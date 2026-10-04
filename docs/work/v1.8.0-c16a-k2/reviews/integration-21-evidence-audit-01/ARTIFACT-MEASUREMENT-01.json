@@ -1,0 +1,89 @@
+[
+  {
+    "name": "advancedrocketry-community-1.20.1-1.8.0-dev-api.jar",
+    "bytes": 51045,
+    "sha256": "7484de1d50ffca610328200a838ff47cc8480ea72b37e964e772178325c749da",
+    "entries": 48,
+    "generated_count": 0,
+    "generated_missing": [],
+    "generated_different": [],
+    "main_java_count": 0,
+    "main_java_missing": [],
+    "main_java_different": [],
+    "baseline_member": "evidence/integration-artifacts-20/advancedrocketry-community-1.20.1-1.8.0-dev-api.jar",
+    "baseline_identity": {
+      "bytes": 51045,
+      "sha256": "7484de1d50ffca610328200a838ff47cc8480ea72b37e964e772178325c749da"
+    },
+    "whole_bytes_equal_baseline": true,
+    "member_delta": {
+      "added": [],
+      "removed": [],
+      "changed": [],
+      "unchanged_file_count": 35,
+      "baseline_entries": 48
+    }
+  },
+  {
+    "name": "advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
+    "bytes": 2620612,
+    "sha256": "1368d531681032c3c70fa320fbe7697dff3f124e668c4f17176707220abef9d2",
+    "entries": 2661,
+    "generated_count": 29,
+    "generated_missing": [],
+    "generated_different": [
+      "data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "data/minecraft/tags/blocks/needs_iron_tool.json"
+    ],
+    "main_java_count": 1210,
+    "main_java_missing": [],
+    "main_java_different": [],
+    "baseline_member": "evidence/integration-artifacts-20/advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
+    "baseline_identity": {
+      "bytes": 2617913,
+      "sha256": "3e6447ae9e6232fd6a93b5989750866e4dc11c5e101de20ccd2ac15b131054f0"
+    },
+    "whole_bytes_equal_baseline": false,
+    "member_delta": {
+      "added": [
+        "io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java"
+      ],
+      "removed": [],
+      "changed": [],
+      "unchanged_file_count": 2378,
+      "baseline_entries": 2660
+    }
+  },
+  {
+    "name": "advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+    "bytes": 5440794,
+    "sha256": "796c9611ec8d655398e5a046bfe6cc3f81b2c7880a19c835ea9ed301a990373e",
+    "entries": 3305,
+    "generated_count": 29,
+    "generated_missing": [],
+    "generated_different": [
+      "data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "data/minecraft/tags/blocks/needs_iron_tool.json"
+    ],
+    "main_java_count": 0,
+    "main_java_missing": [],
+    "main_java_different": [],
+    "baseline_member": "evidence/integration-artifacts-20/advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+    "baseline_identity": {
+      "bytes": 5433734,
+      "sha256": "90ab8ba5379fd10e3c199645289d7dc43296028377f5cc65a0b84062d6e96468"
+    },
+    "whole_bytes_equal_baseline": false,
+    "member_delta": {
+      "added": [
+        "io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes$FixedOutput.class",
+        "io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes$Writer.class",
+        "io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.class"
+      ],
+      "removed": [],
+      "changed": [],
+      "unchanged_file_count": 3021,
+      "baseline_entries": 3302
+    }
+  }
+]

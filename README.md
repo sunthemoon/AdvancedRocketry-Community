@@ -83,13 +83,70 @@ each with permission, protection, rate, energy and audit bounds. The
 [development handoff](docs/releases/v1.7.0/RELEASE-EVIDENCE.md) lists its
 evidence and open acceptance.
 
-**v1.8 Classic Content Completion is in development.** Its contracts are
-accepted: every legacy content unit has a recorded disposition, imported legacy
-art must pass a vanilla-derivation check and a provenance record, and the first
-batch adds the classic metals, ores, the small plate press and new Moon, Mars
-and Venus surfaces. The [implementation log](docs/work/v1.8.0-implementation-log.md)
-tracks the work. None of the classic content is available yet; the runtime build
-remains `1.20.1-1.7.0-dev` until it begins.
+**v1.8 Classic Content Completion is in development** (`1.20.1-1.8.0-dev`).
+The development build includes classic metals and ores, the small plate press and combustion generator,
+five classic fluids and whole-unit gas canisters, a pressurized tank and pump,
+four craftable motor tiers,
+rebuilt Moon, Mars and Venus surfaces, and the Tau Ceti f and g worlds. Every
+legacy content unit has a recorded disposition, and imported legacy art must
+pass the vanilla-derivation and provenance checks. Classic machines, rocket
+and station components, life support, progression and the remaining assets are
+not complete. The [implementation log](docs/work/v1.8.0-implementation-log.md)
+records implemented slices, independent reviews and outstanding acceptance;
+this build is not a stable release or complete classic-content parity.
+
+Craft one unpowered Small Plate Press with a vanilla piston centered above three
+iron ingots. It requires neither steel nor a motor. Place the material beneath
+the press with obsidian below it, then apply a redstone pulse to process it.
+
+Oxygen, hydrogen and nitrogen are container-only fluids: one canister holds
+1,000 mB, with the existing stack limit of 16 and unchanged suit/vent use.
+Compatible fluid integrations detach one unit and retain its returned item;
+partial transfers and direct stacked fill/drain refuse. The discovered gas
+giant offers nitrogen as well as unchanged hydrogen. Rocket fuel and enriched
+lava have world blocks and buckets; newly generated Venus volcanoes contain
+enriched lava without rewriting explored lava. Fuel-producing machine families
+are still unfinished.
+
+A Pressurized Tank holds 64,000 mB by default. The COMMON setting
+`machines.tankCapacityMultiplier` allows 0.25–4.0; reducing it keeps existing
+overflow drainable and blocks further fills. Breaking a normal tank keeps its
+fluid and metadata in the dropped item. Stacked tanks pull at most 1,000 mB/t
+from the loaded tank directly above, using a bounded per-Level scheduler.
+
+A Pump stores 16,000 mB and 10,000 FE. Each source block costs 100 FE for
+1,000 mB, followed by a five-tick cooldown. Its loaded-only search checks at
+most 64 nodes/t and 4,096 per search; owner placement and server protection
+checks authorize draining. Ownerless pumps do not drain. Right-click displays
+status; the owner or an operator can retry. `machines.pumpEnabled` pauses drain
+and export while retaining resources. Custom pickup blocks and waterlogged
+blocks are not supported sources.
+
+Unsupported tank/pump saves refuse ordinary removal. Oversized retained data
+prevents saving its entire chunk until backup/offline repair; unrelated changes
+in that chunk are not durable during refusal. Ordinary fluid integration and
+clean restarts do not guarantee atomic transfers across independently saved
+chunks. Some steel/component production routes still await the remaining
+machine families; a complete new-world survival progression is not yet available.
+
+Motor, Advanced Motor, Enhanced Motor and Elite Motor are crafting/structure
+components, not powered machines. Craft the first from a copper coil, two steel
+plates, two iron rods and a steel ingot; each upgrade uses the previous tier,
+one coil and two plates of gold, titanium or iridium. The existing Endgame
+Casing now displays as Advanced Machine Casing without changing its saved ID.
+Classic machine structures using these parts are still incomplete.
+
+Craft a Combustion Generator with six iron ingots, a copper coil, a furnace and
+redstone. It burns furnace fuel at 40 FE/t, stores 20,000 FE and exports at most
+1,000 FE/t across all sides to adjacent loaded energy receivers. A coal supplies
+64,000 FE; a lava bucket leaves its empty bucket in the fuel slot. A full buffer
+pauses without wasting fuel. `machines.combustionGeneratorEnabled` pauses power
+generation/export without deleting stored fuel. The menu shows fuel, burn credit,
+energy and the pause reason. Breaking a normal generator drops unburned fuel or
+its container; energy and consumed burn credit are lost. Unsupported resource
+saves are protected from ordinary removal and need backup/offline repair.
+Oversized generator data prevents saving its entire chunk until repaired;
+other changes in that chunk are not durable during that refusal.
 
 ## What this project is
 

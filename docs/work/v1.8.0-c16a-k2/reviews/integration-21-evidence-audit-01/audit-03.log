@@ -1,0 +1,451 @@
+Generated/framing {
+  "generated": [
+    {
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
+      "exact_v180_generated_files": 771,
+      "comparison_set_sha256": "aa78985fa323444cb2fe7bb206f4ca239ae46aae2c0d9030389b22e0917c3793"
+    },
+    {
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+      "exact_v180_generated_files": 771,
+      "comparison_set_sha256": "aa78985fa323444cb2fe7bb206f4ca239ae46aae2c0d9030389b22e0917c3793"
+    }
+  ],
+  "wrapper": {
+    "path": "gradlew.bat",
+    "commit": {
+      "bytes": 2776,
+      "sha256": "18774a0ac0203f6893bf1db3291a0d77f06cd1b4dca2a43b51e7009da3e28cfa"
+    },
+    "tested_snapshot": {
+      "bytes": 2868,
+      "sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955"
+    },
+    "equal_after_CRLF_to_LF": true,
+    "Git_LF_lines": 92,
+    "snapshot_CRLF_pairs": 92
+  }
+}
+K2 added suite {
+  "path": "evidence/xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml",
+  "suite_name": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest",
+  "tests": 20,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "bytes": 5761,
+  "sha256": "8ab83ce799ee5b98e694b4b2275e5bcdf9942f45ee6e1509e283f92589b39373"
+}
+JOB markdown-links-17 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\verify_current_links17.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:36:29.489346+00:00'}
+{
+
+  "files": 675,
+
+  "links": 3101,
+
+  "errors": []
+
+}
+
+
+JOB repository-boundary-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\validate_repository_boundary21.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:36:32.175405+00:00'}
+7.0 DataGen resources match the exact station inventory
+
+[PASS] v0.8.0 DataGen resources match the exact satellite inventory
+
+[PASS] v0.9.0 migration fixtures match the exact hash inventory
+
+[PASS] v0.9.0 resource and localization audit covers 1259 files and 832 bilingual keys
+
+[PASS] v0.2.0 artifact, automated, persistence, client, server, and checksum evidence is valid
+
+[PASS] v0.2.0 Gate status does not overstate machine-slice evidence
+
+[PASS] v0.3.0 artifact, celestial, persistence, multiplayer, client, and checksum evidence is valid
+
+[PASS] v0.3.0 Gate status is evidence-bound in docs\releases\v0.3.0\GATE-STATUS.md
+
+[PASS] v0.4.0 artifact, atmosphere, persistence, performance, multiplayer, client, and checksum evidence is valid
+
+[PASS] v0.4.0 Gate status is evidence-bound in docs\releases\v0.4.0\GATE-STATUS.md
+
+[PASS] v0.5.0 artifact, rocket, persistence, performance, client, and checksum evidence is valid
+
+[PASS] v0.5.0 Gate status is evidence-bound in docs\releases\v0.5.0\GATE-STATUS.md
+
+[PASS] v0.6.0 artifact, flight, recovery, multiplayer, performance, and checksum evidence is valid
+
+[PASS] v0.6.0 Gate status is evidence-bound in docs\releases\v0.6.0\GATE-STATUS.md
+
+[PASS] v0.7.0 artifact, station, recovery, multiplayer, performance, and checksum evidence is valid
+
+[PASS] v0.7.0 Gate status is evidence-bound in docs\releases\v0.7.0\GATE-STATUS.md
+
+[PASS] v0.8.0 artifact, satellite, restart, multiplayer, performance, and checksum evidence is valid
+
+[PASS] v0.8.0 Gate status is evidence-bound in docs\releases\v0.8.0\GATE-STATUS.md
+
+[PASS] v0.9.0 artifact, migration, recovery, compatibility, soak, and checksum evidence is valid
+
+[PASS] v0.9.0 Gate status is evidence-bound in docs\releases\v0.9.0\GATE-STATUS.md
+
+Summary: 45 passed, 0 pending, 0 warnings, 0 failed
+
+
+JOB planning-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v1plus_planning.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:42:21.157858+00:00'}
+PASS: 11 version plans, explicit G0-G9, entry points, links and 33-input source inventory
+
+Scope: planning validation only; no release Gate or human approval asserted.
+
+
+JOB provenance-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_bootstrap_provenance.py', '--require-approved-review'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:42:21.338385+00:00'}
+[INFO] Validating accepted v0.0.2 provenance at 9359257b9fe1eccf7e0043dfa7f626cf1ee44be9
+
+[PASS] Bootstrap provenance mechanical validation: 2 components, 11 imported targets, 2 local assets
+
+[PASS] Recorded provenance review is mechanically consistent and digest-bound: THIRD_PARTY_APPROVED
+
+
+JOB machine-resources-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v120_machine_resources.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:42:52.830237+00:00'}
+PASS: 9 machine blocks, recipes, loot, models, tags and bilingual keys
+
+
+JOB ledger-strict-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v180_content_ledger.py', '--require-accepted'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:31.208698+00:00'}
+{
+
+  "assets": {
+
+    "EXCLUDE": 113,
+
+    "IMPORT": 182,
+
+    "IMPORTED": 10,
+
+    "REGENERATE": 439,
+
+    "REVIEW": 154
+
+  },
+
+  "dispositions": {
+
+    "DEFERRED": 25,
+
+    "IMPLEMENTED": 104,
+
+    "MERGED": 93,
+
+    "PLANNED": 186,
+
+    "REDESIGNED": 187,
+
+    "REJECTED": 58
+
+  },
+
+  "planned_by_batch": {
+
+    "C16a": 2,
+
+    "C16b": 13,
+
+    "C16c": 16,
+
+    "C16d": 10,
+
+    "C17a": 24,
+
+    "C17b": 9,
+
+    "C17c": 8,
+
+    "C18a": 28,
+
+    "C18b": 23,
+
+    "C18c": 19,
+
+    "C18d": 34
+
+  },
+
+  "result": "PASS",
+
+  "units": 653
+
+}
+
+
+JOB ledger-closure-21 exit 1 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v180_content_ledger.py', '--closure'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:31.860835+00:00'}
+closure: 186 ledger rows are still PLANNED
+
+closure: 154 assets are still handled as REVIEW
+
+{
+
+  "assets": {
+
+    "EXCLUDE": 113,
+
+    "IMPORT": 182,
+
+    "IMPORTED": 10,
+
+    "REGENERATE": 439,
+
+    "REVIEW": 154
+
+  },
+
+  "dispositions": {
+
+    "DEFERRED": 25,
+
+    "IMPLEMENTED": 104,
+
+    "MERGED": 93,
+
+    "PLANNED": 186,
+
+    "REDESIGNED": 187,
+
+    "REJECTED": 58
+
+  },
+
+  "planned_by_batch": {
+
+    "C16a": 2,
+
+    "C16b": 13,
+
+    "C16c": 16,
+
+    "C16d": 10,
+
+    "C17a": 24,
+
+    "C17b": 9,
+
+    "C17c": 8,
+
+    "C18a": 28,
+
+    "C18b": 23,
+
+    "C18c": 19,
+
+    "C18d": 34
+
+  },
+
+  "result": "FAIL",
+
+  "units": 653
+
+}
+
+
+JOB common-client-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/check_client_imports.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:32.279207+00:00'}
+[PASS] No net.minecraft.client references outside the client package
+
+
+JOB focused-python-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', '-m', 'unittest', 'tests.test_run_v180_pump_smoke', 'tests.test_run_v180_tank_smoke', 'tests.test_run_v180_signature_smoke', '-v'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:32.915247+00:00'}
+ector_patch_roundtrip_preserves_other_bytes_and_records) ... ok
+
+test_seed_only_declared_current_or_historical_rows (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_seed_only_declared_current_or_historical_rows) ... ok
+
+test_settled_refusal_requires_runtime_reason_and_failure_pair (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_settled_refusal_requires_runtime_reason_and_failure_pair) ... ok
+
+test_settled_report_after_original_deadline_is_not_accepted (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_settled_report_after_original_deadline_is_not_accepted) ... ok
+
+test_snapshot_order_and_fingerprint_identity (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_snapshot_order_and_fingerprint_identity) ... ok
+
+test_startup_poll_does_not_hide_marker_capability_status_or_protection_loss (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_startup_poll_does_not_hide_marker_capability_status_or_protection_loss) ... ok
+
+test_strict_console_reports_and_refusal_are_not_cap_presence (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_strict_console_reports_and_refusal_are_not_cap_presence) ... ok
+
+test_wrong_adapter_end_and_foreign_report_rows_are_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_adapter_end_and_foreign_report_rows_are_refused) ... ok
+
+test_wrong_fluid_amount_width_or_metadata_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_fluid_amount_width_or_metadata_refused) ... ok
+
+test_wrong_item_count_width_or_unapproved_metadata_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_item_count_width_or_unapproved_metadata_refused) ... ok
+
+
+
+----------------------------------------------------------------------
+
+Ran 90 tests in 5.348s
+
+
+
+OK
+
+
+JOB artifact-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_build_artifact.py', 'D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\integration-artifacts-21\\advancedrocketry-community-1.20.1-1.8.0-dev.jar', '--expected-version', '1.20.1-1.8.0-dev'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:38.688468+00:00'}
+[PASS] Artifact: D:\ARCE-Task-Evidence\v1.8.0\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\integration-artifacts-21\advancedrocketry-community-1.20.1-1.8.0-dev.jar
+
+[PASS] SHA-256: 796c9611ec8d655398e5a046bfe6cc3f81b2c7880a19c835ea9ed301a990373e
+
+[PASS] Entries: 3305
+
+[PASS] Metadata, notices, paths, and credential name/content scan
+
+
+JOB git-diff-check-21 exit 0 command {'command': ['git', 'diff', '--check'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:40.517725+00:00'}
+
+JOB git-diff-exit-21 exit 1 command {'command': ['git', 'diff', '--exit-code'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:41.058951+00:00'}
+assertEquals(0, messages, "Menu admission channel must remain message-empty: " + file);
++                    emptyChannels.add(channel.group(1) + "|" + protocol.group(1));
++                } else {
++                    channelSources.add(file);
++                    assertTrue(messages > 0, "A channel without messages: " + file);
++                }
+                 assertEquals(source.split("messageBuilder\\(", -1).length - 1, messages,
+                         "A message registration the pin table cannot read (for example a non-literal index): " + file);
+             }
+         }
+         assertEquals(6, channelSources.size(), "Channel sources changed: " + channelSources);
++        assertEquals(List.of("machine_menu|1"), emptyChannels);
+         assertEquals(expected(), actual.stream().sorted().toList());
+     }
+ 
+diff --git a/tests/test_validate_v180_content_ledger.py b/tests/test_validate_v180_content_ledger.py
+index 118ef014..0e74db02 100644
+--- a/tests/test_validate_v180_content_ledger.py
++++ b/tests/test_validate_v180_content_ledger.py
+@@ -240,7 +240,8 @@ class V180ContentLedgerTests(unittest.TestCase):
+         self.assertFalse(any("who is neither the owner" in error for error in self._errors()))
+ 
+     def test_owning_units_are_not_delivered_after_the_asset(self) -> None:
+-        self._set_rule("textures/blocks/liquidtank.png", units="config:CLIENT.advancedVFX")
++        # This check governs legacy imports; the shipped tank now uses NEW art.
++        self._set_rule("textures/blocks/liquidtank.png", handling="IMPORT", units="config:CLIENT.advancedVFX")
+         self.assertTrue(any(error.endswith("owning unit config:CLIENT.advancedVFX is delivered in C18d, after the "
+                                            "rule's batch C16a") for error in self._errors()))
+ 
+
+WRAPPER exact output-name-only differences verified
+PHASE integration-build-data-21
+evidence/integration-build-data-21.command.json {
+
+  "command": [
+
+    "D:\\GitHub\\AdvancedRocketry-Community\\gradlew.bat",
+
+    "--offline",
+
+    "--no-daemon",
+
+    "--max-workers=2",
+
+    "-Dorg.gradle.jvmargs=-Xmx2G",
+
+    "clean",
+
+    "build",
+
+    "test",
+
+    "runData"
+
+  ],
+
+  "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+
+  "JAVA_HOME": "C:/Program Files/Java/jdk-17.0.7",
+
+  "started_utc": "2026-10-04T04:34:28.395070+00:00"
+
+}
+evidence/integration-build-data-21.started 2026-10-04T04:34:28.395070+00:00
+evidence/integration-build-data-21.finished 2026-10-04T04:37:42.382769+00:00
+evidence/integration-build-data-21.exit 0
+Build/data tail xoplanet art
+
+[12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 exoplanet art finished after 1 ms
+
+[12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 exoplanet celestial data
+
+[12:37:42] [main/INFO] [minecraft/DataGenerator]: v1.8 exoplanet celestial data finished after 42 ms
+
+[12:37:42] [main/INFO] [minecraft/DataGenerator]: All providers took: 666 ms
+
+[12:37:42] [main/INFO] [minecraft/HashCache]: Caching: total files: 771, old count: 771, new count: 772, removed stale: 0, written: 0
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+
+
+BUILD SUCCESSFUL in 3m 13s
+
+26 actionable tasks: 16 executed, 9 from cache, 1 up-to-date
+
+
+DATAGEN 109 [12:37:42] [main/INFO] [minecraft/HashCache]: Caching: total files: 771, old count: 771, new count: 772, removed stale: 0, written: 0
+PHASE integration-gametest-12
+evidence/integration-gametest-12.command.json {
+
+  "command": [
+
+    "D:\\GitHub\\AdvancedRocketry-Community\\gradlew.bat",
+
+    "--offline",
+
+    "--no-daemon",
+
+    "--max-workers=2",
+
+    "-Dorg.gradle.jvmargs=-Xmx2G",
+
+    "runGameTestServer"
+
+  ],
+
+  "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+
+  "JAVA_HOME": "C:/Program Files/Java/jdk-17.0.7",
+
+  "started_utc": "2026-10-04T04:53:03.407269+00:00"
+
+}
+evidence/integration-gametest-12.started 2026-10-04T04:53:03.407269+00:00
+evidence/integration-gametest-12.finished 2026-10-04T04:57:06.385603+00:00
+evidence/integration-gametest-12.exit 0
+Build/data tail ] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+
+[12:57:04] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (tau_ceti_g): All chunks are saved
+
+[12:57:04] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (space): All chunks are saved
+
+[12:57:04] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+
+[12:57:05] [Server thread/INFO] [minecraft/GameTestServer]: Game test server shutting down
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+
+
+BUILD SUCCESSFUL in 4m 2s
+
+18 actionable tasks: 4 executed, 14 up-to-date
+
+
+GT completion [{'line': 5546, 'text': '[04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: ========= 464 GAME TESTS COMPLETE ======================'}, {'line': 5547, 'text': '[04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: All 464 required tests passed :)'}] ERROR61 categories Counter({'[net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first': 24, '[net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number': 8, '[net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number': 8, '[net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional Energy-only migration binding save failure': 3, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite idle launch operation failed': 3, '[net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure': 2, '[net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40042,40004': 2, '[net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40002,40001': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:rolling_iron_bars until tag reload: machine ingredient has no bound alternatives': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:precision_control_circuit until tag reload: machine ingredient has no bound alternatives': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:electrolyzer_water until tag reload: machine ingredient has no bound alternatives': 1, '[net.minecraft.server.level.ChunkMap/]: Failed to save chunk 32013,32003': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=512207, y=36, z=512063} in minecraft:overworld: BlockPos{x=512208, y=36, z=512063}: arce_precision_port_migration differs (expected hash=-2043996827, saved hash=0)': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite launch operation failed': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=640671, y=20, z=640061} in minecraft:overworld: BlockPos{x=640672, y=20, z=640064}: arce_part_binding differs (expected hash=1241633005, saved hash=1241633004)': 1, '[net.minecraft.server.level.ChunkMap/]: Failed to save chunk 32001,32006': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=512031, y=20, z=512111} in minecraft:overworld: BlockPos{x=512031, y=20, z=512111}: arce_precision_resources differs (expected hash=1319225500, saved hash=0)': 1, '[net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized combustion input; back up and repair first': 1})
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Temp\ark2a-a7e21b35c0\audit03.py", line 10, in <module>
+    exec(compile(source, str(p.with_name('audit03.py')), 'exec'))
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Administrator\AppData\Local\Temp\ark2a-a7e21b35c0\audit03.py", line 166, in <module>
+  File "C:\Users\Administrator\AppData\Local\Temp\ark2a-a7e21b35c0\audit03.py", line 35, in validate_zip
+AssertionError: []

@@ -1,0 +1,46 @@
+{
+  "AGENTS.md": {
+    "bytes": 12047,
+    "sha256": "1be0391c3f69f566ae3f627e37107adfbd0bbfa6f581b105ff6bd2a2c2630dc0"
+  },
+  "PROJECT-CONFIG.md": {
+    "bytes": 3543,
+    "sha256": "44b2e383e1f57f28ff2f432b5702f854ac32bd0d9b51b53df30b88e6853cf22b"
+  },
+  "PRODUCT.md": {
+    "bytes": 4325,
+    "sha256": "0afbb33a772ddaa60e654e2a55e7832ad2e1528eb1a5273b257cef4bb734e090"
+  },
+  "docs/01-PORTING-PRINCIPLES.md": {
+    "bytes": 4619,
+    "sha256": "a1ff595bdcc85335ef6124c4ca4d640d318d5fd8ca69af8c57d842186e629984"
+  },
+  "docs/04-VERSION-ROADMAP.md": {
+    "bytes": 5260,
+    "sha256": "d3fd1539581db13cc807c613cf333f5c34aa75d6627dafd50bfb66d079ce2ab3"
+  },
+  "docs/versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md": {
+    "bytes": 8905,
+    "sha256": "902b0e65585f47c4e4beec39f365c5046346799a2e77dee276ebaa58e433b051"
+  },
+  "docs/05-MASTER-TEST-PLAN.md": {
+    "bytes": 7695,
+    "sha256": "c84e282637842bb55c374949d3787e9459b5273b28d67fd756c05002018dca47"
+  },
+  "docs/06-RELEASE-AND-ACCEPTANCE-GATES.md": {
+    "bytes": 4069,
+    "sha256": "872980fc3ed6e264e25a7873c58c6439330ed19d8a7cc96564f9ec99e94890a1"
+  },
+  "docs/16-POST-1.0-VERSION-ROADMAP.md": {
+    "bytes": 7281,
+    "sha256": "c436fef7e31b55cccbcea6a089e0c92c15fd597a87c72bcf1a6c956c838d7f37"
+  },
+  "docs/17-V1PLUS-QUALITY-BUDGETS.md": {
+    "bytes": 7082,
+    "sha256": "5dc4f2a4f43006cfddff6d65795fd02b4c2437116b79828b6a85e7ddd316c42e"
+  },
+  "docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md": {
+    "bytes": 10204,
+    "sha256": "0c3a3ee3175b9cbdbd61bbf80d8f6ca44634dc3ee4337be8b0be581ebb10580f"
+  }
+}

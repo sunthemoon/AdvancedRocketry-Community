@@ -1,0 +1,23 @@
+{
+  "runtime_tested": false,
+  "input_sources_jar_sha256": "918a11bdfceace2752d4c29bddbdf327981e1f6a1e1f0675f23e5fbf01e226c0",
+  "observations": [
+    "SimpleChannel creates NetworkInstance and registers it before any message registration",
+    "channel map built from all instances",
+    "missing peer version uses ABSENT before exact predicate",
+    "handshake handlers close mismatched connections"
+  ],
+  "entries": [
+    {
+      "sha256": "d0e30f6af23d735e8270d9b714563d2259343d710f1a7fe3a37206aebf64ecd7",
+      "bytes": 20508,
+      "entry": "net/minecraftforge/network/NetworkRegistry.java"
+    },
+    {
+      "sha256": "10508a90be6fcb05354ccc1d2a76f842da153c8341f44e6af0a939f2f9bde5d0",
+      "bytes": 21693,
+      "entry": "net/minecraftforge/network/HandshakeHandler.java"
+    }
+  ],
+  "environment": "pinned Forge 47.4.10 source inspection only"
+}

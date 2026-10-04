@@ -1,0 +1,241 @@
+[
+  {
+    "group": "full",
+    "label": "markdown-links-17",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\verify_current_links17.py"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:36:29.489346+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 57,
+      "sha256": "dafd9ac3664e1e69e9e1ff443414624d573cdfbba411b1091d2efbad5ccd374f"
+    }
+  },
+  {
+    "group": "full",
+    "label": "repository-boundary-21",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\validate_repository_boundary21.py"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:36:32.175405+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 3844,
+      "sha256": "43fdffe66826acca17067b35f581b6288b89a6baa6793db2b29ee8e4435cb64a"
+    }
+  },
+  {
+    "group": "full",
+    "label": "planning-21",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "scripts/validate_v1plus_planning.py"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:42:21.157858+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 169,
+      "sha256": "f0eb0a508ba1768dc1b024eb4663833b31eb1f106901d8ec56f5de5d6893da54"
+    }
+  },
+  {
+    "group": "full",
+    "label": "provenance-21",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "scripts/validate_bootstrap_provenance.py",
+        "--require-approved-review"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:42:21.338385+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 293,
+      "sha256": "34816aa32bf269ecc3e1e5fe129413a1d9b05d151906482bf37dd79839e77f35"
+    }
+  },
+  {
+    "group": "full",
+    "label": "machine-resources-21",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "scripts/validate_v120_machine_resources.py"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:42:52.830237+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 72,
+      "sha256": "1d3d83a4191126823a59aa2d308d349ec7d46cd33af9f50025384f513b8dcf6d"
+    }
+  },
+  {
+    "group": "scoped",
+    "label": "ledger-strict-21",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "scripts/validate_v180_content_ledger.py",
+        "--require-accepted"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:53:31.208698+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 540,
+      "sha256": "61a48b9ee492e9aefd2ca38a514e25687b15aa459ec51375b62ae04acbf2eab4"
+    }
+  },
+  {
+    "group": "scoped",
+    "label": "ledger-closure-21",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "scripts/validate_v180_content_ledger.py",
+        "--closure"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:53:31.860835+00:00"
+    },
+    "exit": 1,
+    "documented_nonpass": true,
+    "log": {
+      "bytes": 633,
+      "sha256": "b7670cace1b3980c8d74242a80f1181031fffe7579a4dcf2711634ab765f6373"
+    }
+  },
+  {
+    "group": "scoped",
+    "label": "common-client-21",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "scripts/check_client_imports.py"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:53:32.279207+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 70,
+      "sha256": "41d7f9b8f46d1eeaf40be07406c7c5b8fe4fc53b75ce90cd23b55ed7c489293c"
+    }
+  },
+  {
+    "group": "scoped",
+    "label": "focused-python-21",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.test_run_v180_pump_smoke",
+        "tests.test_run_v180_tank_smoke",
+        "tests.test_run_v180_signature_smoke",
+        "-v"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:53:32.915247+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 17262,
+      "sha256": "e5ac49bf0372c1c1925d8cea6850763cc251229c3a409c3fc198ec4d049af59c"
+    }
+  },
+  {
+    "group": "scoped",
+    "label": "artifact-21",
+    "command": {
+      "command": [
+        "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+        "-B",
+        "scripts/validate_build_artifact.py",
+        "D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\integration-artifacts-21\\advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+        "--expected-version",
+        "1.20.1-1.8.0-dev"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:53:38.688468+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 336,
+      "sha256": "1e15600e22e1a34cf7c01b8e4f10a647a0296289104704b8df6c5a1863244f80"
+    }
+  },
+  {
+    "group": "scoped",
+    "label": "git-diff-check-21",
+    "command": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:53:40.517725+00:00"
+    },
+    "exit": 0,
+    "documented_nonpass": false,
+    "log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  {
+    "group": "scoped",
+    "label": "git-diff-exit-21",
+    "command": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T04:53:41.058951+00:00"
+    },
+    "exit": 1,
+    "documented_nonpass": true,
+    "log": {
+      "bytes": 474555,
+      "sha256": "b1a0d33cdec4538ad5da3df1d413e673f5d11c4f01864f6d075f8de36cbc0243"
+    }
+  }
+]

@@ -6,6 +6,45 @@ Rocketry maintainers.
 
 ## v1.8.0 — in development
 
+- Add four craftable motor tiers: Motor, Advanced Motor, Enhanced Motor and
+  Elite Motor. The base uses a copper coil, two steel plates, two iron rods
+  and a steel ingot; upgrades use the previous tier with one coil and two
+  plates of gold, titanium or iridium. Both item/block motor tags include
+  every tier. They are components, not powered machines. Rename the existing
+  Endgame Casing display to Advanced Machine Casing, retaining its saved
+  block/item ID and existing recipe. Resource packs overriding the casing label
+  must use `block.advancedrocketrycommunity.advanced_machine_casing` instead of
+  the old display key. Classic machine structures remain incomplete.
+- Add oxygen, hydrogen and nitrogen as container-only Forge fluids. Existing
+  empty/hydrogen/oxygen canisters keep their IDs and stack limit of 16; a new
+  nitrogen canister joins them. One canister holds exactly 1,000 mB. Partial
+  transfers and direct stacked mutations refuse without consuming resources;
+  compatible integrations must store the returned count-one container.
+- Add placeable rocket fuel and enriched lava with buckets. Newly generated
+  Venus volcano cores and crater pools contain enriched lava; explored lava
+  blocks are not rewritten. Enriched lava ignites entities. The existing
+  gas-giant mission offers nitrogen at 8 canisters per 1,000 ticks alongside
+  unchanged hydrogen; discovery, eligibility and selected-product rules stay
+  unchanged. Fuel-producing machine families remain incomplete.
+- Add the Pressurized Tank: 64,000 mB base capacity, a COMMON
+  `machines.tankCapacityMultiplier` of 0.25–4.0, drainable retained overflow,
+  whole-unit container transfers and fluid-preserving dropped items. Vertical
+  stacks pull at most 1,000 mB/t from a loaded tank above with bounded scheduling.
+- Add the Pump: a 16,000 mB bank, 10,000 FE buffer and owner-authorized source
+  drain costing 100 FE per 1,000 mB with a five-tick cooldown. Search is loaded-only,
+  bounded to 64 nodes/t and 4,096 per search, and obeys server protection checks.
+  Ownerless pumps do not drain. The COMMON `machines.pumpEnabled` switch pauses
+  draining/export without deleting resources. Unsupported resource saves refuse
+  ordinary removal; oversized retained data prevents the whole chunk from saving
+  until repaired against a backup. Clean restart is not cross-chunk crash atomicity.
+- Add the Combustion Generator: furnace fuel at 40 FE/t, a 20,000 FE buffer,
+  and a shared 1,000 FE/t output budget. Coal gives 64,000 FE; fuel containers
+  stay in the slot. The menu displays energy, burn credit and pause reasons.
+  Full buffers pause without spending fuel; the COMMON switch
+  `machines.combustionGeneratorEnabled` pauses generation/export while retaining
+  fuel. Its crafting recipe uses iron, a copper coil, a furnace and redstone,
+  with no powered-machine dependency. Existing machine families remain incomplete.
+
 **Status:** `IN_PROGRESS`; development identity `1.20.1-1.8.0-dev`.
 No candidate or release approval is assigned.
 
@@ -34,7 +73,8 @@ No candidate or release approval is assigned.
   so iron plates come from the press.
 - Upgraded worlds: a Rolling Machine that holds copper or gold ingots (or any
   newly rollable ingot) starts rolling them into plates.
-- Add the Small Plate Press. Put a metal block or an ore under it, obsidian
+- Add the Small Plate Press, crafted with one vanilla piston above three iron
+  ingots and no steel/motor requirement. Put a metal block or an ore under it, obsidian
   under that block, and give the press a redstone pulse: a block becomes four
   plates, an ore two dust (not rutile). One operation per pulse. It is
   protected like a vanilla piston: mods that cancel Forge's piston event stop
@@ -45,7 +85,7 @@ No candidate or release approval is assigned.
   Highlands (Moon Turf) and Regolith Lowlands (Dark Moon Turf), over stone,
   with impact craters. Mars is covered in Oxidized Ferric Sand (Ferric
   Regolith Wasteland) over red sandstone, with craters. Venus is basalt, with
-  Volcanic and Volcanic Lowlands biomes, volcanoes with lava, buried ore geodes
+  Volcanic and Volcanic Lowlands biomes, volcanoes with enriched lava, buried ore geodes
   lined with Geode Blocks, and charred trees of Charcoal Logs. The Moon and
   Mars carry copper, tin, rutile, aluminum, iridium and dilithium ores between
   y 4 and 40 (dilithium is common on the airless Moon). Charcoal Logs do not
@@ -76,7 +116,7 @@ No candidate or release approval is assigned.
   1.4 atm, not breathable) of Stormland (charred trees and Electric
   Mushrooms under a dark sky) and Crystal Chasms (snow over packed ice with
   giant crystals in six colours). Nothing spawns on either world. Around each
-  world's origin, a landing ground of radius 160 keeps the rocket landing pads
+  world's origin, a landing ground of radius 224 keeps the rocket landing pads
   dry and free of trees and plants.
 - New blocks: Lightwood Log, Leaves, Sapling and Planks (the leaves and
   planks glow, the sapling grows a Lightwood tree, and they work in vanilla
@@ -84,6 +124,14 @@ No candidate or release approval is assigned.
   orange) and the Electric Mushroom. Electric Mushrooms throw sparks; in a
   stormland during rain the sky flashes and distant thunder sounds. The CLIENT
   value `effects.electricMushroomFlashes` turns the flashes off.
+- Electric Mushroom flashes now tint the custom planetary sky, respect the
+  client's hide-lightning-flash option, and use a world-scoped cooldown that
+  resets after reconnects or clock rewinds. Both Tau Ceti sky profiles are
+  included in the initial fallback if the first resource reload fails.
+- The Tau Ceti landing ground covers every rectangular footprint within the
+  existing 16-chunk landing limit, including long/thin rockets, and diagonal
+  feature reach. Previously generated chunks keep their old terrain and plants;
+  the enlarged ground applies only to new chunks, with the usual generation seam.
 - New COMMON values turn each Tau Ceti feature off in new chunks:
   `worldgen.lightwoodTrees`, `worldgen.swampTrees`,
   `worldgen.invertedPillars`, `worldgen.crystalClusters` and

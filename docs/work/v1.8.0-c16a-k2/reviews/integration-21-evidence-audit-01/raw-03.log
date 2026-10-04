@@ -1,0 +1,495 @@
+
+===== evidence/collect_build21.py =====
+import sys
+from pathlib import Path
+
+assert len(sys.argv) == 2 and sys.argv[1] in ('tests', 'artifacts', 'gt')
+here = Path(__file__).parent
+source = (here / 'collect_menu18.py').read_text()
+source = source.replace('-18', '-21').replace('-09', '-12')
+source = source.replace("'gametest/RecipeMenuGameTests')", "'gametest/RecipeMenuGameTests', 'gametest/RecipeMenuChannelGameTests', 'machine/classic/adapter/ClassicNbtKeyOrder', 'machine/classic/adapter/ClassicNbtCanonicalBytes')")
+exec(compile(source, str(here / 'collect_menu18.py'), 'exec'))
+
+
+===== evidence/checks21.py =====
+import datetime
+import hashlib
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+here = Path(__file__).parent
+root = Path('D:/GitHub/AdvancedRocketry-Community')
+python = [sys.executable, '-B']
+mode = sys.argv[1]
+if mode == 'scoped':
+    jobs = [
+        ('ledger-strict-21', python + ['scripts/validate_v180_content_ledger.py', '--require-accepted'], 0),
+        ('ledger-closure-21', python + ['scripts/validate_v180_content_ledger.py', '--closure'], 1),
+        ('common-client-21', python + ['scripts/check_client_imports.py'], 0),
+        ('focused-python-21', python + ['-m', 'unittest', 'tests.test_run_v180_pump_smoke', 'tests.test_run_v180_tank_smoke', 'tests.test_run_v180_signature_smoke', '-v'], 0),
+        ('artifact-21', python + ['scripts/validate_build_artifact.py', str(here / 'integration-artifacts-21/advancedrocketry-community-1.20.1-1.8.0-dev.jar'), '--expected-version', '1.20.1-1.8.0-dev'], 0),
+        ('git-diff-check-21', ['git', 'diff', '--check'], 0),
+        ('git-diff-exit-21', ['git', 'diff', '--exit-code'], 1),
+    ]
+elif mode == 'full':
+    for origin, target, old, new in (
+        ('validate_repository_boundary15.py', 'validate_repository_boundary21.py', 'repository-boundary-15.json', 'repository-boundary-21.json'),
+        ('verify_current_links15.py', 'verify_current_links17.py', 'markdown-links-15.json', 'markdown-links-17.json'),
+    ):
+        source = (here / origin).read_text()
+        assert source.count(old) == 1
+        path = here / target
+        assert not path.exists()
+        path.write_text(source.replace(old, new))
+    jobs = [
+        ('markdown-links-17', python + [str(here / 'verify_current_links17.py')], 0),
+        ('repository-boundary-21', python + [str(here / 'validate_repository_boundary21.py')], 0),
+        ('planning-21', python + ['scripts/validate_v1plus_planning.py'], 0),
+        ('provenance-21', python + ['scripts/validate_bootstrap_provenance.py', '--require-approved-review'], 0),
+        ('machine-resources-21', python + ['scripts/validate_v120_machine_resources.py'], 0),
+    ]
+else:
+    raise ValueError(mode)
+records = []
+for name, command, documented in jobs:
+    log = here / (name + '.log')
+    command_path = here / (name + '.command.json')
+    assert not log.exists() and not command_path.exists()
+    start = datetime.datetime.now(datetime.timezone.utc)
+    command_path.write_text(json.dumps({'command': command, 'cwd': str(root), 'started_utc': start.isoformat()}, indent=2) + '\n')
+    with log.open('xb') as stream:
+        result = subprocess.run(command, cwd=root, stdout=stream, stderr=subprocess.STDOUT)
+    end = datetime.datetime.now(datetime.timezone.utc)
+    (here / (name + '.exit')).write_text(str(result.returncode) + '\n')
+    row = {'name': name, 'exit': result.returncode, 'documented_exit': documented,
+           'documented_failure_not_pass': documented != 0,
+           'elapsed_seconds': (end - start).total_seconds(), 'finished_utc': end.isoformat(),
+           'log_sha256': hashlib.sha256(log.read_bytes()).hexdigest()}
+    records.append(row)
+    print(json.dumps(row), flush=True)
+destination = here / ('checks-21-' + mode + '.json')
+assert not destination.exists()
+destination.write_text(json.dumps({'jobs': records, 'release_gate_claimed': False,
+    'old_failures_not_relabelled': True}, indent=2) + '\n')
+sys.exit(int(any(r['exit'] != r['documented_exit'] for r in records)))
+
+
+===== evidence/validate_repository_boundary21.py =====
+"""Run unchanged repository checks with the owner's foreign-directory boundary.
+
+
+
+Only the Git untracked inventory receives a literal directory exclusion.
+
+Tracked inputs, trusted Git environment, byte/count/time budgets, validation
+
+assertions and result reporting are unchanged. This is an explicit bounded
+
+wrapper run, not an unmodified direct-command or release-Gate claim.
+
+"""
+
+import hashlib
+
+import json
+
+import sys
+
+from pathlib import Path
+
+
+
+root = Path('D:/GitHub/AdvancedRocketry-Community')
+
+here = Path(__file__).parent
+
+sys.path.insert(0, str(root))
+
+from scripts import validate_repository as validator
+
+
+
+prefix = 'AdvancedRocketry-Community-v1plus-Development-Docs/'
+
+original = validator._bounded_git_stdout
+
+calls = []
+
+
+
+def inventory(command, **kwargs):
+
+    args = list(command)
+
+    excluded = 'ls-files' in args and '--others' in args
+
+    if excluded:
+
+        args.append('--exclude=/' + prefix)
+
+    result = original(args, **kwargs)
+
+    if 'ls-files' in args:
+
+        assert not any(name.decode('utf-8').startswith(prefix)
+
+                       for name in result.split(b'\0') if name)
+
+    calls.append({'command': args, 'foreign_directory_excluded': excluded,
+
+                  'stdout_bytes': len(result),
+
+                  'stdout_sha256': hashlib.sha256(result).hexdigest()})
+
+    return result
+
+
+
+validator._bounded_git_stdout = inventory
+
+sys.argv = [str(root / 'scripts/validate_repository.py'), '--require-approved-identity']
+
+code = validator.main()
+
+receipt = here / 'repository-boundary-21.json'
+
+assert not receipt.exists()
+
+receipt.write_text(json.dumps({'validator_sha256': hashlib.sha256(
+
+    (root / 'scripts/validate_repository.py').read_bytes()).hexdigest(),
+
+    'exit': code, 'calls': calls, 'release_gate_claimed': False}, indent=2) + '\n')
+
+sys.exit(code)
+
+
+
+===== evidence/run_root_job21.py =====
+from pathlib import Path
+
+here = Path(__file__).parent
+source = (here / 'run_root_job18.py').read_text()
+source = source.replace("    'integration-data18-01': ['runData'],\n", '')
+source = source.replace('integration-build-data-18', 'integration-build-data-21')
+source = source.replace('integration-gametest-09', 'integration-gametest-12')
+exec(compile(source, str(here / 'run_root_job18.py'), 'exec'))
+
+
+===== evidence/integration-build-data-21.log excerpts =====
+
+59: [12:37:41] [main/WARN] [minecraft/VanillaPackResourcesBuilder]: Assets URL 'union:/C:/Users/Administrator/.gradle/caches/forge_gradle/minecraft_user_repo/net/minecraftforge/forge/1.20.1-47.4.10_mapped_official_1.20.1/forge-1.20.1-47.4.10_mapped_official_1.20.1.jar%23191!/data/.mcassetsroot' uses unexpected schema
+60: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 material art
+61: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 material art finished after 6 ms
+62: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 combustion generator art
+63: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 combustion generator art finished after 59 ms
+64: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 original fluid art
+65: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 original fluid art finished after 45 ms
+66: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 original motor art
+67: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 original motor art finished after 35 ms
+68: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 original pressurized tank art
+69: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 original pressurized tank art finished after 9 ms
+70: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 pressurized tank crafting and resources
+71: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 pressurized tank crafting and resources finished after 5 ms
+72: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 original pump art
+73: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 original pump art finished after 12 ms
+74: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 pump crafting and resources
+75: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 pump crafting and resources finished after 4 ms
+76: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 motor crafting and resources
+77: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 motor crafting and resources finished after 7 ms
+78: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 classic fluid data
+79: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 classic fluid data finished after 9 ms
+80: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 combustion generator models
+81: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 combustion generator models finished after 116 ms
+82: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: Block States: advancedrocketrycommunity
+83: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Block States: advancedrocketrycommunity finished after 83 ms
+84: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: Languages: en_us
+85: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Languages: en_us finished after 12 ms
+86: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: Languages: zh_cn
+87: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Languages: zh_cn finished after 3 ms
+88: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: Loot Tables
+89: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Loot Tables finished after 50 ms
+90: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: Tags for minecraft:block mod id advancedrocketrycommunity
+91: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Tags for minecraft:block mod id advancedrocketrycommunity finished after 21 ms
+92: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: Tags for minecraft:item mod id advancedrocketrycommunity
+93: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Tags for minecraft:item mod id advancedrocketrycommunity finished after 17 ms
+94: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: Recipes
+95: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Recipes finished after 55 ms
+96: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: Registries
+97: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Registries finished after 44 ms
+98: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: Tags for minecraft:worldgen/biome mod id advancedrocketrycommunity
+99: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Tags for minecraft:worldgen/biome mod id advancedrocketrycommunity finished after 1 ms
+100: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 planetary dimensions
+101: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 planetary dimensions finished after 5 ms
+102: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 surface art
+103: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 surface art finished after 2 ms
+104: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 exoplanet art
+105: [12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 exoplanet art finished after 1 ms
+106: [12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 exoplanet celestial data
+107: [12:37:42] [main/INFO] [minecraft/DataGenerator]: v1.8 exoplanet celestial data finished after 42 ms
+108: [12:37:42] [main/INFO] [minecraft/DataGenerator]: All providers took: 666 ms
+109: [12:37:42] [main/INFO] [minecraft/HashCache]: Caching: total files: 771, old count: 771, new count: 772, removed stale: 0, written: 0
+110: 
+111: Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+112: 
+113: You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+114: 
+115: For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+116: 
+117: BUILD SUCCESSFUL in 3m 13s
+118: 26 actionable tasks: 16 executed, 9 from cache, 1 up-to-date
+
+===== evidence/integration-gametest-12-latest.log excerpts =====
+
+1: [04Oct2026 12:53:19.736] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgegametestserveruserdev, --gameDir, ., --fml.forgeVersion, 47.4.10, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412]
+2: [04Oct2026 12:53:19.740] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher 10.0.9+10.0.9+main.dcd20f30 starting: java version 17.0.7 by Oracle Corporation; OS Windows 11 arch amd64 version 10.0
+3: [04Oct2026 12:53:19.844] [main/WARN] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Configuration file D:\GitHub\AdvancedRocketry-Community\build\gametest\config\fml.toml is not correct. Correcting
+4: [04Oct2026 12:53:19.846] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowSkipGLVersions] was corrected from null to []
+5: [04Oct2026 12:53:19.847] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowLogHelpMessage] was corrected from null to true
+6: [04Oct2026 12:53:19.847] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowSquir] was corrected from null to false
+7: [04Oct2026 12:53:19.847] [main/INFO] [net.minecraftforge.fml.loading.FMLConfig/CORE]: Incorrect key [earlyWindowShowCPU] was corrected from null to false
+8: [04Oct2026 12:53:19.867] [main/INFO] [net.minecraftforge.fml.loading.ImmediateWindowHandler/]: ImmediateWindowProvider not loading because launch target is forgegametestserveruserdev
+5543: [04Oct2026 12:57:02.066] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: [++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++__]
+5544: [04Oct2026 12:57:02.088] [Server thread/WARN] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE_SATELLITE_RECEIVER_RELEASE_SKIPPED receiver=6feb3ae0-dc0d-40d6-8347-7f1bbc40556b reason=registry_blocked
+5545: [04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: [++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++]
+5546: [04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: ========= 464 GAME TESTS COMPLETE ======================
+5547: [04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: All 464 required tests passed :)
+5548: [04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: ====================================================
+5549: [04Oct2026 12:57:02.168] [Server thread/INFO] [io.github.sunthemoon.arceadaptertest.EnvironmentQueryFixture/]: Environment query handle expired at server stopping
+5550: [04Oct2026 12:57:02.169] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+5551: [04Oct2026 12:57:02.169] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+5552: [04Oct2026 12:57:02.169] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+5553: [04Oct2026 12:57:03.102] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+5554: [04Oct2026 12:57:04.637] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:moon
+5555: [04Oct2026 12:57:04.654] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether
+5556: [04Oct2026 12:57:04.656] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:mars
+5557: [04Oct2026 12:57:04.667] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:tau_ceti_f
+5558: [04Oct2026 12:57:04.684] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:venus
+5559: [04Oct2026 12:57:04.704] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end
+5560: [04Oct2026 12:57:04.705] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:tau_ceti_g
+5561: [04Oct2026 12:57:04.714] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:space
+5562: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (world): All chunks are saved
+5563: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (moon): All chunks are saved
+5564: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+5565: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (mars): All chunks are saved
+5566: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (tau_ceti_f): All chunks are saved
+5567: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (venus): All chunks are saved
+5568: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+5569: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (tau_ceti_g): All chunks are saved
+5570: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (space): All chunks are saved
+5571: [04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
+5572: [04Oct2026 12:57:05.572] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: Game test server shutting down
+
+===== evidence/repository-boundary-21.log excerpts =====
+
+1: [PASS] Required governance files and 12 version plans exist
+2: [PASS] Project identity is APPROVED and expected values are present
+3: [PASS] README, NOTICE, branding, and issue intake state unofficial status
+4: [PASS] LICENSE preserves the original notice and community attribution
+5: [PASS] Exact upstream commit is recorded: c5cd5af62fc07cd4e0d24f06a16033f181c47c04
+6: [PASS] Markdown relative links resolve (2677 checked)
+7: [PASS] No forbidden legacy source or unapproved binary found; applicable source-resource allowlists match (1 wrapper JAR and 7 v0.0.1 evidence screenshots verified)
+8: [PASS] No case-insensitive path collisions found
+9: [PASS] Issue template files have the required dependency-free structure
+10: [PASS] Repository governance workflow invokes validators in enabled blocking run steps
+11: [PASS] Forge baseline and advisory latest-lane commands are in enabled blocking run steps
+12: [PASS] v0.0.2 bootstrap provenance validates 11 imported targets and 2 local resources
+13: [PASS] v0.0.2 final-G0 records are mechanically valid; source=APPROVED, README=APPROVED; Gate not computed
+14: [PASS] v0.0.2 client evidence bundle is structurally valid and mechanically READY_FOR_HUMAN_GATE_REVIEW
+15: [PASS] v0.0.2 ADR-005 is ACCEPTED and matches canonical client evidence
+16: [PASS] v0.0.2 Gate status does not overstate final-G0, G4, G8, or G9 evidence
+17: [PASS] v0.0.2 release checksums cover 36 evidence files and match the JAR manifest
+18: [PASS] v0.1.0 imported and generated resources have exact provenance, hashes, and references
+19: [PASS] v0.1.0 artifact, provenance, client, dedicated-server, and checksum evidence is valid
+20: [PASS] v0.1.0 Gate status does not overstate mechanical or human evidence
+21: [PASS] v0.2.0 DataGen resources match the bounded authored-resource inventory
+22: [PASS] v0.3.0 DataGen resources match the exact fixed-world inventory
+23: [PASS] v0.4.0 DataGen resources match the exact atmosphere inventory
+24: [PASS] v0.5.0 DataGen resources match the exact rocket inventory
+25: [PASS] v0.6.0 DataGen resources match the exact fuel inventory
+26: [PASS] v0.7.0 DataGen resources match the exact station inventory
+27: [PASS] v0.8.0 DataGen resources match the exact satellite inventory
+28: [PASS] v0.9.0 migration fixtures match the exact hash inventory
+29: [PASS] v0.9.0 resource and localization audit covers 1259 files and 832 bilingual keys
+30: [PASS] v0.2.0 artifact, automated, persistence, client, server, and checksum evidence is valid
+31: [PASS] v0.2.0 Gate status does not overstate machine-slice evidence
+32: [PASS] v0.3.0 artifact, celestial, persistence, multiplayer, client, and checksum evidence is valid
+33: [PASS] v0.3.0 Gate status is evidence-bound in docs\releases\v0.3.0\GATE-STATUS.md
+34: [PASS] v0.4.0 artifact, atmosphere, persistence, performance, multiplayer, client, and checksum evidence is valid
+35: [PASS] v0.4.0 Gate status is evidence-bound in docs\releases\v0.4.0\GATE-STATUS.md
+36: [PASS] v0.5.0 artifact, rocket, persistence, performance, client, and checksum evidence is valid
+37: [PASS] v0.5.0 Gate status is evidence-bound in docs\releases\v0.5.0\GATE-STATUS.md
+38: [PASS] v0.6.0 artifact, flight, recovery, multiplayer, performance, and checksum evidence is valid
+39: [PASS] v0.6.0 Gate status is evidence-bound in docs\releases\v0.6.0\GATE-STATUS.md
+40: [PASS] v0.7.0 artifact, station, recovery, multiplayer, performance, and checksum evidence is valid
+41: [PASS] v0.7.0 Gate status is evidence-bound in docs\releases\v0.7.0\GATE-STATUS.md
+42: [PASS] v0.8.0 artifact, satellite, restart, multiplayer, performance, and checksum evidence is valid
+43: [PASS] v0.8.0 Gate status is evidence-bound in docs\releases\v0.8.0\GATE-STATUS.md
+44: [PASS] v0.9.0 artifact, migration, recovery, compatibility, soak, and checksum evidence is valid
+45: [PASS] v0.9.0 Gate status is evidence-bound in docs\releases\v0.9.0\GATE-STATUS.md
+46: Summary: 45 passed, 0 pending, 0 warnings, 0 failed
+
+===== evidence/focused-python-21.log excerpts =====
+
+36: test_guard_event_error_without_exact_chunk_save_error_is_insufficient (tests.test_run_v180_tank_smoke.TankNativeEvidenceTest.test_guard_event_error_without_exact_chunk_save_error_is_insufficient) ... ok
+37: test_native_refusal_log_requires_both_guard_and_exact_chunk_and_rejects_other_errors (tests.test_run_v180_tank_smoke.TankNativeEvidenceTest.test_native_refusal_log_requires_both_guard_and_exact_chunk_and_rejects_other_errors) ... ok
+38: test_oversized_patch_is_one_native_future_root_with_backup_and_unchanged_header (tests.test_run_v180_tank_smoke.TankNativeEvidenceTest.test_oversized_patch_is_one_native_future_root_with_backup_and_unchanged_header) ... ok
+39: test_palette_presence_and_wrong_chunk_do_not_establish_identity (tests.test_run_v180_tank_smoke.TankNativeEvidenceTest.test_palette_presence_and_wrong_chunk_do_not_establish_identity) ... ok
+40: test_report_waits_for_final_feedback_not_the_first_duplicate_logger_row (tests.test_run_v180_tank_smoke.TankNativeEvidenceTest.test_report_waits_for_final_feedback_not_the_first_duplicate_logger_row) ... ok
+41: test_wrong_or_duplicate_marker_refuses_patch_before_native_file_mutation (tests.test_run_v180_tank_smoke.TankNativeEvidenceTest.test_wrong_or_duplicate_marker_refuses_patch_before_native_file_mutation) ... ok
+42: test_exact_delta_rejects_loss_extra_alternatives_and_current_state_changes (tests.test_run_v180_signature_smoke.LiveTagExpansionTest.test_exact_delta_rejects_loss_extra_alternatives_and_current_state_changes) ... ok
+43: test_generation_only_change_never_proves_a_new_tag_alternative (tests.test_run_v180_signature_smoke.LiveTagExpansionTest.test_generation_only_change_never_proves_a_new_tag_alternative) ... ok
+44: test_installation_and_reload_keep_original_deadline_and240report_limit (tests.test_run_v180_signature_smoke.LiveTagExpansionTest.test_installation_and_reload_keep_original_deadline_and240report_limit) ... ok
+45: test_legacy_protection_and_unproven_refusals_remain_required_during_reload (tests.test_run_v180_signature_smoke.LiveTagExpansionTest.test_legacy_protection_and_unproven_refusals_remain_required_during_reload) ... ok
+46: test_literal_item_adapter_is_only_unchanged_recipe_and_generation_control (tests.test_run_v180_signature_smoke.LiveTagExpansionTest.test_literal_item_adapter_is_only_unchanged_recipe_and_generation_control) ... ok
+47: test_original_report_install_reload_and_new_alternatives_are_same_phase_order (tests.test_run_v180_signature_smoke.LiveTagExpansionTest.test_original_report_install_reload_and_new_alternatives_are_same_phase_order) ... ok
+48: test_pack_installation_occurs_only_in_live_reload_phase (tests.test_run_v180_signature_smoke.LiveTagExpansionTest.test_pack_installation_occurs_only_in_live_reload_phase) ... ok
+49: test_preexpanded_table_refuses_before_install_or_reload (tests.test_run_v180_signature_smoke.LiveTagExpansionTest.test_preexpanded_table_refuses_before_install_or_reload) ... ok
+50: test_all490_mutation_cells_are_unique_fixed_loaded_and_bounded (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_all490_mutation_cells_are_unique_fixed_loaded_and_bounded) ... ok
+51: test_all_four_current_host_entries_keep_explicit_startup_handling (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_all_four_current_host_entries_keep_explicit_startup_handling) ... ok
+52: test_all_three_synthetic_partial_oracles_and_node_count (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_all_three_synthetic_partial_oracles_and_node_count) ... ok
+53: test_clean_stop_is_strict_and_not_crash (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_clean_stop_is_strict_and_not_crash) ... ok
+54: test_compression_trailing_bytes_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_compression_trailing_bytes_refused) ... ok
+55: test_current_cut_signature_and_live_alternatives_preserved (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_current_cut_signature_and_live_alternatives_preserved) ... ok
+56: test_cut_still_refused_if_maximum_compression_exceeds_original_sectors (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_cut_still_refused_if_maximum_compression_exceeds_original_sectors) ... ok
+57: test_duplicate_json_keys_and_boolean_numeric_values_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_duplicate_json_keys_and_boolean_numeric_values_refused) ... ok
+58: test_duplicate_trailing_rootname_and_invalid_list_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_duplicate_trailing_rootname_and_invalid_list_refused) ... ok
+59: test_electrolyzer_completed_native_slots_match_shipped_adapter (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_electrolyzer_completed_native_slots_match_shipped_adapter) ... ok
+60: test_electrolyzer_completion_wrong_slots_and_extra_items_are_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_electrolyzer_completion_wrong_slots_and_extra_items_are_refused) ... ok
+61: test_fake_nested_or_wrong_logger_marker_cannot_satisfy_report (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_fake_nested_or_wrong_logger_marker_cannot_satisfy_report) ... ok
+62: test_finish_startup_power_completion_share_one60second240report_budget (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_finish_startup_power_completion_share_one60second240report_budget) ... ok
+63: test_injected_legacy_cut_retains_actual_partial_and_own_owner (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_injected_legacy_cut_retains_actual_partial_and_own_owner) ... ok
+64: test_load_pending_times_out_under_original60seconds240probes (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_load_pending_times_out_under_original60seconds240probes) ... ok
+65: test_missing_duplicate_out_of_order_and_post_end_rows_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_missing_duplicate_out_of_order_and_post_end_rows_refused) ... ok
+66: test_native_all_widths_arrays_empty_list_subtypes_round_trip (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_native_all_widths_arrays_empty_list_subtypes_round_trip) ... ok
+67: test_node_depth_collection_byte_bounds_are_not_relaxed (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_node_depth_collection_byte_bounds_are_not_relaxed) ... ok
+68: test_old_marker_and_changed_clock_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_old_marker_and_changed_clock_refused) ... ok
+69: test_only_load_pending_is_transient_and_never_final_acceptance (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_only_load_pending_is_transient_and_never_final_acceptance) ... ok
+70: test_partial_reports_do_not_infer_future_status_from_marker (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_partial_reports_do_not_infer_future_status_from_marker) ... ok
+71: test_patch_refuses_unknown_cell_and_unrelated_chunk_change (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_patch_refuses_unknown_cell_and_unrelated_chunk_change) ... ok
+72: test_patch_selects_maximum_zlib_compression_without_region_growth (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_patch_selects_maximum_zlib_compression_without_region_growth) ... ok
+73: test_per_adapter_commands_and_mutations_do_not_cross_columns (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_per_adapter_commands_and_mutations_do_not_cross_columns) ... ok
+74: test_readiness_rejects_nested_full_and_late_barrier (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_readiness_rejects_nested_full_and_late_barrier) ... ok
+75: test_real_finish_phase_awaits_mixed_load_settled_before_ordinary_power (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_real_finish_phase_awaits_mixed_load_settled_before_ordinary_power) ... ok
+76: test_real_finish_phase_does_not_power_on_unsafe_or_unknown_startup (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_real_finish_phase_does_not_power_on_unsafe_or_unknown_startup) ... ok
+77: test_real_finish_phase_never_powers_a_permanently_pending_startup (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_real_finish_phase_never_powers_a_permanently_pending_startup) ... ok
+78: test_refusal_wait_checks_mixed_load_runtime_then_returns_exact_settled_rows (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_refusal_wait_checks_mixed_load_runtime_then_returns_exact_settled_rows) ... ok
+79: test_retained_journal_fingerprint_and_transaction_mutation_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_retained_journal_fingerprint_and_transaction_mutation_refused) ... ok
+80: test_retention_rejects_root_resource_loss_and_scalar_width_change (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_retention_rejects_root_resource_loss_and_scalar_width_change) ... ok
+81: test_same_sector_patch_roundtrip_preserves_other_bytes_and_records (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_same_sector_patch_roundtrip_preserves_other_bytes_and_records) ... ok
+82: test_seed_only_declared_current_or_historical_rows (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_seed_only_declared_current_or_historical_rows) ... ok
+83: test_settled_refusal_requires_runtime_reason_and_failure_pair (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_settled_refusal_requires_runtime_reason_and_failure_pair) ... ok
+84: test_settled_report_after_original_deadline_is_not_accepted (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_settled_report_after_original_deadline_is_not_accepted) ... ok
+85: test_snapshot_order_and_fingerprint_identity (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_snapshot_order_and_fingerprint_identity) ... ok
+86: test_startup_poll_does_not_hide_marker_capability_status_or_protection_loss (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_startup_poll_does_not_hide_marker_capability_status_or_protection_loss) ... ok
+87: test_strict_console_reports_and_refusal_are_not_cap_presence (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_strict_console_reports_and_refusal_are_not_cap_presence) ... ok
+88: test_wrong_adapter_end_and_foreign_report_rows_are_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_adapter_end_and_foreign_report_rows_are_refused) ... ok
+89: test_wrong_fluid_amount_width_or_metadata_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_fluid_amount_width_or_metadata_refused) ... ok
+90: test_wrong_item_count_width_or_unapproved_metadata_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_item_count_width_or_unapproved_metadata_refused) ... ok
+91: 
+92: ----------------------------------------------------------------------
+93: Ran 90 tests in 5.348s
+94: 
+95: OK
+
+===== evidence/ledger-closure-21.log excerpts =====
+
+1: closure: 186 ledger rows are still PLANNED
+2: closure: 154 assets are still handled as REVIEW
+3: {
+4:   "assets": {
+5:     "EXCLUDE": 113,
+6:     "IMPORT": 182,
+7:     "IMPORTED": 10,
+8:     "REGENERATE": 439,
+9:     "REVIEW": 154
+10:   },
+11:   "dispositions": {
+12:     "DEFERRED": 25,
+13:     "IMPLEMENTED": 104,
+14:     "MERGED": 93,
+15:     "PLANNED": 186,
+16:     "REDESIGNED": 187,
+17:     "REJECTED": 58
+18:   },
+19:   "planned_by_batch": {
+20:     "C16a": 2,
+21:     "C16b": 13,
+22:     "C16c": 16,
+23:     "C16d": 10,
+24:     "C17a": 24,
+25:     "C17b": 9,
+26:     "C17c": 8,
+27:     "C18a": 28,
+28:     "C18b": 23,
+29:     "C18c": 19,
+30:     "C18d": 34
+31:   },
+32:   "result": "FAIL",
+33:   "units": 653
+34: }
+
+===== evidence/owned-evidence-relocation-01.json excerpts =====
+
+94:       "Preserved": true
+95:     },
+96:     {
+97:       "Source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\sig20-r01",
+98:       "Destination": "D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\sig20-r01",
+99:       "Bytes": 276149593.0,
+100:       "Files": 345,
+101:       "Preserved": true
+102:     },
+103:     {
+104:       "Source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-01",
+105:       "Destination": "D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-01",
+106:       "Bytes": 206127232.0,
+107:       "Files": 261,
+108:       "Preserved": true
+109:     },
+110:     {
+111:       "Source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-02",
+112:       "Destination": "D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-02",
+113:       "Bytes": 215258665.0,
+114:       "Files": 335,
+115:       "Preserved": true
+116:     },
+117:     {
+118:       "Source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-03",
+119:       "Destination": "D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-03",
+120:       "Bytes": 215303772.0,
+121:       "Files": 336,
+122:       "Preserved": true
+123:     },
+124:     {
+125:       "Source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-04",
+126:       "Destination": "D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-04",
+127:       "Bytes": 215341695.0,
+128:       "Files": 336,
+129:       "Preserved": true
+130:     },
+131:     {
+132:       "Source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-06",
+133:       "Destination": "D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-06",
+134:       "Bytes": 215404796.0,
+135:       "Files": 336,
+136:       "Preserved": true
+137:     }
+138:   ],
+139:   "DataDeleted": false,
+140:   "OriginalSourceWorldUntouched": true,
+141:   "RepositoryEvidenceUntouched": true,
+142:   "UnmovedOriginalChildren": [
+143:     "press-source-patch-02",
+144:     "pump-adapter-unit-01-xml",
+145:     "review-link-rehosting-01",
+146:     "signature-encoding-r5",
+147:     "vanilla-reference"
+148:   ],
+149:   "ActiveResultsDirectory": "D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41",
+150:   "FinishedUtc": "2026-10-04T04:52:14.1663900Z",
+151:   "CFree": 10275024896,
+152:   "DFree": 343432790016
+153: }

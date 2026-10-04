@@ -1,0 +1,307 @@
+{
+  "assets/advancedrocketrycommunity/textures/block/advanced_motor_bottom.png": {
+    "bytes": 181,
+    "sha256": "19c1fe57e756dc2806019b180e0786cdac592b1da135e237eb11cc427281401b",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/advanced_motor_side.png": {
+    "bytes": 193,
+    "sha256": "e3c3c9f3cd4e38081112bc374af104ef57eb04bb5745194c52967c0b6bbd03c0",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/advanced_motor_top.png": {
+    "bytes": 198,
+    "sha256": "1c8d33d4c6c66bc51f3ec719b8823ee0efba1fe45d76c45e40630a20e54a7f15",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/charcoal_log.png": {
+    "bytes": 171,
+    "sha256": "b6ceba5c49bfac39214b549713feea15bf0db47503d66db86d578c0a638d9c25",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/charcoal_log_top.png": {
+    "bytes": 217,
+    "sha256": "0c661aeb0a2aa7a75bfd9779e0926b8b8bcc5d144ebee36760bbab626fb40d26",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/combustion_front.png": {
+    "bytes": 171,
+    "sha256": "9c77c0075e764f0001f5f9d420c62f6ed6aa6c6eeed71196b79a713d29267f18",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/combustion_front_lit.png": {
+    "bytes": 212,
+    "sha256": "a81b718d95f08b0a535e318b9c403327941377c97008e0e0410f6474a7fa0286",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/combustion_side.png": {
+    "bytes": 159,
+    "sha256": "9e602ef88933f8782f6e6feadd866520916b4b79e46f8d191cf600b8164ba892",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/combustion_top.png": {
+    "bytes": 157,
+    "sha256": "42b3467756440bca7f6f4cc95a0d0470b6f5c6513ac1ed42580c25e2f5bc0092",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/crystal.png": {
+    "bytes": 217,
+    "sha256": "15737229f68ab9e0287246ca7a574d84fec70c2d3a27fb0824bd87d6cc5c4a14",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/dark_moon_turf.png": {
+    "bytes": 205,
+    "sha256": "719c30642339dbb686103028f9381451a0384ccb417e794ff2f5b0ea7466abcf",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/electric_mushroom.png": {
+    "bytes": 143,
+    "sha256": "721cdad405458c22f719298d97966ea5b600b7917db83985efb2dd87d378f74c",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/elite_motor_bottom.png": {
+    "bytes": 179,
+    "sha256": "7ef01c3e581fc74d8e731d135693fc9e56ca6ceb47f5336944193f7fde1df263",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/elite_motor_side.png": {
+    "bytes": 192,
+    "sha256": "873acd34864dc37e010a3aab3ed9eef0f956477e14249b617cb310a9bda5ad39",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/elite_motor_top.png": {
+    "bytes": 199,
+    "sha256": "243a74506e9066319cec35013ad021b98696c19ed1a8abe717f4d25fd8e9316e",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/enhanced_motor_bottom.png": {
+    "bytes": 181,
+    "sha256": "a667ba7f7725b60b88414a2d468a5c34d11684b9de26a154b6d1f7db02b6d100",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/enhanced_motor_side.png": {
+    "bytes": 194,
+    "sha256": "a30864a0974dfe5ae617f2161cc2ac19a2a60a8453dc7c98a2566d60a8ea713d",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/enhanced_motor_top.png": {
+    "bytes": 199,
+    "sha256": "344eead09b2b52d40b9afde0e8c51e5faf14fead844082456ab0959ba87e587d",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/ferric_sand.png": {
+    "bytes": 231,
+    "sha256": "be88220207b82f93e2385c55699419786eb194f81731a4b200b6a9acde4af30f",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_flow.png": {
+    "bytes": 362,
+    "sha256": "1c17a84ec7fd2baa1e85b145e2a3e579f90c19835282f0adfddcf693a06c47ed",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_still.png": {
+    "bytes": 186,
+    "sha256": "6378c069a934a9e43f1f2e05702ec09603dc9b263b6d64461a417c01c98a7593",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_flow.png": {
+    "bytes": 317,
+    "sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_still.png": {
+    "bytes": 188,
+    "sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_flow.png": {
+    "bytes": 317,
+    "sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_still.png": {
+    "bytes": 188,
+    "sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/oxygen_flow.png": {
+    "bytes": 317,
+    "sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/oxygen_still.png": {
+    "bytes": 188,
+    "sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_flow.png": {
+    "bytes": 317,
+    "sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_still.png": {
+    "bytes": 188,
+    "sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/geode_shell.png": {
+    "bytes": 200,
+    "sha256": "963486e1e3f3ad5b90d15f7450a7e516b0bfb33d0129b7f4d5d335eee3a4eb89",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/lightwood_leaves.png": {
+    "bytes": 295,
+    "sha256": "c777c27cca8f53a7e596f420e7d1be60492e0afa9f958b4652c5909af2d5ffe9",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/lightwood_log.png": {
+    "bytes": 288,
+    "sha256": "f80fce56035a3078c214e786df66d92fe6f148138d898e39113de508556ee043",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/lightwood_log_top.png": {
+    "bytes": 268,
+    "sha256": "f05d5421cedd13cd0de5f528e892c6ffc940154901f472b34a3ae801a8ec83b4",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/lightwood_planks.png": {
+    "bytes": 254,
+    "sha256": "7be161ea6844cf2011be739e51606ca6bc819f2ca5374483b006b95a39bd27e2",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/lightwood_sapling.png": {
+    "bytes": 164,
+    "sha256": "4bbb54f11b181ef85c0e5f2be2d50e50934ebddf2e6604c37e3381012d4b3159",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/material/coil_side.png": {
+    "bytes": 119,
+    "sha256": "2d77996e21ae9a6bdcb3d2c22a3aacec6cdc6f5bc7ae29a186bbf8df3a7a181b",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/material/coil_top.png": {
+    "bytes": 154,
+    "sha256": "850d87f3ecf9325fabb10031a5360e83de6dcf244cdf21d84ef75bf91ecfde28",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/material/crystal_ore_overlay.png": {
+    "bytes": 144,
+    "sha256": "4ba5ec01406d71b718860d9aaa58ec0ca0b1d29c296274ebc0b92d17df937ee7",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/material/ore_overlay.png": {
+    "bytes": 151,
+    "sha256": "a31ccd96c4ec422d175b33e024e68b96a2942b60462f2a902da7d1ea405c7a52",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/material/storage.png": {
+    "bytes": 123,
+    "sha256": "6cab677e0aff78d0674bef31fd09ba2e39ab4e54a9ac535ff22b45e899193050",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/moon_turf.png": {
+    "bytes": 211,
+    "sha256": "50e7bd71fe3b99e86051e806d54ceddfde62806c46ea30fecc14f3b4518150c7",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/motor_bottom.png": {
+    "bytes": 178,
+    "sha256": "0073aafbcaae6415dcc7ee42abd68a2a845d85b9e620080755c9bce6a3e77cf3",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/motor_side.png": {
+    "bytes": 195,
+    "sha256": "27c26bcb0a6a11137fed5737a615f7145ef1af84839320c97ac48f4ff8bc481a",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/motor_top.png": {
+    "bytes": 197,
+    "sha256": "d369e28a62b77aea517d449ae151cf358a8156d04b1cbbaf69d1f14291f3bcba",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/small_plate_press_bottom.png": {
+    "bytes": 114,
+    "sha256": "f04b7ca081a93642b7a18d190ad4a180071348897f2b626e0dd1cbdb2ce1082d",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/small_plate_press_side.png": {
+    "bytes": 164,
+    "sha256": "23dc0aaac4622f217719e3caf3ffbff6581264bebd1f9b2ea2b0b5c40259e393",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/block/small_plate_press_top.png": {
+    "bytes": 172,
+    "sha256": "6995c479f14bee4076c3e0b58fea96bb5a21d624c4f0fd251b7a21fee1560813",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/enriched_lava_bucket.png": {
+    "bytes": 182,
+    "sha256": "6f5f77258b5abdfcb66eb006cc1a7ca0e01ea73b254fc235d19eca1bdf83d626",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/boule.png": {
+    "bytes": 153,
+    "sha256": "6941141f85596f918e296af0fede95a1ba7c6d3328a32bb351859fbec182f732",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/crystal.png": {
+    "bytes": 160,
+    "sha256": "8a628cad7cd7752ddeb59aa1361937345309186e98c0b6fee151ab6033aabde0",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/dust.png": {
+    "bytes": 150,
+    "sha256": "31e93808d79e4a15978f9fa8d9c65fc7b1e53a4e3a8c2824b66b981ff9e8cc7b",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/fan.png": {
+    "bytes": 185,
+    "sha256": "752339323d9a76f577ef7439c537580c8750b8f76233e9f4347ca913069606b5",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/gear.png": {
+    "bytes": 200,
+    "sha256": "99a73f991c92d6ce96bfbff42ddb6d65df8b3fb1b47e837396e4a1cff62c713b",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/ingot.png": {
+    "bytes": 136,
+    "sha256": "cc696dec45e084cabb458bfb37e3d7d53b2dd10388c39f0ff69b21e775e5d0be",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/nugget.png": {
+    "bytes": 163,
+    "sha256": "a9beb42169b2a36b71e4fd7d2f42959a64dca01165c5efcada4860e26566c436",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/plate.png": {
+    "bytes": 118,
+    "sha256": "0657f1514ba0ebb089d4a481740f7215578b6aac4283fe213f8a4da91736b915",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/raw.png": {
+    "bytes": 175,
+    "sha256": "0552f548dac93a0aa7f74bc7fa86b6c0186bc202db872ae8bde1d25df71482e5",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/rod.png": {
+    "bytes": 116,
+    "sha256": "e4bac049c9035a290ec9b9f5f411a56391587bc5589f841fa97e3ca3e94f8e5c",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/material/sheet.png": {
+    "bytes": 123,
+    "sha256": "b40e6c017eb12084c7c87074fb3b10970aedb3c8823e2f465cc8fcb693e4aff6",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/nitrogen_canister.png": {
+    "bytes": 136,
+    "sha256": "c8de70dd28b373c0d6f24846f67270ae720cb3f867843ccbd853e4ff5b0141e3",
+    "verdict": "CLEAR"
+  },
+  "assets/advancedrocketrycommunity/textures/item/rocket_fuel_bucket.png": {
+    "bytes": 182,
+    "sha256": "142a054a0514d88156b7273cb327b08c4b1ab964b35bc51dd5ecfe7eee5a82f5",
+    "verdict": "CLEAR"
+  }
+}

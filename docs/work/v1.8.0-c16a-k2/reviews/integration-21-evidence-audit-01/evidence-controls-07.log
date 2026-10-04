@@ -1,0 +1,17 @@
+test_bad_declared_status (__main__.EvidenceControls.test_bad_declared_status) ... ok
+test_declared_failure_is_measured (__main__.EvidenceControls.test_declared_failure_is_measured) ... ok
+test_dirty_exit_is_nonpass (__main__.EvidenceControls.test_dirty_exit_is_nonpass) ... ok
+test_documented_exit_cannot_be_called_pass (__main__.EvidenceControls.test_documented_exit_cannot_be_called_pass) ... ok
+test_duplicate_terminal (__main__.EvidenceControls.test_duplicate_terminal) ... ok
+test_exact_identity (__main__.EvidenceControls.test_exact_identity) ... ok
+test_missing_terminal (__main__.EvidenceControls.test_missing_terminal) ... ok
+test_missing_xml_suite (__main__.EvidenceControls.test_missing_xml_suite) ... ok
+test_repeated_parameterized_display_names_are_not_identity_failure (__main__.EvidenceControls.test_repeated_parameterized_display_names_are_not_identity_failure) ... ok
+test_same_size_changed_bytes (__main__.EvidenceControls.test_same_size_changed_bytes) ... ok
+test_single_terminal (__main__.EvidenceControls.test_single_terminal) ... ok
+test_timestamp_styles_split_before_next_event (__main__.EvidenceControls.test_timestamp_styles_split_before_next_event) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.001s
+
+OK

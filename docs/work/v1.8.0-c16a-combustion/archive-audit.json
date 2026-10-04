@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "archive_member_counts": {
+    "root-evidence.zip": 1074,
+    "reviews/round-01-evidence.zip": 123
+  },
+  "verified_source_and_context": 60,
+  "root_zip_sha256": "37bbe8ac6b3e8e824a1cba43be25fd9039f8d0ccfa7cbd9b1939223bdaad9f3f",
+  "review_zip_sha256": "12af1e3fdea3c2882c42a9f6d1eae9b36195060544a0eeefd1842292d19e2b79",
+  "excluded_user_bundle_absent": true
+}

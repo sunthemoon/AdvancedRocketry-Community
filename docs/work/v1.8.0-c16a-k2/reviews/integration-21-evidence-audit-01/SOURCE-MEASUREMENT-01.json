@@ -1,0 +1,64 @@
+{
+  "commit": "3f3d62aed3980186fe0acc9592cf93ca436405fb",
+  "counts": {
+    "baseline": 2988,
+    "original": 2990,
+    "R1": 2990
+  },
+  "baseline_to_original": {
+    "added": [
+      "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java",
+      "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytesTest.java"
+    ],
+    "removed": [],
+    "changed": []
+  },
+  "original_to_R1": {
+    "added": [],
+    "removed": [],
+    "changed": [
+      "AGENTS.md"
+    ]
+  },
+  "commit_missing": [
+    "docs/work/v1.8.0-c16a-hatch-core/API-ACCEPTANCE.md"
+  ],
+  "commit_mismatches": [
+    {
+      "path": "AGENTS.md",
+      "commit": {
+        "bytes": 8379,
+        "sha256": "725dd46344046bcdb802872e08fbc3cd9da0bf876e680eeba4c82dda801a9503"
+      },
+      "manifest": {
+        "bytes": 12047,
+        "sha256": "1be0391c3f69f566ae3f627e37107adfbd0bbfa6f581b105ff6bd2a2c2630dc0"
+      }
+    },
+    {
+      "path": "docs/decisions/ADR-064-CLASSIC-MACHINES-FLUIDS-AND-COMPONENTS.md",
+      "commit": {
+        "bytes": 20705,
+        "sha256": "e69e423d0cdeb8a573c0502d9a47b2c63b724ff43cc292b4d635ffceaa552fab"
+      },
+      "manifest": {
+        "bytes": 35702,
+        "sha256": "789522c7c982209df660745442ca96fa1f83cc57b29c7f9692b609219c7c37d0"
+      }
+    },
+    {
+      "path": "gradlew.bat",
+      "commit": {
+        "bytes": 2776,
+        "sha256": "18774a0ac0203f6893bf1db3291a0d77f06cd1b4dca2a43b51e7009da3e28cfa"
+      },
+      "manifest": {
+        "bytes": 2868,
+        "sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955"
+      }
+    }
+  ],
+  "commit_exact": 2986,
+  "batch_bytes_consumed_in_memory": 13681711,
+  "no_source_export": true
+}

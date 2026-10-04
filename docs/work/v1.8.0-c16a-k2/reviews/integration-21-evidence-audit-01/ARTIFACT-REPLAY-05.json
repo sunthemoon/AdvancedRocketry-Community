@@ -1,0 +1,19 @@
+{
+  "command": [
+    "D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe",
+    "-B",
+    "scripts/validate_build_artifact.py",
+    "D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\integration-artifacts-21\\advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+    "--expected-version",
+    "1.20.1-1.8.0-dev"
+  ],
+  "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+  "validator": {
+    "bytes": 14047,
+    "sha256": "163f3b3da682db8bbb716b6d5d8b99768e7ef80a1b939b6513b961516ba8a12a"
+  },
+  "actual_exit": 0,
+  "raw_log_sha256": "1e15600e22e1a34cf7c01b8e4f10a647a0296289104704b8df6c5a1863244f80",
+  "Root_writes": false,
+  "Java_or_native_runs": 0
+}

@@ -1,0 +1,68 @@
+# C16a-02 independent review
+
+Reviewer: delegated independent read-only reviewer. Reviewed the combustion-generator slice against accepted ADR-064 revision 2 and repository governance; compared against the supplied pre-task baseline, not HEAD. Root was the only repository writer. This review does not cover C16a-01/03-06, C16b-d, C17-C19 or version-release acceptance.
+
+## Findings and dispositions
+
+No unresolved Critical, High or Medium findings were identified in the frozen scoped source after the corrections and independently rerun A0/A1 checks below.
+
+1. **H1 — lost fuel on inbound shift-click into an occupied generator slot — fixed.** Initial `quickMoveStack` delegated inbound insertion to vanilla `moveItemStackTo`, but the generator slot returns detached `ItemStack` copies. Mapped vanilla bytecode shows an occupied merge mutates `getItem()` and calls only `setChanged()`, so generator coal 1 plus player coal 8 could leave generator coal 1/player coal 0. The corrected [menu](D:/GitHub/AdvancedRocketry-Community/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionGeneratorMenu.java#L123) explicitly inserts into the authoritative bank and writes back the exact player remainder. The new [regression](D:/GitHub/AdvancedRocketry-Community/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/CombustionGeneratorGameTests.java#L375) covers occupied 1/60/64 coal stacks and an incompatible bucket target. Independently passed in the full GameTest run.
+
+2. **H2 — BE serialization exception allowed native replacement of the chunk without quarantined resources — fixed in reviewed code; native storage evidence is separately recorded below.** Initial `saveAdditional` threw for oversized retained input. Actual mapped `LevelChunk.getBlockEntityNbtForSaving` catches this exception and returns null; `ChunkSerializer.write` omits null BE entries and still writes the chunk. The original direct-save exception test did not exercise that loss. The corrected [BE save](D:/GitHub/AdvancedRocketry-Community/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionGeneratorBlockEntity.java#L266) passes the original oversized Tag reference without copying, matching the already accepted ADR-027 caveat. The [complete-chunk save handler](D:/GitHub/AdvancedRocketry-Community/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionProtection.java#L30) bounds outgoing BE count by chunk height, preflights generator roots, restores the dirty flag and deliberately throws before the native storage write. This is necessary because the actual Save event is not cancelable, `ChunkMap.save` discards `post`'s boolean and clears the dirty flag before serialization. The [corrected regression](D:/GitHub/AdvancedRocketry-Community/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/CombustionGeneratorGameTests.java#L238) exercises actual `ChunkSerializer.write` and Forge Save-event dispatch, verifies no-copy retention and dirty retry, and independently passed. It is not by itself an on-disk preservation proof.
+
+3. **L1 — native probe's expected-error matcher used the wrong coordinate format — fixed before native execution.** The first script allowed only `Failed to save chunk [8, 8]`; the actual native save logger formats `Failed to save chunk {},{}`. The frozen script allows the coordinate-exact `8,8` line and its deliberate oversized-save event exception, and retains rejection of unrelated scanner findings. This was a probe false-negative risk, not a runtime resource-loss defect.
+
+The subsequent native attempts exposed additional probe-only marker problems: persisted `forceload` flags have different console feedback, and the earlier logger row could finish a query before its console-feedback duplicate, letting the duplicate satisfy the following command. The reviewed final probe explicitly queries the target's persisted force-load status and waits for the final MinecraftServer console report. Its oversized fixture uses two 4,096-byte arrays: the combined root still exceeds the unchanged 8,192-byte host budget, while each collection stays inside the unchanged Python NBT reader limit. Five independently rerun Python tests cover markers, coordinate rejection, safe patching and ambiguous-marker refusal.
+
+No further actionable scoped issue was found in fuel credit, container handling, shared 1,000 FE/t push/pull accounting, callback exclusion, capability revocation, loaded-only neighbor access, bounded strict decoding, future/corrupt-root retention, menu authority/wire bounds, registration, crafting/bootstrap, data generation or source/provenance declarations. This is an evidence-bounded review result, not a blanket third-party callback or crash-atomicity guarantee.
+
+## Reviewed source identity
+
+- Canonical export: `C:/Users/Administrator/AppData/Local/Temp/arce-v180-combustion-b128ff5de1d440f285670e06d792dcea/review-source`.
+- Reviewed runtime/script/build manifest: `reviewed-runtime-source.json`, SHA-256 **c033d9a5be58ec20e327422f38085c18acb834b7e2e2c262e2a07f955c2517e6**, 2,643 entries. Every export file and every independently copied workspace file matched; rechecking after Gradle found zero source differences.
+- Baseline manifest SHA-256 **b703053baef3d26fe1ae5f6e3b455d31dba4cff0cc02accb10f1e13608aaf699**. `scope-delta.json` records 47 changed/new runtime/script entries relative to matching baseline entries, including the public development-description update and native probe. Documentation changes are not included in that runtime count.
+- Accepted ADR-064 SHA-256 **d8ecc264170047fe62644dee01f2fc1101c56ceb5df1f250d8224486205f7014**.
+- The main packaged JAR produced by the independent copied-source build is byte-for-byte identical to root's native-test input, SHA-256 **582ac7f5b700b6355793f97ae3773741a743c02eaa7edc07190312969fff056e**; ZIP entry sets and all entry contents also match. `artifact-comparison.json` records the independent comparison.
+- Native-probe-only corrections after that Java/resource freeze were reviewed separately: script SHA-256 **0504ff862fa7bf9550da11321bcedf6aba8ab18fc10660514e7226406de1194d**, test SHA-256 **930dc2058d0a7dd44bde65e5993d83f3a30e08ad0d1575f1bee8a4a4d99b3e11** (`native-probe-reviewed-source.json`). These script revisions do not change the independently reproduced host artifact. The original c033d9 manifest identifies the actual Java/A0/A1 source run; it is not presented as the identity of these later Python revisions.
+- Independent disposable workspace: `C:/Users/Administrator/AppData/Local/Temp/arcrv-52f2e1b0`. All Gradle/build/config/world writes occurred there, never in the shared repository or canonical export. The untracked user-owned development-docs bundle was not inspected.
+
+## Actual independent commands and results
+
+Java tools explicitly used `C:/Program Files/Java/jdk-17.0.7`; Gradle ran with that `JAVA_HOME`/PATH.
+
+| Command/check | Result | Evidence |
+|---|---|---|
+| Baseline/exact-source `rg`, file reads and Python diff/hash checks | Completed; final manifest matches all 2,643 files before/after commands | `reviewed-runtime-source.json`, `scope-delta.json` |
+| `javap -c -p` on mapped Forge `AbstractContainerMenu`, `LevelChunk`, `ChunkSerializer`, `ChunkMap`; `javap -v -p` on `ChunkDataEvent$Save` | Exit 0; establishes actual merge, omission, event and dirty-flag behavior | Five `*.javap.txt` files |
+| `javac -d <own Temp>/classes <actual CombustionBurn.java> BurnConservationProbe.java` | Exit 0 | `burn-javac.log`, probe source |
+| `java -cp <own Temp>/classes BurnConservationProbe` | Exit 0; 960,048 independently enumerated transitions passed | `burn-probe.log` |
+| `gradlew.bat --no-daemon --console=plain test --tests '*machine.combustion.*' --tests '*config.CommonConfigTest'` | Exit 0; **37 tests / 5 suites**, zero failures/errors/skips; 24 combustion and 13 config cases | `junit-independent.log`, `junit-summary.json`, `junit-xml/` |
+| `gradlew.bat --no-daemon --console=plain runGameTestServer` | Exit 0; **all 401 required tests passed**, including all 17 generator methods; fixed seed 0 | `gametest-independent.log`, `gametest-latest.log`, `gametest-debug.log`, `gametest-summary.json` |
+| Scoped `git diff --check` | Exit 0 | Tool execution record |
+| `python -B -m unittest discover -s tests -p test_run_v180_combustion_smoke.py -v`, latest native probe copied to own separate Temp workspace | Exit 0; **5 tests** passed; no Java/server launch | `native-probe-unit-independent.log`, `native-probe-reviewed-source.json` |
+| `python -B audit_native_packet.py`, read-only packet/artifact/log/NBT audit | Exit 0; six phase receipts/logs and independently reconstructed compressed-chunk oracle validated | `audit_native_packet.py`, `native-packet-audit.log`, `native-packet-audit.json` |
+
+Exploratory command errors were not test failures or suppressed gates: Windows `rg` wildcard/missing-directory searches failed and were replaced with literal existing-file reads; one Python language read used the Windows default GBK encoding and was rerun with explicit UTF-8; one candidate Forge selector class was absent, so the full unmodified GameTest suite was run instead. Gradle emitted its existing deprecation warning; no timeout/assertion was relaxed and no test was removed.
+
+## Native packaged-server packet
+
+Root executed `native-04`, exit 0/PASS. This reviewer performed a separate light, read-only audit of its input artifacts, six launch/command/receipt packets, raw stdout scans, exported NBT roots and compressed chunk records; **no packaged native server was independently replayed**. Packet location: `C:/Users/Administrator/AppData/Local/Temp/arce-v180-combustion-b128ff5de1d440f285670e06d792dcea/native-04`. Packet summary SHA-256: **5da1ed32b0eafff82ec046737170c0ab38ea738db567c383a669b4bedea52fa9**.
+
+- v1.7 baseline, seed/save, restart 1, restart 2, resumed export/save and oversized refusal all have exit-0/PASS receipts. The native v1.8 input is the exact independently reproduced main artifact identified above; old/fixture input hashes were also independently checked.
+- The five normal phases have no scanner findings and zero ERROR/FATAL entries. The refusal phase has 86 ERROR findings: only the explicit oversized-save event failure and exact chunk `8,8` failure; no unrelated accepted scanner findings and zero FATAL entries. They are retained expected negative-case diagnostics, not claimed to be absent.
+- Independently decoded each exported chunk and compared its four roots with the JSON record. Both same-world restarts retain all roots exactly. Coal returns to 20,000 FE with remaining credit 1,075 after the 1,000 FE export; lava retains its one empty bucket and remaining credit 19,500. Future/corrupt roots remain verbatim and their native reports expose no item/energy capability.
+- Independently extracted the pre-patch compressed chunk from the allowed patch backup, checked it against the resumed-save record, reconstructed the two-array replacement and recompressed it. That reconstruction is **byte-identical** to the final refused chunk, SHA-256 **eab560eed6b309c754fcf3fbeeb38c86fa4b97eac8f3dfec6c304c1495a24b32**. The on-disk coal root remains at pre-refusal credit 1,075 even though the native receipt reports attempted in-memory progress to 1,050: this establishes complete-chunk write veto, not merely retained-root JSON equality.
+- Root's historical-input inventory assertion was audited in the runner and PASS summary; the reviewer intentionally did not reread bulk historical/server worlds or server libraries. Previous `native-01..03` failed harness receipts remain preserved; marker corrections did not alter host code, budgets or native assertions.
+
+Thus the observed native resource/restart/refusal behavior supports this slice's S1 evidence within the audited packet scope. It does not establish client, multiplayer, arbitrary-crash atomicity or whole-version release approval.
+
+## Residual verification and acceptance boundaries
+
+- Reviewer did not rerun `clean build` or `runData`; root's coordinated full-suite run and DataGen reproducibility evidence are separate from the independently executed commands above.
+- Native packaged save/restart/on-disk veto evidence was audited as described above, not independently replayed.
+- Real-GPU V1 and two-real-client V2 were not performed. Static model/art review and primitive-screen inspection do not satisfy either visual/multiplayer gate.
+- Export to arbitrary Forge receivers retains the documented normal automation guarantee, not arbitrary-crash atomicity or a sandbox against malicious third-party callbacks.
+- An oversized-root veto prevents saving the entire affected chunk, including other contents, until administrator backup/offline repair. Changes in that unsavable chunk are not durable; the veto is not a general recovery mechanism for unrelated cross-chunk transactions.
+- All v1.8 Required Gates are **not** declared satisfied. This report establishes only the scoped review/check outcomes; release approval remains an owner decision under repository governance.
+
+The earlier observed defects and pending corrections remain preserved in `REVIEW-PRELIMINARY.md`; this final report does not erase those findings or earlier root failures.

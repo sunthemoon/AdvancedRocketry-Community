@@ -1,0 +1,323 @@
+{
+  "artifacts": [
+    {
+      "bytes": 51040,
+      "entries": 48,
+      "gas_table_copies": 0,
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev-api.jar",
+      "sha256": "252463ff81bdfc1d48c9e6c3ea397e7ca1bb00f4ebf9e5b804405bd27fe6b2eb"
+    },
+    {
+      "bytes": 2446897,
+      "entries": 2498,
+      "gas_table_copies": 1,
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
+      "sha256": "90148def87c4272f0b78e2ecafedd105b46d10e85de1f13684e3be5b22f6d3f1"
+    },
+    {
+      "bytes": 5064574,
+      "entries": 3101,
+      "gas_table_copies": 1,
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+      "sha256": "a1f65ddfff1f638e45690a52041e9f1cc58a93d5a5f6a963601da116e5d7d674"
+    }
+  ],
+  "base_head": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+  "baseline_correction": "Unchanged Wrapper scripts omitted in initial copy; verified git diff empty before adding them.",
+  "branch": "codex/v1.8.0-classic-content",
+  "changes": {
+    "build.gradle": {
+      "before_sha256": "0e8363349295ee8a7f36be417f0bc0c07bb10643351ccbe4ddad2a7701ff6437",
+      "bytes": 24298,
+      "sha256": "43c8df36440c4c04fe3d23d17302676c0e95561dd58a86d4670d64368e45a472"
+    },
+    "scripts/run_v180_fluid_smoke.py": {
+      "before_sha256": null,
+      "bytes": 10762,
+      "sha256": "81f2e534deaa5b8ac9c32794ed9db8ef031d0e349729f32bd4f862bce4a1bf1b"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/enriched_lava.json": {
+      "before_sha256": null,
+      "bytes": 102,
+      "sha256": "7b1c7956d13421ed035e1d87ab94b327d2ae63ef14aec84c6a703781be6e6235"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/rocket_fuel.json": {
+      "before_sha256": null,
+      "bytes": 100,
+      "sha256": "e9a4810f55a8a038e62a7d6dd66dedc32e3dd61bc610673b0937a6c3b9c1b6c3"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/enriched_lava.json": {
+      "before_sha256": null,
+      "bytes": 99,
+      "sha256": "f6cd63ae415dddd9428b1e8645d864162d1d44419f8fedff472e8a337963a013"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/rocket_fuel.json": {
+      "before_sha256": null,
+      "bytes": 97,
+      "sha256": "ddb74a4531a3d40f8508fcd30bba5650a79618d5270b9d324c16540cbf64861b"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/enriched_lava_bucket.json": {
+      "before_sha256": null,
+      "bytes": 131,
+      "sha256": "85e2df322407714ebb0f3958244834be7c06aa8980435ea53799e2b1ba5d1aa6"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/nitrogen_canister.json": {
+      "before_sha256": null,
+      "bytes": 128,
+      "sha256": "28d4636fc1ef570359ba8a10debc1392b782dd2f9753336130cec5a23894a3b2"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/rocket_fuel_bucket.json": {
+      "before_sha256": null,
+      "bytes": 129,
+      "sha256": "5f34da2fd2e8ba326a039b66482cc4ab758a2a47a3e5ffe1f786e7803c250010"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_flow.png": {
+      "before_sha256": null,
+      "bytes": 362,
+      "sha256": "1c17a84ec7fd2baa1e85b145e2a3e579f90c19835282f0adfddcf693a06c47ed"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_still.png": {
+      "before_sha256": null,
+      "bytes": 186,
+      "sha256": "6378c069a934a9e43f1f2e05702ec09603dc9b263b6d64461a417c01c98a7593"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_flow.png": {
+      "before_sha256": null,
+      "bytes": 317,
+      "sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_still.png": {
+      "before_sha256": null,
+      "bytes": 188,
+      "sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_flow.png": {
+      "before_sha256": null,
+      "bytes": 317,
+      "sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_still.png": {
+      "before_sha256": null,
+      "bytes": 188,
+      "sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/oxygen_flow.png": {
+      "before_sha256": null,
+      "bytes": 317,
+      "sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/oxygen_still.png": {
+      "before_sha256": null,
+      "bytes": 188,
+      "sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_flow.png": {
+      "before_sha256": null,
+      "bytes": 317,
+      "sha256": "c6bcfd483e84c6185c788aaa70ac469428f39406ae65a0acb5004f3ff417d184"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_still.png": {
+      "before_sha256": null,
+      "bytes": 188,
+      "sha256": "3f71ea6caa93c145f71c772cc0a814258991ef7618c2515f6b3d946b1701454d"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/enriched_lava_bucket.png": {
+      "before_sha256": null,
+      "bytes": 182,
+      "sha256": "6f5f77258b5abdfcb66eb006cc1a7ca0e01ea73b254fc235d19eca1bdf83d626"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/nitrogen_canister.png": {
+      "before_sha256": null,
+      "bytes": 136,
+      "sha256": "c8de70dd28b373c0d6f24846f67270ae720cb3f867843ccbd853e4ff5b0141e3"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/rocket_fuel_bucket.png": {
+      "before_sha256": null,
+      "bytes": 182,
+      "sha256": "142a054a0514d88156b7273cb327b08c4b1ab964b35bc51dd5ecfe7eee5a82f5"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json": {
+      "before_sha256": "251d86d62201494dc07f701680e65bb30e8774c0ab0726774cc777fd2b9f195b",
+      "bytes": 9844,
+      "sha256": "8fc74980de619236c35777bf2e24b27c0fe884704077a3edb79761f3ba075b8e"
+    },
+    "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json": {
+      "before_sha256": "b71319de4e585ec2d6da9a109eb91a7fb5bca0cdec69685b5e34546ee2d3903d",
+      "bytes": 9270,
+      "sha256": "f784ce9e4f3bf1a47788e847266ac1bdd7c3a196e1c77af3b291f34f86e14de5"
+    },
+    "src/generated/v1.8/resources/data/advancedrocketrycommunity/gas_harvest/gas_giant.json": {
+      "before_sha256": null,
+      "bytes": 308,
+      "sha256": "c93813f2dbd2486d8c2614093e3549cd487b5decf479a35c8b0f9d5dbca395b8"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java": {
+      "before_sha256": "3658a178143ee6f60eca55518d108cd09e47b38674890ec6a5168e73ed46a72b",
+      "bytes": 27838,
+      "sha256": "662f951cdd0b50fd4a29dbd138f4608dea47ba86dd0d95d10eb7b01b566ec3d1"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/content/OxygenCanisterItem.java": {
+      "before_sha256": "92d58825c998dd4d78bc2e7b2d15b6a4c5a297eab7a93a0d99b9ee1b64320c05",
+      "bytes": 2626,
+      "sha256": "2c5bee36e0265002b5d432c5752135916e6eb743a2425767c3be47403367ea04"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/surface/worldgen/VolcanoPiece.java": {
+      "before_sha256": "497af771a0c24ae0e64b30a54628cdedf9107695857840938bb958ca2ac007db",
+      "bytes": 5381,
+      "sha256": "c93428ae04b7733744b3a01eadeacde583a1037070a9d405cb8585ed2c21072a"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java": {
+      "before_sha256": "8ec73e4587747cebb8399e59a000fa7ac1743774d9d898f25fbcfadf533bbc85",
+      "bytes": 6703,
+      "sha256": "3140c4aa6d69198f2025c22590c82103d9dd7406d92bef5c3cd2e568d121a7e4"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java": {
+      "before_sha256": "4b75edb8579f0b7d6b6c98d6156810038a96cb629dde81da9f6897db4b7d19b4",
+      "bytes": 3068,
+      "sha256": "eee0fcb8cd00e368dd99c0c8477f27364589964baeb70d7ccf99d335ed2d8a58"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidArt.java": {
+      "before_sha256": null,
+      "bytes": 4765,
+      "sha256": "5ae5afb2ce807b6573c7f2446bc4fd87f50e52aef9945a829ca16f109cbab819"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidData.java": {
+      "before_sha256": null,
+      "bytes": 4260,
+      "sha256": "08c58a0f592c2728b6c623b3f4b049e498909d2d9043eda3074c924dc14517dc"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java": {
+      "before_sha256": "19e8a6b52ff1d0c84de02cc6e8036de56288db022cd2c00721ef1b1fca74dfb7",
+      "bytes": 9802,
+      "sha256": "15f2789e374e3b19e74b8c215432254a56fcd7e36b6ddfed2c2ee33d348ee436"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/CanisterItemSafety.java": {
+      "before_sha256": null,
+      "bytes": 1507,
+      "sha256": "67cb7039fd8a49e5757869351edcf620bdb77696c967603eb370a014ec72eb45"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/CanisterStackSwap.java": {
+      "before_sha256": null,
+      "bytes": 2184,
+      "sha256": "a5e814bf7fc305014c37f3a46fc06129bdad2ad8932783aa24fbc3df1b4496a6"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/CanisterSwapPlanner.java": {
+      "before_sha256": null,
+      "bytes": 822,
+      "sha256": "88366d96623599d0b44323ffb5a6cc5fa6a71a9817d1a345eae618d0df011403"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/ClassicFluidDefinition.java": {
+      "before_sha256": null,
+      "bytes": 1406,
+      "sha256": "12d397902f45cae769a9ef0ad81e6f322fd35afac8db6c97fbb6def7a25d947f"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/ClassicFluidGameTests.java": {
+      "before_sha256": null,
+      "bytes": 13298,
+      "sha256": "16ed54a1e851b3651ab29f02b5e389e462b8e8e2c20ef0ba167312d46124427f"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/ClassicFluidType.java": {
+      "before_sha256": null,
+      "bytes": 3226,
+      "sha256": "e6f0c29838d4aad529e989f405ef2b6145e5a6bcd9e8325ba80a910c6c490239"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/ClassicFluids.java": {
+      "before_sha256": null,
+      "bytes": 5601,
+      "sha256": "f697b93c356529533dda4146718df569054e86c36b30ad2c6afedef392b6f30b"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/ContainerGasFluid.java": {
+      "before_sha256": null,
+      "bytes": 2222,
+      "sha256": "cc27abe4f0112c2b6f3230f04a66b1a97f484f4afedc7e3c71fc4beb4e8055fa"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/EnrichedLavaBlock.java": {
+      "before_sha256": null,
+      "bytes": 828,
+      "sha256": "ac72609443015764aeaa7727e395b9e3a3b8d2163058494cc004f95eafcb19c4"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/FluidReleaseTestCommands.java": {
+      "before_sha256": null,
+      "bytes": 3676,
+      "sha256": "c7fe752561db0ba1b5bae0d4805b91dcb3016767175050ff072a62cb8ba9c213"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/GasCanisterCapabilities.java": {
+      "before_sha256": null,
+      "bytes": 493,
+      "sha256": "fccccdca45912392cac2358e079aa2629b005eb242e431fb06fd4d8f946e7a3e"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/GasCanisterCatalog.java": {
+      "before_sha256": null,
+      "bytes": 2159,
+      "sha256": "19befee5bf2c0c1f1fd2532ce80a4842739950d0d3a0c2a157c55419e7dc2736"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/GasCanisterHandler.java": {
+      "before_sha256": null,
+      "bytes": 4719,
+      "sha256": "0e676769cf0ba01c4e2908c52a239754f76bed28cefdb6f39d0cf5f4e94fac56"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/GasCanisterItem.java": {
+      "before_sha256": null,
+      "bytes": 672,
+      "sha256": "cbe6cc97f0bfbdf23b4881648ea49807230770821f0f9666a0f09630f51740da"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetSurfaceGameTests.java": {
+      "before_sha256": "59ff91410d4e6e7ed4b85606b3fd74e95b610adb4920c8c86b18094ba3654931",
+      "bytes": 23817,
+      "sha256": "dd01266084a8cce886f9724455bdd188c746d8a48897f0290e7dcf50fa5d9a96"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PlanetaryWorldGameTests.java": {
+      "before_sha256": "631bcb0fc76af9fb0f2f116bc22e92601ff468ee6d93d370b7c9eabef6846236",
+      "bytes": 13587,
+      "sha256": "606edd935e29b7b17d31300728e345a4668943dc25ac8535235e443921eb21ae"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/ResourceMissionGameTests.java": {
+      "before_sha256": "0bacd9af0782543b48f9dc5b8637cbf6f06203754dc8dbe2364711c3514263a4",
+      "bytes": 41282,
+      "sha256": "b10019b605bbb57f813c0e2acec98461e42612db2eece7a17c4e52db5a96b697"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.java": {
+      "before_sha256": "6085a685cb24e358abe52a2f04f71cac933d355c0efaf2813540aa4d19ff2c4b",
+      "bytes": 6039,
+      "sha256": "9edbe031404ca2c91364fa06f138643e87acee4eafefec5eb9e0633bc77d225e"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java": {
+      "before_sha256": "8b0fae4e35f805ce358fa4adbe5990f0e4eb6999b149a1b66123c0e37aeb0c39",
+      "bytes": 11112,
+      "sha256": "b4ba3b7d9e85f947eb5a6b1849bb0d65412de311e3b70cf7d4537e26d8ebf83a"
+    },
+    "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModRegistries.java": {
+      "before_sha256": "7b56905873a0d844fefca8d0d82f87eb8ba6e44c2913c67d7d5ab67061c1f743",
+      "bytes": 1618,
+      "sha256": "54e251cda93dd4d81649f338319296bb3ca2f091e3488ca10ffb575e04267517"
+    },
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/CanisterStackSwapTest.java": {
+      "before_sha256": null,
+      "bytes": 3033,
+      "sha256": "c021ef7ace5a0194fadea46a1dbcec94e8d7ab63ab72ad2eec5f80ecbf2649cf"
+    },
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/CanisterSwapPlannerTest.java": {
+      "before_sha256": null,
+      "bytes": 3177,
+      "sha256": "dda36000bdff5f0edeac1e623b038750829e90092eff6a037bc3e8926d280272"
+    },
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/GasCanisterHandlerTest.java": {
+      "before_sha256": null,
+      "bytes": 6506,
+      "sha256": "eb951d9d939d777e7078bfb274f43740483d030369927794b4265236dbefc23f"
+    },
+    "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/fluid/V180FluidResourcesTest.java": {
+      "before_sha256": null,
+      "bytes": 4158,
+      "sha256": "0018767c0410bd565bfc50ce14ad775342624c7b067a06ad2c54dd1a98f68004"
+    },
+    "tests/test_run_v180_fluid_smoke.py": {
+      "before_sha256": null,
+      "bytes": 3921,
+      "sha256": "8366ec370239148a220193fbc78f55b0abe81c5bc78036fb01175ce1af1b73e5"
+    }
+  },
+  "source_delta_sha256": "afbc42fa414647ef05d412b290ddf1598be002628cfccc39e08dbf9d99ce397c",
+  "source_manifest_sha256": "bcdb08c39c54d7e17c30c9a7cdf2fdd5ed857ffa70468892d627a895e08f6c1a",
+  "uncommitted_snapshot": true
+}

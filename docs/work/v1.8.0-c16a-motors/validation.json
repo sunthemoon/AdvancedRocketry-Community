@@ -1,0 +1,73 @@
+{
+  "archive": {
+    "bytes": 210306,
+    "crc_and_each_entry_sha256": "PASS",
+    "entries": 40,
+    "sha256": "f947a1866d09fc85a96dcf5183de991880beeb623f15218708d59e27c7f7a05a"
+  },
+  "checks": [
+    {
+      "command": "python -B scripts/validate_repository.py --require-approved-identity",
+      "exit": 0,
+      "name": "repository"
+    },
+    {
+      "command": "python -B scripts/validate_v1plus_planning.py",
+      "exit": 0,
+      "name": "planning"
+    },
+    {
+      "command": "python -B scripts/validate_bootstrap_provenance.py",
+      "exit": 0,
+      "name": "provenance"
+    },
+    {
+      "command": "python -B scripts/validate_v180_content_ledger.py --require-accepted",
+      "exit": 0,
+      "name": "ledger-02"
+    },
+    {
+      "command": "python -B scripts/validate_v180_content_ledger.py --require-accepted --closure",
+      "exit": 1,
+      "name": "closure-02"
+    },
+    {
+      "command": "python -B scripts/validate_v120_machine_resources.py",
+      "exit": 0,
+      "name": "machine"
+    },
+    {
+      "command": "python -B scripts/check_client_imports.py",
+      "exit": 0,
+      "name": "client-imports"
+    },
+    {
+      "command": "python -B scripts/validate_build_artifact.py build/libs/advancedrocketry-community-1.20.1-1.8.0-dev.jar --expected-version 1.20.1-1.8.0-dev --content-manifest <owned Temp>/final-jar-manifest.json",
+      "exit": 0,
+      "name": "artifact"
+    },
+    {
+      "command": "python -B -m unittest tests.test_run_v180_motor_smoke -v",
+      "exit": 0,
+      "name": "python"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0,
+      "name": "diff-check"
+    },
+    {
+      "command": "git diff --exit-code",
+      "exit": 1,
+      "name": "diff-exit-code"
+    },
+    {
+      "command": "python -B <owned Temp>/verify_links.py (explicit task/ADR Markdown inventory)",
+      "exit": 0,
+      "name": "new-markdown"
+    }
+  ],
+  "closure": "FAIL: 189 PLANNED rows and 156 REVIEW assets",
+  "preserved_first_ledger_failure": "first ledger/closure attempt rejected evidence fields on PLANNED rows; fields removed, no validator relaxation",
+  "required_gate_pass": false
+}

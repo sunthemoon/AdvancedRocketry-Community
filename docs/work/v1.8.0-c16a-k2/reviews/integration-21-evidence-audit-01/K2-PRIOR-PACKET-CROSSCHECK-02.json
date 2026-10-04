@@ -1,0 +1,77 @@
+[
+  {
+    "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-hatches\\canonical-bytes-k2-source-01.zip",
+    "bytes": 5295301,
+    "sha256": "3442f9b7c3fc06ff694c08f385a8cdfc8fc8b0a527a225b305e7cc7213788ace",
+    "entries": 3085,
+    "manifest_sha256": "42c8d783da1b8fd88c3029f82ed53fe61adf19fa5af6434a58c2dd9dcf580e35",
+    "all_manifested_files": 3084,
+    "two_committed_postimages": [
+      {
+        "committed_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java",
+        "exact_postimage_matches": [
+          {
+            "member": "source-final/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java",
+            "bytes": 8983,
+            "sha256": "1aa5ad420a1288820f148ea55c149510c5206c7351c928186548cada54b3dfd6"
+          },
+          {
+            "member": "source-original/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java",
+            "bytes": 8983,
+            "sha256": "1aa5ad420a1288820f148ea55c149510c5206c7351c928186548cada54b3dfd6"
+          }
+        ]
+      },
+      {
+        "committed_path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytesTest.java",
+        "exact_postimage_matches": [
+          {
+            "member": "source-final/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytesTest.java",
+            "bytes": 20200,
+            "sha256": "5b352b1a6818689b5ac30c505cbcfc3e3adc4014de97f26f168550b31f8cec55"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-hatches\\reviews\\canonical-bytes-k2-independent-01.zip",
+    "bytes": 10874844,
+    "sha256": "e4b46ec2657b66e88e8cf90c188bad5a7fe7c9f0a9f78c62906aa705bb0427e4",
+    "entries": 3172,
+    "manifest_sha256": "26aa8f4a680285af57ace6924d0f3b8dffa24bd66c3871886eb5d1f986843f62",
+    "all_manifested_files": 3171,
+    "two_committed_postimages": [
+      {
+        "committed_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java",
+        "exact_postimage_matches": [
+          {
+            "member": "author-final/source-final/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java",
+            "bytes": 8983,
+            "sha256": "1aa5ad420a1288820f148ea55c149510c5206c7351c928186548cada54b3dfd6"
+          },
+          {
+            "member": "author-final/source-original/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java",
+            "bytes": 8983,
+            "sha256": "1aa5ad420a1288820f148ea55c149510c5206c7351c928186548cada54b3dfd6"
+          },
+          {
+            "member": "checkpoint-01/source/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java",
+            "bytes": 8983,
+            "sha256": "1aa5ad420a1288820f148ea55c149510c5206c7351c928186548cada54b3dfd6"
+          }
+        ]
+      },
+      {
+        "committed_path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytesTest.java",
+        "exact_postimage_matches": [
+          {
+            "member": "author-final/source-final/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytesTest.java",
+            "bytes": 20200,
+            "sha256": "5b352b1a6818689b5ac30c505cbcfc3e3adc4014de97f26f168550b31f8cec55"
+          }
+        ]
+      }
+    ]
+  }
+]

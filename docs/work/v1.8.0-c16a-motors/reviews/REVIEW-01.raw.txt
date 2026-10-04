@@ -1,0 +1,130 @@
+# C16a-07 actual-diff review 01 — original motor integration
+
+Date: 2026-10-03. Reviewer: delegated independent implementation reviewer;
+did not author the runtime, assets or target harness. This report is frozen
+against the original pre-label-fix source, not against subsequent corrections.
+
+## Findings
+
+**0 Critical / 0 High / 0 Medium / 1 Low.**
+
+### L1 — casing label depends on resource namespace iteration
+
+Location: original `src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java:49–50`,
+with existing `datagen/V170LanguageProvider.java:27`.
+
+The v1.8 provider emits `block.advancedrocketrycommunity.endgame_casing` in
+`advancedrocketrycommunity_v180`, but v1.7 still emits the same key with its old
+label in `advancedrocketrycommunity_v170`. The actual Forge 47.4.10 mapped
+Minecraft classes load language entries by resource-manager namespace iteration:
+`MultiPackResourceManager` stores namespaces in a `HashMap` and returns its
+`keySet`; `ClientLanguage.loadFrom` iterates that set and overwrites map entries.
+Version order does not establish precedence.
+
+The independent Java 17 probe reads the actual packaged namespace set. With
+the current 17 namespaces the resulting order happens to select the v1.8
+label. Adding eight distinct namespaces grows the map to the next capacity;
+the `_v170` entry then follows `_v180` and the modeled English result is
+`Endgame Casing`. This violates ADR-064 §4's display-label requirement for an
+otherwise harmless mod/resource combination. Saved IDs and gameplay remain
+unaffected, hence Low under the repository's text/visual severity definition.
+
+Evidence: [mapped client loader bytecode](ClientLanguage.javap.txt),
+[mapped namespace manager bytecode](MultiPackResourceManager.javap.txt),
+[independent namespace/label probe](NamespaceOrder.java),
+[probe output](namespace-order-02.txt). This is a static platform-code and
+Java-container observation, **not** a real-client resource-reload run.
+Use an unambiguous description key or a single authoritative translation entry;
+verify actual block/item description IDs and bilingual generated resources.
+Root has proposed a correction; its separate source freeze must be reviewed
+before treating L1 as resolved.
+
+## Exact source identity and scope
+
+Original root evidence directory:
+`C:/Users/Administrator/AppData/Local/Temp/arce-v180-motor-root-79a12d61d241424eb3ea3ab0d1a3782d`.
+Review compares `before-source` to `final-source`, **not HEAD**. The before
+snapshot already contains unrelated dirty C15/fluid/generator work.
+
+| Identity | SHA-256 | Entries |
+|---|---|---:|
+| pre-motor manifest | `7dcdad25b62ba53503247c6c31232c54131007e21a576b598e3a1bbbbdcc7237` | 2775 |
+| original frozen build manifest | `7fd82a49e2d98ac9219e36310359d84237832ee79beac7e59c2deb3ea8042d6d` | 2823 |
+| original final manifest | `47f6719e6af7c696b4d20ed735b6a58737b764e167799b2d96f3dd57d4ac0727` | 2825 |
+| pre-fix packaged v1.8 JAR | `7fd1cec7b08a0eb4d8492ca2302fc5caf8985a6a6e969897837789be6111aa14` | 5,102,121 bytes |
+| Forge mapped 47.4.10 JAR used for bytecode observation | `95eecc5985233d83a6571299f89f02de034267646da171f7b36a5be2d394d71e` | — |
+
+Every manifested snapshot file was independently rehashed. Original final
+delta: 50 new files, 9 modified files, no removed files. All 2823 frozen build
+inputs are unchanged in final; only the two harness/test Python files were
+added after the root full build. Raw identity/diff evidence is retained in
+[evidence-01](evidence-01/final-manifest.json); exact changed paths and original
+texture hashes are in [static results](probe-static-results.json).
+
+The review covers the four stable block/item IDs, both `motors` tags,
+ADR-064 §4 exact ingredient multisets, recipes/unlocks, loot/tool tags,
+registry/data/creative registration, newly authored procedural art, and existing
+casing preservation. Primary ledger units are `libvulpes:java/blockMotor` and
+`libvulpes:java/blockAdvStructureBlock`; the merged tier/list/tag/advanced-casing
+recipe aliases are not additional independent runtime features. Existing
+`machine_casing` and its aliases remain historical behavior. No ledger unit
+or entire C16a-07 leaf is declared complete by this review.
+
+## Actual checks executed by reviewer
+
+- `python probe_static.py`: exit 0 on attempt 03. Independent generated-JSON
+  and packaged-byte checks confirm all four accepted multisets (base six units,
+  upgrade four units), exact previous-tier input, one output, registered item
+  and block tag IDs, self loot, model/texture references, 12 distinct 16×16
+  textures, preserved old tool-tag members and old casing resources. Attempts
+  01/02 failed due to the reviewer's initial resource-directory assumption and
+  omitted-default `replace` handling; both raw failures are retained and do
+  not indicate target defects.
+- Java 17 source-launch namespace probe: exit 0; exact mapped-class bytecode
+  read using `javap`: exit 0 after resolving the local JDK tool path. Initial
+  `javap` PATH lookup was unavailable; no build/runtime check was claimed then.
+- `python -B -m unittest tests.test_run_v180_motor_smoke -v` from immutable
+  original final snapshot: exit 0, seven tests. Bytecode writes disabled and
+  unit temporary output confined to this review directory. [Log](python-oracle-unit.log).
+- `python -B probe_native_evidence.py`: exit 0. This independent bounded NBT
+  decoder does not import or call the target harness oracle. It rechecks raw
+  saved chunk hashes, exact chest/casing/motor coordinates, whole inventories,
+  counts, tags, and both restart receipts. [Code](probe_native_evidence.py),
+  [results](probe-native-results.json), [log](probe-native-01.log).
+
+The last check independently audits **root-produced evidence**, not a reviewer
+runtime replay. Root XML was parsed: targeted 14 tests / three suites and full
+1501 tests / 283 suites, zero failures/errors/skips. The retained GameTest log
+contains all 413 required tests passing. Root native receipts show four clean
+phases: v1.7 saved casing, v1.8 motor seed, restart 1 and restart 2, bound to
+the original JAR hash above. This does not validate a subsequent corrected JAR.
+No reviewer Gradle/native server was run: root reserved the serialized heavy
+execution slot. Independent native/key test reproduction remains pending.
+
+## Design/security/provenance observations
+
+Motors are inert blocks/items, not ticking adapters or global world state;
+there is no new packet, capability inventory, schema or world scan. Two small
+pure generators define bounded JSON/art, with four DeferredRegister entries
+of each type. Shapeless crafting is an explicitly documented encoding of the
+accepted quantities, not an inferred recipe-number change. Vanilla crafting
+recipe data needs no custom JEI category; actual JEI/client presentation has
+not been tested here.
+
+MotorArt constructs original pixels without reading upstream or official
+bitmap files; the NEW declaration precedes generation in repository metadata.
+No LibVulpes code/art was read or copied by this reviewer. This supports the
+NEW scope but is not by itself full G0 approval; content screening, the broader
+provenance manifest and release audit remain separate evidence.
+
+## Remaining boundaries / Gate result
+
+- Family controller formation with **each** motor tier is future C16 work;
+  the shared tags alone are not proof that those patterns accept all tiers.
+- Real-GPU V1 (tier appearance, item/block casing label, resource reload,
+  GUI scale) and JEI present/absent checks remain unperformed.
+- This inert-component slice does not add crash-transaction semantics; native
+  receipts demonstrate clean save/restart, not S2 crash recovery.
+- Root's dirty development build is not R1 release rebuild or a complete
+  v1.8 Required Gate pass. No version/leaf status, acceptance or release
+  approval is issued. Review follow-up must target the corrected frozen source.

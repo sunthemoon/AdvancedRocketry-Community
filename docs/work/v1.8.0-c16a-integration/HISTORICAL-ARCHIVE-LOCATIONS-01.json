@@ -1,0 +1,1137 @@
+{
+  "date": "2026-10-04",
+  "scope": "Named Root v1.8 historical archive locations. Metadata only, not a new source snapshot or Gate. These local sealed development records are not Git deliverables or remote backups. No packet content was modified. Future checksums must bind package-local or committed files.",
+  "archives": [
+    {
+      "historical_reference": "docs/work/v1.8.0-c15a-materials/independent-review.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15a-materials/independent-review.zip",
+      "bytes": 708275,
+      "sha256": "e3dd480d659116fce29f22513db586ef16fae82f93e3ccbc34969108c5454ba2",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15a-materials/press-acquisition-source-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15a-materials/press-acquisition-source-01.zip",
+      "bytes": 4733110,
+      "sha256": "ac830b9db0ad340943e6b87f6849e15f96eb7de888c87550e5d1742d76a87928",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15a-materials/press-source-patch-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15a-materials/press-source-patch-02.zip",
+      "bytes": 15432,
+      "sha256": "1f5f4d75ef1baba75348ad8df19b75890f104947029707d76ea0112106de284f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15a-materials/reviews/press-acquisition-contract-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15a-materials/reviews/press-acquisition-contract-independent-01.zip",
+      "bytes": 237030,
+      "sha256": "4eaf86fc9a9933e75b7c8a9b873c18c120276483680e0aa523fda705766b6c5b",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15a-materials/reviews/press-acquisition-source-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15a-materials/reviews/press-acquisition-source-independent-01.zip",
+      "bytes": 5462302,
+      "sha256": "5420e0f6ecb695651b8ffef79afe3271240ee8cc5a51745834124da3fd777e9d",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15a-materials/root-checks.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15a-materials/root-checks.zip",
+      "bytes": 637489,
+      "sha256": "f1b05ff0d4c448dc4811d9fd626a2622830b28c7772a3c504585667127450e3f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15b-surfaces/independent-review.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15b-surfaces/independent-review.zip",
+      "bytes": 2708844,
+      "sha256": "bf1b414ba6485d33582c08a83fe247ed08fda096782af1539912898cdec4d14c",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15b-surfaces/reviews/round-02-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15b-surfaces/reviews/round-02-evidence.zip",
+      "bytes": 367339,
+      "sha256": "d0a8166e8541ebdb665046fdde433706057062e0b6fdc4365206b6402b7da49f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15b-surfaces/root-checks.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15b-surfaces/root-checks.zip",
+      "bytes": 1766701,
+      "sha256": "9ec1f3c8982c3dc7584eda77ace6513a2bf4b7c01335174830fc1d49e3afe045",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15c-worlds/reviews/review-link-rehosting-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15c-worlds/reviews/review-link-rehosting-01.zip",
+      "bytes": 94417,
+      "sha256": "9cb247c8afa61e947fc7380fd3de1b2cb540b85f792a16b9e58a5912ac349b31",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15c-worlds/reviews/rounds-01-02-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15c-worlds/reviews/rounds-01-02-evidence.zip",
+      "bytes": 811591,
+      "sha256": "bf320a3268c78f5d5932f1f918fc9b8f163b896adb586fc4ea3e3ce4483c7906",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c15c-worlds/root-checks.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c15c-worlds/root-checks.zip",
+      "bytes": 1756553,
+      "sha256": "aa407fd99f1d62697df42070a801e059b6df02a60c420d81362c206008cd4723",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16-contract/reviews/rounds-01-02-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16-contract/reviews/rounds-01-02-evidence.zip",
+      "bytes": 12609,
+      "sha256": "3cfeff3609b7a6f99dfb4dff1d430fe40bd868657bf62f80772a0022e07c2448",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-combustion/reviews/round-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-combustion/reviews/round-01-evidence.zip",
+      "bytes": 1102777,
+      "sha256": "12af1e3fdea3c2882c42a9f6d1eae9b36195060544a0eeefd1842292d19e2b79",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-combustion/root-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-combustion/root-evidence.zip",
+      "bytes": 21134972,
+      "sha256": "37bbe8ac6b3e8e824a1cba43be25fd9039f8d0ccfa7cbd9b1939223bdaad9f3f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-fluids/reviews/review-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-fluids/reviews/review-evidence.zip",
+      "bytes": 637706,
+      "sha256": "9d37313d0507f0af6765427934c2dc589e09bf10005709db9c418c9b1aa99010",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-fluids/root-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-fluids/root-evidence.zip",
+      "bytes": 22728778,
+      "sha256": "8e024680bf13f11c5903f736f323ac1c63b30db01c5ac619cc81d055de7aff48",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatch-core/reviews/bank-api-final-qualification.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatch-core/reviews/bank-api-final-qualification.zip",
+      "bytes": 472671,
+      "sha256": "82c030af906c95a0f2e0d8b138bf28c399d8e2f10f0fd5905a724c38116d2883",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatch-core/reviews/bank-api-original-review.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatch-core/reviews/bank-api-original-review.zip",
+      "bytes": 230529,
+      "sha256": "8c5393d9c35bc926c1b16b4ffcd1152d249895a5ee08f7829bd77a55a7f7766c",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatch-core/reviews/bank-author-r1-original-closure.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatch-core/reviews/bank-author-r1-original-closure.zip",
+      "bytes": 5063335,
+      "sha256": "aa9556cc9e6dbad46c36e5996c552df3e16bdcc60de33957e059743e2a2f9b86",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatch-core/reviews/bank-author-r2.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatch-core/reviews/bank-author-r2.zip",
+      "bytes": 4720720,
+      "sha256": "11c3a2d26fc130a979c12c25ca5c01e8f742089e4ef07d0453a8b1dffc091d98",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatch-core/reviews/bank-independent-r2.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatch-core/reviews/bank-independent-r2.zip",
+      "bytes": 8912377,
+      "sha256": "6bc6d9ec7ad47ddc35b242540d3e54df3dc9e8afc8542eed6a471cd124b38539",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/adapter-contract-proposal-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/adapter-contract-proposal-01.zip",
+      "bytes": 352610,
+      "sha256": "82aa445e185a30744f35899889ab5a2ef8a77499a65dd197b494176cdf69491e",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/adapter-contract-proposal-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/adapter-contract-proposal-02.zip",
+      "bytes": 7196008,
+      "sha256": "6e5a3c11c732132dbc98f6a86471501b01339fd99e419ad34f61981484c54f22",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/canonical-bytes-k2-source-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/canonical-bytes-k2-source-01.zip",
+      "bytes": 5295301,
+      "sha256": "3442f9b7c3fc06ff694c08f385a8cdfc8fc8b0a527a225b305e7cc7213788ace",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/canonical-framing-feasibility-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/canonical-framing-feasibility-01.zip",
+      "bytes": 557808,
+      "sha256": "6278874b1c27327f3c6a4178ffad5a62c3809c2ab92bdd1f1495dbde139ce913",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/guard-carrier-proposal-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/guard-carrier-proposal-01.zip",
+      "bytes": 38686796,
+      "sha256": "845d13eebce51ff2e1a3988a9e91451dcd0c578b741f63ef1763b1ddc322546b",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/guard-inventory-owner-modes-amendment-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/guard-inventory-owner-modes-amendment-01.zip",
+      "bytes": 47854957,
+      "sha256": "2f87e34176689cf53fab74291a81d6ccccc60ddf2f6127c4c7bd58f7fdc4958f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/guard-inventory-proposal-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/guard-inventory-proposal-01.zip",
+      "bytes": 46954598,
+      "sha256": "77cb3f909cd645828f08c4ba60d4db89939b8cabd533d98278f31c30cda0ef9e",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/hash-order-proposal-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/hash-order-proposal-01.zip",
+      "bytes": 15057541,
+      "sha256": "75c40095dcc906e7a28b22adc23007bc75f7925c5df5899a29db980c3b4dee95",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/hatch-values-capacity-revision-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/hatch-values-capacity-revision-02.zip",
+      "bytes": 45907777,
+      "sha256": "9a5989c230bee1df4b43b9411f1b7daf18eee67b5a6514ca92d1eaabf92b196a",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/hatch-values-data-only-handoff-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/hatch-values-data-only-handoff-02.zip",
+      "bytes": 11318494,
+      "sha256": "dead42436c94e141bfa4156bd874b2453a0fef710a5f68de0988ba2f33d7e911",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/native-key-order-implementation-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/native-key-order-implementation-01.zip",
+      "bytes": 4887247,
+      "sha256": "1ac02a13fb1756bb46d9bd2941aba924477c0a18e374704ad529ee3ba0e761d7",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/adapter-contract-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/adapter-contract-independent-01.zip",
+      "bytes": 757169,
+      "sha256": "6aa566d40e9a6f045c9ba82ffc911957be78eb6e6b0091c45271ae854b5363c0",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/adapter-contract-independent-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/adapter-contract-independent-02.zip",
+      "bytes": 15324275,
+      "sha256": "4cd7b79bb12dc6d187f3f74973ab0d2368882893faf769c1bcea3c50f5dadd34",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/canonical-bytes-k2-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/canonical-bytes-k2-independent-01.zip",
+      "bytes": 10874844,
+      "sha256": "e4b46ec2657b66e88e8cf90c188bad5a7fe7c9f0a9f78c62906aa705bb0427e4",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/guard-carrier-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/guard-carrier-independent-01.zip",
+      "bytes": 801634,
+      "sha256": "50f618f04f8fe4f0c9011d787789e3a8a0df792498bd0062efe1c8f74aca784f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/guard-inventory-context-addendum-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/guard-inventory-context-addendum-01.zip",
+      "bytes": 9261,
+      "sha256": "fa7dcfda417284dfd35772ece014c66cd3122452587ac486bc439f7046372684",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/guard-inventory-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/guard-inventory-independent-01.zip",
+      "bytes": 539160,
+      "sha256": "0872d305f79b8e1d4f39815a0b4e991d361ef6ce67414ce4596cb2aeebdafb52",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/guard-owner-modes-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/guard-owner-modes-independent-01.zip",
+      "bytes": 1660359,
+      "sha256": "3b2496f4b9c05d81f2ebebaa96cf2349f803a5961a3cf53de28c56649b1e6501",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/hash-order-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/hash-order-independent-01.zip",
+      "bytes": 264801,
+      "sha256": "9658ad59fb20c29e94716db60d882f725811416ff24df0e154763e7e35e08daa",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/hatch-values-capacity-independent-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/hatch-values-capacity-independent-02.zip",
+      "bytes": 23160454,
+      "sha256": "a78a424843e5aec4e0875535d396af0bacf81fdf052213c7184b334dd4f7fde4",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/hatch-values-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/hatch-values-independent-01.zip",
+      "bytes": 22626240,
+      "sha256": "10d8dc124a665d521d469732bb11c92424563952a238c53457530a73c7f30109",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/lifecycle-hash-feasibility-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/lifecycle-hash-feasibility-01.zip",
+      "bytes": 7790226,
+      "sha256": "74616ca71e1b368cb69ee23fd8a6199c5648f972d13a918e96962c4b9ed9bd6b",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/native-key-order-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/native-key-order-independent-01.zip",
+      "bytes": 5329617,
+      "sha256": "0c876ca598e85d6abb2527819fbcebe4ee3fd4f360675d88e8d5ccf6746cc274",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/round-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/round-01-evidence.zip",
+      "bytes": 107874,
+      "sha256": "1ea637646c1c427e2bafdcd29e5e28a14eaf7863f5b26f9e17df9b60cc4eb6a1",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/round-02-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/round-02-evidence.zip",
+      "bytes": 123768,
+      "sha256": "8b7c0638e6d894a94d8340a984be4d494dd009e9348d2cfe15bec78f6538f9f5",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/reviews/round-03-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/reviews/round-03-evidence.zip",
+      "bytes": 136171,
+      "sha256": "c6183e6312b2e4025e686888bc414f031ccff41de78a9f546cf39df8d223e5b8",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-hatches/survival-feasibility-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-hatches/survival-feasibility-01.zip",
+      "bytes": 560763,
+      "sha256": "3fbd4f62282cf672949914446faa7f16dbe16db55501b789f075a4f777e08b39",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/central-review-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/central-review-01-evidence.zip",
+      "bytes": 9130128,
+      "sha256": "8dcadb17d87ead05fab848e28ab210b106e5abc969be49f1a8b2eaa4fdd7076e",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/config-addendum-review-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/config-addendum-review-01-evidence.zip",
+      "bytes": 40923,
+      "sha256": "8dc14c84fab5172208efb8946bec552560c1d09d103570998373d384cf238416",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/doc-rehosting-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/doc-rehosting-independent-01.zip",
+      "bytes": 22215171,
+      "sha256": "88b776472cc11cfcf1c8a5fdf5b4208dbef2e7eba7e8b6f7ef087206deff0ef7",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/integration10-independent-evidence-audit-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/integration10-independent-evidence-audit-01.zip",
+      "bytes": 12204592,
+      "sha256": "e989d52aa00ce07ece3beb09320e38d6e8184b804d63f7ddb4b76234e5511181",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/integration11-independent-evidence-audit-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/integration11-independent-evidence-audit-01.zip",
+      "bytes": 66656912,
+      "sha256": "4d2ba002d7b8ca1176f8fe25eff251753ed92551ca48b4d6c70d3065c3941ff2",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/integration12-independent-evidence-audit-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/integration12-independent-evidence-audit-01.zip",
+      "bytes": 70130361,
+      "sha256": "602fbfc94225ced6817bde9ec927cb5d860770ad82877eb86d0ba12e768b3013",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/kernel-tags-candidate-10.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/kernel-tags-candidate-10.zip",
+      "bytes": 4640669,
+      "sha256": "ae12cb02d623bde438006eadbbdb4f924fbacd11f81cb298fc37000d6265da7e",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/kernel-tags-candidate-11.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/kernel-tags-candidate-11.zip",
+      "bytes": 4640661,
+      "sha256": "6b5cfe74879687c469f8ffa81c89d337da92d1d7bc3c6c7712f2118421b35598",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/kernel-tags-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/kernel-tags-independent-01.zip",
+      "bytes": 22781490,
+      "sha256": "c09f33cf7a2b095a110429bd85ed35d8881c7741878bb3a7f80dc1932945bc6b",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/native-pump02-tank04-independent.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/native-pump02-tank04-independent.zip",
+      "bytes": 18366161,
+      "sha256": "81c97da3e5d0265fde4d053c402230df00ede2a2b963d3fcc8a8cada3341e35a",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/portable-archive-index-05.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/portable-archive-index-05.zip",
+      "bytes": 774828,
+      "sha256": "6524c3fb2b8adce1e5f82762093b8d359099ce3c165be317c03295b36ff000c5",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/reviews/root20-evidence-audit-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/reviews/root20-evidence-audit-01.zip",
+      "bytes": 25533017,
+      "sha256": "a0f8d55ba9fced009c37c6e90a961ef7540b5db892ccc73ac9385174e8033b5f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-BUILD-13.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-BUILD-13.zip",
+      "bytes": 11796348,
+      "sha256": "90fb263ed405ead51ea6d7e47c286b98c8a4c7f12ee291f77b2b1f9f54b37488",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-07.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-07.zip",
+      "bytes": 54317074,
+      "sha256": "7ba0db38ff5ba814a5496d100ceadfbff05c32d20332af4549d69f4be833ab4f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-11.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-11.zip",
+      "bytes": 37553082,
+      "sha256": "404d44c1df772e6a318a1d4c45ddd054a5df11dd32d8345953982867811bae65",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-12.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-12.zip",
+      "bytes": 23673654,
+      "sha256": "928c8fa585c00fdf7b38ad77058fdf2ee3f78ba825faea1d716e64c32e1df2b5",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-14.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-14.zip",
+      "bytes": 12141439,
+      "sha256": "de2a59a294a5acd93add5eea170130252191a9b5c22cdc43bb259f9fdf74b652",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-15.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-15.zip",
+      "bytes": 12211462,
+      "sha256": "10b0c3a19cc443a18b85725c041f8b1a40e050a9f97782f854ab39c883ccb693",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-18.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-18.zip",
+      "bytes": 12419585,
+      "sha256": "e001ff7f8990300839c66927dd5d3976c80226cda905f938f41f9ca0e6e4c82f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-19-STATIC-FAIL.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-19-STATIC-FAIL.zip",
+      "bytes": 12315352,
+      "sha256": "199fbb9ec179ef5078b231994753f486c7e75a2ad73b0d5b9f1c5d61d512146a",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-20.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-INTEGRATION-20.zip",
+      "bytes": 12310298,
+      "sha256": "3b6176f549d8bde523df1245fe7c4902e4633f093c40c6bce87db78fbf364bd2",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-integration/ROOT-STATIC-15-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-integration/ROOT-STATIC-15-01.zip",
+      "bytes": 199512,
+      "sha256": "642a3ab34327da8572edaff39f8b3183e6b15d9535138fc9e04ae9cdd5f1e2aa",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-motors/reviews/review-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-motors/reviews/review-evidence.zip",
+      "bytes": 2196718,
+      "sha256": "a19ad6d98e51c41a3b58e35ff866790ceb0a845bf2d55473075ec7099641387e",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-motors/root-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-motors/root-evidence.zip",
+      "bytes": 34054963,
+      "sha256": "88fd89b0800756ff24cd870532405b064d0e94df94512e9c2d1df60777520926",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-motors/validator-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-motors/validator-evidence.zip",
+      "bytes": 210306,
+      "sha256": "f947a1866d09fc85a96dcf5183de991880beeb623f15218708d59e27c7f7a05a",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-pump/reviews/pump-hook-independent-r1.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-pump/reviews/pump-hook-independent-r1.zip",
+      "bytes": 4750048,
+      "sha256": "b0007c309899b491d72194d38f5173858bb01736eef89598a0216f200a717cd1",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-pump/reviews/pump-hook-independent-r2.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-pump/reviews/pump-hook-independent-r2.zip",
+      "bytes": 4512628,
+      "sha256": "890c92062872dbde7ec08bffcaadc2260ce2c9600eebadcbd0e1178ecbf35ebc",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-pump/reviews/pump-hook-independent-r3.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-pump/reviews/pump-hook-independent-r3.zip",
+      "bytes": 4514410,
+      "sha256": "50cc13c5748f22b726b9c9fed8eb37c54b18a96c8da0db1cbabae328e5a77247",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-pump/reviews/pump-python-author-r2.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-pump/reviews/pump-python-author-r2.zip",
+      "bytes": 1823140,
+      "sha256": "02450879eb9fb81a65ea246f14bf0f97e3da384258ff137397c08ef8305a431e",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-pump/reviews/pump-python-independent-final-portable.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-pump/reviews/pump-python-independent-final-portable.zip",
+      "bytes": 6607777,
+      "sha256": "e30de06c1d050862a0a4dac2fd6e6623f7f87b1f0b036225a15943b1badd4375",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-pump/reviews/pump-python-independent-r1-original-finding.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-pump/reviews/pump-python-independent-r1-original-finding.zip",
+      "bytes": 1851039,
+      "sha256": "8bce83ed060f6abef7492f89637af6e4c4721573bcfebf81ca3442da5873cc79",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-pump/reviews/round-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-pump/reviews/round-01-evidence.zip",
+      "bytes": 5146451,
+      "sha256": "e710ae9a84b65d602f6e0d763ff7cf85494e55be5c7e2e6ebf1ef46add42eb74",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-pump/reviews/round-02-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-pump/reviews/round-02-evidence.zip",
+      "bytes": 10378779,
+      "sha256": "1143ac3cb1fde0cef8528921235d5e205e04cf9f7ec3a8173428624e24f6f698",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/menu-fallback-proposal-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/menu-fallback-proposal-01.zip",
+      "bytes": 5014082,
+      "sha256": "7c7a3c25f8054e2e2566a33deec13695e785b16bf68f6305c1d1a542b313c19b",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/menu-transport-implementation-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/menu-transport-implementation-01.zip",
+      "bytes": 6559237,
+      "sha256": "970cb03dc7e5469abf0b8d6bcf159ae4bd79bf229e3c6d599c38ea8b96c47738",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/central-four-datagen-independent.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/central-four-datagen-independent.zip",
+      "bytes": 61468,
+      "sha256": "c52ec98a8ffa200aba9d232ccbc96027d5eed9904d30832bd2c7af125f715fe1",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/legacy-policy-round-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/legacy-policy-round-01-evidence.zip",
+      "bytes": 26123,
+      "sha256": "bc29d0f6ff0545876d967d8e84f66bc7612c6fcf9f0964c7a19bcf7893f4b2d6",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/legacy-policy-round-02-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/legacy-policy-round-02-evidence.zip",
+      "bytes": 24399,
+      "sha256": "ef6f3dfc4e415efcf532162ae29a6d6d710e3b93b25f6e3da832fa82b9db32e2",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/menu-contract-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/menu-contract-independent-01.zip",
+      "bytes": 216329,
+      "sha256": "9613fc455f53064c8342781e820631dddc46bac2e0419d1b672405d27fe50e0b",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/menu-contract-round-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/menu-contract-round-01-evidence.zip",
+      "bytes": 60002,
+      "sha256": "543ef7e4b464e2d17bf934bfe484fb04db12ae907430d2b074ac34fe353e83d4",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/menu-fallback-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/menu-fallback-independent-01.zip",
+      "bytes": 9808696,
+      "sha256": "0cb2c17a7e131c27b9796a74eea8f23ef4c299f3ba6d6a56c0dc2c2352ad8775",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/menu-source-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/menu-source-independent-01.zip",
+      "bytes": 14249235,
+      "sha256": "df7b79d45101c8e9602c6e7ca25079f5a06fd8c339133aca3afeeddbe1460b93",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/native-retention-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/native-retention-independent-01.zip",
+      "bytes": 9469077,
+      "sha256": "7a9927d84fa3116882cd76264bd0ebd03a96be7e45c2391edbe89a8cab3168e5",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/root-fixture-independent-review-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/root-fixture-independent-review-01.zip",
+      "bytes": 304555,
+      "sha256": "b68e120352b75c74146d355a288382e0d5f7bfb58194be82e388fb334a9a7d09",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/root18-evidence-audit-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/root18-evidence-audit-01.zip",
+      "bytes": 13982779,
+      "sha256": "3908d8c49d772fc9139cc8486aed997bd0b500acdebf00cb6bb57dd85b363602",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/round-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/round-01-evidence.zip",
+      "bytes": 352510,
+      "sha256": "5ac9e458ff855262b7e579f415a0e7f8b4fcc1b6111f3fbcaf497450e3fae8f5",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-author-r3-full-closure.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-author-r3-full-closure.zip",
+      "bytes": 834344,
+      "sha256": "a8e2815bcbcdcfd434f4e6fb460af1425acc91d7759aa2a83c010eb155ef4c99",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-guard-static-review.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-guard-static-review.zip",
+      "bytes": 80024,
+      "sha256": "b87f808d9e7190f3119ef517c6e2ba25930e3c72b0b0163a2f9eae1c01df6510",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-independent-r3-context-closure.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-independent-r3-context-closure.zip",
+      "bytes": 10903044,
+      "sha256": "4a165a75dfa8d752bd5e1854026880bd96054f002990d20e9334ddc3be0000fc",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-independent-r3.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-independent-r3.zip",
+      "bytes": 5761814,
+      "sha256": "01bb5049babe960a260903b48f658487cb3cdc3f42414c9a8bfdd528a62659b2",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-live-tag-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-live-tag-independent-01.zip",
+      "bytes": 5682172,
+      "sha256": "552f754cec45c5dda3a3cec8a32f2f29d389b0d5e08df8f3c38508a848836a40",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native14-02-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native14-02-independent-01.zip",
+      "bytes": 45769638,
+      "sha256": "b991435d3705a38cb6e1dd7c4dcec672a4ae8695cfdfc1e7d33c4f1ef6dcf70b",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native16-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native16-independent-01.zip",
+      "bytes": 13678430,
+      "sha256": "e4d590570a6a9f20ba0e922f1db8e74f3a7c824dc19d7f8f51f417dcd63f6a7a",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native17-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native17-independent-01.zip",
+      "bytes": 2521552,
+      "sha256": "04c72bd161849aa9b100527d3dfa95fd3aaf33c073bf56b65e322abaf6bbf78c",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native19-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native19-independent-01.zip",
+      "bytes": 181205195,
+      "sha256": "e1bafef9d0ba4b63934eca3063b0b19a7727c67d86b06a93722397e684efa652",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native20-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-native20-independent-01.zip",
+      "bytes": 181699734,
+      "sha256": "b32b4b561d4d3bda5a244c24ef88b1fa73bfbabbb8eb6f75cffe4cf81ec01504",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-s1-independent-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-s1-independent-01.zip",
+      "bytes": 5506791,
+      "sha256": "9de00595877a05a8f8a0dc8f8544dbe0788525d0eaf7cc869a49a33c42d8fb61",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-s1-independent-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-s1-independent-02.zip",
+      "bytes": 14629485,
+      "sha256": "da9ea7dc0dd4060815bccf4c272fbc548ddc2183cceb731b9d53eef73df14ac1",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-s1-runtime-independent-03.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-s1-runtime-independent-03.zip",
+      "bytes": 117884996,
+      "sha256": "b5a1d73d106d41f43e779bba8fb4ef59cefd6c34ab6a7d36a829bac73637b4d3",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-s1-runtime-independent-04.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-s1-runtime-independent-04.zip",
+      "bytes": 4087545,
+      "sha256": "e0b6e507f37a4ee682385ebd2434c05bce0457f46a96dd29ac8b1888d22192e2",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-stopped-encoding-independent-05.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/signature-stopped-encoding-independent-05.zip",
+      "bytes": 39633657,
+      "sha256": "10c2ee592ed771132571760795c2cea556a9295660b8506261895aa83553674e",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-author-04.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-author-04.zip",
+      "bytes": 11372568,
+      "sha256": "6780317a411b7c4a5d148ca4aea18ddf43c7d90b2cc6461485dbf76583f2f8c8",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-author-05.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-author-05.zip",
+      "bytes": 36108524,
+      "sha256": "87cb9375b3281591ba168df5d8ec2f724aaf42d66e35c88dcce8dfe4a9d6ad9a",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-independent-04.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-independent-04.zip",
+      "bytes": 22747872,
+      "sha256": "2c55c9d6109b94c4dc20f49beebf47a8dd92ee4f6fc56f2980830e11620c2c33",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-independent-05.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-independent-05.zip",
+      "bytes": 77296802,
+      "sha256": "e17f176626f5bde216e88e1895d7c5da978feecc903f0fc12d8ee88639b7368e",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-independent-06.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-independent-06.zip",
+      "bytes": 5342122,
+      "sha256": "6f46e6a94d393e2bce9068688639408fe3309efaaa0aed7da13ea1346fbf882d",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-proposal-06.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/reviews/source-proposal-06.zip",
+      "bytes": 54138488,
+      "sha256": "214d2fd91a391f5faf075845fdfd2cf5d74166ce6e6031c930b7202ed0f22882",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/signature-live-tag-proposal-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/signature-live-tag-proposal-01.zip",
+      "bytes": 5305413,
+      "sha256": "d55f64f0ee781e3a2a6f02e8cd33c3189cc24ce5d268ca8ce0c7bde969fdd9f8",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-14-02-FAIL.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-14-02-FAIL.zip",
+      "bytes": 22320485,
+      "sha256": "3b72c3d1c428040acca145d30c938f9ba03fad5564133327890586a7365ef2be",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-16-01-FAIL.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-16-01-FAIL.zip",
+      "bytes": 90634828,
+      "sha256": "5d064201ae9447269bbf7d55f27f512375c1f829f616a42cd496fc57eeba1910",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-17-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-17-01.zip",
+      "bytes": 168634745,
+      "sha256": "87d2955ef623a2e82edfb137cd6e194e9c35b1d315191b2be85d698c7b9ad251",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-19-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-19-01.zip",
+      "bytes": 168378287,
+      "sha256": "857fc96dd0833eb5753c86a8be79a8b97d0232d38e36269b1f35af8d0d966f55",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-20-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-20-01.zip",
+      "bytes": 168889947,
+      "sha256": "a1502f575fa7bc487197b9068eabafbf39bef9b046ef8b9362fb1977d574d77f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/signature-s1-native-proposal-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/signature-s1-native-proposal-01.zip",
+      "bytes": 4960548,
+      "sha256": "55c7ffe5a4a897e895d4b74f4d4ce64ebf93d0945493780c21416c4909550488",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/signature-s1-native-proposal-revision-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/signature-s1-native-proposal-revision-02.zip",
+      "bytes": 14078142,
+      "sha256": "8cea643f068e96539d94c7b0e1634fb48b2feadc5245f7d3f1c2d098df751456",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/signature-s1-runtime-fixture-revision-03.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/signature-s1-runtime-fixture-revision-03.zip",
+      "bytes": 58622662,
+      "sha256": "04d171fc6cb06981276e4c5ca767c2436e58f69ab007341f1ba2820b90ea0059",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/signature-s1-runtime-fixture-revision-04.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/signature-s1-runtime-fixture-revision-04.zip",
+      "bytes": 3107937,
+      "sha256": "772d3eb8047f3771397a04940d96c18c4f44a1c95ad3c3e520d868ce8a5824d0",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/signature-stopped-encoding-patch-delivery-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/signature-stopped-encoding-patch-delivery-02.zip",
+      "bytes": 4919,
+      "sha256": "f7d03e191340412b7fd0e8a808eff33ee8f731d9a550de278bcb6d3e5fc94e1c",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-recipe-signatures/signature-stopped-encoding-proposal-05.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-recipe-signatures/signature-stopped-encoding-proposal-05.zip",
+      "bytes": 11525919,
+      "sha256": "a5e0fb1146ef8f8b2d47a3db9977a88d008f676593012d784ecdb2302add70d2",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-save-guard/reviews/bounded-nbt-static-review-01.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-save-guard/reviews/bounded-nbt-static-review-01.zip",
+      "bytes": 18826498,
+      "sha256": "0621e562c99fc252ad7b9db9d66a989a93a90d5cbd06d898e8cd66989328b98d",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-save-guard/reviews/native-correction-03-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-save-guard/reviews/native-correction-03-evidence.zip",
+      "bytes": 814338,
+      "sha256": "212fdeb9a28ff426599f62ca2d44a32feea9737b1d6e5bb8fd3b2f5246e2fd77",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-save-guard/reviews/native-incident-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-save-guard/reviews/native-incident-01-evidence.zip",
+      "bytes": 665494,
+      "sha256": "56e2d09bf0e53c8026d549da1827643b20301e191aa25a765a3d3b23ada0542d",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-save-guard/reviews/native-incident-02-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-save-guard/reviews/native-incident-02-evidence.zip",
+      "bytes": 6144221,
+      "sha256": "708c57cb6cb8e5308eb9e6025cd2636fda5bba777d9080d4f7ca6bc8e7f97070",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-save-guard/reviews/native-retention-correction-independent-02.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-save-guard/reviews/native-retention-correction-independent-02.zip",
+      "bytes": 18520732,
+      "sha256": "d306c2ea31527b8010304ee41ea51e0143c224bcd0370e8169042ac52cd30e22",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-save-guard/reviews/source-review-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-save-guard/reviews/source-review-01-evidence.zip",
+      "bytes": 217746,
+      "sha256": "4f12063e1c43f755ba4ab644039cb6d535aea969169e9b8977b577a64662b4a8",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-tank/reviews/harness-round-02-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-tank/reviews/harness-round-02-evidence.zip",
+      "bytes": 26527,
+      "sha256": "187c7d840d1f5dd3c6b73efdce39be2f91d71778b52bbd9fdea5637a78130f80",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-tank/reviews/harness-round-03-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-tank/reviews/harness-round-03-evidence.zip",
+      "bytes": 175925,
+      "sha256": "351a620df73bb5fb6ab4795f01ba159a3452a0d672079fa5c5b81b252b70da6f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-tank/reviews/harness-round-04-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-tank/reviews/harness-round-04-evidence.zip",
+      "bytes": 160798,
+      "sha256": "2aa8f86f0d259ce29addbbdc05c9ac6817fc085fa163d9eb39ef80503dea5ffb",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-tank/reviews/harness-round-05-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-tank/reviews/harness-round-05-evidence.zip",
+      "bytes": 164361,
+      "sha256": "2ca8bd9fd9677ee3bed8684e796d2ba4c523dab6ce96e6e0ce2faa1496701b39",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-tank/reviews/round-01-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-tank/reviews/round-01-evidence.zip",
+      "bytes": 1664116,
+      "sha256": "e8adea8d1b0ea55ff85472baa4ebedd2f63fcecc7c12c27a355e8cb48c2e2472",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-c16a-tank/reviews/round-02-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c16a-tank/reviews/round-02-evidence.zip",
+      "bytes": 669982,
+      "sha256": "fdc72632e31438ab05ed0a16abc350446263e11bb21658404987c1af0ad4d65f",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    },
+    {
+      "historical_reference": "docs/work/v1.8.0-review-continuation/root-evidence.zip",
+      "location": "D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-review-continuation/root-evidence.zip",
+      "bytes": 8650403,
+      "sha256": "d06da824a638580a7a21eaa0bce85b1e4675bb211f6930cf41df38b5062d5d90",
+      "stored_in_git": false,
+      "remote_upload_verified": false
+    }
+  ],
+  "total_bytes": 2590728550,
+  "remaining_storage_debt": true,
+  "code_commit": "3f3d62aed3980186fe0acc9592cf93ca436405fb"
+}

@@ -1,0 +1,7 @@
+Actual batches 128 464 baseline 128 464
+Actual/baseline ERROR categories {'precision_migration_negative': 13, 'unbound_recipe_negative': 3, 'satellite_negative': 4, 'menu_protocol_negative': 16, 'recipe_guard_negative': 24, 'combustion_guard_negative': 1}
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Temp\ark2a-a7e21b35c0\gt_context04.py", line 66, in <module>
+    assert len(paths)==1,paths
+           ^^^^^^^^^^^^^
+AssertionError: []

@@ -1,0 +1,52 @@
+[
+  {
+    "exit": 0,
+    "command": "python -B scripts/validate_repository.py --require-approved-identity",
+    "name": "repository"
+  },
+  {
+    "exit": 0,
+    "command": "python -B scripts/validate_v1plus_planning.py",
+    "name": "planning"
+  },
+  {
+    "exit": 0,
+    "command": "python -B scripts/validate_bootstrap_provenance.py",
+    "name": "provenance"
+  },
+  {
+    "exit": 0,
+    "command": "python -B scripts/validate_v180_content_ledger.py --require-accepted",
+    "name": "ledger"
+  },
+  {
+    "exit": 1,
+    "command": "python -B scripts/validate_v180_content_ledger.py --require-accepted --closure",
+    "name": "closure"
+  },
+  {
+    "exit": 0,
+    "command": "python -B scripts/validate_v120_machine_resources.py",
+    "name": "machine"
+  },
+  {
+    "exit": 0,
+    "command": "python -B scripts/check_client_imports.py",
+    "name": "client-imports"
+  },
+  {
+    "exit": 0,
+    "command": "python -B scripts/validate_build_artifact.py build/libs/advancedrocketry-community-1.20.1-1.8.0-dev.jar --expected-version 1.20.1-1.8.0-dev",
+    "name": "artifact"
+  },
+  {
+    "exit": 0,
+    "command": "git diff --check",
+    "name": "diff-check"
+  },
+  {
+    "exit": 1,
+    "command": "git diff --exit-code",
+    "name": "diff-exit-code"
+  }
+]

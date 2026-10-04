@@ -1,0 +1,13 @@
+{
+  "archive_bytes": 22728778,
+  "archive_sha256": "8e024680bf13f11c5903f736f323ac1c63b30db01c5ac619cc81d055de7aff48",
+  "entry_hashes": "PASS",
+  "excluded": [
+    "Development-Docs bundle",
+    "native runtime/server/libraries/world",
+    "official client JARs"
+  ],
+  "files": 8459,
+  "result": "PASS",
+  "zip_crc": "PASS"
+}

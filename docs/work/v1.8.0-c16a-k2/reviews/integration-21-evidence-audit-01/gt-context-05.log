@@ -1,0 +1,564 @@
+Actual batches 128 464 baseline 128 464
+Actual/baseline ERROR categories {'precision_migration_negative': 13, 'unbound_recipe_negative': 3, 'satellite_negative': 4, 'menu_protocol_negative': 16, 'recipe_guard_negative': 24, 'combustion_guard_negative': 1}
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/CombustionGeneratorGameTests.java 94fc44c645ff03e34b53b7d03ab0627064188937c3bfc27610a8d6800bbabd94
+248         boolean refused = false;
+249         try {
+250             var outgoing = net.minecraft.world.level.chunk.storage.ChunkSerializer.write(helper.getLevel(), chunk);
+251             chunk.setUnsaved(false); // ChunkMap does this before its serialization/event/write sequence.
+252             MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.level.ChunkDataEvent.Save(chunk,
+253                     helper.getLevel(), outgoing));
+254         } catch (IllegalStateException expected) {
+255             refused = expected.getMessage().contains("oversized combustion input");
+256         }
+257         helper.assertTrue(refused && chunk.isUnsaved(), "Chunk save did not refuse oversized input and retain its retry");
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PrecisionAssemblerMigrationSaveFailureGameTests.java e9014b6f00af3da3d48870c519728e9e51bb87f9e253a655ead2d0497c26f9d9
+105             MinecraftForge.EVENT_BUS.addListener(fault);
+106             try {
+107                 // Drive the real manager synchronously so another test's tick/save
+108                 // cannot repair the failed chunk before the explicit retry.
+109                 manager.tick(level.getServer());
+110                 helper.assertTrue(fault.fired, "The one-shot migration save failure was not exercised");
+111                 helper.assertTrue(fault.savesAfterFailure == 0,
+112                         "An unrelated save repaired the target chunk before explicit retry");
+113                 helper.assertTrue("preparing".equals(controller.saveWithFullMetadata()
+114                                 .getCompound("arce_precision_resources").getString("phase")),
+188     private static PrecisionAssemblerPortBlockEntity port(ServerLevel level, BlockPos position) {
+189         return (PrecisionAssemblerPortBlockEntity) level.getBlockEntity(position);
+190     }
+191 
+192     private static final class OneShotSaveFailure implements Consumer<ChunkDataEvent.Save> {
+193         private final ServerLevel level;
+194         private final BlockPos position;
+195         private final boolean markerBarrier;
+196         private boolean fired;
+197         private int savesAfterFailure;
+222                         ? entity.contains("arce_precision_port_migration", Tag.TAG_COMPOUND)
+223                         : "preparing".equals(entity.getCompound("arce_precision_resources").getString("phase"));
+224                 if (matches) {
+225                     fired = true;
+226                     throw new IllegalStateException("Intentional one-shot Precision migration save failure");
+227                 }
+228             }
+229         }
+230     }
+231 }
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RecipeMenuChannelGameTests.java 8452cbb77f9b4a34ab0cb8c3535b9b9e0f60814a450699cab488d72b71397af5
+22     public static void installedMenuChannelAdvertisesAndRejectsIncompatiblePeerVersions(GameTestHelper helper) {
+23         try {
+24             ResourceLocation menuId = ModIdentity.id("machine_menu");
+25             Map<ResourceLocation, String> advertised = advertised();
+26             helper.assertTrue("1".equals(advertised.get(menuId)),
+27                     "Common setup must install the required menu channel before this observation");
+28             for (String direction : new String[] {"validateClientChannels", "validateServerChannels"}) {
+29                 helper.assertTrue(rejected(direction, advertised).isEmpty(),
+30                         "Matching installed channel versions must be accepted by " + direction);
+31                 Map<ResourceLocation, String> missing = new HashMap<>(advertised);
+32                 missing.remove(menuId);
+33                 Map<ResourceLocation, String> missingRejected = rejected(direction, missing);
+34                 helper.assertTrue(missingRejected.size() == 1 && missingRejected.containsKey(menuId),
+35                         "Only the omitted menu channel must be rejected by " + direction);
+36                 for (String version : new String[] {"", "0", "2", "01", "1 ",
+37                         NetworkRegistry.ABSENT.version(), NetworkRegistry.ACCEPTVANILLA}) {
+38                     Map<ResourceLocation, String> incompatible = new HashMap<>(advertised);
+39                     incompatible.put(menuId, version);
+40                     Map<ResourceLocation, String> refused = rejected(direction, incompatible);
+41                     helper.assertTrue(refused.size() == 1 && refused.containsKey(menuId),
+42                             "Only the incompatible menu channel must be rejected by " + direction);
+43                     helper.assertTrue(version.equals(refused.get(menuId)),
+44                             "The rejection must report the supplied peer version without rewriting it");
+45                 }
+46             }
+47             helper.assertTrue(advertised.equals(advertised()),
+48                     "Read-only channel validation must not change installed advertisements");
+49             helper.succeed();
+50         } catch (ReflectiveOperationException exception) {
+51             throw new IllegalStateException("Pinned Forge channel observation is unavailable", exception);
+52         }
+53     }
+54 
+55     @SuppressWarnings("unchecked")
+56     private static Map<ResourceLocation, String> advertised() throws ReflectiveOperationException {
+57         Method method = NetworkRegistry.class.getDeclaredMethod("buildChannelVersions");
+58         method.setAccessible(true);
+59         return (Map<ResourceLocation, String>) method.invoke(null);
+60     }
+61 
+62     @SuppressWarnings("unchecked")
+63     private static Map<ResourceLocation, String> rejected(String direction, Map<ResourceLocation, String> incoming)
+64             throws ReflectiveOperationException {
+65         Method method = NetworkRegistry.class.getDeclaredMethod(direction, Map.class);
+66         method.setAccessible(true);
+67         return (Map<ResourceLocation, String>) method.invoke(null, incoming);
+68     }
+69 }
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RecipeSignatureMigrationGameTests.java f7cece1f8489d0f9988ef43896ac32d0243bcd6e3c0a01ab3396fa293e904ea6
+48     private static final String ELECTRO_SHA = "5eacb5d39d636c9045ea0e1e198e41e89d411dc2cc8f13c9994466cdfb53d152";
+49 
+50     private RecipeSignatureMigrationGameTests() { }
+51 
+52     @GameTest(template = "empty", batch = "recipe_signatures", timeoutTicks = 20)
+53     public static void allThreeTagSerializersSyncUnboundJsonWithoutResolving(GameTestHelper helper) {
+54         RollingMachineRecipe oldRolling = oldRolling();
+55         JsonObject rollingJson = oldRolling.jsonPayload(); rollingJson.add("ingredient", unbound());
+56         var rollingSerializer = new RollingMachineRecipe.Serializer();
+57         RollingMachineRecipe rolling = rollingSerializer.fromJson(oldRolling.getId(), rollingJson);
+58         PrecisionAssemblerRecipe oldPrecision = oldPrecision();
+59         JsonObject precisionJson = oldPrecision.jsonPayload();
+60         precisionJson.getAsJsonArray("inputs").get(0).getAsJsonObject().add("ingredient", unbound());
+61         var precisionSerializer = new PrecisionAssemblerRecipe.Serializer();
+62         PrecisionAssemblerRecipe precision = precisionSerializer.fromJson(oldPrecision.getId(), precisionJson);
+63         ElectrolyzerRecipe oldElectro = oldElectro();
+64         JsonObject electroJson = oldElectro.jsonPayload(); electroJson.add("ingredient", unbound());
+65         var electroSerializer = new ElectrolyzerRecipe.Serializer();
+66         ElectrolyzerRecipe electro = electroSerializer.fromJson(oldElectro.getId(), electroJson);
+67         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
+68         try {
+69             rollingSerializer.toNetwork(buffer, rolling);
+70             helper.assertTrue(rolling.signature().equals(rollingSerializer.fromNetwork(rolling.getId(), buffer).signature()),
+71                     "Rolling wire changed the unbound JSON signature");
+72             precisionSerializer.toNetwork(buffer, precision);
+73             helper.assertTrue(precision.signature().equals(precisionSerializer.fromNetwork(precision.getId(), buffer).signature()),
+74                     "Precision wire changed the unbound JSON signature");
+75             electroSerializer.toNetwork(buffer, electro);
+76             helper.assertTrue(electro.signature().equals(electroSerializer.fromNetwork(electro.getId(), buffer).signature()),
+77                     "Electrolyzer wire changed the unbound JSON signature");
+78             helper.assertTrue(buffer.readableBytes() == 0, "Recipe wire left unread bytes");
+79             helper.assertFalse(rolling.available() || precision.available() || electro.available(),
+80                     "An unbound tag was treated as a valid recipe");
+81         } finally { buffer.release(); }
+82         helper.succeed();
+83     }
+84 
+85     @GameTest(template = "rocket_test", batch = "recipe_signatures", timeoutTicks = 100)
+95             machine.load(saved); RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+96         });
+97         helper.runAtTickTime(15, () -> {
+98             var machine = RollingMachineGameTestFixtures.controller(helper);
+99             cut.get().assertUnchanged(helper, machine.saveWithFullMetadata());
+100             int ticks = machine.processProgress().orElseThrow().progressTicks();
+101             machine.load(machine.saveWithFullMetadata());
+102             helper.assertTrue(machine.processProgress().orElseThrow().progressTicks() == ticks, "First load changed progress");
+103             machine.load(machine.saveWithFullMetadata());
+104             helper.assertTrue(machine.processProgress().orElseThrow().progressTicks() == ticks, "Second load changed progress");
+105             RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+106         });
+107         helper.runAtTickTime(90, () -> {
+108             cut.get().assertUnchanged(helper, RollingMachineGameTestFixtures.controller(helper).saveWithFullMetadata());
+109             helper.succeed();
+110         });
+111     }
+112 
+113     @GameTest(template = "rocket_test", batch = "recipe_signatures", timeoutTicks = 40)
+129             machine.load(saved); RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+130         });
+131         helper.runAtTickTime(20, () -> {
+132             var machine = RollingMachineGameTestFixtures.controller(helper);
+133             cut.get().assertUnchanged(helper, machine.saveWithFullMetadata());
+134             machine.load(machine.saveWithFullMetadata()); machine.load(machine.saveWithFullMetadata());
+135             RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+136         });
+137         helper.runAtTickTime(30, () -> {
+138             cut.get().assertUnchanged(helper, RollingMachineGameTestFixtures.controller(helper).saveWithFullMetadata());
+139             helper.succeed();
+140         });
+141     }
+142 
+143     @GameTest(template = "empty", batch = "recipe_signatures", timeoutTicks = 60)
+144     public static void precisionHistoricalPartialIsRetainedAcrossTicksAndTwoNbtLoads(GameTestHelper helper) {
+145         AtomicReference<RetainedCut> cut = new AtomicReference<>();
+146         PrecisionAssemblerGameTests.placeStructure(helper);
+147         helper.runAtTickTime(8, () -> {
+148             PrecisionAssemblerGameTests.insertInputs(helper);
+154             machine.load(saved); PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+155         });
+156         helper.runAtTickTime(12, () -> {
+157             var machine = PrecisionAssemblerGameTests.controller(helper);
+158             cut.get().assertUnchanged(helper, machine.saveWithFullMetadata());
+159             int ticks = machine.processProgress().orElseThrow().progressTicks();
+160             machine.load(machine.saveWithFullMetadata()); machine.load(machine.saveWithFullMetadata());
+161             helper.assertTrue(machine.processProgress().orElseThrow().progressTicks() == ticks, "Loads changed precision progress");
+162             PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+163         });
+164         helper.runAtTickTime(45, () -> {
+165             cut.get().assertUnchanged(helper, PrecisionAssemblerGameTests.controller(helper).saveWithFullMetadata());
+166             helper.succeed();
+167         });
+168     }
+169 
+170     @GameTest(template = "empty", batch = "recipe_signatures", timeoutTicks = 40)
+171     public static void precisionHistoricalPreparedJournalIsRetainedWithoutResourceReplay(GameTestHelper helper) {
+172         AtomicReference<RetainedCut> cut = new AtomicReference<>();
+173         PrecisionAssemblerGameTests.placeStructure(helper);
+174         helper.runAtTickTime(8, () -> {
+175             PrecisionAssemblerGameTests.insertInputs(helper); var machine = PrecisionAssemblerGameTests.controller(helper);
+181             machine.load(saved); PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+182         });
+183         helper.runAtTickTime(20, () -> {
+184             var machine = PrecisionAssemblerGameTests.controller(helper);
+185             cut.get().assertUnchanged(helper, machine.saveWithFullMetadata());
+186             machine.load(machine.saveWithFullMetadata()); machine.load(machine.saveWithFullMetadata());
+187             PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+188         });
+189         helper.runAtTickTime(30, () -> {
+190             cut.get().assertUnchanged(helper, PrecisionAssemblerGameTests.controller(helper).saveWithFullMetadata());
+191             helper.succeed();
+192         });
+193     }
+194 
+195     @GameTest(template = "empty", batch = "recipe_signatures", timeoutTicks = 100)
+196     public static void electrolyzerHistoricalPartialIsRetainedAcrossTicksAndTwoNbtLoads(GameTestHelper helper) {
+197         ElectrolyzerBlockEntity machine = seedElectro(helper, true); CompoundTag saved = machine.saveWithoutMetadata();
+198         legacyProgress(saved, oldElectro().processDefinition(), 40,
+199                 saved.getCompound(ProcessStatePersistence.ROOT).getLong("resource_revision"), ELECTRO_SHA);
+200         saved.getCompound("arce_machine").putInt("progress", 40);
+201         saved.getCompound("arce_machine").putString("active_recipe", oldElectro().getId().toString());
+202         RetainedCut cut = new RetainedCut(retainedRoots(saved), Map.of()); machine.load(saved);
+203         helper.runAtTickTime(8, () -> {
+204             cut.assertUnchanged(helper, machine.saveWithoutMetadata()); int ticks = machine.progress();
+205             machine.load(machine.saveWithoutMetadata()); machine.load(machine.saveWithoutMetadata());
+206             helper.assertTrue(machine.progress() == ticks, "Loads changed electrolyzer progress");
+207         });
+208         helper.runAtTickTime(90, () -> { cut.assertUnchanged(helper, machine.saveWithoutMetadata()); helper.succeed(); });
+209     }
+210 
+211     @GameTest(template = "empty", batch = "recipe_signatures", timeoutTicks = 35)
+212     public static void electrolyzerHistoricalPreparedJournalIsRetainedWithoutResourceReplay(GameTestHelper helper) {
+213         ElectrolyzerBlockEntity machine = seedElectro(helper, false); var recipe = oldElectro();
+214         CompoundTag saved = machine.saveWithoutMetadata();
+215         long revision = saved.getCompound(ProcessStatePersistence.ROOT).getLong("resource_revision");
+216         ProcessResourceSnapshot before = new ProcessResourceSnapshot(revision, Map.of(
+217                 key(ProcessResourceKind.ITEM, "item_input", ModItems.EMPTY_CANISTER.getId().toString()), new ProcessResourceBalance(2, 16),
+218                 key(ProcessResourceKind.FLUID, "fluid_input", "minecraft:water"), new ProcessResourceBalance(1_000, 4_000),
+219                 key(ProcessResourceKind.ITEM, "item_output", ModItems.HYDROGEN_CANISTER.getId().toString()), new ProcessResourceBalance(0, 16),
+220                 key(ProcessResourceKind.ITEM, "item_output", ModItems.OXYGEN_CANISTER.getId().toString()), new ProcessResourceBalance(0, 16)));
+221         legacyProgress(saved, recipe.processDefinition(), 100, revision, ELECTRO_SHA);
+222         saved.getCompound("arce_machine").putInt("progress", 100);
+226         saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(ProcessTransactionJournal.prepared(
+227                 UUID.randomUUID(), owner, ProcessMachineLogic.simulate(recipe.processDefinition(), before).plan().orElseThrow())));
+228         RetainedCut cut = new RetainedCut(retainedRoots(saved), Map.of()); machine.load(saved);
+229         helper.runAtTickTime(8, () -> {
+230             cut.assertUnchanged(helper, machine.saveWithoutMetadata());
+231             machine.load(machine.saveWithoutMetadata()); machine.load(machine.saveWithoutMetadata());
+232         });
+233         helper.runAtTickTime(25, () -> { cut.assertUnchanged(helper, machine.saveWithoutMetadata()); helper.succeed(); });
+234     }
+235 
+236     @GameTest(template = "rocket_test", batch = "recipe_signatures", timeoutTicks = 40)
+237     public static void rollingCurrentPreparedJournalRecoversOriginalPlanOnce(GameTestHelper helper) {
+238         RollingMachineGameTestFixtures.placeStructure(helper);
+240             seedRolling(helper, false);
+241             var machine = RollingMachineGameTestFixtures.controller(helper);
+242             var recipe = (RollingMachineRecipe) helper.getLevel().getRecipeManager()
+243                     .byKey(new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, "rolling_iron_bars")).orElseThrow();
+244             helper.assertTrue(recipe.hasTagIngredients(), "Current journal fixture did not use the live tag recipe");
+245             helper.assertFalse(recipe.signature().equals(oldRolling().signature()),
+246                     "Current tag recipe was confused with historical item-only JSON");
+247             ProcessResourceSnapshot before = rollingBefore(machine.resourceRevision());
+248             CompoundTag saved = machine.saveWithFullMetadata();
+249             legacyProgress(saved, recipe.processDefinition(), 100, before.revision(), recipe.signature());
+250             saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(ProcessTransactionJournal.prepared(
+253             new RecipeSignatureMigration().save(saved, recipe.getId().toString());
+254             machine.load(saved); RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+255         });
+256         helper.runAtTickTime(20, () -> {
+257             var machine = RollingMachineGameTestFixtures.controller(helper); assertRollingComplete(helper, 0);
+258             helper.assertFalse(machine.saveWithFullMetadata().contains(ProcessJournalPersistence.ROOT), "Current journal was not cleared");
+259             machine.load(machine.saveWithFullMetadata()); machine.load(machine.saveWithFullMetadata());
+260             RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());
+261         });
+262         helper.runAtTickTime(30, () -> { assertRollingComplete(helper, 0); helper.succeed(); });
+263     }
+264 
+265     @GameTest(template = "empty", batch = "recipe_signatures", timeoutTicks = 35)
+266     public static void electrolyzerCurrentPreparedJournalRecoversOriginalPlanOnce(GameTestHelper helper) {
+267         ElectrolyzerBlockEntity machine = seedElectro(helper, false);
+268         var recipe = (ElectrolyzerRecipe) helper.getLevel().getRecipeManager()
+269                 .byKey(new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, "electrolyzer_water")).orElseThrow();
+270         CompoundTag saved = machine.saveWithoutMetadata();
+271         long revision = saved.getCompound(ProcessStatePersistence.ROOT).getLong("resource_revision");
+272         ProcessResourceSnapshot before = new ProcessResourceSnapshot(revision, Map.of(
+273                 key(ProcessResourceKind.ITEM, "item_input", ModItems.EMPTY_CANISTER.getId().toString()), new ProcessResourceBalance(2, 16),
+274                 key(ProcessResourceKind.FLUID, "fluid_input", "minecraft:water"), new ProcessResourceBalance(1_000, 4_000),
+275                 key(ProcessResourceKind.ITEM, "item_output", ModItems.HYDROGEN_CANISTER.getId().toString()), new ProcessResourceBalance(0, 16),
+276                 key(ProcessResourceKind.ITEM, "item_output", ModItems.OXYGEN_CANISTER.getId().toString()), new ProcessResourceBalance(0, 16)));
+277         legacyProgress(saved, recipe.processDefinition(), 100, revision, recipe.signature());
+278         saved.getCompound("arce_machine").putInt("progress", 100);
+282         saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(ProcessTransactionJournal.prepared(
+283                 UUID.randomUUID(), owner, ProcessMachineLogic.simulate(recipe.processDefinition(), before).plan().orElseThrow())));
+284         new RecipeSignatureMigration().save(saved, recipe.getId().toString()); machine.load(saved);
+285         helper.runAtTickTime(8, () -> {
+286             assertElectroComplete(helper, machine, 0);
+287             machine.load(machine.saveWithoutMetadata()); machine.load(machine.saveWithoutMetadata());
+288         });
+289         helper.runAtTickTime(25, () -> { assertElectroComplete(helper, machine, 0); helper.succeed(); });
+290     }
+291 
+292     private static void legacyProgress(CompoundTag parent, ProcessDefinition recipe, int ticks, long revision, String sha) {
+293         parent.remove(RecipeSignatureMigration.ROOT);
+294         parent.put(ProcessStatePersistence.ROOT, ProcessStatePersistence.encode(new ProcessStateData(
+295                 ProcessMachineState.RUNNING, revision, Optional.of(new ProcessProgress(recipe.id(), ticks,
+296                         (long) ticks * recipe.energyPerTick())), Optional.of(sha), Optional.empty(), ProcessFailure.NONE)));
+297     }
+298 
+299     private static CompoundTag retainedRoots(CompoundTag parent) {
+300         CompoundTag selected = new CompoundTag();
+301         for (String root : List.of(ProcessStatePersistence.ROOT, ProcessJournalPersistence.ROOT,
+323         return new RetainedCut(retainedRoots(parent), Map.copyOf(ports));
+324     }
+325 
+326     private record RetainedCut(CompoundTag controller, Map<BlockEntity, CompoundTag> ports) {
+327         private void assertUnchanged(GameTestHelper helper, CompoundTag saved) {
+328             helper.assertFalse(saved.contains(RecipeSignatureMigration.ROOT), "Unwitnessed work was marked current");
+329             helper.assertTrue(controller.equals(retainedRoots(saved)), "Old work/resources were rewritten or replayed");
+330             for (var entry : ports.entrySet()) {
+331                 helper.assertTrue(entry.getValue().equals(retainedRoots(entry.getKey().saveWithoutMetadata())),
+332                         "Port input/output/fluid/energy changed while historical work was paused");
+333             }
+334         }
+335     }
+336 
+353                 key(ProcessResourceKind.FLUID, "fluid_input", "minecraft:water"), new ProcessResourceBalance(100, 4_000),
+354                 key(ProcessResourceKind.ITEM, "item_output", "minecraft:iron_bars"), new ProcessResourceBalance(0, 64)));
+355     }
+356 
+357     private static void assertRollingComplete(GameTestHelper helper, int energy) {
+358         var input = RollingMachineGameTestFixtures.port(helper, RollingMachineGameTestFixtures.ITEM_INPUT);
+359         var output = RollingMachineGameTestFixtures.port(helper, RollingMachineGameTestFixtures.ITEM_OUTPUT);
+360         helper.assertTrue(input.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow().getStackInSlot(0).isEmpty(),
+361                 "Rolling retained a consumed input");
+362         ItemStack result = output.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow().getStackInSlot(0);
+363         helper.assertTrue(result.is(Items.IRON_BARS) && result.getCount() == 8, "Rolling result was not produced exactly once");
+364         helper.assertTrue(RollingMachineGameTestFixtures.port(helper, RollingMachineGameTestFixtures.FLUID_INPUT)
+365                 .getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElseThrow().getFluidInTank(0).isEmpty(), "Rolling water changed incorrectly");
+366         helper.assertTrue(RollingMachineGameTestFixtures.port(helper, RollingMachineGameTestFixtures.ENERGY_INPUT)
+367                 .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow().getEnergyStored() == energy, "Rolling energy changed incorrectly");
+368     }
+369 
+370     private static ElectrolyzerBlockEntity seedElectro(GameTestHelper helper, boolean energy) {
+371         helper.setBlock(BlockPos.ZERO, ModBlocks.ELECTROLYZER.get());
+372         var machine = (ElectrolyzerBlockEntity) helper.getBlockEntity(BlockPos.ZERO);
+373         machine.getCapability(ForgeCapabilities.ITEM_HANDLER, net.minecraft.core.Direction.UP).resolve().orElseThrow()
+374                 .insertItem(0, new ItemStack(ModItems.EMPTY_CANISTER.get(), 2), false);
+375         machine.getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElseThrow()
+376                 .fill(new FluidStack(Fluids.WATER, 1_000), IFluidHandler.FluidAction.EXECUTE);
+377         if (energy) {
+378             var storage = machine.getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow();
+379             storage.receiveEnergy(1_000, false); storage.receiveEnergy(1_000, false);
+380         }
+381         return machine;
+382     }
+383 
+384     private static void assertElectroComplete(GameTestHelper helper, ElectrolyzerBlockEntity machine, int energy) {
+385         helper.assertTrue(machine.menuInventory().getStackInSlot(ElectrolyzerBlockEntity.SLOT_INPUT).isEmpty(), "Electrolyzer retained input");
+386         helper.assertTrue(machine.menuInventory().getStackInSlot(ElectrolyzerBlockEntity.SLOT_HYDROGEN).getCount() == 1
+387                 && machine.menuInventory().getStackInSlot(ElectrolyzerBlockEntity.SLOT_OXYGEN).getCount() == 1,
+388                 "Electrolyzer outputs were not produced exactly once");
+389         helper.assertTrue(machine.waterAmount() == 0 && machine.energyStored() == energy, "Electrolyzer resources changed incorrectly");
+390         helper.assertFalse(machine.saveWithoutMetadata().contains(ProcessJournalPersistence.ROOT), "Electrolyzer retained its journal");
+391     }
+392 
+393     private static RollingMachineRecipe oldRolling() {
+394         var id = new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, "rolling_iron_bars");
+395         return new RollingMachineRecipe.Serializer().fromJson(id,
+404         var id = new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, "electrolyzer_water");
+405         return new ElectrolyzerRecipe.Serializer().fromJson(id,
+406                 LegacyKernelRecipeProof.payload(id, "advancedrocketrycommunity:electrolyzing"));
+407     }
+408     private static com.google.gson.JsonElement unbound() { return JsonParser.parseString("{\"tag\":\"arce_test:unbound\"}"); }
+409     private static ProcessResourceKey key(ProcessResourceKind kind, String channel, String id) {
+410         return new ProcessResourceKey(kind, channel, id);
+411     }
+412 }
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RecipeSignatureSaveEventGameTests.java 715ff5fdd969ed321f887db9fb011e2c973ab47ab73ef0b5da76797ae27bdd5a
+33                     carrier.put(root, oversized);
+34                     ListTag entities = new ListTag(); entities.add(carrier);
+35                     CompoundTag outgoing = new CompoundTag(); outgoing.put("block_entities", entities);
+36                     chunk.setUnsaved(false);
+37                     rejected(helper, new ChunkDataEvent.Save(chunk, helper.getLevel(), outgoing));
+38                     helper.assertTrue(chunk.isUnsaved(), "Initial recipe refusal lost retry flag: " + id + "/" + root);
+39                     chunk.setUnsaved(false);
+40                     rejected(helper, new ChunkDataEvent.Save(chunk, helper.getLevel(), new CompoundTag()));
+41                     helper.assertTrue(chunk.isUnsaved(), "Empty recipe retry lost Level-owned denial: " + id + "/" + root);
+42                 } finally {
+43                     // No live BE/resource was changed: only this synthetic outgoing tag existed.
+44                     GuardedChunkSaves.restoreGameTestFixture(helper.getLevel(), chunk.getPos());
+45                 }
+58         helper.succeed();
+59     }
+60 
+61     private static void rejected(GameTestHelper helper, ChunkDataEvent.Save event) {
+62         try { MinecraftForge.EVENT_BUS.post(event); helper.fail("Oversized recipe/empty retry was admitted"); }
+63         catch (IllegalStateException refused) {
+64             helper.assertTrue(REASON.equals(refused.getMessage()), "Different failure masked recipe save denial");
+65         }
+66     }
+67     private RecipeSignatureSaveEventGameTests() { }
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/SatelliteReviewGameTests.java 61ef6df0806127b639398a508bba4d56db339cedb8985cddbfa8a75efcda5929
+82         try {
+83             Files.createDirectory(obstacle);
+84             try {
+85                 AdvancedRocketryCommunity.LOGGER.info("ARCE_SATELLITE_EXPECTED_SAVE_FAILURE testing the idle-launch barrier");
+86                 press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.UNSUPPORTED_DATA);
+87                 helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
+88                         "A launch whose flush failed consumed the package");
+89                 press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.UNSUPPORTED_DATA);
+90                 helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
+91                         "A replay consumed the package before the registry was durable");
+92             } finally {
+93                 Files.delete(obstacle);
+94             }
+130         SatelliteIdentity survey = surveyIdentity(owner.getUUID());
+131         insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, bound(ModItems.SATELLITE_CONTROL_CHIP.get(), survey));
+132         insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_PACKAGE, bound(ModItems.SATELLITE_PACKAGE.get(), survey));
+133         power(terminal);
+134         terminal.handleButton(owner, SatelliteTerminalMenu.BUTTON_LAUNCH);
+135         helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),
+136                 "A launch on a blocked registry consumed the package");
+137 
+138         helper.runAfterDelay(22, () -> {
+139             helper.assertTrue(receiver.status(0) == SolarLinks.LinkStatus.UNAVAILABLE && receiver.output() == 0,
+371     }
+372 
+373     private static void press(GameTestHelper helper, SatelliteTerminalBlockEntity terminal, FakePlayer player,
+374                               int button, SatelliteOperationCode expected) {
+375         terminal.handleButton(player, button);
+376         int actual = terminal.saveWithoutMetadata().getCompound("SatelliteTerminal").getInt("last_result");
+377         helper.assertTrue(actual == expected.ordinal(), "Button " + button + ": expected " + expected + " but got "
+378                 + SatelliteOperationCode.values()[actual]);
+379     }
+380 
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerMigrationBindingGameTests.java c654f71f5c4613ac2ee44bcb553bf2ac9287ddd5b7610f6359e00bea8d8e1525
+113             MinecraftForge.EVENT_BUS.addListener(fault);
+114             try {
+115                 // Synchronous real-manager work prevents a later world tick from
+116                 // hiding the cleared dirty flag or repairing the stale disk root.
+117                 manager.tick(level.getServer());
+118                 helper.assertTrue(fault.fired >= 1, "Energy binding save fault was not exercised");
+119                 if (failures == 2) {
+120                     helper.assertTrue(fault.fired == 2, "Energy binding was not retried at the second barrier");
+121                     helper.assertTrue("preparing".equals(controller.saveWithFullMetadata()
+122                                     .getCompound("arce_precision_resources").getString("phase")),
+186             throw new IllegalStateException("Cannot read saved Energy binding fixture", exception);
+187         }
+188     }
+189 
+190     private static final class BindingSaveFailure implements Consumer<ChunkDataEvent.Save> {
+191         private final ServerLevel level;
+192         private final BlockPos position;
+193         private final int limit;
+194         private int fired;
+195 
+210                 if (entity.getInt("x") == position.getX() && entity.getInt("y") == position.getY()
+211                         && entity.getInt("z") == position.getZ()
+212                         && entity.getCompound("arce_part_binding").getLong("generation") == GENERATION) {
+213                     fired++;
+214                     throw new IllegalStateException("Intentional Energy-only migration binding save failure");
+215                 }
+216             }
+217         }
+218     }
+219 }
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/DeferredProcessDefinition.java 73da5ac30c00a5870ad5cc990825bd3d7c9d80efcf9e47a14db0cf2cc93e427d
+4 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessDefinition;
+5 import java.util.Objects;
+6 import java.util.function.Supplier;
+7 
+8 /** Recipe-local bounded resolution cache, invalidated by tag rebinding rather than parsing. */
+9 public final class DeferredProcessDefinition {
+10     private final String id;
+11     private final Supplier<ProcessDefinition> factory;
+12     private long generation = Long.MIN_VALUE;
+13     private ProcessDefinition definition;
+25 
+26     public ProcessDefinition get() {
+27         refresh();
+28         if (failure != null) {
+29             throw failure;
+30         }
+31         return definition;
+32     }
+33 
+34     private void refresh() {
+42         try {
+43             definition = Objects.requireNonNull(factory.get());
+44         } catch (IllegalArgumentException exception) {
+45             failure = exception;
+46             AdvancedRocketryCommunity.LOGGER.error("Disabling machine recipe {} until tag reload: {}",
+47                     id, exception.getMessage());
+48         }
+49     }
+50 }
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/RecipeSignatureProtection.java 51e41e64013d3c410c76a0a5d07f2c8b92d54e67737ad4ea30808d5d183641f9
+14 import net.minecraftforge.event.level.ExplosionEvent;
+15 import net.minecraftforge.eventbus.api.SubscribeEvent;
+16 import net.minecraftforge.fml.common.Mod;
+17 
+18 /** Refuse removal and veto oversized saves without asking LevelChunk to omit a BlockEntity. */
+19 @Mod.EventBusSubscriber(modid = AdvancedRocketryCommunity.MOD_ID)
+20 public final class RecipeSignatureProtection {
+21     private static final Set<String> CONTROLLER_IDS = Set.of(
+22             "advancedrocketrycommunity:rolling_machine",
+23             "advancedrocketrycommunity:precision_assembler",
+52     static void requireBoundedChunk(CompoundTag data, int maximumEntities, Runnable retainRetry) {
+53         var entities = data.getList("block_entities", Tag.TAG_COMPOUND);
+54         if (entities.size() > maximumEntities) {
+55             retainRetry.run();
+56             throw new IllegalStateException("Chunk block-entity count exceeds its physical bound");
+57         }
+58         for (int index = 0; index < entities.size(); index++) {
+59             CompoundTag entity = entities.getCompound(index);
+60             if (CONTROLLER_IDS.contains(entity.getString("id")) && !RecipeSignatureMigration.bounded(entity)) {
+61                 retainRetry.run();
+62                 throw new IllegalStateException("Refusing chunk save with oversized recipe input; back up and repair first");
+63             }
+64         }
+65     }
+66 
+67     /** Shared by Forge entity hooks and events; never load a missing chunk. */
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/GuardedChunkSaves.java 14132bf89fc3f4b6589a3ef227e70bc72bf287f94fe86336cb29de52c18aa487
+47     @SubscribeEvent(priority = EventPriority.HIGHEST)
+48     public static void beforeSave(ChunkDataEvent.Save event) {
+49         if (event.getLevel() instanceof ServerLevel level) {
+50             var reason = state(level).reason(event.getChunk().getPos().toLong());
+51             if (reason.isPresent()) { fail(event, reason.orElseThrow()); }
+52         }
+53     }
+54 
+55     public static void refuse(ChunkDataEvent.Save event, String reason) {
+56         if (event.getLevel() instanceof ServerLevel level) {
+57             state(level).deny(event.getChunk().getPos().toLong(), reason);
+58         }
+59         fail(event, reason);
+60     }
+61 
+62     private static void fail(ChunkDataEvent.Save event, String reason) {
+63         event.getChunk().setUnsaved(true);
+64         throw new IllegalStateException(reason);
+65     }
+66 
+67     /** Disposable GT fixtures only; a native DedicatedServer has no online guard-reset operation. */
+68     public static void restoreGameTestFixture(ServerLevel level, ChunkPos position) {
+69         if (!(level.getServer() instanceof GameTestServer)) {
+
+SOURCE src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/DiscoveryRecoveryGameTests.java c302c673d38379e5e5d93ad7f92b1178ef9caf96de62e96a7d9703f9ccd6c64c
+68                     .resolve(SatelliteMissionSavedData.DATA_NAME + ".dat.arce-pending");
+69             java.nio.file.Files.createDirectory(obstacle);
+70             try {
+71                 AdvancedRocketryCommunity.LOGGER.info("ARCE_DISCOVERY_EXPECTED_SAVE_FAILURE testing launch acknowledgment");
+72                 helper.assertTrue(manager.launch(owner, identity, PlanetaryContent.VENUS).code()
+73                         == SatelliteOperationCode.UNSUPPORTED_DATA, "Unacknowledged launch was reported successful");
+74             } finally { java.nio.file.Files.delete(obstacle); }
+75             helper.assertTrue(manager.launch(owner, identity, PlanetaryContent.VENUS).success(), "Second mission did not launch");
+76             var acknowledgedLaunch = SatelliteMissionSavedData.load(NbtIo.readCompressed(server.getWorldPath(LevelResource.ROOT)
+77                     .resolve("data").resolve(SatelliteMissionSavedData.DATA_NAME + ".dat").toFile()).getCompound("data"));
+GT finite-context check completed

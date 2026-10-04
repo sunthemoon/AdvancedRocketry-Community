@@ -1,0 +1,358 @@
+{
+  "base_head": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+  "baseline_manifest_sha256": "b703053baef3d26fe1ae5f6e3b455d31dba4cff0cc02accb10f1e13608aaf699",
+  "branch": "codex/v1.8.0-classic-content",
+  "changes": [
+    {
+      "before_sha256": "6ae19c89a0d327bad4faae759ef577ccad47f940aeebed5d7efb9ed9abdc2608",
+      "bytes": 2143,
+      "path": "gradle.properties",
+      "sha256": "4331c961cc2af42c9b764cf588393a59158e938003eece905de51fe4fc5b56cb"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 13459,
+      "path": "scripts/run_v180_combustion_smoke.py",
+      "sha256": "0504ff862fa7bf9550da11321bcedf6aba8ab18fc10660514e7226406de1194d"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 996,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/combustion_generator.json",
+      "sha256": "26cb9dc404c0dbfd0baf8c5b22217981c51df333ae6105ef85bd559bc0f82ef3"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 253,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/combustion_generator.json",
+      "sha256": "deb43ef4a166d587f816bb02c6f5fccc61720b3fbd9cfbd18791f243726fb050"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 257,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/combustion_generator_lit.json",
+      "sha256": "1183ba49600b551be701f5dc8d37191d1c89946515e84c747b8f54163493de8f"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 70,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/combustion_generator.json",
+      "sha256": "61bb968f893f081f36e7efadd063e791c2efe35e5c6d4f9bef3b973e0b375625"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 171,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/combustion_front.png",
+      "sha256": "9c77c0075e764f0001f5f9d420c62f6ed6aa6c6eeed71196b79a713d29267f18"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 212,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/combustion_front_lit.png",
+      "sha256": "a81b718d95f08b0a535e318b9c403327941377c97008e0e0410f6474a7fa0286"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 159,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/combustion_side.png",
+      "sha256": "9e602ef88933f8782f6e6feadd866520916b4b79e46f8d191cf600b8164ba892"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 157,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/combustion_top.png",
+      "sha256": "42b3467756440bca7f6f4cc95a0d0470b6f5c6513ac1ed42580c25e2f5bc0092"
+    },
+    {
+      "before_sha256": "6bab5008b7e16a23d79a026842a820e41ba0fe7404a7e028f8eb5932b0b7ccb5",
+      "bytes": 9152,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "sha256": "251d86d62201494dc07f701680e65bb30e8774c0ab0726774cc777fd2b9f195b"
+    },
+    {
+      "before_sha256": "1a70b482c8953b15c9496de113004861b930d62394d03fd53e94c7afb800b54c",
+      "bytes": 8598,
+      "path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "sha256": "b71319de4e585ec2d6da9a109eb91a7fb5bca0cdec69685b5e34546ee2d3903d"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 691,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/redstone/combustion_generator.json",
+      "sha256": "0792edf4f78ace13bc2b3c10f34b1ce349c5d7201b720f0258303534f1e7eae9"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 440,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/combustion_generator.json",
+      "sha256": "18214a4c80cb5c8660f550cf5d0b7e1bff7941e56d4599b4c80a74f189585275"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 471,
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/combustion_generator.json",
+      "sha256": "fec32721876c58aec055f94e2c7a6dff750e13e8edcd3148f19cc38cd5f75c97"
+    },
+    {
+      "before_sha256": "47751d3f7cd539664c60a412a7fb8379381a7c0ba6789f7642dc66d192effe81",
+      "bytes": 2724,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "sha256": "e03d8a07455a2315528acf545e8bee5641d225db95ff0c486e21a701c0007c4e"
+    },
+    {
+      "before_sha256": "2946b488bed06056802dd40ae5497b20bb11a3e4cecc51ad94eda52bc064a5d0",
+      "bytes": 892,
+      "path": "src/generated/v1.8/resources/data/minecraft/tags/blocks/needs_stone_tool.json",
+      "sha256": "10f351694b361e4e9dc7f09759a4e195e6d3bd60be95e982b193b114a5a12fdf"
+    },
+    {
+      "before_sha256": "ea2a45360f46f19294b3e40dc9be086cb99dab1e851b07ddae8d09c5394dac57",
+      "bytes": 27680,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/AdvancedRocketryCommunity.java",
+      "sha256": "3658a178143ee6f60eca55518d108cd09e47b38674890ec6a5168e73ed46a72b"
+    },
+    {
+      "before_sha256": "31807c97a3fddf3cc67daa5b3a50e9b63d824af80fb7ab5015c50213660285f7",
+      "bytes": 6113,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/ClientBootstrap.java",
+      "sha256": "8ec73e4587747cebb8399e59a000fa7ac1743774d9d898f25fbcfadf533bbc85"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 4025,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/CombustionGeneratorScreen.java",
+      "sha256": "6fc2f40b6a90a54351331ef843e09db023d30b92959cb27244fde1ef4842c141"
+    },
+    {
+      "before_sha256": "cc2da89bde80c6196e6b10e0702e849f23a2c01882c1a81764292a8d38ed60b6",
+      "bytes": 30848,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfig.java",
+      "sha256": "a986cc7f4f1055f5efcca2505edebe7f9e6469f358b7d7d427ec7cb170fe08de"
+    },
+    {
+      "before_sha256": "a311c85b4be86eb916fd5a7e97c79765392048ea47b184ef2b7e83014554bb37",
+      "bytes": 2820,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/BootstrapDataGenerators.java",
+      "sha256": "4b75edb8579f0b7d6b6c98d6156810038a96cb629dde81da9f6897db4b7d19b4"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 4273,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CombustionArt.java",
+      "sha256": "6b7af8e637009f10e35e10f4c234333a01574ad45e6d736346ec6e9eeb52491d"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 2153,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CombustionModels.java",
+      "sha256": "8a7e466373ea30590514450574df0e549431d6b48bc39724d853c135de45e3bc"
+    },
+    {
+      "before_sha256": "632b1cfaa19a19674afd7a6c75b50aa225909e9fb28629037a996b3fbeb8b293",
+      "bytes": 8872,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "sha256": "19e8a6b52ff1d0c84de02cc6e8036de56288db022cd2c00721ef1b1fca74dfb7"
+    },
+    {
+      "before_sha256": "7a61061d05b2e4f2fd1e231686584b187304432074e0545ef9490c1dc40fabf2",
+      "bytes": 14263,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialData.java",
+      "sha256": "45bb99db5ee0533913eb22082ad6f83e2f196c2378abac8dacabd952fbf3516b"
+    },
+    {
+      "before_sha256": "bfc0aecd05bdf26adbde4b2ebddcbcb79bb7b3db52d56e9550c40e38a5b63ae9",
+      "bytes": 14188,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180MaterialRecipes.java",
+      "sha256": "ae58686461c817f6fa86bd49b36069297991bedcbcbb62fd3d10c5f45bd71492"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 25114,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/CombustionGeneratorGameTests.java",
+      "sha256": "931b081d8a7cc1729ff370274aff54dda45b7528913f1d52741b2db5c489b3cf"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 1801,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionBurn.java",
+      "sha256": "7c1f8983b601541b28eee5fa55892f74d3e539848bdb0793e888bf4e151cc270"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 5940,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionGeneratorBlock.java",
+      "sha256": "2b7f9b0655bd7b3a5fca9080db4d6de13bbf5e3c4d7772df7fb75a2cde72a3af"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 12902,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionGeneratorBlockEntity.java",
+      "sha256": "a623810ece45a6532d492848ffce6c96f79fd5de49b20096199c28cfedd9ccee"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 7574,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionGeneratorMenu.java",
+      "sha256": "27b25c3fcdf1f8c64eebfa91e82f5a517c15f5c53348c4f9060f70e51bcf837f"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 2452,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionPorts.java",
+      "sha256": "5b3b37650f55de6b2717c9d80e5f28862fdea9ae7fcd8a31348f395375091f04"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 2592,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionProtection.java",
+      "sha256": "3c4a01f858cc71bc2c4ef1ae42a56f464db4380165e65c32425facd9412f7c0b"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 6290,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionReleaseTestCommands.java",
+      "sha256": "6dab9b3460c8b76284750fbbd3138474660dcd7cbda99c1f4b5e34572cfa3939"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 4256,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionSave.java",
+      "sha256": "1a172a826c5aab3ed541f10518d78e11c203ba9f8d442703964b891ddf896c7e"
+    },
+    {
+      "before_sha256": "94992d35d7d11bcf288c52b56f47d381206d49aa02bc1fc890e70f7fe31ebf59",
+      "bytes": 11500,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlockEntities.java",
+      "sha256": "be807456bf795e2e109efe7916caa27f908cec30775509be764518b1ac1964df"
+    },
+    {
+      "before_sha256": "a85c8c0611807599741727e37baf4fa37747d8cf01dbb67664a7671d1993b69e",
+      "bytes": 13783,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModBlocks.java",
+      "sha256": "d99a88a4197c7ba2ac4c99bef026ab8f2b92607e9507891f63cc7cd7b1f9548e"
+    },
+    {
+      "before_sha256": "ab0e9e0360e392badd24a529262739f2cfebc6ca5a05b4a7e6ed780a2aa26f9c",
+      "bytes": 5642,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModCreativeTabs.java",
+      "sha256": "6085a685cb24e358abe52a2f04f71cac933d355c0efaf2813540aa4d19ff2c4b"
+    },
+    {
+      "before_sha256": "cdc11e4957f32090e09ad803c3632af3fd46e927e3544d0737642be4e7e695d6",
+      "bytes": 11013,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModItems.java",
+      "sha256": "8b0fae4e35f805ce358fa4adbe5990f0e4eb6999b149a1b66123c0e37aeb0c39"
+    },
+    {
+      "before_sha256": "39faeebb6726cbda953738fa5d83d5841703928b07a5d720ce41424146c6a488",
+      "bytes": 4988,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/registry/ModMenuTypes.java",
+      "sha256": "f1d0109456af02171c2d437c2cf87afc03f7655d36147275f0a2a3a5a0ad7dc6"
+    },
+    {
+      "before_sha256": "72bc41be54539856af36ddb4d8e5d3ab8a61c4f5f6f499e0ff2a5c4f71e4e3e6",
+      "bytes": 2097,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java",
+      "sha256": "acccfb474b493308481f948360c2218aa37eab8bcb2c36db489e6b955c44658d"
+    },
+    {
+      "before_sha256": "272eb618d9402169806323c2a929db570c7df0c4f40d1560567f3b9143048d9a",
+      "bytes": 14623,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/config/CommonConfigTest.java",
+      "sha256": "e627db996950d7fecbdf3601425b2f422fa31e6d6733ee73fe30f62375af46aa"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 2779,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionBurnTest.java",
+      "sha256": "7442a10a2b0d27080dd62f64015f280b117f5393a8890876d8a1fc818892c5ae"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 1674,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionMenuWireTest.java",
+      "sha256": "6d13e5e85fde2e271d5b61835583855029c82c6afb0652eb6e69f83b230e924f"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 4262,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionSaveTest.java",
+      "sha256": "8911778d03ae470b7459a34996e3c25d34ad5dd8a9f9424ad23466a96d243069"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 4119,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/V180CombustionResourcesTest.java",
+      "sha256": "1b27033eedafbdb6626246248a17d8bc0e2e84a3e0b49f837ca7dd14dff49f52"
+    },
+    {
+      "before_sha256": null,
+      "bytes": 4065,
+      "path": "tests/test_run_v180_combustion_smoke.py",
+      "sha256": "930dc2058d0a7dd44bde65e5993d83f3a30e08ad0d1575f1bee8a4a4d99b3e11"
+    },
+    {
+      "path": "AGENTS.md",
+      "scope": "context/documentation",
+      "sha256": "725dd46344046bcdb802872e08fbc3cd9da0bf876e680eeba4c82dda801a9503"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "scope": "context/documentation",
+      "sha256": "86634791382a149472752b1b09124872baa2f47ccb5254cee97feec5836641da"
+    },
+    {
+      "path": "README.md",
+      "scope": "context/documentation",
+      "sha256": "abe8a681c1fa287997ce628ce6979a98ce7003a9d067c8c4c1844843e3f16db0"
+    },
+    {
+      "path": "docs/decisions/ADR-064-CLASSIC-MACHINES-FLUIDS-AND-COMPONENTS.md",
+      "scope": "context/documentation",
+      "sha256": "d8ecc264170047fe62644dee01f2fc1101c56ceb5df1f250d8224486205f7014"
+    },
+    {
+      "path": "docs/provenance/v1.8.0-development-metadata.md",
+      "scope": "context/documentation",
+      "sha256": "5d7f264fb1ae871e604bf4861c6abaa125ada97c0a28d55ee840c541327f51d8"
+    },
+    {
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "scope": "context/documentation",
+      "sha256": "1caa16c23989f96e7ac8a32107f0bc42128c163411b2c41a5afe95da87e1c596"
+    },
+    {
+      "path": "docs/status/CURRENT_VERSION.md",
+      "scope": "context/documentation",
+      "sha256": "b862ed82a45661d4496f5a3ad25d033700ff833fa4a9d9f57af59553c0da443b"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-combustion/TASK.md",
+      "scope": "context/documentation",
+      "sha256": "6b3d2076b2dfb6dd46e743da0e7da6a9dc0aa8ac84dbc2a8b578f9d58bed3088"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-combustion/VERIFICATION.md",
+      "scope": "context/documentation",
+      "sha256": "1642008907e0f701efa21a5f95492b097f47b4233acace3a0bb3e77eafeaaf02"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-combustion/review-dispositions.md",
+      "scope": "context/documentation",
+      "sha256": "3e722b2b425c77c3b075339198b4fb6868d42e642db43f85b07a842dea77a0d7"
+    },
+    {
+      "path": "docs/work/v1.8.0-content-ledger.csv",
+      "scope": "context/documentation",
+      "sha256": "f5915cb9148b797f7ac592891377b6ff0ce5aae66f0871619ae90392f343c889"
+    },
+    {
+      "path": "docs/work/v1.8.0-implementation-log.md",
+      "scope": "context/documentation",
+      "sha256": "b73586ce9337c0e1b6916cb97fe21e57070989aa12f5b9603f0cf3e54fbba8af"
+    }
+  ],
+  "final_manifest_sha256": "636ce04e6022e7bf191aa849a0400493bb5acce954b69aca17b956569e2ff099",
+  "frozen_review_input_manifest_sha256": "c033d9a5be58ec20e327422f38085c18acb834b7e2e2c262e2a07f955c2517e6",
+  "snapshot": "uncommitted development tree; actual pre-task dirty baseline"
+}

@@ -1,0 +1,872 @@
+Generated/framing {
+  "generated": [
+    {
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
+      "exact_v180_generated_files": 771,
+      "comparison_set_sha256": "aa78985fa323444cb2fe7bb206f4ca239ae46aae2c0d9030389b22e0917c3793"
+    },
+    {
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+      "exact_v180_generated_files": 771,
+      "comparison_set_sha256": "aa78985fa323444cb2fe7bb206f4ca239ae46aae2c0d9030389b22e0917c3793"
+    }
+  ],
+  "wrapper": {
+    "path": "gradlew.bat",
+    "commit": {
+      "bytes": 2776,
+      "sha256": "18774a0ac0203f6893bf1db3291a0d77f06cd1b4dca2a43b51e7009da3e28cfa"
+    },
+    "tested_snapshot": {
+      "bytes": 2868,
+      "sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955"
+    },
+    "equal_after_CRLF_to_LF": true,
+    "Git_LF_lines": 92,
+    "snapshot_CRLF_pairs": 92
+  }
+}
+K2 added suite {
+  "path": "evidence/xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml",
+  "suite_name": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest",
+  "tests": 20,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "bytes": 5761,
+  "sha256": "8ab83ce799ee5b98e694b4b2275e5bcdf9942f45ee6e1509e283f92589b39373"
+}
+JOB markdown-links-17 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\verify_current_links17.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:36:29.489346+00:00'}
+{
+
+  "files": 675,
+
+  "links": 3101,
+
+  "errors": []
+
+}
+
+
+JOB repository-boundary-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\validate_repository_boundary21.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:36:32.175405+00:00'}
+7.0 DataGen resources match the exact station inventory
+
+[PASS] v0.8.0 DataGen resources match the exact satellite inventory
+
+[PASS] v0.9.0 migration fixtures match the exact hash inventory
+
+[PASS] v0.9.0 resource and localization audit covers 1259 files and 832 bilingual keys
+
+[PASS] v0.2.0 artifact, automated, persistence, client, server, and checksum evidence is valid
+
+[PASS] v0.2.0 Gate status does not overstate machine-slice evidence
+
+[PASS] v0.3.0 artifact, celestial, persistence, multiplayer, client, and checksum evidence is valid
+
+[PASS] v0.3.0 Gate status is evidence-bound in docs\releases\v0.3.0\GATE-STATUS.md
+
+[PASS] v0.4.0 artifact, atmosphere, persistence, performance, multiplayer, client, and checksum evidence is valid
+
+[PASS] v0.4.0 Gate status is evidence-bound in docs\releases\v0.4.0\GATE-STATUS.md
+
+[PASS] v0.5.0 artifact, rocket, persistence, performance, client, and checksum evidence is valid
+
+[PASS] v0.5.0 Gate status is evidence-bound in docs\releases\v0.5.0\GATE-STATUS.md
+
+[PASS] v0.6.0 artifact, flight, recovery, multiplayer, performance, and checksum evidence is valid
+
+[PASS] v0.6.0 Gate status is evidence-bound in docs\releases\v0.6.0\GATE-STATUS.md
+
+[PASS] v0.7.0 artifact, station, recovery, multiplayer, performance, and checksum evidence is valid
+
+[PASS] v0.7.0 Gate status is evidence-bound in docs\releases\v0.7.0\GATE-STATUS.md
+
+[PASS] v0.8.0 artifact, satellite, restart, multiplayer, performance, and checksum evidence is valid
+
+[PASS] v0.8.0 Gate status is evidence-bound in docs\releases\v0.8.0\GATE-STATUS.md
+
+[PASS] v0.9.0 artifact, migration, recovery, compatibility, soak, and checksum evidence is valid
+
+[PASS] v0.9.0 Gate status is evidence-bound in docs\releases\v0.9.0\GATE-STATUS.md
+
+Summary: 45 passed, 0 pending, 0 warnings, 0 failed
+
+
+JOB planning-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v1plus_planning.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:42:21.157858+00:00'}
+PASS: 11 version plans, explicit G0-G9, entry points, links and 33-input source inventory
+
+Scope: planning validation only; no release Gate or human approval asserted.
+
+
+JOB provenance-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_bootstrap_provenance.py', '--require-approved-review'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:42:21.338385+00:00'}
+[INFO] Validating accepted v0.0.2 provenance at 9359257b9fe1eccf7e0043dfa7f626cf1ee44be9
+
+[PASS] Bootstrap provenance mechanical validation: 2 components, 11 imported targets, 2 local assets
+
+[PASS] Recorded provenance review is mechanically consistent and digest-bound: THIRD_PARTY_APPROVED
+
+
+JOB machine-resources-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v120_machine_resources.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:42:52.830237+00:00'}
+PASS: 9 machine blocks, recipes, loot, models, tags and bilingual keys
+
+
+JOB ledger-strict-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v180_content_ledger.py', '--require-accepted'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:31.208698+00:00'}
+{
+
+  "assets": {
+
+    "EXCLUDE": 113,
+
+    "IMPORT": 182,
+
+    "IMPORTED": 10,
+
+    "REGENERATE": 439,
+
+    "REVIEW": 154
+
+  },
+
+  "dispositions": {
+
+    "DEFERRED": 25,
+
+    "IMPLEMENTED": 104,
+
+    "MERGED": 93,
+
+    "PLANNED": 186,
+
+    "REDESIGNED": 187,
+
+    "REJECTED": 58
+
+  },
+
+  "planned_by_batch": {
+
+    "C16a": 2,
+
+    "C16b": 13,
+
+    "C16c": 16,
+
+    "C16d": 10,
+
+    "C17a": 24,
+
+    "C17b": 9,
+
+    "C17c": 8,
+
+    "C18a": 28,
+
+    "C18b": 23,
+
+    "C18c": 19,
+
+    "C18d": 34
+
+  },
+
+  "result": "PASS",
+
+  "units": 653
+
+}
+
+
+JOB ledger-closure-21 exit 1 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v180_content_ledger.py', '--closure'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:31.860835+00:00'}
+closure: 186 ledger rows are still PLANNED
+
+closure: 154 assets are still handled as REVIEW
+
+{
+
+  "assets": {
+
+    "EXCLUDE": 113,
+
+    "IMPORT": 182,
+
+    "IMPORTED": 10,
+
+    "REGENERATE": 439,
+
+    "REVIEW": 154
+
+  },
+
+  "dispositions": {
+
+    "DEFERRED": 25,
+
+    "IMPLEMENTED": 104,
+
+    "MERGED": 93,
+
+    "PLANNED": 186,
+
+    "REDESIGNED": 187,
+
+    "REJECTED": 58
+
+  },
+
+  "planned_by_batch": {
+
+    "C16a": 2,
+
+    "C16b": 13,
+
+    "C16c": 16,
+
+    "C16d": 10,
+
+    "C17a": 24,
+
+    "C17b": 9,
+
+    "C17c": 8,
+
+    "C18a": 28,
+
+    "C18b": 23,
+
+    "C18c": 19,
+
+    "C18d": 34
+
+  },
+
+  "result": "FAIL",
+
+  "units": 653
+
+}
+
+
+JOB common-client-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/check_client_imports.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:32.279207+00:00'}
+[PASS] No net.minecraft.client references outside the client package
+
+
+JOB focused-python-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', '-m', 'unittest', 'tests.test_run_v180_pump_smoke', 'tests.test_run_v180_tank_smoke', 'tests.test_run_v180_signature_smoke', '-v'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:32.915247+00:00'}
+ector_patch_roundtrip_preserves_other_bytes_and_records) ... ok
+
+test_seed_only_declared_current_or_historical_rows (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_seed_only_declared_current_or_historical_rows) ... ok
+
+test_settled_refusal_requires_runtime_reason_and_failure_pair (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_settled_refusal_requires_runtime_reason_and_failure_pair) ... ok
+
+test_settled_report_after_original_deadline_is_not_accepted (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_settled_report_after_original_deadline_is_not_accepted) ... ok
+
+test_snapshot_order_and_fingerprint_identity (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_snapshot_order_and_fingerprint_identity) ... ok
+
+test_startup_poll_does_not_hide_marker_capability_status_or_protection_loss (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_startup_poll_does_not_hide_marker_capability_status_or_protection_loss) ... ok
+
+test_strict_console_reports_and_refusal_are_not_cap_presence (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_strict_console_reports_and_refusal_are_not_cap_presence) ... ok
+
+test_wrong_adapter_end_and_foreign_report_rows_are_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_adapter_end_and_foreign_report_rows_are_refused) ... ok
+
+test_wrong_fluid_amount_width_or_metadata_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_fluid_amount_width_or_metadata_refused) ... ok
+
+test_wrong_item_count_width_or_unapproved_metadata_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_item_count_width_or_unapproved_metadata_refused) ... ok
+
+
+
+----------------------------------------------------------------------
+
+Ran 90 tests in 5.348s
+
+
+
+OK
+
+
+JOB artifact-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_build_artifact.py', 'D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\integration-artifacts-21\\advancedrocketry-community-1.20.1-1.8.0-dev.jar', '--expected-version', '1.20.1-1.8.0-dev'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:38.688468+00:00'}
+[PASS] Artifact: D:\ARCE-Task-Evidence\v1.8.0\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\integration-artifacts-21\advancedrocketry-community-1.20.1-1.8.0-dev.jar
+
+[PASS] SHA-256: 796c9611ec8d655398e5a046bfe6cc3f81b2c7880a19c835ea9ed301a990373e
+
+[PASS] Entries: 3305
+
+[PASS] Metadata, notices, paths, and credential name/content scan
+
+
+JOB git-diff-check-21 exit 0 command {'command': ['git', 'diff', '--check'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:40.517725+00:00'}
+
+JOB git-diff-exit-21 exit 1 command {'command': ['git', 'diff', '--exit-code'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:41.058951+00:00'}
+assertEquals(0, messages, "Menu admission channel must remain message-empty: " + file);
++                    emptyChannels.add(channel.group(1) + "|" + protocol.group(1));
++                } else {
++                    channelSources.add(file);
++                    assertTrue(messages > 0, "A channel without messages: " + file);
++                }
+                 assertEquals(source.split("messageBuilder\\(", -1).length - 1, messages,
+                         "A message registration the pin table cannot read (for example a non-literal index): " + file);
+             }
+         }
+         assertEquals(6, channelSources.size(), "Channel sources changed: " + channelSources);
++        assertEquals(List.of("machine_menu|1"), emptyChannels);
+         assertEquals(expected(), actual.stream().sorted().toList());
+     }
+ 
+diff --git a/tests/test_validate_v180_content_ledger.py b/tests/test_validate_v180_content_ledger.py
+index 118ef014..0e74db02 100644
+--- a/tests/test_validate_v180_content_ledger.py
++++ b/tests/test_validate_v180_content_ledger.py
+@@ -240,7 +240,8 @@ class V180ContentLedgerTests(unittest.TestCase):
+         self.assertFalse(any("who is neither the owner" in error for error in self._errors()))
+ 
+     def test_owning_units_are_not_delivered_after_the_asset(self) -> None:
+-        self._set_rule("textures/blocks/liquidtank.png", units="config:CLIENT.advancedVFX")
++        # This check governs legacy imports; the shipped tank now uses NEW art.
++        self._set_rule("textures/blocks/liquidtank.png", handling="IMPORT", units="config:CLIENT.advancedVFX")
+         self.assertTrue(any(error.endswith("owning unit config:CLIENT.advancedVFX is delivered in C18d, after the "
+                                            "rule's batch C16a") for error in self._errors()))
+ 
+
+WRAPPER exact output-name-only differences verified
+PHASE integration-build-data-21
+evidence/integration-build-data-21.command.json {
+
+  "command": [
+
+    "D:\\GitHub\\AdvancedRocketry-Community\\gradlew.bat",
+
+    "--offline",
+
+    "--no-daemon",
+
+    "--max-workers=2",
+
+    "-Dorg.gradle.jvmargs=-Xmx2G",
+
+    "clean",
+
+    "build",
+
+    "test",
+
+    "runData"
+
+  ],
+
+  "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+
+  "JAVA_HOME": "C:/Program Files/Java/jdk-17.0.7",
+
+  "started_utc": "2026-10-04T04:34:28.395070+00:00"
+
+}
+evidence/integration-build-data-21.started 2026-10-04T04:34:28.395070+00:00
+evidence/integration-build-data-21.finished 2026-10-04T04:37:42.382769+00:00
+evidence/integration-build-data-21.exit 0
+Build/data tail xoplanet art
+
+[12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 exoplanet art finished after 1 ms
+
+[12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 exoplanet celestial data
+
+[12:37:42] [main/INFO] [minecraft/DataGenerator]: v1.8 exoplanet celestial data finished after 42 ms
+
+[12:37:42] [main/INFO] [minecraft/DataGenerator]: All providers took: 666 ms
+
+[12:37:42] [main/INFO] [minecraft/HashCache]: Caching: total files: 771, old count: 771, new count: 772, removed stale: 0, written: 0
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+
+
+BUILD SUCCESSFUL in 3m 13s
+
+26 actionable tasks: 16 executed, 9 from cache, 1 up-to-date
+
+
+DATAGEN 109 [12:37:42] [main/INFO] [minecraft/HashCache]: Caching: total files: 771, old count: 771, new count: 772, removed stale: 0, written: 0
+PHASE integration-gametest-12
+evidence/integration-gametest-12.command.json {
+
+  "command": [
+
+    "D:\\GitHub\\AdvancedRocketry-Community\\gradlew.bat",
+
+    "--offline",
+
+    "--no-daemon",
+
+    "--max-workers=2",
+
+    "-Dorg.gradle.jvmargs=-Xmx2G",
+
+    "runGameTestServer"
+
+  ],
+
+  "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+
+  "JAVA_HOME": "C:/Program Files/Java/jdk-17.0.7",
+
+  "started_utc": "2026-10-04T04:53:03.407269+00:00"
+
+}
+evidence/integration-gametest-12.started 2026-10-04T04:53:03.407269+00:00
+evidence/integration-gametest-12.finished 2026-10-04T04:57:06.385603+00:00
+evidence/integration-gametest-12.exit 0
+Build/data tail ] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+
+[12:57:04] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (tau_ceti_g): All chunks are saved
+
+[12:57:04] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (space): All chunks are saved
+
+[12:57:04] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+
+[12:57:05] [Server thread/INFO] [minecraft/GameTestServer]: Game test server shutting down
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+
+
+BUILD SUCCESSFUL in 4m 2s
+
+18 actionable tasks: 4 executed, 14 up-to-date
+
+
+GT completion [{'line': 5546, 'text': '[04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: ========= 464 GAME TESTS COMPLETE ======================'}, {'line': 5547, 'text': '[04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: All 464 required tests passed :)'}] ERROR61 categories Counter({'[net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first': 24, '[net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number': 8, '[net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number': 8, '[net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional Energy-only migration binding save failure': 3, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite idle launch operation failed': 3, '[net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure': 2, '[net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40042,40004': 2, '[net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40002,40001': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:rolling_iron_bars until tag reload: machine ingredient has no bound alternatives': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:precision_control_circuit until tag reload: machine ingredient has no bound alternatives': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:electrolyzer_water until tag reload: machine ingredient has no bound alternatives': 1, '[net.minecraft.server.level.ChunkMap/]: Failed to save chunk 32013,32003': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=512207, y=36, z=512063} in minecraft:overworld: BlockPos{x=512208, y=36, z=512063}: arce_precision_port_migration differs (expected hash=-2043996827, saved hash=0)': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite launch operation failed': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=640671, y=20, z=640061} in minecraft:overworld: BlockPos{x=640672, y=20, z=640064}: arce_part_binding differs (expected hash=1241633005, saved hash=1241633004)': 1, '[net.minecraft.server.level.ChunkMap/]: Failed to save chunk 32001,32006': 1, '[io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=512031, y=20, z=512111} in minecraft:overworld: BlockPos{x=512031, y=20, z=512111}: arce_precision_resources differs (expected hash=1319225500, saved hash=0)': 1, '[net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized combustion input; back up and repair first': 1})
+PACKET REPORT docs/work/v1.8.0-c16a-hatches/canonical-bytes-k2-source-01.zip HANDOFF.md 
+ # K2 canonical bytes: bounded source handoff
+
+Status: **review-ready source proposal**, not Root application, public API,
+resource hash, frame codec, native persistence or version admission.
+
+## Completed / not completed
+
+Two new files only: package-private `ClassicNbtCanonicalBytes` and its focused
+test. All2,988 Source20 baseline inputs,25 values, Bank14, K1, BoundedNbt and
+all existing tests remain byte-exact. Final copied source closure has2,990
+inputs. No central/build/registry/protocol/schema/language/generated/root edits.
+No GuardTicket, resource getters, frame decoder, checkpoint publisher, world
+writer, carrier/FE/drop, formation, gameplay consumer or hash producer exists in
+this change. The helper neither decides raw-root supported/protected status nor
+changes other callers' admission.
+
+## Source / integration identity
+
+Full baseline: [manifest](BASELINE-MANIFEST.json), SHA256
+`6ad7b69e413de857f71d3cb3497edc8ddabefddeb48d56f07285935e1a0c3c8e`.
+Original Root20 archive SHA256
+`3b6176f549d8bde523df1245fe7c4902e4633f093c40c6bce87db78fbf364bd2`;
+full CRC/every archive entry SHA verified at intake. See [receipt](INTAKE-01.json).
+Candidate origin: `C:/Users/Administrator/AppData/Local/Temp/ack2-f5948349e1`.
+
+Final integration proposal: [SOURCE-03.patch](SOURCE-03.patch), SHA256
+`4d0d1e6cb7f493ec86ad3a780d4aa00dc9b648a40ea0ff58828d63eea87018f3`.
+It adds only the two named files; Root alone may apply it after separate review.
+Use exact postimages or `git -c core.autocrlf=false apply`: the first default
+autocrlf replay changed LF to CRLF and failed exact-byte comparison. Its patch,
+failure and emitted postimages are preserved, not substituted for the tested
+proposal. Corrected check/apply both exit0 with exact postimages.
+
+| Final identity | SHA256 |
+|---|---|
+| [own two-file manifest](OWN-FILES-02.json) | `ba51596c019df8c297d3b01696962fa7d5e28270c14f028fb3c0f41dea71bf88` |
+| [full2,990 manifest](FULL-MANIFEST-02.json) | `4d0e22a60f35d203a835e35738c0ef6d06ac56d7125c4c7dcbec53fabbd8a756` |
+| [production](source-final/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java) | `1aa5ad420a1288820f148ea55c149510c5206c7351c928186548cada54b3dfd6` |
+| [test](source-final/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytesTest.java) | `5b352b1a6818689b5ac30c505cbcfc3e3adc4014de97f26f168550b31f8cec55` |
+
+The portable packet carries one complete final source closure. Original
+candidate01 is reconstructed from that shared2,988 baseline plus its exact two
+postimages under `source-original/` and [original full manifest](FULL-MANIFEST-01.json).
+Original Temp snapshots remain unchanged. This avoids duplicating the entire
+baseline or recursively embedding prior large archives.
+
+## Private API and exact computation boundary
+
+```java
+static byte[] ClassicNbtCanonicalBytes.encode(CompoundTag root, ClassicNbtLimits limits)
+```
+
+Input: exclusively caller-owned **stable** standard native compound data.
+Return: freshly owned complete named-empty-root bytes. Null input/limits refuse
+with NullPointerException; unsupported/unbounded/lossy/illegal data or oversized
+helper budget refuses with IllegalArgumentException, before a partial result
+escapes. These are computation exceptions, not new persisted failure IDs.
+
+The helper first uses unchanged shape preflight, then unchanged BoundedNbt
+lossless-emission preflight. Shape-first avoids the existing BoundedNbt foreign
+list-child getId residual for the stable unsupported inputs exercised here.
+This is not a callback sandbox for concurrent modification, native Item/Fluid
+callbacks or arbitrary world objects. Encoder exact-class/depth/node/type/UTF/
+list/byte rechecks bound its own work; it invokes no Tag.write/copy/equality,
+registry/resource API or world operation.
+
+Canonical framing preserves types, original strings/code units, array values
+and list order; only compound keys use adopted K1. Root is type10 plus empty
+modified-UTF name. Payloads use native DataOutput widths/String encoding, not
+SNBT/JSON/compression/a new float protocol. No SHA256/domain prefix/hash-v1
+producer is introduced. Refused typed-empty lists, noncanonical NaNs, overlong
+UTF, foreign tags, End children and cycles are not normalized/emitted.
+
+## Bounds / allocations / aliases
+
+Limits constructor/constants are unchanged. Root separately authorized the
+helper-only componentwise ceiling: no requested bytes/depth/nodes may exceed
+existing REJECTED1,873,117/25/86,529; stricter positive budgets are accepted and
+larger components refuse rather than clamp. Future callers still must supply
+their exact individual-root ceilings (resources32,768/16/8,192), not the helper
+maximum. See [clarified task](authority/CANONICAL-BYTES-TASK-CLARIFIED.md.raw.txt).
+
+No encoder byte buffer exists until both preflights succeed. One fixed scratch
+array has requested byte capacity and never grows. Success returns a distinct
+trimmed copy no larger than that capacity: at most two such arrays overlap
+(3,746,234 raw data bytes at maximum helper budget), plus bounded traversal/key
+lists and JDK encoding/sort scratch. This is not a whole-JVM heap/performance
+Gate claim. Names are length/budget-checked before sorting; DataOutput UTF
+fields are limited to65,535 encoded bytes and checked against remaining output.
+Temporary ordinary UTF-8 ordering arrays are not used as emitted names.
+
+Shared-child versus independent equal tree values encode equally; no source
+compound/list/array is reordered or detached by this helper. Returned arrays do
+not alias input or another returned array. Mutation **between** calls changes
+the new frame but not old output. Concurrent mutation **during** a call violates
+the exclusive/stable-input precondition; structural/write rechecks are defense,
+not an atomic snapshot/authority guarantee. No live native Tag is exported.
+
+## Actual failure, fixture correction and verification
+
+The exact original candidate01 job compiled production/tests, then ran19 tests
+in one suite: **exit1, one assertion failure**,56.169s receipt (Gradle55s).
+`signedZerosRemainDistinct` used `putFloat/putDouble(-0.0)`. The pinned native
+valueOf factories cache zero and native TYPE.load calls them. Candidate02 adds
+before-encoder observations: actual factory **and native loader** float/double
+raw bits are0. Thus the original test supplied +0 Tags, not -0 Tags.
+
+The fixture-only revision builds exact native FloatTag/DoubleTag values via
+their private scalar constructors. It checks negative raw bits before encoding,
+checks native payload byte fidelity and retains all original three signed-zero
+assertions after encoding. All other18 original test methods are text-exact;
+no assertion/timing/budget was weakened. [Lineage receipt](TEST-LINEAGE-02.json).
+Production is unchanged through both jobs. Exact-class reflection is a
+mechanics fixture, **not naturally loaded gameplay/persistence support**. Native
+writer-byte preservation is not a promise that native loaders preserve every
+original bit pattern. The preexisting factory/load normalization is outside
+K2's helper-input contract and is not relabeled as a repaired persistence issue.
+
+Both bounded commands used pinned Java17.0.7, offline/no-daemon/workers2/Xmx2G:
+
+```text
+gradlew.bat --offline --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx2G
+  cleanTest compileJava compileTestJava test
+  --tests io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest
+```
+
+Candidate02 actual: **exit0,20 tests/1 suite/0 failures/errors/skips**,
+22.331s receipt. compileJava UP-TO-DATE after unchanged successful compile01;
+compileTestJava and test executed. These are scoped compile/JUnit commands,
+not fullbuild/DataGen/GT/native-server/client commands. Dependencies incidentally
+build JAR tasks; those artifacts are not treated as reviewed release candidates.
+
+[Final results](SCOPED-RESULTS-02.json), [first raw log](scoped-01.log),
+[second raw log](scoped-02.log), [first XML](scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml),
+[second XML](scoped-02-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml).
+All2,990 final inputs and2,988 Root baseline files were reread after the job and
+remain exact. Actual JUnit Tag/CompoundTag/ListTag/NbtIo class resource SHA and
+code-source locations match the pinned mapped47.4.10 JAR. Derived
+[native construction facts](primary/ZERO-CONSTRUCTION-STATIC-02.json) contain
+declarations/references only, no official bodies.
+
+Coverage: all native payload kinds, native one-child byte differentials, nested
+compound sorting/list and array order, Unicode replacement-order collisions
+with distinct original modified-UTF names, empty/presence/type distinctions,
+canonical/noncanonical NaNs and signed zero, exact byte/depth/node/UTF bounds,
+arrays-as-one-node, typed-empty raw decode/refusal, illegal/foreign/cyclic/null
+input, input/output alias isolation and arbitrary-budget refusal. The focused
+test uses native writers only for eligible reference payloads; no forced write
+after lossless-emission refusal.
+
+## Authority history / provenance / unresolved admission
+
+Initial task0dfafad��, clarified taske1dd3a�� and later Root progress-only context
+are distinct snapshots. The admitted adapter02/K1/phase01 contracts are
+unchanged; Root alone approves integration. Both new files are NEW
+repository-authored Java17 computation/tests under repository licensing;
+no upstream/LibVulpes/native source bodies/assets were copied.
+
+No author finding verdict substitutes for the assigned independent source
+review. Full GuardTicket/native capture/frame/hash/checkpoint/lifecycle/save,
+FE carrier/removal modes, actual first consumer/lathe, server/restart and V1/V2
+remain separate. Current v1.8 all Required Gates are **not** satisfied by this
+handoff. Next eligible work is independent actual-source review/replay of this
+two-file delta, then Root's bounded integration/regression if qualified.
+
+PACKET REPORT docs/work/v1.8.0-c16a-hatches/reviews/canonical-bytes-k2-independent-01.zip HANDOFF.md 
+ # K2 independent source-review handoff
+
+Final findings and exact limits: [REVIEW-01](REVIEW-01.md).
+No introduced C/H/M/L identified in the two-file private helper/test scope.
+Recommend Root consider only that exact bounded source integration and regression;
+no public consumer, hash, resource/native capture, frame, GuardTicket, writer,
+natural native signed-zero round-trip or Required Gate admission follows.
+
+Actual reviewer scoped job:28 testcase elements/2 suites/0 failures/errors/skips,
+exit0/44.284s; author20 plus eight additional controls, all original2,990 source
+pins unchanged. compileJava was FROM-CACHE; compileTestJava/test executed.
+Java slot released; no reviewer Java/native/GT/client/server process remains.
+
+Exact archive intake and isolated patch: [INTAKE-FINAL-02](INTAKE-FINAL-02.json).
+Independent Root20/lineage/XML/native-class pin checks: [STATIC-AND-RESULTS](STATIC-AND-RESULTS-02.json).
+Specific line evidence: [matrix](SOURCE-REVIEW-MATRIX.md).
+Original author19/1 failure and final20/0, default-autocrlf mismatch and first
+GBK wrapper failure remain byte-exact under [verified author archive](inputs/canonical-bytes-k2-source-01.zip)
+and its extracted companions. Reviewer editor/read observations and unexecuted
+draft are distinctly labelled, not turned into a passing test or a candidate defect.
+
+The final manifest pins every portable companion and the final outer ZIP binds
+that manifest. Root/author/old packets/status/ADR/source remained read-only.
+Next eligible work is Root's current-version integration/regression; dependent
+runtime/frame/hash/save and physical/client/version gates remain separate.
+
+PACKET REPORT docs/work/v1.8.0-c16a-hatches/reviews/canonical-bytes-k2-independent-01.zip REVIEW-01.md 
+ # Independent K2 canonical-bytes source review
+
+## Findings first
+
+No introduced Critical, High, Medium or Low finding identified in the exact **two-file private computation/test delta** reviewed here. The evidence supports Root considering bounded source integration; it does not freeze a consumer, public API, hash/frame codec, GuardTicket, resource capture, world writer or v1.8 Required Gate.
+
+The original author signed-zero failure is preserved, not relabelled as a pass. The original native factory fixture supplied +0 Tags; independent pre-encode controls and actual `NbtIo.read` show the same normalization. The final private-constructor fixture tests native **emitted byte fidelity of actual -0 values** only. It does not establish naturally loaded gameplay/persistence support or repair native decoding. This qualification is already explicit in the final [author handoff](author-final/HANDOFF.md); no source correction is requested from this observation.
+
+## Exact reviewed authority and input closure
+
+Author archive: [canonical-bytes-k2-source-01.zip](inputs/canonical-bytes-k2-source-01.zip), **5,295,301 bytes /3,085 entries**, SHA256 `3442f9b7c3fc06ff694c08f385a8cdfc8fc8b0a527a225b305e7cc7213788ace`.
+Every CRC and all3,084 manifest-entry SHA/length values verified; unique case-safe names, safe relative paths and no symlinks. [Archive manifest](author-final/MANIFEST.json) SHA256 `42c8d783da1b8fd88c3029f82ed53fe61adf19fa5af6434a58c2dd9dcf580e35`.
+
+| Pin | SHA256 |
+|---|---|
+| [Clarified task authority](author-final/authority/CANONICAL-BYTES-TASK-CLARIFIED.md.raw.txt) | `e1dd3a97a1040c88ad9bcf3253b01bc2b0509eb0b802ac82c95f3196e69468a2` |
+| [Separate progress-only task snapshot](author-final/authority/CANONICAL-BYTES-TASK-PROGRESS.md.raw.txt) | `6f7abbbca79547d43521dbc84041ce8c6c08cb5f7d717066af1d599024dda4d4` |
+| [Source20 baseline2,988](author-final/BASELINE-MANIFEST.json) | `6ad7b69e413de857f71d3cb3497edc8ddabefddeb48d56f07285935e1a0c3c8e` |
+| [Final2,990](author-final/FULL-MANIFEST-02.json) | `4d0e22a60f35d203a835e35738c0ef6d06ac56d7125c4c7dcbec53fabbd8a756` |
+| [Two NEW file manifest](author-final/OWN-FILES-02.json) | `ba51596c019df8c297d3b01696962fa7d5e28270c14f028fb3c0f41dea71bf88` |
+| [Production](author-final/source-final/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java) | `1aa5ad420a1288820f148ea55c149510c5206c7351c928186548cada54b3dfd6` |
+| [Final test](author-final/source-final/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytesTest.java) | `5b352b1a6818689b5ac30c505cbcfc3e3adc4014de97f26f168550b31f8cec55` |
+| [Actual source patch](author-final/SOURCE-03.patch) | `4d0d1e6cb7f493ec86ad3a780d4aa00dc9b648a40ea0ff58828d63eea87018f3` |
+| [Reviewer-only eight controls](IndependentCanonicalBytesTest.java) | `90c1c046c5a9442ab5f5da9caa25b25ccab1ab2d6ff9fdf1a6088e1f7ebeceaf` |
+
+Source20 Root archive was separately reread (named read-only input, no live-world inspection): SHA256 `3b6176f549d8bde523df1245fe7c4902e4633f093c40c6bce87db78fbf364bd2`,12,310,298 bytes/3,403 entries. All CRC/entry pins pass and its [2,988 manifest](inputs/root20/integration-20-source-manifest.json) equals the author baseline exactly. All original baseline files, public contracts/Bank14/25 values/K1/BoundedNbt code, old tests, central/config/build/generated/assets remain unchanged. Exact final source2,990 was copied under this reviewer's fresh Temp; one NEW reviewer test made2,991 copied inputs. No Root/author source write occurred.
+
+Review was source-derived against adopted adapter02 framing, adopted K1 order, the helper-only task ceiling and unchanged native-lossless preflight. [Source matrix](SOURCE-REVIEW-MATRIX.md) gives precise line references and controls. Package-private `encode` at production13-16 has no public registry/callback surface. It bounds all requested components before allocation19-25, uses shape-first native eligibility22-24, writes native type/name/payload widths71-109, sorts only compound names122, preserves list/array order132-146 and source aliases, and returns only the complete fresh trimmed array187. No public schema/root/ceiling or managed identity changed.
+
+## Actual commands and results
+
+All commands ran only in `C:/Users/Administrator/AppData/Local/Temp/ak2r-2303cb6965` or its isolated copied candidate. The Temp Git replay has no commits and is not an implementation worktree.
+
+| Command / receipt | Observed result |
+|---|---|
+| `python intake_static_01.py` ([raw](intake-static-01.log), [exit](intake-static-01.exit)) | exit0; original intermediate2,990 hashes and mandatory named documents captured before final intake; no verdict/Java |
+| `python intake_final_02.py` ([raw](intake-final-02.log), [exit](intake-final-02.exit)) | exit0; final archive CRC/SHA, safe paths, all2,990 source/2,988 baseline and original checkpoint reconstruction checked |
+| `git init --quiet`; `git -c core.autocrlf=false apply --check SOURCE-03.patch`; same `apply` ([check](patch-final-check.log), [apply](patch-final-apply.log)) | each exit0; exact two LF postimages verified; no commit |
+| `python run_scoped_01.py`, invoking the exact command below ([raw](scoped-01.log), [receipt](SCOPED-RESULT-01.json)) | exit0,44.284s; actual **28 testcase elements /2 fresh suites /0 failures, errors, skips** = exact author20 + independent8; all2,990 pre/post source hashes equal |
+| `python static_and_results_02.py` ([first0](static-results-02.log), [expanded0](static-results-03.log)) | exit0 both; independent Root20 CRC/SHA/baseline equality, exact18 method lineage, all original3 zero assertions, fresh XML and mapped native identities checked |
+
+```text
+JAVA_HOME=C:/Program Files/Java/jdk-17.0.7
+gradlew.bat --offline --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx2G
+  cleanTest compileJava compileTestJava test
+  --tests io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest
+  --tests io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.IndependentCanonicalBytesTest
+```
+
+`compileJava` was FROM-CACHE; `compileTestJava` and tests executed. Fresh `cleanTest` did not reuse XML; [fresh20 XML](reviewer-scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml) and [fresh8 XML](reviewer-scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.IndependentCanonicalBytesTest.xml) have actual testcase elements and filesystem times inside this recorded job. Gradle dependency `jar/reobfJar/apiJar` tasks ran incidentally; they are not full-build/release-artifact acceptance. Deprecation warnings remain visible in raw output; no warning-free claim.
+
+The additional controls independently passed maximum1,873,117-byte and86,529-occurrence boundaries (one less/one over refuse), all valid typed-empty non-End list subtypes1..12 without normalization, original MUTF key/string framing under K1 UTF8 ties, fresh output/source alias separation, noncanonical NaN/End refusal, foreign-root zero observed method invocations, and signed-zero native-write vs factory/load separation. Native `Tag/CompoundTag/ListTag/NbtIo` class-resource hashes printed by actual JUnit match mapped Forge47.4.10 JAR SHA256 `95eecc5985233d83a6571299f89f02de034267646da171f7b36a5be2d394d71e`. Four scalar/factory class hashes were separately compared to that same JAR. No official source/class bodies were copied; [results](STATIC-AND-RESULTS-02.json) stores derived identity facts only.
+
+## Failure lineage and observation integrity
+
+Original author checkpoint remains in [original two source files](author-final/OWN-FILES-01.json), original19/1F [XML](author-final/scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml)/[raw](author-final/scoped-01.log), original source patches and manifests. The final author20/0 [XML](author-final/scoped-02-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml) is separately attributed. Independent XML parsing confirms those counts; original signed-zero failure is not removed. Production bytes are equal through both checkpoints. [Independent method lineage](METHOD-LINEAGE-INDEPENDENT-02.json) verifies18 original methods text-exact, all original3 signed-zero assertions present, and only one source-derived constructor fixture correction plus one NEW factory/load observation method.
+
+Author initial default-autocrlf postimage mismatch and first GBK packaging error are retained in the verified final packet. The completed final-02 wrapper is distinct. Reviewer [editor patch-authoring failure](patch-authoring-failure-01.txt) had no OS/test execution; [early missing-manifest read observation](exploratory-read-01-observation.txt) is labelled an observation, not fabricated test output. The [unexecuted reviewer draft](IndependentCanonicalBytesTest.unexecuted-draft-01.txt) was corrected for its own node-frame count before any Java job; it was never reported as a failed or passed test. No assertion, limit, timeout, old packet or source was relaxed or rewritten to obtain this result.
+
+## Scoped disposition and remaining work
+
+Recommend Root may consider exact two-file private source integration under the clarified task, followed by Root's actual integration regression. Root remains sole admission writer. This is not full native round-trip eligibility: loaded float -0 normalization stays a separately observed native fact, typed-empty/noncanonical NaN/foreign/cyclic invalid data remain refused, and this helper neither classifies nor rewrites protected records.
+
+Required but unrun here: Root integration/full regression; first real consumer's exact per-root limits and ownership; resource hash/frame/checkpoint/GuardTicket/lifecycle/save behavior; actual registry/native resource callbacks; server/restarts/crash/first-save proof; client V1/V2 and all remaining Required Gates. No fullbuild, runData, GameTest, dedicated server, native/world/client replay or performance/whole-heap Gate was launched by this reviewer. Stable exclusive caller ownership is a precondition; structural checks are not an atomic/concurrency snapshot or reentrancy sandbox.
+
+Completed scope: exact source review, patch replay, independent compile/scoped tests, immutable input/result preparation. Uncompleted scope: all dependent runtime/public/writer/version admission. Changes by reviewer: fresh Temp-only tests/scripts/reports/evidence. Known risk: dependent consumers must not silently use this helper maximum instead of their actual per-root ceiling or infer broader full-codec admission. **Current version all Required Gates: not established by this review.** Next eligible action is Root's current-version bounded integration/regression, not a future-version expansion.
+
+PACKET REPORT docs/work/v1.8.0-c16a-hatches/reviews/canonical-bytes-k2-independent-01.zip author-final/HANDOFF.md 
+ # K2 canonical bytes: bounded source handoff
+
+Status: **review-ready source proposal**, not Root application, public API,
+resource hash, frame codec, native persistence or version admission.
+
+## Completed / not completed
+
+Two new files only: package-private `ClassicNbtCanonicalBytes` and its focused
+test. All2,988 Source20 baseline inputs,25 values, Bank14, K1, BoundedNbt and
+all existing tests remain byte-exact. Final copied source closure has2,990
+inputs. No central/build/registry/protocol/schema/language/generated/root edits.
+No GuardTicket, resource getters, frame decoder, checkpoint publisher, world
+writer, carrier/FE/drop, formation, gameplay consumer or hash producer exists in
+this change. The helper neither decides raw-root supported/protected status nor
+changes other callers' admission.
+
+## Source / integration identity
+
+Full baseline: [manifest](BASELINE-MANIFEST.json), SHA256
+`6ad7b69e413de857f71d3cb3497edc8ddabefddeb48d56f07285935e1a0c3c8e`.
+Original Root20 archive SHA256
+`3b6176f549d8bde523df1245fe7c4902e4633f093c40c6bce87db78fbf364bd2`;
+full CRC/every archive entry SHA verified at intake. See [receipt](INTAKE-01.json).
+Candidate origin: `C:/Users/Administrator/AppData/Local/Temp/ack2-f5948349e1`.
+
+Final integration proposal: [SOURCE-03.patch](SOURCE-03.patch), SHA256
+`4d0d1e6cb7f493ec86ad3a780d4aa00dc9b648a40ea0ff58828d63eea87018f3`.
+It adds only the two named files; Root alone may apply it after separate review.
+Use exact postimages or `git -c core.autocrlf=false apply`: the first default
+autocrlf replay changed LF to CRLF and failed exact-byte comparison. Its patch,
+failure and emitted postimages are preserved, not substituted for the tested
+proposal. Corrected check/apply both exit0 with exact postimages.
+
+| Final identity | SHA256 |
+|---|---|
+| [own two-file manifest](OWN-FILES-02.json) | `ba51596c019df8c297d3b01696962fa7d5e28270c14f028fb3c0f41dea71bf88` |
+| [full2,990 manifest](FULL-MANIFEST-02.json) | `4d0e22a60f35d203a835e35738c0ef6d06ac56d7125c4c7dcbec53fabbd8a756` |
+| [production](source-final/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java) | `1aa5ad420a1288820f148ea55c149510c5206c7351c928186548cada54b3dfd6` |
+| [test](source-final/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytesTest.java) | `5b352b1a6818689b5ac30c505cbcfc3e3adc4014de97f26f168550b31f8cec55` |
+
+The portable packet carries one complete final source closure. Original
+candidate01 is reconstructed from that shared2,988 baseline plus its exact two
+postimages under `source-original/` and [original full manifest](FULL-MANIFEST-01.json).
+Original Temp snapshots remain unchanged. This avoids duplicating the entire
+baseline or recursively embedding prior large archives.
+
+## Private API and exact computation boundary
+
+```java
+static byte[] ClassicNbtCanonicalBytes.encode(CompoundTag root, ClassicNbtLimits limits)
+```
+
+Input: exclusively caller-owned **stable** standard native compound data.
+Return: freshly owned complete named-empty-root bytes. Null input/limits refuse
+with NullPointerException; unsupported/unbounded/lossy/illegal data or oversized
+helper budget refuses with IllegalArgumentException, before a partial result
+escapes. These are computation exceptions, not new persisted failure IDs.
+
+The helper first uses unchanged shape preflight, then unchanged BoundedNbt
+lossless-emission preflight. Shape-first avoids the existing BoundedNbt foreign
+list-child getId residual for the stable unsupported inputs exercised here.
+This is not a callback sandbox for concurrent modification, native Item/Fluid
+callbacks or arbitrary world objects. Encoder exact-class/depth/node/type/UTF/
+list/byte rechecks bound its own work; it invokes no Tag.write/copy/equality,
+registry/resource API or world operation.
+
+Canonical framing preserves types, original strings/code units, array values
+and list order; only compound keys use adopted K1. Root is type10 plus empty
+modified-UTF name. Payloads use native DataOutput widths/String encoding, not
+SNBT/JSON/compression/a new float protocol. No SHA256/domain prefix/hash-v1
+producer is introduced. Refused typed-empty lists, noncanonical NaNs, overlong
+UTF, foreign tags, End children and cycles are not normalized/emitted.
+
+## Bounds / allocations / aliases
+
+Limits constructor/constants are unchanged. Root separately authorized the
+helper-only componentwise ceiling: no requested bytes/depth/nodes may exceed
+existing REJECTED1,873,117/25/86,529; stricter positive budgets are accepted and
+larger components refuse rather than clamp. Future callers still must supply
+their exact individual-root ceilings (resources32,768/16/8,192), not the helper
+maximum. See [clarified task](authority/CANONICAL-BYTES-TASK-CLARIFIED.md.raw.txt).
+
+No encoder byte buffer exists until both preflights succeed. One fixed scratch
+array has requested byte capacity and never grows. Success returns a distinct
+trimmed copy no larger than that capacity: at most two such arrays overlap
+(3,746,234 raw data bytes at maximum helper budget), plus bounded traversal/key
+lists and JDK encoding/sort scratch. This is not a whole-JVM heap/performance
+Gate claim. Names are length/budget-checked before sorting; DataOutput UTF
+fields are limited to65,535 encoded bytes and checked against remaining output.
+Temporary ordinary UTF-8 ordering arrays are not used as emitted names.
+
+Shared-child versus independent equal tree values encode equally; no source
+compound/list/array is reordered or detached by this helper. Returned arrays do
+not alias input or another returned array. Mutation **between** calls changes
+the new frame but not old output. Concurrent mutation **during** a call violates
+the exclusive/stable-input precondition; structural/write rechecks are defense,
+not an atomic snapshot/authority guarantee. No live native Tag is exported.
+
+## Actual failure, fixture correction and verification
+
+The exact original candidate01 job compiled production/tests, then ran19 tests
+in one suite: **exit1, one assertion failure**,56.169s receipt (Gradle55s).
+`signedZerosRemainDistinct` used `putFloat/putDouble(-0.0)`. The pinned native
+valueOf factories cache zero and native TYPE.load calls them. Candidate02 adds
+before-encoder observations: actual factory **and native loader** float/double
+raw bits are0. Thus the original test supplied +0 Tags, not -0 Tags.
+
+The fixture-only revision builds exact native FloatTag/DoubleTag values via
+their private scalar constructors. It checks negative raw bits before encoding,
+checks native payload byte fidelity and retains all original three signed-zero
+assertions after encoding. All other18 original test methods are text-exact;
+no assertion/timing/budget was weakened. [Lineage receipt](TEST-LINEAGE-02.json).
+Production is unchanged through both jobs. Exact-class reflection is a
+mechanics fixture, **not naturally loaded gameplay/persistence support**. Native
+writer-byte preservation is not a promise that native loaders preserve every
+original bit pattern. The preexisting factory/load normalization is outside
+K2's helper-input contract and is not relabeled as a repaired persistence issue.
+
+Both bounded commands used pinned Java17.0.7, offline/no-daemon/workers2/Xmx2G:
+
+```text
+gradlew.bat --offline --no-daemon --max-workers=2 -Dorg.gradle.jvmargs=-Xmx2G
+  cleanTest compileJava compileTestJava test
+  --tests io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest
+```
+
+Candidate02 actual: **exit0,20 tests/1 suite/0 failures/errors/skips**,
+22.331s receipt. compileJava UP-TO-DATE after unchanged successful compile01;
+compileTestJava and test executed. These are scoped compile/JUnit commands,
+not fullbuild/DataGen/GT/native-server/client commands. Dependencies incidentally
+build JAR tasks; those artifacts are not treated as reviewed release candidates.
+
+[Final results](SCOPED-RESULTS-02.json), [first raw log](scoped-01.log),
+[second raw log](scoped-02.log), [first XML](scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml),
+[second XML](scoped-02-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml).
+All2,990 final inputs and2,988 Root baseline files were reread after the job and
+remain exact. Actual JUnit Tag/CompoundTag/ListTag/NbtIo class resource SHA and
+code-source locations match the pinned mapped47.4.10 JAR. Derived
+[native construction facts](primary/ZERO-CONSTRUCTION-STATIC-02.json) contain
+declarations/references only, no official bodies.
+
+Coverage: all native payload kinds, native one-child byte differentials, nested
+compound sorting/list and array order, Unicode replacement-order collisions
+with distinct original modified-UTF names, empty/presence/type distinctions,
+canonical/noncanonical NaNs and signed zero, exact byte/depth/node/UTF bounds,
+arrays-as-one-node, typed-empty raw decode/refusal, illegal/foreign/cyclic/null
+input, input/output alias isolation and arbitrary-budget refusal. The focused
+test uses native writers only for eligible reference payloads; no forced write
+after lossless-emission refusal.
+
+## Authority history / provenance / unresolved admission
+
+Initial task0dfafad��, clarified taske1dd3a�� and later Root progress-only context
+are distinct snapshots. The admitted adapter02/K1/phase01 contracts are
+unchanged; Root alone approves integration. Both new files are NEW
+repository-authored Java17 computation/tests under repository licensing;
+no upstream/LibVulpes/native source bodies/assets were copied.
+
+No author finding verdict substitutes for the assigned independent source
+review. Full GuardTicket/native capture/frame/hash/checkpoint/lifecycle/save,
+FE carrier/removal modes, actual first consumer/lathe, server/restart and V1/V2
+remain separate. Current v1.8 all Required Gates are **not** satisfied by this
+handoff. Next eligible work is independent actual-source review/replay of this
+two-file delta, then Root's bounded integration/regression if qualified.
+
+ALL SECOND MEASUREMENTS COMPLETE

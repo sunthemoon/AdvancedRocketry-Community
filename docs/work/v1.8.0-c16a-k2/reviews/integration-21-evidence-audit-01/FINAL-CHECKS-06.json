@@ -1,0 +1,262 @@
+{
+  "phases": [
+    {
+      "phase": "integration-build-data-21",
+      "command": {
+        "command": [
+          "D:\\GitHub\\AdvancedRocketry-Community\\gradlew.bat",
+          "--offline",
+          "--no-daemon",
+          "--max-workers=2",
+          "-Dorg.gradle.jvmargs=-Xmx2G",
+          "clean",
+          "build",
+          "test",
+          "runData"
+        ],
+        "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+        "JAVA_HOME": "C:/Program Files/Java/jdk-17.0.7",
+        "started_utc": "2026-10-04T04:34:28.395070+00:00"
+      },
+      "started": "2026-10-04T04:34:28.395070+00:00",
+      "finished": "2026-10-04T04:37:42.382769+00:00",
+      "elapsed_seconds": 193.987699,
+      "exit": 0,
+      "log": {
+        "bytes": 12900,
+        "sha256": "a4bece006129d09da1085b9bbea011bf76642f0bdb5893dd402708818d31c097"
+      }
+    },
+    {
+      "phase": "integration-gametest-12",
+      "command": {
+        "command": [
+          "D:\\GitHub\\AdvancedRocketry-Community\\gradlew.bat",
+          "--offline",
+          "--no-daemon",
+          "--max-workers=2",
+          "-Dorg.gradle.jvmargs=-Xmx2G",
+          "runGameTestServer"
+        ],
+        "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+        "JAVA_HOME": "C:/Program Files/Java/jdk-17.0.7",
+        "started_utc": "2026-10-04T04:53:03.407269+00:00"
+      },
+      "started": "2026-10-04T04:53:03.407269+00:00",
+      "finished": "2026-10-04T04:57:06.385603+00:00",
+      "elapsed_seconds": 242.978334,
+      "exit": 0,
+      "log": {
+        "bytes": 1476161,
+        "sha256": "f5d9d20094d73f33574340abcd35a95212021276b6780a665394779a5b246a07"
+      }
+    }
+  ],
+  "disk_precheck": {
+    "D": 343424028672,
+    "ThresholdBytes": 10000000000,
+    "C": 10264489984,
+    "CheckedUtc": "2026-10-04T04:53:02.7950039Z"
+  },
+  "governance_initial_collector_nonpass": {
+    "artifact_collection_exit": 1,
+    "GameTest_started": false,
+    "input_drift": [
+      {
+        "path": "AGENTS.md",
+        "before": {
+          "bytes": 8379,
+          "sha256": "725dd46344046bcdb802872e08fbc3cd9da0bf876e680eeba4c82dda801a9503"
+        },
+        "after": {
+          "bytes": 10353,
+          "sha256": "e5bc37d6e3c4888101aabb3a98f415f9718d38547412a1a4cf793d982df4de13"
+        }
+      }
+    ]
+  },
+  "R1_governance_observation": {
+    "observed_utc": "2026-10-04T04:53:00.364031+00:00",
+    "changes": {
+      "AGENTS.md": {
+        "before": {
+          "bytes": 8379,
+          "sha256": "725dd46344046bcdb802872e08fbc3cd9da0bf876e680eeba4c82dda801a9503"
+        },
+        "after": {
+          "bytes": 12047,
+          "sha256": "1be0391c3f69f566ae3f627e37107adfbd0bbfa6f581b105ff6bd2a2c2630dc0"
+        }
+      }
+    },
+    "exact_unchanged_inputs": 2989,
+    "Root_did_not_write_AGENTS": true,
+    "original_manifest_and_failed_collector_not_rewritten": true,
+    "build_code_tests_resources_not_changed": true,
+    "new_sections_read": [
+      9,
+      10,
+      11
+    ],
+    "revised_manifest_sha256": "2a2e4973bd1d214a89ab3e340c8977c66b574ff680a77d2dc49f3bfffaae0a46"
+  },
+  "links_observation_scope": {
+    "files": 675,
+    "links": 3101,
+    "errors": 0,
+    "AGENTS_snapshot_at_link_run": {
+      "path": "AGENTS.md",
+      "sha256": "e5bc37d6e3c4888101aabb3a98f415f9718d38547412a1a4cf793d982df4de13"
+    },
+    "does_not_cover_later_Root_docs": true
+  },
+  "boundary_actual_wrapper": {
+    "validator_sha256": "ff77ac86f500ce2f6c782d01084623746e87a653f76916ad1f04673683a950f2",
+    "exit": 0,
+    "calls": [
+      {
+        "command": [
+          "C:\\Program Files\\Git\\cmd\\git.exe",
+          "--no-pager",
+          "--no-replace-objects",
+          "--literal-pathspecs",
+          "-c",
+          "core.commitGraph=false",
+          "-c",
+          "core.fsmonitor=false",
+          "-c",
+          "core.untrackedCache=false",
+          "-c",
+          "safe.directory=D:/GitHub/AdvancedRocketry-Community",
+          "-C",
+          "D:\\GitHub\\AdvancedRocketry-Community",
+          "ls-files",
+          "-z",
+          "--cached"
+        ],
+        "foreign_directory_excluded": false,
+        "stdout_bytes": 784074,
+        "stdout_sha256": "f6a7352b5cbdbc5a973486b7dfa1dded333df58583920d80203a49a831a809e7"
+      },
+      {
+        "command": [
+          "C:\\Program Files\\Git\\cmd\\git.exe",
+          "--no-pager",
+          "--no-replace-objects",
+          "--literal-pathspecs",
+          "-c",
+          "core.commitGraph=false",
+          "-c",
+          "core.fsmonitor=false",
+          "-c",
+          "core.untrackedCache=false",
+          "-c",
+          "safe.directory=D:/GitHub/AdvancedRocketry-Community",
+          "-C",
+          "D:\\GitHub\\AdvancedRocketry-Community",
+          "ls-files",
+          "-z",
+          "--cached",
+          "--others",
+          "--exclude-standard",
+          "--exclude=/AdvancedRocketry-Community-v1plus-Development-Docs/"
+        ],
+        "foreign_directory_excluded": true,
+        "stdout_bytes": 837050,
+        "stdout_sha256": "963029c28e3456138e6f0b9c847a414919c45559e21f96d0f6f6ea822bc724de"
+      }
+    ],
+    "release_gate_claimed": false
+  },
+  "code_and_push": {
+    "observed_HEAD": "3f3d62aed3980186fe0acc9592cf93ca436405fb",
+    "observed_origin_branch": "3f3d62aed3980186fe0acc9592cf93ca436405fb",
+    "pinned_code_commit": {
+      "commit": "3f3d62aed3980186fe0acc9592cf93ca436405fb",
+      "tree": "3fadd9b2e57093fa4c27ec4b599b7bd82e0ea0d5",
+      "subject": "feat(machine): add bounded private canonical NBT bytes"
+    },
+    "remote_network_verification": false,
+    "force_push": false,
+    "actual_recorded_push": {
+      "command": [
+        "git",
+        "push",
+        "origin",
+        "codex/v1.8.0-classic-content"
+      ],
+      "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+      "started_utc": "2026-10-04T05:01:10.391799+00:00",
+      "finished_utc": "2026-10-04T05:01:16.485415+00:00",
+      "exit": 0,
+      "log_sha256": "11fc888450a9ddbec68b0469d54f74fc8d47973eb0890bb8a1ce2d1a3a8c7892",
+      "force": false
+    }
+  },
+  "prior_K2_test_evidence": [
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-hatches\\canonical-bytes-k2-source-01.zip",
+      "selected_actual_XML": [
+        {
+          "member": "scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml",
+          "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest",
+          "tests": 19,
+          "failures": 1,
+          "errors": 0,
+          "skipped": 0,
+          "failure_names": [
+            "signedZerosRemainDistinct()"
+          ],
+          "bytes": 15918,
+          "sha256": "03ac50217dc4f4a49411d123e19b20d0d691a10ac18b357ffa4b05734bf36b8e"
+        },
+        {
+          "member": "scoped-02-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml",
+          "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest",
+          "tests": 20,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failure_names": [],
+          "bytes": 5773,
+          "sha256": "4817e43ae792ac84c07e3bd0d76b111e6f12f20aa30994fb5dddf9d47368f15e"
+        }
+      ],
+      "not_independently_reexecuted_here": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-hatches\\reviews\\canonical-bytes-k2-independent-01.zip",
+      "selected_actual_XML": [
+        {
+          "member": "reviewer-scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml",
+          "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest",
+          "tests": 20,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failure_names": [],
+          "bytes": 5775,
+          "sha256": "12037963df24b141fbd853f43d5a031665447e9d2a7c950862acbfc9e2472ba0"
+        },
+        {
+          "member": "reviewer-scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.IndependentCanonicalBytesTest.xml",
+          "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.IndependentCanonicalBytesTest",
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0,
+          "failure_names": [],
+          "bytes": 2082,
+          "sha256": "cb3024ad06d93300d24799440377fff0ee42049bfe64c975a5c0975fc697db62"
+        }
+      ],
+      "not_independently_reexecuted_here": true
+    }
+  ],
+  "baseline_full3402_manifested_entries_verified": true,
+  "compact_postcheck": {
+    "bytes": 1241813,
+    "sha256": "9a9de4bf0f1bf41c7dabbfbbbfac48a89acdcccc919f9526349c8b7f527955f0"
+  },
+  "Java_GT_native_reexecutions": 0
+}

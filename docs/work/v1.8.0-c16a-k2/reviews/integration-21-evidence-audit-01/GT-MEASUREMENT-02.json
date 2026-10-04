@@ -1,0 +1,934 @@
+{
+  "launch_header": "[04Oct2026 12:53:19.736] [main/INFO] [cpw.mods.modlauncher.Launcher/MODLAUNCHER]: ModLauncher running: args [--launchTarget, forgegametestserveruserdev, --gameDir, ., --fml.forgeVersion, 47.4.10, --fml.mcVersion, 1.20.1, --fml.forgeGroup, net.minecraftforge, --fml.mcpVersion, 20230612.114412]",
+  "completions": [
+    {
+      "line": 5546,
+      "text": "[04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: ========= 464 GAME TESTS COMPLETE ======================"
+    },
+    {
+      "line": 5547,
+      "text": "[04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: All 464 required tests passed :)"
+    }
+  ],
+  "stop_tail": [
+    "[04Oct2026 12:57:02.168] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: ====================================================",
+    "[04Oct2026 12:57:02.168] [Server thread/INFO] [io.github.sunthemoon.arceadaptertest.EnvironmentQueryFixture/]: Environment query handle expired at server stopping",
+    "[04Oct2026 12:57:02.169] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server",
+    "[04Oct2026 12:57:02.169] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players",
+    "[04Oct2026 12:57:02.169] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds",
+    "[04Oct2026 12:57:03.102] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld",
+    "[04Oct2026 12:57:04.637] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:moon",
+    "[04Oct2026 12:57:04.654] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_nether",
+    "[04Oct2026 12:57:04.656] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:mars",
+    "[04Oct2026 12:57:04.667] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:tau_ceti_f",
+    "[04Oct2026 12:57:04.684] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:venus",
+    "[04Oct2026 12:57:04.704] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/minecraft:the_end",
+    "[04Oct2026 12:57:04.705] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:tau_ceti_g",
+    "[04Oct2026 12:57:04.714] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[world]'/advancedrocketrycommunity:space",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (world): All chunks are saved",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (moon): All chunks are saved",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (mars): All chunks are saved",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (tau_ceti_f): All chunks are saved",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (venus): All chunks are saved",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (tau_ceti_g): All chunks are saved",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (space): All chunks are saved",
+    "[04Oct2026 12:57:04.788] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved",
+    "[04Oct2026 12:57:05.572] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestServer/]: Game test server shutting down"
+  ],
+  "ERROR_count": 61,
+  "errors": [
+    {
+      "line": 213,
+      "header": "[04Oct2026 12:53:56.044] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional Energy-only migration binding save failure",
+      "context_lines": 50,
+      "context_sha256": "3714f851ce3f0918db4babf3a0dd5a64e61924e51f4d56909bbc86852fda4b58",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117)"
+      ]
+    },
+    {
+      "line": 263,
+      "header": "[04Oct2026 12:53:56.045] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40002,40001",
+      "context_lines": 37,
+      "context_sha256": "66a58a7452d7b14e8e9336a7fdcb7b8ca56f75777905c130786062cf5c21e496",
+      "frames": [
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117) ~[%23197!/:?]"
+      ]
+    },
+    {
+      "line": 661,
+      "header": "[04Oct2026 12:54:15.857] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:rolling_iron_bars until tag reload: machine ingredient has no bound alternatives",
+      "context_lines": 1,
+      "context_sha256": "c164aa90ed38373c6fc63847bee4b345acd930d08277f9d1e83f145b0f6cff94",
+      "frames": []
+    },
+    {
+      "line": 662,
+      "header": "[04Oct2026 12:54:15.858] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:precision_control_circuit until tag reload: machine ingredient has no bound alternatives",
+      "context_lines": 1,
+      "context_sha256": "481c4bd4957fdc8d75e1349bd642f5a4ec0ecec9b61af66ad2d89afdffe54286",
+      "frames": []
+    },
+    {
+      "line": 663,
+      "header": "[04Oct2026 12:54:15.858] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:electrolyzer_water until tag reload: machine ingredient has no bound alternatives",
+      "context_lines": 1,
+      "context_sha256": "7a0bb0c928f1c5128c2a0c15ed8b4f0a8c8ac544b88314c03a517ba10cf86686",
+      "frames": []
+    },
+    {
+      "line": 825,
+      "header": "[04Oct2026 12:54:22.182] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite idle launch operation failed",
+      "context_lines": 34,
+      "context_sha256": "7d7d7ca998bad143d2434ab7d81a8da093183f6388ba9dd328c56e6e2580d658",
+      "frames": [
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:71) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:49) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:43) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:39) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteKindLifecycle.launchIdle(SatelliteKindLifecycle.java:106) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager.launch(SatelliteManager.java:205) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime.launch(SatelliteRuntime.java:46) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.launchOrStart(SatelliteTerminalBlockEntity.java:313) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.handleButton(SatelliteTerminalBlockEntity.java:194) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.press(SatelliteReviewGameTests.java:375) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.aFailedLaunchFlushKeepsThePackageUntilTheReplayIsDurable(SatelliteReviewGameTests.java:86) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.requireFileOrAbsent(CheckedSavedDataFile.java:96) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:49) ~[%23197!/:?]"
+      ]
+    },
+    {
+      "line": 859,
+      "header": "[04Oct2026 12:54:22.185] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite idle launch operation failed",
+      "context_lines": 34,
+      "context_sha256": "f1cddb15f125c91f9a0ed8268dc9cca28acc64bf360072c2c7e3b7a23e95c5c1",
+      "frames": [
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:71) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:49) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:43) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:39) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteKindLifecycle.launchIdle(SatelliteKindLifecycle.java:62) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager.launch(SatelliteManager.java:205) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime.launch(SatelliteRuntime.java:46) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.launchOrStart(SatelliteTerminalBlockEntity.java:313) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.handleButton(SatelliteTerminalBlockEntity.java:194) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.press(SatelliteReviewGameTests.java:375) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.aFailedLaunchFlushKeepsThePackageUntilTheReplayIsDurable(SatelliteReviewGameTests.java:89) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.requireFileOrAbsent(CheckedSavedDataFile.java:96) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:49) ~[%23197!/:?]"
+      ]
+    },
+    {
+      "line": 953,
+      "header": "[04Oct2026 12:54:26.034] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure",
+      "context_lines": 50,
+      "context_sha256": "8963562bb4e39be188fd3d2f7b0ea622787844d1b10f4bc3142a3edd9c01cdc2",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:226)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:192)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:364)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests.lambda$exerciseRetry$1(PrecisionAssemblerMigrationSaveFailureGameTests.java:109)"
+      ]
+    },
+    {
+      "line": 1003,
+      "header": "[04Oct2026 12:54:26.035] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 32013,32003",
+      "context_lines": 37,
+      "context_sha256": "735db4f969c917f840cc73d1c06d3963a7c515dc76da5c812bb1899e5764c41d",
+      "frames": [
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:226) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:192) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:364) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests.lambda$exerciseRetry$1(PrecisionAssemblerMigrationSaveFailureGameTests.java:109) ~[%23197!/:?]"
+      ]
+    },
+    {
+      "line": 1040,
+      "header": "[04Oct2026 12:54:26.045] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=512207, y=36, z=512063} in minecraft:overworld: BlockPos{x=512208, y=36, z=512063}: arce_precision_port_migration differs (expected hash=-2043996827, saved hash=0)",
+      "context_lines": 1,
+      "context_sha256": "f340dbc56225560bfd54f97b128e113011a938da9ca2bf20d5b5012021a678be",
+      "frames": []
+    },
+    {
+      "line": 1931,
+      "header": "[04Oct2026 12:54:37.229] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite launch operation failed",
+      "context_lines": 29,
+      "context_sha256": "01d91c31af638d4ce5709f92a9740aae91c18b05fd6e36b3f053276e18801481",
+      "frames": [
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:71) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:49) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:43) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:39) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager.launch(SatelliteManager.java:228) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.DiscoveryRecoveryGameTests.oldPaidReceiptAndNewRemovedTargetRecoverWithoutAnotherClaim(DiscoveryRecoveryGameTests.java:72) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.requireFileOrAbsent(CheckedSavedDataFile.java:96) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:49) ~[%23197!/:?]"
+      ]
+    },
+    {
+      "line": 2252,
+      "header": "[04Oct2026 12:54:56.301] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+      "context_lines": 1,
+      "context_sha256": "8c4026607e921e157bb95fed70343d20ccb96b046977be29938edf20f043e503",
+      "frames": []
+    },
+    {
+      "line": 2253,
+      "header": "[04Oct2026 12:54:56.302] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+      "context_lines": 1,
+      "context_sha256": "92f480a0d3778145b6d6a0fe7515e094b9492f2b1b8518d278e659c213c05555",
+      "frames": []
+    },
+    {
+      "line": 2254,
+      "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+      "context_lines": 1,
+      "context_sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+      "frames": []
+    },
+    {
+      "line": 2255,
+      "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+      "context_lines": 1,
+      "context_sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+      "frames": []
+    },
+    {
+      "line": 2256,
+      "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+      "context_lines": 1,
+      "context_sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+      "frames": []
+    },
+    {
+      "line": 2257,
+      "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+      "context_lines": 1,
+      "context_sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+      "frames": []
+    },
+    {
+      "line": 2258,
+      "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+      "context_lines": 1,
+      "context_sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+      "frames": []
+    },
+    {
+      "line": 2259,
+      "header": "[04Oct2026 12:54:56.304] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+      "context_lines": 1,
+      "context_sha256": "a33b7ed71dbc71dc0a0b2235038b2802f74db9cb1271ffc654fda01e4320f429",
+      "frames": []
+    },
+    {
+      "line": 2260,
+      "header": "[04Oct2026 12:54:56.304] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+      "context_lines": 1,
+      "context_sha256": "4a4cfbd70bb23526a1c662010fc2c69cf9476f6404c2c796e8b74e39495e01af",
+      "frames": []
+    },
+    {
+      "line": 2261,
+      "header": "[04Oct2026 12:54:56.305] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+      "context_lines": 1,
+      "context_sha256": "e124e3f03782beaf6e9f597f924bdedd091a362d5ea4d2249e3e7559f9613725",
+      "frames": []
+    },
+    {
+      "line": 2262,
+      "header": "[04Oct2026 12:54:56.305] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+      "context_lines": 1,
+      "context_sha256": "e124e3f03782beaf6e9f597f924bdedd091a362d5ea4d2249e3e7559f9613725",
+      "frames": []
+    },
+    {
+      "line": 2263,
+      "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+      "context_lines": 1,
+      "context_sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+      "frames": []
+    },
+    {
+      "line": 2264,
+      "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+      "context_lines": 1,
+      "context_sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+      "frames": []
+    },
+    {
+      "line": 2265,
+      "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+      "context_lines": 1,
+      "context_sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+      "frames": []
+    },
+    {
+      "line": 2266,
+      "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+      "context_lines": 1,
+      "context_sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+      "frames": []
+    },
+    {
+      "line": 2267,
+      "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+      "context_lines": 1,
+      "context_sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+      "frames": []
+    },
+    {
+      "line": 2300,
+      "header": "[04Oct2026 12:55:00.324] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional Energy-only migration binding save failure",
+      "context_lines": 50,
+      "context_sha256": "8eb566f0640acd157b793c5a85be3fb8f0648f7ac411038368b36c05a30cebe1",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117)"
+      ]
+    },
+    {
+      "line": 2350,
+      "header": "[04Oct2026 12:55:00.325] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40042,40004",
+      "context_lines": 37,
+      "context_sha256": "427f85c528f20ee2ea7c9476abed6e3fb78c63537715de9fc10a8699ca76ca8a",
+      "frames": [
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117) ~[%23197!/:?]"
+      ]
+    },
+    {
+      "line": 2387,
+      "header": "[04Oct2026 12:55:00.342] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional Energy-only migration binding save failure",
+      "context_lines": 50,
+      "context_sha256": "8379a7902060f7881db2a222621c92bc3c5d564f1509cfa673b5b3225833c712",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:364)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117)"
+      ]
+    },
+    {
+      "line": 2437,
+      "header": "[04Oct2026 12:55:00.342] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40042,40004",
+      "context_lines": 37,
+      "context_sha256": "6d88a89c87d1754213c323e7ee5411f4b9c8057ec767b0f05c176c5d7cae0c09",
+      "frames": [
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:364) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117) ~[%23197!/:?]"
+      ]
+    },
+    {
+      "line": 2474,
+      "header": "[04Oct2026 12:55:00.361] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=640671, y=20, z=640061} in minecraft:overworld: BlockPos{x=640672, y=20, z=640064}: arce_part_binding differs (expected hash=1241633005, saved hash=1241633004)",
+      "context_lines": 1,
+      "context_sha256": "0eb9937d7ff34506d693bab4de22ba27bc05ba88f16061b7a993d3fdb1050e6f",
+      "frames": []
+    },
+    {
+      "line": 3285,
+      "header": "[04Oct2026 12:56:00.370] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure",
+      "context_lines": 50,
+      "context_sha256": "a86e933759481f08356b3ac4096eed77031bf9e549a4f706f30e19aaf9bac967",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:226)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:192)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests.lambda$exerciseRetry$1(PrecisionAssemblerMigrationSaveFailureGameTests.java:109)"
+      ]
+    },
+    {
+      "line": 3335,
+      "header": "[04Oct2026 12:56:00.370] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 32001,32006",
+      "context_lines": 37,
+      "context_sha256": "5d11fd7be329ac15772a919b088ceb360036b49681fc5bbaac920cfc94f29f6b",
+      "frames": [
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:226) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:192) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests.lambda$exerciseRetry$1(PrecisionAssemblerMigrationSaveFailureGameTests.java:109) ~[%23197!/:?]"
+      ]
+    },
+    {
+      "line": 3372,
+      "header": "[04Oct2026 12:56:00.383] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=512031, y=20, z=512111} in minecraft:overworld: BlockPos{x=512031, y=20, z=512111}: arce_precision_resources differs (expected hash=1319225500, saved hash=0)",
+      "context_lines": 1,
+      "context_sha256": "e880bc269ca249d0eb7605a7375e2ea577a28a1d2c397c5a7765656c6020283a",
+      "frames": []
+    },
+    {
+      "line": 4246,
+      "header": "[04Oct2026 12:56:15.960] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "71512082733e1ea1ecd9d459be56f258395ab204540dfee931dae36c2d865c52",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4286,
+      "header": "[04Oct2026 12:56:15.960] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "ceacf4a08b22ade9304635229b82b7b155b65a7cddc14d8a725f5bdacc945ff3",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 4325,
+      "header": "[04Oct2026 12:56:15.962] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "4c6b48267b7c3b11abe62c5a4cc0871d9269b452fecaafb1cd35763f36f9f60a",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4365,
+      "header": "[04Oct2026 12:56:15.962] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "11f2976b13fe6be47d45100ffa712a409a45c2570494f746486dadef8e5fc9fa",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 4404,
+      "header": "[04Oct2026 12:56:15.963] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "77007dba762d44e1df8adb9e39f63615c02b57f57f174c0afcb05b4056d6862f",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4444,
+      "header": "[04Oct2026 12:56:15.963] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "cc05c1b5b857d8a41eedb9d13d254d9f1537faf4082e58b7d94b29822c784cbd",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 4483,
+      "header": "[04Oct2026 12:56:15.963] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "77007dba762d44e1df8adb9e39f63615c02b57f57f174c0afcb05b4056d6862f",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4523,
+      "header": "[04Oct2026 12:56:15.964] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "c872a3c32e6fd18f8781e0df213f94be3ca5bf72a5822167946b0937da408322",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 4562,
+      "header": "[04Oct2026 12:56:15.964] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "9265fa5a256e792e40953d4668e835d1ae05983f78956fe18f2fb29a7fe48b9e",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4602,
+      "header": "[04Oct2026 12:56:15.965] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "433e0391daf284e0d3fd9d8fbc63cba716690832722e68e26a49889f98a7393b",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 4641,
+      "header": "[04Oct2026 12:56:15.966] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "39360f1f70735396253dc336f7863315fe2b39144c1f8077ed99666ce684ac0e",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4681,
+      "header": "[04Oct2026 12:56:15.966] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "14d5adff4f3f4802a8e13239f4738a6a3994519770640f3b379eb9c33b73428c",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 4720,
+      "header": "[04Oct2026 12:56:15.968] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "fe174369c61340e05d659af50e75530ee2e2ba793d9ee3724ec12ec71f17e11c",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4760,
+      "header": "[04Oct2026 12:56:15.968] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "abdf05363bd7a8de37eff19a6e30d3810abafffe091f266e6e2238c19a15084b",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 4799,
+      "header": "[04Oct2026 12:56:15.969] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "8410ab745f05563da400b2ff4dea6c63f96007ac5377e89ad788e3b2a7bec6af",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4839,
+      "header": "[04Oct2026 12:56:15.970] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "c9a8bf413feef17e4c1f1b0dc596b2391395b4027a32bca49b3c59b0b88ab50f",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 4878,
+      "header": "[04Oct2026 12:56:15.970] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "b806883c18a95161ca44fa96fbeba6bb4ae1683171b8b5524370a79733441f84",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4918,
+      "header": "[04Oct2026 12:56:15.970] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "c9a8bf413feef17e4c1f1b0dc596b2391395b4027a32bca49b3c59b0b88ab50f",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 4957,
+      "header": "[04Oct2026 12:56:15.970] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "b806883c18a95161ca44fa96fbeba6bb4ae1683171b8b5524370a79733441f84",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 4997,
+      "header": "[04Oct2026 12:56:15.971] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "be2af14d0d9b54aae8630364cc435e244e4a1a018de2734d982fba6f655a2b74",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 5036,
+      "header": "[04Oct2026 12:56:15.972] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "787f3876953e95cfa8d817831df1256d4240e0651715009b407a4431cf086df6",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 5076,
+      "header": "[04Oct2026 12:56:15.972] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "7547fcfaedf32715df3b9301745194cc165ac21a6308c9b65931b855415f65a7",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 5115,
+      "header": "[04Oct2026 12:56:15.972] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 40,
+      "context_sha256": "787f3876953e95cfa8d817831df1256d4240e0651715009b407a4431cf086df6",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+      ]
+    },
+    {
+      "line": 5155,
+      "header": "[04Oct2026 12:56:15.974] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "58bcd665643fdbac5e7ec6d69f82126197af518a5274062aa7f895dc00fd1783",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+      ]
+    },
+    {
+      "line": 5203,
+      "header": "[04Oct2026 12:56:16.031] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized combustion input; back up and repair first",
+      "context_lines": 39,
+      "context_sha256": "9a65708b7fdf536e2321ecdf013ba5f22758a8d9ba000fc29352325f49fd7c23",
+      "frames": [
+        "1: ASM: class io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves beforeSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "5: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "6: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "7: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "8: ASM: class io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankProtection chunkSave(Lnet/minecraftforge/event/level/ChunkDataEvent$Save;)V",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection.chunkSave(CombustionProtection.java:44)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.__CombustionProtection_chunkSave_Save.invoke(.dynamic)",
+        "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.CombustionGeneratorGameTests.oversizedSaveFailsBeforeReplacingItsStoredRoot(CombustionGeneratorGameTests.java:252)"
+      ]
+    },
+    {
+      "line": 5515,
+      "header": "[04Oct2026 12:57:01.814] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite idle launch operation failed",
+      "context_lines": 27,
+      "context_sha256": "01108b7e0fc6bbcec9859251f6d3eb354ad719b53c034cac91c8426e55c6bd50",
+      "frames": [
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData.requireOperational(SatelliteMissionSavedData.java:390) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData.account(SatelliteMissionSavedData.java:342) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteKindLifecycle.launchIdle(SatelliteKindLifecycle.java:91) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager.launch(SatelliteManager.java:205) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime.launch(SatelliteRuntime.java:46) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.launchOrStart(SatelliteTerminalBlockEntity.java:313) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.handleButton(SatelliteTerminalBlockEntity.java:194) ~[%23197!/:?]",
+        "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.aBlockedRegistryFailsClosedWithoutCrashing(SatelliteReviewGameTests.java:134) ~[%23197!/:?]"
+      ]
+    }
+  ],
+  "batch_samples": [
+    {
+      "line": 167,
+      "text": "[04Oct2026 12:53:49.068] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'flight_concurrency:1' (1 tests)..."
+    },
+    {
+      "line": 211,
+      "text": "[04Oct2026 12:53:54.462] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'precision_energy_binding_retry:1' (1 tests)..."
+    },
+    {
+      "line": 300,
+      "text": "[04Oct2026 12:53:56.121] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_protection:1' (1 tests)..."
+    },
+    {
+      "line": 303,
+      "text": "[04Oct2026 12:53:56.283] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_elevator_redirect:1' (1 tests)..."
+    },
+    {
+      "line": 320,
+      "text": "[04Oct2026 12:53:57.513] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'atmosphere_performance:1' (1 tests)..."
+    },
+    {
+      "line": 632,
+      "text": "[04Oct2026 12:54:05.841] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_commit:1' (1 tests)..."
+    }
+  ]
+}

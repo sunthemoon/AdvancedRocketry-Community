@@ -1,0 +1,287 @@
+{
+  "base_commit": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+  "branch": "codex/v1.8.0-classic-content",
+  "exclusions": [
+    "pre-existing untracked user documentation bundle",
+    "binary evidence archives and their generated index/checksums"
+  ],
+  "files": [
+    {
+      "bytes": 50091,
+      "head_sha256": "4a4669692c274724fa8fb3f56f3432470c6e087ba2ea9d7c0e0edc908c350ceb",
+      "path": "CHANGELOG.md",
+      "sha256": "e014a35395ff2bb4b3a65646c06b8acd29f251c79c589d4d0f961336df16308c"
+    },
+    {
+      "bytes": 11069,
+      "head_sha256": "4fbea3fcb7dfe954c7984905ae8c417015dc140fc777fa18efe6cf18024f7c8a",
+      "path": "README.md",
+      "sha256": "fc8893e4aa27219475305782359ca9e0dec8f8b127d9621506f09b7fb1b76b77"
+    },
+    {
+      "bytes": 15904,
+      "head_sha256": "104cfcdb9b04b32a83ded719293b37695fabaed309629ce26c5de5772567a105",
+      "path": "docs/CELESTIAL-DATA-GUIDE.md",
+      "sha256": "5bf98ce1d1e4d254a3c85b933e3904ce9884c1f952fb91d7fe672dbf4dad56e8"
+    },
+    {
+      "bytes": 34350,
+      "head_sha256": "6fabdca6a20cdebfb478638d50ef3332621d1488bac773df061196f42efe2006",
+      "path": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "sha256": "223cacc2b3b3a2a9a649d01bd83980bebd4aa8225c694377130786d29bd3321a"
+    },
+    {
+      "bytes": 45930,
+      "head_sha256": "b703b204e9574eae8fc6369cbd64bd311e1e1b22a04f1a236c69b4ff310adc06",
+      "path": "docs/decisions/ADR-063-MATERIALS-ORES-AND-PLANETARY-SURFACES.md",
+      "sha256": "d9850c98f198d921d5f9c1b8ad2d0c1a320280af664bf41c7c9eeb4a8980dab0"
+    },
+    {
+      "bytes": 30643,
+      "head_sha256": "e69e423d0cdeb8a573c0502d9a47b2c63b724ff43cc292b4d635ffceaa552fab",
+      "path": "docs/decisions/ADR-064-CLASSIC-MACHINES-FLUIDS-AND-COMPONENTS.md",
+      "sha256": "d8ecc264170047fe62644dee01f2fc1101c56ceb5df1f250d8224486205f7014"
+    },
+    {
+      "bytes": 6839,
+      "head_sha256": "284eb7536833beda4063c415ab9b4a9e5e2bcf994828eebee701e31999580381",
+      "path": "docs/provenance/v1.8.0-development-metadata.md",
+      "sha256": "57188e351468c62c9926d42b26f0270de343a5df504f51b49de298dbf696983c"
+    },
+    {
+      "bytes": 15904,
+      "head_sha256": "460a835838fd7d6860c02c848b6c91b576ed1685131b32292ee17aee5bd9dc82",
+      "path": "docs/status/COMPLETION-PLAN.md",
+      "sha256": "f7bf492ee413f330114f41b3c27c271b5dde20eafceb4bee71be78125d6fb65e"
+    },
+    {
+      "bytes": 11705,
+      "head_sha256": "8c9891a35f2a319c6e0f91f243fef908bbc2088a5fefe5bc758c05dcac9e585a",
+      "path": "docs/status/CURRENT_VERSION.md",
+      "sha256": "1568f441e0d8b27a7c41ee058bcb17c13bda5ec219ed7e7950e19637c1f19c67"
+    },
+    {
+      "bytes": 708,
+      "head_sha256": null,
+      "path": "docs/work/v1.8.0-c15b-surfaces/review-02-dispositions.md",
+      "sha256": "0cff400de9ebe04e630f753036194c816b4cdc10da11f267b307c15b276f8809"
+    },
+    {
+      "bytes": 6803,
+      "head_sha256": null,
+      "path": "docs/work/v1.8.0-c15b-surfaces/reviews/REVIEW-02.md",
+      "sha256": "f09b51f3e4304088b4f5eb37f8e56c5ba15f383a937838487685390c34032ff7"
+    },
+    {
+      "bytes": 2595,
+      "head_sha256": null,
+      "path": "docs/work/v1.8.0-c15c-worlds/review-01-dispositions.md",
+      "sha256": "b2288794b89e587569b8299c3a31394c0e92dd2d208eea2f767afe1ee2bcda3e"
+    },
+    {
+      "bytes": 13083,
+      "head_sha256": null,
+      "path": "docs/work/v1.8.0-c15c-worlds/reviews/REVIEW-01.md",
+      "sha256": "c1882343a9d362828bf1628422177c13226d7330899f3297d152969fc5055ca6"
+    },
+    {
+      "bytes": 9800,
+      "head_sha256": null,
+      "path": "docs/work/v1.8.0-c15c-worlds/reviews/REVIEW-02.md",
+      "sha256": "e6a5c31f3895fc20b3dce0cc78dc32e75cf554f889d919eeb78312a11262caac"
+    },
+    {
+      "bytes": 2781,
+      "head_sha256": null,
+      "path": "docs/work/v1.8.0-c16-contract/review-dispositions.md",
+      "sha256": "9b2c5a0208e5fa6f487deaf92740c1b0bf2b4c6483394daa8334ccf0efbb9697"
+    },
+    {
+      "bytes": 11970,
+      "head_sha256": null,
+      "path": "docs/work/v1.8.0-c16-contract/reviews/REVIEW-01.md",
+      "sha256": "4815e5002ecb6931a07f1dbde2c2e6ad19429ef5ac0d4d00ed64677b00261164"
+    },
+    {
+      "bytes": 8189,
+      "head_sha256": null,
+      "path": "docs/work/v1.8.0-c16-contract/reviews/REVIEW-02.md",
+      "sha256": "986d8290f2d9721200bf3da12cc8280e83acc76268a84cce7abb62f40eac0d24"
+    },
+    {
+      "bytes": 26597,
+      "head_sha256": "ccb3bff714ca1757e91961e0eae27e79016bec8fb7486a6746e97ddc841dfaea",
+      "path": "docs/work/v1.8.0-implementation-log.md",
+      "sha256": "386438a249078303c0586a2ce4dc58c6b0ac2efe18e88e68c6d745ad605005d3"
+    },
+    {
+      "bytes": 8439,
+      "head_sha256": null,
+      "path": "docs/work/v1.8.0-review-continuation/VERIFICATION.md",
+      "sha256": "2f25165160eb511ff858fbe37e7232c1980869c362d48a71fc29780d2d50d06b"
+    },
+    {
+      "bytes": 2109,
+      "head_sha256": "16adf8b99f96381b6e3991cf72bc201a8c70f25b56cfec9ee4bb6cb4b4fe30c9",
+      "path": "gradle.properties",
+      "sha256": "6ae19c89a0d327bad4faae759ef577ccad47f940aeebed5d7efb9ed9abdc2608"
+    },
+    {
+      "bytes": 7808,
+      "head_sha256": "cb018c0a05226d036d7444e7f6d58e960f6e35551ff89b411f26fc594e366431",
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/noise_settings/tau_ceti_f.json",
+      "sha256": "4c98713cd12d959146cc36ee17fa1e846df388b24bcc0770990a93d25d5a6c4b"
+    },
+    {
+      "bytes": 405,
+      "head_sha256": "7b917eb2bcf7cfaf10ff70f867d129005643ae51381293beb6c84092fb23f307",
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/alien_forest_grass.json",
+      "sha256": "a10bdf87e2719fd885e7b12937a16f4d4d7f7776eeb97ed76c9ac858eb502352"
+    },
+    {
+      "bytes": 532,
+      "head_sha256": "ae380ff8698a2fb4699e1b9c70646ef01a1afdc716d9371085bf9efc17a0a9d8",
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/crystal_cluster.json",
+      "sha256": "41b85c3cf40b9a86851431ea57f50b69cdfcc2ef6d150f4059bbe10e1ea7ba3f"
+    },
+    {
+      "bytes": 464,
+      "head_sha256": "55987bb7c82d0afe6791d837ce1207d1900711f6b88e06b4436e65cdf493b0cd",
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/electric_mushrooms.json",
+      "sha256": "43ec074267519ffe553f94da23ee5505b38cbebb7f6b94bce593cded545063bf"
+    },
+    {
+      "bytes": 621,
+      "head_sha256": "290b4131effe8955fccd41f0f0e0c1b94fe2d3c922e3bde5a25ee7d87421cf41",
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/giant_swamp_tree.json",
+      "sha256": "6df4ff8ee878df94131f5c0d8e25f9684d08249bf087f6afdf45e31b32d3f9e2"
+    },
+    {
+      "bytes": 529,
+      "head_sha256": "97a09d18aaef687df9d1722e749f0248d50d5f9e41fd6bc2fecbb202863dbdc3",
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/inverted_pillar.json",
+      "sha256": "577d9298f16ad96e6461884def9e189932a2b55c588724e226f4fc5b7b3b86f7"
+    },
+    {
+      "bytes": 622,
+      "head_sha256": "0eb3fb6b21f406c95385ae553054c8fc5a371d2bd94dd7733095a0420bcd3b8d",
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/lightwood_tree.json",
+      "sha256": "7fd902b57e339ff73cc8e23070892b22c22b1383cfbfc2cbde579616fc45bc47"
+    },
+    {
+      "bytes": 516,
+      "head_sha256": "6cb758373b38d3ad95dfa1507d81d8ffe4349e355ddbac4dd0b26cb259dc0d3d",
+      "path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/worldgen/placed_feature/stormland_charred_tree.json",
+      "sha256": "8e7e8312d2535cdf293ae00e680210ffb5635f841a6c8b00f2074945b7fd6b8b"
+    },
+    {
+      "bytes": 4963,
+      "head_sha256": "dfcf11228c3778a8c8a293ad22a6d87bfc739958a0f59ca1c1eaa0d2433410df",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/ExoplanetContent.java",
+      "sha256": "7dc0c007238ea705530850d91d627aac11ad90e72806edd71634be74b3f2f172"
+    },
+    {
+      "bytes": 4740,
+      "head_sha256": "bc25dd2ceb7aceb00ebe44bc5bfcaa14fe6946c9a3a5e2ac77804dc20216e0eb",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/ExoplanetWorldgen.java",
+      "sha256": "b2b470d20616fe305140f3a0e5b6d4516477f4a8d5a1f1a02250c306478409a8"
+    },
+    {
+      "bytes": 2379,
+      "head_sha256": "d5b95fb1338cd04ea54a35430c13e369f12688a46da83b806b1a8c275cafcd66",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/LandingGroundFilter.java",
+      "sha256": "79b07ffd1f9538c89531e3113dbb978a813147bf4992f684ba40a26405b334fd"
+    },
+    {
+      "bytes": 3909,
+      "head_sha256": "3d35c2fd18dde25373b2f0e4fe65c905ab4b613567ae4abc693057976bc4de91",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyMath.java",
+      "sha256": "89fc7cb89838f7c42e6aa4a40807c69b9919eac588f50b70eaf2796052ad52c1"
+    },
+    {
+      "bytes": 1856,
+      "head_sha256": "d74b1828d6603355a3d199befb6c92126c9d0c6c150b858574ffbd41f1d4d917",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyProfiles.java",
+      "sha256": "c9ae287aaf379ccfc2757338c1f3e0540c8f8d0b1d40c7a50add63f0e7e1e9b2"
+    },
+    {
+      "bytes": 3554,
+      "head_sha256": "3f103f599b35e92b5a192a67c7446fec67af1d2a781f412617b8ba41eff7e67a",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/exoplanet/ClientExoplanetEffects.java",
+      "sha256": "6e072f1059d22ba2b2c9b16f921a81316a134b67ace31c7ccacfd2d076c2597a"
+    },
+    {
+      "bytes": 1016,
+      "head_sha256": null,
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/exoplanet/FlashCooldown.java",
+      "sha256": "31764256568b49da6ac3734f17d0a4c8c1f53559b440ac377267bec8bbbe6f72"
+    },
+    {
+      "bytes": 2296,
+      "head_sha256": "77e52cceca4027d1a684de6c4be0a64dba56149d21342576a3b6f38f0aebacfc",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetaryDimensionEffects.java",
+      "sha256": "90068ef902824f7f4227215c7c5ff3998095ef8c24866c29d497b9bd809657ea"
+    },
+    {
+      "bytes": 4372,
+      "head_sha256": "18f263a32c65eaa3d61b9c8032be6732c51bf9746dd9ec2c0de398a09ec7d1c9",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyClient.java",
+      "sha256": "c0d12bbec2bd0e6c1578354c2dd3cb822c1fa53e0acbba1b10e75e1d72cb3e65"
+    },
+    {
+      "bytes": 6776,
+      "head_sha256": "d6a94ea584b82992ecc977ace39efa22c048b06df7d7aec0e7013bf8458c5f53",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/PlanetarySkyRenderer.java",
+      "sha256": "6a13daeecb41a70ed8b38bbde4a3ed6295e04026f0aa4f119a1115c4454ad60a"
+    },
+    {
+      "bytes": 3318,
+      "head_sha256": "3c3dfd2cb3a75d6ac4160d782d1a84307f5690972112dedc8ff372357b49af07",
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ExoplanetData.java",
+      "sha256": "1a6177bca0646bdd498b65c9a4b0aef2c85ffe2e6a04907165aff0de3964d3db"
+    },
+    {
+      "bytes": 2063,
+      "head_sha256": "328ed05aa71cd9d675171d7e8566fe0f78b715d783a20ffd0de413ff9b27c998",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/ModMetadataTest.java",
+      "sha256": "72bc41be54539856af36ddb4d8e5d3ab8a61c4f5f6f499e0ff2a5c4f71e4e3e6"
+    },
+    {
+      "bytes": 21567,
+      "head_sha256": "3f6b51321f480c3808db7e101d466b697a913bae0c0dc38b7b877c7da8149aa2",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/V180ExoplanetResourcesTest.java",
+      "sha256": "02557505fe6c375782e3a5881c3abd41bb37934c695cbff4f94e076f702ee273"
+    },
+    {
+      "bytes": 7783,
+      "head_sha256": "58a202fb9fe76919a9c60b0c5b70731b3a8d8e8957958621e0dd67d3e6dff053",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/exoplanet/worldgen/LandingGroundTest.java",
+      "sha256": "46fc976e69fc942d06f7612e7b77344e8b287525b8f27aac39b105aab65d7de9"
+    },
+    {
+      "bytes": 4751,
+      "head_sha256": "62ef607b504e6d4465656db5fb405aa410599d6fd71b1461d0707b9500680ebd",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyMathTest.java",
+      "sha256": "fb96221f25ddad2348c33020736897b649d9c5c051879958e3f8d0beecc86b74"
+    },
+    {
+      "bytes": 3149,
+      "head_sha256": "016ccd3c7769455dc84fbf5ab5007463c26c84ac43454f99329e5e97e67db294",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/visual/SkyProfileTest.java",
+      "sha256": "35e75a270e6f3b3d27189499bd70912ad94f547bc320e7ca80edd8399e27b160"
+    },
+    {
+      "bytes": 1772,
+      "head_sha256": null,
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/exoplanet/FlashCooldownTest.java",
+      "sha256": "01996f54a33e32af2e237e041667d2c1b4d0afeec72b2dd0fa617b6cac902e58"
+    },
+    {
+      "bytes": 8238,
+      "head_sha256": "1557db1e446bdf0aae653341cf79747bf6af944002d5481d53e5a758fc00b05c",
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/sky/SkyProfileReloadTest.java",
+      "sha256": "11f49a1a09cb51011c946655a3487df909f9fe13bcf4d743cf45bfcb666525c4"
+    }
+  ],
+  "uncommitted_snapshot": true
+}

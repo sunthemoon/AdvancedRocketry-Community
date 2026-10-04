@@ -1,0 +1,158 @@
+{
+  "commit": "3f3d62aed3980186fe0acc9592cf93ca436405fb",
+  "counts": {
+    "baseline": 2988,
+    "original": 2990,
+    "R1": 2990
+  },
+  "baseline_to_original": {
+    "added": [
+      "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java",
+      "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytesTest.java"
+    ],
+    "removed": [],
+    "changed": []
+  },
+  "original_to_R1": {
+    "added": [],
+    "removed": [],
+    "changed": [
+      "AGENTS.md"
+    ]
+  },
+  "commit_missing": [
+    "docs/work/v1.8.0-c16a-hatch-core/API-ACCEPTANCE.md"
+  ],
+  "commit_mismatches": [
+    {
+      "path": "AGENTS.md",
+      "commit": {
+        "bytes": 8379,
+        "sha256": "725dd46344046bcdb802872e08fbc3cd9da0bf876e680eeba4c82dda801a9503"
+      },
+      "manifest": {
+        "bytes": 12047,
+        "sha256": "1be0391c3f69f566ae3f627e37107adfbd0bbfa6f581b105ff6bd2a2c2630dc0"
+      }
+    },
+    {
+      "path": "docs/decisions/ADR-064-CLASSIC-MACHINES-FLUIDS-AND-COMPONENTS.md",
+      "commit": {
+        "bytes": 20705,
+        "sha256": "e69e423d0cdeb8a573c0502d9a47b2c63b724ff43cc292b4d635ffceaa552fab"
+      },
+      "manifest": {
+        "bytes": 35702,
+        "sha256": "789522c7c982209df660745442ca96fa1f83cc57b29c7f9692b609219c7c37d0"
+      }
+    },
+    {
+      "path": "gradlew.bat",
+      "commit": {
+        "bytes": 2776,
+        "sha256": "18774a0ac0203f6893bf1db3291a0d77f06cd1b4dca2a43b51e7009da3e28cfa"
+      },
+      "manifest": {
+        "bytes": 2868,
+        "sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955"
+      }
+    }
+  ],
+  "commit_exact": 2986,
+  "batch_bytes_consumed_in_memory": 13681711,
+  "no_source_export": true
+}
+collector XML shape ['suites', 'declared', 'testcase_elements', 'xml']
+XML totals {'suites': 329, 'tests': 1750, 'failures': 0, 'errors': 0, 'skipped': 0}
+ARTIFACTS [
+  {
+    "name": "advancedrocketry-community-1.20.1-1.8.0-dev-api.jar",
+    "bytes": 51045,
+    "sha256": "7484de1d50ffca610328200a838ff47cc8480ea72b37e964e772178325c749da",
+    "entries": 48,
+    "generated_count": 0,
+    "generated_missing": [],
+    "generated_different": [],
+    "main_java_count": 0,
+    "main_java_missing": [],
+    "main_java_different": [],
+    "baseline_member": "evidence/integration-artifacts-20/advancedrocketry-community-1.20.1-1.8.0-dev-api.jar",
+    "baseline_identity": {
+      "bytes": 51045,
+      "sha256": "7484de1d50ffca610328200a838ff47cc8480ea72b37e964e772178325c749da"
+    },
+    "whole_bytes_equal_baseline": true,
+    "member_delta": {
+      "added": [],
+      "removed": [],
+      "changed": [],
+      "unchanged_file_count": 35,
+      "baseline_entries": 48
+    }
+  },
+  {
+    "name": "advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
+    "bytes": 2620612,
+    "sha256": "1368d531681032c3c70fa320fbe7697dff3f124e668c4f17176707220abef9d2",
+    "entries": 2661,
+    "generated_count": 29,
+    "generated_missing": [],
+    "generated_different": [
+      "data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "data/minecraft/tags/blocks/needs_iron_tool.json"
+    ],
+    "main_java_count": 1210,
+    "main_java_missing": [],
+    "main_java_different": [],
+    "baseline_member": "evidence/integration-artifacts-20/advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
+    "baseline_identity": {
+      "bytes": 2617913,
+      "sha256": "3e6447ae9e6232fd6a93b5989750866e4dc11c5e101de20ccd2ac15b131054f0"
+    },
+    "whole_bytes_equal_baseline": false,
+    "member_delta": {
+      "added": [
+        "io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.java"
+      ],
+      "removed": [],
+      "changed": [],
+      "unchanged_file_count": 2378,
+      "baseline_entries": 2660
+    }
+  },
+  {
+    "name": "advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+    "bytes": 5440794,
+    "sha256": "796c9611ec8d655398e5a046bfe6cc3f81b2c7880a19c835ea9ed301a990373e",
+    "entries": 3305,
+    "generated_count": 29,
+    "generated_missing": [],
+    "generated_different": [
+      "data/minecraft/tags/blocks/mineable/pickaxe.json",
+      "data/minecraft/tags/blocks/needs_iron_tool.json"
+    ],
+    "main_java_count": 0,
+    "main_java_missing": [],
+    "main_java_different": [],
+    "baseline_member": "evidence/integration-artifacts-20/advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+    "baseline_identity": {
+      "bytes": 5433734,
+      "sha256": "90ab8ba5379fd10e3c199645289d7dc43296028377f5cc65a0b84062d6e96468"
+    },
+    "whole_bytes_equal_baseline": false,
+    "member_delta": {
+      "added": [
+        "io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes$FixedOutput.class",
+        "io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes$Writer.class",
+        "io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicNbtCanonicalBytes.class"
+      ],
+      "removed": [],
+      "changed": [],
+      "unchanged_file_count": 3021,
+      "baseline_entries": 3302
+    }
+  }
+]
+BASELINE XML totals {'suites': 328, 'tests': 1730, 'failures': 0, 'errors': 0, 'skipped': 0}
+XML suite additions ['io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest']
+ALL MEASUREMENTS COMPLETED; no Java/native run/source export

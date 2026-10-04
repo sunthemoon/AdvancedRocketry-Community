@@ -1,0 +1,22 @@
+{
+  "NOTICE.md": {
+    "sha256": "4cc293cee77bbbd95b81b2b666eddb0f5428ca782b17dfcc51075a8fc1ac7d36",
+    "bytes": 2141
+  },
+  "docs/licenses/MINECRAFT-FORGE-1.20.1-47.4.10-LICENSE.txt": {
+    "sha256": "481c96d94d182382c4225d5b210f8c658c85350cf548f25c9f56c058804f1e57",
+    "bytes": 27732
+  },
+  "THIRD-PARTY-NOTICES.md": {
+    "sha256": "35e26f1214b090b432934b51e342b1f75c6f897b4e5c9146fa85ea7b94ccd88c",
+    "bytes": 8637
+  },
+  "docs/licenses/GRADLE-8.1.1-LICENSE.txt": {
+    "sha256": "e5bfcf1132c8e12c3fce87d4dfbcb543cfb7202d8fa28ba85c07132e30836437",
+    "bytes": 23606
+  },
+  "LICENSE": {
+    "sha256": "6cb93bf243331e49b6349d24e884e6cf27f8f444d66bf4bd00f9469e8a6f37ba",
+    "bytes": 1125
+  }
+}

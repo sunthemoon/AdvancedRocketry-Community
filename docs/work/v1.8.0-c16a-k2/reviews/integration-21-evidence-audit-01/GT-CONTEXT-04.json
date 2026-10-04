@@ -1,0 +1,3693 @@
+{
+  "candidate": {
+    "batches": 128,
+    "batch_test_sum": 464,
+    "batch_rows": [
+      {
+        "line": 167,
+        "name": "flight_concurrency:1",
+        "tests": 1
+      },
+      {
+        "line": 211,
+        "name": "precision_energy_binding_retry:1",
+        "tests": 1
+      },
+      {
+        "line": 300,
+        "name": "station_protection:1",
+        "tests": 1
+      },
+      {
+        "line": 303,
+        "name": "endgame_elevator_redirect:1",
+        "tests": 1
+      },
+      {
+        "line": 320,
+        "name": "atmosphere_performance:1",
+        "tests": 1
+      },
+      {
+        "line": 632,
+        "name": "station_warp_commit:1",
+        "tests": 1
+      },
+      {
+        "line": 658,
+        "name": "planet_surfaces:1",
+        "tests": 8
+      },
+      {
+        "line": 659,
+        "name": "exoplanet_sapling:1",
+        "tests": 1
+      },
+      {
+        "line": 660,
+        "name": "recipe_signatures:1",
+        "tests": 16
+      },
+      {
+        "line": 669,
+        "name": "endgame_black_hole_idle:1",
+        "tests": 1
+      },
+      {
+        "line": 678,
+        "name": "station_warp_serial:1",
+        "tests": 1
+      },
+      {
+        "line": 708,
+        "name": "planetary_discovery:1",
+        "tests": 1
+      },
+      {
+        "line": 727,
+        "name": "station_expansion:1",
+        "tests": 1
+      },
+      {
+        "line": 776,
+        "name": "endgame_elevator_zone:1",
+        "tests": 1
+      },
+      {
+        "line": 806,
+        "name": "endgame_destruction_blast:1",
+        "tests": 1
+      },
+      {
+        "line": 810,
+        "name": "planet_features:1",
+        "tests": 7
+      },
+      {
+        "line": 811,
+        "name": "planetary_terrain:1",
+        "tests": 2
+      },
+      {
+        "line": 820,
+        "name": "station_warp_charge:1",
+        "tests": 1
+      },
+      {
+        "line": 823,
+        "name": "satellite_flush_failure:1",
+        "tests": 1
+      },
+      {
+        "line": 893,
+        "name": "station_orbit:1",
+        "tests": 1
+      },
+      {
+        "line": 910,
+        "name": "materials_switches:1",
+        "tests": 1
+      },
+      {
+        "line": 911,
+        "name": "rocket_navigation_menu:1",
+        "tests": 1
+      },
+      {
+        "line": 916,
+        "name": "station_context:1",
+        "tests": 1
+      },
+      {
+        "line": 917,
+        "name": "station_warp_logout:1",
+        "tests": 1
+      },
+      {
+        "line": 947,
+        "name": "endgame_laser_target:1",
+        "tests": 1
+      },
+      {
+        "line": 952,
+        "name": "precision_migration_port_failure:1",
+        "tests": 1
+      },
+      {
+        "line": 1041,
+        "name": "endgame_railgun_two_sources:1",
+        "tests": 1
+      },
+      {
+        "line": 1061,
+        "name": "station_permission_matrix:1",
+        "tests": 1
+      },
+      {
+        "line": 1640,
+        "name": "endgame_elevator_placement:1",
+        "tests": 1
+      },
+      {
+        "line": 1646,
+        "name": "station_warp_rejections:1",
+        "tests": 1
+      },
+      {
+        "line": 1669,
+        "name": "materials_ore_switch:1",
+        "tests": 1
+      },
+      {
+        "line": 1670,
+        "name": "flight:1",
+        "tests": 2
+      },
+      {
+        "line": 1748,
+        "name": "endgame_laser_physical_attached:1",
+        "tests": 1
+      },
+      {
+        "line": 1764,
+        "name": "endgame_laser_target_owner_waiting:1",
+        "tests": 1
+      },
+      {
+        "line": 1772,
+        "name": "station_warp_abort:1",
+        "tests": 1
+      },
+      {
+        "line": 1803,
+        "name": "passenger_new_board:1",
+        "tests": 1
+      },
+      {
+        "line": 1830,
+        "name": "station_warp_repriced:1",
+        "tests": 1
+      },
+      {
+        "line": 1850,
+        "name": "planetary_surface_flight:1",
+        "tests": 1
+      },
+      {
+        "line": 1929,
+        "name": "planetary_discovery_recovery:1",
+        "tests": 1
+      },
+      {
+        "line": 1960,
+        "name": "satellite_lifecycle:1",
+        "tests": 1
+      },
+      {
+        "line": 1966,
+        "name": "passenger_leave:1",
+        "tests": 1
+      },
+      {
+        "line": 1993,
+        "name": "passenger_entity_readiness:1",
+        "tests": 1
+      },
+      {
+        "line": 2018,
+        "name": "endgame_gravity_trust_format:1",
+        "tests": 1
+      },
+      {
+        "line": 2022,
+        "name": "station_warp_killswitch:1",
+        "tests": 1
+      },
+      {
+        "line": 2041,
+        "name": "planetary_admission_warp:1",
+        "tests": 1
+      },
+      {
+        "line": 2051,
+        "name": "endgame_laser_physical_counters:1",
+        "tests": 2
+      },
+      {
+        "line": 2094,
+        "name": "precision_unload_active:1",
+        "tests": 1
+      },
+      {
+        "line": 2095,
+        "name": "endgame_gravity_station:1",
+        "tests": 1
+      },
+      {
+        "line": 2120,
+        "name": "endgame_laser_target_dirty:1",
+        "tests": 1
+      },
+      {
+        "line": 2125,
+        "name": "endgame_menu_unavailable:1",
+        "tests": 1
+      },
+      {
+        "line": 2132,
+        "name": "moon_arrival_crater:1",
+        "tests": 1
+      },
+      {
+        "line": 2163,
+        "name": "station_write_budget:1",
+        "tests": 1
+      },
+      {
+        "line": 2188,
+        "name": "legacy_passenger_recovery:1",
+        "tests": 1
+      },
+      {
+        "line": 2218,
+        "name": "planetary_physical_admission:1",
+        "tests": 2
+      },
+      {
+        "line": 2221,
+        "name": "flight_security:1",
+        "tests": 1
+      },
+      {
+        "line": 2234,
+        "name": "endgame_railgun:1",
+        "tests": 1
+      },
+      {
+        "line": 2249,
+        "name": "venus_geode_cover:1",
+        "tests": 1
+      },
+      {
+        "line": 2251,
+        "name": "machine_menu_channel:1",
+        "tests": 1
+      },
+      {
+        "line": 2268,
+        "name": "satellite_menu_save:1",
+        "tests": 1
+      },
+      {
+        "line": 2272,
+        "name": "planetary_changed_pad:1",
+        "tests": 2
+      },
+      {
+        "line": 2293,
+        "name": "endgame_menu_fuel_save:1",
+        "tests": 1
+      },
+      {
+        "line": 2297,
+        "name": "endgame_framework:1",
+        "tests": 2
+      },
+      {
+        "line": 2298,
+        "name": "precision_energy_binding_gate:1",
+        "tests": 1
+      },
+      {
+        "line": 2475,
+        "name": "endgame_elevator_cargo:1",
+        "tests": 1
+      },
+      {
+        "line": 2517,
+        "name": "tau_ceti_path:1",
+        "tests": 1
+      },
+      {
+        "line": 2615,
+        "name": "endgame_menu_member:1",
+        "tests": 1
+      },
+      {
+        "line": 2622,
+        "name": "station_warp_fold:1",
+        "tests": 1
+      },
+      {
+        "line": 2665,
+        "name": "planetary_admission_station_built:1",
+        "tests": 1
+      },
+      {
+        "line": 2668,
+        "name": "star_systems:1",
+        "tests": 1
+      },
+      {
+        "line": 2673,
+        "name": "station_sky_context:1",
+        "tests": 1
+      },
+      {
+        "line": 2682,
+        "name": "precision_unload_prepared:1",
+        "tests": 1
+      },
+      {
+        "line": 2683,
+        "name": "exoplanet_blocks:1",
+        "tests": 1
+      },
+      {
+        "line": 2684,
+        "name": "passenger_logout_cleanup:1",
+        "tests": 1
+      },
+      {
+        "line": 2712,
+        "name": "moon_arrival_highlands:1",
+        "tests": 1
+      },
+      {
+        "line": 2742,
+        "name": "venus_volcano_relief:1",
+        "tests": 1
+      },
+      {
+        "line": 2743,
+        "name": "tau_ceti_landing_f:1",
+        "tests": 1
+      },
+      {
+        "line": 2744,
+        "name": "tau_ceti_landing_g:1",
+        "tests": 1
+      },
+      {
+        "line": 2746,
+        "name": "station_warp_deop:1",
+        "tests": 1
+      },
+      {
+        "line": 2766,
+        "name": "endgame_laser_drill:1",
+        "tests": 6
+      },
+      {
+        "line": 2791,
+        "name": "endgame_elevator_spacing:1",
+        "tests": 1
+      },
+      {
+        "line": 2809,
+        "name": "flight_recovery:1",
+        "tests": 1
+      },
+      {
+        "line": 2846,
+        "name": "endgame_railgun_menu:1",
+        "tests": 1
+      },
+      {
+        "line": 2866,
+        "name": "endgame_menu_drill_save:1",
+        "tests": 1
+      },
+      {
+        "line": 2870,
+        "name": "endgame_elevator_rides:1",
+        "tests": 1
+      },
+      {
+        "line": 2934,
+        "name": "planetary_admission:1",
+        "tests": 3
+      },
+      {
+        "line": 2955,
+        "name": "endgame_gravity_planet:1",
+        "tests": 1
+      },
+      {
+        "line": 2992,
+        "name": "exoplanet_feature_bounds:1",
+        "tests": 1
+      },
+      {
+        "line": 2993,
+        "name": "planetary_sunlight:1",
+        "tests": 1
+      },
+      {
+        "line": 2995,
+        "name": "precision_assembler:1",
+        "tests": 36
+      },
+      {
+        "line": 2999,
+        "name": "endgame_railgun_refusals:1",
+        "tests": 1
+      },
+      {
+        "line": 3023,
+        "name": "endgame_menu_marker_save:1",
+        "tests": 1
+      },
+      {
+        "line": 3027,
+        "name": "station_flight:1",
+        "tests": 1
+      },
+      {
+        "line": 3087,
+        "name": "exoplanet_switches:1",
+        "tests": 1
+      },
+      {
+        "line": 3088,
+        "name": "station_warp_delete:1",
+        "tests": 1
+      },
+      {
+        "line": 3090,
+        "name": "endgame_laser_physical:1",
+        "tests": 1
+      },
+      {
+        "line": 3139,
+        "name": "endgame_menu_stranger:1",
+        "tests": 1
+      },
+      {
+        "line": 3146,
+        "name": "station_elevator:1",
+        "tests": 1
+      },
+      {
+        "line": 3162,
+        "name": "endgame_destruction:1",
+        "tests": 1
+      },
+      {
+        "line": 3163,
+        "name": "materials_recipe_overlap:1",
+        "tests": 1
+      },
+      {
+        "line": 3164,
+        "name": "station_sky_context_wiring:1",
+        "tests": 1
+      },
+      {
+        "line": 3171,
+        "name": "planetary_player_station:1",
+        "tests": 1
+      },
+      {
+        "line": 3174,
+        "name": "station:1",
+        "tests": 2
+      },
+      {
+        "line": 3189,
+        "name": "machine_menu:1",
+        "tests": 3
+      },
+      {
+        "line": 3191,
+        "name": "rocket_navigation:1",
+        "tests": 1
+      },
+      {
+        "line": 3194,
+        "name": "rocket_navigation_refresh:1",
+        "tests": 1
+      },
+      {
+        "line": 3202,
+        "name": "endgame_elevator_validity:1",
+        "tests": 1
+      },
+      {
+        "line": 3233,
+        "name": "passenger_refueled_disassembly:1",
+        "tests": 1
+      },
+      {
+        "line": 3264,
+        "name": "satellite:1",
+        "tests": 21
+      },
+      {
+        "line": 3283,
+        "name": "precision_migration_controller_failure:1",
+        "tests": 1
+      },
+      {
+        "line": 3373,
+        "name": "endgame_black_hole:1",
+        "tests": 1
+      },
+      {
+        "line": 3386,
+        "name": "satellite_resources:1",
+        "tests": 8
+      },
+      {
+        "line": 4196,
+        "name": "endgame_endpoint_forget:1",
+        "tests": 1
+      },
+      {
+        "line": 4206,
+        "name": "endgame_elevator_automation:1",
+        "tests": 1
+      },
+      {
+        "line": 4234,
+        "name": "defaultBatch:1",
+        "tests": 100
+      },
+      {
+        "line": 5271,
+        "name": "defaultBatch:2",
+        "tests": 100
+      },
+      {
+        "line": 5319,
+        "name": "defaultBatch:3",
+        "tests": 26
+      },
+      {
+        "line": 5369,
+        "name": "precision_transaction_cuts:1",
+        "tests": 5
+      },
+      {
+        "line": 5370,
+        "name": "exoplanet_worlds:1",
+        "tests": 3
+      },
+      {
+        "line": 5371,
+        "name": "endgame_railgun_station:1",
+        "tests": 1
+      },
+      {
+        "line": 5421,
+        "name": "endgame_zone_pages:1",
+        "tests": 1
+      },
+      {
+        "line": 5422,
+        "name": "station_warp_interstellar:1",
+        "tests": 1
+      },
+      {
+        "line": 5444,
+        "name": "satellite_payload:1",
+        "tests": 1
+      },
+      {
+        "line": 5470,
+        "name": "exoplanet_surfaces_f:1",
+        "tests": 1
+      },
+      {
+        "line": 5471,
+        "name": "exoplanet_surfaces_g:1",
+        "tests": 1
+      },
+      {
+        "line": 5472,
+        "name": "endgame_laser_target_owner:1",
+        "tests": 1
+      },
+      {
+        "line": 5481,
+        "name": "endgame_laser_target_generation:1",
+        "tests": 1
+      },
+      {
+        "line": 5495,
+        "name": "station_warp_target_removed:1",
+        "tests": 1
+      },
+      {
+        "line": 5514,
+        "name": "satellite_blocked:1",
+        "tests": 2
+      }
+    ],
+    "ERROR_headers": 61,
+    "ERROR_categories": {
+      "precision_migration_negative": 13,
+      "unbound_recipe_negative": 3,
+      "satellite_negative": 4,
+      "menu_protocol_negative": 16,
+      "recipe_guard_negative": 24,
+      "combustion_guard_negative": 1
+    },
+    "contexts": [
+      {
+        "line": 213,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:53:56.044] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional Energy-only migration binding save failure",
+        "context_lines": 50,
+        "sha256": "3714f851ce3f0918db4babf3a0dd5a64e61924e51f4d56909bbc86852fda4b58",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117)"
+        ]
+      },
+      {
+        "line": 263,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:53:56.045] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40002,40001",
+        "context_lines": 37,
+        "sha256": "66a58a7452d7b14e8e9336a7fdcb7b8ca56f75777905c130786062cf5c21e496",
+        "frames": [
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117) ~[%23197!/:?]"
+        ]
+      },
+      {
+        "line": 661,
+        "category": "unbound_recipe_negative",
+        "header": "[04Oct2026 12:54:15.857] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:rolling_iron_bars until tag reload: machine ingredient has no bound alternatives",
+        "context_lines": 1,
+        "sha256": "c164aa90ed38373c6fc63847bee4b345acd930d08277f9d1e83f145b0f6cff94",
+        "frames": []
+      },
+      {
+        "line": 662,
+        "category": "unbound_recipe_negative",
+        "header": "[04Oct2026 12:54:15.858] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:precision_control_circuit until tag reload: machine ingredient has no bound alternatives",
+        "context_lines": 1,
+        "sha256": "481c4bd4957fdc8d75e1349bd642f5a4ec0ecec9b61af66ad2d89afdffe54286",
+        "frames": []
+      },
+      {
+        "line": 663,
+        "category": "unbound_recipe_negative",
+        "header": "[04Oct2026 12:54:15.858] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Disabling machine recipe advancedrocketrycommunity:electrolyzer_water until tag reload: machine ingredient has no bound alternatives",
+        "context_lines": 1,
+        "sha256": "7a0bb0c928f1c5128c2a0c15ed8b4f0a8c8ac544b88314c03a517ba10cf86686",
+        "frames": []
+      },
+      {
+        "line": 825,
+        "category": "satellite_negative",
+        "header": "[04Oct2026 12:54:22.182] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite idle launch operation failed",
+        "context_lines": 34,
+        "sha256": "7d7d7ca998bad143d2434ab7d81a8da093183f6388ba9dd328c56e6e2580d658",
+        "frames": [
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:71) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:49) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:43) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:39) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteKindLifecycle.launchIdle(SatelliteKindLifecycle.java:106) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager.launch(SatelliteManager.java:205) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime.launch(SatelliteRuntime.java:46) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.launchOrStart(SatelliteTerminalBlockEntity.java:313) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.handleButton(SatelliteTerminalBlockEntity.java:194) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.press(SatelliteReviewGameTests.java:375) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.aFailedLaunchFlushKeepsThePackageUntilTheReplayIsDurable(SatelliteReviewGameTests.java:86) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.requireFileOrAbsent(CheckedSavedDataFile.java:96) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:49) ~[%23197!/:?]"
+        ]
+      },
+      {
+        "line": 859,
+        "category": "satellite_negative",
+        "header": "[04Oct2026 12:54:22.185] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite idle launch operation failed",
+        "context_lines": 34,
+        "sha256": "f1cddb15f125c91f9a0ed8268dc9cca28acc64bf360072c2c7e3b7a23e95c5c1",
+        "frames": [
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:71) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:49) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:43) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:39) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteKindLifecycle.launchIdle(SatelliteKindLifecycle.java:62) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager.launch(SatelliteManager.java:205) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime.launch(SatelliteRuntime.java:46) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.launchOrStart(SatelliteTerminalBlockEntity.java:313) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.handleButton(SatelliteTerminalBlockEntity.java:194) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.press(SatelliteReviewGameTests.java:375) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.aFailedLaunchFlushKeepsThePackageUntilTheReplayIsDurable(SatelliteReviewGameTests.java:89) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.requireFileOrAbsent(CheckedSavedDataFile.java:96) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:49) ~[%23197!/:?]"
+        ]
+      },
+      {
+        "line": 953,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:54:26.034] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure",
+        "context_lines": 50,
+        "sha256": "8963562bb4e39be188fd3d2f7b0ea622787844d1b10f4bc3142a3edd9c01cdc2",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:226)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:192)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:364)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests.lambda$exerciseRetry$1(PrecisionAssemblerMigrationSaveFailureGameTests.java:109)"
+        ]
+      },
+      {
+        "line": 1003,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:54:26.035] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 32013,32003",
+        "context_lines": 37,
+        "sha256": "735db4f969c917f840cc73d1c06d3963a7c515dc76da5c812bb1899e5764c41d",
+        "frames": [
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:226) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:192) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:364) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests.lambda$exerciseRetry$1(PrecisionAssemblerMigrationSaveFailureGameTests.java:109) ~[%23197!/:?]"
+        ]
+      },
+      {
+        "line": 1040,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:54:26.045] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=512207, y=36, z=512063} in minecraft:overworld: BlockPos{x=512208, y=36, z=512063}: arce_precision_port_migration differs (expected hash=-2043996827, saved hash=0)",
+        "context_lines": 1,
+        "sha256": "f340dbc56225560bfd54f97b128e113011a938da9ca2bf20d5b5012021a678be",
+        "frames": []
+      },
+      {
+        "line": 1931,
+        "category": "satellite_negative",
+        "header": "[04Oct2026 12:54:37.229] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite launch operation failed",
+        "context_lines": 29,
+        "sha256": "01d91c31af638d4ce5709f92a9740aae91c18b05fd6e36b3f053276e18801481",
+        "frames": [
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:71) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:49) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:43) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData.flush(AtomicSavedData.java:39) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager.launch(SatelliteManager.java:228) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.DiscoveryRecoveryGameTests.oldPaidReceiptAndNewRemovedTargetRecoverWithoutAnotherClaim(DiscoveryRecoveryGameTests.java:72) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.requireFileOrAbsent(CheckedSavedDataFile.java:96) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.replace(CheckedSavedDataFile.java:49) ~[%23197!/:?]"
+        ]
+      },
+      {
+        "line": 2252,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.301] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "context_lines": 1,
+        "sha256": "8c4026607e921e157bb95fed70343d20ccb96b046977be29938edf20f043e503",
+        "frames": []
+      },
+      {
+        "line": 2253,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.302] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "context_lines": 1,
+        "sha256": "92f480a0d3778145b6d6a0fe7515e094b9492f2b1b8518d278e659c213c05555",
+        "frames": []
+      },
+      {
+        "line": 2254,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "context_lines": 1,
+        "sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+        "frames": []
+      },
+      {
+        "line": 2255,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "context_lines": 1,
+        "sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+        "frames": []
+      },
+      {
+        "line": 2256,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "context_lines": 1,
+        "sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+        "frames": []
+      },
+      {
+        "line": 2257,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "context_lines": 1,
+        "sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+        "frames": []
+      },
+      {
+        "line": 2258,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.303] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "context_lines": 1,
+        "sha256": "9a5944501edfde65356d41a253a35e50c07098905f67ed61ef4e493c53d5c502",
+        "frames": []
+      },
+      {
+        "line": 2259,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.304] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their server side version number",
+        "context_lines": 1,
+        "sha256": "a33b7ed71dbc71dc0a0b2235038b2802f74db9cb1271ffc654fda01e4320f429",
+        "frames": []
+      },
+      {
+        "line": 2260,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.304] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "context_lines": 1,
+        "sha256": "4a4cfbd70bb23526a1c662010fc2c69cf9476f6404c2c796e8b74e39495e01af",
+        "frames": []
+      },
+      {
+        "line": 2261,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.305] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "context_lines": 1,
+        "sha256": "e124e3f03782beaf6e9f597f924bdedd091a362d5ea4d2249e3e7559f9613725",
+        "frames": []
+      },
+      {
+        "line": 2262,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.305] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "context_lines": 1,
+        "sha256": "e124e3f03782beaf6e9f597f924bdedd091a362d5ea4d2249e3e7559f9613725",
+        "frames": []
+      },
+      {
+        "line": 2263,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "context_lines": 1,
+        "sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+        "frames": []
+      },
+      {
+        "line": 2264,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "context_lines": 1,
+        "sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+        "frames": []
+      },
+      {
+        "line": 2265,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "context_lines": 1,
+        "sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+        "frames": []
+      },
+      {
+        "line": 2266,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "context_lines": 1,
+        "sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+        "frames": []
+      },
+      {
+        "line": 2267,
+        "category": "menu_protocol_negative",
+        "header": "[04Oct2026 12:54:56.306] [Server thread/ERROR] [net.minecraftforge.network.NetworkRegistry/NETREGISTRY]: Channels [advancedrocketrycommunity:machine_menu] rejected their client side version number",
+        "context_lines": 1,
+        "sha256": "5b07620593ff30d589f55d37a2c2d0c2e29ae2263a4f8be76b1b0f185ceeb58e",
+        "frames": []
+      },
+      {
+        "line": 2300,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:55:00.324] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional Energy-only migration binding save failure",
+        "context_lines": 50,
+        "sha256": "8eb566f0640acd157b793c5a85be3fb8f0648f7ac411038368b36c05a30cebe1",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117)"
+        ]
+      },
+      {
+        "line": 2350,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:55:00.325] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40042,40004",
+        "context_lines": 37,
+        "sha256": "427f85c528f20ee2ea7c9476abed6e3fb78c63537715de9fc10a8699ca76ca8a",
+        "frames": [
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117) ~[%23197!/:?]"
+        ]
+      },
+      {
+        "line": 2387,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:55:00.342] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional Energy-only migration binding save failure",
+        "context_lines": 50,
+        "sha256": "8379a7902060f7881db2a222621c92bc3c5d564f1509cfa673b5b3225833c712",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:364)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117)"
+        ]
+      },
+      {
+        "line": 2437,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:55:00.342] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 40042,40004",
+        "context_lines": 37,
+        "sha256": "6d88a89c87d1754213c323e7ee5411f4b9c8057ec767b0f05c176c5d7cae0c09",
+        "frames": [
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:214) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept(PrecisionAssemblerMigrationBindingGameTests.java:190) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:364) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMigrationBindingGameTests.lambda$exerciseSavedBinding$2(PrecisionAssemblerMigrationBindingGameTests.java:117) ~[%23197!/:?]"
+        ]
+      },
+      {
+        "line": 2474,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:55:00.361] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration port marker roots are not confirmed on disk at BlockPos{x=640671, y=20, z=640061} in minecraft:overworld: BlockPos{x=640672, y=20, z=640064}: arce_part_binding differs (expected hash=1241633005, saved hash=1241633004)",
+        "context_lines": 1,
+        "sha256": "0eb9937d7ff34506d693bab4de22ba27bc05ba88f16061b7a993d3fdb1050e6f",
+        "frames": []
+      },
+      {
+        "line": 3285,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:56:00.370] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Intentional one-shot Precision migration save failure",
+        "context_lines": 50,
+        "sha256": "a86e933759481f08356b3ac4096eed77031bf9e549a4f706f30e19aaf9bac967",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:226)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:192)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests.lambda$exerciseRetry$1(PrecisionAssemblerMigrationSaveFailureGameTests.java:109)"
+        ]
+      },
+      {
+        "line": 3335,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:56:00.370] [Server thread/ERROR] [net.minecraft.server.level.ChunkMap/]: Failed to save chunk 32001,32006",
+        "context_lines": 37,
+        "sha256": "5d11fd7be329ac15772a919b088ceb360036b49681fc5bbaac920cfc94f29f6b",
+        "frames": [
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:226) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept(PrecisionAssemblerMigrationSaveFailureGameTests.java:192) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.flushMigrationBarrier(PrecisionAssemblerManager.java:423) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.migrateLegacyItems(PrecisionAssemblerManager.java:339) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.processReady(PrecisionAssemblerManager.java:318) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager.tick(PrecisionAssemblerManager.java:125) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemblerMigrationSaveFailureGameTests.lambda$exerciseRetry$1(PrecisionAssemblerMigrationSaveFailureGameTests.java:109) ~[%23197!/:?]"
+        ]
+      },
+      {
+        "line": 3372,
+        "category": "precision_migration_negative",
+        "header": "[04Oct2026 12:56:00.383] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos{x=512031, y=20, z=512111} in minecraft:overworld: BlockPos{x=512031, y=20, z=512111}: arce_precision_resources differs (expected hash=1319225500, saved hash=0)",
+        "context_lines": 1,
+        "sha256": "e880bc269ca249d0eb7605a7375e2ea577a28a1d2c397c5a7765656c6020283a",
+        "frames": []
+      },
+      {
+        "line": 4246,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.960] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "71512082733e1ea1ecd9d459be56f258395ab204540dfee931dae36c2d865c52",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4286,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.960] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "ceacf4a08b22ade9304635229b82b7b155b65a7cddc14d8a725f5bdacc945ff3",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 4325,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.962] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "4c6b48267b7c3b11abe62c5a4cc0871d9269b452fecaafb1cd35763f36f9f60a",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4365,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.962] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "11f2976b13fe6be47d45100ffa712a409a45c2570494f746486dadef8e5fc9fa",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 4404,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.963] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "77007dba762d44e1df8adb9e39f63615c02b57f57f174c0afcb05b4056d6862f",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4444,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.963] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "cc05c1b5b857d8a41eedb9d13d254d9f1537faf4082e58b7d94b29822c784cbd",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 4483,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.963] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "77007dba762d44e1df8adb9e39f63615c02b57f57f174c0afcb05b4056d6862f",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4523,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.964] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "c872a3c32e6fd18f8781e0df213f94be3ca5bf72a5822167946b0937da408322",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 4562,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.964] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "9265fa5a256e792e40953d4668e835d1ae05983f78956fe18f2fb29a7fe48b9e",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4602,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.965] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "433e0391daf284e0d3fd9d8fbc63cba716690832722e68e26a49889f98a7393b",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 4641,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.966] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "39360f1f70735396253dc336f7863315fe2b39144c1f8077ed99666ce684ac0e",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4681,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.966] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "14d5adff4f3f4802a8e13239f4738a6a3994519770640f3b379eb9c33b73428c",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 4720,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.968] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "fe174369c61340e05d659af50e75530ee2e2ba793d9ee3724ec12ec71f17e11c",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4760,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.968] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "abdf05363bd7a8de37eff19a6e30d3810abafffe091f266e6e2238c19a15084b",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 4799,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.969] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "8410ab745f05563da400b2ff4dea6c63f96007ac5377e89ad788e3b2a7bec6af",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4839,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.970] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "c9a8bf413feef17e4c1f1b0dc596b2391395b4027a32bca49b3c59b0b88ab50f",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 4878,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.970] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "b806883c18a95161ca44fa96fbeba6bb4ae1683171b8b5524370a79733441f84",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4918,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.970] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "c9a8bf413feef17e4c1f1b0dc596b2391395b4027a32bca49b3c59b0b88ab50f",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 4957,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.970] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "b806883c18a95161ca44fa96fbeba6bb4ae1683171b8b5524370a79733441f84",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 4997,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.971] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "be2af14d0d9b54aae8630364cc435e244e4a1a018de2734d982fba6f655a2b74",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 5036,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.972] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "787f3876953e95cfa8d817831df1256d4240e0651715009b407a4431cf086df6",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 5076,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.972] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "7547fcfaedf32715df3b9301745194cc165ac21a6308c9b65931b855415f65a7",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 5115,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.972] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 40,
+        "sha256": "787f3876953e95cfa8d817831df1256d4240e0651715009b407a4431cf086df6",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection.chunkSave(RecipeSignatureProtection.java:48)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.__RecipeSignatureProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:37)"
+        ]
+      },
+      {
+        "line": 5155,
+        "category": "recipe_guard_negative",
+        "header": "[04Oct2026 12:56:15.974] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "58bcd665643fdbac5e7ec6d69f82126197af518a5274062aa7f895dc00fd1783",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.beforeSave(GuardedChunkSaves.java:51)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.__GuardedChunkSaves_beforeSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.rejected(RecipeSignatureSaveEventGameTests.java:62)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears(RecipeSignatureSaveEventGameTests.java:40)"
+        ]
+      },
+      {
+        "line": 5203,
+        "category": "combustion_guard_negative",
+        "header": "[04Oct2026 12:56:16.031] [Server thread/ERROR] [net.minecraftforge.eventbus.EventBus/EVENTBUS]: Exception caught during firing event: Refusing chunk save with oversized combustion input; back up and repair first",
+        "context_lines": 39,
+        "sha256": "9a65708b7fdf536e2321ecdf013ba5f22758a8d9ba000fc29352325f49fd7c23",
+        "frames": [
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.fail(GuardedChunkSaves.java:64)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves.refuse(GuardedChunkSaves.java:59)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionProtection.chunkSave(CombustionProtection.java:44)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.__CombustionProtection_chunkSave_Save.invoke(.dynamic)",
+          "at TRANSFORMER/advancedrocketrycommunity@1.20.1-1.8.0-dev/io.github.sunthemoon.advancedrocketrycommunity.gametest.CombustionGeneratorGameTests.oversizedSaveFailsBeforeReplacingItsStoredRoot(CombustionGeneratorGameTests.java:252)"
+        ]
+      },
+      {
+        "line": 5515,
+        "category": "satellite_negative",
+        "header": "[04Oct2026 12:57:01.814] [Server thread/ERROR] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Satellite idle launch operation failed",
+        "context_lines": 27,
+        "sha256": "01108b7e0fc6bbcec9859251f6d3eb354ad719b53c034cac91c8426e55c6bd50",
+        "frames": [
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData.requireOperational(SatelliteMissionSavedData.java:390) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData.account(SatelliteMissionSavedData.java:342) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteKindLifecycle.launchIdle(SatelliteKindLifecycle.java:91) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteManager.launch(SatelliteManager.java:205) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime.launch(SatelliteRuntime.java:46) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.launchOrStart(SatelliteTerminalBlockEntity.java:313) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlockEntity.handleButton(SatelliteTerminalBlockEntity.java:194) ~[%23197!/:?]",
+          "at io.github.sunthemoon.advancedrocketrycommunity.gametest.SatelliteReviewGameTests.aBlockedRegistryFailsClosedWithoutCrashing(SatelliteReviewGameTests.java:134) ~[%23197!/:?]"
+        ]
+      }
+    ],
+    "log_bytes": 1646986,
+    "log_sha256": "4faba890bb108693e77d2f8ca04ea08e09c11cfdde5aee0fad1075103abf0095"
+  },
+  "baseline": {
+    "batches": 128,
+    "batch_test_sum": 464,
+    "ERROR_headers": 61,
+    "ERROR_categories": {
+      "precision_migration_negative": 13,
+      "unbound_recipe_negative": 3,
+      "satellite_negative": 4,
+      "menu_protocol_negative": 16,
+      "recipe_guard_negative": 24,
+      "combustion_guard_negative": 1
+    },
+    "log_bytes": 1646791,
+    "log_sha256": "c36c3bbaf49df78e54c8c635d58d5bee8df65b9aa4385c4abf9283fda5741012"
+  },
+  "source_evidence": [
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/CombustionGeneratorGameTests.java",
+      "bytes": 25258,
+      "sha256": "94fc44c645ff03e34b53b7d03ab0627064188937c3bfc27610a8d6800bbabd94",
+      "selected_evidence_lines": [
+        {
+          "line": 248,
+          "text": "        boolean refused = false;"
+        },
+        {
+          "line": 249,
+          "text": "        try {"
+        },
+        {
+          "line": 250,
+          "text": "            var outgoing = net.minecraft.world.level.chunk.storage.ChunkSerializer.write(helper.getLevel(), chunk);"
+        },
+        {
+          "line": 251,
+          "text": "            chunk.setUnsaved(false); // ChunkMap does this before its serialization/event/write sequence."
+        },
+        {
+          "line": 252,
+          "text": "            MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.level.ChunkDataEvent.Save(chunk,"
+        },
+        {
+          "line": 253,
+          "text": "                    helper.getLevel(), outgoing));"
+        },
+        {
+          "line": 254,
+          "text": "        } catch (IllegalStateException expected) {"
+        },
+        {
+          "line": 255,
+          "text": "            refused = expected.getMessage().contains(\"oversized combustion input\");"
+        },
+        {
+          "line": 256,
+          "text": "        }"
+        },
+        {
+          "line": 257,
+          "text": "        helper.assertTrue(refused && chunk.isUnsaved(), \"Chunk save did not refuse oversized input and retain its retry\");"
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/PrecisionAssemblerMigrationSaveFailureGameTests.java",
+      "bytes": 13384,
+      "sha256": "e9014b6f00af3da3d48870c519728e9e51bb87f9e253a655ead2d0497c26f9d9",
+      "selected_evidence_lines": [
+        {
+          "line": 105,
+          "text": "            MinecraftForge.EVENT_BUS.addListener(fault);"
+        },
+        {
+          "line": 106,
+          "text": "            try {"
+        },
+        {
+          "line": 107,
+          "text": "                // Drive the real manager synchronously so another test's tick/save"
+        },
+        {
+          "line": 108,
+          "text": "                // cannot repair the failed chunk before the explicit retry."
+        },
+        {
+          "line": 109,
+          "text": "                manager.tick(level.getServer());"
+        },
+        {
+          "line": 110,
+          "text": "                helper.assertTrue(fault.fired, \"The one-shot migration save failure was not exercised\");"
+        },
+        {
+          "line": 111,
+          "text": "                helper.assertTrue(fault.savesAfterFailure == 0,"
+        },
+        {
+          "line": 112,
+          "text": "                        \"An unrelated save repaired the target chunk before explicit retry\");"
+        },
+        {
+          "line": 113,
+          "text": "                helper.assertTrue(\"preparing\".equals(controller.saveWithFullMetadata()"
+        },
+        {
+          "line": 114,
+          "text": "                                .getCompound(\"arce_precision_resources\").getString(\"phase\")),"
+        },
+        {
+          "line": 188,
+          "text": "    private static PrecisionAssemblerPortBlockEntity port(ServerLevel level, BlockPos position) {"
+        },
+        {
+          "line": 189,
+          "text": "        return (PrecisionAssemblerPortBlockEntity) level.getBlockEntity(position);"
+        },
+        {
+          "line": 190,
+          "text": "    }"
+        },
+        {
+          "line": 191,
+          "text": ""
+        },
+        {
+          "line": 192,
+          "text": "    private static final class OneShotSaveFailure implements Consumer<ChunkDataEvent.Save> {"
+        },
+        {
+          "line": 193,
+          "text": "        private final ServerLevel level;"
+        },
+        {
+          "line": 194,
+          "text": "        private final BlockPos position;"
+        },
+        {
+          "line": 195,
+          "text": "        private final boolean markerBarrier;"
+        },
+        {
+          "line": 196,
+          "text": "        private boolean fired;"
+        },
+        {
+          "line": 197,
+          "text": "        private int savesAfterFailure;"
+        },
+        {
+          "line": 222,
+          "text": "                        ? entity.contains(\"arce_precision_port_migration\", Tag.TAG_COMPOUND)"
+        },
+        {
+          "line": 223,
+          "text": "                        : \"preparing\".equals(entity.getCompound(\"arce_precision_resources\").getString(\"phase\"));"
+        },
+        {
+          "line": 224,
+          "text": "                if (matches) {"
+        },
+        {
+          "line": 225,
+          "text": "                    fired = true;"
+        },
+        {
+          "line": 226,
+          "text": "                    throw new IllegalStateException(\"Intentional one-shot Precision migration save failure\");"
+        },
+        {
+          "line": 227,
+          "text": "                }"
+        },
+        {
+          "line": 228,
+          "text": "            }"
+        },
+        {
+          "line": 229,
+          "text": "        }"
+        },
+        {
+          "line": 230,
+          "text": "    }"
+        },
+        {
+          "line": 231,
+          "text": "}"
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RecipeMenuChannelGameTests.java",
+      "bytes": 4019,
+      "sha256": "8452cbb77f9b4a34ab0cb8c3535b9b9e0f60814a450699cab488d72b71397af5",
+      "selected_evidence_lines": [
+        {
+          "line": 22,
+          "text": "    public static void installedMenuChannelAdvertisesAndRejectsIncompatiblePeerVersions(GameTestHelper helper) {"
+        },
+        {
+          "line": 23,
+          "text": "        try {"
+        },
+        {
+          "line": 24,
+          "text": "            ResourceLocation menuId = ModIdentity.id(\"machine_menu\");"
+        },
+        {
+          "line": 25,
+          "text": "            Map<ResourceLocation, String> advertised = advertised();"
+        },
+        {
+          "line": 26,
+          "text": "            helper.assertTrue(\"1\".equals(advertised.get(menuId)),"
+        },
+        {
+          "line": 27,
+          "text": "                    \"Common setup must install the required menu channel before this observation\");"
+        },
+        {
+          "line": 28,
+          "text": "            for (String direction : new String[] {\"validateClientChannels\", \"validateServerChannels\"}) {"
+        },
+        {
+          "line": 29,
+          "text": "                helper.assertTrue(rejected(direction, advertised).isEmpty(),"
+        },
+        {
+          "line": 30,
+          "text": "                        \"Matching installed channel versions must be accepted by \" + direction);"
+        },
+        {
+          "line": 31,
+          "text": "                Map<ResourceLocation, String> missing = new HashMap<>(advertised);"
+        },
+        {
+          "line": 32,
+          "text": "                missing.remove(menuId);"
+        },
+        {
+          "line": 33,
+          "text": "                Map<ResourceLocation, String> missingRejected = rejected(direction, missing);"
+        },
+        {
+          "line": 34,
+          "text": "                helper.assertTrue(missingRejected.size() == 1 && missingRejected.containsKey(menuId),"
+        },
+        {
+          "line": 35,
+          "text": "                        \"Only the omitted menu channel must be rejected by \" + direction);"
+        },
+        {
+          "line": 36,
+          "text": "                for (String version : new String[] {\"\", \"0\", \"2\", \"01\", \"1 \","
+        },
+        {
+          "line": 37,
+          "text": "                        NetworkRegistry.ABSENT.version(), NetworkRegistry.ACCEPTVANILLA}) {"
+        },
+        {
+          "line": 38,
+          "text": "                    Map<ResourceLocation, String> incompatible = new HashMap<>(advertised);"
+        },
+        {
+          "line": 39,
+          "text": "                    incompatible.put(menuId, version);"
+        },
+        {
+          "line": 40,
+          "text": "                    Map<ResourceLocation, String> refused = rejected(direction, incompatible);"
+        },
+        {
+          "line": 41,
+          "text": "                    helper.assertTrue(refused.size() == 1 && refused.containsKey(menuId),"
+        },
+        {
+          "line": 42,
+          "text": "                            \"Only the incompatible menu channel must be rejected by \" + direction);"
+        },
+        {
+          "line": 43,
+          "text": "                    helper.assertTrue(version.equals(refused.get(menuId)),"
+        },
+        {
+          "line": 44,
+          "text": "                            \"The rejection must report the supplied peer version without rewriting it\");"
+        },
+        {
+          "line": 45,
+          "text": "                }"
+        },
+        {
+          "line": 46,
+          "text": "            }"
+        },
+        {
+          "line": 47,
+          "text": "            helper.assertTrue(advertised.equals(advertised()),"
+        },
+        {
+          "line": 48,
+          "text": "                    \"Read-only channel validation must not change installed advertisements\");"
+        },
+        {
+          "line": 49,
+          "text": "            helper.succeed();"
+        },
+        {
+          "line": 50,
+          "text": "        } catch (ReflectiveOperationException exception) {"
+        },
+        {
+          "line": 51,
+          "text": "            throw new IllegalStateException(\"Pinned Forge channel observation is unavailable\", exception);"
+        },
+        {
+          "line": 52,
+          "text": "        }"
+        },
+        {
+          "line": 53,
+          "text": "    }"
+        },
+        {
+          "line": 54,
+          "text": ""
+        },
+        {
+          "line": 55,
+          "text": "    @SuppressWarnings(\"unchecked\")"
+        },
+        {
+          "line": 56,
+          "text": "    private static Map<ResourceLocation, String> advertised() throws ReflectiveOperationException {"
+        },
+        {
+          "line": 57,
+          "text": "        Method method = NetworkRegistry.class.getDeclaredMethod(\"buildChannelVersions\");"
+        },
+        {
+          "line": 58,
+          "text": "        method.setAccessible(true);"
+        },
+        {
+          "line": 59,
+          "text": "        return (Map<ResourceLocation, String>) method.invoke(null);"
+        },
+        {
+          "line": 60,
+          "text": "    }"
+        },
+        {
+          "line": 61,
+          "text": ""
+        },
+        {
+          "line": 62,
+          "text": "    @SuppressWarnings(\"unchecked\")"
+        },
+        {
+          "line": 63,
+          "text": "    private static Map<ResourceLocation, String> rejected(String direction, Map<ResourceLocation, String> incoming)"
+        },
+        {
+          "line": 64,
+          "text": "            throws ReflectiveOperationException {"
+        },
+        {
+          "line": 65,
+          "text": "        Method method = NetworkRegistry.class.getDeclaredMethod(direction, Map.class);"
+        },
+        {
+          "line": 66,
+          "text": "        method.setAccessible(true);"
+        },
+        {
+          "line": 67,
+          "text": "        return (Map<ResourceLocation, String>) method.invoke(null, incoming);"
+        },
+        {
+          "line": 68,
+          "text": "    }"
+        },
+        {
+          "line": 69,
+          "text": "}"
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RecipeSignatureMigrationGameTests.java",
+      "bytes": 29449,
+      "sha256": "f7cece1f8489d0f9988ef43896ac32d0243bcd6e3c0a01ab3396fa293e904ea6",
+      "selected_evidence_lines": [
+        {
+          "line": 48,
+          "text": "    private static final String ELECTRO_SHA = \"5eacb5d39d636c9045ea0e1e198e41e89d411dc2cc8f13c9994466cdfb53d152\";"
+        },
+        {
+          "line": 49,
+          "text": ""
+        },
+        {
+          "line": 50,
+          "text": "    private RecipeSignatureMigrationGameTests() { }"
+        },
+        {
+          "line": 51,
+          "text": ""
+        },
+        {
+          "line": 52,
+          "text": "    @GameTest(template = \"empty\", batch = \"recipe_signatures\", timeoutTicks = 20)"
+        },
+        {
+          "line": 53,
+          "text": "    public static void allThreeTagSerializersSyncUnboundJsonWithoutResolving(GameTestHelper helper) {"
+        },
+        {
+          "line": 54,
+          "text": "        RollingMachineRecipe oldRolling = oldRolling();"
+        },
+        {
+          "line": 55,
+          "text": "        JsonObject rollingJson = oldRolling.jsonPayload(); rollingJson.add(\"ingredient\", unbound());"
+        },
+        {
+          "line": 56,
+          "text": "        var rollingSerializer = new RollingMachineRecipe.Serializer();"
+        },
+        {
+          "line": 57,
+          "text": "        RollingMachineRecipe rolling = rollingSerializer.fromJson(oldRolling.getId(), rollingJson);"
+        },
+        {
+          "line": 58,
+          "text": "        PrecisionAssemblerRecipe oldPrecision = oldPrecision();"
+        },
+        {
+          "line": 59,
+          "text": "        JsonObject precisionJson = oldPrecision.jsonPayload();"
+        },
+        {
+          "line": 60,
+          "text": "        precisionJson.getAsJsonArray(\"inputs\").get(0).getAsJsonObject().add(\"ingredient\", unbound());"
+        },
+        {
+          "line": 61,
+          "text": "        var precisionSerializer = new PrecisionAssemblerRecipe.Serializer();"
+        },
+        {
+          "line": 62,
+          "text": "        PrecisionAssemblerRecipe precision = precisionSerializer.fromJson(oldPrecision.getId(), precisionJson);"
+        },
+        {
+          "line": 63,
+          "text": "        ElectrolyzerRecipe oldElectro = oldElectro();"
+        },
+        {
+          "line": 64,
+          "text": "        JsonObject electroJson = oldElectro.jsonPayload(); electroJson.add(\"ingredient\", unbound());"
+        },
+        {
+          "line": 65,
+          "text": "        var electroSerializer = new ElectrolyzerRecipe.Serializer();"
+        },
+        {
+          "line": 66,
+          "text": "        ElectrolyzerRecipe electro = electroSerializer.fromJson(oldElectro.getId(), electroJson);"
+        },
+        {
+          "line": 67,
+          "text": "        FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());"
+        },
+        {
+          "line": 68,
+          "text": "        try {"
+        },
+        {
+          "line": 69,
+          "text": "            rollingSerializer.toNetwork(buffer, rolling);"
+        },
+        {
+          "line": 70,
+          "text": "            helper.assertTrue(rolling.signature().equals(rollingSerializer.fromNetwork(rolling.getId(), buffer).signature()),"
+        },
+        {
+          "line": 71,
+          "text": "                    \"Rolling wire changed the unbound JSON signature\");"
+        },
+        {
+          "line": 72,
+          "text": "            precisionSerializer.toNetwork(buffer, precision);"
+        },
+        {
+          "line": 73,
+          "text": "            helper.assertTrue(precision.signature().equals(precisionSerializer.fromNetwork(precision.getId(), buffer).signature()),"
+        },
+        {
+          "line": 74,
+          "text": "                    \"Precision wire changed the unbound JSON signature\");"
+        },
+        {
+          "line": 75,
+          "text": "            electroSerializer.toNetwork(buffer, electro);"
+        },
+        {
+          "line": 76,
+          "text": "            helper.assertTrue(electro.signature().equals(electroSerializer.fromNetwork(electro.getId(), buffer).signature()),"
+        },
+        {
+          "line": 77,
+          "text": "                    \"Electrolyzer wire changed the unbound JSON signature\");"
+        },
+        {
+          "line": 78,
+          "text": "            helper.assertTrue(buffer.readableBytes() == 0, \"Recipe wire left unread bytes\");"
+        },
+        {
+          "line": 79,
+          "text": "            helper.assertFalse(rolling.available() || precision.available() || electro.available(),"
+        },
+        {
+          "line": 80,
+          "text": "                    \"An unbound tag was treated as a valid recipe\");"
+        },
+        {
+          "line": 81,
+          "text": "        } finally { buffer.release(); }"
+        },
+        {
+          "line": 82,
+          "text": "        helper.succeed();"
+        },
+        {
+          "line": 83,
+          "text": "    }"
+        },
+        {
+          "line": 84,
+          "text": ""
+        },
+        {
+          "line": 85,
+          "text": "    @GameTest(template = \"rocket_test\", batch = \"recipe_signatures\", timeoutTicks = 100)"
+        },
+        {
+          "line": 95,
+          "text": "            machine.load(saved); RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 96,
+          "text": "        });"
+        },
+        {
+          "line": 97,
+          "text": "        helper.runAtTickTime(15, () -> {"
+        },
+        {
+          "line": 98,
+          "text": "            var machine = RollingMachineGameTestFixtures.controller(helper);"
+        },
+        {
+          "line": 99,
+          "text": "            cut.get().assertUnchanged(helper, machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 100,
+          "text": "            int ticks = machine.processProgress().orElseThrow().progressTicks();"
+        },
+        {
+          "line": 101,
+          "text": "            machine.load(machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 102,
+          "text": "            helper.assertTrue(machine.processProgress().orElseThrow().progressTicks() == ticks, \"First load changed progress\");"
+        },
+        {
+          "line": 103,
+          "text": "            machine.load(machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 104,
+          "text": "            helper.assertTrue(machine.processProgress().orElseThrow().progressTicks() == ticks, \"Second load changed progress\");"
+        },
+        {
+          "line": 105,
+          "text": "            RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 106,
+          "text": "        });"
+        },
+        {
+          "line": 107,
+          "text": "        helper.runAtTickTime(90, () -> {"
+        },
+        {
+          "line": 108,
+          "text": "            cut.get().assertUnchanged(helper, RollingMachineGameTestFixtures.controller(helper).saveWithFullMetadata());"
+        },
+        {
+          "line": 109,
+          "text": "            helper.succeed();"
+        },
+        {
+          "line": 110,
+          "text": "        });"
+        },
+        {
+          "line": 111,
+          "text": "    }"
+        },
+        {
+          "line": 112,
+          "text": ""
+        },
+        {
+          "line": 113,
+          "text": "    @GameTest(template = \"rocket_test\", batch = \"recipe_signatures\", timeoutTicks = 40)"
+        },
+        {
+          "line": 129,
+          "text": "            machine.load(saved); RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 130,
+          "text": "        });"
+        },
+        {
+          "line": 131,
+          "text": "        helper.runAtTickTime(20, () -> {"
+        },
+        {
+          "line": 132,
+          "text": "            var machine = RollingMachineGameTestFixtures.controller(helper);"
+        },
+        {
+          "line": 133,
+          "text": "            cut.get().assertUnchanged(helper, machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 134,
+          "text": "            machine.load(machine.saveWithFullMetadata()); machine.load(machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 135,
+          "text": "            RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 136,
+          "text": "        });"
+        },
+        {
+          "line": 137,
+          "text": "        helper.runAtTickTime(30, () -> {"
+        },
+        {
+          "line": 138,
+          "text": "            cut.get().assertUnchanged(helper, RollingMachineGameTestFixtures.controller(helper).saveWithFullMetadata());"
+        },
+        {
+          "line": 139,
+          "text": "            helper.succeed();"
+        },
+        {
+          "line": 140,
+          "text": "        });"
+        },
+        {
+          "line": 141,
+          "text": "    }"
+        },
+        {
+          "line": 142,
+          "text": ""
+        },
+        {
+          "line": 143,
+          "text": "    @GameTest(template = \"empty\", batch = \"recipe_signatures\", timeoutTicks = 60)"
+        },
+        {
+          "line": 144,
+          "text": "    public static void precisionHistoricalPartialIsRetainedAcrossTicksAndTwoNbtLoads(GameTestHelper helper) {"
+        },
+        {
+          "line": 145,
+          "text": "        AtomicReference<RetainedCut> cut = new AtomicReference<>();"
+        },
+        {
+          "line": 146,
+          "text": "        PrecisionAssemblerGameTests.placeStructure(helper);"
+        },
+        {
+          "line": 147,
+          "text": "        helper.runAtTickTime(8, () -> {"
+        },
+        {
+          "line": 148,
+          "text": "            PrecisionAssemblerGameTests.insertInputs(helper);"
+        },
+        {
+          "line": 154,
+          "text": "            machine.load(saved); PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 155,
+          "text": "        });"
+        },
+        {
+          "line": 156,
+          "text": "        helper.runAtTickTime(12, () -> {"
+        },
+        {
+          "line": 157,
+          "text": "            var machine = PrecisionAssemblerGameTests.controller(helper);"
+        },
+        {
+          "line": 158,
+          "text": "            cut.get().assertUnchanged(helper, machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 159,
+          "text": "            int ticks = machine.processProgress().orElseThrow().progressTicks();"
+        },
+        {
+          "line": 160,
+          "text": "            machine.load(machine.saveWithFullMetadata()); machine.load(machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 161,
+          "text": "            helper.assertTrue(machine.processProgress().orElseThrow().progressTicks() == ticks, \"Loads changed precision progress\");"
+        },
+        {
+          "line": 162,
+          "text": "            PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 163,
+          "text": "        });"
+        },
+        {
+          "line": 164,
+          "text": "        helper.runAtTickTime(45, () -> {"
+        },
+        {
+          "line": 165,
+          "text": "            cut.get().assertUnchanged(helper, PrecisionAssemblerGameTests.controller(helper).saveWithFullMetadata());"
+        },
+        {
+          "line": 166,
+          "text": "            helper.succeed();"
+        },
+        {
+          "line": 167,
+          "text": "        });"
+        },
+        {
+          "line": 168,
+          "text": "    }"
+        },
+        {
+          "line": 169,
+          "text": ""
+        },
+        {
+          "line": 170,
+          "text": "    @GameTest(template = \"empty\", batch = \"recipe_signatures\", timeoutTicks = 40)"
+        },
+        {
+          "line": 171,
+          "text": "    public static void precisionHistoricalPreparedJournalIsRetainedWithoutResourceReplay(GameTestHelper helper) {"
+        },
+        {
+          "line": 172,
+          "text": "        AtomicReference<RetainedCut> cut = new AtomicReference<>();"
+        },
+        {
+          "line": 173,
+          "text": "        PrecisionAssemblerGameTests.placeStructure(helper);"
+        },
+        {
+          "line": 174,
+          "text": "        helper.runAtTickTime(8, () -> {"
+        },
+        {
+          "line": 175,
+          "text": "            PrecisionAssemblerGameTests.insertInputs(helper); var machine = PrecisionAssemblerGameTests.controller(helper);"
+        },
+        {
+          "line": 181,
+          "text": "            machine.load(saved); PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 182,
+          "text": "        });"
+        },
+        {
+          "line": 183,
+          "text": "        helper.runAtTickTime(20, () -> {"
+        },
+        {
+          "line": 184,
+          "text": "            var machine = PrecisionAssemblerGameTests.controller(helper);"
+        },
+        {
+          "line": 185,
+          "text": "            cut.get().assertUnchanged(helper, machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 186,
+          "text": "            machine.load(machine.saveWithFullMetadata()); machine.load(machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 187,
+          "text": "            PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 188,
+          "text": "        });"
+        },
+        {
+          "line": 189,
+          "text": "        helper.runAtTickTime(30, () -> {"
+        },
+        {
+          "line": 190,
+          "text": "            cut.get().assertUnchanged(helper, PrecisionAssemblerGameTests.controller(helper).saveWithFullMetadata());"
+        },
+        {
+          "line": 191,
+          "text": "            helper.succeed();"
+        },
+        {
+          "line": 192,
+          "text": "        });"
+        },
+        {
+          "line": 193,
+          "text": "    }"
+        },
+        {
+          "line": 194,
+          "text": ""
+        },
+        {
+          "line": 195,
+          "text": "    @GameTest(template = \"empty\", batch = \"recipe_signatures\", timeoutTicks = 100)"
+        },
+        {
+          "line": 196,
+          "text": "    public static void electrolyzerHistoricalPartialIsRetainedAcrossTicksAndTwoNbtLoads(GameTestHelper helper) {"
+        },
+        {
+          "line": 197,
+          "text": "        ElectrolyzerBlockEntity machine = seedElectro(helper, true); CompoundTag saved = machine.saveWithoutMetadata();"
+        },
+        {
+          "line": 198,
+          "text": "        legacyProgress(saved, oldElectro().processDefinition(), 40,"
+        },
+        {
+          "line": 199,
+          "text": "                saved.getCompound(ProcessStatePersistence.ROOT).getLong(\"resource_revision\"), ELECTRO_SHA);"
+        },
+        {
+          "line": 200,
+          "text": "        saved.getCompound(\"arce_machine\").putInt(\"progress\", 40);"
+        },
+        {
+          "line": 201,
+          "text": "        saved.getCompound(\"arce_machine\").putString(\"active_recipe\", oldElectro().getId().toString());"
+        },
+        {
+          "line": 202,
+          "text": "        RetainedCut cut = new RetainedCut(retainedRoots(saved), Map.of()); machine.load(saved);"
+        },
+        {
+          "line": 203,
+          "text": "        helper.runAtTickTime(8, () -> {"
+        },
+        {
+          "line": 204,
+          "text": "            cut.assertUnchanged(helper, machine.saveWithoutMetadata()); int ticks = machine.progress();"
+        },
+        {
+          "line": 205,
+          "text": "            machine.load(machine.saveWithoutMetadata()); machine.load(machine.saveWithoutMetadata());"
+        },
+        {
+          "line": 206,
+          "text": "            helper.assertTrue(machine.progress() == ticks, \"Loads changed electrolyzer progress\");"
+        },
+        {
+          "line": 207,
+          "text": "        });"
+        },
+        {
+          "line": 208,
+          "text": "        helper.runAtTickTime(90, () -> { cut.assertUnchanged(helper, machine.saveWithoutMetadata()); helper.succeed(); });"
+        },
+        {
+          "line": 209,
+          "text": "    }"
+        },
+        {
+          "line": 210,
+          "text": ""
+        },
+        {
+          "line": 211,
+          "text": "    @GameTest(template = \"empty\", batch = \"recipe_signatures\", timeoutTicks = 35)"
+        },
+        {
+          "line": 212,
+          "text": "    public static void electrolyzerHistoricalPreparedJournalIsRetainedWithoutResourceReplay(GameTestHelper helper) {"
+        },
+        {
+          "line": 213,
+          "text": "        ElectrolyzerBlockEntity machine = seedElectro(helper, false); var recipe = oldElectro();"
+        },
+        {
+          "line": 214,
+          "text": "        CompoundTag saved = machine.saveWithoutMetadata();"
+        },
+        {
+          "line": 215,
+          "text": "        long revision = saved.getCompound(ProcessStatePersistence.ROOT).getLong(\"resource_revision\");"
+        },
+        {
+          "line": 216,
+          "text": "        ProcessResourceSnapshot before = new ProcessResourceSnapshot(revision, Map.of("
+        },
+        {
+          "line": 217,
+          "text": "                key(ProcessResourceKind.ITEM, \"item_input\", ModItems.EMPTY_CANISTER.getId().toString()), new ProcessResourceBalance(2, 16),"
+        },
+        {
+          "line": 218,
+          "text": "                key(ProcessResourceKind.FLUID, \"fluid_input\", \"minecraft:water\"), new ProcessResourceBalance(1_000, 4_000),"
+        },
+        {
+          "line": 219,
+          "text": "                key(ProcessResourceKind.ITEM, \"item_output\", ModItems.HYDROGEN_CANISTER.getId().toString()), new ProcessResourceBalance(0, 16),"
+        },
+        {
+          "line": 220,
+          "text": "                key(ProcessResourceKind.ITEM, \"item_output\", ModItems.OXYGEN_CANISTER.getId().toString()), new ProcessResourceBalance(0, 16)));"
+        },
+        {
+          "line": 221,
+          "text": "        legacyProgress(saved, recipe.processDefinition(), 100, revision, ELECTRO_SHA);"
+        },
+        {
+          "line": 222,
+          "text": "        saved.getCompound(\"arce_machine\").putInt(\"progress\", 100);"
+        },
+        {
+          "line": 226,
+          "text": "        saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(ProcessTransactionJournal.prepared("
+        },
+        {
+          "line": 227,
+          "text": "                UUID.randomUUID(), owner, ProcessMachineLogic.simulate(recipe.processDefinition(), before).plan().orElseThrow())));"
+        },
+        {
+          "line": 228,
+          "text": "        RetainedCut cut = new RetainedCut(retainedRoots(saved), Map.of()); machine.load(saved);"
+        },
+        {
+          "line": 229,
+          "text": "        helper.runAtTickTime(8, () -> {"
+        },
+        {
+          "line": 230,
+          "text": "            cut.assertUnchanged(helper, machine.saveWithoutMetadata());"
+        },
+        {
+          "line": 231,
+          "text": "            machine.load(machine.saveWithoutMetadata()); machine.load(machine.saveWithoutMetadata());"
+        },
+        {
+          "line": 232,
+          "text": "        });"
+        },
+        {
+          "line": 233,
+          "text": "        helper.runAtTickTime(25, () -> { cut.assertUnchanged(helper, machine.saveWithoutMetadata()); helper.succeed(); });"
+        },
+        {
+          "line": 234,
+          "text": "    }"
+        },
+        {
+          "line": 235,
+          "text": ""
+        },
+        {
+          "line": 236,
+          "text": "    @GameTest(template = \"rocket_test\", batch = \"recipe_signatures\", timeoutTicks = 40)"
+        },
+        {
+          "line": 237,
+          "text": "    public static void rollingCurrentPreparedJournalRecoversOriginalPlanOnce(GameTestHelper helper) {"
+        },
+        {
+          "line": 238,
+          "text": "        RollingMachineGameTestFixtures.placeStructure(helper);"
+        },
+        {
+          "line": 240,
+          "text": "            seedRolling(helper, false);"
+        },
+        {
+          "line": 241,
+          "text": "            var machine = RollingMachineGameTestFixtures.controller(helper);"
+        },
+        {
+          "line": 242,
+          "text": "            var recipe = (RollingMachineRecipe) helper.getLevel().getRecipeManager()"
+        },
+        {
+          "line": 243,
+          "text": "                    .byKey(new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, \"rolling_iron_bars\")).orElseThrow();"
+        },
+        {
+          "line": 244,
+          "text": "            helper.assertTrue(recipe.hasTagIngredients(), \"Current journal fixture did not use the live tag recipe\");"
+        },
+        {
+          "line": 245,
+          "text": "            helper.assertFalse(recipe.signature().equals(oldRolling().signature()),"
+        },
+        {
+          "line": 246,
+          "text": "                    \"Current tag recipe was confused with historical item-only JSON\");"
+        },
+        {
+          "line": 247,
+          "text": "            ProcessResourceSnapshot before = rollingBefore(machine.resourceRevision());"
+        },
+        {
+          "line": 248,
+          "text": "            CompoundTag saved = machine.saveWithFullMetadata();"
+        },
+        {
+          "line": 249,
+          "text": "            legacyProgress(saved, recipe.processDefinition(), 100, before.revision(), recipe.signature());"
+        },
+        {
+          "line": 250,
+          "text": "            saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(ProcessTransactionJournal.prepared("
+        },
+        {
+          "line": 253,
+          "text": "            new RecipeSignatureMigration().save(saved, recipe.getId().toString());"
+        },
+        {
+          "line": 254,
+          "text": "            machine.load(saved); RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 255,
+          "text": "        });"
+        },
+        {
+          "line": 256,
+          "text": "        helper.runAtTickTime(20, () -> {"
+        },
+        {
+          "line": 257,
+          "text": "            var machine = RollingMachineGameTestFixtures.controller(helper); assertRollingComplete(helper, 0);"
+        },
+        {
+          "line": 258,
+          "text": "            helper.assertFalse(machine.saveWithFullMetadata().contains(ProcessJournalPersistence.ROOT), \"Current journal was not cleared\");"
+        },
+        {
+          "line": 259,
+          "text": "            machine.load(machine.saveWithFullMetadata()); machine.load(machine.saveWithFullMetadata());"
+        },
+        {
+          "line": 260,
+          "text": "            RollingMachineRuntime.markProcessReady(helper.getLevel(), machine.getBlockPos());"
+        },
+        {
+          "line": 261,
+          "text": "        });"
+        },
+        {
+          "line": 262,
+          "text": "        helper.runAtTickTime(30, () -> { assertRollingComplete(helper, 0); helper.succeed(); });"
+        },
+        {
+          "line": 263,
+          "text": "    }"
+        },
+        {
+          "line": 264,
+          "text": ""
+        },
+        {
+          "line": 265,
+          "text": "    @GameTest(template = \"empty\", batch = \"recipe_signatures\", timeoutTicks = 35)"
+        },
+        {
+          "line": 266,
+          "text": "    public static void electrolyzerCurrentPreparedJournalRecoversOriginalPlanOnce(GameTestHelper helper) {"
+        },
+        {
+          "line": 267,
+          "text": "        ElectrolyzerBlockEntity machine = seedElectro(helper, false);"
+        },
+        {
+          "line": 268,
+          "text": "        var recipe = (ElectrolyzerRecipe) helper.getLevel().getRecipeManager()"
+        },
+        {
+          "line": 269,
+          "text": "                .byKey(new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, \"electrolyzer_water\")).orElseThrow();"
+        },
+        {
+          "line": 270,
+          "text": "        CompoundTag saved = machine.saveWithoutMetadata();"
+        },
+        {
+          "line": 271,
+          "text": "        long revision = saved.getCompound(ProcessStatePersistence.ROOT).getLong(\"resource_revision\");"
+        },
+        {
+          "line": 272,
+          "text": "        ProcessResourceSnapshot before = new ProcessResourceSnapshot(revision, Map.of("
+        },
+        {
+          "line": 273,
+          "text": "                key(ProcessResourceKind.ITEM, \"item_input\", ModItems.EMPTY_CANISTER.getId().toString()), new ProcessResourceBalance(2, 16),"
+        },
+        {
+          "line": 274,
+          "text": "                key(ProcessResourceKind.FLUID, \"fluid_input\", \"minecraft:water\"), new ProcessResourceBalance(1_000, 4_000),"
+        },
+        {
+          "line": 275,
+          "text": "                key(ProcessResourceKind.ITEM, \"item_output\", ModItems.HYDROGEN_CANISTER.getId().toString()), new ProcessResourceBalance(0, 16),"
+        },
+        {
+          "line": 276,
+          "text": "                key(ProcessResourceKind.ITEM, \"item_output\", ModItems.OXYGEN_CANISTER.getId().toString()), new ProcessResourceBalance(0, 16)));"
+        },
+        {
+          "line": 277,
+          "text": "        legacyProgress(saved, recipe.processDefinition(), 100, revision, recipe.signature());"
+        },
+        {
+          "line": 278,
+          "text": "        saved.getCompound(\"arce_machine\").putInt(\"progress\", 100);"
+        },
+        {
+          "line": 282,
+          "text": "        saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(ProcessTransactionJournal.prepared("
+        },
+        {
+          "line": 283,
+          "text": "                UUID.randomUUID(), owner, ProcessMachineLogic.simulate(recipe.processDefinition(), before).plan().orElseThrow())));"
+        },
+        {
+          "line": 284,
+          "text": "        new RecipeSignatureMigration().save(saved, recipe.getId().toString()); machine.load(saved);"
+        },
+        {
+          "line": 285,
+          "text": "        helper.runAtTickTime(8, () -> {"
+        },
+        {
+          "line": 286,
+          "text": "            assertElectroComplete(helper, machine, 0);"
+        },
+        {
+          "line": 287,
+          "text": "            machine.load(machine.saveWithoutMetadata()); machine.load(machine.saveWithoutMetadata());"
+        },
+        {
+          "line": 288,
+          "text": "        });"
+        },
+        {
+          "line": 289,
+          "text": "        helper.runAtTickTime(25, () -> { assertElectroComplete(helper, machine, 0); helper.succeed(); });"
+        },
+        {
+          "line": 290,
+          "text": "    }"
+        },
+        {
+          "line": 291,
+          "text": ""
+        },
+        {
+          "line": 292,
+          "text": "    private static void legacyProgress(CompoundTag parent, ProcessDefinition recipe, int ticks, long revision, String sha) {"
+        },
+        {
+          "line": 293,
+          "text": "        parent.remove(RecipeSignatureMigration.ROOT);"
+        },
+        {
+          "line": 294,
+          "text": "        parent.put(ProcessStatePersistence.ROOT, ProcessStatePersistence.encode(new ProcessStateData("
+        },
+        {
+          "line": 295,
+          "text": "                ProcessMachineState.RUNNING, revision, Optional.of(new ProcessProgress(recipe.id(), ticks,"
+        },
+        {
+          "line": 296,
+          "text": "                        (long) ticks * recipe.energyPerTick())), Optional.of(sha), Optional.empty(), ProcessFailure.NONE)));"
+        },
+        {
+          "line": 297,
+          "text": "    }"
+        },
+        {
+          "line": 298,
+          "text": ""
+        },
+        {
+          "line": 299,
+          "text": "    private static CompoundTag retainedRoots(CompoundTag parent) {"
+        },
+        {
+          "line": 300,
+          "text": "        CompoundTag selected = new CompoundTag();"
+        },
+        {
+          "line": 301,
+          "text": "        for (String root : List.of(ProcessStatePersistence.ROOT, ProcessJournalPersistence.ROOT,"
+        },
+        {
+          "line": 323,
+          "text": "        return new RetainedCut(retainedRoots(parent), Map.copyOf(ports));"
+        },
+        {
+          "line": 324,
+          "text": "    }"
+        },
+        {
+          "line": 325,
+          "text": ""
+        },
+        {
+          "line": 326,
+          "text": "    private record RetainedCut(CompoundTag controller, Map<BlockEntity, CompoundTag> ports) {"
+        },
+        {
+          "line": 327,
+          "text": "        private void assertUnchanged(GameTestHelper helper, CompoundTag saved) {"
+        },
+        {
+          "line": 328,
+          "text": "            helper.assertFalse(saved.contains(RecipeSignatureMigration.ROOT), \"Unwitnessed work was marked current\");"
+        },
+        {
+          "line": 329,
+          "text": "            helper.assertTrue(controller.equals(retainedRoots(saved)), \"Old work/resources were rewritten or replayed\");"
+        },
+        {
+          "line": 330,
+          "text": "            for (var entry : ports.entrySet()) {"
+        },
+        {
+          "line": 331,
+          "text": "                helper.assertTrue(entry.getValue().equals(retainedRoots(entry.getKey().saveWithoutMetadata())),"
+        },
+        {
+          "line": 332,
+          "text": "                        \"Port input/output/fluid/energy changed while historical work was paused\");"
+        },
+        {
+          "line": 333,
+          "text": "            }"
+        },
+        {
+          "line": 334,
+          "text": "        }"
+        },
+        {
+          "line": 335,
+          "text": "    }"
+        },
+        {
+          "line": 336,
+          "text": ""
+        },
+        {
+          "line": 353,
+          "text": "                key(ProcessResourceKind.FLUID, \"fluid_input\", \"minecraft:water\"), new ProcessResourceBalance(100, 4_000),"
+        },
+        {
+          "line": 354,
+          "text": "                key(ProcessResourceKind.ITEM, \"item_output\", \"minecraft:iron_bars\"), new ProcessResourceBalance(0, 64)));"
+        },
+        {
+          "line": 355,
+          "text": "    }"
+        },
+        {
+          "line": 356,
+          "text": ""
+        },
+        {
+          "line": 357,
+          "text": "    private static void assertRollingComplete(GameTestHelper helper, int energy) {"
+        },
+        {
+          "line": 358,
+          "text": "        var input = RollingMachineGameTestFixtures.port(helper, RollingMachineGameTestFixtures.ITEM_INPUT);"
+        },
+        {
+          "line": 359,
+          "text": "        var output = RollingMachineGameTestFixtures.port(helper, RollingMachineGameTestFixtures.ITEM_OUTPUT);"
+        },
+        {
+          "line": 360,
+          "text": "        helper.assertTrue(input.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow().getStackInSlot(0).isEmpty(),"
+        },
+        {
+          "line": 361,
+          "text": "                \"Rolling retained a consumed input\");"
+        },
+        {
+          "line": 362,
+          "text": "        ItemStack result = output.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow().getStackInSlot(0);"
+        },
+        {
+          "line": 363,
+          "text": "        helper.assertTrue(result.is(Items.IRON_BARS) && result.getCount() == 8, \"Rolling result was not produced exactly once\");"
+        },
+        {
+          "line": 364,
+          "text": "        helper.assertTrue(RollingMachineGameTestFixtures.port(helper, RollingMachineGameTestFixtures.FLUID_INPUT)"
+        },
+        {
+          "line": 365,
+          "text": "                .getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElseThrow().getFluidInTank(0).isEmpty(), \"Rolling water changed incorrectly\");"
+        },
+        {
+          "line": 366,
+          "text": "        helper.assertTrue(RollingMachineGameTestFixtures.port(helper, RollingMachineGameTestFixtures.ENERGY_INPUT)"
+        },
+        {
+          "line": 367,
+          "text": "                .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow().getEnergyStored() == energy, \"Rolling energy changed incorrectly\");"
+        },
+        {
+          "line": 368,
+          "text": "    }"
+        },
+        {
+          "line": 369,
+          "text": ""
+        },
+        {
+          "line": 370,
+          "text": "    private static ElectrolyzerBlockEntity seedElectro(GameTestHelper helper, boolean energy) {"
+        },
+        {
+          "line": 371,
+          "text": "        helper.setBlock(BlockPos.ZERO, ModBlocks.ELECTROLYZER.get());"
+        },
+        {
+          "line": 372,
+          "text": "        var machine = (ElectrolyzerBlockEntity) helper.getBlockEntity(BlockPos.ZERO);"
+        },
+        {
+          "line": 373,
+          "text": "        machine.getCapability(ForgeCapabilities.ITEM_HANDLER, net.minecraft.core.Direction.UP).resolve().orElseThrow()"
+        },
+        {
+          "line": 374,
+          "text": "                .insertItem(0, new ItemStack(ModItems.EMPTY_CANISTER.get(), 2), false);"
+        },
+        {
+          "line": 375,
+          "text": "        machine.getCapability(ForgeCapabilities.FLUID_HANDLER).resolve().orElseThrow()"
+        },
+        {
+          "line": 376,
+          "text": "                .fill(new FluidStack(Fluids.WATER, 1_000), IFluidHandler.FluidAction.EXECUTE);"
+        },
+        {
+          "line": 377,
+          "text": "        if (energy) {"
+        },
+        {
+          "line": 378,
+          "text": "            var storage = machine.getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow();"
+        },
+        {
+          "line": 379,
+          "text": "            storage.receiveEnergy(1_000, false); storage.receiveEnergy(1_000, false);"
+        },
+        {
+          "line": 380,
+          "text": "        }"
+        },
+        {
+          "line": 381,
+          "text": "        return machine;"
+        },
+        {
+          "line": 382,
+          "text": "    }"
+        },
+        {
+          "line": 383,
+          "text": ""
+        },
+        {
+          "line": 384,
+          "text": "    private static void assertElectroComplete(GameTestHelper helper, ElectrolyzerBlockEntity machine, int energy) {"
+        },
+        {
+          "line": 385,
+          "text": "        helper.assertTrue(machine.menuInventory().getStackInSlot(ElectrolyzerBlockEntity.SLOT_INPUT).isEmpty(), \"Electrolyzer retained input\");"
+        },
+        {
+          "line": 386,
+          "text": "        helper.assertTrue(machine.menuInventory().getStackInSlot(ElectrolyzerBlockEntity.SLOT_HYDROGEN).getCount() == 1"
+        },
+        {
+          "line": 387,
+          "text": "                && machine.menuInventory().getStackInSlot(ElectrolyzerBlockEntity.SLOT_OXYGEN).getCount() == 1,"
+        },
+        {
+          "line": 388,
+          "text": "                \"Electrolyzer outputs were not produced exactly once\");"
+        },
+        {
+          "line": 389,
+          "text": "        helper.assertTrue(machine.waterAmount() == 0 && machine.energyStored() == energy, \"Electrolyzer resources changed incorrectly\");"
+        },
+        {
+          "line": 390,
+          "text": "        helper.assertFalse(machine.saveWithoutMetadata().contains(ProcessJournalPersistence.ROOT), \"Electrolyzer retained its journal\");"
+        },
+        {
+          "line": 391,
+          "text": "    }"
+        },
+        {
+          "line": 392,
+          "text": ""
+        },
+        {
+          "line": 393,
+          "text": "    private static RollingMachineRecipe oldRolling() {"
+        },
+        {
+          "line": 394,
+          "text": "        var id = new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, \"rolling_iron_bars\");"
+        },
+        {
+          "line": 395,
+          "text": "        return new RollingMachineRecipe.Serializer().fromJson(id,"
+        },
+        {
+          "line": 404,
+          "text": "        var id = new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, \"electrolyzer_water\");"
+        },
+        {
+          "line": 405,
+          "text": "        return new ElectrolyzerRecipe.Serializer().fromJson(id,"
+        },
+        {
+          "line": 406,
+          "text": "                LegacyKernelRecipeProof.payload(id, \"advancedrocketrycommunity:electrolyzing\"));"
+        },
+        {
+          "line": 407,
+          "text": "    }"
+        },
+        {
+          "line": 408,
+          "text": "    private static com.google.gson.JsonElement unbound() { return JsonParser.parseString(\"{\\\"tag\\\":\\\"arce_test:unbound\\\"}\"); }"
+        },
+        {
+          "line": 409,
+          "text": "    private static ProcessResourceKey key(ProcessResourceKind kind, String channel, String id) {"
+        },
+        {
+          "line": 410,
+          "text": "        return new ProcessResourceKey(kind, channel, id);"
+        },
+        {
+          "line": 411,
+          "text": "    }"
+        },
+        {
+          "line": 412,
+          "text": "}"
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RecipeSignatureSaveEventGameTests.java",
+      "bytes": 4045,
+      "sha256": "715ff5fdd969ed321f887db9fb011e2c973ab47ab73ef0b5da76797ae27bdd5a",
+      "selected_evidence_lines": [
+        {
+          "line": 33,
+          "text": "                    carrier.put(root, oversized);"
+        },
+        {
+          "line": 34,
+          "text": "                    ListTag entities = new ListTag(); entities.add(carrier);"
+        },
+        {
+          "line": 35,
+          "text": "                    CompoundTag outgoing = new CompoundTag(); outgoing.put(\"block_entities\", entities);"
+        },
+        {
+          "line": 36,
+          "text": "                    chunk.setUnsaved(false);"
+        },
+        {
+          "line": 37,
+          "text": "                    rejected(helper, new ChunkDataEvent.Save(chunk, helper.getLevel(), outgoing));"
+        },
+        {
+          "line": 38,
+          "text": "                    helper.assertTrue(chunk.isUnsaved(), \"Initial recipe refusal lost retry flag: \" + id + \"/\" + root);"
+        },
+        {
+          "line": 39,
+          "text": "                    chunk.setUnsaved(false);"
+        },
+        {
+          "line": 40,
+          "text": "                    rejected(helper, new ChunkDataEvent.Save(chunk, helper.getLevel(), new CompoundTag()));"
+        },
+        {
+          "line": 41,
+          "text": "                    helper.assertTrue(chunk.isUnsaved(), \"Empty recipe retry lost Level-owned denial: \" + id + \"/\" + root);"
+        },
+        {
+          "line": 42,
+          "text": "                } finally {"
+        },
+        {
+          "line": 43,
+          "text": "                    // No live BE/resource was changed: only this synthetic outgoing tag existed."
+        },
+        {
+          "line": 44,
+          "text": "                    GuardedChunkSaves.restoreGameTestFixture(helper.getLevel(), chunk.getPos());"
+        },
+        {
+          "line": 45,
+          "text": "                }"
+        },
+        {
+          "line": 58,
+          "text": "        helper.succeed();"
+        },
+        {
+          "line": 59,
+          "text": "    }"
+        },
+        {
+          "line": 60,
+          "text": ""
+        },
+        {
+          "line": 61,
+          "text": "    private static void rejected(GameTestHelper helper, ChunkDataEvent.Save event) {"
+        },
+        {
+          "line": 62,
+          "text": "        try { MinecraftForge.EVENT_BUS.post(event); helper.fail(\"Oversized recipe/empty retry was admitted\"); }"
+        },
+        {
+          "line": 63,
+          "text": "        catch (IllegalStateException refused) {"
+        },
+        {
+          "line": 64,
+          "text": "            helper.assertTrue(REASON.equals(refused.getMessage()), \"Different failure masked recipe save denial\");"
+        },
+        {
+          "line": 65,
+          "text": "        }"
+        },
+        {
+          "line": 66,
+          "text": "    }"
+        },
+        {
+          "line": 67,
+          "text": "    private RecipeSignatureSaveEventGameTests() { }"
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/SatelliteReviewGameTests.java",
+      "bytes": 26165,
+      "sha256": "61ef6df0806127b639398a508bba4d56db339cedb8985cddbfa8a75efcda5929",
+      "selected_evidence_lines": [
+        {
+          "line": 82,
+          "text": "        try {"
+        },
+        {
+          "line": 83,
+          "text": "            Files.createDirectory(obstacle);"
+        },
+        {
+          "line": 84,
+          "text": "            try {"
+        },
+        {
+          "line": 85,
+          "text": "                AdvancedRocketryCommunity.LOGGER.info(\"ARCE_SATELLITE_EXPECTED_SAVE_FAILURE testing the idle-launch barrier\");"
+        },
+        {
+          "line": 86,
+          "text": "                press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.UNSUPPORTED_DATA);"
+        },
+        {
+          "line": 87,
+          "text": "                helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),"
+        },
+        {
+          "line": 88,
+          "text": "                        \"A launch whose flush failed consumed the package\");"
+        },
+        {
+          "line": 89,
+          "text": "                press(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.UNSUPPORTED_DATA);"
+        },
+        {
+          "line": 90,
+          "text": "                helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),"
+        },
+        {
+          "line": 91,
+          "text": "                        \"A replay consumed the package before the registry was durable\");"
+        },
+        {
+          "line": 92,
+          "text": "            } finally {"
+        },
+        {
+          "line": 93,
+          "text": "                Files.delete(obstacle);"
+        },
+        {
+          "line": 94,
+          "text": "            }"
+        },
+        {
+          "line": 130,
+          "text": "        SatelliteIdentity survey = surveyIdentity(owner.getUUID());"
+        },
+        {
+          "line": 131,
+          "text": "        insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_CONTROL_CHIP, bound(ModItems.SATELLITE_CONTROL_CHIP.get(), survey));"
+        },
+        {
+          "line": 132,
+          "text": "        insert(helper, slots, SatelliteTerminalBlockEntity.SLOT_PACKAGE, bound(ModItems.SATELLITE_PACKAGE.get(), survey));"
+        },
+        {
+          "line": 133,
+          "text": "        power(terminal);"
+        },
+        {
+          "line": 134,
+          "text": "        terminal.handleButton(owner, SatelliteTerminalMenu.BUTTON_LAUNCH);"
+        },
+        {
+          "line": 135,
+          "text": "        helper.assertTrue(!slots.getStackInSlot(SatelliteTerminalBlockEntity.SLOT_PACKAGE).isEmpty(),"
+        },
+        {
+          "line": 136,
+          "text": "                \"A launch on a blocked registry consumed the package\");"
+        },
+        {
+          "line": 137,
+          "text": ""
+        },
+        {
+          "line": 138,
+          "text": "        helper.runAfterDelay(22, () -> {"
+        },
+        {
+          "line": 139,
+          "text": "            helper.assertTrue(receiver.status(0) == SolarLinks.LinkStatus.UNAVAILABLE && receiver.output() == 0,"
+        },
+        {
+          "line": 371,
+          "text": "    }"
+        },
+        {
+          "line": 372,
+          "text": ""
+        },
+        {
+          "line": 373,
+          "text": "    private static void press(GameTestHelper helper, SatelliteTerminalBlockEntity terminal, FakePlayer player,"
+        },
+        {
+          "line": 374,
+          "text": "                              int button, SatelliteOperationCode expected) {"
+        },
+        {
+          "line": 375,
+          "text": "        terminal.handleButton(player, button);"
+        },
+        {
+          "line": 376,
+          "text": "        int actual = terminal.saveWithoutMetadata().getCompound(\"SatelliteTerminal\").getInt(\"last_result\");"
+        },
+        {
+          "line": 377,
+          "text": "        helper.assertTrue(actual == expected.ordinal(), \"Button \" + button + \": expected \" + expected + \" but got \""
+        },
+        {
+          "line": 378,
+          "text": "                + SatelliteOperationCode.values()[actual]);"
+        },
+        {
+          "line": 379,
+          "text": "    }"
+        },
+        {
+          "line": 380,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerMigrationBindingGameTests.java",
+      "bytes": 12740,
+      "sha256": "c654f71f5c4613ac2ee44bcb553bf2ac9287ddd5b7610f6359e00bea8d8e1525",
+      "selected_evidence_lines": [
+        {
+          "line": 113,
+          "text": "            MinecraftForge.EVENT_BUS.addListener(fault);"
+        },
+        {
+          "line": 114,
+          "text": "            try {"
+        },
+        {
+          "line": 115,
+          "text": "                // Synchronous real-manager work prevents a later world tick from"
+        },
+        {
+          "line": 116,
+          "text": "                // hiding the cleared dirty flag or repairing the stale disk root."
+        },
+        {
+          "line": 117,
+          "text": "                manager.tick(level.getServer());"
+        },
+        {
+          "line": 118,
+          "text": "                helper.assertTrue(fault.fired >= 1, \"Energy binding save fault was not exercised\");"
+        },
+        {
+          "line": 119,
+          "text": "                if (failures == 2) {"
+        },
+        {
+          "line": 120,
+          "text": "                    helper.assertTrue(fault.fired == 2, \"Energy binding was not retried at the second barrier\");"
+        },
+        {
+          "line": 121,
+          "text": "                    helper.assertTrue(\"preparing\".equals(controller.saveWithFullMetadata()"
+        },
+        {
+          "line": 122,
+          "text": "                                    .getCompound(\"arce_precision_resources\").getString(\"phase\")),"
+        },
+        {
+          "line": 186,
+          "text": "            throw new IllegalStateException(\"Cannot read saved Energy binding fixture\", exception);"
+        },
+        {
+          "line": 187,
+          "text": "        }"
+        },
+        {
+          "line": 188,
+          "text": "    }"
+        },
+        {
+          "line": 189,
+          "text": ""
+        },
+        {
+          "line": 190,
+          "text": "    private static final class BindingSaveFailure implements Consumer<ChunkDataEvent.Save> {"
+        },
+        {
+          "line": 191,
+          "text": "        private final ServerLevel level;"
+        },
+        {
+          "line": 192,
+          "text": "        private final BlockPos position;"
+        },
+        {
+          "line": 193,
+          "text": "        private final int limit;"
+        },
+        {
+          "line": 194,
+          "text": "        private int fired;"
+        },
+        {
+          "line": 195,
+          "text": ""
+        },
+        {
+          "line": 210,
+          "text": "                if (entity.getInt(\"x\") == position.getX() && entity.getInt(\"y\") == position.getY()"
+        },
+        {
+          "line": 211,
+          "text": "                        && entity.getInt(\"z\") == position.getZ()"
+        },
+        {
+          "line": 212,
+          "text": "                        && entity.getCompound(\"arce_part_binding\").getLong(\"generation\") == GENERATION) {"
+        },
+        {
+          "line": 213,
+          "text": "                    fired++;"
+        },
+        {
+          "line": 214,
+          "text": "                    throw new IllegalStateException(\"Intentional Energy-only migration binding save failure\");"
+        },
+        {
+          "line": 215,
+          "text": "                }"
+        },
+        {
+          "line": 216,
+          "text": "            }"
+        },
+        {
+          "line": 217,
+          "text": "        }"
+        },
+        {
+          "line": 218,
+          "text": "    }"
+        },
+        {
+          "line": 219,
+          "text": "}"
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/DeferredProcessDefinition.java",
+      "bytes": 1679,
+      "sha256": "73da5ac30c00a5870ad5cc990825bd3d7c9d80efcf9e47a14db0cf2cc93e427d",
+      "selected_evidence_lines": [
+        {
+          "line": 4,
+          "text": "import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessDefinition;"
+        },
+        {
+          "line": 5,
+          "text": "import java.util.Objects;"
+        },
+        {
+          "line": 6,
+          "text": "import java.util.function.Supplier;"
+        },
+        {
+          "line": 7,
+          "text": ""
+        },
+        {
+          "line": 8,
+          "text": "/** Recipe-local bounded resolution cache, invalidated by tag rebinding rather than parsing. */"
+        },
+        {
+          "line": 9,
+          "text": "public final class DeferredProcessDefinition {"
+        },
+        {
+          "line": 10,
+          "text": "    private final String id;"
+        },
+        {
+          "line": 11,
+          "text": "    private final Supplier<ProcessDefinition> factory;"
+        },
+        {
+          "line": 12,
+          "text": "    private long generation = Long.MIN_VALUE;"
+        },
+        {
+          "line": 13,
+          "text": "    private ProcessDefinition definition;"
+        },
+        {
+          "line": 25,
+          "text": ""
+        },
+        {
+          "line": 26,
+          "text": "    public ProcessDefinition get() {"
+        },
+        {
+          "line": 27,
+          "text": "        refresh();"
+        },
+        {
+          "line": 28,
+          "text": "        if (failure != null) {"
+        },
+        {
+          "line": 29,
+          "text": "            throw failure;"
+        },
+        {
+          "line": 30,
+          "text": "        }"
+        },
+        {
+          "line": 31,
+          "text": "        return definition;"
+        },
+        {
+          "line": 32,
+          "text": "    }"
+        },
+        {
+          "line": 33,
+          "text": ""
+        },
+        {
+          "line": 34,
+          "text": "    private void refresh() {"
+        },
+        {
+          "line": 42,
+          "text": "        try {"
+        },
+        {
+          "line": 43,
+          "text": "            definition = Objects.requireNonNull(factory.get());"
+        },
+        {
+          "line": 44,
+          "text": "        } catch (IllegalArgumentException exception) {"
+        },
+        {
+          "line": 45,
+          "text": "            failure = exception;"
+        },
+        {
+          "line": 46,
+          "text": "            AdvancedRocketryCommunity.LOGGER.error(\"Disabling machine recipe {} until tag reload: {}\","
+        },
+        {
+          "line": 47,
+          "text": "                    id, exception.getMessage());"
+        },
+        {
+          "line": 48,
+          "text": "        }"
+        },
+        {
+          "line": 49,
+          "text": "    }"
+        },
+        {
+          "line": 50,
+          "text": "}"
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/RecipeSignatureProtection.java",
+      "bytes": 3503,
+      "sha256": "51e41e64013d3c410c76a0a5d07f2c8b92d54e67737ad4ea30808d5d183641f9",
+      "selected_evidence_lines": [
+        {
+          "line": 14,
+          "text": "import net.minecraftforge.event.level.ExplosionEvent;"
+        },
+        {
+          "line": 15,
+          "text": "import net.minecraftforge.eventbus.api.SubscribeEvent;"
+        },
+        {
+          "line": 16,
+          "text": "import net.minecraftforge.fml.common.Mod;"
+        },
+        {
+          "line": 17,
+          "text": ""
+        },
+        {
+          "line": 18,
+          "text": "/** Refuse removal and veto oversized saves without asking LevelChunk to omit a BlockEntity. */"
+        },
+        {
+          "line": 19,
+          "text": "@Mod.EventBusSubscriber(modid = AdvancedRocketryCommunity.MOD_ID)"
+        },
+        {
+          "line": 20,
+          "text": "public final class RecipeSignatureProtection {"
+        },
+        {
+          "line": 21,
+          "text": "    private static final Set<String> CONTROLLER_IDS = Set.of("
+        },
+        {
+          "line": 22,
+          "text": "            \"advancedrocketrycommunity:rolling_machine\","
+        },
+        {
+          "line": 23,
+          "text": "            \"advancedrocketrycommunity:precision_assembler\","
+        },
+        {
+          "line": 52,
+          "text": "    static void requireBoundedChunk(CompoundTag data, int maximumEntities, Runnable retainRetry) {"
+        },
+        {
+          "line": 53,
+          "text": "        var entities = data.getList(\"block_entities\", Tag.TAG_COMPOUND);"
+        },
+        {
+          "line": 54,
+          "text": "        if (entities.size() > maximumEntities) {"
+        },
+        {
+          "line": 55,
+          "text": "            retainRetry.run();"
+        },
+        {
+          "line": 56,
+          "text": "            throw new IllegalStateException(\"Chunk block-entity count exceeds its physical bound\");"
+        },
+        {
+          "line": 57,
+          "text": "        }"
+        },
+        {
+          "line": 58,
+          "text": "        for (int index = 0; index < entities.size(); index++) {"
+        },
+        {
+          "line": 59,
+          "text": "            CompoundTag entity = entities.getCompound(index);"
+        },
+        {
+          "line": 60,
+          "text": "            if (CONTROLLER_IDS.contains(entity.getString(\"id\")) && !RecipeSignatureMigration.bounded(entity)) {"
+        },
+        {
+          "line": 61,
+          "text": "                retainRetry.run();"
+        },
+        {
+          "line": 62,
+          "text": "                throw new IllegalStateException(\"Refusing chunk save with oversized recipe input; back up and repair first\");"
+        },
+        {
+          "line": 63,
+          "text": "            }"
+        },
+        {
+          "line": 64,
+          "text": "        }"
+        },
+        {
+          "line": 65,
+          "text": "    }"
+        },
+        {
+          "line": 66,
+          "text": ""
+        },
+        {
+          "line": 67,
+          "text": "    /** Shared by Forge entity hooks and events; never load a missing chunk. */"
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/GuardedChunkSaves.java",
+      "bytes": 4047,
+      "sha256": "14132bf89fc3f4b6589a3ef227e70bc72bf287f94fe86336cb29de52c18aa487",
+      "selected_evidence_lines": [
+        {
+          "line": 47,
+          "text": "    @SubscribeEvent(priority = EventPriority.HIGHEST)"
+        },
+        {
+          "line": 48,
+          "text": "    public static void beforeSave(ChunkDataEvent.Save event) {"
+        },
+        {
+          "line": 49,
+          "text": "        if (event.getLevel() instanceof ServerLevel level) {"
+        },
+        {
+          "line": 50,
+          "text": "            var reason = state(level).reason(event.getChunk().getPos().toLong());"
+        },
+        {
+          "line": 51,
+          "text": "            if (reason.isPresent()) { fail(event, reason.orElseThrow()); }"
+        },
+        {
+          "line": 52,
+          "text": "        }"
+        },
+        {
+          "line": 53,
+          "text": "    }"
+        },
+        {
+          "line": 54,
+          "text": ""
+        },
+        {
+          "line": 55,
+          "text": "    public static void refuse(ChunkDataEvent.Save event, String reason) {"
+        },
+        {
+          "line": 56,
+          "text": "        if (event.getLevel() instanceof ServerLevel level) {"
+        },
+        {
+          "line": 57,
+          "text": "            state(level).deny(event.getChunk().getPos().toLong(), reason);"
+        },
+        {
+          "line": 58,
+          "text": "        }"
+        },
+        {
+          "line": 59,
+          "text": "        fail(event, reason);"
+        },
+        {
+          "line": 60,
+          "text": "    }"
+        },
+        {
+          "line": 61,
+          "text": ""
+        },
+        {
+          "line": 62,
+          "text": "    private static void fail(ChunkDataEvent.Save event, String reason) {"
+        },
+        {
+          "line": 63,
+          "text": "        event.getChunk().setUnsaved(true);"
+        },
+        {
+          "line": 64,
+          "text": "        throw new IllegalStateException(reason);"
+        },
+        {
+          "line": 65,
+          "text": "    }"
+        },
+        {
+          "line": 66,
+          "text": ""
+        },
+        {
+          "line": 67,
+          "text": "    /** Disposable GT fixtures only; a native DedicatedServer has no online guard-reset operation. */"
+        },
+        {
+          "line": 68,
+          "text": "    public static void restoreGameTestFixture(ServerLevel level, ChunkPos position) {"
+        },
+        {
+          "line": 69,
+          "text": "        if (!(level.getServer() instanceof GameTestServer)) {"
+        }
+      ]
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/service/DiscoveryRecoveryGameTests.java",
+      "bytes": 9417,
+      "sha256": "c302c673d38379e5e5d93ad7f92b1178ef9caf96de62e96a7d9703f9ccd6c64c",
+      "selected_evidence_lines": [
+        {
+          "line": 68,
+          "text": "                    .resolve(SatelliteMissionSavedData.DATA_NAME + \".dat.arce-pending\");"
+        },
+        {
+          "line": 69,
+          "text": "            java.nio.file.Files.createDirectory(obstacle);"
+        },
+        {
+          "line": 70,
+          "text": "            try {"
+        },
+        {
+          "line": 71,
+          "text": "                AdvancedRocketryCommunity.LOGGER.info(\"ARCE_DISCOVERY_EXPECTED_SAVE_FAILURE testing launch acknowledgment\");"
+        },
+        {
+          "line": 72,
+          "text": "                helper.assertTrue(manager.launch(owner, identity, PlanetaryContent.VENUS).code()"
+        },
+        {
+          "line": 73,
+          "text": "                        == SatelliteOperationCode.UNSUPPORTED_DATA, \"Unacknowledged launch was reported successful\");"
+        },
+        {
+          "line": 74,
+          "text": "            } finally { java.nio.file.Files.delete(obstacle); }"
+        },
+        {
+          "line": 75,
+          "text": "            helper.assertTrue(manager.launch(owner, identity, PlanetaryContent.VENUS).success(), \"Second mission did not launch\");"
+        },
+        {
+          "line": 76,
+          "text": "            var acknowledgedLaunch = SatelliteMissionSavedData.load(NbtIo.readCompressed(server.getWorldPath(LevelResource.ROOT)"
+        },
+        {
+          "line": 77,
+          "text": "                    .resolve(\"data\").resolve(SatelliteMissionSavedData.DATA_NAME + \".dat\").toFile()).getCompound(\"data\"));"
+        }
+      ]
+    }
+  ],
+  "interpretation_limits": [
+    "Finite context attribution is not a clean-log waiver",
+    "Stackless unbound recipe logs correlate with recipe_signatures batch and explicit negative rebind test; not an exact callback trace",
+    "No K2 GameTest consumer/runtime/persistence execution is inferred",
+    "No copied baseline native world proof"
+  ]
+}

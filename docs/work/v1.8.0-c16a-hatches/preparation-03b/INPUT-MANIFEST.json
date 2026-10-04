@@ -1,0 +1,592 @@
+{
+  "format": "arce-read-only-preparation-inputs-v1",
+  "created_utc": "2026-10-03T17:32:53.525948+00:00",
+  "agent": "/root/c17_contract",
+  "task": "C16a-03b physical hatch/controller boundary preparation",
+  "status": "PROPOSED; no public API/schema/physical adapter admission",
+  "repository": {
+    "path": "D:/GitHub/AdvancedRocketry-Community",
+    "branch": "codex/v1.8.0-classic-content",
+    "head": "cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6",
+    "tracked_dirty_entries": 109,
+    "status_command": "git status --short --untracked-files=no"
+  },
+  "write_boundary": {
+    "directory": "C:/Users/Administrator/AppData/Local/Temp/ah3b-8dc7929121",
+    "permitted_files": [
+      "MEMO.md",
+      "INPUT-MANIFEST.json"
+    ],
+    "repository_author_and_prior_artifacts_read_only": true
+  },
+  "inputs": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 8379,
+      "sha256": "725dd46344046bcdb802872e08fbc3cd9da0bf876e680eeba4c82dda801a9503"
+    },
+    {
+      "path": "PROJECT-CONFIG.md",
+      "bytes": 3543,
+      "sha256": "44b2e383e1f57f28ff2f432b5702f854ac32bd0d9b51b53df30b88e6853cf22b"
+    },
+    {
+      "path": "PRODUCT.md",
+      "bytes": 4325,
+      "sha256": "0afbb33a772ddaa60e654e2a55e7832ad2e1528eb1a5273b257cef4bb734e090"
+    },
+    {
+      "path": "docs/01-PORTING-PRINCIPLES.md",
+      "bytes": 4619,
+      "sha256": "a1ff595bdcc85335ef6124c4ca4d640d318d5fd8ca69af8c57d842186e629984"
+    },
+    {
+      "path": "docs/04-VERSION-ROADMAP.md",
+      "bytes": 5260,
+      "sha256": "d3fd1539581db13cc807c613cf333f5c34aa75d6627dafd50bfb66d079ce2ab3"
+    },
+    {
+      "path": "docs/versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md",
+      "bytes": 8905,
+      "sha256": "902b0e65585f47c4e4beec39f365c5046346799a2e77dee276ebaa58e433b051"
+    },
+    {
+      "path": "docs/05-MASTER-TEST-PLAN.md",
+      "bytes": 7695,
+      "sha256": "c84e282637842bb55c374949d3787e9459b5273b28d67fd756c05002018dca47"
+    },
+    {
+      "path": "docs/06-RELEASE-AND-ACCEPTANCE-GATES.md",
+      "bytes": 4069,
+      "sha256": "872980fc3ed6e264e25a7873c58c6439330ed19d8a7cc96564f9ec99e94890a1"
+    },
+    {
+      "path": "docs/16-POST-1.0-VERSION-ROADMAP.md",
+      "bytes": 7281,
+      "sha256": "c436fef7e31b55cccbcea6a089e0c92c15fd597a87c72bcf1a6c956c838d7f37"
+    },
+    {
+      "path": "docs/17-V1PLUS-QUALITY-BUDGETS.md",
+      "bytes": 7082,
+      "sha256": "5dc4f2a4f43006cfddff6d65795fd02b4c2437116b79828b6a85e7ddd316c42e"
+    },
+    {
+      "path": "docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md",
+      "bytes": 10204,
+      "sha256": "0c3a3ee3175b9cbdbd61bbf80d8f6ca44634dc3ee4337be8b0be581ebb10580f"
+    },
+    {
+      "path": "docs/decisions/ADR-064-CLASSIC-MACHINES-FLUIDS-AND-COMPONENTS.md",
+      "bytes": 33209,
+      "sha256": "013f6478b82c3497116f2aff2290b680c290b196175914ebd69b7c043f06e144"
+    },
+    {
+      "path": "docs/decisions/ADR-019-PRECISION-RESOURCE-OWNERSHIP.md",
+      "bytes": 10431,
+      "sha256": "1e62a67e9ef63d14b84ac19209275d1f9e591c251b96d8b5c6ed75da6fbc2d54"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-hatches/LEAF-CONTRACT-DRAFT.md",
+      "bytes": 8786,
+      "sha256": "9cf12fc94224dd4162cdc413a8b32660896e5707fad6ef528d4c1783efddc9f5"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-hatches/ACCEPTANCE.md",
+      "bytes": 1648,
+      "sha256": "cea78c06e315ad89ac80c721ca324ed2d1e3e161af385e155bef3b236bdc1978"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-hatches/OWNER-DECISIONS.md",
+      "bytes": 1033,
+      "sha256": "d59c4dba9d25a48af3a22f1f06d74694730cbe05823861ce417905b8821a29d3"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-hatches/TASK.md",
+      "bytes": 3203,
+      "sha256": "4782b25ddef30d287a9fc42e46d61a37c569efe682aec992d8077133575497fe"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-hatch-core/API-ACCEPTANCE.md",
+      "bytes": 3016,
+      "sha256": "94d70229a6c2315aae207b88d411b890001bdeb85336327458c9ffc0a9f758a3"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-hatch-core/VERIFICATION.md",
+      "bytes": 2199,
+      "sha256": "5f43cc3dddbe35eed499b4c9156d45bab09bddf4c0999bc8ec0fd7924ae2ac1c"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-hatch-core/TASK.md",
+      "bytes": 3934,
+      "sha256": "86c1dad441a08d4956104c3ad2429a24a8fc8d9ae4bfa65911caa87e945401c0"
+    },
+    {
+      "path": "docs/work/v1.8.0-content-ledger.csv",
+      "bytes": 74483,
+      "sha256": "aabb5ca22e102b3add0b60f82e5aa43ac6a3ae56f93a73554a3d3015fbc29d15"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-hatch-core/reviews/bank-author-r2.zip",
+      "bytes": 4720720,
+      "sha256": "11c3a2d26fc130a979c12c25ca5c01e8f742089e4ef07d0453a8b1dffc091d98"
+    },
+    {
+      "path": "docs/work/v1.8.0-c16a-hatch-core/reviews/bank-api-final-qualification.zip",
+      "bytes": 472671,
+      "sha256": "82c030af906c95a0f2e0d8b138bf28c399d8e2f10f0fd5905a724c38116d2883"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankKey.java",
+      "bytes": 1502,
+      "sha256": "b540c9678736576d5538c709e7b29312f6336012635f44809637ef6945556da0"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankKind.java",
+      "bytes": 992,
+      "sha256": "44e9bf030648697030a2b94f45d1d781dc9d4efceb815999801cf67df7dd5677"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourceBank.java",
+      "bytes": 4158,
+      "sha256": "c7f4317d39fda05208b6b1aca373b3cbca72bef8799611c235c5619015557bc6"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResources.java",
+      "bytes": 3547,
+      "sha256": "f3aee8d55ae839a4ee14c3fe9f7e1a533a0c69e9dc27f7cb6c3a9756e625ec7f"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankTransfers.java",
+      "bytes": 5230,
+      "sha256": "6760bd04fc0ea1bc2a045d171b35f32cff2c292a7851e78924a9f077a5a7c7bd"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourcesDecode.java",
+      "bytes": 2043,
+      "sha256": "909f6257e71ca9cbd259b92cd347177d25762e49759187567e63123dfdb96cdf"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourcesCodec.java",
+      "bytes": 7367,
+      "sha256": "f56093ad96f74e2ac07db5c5f9b0e6c9d265ce58c21934d60d1c6ae651857a05"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicNativePayload.java",
+      "bytes": 6287,
+      "sha256": "1e4e5eef3654a47ff61db7a70e8a14fa8f53fa17d7cfe5ec2e0c30a07dc87a86"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankKeyTest.java",
+      "bytes": 2223,
+      "sha256": "f508d9522ae87720ca9cd05467ee945efc91c79e8c72c2408d89fd18562d53fa"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourceBankTest.java",
+      "bytes": 6630,
+      "sha256": "5d54511ba30798b1bf0f9af20bd205e74a895d0b262cdff89ec69c3da3dabcdb"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourcesTest.java",
+      "bytes": 5401,
+      "sha256": "f6afd20a1a38cd9a313e5b40c47c23ef94c5d922df9ff4abdb3a392f7f6b019c"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourcesCodecTest.java",
+      "bytes": 16862,
+      "sha256": "22e09e2b73d254e95d457b9caa0e686ca7817f16148835ed90062100502ca5af"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankTransfersTest.java",
+      "bytes": 10588,
+      "sha256": "3c9cd0d02368a6ebc4cee5306e4af517b943f65c3974d8e15fa5b9f35ce482a1"
+    },
+    {
+      "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicItemCountTest.java",
+      "bytes": 5149,
+      "sha256": "4eeba18d6c60f6453eef7d30d1dce0677cf3e2212280535abda9ec6910820fe0"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachinePortBlockEntity.java",
+      "bytes": 19840,
+      "sha256": "97c553267a4610564345e512daffd74253788e2f809458b1a7c25dc0d6b9cd97"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachineBlockEntity.java",
+      "bytes": 11169,
+      "sha256": "f923f6bc0c2ac45421ce80f241e388dfb659496adcf9a2d165c3df2d95b70354"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachinePortBlock.java",
+      "bytes": 3829,
+      "sha256": "1ffeade7286b8dd1ae01896cc5f051db2122a66a0fd8a052f163a8cad2287d5a"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachineBlock.java",
+      "bytes": 4677,
+      "sha256": "9c9feea97925c6173ad8029d6efbca451d56b44f4d7474434bd0a530d4f53b1a"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachinePortType.java",
+      "bytes": 1526,
+      "sha256": "03187ddd23f8f6dd902a15440f265b949e5ca7f07780a5bab2b46471ce72917c"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachineManager.java",
+      "bytes": 13476,
+      "sha256": "51eab4bcd0b4df543787255ceae9c442d2061eae57aebcfb9819bed265e4ef80"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachineRuntime.java",
+      "bytes": 1621,
+      "sha256": "707596dd61fdd2277a90b287dfa07b41716b1b8ab7edffe02cf749531f7e0f4b"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/rolling/RollingMachineProcessController.java",
+      "bytes": 22792,
+      "sha256": "9c57e16f1332d37712d0ebcc37de04a7f36a44284369c1a68c57fafbc8185dcd"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerPortBlockEntity.java",
+      "bytes": 22307,
+      "sha256": "7af790585662276f3087e78dddc818e881eb769fe0a6ac8a151c0bcbb5886028"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerBlockEntity.java",
+      "bytes": 23550,
+      "sha256": "f675bd28a62f99c5dce394d21b5a19b25c57b6d792483c4ac74247b6f1687927"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerPortType.java",
+      "bytes": 1995,
+      "sha256": "ea5c5d31c56972790486f3e91945ae8bb54f949bd90f814e8fbbb39d895a5e3a"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerControllerItemView.java",
+      "bytes": 2296,
+      "sha256": "18b83a9a8e5b93e448d95887cc80bb5c56300c3eb5935c5e475c85c929689a7c"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerResourceStore.java",
+      "bytes": 16166,
+      "sha256": "23dc96324d136ffe2b88088c15bc62770fe87f3e8550ea31eabc511128d1487d"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerManager.java",
+      "bytes": 20001,
+      "sha256": "0d0c009d4a7257e40a85b42fe7dd2917a6dd9e153de8a4cc697b58186fe96bdc"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerRuntime.java",
+      "bytes": 1662,
+      "sha256": "a9219d651151492a93c507ec82d29dcf42af75ec802cfab38713ad263b2e6432"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerProcessController.java",
+      "bytes": 23162,
+      "sha256": "1c5bde2c69af8e4c6c9472938d2ea8c99c539c55577aee155d6af847c834e76c"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerPortLayout.java",
+      "bytes": 6006,
+      "sha256": "8adcac0203bfac5e772348b6ecd04996c843e8c0863e21c5217b723b560b017f"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/MultiblockPartBinding.java",
+      "bytes": 1399,
+      "sha256": "c15f5647b1fdc343d3af0543ce99ee49a0814b601ab6b4d4e3df39b0ca71efbc"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/ControllerBindingView.java",
+      "bytes": 880,
+      "sha256": "54390536a77428f4b9cd09f1115b22334b4f636f30132eca26916dab0ecf1731"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/PartBindingVerifier.java",
+      "bytes": 2062,
+      "sha256": "7a9dd56f9653aad89c5126b89411cb826c1d36d77014a878fd1444bf49160052"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/MultiblockControllerState.java",
+      "bytes": 4498,
+      "sha256": "9d6f057932182e054c2c789bf6954b8fb0c0a8e28c23cfd173002243277c417d"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/MultiblockFormationState.java",
+      "bytes": 308,
+      "sha256": "6f89ea6dfb52b2e880a4e3db3f2683c6361a44d149c9c3b88c60858bfbd629bb"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/MultiblockLifecycleCoordinator.java",
+      "bytes": 8759,
+      "sha256": "3495c36448e64e1c29ad921c33da3a6a9c1638c37e7941bf3f55801a3b313a5b"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/MultiblockDirtyQueue.java",
+      "bytes": 4433,
+      "sha256": "d6db239de74f74bd919d6f9f7ccd910aa5a1e112b2d8ceff637495c10f88674c"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/forge/LoadedPartBindingGateway.java",
+      "bytes": 7971,
+      "sha256": "af24416c3ef5c4e5b02f2cb562d35593779d46cd00ee2496fdf2287f0d0a4f54"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/forge/ServerLevelPartBindingAccess.java",
+      "bytes": 1215,
+      "sha256": "d028c0ad7b1e17ae01c1a1e426383a998aca37556f45d28259223c11cde078df"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/forge/LoadedPartBindingAccess.java",
+      "bytes": 518,
+      "sha256": "d398588635886eaacd1f64abae0228e1c307ee2a7cdc9f808eef15936aca7771"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/forge/MultiblockPartBindingTarget.java",
+      "bytes": 497,
+      "sha256": "ad4ec0e6b1e257e9ece797e2551a93e0dfb4ab2e313d35e58763adb19f668ff1"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/lifecycle/persistence/MultiblockPartBindingNbtCodec.java",
+      "bytes": 5572,
+      "sha256": "0d8a657977b55c9a9f6701163c87e9170882d9abd11072870c37064d3def4ad1"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/PatternSize.java",
+      "bytes": 937,
+      "sha256": "a3484ce5ac6623d9fb740b1d7b8a6a4fc79c8ffa80369c984eb58bf8e37570e2"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/MultiblockPatternValidator.java",
+      "bytes": 3880,
+      "sha256": "016e6f92e9682c334a0be364272b2962eafe376a278c197004b739d6b811bfe8"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/PatternMatcher.java",
+      "bytes": 2685,
+      "sha256": "ec48831a381cf47dead6483bbcb9a9aec6e14e0c1f062de44bc3ad4dbf46be0c"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/PatternTransform.java",
+      "bytes": 1949,
+      "sha256": "cd8e97f68d7929e3206aa1d57f33dd6490132f7b0e3a7d683a1a1fb2a54e7215"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/PatternRotation.java",
+      "bytes": 363,
+      "sha256": "f58381222578f04eb782b5a0eec8d18a01eb869122d53da3c2032579ef4b8378"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/forge/ServerLevelPatternWorldView.java",
+      "bytes": 3028,
+      "sha256": "5c0e7a0e7fb72a89835bc8d7f47cbb35bca7d39e21347181268ac05fc7ffa31b"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/multiblock/pattern/forge/PatternRoleResolver.java",
+      "bytes": 464,
+      "sha256": "e6b3cd058d95fb0405972cf45d43b42e2c46f5a95a4fa51fb01bb0c36ba7ceda"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/port/ProcessPortKind.java",
+      "bytes": 134,
+      "sha256": "fe2d7c5b045bb125067fe6715db0d3647b5284d5508d7113af8004feaded7ec5"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/port/forge/ProcessItemPortHandler.java",
+      "bytes": 4264,
+      "sha256": "f0837f857427ba9169f847cd453e676eac4480c187a71cb03ed304478b0bdd85"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/port/forge/ProcessFluidPortHandler.java",
+      "bytes": 6171,
+      "sha256": "3dbe7404c6e966ecaceb2c5a28170d439a914223a1977bf0a95063c3e270c1d4"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/port/forge/ProcessCapabilityCache.java",
+      "bytes": 1795,
+      "sha256": "d9c19b748d2bc388e146ac9826bbf1b5b8ddbd9fb146ccb97116ea946c44b28a"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/process/ProcessResourceKey.java",
+      "bytes": 1757,
+      "sha256": "a6f7423030a2b64d04e5653b4cda33eb6a7f8e81cce4587679bbf092dfd542ef"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/process/ProcessResourceSnapshot.java",
+      "bytes": 2669,
+      "sha256": "88a3f89d477021730cae7d87c96109dccfa5630cda9ad4fcf74074cdd5f94319"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/process/persistence/ProcessJournalPersistence.java",
+      "bytes": 10336,
+      "sha256": "3d05df74c20f2b01e1ec91fd420b1de5e90061bd0f4739d2c2a71b3d326c5223"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/BoundedNbt.java",
+      "bytes": 2965,
+      "sha256": "62f112307cd348c48943260d3943165c47597687c220c2d9a05e7a75d8e3b18d"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/GuardedChunkSaves.java",
+      "bytes": 4047,
+      "sha256": "14132bf89fc3f4b6589a3ef227e70bc72bf287f94fe86336cb29de52c18aa487"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/ChunkSaveDenials.java",
+      "bytes": 1856,
+      "sha256": "96a66b34e46af0ae079802263e46b595eba83cae0ce179a22176165c49e15427"
+    },
+    {
+      "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/material/MaterialCatalog.java",
+      "bytes": 9260,
+      "sha256": "fdece1ec3f8a73d8df098f8e80007a6ffc6b556c1dcb81421e50f636210e2d71"
+    }
+  ],
+  "checks": {
+    "pinned_contracts_archive_and_qualification": {
+      "docs/decisions/ADR-064-CLASSIC-MACHINES-FLUIDS-AND-COMPONENTS.md": "013f6478b82c3497116f2aff2290b680c290b196175914ebd69b7c043f06e144",
+      "docs/work/v1.8.0-c16a-hatches/LEAF-CONTRACT-DRAFT.md": "9cf12fc94224dd4162cdc413a8b32660896e5707fad6ef528d4c1783efddc9f5",
+      "docs/work/v1.8.0-c16a-hatch-core/API-ACCEPTANCE.md": "94d70229a6c2315aae207b88d411b890001bdeb85336327458c9ffc0a9f758a3",
+      "docs/work/v1.8.0-c16a-hatch-core/reviews/bank-author-r2.zip": "11c3a2d26fc130a979c12c25ca5c01e8f742089e4ef07d0453a8b1dffc091d98",
+      "docs/work/v1.8.0-c16a-hatch-core/reviews/bank-api-final-qualification.zip": "82c030af906c95a0f2e0d8b138bf28c399d8e2f10f0fd5905a724c38116d2883"
+    },
+    "additional_named_ancestor_agents": [],
+    "named_inputs_rechecked_unchanged": {
+      "count": 84,
+      "changed": []
+    },
+    "bank_java_comparison": {
+      "production": 8,
+      "tests": 6,
+      "matches": [
+        {
+          "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankKey.java",
+          "matches_frozen_r2": true,
+          "sha256": "b540c9678736576d5538c709e7b29312f6336012635f44809637ef6945556da0"
+        },
+        {
+          "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankKind.java",
+          "matches_frozen_r2": true,
+          "sha256": "44e9bf030648697030a2b94f45d1d781dc9d4efceb815999801cf67df7dd5677"
+        },
+        {
+          "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankTransfers.java",
+          "matches_frozen_r2": true,
+          "sha256": "6760bd04fc0ea1bc2a045d171b35f32cff2c292a7851e78924a9f077a5a7c7bd"
+        },
+        {
+          "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicNativePayload.java",
+          "matches_frozen_r2": true,
+          "sha256": "1e4e5eef3654a47ff61db7a70e8a14fa8f53fa17d7cfe5ec2e0c30a07dc87a86"
+        },
+        {
+          "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourceBank.java",
+          "matches_frozen_r2": true,
+          "sha256": "c7f4317d39fda05208b6b1aca373b3cbca72bef8799611c235c5619015557bc6"
+        },
+        {
+          "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResources.java",
+          "matches_frozen_r2": true,
+          "sha256": "f3aee8d55ae839a4ee14c3fe9f7e1a533a0c69e9dc27f7cb6c3a9756e625ec7f"
+        },
+        {
+          "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourcesCodec.java",
+          "matches_frozen_r2": true,
+          "sha256": "f56093ad96f74e2ac07db5c5f9b0e6c9d265ce58c21934d60d1c6ae651857a05"
+        },
+        {
+          "path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourcesDecode.java",
+          "matches_frozen_r2": true,
+          "sha256": "909f6257e71ca9cbd259b92cd347177d25762e49759187567e63123dfdb96cdf"
+        },
+        {
+          "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankKeyTest.java",
+          "matches_frozen_r2": true,
+          "sha256": "f508d9522ae87720ca9cd05467ee945efc91c79e8c72c2408d89fd18562d53fa"
+        },
+        {
+          "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicBankTransfersTest.java",
+          "matches_frozen_r2": true,
+          "sha256": "3c9cd0d02368a6ebc4cee5306e4af517b943f65c3974d8e15fa5b9f35ce482a1"
+        },
+        {
+          "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicItemCountTest.java",
+          "matches_frozen_r2": true,
+          "sha256": "4eeba18d6c60f6453eef7d30d1dce0677cf3e2212280535abda9ec6910820fe0"
+        },
+        {
+          "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourceBankTest.java",
+          "matches_frozen_r2": true,
+          "sha256": "5d54511ba30798b1bf0f9af20bd205e74a895d0b262cdff89ec69c3da3dabcdb"
+        },
+        {
+          "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourcesCodecTest.java",
+          "matches_frozen_r2": true,
+          "sha256": "22e09e2b73d254e95d457b9caa0e686ca7817f16148835ed90062100502ca5af"
+        },
+        {
+          "path": "src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/resource/ClassicResourcesTest.java",
+          "matches_frozen_r2": true,
+          "sha256": "f6afd20a1a38cd9a313e5b40c47c23ef94c5d922df9ff4abdb3a392f7f6b019c"
+        }
+      ],
+      "archive_owned_manifest_entry": "frozen-02/source/docs/work/v1.8.0-c16a-hatch-core/revision-02/OWN-FILES.json",
+      "archive_owned_manifest_sha256": "70eb63383543d95551cd2e83d9af4f8bbe5f1dc031b5fbba3219e50f90eae9a0",
+      "archive_historical_api_entry": "frozen-02/source/docs/work/v1.8.0-c16a-hatch-core/revision-02/API-AND-SCHEMA.md",
+      "archive_historical_api_sha256": "0670a82e0ca8d60020e9f56aaee51bb8953a11ff52d255ed3937796b57199348",
+      "historical_api_superseded_in_callback_scope_by_94d70229": true
+    },
+    "static_channel_arithmetic": {
+      "coordinate_samples": "All eight tuples over signed int extrema",
+      "bank_samples": 32,
+      "bank_unique": 32,
+      "max_bank_length": 48,
+      "proposed_participating_channel_samples": 80,
+      "proposed_unique": 80,
+      "max_proposed_length": 50,
+      "actual_java_parser_invoked": false,
+      "channel_specification_admitted": false
+    },
+    "executed_categories": [
+      "read-only PowerShell source/docs inspection",
+      "git branch/head/tracked status",
+      "inline Python SHA/ZIP member/source identity comparisons",
+      "inline Python signed-int channel string arithmetic"
+    ],
+    "commands": [
+      {
+        "name": "manifest-probe-01",
+        "invocation": "PowerShell here-string piped to python -",
+        "exit": 1,
+        "error": "Traceback (most recent call last): File <stdin>, line 120, in <module>; AssertionError",
+        "cause": "Author expected proposed channel maximum 51; arithmetic observation was 50. No output manifest was created."
+      },
+      {
+        "name": "diagnostic-01",
+        "invocation": "PowerShell here-string piped to python -; print exact frozen metadata/14 comparisons/string lengths",
+        "exit": 0,
+        "observations": "All14 source size+SHA matches; historical metadata hashes match; channel maxima48/50;80unique participating samples."
+      },
+      {
+        "name": "manifest-probe-02",
+        "invocation": "PowerShell here-string piped to python -; exact named file hashes/ZIP comparisons/recheck/string arithmetic/git metadata",
+        "exit": 0,
+        "checks": "Pinned hashes,14source matches,48/50channel maxima,32/80uniqueness,second named-input hashes."
+      }
+    ],
+    "earlier_exploration_errors": "Read-only guessed paths and one apply_patch context mismatch failed; corrected actual paths/anchors were inspected. No root/author bytes were edited.",
+    "not_executed": [
+      "Java",
+      "Gradle",
+      "GameTests",
+      "Minecraft/native",
+      "upstream imports",
+      "new automated test implementation",
+      "Gate or runtime acceptance"
+    ]
+  },
+  "output_memo": {
+    "path": "MEMO.md",
+    "bytes": 27855,
+    "sha256": "5811db4c61ee4d06dff20f20982894a9c28ec9cbeb4e36f029bb9370ce54475b"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "generated": [
+    {
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
+      "exact_v180_generated_files": 771,
+      "comparison_set_sha256": "aa78985fa323444cb2fe7bb206f4ca239ae46aae2c0d9030389b22e0917c3793"
+    },
+    {
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+      "exact_v180_generated_files": 771,
+      "comparison_set_sha256": "aa78985fa323444cb2fe7bb206f4ca239ae46aae2c0d9030389b22e0917c3793"
+    }
+  ],
+  "wrapper_framing": {
+    "path": "gradlew.bat",
+    "commit": {
+      "bytes": 2776,
+      "sha256": "18774a0ac0203f6893bf1db3291a0d77f06cd1b4dca2a43b51e7009da3e28cfa"
+    },
+    "tested_snapshot": {
+      "bytes": 2868,
+      "sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955"
+    },
+    "equal_after_CRLF_to_LF": true,
+    "Git_LF_lines": 92,
+    "snapshot_CRLF_pairs": 92
+  },
+  "initial_selector_note": "measure01 selected29 historical src/generated/resources and exposed2 later overlay tag differences, not v1.8 generator delta"
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "exit_code": 0,
+    "matches": true,
+    "command": "python -B scripts/validate_v1plus_planning.py",
+    "expected_exit_code": 0
+  },
+  {
+    "exit_code": 0,
+    "matches": true,
+    "command": "python -B scripts/validate_bootstrap_provenance.py",
+    "expected_exit_code": 0
+  },
+  {
+    "exit_code": 0,
+    "matches": true,
+    "command": "python -B scripts/validate_v180_content_ledger.py --require-accepted",
+    "expected_exit_code": 0
+  },
+  {
+    "exit_code": 1,
+    "matches": true,
+    "command": "python -B scripts/validate_v180_content_ledger.py --closure",
+    "expected_exit_code": 1
+  },
+  {
+    "exit_code": 0,
+    "matches": true,
+    "command": "python -B scripts/check_client_imports.py",
+    "expected_exit_code": 0
+  },
+  {
+    "exit_code": 0,
+    "matches": true,
+    "command": "python -B scripts/validate_repository.py --require-approved-identity",
+    "expected_exit_code": 0
+  },
+  {
+    "exit_code": 0,
+    "matches": true,
+    "command": "git diff --check",
+    "expected_exit_code": 0
+  }
+]

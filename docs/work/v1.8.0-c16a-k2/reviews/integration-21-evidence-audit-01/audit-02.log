@@ -1,0 +1,576 @@
+Generated/framing {
+  "generated": [
+    {
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev-sources.jar",
+      "exact_v180_generated_files": 771,
+      "comparison_set_sha256": "aa78985fa323444cb2fe7bb206f4ca239ae46aae2c0d9030389b22e0917c3793"
+    },
+    {
+      "name": "advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+      "exact_v180_generated_files": 771,
+      "comparison_set_sha256": "aa78985fa323444cb2fe7bb206f4ca239ae46aae2c0d9030389b22e0917c3793"
+    }
+  ],
+  "wrapper": {
+    "path": "gradlew.bat",
+    "commit": {
+      "bytes": 2776,
+      "sha256": "18774a0ac0203f6893bf1db3291a0d77f06cd1b4dca2a43b51e7009da3e28cfa"
+    },
+    "tested_snapshot": {
+      "bytes": 2868,
+      "sha256": "8e327fcb99d29ce0fe3ee2fec6e6a25de815a2df83a6a44a553dea89ffc92955"
+    },
+    "equal_after_CRLF_to_LF": true,
+    "Git_LF_lines": 92,
+    "snapshot_CRLF_pairs": 92
+  }
+}
+K2 added suite {
+  "path": "evidence/xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml",
+  "suite_name": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest",
+  "tests": 20,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "bytes": 5761,
+  "sha256": "8ab83ce799ee5b98e694b4b2275e5bcdf9942f45ee6e1509e283f92589b39373"
+}
+JOB markdown-links-17 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\verify_current_links17.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:36:29.489346+00:00'}
+{
+
+  "files": 675,
+
+  "links": 3101,
+
+  "errors": []
+
+}
+
+
+JOB repository-boundary-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\validate_repository_boundary21.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:36:32.175405+00:00'}
+7.0 DataGen resources match the exact station inventory
+
+[PASS] v0.8.0 DataGen resources match the exact satellite inventory
+
+[PASS] v0.9.0 migration fixtures match the exact hash inventory
+
+[PASS] v0.9.0 resource and localization audit covers 1259 files and 832 bilingual keys
+
+[PASS] v0.2.0 artifact, automated, persistence, client, server, and checksum evidence is valid
+
+[PASS] v0.2.0 Gate status does not overstate machine-slice evidence
+
+[PASS] v0.3.0 artifact, celestial, persistence, multiplayer, client, and checksum evidence is valid
+
+[PASS] v0.3.0 Gate status is evidence-bound in docs\releases\v0.3.0\GATE-STATUS.md
+
+[PASS] v0.4.0 artifact, atmosphere, persistence, performance, multiplayer, client, and checksum evidence is valid
+
+[PASS] v0.4.0 Gate status is evidence-bound in docs\releases\v0.4.0\GATE-STATUS.md
+
+[PASS] v0.5.0 artifact, rocket, persistence, performance, client, and checksum evidence is valid
+
+[PASS] v0.5.0 Gate status is evidence-bound in docs\releases\v0.5.0\GATE-STATUS.md
+
+[PASS] v0.6.0 artifact, flight, recovery, multiplayer, performance, and checksum evidence is valid
+
+[PASS] v0.6.0 Gate status is evidence-bound in docs\releases\v0.6.0\GATE-STATUS.md
+
+[PASS] v0.7.0 artifact, station, recovery, multiplayer, performance, and checksum evidence is valid
+
+[PASS] v0.7.0 Gate status is evidence-bound in docs\releases\v0.7.0\GATE-STATUS.md
+
+[PASS] v0.8.0 artifact, satellite, restart, multiplayer, performance, and checksum evidence is valid
+
+[PASS] v0.8.0 Gate status is evidence-bound in docs\releases\v0.8.0\GATE-STATUS.md
+
+[PASS] v0.9.0 artifact, migration, recovery, compatibility, soak, and checksum evidence is valid
+
+[PASS] v0.9.0 Gate status is evidence-bound in docs\releases\v0.9.0\GATE-STATUS.md
+
+Summary: 45 passed, 0 pending, 0 warnings, 0 failed
+
+
+JOB planning-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v1plus_planning.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:42:21.157858+00:00'}
+PASS: 11 version plans, explicit G0-G9, entry points, links and 33-input source inventory
+
+Scope: planning validation only; no release Gate or human approval asserted.
+
+
+JOB provenance-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_bootstrap_provenance.py', '--require-approved-review'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:42:21.338385+00:00'}
+[INFO] Validating accepted v0.0.2 provenance at 9359257b9fe1eccf7e0043dfa7f626cf1ee44be9
+
+[PASS] Bootstrap provenance mechanical validation: 2 components, 11 imported targets, 2 local assets
+
+[PASS] Recorded provenance review is mechanically consistent and digest-bound: THIRD_PARTY_APPROVED
+
+
+JOB machine-resources-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v120_machine_resources.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:42:52.830237+00:00'}
+PASS: 9 machine blocks, recipes, loot, models, tags and bilingual keys
+
+
+JOB ledger-strict-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v180_content_ledger.py', '--require-accepted'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:31.208698+00:00'}
+{
+
+  "assets": {
+
+    "EXCLUDE": 113,
+
+    "IMPORT": 182,
+
+    "IMPORTED": 10,
+
+    "REGENERATE": 439,
+
+    "REVIEW": 154
+
+  },
+
+  "dispositions": {
+
+    "DEFERRED": 25,
+
+    "IMPLEMENTED": 104,
+
+    "MERGED": 93,
+
+    "PLANNED": 186,
+
+    "REDESIGNED": 187,
+
+    "REJECTED": 58
+
+  },
+
+  "planned_by_batch": {
+
+    "C16a": 2,
+
+    "C16b": 13,
+
+    "C16c": 16,
+
+    "C16d": 10,
+
+    "C17a": 24,
+
+    "C17b": 9,
+
+    "C17c": 8,
+
+    "C18a": 28,
+
+    "C18b": 23,
+
+    "C18c": 19,
+
+    "C18d": 34
+
+  },
+
+  "result": "PASS",
+
+  "units": 653
+
+}
+
+
+JOB ledger-closure-21 exit 1 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_v180_content_ledger.py', '--closure'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:31.860835+00:00'}
+closure: 186 ledger rows are still PLANNED
+
+closure: 154 assets are still handled as REVIEW
+
+{
+
+  "assets": {
+
+    "EXCLUDE": 113,
+
+    "IMPORT": 182,
+
+    "IMPORTED": 10,
+
+    "REGENERATE": 439,
+
+    "REVIEW": 154
+
+  },
+
+  "dispositions": {
+
+    "DEFERRED": 25,
+
+    "IMPLEMENTED": 104,
+
+    "MERGED": 93,
+
+    "PLANNED": 186,
+
+    "REDESIGNED": 187,
+
+    "REJECTED": 58
+
+  },
+
+  "planned_by_batch": {
+
+    "C16a": 2,
+
+    "C16b": 13,
+
+    "C16c": 16,
+
+    "C16d": 10,
+
+    "C17a": 24,
+
+    "C17b": 9,
+
+    "C17c": 8,
+
+    "C18a": 28,
+
+    "C18b": 23,
+
+    "C18c": 19,
+
+    "C18d": 34
+
+  },
+
+  "result": "FAIL",
+
+  "units": 653
+
+}
+
+
+JOB common-client-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/check_client_imports.py'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:32.279207+00:00'}
+[PASS] No net.minecraft.client references outside the client package
+
+
+JOB focused-python-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', '-m', 'unittest', 'tests.test_run_v180_pump_smoke', 'tests.test_run_v180_tank_smoke', 'tests.test_run_v180_signature_smoke', '-v'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:32.915247+00:00'}
+ector_patch_roundtrip_preserves_other_bytes_and_records) ... ok
+
+test_seed_only_declared_current_or_historical_rows (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_seed_only_declared_current_or_historical_rows) ... ok
+
+test_settled_refusal_requires_runtime_reason_and_failure_pair (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_settled_refusal_requires_runtime_reason_and_failure_pair) ... ok
+
+test_settled_report_after_original_deadline_is_not_accepted (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_settled_report_after_original_deadline_is_not_accepted) ... ok
+
+test_snapshot_order_and_fingerprint_identity (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_snapshot_order_and_fingerprint_identity) ... ok
+
+test_startup_poll_does_not_hide_marker_capability_status_or_protection_loss (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_startup_poll_does_not_hide_marker_capability_status_or_protection_loss) ... ok
+
+test_strict_console_reports_and_refusal_are_not_cap_presence (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_strict_console_reports_and_refusal_are_not_cap_presence) ... ok
+
+test_wrong_adapter_end_and_foreign_report_rows_are_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_adapter_end_and_foreign_report_rows_are_refused) ... ok
+
+test_wrong_fluid_amount_width_or_metadata_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_fluid_amount_width_or_metadata_refused) ... ok
+
+test_wrong_item_count_width_or_unapproved_metadata_refused (tests.test_run_v180_signature_smoke.SignatureSmokeTest.test_wrong_item_count_width_or_unapproved_metadata_refused) ... ok
+
+
+
+----------------------------------------------------------------------
+
+Ran 90 tests in 5.348s
+
+
+
+OK
+
+
+JOB artifact-21 exit 0 command {'command': ['D:\\python\\pyenv\\pyenv-win\\versions\\3.13.15\\python.exe', '-B', 'scripts/validate_build_artifact.py', 'D:\\ARCE-Task-Evidence\\v1.8.0\\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\\integration-artifacts-21\\advancedrocketry-community-1.20.1-1.8.0-dev.jar', '--expected-version', '1.20.1-1.8.0-dev'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:38.688468+00:00'}
+[PASS] Artifact: D:\ARCE-Task-Evidence\v1.8.0\integration-072fbcf821ce4ceb9fbcb3d98ec27d41\integration-artifacts-21\advancedrocketry-community-1.20.1-1.8.0-dev.jar
+
+[PASS] SHA-256: 796c9611ec8d655398e5a046bfe6cc3f81b2c7880a19c835ea9ed301a990373e
+
+[PASS] Entries: 3305
+
+[PASS] Metadata, notices, paths, and credential name/content scan
+
+
+JOB git-diff-check-21 exit 0 command {'command': ['git', 'diff', '--check'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:40.517725+00:00'}
+
+JOB git-diff-exit-21 exit 1 command {'command': ['git', 'diff', '--exit-code'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T04:53:41.058951+00:00'}
+assertEquals(0, messages, "Menu admission channel must remain message-empty: " + file);
++                    emptyChannels.add(channel.group(1) + "|" + protocol.group(1));
++                } else {
++                    channelSources.add(file);
++                    assertTrue(messages > 0, "A channel without messages: " + file);
++                }
+                 assertEquals(source.split("messageBuilder\\(", -1).length - 1, messages,
+                         "A message registration the pin table cannot read (for example a non-literal index): " + file);
+             }
+         }
+         assertEquals(6, channelSources.size(), "Channel sources changed: " + channelSources);
++        assertEquals(List.of("machine_menu|1"), emptyChannels);
+         assertEquals(expected(), actual.stream().sorted().toList());
+     }
+ 
+diff --git a/tests/test_validate_v180_content_ledger.py b/tests/test_validate_v180_content_ledger.py
+index 118ef014..0e74db02 100644
+--- a/tests/test_validate_v180_content_ledger.py
++++ b/tests/test_validate_v180_content_ledger.py
+@@ -240,7 +240,8 @@ class V180ContentLedgerTests(unittest.TestCase):
+         self.assertFalse(any("who is neither the owner" in error for error in self._errors()))
+ 
+     def test_owning_units_are_not_delivered_after_the_asset(self) -> None:
+-        self._set_rule("textures/blocks/liquidtank.png", units="config:CLIENT.advancedVFX")
++        # This check governs legacy imports; the shipped tank now uses NEW art.
++        self._set_rule("textures/blocks/liquidtank.png", handling="IMPORT", units="config:CLIENT.advancedVFX")
+         self.assertTrue(any(error.endswith("owning unit config:CLIENT.advancedVFX is delivered in C18d, after the "
+                                            "rule's batch C16a") for error in self._errors()))
+ 
+
+WRAPPER exact output-name-only differences verified
+PHASE integration-build-data-21
+evidence/integration-build-data-21.command.json {
+
+  "command": [
+
+    "D:\\GitHub\\AdvancedRocketry-Community\\gradlew.bat",
+
+    "--offline",
+
+    "--no-daemon",
+
+    "--max-workers=2",
+
+    "-Dorg.gradle.jvmargs=-Xmx2G",
+
+    "clean",
+
+    "build",
+
+    "test",
+
+    "runData"
+
+  ],
+
+  "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+
+  "JAVA_HOME": "C:/Program Files/Java/jdk-17.0.7",
+
+  "started_utc": "2026-10-04T04:34:28.395070+00:00"
+
+}
+evidence/integration-build-data-21.started 2026-10-04T04:34:28.395070+00:00
+evidence/integration-build-data-21.finished 2026-10-04T04:37:42.382769+00:00
+evidence/integration-build-data-21.exit 0
+Build/data tail xoplanet art
+
+[12:37:41] [main/INFO] [minecraft/DataGenerator]: v1.8 exoplanet art finished after 1 ms
+
+[12:37:41] [main/INFO] [minecraft/DataGenerator]: Starting provider: v1.8 exoplanet celestial data
+
+[12:37:42] [main/INFO] [minecraft/DataGenerator]: v1.8 exoplanet celestial data finished after 42 ms
+
+[12:37:42] [main/INFO] [minecraft/DataGenerator]: All providers took: 666 ms
+
+[12:37:42] [main/INFO] [minecraft/HashCache]: Caching: total files: 771, old count: 771, new count: 772, removed stale: 0, written: 0
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+
+
+BUILD SUCCESSFUL in 3m 13s
+
+26 actionable tasks: 16 executed, 9 from cache, 1 up-to-date
+
+
+DATAGEN 109 [12:37:42] [main/INFO] [minecraft/HashCache]: Caching: total files: 771, old count: 771, new count: 772, removed stale: 0, written: 0
+PHASE integration-gametest-12
+evidence/integration-gametest-12.command.json {
+
+  "command": [
+
+    "D:\\GitHub\\AdvancedRocketry-Community\\gradlew.bat",
+
+    "--offline",
+
+    "--no-daemon",
+
+    "--max-workers=2",
+
+    "-Dorg.gradle.jvmargs=-Xmx2G",
+
+    "runGameTestServer"
+
+  ],
+
+  "cwd": "D:\\GitHub\\AdvancedRocketry-Community",
+
+  "JAVA_HOME": "C:/Program Files/Java/jdk-17.0.7",
+
+  "started_utc": "2026-10-04T04:53:03.407269+00:00"
+
+}
+evidence/integration-gametest-12.started 2026-10-04T04:53:03.407269+00:00
+evidence/integration-gametest-12.finished 2026-10-04T04:57:06.385603+00:00
+evidence/integration-gametest-12.exit 0
+Build/data tail ] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+
+[12:57:04] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (tau_ceti_g): All chunks are saved
+
+[12:57:04] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage (space): All chunks are saved
+
+[12:57:04] [Server thread/INFO] [minecraft/MinecraftServer]: ThreadedAnvilChunkStorage: All dimensions are saved
+
+[12:57:05] [Server thread/INFO] [minecraft/GameTestServer]: Game test server shutting down
+
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.8/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+
+
+BUILD SUCCESSFUL in 4m 2s
+
+18 actionable tasks: 4 executed, 14 up-to-date
+
+
+BATCH SAMPLE 167 [04Oct2026 12:53:49.068] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'flight_concurrency:1' (1 tests)...
+BATCH SAMPLE 211 [04Oct2026 12:53:54.462] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'precision_energy_binding_retry:1' (1 tests)...
+BATCH SAMPLE 300 [04Oct2026 12:53:56.121] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_protection:1' (1 tests)...
+BATCH SAMPLE 303 [04Oct2026 12:53:56.283] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_elevator_redirect:1' (1 tests)...
+BATCH SAMPLE 320 [04Oct2026 12:53:57.513] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'atmosphere_performance:1' (1 tests)...
+BATCH SAMPLE 632 [04Oct2026 12:54:05.841] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_commit:1' (1 tests)...
+BATCH SAMPLE 658 [04Oct2026 12:54:07.492] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planet_surfaces:1' (8 tests)...
+BATCH SAMPLE 659 [04Oct2026 12:54:13.190] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'exoplanet_sapling:1' (1 tests)...
+BATCH SAMPLE 660 [04Oct2026 12:54:15.386] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'recipe_signatures:1' (16 tests)...
+BATCH SAMPLE 669 [04Oct2026 12:54:16.274] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_black_hole_idle:1' (1 tests)...
+BATCH SAMPLE 678 [04Oct2026 12:54:16.564] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_serial:1' (1 tests)...
+BATCH SAMPLE 708 [04Oct2026 12:54:17.562] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_discovery:1' (1 tests)...
+BATCH SAMPLE 727 [04Oct2026 12:54:18.250] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_expansion:1' (1 tests)...
+BATCH SAMPLE 776 [04Oct2026 12:54:18.623] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_elevator_zone:1' (1 tests)...
+BATCH SAMPLE 806 [04Oct2026 12:54:19.725] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_destruction_blast:1' (1 tests)...
+BATCH SAMPLE 810 [04Oct2026 12:54:20.007] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planet_features:1' (7 tests)...
+BATCH SAMPLE 811 [04Oct2026 12:54:20.754] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_terrain:1' (2 tests)...
+BATCH SAMPLE 820 [04Oct2026 12:54:21.735] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_charge:1' (1 tests)...
+BATCH SAMPLE 823 [04Oct2026 12:54:21.949] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'satellite_flush_failure:1' (1 tests)...
+BATCH SAMPLE 893 [04Oct2026 12:54:22.226] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_orbit:1' (1 tests)...
+BATCH SAMPLE 910 [04Oct2026 12:54:22.827] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'materials_switches:1' (1 tests)...
+BATCH SAMPLE 911 [04Oct2026 12:54:23.250] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'rocket_navigation_menu:1' (1 tests)...
+BATCH SAMPLE 916 [04Oct2026 12:54:23.438] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_context:1' (1 tests)...
+BATCH SAMPLE 917 [04Oct2026 12:54:23.536] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_logout:1' (1 tests)...
+BATCH SAMPLE 947 [04Oct2026 12:54:24.422] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_laser_target:1' (1 tests)...
+BATCH SAMPLE 952 [04Oct2026 12:54:24.616] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'precision_migration_port_failure:1' (1 tests)...
+BATCH SAMPLE 1041 [04Oct2026 12:54:26.079] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_railgun_two_sources:1' (1 tests)...
+BATCH SAMPLE 1061 [04Oct2026 12:54:26.919] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_permission_matrix:1' (1 tests)...
+BATCH SAMPLE 1640 [04Oct2026 12:54:28.486] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_elevator_placement:1' (1 tests)...
+BATCH SAMPLE 1646 [04Oct2026 12:54:28.807] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_rejections:1' (1 tests)...
+BATCH SAMPLE 1669 [04Oct2026 12:54:28.935] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'materials_ore_switch:1' (1 tests)...
+BATCH SAMPLE 1670 [04Oct2026 12:54:29.257] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'flight:1' (2 tests)...
+BATCH SAMPLE 1748 [04Oct2026 12:54:31.325] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_laser_physical_attached:1' (1 tests)...
+BATCH SAMPLE 1764 [04Oct2026 12:54:31.791] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_laser_target_owner_waiting:1' (1 tests)...
+BATCH SAMPLE 1772 [04Oct2026 12:54:32.060] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_abort:1' (1 tests)...
+BATCH SAMPLE 1803 [04Oct2026 12:54:33.226] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'passenger_new_board:1' (1 tests)...
+BATCH SAMPLE 1830 [04Oct2026 12:54:33.989] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_repriced:1' (1 tests)...
+BATCH SAMPLE 1850 [04Oct2026 12:54:34.696] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_surface_flight:1' (1 tests)...
+BATCH SAMPLE 1929 [04Oct2026 12:54:37.197] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_discovery_recovery:1' (1 tests)...
+BATCH SAMPLE 1960 [04Oct2026 12:54:37.282] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'satellite_lifecycle:1' (1 tests)...
+BATCH SAMPLE 1966 [04Oct2026 12:54:37.479] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'passenger_leave:1' (1 tests)...
+BATCH SAMPLE 1993 [04Oct2026 12:54:38.370] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'passenger_entity_readiness:1' (1 tests)...
+BATCH SAMPLE 2018 [04Oct2026 12:54:39.073] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_gravity_trust_format:1' (1 tests)...
+BATCH SAMPLE 2022 [04Oct2026 12:54:39.113] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_killswitch:1' (1 tests)...
+BATCH SAMPLE 2041 [04Oct2026 12:54:39.964] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_admission_warp:1' (1 tests)...
+BATCH SAMPLE 2051 [04Oct2026 12:54:40.432] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_laser_physical_counters:1' (2 tests)...
+BATCH SAMPLE 2094 [04Oct2026 12:54:42.834] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'precision_unload_active:1' (1 tests)...
+BATCH SAMPLE 2095 [04Oct2026 12:54:43.754] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_gravity_station:1' (1 tests)...
+BATCH SAMPLE 2120 [04Oct2026 12:54:44.650] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_laser_target_dirty:1' (1 tests)...
+BATCH SAMPLE 2125 [04Oct2026 12:54:44.965] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_menu_unavailable:1' (1 tests)...
+BATCH SAMPLE 2132 [04Oct2026 12:54:45.296] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'moon_arrival_crater:1' (1 tests)...
+BATCH SAMPLE 2163 [04Oct2026 12:54:46.437] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_write_budget:1' (1 tests)...
+BATCH SAMPLE 2188 [04Oct2026 12:54:47.367] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'legacy_passenger_recovery:1' (1 tests)...
+BATCH SAMPLE 2218 [04Oct2026 12:54:48.418] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_physical_admission:1' (2 tests)...
+BATCH SAMPLE 2221 [04Oct2026 12:54:49.033] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'flight_security:1' (1 tests)...
+BATCH SAMPLE 2234 [04Oct2026 12:54:49.361] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_railgun:1' (1 tests)...
+BATCH SAMPLE 2249 [04Oct2026 12:54:50.010] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'venus_geode_cover:1' (1 tests)...
+BATCH SAMPLE 2251 [04Oct2026 12:54:56.213] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'machine_menu_channel:1' (1 tests)...
+BATCH SAMPLE 2268 [04Oct2026 12:54:56.316] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'satellite_menu_save:1' (1 tests)...
+BATCH SAMPLE 2272 [04Oct2026 12:54:56.693] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_changed_pad:1' (2 tests)...
+BATCH SAMPLE 2293 [04Oct2026 12:54:58.391] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_menu_fuel_save:1' (1 tests)...
+BATCH SAMPLE 2297 [04Oct2026 12:54:58.433] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_framework:1' (2 tests)...
+BATCH SAMPLE 2298 [04Oct2026 12:54:58.484] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'precision_energy_binding_gate:1' (1 tests)...
+BATCH SAMPLE 2475 [04Oct2026 12:55:00.428] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_elevator_cargo:1' (1 tests)...
+BATCH SAMPLE 2517 [04Oct2026 12:55:03.169] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'tau_ceti_path:1' (1 tests)...
+BATCH SAMPLE 2615 [04Oct2026 12:55:06.984] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_menu_member:1' (1 tests)...
+BATCH SAMPLE 2622 [04Oct2026 12:55:07.063] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_fold:1' (1 tests)...
+BATCH SAMPLE 2665 [04Oct2026 12:55:09.422] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_admission_station_built:1' (1 tests)...
+BATCH SAMPLE 2668 [04Oct2026 12:55:10.406] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'star_systems:1' (1 tests)...
+BATCH SAMPLE 2673 [04Oct2026 12:55:10.560] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_sky_context:1' (1 tests)...
+BATCH SAMPLE 2682 [04Oct2026 12:55:10.793] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'precision_unload_prepared:1' (1 tests)...
+BATCH SAMPLE 2683 [04Oct2026 12:55:12.602] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'exoplanet_blocks:1' (1 tests)...
+BATCH SAMPLE 2684 [04Oct2026 12:55:12.868] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'passenger_logout_cleanup:1' (1 tests)...
+BATCH SAMPLE 2712 [04Oct2026 12:55:14.052] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'moon_arrival_highlands:1' (1 tests)...
+BATCH SAMPLE 2742 [04Oct2026 12:55:15.176] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'venus_volcano_relief:1' (1 tests)...
+BATCH SAMPLE 2743 [04Oct2026 12:55:27.901] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'tau_ceti_landing_f:1' (1 tests)...
+BATCH SAMPLE 2744 [04Oct2026 12:55:28.403] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'tau_ceti_landing_g:1' (1 tests)...
+BATCH SAMPLE 2746 [04Oct2026 12:55:30.982] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_deop:1' (1 tests)...
+BATCH SAMPLE 2766 [04Oct2026 12:55:32.330] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_laser_drill:1' (6 tests)...
+BATCH SAMPLE 2791 [04Oct2026 12:55:33.067] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_elevator_spacing:1' (1 tests)...
+BATCH SAMPLE 2809 [04Oct2026 12:55:33.906] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'flight_recovery:1' (1 tests)...
+BATCH SAMPLE 2846 [04Oct2026 12:55:34.683] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_railgun_menu:1' (1 tests)...
+BATCH SAMPLE 2866 [04Oct2026 12:55:35.049] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_menu_drill_save:1' (1 tests)...
+BATCH SAMPLE 2870 [04Oct2026 12:55:35.191] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_elevator_rides:1' (1 tests)...
+BATCH SAMPLE 2934 [04Oct2026 12:55:39.080] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_admission:1' (3 tests)...
+BATCH SAMPLE 2955 [04Oct2026 12:55:39.808] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_gravity_planet:1' (1 tests)...
+BATCH SAMPLE 2992 [04Oct2026 12:55:40.982] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'exoplanet_feature_bounds:1' (1 tests)...
+BATCH SAMPLE 2993 [04Oct2026 12:55:42.468] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_sunlight:1' (1 tests)...
+BATCH SAMPLE 2995 [04Oct2026 12:55:42.998] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'precision_assembler:1' (36 tests)...
+BATCH SAMPLE 2999 [04Oct2026 12:55:44.225] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_railgun_refusals:1' (1 tests)...
+BATCH SAMPLE 3023 [04Oct2026 12:55:45.670] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_menu_marker_save:1' (1 tests)...
+BATCH SAMPLE 3027 [04Oct2026 12:55:45.960] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_flight:1' (1 tests)...
+BATCH SAMPLE 3087 [04Oct2026 12:55:48.457] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'exoplanet_switches:1' (1 tests)...
+BATCH SAMPLE 3088 [04Oct2026 12:55:48.474] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_delete:1' (1 tests)...
+BATCH SAMPLE 3090 [04Oct2026 12:55:48.622] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_laser_physical:1' (1 tests)...
+BATCH SAMPLE 3139 [04Oct2026 12:55:50.066] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_menu_stranger:1' (1 tests)...
+BATCH SAMPLE 3146 [04Oct2026 12:55:50.129] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_elevator:1' (1 tests)...
+BATCH SAMPLE 3162 [04Oct2026 12:55:50.193] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_destruction:1' (1 tests)...
+BATCH SAMPLE 3163 [04Oct2026 12:55:50.355] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'materials_recipe_overlap:1' (1 tests)...
+BATCH SAMPLE 3164 [04Oct2026 12:55:50.445] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_sky_context_wiring:1' (1 tests)...
+BATCH SAMPLE 3171 [04Oct2026 12:55:50.929] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'planetary_player_station:1' (1 tests)...
+BATCH SAMPLE 3174 [04Oct2026 12:55:51.190] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station:1' (2 tests)...
+BATCH SAMPLE 3189 [04Oct2026 12:55:52.157] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'machine_menu:1' (3 tests)...
+BATCH SAMPLE 3191 [04Oct2026 12:55:53.357] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'rocket_navigation:1' (1 tests)...
+BATCH SAMPLE 3194 [04Oct2026 12:55:53.633] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'rocket_navigation_refresh:1' (1 tests)...
+BATCH SAMPLE 3202 [04Oct2026 12:55:54.138] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_elevator_validity:1' (1 tests)...
+BATCH SAMPLE 3233 [04Oct2026 12:55:56.111] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'passenger_refueled_disassembly:1' (1 tests)...
+BATCH SAMPLE 3264 [04Oct2026 12:55:57.648] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'satellite:1' (21 tests)...
+BATCH SAMPLE 3283 [04Oct2026 12:55:59.013] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'precision_migration_controller_failure:1' (1 tests)...
+BATCH SAMPLE 3373 [04Oct2026 12:56:00.425] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_black_hole:1' (1 tests)...
+BATCH SAMPLE 3386 [04Oct2026 12:56:01.189] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'satellite_resources:1' (8 tests)...
+BATCH SAMPLE 4196 [04Oct2026 12:56:02.710] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_endpoint_forget:1' (1 tests)...
+BATCH SAMPLE 4206 [04Oct2026 12:56:02.789] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_elevator_automation:1' (1 tests)...
+BATCH SAMPLE 4234 [04Oct2026 12:56:11.869] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'defaultBatch:1' (100 tests)...
+BATCH SAMPLE 5271 [04Oct2026 12:56:28.422] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'defaultBatch:2' (100 tests)...
+BATCH SAMPLE 5319 [04Oct2026 12:56:39.769] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'defaultBatch:3' (26 tests)...
+BATCH SAMPLE 5369 [04Oct2026 12:56:41.508] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'precision_transaction_cuts:1' (5 tests)...
+BATCH SAMPLE 5370 [04Oct2026 12:56:42.386] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'exoplanet_worlds:1' (3 tests)...
+BATCH SAMPLE 5371 [04Oct2026 12:56:42.665] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_railgun_station:1' (1 tests)...
+BATCH SAMPLE 5421 [04Oct2026 12:56:51.411] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_zone_pages:1' (1 tests)...
+BATCH SAMPLE 5422 [04Oct2026 12:56:51.458] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_interstellar:1' (1 tests)...
+BATCH SAMPLE 5444 [04Oct2026 12:56:53.766] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'satellite_payload:1' (1 tests)...
+BATCH SAMPLE 5470 [04Oct2026 12:56:58.167] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'exoplanet_surfaces_f:1' (1 tests)...
+BATCH SAMPLE 5471 [04Oct2026 12:56:58.526] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'exoplanet_surfaces_g:1' (1 tests)...
+BATCH SAMPLE 5472 [04Oct2026 12:56:59.016] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_laser_target_owner:1' (1 tests)...
+BATCH SAMPLE 5481 [04Oct2026 12:56:59.533] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'endgame_laser_target_generation:1' (1 tests)...
+BATCH SAMPLE 5495 [04Oct2026 12:56:59.565] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'station_warp_target_removed:1' (1 tests)...
+BATCH SAMPLE 5514 [04Oct2026 12:57:01.783] [Server thread/INFO] [net.minecraft.gametest.framework.GameTestBatchRunner/]: Running test batch 'satellite_blocked:1' (2 tests)...
+Traceback (most recent call last):
+  File "C:\Users\Administrator\AppData\Local\Temp\ark2a-a7e21b35c0\audit02.py", line 149, in <module>
+    assert len(errors)==counts['logger_ERROR_lines']==61
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

@@ -1,0 +1,63 @@
+Raw phase durations [('integration-build-data-21', 193.987699), ('integration-gametest-12', 242.978334)]
+Pinned code commit / observed refs {'observed_HEAD': '3f3d62aed3980186fe0acc9592cf93ca436405fb', 'observed_origin_branch': '3f3d62aed3980186fe0acc9592cf93ca436405fb', 'pinned_code_commit': {'commit': '3f3d62aed3980186fe0acc9592cf93ca436405fb', 'tree': '3fadd9b2e57093fa4c27ec4b599b7bd82e0ea0d5', 'subject': 'feat(machine): add bounded private canonical NBT bytes'}, 'remote_network_verification': False, 'force_push': False, 'actual_recorded_push': {'command': ['git', 'push', 'origin', 'codex/v1.8.0-classic-content'], 'cwd': 'D:\\GitHub\\AdvancedRocketry-Community', 'started_utc': '2026-10-04T05:01:10.391799+00:00', 'finished_utc': '2026-10-04T05:01:16.485415+00:00', 'exit': 0, 'log_sha256': '11fc888450a9ddbec68b0469d54f74fc8d47973eb0890bb8a1ce2d1a3a8c7892', 'force': False}}
+Prior red/final/reviewer K2 evidence [
+  {
+    "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-hatches\\canonical-bytes-k2-source-01.zip",
+    "selected_actual_XML": [
+      {
+        "member": "scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml",
+        "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest",
+        "tests": 19,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 0,
+        "failure_names": [
+          "signedZerosRemainDistinct()"
+        ],
+        "bytes": 15918,
+        "sha256": "03ac50217dc4f4a49411d123e19b20d0d691a10ac18b357ffa4b05734bf36b8e"
+      },
+      {
+        "member": "scoped-02-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml",
+        "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest",
+        "tests": 20,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "failure_names": [],
+        "bytes": 5773,
+        "sha256": "4817e43ae792ac84c07e3bd0d76b111e6f12f20aa30994fb5dddf9d47368f15e"
+      }
+    ],
+    "not_independently_reexecuted_here": true
+  },
+  {
+    "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-hatches\\reviews\\canonical-bytes-k2-independent-01.zip",
+    "selected_actual_XML": [
+      {
+        "member": "reviewer-scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest.xml",
+        "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicNbtCanonicalBytesTest",
+        "tests": 20,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "failure_names": [],
+        "bytes": 5775,
+        "sha256": "12037963df24b141fbd853f43d5a031665447e9d2a7c950862acbfc9e2472ba0"
+      },
+      {
+        "member": "reviewer-scoped-01-xml/TEST-io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.IndependentCanonicalBytesTest.xml",
+        "suite": "io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.IndependentCanonicalBytesTest",
+        "tests": 8,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "failure_names": [],
+        "bytes": 2082,
+        "sha256": "cb3024ad06d93300d24799440377fff0ee42049bfe64c975a5c0975fc697db62"
+      }
+    ],
+    "not_independently_reexecuted_here": true
+  }
+]
+Full baseline manifest, links/static receipts, preserved non-PASS and final compact postcheck verified

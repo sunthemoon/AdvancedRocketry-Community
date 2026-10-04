@@ -1,0 +1,171 @@
+# C16a-07 actual-diff review 02 — corrected motor integration
+
+Date: 2026-10-03. Independent delegated implementation reviewer; did not author
+the motors, casing correction, assets or target harness. Root and other worker
+sources were read-only. All reviewer output/rebuild work used fresh Temp space.
+
+## Findings / review conclusion
+
+**0 Critical / 0 High / 0 Medium / 0 Low remaining findings.** Original L1 is
+resolved on the actual corrected source and independently reproduced key tests.
+The four-motor/inert-casing-label technical sub-slice has passed this review.
+This is **not** completion or approval of the entire C16a-07 leaf, its ledger
+units, C16, v1.8, G0–G9, V1, or release.
+
+Original report [REVIEW-01](../REVIEW-01.md), SHA-256
+`04a63d9efbc8ba04a20c5911a00015a768af6a77a474f7d47ef8fbe641a19d4c`,
+and all original observations/failures are retained unchanged.
+
+## L1 disposition and exact change
+
+- `src/main/java/io/github/sunthemoon/advancedrocketrycommunity/classiccomponent/AdvancedMachineCasingBlock.java:5–12`
+  overrides only `getDescriptionId`, returning
+  `block.advancedrocketrycommunity.advanced_machine_casing`.
+- `registry/ModBlocks.java:167–174` changes only the constructor class at the
+  existing `endgame_casing` registration. Saved registry ID and all Properties
+  are byte-for-byte unchanged; the existing BlockItem mapping is unchanged.
+- `datagen/V180LanguageProvider.java:49–50` emits only the new unique key.
+  The old key stays in immutable v1.7 resources, without a conflicting v1.8
+  entry. Existing casing blockstate/models/textures/recipes/loot remain intact.
+- `gametest/MotorGameTests.java:56–66` asserts both saved registry IDs and
+  actual block/item description IDs. `MotorLanguageResourcesTest.java:14–25`
+  checks generated English/Chinese labels and absence of the duplicate old key.
+
+Independent source/JSON checks confirm one definition per locale across all
+historical roots. The actual corrected JAR also passed the mapped-loader
+algorithm model for both locales with 0, 8 and 80 extra namespaces:
+[model](UniqueCasingLabel.java), [six-case result](unique-casing-label.log).
+This model is not a real-client run; the actual Forge block/item dispatch was
+independently exercised by the GameTests below. Resource packs targeting the
+old casing description key need to adopt the new display key; saved worlds
+and item/block IDs do not need a migration.
+
+## Source identity / covered diff
+
+Original root evidence directory:
+`C:/Users/Administrator/AppData/Local/Temp/arce-v180-motor-root-79a12d61d241424eb3ea3ab0d1a3782d`.
+Comparison is its **pre-motor `before-source` to `frozen-02-source` /
+`final-02-source`, not HEAD**. This excludes unrelated pre-existing C15, fluid
+and generator changes. Root branch is `codex/v1.8.0-classic-content`, base HEAD
+`cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6`; snapshot is uncommitted development.
+
+| Identity | SHA-256 |
+|---|---|
+| pre-motor 2775-input manifest | `7dcdad25b62ba53503247c6c31232c54131007e21a576b598e3a1bbbbdcc7237` |
+| corrected frozen/final 2827-input manifest | `d5f73cf1c23f1beeb6c7d63628129a8c50f5dfa75a995d0829551f54b70b0367` |
+| corrected main JAR | `36665d1a80d393db8dda666378fc7741f62deed84738597d5ba008ae81de1f63` |
+| corrected sources JAR | `20e5ae6c1855be41a132e95e173f508711125469cb00baea9494be6a70c9926c` |
+| corrected API JAR | `252463ff81bdfc1d48c9e6c3ea397e7ca1bb00f4ebf9e5b804405bd27fe6b2eb` |
+
+All manifested source bytes were rehashed. Before→corrected delta has **52
+new files, 10 modified files, zero removed files**. The label correction adds
+two files and modifies five original-motor files, with no unrelated runtime
+change. [Exact delta](evidence/final-02-delta.json),
+[actual diff](evidence/final-02-source.diff),
+[manifest](evidence/final-02-manifest.json),
+[independent static results](probe-static-results.json).
+
+Accepted ADR-064 §4 checks cover all four stable block/item IDs, both motors
+tags, exact ingredient multisets, exact previous-tier upgrade input, one-item
+outputs/unlocks, self loot/tool tags, original bounded art and registered
+models/data/creative entries. Primary ledger units:
+`libvulpes:java/blockMotor`, `libvulpes:java/blockAdvStructureBlock`; merged
+aliases are `blockAdvancedMotor`, `blockEnhancedMotor`, `blockEliteMotor`,
+`motors`, `libvulpes:ore/blockMotor` and
+`libvulpes:recipe/advstructuremachine`. Existing `machine_casing` is preserved,
+not newly implemented or closed. All-tier machine-family formation is not yet
+delivered, so this report does not close the primary ledger units.
+
+## Commands actually executed by reviewer
+
+1. `python -B probe_static.py`: exit 0 against corrected source and packaged
+   resources; exact ADR quantities, stable tags/IDs, references, old casing
+   resources and unique label definitions checked without target imports.
+2. Java 17 source-launch `UniqueCasingLabel.java <corrected.jar>`: exit 0,
+   six bilingual/namespace model cases. Exact input JAR hash retained in
+   [artifact binding](unique-casing-artifact-hash.txt).
+3. Serialized isolated command, after explicit heavy-slot grant:
+
+   ```text
+   gradlew.bat --offline --no-daemon -Dorg.gradle.workers.max=1 clean build runData test --tests '*classiccomponent.*' runGameTestServer
+   ```
+
+   **Exit 0, 4m12s.** Independently executed **15 scoped JUnit / four suites**,
+   zero failures/errors/skips, and **all 413 required GameTests**.
+   The selector also applies to the build test task: this is deliberately not
+   an independent execution of the root's entire 1502-test JUnit suite.
+   Java compilation used the shared Gradle cache; tests and GameTests executed.
+   [Exact launch script](run-key-checks.ps1), [full output](key-checks.log),
+   [exit](key-checks.exit), [raw JUnit](independent-junit/TEST-io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorLanguageResourcesTest.xml),
+   [actual GameTest log](independent-gametest.log).
+4. `python -B probe_rebuild_results.py`: exit 0. All **2827** copied inputs
+   remain byte-identical after DataGen, no unexpected source inputs, and all
+   three independently rebuilt JAR hashes match corrected root artifacts.
+   [Bound result/test names](rebuild-results.json),
+   [probe](probe_rebuild_results.py), [log](probe-rebuild-results.log).
+5. `python -B probe_native_evidence.py`: exit 0. A separately authored,
+   bounded raw-NBT decoder independently verifies all four native-02 chunk
+   artifacts, exact block coordinates, whole inventories, counts/tags, saved
+   casing ID and two same-world restart receipts. It neither imports nor calls
+   the target harness oracle. [Result](probe-native-results.json),
+   [probe](probe_native_evidence.py), [log](probe-native-02.log).
+   **This is an audit of root's native execution, not an independent native replay.**
+
+Reviewer rebuild directory:
+`C:/Users/ADMINI~1/AppData/Local/Temp/arce-mr-19d728af`.
+Preparation first failed at the Win32 path-length limit in a longer review
+subdirectory; that incomplete copy/log is retained. A fresh short Temp copy
+was fully rehashed and succeeded. No assertion, timeout, test or budget was
+weakened; no root file was changed or removed. Original static-probe path and
+omitted-JSON-default mistakes remain recorded in review 01.
+
+## Root execution audited separately
+
+Root corrected full run: exit 0, **1502 JUnit / 284 suites**, zero
+failure/error/skip, all 413 required GameTests. XML/logs were independently
+parsed. Root corrected native-02: four clean-stop phases (v1.7 saved casing,
+v1.8 motor seed, restart 1, restart 2), bound to main JAR hash above.
+Both native iterations are preserved; old native-01 results are not used to
+approve the changed JAR. [Corrected native summary](evidence/native-summary.json),
+[source/JAR binding](evidence/source-identity-final.json),
+[root full output](evidence/root-full-02.log).
+
+## Design / provenance / residual boundaries
+
+- Motors remain inert blocks/items: no new ticking adapter, authority packet,
+  inventory transaction, SavedData schema or world scan. Bounded pure JSON/art
+  generators produce four recipe definitions and 12 16×16 original faces.
+- Vanilla shapeless recipes encode accepted multisets; they are registered
+  crafting data usable by JEI's ordinary crafting integration, not a custom
+  machine category. Actual JEI presence/absence and client recipe display were
+  not tested. Crafting matching/assembly is tested; no separate player-menu
+  crafting-consumption runtime is claimed.
+- NEW provenance metadata and the procedural implementation were reviewed;
+  no LibVulpes source/art was accessed or copied. Root's 61 CLEAR image-origin
+  screening records include all 12 motor faces; this is observed evidence,
+  not an independent screening rerun or complete G0 legal/release approval.
+  [Metadata](evidence/provenance-metadata.md) SHA
+  `2243f78f01f0cccf1900ce454a011d84b9102de783ecbb6519dbe8ddabce5e29`;
+  [screening output](evidence/art-screen.json) SHA
+  `19b467b1d24158ee08a9a21810aa4d536f51ef2260b83457144a4fa3fc7b3c67`.
+- Family patterns accepting **every motor tier**, real-GPU V1 visual/label/
+  resource reload evidence, recipe-graph/survival progression and modpack
+  compatibility remain current-version work. Tags/test counts are not a
+  substitute for formation or visual evidence.
+- Clean native save/restarts are not S2 crash recovery. This narrow inert
+  slice introduces no new crash coordinator. Reproducible matching artifacts
+  from a dirty development snapshot are not a clean approved R1 release.
+
+## Completion / Gate status / permitted continuation
+
+Completed: independent actual-diff review, L1 correction verification, scoped
+JUnit/build/DataGen and full GameTest reproduction, saved-artifact audit.
+Changes made by reviewer: Temp reports/probes/evidence/rebuild only; no runtime
+implementation or repository edits. New/changed target tests were reviewed and
+executed as detailed above. No further finding remains in this technical scope.
+
+Uncompleted: full C16a-07 family-formation proof and v1.8 Required Gates,
+including real-client and release/provenance acceptance. **All v1.8 Required
+Gates satisfied: NO.** Continue with current C16 machine formation and current
+v1.8 client/compatibility/acceptance work; no later-version implementation is
+authorized by this report.

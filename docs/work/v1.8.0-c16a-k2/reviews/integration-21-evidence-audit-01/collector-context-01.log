@@ -1,0 +1,182 @@
+# K2 private canonical-byte source acceptance
+
+Date:2026-10-04.Status:SOURCE_ACCEPTED;Root integration regression pending.
+
+Root adopts exactly the two new private computation/test files reviewed in
+[author source01](canonical-bytes-k2-source-01.zip),SHA256
+`3442f9b7c3fc06ff694c08f385a8cdfc8fc8b0a527a225b305e7cc7213788ace`,
+and [different-agent source review01](reviews/canonical-bytes-k2-independent-01.zip),
+SHA256 `e4b46ec2657b66e88e8cf90c188bad5a7fe7c9f0a9f78c62906aa705bb0427e4`.
+Root archive51/53 independently verifies each CRC,length,SHA and safe unique
+path. Reviewer report SHA256
+`d8a0ff0369a84f3dde0eb62532314daba64a0aa5214a36d005912a98d0165cc9`
+identifies no introduced Critical/High/Medium/Low in that exact source scope.
+
+Production SHA256 `1aa5ad420a1288820f148ea55c149510c5206c7351c928186548cada54b3dfd6`;
+test SHA256 `5b352b1a6818689b5ac30c505cbcfc3e3adc4014de97f26f168550b31f8cec55`.
+Source20's2,988 existing inputs remain byte-exact;only these two files produce
+Source21's2,990-input closure. No registry,network,build,generated resource,
+Bank/value schema,GuardTicket,world writer or old test is modified by this delta.
+
+Actual author scoped run01 remains19 tests/1 failure. Native scalar factories
+and native decoding normalized its negative-zero fixture before the encoder.
+The final constructor-based fixture retains the original assertions and proves
+only emitted-byte fidelity of exact native negative-zero values. The unchanged
+production then passes author20/1 suite/0FES;independent checks pass28/2/0FES,
+exit0/44.284s,with compileJava FROM-CACHE and fresh compileTestJava/test.
+Default-autocrlf delivery and GBK packaging failures remain separately recorded.
+None is rewritten as an original passing run or proof of world persistence.
+
+The private helper requires stable,exclusively owned standard native input,
+unchanged shape-first and native-lossless preflights,and caller-selected
+per-root limits. Its componentwise maximum is the existing REJECTED ceiling;
+larger requests refuse rather than clamp. Only compound keys sort by K1;
+native field widths,modified UTF,types,list/array order and input aliases remain.
+Successful results are newly owned bounded byte arrays. Structural checks do
+not create a concurrency snapshot or sandbox arbitrary native callbacks.
+
+This acceptance permits bounded Root integration/regression only. It does not
+admit full resource hash/framing/codec,typed-empty or noncanonical NaN rewriting,
+negative-zero persistence,resource getters,Guard lifecycle,physical hatches,
+charged-mode interception,native recovery,client evidence or any version Gate.
+Those remain separate current-version work under the existing contracts.
+
+import hashlib
+import json
+import os
+import shutil
+import sys
+import xml.etree.ElementTree as ET
+import zipfile
+from pathlib import Path
+
+here = Path(__file__).parent
+root = Path('D:/GitHub/AdvancedRocketry-Community')
+def io(path):
+    return path if os.name != 'nt' or str(path).startswith('\\\\?\\') else Path('\\\\?\\' + str(path.absolute()))
+def record(raw):
+    return {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()}
+def write(name, value):
+    target = here / name
+    assert not target.exists(), target
+    target.write_text(json.dumps(value, indent=2) + '\n')
+def exact(manifest):
+    for name, expected in manifest.items():
+        assert record((root / name).read_bytes()) == expected, name
+action = sys.argv[1]
+if action == 'precheck':
+    manifest = json.loads((here / 'integration-18-predata-source-manifest.json').read_bytes())
+    exact(manifest)
+    write('menu-integration-18-postimage-check.json', {'source_files': len(manifest), 'exact': True,
+        'Root_source_applied': True, 'Java_or_runtime_admission': False})
+    print('Exact code predata source:', len(manifest))
+elif action == 'postdata':
+    assert (here / 'integration-data18-01.exit').read_text().strip() == '0'
+    before = json.loads((here / 'integration-18-predata-source-manifest.json').read_bytes())
+    changes = {}
+    labels = ('generic', 'recipe_missing', 'recipe_changed', 'recipe_tags_invalid',
+              'signature_migration_pending', 'signature_migration_unproven', 'retained_plan_invalid')
+    allowed = {f'src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/{language}.json'
+               for language in ('en_us', 'zh_cn')}
+    after = {}
+    with zipfile.ZipFile(here / 'integration-artifacts-15/advancedrocketry-community-1.20.1-1.8.0-dev.jar') as baseline:
+        for name, expected in before.items():
+            raw = (root / name).read_bytes()
+            value = record(raw)
+            after[name] = value
+            if name in allowed:
+                old = baseline.read(name.removeprefix('src/generated/v1.8/resources/'))
+                assert record(old) == expected, name
+                old_values = json.loads(old)
+                new_values = json.loads(raw)
+                assert all(new_values.get(key) == old_value for key, old_value in old_values.items())
+                assert set(new_values) - set(old_values) == {
+                    'status.advancedrocketrycommunity.machine_recipe.' + label for label in labels}
+                assert all(isinstance(new_values['status.advancedrocketrycommunity.machine_recipe.' + label], str)
+                           and new_values['status.advancedrocketrycommunity.machine_recipe.' + label]
+                           for label in labels)
+                changes[name] = {'before': expected, 'after': value, 'added_labels': len(labels)}
+            else:
+                assert value == expected, name
+    assert len(after) == 2986 and len(changes) == 2
+    write('integration-18-source-manifest.json', dict(sorted(after.items())))
+    write('integration-18-data-change.json', {'changes': changes,
+        'manifest_sha256': hashlib.sha256((here / 'integration-18-source-manifest.json').read_bytes()).hexdigest(),
+        'other_source_inputs_unchanged': len(after) - len(changes)})
+    print(json.dumps({'source_files': len(after), 'changed_generated_languages': len(changes)}))
+elif action == 'tests':
+    assert (here / 'integration-build-data-18.exit').read_text().strip() == '0'
+    target = here / 'integration-build-data-18-xml/test'
+    assert not target.exists()
+    target.mkdir(parents=True)
+    files = sorted((root / 'build/test-results/test').glob('*.xml'))
+    assert files
+    declared = {key: 0 for key in ('tests', 'failures', 'errors', 'skipped')}
+    actual = dict(declared)
+    records = {}
+    for path in files:
+        raw = io(path).read_bytes()
+        destination = target / path.name
+        io(destination).write_bytes(raw)
+        assert io(destination).read_bytes() == raw
+        suite = ET.fromstring(raw)
+        cases = suite.findall('testcase')
+        for key in declared:
+            declared[key] += int(suite.get(key, '0'))
+        actual['tests'] += len(cases)
+        for tag, key in (('failure', 'failures'), ('error', 'errors'), ('skipped', 'skipped')):
+            actual[key] += sum(len(case.findall(tag)) for case in cases)
+        records[path.name] = record(raw)
+    assert declared == actual
+    assert not any(actual[key] for key in ('failures', 'errors', 'skipped'))
+    write('integration-build-data-18-junit.json', {'suites': len(files), 'declared': declared,
+        'testcase_elements': actual, 'xml': records})
+    print(json.dumps({'suites': len(files), **actual}))
+elif action == 'artifacts':
+    assert (here / 'integration-build-data-18.exit').read_text().strip() == '0'
+    exact(json.loads((here / 'integration-18-source-manifest.json').read_bytes()))
+    destination = here / 'integration-artifacts-18'
+    assert not destination.exists()
+    destination.mkdir()
+    resources = root / 'src/generated/v1.8/resources'
+    generated = sorted(path for path in resources.rglob('*') if path.is_file()
+                       and '.cache' not in path.relative_to(resources).parts)
+    records = []
+    for source in sorted((root / 'build/libs').glob('*.jar')):
+        with zipfile.ZipFile(source) as archive:
+            names = archive.namelist()
+            assert archive.testzip() is None and len(names) == len(set(names))
+            api = source.name.endswith('-api.jar')
+            suffix = '.java' if source.name.endswith('-sources.jar') else '.class'
+            if not api:
+                for resource in generated:
+                    assert archive.read(resource.relative_to(resources).as_posix()) == resource.read_bytes()
+                for leaf in ('machine/menu/MachineMenuNetwork', 'machine/menu/MachineMenuOpening',
+                             'machine/menu/RecipeMenuReason', 'gametest/RecipeMenuGameTests'):
+                    assert 'io/github/sunthemoon/advancedrocketrycommunity/' + leaf + suffix in names
+            records.append({'name': source.name, **record(source.read_bytes()), 'entries': len(names),
+                'generated_files_compared': 0 if api else len(generated)})
+        shutil.copyfile(source, destination / source.name)
+    assert len(records) == 3
+    write('integration-artifacts-18.json', records)
+    print(json.dumps(records))
+elif action == 'gt':
+    import re
+    assert (here / 'integration-gametest-09.exit').read_text().strip() == '0'
+    source = root / 'build/gametest/logs/latest.log'
+    raw = source.read_bytes()
+    counts = re.findall(r'All (\d+) required tests passed', raw.decode('utf-8'))
+    gradle = (here / 'integration-gametest-09.log').read_bytes()
+    assert len(counts) == 1
+    assert re.findall(r'All (\d+) required tests passed', gradle.decode('utf-8')) == counts
+    target = here / 'integration-gametest-09-latest.log'
+    assert not target.exists()
+    target.write_bytes(raw)
+    exact(json.loads((here / 'integration-18-source-manifest.json').read_bytes()))
+    write('integration-gametest-09-counts.json', {'required_passed': int(counts[0]), 'exit': 0,
+        'minecraft_log': record(raw), 'gradle_log': record(gradle),
+        'logger_ERROR_lines': len(re.findall(r'/ERROR\]', raw.decode('utf-8'))), 'clean_log_claimed': False})
+    print('Required GameTests passed:', counts[0])
+else:
+    raise ValueError(action)
+

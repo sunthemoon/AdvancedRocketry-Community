@@ -1,0 +1,11 @@
+{
+  "archive_bytes": 34054963,
+  "archive_sha256": "88fd89b0800756ff24cd870532405b064d0e94df94512e9c2d1df60777520926",
+  "crc": "PASS",
+  "entries": 6340,
+  "every_entry_hash": "PASS",
+  "official_client_jars_included": false,
+  "protected_document_bundle_included": false,
+  "result": "PASS",
+  "runtime_libraries_or_full_world_included": false
+}
