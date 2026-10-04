@@ -36,26 +36,29 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: a5abc34809891d6b10724ee60ab9b5e97f036bae
+tested_code_commit: 9fce551ea9389ce37a94f804aa0e817399586a7e
 last_updated: 2026-10-05
 ```
 
 ## Current development evidence
 
-The latest C18 inventory source is committed and pushed at the tested commit
-above. [Source25 verification](../work/v1.8.0-c18c-tutorial-inventory/VERIFICATION-01.md)
-records 1,785 JUnit /333 suites and all 467 required GameTests passing, including
-three actual inventory-listener tests. Its 3,009 named inputs are not a whole
-repository snapshot. DataGen has 777 files and zero repeat writes. The previous
-Source24 bounded repository check (45 passed) and 120 focused Python are
-historical, not newly rerun Source25 results. Exact source and separate result
-audits are frozen; historical collector wording is explicitly corrected.
-Failed collectors
-and 61 ERROR headers in each GameTest stream remain disclosed, not waived.
-The owner-modified AGENTS and 92 wrapper LF/CRLF expansions remain qualified.
+The latest analyzer source is committed and pushed at the tested commit above.
+[Source26 verification](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-01.md)
+records build/test/DataGen passing with 1,807 JUnit /339 suites /0FES, but the
+complete 477-test GameTest command fails with four required analyzer failures.
+Pending/supplied-room, frozen-item-registry and unloaded-eye assertions require
+isolated repair and a new committed regression. The 3,036 named inputs are not
+a whole repository snapshot. DataGen has 781 files and zero repeat changes;
+eight scoped static checks and package-member checks pass. Ledger closure and
+global dirty diff remain actual failures. The [independent result audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-01.md)
+confirms this failed cohort and its source/artifact boundaries without finding
+an additional receipt inconsistency; it does not rerun Java or accept the leaf.
+The 65 ERROR headers are disclosed, not waived. Live owner AGENTS and one
+LF/CRLF wrapper expansion are qualified. Previous passing cohorts are historical,
+not a substitute for the latest failed complete command.
 
 The development main JAR SHA-256 is
-`61c5499318dcd17d929acd9f3d28ab1e99066ba2c29da1de34603096f10f3921`.
+`ba33be072bc9da427975d52ff351dce0ded9f36d88af7904980885f0280176a8`.
 The API artifact remains unchanged. This is not a frozen release candidate.
 The content ledger has **186 PLANNED units /154 REVIEW assets**; its closure
 check still fails. v1.8 remains **IN_PROGRESS /IMPLEMENTING**, with **G0–G9 open**.
@@ -65,8 +68,11 @@ All four historical copied-world lifecycle attempts remain failures. New
 passes in 70.746109 seconds with independent exact result review: first-host
 true unload/live restoration/clean stop, then same-copy second-host refusal
 retrigger and retained native bytes. Its separate Python commit is
-`f1d649238284bef515ff8fafafd65611ac37bc32`; Java remains the tested Source25
-artifact above. Metadata progresses five marks to exact target/far two marks.
+`f1d649238284bef515ff8fafafd65611ac37bc32`; Java remains the prior Source25
+artifact at `a5abc34809891d6b10724ee60ab9b5e97f036bae`, main SHA
+`61c5499318dcd17d929acd9f3d28ab1e99066ba2c29da1de34603096f10f3921`.
+This native result is not rerun on the newer analyzer artifact. Metadata
+progresses five marks to exact target/far two marks.
 The old native04 stopped observation remains observation-only, not rewritten
 as PASS. Unique production cause, final BE disposal instrumentation, first-save
 writer, cross-store/crash/client and all version Gates remain unverified.
@@ -80,9 +86,12 @@ is preserved, as is the revision 2 constructor/join scene finding. The separate
 [revision 3 review](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-03.md)
 addresses that scene at contract/source level but identifies two Medium native
 lifecycle conflicts: startup properties rewriting and repeated reload forceload
-refusal. Revision 3 is not adopted/implemented; phase-specific corrections are
-being proposed. Exact proposal/failures/primary controls are portable. No setup,
-fixture source or native execution is admitted.
+refusal. Revision 3 remains unadopted. The [revision 4 disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04.md)
+adopts the independently reviewed phase-bound contract only, committed and
+pushed at `d04a116e6e6001f166bbf5e8f31fb78623a6b392`. A fresh isolated fixture
+implementation is assigned; actual-source review, clean host selection and
+native execution remain pending. Exact proposals/failures/primary controls are
+portable. No setup or native execution is admitted by this contract review.
 See
 [source integration](../work/v1.8.0-c18c-tutorial-inventory/SOURCE-INTEGRATION-01.md).
 
@@ -155,10 +164,11 @@ has an independently reviewed, narrowly adopted contract and pre-authoring
 original-resource record. Isolated implementation at committed base
 `9135c20c34a402b7cf0715148aeb6683a35c1f50` has exact independent source review
 with no unresolved C/H/M/L and 19 independently executed tests. Root integrates
-25 source/task postimages and six generated files. Intermediate 36 JUnit and
-781-file DataGen with zero repeat changes pass. Source commit and complete
-committed regression are being prepared; packaged use/restart, client and
-ledger delivery remain open. See the [source checkpoint](../work/v1.8.0-c18a-atmosphere-analyzer/SOURCE-INTEGRATION-01.md).
+25 source/task postimages and six generated files, committed and pushed.
+Full build/JUnit and repeat DataGen pass, but four registered analyzer GameTests
+fail in the complete cohort above. Isolated repair and independent result review
+are active; packaged use/restart, client and ledger delivery remain open.
+See the [source checkpoint](../work/v1.8.0-c18a-atmosphere-analyzer/SOURCE-INTEGRATION-01.md).
 It does not enable
 unproven refill/shared-save dependencies.
 The [completion plan](COMPLETION-PLAN.md) lists the remaining leaves. Historical
