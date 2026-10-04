@@ -114,6 +114,10 @@ fixed-commit replay passes 34 focused + 39 unchanged phase01 methods /0FES.
 Its fresh D fixture is cleaned, 99,375 bytes, after a separately retained
 precheck correction. This is only private quiescent properties input. Live,
 ownership, JSON/NBT, receipt/driver and native authority remain unimplemented.
+The separate [pure JSON task](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-04-JSON.md)
+is independently reviewed and frozen. Its five role budgets, key-inclusive
+counting and immutable scalar/entry observations are private syntax policy,
+not file/live/native authority; no implementation assignment has started.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
