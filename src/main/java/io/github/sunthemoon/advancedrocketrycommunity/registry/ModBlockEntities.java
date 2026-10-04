@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionGeneratorBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorAnchorBlockEntity;
@@ -32,6 +33,9 @@ public final class ModBlockEntities {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<BlockEntityType<CombustionGeneratorBlockEntity>> COMBUSTION_GENERATOR =
+            BLOCK_ENTITIES.register("combustion_generator", () -> BlockEntityType.Builder.of(
+                    CombustionGeneratorBlockEntity::new, ModBlocks.COMBUSTION_GENERATOR.get()).build(null));
     public static final RegistryObject<BlockEntityType<ElectrolyzerBlockEntity>> ELECTROLYZER =
             BLOCK_ENTITIES.register(
                     "electrolyzer",
@@ -204,6 +208,12 @@ public final class ModBlockEntities {
                             ModBlocks.ELEVATOR_TERMINAL.get()
                     ).build(null)
             );
+
+    public static final RegistryObject<BlockEntityType<
+            io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTankBlockEntity>> PRESSURIZED_TANK =
+            BLOCK_ENTITIES.register("pressurized_tank", () -> BlockEntityType.Builder.of(
+                    (position, state) -> ModBlocks.PRESSURIZED_TANK.get().newBlockEntity(position, state),
+                    ModBlocks.PRESSURIZED_TANK.get()).build(null));
 
     private ModBlockEntities() {
     }

@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.precision;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.MachineMenuOpening;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.RecipeMenuReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFormationState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternDiagnosticReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
@@ -51,7 +53,7 @@ public final class PrecisionAssemblerMenu extends AbstractContainerMenu {
     private final long openedGeneration;
 
     public PrecisionAssemblerMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buffer) {
-        this(containerId, playerInventory, buffer.readBlockPos(),
+        this(containerId, playerInventory, MachineMenuOpening.read(buffer, PrecisionAssemblerMenuData.COUNT),
                 new ItemStackHandler(MACHINE_SLOT_COUNT),
                 new SimpleContainerData(PrecisionAssemblerMenuData.COUNT), null);
     }
@@ -72,6 +74,7 @@ public final class PrecisionAssemblerMenu extends AbstractContainerMenu {
     ) {
         super(ModMenuTypes.PRECISION_ASSEMBLER.get(), containerId);
         checkContainerDataCount(data, PrecisionAssemblerMenuData.COUNT);
+        MachineMenuOpening.requireExactDataCount(data, PrecisionAssemblerMenuData.COUNT);
         this.controllerPosition = controllerPosition.immutable();
         this.machineItems = machineItems;
         this.data = data;
@@ -202,6 +205,15 @@ public final class PrecisionAssemblerMenu extends AbstractContainerMenu {
 
     public ProcessFailureCode processFailure() {
         return PrecisionAssemblerMenuWire.failure(data.get(PrecisionAssemblerMenuData.PROCESS_FAILURE));
+    }
+
+    public RecipeMenuReason recipeReason() {
+        if (formationState() == MultiblockFormationState.UNSUPPORTED_DATA
+                || processState() == ProcessMachineState.UNSUPPORTED_DATA
+                || processFailure() == ProcessFailureCode.NONE) {
+            return RecipeMenuReason.NONE;
+        }
+        return RecipeMenuReason.fromNetworkId(data.get(PrecisionAssemblerMenuData.RECIPE_REASON));
     }
 
     public int progress() {

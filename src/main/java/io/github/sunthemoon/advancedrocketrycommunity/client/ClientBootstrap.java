@@ -31,6 +31,16 @@ public final class ClientBootstrap {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            var fluids = io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ROCKET_FUEL;
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(fluids.get(),
+                    net.minecraft.client.renderer.RenderType.translucent());
+            net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(
+                    io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.FLOWING_ROCKET_FUEL.get(),
+                    net.minecraft.client.renderer.RenderType.translucent());
+        });
+        event.enqueueWork(() -> MenuScreens.register(ModMenuTypes.COMBUSTION_GENERATOR.get(),
+                CombustionGeneratorScreen::new));
         event.enqueueWork(() -> MenuScreens.register(
                 ModMenuTypes.ELECTROLYZER.get(),
                 ElectrolyzerScreen::new

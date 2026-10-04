@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.OxygenCanisterItem;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitArmorItem;
 import io.github.sunthemoon.advancedrocketrycommunity.content.DevelopmentComponentItem;
+import io.github.sunthemoon.advancedrocketrycommunity.fluid.GasCanisterItem;
 import io.github.sunthemoon.advancedrocketrycommunity.station.content.StationDeploymentKitItem;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.DataSatellitePackageItem;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteControlChipItem;
@@ -22,6 +23,8 @@ public final class ModItems {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<Item> COMBUSTION_GENERATOR = blockItem("combustion_generator",
+            ModBlocks.COMBUSTION_GENERATOR);
     public static final RegistryObject<Item> MACHINE_CASING = ITEMS.register(
             "machine_casing",
             () -> new BlockItem(ModBlocks.MACHINE_CASING.get(), new Item.Properties())
@@ -68,11 +71,11 @@ public final class ModItems {
     );
     public static final RegistryObject<Item> EMPTY_CANISTER = ITEMS.register(
             "empty_canister",
-            () -> new Item(new Item.Properties().stacksTo(16))
+            () -> new GasCanisterItem(new Item.Properties().stacksTo(16))
     );
     public static final RegistryObject<Item> HYDROGEN_CANISTER = ITEMS.register(
             "hydrogen_canister",
-            () -> new Item(new Item.Properties().stacksTo(16))
+            () -> new GasCanisterItem(new Item.Properties().stacksTo(16))
     );
     public static final RegistryObject<Item> OXYGEN_CANISTER = ITEMS.register(
             "oxygen_canister",
@@ -181,6 +184,10 @@ public final class ModItems {
     public static final RegistryObject<Item> ELEVATOR_ANCHOR = blockItem("elevator_anchor", ModBlocks.ELEVATOR_ANCHOR);
     public static final RegistryObject<Item> ELEVATOR_TERMINAL = blockItem("elevator_terminal",
             ModBlocks.ELEVATOR_TERMINAL);
+
+    public static final RegistryObject<Item> PRESSURIZED_TANK = ITEMS.register("pressurized_tank", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTankItem(
+                    ModBlocks.PRESSURIZED_TANK.get(), new Item.Properties()));
 
     private ModItems() {
     }

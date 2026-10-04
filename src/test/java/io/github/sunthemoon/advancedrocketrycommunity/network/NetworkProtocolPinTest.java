@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 /**
  * ADR-046 UI-01: the station, team and warp controls add no packet. Every channel in the main sources,
  * its protocol version and its registered message list must equal the committed table.
+ * ADR-064 section 14 adds exactly one required message-empty menu admission channel.
  */
 final class NetworkProtocolPinTest {
     private static final Path MAIN = Path.of("src", "main", "java");
@@ -34,13 +35,13 @@ final class NetworkProtocolPinTest {
     void everyChannelAndMessageMatchesTheCommittedTable() throws IOException {
         List<String> actual = new ArrayList<>();
         List<Path> channelSources = new ArrayList<>();
+        List<String> emptyChannels = new ArrayList<>();
         try (Stream<Path> files = Files.walk(MAIN)) {
             for (Path file : files.filter(path -> path.toString().endsWith(".java")).sorted().toList()) {
                 String source = Files.readString(file, StandardCharsets.UTF_8);
                 if (!ANY_CHANNEL.matcher(source).find()) {
                     continue;
                 }
-                channelSources.add(file);
                 Matcher channel = CHANNEL.matcher(source);
                 Matcher protocol = PROTOCOL.matcher(source);
                 assertTrue(channel.find() && !channel.find(), "One named channel per source: " + file);
@@ -58,12 +59,20 @@ final class NetworkProtocolPinTest {
                             message.group(2), message.group(1), message.group(3)));
                     messages++;
                 }
-                assertTrue(messages > 0, "A channel without messages: " + file);
+                if ("machine_menu".equals(channel.group(1))) {
+                    assertEquals("1", protocol.group(1), "Menu layout admission protocol changed: " + file);
+                    assertEquals(0, messages, "Menu admission channel must remain message-empty: " + file);
+                    emptyChannels.add(channel.group(1) + "|" + protocol.group(1));
+                } else {
+                    channelSources.add(file);
+                    assertTrue(messages > 0, "A channel without messages: " + file);
+                }
                 assertEquals(source.split("messageBuilder\\(", -1).length - 1, messages,
                         "A message registration the pin table cannot read (for example a non-literal index): " + file);
             }
         }
         assertEquals(6, channelSources.size(), "Channel sources changed: " + channelSources);
+        assertEquals(List.of("machine_menu|1"), emptyChannels);
         assertEquals(expected(), actual.stream().sorted().toList());
     }
 

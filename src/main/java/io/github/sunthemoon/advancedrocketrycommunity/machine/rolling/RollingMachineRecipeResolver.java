@@ -34,13 +34,17 @@ final class RollingMachineRecipeResolver {
             Optional<? extends net.minecraft.world.item.crafting.Recipe<?>> loaded = activeId == null
                     ? Optional.empty()
                     : level.getRecipeManager().byKey(activeId);
-            if (loaded.isEmpty()
-                    || !(loaded.orElseThrow() instanceof RollingMachineRecipe recipe)
-                    || !recipe.signature().equals(recipeSignature)) {
+            if (loaded.isEmpty() || !(loaded.orElseThrow() instanceof RollingMachineRecipe)) {
                 return Resolution.missing(
                         ProcessMachineState.INVALID_RECIPE,
-                        failure(ProcessFailureCode.INVALID_RECIPE, progress.definitionId())
+                        failure(ProcessFailureCode.INVALID_RECIPE, "recipe_missing")
                 );
+            }
+            RollingMachineRecipe recipe = (RollingMachineRecipe) loaded.orElseThrow();
+            if (!recipe.signature().equals(recipeSignature) || !recipe.available()) {
+                return Resolution.missing(ProcessMachineState.INVALID_RECIPE,
+                        failure(ProcessFailureCode.INVALID_RECIPE,
+                                !recipe.signature().equals(recipeSignature) ? "recipe_changed" : "recipe_tags_invalid"));
             }
             return Resolution.found(recipe);
         }

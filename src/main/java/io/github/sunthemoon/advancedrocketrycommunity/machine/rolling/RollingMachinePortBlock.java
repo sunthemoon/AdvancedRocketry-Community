@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.rolling;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -7,9 +8,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.Containers;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -53,6 +56,12 @@ public final class RollingMachinePortBlock extends BaseEntityBlock {
             );
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    public boolean canEntityDestroy(BlockState state, BlockGetter level, BlockPos position, Entity entity) {
+        return !RecipeSignatureProtection.blocksRemoval(level, position)
+                && super.canEntityDestroy(state, level, position, entity);
     }
 
     @Override

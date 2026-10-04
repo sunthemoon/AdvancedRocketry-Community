@@ -11,6 +11,8 @@ import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraftforge.common.Tags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -33,8 +35,8 @@ public final class PrecisionAssemblerRecipeProvider {
         public void serializeRecipeData(JsonObject json) {
             json.addProperty("schema_version", ProcessDefinition.SCHEMA_VERSION);
             JsonArray inputs = new JsonArray();
-            inputs.add(input(Items.IRON_INGOT, 2));
-            inputs.add(input(Items.REDSTONE, 2));
+            inputs.add(input(Tags.Items.INGOTS_IRON, 2));
+            inputs.add(input(Tags.Items.DUSTS_REDSTONE, 2));
             json.add("inputs", inputs);
             JsonArray outputs = new JsonArray();
             outputs.add(result(ModItems.ADVANCED_CIRCUIT.get(), 1));
@@ -74,11 +76,11 @@ public final class PrecisionAssemblerRecipeProvider {
         public void serializeRecipeData(JsonObject json) {
             json.addProperty("schema_version", ProcessDefinition.SCHEMA_VERSION);
             JsonArray inputs = new JsonArray();
-            inputs.add(input(Items.IRON_INGOT, 2));
-            inputs.add(input(Items.REDSTONE, 2));
-            inputs.add(input(Items.GOLD_INGOT, 1));
-            inputs.add(input(Items.QUARTZ, 1));
-            inputs.add(input(Items.COPPER_INGOT, 1));
+            inputs.add(input(Tags.Items.INGOTS_IRON, 2));
+            inputs.add(input(Tags.Items.DUSTS_REDSTONE, 2));
+            inputs.add(input(Tags.Items.INGOTS_GOLD, 1));
+            inputs.add(input(Tags.Items.GEMS_QUARTZ, 1));
+            inputs.add(input(Tags.Items.INGOTS_COPPER, 1));
             json.add("inputs", inputs);
             JsonArray outputs = new JsonArray();
             outputs.add(result(Items.COMPARATOR, 1));
@@ -110,7 +112,7 @@ public final class PrecisionAssemblerRecipeProvider {
         }
     }
 
-    private static JsonObject input(Item item, int count) {
+    private static JsonObject input(TagKey<Item> item, int count) {
         JsonObject input = new JsonObject();
         input.add("ingredient", Ingredient.of(item).toJson());
         input.addProperty("count", count);

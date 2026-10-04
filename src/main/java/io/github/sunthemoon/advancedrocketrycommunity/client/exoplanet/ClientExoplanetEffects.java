@@ -25,9 +25,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 @Mod.EventBusSubscriber(modid = AdvancedRocketryCommunity.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD,
         value = Dist.CLIENT)
 public final class ClientExoplanetEffects {
-    /** Game ticks between two flashes on this client: at most one every five seconds. */
-    static final int FLASH_INTERVAL_TICKS = 100;
-
     private ClientExoplanetEffects() {
     }
 
@@ -56,19 +53,17 @@ public final class ClientExoplanetEffects {
 
     /** A sky flash and distant thunder on this client only; the server never sees it. */
     private static final class Flashes implements ElectricMushroomBlock.Flash {
-        private long nextFlash = Long.MIN_VALUE;
+        private final FlashCooldown cooldown = new FlashCooldown();
 
         @Override
         public void maybeFlash(Level level, BlockPos position, RandomSource random) {
             if (!(level instanceof ClientLevel client) || !ClientConfig.electricMushroomFlashes() || !client.isRaining()) {
                 return;
             }
-            long now = client.getGameTime();
-            if (now < nextFlash || random.nextInt(40) != 0
-                    || !client.getBiome(position).is(ExoplanetWorldgen.STORMLAND)) {
+            if (random.nextInt(40) != 0 || !client.getBiome(position).is(ExoplanetWorldgen.STORMLAND)
+                    || !cooldown.tryAcquire(client, client.getGameTime())) {
                 return;
             }
-            nextFlash = now + FLASH_INTERVAL_TICKS;
             client.setSkyFlashTime(2);
             client.playLocalSound(position.getX() + random.nextInt(25) - 12, position.getY(),
                     position.getZ() + random.nextInt(25) - 12, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.WEATHER,

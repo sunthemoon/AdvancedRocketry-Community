@@ -42,7 +42,8 @@ import net.minecraftforge.items.IItemHandler;
 
 /** Typed resource port with generation-aware, loaded-only controller access. */
 public final class RollingMachinePortBlockEntity extends BlockEntity
-        implements MultiblockPartBindingTarget {
+        implements MultiblockPartBindingTarget,
+        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected {
     public static final int FLUID_CAPACITY = 4_000;
     public static final int ENERGY_CAPACITY = 20_000;
     public static final int ENERGY_RECEIVE_LIMIT = 1_000;
@@ -308,6 +309,19 @@ public final class RollingMachinePortBlockEntity extends BlockEntity
         return loadedFormedController()
                 .map(RollingMachineBlockEntity::processLocked)
                 .orElse(true);
+    }
+
+    @Override
+    public boolean preservesRecipeInput() {
+        if (!acceptsBindingMutations()) { return true; }
+        if (!(level instanceof ServerLevel serverLevel) || binding.isEmpty()) { return false; }
+        MultiblockPartBinding expected = binding.orElseThrow();
+        if (!expected.controllerLevel().equals(serverLevel.dimension())
+                || !serverLevel.hasChunkAt(expected.controllerPosition())) { return true; }
+        BlockEntity owner = serverLevel.getBlockEntity(expected.controllerPosition());
+        return !(owner instanceof RollingMachineBlockEntity controller)
+                || !controller.controllerState().machineInstanceId().equals(expected.machineInstanceId())
+                || controller.preservesRecipeInput();
     }
 
     private Optional<RollingMachineBlockEntity> loadedFormedController() {

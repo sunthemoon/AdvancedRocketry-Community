@@ -75,6 +75,10 @@ class SkyProfileReloadTest {
         reload();
         assertSame(SkyProfiles.builtins(), listener.profiles());
         assertFalse(listener.lastAccepted());
+        for (var name : List.of("tau_ceti_f", "tau_ceti_g")) {
+            assertNotNull(listener.profiles().get(ModIdentity.id(name)), "Initial fallback missing " + name);
+            assertEquals(SkyProfiles.builtins().get(ModIdentity.id(name)), listener.profiles().get(ModIdentity.id(name)));
+        }
         write(root, "broken", profile());
         reload();
         assertTrue(listener.lastAccepted());

@@ -35,7 +35,8 @@ public final class PlanetaryDimensionEffects extends DimensionSpecialEffects {
             return false;
         }
         setupFog.run();
-        return PlanetarySkyClient.render(selection, poses, projection, level.getSunAngle(partialTick));
+        return PlanetarySkyClient.render(selection, poses, projection, level.getSunAngle(partialTick),
+                level.getSkyFlashTime() - partialTick);
     }
 
     @Override public boolean renderClouds(ClientLevel level, int ticks, float partialTick, PoseStack poses,

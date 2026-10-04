@@ -21,12 +21,11 @@ class ModMetadataTest {
             assertTrue(metadata.contains("displayName=\"Advanced Rocketry: Community Edition\""));
             assertTrue(metadata.contains("license=\"MIT\""));
             assertTrue(metadata.contains("version=\"1.20.1-1.8.0-dev\""));
-            assertTrue(metadata.contains("This v1.8.0 development build adds the classic material set to the "
-                    + "endgame development baseline: titanium, aluminum, tin, steel, iridium, dilithium, silicon and "
-                    + "the two titanium alloys with their ingots, nuggets, dusts, plates, sheets, rods, gears, fans, "
-                    + "boules, coils and storage blocks, Overworld tin, rutile, aluminum and dilithium ores, and the "
-                    + "small plate press. The planetary surfaces, classic machines and parts, the rocket and station "
-                    + "parts and release validation remain in progress"));
+            assertTrue(metadata.contains("This v1.8.0 development build includes classic metals, ores and "
+                    + "material components, the small plate press, the combustion generator, rebuilt Moon, Mars and Venus surfaces, and "
+                    + "the Tau Ceti f and g worlds. Classic machine families, rocket and station components, life "
+                    + "support, progression and remaining assets are not complete. This is not a stable "
+                    + "release or complete classic-content parity."));
             assertTrue(metadata.contains("features={java_version=\"[17,)\"}"));
             assertTrue(metadata.contains("modId=\"jei\""));
             assertTrue(metadata.contains("mandatory=false"));

@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionGeneratorMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldMenu;
@@ -27,6 +28,8 @@ public final class ModMenuTypes {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<MenuType<CombustionGeneratorMenu>> COMBUSTION_GENERATOR = MENUS.register(
+            "combustion_generator", () -> IForgeMenuType.create(CombustionGeneratorMenu::new));
     public static final RegistryObject<MenuType<ElectrolyzerMenu>> ELECTROLYZER = MENUS.register(
             "electrolyzer",
             () -> IForgeMenuType.create(ElectrolyzerMenu::new)

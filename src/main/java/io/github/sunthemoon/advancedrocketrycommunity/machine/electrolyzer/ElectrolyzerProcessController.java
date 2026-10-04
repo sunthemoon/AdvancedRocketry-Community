@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.RecipeMenuReason;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFailure;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFailureCode;
@@ -20,6 +21,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistenc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessNbtStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessStateData;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessStatePersistence;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,6 +60,7 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
     private boolean writeProcessRoot = true;
     private boolean migrationPerformed;
     private final ElectrolyzerRecipeResolver recipes = new ElectrolyzerRecipeResolver();
+    private final RecipeSignatureMigration signatures = new RecipeSignatureMigration();
 
     ElectrolyzerProcessController(Runnable changed) {
         this.changed = Objects.requireNonNull(changed, "changed");
@@ -65,6 +68,12 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
 
     void load(CompoundTag parent, ElectrolyzerPersistence.DecodeResult legacy) {
         reset();
+        if (!RecipeSignatureMigration.bounded(parent)) {
+            signatures.load(parent, true, null);
+            state = ProcessMachineState.UNSUPPORTED_DATA;
+            displayStatus = ElectrolyzerStatus.UNSUPPORTED_DATA;
+            return;
+        }
         legacyStatus = legacyStatus(legacy);
         ProcessNbtResult<ProcessStateData> processResult = ProcessStatePersistence.decode(parent);
         processStatus = normalizeEmpty(processResult.status());
@@ -108,9 +117,19 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
         } else {
             displayStatus = statusFor(state, failure);
         }
+        signatures.load(parent, progress != null || journal != null || !acceptsResourceAccess(), retainedRecipeId());
+        if (signatures.unsupported()) {
+            state = ProcessMachineState.UNSUPPORTED_DATA;
+            displayStatus = ElectrolyzerStatus.UNSUPPORTED_DATA;
+        } else if (acceptsResourceAccess() && !signatures.current() && progress != null) {
+            state = ProcessMachineState.RECOVERY_REQUIRED;
+            failure = failure(ProcessFailureCode.RECOVERY_DIVERGED, "signature_migration_pending");
+            displayStatus = ElectrolyzerStatus.INVALID_RECIPE;
+        }
     }
 
     void save(CompoundTag parent) {
+        if (signatures.oversized()) { signatures.save(parent, null); return; }
         if (preservedProcessRoot != null) {
             parent.put(ProcessStatePersistence.ROOT, preservedProcessRoot.copy());
         } else if (writeProcessRoot) {
@@ -125,10 +144,22 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
         } else {
             parent.remove(ProcessJournalPersistence.ROOT);
         }
+        signatures.save(parent, retainedRecipeId());
+    }
+
+    private String retainedRecipeId() {
+        if (progress != null && journal != null && !progress.definitionId().equals(journal.definitionId())) { return null; }
+        return progress != null ? progress.definitionId() : journal != null ? journal.definitionId() : null;
+    }
+
+    boolean preservesRecipeInput() {
+        return !signatures.current() || !acceptsResourceAccess() || journal != null
+                || state == ProcessMachineState.RECOVERY_REQUIRED
+                || state == ProcessMachineState.UNSUPPORTED_DATA;
     }
 
     void tick(ServerLevel level, ElectrolyzerBlockEntity machine, boolean enabled) {
-        if (!acceptsResourceAccess()) {
+        if (!prepareSignature() || !acceptsResourceAccess()) {
             return;
         }
         if (journal != null) {
@@ -139,9 +170,7 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
                 || state == ProcessMachineState.UNSUPPORTED_DATA) {
             return;
         }
-        if (machine.chargeFromRedstoneInternal()) {
-            recordResourceMutation();
-        }
+        if (progress == null && machine.chargeFromRedstoneInternal()) { recordResourceMutation(); }
         if (level.getGameTime() % 20L == 0L) {
             recipes.requestRefresh();
         }
@@ -149,11 +178,10 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
         ItemStack input = machine.storedItemCopy(ElectrolyzerBlockEntity.SLOT_INPUT);
         if (input.isEmpty()) {
             boolean lostActiveRecipe = progress != null;
-            resetProcess();
             updateState(
-                    lostActiveRecipe ? ProcessMachineState.INVALID_RECIPE : ProcessMachineState.IDLE,
+                    lostActiveRecipe ? ProcessMachineState.WAITING_INPUT : ProcessMachineState.IDLE,
                     lostActiveRecipe
-                            ? failure(ProcessFailureCode.INVALID_RECIPE, "missing_active_input")
+                            ? failure(ProcessFailureCode.MISSING_ITEM_INPUT, "missing_active_input")
                             : ProcessFailure.NONE,
                     lostActiveRecipe ? ElectrolyzerStatus.INVALID_RECIPE : ElectrolyzerStatus.IDLE
             );
@@ -169,27 +197,20 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
                 recipeSignature
         );
         if (recipe == null) {
-            resetProcess();
             updateState(
                     ProcessMachineState.INVALID_RECIPE,
-                    failure(ProcessFailureCode.INVALID_RECIPE, input.getItem().toString()),
+                    failure(ProcessFailureCode.INVALID_RECIPE, wasActive ? recipes.failureReason() : "no_recipe"),
                     wasActive || recipes.ambiguous()
                             ? ElectrolyzerStatus.INVALID_RECIPE
                             : ElectrolyzerStatus.NO_RECIPE
             );
             return;
         }
-        if (LEGACY_UNVERIFIED_SIGNATURE.equals(recipeSignature)) {
-            if (!adoptLegacyRecipe(recipe)) {
-                updateState(
-                        ProcessMachineState.INVALID_RECIPE,
-                        failure(ProcessFailureCode.INVALID_RECIPE, recipe.getId().toString()),
-                        ElectrolyzerStatus.INVALID_RECIPE
-                );
-                return;
-            }
+        if (!recipe.available()) {
+            updateState(ProcessMachineState.INVALID_RECIPE,
+                    failure(ProcessFailureCode.INVALID_RECIPE, "recipe_tags_invalid"), ElectrolyzerStatus.INVALID_RECIPE);
+            return;
         }
-
         ProcessProgress active = progress == null
                 ? ProcessProgress.notStarted(recipe.processDefinition())
                 : progress;
@@ -209,6 +230,12 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
             );
             return;
         }
+        if (!recipe.matches(new net.minecraft.world.SimpleContainer(input.copy()), level)) {
+            updateState(ProcessMachineState.WAITING_INPUT,
+                    failure(ProcessFailureCode.MISSING_ITEM_INPUT, recipe.getId().toString()), ElectrolyzerStatus.NO_RECIPE);
+            return;
+        }
+        if (progress != null && machine.chargeFromRedstoneInternal()) { recordResourceMutation(); }
 
         ElectrolyzerResourceStore resources = new ElectrolyzerResourceStore(machine, this, recipe);
         ProcessSimulationResult simulation = ProcessMachineLogic.simulate(
@@ -254,13 +281,13 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
     }
 
     boolean acceptsResourceAccess() {
-        return legacyStatus == ProcessNbtStatus.SUPPORTED
+        return !signatures.unsupported() && legacyStatus == ProcessNbtStatus.SUPPORTED
                 && processStatus == ProcessNbtStatus.SUPPORTED
                 && journalStatus == ProcessNbtStatus.SUPPORTED;
     }
 
     boolean permitsExternalResourceOperations() {
-        return acceptsResourceAccess()
+        return signatures.current() && acceptsResourceAccess()
                 && journal == null
                 && state != ProcessMachineState.RECOVERY_REQUIRED
                 && state != ProcessMachineState.UNSUPPORTED_DATA;
@@ -286,6 +313,11 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
 
     ElectrolyzerStatus displayStatus() {
         return displayStatus;
+    }
+
+    RecipeMenuReason recipeMenuReason() {
+        return state == ProcessMachineState.UNSUPPORTED_DATA
+                ? RecipeMenuReason.NONE : RecipeMenuReason.fromFailure(failure);
     }
 
     long recipeLookupCount() {
@@ -366,17 +398,27 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
             return;
         }
         ElectrolyzerRecipe recipe = recipes.byId(level, activeJournal.definitionId());
-        if (recipe == null
-                || progress == null
+        if (recipe == null || !recipe.signature().equals(recipeSignature)) {
+            updateState(ProcessMachineState.INVALID_RECIPE,
+                    failure(ProcessFailureCode.INVALID_RECIPE, recipe == null ? "recipe_missing" : "recipe_changed"),
+                    ElectrolyzerStatus.INVALID_RECIPE);
+            return;
+        }
+        if (progress == null
                 || !progress.definitionId().equals(activeJournal.definitionId())
-                || !recipe.signature().equals(recipeSignature)
-                || !validProgress(recipe, progress)
-                || progress.progressTicks() != recipe.processDefinition().durationTicks()) {
+                || progress.consumedEnergy() != (long) progress.progressTicks() * recipe.spec().energyPerTick()
+                || progress.progressTicks() != recipe.spec().processingTicks()) {
             updateState(
                     ProcessMachineState.RECOVERY_REQUIRED,
-                    failure(ProcessFailureCode.RECOVERY_DIVERGED, activeJournal.definitionId()),
+                    failure(ProcessFailureCode.RECOVERY_DIVERGED, "journal_progress_invalid"),
                     ElectrolyzerStatus.INVALID_RECIPE
             );
+            return;
+        }
+        try { recipe = recipe.retainedPlan(activeJournal.before()); }
+        catch (IllegalArgumentException | com.google.gson.JsonParseException exception) {
+            updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                    failure(ProcessFailureCode.RECOVERY_DIVERGED, "retained_plan_invalid"), ElectrolyzerStatus.INVALID_RECIPE);
             return;
         }
         ProcessSimulationResult expected = ProcessMachineLogic.simulate(
@@ -392,10 +434,11 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
             );
             return;
         }
-        handleTransactionResult(ProcessTransactionExecutor.recover(
+        ProcessTransactionResult recovered = ProcessTransactionExecutor.recover(
                 new ElectrolyzerResourceStore(machine, this, recipe),
                 this
-        ));
+        );
+        handleTransactionResult(recovered);
     }
 
     private void complete(
@@ -440,25 +483,6 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
         updateState(replacement, result.failure(), statusFor(replacement, result.failure()));
     }
 
-    private boolean adoptLegacyRecipe(ElectrolyzerRecipe recipe) {
-        if (progress == null
-                || !progress.definitionId().equals(recipe.getId().toString())
-                || progress.progressTicks() >= recipe.processDefinition().durationTicks()) {
-            return false;
-        }
-        progress = new ProcessProgress(
-                progress.definitionId(),
-                progress.progressTicks(),
-                Math.multiplyExact(
-                        (long) progress.progressTicks(),
-                        recipe.processDefinition().energyPerTick()
-                )
-        );
-        recipeSignature = recipe.signature();
-        changed.run();
-        return true;
-    }
-
     private boolean validProgress(ElectrolyzerRecipe recipe, ProcessProgress active) {
         if (!active.definitionId().equals(recipe.getId().toString())
                 || active.progressTicks() > recipe.processDefinition().durationTicks()) {
@@ -474,6 +498,22 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
                 (long) active.progressTicks(),
                 recipe.processDefinition().energyPerTick()
         );
+    }
+
+    private boolean prepareSignature() {
+        if (!acceptsResourceAccess()) { return false; }
+        if (signatures.current()) {
+            if (journal != null && progress == null) {
+                updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                        failure(ProcessFailureCode.RECOVERY_DIVERGED, "journal_progress_missing"), ElectrolyzerStatus.INVALID_RECIPE);
+                return false;
+            }
+            return true;
+        }
+        // Old ID/resolved hashes do not witness authored JSON, including same-ID overrides.
+        updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                failure(ProcessFailureCode.RECOVERY_DIVERGED, "signature_migration_unproven"), ElectrolyzerStatus.INVALID_RECIPE);
+        return false;
     }
 
     private void applyTick(ElectrolyzerRecipe recipe, ProcessTickResult tick) {
@@ -576,6 +616,7 @@ final class ElectrolyzerProcessController implements ProcessJournalStore {
     }
 
     private void reset() {
+        signatures.reset();
         state = ProcessMachineState.IDLE;
         failure = ProcessFailure.NONE;
         displayStatus = ElectrolyzerStatus.IDLE;

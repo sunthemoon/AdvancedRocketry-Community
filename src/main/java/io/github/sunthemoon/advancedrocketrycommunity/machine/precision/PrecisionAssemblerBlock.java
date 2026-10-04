@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.precision;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.MachineMenuOpening;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -56,7 +57,8 @@ public final class PrecisionAssemblerBlock extends BaseEntityBlock {
         }
         if (player instanceof ServerPlayer serverPlayer
                 && PrecisionAssemblerMenu.canOpen(controller, serverPlayer)) {
-            NetworkHooks.openScreen(serverPlayer, controller, position);
+                NetworkHooks.openScreen(serverPlayer, controller,
+                        buffer -> MachineMenuOpening.write(buffer, position, PrecisionAssemblerMenuData.COUNT));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }

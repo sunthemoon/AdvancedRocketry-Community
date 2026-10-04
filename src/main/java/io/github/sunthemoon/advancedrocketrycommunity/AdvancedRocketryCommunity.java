@@ -234,12 +234,23 @@ public final class AdvancedRocketryCommunity {
         // C15b evidence hooks (ADR-063 section 9, S1); registered only with the release-test JVM flag.
         MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.celestial.surface
                 .SurfaceReleaseTestCommands()::register);
+        MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.machine.combustion
+                .CombustionReleaseTestCommands()::register);
+        MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.machine.tank
+                .TankReleaseTestCommands()::register);
+        MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.machine.pump
+                .PumpReleaseTestCommands()::register);
+        MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.machine.recipe
+                .RecipeSignatureReleaseTestCommands()::register);
+        MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.fluid
+                .FluidReleaseTestCommands()::register);
         // v1.7 (ADR-054): the endgame framework's root, observations, audit and commands.
         io.github.sunthemoon.advancedrocketrycommunity.endgame.EndgameModule.install(multiblockPatterns, celestialCatalogs,
                 laserDrillTables, blackHoleData);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(io.github.sunthemoon.advancedrocketrycommunity.machine.menu.MachineMenuNetwork::register);
         event.enqueueWork(this::initializeRocketAdapters);
         event.enqueueWork(this::initializeRocketFuels);
         event.enqueueWork(this::initializeSatellitePayloads);

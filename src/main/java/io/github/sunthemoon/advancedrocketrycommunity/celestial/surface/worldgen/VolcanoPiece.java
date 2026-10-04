@@ -76,7 +76,8 @@ public final class VolcanoPiece extends StructurePiece {
         if (area == null) {
             return;
         }
-        BlockState lava = Blocks.LAVA.defaultBlockState();
+        BlockState lava = io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids
+                .ENRICHED_LAVA_BLOCK.get().defaultBlockState();
         int poolLevel = baseY + shape.poolRise();
         BlockPos.MutableBlockPos position = new BlockPos.MutableBlockPos();
         for (int x = area.minX(); x <= area.maxX(); x++) {

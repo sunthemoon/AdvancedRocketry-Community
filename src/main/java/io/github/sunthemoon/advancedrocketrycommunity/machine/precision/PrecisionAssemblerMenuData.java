@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.precision;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.RecipeMenuReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternDiagnostic;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternValidationResult;
@@ -31,7 +32,8 @@ final class PrecisionAssemblerMenuData implements ContainerData {
     static final int ENERGY_CAPACITY = 19;
     static final int DIAGNOSTIC_PRESENT = 20;
     static final int INSPECTED_CELLS = 21;
-    static final int COUNT = 22;
+    static final int RECIPE_REASON = 22;
+    static final int COUNT = 23;
 
     private final PrecisionAssemblerBlockEntity controller;
 
@@ -71,6 +73,7 @@ final class PrecisionAssemblerMenuData implements ContainerData {
             case ENERGY_CAPACITY -> PrecisionAssemblerPortPersistence.ENERGY_CAPACITY;
             case DIAGNOSTIC_PRESENT -> diagnostic.isPresent() ? 1 : 0;
             case INSPECTED_CELLS -> validation.map(PatternValidationResult::inspectedCells).orElse(0);
+            case RECIPE_REASON -> RecipeMenuReason.fromFailure(controller.processFailure()).networkId();
             default -> throw new IndexOutOfBoundsException("Unknown Precision Assembler menu field " + index);
         };
     }

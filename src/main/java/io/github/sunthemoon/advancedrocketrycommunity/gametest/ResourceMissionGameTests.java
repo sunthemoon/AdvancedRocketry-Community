@@ -154,6 +154,15 @@ public final class ResourceMissionGameTests {
 
     @GameTest(template = "empty", batch = SatelliteRegistryFixture.RESOURCE_BATCH, timeoutTicks = 60)
     public static void gasHarvestNeedsTheDiscoveredGasGiant(GameTestHelper helper) {
+        gasHarvest(helper, false);
+    }
+
+    @GameTest(template = "empty", batch = SatelliteRegistryFixture.RESOURCE_BATCH, timeoutTicks = 60)
+    public static void nitrogenUsesTheExistingDiscoveredGasGiantMissionRules(GameTestHelper helper) {
+        gasHarvest(helper, true);
+    }
+
+    private static void gasHarvest(GameTestHelper helper, boolean nitrogenSelected) {
         MinecraftServer server = helper.getLevel().getServer();
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
         SatelliteTerminalBlockEntity terminal = place(helper, new BlockPos(1, 2, 1));
@@ -168,15 +177,24 @@ public final class ResourceMissionGameTests {
         }
         SatelliteTerminalViewPacket view = SatelliteTerminalViews.compose(terminal, 5, server);
         ResourceLocation hydrogen = ForgeRegistries.ITEMS.getKey(ModItems.HYDROGEN_CANISTER.get());
-        helper.assertTrue(view.product().id().equals(java.util.Optional.of(hydrogen)) && view.product().size() == 1,
-                "The view does not offer the gas giant's hydrogen product");
+        helper.assertTrue(view.product().id().equals(java.util.Optional.of(hydrogen)) && view.product().size() == 2,
+                "The view does not preserve hydrogen as first of the two gas giant products");
+        ResourceLocation selected = hydrogen;
+        if (nitrogenSelected) {
+            act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_OPTION_NEXT, SatelliteOperationCode.SUCCESS);
+            selected = ForgeRegistries.ITEMS.getKey(io.github.sunthemoon.advancedrocketrycommunity.fluid
+                    .ClassicFluids.NITROGEN_CANISTER.get());
+            view = SatelliteTerminalViews.compose(terminal, 5, server);
+            helper.assertTrue(view.product().id().equals(java.util.Optional.of(selected)) && view.product().size() == 2,
+                    "Nitrogen is not selectable through the existing gas-product control");
+        }
         act(helper, terminal, owner, SatelliteTerminalMenu.BUTTON_LAUNCH, SatelliteOperationCode.SUCCESS);
         MissionState harvesting = current(data, harvester);
         MissionPayload.Resource resource = (MissionPayload.Resource) harvesting.payload();
         // gas-v1 with 8 per 1,000 ticks, rating 10 and cargo 9: 576 canisters over 72,000 ticks (examples.json).
         helper.assertTrue(harvesting.kind() == MissionKind.GAS && harvesting.targetBodyId().equals(PlanetaryContent.GAS_GIANT)
                         && resource.reward().equals(List.of(new io.github.sunthemoon.advancedrocketrycommunity.satellite
-                        .mission.RewardEntry(hydrogen, 576)))
+                          .mission.RewardEntry(selected, 576)))
                         && harvesting.completesAtLogicalTime() - harvesting.startedAtLogicalTime() == 72_000L
                         && harvesting.rewardVersion().startsWith("gas-v1/"),
                 "The gas mission does not match gas-v1");

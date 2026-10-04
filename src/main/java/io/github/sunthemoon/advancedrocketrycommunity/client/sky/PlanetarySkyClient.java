@@ -40,8 +40,9 @@ public final class PlanetarySkyClient {
                 RESOURCES.profiles(), orbit);
     }
 
-    static boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle) {
-        return RENDERER.render(selection, poses, projection, angle);
+    static boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle, float flash) {
+        double visibleFlash = Minecraft.getInstance().options.hideLightningFlash().get() ? 0 : flash;
+        return RENDERER.render(selection, poses, projection, angle, visibleFlash);
     }
 
     public static boolean clearView(Camera camera) {

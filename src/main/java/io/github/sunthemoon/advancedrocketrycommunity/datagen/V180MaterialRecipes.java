@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.P
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialTags;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
@@ -36,8 +37,7 @@ import net.minecraft.world.level.material.Fluids;
  * the rolling machine (ingot to plate at 20 FE/t, plate to sheet at 200 FE/t, 300 ticks and 100 mB of water each)
  * and the small plate press (block to four plates, ore to two dust; rutile neither smelts nor presses).
  *
- * <p>Rolling recipes name items, as the v1.2 {@code rolling_iron_bars} recipe does: the kernel recipe type resolves its
- * ingredient when recipes load, before tags are bound. Iron is the one rolling exception: {@code rolling_iron_bars}
+ * <p>Rolling recipes use common material tags, resolved after tag binding by the kernel. Iron is the one rolling exception: {@code rolling_iron_bars}
  * already rolls iron ingots, and a second iron-ingot recipe would make the machine refuse both as ambiguous, so iron
  * plates come from the small plate press (ADR-063 revision 4).
  */
@@ -48,6 +48,21 @@ public final class V180MaterialRecipes extends RecipeProvider {
 
     @Override
     protected void buildRecipes(Consumer<FinishedRecipe> output) {
+        // ADR-064 section 2.4: same IDs and accounting, current tag selectors; v1.2 inputs stay immutable.
+        RollingMachineRecipeProvider.addProcessRecipes(output);
+        // ADR-063 revision 7: restore the unpowered piston-and-iron acquisition route.
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, MaterialContent.SMALL_PLATE_PRESS_ITEM.get())
+                .pattern(" P ").pattern("III").define('P', Items.PISTON)
+                .define('I', MaterialTags.item(Material.IRON, Product.INGOT))
+                .unlockedBy("has_piston", has(Items.PISTON))
+                .save(output, ModIdentity.id("small_plate_press"));
+        ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, ModBlocks.COMBUSTION_GENERATOR.get())
+                .pattern("ICI").pattern("IFI").pattern("IRI")
+                .define('I', MaterialTags.item(Material.IRON, Product.INGOT))
+                .define('C', MaterialContent.item("copper_coil"))
+                .define('F', net.minecraft.world.level.block.Blocks.FURNACE).define('R', Items.REDSTONE)
+                .unlockedBy("has_coil", has(MaterialContent.item("copper_coil")))
+                .save(output, ModIdentity.id("combustion_generator"));
         // C15c (ADR-063 section 6): four lightwood planks from a log, in the vanilla planks group.
         ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, ExoplanetBlocks.LIGHTWOOD_PLANKS.get(), 4)
                 .requires(ExoplanetBlocks.LIGHTWOOD_LOG.get()).group("planks")
@@ -155,11 +170,11 @@ public final class V180MaterialRecipes extends RecipeProvider {
         String id = material.id();
         if (material.has(Product.PLATE) && material != Material.IRON
                 && (material.has(Product.INGOT) || material.vanillaIngot())) {
-            output.accept(new Rolling(ModIdentity.id("rolling_" + id + "_plate"), ingotItem(material),
+            output.accept(new Rolling(ModIdentity.id("rolling_" + id + "_plate"), MaterialTags.item(material, Product.INGOT),
                     MaterialContent.item(id + "_plate"), 20));
         }
         if (material.has(Product.SHEET)) {
-            output.accept(new Rolling(ModIdentity.id("rolling_" + id + "_sheet"), MaterialContent.item(id + "_plate"),
+            output.accept(new Rolling(ModIdentity.id("rolling_" + id + "_sheet"), MaterialTags.item(material, Product.PLATE),
                     MaterialContent.item(id + "_sheet"), 200));
         }
     }
@@ -188,7 +203,7 @@ public final class V180MaterialRecipes extends RecipeProvider {
         return json;
     }
 
-    private record Rolling(ResourceLocation id, Item input, Item result, int energyPerTick)
+    private record Rolling(ResourceLocation id, TagKey<Item> input, Item result, int energyPerTick)
             implements FinishedRecipe {
         @Override
         public void serializeRecipeData(JsonObject json) {

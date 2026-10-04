@@ -51,6 +51,27 @@ public final class SkyMath {
         return result;
     }
 
+    /** Vanilla-like blue-white lightning tint; presentation only, clamped to a 45 percent blend. */
+    public static int flashColor(int rgb, double flash) {
+        double blend = clamp(flash, 0, 1) * 0.45;
+        int result = 0;
+        for (int shift = 0; shift <= 16; shift += 8) {
+            int base = (rgb >> shift) & 255;
+            int target = shift == 0 ? 255 : 204;
+            result |= (int) Math.round(base + (target - base) * blend) << shift;
+        }
+        return result;
+    }
+
+    public static int scaleColor(int rgb, double brightness) {
+        double scale = clamp(brightness, 0, 1);
+        int result = 0;
+        for (int shift = 0; shift <= 16; shift += 8) {
+            result |= (int) Math.round(((rgb >> shift) & 255) * scale) << shift;
+        }
+        return result;
+    }
+
     public static Fog fog(SkyProfile profile, float near, float far) {
         if (!Float.isFinite(near) || !Float.isFinite(far) || near >= far || far <= 0) {
             return new Fog(near, far);

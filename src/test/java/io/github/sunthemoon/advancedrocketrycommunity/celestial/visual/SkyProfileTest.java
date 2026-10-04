@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 class SkyProfileTest {
     @Test void allOriginalProfilesRoundTripWithoutDefaults() {
-        assertEquals(4, SkyProfiles.builtins().size());
+        assertEquals(6, SkyProfiles.builtins().size());
         SkyProfiles.builtins().forEach((id, profile) -> assertEquals(profile, SkyProfile.decode(profile.encode())));
         assertEquals(0, SkyProfiles.builtins().get(ModIdentity.id("moon")).soundVolume());
         assertTrue(SkyProfiles.builtins().get(ModIdentity.id("space")).ambientSound().isEmpty());

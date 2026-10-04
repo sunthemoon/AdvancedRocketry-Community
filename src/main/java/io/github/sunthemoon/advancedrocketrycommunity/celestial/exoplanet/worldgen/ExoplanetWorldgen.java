@@ -22,12 +22,13 @@ import net.minecraftforge.registries.RegistryObject;
  */
 public final class ExoplanetWorldgen {
     /**
-     * The landing ground around each Tau Ceti world's origin. The fixed landing pads are centred on chunk corners up
-     * to 64 blocks out along each axis, a rocket's footprint (at most 16 chunks: 64 blocks wide) reaches 32 blocks
-     * past its pad's centre along each axis, so its farthest corner lies about 136 blocks out, and a feature writes
-     * up to 12 blocks from where it starts: no feature starts inside, and Tau Ceti f's ground there stays dry.
+     * The landing ground around each Tau Ceti world's origin in newly generated chunks. The fixed pads reach 64
+     * blocks along either axis; the 16-chunk footprint budget also permits long, thin rockets, not only 4-by-4
+     * chunk squares. Enumerating the selector's integer-centred rectangles gives a farthest corner of 201.758
+     * blocks. Features can write 12 blocks along each axis (16.971 diagonally), so radius 224 covers both bounds.
+     * No feature starts inside it, and Tau Ceti f's terrain floor keeps this ground dry.
      */
-    public static final int LANDING_GROUND_RADIUS = 160;
+    public static final int LANDING_GROUND_RADIUS = 224;
 
     public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(ForgeRegistries.FEATURES,
             ModIdentity.MOD_ID);

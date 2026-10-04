@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.RecipeMenuReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFormationState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternDiagnosticReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
@@ -144,7 +145,9 @@ public final class RollingMachineScreen extends AbstractContainerScreen<RollingM
                     if (failure != ProcessFailureCode.NONE) {
                         drawCenteredFit(
                                 graphics,
-                                Component.translatable(enumKey("failure", failure.name())),
+                                menu.recipeReason() == RecipeMenuReason.NONE
+                                        ? Component.translatable(enumKey("failure", failure.name()))
+                                        : Component.translatable(menu.recipeReason().translationKey()),
                                 94,
                                 ALERT
                         );

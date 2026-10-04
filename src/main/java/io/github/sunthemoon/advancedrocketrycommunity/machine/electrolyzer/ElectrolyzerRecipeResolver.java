@@ -19,6 +19,7 @@ final class ElectrolyzerRecipeResolver {
     private boolean ambiguous;
     private boolean ambiguityLogged;
     private long lookupCount;
+    private String failureReason = "no_recipe";
 
     @Nullable
     ElectrolyzerRecipe resolve(
@@ -32,15 +33,13 @@ final class ElectrolyzerRecipeResolver {
         if (progress != null) {
             ElectrolyzerRecipe active = byId(level, progress.definitionId());
             lookupCount++;
-            if (active != null
-                    && active.matches(container, level)
-                    && (ElectrolyzerProcessController.LEGACY_UNVERIFIED_SIGNATURE.equals(recipeSignature)
-                    || active.signature().equals(recipeSignature))) {
+            if (active != null && active.signature().equals(recipeSignature)) {
                 cachedRecipe = active;
                 dirty = false;
                 ambiguous = false;
                 return active;
             }
+            failureReason = active == null ? "recipe_missing" : "recipe_changed";
             return null;
         }
         if (!dirty && cachedRecipe != null && cachedRecipe.matches(container, level)) {
@@ -56,11 +55,19 @@ final class ElectrolyzerRecipeResolver {
         if (!dirty) {
             return null;
         }
-        List<ElectrolyzerRecipe> matches = level.getRecipeManager().getRecipesFor(
-                ModRecipes.ELECTROLYZING_TYPE.get(),
-                container,
-                level
-        );
+        List<ElectrolyzerRecipe> candidates = level.getRecipeManager().getAllRecipesFor(ModRecipes.ELECTROLYZING_TYPE.get());
+        if (candidates.size() > 1_024) {
+            failureReason = "recipe_limit";
+            ambiguous = true;
+            return null;
+        }
+        java.util.ArrayList<ElectrolyzerRecipe> matches = new java.util.ArrayList<>(2);
+        for (ElectrolyzerRecipe candidate : candidates) {
+            if (candidate.matches(container, level)) {
+                matches.add(candidate);
+                if (matches.size() == 2) { break; }
+            }
+        }
         lookupCount++;
         dirty = false;
         ambiguous = matches.size() > 1;
@@ -117,6 +124,8 @@ final class ElectrolyzerRecipeResolver {
     boolean ambiguous() {
         return ambiguous;
     }
+
+    String failureReason() { return failureReason; }
 
     int totalProcessingTicks() {
         return cachedRecipe == null ? 0 : cachedRecipe.spec().processingTicks();

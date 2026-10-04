@@ -74,10 +74,12 @@ public final class PlanetaryWorldGameTests {
                 helper.assertTrue(y > 4 && y < 240, "Generated terrain height is unsafe");
                 // v1.8 (ADR-063 section 5): Mars has ferric sand over red sandstone, Venus is basalt throughout; a
                 // volcano's lava pool may also be the top. The base blocks and heights are the v1.4 ones.
-                helper.assertTrue(mars ? top.is(SurfaceContent.FERRIC_SAND.get()) : top.is(Blocks.BASALT) || top.is(Blocks.LAVA),
+                helper.assertTrue(mars ? top.is(SurfaceContent.FERRIC_SAND.get()) : top.is(Blocks.BASALT) || top.is(Blocks.LAVA)
+                        || top.is(io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ENRICHED_LAVA_BLOCK.get()),
                         "Unexpected planetary surface " + top);
                 // A Venus geode's hollow or a volcano's lava can lie under a sampled column.
                 helper.assertTrue(rock.is(mars ? Blocks.RED_SANDSTONE : Blocks.BASALT) || rock.is(Blocks.LAVA)
+                        || rock.is(io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ENRICHED_LAVA_BLOCK.get())
                                 || rock.is(Blocks.CAVE_AIR)
                                 || rock.is(SurfaceContent.GEODE_SHELL.get()),
                         "Unexpected planetary interior " + rock);

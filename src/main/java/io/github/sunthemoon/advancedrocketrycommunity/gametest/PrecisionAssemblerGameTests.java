@@ -20,11 +20,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTra
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessJournalPersistence;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessStatePersistence;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRecipe;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.core.BlockPos;
@@ -310,6 +312,7 @@ public final class PrecisionAssemblerGameTests {
             savedJournal.set(prepared);
             CompoundTag saved = machine.saveWithFullMetadata();
             saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(prepared));
+            completedProgress(saved, recipe);
             machine.load(saved);
             PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), helper.absolutePos(CONTROLLER));
         });
@@ -322,6 +325,7 @@ public final class PrecisionAssemblerGameTests {
             replay.getCompound(ProcessStatePersistence.ROOT).putString("last_applied_transaction", "");
             replay.put(ProcessJournalPersistence.ROOT,
                     ProcessJournalPersistence.encode(savedJournal.get().advance(ProcessJournalPhase.APPLYING)));
+            completedProgress(replay, requireProcessRecipe(helper));
             machine.load(replay);
             PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(), helper.absolutePos(CONTROLLER));
         });
@@ -438,6 +442,17 @@ public final class PrecisionAssemblerGameTests {
                 ProcessMachineLogic.simulate(recipe.processDefinition(), before).plan().orElseThrow());
     }
 
+    /** The journal is written at the completion cut, while matching completed progress is still retained. */
+    static void completedProgress(CompoundTag parent, PrecisionAssemblerRecipe recipe) {
+        CompoundTag process = parent.getCompound(ProcessStatePersistence.ROOT);
+        process.putString("state", "running");
+        process.putString("definition_id", recipe.getId().toString());
+        process.putString("recipe_signature", recipe.signature());
+        process.putInt("progress_ticks", recipe.processingTicks());
+        process.putLong("consumed_energy", recipe.processDefinition().totalEnergy());
+        new RecipeSignatureMigration().save(parent, recipe.getId().toString());
+    }
+
     static void placeStructure(GameTestHelper helper) {
         for (int z = 0; z < 4; z++) {
             for (int y = 0; y < 3; y++) {
@@ -466,6 +481,10 @@ public final class PrecisionAssemblerGameTests {
 
     static PrecisionAssemblerBlockEntity controller(GameTestHelper helper) {
         return (PrecisionAssemblerBlockEntity) helper.getBlockEntity(CONTROLLER);
+    }
+
+    static Set<BlockPos> portPositions() {
+        return CHANNELS.keySet();
     }
 
     static PrecisionAssemblerPortBlockEntity port(GameTestHelper helper, BlockPos position) {

@@ -29,7 +29,8 @@ import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.items.IItemHandler;
 
 /** Forge lifecycle adapter for the single-block Electrolyzer process owner and storage. */
-public final class ElectrolyzerBlockEntity extends BlockEntity implements MenuProvider {
+public final class ElectrolyzerBlockEntity extends BlockEntity implements MenuProvider,
+        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected {
     public static final int SLOT_INPUT = 0;
     public static final int SLOT_CHARGE = 1;
     public static final int SLOT_HYDROGEN = 2;
@@ -38,7 +39,7 @@ public final class ElectrolyzerBlockEntity extends BlockEntity implements MenuPr
     public static final int ENERGY_CAPACITY = 20_000;
     public static final int REDSTONE_ENERGY = 2_000;
     public static final int WATER_CAPACITY = 4_000;
-    public static final int MENU_DATA_COUNT = 7;
+    public static final int MENU_DATA_COUNT = 8;
 
     private final ElectrolyzerProcessController process = new ElectrolyzerProcessController(this::setChanged);
     private final ElectrolyzerInventory inventory = new ElectrolyzerInventory(
@@ -70,7 +71,8 @@ public final class ElectrolyzerBlockEntity extends BlockEntity implements MenuPr
             this::totalProcessingTicks,
             this::energyStored,
             this::waterAmount,
-            this::statusNetworkId
+            this::statusNetworkId,
+            () -> process.recipeMenuReason().networkId()
     );
 
     private boolean internalMutation;
@@ -215,10 +217,16 @@ public final class ElectrolyzerBlockEntity extends BlockEntity implements MenuPr
     }
 
     @Override
+    public boolean preservesRecipeInput() { return process.preservesRecipeInput(); }
+
+    @Override
     public void load(CompoundTag parent) {
         super.load(parent);
         resetLoadedStorage();
-        ElectrolyzerPersistence.DecodeResult decoded = ElectrolyzerPersistence.decode(parent);
+        // Guard all legacy roots before the resource codec's recursive size/copy/item decoding.
+        ElectrolyzerPersistence.DecodeResult decoded =
+                io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration.bounded(parent)
+                        ? ElectrolyzerPersistence.decode(parent) : ElectrolyzerPersistence.decode(new CompoundTag());
         preservedLegacyData = decoded.preservedData();
         internalMutation = true;
         try {

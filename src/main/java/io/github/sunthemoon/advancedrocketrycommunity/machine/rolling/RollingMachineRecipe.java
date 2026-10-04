@@ -11,6 +11,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessOut
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKey;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKind;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.DeferredProcessDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeJsonSignature;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -63,8 +65,10 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
     private final Fluid fluid;
     private final int fluidAmount;
     private final ItemStack result;
-    private final ProcessDefinition processDefinition;
-    private final List<String> ingredientAlternatives;
+    private final DeferredProcessDefinition definition;
+    private final JsonElement ingredientJson;
+    private final int processingTicks;
+    private final int energyPerTick;
     private final String signature;
 
     public RollingMachineRecipe(
@@ -78,16 +82,28 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
             int energyPerTick,
             int encodedSizeBytes
     ) {
+        this(id, ingredient, inputCount, fluid, fluidAmount, result, processingTicks,
+                energyPerTick, encodedSizeBytes, ingredient.toJson());
+    }
+
+    private RollingMachineRecipe(ResourceLocation id, Ingredient ingredient, int inputCount, Fluid fluid,
+            int fluidAmount, ItemStack result, int processingTicks, int energyPerTick,
+            int encodedSizeBytes, JsonElement ingredientJson) {
         this.id = Objects.requireNonNull(id, "id");
         this.ingredient = Objects.requireNonNull(ingredient, "ingredient");
         this.inputCount = requireRange("input_count", inputCount, 1, MAX_ITEM_COUNT);
         this.fluid = Objects.requireNonNull(fluid, "fluid");
         this.fluidAmount = requireRange("fluid amount", fluidAmount, 1, MAX_FLUID_AMOUNT);
         this.result = Objects.requireNonNull(result, "result").copy();
-        this.ingredientAlternatives = BoundedItemIngredientCodec.resolveAlternatives(ingredient);
+        BoundedItemIngredientCodec.validateOnly(ingredientJson);
+        this.ingredientJson = ingredientJson.deepCopy();
+        this.processingTicks = processingTicks;
+        this.energyPerTick = energyPerTick;
         validateFluid();
         validateResult();
-        this.processDefinition = new ProcessDefinition(
+        new ProcessDefinition(id.toString(), ProcessDefinition.SCHEMA_VERSION, encodedSizeBytes,
+                processingTicks, energyPerTick, List.of(), List.of());
+        this.definition = new DeferredProcessDefinition(id.toString(), () -> new ProcessDefinition(
                 id.toString(),
                 ProcessDefinition.SCHEMA_VERSION,
                 encodedSizeBytes,
@@ -97,7 +113,7 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
                         new ProcessInput(
                                 ProcessResourceKind.ITEM,
                                 RollingMachinePortType.ITEM_INPUT.channel(),
-                                ingredientAlternatives,
+                                BoundedItemIngredientCodec.resolveAlternatives(this.ingredientJson),
                                 inputCount
                         ),
                         new ProcessInput(
@@ -115,14 +131,16 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
                         ),
                         result.getCount()
                 ))
-        );
-        this.signature = signature(canonicalPayload());
+        ));
+        this.signature = RecipeJsonSignature.signature(jsonPayload());
     }
 
     @Override
     public boolean matches(SimpleContainer container, Level level) {
         ItemStack stack = container.getItem(0);
-        return ingredient.test(stack) && stack.getCount() >= inputCount;
+        return available() && !stack.hasTag() && !stack.isEmpty()
+                && ingredientAlternatives().contains(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString())
+                && stack.getCount() >= inputCount;
     }
 
     @Override
@@ -186,15 +204,48 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
     }
 
     public ProcessDefinition processDefinition() {
-        return processDefinition;
+        return definition.get();
     }
 
     public List<String> ingredientAlternatives() {
-        return ingredientAlternatives;
+        return processDefinition().inputs().get(0).alternatives();
     }
 
     public String signature() {
         return signature;
+    }
+
+    public boolean available() { return definition.available(); }
+
+    public boolean hasTagIngredients() { return BoundedItemIngredientCodec.hasTags(ingredientJson); }
+
+   public String legacySignature() { return signature(canonicalPayload()); }
+
+    public int processingTicks() { return processingTicks; }
+    public int energyPerTick() { return energyPerTick; }
+
+    public RollingMachineRecipe retainedPlan(io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot before) {
+        JsonObject json = jsonPayload();
+        json.add("ingredient", io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RetainedRecipePlan
+                .ingredient(before, RollingMachinePortType.ITEM_INPUT.channel()));
+        return new Serializer().fromJson(id, json);
+    }
+
+    public JsonObject jsonPayload() {
+        JsonObject json = new JsonObject();
+        json.addProperty("type", RollingMachineIds.RECIPE.toString());
+        json.addProperty("schema_version", ProcessDefinition.SCHEMA_VERSION);
+        json.add("ingredient", ingredientJson.deepCopy());
+        json.addProperty("input_count", inputCount);
+        JsonObject water = new JsonObject();
+        water.addProperty("fluid", fluidId()); water.addProperty("amount", fluidAmount);
+        json.add("fluid", water);
+        JsonObject output = new JsonObject();
+        output.addProperty("item", resultId()); output.addProperty("count", result.getCount());
+        json.add("result", output);
+        json.addProperty("processing_time", processingTicks);
+        json.addProperty("energy_per_tick", energyPerTick);
+        return json;
     }
 
     private void validateFluid() {
@@ -219,14 +270,14 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
                 "|",
                 Integer.toString(ProcessDefinition.SCHEMA_VERSION),
                 id.toString(),
-                String.join(",", ingredientAlternatives),
+                String.join(",", ingredientAlternatives()),
                 Integer.toString(inputCount),
                 fluidId(),
                 Integer.toString(fluidAmount),
                 resultId(),
                 Integer.toString(result.getCount()),
-                Integer.toString(processDefinition.durationTicks()),
-                Integer.toString(processDefinition.energyPerTick())
+                Integer.toString(processingTicks),
+                Integer.toString(energyPerTick)
         );
     }
 
@@ -266,7 +317,7 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
         @Override
         public RollingMachineRecipe fromJson(ResourceLocation id, JsonObject json) {
             try {
-                int encodedBytes = json.toString().getBytes(StandardCharsets.UTF_8).length;
+                int encodedBytes = RecipeJsonSignature.canonical(json).getBytes(StandardCharsets.UTF_8).length;
                 if (encodedBytes < 1 || encodedBytes > ProcessDefinition.MAX_DEFINITION_BYTES) {
                     throw new IllegalArgumentException("recipe JSON exceeds the 64 KiB limit");
                 }
@@ -278,7 +329,7 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
                     throw new IllegalArgumentException("unsupported recipe schema");
                 }
                 JsonElement ingredientJson = GsonHelper.getNonNull(json, "ingredient");
-                Ingredient ingredient = BoundedItemIngredientCodec.decodeItemsOnly(ingredientJson);
+                Ingredient ingredient = BoundedItemIngredientCodec.decode(ingredientJson);
                 JsonObject fluidJson = exactObject(json, "fluid", FLUID_FIELDS);
                 JsonObject resultJson = exactObject(json, "result", RESULT_FIELDS);
                 return new RollingMachineRecipe(
@@ -293,7 +344,8 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
                         ),
                         requireInt(json, "processing_time"),
                         requireInt(json, "energy_per_tick"),
-                        encodedBytes
+                        encodedBytes,
+                        ingredientJson
                 );
             } catch (RuntimeException exception) {
                 throw new JsonSyntaxException(
@@ -312,7 +364,7 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
                 }
                 String ingredientText = buffer.readUtf(MAX_INGREDIENT_JSON_CHARS);
                 JsonElement ingredientJson = JsonParser.parseString(ingredientText);
-                Ingredient ingredient = BoundedItemIngredientCodec.decodeItemsOnly(ingredientJson);
+                Ingredient ingredient = BoundedItemIngredientCodec.decode(ingredientJson);
                 int inputCount = buffer.readVarInt();
                 Fluid fluid = requireWater(buffer.readUtf(MAX_RESOURCE_ID_CHARS));
                 int fluidAmount = buffer.readVarInt();
@@ -340,7 +392,8 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
                         new ItemStack(resultItem, resultCount),
                         processingTicks,
                         energyPerTick,
-                        encodedBytes
+                        encodedBytes,
+                        ingredientJson
                 );
             } catch (RuntimeException exception) {
                 throw new JsonParseException("Invalid network Rolling Machine recipe " + id, exception);
@@ -349,7 +402,7 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
 
         @Override
         public void toNetwork(FriendlyByteBuf buffer, RollingMachineRecipe recipe) {
-            String ingredientJson = recipe.ingredient.toJson().toString();
+            String ingredientJson = recipe.ingredientJson.toString();
             BoundedItemIngredientCodec.validateOnly(JsonParser.parseString(ingredientJson));
             buffer.writeVarInt(ProcessDefinition.SCHEMA_VERSION);
             buffer.writeUtf(ingredientJson, MAX_INGREDIENT_JSON_CHARS);
@@ -358,8 +411,8 @@ public final class RollingMachineRecipe implements Recipe<SimpleContainer> {
             buffer.writeVarInt(recipe.fluidAmount);
             buffer.writeUtf(recipe.resultId(), MAX_RESOURCE_ID_CHARS);
             buffer.writeVarInt(recipe.result.getCount());
-            buffer.writeVarInt(recipe.processDefinition.durationTicks());
-            buffer.writeVarInt(recipe.processDefinition.energyPerTick());
+            buffer.writeVarInt(recipe.processingTicks);
+            buffer.writeVarInt(recipe.energyPerTick);
         }
 
         private static JsonObject exactObject(JsonObject parent, String field, Set<String> fields) {

@@ -145,7 +145,7 @@ class V180ExoplanetResourcesTest {
         assertEquals("minecraft:max", continents.get("type").getAsString());
         JsonObject floor = continents.getAsJsonObject("argument2");
         assertEquals(NS + ":landing_ground_floor", floor.get("type").getAsString());
-        assertEquals(160, floor.get("inner_radius").getAsInt());
+        assertEquals(224, floor.get("inner_radius").getAsInt());
         assertEquals(96, floor.get("slope_width").getAsInt());
         assertEquals(0.2, floor.get("level").getAsDouble(), 1.0E-9);
         assertTrue(f.getAsJsonObject("noise_router").get("final_density").toString().contains("landing_ground_floor"));
@@ -219,7 +219,7 @@ class V180ExoplanetResourcesTest {
             JsonArray placement = json(WORLDGEN.resolve("placed_feature/" + feature + ".json")).getAsJsonArray("placement");
             JsonObject filter = placement.get(placement.size() - 2).getAsJsonObject();
             assertEquals(NS + ":landing_ground", filter.get("type").getAsString(), feature);
-            assertEquals(160, filter.get("radius").getAsInt(), feature);
+            assertEquals(224, filter.get("radius").getAsInt(), feature);
         }
         JsonObject grass = json(WORLDGEN.resolve("placed_feature/alien_forest_grass.json"));
         assertEquals("minecraft:patch_grass_jungle", grass.get("feature").getAsString());

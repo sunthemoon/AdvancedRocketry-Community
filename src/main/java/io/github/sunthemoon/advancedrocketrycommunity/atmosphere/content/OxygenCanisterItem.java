@@ -19,6 +19,12 @@ public final class OxygenCanisterItem extends Item {
     }
 
     @Override
+    public net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities(
+            ItemStack stack, net.minecraft.nbt.CompoundTag nbt) {
+        return io.github.sunthemoon.advancedrocketrycommunity.fluid.GasCanisterCapabilities.create(stack);
+    }
+
+    @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
         ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);

@@ -20,6 +20,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistenc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessNbtStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessStateData;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessStatePersistence;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +34,7 @@ import net.minecraft.server.level.ServerLevel;
 final class PrecisionAssemblerProcessController implements ProcessJournalStore {
     private final Runnable changed;
     private final PrecisionAssemblerRecipeResolver recipes = new PrecisionAssemblerRecipeResolver();
+    private final RecipeSignatureMigration signatures = new RecipeSignatureMigration();
 
     private ProcessMachineState state = ProcessMachineState.IDLE;
     private ProcessFailure failure = ProcessFailure.NONE;
@@ -66,6 +68,11 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
 
     void load(CompoundTag parent, UUID loadedMachineId) {
         reset(loadedMachineId);
+        if (!RecipeSignatureMigration.bounded(parent)) {
+            signatures.load(parent, true, null);
+            state = ProcessMachineState.UNSUPPORTED_DATA;
+            return;
+        }
         ProcessNbtResult<ProcessStateData> processResult = ProcessStatePersistence.decode(parent);
         processStatus = normalizeEmpty(processResult.status());
         if (processResult.status() == ProcessNbtStatus.SUPPORTED) {
@@ -101,9 +108,19 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
                 state = blockedState(journalStatus);
             }
         }
+        if (processStatus == ProcessNbtStatus.UNSUPPORTED_SCHEMA || journalStatus == ProcessNbtStatus.UNSUPPORTED_SCHEMA) {
+            state = ProcessMachineState.UNSUPPORTED_DATA;
+        }
+        signatures.load(parent, progress != null || journal != null || !acceptsResourceAccess(), retainedRecipeId());
+        if (signatures.unsupported()) { state = ProcessMachineState.UNSUPPORTED_DATA; }
+        else if (acceptsResourceAccess() && !signatures.current() && progress != null) {
+            state = ProcessMachineState.RECOVERY_REQUIRED;
+            failure = failure(ProcessFailureCode.RECOVERY_DIVERGED, "signature_migration_pending");
+        }
     }
 
     void save(CompoundTag parent) {
+        if (signatures.oversized()) { signatures.save(parent, null); return; }
         parent.put(ProcessStatePersistence.ROOT,
                 preservedProcessRoot != null ? preservedProcessRoot.copy() : ProcessStatePersistence.encode(
                         new ProcessStateData(state, resourceRevision, Optional.ofNullable(progress),
@@ -116,10 +133,22 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
         } else {
             parent.remove(ProcessJournalPersistence.ROOT);
         }
+        signatures.save(parent, retainedRecipeId());
+    }
+
+    private String retainedRecipeId() {
+        if (progress != null && journal != null && !progress.definitionId().equals(journal.definitionId())) { return null; }
+        return progress != null ? progress.definitionId() : journal != null ? journal.definitionId() : null;
+    }
+
+    boolean preservesRecipeInput() {
+        return !signatures.current() || !acceptsResourceAccess() || journal != null
+                || state == ProcessMachineState.RECOVERY_REQUIRED
+                || state == ProcessMachineState.UNSUPPORTED_DATA;
     }
 
     boolean tick(ServerLevel level, PrecisionAssemblerBlockEntity controller) {
-        if (!acceptsResourceAccess()
+        if (!prepareSignature() || !acceptsResourceAccess()
                 || controller.formationState() != MultiblockFormationState.FORMED) {
             return false;
         }
@@ -197,12 +226,12 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
     }
 
     boolean acceptsResourceAccess() {
-        return processStatus == ProcessNbtStatus.SUPPORTED
+        return !signatures.unsupported() && processStatus == ProcessNbtStatus.SUPPORTED
                 && journalStatus == ProcessNbtStatus.SUPPORTED;
     }
 
     boolean permitsExternalResourceOperations() {
-        return acceptsResourceAccess() && journal == null
+        return signatures.current() && acceptsResourceAccess() && journal == null
                 && state != ProcessMachineState.RECOVERY_REQUIRED
                 && state != ProcessMachineState.UNSUPPORTED_DATA;
     }
@@ -247,7 +276,7 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
                 || !recipe.signature().equals(recipeSignature)) {
             return 0;
         }
-        return recipe.processDefinition().durationTicks();
+        return recipe.processingTicks();
     }
 
     long resourceRevision() {
@@ -320,18 +349,30 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
         ResourceLocation id = ResourceLocation.tryParse(pending.definitionId());
         Optional<? extends net.minecraft.world.item.crafting.Recipe<?>> loaded = id == null
                 ? Optional.empty() : level.getRecipeManager().byKey(id);
-        if (loaded.isEmpty() || !(loaded.orElseThrow() instanceof PrecisionAssemblerRecipe recipe)) {
+        PrecisionAssemblerRecipe recipe = loaded.isPresent() && loaded.orElseThrow() instanceof PrecisionAssemblerRecipe value
+                ? value : null;
+        if (recipe == null || !recipe.signature().equals(recipeSignature)) {
             updateState(ProcessMachineState.INVALID_RECIPE,
-                    failure(ProcessFailureCode.INVALID_RECIPE, pending.definitionId()));
+                    failure(ProcessFailureCode.INVALID_RECIPE, recipe == null ? "recipe_missing" : "recipe_changed"));
+            return false;
+        }
+        if (progress == null || !progress.definitionId().equals(pending.definitionId())
+                || !validProgress(recipe, progress) || progress.progressTicks() != recipe.processingTicks()) {
+            updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                    failure(ProcessFailureCode.RECOVERY_DIVERGED, "journal_progress_invalid"));
+            return false;
+        }
+        try { recipe = recipe.retainedPlan(pending.before()); }
+        catch (IllegalArgumentException | com.google.gson.JsonParseException exception) {
+            updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                    failure(ProcessFailureCode.RECOVERY_DIVERGED, "retained_plan_invalid"));
             return false;
         }
         ProcessSimulationResult expected = ProcessMachineLogic.simulate(
                 recipe.processDefinition(), pending.before()
         );
         if (expected.plan().isEmpty()
-                || !expected.plan().orElseThrow().after().equals(pending.after())
-                || (progress != null && (!progress.definitionId().equals(recipe.getId().toString())
-                || !recipe.signature().equals(recipeSignature)))) {
+                || !expected.plan().orElseThrow().after().equals(pending.after())) {
             updateState(ProcessMachineState.RECOVERY_REQUIRED,
                     failure(ProcessFailureCode.RECOVERY_DIVERGED, pending.definitionId()));
             return false;
@@ -344,7 +385,8 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
                     failure(ProcessFailureCode.RECOVERY_DIVERGED, pending.definitionId()));
             return false;
         }
-        return handleTransactionResult(ProcessTransactionExecutor.recover(resources, this));
+        ProcessTransactionResult recovered = ProcessTransactionExecutor.recover(resources, this);
+        return handleTransactionResult(recovered);
     }
 
     private boolean complete(
@@ -398,9 +440,25 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
 
     private static boolean validProgress(PrecisionAssemblerRecipe recipe, ProcessProgress active) {
         return active.definitionId().equals(recipe.getId().toString())
-                && active.progressTicks() <= recipe.processDefinition().durationTicks()
+                && active.progressTicks() <= recipe.processingTicks()
                 && active.consumedEnergy() == Math.multiplyExact(
-                        (long) active.progressTicks(), recipe.processDefinition().energyPerTick());
+                        (long) active.progressTicks(), recipe.energyPerTick());
+    }
+
+    private boolean prepareSignature() {
+        if (!acceptsResourceAccess()) { return false; }
+        if (signatures.current()) {
+            if (journal != null && progress == null) {
+                updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                        failure(ProcessFailureCode.RECOVERY_DIVERGED, "journal_progress_missing"));
+                return false;
+            }
+            return true;
+        }
+        // Old ID/resolved hashes do not witness authored JSON, including same-ID overrides.
+        updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                failure(ProcessFailureCode.RECOVERY_DIVERGED, "signature_migration_unproven"));
+        return false;
     }
 
     @Nullable
@@ -432,6 +490,7 @@ final class PrecisionAssemblerProcessController implements ProcessJournalStore {
     }
 
     private void reset(UUID replacementMachineId) {
+        signatures.reset();
         machineId = Objects.requireNonNull(replacementMachineId, "replacementMachineId");
         state = ProcessMachineState.IDLE;
         failure = ProcessFailure.NONE;

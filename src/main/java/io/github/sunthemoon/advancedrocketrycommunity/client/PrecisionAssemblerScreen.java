@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.RecipeMenuReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFormationState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerMenu;
@@ -117,7 +118,9 @@ public final class PrecisionAssemblerScreen extends AbstractContainerScreen<Prec
                     ProcessFailureCode failure = menu.processFailure();
                     if (failure != ProcessFailureCode.NONE) {
                         drawCenteredFit(graphics,
-                                Component.translatable(statusKey("failure", failure.name())),
+                                menu.recipeReason() == RecipeMenuReason.NONE
+                                        ? Component.translatable(statusKey("failure", failure.name()))
+                                        : Component.translatable(menu.recipeReason().translationKey()),
                                 110, ALERT);
                     }
                 }

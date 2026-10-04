@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.RecipeMenuReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerStatus;
 import net.minecraft.client.gui.GuiGraphics;
@@ -104,9 +105,12 @@ public final class ElectrolyzerScreen extends AbstractContainerScreen<Electrolyz
         graphics.drawString(font, title, titleLabelX, titleLabelY, 0xFFDCE9ED, false);
         graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 0xFFC9D4D7, false);
         ElectrolyzerStatus status = menu.status();
+        Component statusText = menu.recipeReason() == RecipeMenuReason.NONE
+                ? Component.translatable(status.translationKey())
+                : Component.translatable(menu.recipeReason().translationKey());
         graphics.drawCenteredString(
                 font,
-                Component.translatable(status.translationKey()),
+                statusText,
                 imageWidth / 2,
                 72,
                 status == ElectrolyzerStatus.INVALID_RECIPE || status == ElectrolyzerStatus.UNSUPPORTED_DATA

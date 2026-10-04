@@ -11,6 +11,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessOut
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKey;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKind;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.DeferredProcessDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeJsonSignature;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeSet;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
@@ -40,8 +43,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 /** Bounded two-output recipe decoded before it can be exposed to the machine. */
 public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
-    private static final int MAX_INGREDIENT_VARIANTS = 16;
-    private static final int MAX_INGREDIENT_JSON_CHARS = 2_048;
+    private static final int MAX_INGREDIENT_JSON_CHARS = BoundedItemIngredientCodec.MAX_INGREDIENT_JSON_CHARS;
     private static final int MAX_RESOURCE_ID_CHARS = 128;
     private final ResourceLocation id;
     private final Ingredient ingredient;
@@ -49,8 +51,8 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
     private final ItemStack hydrogenResult;
     private final ItemStack oxygenResult;
     private final ElectrolyzerRecipeSpec spec;
-    private final List<String> ingredientAlternatives;
-    private final ProcessDefinition processDefinition;
+    private final JsonElement ingredientJson;
+    private final DeferredProcessDefinition definition;
     private final String signature;
 
     public ElectrolyzerRecipe(
@@ -81,15 +83,24 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
             ElectrolyzerRecipeSpec spec,
             int encodedSizeBytes
     ) {
+        this(id, ingredient, fluid, hydrogenResult, oxygenResult, spec, encodedSizeBytes, ingredient.toJson());
+    }
+
+    private ElectrolyzerRecipe(ResourceLocation id, Ingredient ingredient, Fluid fluid,
+            ItemStack hydrogenResult, ItemStack oxygenResult, ElectrolyzerRecipeSpec spec,
+            int encodedSizeBytes, JsonElement ingredientJson) {
         this.id = Objects.requireNonNull(id, "id");
         this.ingredient = Objects.requireNonNull(ingredient, "ingredient");
         this.fluid = Objects.requireNonNull(fluid, "fluid");
         this.hydrogenResult = Objects.requireNonNull(hydrogenResult, "hydrogenResult").copy();
         this.oxygenResult = Objects.requireNonNull(oxygenResult, "oxygenResult").copy();
         this.spec = Objects.requireNonNull(spec, "spec");
+        BoundedItemIngredientCodec.validateOnly(ingredientJson);
+        this.ingredientJson = ingredientJson.deepCopy();
         validateContent();
-        ingredientAlternatives = resolveAlternatives(ingredient);
-        processDefinition = new ProcessDefinition(
+        new ProcessDefinition(id.toString(), ProcessDefinition.SCHEMA_VERSION, encodedSizeBytes,
+                spec.processingTicks(), spec.energyPerTick(), List.of(), List.of());
+        definition = new DeferredProcessDefinition(id.toString(), () -> new ProcessDefinition(
                 id.toString(),
                 ProcessDefinition.SCHEMA_VERSION,
                 encodedSizeBytes,
@@ -99,7 +110,7 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
                         new ProcessInput(
                                 ProcessResourceKind.ITEM,
                                 ElectrolyzerPortPolicy.ITEM_INPUT_CHANNEL,
-                                ingredientAlternatives,
+                                BoundedItemIngredientCodec.resolveAlternatives(this.ingredientJson),
                                 spec.inputCount()
                         ),
                         new ProcessInput(
@@ -113,23 +124,11 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
                         output(ElectrolyzerPortPolicy.ITEM_OUTPUT_CHANNEL, hydrogenResult),
                         output(ElectrolyzerPortPolicy.ITEM_OUTPUT_CHANNEL, oxygenResult)
                 )
-        );
-        signature = signature(canonicalPayload());
+        ));
+        signature = RecipeJsonSignature.signature(jsonPayload());
     }
 
     private void validateContent() {
-        if (ingredient.isEmpty()) {
-            throw new IllegalArgumentException("Electrolyzer ingredient cannot be empty");
-        }
-        ItemStack[] variants = ingredient.getItems();
-        if (variants.length < 1 || variants.length > MAX_INGREDIENT_VARIANTS) {
-            throw new IllegalArgumentException("Electrolyzer ingredient must resolve to 1-16 bounded variants");
-        }
-        for (ItemStack variant : variants) {
-            if (variant.hasTag()) {
-                throw new IllegalArgumentException("Electrolyzer ingredients cannot carry NBT");
-            }
-        }
         if (fluid != Fluids.WATER || ForgeRegistries.FLUIDS.getKey(fluid) == null) {
             throw new IllegalArgumentException("Electrolyzer fluid must be registered water");
         }
@@ -159,7 +158,8 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
     @Override
     public boolean matches(SimpleContainer container, Level level) {
         ItemStack stack = container.getItem(0);
-        return ingredient.test(stack) && stack.getCount() >= spec.inputCount();
+        return available() && !stack.hasTag() && !stack.isEmpty()
+                && ingredientAlternatives().contains(itemId(stack)) && stack.getCount() >= spec.inputCount();
     }
 
     @Override
@@ -223,15 +223,49 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
     }
 
     public List<String> ingredientAlternatives() {
-        return ingredientAlternatives;
+        return processDefinition().inputs().get(0).alternatives();
     }
 
     public ProcessDefinition processDefinition() {
-        return processDefinition;
+        return definition.get();
     }
 
     public String signature() {
         return signature;
+    }
+
+    public boolean available() { return definition.available(); }
+
+    public boolean hasTagIngredients() { return BoundedItemIngredientCodec.hasTags(ingredientJson); }
+
+   public String legacySignature() { return signature(canonicalPayload()); }
+
+    public ElectrolyzerRecipe retainedPlan(io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot before) {
+        JsonObject json = jsonPayload();
+        json.add("ingredient", io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RetainedRecipePlan
+                .ingredient(before, ElectrolyzerPortPolicy.ITEM_INPUT_CHANNEL));
+        return new Serializer().fromJson(id, json);
+    }
+
+    public JsonObject jsonPayload() {
+        JsonObject json = new JsonObject();
+        json.addProperty("type", "advancedrocketrycommunity:electrolyzing");
+        json.addProperty("schema_version", spec.schemaVersion());
+        json.add("ingredient", ingredientJson.deepCopy());
+        json.addProperty("input_count", spec.inputCount());
+        JsonObject water = new JsonObject();
+        water.addProperty("fluid", fluidId()); water.addProperty("amount", spec.waterAmount()); json.add("fluid", water);
+        json.add("hydrogen_result", resultJson(hydrogenResult));
+        json.add("oxygen_result", resultJson(oxygenResult));
+        json.addProperty("processing_time", spec.processingTicks());
+        json.addProperty("energy_per_tick", spec.energyPerTick());
+        return json;
+    }
+
+    private static JsonObject resultJson(ItemStack stack) {
+        JsonObject json = new JsonObject();
+        json.addProperty("item", itemId(stack)); json.addProperty("count", stack.getCount());
+        return json;
     }
 
     public static final class Serializer implements RecipeSerializer<ElectrolyzerRecipe> {
@@ -240,27 +274,30 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
         @Override
         public ElectrolyzerRecipe fromJson(ResourceLocation id, JsonObject json) {
             try {
-                int encodedSizeBytes = json.toString().getBytes(StandardCharsets.UTF_8).length;
+                int encodedSizeBytes = RecipeJsonSignature.canonical(json).getBytes(StandardCharsets.UTF_8).length;
                 if (encodedSizeBytes < 1 || encodedSizeBytes > ProcessDefinition.MAX_DEFINITION_BYTES) {
                     throw new IllegalArgumentException("recipe JSON exceeds the 64 KiB limit");
                 }
+                if (!Set.of("type", "schema_version", "ingredient", "input_count", "fluid",
+                        "hydrogen_result", "oxygen_result", "processing_time", "energy_per_tick").equals(json.keySet())
+                        || !"advancedrocketrycommunity:electrolyzing".equals(GsonHelper.getAsString(json, "type"))) {
+                    throw new IllegalArgumentException("recipe has missing or unexpected top-level fields");
+                }
                 JsonElement ingredientJson = GsonHelper.getNonNull(json, "ingredient");
-                BoundedItemIngredientCodec.requireItemsOnly(ingredientJson);
-                Ingredient ingredient = Ingredient.fromJson(ingredientJson);
+                Ingredient ingredient = BoundedItemIngredientCodec.decode(ingredientJson);
                 JsonObject fluidObject = GsonHelper.getAsJsonObject(json, FLUID_FIELD);
                 Fluid fluid = requireFluid(GsonHelper.getAsString(fluidObject, FLUID_FIELD));
-                ItemStack hydrogen = ShapedRecipe.itemStackFromJson(
-                        GsonHelper.getAsJsonObject(json, "hydrogen_result")
-                );
-                ItemStack oxygen = ShapedRecipe.itemStackFromJson(
-                        GsonHelper.getAsJsonObject(json, "oxygen_result")
-                );
+                if (!Set.of("fluid", "amount").equals(fluidObject.keySet())) {
+                    throw new IllegalArgumentException("fluid has missing or unexpected fields");
+                }
+                ItemStack hydrogen = resultFromJson(GsonHelper.getAsJsonObject(json, "hydrogen_result"));
+                ItemStack oxygen = resultFromJson(GsonHelper.getAsJsonObject(json, "oxygen_result"));
                 ElectrolyzerRecipeSpec spec = new ElectrolyzerRecipeSpec(
-                        GsonHelper.getAsInt(json, "schema_version"),
-                        GsonHelper.getAsInt(json, "input_count"),
-                        GsonHelper.getAsInt(fluidObject, "amount"),
-                        GsonHelper.getAsInt(json, "processing_time"),
-                        GsonHelper.getAsInt(json, "energy_per_tick"),
+                        RecipeJsonSignature.requireInt(json, "schema_version"),
+                        RecipeJsonSignature.requireInt(json, "input_count"),
+                        RecipeJsonSignature.requireInt(fluidObject, "amount"),
+                        RecipeJsonSignature.requireInt(json, "processing_time"),
+                        RecipeJsonSignature.requireInt(json, "energy_per_tick"),
                         hydrogen.getCount(),
                         oxygen.getCount()
                 );
@@ -271,7 +308,8 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
                         hydrogen,
                         oxygen,
                         spec,
-                        encodedSizeBytes
+                        encodedSizeBytes,
+                        ingredientJson
                 );
             } catch (IllegalArgumentException exception) {
                 throw new JsonSyntaxException("Invalid Electrolyzer recipe " + id + ": " + exception.getMessage(), exception);
@@ -283,8 +321,7 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
             try {
                 String ingredientJson = buffer.readUtf(MAX_INGREDIENT_JSON_CHARS);
                 JsonElement parsed = JsonParser.parseString(ingredientJson);
-                BoundedItemIngredientCodec.requireItemsOnly(parsed);
-                Ingredient ingredient = Ingredient.fromJson(parsed);
+                Ingredient ingredient = BoundedItemIngredientCodec.decode(parsed);
                 Fluid fluid = requireFluid(buffer.readUtf(MAX_RESOURCE_ID_CHARS));
                 int schemaVersion = buffer.readVarInt();
                 int inputCount = buffer.readVarInt();
@@ -302,7 +339,8 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
                         hydrogen.getCount(),
                         oxygen.getCount()
                 );
-                return new ElectrolyzerRecipe(id, ingredient, fluid, hydrogen, oxygen, spec);
+                return new ElectrolyzerRecipe(id, ingredient, fluid, hydrogen, oxygen, spec,
+                        canonicalEncodedSize(id, ingredient, fluid, hydrogen, oxygen, spec), parsed);
             } catch (RuntimeException exception) {
                 throw new JsonParseException("Invalid network Electrolyzer recipe " + id, exception);
             }
@@ -310,7 +348,7 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
 
         @Override
         public void toNetwork(FriendlyByteBuf buffer, ElectrolyzerRecipe recipe) {
-            String ingredientJson = recipe.ingredient.toJson().toString();
+            String ingredientJson = recipe.ingredientJson.toString();
             buffer.writeUtf(ingredientJson, MAX_INGREDIENT_JSON_CHARS);
             ResourceLocation fluidId = ForgeRegistries.FLUIDS.getKey(recipe.fluid);
             if (fluidId == null) {
@@ -333,6 +371,21 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
             int count = buffer.readVarInt();
             if (item == null || item.getDefaultInstance().isEmpty() || count < 1 || count > 64) {
                 throw new IllegalArgumentException("Invalid " + field + " item/count");
+            }
+            return new ItemStack(item, count);
+        }
+
+        private static ItemStack resultFromJson(JsonObject json) {
+            if (!Set.of("item").equals(json.keySet()) && !Set.of("item", "count").equals(json.keySet())) {
+                throw new IllegalArgumentException("result has missing or unexpected fields");
+            }
+            String rawId = GsonHelper.getAsString(json, "item");
+            ResourceLocation id = ResourceLocation.tryParse(rawId);
+            Item item = id == null ? null : ForgeRegistries.ITEMS.getValue(id);
+            int count = json.has("count") ? RecipeJsonSignature.requireInt(json, "count") : 1;
+            if (rawId.length() > MAX_RESOURCE_ID_CHARS || item == null || item.getDefaultInstance().isEmpty()
+                    || count < 1 || count > Math.min(64, item.getMaxStackSize())) {
+                throw new IllegalArgumentException("result has an invalid item/count");
             }
             return new ItemStack(item, count);
         }
@@ -375,7 +428,7 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
                 "|",
                 Integer.toString(ProcessDefinition.SCHEMA_VERSION),
                 id.toString(),
-                String.join(",", ingredientAlternatives),
+                String.join(",", ingredientAlternatives()),
                 Integer.toString(spec.inputCount()),
                 fluidId(),
                 Integer.toString(spec.waterAmount()),
@@ -402,20 +455,6 @@ public final class ElectrolyzerRecipe implements Recipe<SimpleContainer> {
             throw new IllegalArgumentException("Electrolyzer item has no registered ID");
         }
         return registered.toString();
-    }
-
-    private static List<String> resolveAlternatives(Ingredient ingredient) {
-        TreeSet<String> alternatives = new TreeSet<>();
-        for (ItemStack variant : ingredient.getItems()) {
-            if (variant.isEmpty() || variant.hasTag()) {
-                throw new IllegalArgumentException("Electrolyzer ingredients cannot be empty or carry NBT");
-            }
-            alternatives.add(itemId(variant));
-        }
-        if (alternatives.isEmpty() || alternatives.size() > MAX_INGREDIENT_VARIANTS) {
-            throw new IllegalArgumentException("Electrolyzer ingredient has no bounded alternatives");
-        }
-        return List.copyOf(alternatives);
     }
 
     private static int canonicalEncodedSize(

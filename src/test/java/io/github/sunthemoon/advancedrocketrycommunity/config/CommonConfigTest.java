@@ -38,8 +38,27 @@ class CommonConfigTest {
         // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
         // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values,
         // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values, and the v1.8
-        // switches: two of C15a, five of C15b and five of C15c (ADR-063).
-        assertEquals(66, countValues(CommonConfig.SPEC.getValues()));
+        // Classic settings: C15a/b/c (ADR-063), combustion, tank capacity and pump operation (ADR-064).
+        assertEquals(69, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void tankAndPumpExposeOnlyTheirAcceptedDefaultsAndBounds() {
+        ForgeConfigSpec.ValueSpec tank = assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                CommonConfig.SPEC.getSpec().get("machines.tankCapacityMultiplier"));
+        ForgeConfigSpec.Range<Double> range = tank.getRange();
+        assertEquals(0.25, range.getMin());
+        assertEquals(4.0, range.getMax());
+        assertEquals(1.0, CommonConfig.TANK_CAPACITY_MULTIPLIER.getDefault());
+        assertEquals(1.0, CommonConfig.tankCapacityMultiplier());
+        assertTrue(tank.test(0.25));
+        assertTrue(tank.test(4.0));
+        assertFalse(tank.test(0.249));
+        assertFalse(tank.test(4.001));
+        assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                CommonConfig.SPEC.getSpec().get("machines.pumpEnabled"));
+        assertEquals(Boolean.TRUE, CommonConfig.PUMP_ENABLED.getDefault());
+        assertTrue(CommonConfig.pumpEnabled());
     }
 
     @Test

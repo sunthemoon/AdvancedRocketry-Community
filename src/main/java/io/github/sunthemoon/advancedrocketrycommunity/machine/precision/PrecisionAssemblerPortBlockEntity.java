@@ -40,7 +40,8 @@ import net.minecraftforge.items.IItemHandler;
 
 /** Generation-scoped Item facade and physically persistent Energy input. */
 public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
-        implements MultiblockPartBindingTarget {
+        implements MultiblockPartBindingTarget,
+        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected {
     private static final Set<ProcessPortSide> ALL_SIDES = Set.of(
             ProcessPortSide.FRONT,
             ProcessPortSide.BACK,
@@ -85,6 +86,12 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
         if (level instanceof ServerLevel serverLevel) {
             PrecisionAssemblerRuntime.markDirty(serverLevel, worldPosition);
         }
+    }
+
+    @Override
+    public boolean preservesRecipeInput() {
+        return level instanceof ServerLevel serverLevel
+                && PrecisionAssemblerRemovalPolicy.blocksRemoval(serverLevel, worldPosition);
     }
 
     public PrecisionAssemblerPortType portType() {

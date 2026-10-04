@@ -16,6 +16,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTra
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTransactionJournal;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTransactionResult;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessTransactionStatus;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import net.minecraft.server.level.ServerLevel;
 final class RollingMachineProcessController implements ProcessJournalStore {
     private final Runnable changed;
     private final RollingMachineRecipeResolver recipes = new RollingMachineRecipeResolver();
+    private final RecipeSignatureMigration signatures = new RecipeSignatureMigration();
 
     private ProcessMachineState state = ProcessMachineState.IDLE;
     private ProcessFailure failure = ProcessFailure.NONE;
@@ -62,6 +64,11 @@ final class RollingMachineProcessController implements ProcessJournalStore {
 
     void load(CompoundTag parent, UUID loadedMachineId) {
         reset(loadedMachineId);
+        if (!RecipeSignatureMigration.bounded(parent)) {
+            signatures.load(parent, true, null);
+            state = ProcessMachineState.UNSUPPORTED_DATA;
+            return;
+        }
         RollingMachineNbtResult<RollingMachineProcessPersistence.ProcessData> processResult =
                 RollingMachineProcessPersistence.decode(parent);
         processPersistenceStatus = normalizeEmpty(processResult.status());
@@ -86,9 +93,20 @@ final class RollingMachineProcessController implements ProcessJournalStore {
                     ? ProcessMachineState.UNSUPPORTED_DATA
                     : ProcessMachineState.RECOVERY_REQUIRED;
         }
+        if (processPersistenceStatus == MultiblockNbtStatus.UNSUPPORTED_SCHEMA
+                || journalPersistenceStatus == MultiblockNbtStatus.UNSUPPORTED_SCHEMA) {
+            state = ProcessMachineState.UNSUPPORTED_DATA;
+        }
+        signatures.load(parent, progress != null || journal != null || !acceptsResourceAccess(), retainedRecipeId());
+        if (signatures.unsupported()) { state = ProcessMachineState.UNSUPPORTED_DATA; }
+        else if (acceptsResourceAccess() && !signatures.current() && progress != null) {
+            state = ProcessMachineState.RECOVERY_REQUIRED;
+            failure = failure(ProcessFailureCode.RECOVERY_DIVERGED, "signature_migration_pending");
+        }
     }
 
     void save(CompoundTag parent) {
+        if (signatures.oversized()) { signatures.save(parent, null); return; }
         if (preservedProcessRoot != null) {
             parent.put(RollingMachineProcessPersistence.ROOT, preservedProcessRoot.copy());
         } else {
@@ -107,10 +125,22 @@ final class RollingMachineProcessController implements ProcessJournalStore {
         } else {
             parent.remove(RollingMachineJournalPersistence.ROOT);
         }
+        signatures.save(parent, retainedRecipeId());
+    }
+
+    private String retainedRecipeId() {
+        if (progress != null && journal != null && !progress.definitionId().equals(journal.definitionId())) { return null; }
+        return progress != null ? progress.definitionId() : journal != null ? journal.definitionId() : null;
+    }
+
+    boolean preservesRecipeInput() {
+        return !signatures.current() || !acceptsResourceAccess() || journal != null
+                || state == ProcessMachineState.RECOVERY_REQUIRED
+                || state == ProcessMachineState.UNSUPPORTED_DATA;
     }
 
     boolean tick(ServerLevel level, RollingMachineBlockEntity controller) {
-        if (!acceptsResourceAccess()
+        if (!prepareSignature() || !acceptsResourceAccess()
                 || controller.formationState() != MultiblockFormationState.FORMED) {
             return false;
         }
@@ -200,12 +230,12 @@ final class RollingMachineProcessController implements ProcessJournalStore {
     }
 
     boolean acceptsResourceAccess() {
-        return processPersistenceStatus == MultiblockNbtStatus.SUPPORTED
+        return !signatures.unsupported() && processPersistenceStatus == MultiblockNbtStatus.SUPPORTED
                 && journalPersistenceStatus == MultiblockNbtStatus.SUPPORTED;
     }
 
     boolean permitsExternalResourceOperations() {
-        return acceptsResourceAccess()
+        return signatures.current() && acceptsResourceAccess()
                 && journal == null
                 && state != ProcessMachineState.RECOVERY_REQUIRED
                 && state != ProcessMachineState.UNSUPPORTED_DATA;
@@ -315,11 +345,26 @@ final class RollingMachineProcessController implements ProcessJournalStore {
         Optional<? extends net.minecraft.world.item.crafting.Recipe<?>> loaded = recipeId == null
                 ? Optional.empty()
                 : level.getRecipeManager().byKey(recipeId);
-        if (loaded.isEmpty() || !(loaded.orElseThrow() instanceof RollingMachineRecipe recipe)) {
+        RollingMachineRecipe recipe = loaded.isPresent() && loaded.orElseThrow() instanceof RollingMachineRecipe value
+                ? value : null;
+        if (recipe == null || !recipe.signature().equals(recipeSignature)) {
+            updateState(ProcessMachineState.INVALID_RECIPE,
+                    failure(ProcessFailureCode.INVALID_RECIPE, recipe == null ? "recipe_missing" : "recipe_changed"));
+            return false;
+        }
+        if (progress == null || !progress.definitionId().equals(activeJournal.definitionId())
+                || !validProgress(recipe, progress)
+                || progress.progressTicks() != recipe.processingTicks()) {
             updateState(
-                    ProcessMachineState.INVALID_RECIPE,
-                    failure(ProcessFailureCode.INVALID_RECIPE, activeJournal.definitionId())
+                    ProcessMachineState.RECOVERY_REQUIRED,
+                    failure(ProcessFailureCode.RECOVERY_DIVERGED, "journal_progress_invalid")
             );
+            return false;
+        }
+        try { recipe = recipe.retainedPlan(activeJournal.before()); }
+        catch (IllegalArgumentException | com.google.gson.JsonParseException exception) {
+            updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                    failure(ProcessFailureCode.RECOVERY_DIVERGED, "retained_plan_invalid"));
             return false;
         }
         ProcessSimulationResult expected = ProcessMachineLogic.simulate(
@@ -327,9 +372,7 @@ final class RollingMachineProcessController implements ProcessJournalStore {
                 activeJournal.before()
         );
         if (expected.plan().isEmpty()
-                || !expected.plan().orElseThrow().after().equals(activeJournal.after())
-                || (progress != null && (!progress.definitionId().equals(recipe.getId().toString())
-                || !recipe.signature().equals(recipeSignature)))) {
+                || !expected.plan().orElseThrow().after().equals(activeJournal.after())) {
             updateState(
                     ProcessMachineState.RECOVERY_REQUIRED,
                     failure(ProcessFailureCode.RECOVERY_DIVERGED, activeJournal.definitionId())
@@ -404,14 +447,30 @@ final class RollingMachineProcessController implements ProcessJournalStore {
 
     private boolean validProgress(RollingMachineRecipe recipe, ProcessProgress active) {
         if (!active.definitionId().equals(recipe.getId().toString())
-                || active.progressTicks() > recipe.processDefinition().durationTicks()) {
+                || active.progressTicks() > recipe.processingTicks()) {
             return false;
         }
         long expectedEnergy = Math.multiplyExact(
                 (long) active.progressTicks(),
-                recipe.processDefinition().energyPerTick()
+                recipe.energyPerTick()
         );
         return active.consumedEnergy() == expectedEnergy;
+    }
+
+    private boolean prepareSignature() {
+        if (!acceptsResourceAccess()) { return false; }
+        if (signatures.current()) {
+            if (journal != null && progress == null) {
+                updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                        failure(ProcessFailureCode.RECOVERY_DIVERGED, "journal_progress_missing"));
+                return false;
+            }
+            return true;
+        }
+        // Old ID/resolved hashes do not witness authored JSON, including same-ID overrides.
+        updateState(ProcessMachineState.RECOVERY_REQUIRED,
+                failure(ProcessFailureCode.RECOVERY_DIVERGED, "signature_migration_unproven"));
+        return false;
     }
 
     @Nullable
@@ -464,6 +523,7 @@ final class RollingMachineProcessController implements ProcessJournalStore {
     }
 
     private void reset(UUID replacementMachineId) {
+        signatures.reset();
         machineId = Objects.requireNonNull(replacementMachineId, "replacementMachineId");
         state = ProcessMachineState.IDLE;
         failure = ProcessFailure.NONE;

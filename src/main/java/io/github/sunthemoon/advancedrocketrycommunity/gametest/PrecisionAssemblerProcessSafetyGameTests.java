@@ -190,6 +190,7 @@ public final class PrecisionAssemblerProcessSafetyGameTests {
             PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
             CompoundTag saved = machine.saveWithFullMetadata();
             saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(prepared));
+            PrecisionAssemblerGameTests.completedProgress(saved, recipe);
             machine.load(saved);
             PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(),
                     helper.absolutePos(PrecisionAssemblerGameTests.CONTROLLER));
@@ -219,14 +220,7 @@ public final class PrecisionAssemblerProcessSafetyGameTests {
             PrecisionAssemblerGameTests.insertInputs(helper);
             PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
             CompoundTag saved = machine.saveWithFullMetadata();
-            CompoundTag process = saved.getCompound(ProcessStatePersistence.ROOT);
-            process.putString("state", "running");
-            process.putString("definition_id", recipe.getId().toString());
-            process.putString("recipe_signature", recipe.signature());
-            process.putInt("progress_ticks", recipe.processDefinition().durationTicks());
-            process.putLong("consumed_energy", Math.multiplyExact(
-                    (long) recipe.processDefinition().durationTicks(),
-                    recipe.processDefinition().energyPerTick()));
+            PrecisionAssemblerGameTests.completedProgress(saved, recipe);
             machine.load(saved);
             replaceStoredItem(helper, PrecisionAssemblerGameTests.INPUT_0, ItemStack.EMPTY);
             replaceStoredItem(helper, PrecisionAssemblerGameTests.OUTPUT_0, recipe.outputs().get(0));
@@ -270,6 +264,7 @@ public final class PrecisionAssemblerProcessSafetyGameTests {
             PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
             CompoundTag saved = machine.saveWithFullMetadata();
             saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(journal));
+            PrecisionAssemblerGameTests.completedProgress(saved, recipe);
             if (applied) {
                 saved.getCompound(ProcessStatePersistence.ROOT).putLong(
                         "resource_revision", journal.after().revision());
@@ -302,6 +297,7 @@ public final class PrecisionAssemblerProcessSafetyGameTests {
             PrecisionAssemblerBlockEntity machine = PrecisionAssemblerGameTests.controller(helper);
             CompoundTag saved = machine.saveWithFullMetadata();
             saved.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(journal));
+            PrecisionAssemblerGameTests.completedProgress(saved, recipe);
             machine.load(saved);
             replaceStoredItem(helper, PrecisionAssemblerGameTests.OUTPUT_0, new ItemStack(Items.DIRT));
             PrecisionAssemblerRuntime.markProcessReady(helper.getLevel(),

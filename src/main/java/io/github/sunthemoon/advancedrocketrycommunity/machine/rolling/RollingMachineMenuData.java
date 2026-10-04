@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.rolling;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.RecipeMenuReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternDiagnostic;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternValidationResult;
@@ -33,7 +34,8 @@ final class RollingMachineMenuData implements ContainerData {
     static final int WATER_CAPACITY = 21;
     static final int DIAGNOSTIC_PRESENT = 22;
     static final int INSPECTED_CELLS = 23;
-    static final int COUNT = 24;
+    static final int RECIPE_REASON = 24;
+    static final int COUNT = 25;
 
     private final RollingMachineBlockEntity controller;
 
@@ -79,6 +81,7 @@ final class RollingMachineMenuData implements ContainerData {
             case WATER_CAPACITY -> RollingMachinePortBlockEntity.FLUID_CAPACITY;
             case DIAGNOSTIC_PRESENT -> diagnostic.isPresent() ? 1 : 0;
             case INSPECTED_CELLS -> validation.map(PatternValidationResult::inspectedCells).orElse(0);
+            case RECIPE_REASON -> RecipeMenuReason.fromFailure(controller.processFailure()).networkId();
             default -> throw new IndexOutOfBoundsException("Unknown Rolling Machine menu field " + index);
         };
     }

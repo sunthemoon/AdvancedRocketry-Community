@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.precision;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -90,9 +91,9 @@ class PrecisionAssemblerRecipeTest {
         assertEquals("item_input_4", longRecipe.processDefinition().inputs().get(4).channel());
     }
 
-    /** C15aR2-L1: a tag ingredient arriving over the network is refused like one from JSON. */
+    /** C16a-01 preserves tag JSON without reading unsynchronized client tags. */
     @Test
-    void aTagIngredientFromTheNetworkIsRefused() {
+    void aTagIngredientFromTheNetworkIsPreserved() {
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
             serializer.toNetwork(buffer, serializer.fromJson(ID, twoInputJson()));
@@ -104,13 +105,11 @@ class PrecisionAssemblerRecipeTest {
             assertTrue(wire.contains(item) && item.length() == tag.length(), "the probe swaps the ingredient in place");
             FriendlyByteBuf swapped = new FriendlyByteBuf(Unpooled.wrappedBuffer(
                     wire.replace(item, tag).getBytes(java.nio.charset.StandardCharsets.ISO_8859_1)));
-            RuntimeException refused = assertThrows(RuntimeException.class, () -> serializer.fromNetwork(ID, swapped));
-            Throwable cause = refused;
-            while (cause.getCause() != null && !String.valueOf(cause.getMessage()).contains("tag ingredients")) {
-                cause = cause.getCause();
-            }
-            assertTrue(String.valueOf(cause.getMessage()).contains("tag ingredients are not supported"),
-                    refused.toString());
+            try {
+                PrecisionAssemblerRecipe decoded = serializer.fromNetwork(ID, swapped);
+                assertTrue(decoded.hasTagIngredients());
+                assertEquals(JsonParser.parseString(tag), decoded.inputs().get(0).json());
+            } finally { swapped.release(); }
         } finally {
             buffer.release();
         }
@@ -135,7 +134,7 @@ class PrecisionAssemblerRecipeTest {
     }
 
     @Test
-    void ingredientAlternativeOrderIsCanonicalAndTaggedInputIsNotConsumed() {
+    void ingredientArrayOrderAffectsJsonSignatureAndTaggedInputIsNotConsumed() {
         JsonObject firstJson = twoInputJson();
         JsonObject secondJson = twoInputJson();
         firstJson.getAsJsonArray("inputs").get(0).getAsJsonObject().add("ingredient",
@@ -146,7 +145,8 @@ class PrecisionAssemblerRecipeTest {
                         + "{\"item\":\"minecraft:iron_ingot\"}]"));
         PrecisionAssemblerRecipe first = serializer.fromJson(ID, firstJson);
         PrecisionAssemblerRecipe second = serializer.fromJson(ID, secondJson);
-        assertEquals(first.signature(), second.signature());
+        assertNotEquals(first.signature(), second.signature());
+        assertEquals(first.legacySignature(), second.legacySignature());
 
         ItemStack tagged = new ItemStack(Items.IRON_INGOT, 2);
         tagged.getOrCreateTag().putString("owner", "test");
@@ -194,16 +194,11 @@ class PrecisionAssemblerRecipeTest {
         invalidEnergy.addProperty("energy_per_tick", ProcessDefinition.MAX_ENERGY_PER_TICK + 1);
         assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, invalidEnergy));
 
-        // C15aR1-M2: kernel recipes name items until tags resolve after binding (ADR-061 section 2.2, revision 7).
+        // Tag binding is deferred; malformed ingredient shapes remain rejected above.
         JsonObject tagged = twoInputJson();
         tagged.getAsJsonArray("inputs").get(0).getAsJsonObject()
                 .add("ingredient", JsonParser.parseString("{\"tag\": \"forge:ingots/iron\"}"));
-        RuntimeException tag = assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, tagged));
-        Throwable cause = tag;
-        while (cause.getCause() != null && !String.valueOf(cause.getMessage()).contains("tag ingredients")) {
-            cause = cause.getCause();
-        }
-        assertTrue(String.valueOf(cause.getMessage()).contains("tag ingredients are not supported"), tag.toString());
+        assertTrue(serializer.fromJson(ID, tagged).hasTagIngredients());
     }
 
     @Test
@@ -255,7 +250,9 @@ class PrecisionAssemblerRecipeTest {
         JsonObject extra = new JsonObject();
         extra.addProperty("item", BuiltInRegistries.ITEM.getKey(variants.get(55)).toString());
         second.add(extra);
-        assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, json));
+        PrecisionAssemblerRecipe overBudget = serializer.fromJson(ID, json);
+        assertFalse(overBudget.available());
+        assertThrows(RuntimeException.class, overBudget::processDefinition);
     }
 
     private static JsonArray alternatives(List<Item> items) {

@@ -15,7 +15,8 @@ import net.minecraft.data.PackOutput;
 
 /**
  * The C15c celestial data (ADR-063 section 6 with revision 6): Tau Ceti f and g, their three routes, the v1.8 data
- * satellite that supersedes the v1.5 copy (section 8), and, on the client side, the two sky profiles.
+ * satellite that supersedes the v1.5 copy (section 8), and the two sky profiles from the canonical builtin set.
+ * Earlier version outputs remain immutable; their providers do not run during v1.8 data generation.
  */
 public final class V180ExoplanetData implements DataProvider {
     private final PackOutput output;

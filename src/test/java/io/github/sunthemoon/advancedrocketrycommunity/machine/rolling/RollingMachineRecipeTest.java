@@ -1,14 +1,20 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.rolling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKind;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.LegacyKernelRecipeProof;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import io.netty.buffer.Unpooled;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -88,19 +94,20 @@ class RollingMachineRecipeTest {
         assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, customIngredient));
     }
 
-    /** C15aR1-M2: kernel recipes name items until tags resolve after binding (ADR-061 section 2.2, revision 7). */
+    /** C16a-01 supersedes the temporary item-only restriction; parsing and sync do not expand tags. */
     @Test
-    void tagIngredientsAreRejectedFromJsonAndFromTheNetwork() {
+    void tagIngredientsArePreservedFromJsonAndFromTheNetworkWithoutBinding() {
         RollingMachineRecipe.Serializer serializer = new RollingMachineRecipe.Serializer();
         JsonObject tagged = validJson();
         tagged.add("ingredient", JsonParser.parseString("{\"tag\": \"forge:ingots/iron\"}"));
-        RuntimeException json = assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, tagged));
-        assertTrue(String.valueOf(json.getMessage()).contains("tag ingredients are not supported"), json.getMessage());
+        RollingMachineRecipe parsed = serializer.fromJson(ID, tagged);
+        assertTrue(parsed.hasTagIngredients());
+        assertEquals(tagged.get("ingredient"), parsed.jsonPayload().get("ingredient"));
 
         JsonObject mixed = validJson();
         mixed.add("ingredient", JsonParser.parseString(
                 "[{\"item\": \"minecraft:iron_ingot\"}, {\"tag\": \"forge:ingots/iron\"}]"));
-        assertThrows(RuntimeException.class, () -> serializer.fromJson(ID, mixed));
+        assertTrue(serializer.fromJson(ID, mixed).hasTagIngredients());
 
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         serializer.toNetwork(buffer, serializer.fromJson(ID, validJson()));
@@ -112,13 +119,43 @@ class RollingMachineRecipeTest {
         assertTrue(wire.contains(item) && item.length() == tag.length(), "the probe swaps the ingredient in place");
         FriendlyByteBuf swapped = new FriendlyByteBuf(Unpooled.wrappedBuffer(
                 wire.replace(item, tag).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
-        assertThrows(RuntimeException.class, () -> serializer.fromNetwork(ID, swapped));
+        RollingMachineRecipe decoded = serializer.fromNetwork(ID, swapped);
+        assertTrue(decoded.hasTagIngredients());
+        assertEquals(JsonParser.parseString(tag), decoded.jsonPayload().get("ingredient"));
+        swapped.release();
+        buffer.release();
     }
 
     @Test
     void recipeRemainsOutsideTheVanillaRecipeBookContract() {
         RollingMachineRecipe recipe = new RollingMachineRecipe.Serializer().fromJson(ID, validJson());
         assertTrue(recipe.isSpecial());
+    }
+
+    @Test
+    void processedCurrentTagRecipeAndHistoricalItemRecipeKeepDistinctSignatures() throws Exception {
+        JsonObject currentJson;
+        try (InputStream stream = getClass().getResourceAsStream(
+                "/data/advancedrocketrycommunity/recipes/rolling_iron_bars.json")) {
+            assertNotNull(stream, "the processed current Rolling recipe must be available");
+            currentJson = JsonParser.parseString(new String(stream.readAllBytes(), StandardCharsets.UTF_8))
+                    .getAsJsonObject();
+        }
+        assertEquals(JsonParser.parseString("{\"tag\":\"forge:ingots/iron\"}"), currentJson.get("ingredient"));
+        JsonObject historicalJson = LegacyKernelRecipeProof.payload(ID, "advancedrocketrycommunity:rolling");
+        assertNotNull(historicalJson);
+        RollingMachineRecipe.Serializer serializer = new RollingMachineRecipe.Serializer();
+        RollingMachineRecipe current = serializer.fromJson(ID, currentJson);
+        RollingMachineRecipe historical = serializer.fromJson(ID, historicalJson);
+        assertEquals(current.getId(), historical.getId());
+        assertTrue(current.hasTagIngredients());
+        assertFalse(historical.hasTagIngredients());
+        assertNotEquals(current.signature(), historical.signature(), "authored tag JSON is not historical item JSON");
+        JsonObject currentFields = current.jsonPayload();
+        JsonObject historicalFields = historical.jsonPayload();
+        currentFields.remove("ingredient");
+        historicalFields.remove("ingredient");
+        assertEquals(historicalFields, currentFields, "the current selector changes no other recipe field");
     }
 
     private static JsonObject validJson() {

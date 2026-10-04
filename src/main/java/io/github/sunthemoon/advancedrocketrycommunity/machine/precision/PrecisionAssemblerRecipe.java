@@ -13,6 +13,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessRes
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceKind;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.BoundedItemIngredientCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.DeferredProcessDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeJsonSignature;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import io.netty.buffer.Unpooled;
 import java.math.BigDecimal;
@@ -57,8 +59,9 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
     private final ResourceLocation id;
     private final List<Input> inputs;
     private final List<ItemStack> outputs;
-    private final List<List<String>> alternatives;
-    private final ProcessDefinition processDefinition;
+    private final DeferredProcessDefinition definition;
+    private final int processingTicks;
+    private final int energyPerTick;
     private final String signature;
 
     public PrecisionAssemblerRecipe(
@@ -81,31 +84,11 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
             throw new IllegalArgumentException("precision output count must be 1..2");
         }
 
-        List<List<String>> resolved = new ArrayList<>(this.inputs.size());
-        List<ProcessInput> processInputs = new ArrayList<>(this.inputs.size());
-        int totalAlternatives = 0;
-        for (int index = 0; index < this.inputs.size(); index++) {
-            Input input = this.inputs.get(index);
-            List<String> choices = BoundedItemIngredientCodec.resolveAlternatives(input.ingredient());
-            totalAlternatives = Math.addExact(totalAlternatives, choices.size());
-            if (totalAlternatives > MAX_TOTAL_ALTERNATIVES) {
-                throw new IllegalArgumentException("precision recipe exceeds the 64-entry journal snapshot");
-            }
-            for (ItemStack variant : input.ingredient().getItems()) {
-                if (input.count() > variant.getMaxStackSize()) {
-                    throw new IllegalArgumentException("input count exceeds an ingredient stack limit");
-                }
-            }
-            resolved.add(choices);
-            processInputs.add(new ProcessInput(
-                    ProcessResourceKind.ITEM,
-                    PrecisionAssemblerChannels.input(index),
-                    choices,
-                    input.count()
-            ));
+        this.processingTicks = processingTicks;
+        this.energyPerTick = energyPerTick;
+        for (Input input : this.inputs) {
+            BoundedItemIngredientCodec.validateOnly(input.json());
         }
-        this.alternatives = List.copyOf(resolved);
-
         List<ProcessOutput> processOutputs = new ArrayList<>(this.outputs.size());
         for (int index = 0; index < this.outputs.size(); index++) {
             ItemStack output = this.outputs.get(index);
@@ -113,16 +96,41 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                     || output.getCount() > Math.min(MAX_ITEM_COUNT, output.getMaxStackSize())) {
                 throw new IllegalArgumentException("precision result must be a bounded untagged item");
             }
-            processOutputs.add(new ProcessOutput(
-                    new ProcessResourceKey(
-                            ProcessResourceKind.ITEM,
-                            PrecisionAssemblerChannels.output(index),
-                            requireRegisteredId(output.getItem(), "result").toString()
-                    ),
-                    output.getCount()
+            processOutputs.add(new ProcessOutput(new ProcessResourceKey(ProcessResourceKind.ITEM,
+                    PrecisionAssemblerChannels.output(index), requireRegisteredId(output.getItem(), "result").toString()),
+                    output.getCount()));
+        }
+        new ProcessDefinition(id.toString(), ProcessDefinition.SCHEMA_VERSION, encodedSizeBytes,
+                processingTicks, energyPerTick, List.of(), processOutputs);
+        this.definition = new DeferredProcessDefinition(id.toString(), () -> resolveDefinition(
+                encodedSizeBytes, processOutputs));
+        this.signature = RecipeJsonSignature.signature(jsonPayload());
+    }
+
+    private ProcessDefinition resolveDefinition(int encodedSizeBytes, List<ProcessOutput> processOutputs) {
+        List<ProcessInput> processInputs = new ArrayList<>(this.inputs.size());
+        int totalAlternatives = 0;
+        for (int index = 0; index < this.inputs.size(); index++) {
+            Input input = this.inputs.get(index);
+            List<String> choices = BoundedItemIngredientCodec.resolveAlternatives(input.json());
+            totalAlternatives = Math.addExact(totalAlternatives, choices.size());
+            if (totalAlternatives > MAX_TOTAL_ALTERNATIVES) {
+                throw new IllegalArgumentException("precision recipe exceeds the 64-entry journal snapshot");
+            }
+            for (String choice : choices) {
+                Item variant = BuiltInRegistries.ITEM.getOptional(ResourceLocation.tryParse(choice)).orElseThrow();
+                if (input.count() > variant.getMaxStackSize()) {
+                    throw new IllegalArgumentException("input count exceeds an ingredient stack limit");
+                }
+            }
+            processInputs.add(new ProcessInput(
+                    ProcessResourceKind.ITEM,
+                    PrecisionAssemblerChannels.input(index),
+                    choices,
+                    input.count()
             ));
         }
-        this.processDefinition = new ProcessDefinition(
+        return new ProcessDefinition(
                 id.toString(),
                 ProcessDefinition.SCHEMA_VERSION,
                 encodedSizeBytes,
@@ -131,19 +139,21 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                 processInputs,
                 processOutputs
         );
-        this.signature = sha256(canonicalPayload());
     }
 
     @Override
     public boolean matches(SimpleContainer container, Level level) {
-        if (container.getContainerSize() != MAX_INPUTS) {
+        if (!available() || container.getContainerSize() != MAX_INPUTS) {
             return false;
         }
         for (int index = 0; index < MAX_INPUTS; index++) {
             ItemStack stack = container.getItem(index);
             if (index < inputs.size()) {
                 Input input = inputs.get(index);
-                if (stack.hasTag() || !input.ingredient().test(stack) || stack.getCount() < input.count()) {
+                if (stack.hasTag() || stack.isEmpty()
+                        || !ingredientAlternatives().get(index).contains(
+                                BuiltInRegistries.ITEM.getKey(stack.getItem()).toString())
+                        || stack.getCount() < input.count()) {
                     return false;
                 }
             } else if (!stack.isEmpty()) {
@@ -204,15 +214,58 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
     }
 
     public List<List<String>> ingredientAlternatives() {
-        return alternatives;
+        return processDefinition().inputs().stream().map(ProcessInput::alternatives).toList();
     }
 
     public ProcessDefinition processDefinition() {
-        return processDefinition;
+        return definition.get();
     }
 
     public String signature() {
         return signature;
+    }
+
+    public boolean available() { return definition.available(); }
+
+    public boolean hasTagIngredients() {
+        return inputs.stream().anyMatch(input -> BoundedItemIngredientCodec.hasTags(input.json()));
+    }
+
+   public String legacySignature() { return sha256(canonicalPayload()); }
+
+    public int processingTicks() { return processingTicks; }
+    public int energyPerTick() { return energyPerTick; }
+
+    public PrecisionAssemblerRecipe retainedPlan(ProcessResourceSnapshot before) {
+        JsonObject json = jsonPayload();
+        for (int index = 0; index < inputs.size(); index++) {
+            json.getAsJsonArray("inputs").get(index).getAsJsonObject().add("ingredient",
+                    io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RetainedRecipePlan
+                            .ingredient(before, PrecisionAssemblerChannels.input(index)));
+        }
+        return new Serializer().fromJson(id, json);
+    }
+
+    public JsonObject jsonPayload() {
+        JsonObject json = new JsonObject();
+        json.addProperty("type", PrecisionAssemblerIds.RECIPE.toString());
+        json.addProperty("schema_version", ProcessDefinition.SCHEMA_VERSION);
+        JsonArray inputArray = new JsonArray();
+        for (Input input : inputs) {
+            JsonObject entry = new JsonObject();
+            entry.add("ingredient", input.json()); entry.addProperty("count", input.count()); inputArray.add(entry);
+        }
+        json.add("inputs", inputArray);
+        JsonArray outputArray = new JsonArray();
+        for (ItemStack output : outputs) {
+            JsonObject entry = new JsonObject();
+            entry.addProperty("item", requireRegisteredId(output.getItem(), "result").toString());
+            entry.addProperty("count", output.getCount()); outputArray.add(entry);
+        }
+        json.add("outputs", outputArray);
+        json.addProperty("processing_time", processingTicks);
+        json.addProperty("energy_per_tick", energyPerTick);
+        return json;
     }
 
     private String canonicalPayload() {
@@ -221,7 +274,7 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                 .append(id).append('|').append(inputs.size());
         for (int index = 0; index < inputs.size(); index++) {
             canonical.append('|').append(PrecisionAssemblerChannels.input(index))
-                    .append('|').append(String.join(",", alternatives.get(index)))
+                    .append('|').append(String.join(",", ingredientAlternatives().get(index)))
                     .append('|').append(inputs.get(index).count());
         }
         canonical.append('|').append(outputs.size());
@@ -230,8 +283,8 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                     .append('|').append(requireRegisteredId(outputs.get(index).getItem(), "result"))
                     .append('|').append(outputs.get(index).getCount());
         }
-        return canonical.append('|').append(processDefinition.durationTicks())
-                .append('|').append(processDefinition.energyPerTick()).toString();
+        return canonical.append('|').append(processingTicks)
+                .append('|').append(energyPerTick).toString();
     }
 
     private static ResourceLocation requireRegisteredId(Item item, String field) {
@@ -294,20 +347,26 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
         }
     }
 
-    public record Input(Ingredient ingredient, int count) {
+    public record Input(Ingredient ingredient, int count, JsonElement json) {
+        public Input(Ingredient ingredient, int count) { this(ingredient, count, ingredient.toJson()); }
+
         public Input {
             Objects.requireNonNull(ingredient, "ingredient");
             if (count < 1 || count > MAX_ITEM_COUNT) {
                 throw new IllegalArgumentException("input count is outside the bounded range");
             }
+            BoundedItemIngredientCodec.validateOnly(json);
+            json = json.deepCopy();
         }
+
+        @Override public JsonElement json() { return json.deepCopy(); }
     }
 
     public static final class Serializer implements RecipeSerializer<PrecisionAssemblerRecipe> {
         @Override
         public PrecisionAssemblerRecipe fromJson(ResourceLocation id, JsonObject json) {
             try {
-                int bytes = json.toString().getBytes(StandardCharsets.UTF_8).length;
+                int bytes = RecipeJsonSignature.canonical(json).getBytes(StandardCharsets.UTF_8).length;
                 if (bytes < 1 || bytes > ProcessDefinition.MAX_DEFINITION_BYTES) {
                     throw new IllegalArgumentException("recipe JSON exceeds the 64 KiB limit");
                 }
@@ -322,8 +381,8 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                 for (JsonElement element : inputArray) {
                     JsonObject input = exactObject(element, INPUT_FIELDS, "input");
                     inputs.add(new Input(
-                            BoundedItemIngredientCodec.decodeItemsOnly(input.get("ingredient")),
-                            requireInt(input, "count")
+                            BoundedItemIngredientCodec.decode(input.get("ingredient")),
+                            requireInt(input, "count"), input.get("ingredient")
                     ));
                 }
                 List<ItemStack> outputs = new ArrayList<>(outputArray.size());
@@ -358,10 +417,8 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                 List<Input> inputs = new ArrayList<>(inputCount);
                 for (int index = 0; index < inputCount; index++) {
                     String ingredientJson = buffer.readUtf(BoundedItemIngredientCodec.MAX_INGREDIENT_JSON_CHARS);
-                    inputs.add(new Input(
-                            BoundedItemIngredientCodec.decodeItemsOnly(JsonParser.parseString(ingredientJson)),
-                            buffer.readVarInt()
-                    ));
+                    JsonElement raw = JsonParser.parseString(ingredientJson);
+                    inputs.add(new Input(BoundedItemIngredientCodec.decode(raw), buffer.readVarInt(), raw));
                 }
                 int outputCount = buffer.readVarInt();
                 if (outputCount < MIN_OUTPUTS || outputCount > MAX_OUTPUTS) {
@@ -390,7 +447,7 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
             buffer.writeVarInt(ProcessDefinition.SCHEMA_VERSION);
             buffer.writeVarInt(recipe.inputs.size());
             for (Input input : recipe.inputs) {
-                String json = input.ingredient().toJson().toString();
+                String json = input.json().toString();
                 BoundedItemIngredientCodec.validateOnly(JsonParser.parseString(json));
                 buffer.writeUtf(json, BoundedItemIngredientCodec.MAX_INGREDIENT_JSON_CHARS);
                 buffer.writeVarInt(input.count());
@@ -401,8 +458,8 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                         ProcessResourceKey.MAX_RESOURCE_ID_CHARS);
                 buffer.writeVarInt(output.getCount());
             }
-            buffer.writeVarInt(recipe.processDefinition.durationTicks());
-            buffer.writeVarInt(recipe.processDefinition.energyPerTick());
+            buffer.writeVarInt(recipe.processingTicks);
+            buffer.writeVarInt(recipe.energyPerTick);
         }
 
         private static int canonicalNetworkSize(
@@ -417,7 +474,7 @@ public final class PrecisionAssemblerRecipe implements Recipe<SimpleContainer> {
                 encoded.writeUtf(id.toString(), ProcessResourceKey.MAX_RESOURCE_ID_CHARS);
                 encoded.writeVarInt(inputs.size());
                 for (Input input : inputs) {
-                    encoded.writeUtf(input.ingredient().toJson().toString(),
+                    encoded.writeUtf(input.json().toString(),
                             BoundedItemIngredientCodec.MAX_INGREDIENT_JSON_CHARS);
                     encoded.writeVarInt(input.count());
                 }

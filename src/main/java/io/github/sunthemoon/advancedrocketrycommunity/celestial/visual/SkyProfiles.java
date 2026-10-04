@@ -19,7 +19,11 @@ public final class SkyProfiles {
                     Optional.of(new ResourceLocation("minecraft", "ambient.basalt_deltas.additions")), 0.18),
             ModIdentity.id("venus"), new SkyProfile(0xC6A34F, 0x302719, 0xBDAD67, 0xFFE9AA,
                     4, 0.18, 0.025, 0.1, 48,
-                    Optional.of(new ResourceLocation("minecraft", "ambient.nether_wastes.mood")), 0.12));
+                    Optional.of(new ResourceLocation("minecraft", "ambient.nether_wastes.mood")), 0.12),
+            ModIdentity.id("tau_ceti_f"), new SkyProfile(0x5FA8C8, 0x07131C, 0x7FB8C0, 0xFFE2B0,
+                    3, 1.0, 0.3, 0.6, 256, Optional.empty(), 0),
+            ModIdentity.id("tau_ceti_g"), new SkyProfile(0x202020, 0x050505, 0x2A2A2E, 0xFFD8A0,
+                    4, 0.5, 0.1, 0.3, 160, Optional.empty(), 0));
 
     private SkyProfiles() { }
 

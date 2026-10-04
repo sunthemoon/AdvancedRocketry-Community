@@ -70,6 +70,7 @@ public final class V180MaterialData {
                 }
             }
             dropSelf(MaterialContent.SMALL_PLATE_PRESS.get());
+            dropSelf(ModBlocks.COMBUSTION_GENERATOR.get());
             // C15b surface blocks drop themselves (ADR-063 section 5), except the charcoal log, which drops one
             // charcoal as the legacy log did: itself with Silk Touch, and Fortune adds up to its level.
             for (RegistryObject<Block> block : SurfaceContent.blocks()) {
@@ -99,6 +100,7 @@ public final class V180MaterialData {
             List<Block> blocks = new ArrayList<>();
             MaterialContent.blocks().values().forEach(block -> blocks.add(block.get()));
             blocks.add(MaterialContent.SMALL_PLATE_PRESS.get());
+            blocks.add(ModBlocks.COMBUSTION_GENERATOR.get());
             SurfaceContent.blocks().forEach(block -> blocks.add(block.get()));
             ExoplanetBlocks.blocks().forEach(block -> blocks.add(block.get()));
             return blocks;
@@ -145,6 +147,16 @@ public final class V180MaterialData {
             tag(BlockTags.NEEDS_IRON_TOOL).add(earlier);
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(MaterialContent.SMALL_PLATE_PRESS.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(MaterialContent.SMALL_PLATE_PRESS.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.COMBUSTION_GENERATOR.get());
+            tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.COMBUSTION_GENERATOR.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.PRESSURIZED_TANK.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.BLOCK.get());
+            tag(BlockTags.NEEDS_STONE_TOOL).add(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.BLOCK.get());
+            for (var tier : io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorDefinition.values()) {
+                Block motor = io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorContent.block(tier).get();
+                tag(BlockTags.MINEABLE_WITH_PICKAXE).add(motor);
+                tag(BlockTags.NEEDS_STONE_TOOL).add(motor);
+            }
             // C15b surfaces (ADR-063 section 5): soft turfs dig with a shovel, the charcoal log with an axe, the
             // geode shell needs an iron pickaxe (legacy: the jackhammer at level 2, which comes in C18b); geode ores
             // default to the legacy list (iron, gold, copper, tin, redstone).

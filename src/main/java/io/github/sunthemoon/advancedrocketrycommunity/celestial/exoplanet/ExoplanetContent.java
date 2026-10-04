@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialB
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialCapabilities;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.OrbitDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyProfile;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyProfiles;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.route.model.RouteAnchor;
@@ -69,10 +70,8 @@ public final class ExoplanetContent {
     /** A blue-green day sky for f; the dark legacy stormland sky (0x202020) for g, its sun dimmed by the storm. */
     public static Map<ResourceLocation, SkyProfile> skyProfiles() {
         return Map.of(
-                TAU_CETI_F, new SkyProfile(0x5FA8C8, 0x07131C, 0x7FB8C0, 0xFFE2B0, 3, 1.0, 0.3, 0.6, 256,
-                        Optional.empty(), 0),
-                TAU_CETI_G, new SkyProfile(0x202020, 0x050505, 0x2A2A2E, 0xFFD8A0, 4, 0.5, 0.1, 0.3, 160,
-                        Optional.empty(), 0));
+                TAU_CETI_F, SkyProfiles.builtins().get(TAU_CETI_F),
+                TAU_CETI_G, SkyProfiles.builtins().get(TAU_CETI_G));
     }
 
     private static RouteDefinition route(String id, RouteAnchor from, RouteAnchor to, int distance) {

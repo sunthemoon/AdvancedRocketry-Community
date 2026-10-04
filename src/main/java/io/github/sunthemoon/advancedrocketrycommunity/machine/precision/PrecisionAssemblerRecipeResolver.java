@@ -35,13 +35,17 @@ final class PrecisionAssemblerRecipeResolver {
             Optional<? extends net.minecraft.world.item.crafting.Recipe<?>> loaded = activeId == null
                     ? Optional.empty()
                     : level.getRecipeManager().byKey(activeId);
-            if (loaded.isEmpty()
-                    || !(loaded.orElseThrow() instanceof PrecisionAssemblerRecipe recipe)
-                    || !recipe.signature().equals(signature)) {
+            if (loaded.isEmpty() || !(loaded.orElseThrow() instanceof PrecisionAssemblerRecipe)) {
                 return Resolution.missing(
                         ProcessMachineState.INVALID_RECIPE,
-                        new ProcessFailure(ProcessFailureCode.INVALID_RECIPE, progress.definitionId())
+                        new ProcessFailure(ProcessFailureCode.INVALID_RECIPE, "recipe_missing")
                 );
+            }
+            PrecisionAssemblerRecipe recipe = (PrecisionAssemblerRecipe) loaded.orElseThrow();
+            if (!recipe.signature().equals(signature) || !recipe.available()) {
+                return Resolution.missing(ProcessMachineState.INVALID_RECIPE,
+                        new ProcessFailure(ProcessFailureCode.INVALID_RECIPE,
+                                !recipe.signature().equals(signature) ? "recipe_changed" : "recipe_tags_invalid"));
             }
             return Resolution.found(recipe);
         }

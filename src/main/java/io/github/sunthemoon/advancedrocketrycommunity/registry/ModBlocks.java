@@ -2,7 +2,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.AdvancedMachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionGeneratorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorEndpointBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlock;
@@ -38,6 +40,10 @@ public final class ModBlocks {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<CombustionGeneratorBlock> COMBUSTION_GENERATOR = BLOCKS.register(
+            "combustion_generator", () -> new CombustionGeneratorBlock(metalProperties().requiresCorrectToolForDrops()
+                    .pushReaction(PushReaction.BLOCK)
+                    .lightLevel(state -> state.getValue(CombustionGeneratorBlock.LIT) ? 13 : 0)));
     public static final RegistryObject<Block> MACHINE_CASING = BLOCKS.register(
             "machine_casing",
             () -> new MachineCasingBlock(BlockBehaviour.Properties.of()
@@ -160,7 +166,7 @@ public final class ModBlocks {
     /** ADR-054 section 16: the structure cell of the endgame multiblocks (laser drill, railgun, generator, anchor). */
     public static final RegistryObject<Block> ENDGAME_CASING = BLOCKS.register(
             "endgame_casing",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new AdvancedMachineCasingBlock(BlockBehaviour.Properties.of()
                     .mapColor(MapColor.COLOR_BLACK)
                     .requiresCorrectToolForDrops()
                     .strength(5.0F, 6.0F)
@@ -242,6 +248,14 @@ public final class ModBlocks {
                     .pushReaction(PushReaction.BLOCK)
                     .sound(SoundType.METAL), false)
     );
+
+    /** ADR-064 section 6: one native tank and one dropped Item resource carrier. */
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTankBlock>
+            PRESSURIZED_TANK = BLOCKS.register("pressurized_tank", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTankBlock(
+                    metalProperties().pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK),
+                    () -> ModBlockEntities.PRESSURIZED_TANK.get(),
+                    io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig::tankCapacityMultiplier));
 
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()

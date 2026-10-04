@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.MachineMenuOpening;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtection;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -9,11 +11,13 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
@@ -112,9 +116,16 @@ public final class ElectrolyzerBlock extends BaseEntityBlock {
         }
 
         if (!level.isClientSide && player instanceof ServerPlayer serverPlayer) {
-            NetworkHooks.openScreen(serverPlayer, electrolyzer, position);
+            NetworkHooks.openScreen(serverPlayer, electrolyzer,
+                    buffer -> MachineMenuOpening.write(buffer, position, ElectrolyzerBlockEntity.MENU_DATA_COUNT));
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
+    @Override
+    public boolean canEntityDestroy(BlockState state, BlockGetter level, BlockPos position, Entity entity) {
+        return !RecipeSignatureProtection.blocksRemoval(level, position)
+                && super.canEntityDestroy(state, level, position, entity);
     }
 
     @Override

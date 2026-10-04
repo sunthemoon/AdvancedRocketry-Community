@@ -181,7 +181,7 @@ public final class ElectrolyzerKernelGameTests {
     }
 
     @GameTest(template = "empty", timeoutTicks = 20)
-    public static void v120Mig001LegacyStateMigratesIdempotentlyWithoutResourceEffects(GameTestHelper helper) {
+    public static void unsignedLegacyStateStaysVerbatimAndLockedWithoutResourceEffects(GameTestHelper helper) {
         ElectrolyzerBlockEntity source = placeMachine(helper, BlockPos.ZERO);
         IItemHandler input = source.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP)
                 .orElseThrow(() -> new IllegalStateException("Top item capability is missing"));
@@ -205,6 +205,7 @@ public final class ElectrolyzerKernelGameTests {
         CompoundTag legacyParent = source.saveWithoutMetadata();
         legacyParent.remove("arce_process");
         legacyParent.remove("arce_process_journal");
+        legacyParent.remove("arce_recipe_signature");
         CompoundTag legacyRoot = legacyParent.getCompound("arce_machine");
         legacyRoot.putInt("progress", 40);
         legacyRoot.putString("active_recipe", RECIPE_ID.toString());
@@ -218,22 +219,17 @@ public final class ElectrolyzerKernelGameTests {
         CompoundTag firstSave = first.saveWithoutMetadata();
         helper.assertTrue(legacyBefore.equals(firstSave.getCompound("arce_machine")),
                 "Migration rewrote the accepted schema-1 root");
-        helper.assertTrue(firstSave.contains("arce_process", CompoundTag.TAG_COMPOUND),
-                "Migration did not create the shared process root");
+        helper.assertFalse(firstSave.contains("arce_process"),
+                "Unsigned work was reinterpreted as verified process progress");
+        helper.assertFalse(firstSave.contains("arce_recipe_signature"),
+                "Unsigned work received a verified signature marker");
         helper.assertFalse(firstSave.contains("arce_process_journal"),
                 "Migration executed a resource transaction");
-        CompoundTag migratedProcess = firstSave.getCompound("arce_process").copy();
-        helper.assertTrue(migratedProcess.getInt("progress_ticks") == 40
-                        && migratedProcess.getLong("consumed_energy") == 0,
-                "Migration changed progress or consumed energy");
-        helper.assertTrue("0".repeat(64).equals(migratedProcess.getString("recipe_signature")),
-                "Migration did not mark the legacy recipe for deferred verification");
-
         ElectrolyzerBlockEntity second = new ElectrolyzerBlockEntity(source.getBlockPos(), source.getBlockState());
         second.load(firstSave);
         CompoundTag secondSave = second.saveWithoutMetadata();
-        helper.assertTrue(migratedProcess.equals(secondSave.getCompound("arce_process")),
-                "A second load changed the migrated process root");
+        helper.assertFalse(secondSave.contains("arce_process") || secondSave.contains("arce_recipe_signature"),
+                "A second load invented signature proof");
         helper.assertTrue(legacyBefore.equals(secondSave.getCompound("arce_machine")),
                 "A second load changed the legacy compatibility root");
         assertResourcesUnchanged(helper, second);
@@ -278,6 +274,8 @@ public final class ElectrolyzerKernelGameTests {
                 ProcessMachineLogic.simulate(recipe.processDefinition(), before).plan().orElseThrow()
         );
         persisted.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(forged));
+        new io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration()
+                .save(persisted, recipe.getId().toString());
         machine.load(persisted);
 
         IItemHandler charge = machine.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.NORTH)

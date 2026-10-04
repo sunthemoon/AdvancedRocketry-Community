@@ -224,6 +224,7 @@ public final class BootstrapGameTests {
         ResourceLocation id = ModIdentity.id("serializer_fixture");
         JsonObject json = JsonParser.parseString("""
                 {
+                  "type": "advancedrocketrycommunity:electrolyzing",
                   "schema_version": 1,
                   "ingredient": {"item": "advancedrocketrycommunity:empty_canister"},
                   "input_count": 2,

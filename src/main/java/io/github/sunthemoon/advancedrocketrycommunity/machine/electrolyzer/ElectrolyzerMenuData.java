@@ -9,19 +9,22 @@ final class ElectrolyzerMenuData implements ContainerData {
     private final IntSupplier energy;
     private final IntSupplier water;
     private final IntSupplier status;
+    private final IntSupplier recipeReason;
 
     ElectrolyzerMenuData(
             IntSupplier progress,
             IntSupplier totalProcessingTicks,
             IntSupplier energy,
             IntSupplier water,
-            IntSupplier status
+            IntSupplier status,
+            IntSupplier recipeReason
     ) {
         this.progress = progress;
         this.totalProcessingTicks = totalProcessingTicks;
         this.energy = energy;
         this.water = water;
         this.status = status;
+        this.recipeReason = recipeReason;
     }
 
     @Override
@@ -34,6 +37,7 @@ final class ElectrolyzerMenuData implements ContainerData {
             case 4 -> water.getAsInt();
             case 5 -> ElectrolyzerBlockEntity.WATER_CAPACITY;
             case 6 -> status.getAsInt();
+            case 7 -> recipeReason.getAsInt();
             default -> 0;
         };
     }

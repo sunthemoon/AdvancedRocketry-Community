@@ -16,7 +16,7 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 public final class LandingGroundFilter extends PlacementFilter {
     /**
      * Reads the plain radius and checks it as a result, so an out-of-range radius is a codec error; a map codec, so
-     * the placement JSON stays flat: {@code {"type": ..., "radius": 160}}.
+     * the placement JSON stays flat: {@code {"type": ..., "radius": 224}}.
      */
     public static final Codec<LandingGroundFilter> CODEC = Codec.INT.fieldOf("radius").<LandingGroundFilter>flatXmap(
             radius -> valid(radius) ? DataResult.success(new LandingGroundFilter(radius))

@@ -1,5 +1,5 @@
 // Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
-// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, 2026-09-01, 2026-09-03, 2026-09-11, 2026-09-26, 2026-09-27, 2026-09-30, 2026-10-01, 2026-10-02, and 2026-10-03; see THIRD-PARTY-NOTICES.md.
+// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, 2026-09-01, 2026-09-03, 2026-09-11, 2026-09-26, 2026-09-27, 2026-09-30, 2026-10-01, 2026-10-02, 2026-10-03, and 2026-10-04; see THIRD-PARTY-NOTICES.md.
 plugins {
     id 'eclipse'
     id 'idea'
@@ -144,6 +144,14 @@ def currentSupersededV030Types = [
 ] as Set
 
 def currentSatelliteDefinition = 'data/advancedrocketrycommunity/satellite_definitions/data_satellite.json'
+def currentGasTable = 'data/advancedrocketrycommunity/gas_harvest/gas_giant.json'
+
+// ADR-064 section 2.4: current tag selectors supersede these exact immutable v1.2 process payloads.
+def supersededV120ProcessRecipes = [
+        'data/advancedrocketrycommunity/recipes/rolling_iron_bars.json',
+        'data/advancedrocketrycommunity/recipes/precision_control_circuit.json',
+        'data/advancedrocketrycommunity/recipes/precision_guidance_module.json'
+] as Set
 
 // ADR-063 section 8: the v1.8 copies of the Moon, Mars and Venus dimensions and of the Mars and Venus noise
 // settings (new biome sources and surface rules, the noise router unchanged) supersede these earlier copies.
@@ -159,6 +167,15 @@ def supersededV140Planets = [
 
 tasks.named('processResources') {
     eachFile { details ->
+        if (details.file.toPath().startsWith(file('src/generated/v1.2/resources').toPath())
+                && supersededV120ProcessRecipes.contains(details.path)) {
+            details.exclude()
+        }
+        // ADR-064 section 5: retain the immutable v1.6 table, ship its v1.8 nitrogen extension instead.
+        if (details.file.toPath().startsWith(file('src/generated/v1.6/resources').toPath())
+                && details.path == currentGasTable) {
+            details.exclude()
+        }
         // ADR-043 and ADR-063 section 8: the v1.8 copy is authoritative; the v0.8, v1.4 and v1.5 copies are
         // superseded.
         if ((details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())
@@ -202,6 +219,14 @@ tasks.named('processResources') {
 
 tasks.named('sourcesJar') {
     eachFile { details ->
+        if (details.file.toPath().startsWith(file('src/generated/v1.2/resources').toPath())
+                && supersededV120ProcessRecipes.contains(details.path)) {
+            details.exclude()
+        }
+        if (details.file.toPath().startsWith(file('src/generated/v1.6/resources').toPath())
+                && details.path == currentGasTable) {
+            details.exclude()
+        }
         // ADR-043 and ADR-063 section 8: the v1.8 copy is authoritative; the v0.8, v1.4 and v1.5 copies are
         // superseded.
         if ((details.file.toPath().startsWith(file('src/generated/v0.8/resources').toPath())

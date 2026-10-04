@@ -16,6 +16,11 @@ public final class ModRegistries {
         ModSounds.register(modBus);
         ModEntities.register(modBus);
         ModCreativeTabs.register(modBus);
+        // ADR-064 section 5: three container gases and two placeable liquids.
+        io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.register(modBus);
+        io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorContent.register(modBus);
+        io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.register(modBus,
+                io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig::pumpEnabled);
         // v1.8 (ADR-063): the classic material set, its ores and the small plate press.
         io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent.register(modBus);
         // v1.8 (ADR-063 section 5): the Moon, Mars and Venus surface blocks and world generators.

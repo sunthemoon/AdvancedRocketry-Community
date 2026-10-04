@@ -28,8 +28,45 @@ public final class V180LanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        V180PumpLanguage.translations(chinese).forEach(this::add);
+        V180RecipeMenuLanguage.translations(chinese).forEach(this::add);
         add("itemGroup." + NS + ".materials", chinese ? "高级火箭：材料" : "Advanced Rocketry: Materials");
         add("block." + NS + ".small_plate_press", chinese ? "小型压板机" : "Small Plate Press");
+        add("block." + NS + ".combustion_generator", chinese ? "燃烧发电机" : "Combustion Generator");
+        add("screen." + NS + ".combustion.rate", "40 FE/t");
+        add("block." + NS + ".pressurized_tank", chinese ? "加压储罐" : "Pressurized Tank");
+        add("message." + NS + ".tank.empty", chinese ? "空" : "Empty");
+        add("message." + NS + ".tank.contents", chinese ? "%s：%s / %s mB" : "%s: %s / %s mB");
+        add("tooltip." + NS + ".tank.contents", chinese ? "%s：%s mB" : "%s: %s mB");
+        add("message." + NS + ".tank.repair", chinese ? "储罐数据无法识别；请备份后由管理员修复。"
+                : "Unsupported tank data; back up the world and ask an administrator to repair it.");
+        add("message." + NS + ".tank.refused", chinese ? "无法交换完整的 1,000 mB：请检查容量、流体、元数据和库存空间。"
+                : "Cannot exchange a full 1,000 mB: check capacity, fluid, metadata and inventory space.");
+        String[] gases = {"oxygen", "hydrogen", "nitrogen", "rocket_fuel", "enriched_lava"};
+        String[] fluidEnglish = {"Oxygen", "Hydrogen", "Nitrogen", "Rocket Fuel", "Enriched Lava"};
+        String[] fluidChinese = {"氧气", "氢气", "氮气", "火箭燃料", "富集熔岩"};
+        for (int i = 0; i < gases.length; i++) {
+            add("fluid_type." + NS + "." + gases[i], chinese ? fluidChinese[i] : fluidEnglish[i]);
+        }
+        add("item." + NS + ".nitrogen_canister", chinese ? "氮气罐" : "Nitrogen Canister");
+        add("item." + NS + ".rocket_fuel_bucket", chinese ? "火箭燃料桶" : "Rocket Fuel Bucket");
+        add("item." + NS + ".enriched_lava_bucket", chinese ? "富集熔岩桶" : "Enriched Lava Bucket");
+        add("block." + NS + ".rocket_fuel", chinese ? "火箭燃料" : "Rocket Fuel");
+        add("block." + NS + ".enriched_lava", chinese ? "富集熔岩" : "Enriched Lava");
+        for (var motor : io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorDefinition.values()) {
+            add("block." + NS + "." + motor.id(), chinese ? motor.chinese() : motor.english());
+        }
+        // Keep the existing v1.7 registry identity; only the player-facing casing name changes.
+        add("block." + NS + ".advanced_machine_casing", chinese ? "高级机器机壳" : "Advanced Machine Casing");
+        add("screen." + NS + ".combustion.burn", chinese ? "剩余燃烧：%s / %s tick" : "Burn credit: %s / %s ticks");
+        String[] combustionEnglish = {"No fuel", "Generating", "Buffer full", "Disabled", "Fuel too long",
+                "Container blocked", "Repair required"};
+        String[] combustionChinese = {"无燃料", "发电中", "缓冲区已满", "已禁用", "燃烧时间过长", "容器无法保留", "需要修复"};
+        var statuses = io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionBurn.Status.values();
+        for (int i = 0; i < statuses.length; i++) {
+            add("screen." + NS + ".combustion.status." + statuses[i].name().toLowerCase(java.util.Locale.ROOT),
+                    chinese ? combustionChinese[i] : combustionEnglish[i]);
+        }
         add("jei." + NS + ".small_plate_press.redstone",
                 chinese ? "红石脉冲" : "Redstone pulse");
         // C15b surface blocks and biomes (ADR-063 section 5), with the legacy names where the legacy game had them.

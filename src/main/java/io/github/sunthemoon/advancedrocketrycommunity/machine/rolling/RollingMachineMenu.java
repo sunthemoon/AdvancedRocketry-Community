@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.rolling;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.MachineMenuOpening;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.RecipeMenuReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecycle.MultiblockFormationState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternDiagnosticReason;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
@@ -46,7 +48,7 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
                 playerInventory,
                 new ItemStackHandler(MACHINE_SLOT_COUNT),
                 new SimpleContainerData(RollingMachineMenuData.COUNT),
-                requireAccess(playerInventory, buffer.readBlockPos())
+                requireAccess(playerInventory, MachineMenuOpening.read(buffer, RollingMachineMenuData.COUNT))
         );
     }
 
@@ -77,6 +79,7 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
     ) {
         super(ModMenuTypes.ROLLING_MACHINE.get(), containerId);
         checkContainerDataCount(data, RollingMachineMenuData.COUNT);
+        MachineMenuOpening.requireExactDataCount(data, RollingMachineMenuData.COUNT);
         this.data = data;
         this.access = access;
         this.machineItems = machineItems;
@@ -174,6 +177,15 @@ public final class RollingMachineMenu extends AbstractContainerMenu {
 
     public ProcessFailureCode processFailure() {
         return RollingMachineMenuWire.failure(data.get(RollingMachineMenuData.PROCESS_FAILURE));
+    }
+
+    public RecipeMenuReason recipeReason() {
+        if (formationState() == MultiblockFormationState.UNSUPPORTED_DATA
+                || processState() == ProcessMachineState.UNSUPPORTED_DATA
+                || processFailure() == ProcessFailureCode.NONE) {
+            return RecipeMenuReason.NONE;
+        }
+        return RecipeMenuReason.fromNetworkId(data.get(RollingMachineMenuData.RECIPE_REASON));
     }
 
     public int progress() {

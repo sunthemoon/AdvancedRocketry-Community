@@ -20,6 +20,72 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class ElectrolyzerMigrationTest {
+    @Test
+    void unmarkedBuiltinActiveAndEveryJournalPhasePauseBeforeLookupChargingOrReplay() {
+        for (String signature : new String[]{"5eacb5d39d636c9045ea0e1e198e41e89d411dc2cc8f13c9994466cdfb53d152",
+                "0".repeat(64), "a".repeat(64)}) {
+            for (var phase : new io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessJournalPhase[]{
+                    null, io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessJournalPhase.PREPARED,
+                    io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessJournalPhase.APPLYING,
+                    io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessJournalPhase.APPLIED}) {
+                int ticks = phase == null ? 40 : 100;
+                CompoundTag old = parentWithLegacy(ticks, RECIPE_ID, 1_200);
+                old.put(ProcessStatePersistence.ROOT, ProcessStatePersistence.encode(new ProcessStateData(
+                        ProcessMachineState.RUNNING, 4, java.util.Optional.of(
+                                new io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessProgress(RECIPE_ID, ticks, ticks * 20L)),
+                        java.util.Optional.of(signature), java.util.Optional.empty(),
+                        new io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFailure(
+                                io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFailureCode.OUTPUT_BLOCKED, "old_failure"))));
+                if (phase != null) {
+                    var before = new io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot(4, java.util.Map.of());
+                    var after = new io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot(5, java.util.Map.of());
+                    old.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(new ProcessTransactionJournal(
+                            1, java.util.UUID.randomUUID(), java.util.UUID.randomUUID(), RECIPE_ID, 4,
+                            before.fingerprint(), before, after, phase)));
+                }
+                for (int load = 0; load < 2; load++) {
+                    ElectrolyzerProcessController process = new ElectrolyzerProcessController(() -> {});
+                    process.load(old, ElectrolyzerPersistence.decode(old));
+                    process.tick(null, null, true);
+                    assertEquals(ElectrolyzerStatus.INVALID_RECIPE, process.displayStatus());
+                    assertEquals(0, process.recipeLookupCount()); assertEquals(ticks, process.progressTicks());
+                    assertEquals(4, process.resourceRevision()); assertTrue(process.preservesRecipeInput());
+                    assertFalse(process.permitsExternalResourceOperations());
+                    assertEquals(phase != null, process.load().isPresent());
+                    CompoundTag saved = new CompoundTag(); process.save(saved); assertEquals(old, saved);
+                    assertEquals(1_200, ElectrolyzerPersistence.decode(saved).energy());
+                    assertFalse(saved.contains("arce_recipe_signature")); old = saved;
+                }
+            }
+        }
+    }
+
+    @Test
+    void markedProgressAndJournalMustBothMatchTheMarkerIdentity() {
+        CompoundTag parent = parentWithLegacy(40, "advancedrocketrycommunity:electrolyzer_water", 1_200);
+        parent.put(ProcessStatePersistence.ROOT, ProcessStatePersistence.encode(new ProcessStateData(
+                ProcessMachineState.RUNNING, 4, java.util.Optional.of(
+                        new io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessProgress(
+                                "advancedrocketrycommunity:electrolyzer_water", 40, 800)),
+                java.util.Optional.of("a".repeat(64)), java.util.Optional.empty(),
+                io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFailure.NONE)));
+        var before = new io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot(
+                4, java.util.Map.of());
+        var after = new io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessResourceSnapshot(
+                5, java.util.Map.of());
+        parent.put(ProcessJournalPersistence.ROOT, ProcessJournalPersistence.encode(
+                ProcessTransactionJournal.prepared(java.util.UUID.randomUUID(), java.util.UUID.randomUUID(),
+                        new io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessPlan(
+                                "arce_test:different", 4, before.fingerprint(), before, after))));
+        new io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration()
+                .save(parent, "advancedrocketrycommunity:electrolyzer_water");
+        ElectrolyzerProcessController process = new ElectrolyzerProcessController(() -> {});
+        process.load(parent, ElectrolyzerPersistence.decode(parent));
+        assertFalse(process.acceptsResourceAccess()); assertEquals(ElectrolyzerStatus.UNSUPPORTED_DATA, process.displayStatus());
+        CompoundTag saved = new CompoundTag(); process.save(saved);
+        assertEquals(parent, saved);
+    }
+
     private static final String RECIPE_ID = "advancedrocketrycommunity:electrolyzer_water";
 
     @BeforeAll
@@ -28,7 +94,7 @@ class ElectrolyzerMigrationTest {
     }
 
     @Test
-    void v120Mig001LegacySchemaMigratesOnceWithoutResolvingOrExecutingARecipe() {
+    void oldUnsignedProgressRemainsVerbatimWithoutResolvingExecutingOrInventingProof() {
         CompoundTag parent = parentWithLegacy(40, RECIPE_ID, 1_200);
         Tag legacyBefore = parent.get(ElectrolyzerPersistence.DATA_KEY).copy();
         ElectrolyzerPersistence.DecodeResult legacy = ElectrolyzerPersistence.decode(parent);
@@ -48,28 +114,21 @@ class ElectrolyzerMigrationTest {
         assertEquals(legacyBefore, parent.get(ElectrolyzerPersistence.DATA_KEY));
         assertFalse(parent.contains(ProcessJournalPersistence.ROOT));
 
-        ProcessStateData migrated = ProcessStatePersistence.decode(parent).value().orElseThrow();
-        assertEquals(ProcessMachineState.RUNNING, migrated.state());
-        assertEquals(RECIPE_ID, migrated.progress().orElseThrow().definitionId());
-        assertEquals(40, migrated.progress().orElseThrow().progressTicks());
-        assertEquals(0, migrated.progress().orElseThrow().consumedEnergy());
-        assertEquals(
-                ElectrolyzerProcessController.LEGACY_UNVERIFIED_SIGNATURE,
-                migrated.recipeSignature().orElseThrow()
-        );
-        assertTrue(migrated.lastAppliedTransactionId().isEmpty());
+        assertFalse(parent.contains(ProcessStatePersistence.ROOT));
+        assertFalse(parent.contains("arce_recipe_signature"));
+        assertFalse(first.permitsExternalResourceOperations());
         assertEquals(0, changed.get(), "Migration must not masquerade as a resource mutation");
 
-        CompoundTag processBefore = parent.getCompound(ProcessStatePersistence.ROOT).copy();
+        CompoundTag before = parent.copy();
         ElectrolyzerProcessController second = new ElectrolyzerProcessController(() -> { });
         second.load(parent, ElectrolyzerPersistence.decode(parent));
         CompoundTag secondSave = parent.copy();
         second.save(secondSave);
 
-        assertFalse(second.migrationPerformed());
+        assertTrue(second.migrationPerformed(), "unsigned work is still awaiting proof, not persisted as verified");
         assertEquals(40, second.progressTicks());
         assertEquals(0, second.recipeLookupCount());
-        assertEquals(processBefore, secondSave.getCompound(ProcessStatePersistence.ROOT));
+        assertEquals(before, secondSave);
         assertEquals(legacyBefore, secondSave.get(ElectrolyzerPersistence.DATA_KEY));
     }
 

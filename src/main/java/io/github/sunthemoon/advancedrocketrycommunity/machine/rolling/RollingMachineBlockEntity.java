@@ -34,7 +34,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Thin Minecraft lifecycle adapter around the immutable multiblock controller state. */
-public final class RollingMachineBlockEntity extends BlockEntity implements MenuProvider {
+public final class RollingMachineBlockEntity extends BlockEntity implements MenuProvider,
+        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected {
     private MultiblockControllerState controllerState;
     private final RollingMachineProcessController process;
     private final RollingMachineMenuData menuData;
@@ -211,7 +212,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
                 || !recipe.signature().equals(process.recipeSignature().orElseThrow())) {
             return 0;
         }
-        return recipe.processDefinition().durationTicks();
+        return recipe.processingTicks();
     }
 
     @Override
@@ -241,6 +242,11 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
             );
         }
         process.save(parent);
+    }
+
+    @Override
+    public boolean preservesRecipeInput() {
+        return persistenceStatus != MultiblockNbtStatus.SUPPORTED || process.preservesRecipeInput();
     }
 
     @Override

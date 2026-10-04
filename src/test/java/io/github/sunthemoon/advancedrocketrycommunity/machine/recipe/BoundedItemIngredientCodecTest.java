@@ -15,11 +15,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-/**
- * C15aR1-M2 (ADR-061 section 2.2, revision 7): kernel machine recipes name items. Minecraft parses recipes and sends
- * them to joining clients before tags are bound, and kernel recipes resolve their ingredient when built, so they
- * reject tag entries until the C16a machine family resolves tags after binding; the small plate press keeps tags.
- */
+/** Bounded subset checks; the explicit item-only decoder remains available for legacy proof. */
 class BoundedItemIngredientCodecTest {
     @BeforeAll
     static void bootstrap() {
@@ -43,7 +39,7 @@ class BoundedItemIngredientCodecTest {
     }
 
     @Test
-    void theElectrolyzerRejectsATagIngredientBeforeAnythingElse() {
+    void anUnboundTagDoesNotMaskInvalidElectrolyzerOutputCounts() {
         RuntimeException exception = assertThrows(RuntimeException.class, () -> new ElectrolyzerRecipe.Serializer()
                 .fromJson(new ResourceLocation("advancedrocketrycommunity", "probe"), JsonParser.parseString("""
                         {
@@ -52,19 +48,19 @@ class BoundedItemIngredientCodecTest {
                           "ingredient": {"tag": "forge:ingots/iron"},
                           "input_count": 1,
                           "fluid": {"fluid": "minecraft:water", "amount": 100},
-                          "hydrogen_result": {"item": "minecraft:stone"},
+                          "hydrogen_result": {"item": "minecraft:stone", "count": 0},
                           "oxygen_result": {"item": "minecraft:stone"},
                           "processing_time": 100,
                           "energy_per_tick": 10
                         }
                         """).getAsJsonObject()));
-        assertEquals(true, String.valueOf(exception.getMessage()).contains("tag ingredients are not supported"),
+        assertEquals(true, String.valueOf(exception.getMessage()).contains("invalid item/count"),
                 exception.getMessage());
     }
 
-    /** C15aR2-L1: the electrolyzer refuses a tag ingredient arriving over the network, before anything else. */
+    /** A tag is decoded without binding, but output and packet bounds still apply. */
     @Test
-    void theElectrolyzerRefusesATagIngredientFromTheNetwork() {
+    void anUnboundNetworkTagDoesNotMaskAnInvalidOutputCount() {
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
             buffer.writeUtf("{\"tag\":\"forge:ingots/iron\"}");
@@ -72,13 +68,14 @@ class BoundedItemIngredientCodecTest {
             for (int value : new int[] {1, 1, 100, 100, 10}) {
                 buffer.writeVarInt(value);
             }
+            buffer.writeUtf("minecraft:stone"); buffer.writeVarInt(0);
             RuntimeException refused = assertThrows(RuntimeException.class, () -> new ElectrolyzerRecipe.Serializer()
                     .fromNetwork(new ResourceLocation("advancedrocketrycommunity", "probe"), buffer));
             Throwable cause = refused;
-            while (cause.getCause() != null && !String.valueOf(cause.getMessage()).contains("tag ingredients")) {
+            while (cause.getCause() != null && !String.valueOf(cause.getMessage()).contains("hydrogen_result")) {
                 cause = cause.getCause();
             }
-            assertEquals(true, String.valueOf(cause.getMessage()).contains("tag ingredients are not supported"),
+            assertEquals(true, String.valueOf(cause.getMessage()).contains("Invalid hydrogen_result item/count"),
                     refused.toString());
         } finally {
             buffer.release();

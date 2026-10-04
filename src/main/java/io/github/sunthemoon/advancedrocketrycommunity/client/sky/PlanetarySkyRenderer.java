@@ -27,7 +27,7 @@ final class PlanetarySkyRenderer implements AutoCloseable {
     private VertexBuffer halo;
     private boolean failed;
 
-    boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle) {
+    boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle, double flash) {
         RenderSystem.assertOnRenderThread();
         if (failed) {
             return false;
@@ -54,9 +54,9 @@ final class PlanetarySkyRenderer implements AutoCloseable {
             var profile = selection.profile();
             double daylight = SkyMath.daylight(angle);
             Matrix4f view = poses.last().pose();
-            tint(SkyMath.skyColor(profile, daylight), 1, 1);
+            tint(SkyMath.flashColor(SkyMath.skyColor(profile, daylight), flash), 1, 1);
             draw(sphere, view, projection);
-            tint(profile.fogColor(), 0.12 + 0.88 * daylight, 1);
+            tint(SkyMath.flashColor(SkyMath.scaleColor(profile.fogColor(), 0.12 + 0.88 * daylight), flash), 1, 1);
             draw(horizon, view, projection);
             var rotating = new Matrix4f(view).rotateY((float) (-Math.PI / 2)).rotateX(angle);
             tint(0xFFFFFF, 1, SkyMath.stars(profile, selection.pressure(), daylight));

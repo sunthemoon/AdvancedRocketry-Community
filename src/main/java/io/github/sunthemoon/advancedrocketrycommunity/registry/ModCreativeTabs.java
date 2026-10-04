@@ -22,6 +22,12 @@ public final class ModCreativeTabs {
                     .icon(() -> new ItemStack(ModItems.SILICON_WAFER.get()))
                     .displayItems((parameters, output) -> {
                         output.accept(ModItems.MACHINE_CASING.get());
+                        output.accept(ModItems.COMBUSTION_GENERATOR.get());
+                        output.accept(ModItems.PRESSURIZED_TANK.get());
+                        output.accept(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.ITEM.get());
+                        for (var motor : io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorDefinition.values()) {
+                            output.accept(io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorContent.item(motor).get());
+                        }
                         output.accept(ModItems.ELECTROLYZER.get());
                         output.accept(ModItems.ROLLING_MACHINE.get());
                         output.accept(ModItems.ROLLING_MACHINE_ITEM_INPUT_PORT.get());
@@ -35,6 +41,9 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.EMPTY_CANISTER.get());
                         output.accept(ModItems.HYDROGEN_CANISTER.get());
                         output.accept(ModItems.OXYGEN_CANISTER.get());
+                        output.accept(io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.NITROGEN_CANISTER.get());
+                        output.accept(io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ROCKET_FUEL_BUCKET.get());
+                        output.accept(io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ENRICHED_LAVA_BUCKET.get());
                         output.accept(ModItems.OXYGEN_VENT.get());
                         output.accept(ModItems.SPACE_SUIT_HELMET.get());
                         output.accept(ModItems.SPACE_SUIT_CHESTPLATE.get());

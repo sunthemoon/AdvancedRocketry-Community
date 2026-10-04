@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.gametest.PrecisionAssemble
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessJournalPersistence;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessStatePersistence;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.gametest.framework.GameTest;
@@ -175,10 +176,14 @@ public final class PrecisionAssemblerTransactionCutGameTests {
 
             // This is deliberately stale input, not a claimed coherent commit cut.
             CompoundTag stale = second.copy();
-            CompoundTag oldJournal = firstCuts.stream()
+            CompoundTag preparedSnapshot = firstCuts.stream()
                     .filter(cut -> "prepared".equals(PrecisionAssemblerTransactionTestFixture.phase(cut.saved())))
-                    .findFirst().orElseThrow().saved().getCompound(ProcessJournalPersistence.ROOT).copy();
+                    .findFirst().orElseThrow().saved();
+            helper.assertTrue(preparedSnapshot.contains(RecipeSignatureMigration.ROOT, Tag.TAG_COMPOUND),
+                    "Actual current-format prepared cut is missing its signature marker");
+            CompoundTag oldJournal = preparedSnapshot.getCompound(ProcessJournalPersistence.ROOT).copy();
             stale.put(ProcessJournalPersistence.ROOT, oldJournal);
+            stale.put(RecipeSignatureMigration.ROOT, preparedSnapshot.get(RecipeSignatureMigration.ROOT).copy());
             fixture.controller.load(stale);
             fixture.tick();
             fixture.tick();

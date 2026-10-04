@@ -165,8 +165,12 @@ public final class PlanetSurfaceGameTests {
             int top = venus.getHeight(Heightmap.Types.WORLD_SURFACE, base.getX(), base.getZ()) - 1;
             helper.assertTrue(top > base.getY() && top <= base.getY() + VolcanoShape.MAX_HEIGHT + 1,
                     "Volcano summit at y " + top + " over a base at " + base.getY());
-            helper.assertTrue(venus.getBlockState(base.above(shape.poolRise())).is(Blocks.LAVA), "No crater lava pool");
-            helper.assertTrue(venus.getBlockState(base.below(2)).is(Blocks.LAVA), "No lava core");
+            helper.assertTrue(venus.getBlockState(base.above(shape.poolRise())).is(
+                    io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ENRICHED_LAVA_BLOCK.get()),
+                    "No enriched crater pool in a newly generated volcano");
+            helper.assertTrue(venus.getBlockState(base.below(2)).is(
+                    io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ENRICHED_LAVA_BLOCK.get()),
+                    "No enriched lava core in a newly generated volcano");
             // Lava only in the core and the crater, and never above the pool (C15bR1-M2).
             BoundingBox box = piece.getBoundingBox();
             for (int x = box.minX(); x <= box.maxX(); x++) {
@@ -175,7 +179,8 @@ public final class PlanetSurfaceGameTests {
                             + (double) (z - base.getZ()) * (z - base.getZ()));
                     boolean lavaAllowed = shape.inCore(distance) || shape.inCrater(distance);
                     for (int y = box.minY(); y <= box.maxY(); y++) {
-                        if (venus.getBlockState(new BlockPos(x, y, z)).is(Blocks.LAVA)) {
+                        if (venus.getBlockState(new BlockPos(x, y, z)).is(
+                                io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ENRICHED_LAVA_BLOCK.get())) {
                             helper.assertTrue(lavaAllowed && y <= base.getY() + shape.poolRise(),
                                     "Lava outside the core and the crater pool at " + new BlockPos(x, y, z));
                         }
@@ -359,7 +364,8 @@ public final class PlanetSurfaceGameTests {
             int z = start.getZ();
             BlockPos top = surface(level, x, z);
             BlockState state = level.getBlockState(top);
-            helper.assertTrue(tops.stream().anyMatch(state::is) || state.is(Blocks.LAVA),
+            helper.assertTrue(tops.stream().anyMatch(state::is) || state.is(Blocks.LAVA)
+                            || state.is(io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ENRICHED_LAVA_BLOCK.get()),
                     key.location() + " top block " + state + " at " + top);
             // The filler (the top blocks again: the column's surface depth, plus a crater rim) is at most
             // MAX_FILLER blocks deep; below it lies the rock, or an ore vein, a geode or lava within it.

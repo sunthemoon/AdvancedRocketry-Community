@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.MachineMenuOpening;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.menu.RecipeMenuReason;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
@@ -31,7 +33,8 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
     private final IItemHandler machineInventory;
 
     public ElectrolyzerMenu(int containerId, Inventory playerInventory, FriendlyByteBuf buffer) {
-        this(containerId, playerInventory, requireMachine(playerInventory, buffer.readBlockPos()));
+        this(containerId, playerInventory, requireMachine(playerInventory,
+                MachineMenuOpening.read(buffer, ElectrolyzerBlockEntity.MENU_DATA_COUNT)));
     }
 
     private ElectrolyzerMenu(
@@ -66,6 +69,7 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
     ) {
         super(ModMenuTypes.ELECTROLYZER.get(), containerId);
         checkContainerDataCount(data, ElectrolyzerBlockEntity.MENU_DATA_COUNT);
+        MachineMenuOpening.requireExactDataCount(data, ElectrolyzerBlockEntity.MENU_DATA_COUNT);
         this.data = data;
         this.access = access;
         this.machineInventory = machineInventory;
@@ -177,6 +181,13 @@ public final class ElectrolyzerMenu extends AbstractContainerMenu {
 
     public ElectrolyzerStatus status() {
         return ElectrolyzerStatus.fromNetworkId(data.get(6));
+    }
+
+    public RecipeMenuReason recipeReason() {
+        if (status() == ElectrolyzerStatus.UNSUPPORTED_DATA) {
+            return RecipeMenuReason.NONE;
+        }
+        return RecipeMenuReason.fromNetworkId(data.get(7));
     }
 
     private static class MachineSlot extends SlotItemHandler {

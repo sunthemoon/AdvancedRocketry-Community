@@ -630,6 +630,8 @@ public final class RollingMachineGameTests {
             process.putString("recipe_signature", recipe.signature());
             process.putInt("progress_ticks", recipe.processDefinition().durationTicks());
             process.putLong("consumed_energy", recipe.processDefinition().totalEnergy());
+            new io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration()
+                    .save(saved, recipeId.toString());
             controller.load(saved);
         });
         helper.runAtTickTime(15, () -> {

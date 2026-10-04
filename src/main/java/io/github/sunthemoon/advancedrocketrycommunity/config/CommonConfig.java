@@ -295,6 +295,19 @@ public final class CommonConfig {
             .comment("Place electric mushrooms in the Tau Ceti g stormland in new chunks (ADR-063 section 6).")
             .define("worldgen.electricMushrooms", true);
 
+    public static final ForgeConfigSpec.BooleanValue COMBUSTION_GENERATOR_ENABLED = BUILDER
+            .comment("Allow combustion generation and FE export; disabling retains blocks, fuel and burn credit.")
+            .define("machines.combustionGeneratorEnabled", true);
+
+    /** ADR-064 section 6: reducing capacity retains existing overflow. */
+    public static final ForgeConfigSpec.DoubleValue TANK_CAPACITY_MULTIPLIER = BUILDER
+            .comment("Pressurized tank capacity multiplier; overflow remains drainable and refuses further fills.")
+            .defineInRange("machines.tankCapacityMultiplier", 1.0, 0.25, 4.0);
+
+    public static final ForgeConfigSpec.BooleanValue PUMP_ENABLED = BUILDER
+            .comment("Allow pump source draining and fluid export; disabling retains resources and owner.")
+            .define("machines.pumpEnabled", true);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
@@ -421,6 +434,7 @@ public final class CommonConfig {
     /** ADR-063 section 3: whether the small plate press acts; the default until the COMMON config is loaded. */
     /** The server switches: the small plate press and the worldgen switches, which tests hold in memory. */
     private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED,
+            COMBUSTION_GENERATOR_ENABLED, PUMP_ENABLED,
             OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,
             CHARRED_TREES_ENABLED, LIGHTWOOD_TREES_ENABLED, SWAMP_TREES_ENABLED, INVERTED_PILLARS_ENABLED,
             CRYSTAL_CLUSTERS_ENABLED, ELECTRIC_MUSHROOMS_ENABLED);
@@ -440,6 +454,18 @@ public final class CommonConfig {
 
     public static boolean smallPlatePressEnabled() {
         return serverSwitchValue(SMALL_PLATE_PRESS_ENABLED);
+    }
+
+    public static boolean combustionGeneratorEnabled() {
+        return serverSwitchValue(COMBUSTION_GENERATOR_ENABLED);
+    }
+
+    public static double tankCapacityMultiplier() {
+        return SPEC.isLoaded() ? TANK_CAPACITY_MULTIPLIER.get() : TANK_CAPACITY_MULTIPLIER.getDefault();
+    }
+
+    public static boolean pumpEnabled() {
+        return serverSwitchValue(PUMP_ENABLED);
     }
 
     /** ADR-063 section 4: whether the Overworld ores generate; the default until the COMMON config is loaded. */

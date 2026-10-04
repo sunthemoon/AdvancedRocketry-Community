@@ -43,7 +43,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Minecraft lifecycle adapter around the structure and process state owners. */
-public final class PrecisionAssemblerBlockEntity extends BlockEntity implements MenuProvider {
+public final class PrecisionAssemblerBlockEntity extends BlockEntity implements MenuProvider,
+        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected {
     private MultiblockControllerState controllerState;
     private final PrecisionAssemblerProcessController process;
     private final PrecisionAssemblerItemBank items;
@@ -206,7 +207,7 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity implements 
     }
 
     boolean blocksResourceRemoval() {
-        return persistenceStatus != MultiblockNbtStatus.SUPPORTED
+        return process.preservesRecipeInput() || persistenceStatus != MultiblockNbtStatus.SUPPORTED
                 || (resourcePersistenceStatus != MultiblockNbtStatus.EMPTY && !ownsItems());
     }
 
@@ -455,6 +456,9 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity implements 
                                     controllerState.machineInstanceId(), resourcePhase, items.storedCopies())));
         }
     }
+
+    @Override
+    public boolean preservesRecipeInput() { return blocksResourceRemoval(); }
 
     @Override
     public void load(CompoundTag parent) {

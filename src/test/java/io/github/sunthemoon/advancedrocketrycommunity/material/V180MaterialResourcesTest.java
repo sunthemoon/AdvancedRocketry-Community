@@ -52,14 +52,19 @@ class V180MaterialResourcesTest {
                 expected.add("rolling_" + material.id() + "_sheet");
             }
         }
-        assertEquals(expected, names("rolling_"));
+        Set<String> allRolling = new TreeSet<>(expected);
+        allRolling.add("rolling_iron_bars");
+        assertEquals(allRolling, names("rolling_"));
+        // The same-ID kernel override is audited independently by V180KernelRecipeResourcesTest.
         for (String name : expected) {
             JsonObject recipe = json(RECIPES.resolve(name + ".json"));
             assertEquals(Set.of("type", "schema_version", "ingredient", "input_count", "fluid", "result",
                     "processing_time", "energy_per_tick"), recipe.keySet(), name);
             assertEquals(NS + ":rolling", recipe.get("type").getAsString());
-            // The kernel resolves its ingredient when recipes load, before tags are bound: items only.
-            assertTrue(recipe.getAsJsonObject("ingredient").has("item"), name);
+            assertEquals(Set.of("tag"), recipe.getAsJsonObject("ingredient").keySet(), name);
+            String material = name.substring("rolling_".length(), name.lastIndexOf('_'));
+            assertEquals("forge:" + (name.endsWith("_sheet") ? "plates/" : "ingots/") + material,
+                    recipe.getAsJsonObject("ingredient").get("tag").getAsString(), name);
             assertEquals(1, recipe.get("input_count").getAsInt());
             assertEquals("minecraft:water", recipe.getAsJsonObject("fluid").get("fluid").getAsString());
             assertEquals(100, recipe.getAsJsonObject("fluid").get("amount").getAsInt());

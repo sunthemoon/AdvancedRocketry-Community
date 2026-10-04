@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.GsonHelper;
@@ -50,13 +51,48 @@ public final class BoundedItemIngredientCodec {
         validate(raw);
     }
 
-    /**
-     * The kernel machine recipes' form: the bounded subset with item entries only (ADR-061 section 2.2, revision 7).
-     * Kernel recipes resolve their ingredient when they are constructed, and Minecraft parses recipes (and sends them
-     * to a joining client) before tags are bound, so a tag would fail on a fresh start, load against stale tags on
-     * {@code /reload}, and could break a client's recipe sync. Until the C16a machine family resolves tags after
-     * binding, kernel recipes reject tag entries outright, so all three cases behave the same.
-     */
+    public static boolean hasTags(JsonElement raw) {
+        return validate(raw).stream().anyMatch(entry -> entry.has("tag"));
+    }
+
+    /** Enumerates at most 33 distinct entries; does not allocate an unbounded vanilla tag expansion. */
+    public static List<String> resolveAlternatives(JsonElement raw) {
+        TreeSet<String> alternatives = new TreeSet<>();
+        for (JsonObject entry : validate(raw)) {
+            if (entry.has("item")) {
+                Item item = requireItem(entry.get("item").getAsString());
+                alternatives.add(BuiltInRegistries.ITEM.getKey(item).toString());
+            } else {
+                ResourceLocation id = ResourceLocation.tryParse(entry.get("tag").getAsString());
+                var holders = BuiltInRegistries.ITEM.getTag(TagKey.create(Registries.ITEM, id));
+                if (holders.isPresent()) {
+                    for (Holder<Item> holder : holders.orElseThrow()) {
+                        Item item = holder.value();
+                        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+                        if (item.getDefaultInstance().isEmpty() || itemId == null
+                                || itemId.toString().length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS) {
+                            throw new IllegalArgumentException("ingredient tag contains an invalid item");
+                        }
+                        alternatives.add(itemId.toString());
+                        requireVariantBound(alternatives.size());
+                    }
+                }
+            }
+            requireVariantBound(alternatives.size());
+        }
+        if (alternatives.isEmpty()) {
+            throw new IllegalArgumentException("machine ingredient has no bound alternatives");
+        }
+        return List.copyOf(alternatives);
+    }
+
+    private static void requireVariantBound(int count) {
+        if (count > ProcessInput.MAX_VARIANTS) {
+            throw new IllegalArgumentException("machine ingredient must resolve to 1..32 variants");
+        }
+    }
+
+    /** Explicit item-only subset for consumers that must not depend on tag binding. */
     public static Ingredient decodeItemsOnly(JsonElement raw) {
         requireItemsOnly(raw);
         return decode(raw);
@@ -97,7 +133,7 @@ public final class BoundedItemIngredientCodec {
     }
 
     private static List<JsonObject> validate(JsonElement raw) {
-        String encoded = raw.toString();
+        String encoded = RecipeJsonSignature.canonical(raw);
         if (encoded.length() > MAX_INGREDIENT_JSON_CHARS) {
             throw new IllegalArgumentException("ingredient JSON exceeds the character limit");
         }
@@ -117,7 +153,11 @@ public final class BoundedItemIngredientCodec {
             if (!item && !tag) {
                 throw new IllegalArgumentException("ingredient entries must contain exactly item or tag");
             }
-            String resource = GsonHelper.getAsString(entry, item ? "item" : "tag");
+            JsonElement value = entry.get(item ? "item" : "tag");
+            if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) {
+                throw new IllegalArgumentException("ingredient resource must be a string");
+            }
+            String resource = value.getAsString();
             ResourceLocation parsed = ResourceLocation.tryParse(resource);
             if (parsed == null || resource.length() > ProcessResourceKey.MAX_RESOURCE_ID_CHARS) {
                 throw new IllegalArgumentException("ingredient resource id is invalid");

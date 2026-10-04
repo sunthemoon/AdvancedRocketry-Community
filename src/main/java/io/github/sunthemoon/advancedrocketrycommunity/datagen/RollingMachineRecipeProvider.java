@@ -66,6 +66,11 @@ public final class RollingMachineRecipeProvider extends RecipeProvider {
                 "has_dropper"
         );
         precisionAssemblerCraftingRecipes(output);
+        addProcessRecipes(output);
+    }
+
+    /** Current versions may supersede process payloads without regenerating historical crafting recipes. */
+    static void addProcessRecipes(Consumer<FinishedRecipe> output) {
         output.accept(new RollingFinishedRecipe());
         PrecisionAssemblerRecipeProvider.addRecipes(output);
     }
@@ -128,7 +133,7 @@ public final class RollingMachineRecipeProvider extends RecipeProvider {
         @Override
         public void serializeRecipeData(JsonObject json) {
             json.addProperty("schema_version", ProcessDefinition.SCHEMA_VERSION);
-            json.add("ingredient", Ingredient.of(Items.IRON_INGOT).toJson());
+            json.add("ingredient", Ingredient.of(Tags.Items.INGOTS_IRON).toJson());
             json.addProperty("input_count", 2);
 
             JsonObject fluid = new JsonObject();

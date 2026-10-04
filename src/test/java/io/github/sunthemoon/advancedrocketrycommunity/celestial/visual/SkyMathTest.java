@@ -7,6 +7,29 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class SkyMathTest {
+    @Test void lightningTintIsBoundedAndInactiveSkyColorsAreUnchanged() {
+        for (int base : new int[] {0x000000, 0x203020, 0x7777FF, 0xFFFFFF}) {
+            for (double inactive : new double[] {-1, 0, Double.NaN, Double.NEGATIVE_INFINITY}) {
+                assertEquals(base, SkyMath.flashColor(base, inactive));
+            }
+            int full = SkyMath.flashColor(base, 1);
+            assertEquals(full, SkyMath.flashColor(base, 10));
+            for (int shift : new int[] {0, 8, 16}) {
+                int original = (base >> shift) & 255;
+                int target = shift == 0 ? 255 : 204;
+                int half = (SkyMath.flashColor(base, 0.5) >> shift) & 255;
+                int flashed = (full >> shift) & 255;
+                assertTrue(half >= Math.min(original, flashed) && half <= Math.max(original, flashed));
+                assertEquals((int) Math.round(original + (target - original) * 0.45), flashed);
+            }
+            assertEquals(base, SkyMath.scaleColor(base, 1));
+            assertEquals(0, SkyMath.scaleColor(base, 0));
+            assertEquals(0, SkyMath.scaleColor(base, Double.NaN));
+        }
+        assertEquals(0x5C5C73, SkyMath.flashColor(0, 1));
+        assertEquals(0x666680, SkyMath.scaleColor(0xCCCCFF, 0.5));
+    }
+
     @Test void fogNeverIncreasesEitherPlaneAndRemainsOrdered() {
         for (var profile : SkyProfiles.builtins().values()) {
             for (float far : new float[] {1, 16, 48, 128, 512, 2048}) {
