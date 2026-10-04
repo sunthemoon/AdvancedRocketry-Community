@@ -202,20 +202,31 @@ class NativeUnloadObservationTest(unittest.TestCase):
         class Process:
             lines = [NativeUnloadObservationTest.LINE, NativeUnloadObservationTest.LINE]
 
+            def command(self, command):
+                self.command_sent = command
+
             def wait_for(self, pattern, timeout, start_at):
                 self.remaining, self.start = timeout, start_at
                 return 1
 
         process = Process()
-        with patch.object(guard, "wait_chunk") as predicate, \
-                patch.object(guard.time, "monotonic", side_effect=[0, 40, 40.1]):
-            self.assertEqual(guard.wait_unload_begin(process, [], 1), self.LINE)
-        predicate.assert_called_once_with(process, [], False, 60)
+        commands = []
+        observed_predicates = []
+        with patch.object(guard, "wait_chunk", side_effect=lambda proc, rows, loaded, timeout:
+                          observed_predicates.append((proc, list(rows), loaded, timeout))), \
+                patch.object(guard.time, "monotonic", side_effect=[0, 40, 40, 40.1]):
+            self.assertEqual(guard.wait_unload_begin(process, commands, 1), self.LINE)
+        self.assertEqual(observed_predicates, [(process, [], False, 60)])
+        self.assertEqual(commands, ["arce-guard-state"])
+        self.assertEqual(process.command_sent, "arce-guard-state")
         self.assertEqual((process.remaining, process.start), (20, 1))
 
     def test_old_marker_does_not_substitute_for_new_unload(self):
         class Process:
             lines = [NativeUnloadObservationTest.LINE]
+
+            def command(self, command):
+                pass
 
             def wait_for(self, pattern, timeout, start_at):
                 if not any(pattern.search(line) for line in self.lines[start_at:]):
@@ -240,13 +251,69 @@ class NativeUnloadObservationTest(unittest.TestCase):
         class Process:
             lines = [NativeUnloadObservationTest.LINE]
 
+            def command(self, command):
+                pass
+
             def wait_for(self, *args, **kwargs):
                 return 0
 
         with patch.object(guard, "wait_chunk"), \
-                patch.object(guard.time, "monotonic", side_effect=[0, 0, 61]), \
+                patch.object(guard.time, "monotonic", side_effect=[0, 0, 0, 61]), \
                 self.assertRaisesRegex(guard.server.SmokeError, "after its original deadline"):
             guard.wait_unload_begin(Process(), [], 0)
+
+
+class ChunkStateDiagnosticTest(unittest.TestCase):
+    LINE = ('[Server thread/INFO] [advancedrocketrycommunity/]: ARCE_GUARD_STATE '
+            'chunk=11,11 no_save=false holder="null" truncated=false')
+
+    def test_fresh_native_state_keeps_values_without_inventing_an_event(self):
+        self.assertEqual(guard.chunk_state_observations([self.LINE, self.LINE], 1), [{
+            "line": self.LINE, "no_save": False, "holder_text": "null", "truncated": False}])
+        self.assertIsNone(guard.UNLOAD_BEGIN.search(self.LINE))
+
+    def test_both_flags_and_escaped_text_are_preserved_as_data(self):
+        line = self.LINE.replace("no_save=false", "no_save=true").replace(
+            'holder="null"', r'holder="a\u000a\"\\"').replace("truncated=false", "truncated=true")
+        value = guard.chunk_state_observations([line], 0)[0]
+        self.assertTrue(value["no_save"])
+        self.assertTrue(value["truncated"])
+        self.assertEqual(value["holder_text"], r'a\u000a\"\\')
+
+    def test_wrong_logger_thread_cell_flags_severity_and_control_text_are_ignored(self):
+        for line in (self.LINE.replace("/INFO]", "/ERROR]"), self.LINE.replace("Server thread", "Worker thread"),
+                     self.LINE.replace("advancedrocketrycommunity/", "example/Other"),
+                     self.LINE.replace("11,11", "11,12"), self.LINE.replace("no_save=false", "no_save=unknown"),
+                     self.LINE.replace('holder="null"', 'holder="line\nother"'),
+                     self.LINE.replace('holder="null"', r'holder="\n"'), "echo " + self.LINE, self.LINE + " extra"):
+            with self.subTest(line=line):
+                self.assertEqual(guard.chunk_state_observations([line], 0), [])
+
+    def test_holder_budget_is_encoded_bytes_not_escape_tokens(self):
+        accepted = self.LINE.replace('holder="null"', 'holder="' + "x" * 256 + '"')
+        rejected = self.LINE.replace('holder="null"', 'holder="' + "x" * 257 + '"')
+        escaped = self.LINE.replace('holder="null"', 'holder="' + r'\u000a' * 43 + '"')
+        self.assertEqual(len(guard.chunk_state_observations([accepted], 0)), 1)
+        self.assertEqual(guard.chunk_state_observations([rejected, escaped], 0), [])
+
+    def test_diagnostic_receipt_has_a_hard_report_count(self):
+        self.assertEqual(len(guard.chunk_state_observations([self.LINE] * 300, 0)), 240)
+
+    def test_state_dispatch_does_not_reset_the_unload_deadline(self):
+        class Process:
+            def command(self, command):
+                self.command_sent = command
+
+            def wait_for(self, *args, **kwargs):
+                raise AssertionError("State dispatch cannot grant a second deadline")
+
+        process, commands = Process(), []
+        with patch.object(guard, "wait_chunk"), \
+                patch.object(guard.time, "monotonic", side_effect=[0, 0, 60]), \
+                self.assertRaisesRegex(guard.server.SmokeError, "original unload deadline"):
+            guard.wait_unload_begin(process, commands, 0)
+        self.assertEqual(commands, ["arce-guard-state"])
+        self.assertEqual(process.command_sent, "arce-guard-state")
 
 
 class CopiedSpawnSetupTest(unittest.TestCase):

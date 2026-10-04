@@ -33,6 +33,12 @@ CHUNK_ERROR = re.compile(ERROR_PREFIX
                         + r"Failed to save chunk (?:11,11|\[11, 11\])\s*$")
 UNLOAD_BEGIN = re.compile(r"^(?:\[\d{2}:\d{2}:\d{2}\] )?\[Server thread/INFO\] "
                           + r"\[advancedrocketrycommunity/\]: ARCE_GUARD_UNLOAD_BEGIN chunk=11,11\s*$")
+STATE_COMMAND = "arce-guard-state"
+CHUNK_STATE = re.compile(r"^(?:\[\d{2}:\d{2}:\d{2}\] )?\[Server thread/INFO\] "
+                         + r'\[advancedrocketrycommunity/\]: ARCE_GUARD_STATE chunk=11,11 '
+                         + r'no_save=(?P<no_save>true|false) holder="'
+                         + r'(?P<holder>(?:[\x20-\x21\x23-\x5b\x5d-\x7e]|\\(?:["\\]|u[0-9a-f]{4})){0,256})'
+                         + r'" truncated=(?P<truncated>true|false)\s*$')
 
 
 def marker(text: str) -> re.Pattern:
@@ -81,10 +87,31 @@ def wait_unload_begin(process, commands: list[str], start_at: int, timeout: floa
     remaining = deadline - time.monotonic()
     if remaining <= 0:
         raise server.SmokeError("Native unload observation exhausted its original deadline")
+    commands.append(STATE_COMMAND)
+    process.command(STATE_COMMAND)
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise server.SmokeError("Native state query exhausted its original unload deadline")
     index = process.wait_for(UNLOAD_BEGIN, remaining, start_at=start_at)
     if time.monotonic() > deadline:
         raise server.SmokeError("Native unload marker arrived after its original deadline")
     return process.lines[index].rstrip()
+
+
+def chunk_state_observations(lines: list[str], start_at: int) -> list[dict]:
+    """Capture bounded fresh diagnostic text; it is never an unload oracle."""
+    observations = []
+    for line in lines[start_at:]:
+        if len(line) > 400:
+            continue
+        match = CHUNK_STATE.search(line)
+        if match is None or len(match["holder"]) > 256:
+            continue
+        observations.append({"line": line.rstrip(), "no_save": match["no_save"] == "true",
+                             "holder_text": match["holder"], "truncated": match["truncated"] == "true"})
+        if len(observations) == 240:
+            break
+    return observations
 
 
 def relocate_copy_spawn(process, commands: list[str]) -> str:
@@ -151,6 +178,7 @@ def native_cycle(runtime: Path, evidence: Path, command: list[str], expected: by
     write(evidence / "launch.json", {"command": command, "cwd": str(runtime)})
     process = None
     commands = []
+    unload_start = None
     receipt = {"result": "IN_PROGRESS", "removal_cut": removal_cut}
     try:
         process = server.CapturedProcess(command, runtime, evidence / "stdout.txt")
@@ -206,6 +234,8 @@ def native_cycle(runtime: Path, evidence: Path, command: list[str], expected: by
             process.abort()
         raise
     finally:
+        receipt["chunk_state_observations"] = (chunk_state_observations(process.lines, unload_start)
+                                               if process is not None and unload_start is not None else [])
         write(evidence / "commands.json", commands)
         write(evidence / "receipt.json", receipt)
         for name in ("latest.log", "debug.log"):
