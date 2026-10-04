@@ -103,7 +103,11 @@ failures and oversized evidence-storage debt remain documented, not erased by
 passing automatic tests.
 
 The separate [save-refusal audit](../work/v1.8.0-c16a-save-guard/SAVE-REFUSAL-DISPOSITION-01.md)
-has two open Medium disclosure/ADR findings. After the 257th distinct refused
+records two original Medium disclosure/ADR findings. Their missing facts are now
+addressed by the corrected R-021 and an independently reviewed explanation
+proposal; the accepted ADR is unchanged and R-021 is still open and unaccepted.
+See the [factual correction disposition](../work/v1.8.0-c16a-save-guard/DISCLOSURE-REVIEW-DISPOSITION-01.md).
+After the 257th distinct refused
 chunk, the guard denies subsequent terrain saves throughout that ServerLevel.
 Historical attempts emit EventBus/ChunkMap ERROR pairs with no guard log quota;
 dirty state does not prevent unload or provide cross-store durability. No
@@ -113,7 +117,8 @@ The user assigns this agent sole integration of the existing v1.8 work and
 requires phase commits/pushes. User-maintained AGENTS.md and the private document
 bundle are excluded. On 2026-10-04 the owner allocates only R-021 correction and
 a proposed ADR disclosure amendment, with no save behavior, risk acceptance or
-other-row changes; that separate documentation implementation/review is pending.
+other-row changes. That factual correction is independently reviewed and
+separately published; the explanatory amendment remains PROPOSED.
 Other newly observed external edits are not silently staged.
 The [completion plan](COMPLETION-PLAN.md) lists the remaining leaves. Historical
 status checkpoints have moved to the implementation log, not this current-state

@@ -139,11 +139,16 @@ postimage check and is not adopted as a K3 save-policy or runtime change.
 ## Open findings and acceptance limits
 
 The separate [save-refusal disposition](../v1.8.0-c16a-save-guard/SAVE-REFUSAL-DISPOSITION-01.md)
-retains two Medium disclosure/ADR findings against unchanged common guard code:
+preserves two original Medium disclosure/ADR findings against unchanged guard code:
 the 257th distinct refused chunk expands denial throughout a ServerLevel, and
 historical refusal emits paired ERROR headers without a guard log quota. Dirty
 state does not prevent unload or ensure cross-store durability. No reset,
 quarantine, stop, discard or repair policy is selected or accepted here.
+The later [factual correction disposition](../v1.8.0-c16a-save-guard/DISCLOSURE-REVIEW-DISPOSITION-01.md)
+records the corrected R-021 and independently reviewed explanatory proposal.
+The accepted ADR is unchanged, the proposal stays PROPOSED and R-021 remains
+open. That separate documentation publication uses its own final input/check
+packet; the original K3 packets are unchanged and do not cover these later bytes.
 
 Source-review tooling/parser failures and their corrected separate executions
 remain preserved. Historical failures and oversized local archive debt are not
