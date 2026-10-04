@@ -1,0 +1,38 @@
+{
+  "parent": "advancedrocketrycommunity:classic/rolling",
+  "criteria": {
+    "has_inventory": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "advancedrocketrycommunity:electrolyzer"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.electrolysis.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:electrolyzer"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.electrolysis.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_inventory"
+    ]
+  ],
+  "rewards": {}
+}

@@ -68,9 +68,13 @@ three-neighbor isolation task preserves the original 60-second/event/live
 restoration/native-byte/restart oracles. Stopped retention remains observation
 only. No real client/crash recovery or new guarded writer admission is supplied.
 
-Six C18 inventory tutorials have reviewed source and 12 author JUnit in a
-separate worktree; three GameTests are compiled, not run. Root integration,
-actual triggers, packaged restart and content-ledger delivery remain pending.
+Six C18 inventory tutorials now have exact reviewed source integrated by Root;
+12 scoped JUnit and integrated DataGen (777 v1.8 files) pass on the uncommitted
+development check. These are not part of Source24. Three GameTests are compiled,
+not yet run; fresh committed full checks, actual triggers, packaged restart and
+ledger delivery remain pending. The native fixture draft has one unresolved
+offline-player file-ownership Medium and is not admitted unchanged. See
+[source integration](../work/v1.8.0-c18c-tutorial-inventory/SOURCE-INTEGRATION-01.md).
 
 ## Implemented development scope
 

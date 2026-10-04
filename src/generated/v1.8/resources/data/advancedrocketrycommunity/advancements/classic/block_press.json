@@ -1,0 +1,38 @@
+{
+  "parent": "advancedrocketrycommunity:classic/root",
+  "criteria": {
+    "has_inventory": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "advancedrocketrycommunity:small_plate_press"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.block_press.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:small_plate_press"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.block_press.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_inventory"
+    ]
+  ],
+  "rewards": {}
+}

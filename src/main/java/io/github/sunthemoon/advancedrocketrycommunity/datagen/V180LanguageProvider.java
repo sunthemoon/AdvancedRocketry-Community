@@ -30,6 +30,7 @@ public final class V180LanguageProvider extends LanguageProvider {
     protected void addTranslations() {
         V180PumpLanguage.translations(chinese).forEach(this::add);
         V180RecipeMenuLanguage.translations(chinese).forEach(this::add);
+        V180ClassicAdvancementLanguage.translations(chinese).forEach(this::add);
         add("itemGroup." + NS + ".materials", chinese ? "高级火箭：材料" : "Advanced Rocketry: Materials");
         add("block." + NS + ".small_plate_press", chinese ? "小型压板机" : "Small Plate Press");
         add("block." + NS + ".combustion_generator", chinese ? "燃烧发电机" : "Combustion Generator");

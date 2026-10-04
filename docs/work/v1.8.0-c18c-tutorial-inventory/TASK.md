@@ -1,6 +1,6 @@
 # C18c-01: inventory tutorial advancements
 
-Date: 2026-10-04. Status: CONTRACT_FROZEN; implementation remains pending.
+Date: 2026-10-04. Status: IMPLEMENTED_UNVERIFIED; native delivery remains pending.
 Integrator: Root. Implementation owner: delegated C18 worker after leaf review.
 Baseline: `85afa4139f74dd71f6963596b0d498ac6a0ebcfc`.
 Contract: accepted ADR-066 section 6.2 and ADR-061 stable identities/DataGen.
@@ -83,3 +83,10 @@ The original reviewed task SHA-256 is
 Only checkpoint metadata was added after that review. The frozen semantics,
 implementation boundaries and runtime obligations are unchanged; see
 [review disposition](REVIEW-DISPOSITION-01.md).
+
+Root has integrated the exact reviewed six source files, both central lines,
+six generated advancements and twelve new keys in each language. Actual scoped
+JUnit and integrated DataGen pass; registered GameTests, committed full checks,
+packaged restart and ledger delivery remain open. See
+[source integration](SOURCE-INTEGRATION-01.md). The separately reviewed native
+fixture draft has an unresolved ownership Medium and is not admitted unchanged.

@@ -1,0 +1,38 @@
+{
+  "criteria": {
+    "has_inventory": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:crafting_table"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.root.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "minecraft:crafting_table"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.root.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_inventory"
+    ]
+  ],
+  "rewards": {}
+}

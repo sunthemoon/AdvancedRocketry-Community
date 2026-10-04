@@ -1,0 +1,53 @@
+{
+  "parent": "advancedrocketrycommunity:classic/root",
+  "criteria": {
+    "has_inventory": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "advancedrocketrycommunity:space_suit_helmet"
+            ]
+          },
+          {
+            "items": [
+              "advancedrocketrycommunity:space_suit_chestplate"
+            ]
+          },
+          {
+            "items": [
+              "advancedrocketrycommunity:space_suit_leggings"
+            ]
+          },
+          {
+            "items": [
+              "advancedrocketrycommunity:space_suit_boots"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.suited_up.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:space_suit_helmet"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.suited_up.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_inventory"
+    ]
+  ],
+  "rewards": {}
+}
