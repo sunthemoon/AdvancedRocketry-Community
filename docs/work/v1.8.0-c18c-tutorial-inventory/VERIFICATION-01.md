@@ -102,9 +102,13 @@ publication receipt and seal helpers remain external in the cohort directory.
 ## Remaining acceptance
 
 The six whole tutorial units remain PLANNED until the required packaged vanilla
-save/load evidence is complete. The first native fixture draft has one
-unresolved offline-file ownership Medium, remains unchanged and is not enabled.
-A separately versioned correction and independent review precede implementation.
+save/load evidence is complete. The first native fixture draft's offline-file
+ownership Medium is historical and its input stays unchanged. The separately
+reviewed replacement proposes ownership checks but has one new constructor/join
+loaded-area Medium; it is not adopted or implemented. Its exact proposal,
+independent controls/failures and primary facts are preserved in the
+[native review disposition](NATIVE-REVIEW-DISPOSITION-02.md). A further versioned
+correction and independent review precede implementation.
 The four prior save-guard lifecycle native failures are unchanged and separate.
 
 186 PLANNED units /154 REVIEW assets, guarded writer qualification, R-021,

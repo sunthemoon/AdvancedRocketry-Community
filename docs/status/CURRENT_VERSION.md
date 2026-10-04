@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 tested_code_commit: a5abc34809891d6b10724ee60ab9b5e97f036bae
-last_updated: 2026-10-04
+last_updated: 2026-10-05
 ```
 
 ## Current development evidence
@@ -75,8 +75,12 @@ Six C18 inventory tutorials now have exact reviewed source integrated by Root;
 12 scoped JUnit and integrated DataGen pass on the earlier intermediate check;
 committed complete tests above are a separate cohort. Three registered tests
 exercise the actual inventory listener. Packaged restart and ledger delivery
-remain pending. The native fixture draft has one unresolved offline-player
-file-ownership Medium and is not admitted unchanged. See
+remain pending. The original native draft's offline-player ownership finding
+is preserved. Its independently reviewed replacement has one constructor/join
+loaded-area Medium and is not adopted or implemented; exact proposal, controls,
+failure and selected primary facts are portable in the
+[native disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-02.md).
+See
 [source integration](../work/v1.8.0-c18c-tutorial-inventory/SOURCE-INTEGRATION-01.md).
 
 ## Implemented development scope
@@ -110,8 +114,7 @@ leaves two disclosure/ADR findings open, so that historical record does not
 authorize new guarded runtime admission. These decisions do not supply runtime,
 migration or native recovery evidence. C18 D4 remains unproven.
 
-Remaining: bounded observation of the unresolved native unload condition,
-Guard lifecycle and first-save/final-unload proof; full hash/frame/
+Remaining: full Guard lifecycle and first-save/final-disposal proof; full hash/frame/
 native codecs and resource consumers; physical hatches, lathe and motor-tier
 formation; steel and component acquisition; C16b–d, C17–C19; real clients/GPU,
 multiplayer, crash recovery, performance and inherited release acceptance.
@@ -144,6 +147,12 @@ a proposed ADR disclosure amendment, with no save behavior, risk acceptance or
 other-row changes. That factual correction is independently reviewed and
 separately published; the explanatory amendment remains PROPOSED.
 Other newly observed external edits are not silently staged.
+The separate [C18a analyzer task](../work/v1.8.0-c18a-atmosphere-analyzer/TASK.md)
+has an independently reviewed, narrowly adopted contract and pre-authoring
+original-resource record; isolated implementation/source review and actual
+verification are pending. No source/native/client or ledger delivery follows.
+It does not enable
+unproven refill/shared-save dependencies.
 The [completion plan](COMPLETION-PLAN.md) lists the remaining leaves. Historical
 status checkpoints have moved to the implementation log, not this current-state
 summary. No version Gate, tag or release is approved.

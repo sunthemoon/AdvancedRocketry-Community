@@ -91,4 +91,6 @@ all 467 required GameTests pass, including three actual inventory-listener
 tests. Packaged restart and ledger delivery remain open. See
 [automatic verification](VERIFICATION-01.md) and
 [source integration](SOURCE-INTEGRATION-01.md). The separately reviewed native
-fixture draft has an unresolved ownership Medium and is not admitted unchanged.
+fixture draft has a historical ownership Medium. Its separately proposed
+replacement has a new native constructor/join loaded-area Medium and is not
+adopted or implemented; see [review disposition](NATIVE-REVIEW-DISPOSITION-02.md).
