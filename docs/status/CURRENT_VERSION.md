@@ -80,6 +80,9 @@ is preserved. Its independently reviewed replacement has one constructor/join
 loaded-area Medium and is not adopted or implemented; exact proposal, controls,
 failure and selected primary facts are portable in the
 [native disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-02.md).
+The separate [third task revision](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-03.md)
+proposes copy-only native host/loaded-envelope and pre-join position admission;
+independent review is active. No setup, source or native execution is admitted.
 See
 [source integration](../work/v1.8.0-c18c-tutorial-inventory/SOURCE-INTEGRATION-01.md).
 
@@ -149,8 +152,9 @@ separately published; the explanatory amendment remains PROPOSED.
 Other newly observed external edits are not silently staged.
 The separate [C18a analyzer task](../work/v1.8.0-c18a-atmosphere-analyzer/TASK.md)
 has an independently reviewed, narrowly adopted contract and pre-authoring
-original-resource record; isolated implementation/source review and actual
-verification are pending. No source/native/client or ledger delivery follows.
+original-resource record. Isolated implementation is active at committed base
+`9135c20c34a402b7cf0715148aeb6683a35c1f50`; exact source review and actual
+verification remain pending. No source/native/client or ledger delivery follows.
 It does not enable
 unproven refill/shared-save dependencies.
 The [completion plan](COMPLETION-PLAN.md) lists the remaining leaves. Historical
