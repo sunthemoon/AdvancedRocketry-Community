@@ -64,3 +64,12 @@ The reviewer independently reran 120 focused Python cases and eight controls,
 and compiled/ran only the pure formatter with Java 17 (1,035,790 assertions).
 These qualify source-only integration. Full committed build and strict native
 execution remain required; no preceding native failure or Gate is closed.
+
+## Committed diagnostic checkpoint
+
+Source is committed/pushed at `50b46f091382d19fa683404fc3ace0896220b0c9`;
+full checks ran at `a385ba452ab756b5689a1cbf21e2177129b93dc9`. The bounded
+state observation itself is verified by actual native output and independent
+audit, while the native lifecycle remains FAIL and cleanup remains blocked.
+See [exact results](STATE-OBSERVATION-VERIFICATION-04.md). This task remains
+IN_PROGRESS for those open lifecycle/cleanup obligations; no Gate is closed.

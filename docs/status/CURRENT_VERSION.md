@@ -36,41 +36,41 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: 23bec1eb1452e8c8ef37c004606aaed3a2394063
+tested_code_commit: a385ba452ab756b5689a1cbf21e2177129b93dc9
 last_updated: 2026-10-04
 ```
 
 ## Current development evidence
 
-The integrated development code, data/art, probes and reviewed contracts are
-committed and pushed in scoped phase commits. The latest Java addition is only
-an opt-in fixed-cell unload observer, without save-policy or resource changes.
-[Current verification](../work/v1.8.0-c16a-save-guard/NATIVE-LIFECYCLE-VERIFICATION-01.md)
-records 1,765 JUnit cases in 330 suites, 464 required GameTests and 114 focused
-Python cases passing. DataGen has 771 files and zero repeat writes. The fresh
-bounded Source23 repository check reports 45 passed. The different-agent
-[build evidence audit](../work/v1.8.0-c16a-save-guard/lifecycle-01/reviews/BUILD23-EVIDENCE-01.zip)
-records no introduced discrepancy in that exact scope. The 61 ERROR logger
-lines remain disclosed, not waived. The two Python-only copied-spawn setup
-postimages have separate focused-test and native input pins; they do not claim
-a new Java build or another complete repository-check execution.
-Their exact source is committed and pushed at
-`f945dc1c33f09199da9d47663e891acf1cf4a475`, without runtime-delivery credit.
+The latest integrated diagnostic source is committed and pushed at
+`50b46f091382d19fa683404fc3ace0896220b0c9`; full checks ran at the tested
+commit above. Its opt-in fixed-cell state command changes no policy, ticket or
+resource. [Current verification](../work/v1.8.0-c16a-save-guard/STATE-OBSERVATION-VERIFICATION-04.md)
+records 1,773 JUnit /331 suites, 464 required GameTests and 120 focused Python
+cases passing. Source24 denotes its 2,997 named inputs, not a whole repository.
+DataGen has 771 files and zero repeat writes; the bounded repository check
+reports 45 passed. Independent exact source/result audits are frozen with
+raw pins and preserved failed reviewer attempts. The 61 ERROR headers in each
+GameTest stream remain disclosed, not waived. The owner-modified AGENTS and
+the wrapper's exact 92 LF/CRLF expansions are individually qualified.
 
 The development main JAR SHA-256 is
-`5fd2a23dd02c8c4977efe9c03628edfe4c517bc1d3d02ba0e846aa89649aeee9`.
+`f8fe53aa38f2221488bcd1d4b52a3795ab9674c9dc64d3a02b9a347f613dc6c2`.
 The API artifact remains unchanged. This is not a frozen release candidate.
 The content ledger has **186 PLANNED units /154 REVIEW assets**; its closure
 check still fails. v1.8 remains **IN_PROGRESS /IMPLEMENTING**, with **G0–G9 open**.
 
-All three copied-world lifecycle attempts fail. The original immediate
-reacquisition fails live restoration; the new-JAR attempt and the separately
-reviewed copied-spawn setup attempt miss the actual unload event within the
-unchanged deadline. The last attempt confirms the spawn command, not unloading.
-Stopped record retention does not replace live restoration, clean stop or
-restart proof. Their logs, independent audits and original failures remain
-separate; the remaining cause is not established. No real client or crash
-recovery result is supplied, and new guarded writers are not opened.
+All four copied-world lifecycle attempts fail. The latest actual state is
+no_save=false with an untruncated level36/full/INACCESSIBLE holder. The copied
+five-mark Forced metadata and primary propagation identify fixture eligibility
+gaps, not a unique production cause or a lifecycle PASS. A separately recorded
+three-neighbor isolation task preserves the original 60-second/event/live
+restoration/native-byte/restart oracles. Stopped retention remains observation
+only. No real client/crash recovery or new guarded writer admission is supplied.
+
+Six C18 inventory tutorials have reviewed source and 12 author JUnit in a
+separate worktree; three GameTests are compiled, not run. Root integration,
+actual triggers, packaged restart and content-ledger delivery remain pending.
 
 ## Implemented development scope
 
@@ -115,6 +115,9 @@ passing automatic tests.
 Future temporary helpers/output now use the owner's requested project-parent
 `D:/GitHub/ARCE-Task-Evidence` location. The tool rejects checked C-script
 removal before execution; C cleanup is not complete and no bypass is attempted.
+The new stopped native04 runtime copy also remains 209,666,732 bytes of cleanup
+debt after its checked literal deletion was rejected before OS execution.
+Compact logs/captures are preserved; no source world or sealed evidence is removed.
 
 The separate [save-refusal audit](../work/v1.8.0-c16a-save-guard/SAVE-REFUSAL-DISPOSITION-01.md)
 records two original Medium disclosure/ADR findings. Their missing facts are now
