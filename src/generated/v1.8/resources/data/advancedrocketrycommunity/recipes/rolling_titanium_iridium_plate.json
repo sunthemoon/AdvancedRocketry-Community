@@ -6,7 +6,7 @@
     "fluid": "minecraft:water"
   },
   "ingredient": {
-    "item": "advancedrocketrycommunity:titanium_iridium_ingot"
+    "tag": "forge:ingots/titanium_iridium"
   },
   "input_count": 1,
   "processing_time": 300,

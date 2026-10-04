@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:copper_coil"
+    },
+    "F": {
+      "item": "minecraft:furnace"
+    },
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "IFI",
+    "IRI"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:combustion_generator"
+  },
+  "show_notification": true
+}

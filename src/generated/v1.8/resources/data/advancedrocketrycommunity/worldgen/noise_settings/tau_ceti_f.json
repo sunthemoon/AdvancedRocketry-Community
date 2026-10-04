@@ -34,7 +34,7 @@
       },
       "argument2": {
         "type": "advancedrocketrycommunity:landing_ground_floor",
-        "inner_radius": 160,
+        "inner_radius": 224,
         "level": 0.2,
         "slope_width": 96
       }
@@ -69,7 +69,7 @@
                 },
                 "argument2": {
                   "type": "advancedrocketrycommunity:landing_ground_floor",
-                  "inner_radius": 160,
+                  "inner_radius": 224,
                   "level": 0.2,
                   "slope_width": 96
                 }
@@ -118,7 +118,7 @@
               },
               "argument2": {
                 "type": "advancedrocketrycommunity:landing_ground_floor",
-                "inner_radius": 160,
+                "inner_radius": 224,
                 "level": 0.2,
                 "slope_width": 96
               }

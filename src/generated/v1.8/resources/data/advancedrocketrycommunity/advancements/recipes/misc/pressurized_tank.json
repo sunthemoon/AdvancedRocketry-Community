@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_recipe": {
+      "conditions": {
+        "recipe": "advancedrocketrycommunity:pressurized_tank"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_steel": {
+      "conditions": {
+        "items": [
+          {
+            "tag": "forge:plates/steel"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_steel",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "advancedrocketrycommunity:pressurized_tank"
+    ]
+  }
+}

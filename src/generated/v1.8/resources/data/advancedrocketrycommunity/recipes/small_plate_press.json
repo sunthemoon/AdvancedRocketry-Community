@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "I": {
+      "tag": "forge:ingots/iron"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    }
+  },
+  "pattern": [
+    " P ",
+    "III"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:small_plate_press"
+  },
+  "show_notification": true
+}

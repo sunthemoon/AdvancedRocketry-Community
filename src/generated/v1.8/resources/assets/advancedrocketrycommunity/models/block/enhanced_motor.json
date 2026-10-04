@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "advancedrocketrycommunity:block/enhanced_motor_bottom",
+    "side": "advancedrocketrycommunity:block/enhanced_motor_side",
+    "top": "advancedrocketrycommunity:block/enhanced_motor_top"
+  }
+}

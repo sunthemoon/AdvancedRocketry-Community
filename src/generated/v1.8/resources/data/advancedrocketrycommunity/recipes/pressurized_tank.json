@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PBP",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:pressurized_tank"
+  }
+}

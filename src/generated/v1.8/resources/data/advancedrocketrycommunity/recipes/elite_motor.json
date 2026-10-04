@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:enhanced_motor"
+    },
+    {
+      "tag": "advancedrocketrycommunity:coils/iridium"
+    },
+    {
+      "tag": "forge:plates/iridium"
+    },
+    {
+      "tag": "forge:plates/iridium"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:elite_motor"
+  }
+}

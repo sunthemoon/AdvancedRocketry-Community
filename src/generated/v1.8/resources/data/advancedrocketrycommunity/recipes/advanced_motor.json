@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:motor"
+    },
+    {
+      "tag": "advancedrocketrycommunity:coils/gold"
+    },
+    {
+      "tag": "forge:plates/gold"
+    },
+    {
+      "tag": "forge:plates/gold"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:advanced_motor"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "advancedrocketrycommunity:coils/copper"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:rods/iron"
+    },
+    {
+      "tag": "forge:rods/iron"
+    },
+    {
+      "tag": "forge:ingots/steel"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:motor"
+  }
+}

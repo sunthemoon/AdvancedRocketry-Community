@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "advancedrocketrycommunity:motor",
+    "advancedrocketrycommunity:advanced_motor",
+    "advancedrocketrycommunity:enhanced_motor",
+    "advancedrocketrycommunity:elite_motor"
+  ]
+}

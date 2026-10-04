@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "advancedrocketrycommunity:block/pump_bottom",
+    "side": "advancedrocketrycommunity:block/pump_side",
+    "top": "advancedrocketrycommunity:block/pump_top"
+  }
+}

@@ -6,7 +6,7 @@
     "fluid": "minecraft:water"
   },
   "ingredient": {
-    "item": "advancedrocketrycommunity:copper_plate"
+    "tag": "forge:plates/copper"
   },
   "input_count": 1,
   "processing_time": 300,

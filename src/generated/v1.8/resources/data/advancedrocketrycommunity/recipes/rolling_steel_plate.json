@@ -6,7 +6,7 @@
     "fluid": "minecraft:water"
   },
   "ingredient": {
-    "item": "advancedrocketrycommunity:steel_ingot"
+    "tag": "forge:ingots/steel"
   },
   "input_count": 1,
   "processing_time": 300,

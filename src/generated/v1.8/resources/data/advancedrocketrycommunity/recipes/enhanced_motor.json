@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:advanced_motor"
+    },
+    {
+      "tag": "advancedrocketrycommunity:coils/titanium"
+    },
+    {
+      "tag": "forge:plates/titanium"
+    },
+    {
+      "tag": "forge:plates/titanium"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:enhanced_motor"
+  }
+}

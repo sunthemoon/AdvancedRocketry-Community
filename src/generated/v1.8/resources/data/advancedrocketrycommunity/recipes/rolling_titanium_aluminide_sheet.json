@@ -6,7 +6,7 @@
     "fluid": "minecraft:water"
   },
   "ingredient": {
-    "item": "advancedrocketrycommunity:titanium_aluminide_plate"
+    "tag": "forge:plates/titanium_aluminide"
   },
   "input_count": 1,
   "processing_time": 300,

@@ -6,7 +6,7 @@
     "fluid": "minecraft:water"
   },
   "ingredient": {
-    "item": "advancedrocketrycommunity:tin_ingot"
+    "tag": "forge:ingots/tin"
   },
   "input_count": 1,
   "processing_time": 300,

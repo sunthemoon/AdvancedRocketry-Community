@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    {
+      "item": "advancedrocketrycommunity:motor"
+    },
+    {
+      "item": "minecraft:bucket"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:plates/steel"
+    },
+    {
+      "tag": "forge:rods/iron"
+    },
+    {
+      "tag": "forge:rods/iron"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:pump"
+  }
+}

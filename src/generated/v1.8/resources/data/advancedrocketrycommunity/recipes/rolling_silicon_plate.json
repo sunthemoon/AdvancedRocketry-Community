@@ -6,7 +6,7 @@
     "fluid": "minecraft:water"
   },
   "ingredient": {
-    "item": "advancedrocketrycommunity:silicon_ingot"
+    "tag": "forge:ingots/silicon"
   },
   "input_count": 1,
   "processing_time": 300,

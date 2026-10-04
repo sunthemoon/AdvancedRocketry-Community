@@ -6,7 +6,7 @@
     "fluid": "minecraft:water"
   },
   "ingredient": {
-    "item": "minecraft:copper_ingot"
+    "tag": "forge:ingots/copper"
   },
   "input_count": 1,
   "processing_time": 300,
