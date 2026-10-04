@@ -1,0 +1,125 @@
+# Independent C18 contract review - revision 2
+
+Date: 2026-10-03. Delegated independent reviewer; this worker did not author C18.
+Repository and the other author's Temp handoff were read-only. This is a scoped
+contract review, not a runtime implementation review, product decision, asset
+clearance or Required Gate result.
+
+## Reviewed identity and verdict
+
+Reviewed [ADR-066 revision 2](C:/Users/Administrator/AppData/Local/Temp/arce-v180-c18-contract-r2-72caa8107091470eb65132167af7121c/ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md),
+SHA-256 `7c6da4ab6f3974d537813ed3662f1f072f86c3cf13990b1d1afb685045ecb976`.
+The actual handoff is a new `arce-v180-c18-contract-r2-...` directory, not the
+original proposed `revision-02` child; it was listed and identity-checked before
+review. The reviewed hash remained unchanged at the end of the static check.
+
+**Scoped findings: 0 Critical / 0 High / 0 Medium / 0 Low.** Revision-1 H1 and
+M1-M4 are addressed at the proposed-contract level, subject to the explicit
+decision and implementation gates below. No new inconsistent behavior, missing
+primary unit or incorrect checked source identity was found in this scope.
+
+This permits consideration of the revised conditional contract; it does not
+choose pending D2/D3, prove a checked writer or authorize an unreviewed feasibility
+alternative. D4 automatic pad/player durability is still unproven. Production
+admission remains restricted exactly as the draft states.
+
+## Revision-1 dispositions independently checked
+
+| Finding | Actual revision-2 evidence | Review conclusion |
+|---|---|---|
+| H1 ground instance origin | ADR-066 lines 518-587 explicitly changes instance schema 1 -> 2 to SURVEY_MISSION/GROUND_SURVEY plus UUID, migrates all old identities/yields/state/allocation, preserves mission-origin PENDING checks and adds exact bidirectional ground job/instance owner/system/backlink invariants. Lines 607-630 separate processor subphase from discovery lifecycle and retain source jobs while instances/references exist. | The old mandatory sourceMission conflict is addressed by an explicit conditional ADR-051 amendment rather than a fake mission or globally weakened invariant. Ground PENDING restart and orphan/migration/pruning fixtures remain required under pending D2; no executed fixture is claimed. |
+| M1 world-first commit gap | Lines 671-744 make progression a durable acknowledgment/grant sink. Station election/outbox shares checkedRelocation's candidate/replace; Moon election shares a proposed checked journal landing-completion authority, expressly not generic transfer COMMITTED. Durable source -> matching durable progression -> source acknowledgment; permanent occurred marker and retained immutable participants prevent winner replacement/pruning gaps. | The post-event callback is no longer the sole authority. Exact checked journal writer, ordinary-save fencing, outcome-unknown reconciliation and both S2 orders are explicit pre-runtime gates, not claimed existing methods. Pending D3 still decides world-first versus per-player semantics. |
+| M2 nonexistent nearest index | Lines 292-325 now name the actual missing capability and specify an additive lifecycle-owned owner/member index, all-station operator candidate set, stable complete cursor, deterministic distance/UUID selection, access-generation revalidation, 64 jobs, 32/pass and 128 global candidates plus 256 loaded probes/tick. | No claim that findAt or the 32-name prefix yields nearest remains. No synchronous all-stations retry or chunk load is authorized. Startup/index/query budgets and interruptible actual safe-arrival adapter require measurement/native fixtures; >32 accessible destinations are explicitly tested. |
+| M3 detector ambiguity | Lines 139-179 replace unfrozen LOW_OXYGEN with a truthful NON_BREATHABLE_ATMOSPHERE name and exact known-cell predicates. Supplied cells override adverse predicates; ambient atmosphere is the actual Level definition, not station orbit-body air. PENDING/unknown/unloaded matches none. | The current pressure/breathability/temperature model supports every declared predicate without invented oxygen fraction. Exact thresholds and permitted overlaps are frozen; climate effects' opt-in does not change measurements. Actual redstone/service-composition tests remain required. |
+| M4 torch identity loss | Lines 207-244 add a bounded unlit BE source pair/block/item root and catalog of <=64 explicitly compatible standing/wall pairs. Exact source identity survives break/relight; missing/future data is preserved/quarantined and events may cancel without drops. | Mounting-only state is no longer claimed sufficient. Two distinct simple pairs can be represented independently through restart. Unsupported arbitrary tagged BEs/properties are explicitly refused rather than normalized; environmental-change protection adapter/native round-trip remains a leaf gate. |
+
+## Cross-batch, schema and API checks
+
+- **C17/C18 finder:** lines 369-393 use the existing two shared HEAD slots,
+  at most one finder, no extra registration/slot and an immutable enabled-only
+  summary port. This agrees with C17 revision-2 section 7. Adapter dependencies
+  point toward the shared model/port rather than importing each other's adapter.
+  Host-only module use, intact install/remove, equipped/held privacy and actual
+  workstation tests still must be implemented together.
+- **Sky/network:** lines 798-814 explicitly join C17's payload schema 2 and
+  celestial protocol 3 -> 4 once, including server-selected ADR-057 singularity
+  kind; C18 does not independently bump flight 8 -> 9. No inferred body-name/
+  gravity flag or new server FE effect is permitted. C18 equipment/motion/audio
+  packet leaf formats are still to freeze and are not implicitly assigned C17
+  discriminator IDs. The separately reviewed C17 orbital clock/restart contract
+  is a dependency, not a capability proven or repaired by this C18 review.
+- **Shared world-first source schemas:** conditional C18 D3 requires coordinated
+  station root 4 -> 5 and transfer journal 2 -> 3 fields/checked writers. These
+  additions must enter one integrated migration/codec contract with C17, not be
+  appended after its root schemas are independently frozen. C18 names this as
+  required adapter work and does not assert C17's current runtime provides it.
+- **Oxygen D1:** lines 404-429 retain public ADR-025 active/provider/HUD 0..2,000,
+  use one built-in oxygen reserve, and perform active/reserve mutation in the
+  same detached armor stack. Correct arithmetic is 10,000 default maximum oxygen,
+  proposed absolute 34,000 (2,000 + one 32,000 reserve), not two oxygen tanks.
+  Lowering active target does not erase already valid gas. No generalized public
+  capacity/API export or claim over registered external-provider roots is added.
+- **Scrubber D5:** lines 116-138 keep finite oxygen debit and one persistence
+  owner for phase/cartridge credits, explicitly migrating actual vent schema 1
+  to proposed 2. A future schema 2 is not treated as a known legacy input.
+  Cartridge schedule values remain balancing proposals and do not imply free air.
+- **Bounds:** job and first-event sections remain within the existing registry/
+  station/journal whole-root bounds; independent record/count/byte/node ceilings
+  may refuse admission before mutation. No bound is raised to fit all maxima,
+  truncation or dropped historical resources is authorized. New model, source
+  envelope, native/raw-root and migration fixtures are still required.
+
+## Remaining decisions and admission limits (not passed tests)
+
+1. **D1/D5 policy selections are owner-confirmed as relayed by root.** This
+   does not approve every tier, multiplier, FE amount or savings schedule, or the
+   full ADR. Preserve public oxygen signatures and nonzero finite debit.
+2. **C18 D2/D3 remain owner-pending.** Ground-owned jobs and world-first events
+   are conditional recommendations, not inferred acceptance. Their alternative
+   prerequisites/player impact cannot be silently chosen by implementation.
+3. **D4 remains a feasibility gate.** Chunk Save/Load or player serialization
+   observation is not disk durability. Automatic charging must not start before
+   exact player/chunk authority, raw preservation and S2 cuts are demonstrated
+   and reviewed; a changed interaction requires owner confirmation.
+4. Exact device/equipment codecs, pattern/recipe fixtures, managed SavedData keys,
+   shared field maps/protocol tables, checked source/receipt writers, safe-arrival
+   adapter and environmental-change protection remain scoped implementation
+   inputs to freeze/review. A no-findings batch draft is not permission to omit
+   them. Current APIs/put/remove/setDirty do not prove these new capabilities.
+5. All 77 REVIEW asset rows still need terminal per-file evidence. Original art,
+   source licensing, native migration/performance, full S1/S2 and real GPU V1/
+   two-client V2 are independently unverified. No C18 unit is complete here.
+
+## Independent static evidence and commands
+
+Ran `python -B review-02/probe.py`: exit 0. Output is
+[static-evidence.json](C:/Users/Administrator/AppData/Local/Temp/arce-v180-c18-independent-review-902f3d2862bf4e83b8d55a09502a1bac/review-02/static-evidence.json).
+
+- 104 distinct mappings equal all current C18 PLANNED ledger IDs/batches:
+  C18a 28 / C18b 23 / C18c 19 / C18d 34. Every CSV field remains nonempty;
+  coverage and asset CSVs retain their revision-1 byte identities.
+- Independently recomputed all 34 approved pinned upstream source hashes against
+  Java/asset manifests, 0 mismatches. Only approved AR commit
+  c5cd5af62fc07cd4e0d24f06a16033f181c47c04 was used; no code/assets copied.
+- Independently expanded the ordered-first-match asset plan: 155 exact C18d
+  rows (77 REVIEW / 77 IMPORT / 1 REGENERATE), field-equal to actual manifest/
+  rules. This is coverage, not source clearance.
+- Read-only Get-Content/rg inspected the actual instance/invariant/codec,
+  station access/index, atmosphere/environment/default-Space and accepted
+  ADR-025/034/051/protection/API baselines, both revision proposals and author
+  dispositions. Failed guessed paths/glob arguments were corrected before
+  factual use. No directory traversal of the protected development-docs bundle,
+  unapproved LibVulpes source or asset imports occurred.
+
+No Gradle, GameTest, server, fixture migration, forced crash, native benchmark,
+GPU or multiplayer command ran. No repository or author-handoff file was written.
+Only this reviewer's fresh Temp review-02 report/probe/evidence were created.
+
+## Execution summary
+
+Completed: independent scoped C18 revision-2 contract/disposition/static review.
+Not completed: pending owner decisions, implementation and required behavioral/
+durability/performance/provenance/client evidence. Runtime files/tests changed:
+none. All Required Gates: **not met by this work**. Next v1.8 scope: owner selects
+pending material alternatives; root jointly freezes eligible shared leaf contracts,
+then implements and independently verifies them without weakening stated gates.

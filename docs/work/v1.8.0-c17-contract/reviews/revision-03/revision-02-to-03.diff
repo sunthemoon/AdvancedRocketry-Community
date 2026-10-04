@@ -1,0 +1,131 @@
+--- revision-02/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md
++++ revision-03/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md
+@@ -2,7 +2,7 @@
+ 
+ ```yaml
+ status: PROPOSED
+-revision: 2
++revision: 3
+ date: 2026-10-03
+ owner: sunthemoon
+ target_version: v1.8.0
+@@ -499,8 +499,10 @@
+ sent for visitors. Strict maximum 256 bytes, integer ranges, trailing-byte rejection
+ and client world/session cache clearing. Celestial network protocol is 3 -> 4,
+ with its exact message table and C18 sky-kind integration in section 11.
+-Publish only on region/context change and at
+-most once per 20 ticks/player; interpolation is presentation only. The effective
++Publish on region/context change, and while any rotation rate is nonzero send
++a heartbeat once per 20 ticks/player through the existing fair context-pass
++budget; never exceed that rate. Sampling/interpolation uses section 5.2.1's
++clock only. The effective
+ solar-intensity resolver does not start attenuating energy by altitude/orientation:
+ that would be an additional gameplay decision, not legacy equivalence.
+ 
+@@ -517,6 +519,106 @@
+ review must still verify the checked transition, migration and wire details;
+ product confirmation does not weaken fixed-space-region geometry or transfer
+ authority and is not acceptance of the whole ADR.
++
++### 5.2.1 Restart-safe orbital clock and sampling contract
++
++Current station records/registry have no persistent clock; the sky service's
++getTickCount pass schedule is transient and is not an epoch authority. Add a
++private pure `StationOrbitalClock` owned by the logical-server station service,
++not a public API, global static collection or independent world/SavedData clock.
++Its persisted authority is an exact `orbital_clock` compound in the same
++Overworld-owned `advancedrocketrycommunity_stations` root schema 5 as the station
++records: `schema_version` int 1 and `logical_tick` long 0..Long.MAX_VALUE, no other
++fields, <=128 bytes/depth 2/three nodes including the compound. Runtime current
++tick starts exactly at that valid saved logical_tick. It advances by one per
++logical-server END tick, once for the entire server regardless of Level/player
++count; the private server-lifecycle service is cleared on stop. It does not read
++getTickCount, Level game/day time, wall time, the satellite clock or client time
++to set/recover an epoch. `/time set`, world-time rollback and a checked station
++file ahead of level.dat therefore cannot put this clock behind its own epoch.
++Offline time contributes zero ticks; restart never runs a catch-up loop.
++
++Every in-memory operational record has `0 <= epoch <= currentLogicalTick`, and
++every serialized candidate has `0 <= epoch <= candidate.orbital_clock.logical_tick`
++for EVERY retained station, including zero-rate records. A changed orientation
++setting (including STOP) samples the clock once, computes the old phases at that sample, and stages
++new phases/rates/epoch plus that same sampled root clock in one immutable candidate.
++All checked station updates carry one sampled nondecreasing root clock through
++the existing stage/force/readback/replace/publish path. Candidate validation permits
++only that clock advancement plus the named exact record/balance transition; it
++does not relax geometry/team/other-station checks. Known commit publishes the
++new record and its clock floor together; failures before replacement retain the
++old accepted record/clock floor. A runtime counter may keep advancing after a
++known clean refusal, but cannot publish an uncommitted rate or epoch.
++
++Use ADR-041's existing outcome-unknown quarantine and ordinary-save acknowledged
++authority policy without replacing it with an invented success. On unknown write,
++disable orbital updates, stop emitting station context (send NONE) and suspend
++the clock service until restart/reconciliation. Any ordinary reassertion uses
++the acknowledged record set and its last checked-commit clock floor, never an
++unpublished candidate or live uncertain epoch. Readback of an exactly matching
++candidate may resolve a checked error as committed only by the existing path.
++On restart, load clock and records from ONE validated root; either coherent old
++or coherent new authority can resume, never records from one file and epoch time
++from another. Missing/malformed/future clock or epoch > saved logical_tick blocks
++the whole original root and preserves it verbatim; do not clamp epochs, take
++max(epoch) as a guessed repair, reset clock to zero or decode records selectively.
++
++For ordinary healthy saves, serialization captures currentLogicalTick once with
++the exact acknowledged live record set and revalidates all epochs, rather than
++serializing an older clock floor beside a newly checked epoch. While rotation is
++active, mark the registry dirty at most once per 20 server ticks so its normal
++autosave/clean-stop save checkpoints that sample. This adds no forced disk write
++per tick or new periodic fsync outside StationWriteBudget. Preserve the existing
++checked-write/ordinary-save ordering; stale serializer state must not overwrite
++a newer checked record/clock pair. A successful checked update has a durable
++co-committed clock; ordinary autosave is not promoted to a disk barrier. An abrupt
++stop can rewind only uncheckpointed visual rotation to the last surviving coherent
++root (potentially the normal autosave interval). Clean restart resumes at the
++saved phases/time with zero offline advancement. No resource, geometry, solar or
++flight outcome depends on this visual elapsed interval. This checkpoint limitation
++is disclosed, not a claim of per-tick durable animation or physical movement.
++
++Root 1/2/3 -> 4 existing migration/recovery runs first. Root 4 -> 5 initializes
++logical_tick=0 and every migrated controls epoch=0, rate=0, distance=4, choosing
++phases to reproduce the unchanged saved sun-angle; identifiers/team/geometry/
++gravity/vacuum/warp balance remain exact. New stationary records likewise start
++at epoch=0/rates=0 so ordinary creation does not create an epoch beyond a checked
++clock floor. Already-current valid root 5 is a no-op; a current root 5 lacking
++clock is malformed, not an undocumented earlier migration. Clock metadata and
++controls stay inside unchanged 4 MiB root/8 KiB record limits; near-limit inputs
++refuse migration/start intact. Conditional C18 first-event source outboxes must
++join this same root-5/journal-3 field/migration freeze only if C18 D3 is selected;
++this neither accepts that pending policy nor bumps the roots independently.
++
++For phase, let `delta = logicalTick - epoch` after validating ordering, then
++`phaseNow = floorMod(phaseAtEpoch + (delta % 72000) * rate * 5, 360000)`.
++The reduced product is at most 21,599,700 in magnitude; no `elapsed * rate`
++overflow or floating-point world-age drift is allowed. The runtime clock uses
++checked/saturating increment: at Long.MAX_VALUE it stays there and exposes
++CLOCK_EXHAUSTED. It does not wrap or renormalize epochs. Rotation freezes at the
++sampled phase; refuse new nonzero rates, permit an authorized checked STOP to
++sample those exact phases and set rates zero, and preserve other existing station
++operations/settlement. Do not silently reset saved clocks under operator authority.
++
++Server context encodes the same validated epoch/current sample basis. The client
++computes phases at packet sample, then extrapolates only 0..40 local render ticks
++since that context packet using the declared rate; addition saturates at
++Long.MAX_VALUE. After that horizon hold the last bounded phase until a fresh
++heartbeat, not indefinite off-server rotation. Interpolation never writes server
++phase/elapsed time. Wrong epoch ordering is a decoding error; blocked/quarantined
++server roots emit NONE instead of malformed frames. Cache/time estimates reset
++on NONE, Level/session/logout/resource-context change.
++
++Required deterministic fixtures: root-4 initialization/no-op repeat; fresh server
++start from nonzero epoch; positive/negative/zero rates and modular wrap; clean
++save/restart and long offline pause; `/time set` backward/independent level.dat
++behind a forced station update; old/new/mismatched checked clock/record pairs,
++known refusal/outcome-unknown/readback and ordinary reassertion; delayed autosave
++visual rollback; epoch-ahead/future/missing clock raw preservation; Long.MAX_VALUE
++increment/STOP and arbitrarily long elapsed phase; packet sample/extrapolation
++40-tick cap/cache reset. Pure model fixtures precede native writer/order/restart
++evidence; none is a runtime or Gate claim in this proposal.
+ 
+ ### 5.3 Localization and notice gaps
+ 

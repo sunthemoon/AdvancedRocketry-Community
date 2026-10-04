@@ -1,0 +1,18 @@
+{
+  "ledger_units": 104,
+  "ledger_batches": {
+    "C18c": 19,
+    "C18a": 28,
+    "C18b": 23,
+    "C18d": 34
+  },
+  "c18d_assets": 155,
+  "c18d_asset_handling": {
+    "REVIEW": 77,
+    "IMPORT": 77,
+    "REGENERATE": 1
+  },
+  "matched_upstream_source_files": 34,
+  "runtime_edits": 0,
+  "gradle_or_native_commands": 0
+}

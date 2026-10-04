@@ -1,0 +1,14 @@
+# Independent C17 revision-4 decision-only contract review
+
+Date: 2026-10-03. Delegated independent reviewer, not root or the C17 author.
+Review the actual frozen revision-3 to revision-4 diff against the actual C17
+owner receipt and relevant accepted C18 boundaries. Check source/coverage
+identity, technical/numeric/clock/writer/native/shared-schema admission and
+unexplained changes; observations do not prescribe a verdict.
+
+Write scope: this fresh Temp directory only, for independently authored static
+probe/report/diff/receipts/hash inventory. Root, author packet, frozen proposal/
+review evidence and previously authored C16 modules remain read-only. Do not
+rerun probes that write their author's/reviewer's evidence directories. No
+runtime/ledger/docs/assets edits, Gradle/native/server/GPU, commit/tag/push or
+OpenPet updates; root coordinates progress and alone may accept a contract.

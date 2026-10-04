@@ -1,0 +1,154 @@
+--- revision-02/ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md
++++ revision-03/ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md
+@@ -2,14 +2,14 @@
+ 
+ ```yaml
+ status: PROPOSED
+-revision: 2
++revision: 3
+ date: 2026-10-03
+ owner: sunthemoon
+ target_version: v1.8.0
+ slices: [C18a, C18b, C18c, C18d]
+ accepted_at: ""
+ acceptance_basis: ""
+-owner_confirmed_decisions: [D1, D5]
++owner_confirmed_decisions: [D1, D2, D3, D5]
+ development_dependency: [ADR-024, ADR-025, ADR-034, ADR-037, ADR-049, ADR-050, ADR-051, ADR-052, ADR-054, ADR-057, ADR-058, ADR-059, ADR-061, ADR-062, ADR-063, ADR-064, C17-contract]
+ revisits: [ADR-025, ADR-051, ADR-057, ADR-059]
+ supersedes: ""
+@@ -21,12 +21,15 @@
+ currently PLANNED C18 ledger units: C18a 28, C18b 23, C18c 19, C18d 34. Asset
+ coverage is separately expanded with the ledger's ordered first-match rules.
+ No existing PLANNED, DEFERRED or REJECTED disposition changes through this text.
+-Revision 2 responds to independent REVIEW-01 (H1, M1-M4). The owner has chosen
+-D1's existing 2,000-unit API/HUD buffer with finite built-in reserves and D5's
+-finite scrubber savings/nonzero minimum consumption. These two choices do not
+-accept this whole ADR, its proposed numeric balance, D2/D3, or D4's unproven
+-durability mechanism. The companion dispositions distinguish author changes
+-from an independent re-review or runtime result.
++Revision 2 addressed independent REVIEW-01 (H1, M1-M4). Revision 3 records the
++subsequent owner choices: D2 independent ground-owned server survey jobs without
++a survey-satellite prerequisite, and D3 preserved world-first Moon/warp milestones
++with recorded winning participants. D1's existing 2,000-unit API/HUD buffer with
++finite built-in reserves and D5's finite savings/nonzero minimum consumption were
++already confirmed. These choices do not accept this whole ADR, its proposed
++numeric balance or D4's unproven durability mechanism. No technical/numeric
++behavior changes from revision 2 through this decision-only revision; final
++independent diff review and root acceptance remain separate from author work.
+ 
+ ## 1. Sources and boundaries
+ 
+@@ -515,7 +518,7 @@
+ Per-Level matching/revalidation and loaded-cell budgets are inherited, not
+ a new synchronous scan. Menus show missing cell/sky/energy/owner/data status.
+ 
+-**Owner decision D2 / recommended extension**: a ground survey is an additive
++**Owner-confirmed decision D2 / selected extension**: a ground survey is an additive
+ owned registry job, not a fake launched satellite and not an unbounded item
+ chip bearing minted yields. Extend the existing satellite registry schema
+ 3 -> 4 while preserving every satellite, mission, instance and research
+@@ -536,7 +539,7 @@
+ per server tick, fair across Levels; excess controllers show QUEUED. Progress
+ mutations use the existing coalesced flush budget, not one file save per tick.
+ 
+-**ADR-051 source amendment, conditional on D2:** replace the mandatory ambiguous
++**ADR-051 source amendment under selected D2:** replace the mandatory ambiguous
+ instance `sourceMission` with a bounded tagged origin, `SURVEY_MISSION` or
+ `GROUND_SURVEY`, plus exactly one UUID. Instance schema 2 serializes exact
+ `origin_kind`/`origin_id`; there is no nullable UUID, invented MissionState or
+@@ -583,8 +586,9 @@
+ Required fixtures include legacy PENDING/AVAILABLE/ALLOCATED and terminal
+ schema-1 migrations, ground PENDING save/restart, exact backlink permutations,
+ duplicate/wrong-owner/wrong-system/wrong-kind origins, pruning/cancel/replay and
+-old source-survey-pruned AVAILABLE/ALLOCATED records. D2 still requires owner
+-choice and independent ADR-051 amendment review; this is not model code.
++old source-survey-pruned AVAILABLE/ALLOCATED records. D2's branch is owner-selected;
++the precise ADR-051 amendment and its implementation still require their scoped
++review and migration evidence. This is not model code or runtime admission.
+ 
+ On authorized START at a formed loaded observatory, derive the actual surface
+ system (or permitted station's orbit system), current asteroid candidates and
+@@ -629,11 +633,12 @@
+ preserves the whole registry. Old schema-3
+ host rejects schema 4, so downgrade restores pre-upgrade backup/matched build.
+ 
+-The alternative is a registry-authoritative survey service that requires an
+-owned survey satellite at the observatory. It adds less schema but changes
+-the promised ground-survey availability/tech path and must not be selected
+-without owner confirmation. Neither alternative removes the observatory or
+-processor from scope. D2 requires explicit ADR-051 revision/extension review.
++The unselected D2 alternative is a registry-authoritative survey service requiring
++an owned survey satellite at the observatory. The owner chose independent ground
++jobs without that prerequisite. Switching to the satellite-required branch would
++change the selected availability/tech path and require a new owner decision;
++it is not an implementation fallback. Observatory and processor remain in scope.
++D2's precise ADR-051 revision/extension review remains an implementation input.
+ 
+ ### 6.2 Advancement identities and triggers
+ 
+@@ -663,12 +668,13 @@
+ | givingitallshesgot | station_warp | player present in authorized station at committed warp |
+ | flightofpheonix | first_station_warp | participant in first committed world station warp |
+ 
+-World-first flags need versioned world state, not static booleans. **Owner
+-decision D3 remains pending:** retain world-first semantics with the following
+-commit-coupled receipts (recommended), or make both per-player first events and
+-revise the published player impact. Other advancements are unaffected.
+-
+-**Conditional world-first design:** add strict bounded schema-1
++World-first flags need versioned world state, not static booleans. **Owner-confirmed
++decision D3:** retain world-first Moon/warp semantics with recorded winning
++participants and the following commit-coupled receipts. Per-player first events
++were not selected; changing to them would require a new owner decision and
++published player-impact revision. Other advancements are unaffected.
++
++**Selected world-first design, implementation still gated:** add strict bounded schema-1
+ `advancedrocketrycommunity_classic_progression` SavedData containing two event
+ receipts. Each records kind, immutable source transaction UUID, source identity,
+ occurred flag and participant UUIDs: at most 4,096 participants/receipt and
+@@ -751,8 +757,9 @@
+ schema-4 station roots initialize no fabricated source event, preserving their
+ existing recovery/balances; migrate settled old transfers under C17's old
+ checksum-first rules. Future/invalid source/receipt roots are raw-preserved and
+-unusable until repair. D3's owner decision and this durability contract review
+-both precede implementation.
++unusable until repair. D3's product branch is owner-confirmed; this durability
++contract/writer review still precedes implementation. Native writer/restart proof
++is not provided by the owner decision receipt.
+ 
+ ### 6.3 Reachability and player guide
+ 
+@@ -912,10 +919,12 @@
+    built-in auxiliary reserve and bounded replenishment. Generalized provider
+    capacity/API migration was not selected. Numeric tier/config limits and
+    schema/migration details still require scoped contract review.
+-2. **D2** new ground-owned registry jobs (recommended) versus a required survey
+-   satellite; explicitly revise/extend ADR-051 and verify schema-4 migration.
+-3. **D3** preserve world-first achievements (recommended) versus per-player
+-   events; old-world initialization and crash-grant receipts need review.
++2. **D2 OWNER-CONFIRMED**: independent ground-owned server survey jobs without
++   a survey-satellite prerequisite. The satellite-required alternative was not
++   selected; explicitly revise/extend ADR-051 and verify schema-4 migration.
++3. **D3 OWNER-CONFIRMED**: preserve world-first Moon/warp milestones with
++   recorded winning participants, not per-player first events. Old-world
++   initialization and crash-grant receipts still need review/native evidence.
+ 4. **D4** prove pad/player save durability protocol or approve an alternate
+    interaction with a stated non-crash-atomic limitation. No phantom atomicity.
+ 5. **D5 OWNER-CONFIRMED**: finite scrubber savings with nonzero minimum
+@@ -941,9 +950,9 @@
+ build/status files belong to root.
+ 
+ No commit/tag/push, Gate pass, runtime completion or asset license clearance is
+-authorized by this proposal alone. Conditional maintainer authorization can
+-accept a revised independently reviewed final contract with no unresolved
+-Critical/High/Medium, but these material owner alternatives require explicit
+-resolution rather than being described as already accepted. D1/D5 are the only
+-newly owner-confirmed alternatives recorded in this revision; D2/D3 remain
+-pending and D4 remains an unproven feasibility/possible-interaction decision.
++authorized by this proposal alone. Conditional maintainer authorization permits
++root to accept an independently reviewed final contract with no unresolved
++Critical/High/Medium; author drafting or owner branch selection alone does not
++accept this ADR. D1/D2/D3/D5 are owner-confirmed. D4 remains an unproven
++feasibility/possible-interaction decision, and an interaction-changing alternative
++still requires owner confirmation rather than an implicit fallback approval.

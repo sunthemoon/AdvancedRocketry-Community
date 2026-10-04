@@ -1,0 +1,36 @@
+{
+  "checked_writer_native_S2_proven": false,
+  "date": "2026-10-03",
+  "inputs": {
+    "docs/decisions/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md": {
+      "bytes": 83259,
+      "sha256": "61659bd419e8857399cfa7d5266dab7d50b818327077b32cde0917927995354c"
+    },
+    "docs/work/v1.8.0-c17-contract/OWNER-DECISIONS.md": {
+      "bytes": 1558,
+      "sha256": "279d7cb58682b0c0e4bc58abf93dce3a32effca4a7a94b12f5d4d246fe39c00c"
+    },
+    "docs/work/v1.8.0-c17-contract/acceptance-integration.diff": {
+      "bytes": 2836,
+      "sha256": "d651dd7c25a7028121b6aafec712d7b90d779939a8ad50a775fed409966431d8"
+    },
+    "docs/work/v1.8.0-c17-contract/proposals/revision-04/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md": {
+      "bytes": 82614,
+      "sha256": "c50de31ea70a56749c55202bd75de258ff3d89a0ae4a9123ff8ee59e9d3545bb"
+    },
+    "docs/work/v1.8.0-c17-contract/reviews/revision-04/REVIEW-04.raw.txt": {
+      "bytes": 12878,
+      "sha256": "8f39d0757fcc2a2a628ff87a03d5ed321c24856cccd3a04c3833af19268f2224"
+    }
+  },
+  "owner_confirmed": [
+    "D1-A",
+    "D1-disassembly-A",
+    "D2-A",
+    "D3-A"
+  ],
+  "required_gate_pass": false,
+  "runtime_delivered": false,
+  "status": "ACCEPTED_CONDITIONAL_CONTRACT",
+  "technical_numeric_body_unchanged": true
+}

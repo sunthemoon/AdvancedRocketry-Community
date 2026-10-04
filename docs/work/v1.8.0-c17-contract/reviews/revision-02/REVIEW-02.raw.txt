@@ -1,0 +1,108 @@
+# Independent C17 contract review - revision 2
+
+Date: 2026-10-03. Reviewer: delegated C18 author, reviewing the different C17
+author's proposal. Repository remains read-only; no runtime/asset implementation,
+heavy Gradle/native process, OpenPet or root-file write.
+
+Reviewed [ADR-065 revision 2](C:/Users/Administrator/AppData/Local/Temp/arce-v180-c17-contract-489381f9d14b45928ec89711c681ed16/revision-02/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md),
+SHA-256 `24158c9bb75fe7455a3ddf2bf9781b1a4a33a99b313f8d830a381825e584f0e6`;
+[author dispositions](C:/Users/Administrator/AppData/Local/Temp/arce-v180-c17-contract-489381f9d14b45928ec89711c681ed16/revision-02/DISPOSITIONS-02.md),
+SHA-256 `8f150c3f80f2b1e813e0bc6bdc53ad026e1ee85419f361da3c219d407ba261da`.
+Coverage CSV remains SHA-256
+`3094547f0e4636c74e64f85cbb8305082e8cbaaec10cc84911da12905bb00eeb`.
+Root base HEAD `cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6` plus actual dirty work.
+
+## Finding: 0 Critical / 0 High / 1 Medium / 0 Low
+
+### M6 - Persisted analytic orientation has no restart-safe clock contract
+
+**Location:** ADR-065 revision 2 lines 466-469, 475-483 and 887-888. The proposal
+stores phase/rate/epoch permanently in station schema 3, samples server logical
+time when changing a rate and computes phase from elapsed time. The exact frozen
+wire layout additionally rejects `epoch > sampledServerLogicalTime`. It never
+identifies this time's authority, persistence owner, initialization or recovery
+when the source time is behind a durable epoch.
+
+**Actual baseline:** [StationSkyContextService.java](D:/GitHub/AdvancedRocketry-Community/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/station/orbit/StationSkyContextService.java):57-59
+uses server getTickCount only for a transient pass schedule. Current station
+registry/codec contain no logical-clock state. The separate
+[MonotonicMissionClock.java](D:/GitHub/AdvancedRocketry-Community/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/satellite/mission/MonotonicMissionClock.java):4-42
+defines a persistable satellite clock and rollback handling; the proposal does
+not adopt it or another authority for stations. The C17 author confirmed through
+review clarification that the revision-2 clock is not frozen and is not an existing
+station capability. Owner D2 confirmation chooses continuous analytic rotation,
+not a persistent clock implementation.
+
+**Impact:** using session tickCount as epoch/sample would put a saved epoch ahead
+of sample after restart; using an independently saved world time may also put
+a checked station update ahead of its saved clock after a crash/rollback. The
+current text allows incompatible phase jumps, rejected context frames, stalled
+rotation or arbitrary epoch resets. No precise assertion oracle exists for the
+advertised restart/migration behavior. This is a missing contract, not an alleged
+executed bug in C17 runtime, which is not implemented here.
+
+**Required revision:** name one bounded restart-safe clock authority and its
+source/persistence owner; define old-record initialization, co-commit consistency
+of epoch/clock with station updates, restart/offline/rollback handling, overflow
+and epoch-ahead-of-sample invalid data. Preserve checked-write outcome-unknown
+semantics and fixed station budgets. Freeze sampling/interpolation rules so the
+wire invariant and continuous phase use the same time basis. It need not reuse
+the satellite clock or add a public API. Add deterministic migration, positive/
+negative rate, long-elapsed, clean restart, checked-station-write ahead of world
+save and backward-time fixtures. Do not infer persistence from getTickCount or
+silently normalize a future/corrupt root. Re-review this correction before freezing
+the affected orbital contract; no heavy/native work is needed to specify it.
+
+## Revision-1 finding dispositions independently checked
+
+| Prior finding | Independent revision-2 assessment |
+|---|---|
+| M1 typed disassembly | Missing behavior is now explicit in section 3.1: complete-vector consent including oxidizer-only, ordinary-cargo separation, immutable quote and retain-on-failure; restoration alternative is also named. **D1-disassembly owner choice remains pending**, so neither actual-Fluid disposal nor carrier restoration is implicitly approved. |
+| M2 external components | Section 3 gives deterministic explicit-over-tag compatibility and rejects external engine/capacity with typed host propulsion before extraction; structural/seat/guidance-only external components remain permitted. This is an explicit pending-D1 compatibility limit, not a silently expanded typed API. |
+| M3 bay/decommission | Section 8 no longer treats live satellite identity as an enduring receipt. Independent durable receipts, registration/decommission fence, retirement proof and full-capacity refusal cover the identified deletion window. **D3 and exact barrier proof remain pending**; this closes the missing lifecycle specification, not a runtime exactly-once proof. |
+| M4 HEAD finder | Section 7 explicitly freezes shared two-slot eligibility/one finder, actual host workstation movement and enabled-only immutable summary. Independently compared to ADR-066 revision 2 (SHA 7c6da4ab6f3974d537813ed3662f1f072f86c3cf13990b1d1afb685045ecb976): catalogs, capacity and private summary agree. Other C18 equipment/motion packet surfaces remain its own leaf input. |
+| M5 force-field source state | Section 6.2 now deliberately retains a full-cube SEALED physical block for active/unloaded/orphan/quarantined states until actual protected removal; removal/placement synchronously invalidates room authority. Source unload is not deletion evidence. This is compatible with the pure BlockState classifier rather than a mutable source callback. Native event/cleanup/explosion cases are still unexecuted. |
+| L1 API names | Actual EndgameEffect/EndgameEffectEvent and API 1.8 baseline are used; append-only FIELD_PROJECTION/minor 1.9 and old-listener fail-closed compatibility checks are specified. No nonexistent type/effect remains. Actual binary/event compatibility tests remain required. |
+| L2 protocol integration | Exact celestial 3 -> 4 / flight 8 -> 9, unchanged discriminator/directions and new classic_controls table are specified. Shared station sky payload 2 agrees with C18 revision 2 sky-kind. Independent arithmetic confirms the current maximal flight envelope plus bounded selected detail is below 32 KiB and sky below 256 bytes. New M6 concerns time authority, not these byte/version values. |
+| L3 byte/hash work | Section 4.1.1 adds one reconstruction/tick plus charged-byte/visit limits, preallocation reservation, resumable preparation, old hash until commit and worst-case native benchmarks against unchanged docs/17. This fills count-only budgeting; proposed ceilings are not claimed measured-safe rates. |
+
+These original gaps are addressed in the conditional proposal. No independent
+finding is erased merely because its implementation/proof is deferred. The one
+new medium clock gap above must still be specified. Whole ADR status remains
+PROPOSED with owner-pending alternatives; no acceptance is issued here.
+
+## Remaining decisions / integration inputs
+
+- D2-A product behavior is owner-confirmed; its clock/migration/wire implementation
+  is not thereby approved. D1, D1-disassembly and D3 remain material choices.
+- Exact D3 disk/source/receipt barriers, pattern/recipe codecs, irradiance function,
+  API consumer compatibility and resource-origin outcomes remain implementation
+  inputs requiring focused review/evidence, not completed work.
+- ADR-066 revision 2 additionally proposes first-event source outboxes co-committed
+  with station warp / checked Moon landing, conditional on C18's still-pending
+  world-first choice. Its station root 5 / journal 3 fields must join the same
+  central migrations rather than independently bumping or silently omitting them.
+  This is an explicit integration prerequisite, not proof existing journals are
+  durable or that C18's pending policy has been chosen.
+
+## Static evidence actually executed / limitations
+
+Own read-only source/ADR inspection and own Temp static probe, no author probe
+execution that could rewrite the reviewed artifacts. Exact 41 primary PLANNED
+rows/unique IDs checked against current root ledger (24/9/8); coverage unchanged.
+Independently rehashed all 26 approved AR source files against supplied identities
+and legacy java manifest. Current protocol table/API/enum/decommission baseline
+and reviewed modern-source hashes captured in static-evidence.json. Source pin is
+`c5cd5af62fc07cd4e0d24f06a16033f181c47c04`; sibling LibVulpes and protected
+development-docs bundle were not read. No source/assets copied.
+
+No Gradle, GameTest, server/crash fixture, benchmark, actual GPU V1 or two-client
+V2 evidence. Corrected guessed nonexistent source locations with actual paths;
+no absent file was behavioral evidence. No runtime reproduction or Gate PASS.
+
+Completed range: independent C17 revision-2 contract/static re-review.
+Uncompleted range: M6 correction/re-review, owner decisions, precise dependent
+recovery contracts, implementations and Gates. Modified files/tests: own Temp
+review/probe/evidence only. Current Required Gates: **not satisfied by this work**.
+Next v1.8 scope: explicit clock revision and independent static re-review before
+the affected C17 orbital contract freeze.

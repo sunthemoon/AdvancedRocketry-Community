@@ -1,0 +1,165 @@
+{
+  "kind": "independent_c18_revision_2_static_review_evidence",
+  "draft_sha256": "7c6da4ab6f3974d537813ed3662f1f072f86c3cf13990b1d1afb685045ecb976",
+  "unit_coverage_sha256": "9a8683cb9b04b43867069efd7d783fc19afd1c29454211dab40af4c0765921fa",
+  "asset_coverage_sha256": "e920a76d884289c9e4c373e80739331f88b53fb8cd2733ff07d0b47260cf5d71",
+  "author_dispositions_sha256": "314b200e04777e8eeb7c70d583c873123c3a19f8eaa72ea57ac585717294869d",
+  "exact_current_planned_units": 104,
+  "unique_unit_ids": 104,
+  "batch_counts": {
+    "C18c": 19,
+    "C18a": 28,
+    "C18b": 23,
+    "C18d": 34
+  },
+  "ordered_first_match_assets": 155,
+  "asset_handling_counts": {
+    "REVIEW": 77,
+    "IMPORT": 77,
+    "REGENERATE": 1
+  },
+  "independently_rehashed_approved_sources": 34,
+  "source_mismatches": [],
+  "source_files": [
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/components/ItemJetpack.java",
+      "sha256": "41665d56ec692f0f9dd3da46f7b424c0fbbb372acb213528729b050b66de3036"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/components/ItemPressureTank.java",
+      "sha256": "5bd9ec256b1cdaf00810cd2a70ea5e1977cde838ac58bfdda4c947515bf65325"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/components/ItemUpgrade.java",
+      "sha256": "15a8e63691b623aa196e2264b90d91721549e1b9a8339c46092891051636325c"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/TileSuitWorkStation.java",
+      "sha256": "611e94a0d09a41a2e49764de968813b1f9f3a099028ce1e5a02159d7164d1c0d"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileCO2Scrubber.java",
+      "sha256": "1d524f79239872e32f8d9cd259af78a38e76739940ec9a134c295c162f3cd983"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileOxygenVent.java",
+      "sha256": "affe627203c453a9ea39d67210ecba8977cad3ba819102e875b437e972ab6f80"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileAtmosphereDetector.java",
+      "sha256": "6a13bb9502f9ce77f82eb7f8246672a74a059322a84c9db737f1d643f5685cb9"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileGasChargePad.java",
+      "sha256": "f36b368df510cea8b81bd425daf0ffa2805adffbec69e7f8cdaa1911cefc7e0e"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileObservatory.java",
+      "sha256": "b1c35a417c36ad01f87228179b8db0ada52ca8528ef86978201b95457ab87b61"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileAstrobodyDataProcessor.java",
+      "sha256": "ce95158d41aae61692758f61e666c761d0ac51340ae8685cbee972a702c12371"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/event/PlanetEventHandler.java",
+      "sha256": "2b4cd7f0a2cb4dd977902ea988f010182a461caff7581961b643c7b90c77d76f"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
+      "sha256": "78ce40293f42c5a13add1e09d8cca13dc0afa8ac462df1a05f43f9dfcde4e1d4"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/enchant/EnchantmentSpaceBreathing.java",
+      "sha256": "be767be7d9090aaa6afb5d7e5803b2d922ef435c8c1d03a6f2c5670b482b4b41"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/ItemJackHammer.java",
+      "sha256": "f39abb553b888ac21d00d86292c35076c59419619e3c25a181e3db738071f3d1"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/entity/EntityRocket.java",
+      "sha256": "6363a7967193a95aa426e3f87e9c431b77bb31274f1973a416e20bf8f60d8248"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/station/TileWarpController.java",
+      "sha256": "153e153c7ef2e1b67e8c88624ee939744a63f884f77b9c6213364ddb9530c05f"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/advancements/ARAdvancements.java",
+      "sha256": "f1c7d8fad3d63de69f9f43307db1e7ec7f29d1010dd1492dc6531328806e6407"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/root.json",
+      "sha256": "951c64f631ca522882de86e0239a6dbfc8f235820d795c9c18d6ee9e62e592b1"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/blockpresser.json",
+      "sha256": "51400710e09013302e68994fb9e6586d34398ecf43837590cd9b6e5f2e0c81d2"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/rollin.json",
+      "sha256": "48dcfdff3a23cd4699dd08540fbeb940697e7b1e7124fe748e6bddad04cc76fc"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/electrifying.json",
+      "sha256": "cebac5f8f66edf70bd02b7935a2cde091faff230e1b1b143ad3aace40adb8419"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/feeltheheat.json",
+      "sha256": "c9112f6eb2805deee3a5a1261062d29fa53b740ef82a599734bf68ca86c6565e"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/spindoctor.json",
+      "sha256": "12f1854a79c7e75f25f48bada591922a3b064386eab2be266d995b23ed7fa65a"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/crystalline.json",
+      "sha256": "51f7e435f097e41e983f32953e5c4ba4ad94c34b0cbf945bdc9ce2f71808df7e"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/dilithium.json",
+      "sha256": "7122d35546903a97c1cb04579aafe9a228f8de3420bd0b3c687faf251287248f"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/holographic.json",
+      "sha256": "28213950665a60081a2f46e874a85f8801a10523960ab06323ff61901898a6da"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/suitedup.json",
+      "sha256": "6fd3e7e1f0443f0207a04adfcdead6713092bcb6e1c296b78f67a893bf810410"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/warp.json",
+      "sha256": "744752d0ec39737db3e4a7eb7b54ceb7ef9cef23048cb6401ce7217edea92739"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/beer.json",
+      "sha256": "1c6090d6d47d8ddd945be05c64a5a069d17474fa3958aba9643f936c713a29b1"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/moonlanding.json",
+      "sha256": "4add62add0e564da27b61d6db2d31186bcfd989c1ff6de7955b986b33971553c"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/onesmallstep.json",
+      "sha256": "97563fe4fac65abab08c6b718b16122839c83644de00f9d0d012b2bdf6cd2ea5"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/wenttothemoon.json",
+      "sha256": "fc5710b38308b6bc28d129a483726efb99dff200b56403bc253001381edd78d3"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/givingitallshesgot.json",
+      "sha256": "15b58618314a4d8b1cc1e728fb8d565ba15f00dd9d03f8d676c13d66478d8886"
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/flightofpheonix.json",
+      "sha256": "233e4391b41600e30e2043f5af746bc43df20baf9529cd78bec89f7d6a566c3d"
+    }
+  ],
+  "runtime_tests_run": false,
+  "repository_writes": false,
+  "command": "python -B review-02/probe.py",
+  "exit_code": 0
+}

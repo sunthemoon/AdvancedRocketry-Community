@@ -1,0 +1,221 @@
+{
+  "upstream_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+  "source_files": [
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/components/ItemJetpack.java",
+      "sha256": "41665d56ec692f0f9dd3da46f7b424c0fbbb372acb213528729b050b66de3036",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/components/ItemPressureTank.java",
+      "sha256": "5bd9ec256b1cdaf00810cd2a70ea5e1977cde838ac58bfdda4c947515bf65325",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/components/ItemUpgrade.java",
+      "sha256": "15a8e63691b623aa196e2264b90d91721549e1b9a8339c46092891051636325c",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/TileSuitWorkStation.java",
+      "sha256": "611e94a0d09a41a2e49764de968813b1f9f3a099028ce1e5a02159d7164d1c0d",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileCO2Scrubber.java",
+      "sha256": "1d524f79239872e32f8d9cd259af78a38e76739940ec9a134c295c162f3cd983",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileOxygenVent.java",
+      "sha256": "affe627203c453a9ea39d67210ecba8977cad3ba819102e875b437e972ab6f80",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileAtmosphereDetector.java",
+      "sha256": "6a13bb9502f9ce77f82eb7f8246672a74a059322a84c9db737f1d643f5685cb9",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileGasChargePad.java",
+      "sha256": "f36b368df510cea8b81bd425daf0ffa2805adffbec69e7f8cdaa1911cefc7e0e",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileObservatory.java",
+      "sha256": "b1c35a417c36ad01f87228179b8db0ada52ca8528ef86978201b95457ab87b61",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileAstrobodyDataProcessor.java",
+      "sha256": "ce95158d41aae61692758f61e666c761d0ac51340ae8685cbee972a702c12371",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/event/PlanetEventHandler.java",
+      "sha256": "2b4cd7f0a2cb4dd977902ea988f010182a461caff7581961b643c7b90c77d76f",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
+      "sha256": "78ce40293f42c5a13add1e09d8cca13dc0afa8ac462df1a05f43f9dfcde4e1d4",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/enchant/EnchantmentSpaceBreathing.java",
+      "sha256": "be767be7d9090aaa6afb5d7e5803b2d922ef435c8c1d03a6f2c5670b482b4b41",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/ItemJackHammer.java",
+      "sha256": "f39abb553b888ac21d00d86292c35076c59419619e3c25a181e3db738071f3d1",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/entity/EntityRocket.java",
+      "sha256": "6363a7967193a95aa426e3f87e9c431b77bb31274f1973a416e20bf8f60d8248",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/station/TileWarpController.java",
+      "sha256": "153e153c7ef2e1b67e8c88624ee939744a63f884f77b9c6213364ddb9530c05f",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/advancements/ARAdvancements.java",
+      "sha256": "f1c7d8fad3d63de69f9f43307db1e7ec7f29d1010dd1492dc6531328806e6407",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/root.json",
+      "sha256": "951c64f631ca522882de86e0239a6dbfc8f235820d795c9c18d6ee9e62e592b1",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/blockpresser.json",
+      "sha256": "51400710e09013302e68994fb9e6586d34398ecf43837590cd9b6e5f2e0c81d2",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/rollin.json",
+      "sha256": "48dcfdff3a23cd4699dd08540fbeb940697e7b1e7124fe748e6bddad04cc76fc",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/electrifying.json",
+      "sha256": "cebac5f8f66edf70bd02b7935a2cde091faff230e1b1b143ad3aace40adb8419",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/feeltheheat.json",
+      "sha256": "c9112f6eb2805deee3a5a1261062d29fa53b740ef82a599734bf68ca86c6565e",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/spindoctor.json",
+      "sha256": "12f1854a79c7e75f25f48bada591922a3b064386eab2be266d995b23ed7fa65a",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/crystalline.json",
+      "sha256": "51f7e435f097e41e983f32953e5c4ba4ad94c34b0cbf945bdc9ce2f71808df7e",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/dilithium.json",
+      "sha256": "7122d35546903a97c1cb04579aafe9a228f8de3420bd0b3c687faf251287248f",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/holographic.json",
+      "sha256": "28213950665a60081a2f46e874a85f8801a10523960ab06323ff61901898a6da",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/suitedup.json",
+      "sha256": "6fd3e7e1f0443f0207a04adfcdead6713092bcb6e1c296b78f67a893bf810410",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/warp.json",
+      "sha256": "744752d0ec39737db3e4a7eb7b54ceb7ef9cef23048cb6401ce7217edea92739",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/beer.json",
+      "sha256": "1c6090d6d47d8ddd945be05c64a5a069d17474fa3958aba9643f936c713a29b1",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/moonlanding.json",
+      "sha256": "4add62add0e564da27b61d6db2d31186bcfd989c1ff6de7955b986b33971553c",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/onesmallstep.json",
+      "sha256": "97563fe4fac65abab08c6b718b16122839c83644de00f9d0d012b2bdf6cd2ea5",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/wenttothemoon.json",
+      "sha256": "fc5710b38308b6bc28d129a483726efb99dff200b56403bc253001381edd78d3",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/givingitallshesgot.json",
+      "sha256": "15b58618314a4d8b1cc1e728fb8d565ba15f00dd9d03f8d676c13d66478d8886",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/flightofpheonix.json",
+      "sha256": "233e4391b41600e30e2043f5af746bc43df20baf9529cd78bec89f7d6a566c3d",
+      "manifest_match": true
+    }
+  ],
+  "authorities": [
+    {
+      "path": "docs/decisions/ADR-025-SUIT-OXYGEN-PROVIDERS.md",
+      "sha256": "13c2eb2241807d46b52d63a37613e133b5843e38d5e7c7b3199449ff09af7159"
+    },
+    {
+      "path": "docs/decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md",
+      "sha256": "00fd18f56ca146c1159875a8fe3ae7b1bba7cdf57273937bfb1a9a043e259272"
+    },
+    {
+      "path": "docs/decisions/ADR-037-PLANETARY-DISCOVERY-AND-RESEARCH.md",
+      "sha256": "2db9be8745139b3d8ab8303aa3af0e58f7a4eae1d3b8f4b49ff8d62c466e4cdc"
+    },
+    {
+      "path": "docs/decisions/ADR-051-RESOURCE-MISSION-INSTANCES-AND-DELIVERY.md",
+      "sha256": "744d0e34385e31e8a7a8930dc70ba1792dcf4ec58deb419391272afe35344fcd"
+    },
+    {
+      "path": "docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md",
+      "sha256": "c95a9bd950f1fc35e0bd7cff734db6614c4a4b65cfd6a5e58acbee1355cd2c7c"
+    },
+    {
+      "path": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md",
+      "sha256": "99bec19fea832fc5cf191cc56bbfcd398bf69cfb624514d362205e5713b5e021"
+    },
+    {
+      "path": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "sha256": "223cacc2b3b3a2a9a649d01bd83980bebd4aa8225c694377130786d29bd3321a"
+    },
+    {
+      "path": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "sha256": "bcc86c546ad82ba61a765cfb31296f2a4af7287a69bcbed802380284ab87e362"
+    },
+    {
+      "path": "docs/decisions/ADR-064-CLASSIC-MACHINES-FLUIDS-AND-COMPONENTS.md",
+      "sha256": "d8ecc264170047fe62644dee01f2fc1101c56ceb5df1f250d8224486205f7014"
+    },
+    {
+      "path": "docs/work/v1.8.0-content-ledger.csv",
+      "sha256": "f5915cb9148b797f7ac592891377b6ff0ce5aae66f0871619ae90392f343c889"
+    },
+    {
+      "path": "docs/work/v1.8.0-asset-plan.csv",
+      "sha256": "b7c51f078c81f3bf4358ca86368c76b0d956acfc20be5365901f13a0185b32a5"
+    }
+  ]
+}

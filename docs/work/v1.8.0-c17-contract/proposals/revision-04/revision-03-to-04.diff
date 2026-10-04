@@ -1,0 +1,211 @@
+--- revision-03/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md
++++ revision-04/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md
+@@ -2,26 +2,26 @@
+ 
+ ```yaml
+ status: PROPOSED
+-revision: 3
++revision: 4
+ date: 2026-10-03
+ owner: sunthemoon
+ target_version: v1.8.0
+ slices: [C17a, C17b, C17c]
+ depends_on: [ADR-026, ADR-027, ADR-035, ADR-037, ADR-041, ADR-044, ADR-046, ADR-047, ADR-049, ADR-050, ADR-054, ADR-058, ADR-059, ADR-061, ADR-062, ADR-063, ADR-064]
+ amends_if_accepted: [ADR-021, ADR-026, ADR-041, ADR-046, ADR-047, ADR-049, ADR-054, ADR-058]
+-owner_decisions_confirmed: [D2-A]
+-owner_decisions_pending: [D1, D1-disassembly, D3]
++owner_decisions_confirmed: [D1-A, D1-disassembly-A, D2-A, D3-A]
++owner_decisions_pending: []
+ accepted_by: ""
+ accepted_at: ""
+ ```
+ 
+ This is a contract proposal, not a runtime delivery, approval, ledger closure or
+-Gate result. The recommendation clauses below require independent review. D2-A
+-was expressly chosen by the owner on 2026-10-03: continuous three-axis analytic
+-rotation and logical altitude, no physical block movement, with elevator endpoint
+-conditions protected while linked/busy. This confirms that product choice, not
+-the entire ADR or its implementation. D1, its disassembly subchoice and D3 remain
+-material product choices that must not be silently accepted by an implementer.
++Gate result. The clauses below require independent review. The owner receipt
++dated 2026-10-03 confirms D1-A, D1-disassembly-A, D2-A and D3-A against reviewed
++revision 3. These are product selections, not acceptance of the entire ADR or
++its implementation. This revision records their selected status without changing
++technical or numeric behavior. The unselected alternatives are not fallbacks;
++changing a selected product boundary requires a new explicit owner decision.
+ The existing accepted contracts prevail until the corresponding amendments are
+ accepted. No source or asset is imported by this document.
+ 
+@@ -150,14 +150,14 @@
+ catch it and omit that BE. The combustion native chunk-save regression is the
+ baseline to extend, not evidence that all new roots are already protected.
+ 
+-## 3. D1: propulsion and fuel representation (owner choice)
+-
+-**Recommendation D1-A:** preserve the current engine/tank baseline and item fuel
++## 3. D1: propulsion and fuel representation (owner-confirmed D1-A)
++
++**Owner-confirmed D1-A:** preserve the current engine/tank baseline and item fuel
+ API, add separate actual Fluid content and distinct oxidizer accounting, and
+ capture propulsion data at assembly. Do not pretend the scalar fuel amount is
+ hydrogen plus oxygen. Do not add arbitrary mod callbacks in a flight tick.
+ 
+-The proposed numeric baseline, subject to D1 acceptance:
++The proposed numeric baseline remains unchanged, subject to scoped contract acceptance:
+ 
+ | Type | Mass | Thrust | Consumption coefficient | Required tank role |
+ |---|---:|---:|---|---|
+@@ -179,7 +179,7 @@
+ assembly with a distinct reason, not whichever engine was visited last. An
+ ADR-026-only rocket retains its old abstract mode and metrics.
+ 
+-The D1-A compatibility recommendation is explicit and order-independent:
++The owner-selected D1-A compatibility boundary is explicit and order-independent:
+ 
+ | Components after existing explicit-definition-over-tag resolution | Allowed mode |
+ |---|---|
+@@ -196,7 +196,7 @@
+ abstract snapshots with such definitions migrate as abstract-only and do not gain
+ Fluid eligibility on reload. No public typed component API or callback change is
+ introduced. The inability to combine external engine/tank metrics with new typed
+-propulsion is a visible player/compatibility limit, included in the pending D1
++propulsion is a visible player/compatibility limit, included in the selected D1-A
+ choice and operator/API documentation, not an implicit external-provider upgrade.
+ Tests cover integrated roles, explicit/tag precedence, all scan-order permutations,
+ old external-only saves, basic host/external saves and every mixed typed case.
+@@ -246,22 +246,23 @@
+ round-trip, and refuse intact if remainder space is unavailable. Survival consumes
+ only actually accepted Fluid; creative follows a documented instabuild convention.
+ 
+-**Alternative D1-B:** restore legacy scale/formula and retune existing rocket
++**Unselected alternative D1-B:** restore legacy scale/formula and retune existing rocket
+ metrics/route requirements. This affects all existing/custom rockets and requires
+ explicit migration of captured stats, capacity and plans, survival progression
+ revalidation and compatibility consumer tests. It cannot be achieved by quietly
+ changing fallback tags or casting old mB to current units.
+ 
+-Acceptance must name D1-A or D1-B and any adjusted numeric/efficiency values.
+-Until then, numeric runtime implementations are not authorized by this draft.
+-
+-### 3.1 D1-disassembly: remaining propulsion resources (owner subchoice)
++D1-A is the selected product boundary; D1-B and numeric/efficiency retuning are
++not selected. Scoped contract review and acceptance remain required before
++numeric runtime implementation; this decision-only revision grants neither.
++
++### 3.1 D1-disassembly: remaining propulsion resources (owner-confirmed D1-disassembly-A)
+ 
+ The actual existing `RocketDisassemblyService` deliberately disposes of a single
+ abstract fuel balance only after player consent; it does not materialize fuel in
+ world tank blocks. New typed contents cannot reuse only that primary-scalar check.
+ 
+-**Recommended D1-disassembly-A, pending owner confirmation:** extend that policy
++**Owner-confirmed D1-disassembly-A:** extend that policy
+ to the complete propulsion vector. Ordinary rocket cargo Fluid is always restored
+ through its single native cargo carrier, never included in the disposal vector.
+ An all-zero propulsion vector needs no disposal consent. Any nonzero abstract,
+@@ -290,15 +291,16 @@
+ does not turn abstract fuel into a fluid-bearing world tank. Menus must disclose
+ that actual Fluid can be unloaded before choosing intentional disposal.
+ 
+-**Alternative D1-disassembly-B:** materialize actual propulsion Fluid into one
++**Unselected alternative D1-disassembly-B:** materialize actual propulsion Fluid into one
+ canonical native tank carrier per bank, deterministically allocated by sorted
+ relative position, and remove it from moving authority only after successful
+ restoration. Existing plain host tank blocks do not supply this storage capability.
+ This alternative requires a separately frozen BE/adapter/root/capacity migration
+ and placement-failure protocol; it is not delivered by attaching a Fluid field to
+ the old scalar. Abstract units still need their existing explicit disposal policy.
+-Do not implement either typed materialization/disposal choice until the owner
+-confirms it and independent resource/recovery review is complete.
++D1-disassembly-A is selected; D1-disassembly-B is not an implementation fallback.
++Independent resource/recovery review and scoped contract acceptance remain required
++before implementing the selected disposal policy.
+ 
+ Required tests: fuel=0/oxidizer>0, tagged working Fluid, cargo Fluid plus propulsion,
+ all-zero versus partial vectors, fill/unload after quote, old scalar migration,
+@@ -411,11 +413,11 @@
+ on unload; their menu and native loot have one chosen resource carrier only.
+ 
+ These transfers span a BE chunk and a rocket Entity file. Vanilla save order does
+-not make a two-store transfer crash-atomic. Therefore implementation must either
+-add an escrow/receipt authority with demonstrable durable barriers and full S2
+-cut evidence, or explicitly obtain owner acceptance of the ADR-027/054 ordinary
+-container torn-save residual and publish it. In-tick conservation plus clean
+-restart is not an exactly-once crash claim. This is D3 below, not a test waiver.
++not make a two-store transfer crash-atomic. Owner-selected D3-A requires an
++escrow/receipt authority with demonstrable durable barriers and full S2 cut
++evidence before admission. No added ADR-027/054 ordinary-container torn-save
++residual is selected. In-tick conservation plus clean restart is not an
++exactly-once crash claim. This is D3 below, not a test waiver.
+ 
+ ### 4.3 Monitor
+ 
+@@ -587,9 +589,9 @@
+ clock floor. Already-current valid root 5 is a no-op; a current root 5 lacking
+ clock is malformed, not an undocumented earlier migration. Clock metadata and
+ controls stay inside unchanged 4 MiB root/8 KiB record limits; near-limit inputs
+-refuse migration/start intact. Conditional C18 first-event source outboxes must
+-join this same root-5/journal-3 field/migration freeze only if C18 D3 is selected;
+-this neither accepts that pending policy nor bumps the roots independently.
++refuse migration/start intact. Owner-selected C18 D3 first-event source outboxes
++must join this same root-5/journal-3 field/migration freeze; the product selection
++neither accepts its shared technical contract nor bumps the roots independently.
+ 
+ For phase, let `delta = logicalTick - epoch` after validating ordering, then
+ `phaseNow = floorMod(phaseAtEpoch + (delta % 72000) * rate * 5, 360000)`.
+@@ -860,9 +862,9 @@
+ rollback of only one world file is outside a proven multi-store S2 guarantee;
+ whole-world backup restore/downgrade remains the documented operator boundary.
+ The exact disk authority/receipt retirement barriers remain the focused D3-A
+-recovery-contract gate. D3-B retains matching in-memory/clean-restart receipts
+-but must disclose its owner-accepted torn-save residual and cannot claim durable
+-exactly-once, with or without a current satellite identity.
++recovery-contract gate. Unselected D3-B would retain matching in-memory/clean-restart
++receipts but require a new explicit owner decision on its added torn-save residual;
++it could not claim durable exactly-once, with or without a current satellite identity.
+ 
+ Complete bay phase/receipt ownership survives flight transfer and disassembly;
+ no historic assembly snapshot restores a consumed package. Fault cuts must cover
+@@ -920,9 +922,9 @@
+ where that adds obtainable machine content. Neither solar profile produces a
+ satellite nor replaces ADR-049's orbital solar transmitter.
+ 
+-## 10. D3: two-store crash durability decision
+-
+-**Recommendation D3-A:** implement an explicit same-authority escrow/receipt
++## 10. D3: two-store crash durability decision (owner-confirmed D3-A)
++
++**Owner-confirmed D3-A:** implement an explicit same-authority escrow/receipt
+ coordinator for BE <-> moving-rocket cargo and satellite bay deployment, with
+ documented durable barriers and S2 fault-cut verification before admitting those
+ automation paths. Bounded pending transfers (64/server, 8/rocket), unique UUID,
+@@ -938,13 +940,14 @@
+ means its asynchronous write is durable. Admission must not begin before the
+ selected durability contract is frozen.
+ 
+-**Alternative D3-B:** retain ordinary two-store in-tick atomicity/clean restart
++**Unselected alternative D3-B:** retain ordinary two-store in-tick atomicity/clean restart
+ with the existing explicitly accepted ADR-027/054 torn-save residual class. This
+ is smaller but exposes save interruption/backup rollback to cargo duplication or
+ loss; it requires the owner to accept the added loader/bay scope with public impact,
+ representative S2 cuts and operator diagnosis, and cannot be marketed as durable
+ exactly-once. Choosing B does not waive known reproducible non-crash duplication
+-or malformed-data loss. No implementation may silently choose B to shorten tests.
++or malformed-data loss. The owner selected D3-A, not this added residual or a
++same-tick-only substitute. No implementation may silently choose B to shorten tests.
+ 
+ ## 11. Network, provenance, progression and verification
+ 
+@@ -1155,8 +1158,10 @@
+ 
+ The independent reviewer checks this proposal against actual working-tree APIs,
+ accepted ADRs, pinned legacy facts, all 41 units and migrations. No conclusion or
+-fixed verdict is prescribed. C17a production starts only after D1/D3 and its
+-schema/recovery and D1-disassembly contracts are accepted; C17b orbital
++fixed verdict is prescribed. The owner-selected D1-A, D1-disassembly-A and D3-A
++product boundaries still require independent review and acceptance of their
++schema/recovery contracts, including D3-A forced-stop recovery verification
++before admitting its interactions. C17b orbital
+ implementation starts only after the owner-confirmed D2-A's checked-transition
+ and wire contract passes independent review and is accepted. Content cannot be silently
+ moved to DEFERRED/REJECTED; changing an ADR-062 disposition requires that ADR's

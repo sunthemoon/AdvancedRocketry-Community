@@ -1,0 +1,13 @@
+# Independent C18 revision-3 decision-only review
+
+Date: 2026-10-03. Delegated reviewer; not the C18 author. Review the actual
+revision-2 to revision-3 proposal changes against the actual owner receipt,
+technical admission boundaries and preserved source/coverage identity.
+
+Write scope: only this fresh Temp directory, including an independently
+authored probe, its output, review report and file manifest. Root checkout,
+both proposal directories and previously authored C16 work remain read-only.
+No author probe rerun, Gradle/native/runtime command, assets, central edits,
+commit/tag/push or Gate/status change is authorized.
+
+The report is a scoped independent observation, not root contract acceptance.

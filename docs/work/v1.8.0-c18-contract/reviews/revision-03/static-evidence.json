@@ -1,0 +1,759 @@
+{
+  "kind": "independent_decision_only_static_checks_not_runtime_or_acceptance",
+  "started_utc": "2026-10-03T09:34:52.395496+00:00",
+  "finished_utc": "2026-10-03T09:34:52.519179+00:00",
+  "python": "3.13.15",
+  "inputs": {
+    "r2": {
+      "ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md",
+        "bytes": 65855,
+        "sha256": "7c6da4ab6f3974d537813ed3662f1f072f86c3cf13990b1d1afb685045ecb976"
+      },
+      "asset-coverage.csv": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\asset-coverage.csv",
+        "bytes": 47223,
+        "sha256": "e920a76d884289c9e4c373e80739331f88b53fb8cd2733ff07d0b47260cf5d71"
+      },
+      "collect_coverage.py": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\collect_coverage.py",
+        "bytes": 11875,
+        "sha256": "4fb37d8dac89313f0bd33ef0ac9ebb4f5c541e35ce1aa98abad326647be2cb66"
+      },
+      "coverage-summary.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\coverage-summary.json",
+        "bytes": 339,
+        "sha256": "560cfa992a2615649862f495b99a16a40c77f8b3dd26c0323c14096962b7762c"
+      },
+      "FILE-HASHES.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\FILE-HASHES.json",
+        "bytes": 2295,
+        "sha256": "7b493897027242e616da7ed254324b6f5bcc3494a1e91863f81a2dc06dc10b47"
+      },
+      "LOCAL-RELOCATION.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\LOCAL-RELOCATION.md",
+        "bytes": 640,
+        "sha256": "df59de60f1e071d813ae734cce74ef9bd0cafa40e2f33bff5c5a8b1bec26d63f"
+      },
+      "original-file-hashes.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\original-file-hashes.json",
+        "bytes": 1688,
+        "sha256": "de757e62443c6e12878717074acb64e1ecdd56762f189012b47d3b53c94181c0"
+      },
+      "REPORT.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\REPORT.md",
+        "bytes": 4180,
+        "sha256": "a83bf190ec6b79353facb30288858a6371c05d2e91c2811b2260822ac4478f1a"
+      },
+      "REPORT.raw.txt": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\REPORT.raw.txt",
+        "bytes": 4382,
+        "sha256": "fd6372a8ff7295df5a2182a53d397656446c94079dab0f00239f9dbaf1a612f0"
+      },
+      "review-01-dispositions.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\review-01-dispositions.md",
+        "bytes": 6060,
+        "sha256": "558f1c25fc3baf062c79886af5fde7ac1a160617f91aeea2c05541edecf72031"
+      },
+      "review-01-dispositions.raw.txt": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\review-01-dispositions.raw.txt",
+        "bytes": 6046,
+        "sha256": "314b200e04777e8eeb7c70d583c873123c3a19f8eaa72ea57ac585717294869d"
+      },
+      "revision-01-to-02.diff": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\revision-01-to-02.diff",
+        "bytes": 42264,
+        "sha256": "6492929bd24042f272e3bb1a95d236467a953fbc535e9b5c1e4539965a3f3ecd"
+      },
+      "source-files.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\source-files.json",
+        "bytes": 9691,
+        "sha256": "99f8078ce02a4774f9da380553f4cd910e2e6ff388d9865c3d4778b0ebac75b8"
+      },
+      "static-checks.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\static-checks.json",
+        "bytes": 630,
+        "sha256": "7947150628041a2e2104ea8d50c708714a24b5b999371daa17c322108f4ee00d"
+      },
+      "unit-coverage.csv": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\unit-coverage.csv",
+        "bytes": 33359,
+        "sha256": "9a8683cb9b04b43867069efd7d783fc19afd1c29454211dab40af4c0765921fa"
+      },
+      "verify_handoff.py": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\verify_handoff.py",
+        "bytes": 3425,
+        "sha256": "08ac396727535f8f3b387ea2a71952c80d41d46289b21a61b043f0ce6055120a"
+      }
+    },
+    "r3": {
+      "ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md",
+        "bytes": 66702,
+        "sha256": "ae4ac5a20983eac80881eeb63bbde83db60665537be48116fee3dc5aa5ce3034"
+      },
+      "asset-coverage.csv": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\asset-coverage.csv",
+        "bytes": 47223,
+        "sha256": "e920a76d884289c9e4c373e80739331f88b53fb8cd2733ff07d0b47260cf5d71"
+      },
+      "coverage-summary.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\coverage-summary.json",
+        "bytes": 339,
+        "sha256": "560cfa992a2615649862f495b99a16a40c77f8b3dd26c0323c14096962b7762c"
+      },
+      "FILE-HASHES.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\FILE-HASHES.json",
+        "bytes": 976,
+        "sha256": "a6ef7cea4339111f80a489fda69dddef5113a27be71ac8a9c9468a33912f9fe0"
+      },
+      "OWNER-DECISIONS-03.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\OWNER-DECISIONS-03.md",
+        "bytes": 1805,
+        "sha256": "98c3382a9402be53fc317790d6b6ba3fe38f2427a533289433f64f973451d477"
+      },
+      "probe.py": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\probe.py",
+        "bytes": 5423,
+        "sha256": "ecab5a1ae94d6dc8a5985cc92f375ed6ecff478451fe24178bb21beccb6618ae"
+      },
+      "REPORT-03.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\REPORT-03.md",
+        "bytes": 4587,
+        "sha256": "e6f60a42a69525195a0958ad329a6bc191f5849db216ad6b3e4328db02b9b0d4"
+      },
+      "revision-02-to-03.diff": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\revision-02-to-03.diff",
+        "bytes": 9605,
+        "sha256": "1b0ac53d364c4e4c445a4278852bc8d2e31ed132d3eb70b2aca8f8d052544e86"
+      },
+      "source-files.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\source-files.json",
+        "bytes": 9691,
+        "sha256": "99f8078ce02a4774f9da380553f4cd910e2e6ff388d9865c3d4778b0ebac75b8"
+      },
+      "static-checks.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\static-checks.json",
+        "bytes": 2117,
+        "sha256": "c2a51beacdea2cd1f8842de39bdcdecef9801ea911b7e588496a41138b811a63"
+      },
+      "unit-coverage.csv": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\unit-coverage.csv",
+        "bytes": 33359,
+        "sha256": "9a8683cb9b04b43867069efd7d783fc19afd1c29454211dab40af4c0765921fa"
+      }
+    },
+    "owner": {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\OWNER-DECISIONS.md",
+      "bytes": 1095,
+      "sha256": "ed4352ee786435afa6573f3aede578528e9ae78914cbae2147fccae98f4d028f"
+    },
+    "prior_review": {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\reviews\\revision-02\\REVIEW-02.raw.txt",
+      "bytes": 11109,
+      "sha256": "d36d69f3c1bd751eb5c43b545032d2c21b71095561c883d4055b82234541d789"
+    }
+  },
+  "input_bytes_unchanged_at_end": true,
+  "verified_manifest_entries": {
+    "r2": {
+      "ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md",
+        "bytes": 65855,
+        "sha256": "7c6da4ab6f3974d537813ed3662f1f072f86c3cf13990b1d1afb685045ecb976"
+      },
+      "asset-coverage.csv": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\asset-coverage.csv",
+        "bytes": 47223,
+        "sha256": "e920a76d884289c9e4c373e80739331f88b53fb8cd2733ff07d0b47260cf5d71"
+      },
+      "collect_coverage.py": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\collect_coverage.py",
+        "bytes": 11875,
+        "sha256": "4fb37d8dac89313f0bd33ef0ac9ebb4f5c541e35ce1aa98abad326647be2cb66"
+      },
+      "coverage-summary.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\coverage-summary.json",
+        "bytes": 339,
+        "sha256": "560cfa992a2615649862f495b99a16a40c77f8b3dd26c0323c14096962b7762c"
+      },
+      "LOCAL-RELOCATION.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\LOCAL-RELOCATION.md",
+        "bytes": 640,
+        "sha256": "df59de60f1e071d813ae734cce74ef9bd0cafa40e2f33bff5c5a8b1bec26d63f"
+      },
+      "original-file-hashes.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\original-file-hashes.json",
+        "bytes": 1688,
+        "sha256": "de757e62443c6e12878717074acb64e1ecdd56762f189012b47d3b53c94181c0"
+      },
+      "REPORT.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\REPORT.md",
+        "bytes": 4180,
+        "sha256": "a83bf190ec6b79353facb30288858a6371c05d2e91c2811b2260822ac4478f1a"
+      },
+      "REPORT.raw.txt": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\REPORT.raw.txt",
+        "bytes": 4382,
+        "sha256": "fd6372a8ff7295df5a2182a53d397656446c94079dab0f00239f9dbaf1a612f0"
+      },
+      "review-01-dispositions.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\review-01-dispositions.md",
+        "bytes": 6060,
+        "sha256": "558f1c25fc3baf062c79886af5fde7ac1a160617f91aeea2c05541edecf72031"
+      },
+      "review-01-dispositions.raw.txt": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\review-01-dispositions.raw.txt",
+        "bytes": 6046,
+        "sha256": "314b200e04777e8eeb7c70d583c873123c3a19f8eaa72ea57ac585717294869d"
+      },
+      "revision-01-to-02.diff": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\revision-01-to-02.diff",
+        "bytes": 42264,
+        "sha256": "6492929bd24042f272e3bb1a95d236467a953fbc535e9b5c1e4539965a3f3ecd"
+      },
+      "source-files.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\source-files.json",
+        "bytes": 9691,
+        "sha256": "99f8078ce02a4774f9da380553f4cd910e2e6ff388d9865c3d4778b0ebac75b8"
+      },
+      "static-checks.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\static-checks.json",
+        "bytes": 630,
+        "sha256": "7947150628041a2e2104ea8d50c708714a24b5b999371daa17c322108f4ee00d"
+      },
+      "unit-coverage.csv": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\unit-coverage.csv",
+        "bytes": 33359,
+        "sha256": "9a8683cb9b04b43867069efd7d783fc19afd1c29454211dab40af4c0765921fa"
+      },
+      "verify_handoff.py": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\proposals\\revision-02\\verify_handoff.py",
+        "bytes": 3425,
+        "sha256": "08ac396727535f8f3b387ea2a71952c80d41d46289b21a61b043f0ce6055120a"
+      }
+    },
+    "r3": {
+      "ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md",
+        "bytes": 66702,
+        "sha256": "ae4ac5a20983eac80881eeb63bbde83db60665537be48116fee3dc5aa5ce3034"
+      },
+      "asset-coverage.csv": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\asset-coverage.csv",
+        "bytes": 47223,
+        "sha256": "e920a76d884289c9e4c373e80739331f88b53fb8cd2733ff07d0b47260cf5d71"
+      },
+      "coverage-summary.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\coverage-summary.json",
+        "bytes": 339,
+        "sha256": "560cfa992a2615649862f495b99a16a40c77f8b3dd26c0323c14096962b7762c"
+      },
+      "OWNER-DECISIONS-03.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\OWNER-DECISIONS-03.md",
+        "bytes": 1805,
+        "sha256": "98c3382a9402be53fc317790d6b6ba3fe38f2427a533289433f64f973451d477"
+      },
+      "probe.py": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\probe.py",
+        "bytes": 5423,
+        "sha256": "ecab5a1ae94d6dc8a5985cc92f375ed6ecff478451fe24178bb21beccb6618ae"
+      },
+      "REPORT-03.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\REPORT-03.md",
+        "bytes": 4587,
+        "sha256": "e6f60a42a69525195a0958ad329a6bc191f5849db216ad6b3e4328db02b9b0d4"
+      },
+      "revision-02-to-03.diff": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\revision-02-to-03.diff",
+        "bytes": 9605,
+        "sha256": "1b0ac53d364c4e4c445a4278852bc8d2e31ed132d3eb70b2aca8f8d052544e86"
+      },
+      "source-files.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\source-files.json",
+        "bytes": 9691,
+        "sha256": "99f8078ce02a4774f9da380553f4cd910e2e6ff388d9865c3d4778b0ebac75b8"
+      },
+      "static-checks.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\static-checks.json",
+        "bytes": 2117,
+        "sha256": "c2a51beacdea2cd1f8842de39bdcdecef9801ea911b7e588496a41138b811a63"
+      },
+      "unit-coverage.csv": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\unit-coverage.csv",
+        "bytes": 33359,
+        "sha256": "9a8683cb9b04b43867069efd7d783fc19afd1c29454211dab40af4c0765921fa"
+      }
+    }
+  },
+  "supplied_diff_matches_actual_normalized_lf_diff": true,
+  "diff_hunks": 10,
+  "changed_spans": [
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        5,
+        5
+      ],
+      "r3_lines_inclusive": [
+        5,
+        5
+      ],
+      "removed": "revision: 2\n",
+      "added": "revision: 3\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        12,
+        12
+      ],
+      "r3_lines_inclusive": [
+        12,
+        12
+      ],
+      "removed": "owner_confirmed_decisions: [D1, D5]\n",
+      "added": "owner_confirmed_decisions: [D1, D2, D3, D5]\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        24,
+        29
+      ],
+      "r3_lines_inclusive": [
+        24,
+        32
+      ],
+      "removed": "Revision 2 responds to independent REVIEW-01 (H1, M1-M4). The owner has chosen\nD1's existing 2,000-unit API/HUD buffer with finite built-in reserves and D5's\nfinite scrubber savings/nonzero minimum consumption. These two choices do not\naccept this whole ADR, its proposed numeric balance, D2/D3, or D4's unproven\ndurability mechanism. The companion dispositions distinguish author changes\nfrom an independent re-review or runtime result.\n",
+      "added": "Revision 2 addressed independent REVIEW-01 (H1, M1-M4). Revision 3 records the\nsubsequent owner choices: D2 independent ground-owned server survey jobs without\na survey-satellite prerequisite, and D3 preserved world-first Moon/warp milestones\nwith recorded winning participants. D1's existing 2,000-unit API/HUD buffer with\nfinite built-in reserves and D5's finite savings/nonzero minimum consumption were\nalready confirmed. These choices do not accept this whole ADR, its proposed\nnumeric balance or D4's unproven durability mechanism. No technical/numeric\nbehavior changes from revision 2 through this decision-only revision; final\nindependent diff review and root acceptance remain separate from author work.\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        518,
+        518
+      ],
+      "r3_lines_inclusive": [
+        521,
+        521
+      ],
+      "removed": "**Owner decision D2 / recommended extension**: a ground survey is an additive\n",
+      "added": "**Owner-confirmed decision D2 / selected extension**: a ground survey is an additive\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        539,
+        539
+      ],
+      "r3_lines_inclusive": [
+        542,
+        542
+      ],
+      "removed": "**ADR-051 source amendment, conditional on D2:** replace the mandatory ambiguous\n",
+      "added": "**ADR-051 source amendment under selected D2:** replace the mandatory ambiguous\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        586,
+        587
+      ],
+      "r3_lines_inclusive": [
+        589,
+        591
+      ],
+      "removed": "old source-survey-pruned AVAILABLE/ALLOCATED records. D2 still requires owner\nchoice and independent ADR-051 amendment review; this is not model code.\n",
+      "added": "old source-survey-pruned AVAILABLE/ALLOCATED records. D2's branch is owner-selected;\nthe precise ADR-051 amendment and its implementation still require their scoped\nreview and migration evidence. This is not model code or runtime admission.\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        632,
+        636
+      ],
+      "r3_lines_inclusive": [
+        636,
+        641
+      ],
+      "removed": "The alternative is a registry-authoritative survey service that requires an\nowned survey satellite at the observatory. It adds less schema but changes\nthe promised ground-survey availability/tech path and must not be selected\nwithout owner confirmation. Neither alternative removes the observatory or\nprocessor from scope. D2 requires explicit ADR-051 revision/extension review.\n",
+      "added": "The unselected D2 alternative is a registry-authoritative survey service requiring\nan owned survey satellite at the observatory. The owner chose independent ground\njobs without that prerequisite. Switching to the satellite-required branch would\nchange the selected availability/tech path and require a new owner decision;\nit is not an implementation fallback. Observatory and processor remain in scope.\nD2's precise ADR-051 revision/extension review remains an implementation input.\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        666,
+        669
+      ],
+      "r3_lines_inclusive": [
+        671,
+        675
+      ],
+      "removed": "World-first flags need versioned world state, not static booleans. **Owner\ndecision D3 remains pending:** retain world-first semantics with the following\ncommit-coupled receipts (recommended), or make both per-player first events and\nrevise the published player impact. Other advancements are unaffected.\n",
+      "added": "World-first flags need versioned world state, not static booleans. **Owner-confirmed\ndecision D3:** retain world-first Moon/warp semantics with recorded winning\nparticipants and the following commit-coupled receipts. Per-player first events\nwere not selected; changing to them would require a new owner decision and\npublished player-impact revision. Other advancements are unaffected.\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        671,
+        671
+      ],
+      "r3_lines_inclusive": [
+        677,
+        677
+      ],
+      "removed": "**Conditional world-first design:** add strict bounded schema-1\n",
+      "added": "**Selected world-first design, implementation still gated:** add strict bounded schema-1\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        754,
+        755
+      ],
+      "r3_lines_inclusive": [
+        760,
+        762
+      ],
+      "removed": "unusable until repair. D3's owner decision and this durability contract review\nboth precede implementation.\n",
+      "added": "unusable until repair. D3's product branch is owner-confirmed; this durability\ncontract/writer review still precedes implementation. Native writer/restart proof\nis not provided by the owner decision receipt.\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        915,
+        918
+      ],
+      "r3_lines_inclusive": [
+        922,
+        927
+      ],
+      "removed": "2. **D2** new ground-owned registry jobs (recommended) versus a required survey\n   satellite; explicitly revise/extend ADR-051 and verify schema-4 migration.\n3. **D3** preserve world-first achievements (recommended) versus per-player\n   events; old-world initialization and crash-grant receipts need review.\n",
+      "added": "2. **D2 OWNER-CONFIRMED**: independent ground-owned server survey jobs without\n   a survey-satellite prerequisite. The satellite-required alternative was not\n   selected; explicitly revise/extend ADR-051 and verify schema-4 migration.\n3. **D3 OWNER-CONFIRMED**: preserve world-first Moon/warp milestones with\n   recorded winning participants, not per-player first events. Old-world\n   initialization and crash-grant receipts still need review/native evidence.\n"
+    },
+    {
+      "operation": "replace",
+      "r2_lines_inclusive": [
+        944,
+        949
+      ],
+      "r3_lines_inclusive": [
+        953,
+        958
+      ],
+      "removed": "authorized by this proposal alone. Conditional maintainer authorization can\naccept a revised independently reviewed final contract with no unresolved\nCritical/High/Medium, but these material owner alternatives require explicit\nresolution rather than being described as already accepted. D1/D5 are the only\nnewly owner-confirmed alternatives recorded in this revision; D2/D3 remain\npending and D4 remains an unproven feasibility/possible-interaction decision.\n",
+      "added": "authorized by this proposal alone. Conditional maintainer authorization permits\nroot to accept an independently reviewed final contract with no unresolved\nCritical/High/Medium; author drafting or owner branch selection alone does not\naccept this ADR. D1/D2/D3/D5 are owner-confirmed. D4 remains an unproven\nfeasibility/possible-interaction decision, and an interaction-changing alternative\nstill requires owner confirmation rather than an implicit fallback approval.\n"
+    }
+  ],
+  "byte_identical_companions": {
+    "unit-coverage.csv": {
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\unit-coverage.csv",
+      "bytes": 33359,
+      "sha256": "9a8683cb9b04b43867069efd7d783fc19afd1c29454211dab40af4c0765921fa"
+    },
+    "asset-coverage.csv": {
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\asset-coverage.csv",
+      "bytes": 47223,
+      "sha256": "e920a76d884289c9e4c373e80739331f88b53fb8cd2733ff07d0b47260cf5d71"
+    },
+    "source-files.json": {
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\source-files.json",
+      "bytes": 9691,
+      "sha256": "99f8078ce02a4774f9da380553f4cd910e2e6ff388d9865c3d4778b0ebac75b8"
+    },
+    "coverage-summary.json": {
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c18-contract-r3-db785f109ab74f34a0e1f1564eb38a99\\coverage-summary.json",
+      "bytes": 339,
+      "sha256": "560cfa992a2615649862f495b99a16a40c77f8b3dd26c0323c14096962b7762c"
+    }
+  },
+  "unchanged_technical_regions": {
+    "source_authority_devices_gas_equipment": {
+      "utf8_bytes_normalized_lf": 32470,
+      "sha256_normalized_lf": "931604958c0e77dabca04d862d31add325d28696293f57ef8e2a7e49ec60fae8"
+    },
+    "ground_origin_codec_invariants": {
+      "utf8_bytes_normalized_lf": 3039,
+      "sha256_normalized_lf": "19d410dc04729fd273356135a8f6239885f44d2b16b69cef5f327d2704e521ca"
+    },
+    "ground_paid_work_analysis_migration": {
+      "utf8_bytes_normalized_lf": 3050,
+      "sha256_normalized_lf": "b0c15ef4597cbaee936e8b5e9e46dd264fbb0b60afab9900d6f18a9b1259adb3"
+    },
+    "world_first_schema_writer_election_ack_recovery": {
+      "utf8_bytes_normalized_lf": 5804,
+      "sha256_normalized_lf": "c8ed515f9ad388bbd66c8674e418b90314ba9f88f07f2c0ba547cde92ba71193"
+    },
+    "reachability_assets_verification": {
+      "utf8_bytes_normalized_lf": 11914,
+      "sha256_normalized_lf": "2b16f1c0c158ddcfe47eaa4113e35dcfa5877e30201cf0f0a6036a43c4a2c44a"
+    },
+    "dependencies_shared_ids_protocols": {
+      "utf8_bytes_normalized_lf": 930,
+      "sha256_normalized_lf": "7b14ea878c438a401d30bc3aef94e56f7c568211b7a63c3bae890efead836872"
+    },
+    "d4_feasibility": {
+      "utf8_bytes_normalized_lf": 530,
+      "sha256_normalized_lf": "d4fbd5cb33649482093b16b0f9b18ee6e5ef576c19fe9f66a663662874875b38"
+    }
+  },
+  "planned_units": 104,
+  "batch_counts": {
+    "C18c": 19,
+    "C18a": 28,
+    "C18b": 23,
+    "C18d": 34
+  },
+  "c18d_assets": 155,
+  "asset_handling": {
+    "REVIEW": 77,
+    "IMPORT": 77,
+    "REGENERATE": 1
+  },
+  "upstream_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+  "upstream_manifest_matches": [
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/components/ItemJetpack.java",
+      "sha256": "41665d56ec692f0f9dd3da46f7b424c0fbbb372acb213528729b050b66de3036",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/components/ItemPressureTank.java",
+      "sha256": "5bd9ec256b1cdaf00810cd2a70ea5e1977cde838ac58bfdda4c947515bf65325",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/components/ItemUpgrade.java",
+      "sha256": "15a8e63691b623aa196e2264b90d91721549e1b9a8339c46092891051636325c",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/TileSuitWorkStation.java",
+      "sha256": "611e94a0d09a41a2e49764de968813b1f9f3a099028ce1e5a02159d7164d1c0d",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileCO2Scrubber.java",
+      "sha256": "1d524f79239872e32f8d9cd259af78a38e76739940ec9a134c295c162f3cd983",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileOxygenVent.java",
+      "sha256": "affe627203c453a9ea39d67210ecba8977cad3ba819102e875b437e972ab6f80",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileAtmosphereDetector.java",
+      "sha256": "6a13bb9502f9ce77f82eb7f8246672a74a059322a84c9db737f1d643f5685cb9",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/atmosphere/TileGasChargePad.java",
+      "sha256": "f36b368df510cea8b81bd425daf0ffa2805adffbec69e7f8cdaa1911cefc7e0e",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileObservatory.java",
+      "sha256": "b1c35a417c36ad01f87228179b8db0ada52ca8528ef86978201b95457ab87b61",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileAstrobodyDataProcessor.java",
+      "sha256": "ce95158d41aae61692758f61e666c761d0ac51340ae8685cbee972a702c12371",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/event/PlanetEventHandler.java",
+      "sha256": "2b4cd7f0a2cb4dd977902ea988f010182a461caff7581961b643c7b90c77d76f",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
+      "sha256": "78ce40293f42c5a13add1e09d8cca13dc0afa8ac462df1a05f43f9dfcde4e1d4",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/enchant/EnchantmentSpaceBreathing.java",
+      "sha256": "be767be7d9090aaa6afb5d7e5803b2d922ef435c8c1d03a6f2c5670b482b4b41",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/ItemJackHammer.java",
+      "sha256": "f39abb553b888ac21d00d86292c35076c59419619e3c25a181e3db738071f3d1",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/entity/EntityRocket.java",
+      "sha256": "6363a7967193a95aa426e3f87e9c431b77bb31274f1973a416e20bf8f60d8248",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/station/TileWarpController.java",
+      "sha256": "153e153c7ef2e1b67e8c88624ee939744a63f884f77b9c6213364ddb9530c05f",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/advancements/ARAdvancements.java",
+      "sha256": "f1c7d8fad3d63de69f9f43307db1e7ec7f29d1010dd1492dc6531328806e6407",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/root.json",
+      "sha256": "951c64f631ca522882de86e0239a6dbfc8f235820d795c9c18d6ee9e62e592b1",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/blockpresser.json",
+      "sha256": "51400710e09013302e68994fb9e6586d34398ecf43837590cd9b6e5f2e0c81d2",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/rollin.json",
+      "sha256": "48dcfdff3a23cd4699dd08540fbeb940697e7b1e7124fe748e6bddad04cc76fc",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/electrifying.json",
+      "sha256": "cebac5f8f66edf70bd02b7935a2cde091faff230e1b1b143ad3aace40adb8419",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/feeltheheat.json",
+      "sha256": "c9112f6eb2805deee3a5a1261062d29fa53b740ef82a599734bf68ca86c6565e",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/spindoctor.json",
+      "sha256": "12f1854a79c7e75f25f48bada591922a3b064386eab2be266d995b23ed7fa65a",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/crystalline.json",
+      "sha256": "51f7e435f097e41e983f32953e5c4ba4ad94c34b0cbf945bdc9ce2f71808df7e",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/dilithium.json",
+      "sha256": "7122d35546903a97c1cb04579aafe9a228f8de3420bd0b3c687faf251287248f",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/holographic.json",
+      "sha256": "28213950665a60081a2f46e874a85f8801a10523960ab06323ff61901898a6da",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/suitedup.json",
+      "sha256": "6fd3e7e1f0443f0207a04adfcdead6713092bcb6e1c296b78f67a893bf810410",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/warp.json",
+      "sha256": "744752d0ec39737db3e4a7eb7b54ceb7ef9cef23048cb6401ce7217edea92739",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/beer.json",
+      "sha256": "1c6090d6d47d8ddd945be05c64a5a069d17474fa3958aba9643f936c713a29b1",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/moonlanding.json",
+      "sha256": "4add62add0e564da27b61d6db2d31186bcfd989c1ff6de7955b986b33971553c",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/onesmallstep.json",
+      "sha256": "97563fe4fac65abab08c6b718b16122839c83644de00f9d0d012b2bdf6cd2ea5",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/wenttothemoon.json",
+      "sha256": "fc5710b38308b6bc28d129a483726efb99dff200b56403bc253001381edd78d3",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/givingitallshesgot.json",
+      "sha256": "15b58618314a4d8b1cc1e728fb8d565ba15f00dd9d03f8d676c13d66478d8886",
+      "manifest_match": true
+    },
+    {
+      "path": "src/main/resources/assets/advancedrocketry/advancements/normal/flightofpheonix.json",
+      "sha256": "233e4391b41600e30e2043f5af746bc43df20baf9529cd78bec89f7d6a566c3d",
+      "manifest_match": true
+    }
+  ],
+  "authority_snapshot_current_observation": [
+    {
+      "path": "docs/decisions/ADR-025-SUIT-OXYGEN-PROVIDERS.md",
+      "r2_r3_recorded_sha256": "13c2eb2241807d46b52d63a37613e133b5843e38d5e7c7b3199449ff09af7159",
+      "current_sha256": "13c2eb2241807d46b52d63a37613e133b5843e38d5e7c7b3199449ff09af7159",
+      "current_matches_record": true
+    },
+    {
+      "path": "docs/decisions/ADR-034-PLANETARY-EXPOSURE-AND-PROTECTION.md",
+      "r2_r3_recorded_sha256": "00fd18f56ca146c1159875a8fe3ae7b1bba7cdf57273937bfb1a9a043e259272",
+      "current_sha256": "00fd18f56ca146c1159875a8fe3ae7b1bba7cdf57273937bfb1a9a043e259272",
+      "current_matches_record": true
+    },
+    {
+      "path": "docs/decisions/ADR-037-PLANETARY-DISCOVERY-AND-RESEARCH.md",
+      "r2_r3_recorded_sha256": "2db9be8745139b3d8ab8303aa3af0e58f7a4eae1d3b8f4b49ff8d62c466e4cdc",
+      "current_sha256": "2db9be8745139b3d8ab8303aa3af0e58f7a4eae1d3b8f4b49ff8d62c466e4cdc",
+      "current_matches_record": true
+    },
+    {
+      "path": "docs/decisions/ADR-051-RESOURCE-MISSION-INSTANCES-AND-DELIVERY.md",
+      "r2_r3_recorded_sha256": "744d0e34385e31e8a7a8930dc70ba1792dcf4ec58deb419391272afe35344fcd",
+      "current_sha256": "744d0e34385e31e8a7a8930dc70ba1792dcf4ec58deb419391272afe35344fcd",
+      "current_matches_record": true
+    },
+    {
+      "path": "docs/decisions/ADR-057-BLACK-HOLE-GENERATOR.md",
+      "r2_r3_recorded_sha256": "c95a9bd950f1fc35e0bd7cff734db6614c4a4b65cfd6a5e58acbee1355cd2c7c",
+      "current_sha256": "c95a9bd950f1fc35e0bd7cff734db6614c4a4b65cfd6a5e58acbee1355cd2c7c",
+      "current_matches_record": true
+    },
+    {
+      "path": "docs/decisions/ADR-059-SPACE-ELEVATOR-LOGISTICS.md",
+      "r2_r3_recorded_sha256": "99bec19fea832fc5cf191cc56bbfcd398bf69cfb624514d362205e5713b5e021",
+      "current_sha256": "99bec19fea832fc5cf191cc56bbfcd398bf69cfb624514d362205e5713b5e021",
+      "current_matches_record": true
+    },
+    {
+      "path": "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md",
+      "r2_r3_recorded_sha256": "223cacc2b3b3a2a9a649d01bd83980bebd4aa8225c694377130786d29bd3321a",
+      "current_sha256": "223cacc2b3b3a2a9a649d01bd83980bebd4aa8225c694377130786d29bd3321a",
+      "current_matches_record": true
+    },
+    {
+      "path": "docs/decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md",
+      "r2_r3_recorded_sha256": "bcc86c546ad82ba61a765cfb31296f2a4af7287a69bcbed802380284ab87e362",
+      "current_sha256": "bcc86c546ad82ba61a765cfb31296f2a4af7287a69bcbed802380284ab87e362",
+      "current_matches_record": true
+    },
+    {
+      "path": "docs/decisions/ADR-064-CLASSIC-MACHINES-FLUIDS-AND-COMPONENTS.md",
+      "r2_r3_recorded_sha256": "d8ecc264170047fe62644dee01f2fc1101c56ceb5df1f250d8224486205f7014",
+      "current_sha256": "d8ecc264170047fe62644dee01f2fc1101c56ceb5df1f250d8224486205f7014",
+      "current_matches_record": true
+    },
+    {
+      "path": "docs/work/v1.8.0-content-ledger.csv",
+      "r2_r3_recorded_sha256": "f5915cb9148b797f7ac592891377b6ff0ce5aae66f0871619ae90392f343c889",
+      "current_sha256": "5e9e776337730ed04b1c0cb2da8681442fdda3b2d5a9b2de26af945e52ac3589",
+      "current_matches_record": false
+    },
+    {
+      "path": "docs/work/v1.8.0-asset-plan.csv",
+      "r2_r3_recorded_sha256": "b7c51f078c81f3bf4358ca86368c76b0d956acfc20be5365901f13a0185b32a5",
+      "current_sha256": "b7c51f078c81f3bf4358ca86368c76b0d956acfc20be5365901f13a0185b32a5",
+      "current_matches_record": true
+    }
+  ],
+  "root_writes": 0,
+  "author_handoff_writes": 0,
+  "gradle_native_runtime_commands": 0,
+  "gate_pass_or_root_acceptance": false
+}

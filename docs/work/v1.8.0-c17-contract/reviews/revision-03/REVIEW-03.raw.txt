@@ -1,0 +1,121 @@
+# Independent C17 revision-3 clock amendment review
+
+Date: 2026-10-03. Delegated independent reviewer, not the C17 author.
+Scope: M6 clock amendment, its migration/recovery/arithmetic and joint schema/
+wire invariants. This is a conditional contract review, not implementation,
+owner acceptance, exact native-save proof or any Required Gate result.
+
+## Findings / verdict
+
+**0 Critical / 0 High / 0 Medium / 0 Low found in the scoped revision-3 review.**
+M6 is resolved **as an explicit proposed contract**: the time authority is now
+named and co-owned with records, restart/unknown/invalid handling is specified,
+and phase/wire arithmetic has a concrete bounded assertion oracle. Previous
+conditional owner/implementation gates remain, and this verdict does not accept
+the whole ADR or turn unimplemented writers/migrations into verified behavior.
+
+## Exact reviewed identity
+
+- Proposal original Temp provenance:
+  `C:/Users/Administrator/AppData/Local/Temp/arce-v180-c17-contract-489381f9d14b45928ec89711c681ed16/revision-03/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md`.
+  SHA-256 `92e706ae84e6565f605227f7794fb83850a23c4f2ca1915686d28c61fa72c321`.
+- M6 author response original Temp provenance:
+  `C:/Users/Administrator/AppData/Local/Temp/arce-v180-c17-contract-489381f9d14b45928ec89711c681ed16/revision-03/DISPOSITIONS-03.md`.
+  SHA-256 `d7720d8a46ec603991aac41b96fcd01c7dd078d31f92e6c35451384dbe3b9e28`.
+- Prior independent REVIEW-02 SHA-256:
+  `709b32387b9ec031830eafde7dde1a10c1ae24f035935ee028ff2744b7aba61f`;
+  revision-2 proposal SHA-256:
+  `24158c9bb75fe7455a3ddf2bf9781b1a4a33a99b313f8d830a381825e584f0e6`.
+  Both independently rechecked unchanged, not rewritten by this review.
+- Actual root HEAD `cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6` plus active dirty
+  development work. Modern-source exact hashes are in [static evidence](static-evidence.json).
+
+The author probe was read for its boundaries but not run; running it would write
+the author's reviewed directory. Only the reviewer's own fresh Temp probe/report
+and companion evidence were written. The [proposal diff](revision-02-to-03.diff)
+records the exact amendment without altering either proposal.
+
+## M6 assessment against actual fields and baseline
+
+| Boundary | Revision-3 contract inspected | Independent assessment |
+|---|---|---|
+| Sole time authority | ADR-065 523-539: private StationOrbitalClock; exact same station root-5 orbital_clock compound with schema_version int 1/logical_tick long; one END-tick increment/server; no external clocks/catch-up. | Named bounded authority resolves the session-counter/world-file mismatch. Actual station runtime still has no such clock; its getTickCount is only transient pass scheduling. The separate existing satellite clock is not silently adopted or coupled. |
+| Record/clock co-commit | Lines 541-552: every retained epoch <= candidate root clock; one sampled clock with changed phases/rates/epoch; checked validation allows only clock advance plus exact allowed station transition. | Candidate and live publication cannot introduce a new epoch ahead of their own clock. Existing geometry/team/other-station/balance checks and checked-write spacing remain required, not widened. |
+| Unknown/restart | Lines 554-565: suspend on unknown, emit NONE; reassert acknowledged records with their checked floor; exact-match readback only; reload one coherent root; bad/missing/future clock or epoch-ahead holds original whole root. | No invented successful write, max(epoch) repair or independent file-time reconciliation. Coherent old and coherent new roots have a defined interpretation; invalid mixed pairs are not normalized. Actual native writer/readback/order cases remain tests to execute. |
+| Ordinary saves | Lines 567-580: healthy serializer samples current counter with acknowledged records, bounded dirty marking, no periodic forced fsync; uncheckpointed visual phase may rewind after abrupt stop. | Explicitly weaker visual checkpoint guarantee is not presented as per-tick durable animation. No physical movement/resource/solar/flight state depends on the unsaved interval. Clean reload starts at saved time and adds no offline elapsed time. |
+| Migration | Lines 582-592: old 1/2/3 -> existing 4 path first; 4 -> 5 initializes clock/epochs/rates zero and preserves original station values; valid 5 no-op; missing current clock malformed; same fixed 4-MiB/8-KiB budgets. | Deterministic old initialization/no-op and strict current-root behavior are specified. Conditional C18 first-event fields join the same root-5/journal-3 freeze only if its policy is chosen, with no extra independent bump. No actual Java migration has been run. |
+| Overflow/phase | Lines 594-602: validate ordering, reduce delta modulo 72,000 then multiply rate*5; saturate at Long.MAX_VALUE with CLOCK_EXHAUSTED; refuse new nonzero rates and allow authorized STOP. | Nonnegative sample-epoch cannot overflow long. Reduced product maximum 21,599,700 and phase sum fit signed int; floorMod is required for negative rates. Checked STOP preserves the sampled phase rather than resetting time. |
+| Server/client sampling | Lines 604-611 and 984-995: same validated epoch/sample in schema-2 sky context, 40 local-render-tick extrapolation, saturating sample addition; NONE/context/session clears estimates; active-rate heartbeat at 20 ticks. | Wire ordering and phase basis agree with the persisted authority. Bounded extrapolation cannot wrap at Long.MAX_VALUE or continue indefinitely while the server stops sending. It remains client presentation only. |
+
+Current concrete sources inspected: station/StationRegistrySavedData checked
+candidate validation/publish/readback/ordinary save, StationRegistryPayload,
+StationNbtCodec, StationLimits, StationWriteBudget, ManagedSavedDataType and
+SavedDataSchemaMigrator, StationSkyContextService/Packet, MonotonicMissionClock,
+RocketFlightPlanPacket and TravelTargetWireCodec. Their present schemas/channels
+are still station 4/record 2 and celestial 3/flight 8: the new fields/protocols are
+proposed, not existing API capabilities. The exact source identities accompany
+the evidence. No public Java API or separate SavedData clock is introduced by
+this clock amendment.
+
+## Independent small checks actually executed
+
+Ran own `python -B probe.py` in this fresh review directory: **exit 0**.
+[Probe source](probe.py) and [static-evidence.json](static-evidence.json) disclose
+that this is an independent specification model/static check, not the target
+Java/Forge service. Counts are context, not acceptance evidence; actual checks:
+
+- Compared bounded modulo-first phase computation to an exact whole-age
+  arbitrary-precision reference for all signed rate values -60..60, boundary
+  phases, varied nonzero epochs, period boundaries and Long.MAX_VALUE, plus
+  deterministic mixed samples. No direct elapsed*rate bounded-integer product
+  is used. Verified the actual reduced-product maximum and phase range.
+- Modeled root-4 zero migration with preserved identities/team/geometry/gravity/
+  vacuum/balances; valid current no-op; exact saved-time reload, one tick advance,
+  zero offline input; coherent checked old/new roots versus epoch-ahead mixed
+  state, including zero-rate records. Exact-field/type/future/missing invalid
+  data refuses without mutating the modeled input.
+- Modeled clean checkpoint versus explicitly unsaved visual rollback, saturated
+  increment and STOP preserving phase, and client extrapolation clamped at 40
+  ticks/Long.MAX_VALUE. These do not execute native failure or disk observations.
+- Encoded the declared small clock compound in standard NBT layout: **61 bytes**
+  including its named compound, below 128; schema int/logical long and three
+  nodes are consistent with the exact field shape. Not a full native root codec.
+- Independently encoded/decoded the declared sky layout at maximum ASCII body
+  length: **167 bytes**, below 256. Tested NONE's exact two-byte ending, fallback
+  without body, explicit flags, schema/kind/rate/order ranges and truncation/
+  trailing refusal. Phase/rate/time fields include Long.MAX_VALUE. The existing
+  flight maximum **31,419 + 386 = 31,805 bytes** remains below 32 KiB; changing
+  clock ownership did not add another wire field or protocol bump.
+- Proposal/disposition hashes and preceding evidence unchanged; exact 41 ledger
+  rows remain byte/field-equal to root (24/9/8). The 26-source identity list is
+  byte-unchanged from independently rehashed revision 2; this clock-only review
+  does not claim a new upstream/asset approval. Channel/discriminator table and
+  declared station-root 5/record 3/clock 1/sky 2 numbering remain coordinated.
+
+Read-only Get-Content, Get-FileHash, git rev-parse and small Python/probe commands
+only. [FILE-HASHES.json](FILE-HASHES.json) binds this review and companions.
+No author artifacts, root files, runtime or tests changed. No Gradle/native/
+GameTest/server/crash/benchmark/GPU/two-client jobs, copied assets or code,
+unapproved LibVulpes/protected development-docs inspection, or OpenPet operations.
+
+## Remaining decisions / limitations / next scope
+
+- D2-A product behavior is owner-confirmed; this review does not supply technical
+  owner acceptance. D1, D1-disassembly and D3 remain pending choices. Their
+  unresolved semantics are not automatically selected by a zero-findings result.
+- Exact D3 durable writer/receipt/barrier admission, native clock save/restart/
+  unknown/stale-serializer tests, API compatibility, leaf recipes/patterns, source
+  licensing and performance/visual Gates still require work. C18's D2/D3 and D4
+  feasibility limits remain independent. Conditional first-event outboxes need
+  one shared integrated schema freeze; no existing setDirty call is a barrier.
+- Abrupt-stop visual rewind to the surviving coherent checkpoint is an explicit
+  limitation, not a hidden timing guarantee. Implementation must preserve this
+  authority model and test it rather than weakening native save assertions.
+
+Completed scope: independent M6 contract correction/static arithmetic/wire review.
+Uncompleted scope: runtime implementations/native proof and Required Gates.
+Key design decision: one same-root, server-lifecycle logical clock with bounded
+phase arithmetic and defined checkpoint recovery. Changed files/tests: own Temp
+probe/report/evidence only. Required Gates: **not met by this work**. Next v1.8
+scope is explicit pending decisions and eligible shared contract integration,
+then scoped implementations with actual migration/native/restart evidence.

@@ -1,0 +1,179 @@
+# Independent C17 final-contract review - revision 4
+
+Date: 2026-10-03. Delegated independent reviewer, not root or the C17 author.
+Scope: actual revision-3 to revision-4 decision-only diff against the actual
+C17 owner receipt, relevant accepted C18 boundaries and preserved technical/
+source/coverage identity. This is not runtime review, ADR acceptance or Gate pass.
+
+## Findings, ordered by severity
+
+**0 Critical / 0 High / 0 Medium / 0 Low findings in this scoped diff review.**
+
+Actual changes agree with the recorded D1-A, D1-disassembly-A, D2-A and D3-A
+product selections. No unexplained technical/numeric change, weakened clock/
+writer/native admission or incorrect shared-schema inference was found. Root
+may consider the final contract under the owner's conditional authorization;
+this review does not accept it. The author artifact remains PROPOSED with blank
+accepted_by/accepted_at fields.
+
+## Precise input identity and raw provenance
+
+Independently calculated actual file hashes, including the packet inventory:
+
+| Input | SHA-256 |
+|---|---|
+| ADR-065 revision 4, 82,614 bytes | `c50de31ea70a56749c55202bd75de258ff3d89a0ae4a9123ff8ee59e9d3545bb` |
+| Frozen ADR-065 revision 3, 82,145 bytes | `92e706ae84e6565f605227f7794fb83850a23c4f2ca1915686d28c61fa72c321` |
+| Supplied/independently recomputed revision-03-to-04.diff | `9df8d940384580bf869a32f8515e268e61c4be131dad35ccceeea2107ec8e039` |
+| Author packet FILE-HASHES.json | `7c4ef39d5da155414e5e8c6b3622a656471b412de2ab0413091f5d069761630f` |
+| Actual C17 OWNER-DECISIONS.md | `279d7cb58682b0c0e4bc58abf93dce3a32effca4a7a94b12f5d4d246fe39c00c` |
+| Actual C18 OWNER-DECISIONS.md | `ed4352ee786435afa6573f3aede578528e9ae78914cbae2147fccae98f4d028f` |
+| Accepted canonical ADR-066 revision 3 | `8a5e06789b94595f26ae04cd9bf0ee63ff37710835224a0750055427486bf63a` |
+| C18 conditional ACCEPTANCE.md | `6ef2bde3fb1c8d19346ed73ba04c1e83b18ef0705e96b3a4d87531e050942ff7` |
+| Previous C17 independent REVIEW-03.raw.txt | `f22b9736e99b554d8d45fbdc3ec1b37e38ebd1f1f53b2af2ee87f7a343c00821` |
+
+Original input provenance remains inline, not absolute companion links that
+would become misleading when root relocates this review:
+
+```text
+author revision-4 packet:
+C:/Users/Administrator/AppData/Local/Temp/arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a
+ADR filename:
+ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md
+frozen root revision-3 proposal/probe:
+D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c17-contract/proposals/revision-03
+prior root independent revision-3 report/probe/evidence:
+D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c17-contract/reviews/revision-03
+actual C17 owner receipt:
+D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c17-contract/OWNER-DECISIONS.md
+actual C18 owner receipt:
+D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c18-contract/OWNER-DECISIONS.md
+canonical conditional C18 contract:
+D:/GitHub/AdvancedRocketry-Community/docs/decisions/ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md
+C18 conditional acceptance record:
+D:/GitHub/AdvancedRocketry-Community/docs/work/v1.8.0-c18-contract/ACCEPTANCE.md
+prior C17 author's historical revision-3 original location:
+C:/Users/Administrator/AppData/Local/Temp/arce-v180-c17-contract-489381f9d14b45928ec89711c681ed16/revision-03
+```
+
+Actual root HEAD is `cd63c5ff53e3daa0e6c3be92f17f16c061ddc5a6` on
+`codex/v1.8.0-classic-content`, with unrelated retained integration changes.
+Root and author inputs were verified unchanged during the probe and at final
+packaging. The prior independent r3 report is contextual evidence, not acceptance
+or a runtime clock test. Its model/probe was read, not rerun in its owned directory.
+
+## Actual diff against owner selections
+
+The [independently recomputed diff](independent.diff) is **raw-byte identical**
+to the supplied diff: **12 hunks / 22 changed spans**. Both ADR inputs are LF.
+Exact removed/added text and inclusive ranges are retained in
+[static evidence](static-evidence.json); the analysis did not rely solely on the
+author's list of replacements.
+
+| Changed boundary | Actual revision-4 lines | Independent observation |
+|---|---|---|
+| Metadata/introduction | 5, 12-13, 19-24 | All four product branches are recorded selected; no material product choice remains pending. Status/acceptance fields still distinguish drafting from root acceptance. |
+| D1-A | 153-160, 182, 199, 249-257 | Matches retained basic metrics/item-fuel API and separate actual Fluid/oxidizer/working-fluid accounting. Tables, classic ratios, Q consumption, bounds and compatibility precedence are unchanged. Legacy-scale/numeric retuning is not selected, and scoped numeric acceptance still precedes runtime. |
+| Disassembly-A | 259, 265, 294, 301-303 | Matches full kind/amount/version vector consent and deliberate propulsion disposal. Ordinary cargo Fluid always restores; typed host/external positive engine/capacity isolation and abstract compatibility remain. The unselected tank-materialization branch is not a fallback. Resource/recovery review still precedes implementing disposal. |
+| D3-A loader/bay admission | 416-420, 865-867, 925-950, 1161-1164 | Matches one persistent transaction/receipt coordinator with forced-stop recovery proof before admitting these interactions. No added ordinary-container torn-save residual or same-tick-only substitute is selected. Exact disk authority/receipt retirement and native fault cuts remain required. |
+| Shared C18 world-first branch | 592-594 | Actual C18 receipt selects world-first recorded participants; accepted C18 planning contract still requires shared leaf/schema/writer proof. C17's existing conditional outbox clause becomes selected, without new fields, root bump or technical acceptance by implication. |
+| D2-A | Unchanged section 5.2, 461-523 | Continuous three-axis analytic rotation/logical altitude, no physical movement and linked/busy elevator guards remain exactly as the owner selected. Its checked transition/migration/wire review is not removed. |
+
+The D3-A selection prohibits silently extending the existing ADR-027/054 residual
+to these new paths. Unchanged language about reviewing/enumerating any residual
+is not approval of an added one: r4 expressly leaves D3-B unselected and requires
+a new owner decision for it. Known baseline limitations are not retroactively
+claimed repaired by the decision.
+
+## Preserved technical, clock, source and coverage identity
+
+The [independent probe](probe.py) compared **15 complete technical intervals**
+and all **six Markdown tables** byte-for-byte, including numeric ratios/budgets,
+external precedence, full disposal vector, latest snapshot/resource authority,
+loaders, monitor, D2 geometry/elevator/wire, same-root clock persistence,
+phase/saturation/client/native fixtures, force fields/finder/bay receipts, solar,
+D3 writer admission, exact protocols/verification/coverage, and rollback/source
+appendix. Their hashes and lengths are retained in the evidence.
+
+The M6 clock amendment remains unchanged: one same-root logical clock, validated
+epoch <= sample for every retained record, coherent checked record/clock commit,
+unknown-outcome quarantine/NONE, acknowledged ordinary-save authority, strict
+missing/future/epoch-ahead raw preservation, zero offline time, disclosed unsaved
+visual checkpoint rewind, bounded modulo-first phase arithmetic, Long.MAX_VALUE
+saturation/authorized STOP and 40-tick client extrapolation. None became executed
+Java/native evidence in this review.
+
+- All **seven** r3 artifact-manifest entries and **eight** r4 packet-manifest
+  entries match actual hashes. Both source/coverage companions are raw-byte
+  identical to the frozen r3 files:
+  - covered-ledger.csv: `3094547f0e4636c74e64f85cbb8305082e8cbaaec10cc84911da12905bb00eeb`.
+  - upstream-source-checks.json: `74362178f6393294fd067a859e47c12ce7526219c4aa9dde1f3142e9eef19277`.
+- **41** distinct C17 PLANNED rows match all actual root ledger fields, not just
+  IDs: C17a 24 / C17b 9 / C17c 8. Every primary ID appears in the ADR coverage.
+- All **26** recorded approved AR source identities independently match current
+  Java manifest and legacy inventory hashes at
+  `c5cd5af62fc07cd4e0d24f06a16033f181c47c04`. This is manifest/inventory identity
+  verification, not a new archive-byte audit, asset clearance or code import.
+- All **12** modern baseline source hashes recorded in the preceding independent
+  r3 evidence still match current files. The actual network-protocol pin text also
+  matches that evidence, SHA `224481cb8bcf1e35a950c3ce7f6d5c46f52ed9e4c3543879d4e01cc018551d3e`.
+
+Shared C17/C18 requirements remain consistent: station registry 4 -> 5/record 3
+with clock format 1, journal 2 -> 3, sky payload 1 -> 2, celestial protocol 3 -> 4
+and flight 8 -> 9 each once. The accepted C18 outbox requirements must join that
+same exact shared freeze. HEAD has two shared slots, at most one finder and an
+enabled-only immutable summary; no separate C18 finder or adapter dependency
+cycle is authorized. C18 D4 automatic pad/player durability remains unproven.
+
+## Residual admission and unexecuted checks
+
+These are preserved limits, not new findings against the decision-only revision:
+
+1. Exact persistent coordinator placement, forced writer/acknowledgment barriers,
+   endpoint ownership, source-generation fencing, receipt retirement and unknown
+   outcomes still need focused independent design and native S2 fault-cut proof.
+   Owner D3-A does not make a vanilla save notification durable. Do not expose
+   the dependent loading/unloading/bay interactions before that proof passes.
+2. Actual Java/native clock/schema migration, checked/ordinary-save ordering,
+   stale serializer, restart/rollback, exhaustion and packet cache/session tests
+   remain unexecuted here. The earlier arithmetic/wire model was not a native
+   clock writer; this task does not reclassify it.
+3. Freeze/review exact shared codecs/field maps/protocols, source-outbox/writer
+   changes, machine cells/recipes and resource/disassembly leaf contracts before
+   their dependent implementation. C18 conditional planning acceptance is not an
+   assertion that this joint leaf freeze or all feasibility checks already exist.
+4. API compatibility, surviving old worlds, resource conservation/protection,
+   graph/playthrough, provenance/art/license, A0/A1/S1/S2, performance, real GPU
+   V1/two-client V2 and release evidence remain required. No C17 ledger unit is
+   implemented by this review. **G0-G9 are not passed.**
+
+## Actual commands and exits
+
+| Executed command/check | Observed result |
+|---|---|
+| Bounded PowerShell Get-ChildItem/Get-Content/rg on exact proposal/review/owner/canonical paths and relevant clauses | Exit 0 in all read-command groups; root and author artifacts inspected read-only. |
+| `git rev-parse HEAD`; `git branch --show-current`; `git status --short --untracked-files=no` | Exit 0; root identity/retained integration changes observed, not edited. |
+| `python -B <own fresh Temp>/probe.py` | Two executions, both exit 0; the second adds exact current network-pin identity. Final retained log run: Python 3.13.15, 2026-10-03 10:03:03 UTC. [Log](probe.log), [exit receipt](probe.exit), [evidence](static-evidence.json). |
+| Bounded `python -B -c` evidence/range/hash inspection | Exit 0; printed actual changed spans and input/packet hashes. |
+| `python -B <own fresh Temp>/verify_evidence.py` | Exit 0; final input immutability, relative links/JSON/whitespace and own manifest checked. [Packaging receipt](packaging-evidence.json). |
+
+No author/preceding-review probe was executed because it writes its evidence
+directory. No Gradle, Java runtime test, GameTest, packaged server, crash/native
+fixture, GPU/multiplayer, import/generation, commit/tag/push or OpenPet ran.
+No protected development-docs bundle or unapproved LibVulpes content was read.
+
+## Execution summary
+
+- Completed scope: independent C17 revision-4 decision-diff/owner/shared-boundary
+  and static identity review, with own Temp evidence.
+- Uncompleted scope: runtime implementation, coordinator/clock/native feasibility,
+  exact remaining leaf inputs and all Required Gates.
+- Design decisions: observed recorded owner branches; introduced none.
+- Modified files/tests: only [task](TASK.md), own probe/diff/evidence/log/receipts,
+  this report, verification script and [hash inventory](FILE-HASHES.json).
+  Root/runtime/ledger/C16 modules and existing tests unchanged. The new probe is
+  an independent static check, not an implementation regression test.
+- Current version Required Gates: **not satisfied by this work**.
+- Remaining v1.8 action: root considers eligible final contract acceptance;
+  freeze/review the shared and native-durability leaf contracts, then implement
+  and independently verify admitted scopes without selecting fallback residuals.

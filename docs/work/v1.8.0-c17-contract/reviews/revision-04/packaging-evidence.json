@@ -1,0 +1,45 @@
+{
+  "kind": "independent_review_packaging_not_gate_or_root_acceptance",
+  "finished_utc": "2026-10-03T10:06:28.907252+00:00",
+  "review_inputs_unchanged_after_report": true,
+  "relative_companion_links_checked": [
+    {
+      "file": "REVIEW-04.md",
+      "target": "independent.diff"
+    },
+    {
+      "file": "REVIEW-04.md",
+      "target": "static-evidence.json"
+    },
+    {
+      "file": "REVIEW-04.md",
+      "target": "probe.py"
+    },
+    {
+      "file": "REVIEW-04.md",
+      "target": "probe.log"
+    },
+    {
+      "file": "REVIEW-04.md",
+      "target": "probe.exit"
+    },
+    {
+      "file": "REVIEW-04.md",
+      "target": "static-evidence.json"
+    },
+    {
+      "file": "REVIEW-04.md",
+      "target": "packaging-evidence.json"
+    },
+    {
+      "file": "REVIEW-04.md",
+      "target": "TASK.md"
+    },
+    {
+      "file": "REVIEW-04.md",
+      "target": "FILE-HASHES.json"
+    }
+  ],
+  "json_markdown_whitespace_checks": true,
+  "root_or_author_writes": 0
+}

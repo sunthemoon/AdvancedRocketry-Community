@@ -1,0 +1,25 @@
+{
+  "kind": "author_static_handoff_check_not_independent_review_or_runtime",
+  "draft_sha256": "7c6da4ab6f3974d537813ed3662f1f072f86c3cf13990b1d1afb685045ecb976",
+  "revision_1_unchanged": true,
+  "exact_current_planned_unit_ids": 104,
+  "batches": {
+    "C18c": 19,
+    "C18a": 28,
+    "C18b": 23,
+    "C18d": 34
+  },
+  "asset_rows": 155,
+  "manifest_matched_upstream_files": 34,
+  "owner_confirmed_decisions": [
+    "D1",
+    "D5"
+  ],
+  "pending_owner_decisions": [
+    "D2",
+    "D3"
+  ],
+  "pending_feasibility_gate": "D4",
+  "root_writes_by_this_worker": 0,
+  "runtime_native_gradle_tests_run": 0
+}

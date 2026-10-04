@@ -1,0 +1,572 @@
+--- revision-01/ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md
++++ revision-02/ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md
+@@ -2,13 +2,14 @@
+ 
+ ```yaml
+ status: PROPOSED
+-revision: 1
++revision: 2
+ date: 2026-10-03
+ owner: sunthemoon
+ target_version: v1.8.0
+ slices: [C18a, C18b, C18c, C18d]
+ accepted_at: ""
+ acceptance_basis: ""
++owner_confirmed_decisions: [D1, D5]
+ development_dependency: [ADR-024, ADR-025, ADR-034, ADR-037, ADR-049, ADR-050, ADR-051, ADR-052, ADR-054, ADR-057, ADR-058, ADR-059, ADR-061, ADR-062, ADR-063, ADR-064, C17-contract]
+ revisits: [ADR-025, ADR-051, ADR-057, ADR-059]
+ supersedes: ""
+@@ -20,6 +21,12 @@
+ currently PLANNED C18 ledger units: C18a 28, C18b 23, C18c 19, C18d 34. Asset
+ coverage is separately expanded with the ledger's ordered first-match rules.
+ No existing PLANNED, DEFERRED or REJECTED disposition changes through this text.
++Revision 2 responds to independent REVIEW-01 (H1, M1-M4). The owner has chosen
++D1's existing 2,000-unit API/HUD buffer with finite built-in reserves and D5's
++finite scrubber savings/nonzero minimum consumption. These two choices do not
++accept this whole ADR, its proposed numeric balance, D2/D3, or D4's unproven
++durability mechanism. The companion dispositions distinguish author changes
++from an independent re-review or runtime result.
+ 
+ ## 1. Sources and boundaries
+ 
+@@ -112,7 +119,8 @@
+   never by scanning arbitrary neighbouring rooms. A vent samples at most its
+   six adjacent loaded cells; one active scrubber gives one oxygen-debit skip
+   every two scheduled debits, two give at most three skips every four. This
+-  finite-savings recommendation is owner decision D5, still pending. The
++  finite-savings policy is owner-confirmed D5; the exact 1/2 and 3/4 schedules
++  remain proposed balancing values for scoped contract review. The
+   fourth debit remains mandatory. Spending one cartridge use per skipped debit
+   and committing phase/use together is required. With no charged cartridge the
+   ordinary vent continues its old debit. `scrubberRequiresCartridge=false`
+@@ -120,17 +128,55 @@
+   the vent's oxygen debit must have one persistence owner: move scrubber credit
+   and cartridge bank into the elected vent root with a generation-scoped facade
+   (ADR-019 pattern); breaking/unbinding rules are the C16 controller-bank rules.
+-  This requires a vent schema migration preserving schema-1/2 oxygen, FE and
+-  inventory exactly. Old vents with no scrubber fields retain baseline supply.
++  This requires vent schema 1 -> 2, preserving the actual schema-1 oxygen, FE,
++  canister counts and oxygen phase exactly. Current HEAD supports schema 1;
++  schema 2 is new here, not a pre-existing input whose future meaning is guessed.
++  Old vents with no scrubber fields retain baseline supply, and unsupported
++  future roots remain preserved/unusable until their explicit migration exists.
+   Never save a duplicate cartridge/credit in both chunks. Cartridge refresh is
+   a special lossless C16 chemical recipe, not a plain-item output that erases
+   arbitrary NBT or creates a second cartridge.
+ - `atmosphere_detector`: schema-1 selection enum `BREATHABLE`, `VACUUM`,
+-  `LOW_OXYGEN`, `HIGH_PRESSURE`, `HOT`, `COLD`. The already merged tiers follow
+-  ADR-062; no separate super-high-pressure state returns. Every ten ticks
+-  inspect the six immediate loaded, non-solid neighbouring cells, signal 15
+-  if any matches, else 0. PENDING/unknown cannot count as breathable. Skip
+-  unloaded neighbours and notify redstone only on state change.
++  `NON_BREATHABLE_ATMOSPHERE`, `HIGH_PRESSURE`, `HOT`, `COLD`. This replaces
++  the not-yet-implemented proposal name LOW_OXYGEN: AtmosphereDefinition has
++  no oxygen fraction. The reader label means nonbreathable atmosphere, not a
++  measured concentration. The already merged tiers follow ADR-062; no
++  separate super-high-pressure state or new composition model returns.
++  Observe each actual cell through the authoritative atmosphere/BodyContext
++  services. For a known supplied sealed cell, the effective classification is
++  BREATHABLE=true and all other modes=false (ADR-034 climate-controlled room),
++  irrespective of the exterior's climate. Otherwise use the known ambient
++  profile's finite pressure/temperature and actual cell breathability below;
++  equipment protection does not change the cell. Unknown/PENDING/unloaded or
++  unsupported profile cells match no mode and retain UNAVAILABLE/PENDING reason.
++  Surface metadata comes from the actual mapped surface's definition; in Space
++  (including station regions) use the actual Space Level's ambient definition,
++  never the orbited body's surface atmosphere. BodyContext ORBIT names an orbit,
++  not air supplied by that planet, and the public API's absent orbit-atmosphere
++  payload must not be filled from orbitBody. A supplied room overrides only
++  when the manager has a valid known supplied cell; it does not make an unknown
++  scan/context valid. Analyzer output separates ambient profile values from
++  actual cell breathability/control, so its localized display cannot imply
++  surface air exists in orbit.
++
++  | Mode | Exact predicate for a known unsupplied cell |
++  |---|---|
++  | BREATHABLE | authoritative cell breathability is true |
++  | VACUUM | pressure == 0 and cell is not breathable |
++  | NON_BREATHABLE_ATMOSPHERE | pressure > 0 and cell is not breathable |
++  | HIGH_PRESSURE | pressure > 2 |
++  | HOT | temperatureKelvin > 330 |
++  | COLD | temperatureKelvin < 240 |
++
++  Thermal/pressure modes may overlap with each other and with breathability;
++  240/330 K and pressure 2 are not adverse predicates. Hazard-damage opt-in
++  switches do not alter this measurement table. Never infer oxygen concentration
++  or effective room climate from a profile name. Every ten ticks inspect only
++  the six immediate loaded, non-solid neighbouring cells, signal 15 if any
++  matches the selected mode, otherwise 0. Unknown cells are skipped, not treated
++  as a positive hazard; if none is known the reason is UNAVAILABLE and signal
++  remains 0. Notify redstone only on state change. Fixtures cover every boundary,
++  overlapping modes, exterior versus supplied-room classification and unknowns.
+ - `atmosphere_analyzer`: item-use reads the user's eye cell and authoritative
+   surface/BodyContext profile; show localized breathability, temperature,
+   pressure and body label with unavailable/pending codes. No target coordinates
+@@ -158,13 +204,24 @@
+ - `thermite` item/common dust tag and `thermite_torch` standing/wall blocks:
+   **proposal** shapeless aluminum dust + iron dust -> one thermite; stick +
+   thermite -> four torches. Vacuum-compatible light level 14, original art,
+-  no heat damage/world explosions. `unlit_torch` standing/wall blocks store
+-  mounting state only, light 0, no survival recipe.
++  no heat damage/world explosions. `unlit_torch` standing/wall blocks emit
++  light 0 and have no survival recipe. Orientation/support stays in BlockState,
++  but a small BlockEntity root `arce_unlit_torch` schema 1 also preserves the
++  exact original torch-pair ID, block ID and item ID; mounting alone cannot
++  distinguish two source torches. Limit that owned root to 2 KiB/depth 8/64
++  nodes, each ID 128 UTF-8 bytes, exact known fields/types. It owns no inventory.
+ - Server tags `combustion_torches` (vanilla standing/wall torches by default)
+   and `combustion_fire_starters` (flint and steel, fire charge, blaze rod,
+   blaze powder) replace `addtorch` and `torchBlocks`. On placement or a
+   subscribed atmosphere invalidation, registered compatible torches in a
+   noncombustible eye/adjacent cell become orientation-preserving unlit torches.
++  A reviewed data catalog `torch_pairs` schema 1 bounds supported pairs to 64
++  definitions, each at most 4 KiB: exact standing block, wall block and source
++  item IDs, no duplicate block mapping. The permanent vanilla torch pair is
++  built in. Additional pairs must be registered TorchBlock/WallTorchBlock-like
++  shapes with the supported orientation properties, no BlockEntity or other
++  arbitrary state to lose, and a verified shared drop/place item. A tag alone
++  is not permission to deserialize a foreign block or invent its drop identity.
+   Unsupported tagged torch blocks refuse placement instead of guessing their
+   orientation/data. Thermite torches are never in this tag. Existing-world
+   torches are reconsidered on relevant block/volume events, not an unbounded
+@@ -172,7 +229,19 @@
+   256 checks/tick; overload is observable and fails new placements closed.
+   No arbitrary block removal by a client request. `dropExtinguishedTorches`
+   default false: true removes once and drops one original torch; false keeps
+-  one unlit block dropping that same torch when broken. Preserve wall support.
++  one unlit block dropping that exact saved source item when broken. Relighting
++  restores the pair's exact standing/wall block in the saved orientation, not
++  a vanilla substitute. Preserve wall support. Removed/unknown catalog identity,
++  future/corrupt root or incompatible replacement properties quarantine the
++  original owned tree: refuse ordinary break, relight, movers and explosions
++  until the matching pack/backup or an explicit offline repair restores it.
++  Never convert a missing item to air. Placement/extinguish/relight/drop changes
++  use the protection policy and applicable cancellable Forge block-change
++  events; cancellation keeps original block/item and emits no drops. Freeze the
++  environmental-change adapter under ADR-054 before runtime, without an
++  operator FakePlayer bypass. Two distinct compatible source pairs with the
++  same orientation must round-trip independently through save/restart/break and
++  relight, with cancellation and removed-pair fixtures.
+   Relighting with a validated fire starter requires combustion air and normal
+   permissions. Suppress fire-starter right-click at the actual adjacent loaded
+   cell when noncombustible/PENDING; do not consume the held item/durability.
+@@ -223,9 +292,33 @@
+ - Space safety return: only an actual connected player outside all committed
+   station regions and not in a rocket transfer/elevator ride transaction is
+   eligible. After 100 consecutive ticks adrift, try the nearest *authorized*
+-  station safe arrival by bounded existing registry index (owner/member/visitor
+-  rules), not a farthest/all-stations scan. Loaded safe arrival only; otherwise
+-  use safe Overworld return. No new station ticket/force load, no outsider access.
++  station safe arrival using VISIT authority, not the legacy farthest policy.
++  The present registry only has occupied-cell findAt and a name-sorted 32-entry
++  access list; neither is a nearest query. Add a small lifecycle-owned reverse
++  owner/member -> station-ID index as part of this slice: at most 4,096 stations
++  with 32 members each, 131,072 member links plus one owner link/station. Update
++  it only after committed create/team/remove changes; rebuild from bounded
++  registry records at startup, not on every player query. Operators use the
++  bounded all-station ID index. Do not use a 32-name prefix as the candidate set.
++  Nearest means squared horizontal distance from the player's captured Space
++  position to station safe arrival, ties by station UUID; it considers every
++  authorized candidate, but only already loaded safe arrivals. No new station
++  ticket/force load, no outsider access. A resumable fair query has one job/player,
++  at most 64 jobs, 32 candidate inspections/job/pass, 128 inspections and 256
++  loaded-cell safety probes/server tick globally. Retain a stable index cursor
++  and best candidate until the entire bounded candidate set is examined; do not
++  return the first safe prefix or run a 4,096-record synchronous retry. Existing
++  safe-arrival checks must be interruptible inside the probe budget; an unsafe
++  or unloaded destination is skipped without world access that loads chunks.
++  Index/access generation changes invalidate the selection; revalidate VISIT,
++  body/profile, loaded safety, same Level and still-adrift eligibility at commit.
++  Distance is measured from the captured query-start position; ordinary drifting
++  does not restart every tick, but entering a committed region cancels the job.
++  If the best
++  destination changed/unloaded, resume a fresh bounded pass; if a complete pass
++  finds none, use safe Overworld return. Queue delay after 100 ticks is observable,
++  not an instantaneous-nearest claim. Unknown/blocked registry cannot authorize
++  a station or be treated as an empty successful query.
+   Rate at most one attempt/player/200 ticks. Unknown/blocked station registry
+   cannot authorize a station. Clear phase on Level change/logout/vehicle/return.
+   Coordinate selection, protection/TELEPORT event and transfer lifecycle use
+@@ -274,7 +367,8 @@
+ ### 5.1 Slots, capacities, workstation and enchantment
+ 
+ `suit_workstation` has exactly one armor slot and one module transfer slot;
+-module layout is fixed: HEAD two visor/hover positions, CHEST one jetpack and
++module layout is fixed: HEAD two shared visor/hover/beacon-finder positions,
++CHEST one jetpack and
+ two pressure-tank positions, LEGS two speed/bionic positions, FEET one padded
+ position. No upgrade stacks; at most one of each upgrade type, one oxygen and
+ one hydrogen tank. Workstation menu only, no automatable armor-edit capability.
+@@ -287,6 +381,17 @@
+ persisted mirror in the workstation. Breaking workstation drops the sole held
+ armor/module once. Old built-in suit IDs/data remain valid without modules.
+ 
++C17's stable `beacon_finder` occupies one of those existing two HEAD slots;
++at most one finder, no new slot and no duplicate C18 registration. Choosing
++finder/hover/two visor types means not all effects fit simultaneously. Publish
++only immutable server equipment-summary `beaconFinderEnabled` to the C17 finder
++adapter, not nested finder NBT or a client claim. C17 owns waypoint policy and
++held-item/finder selection authority. Freeze the shared bounded module-kind
++table and summary port in model/api under root integration; the two adapters
++consume it without importing one another or forming a C17/C18 dependency cycle.
++Full-slot rejection, install/remove, equipped versus held detection, restart and
++summary removal on unequip are required interoperability fixtures.
++
+ Stable IDs: `low_pressure_tank`, `pressure_tank`, `high_pressure_tank`,
+ `super_high_pressure_tank`, `jetpack`, `hover_upgrade`, `flight_speed_upgrade`,
+ `bionic_leg_upgrade`, `padded_landing_boots`, `anti_fog_visor`,
+@@ -296,26 +401,39 @@
+ Empty tanks acquire gas from charge only; nonempty tanks cannot switch gas.
+ No world fluid capability is exposed directly on equipped nested components.
+ 
+-**Owner decision D1**: ADR-025 currently fixes providers/HUD/active oxygen to
+-0..2,000 and built-in data on its original key. Recommended: retain this API
+-and active buffer, add built-in-only auxiliary tank schema. Replenishment is a
+-lossless one-item commit moving at most the exact missing active amount from
+-the installed oxygen reserve; maximum combined storage 18,000 under the
+-default tank table. `spaceSuitO2Buffer` becomes built-in active maximum in
++**Owner-confirmed decision D1**: retain ADR-025's providers/HUD/active oxygen
++0..2,000 and built-in data on its original key; add a built-in-only finite
++auxiliary tank schema. The generalized provider-capacity/API alternative was
++not chosen and is outside this implementation. Replenishment is a lossless
++one-item commit moving at most the exact missing active amount from the single
++installed oxygen reserve, with source debit and active credit in the same
++detached ItemStack owned payload (existing active key plus new module root,
++neither mirrored into the other). Refill runs only before an authoritative
++scheduled oxygen debit or an explicit valid refill, at most one bounded
++2,000-unit transfer/stack/operation; simulated/query/HUD calls never mutate it.
++Active <= 2,000, auxiliary <= its saved supported maximum;
++never mirror auxiliary gas in the active balance or bypass a scheduled debit.
++Under the proposed tier table, default maximum combined oxygen is 10,000
++(2,000 active + one 8,000 tank); two oxygen tanks are forbidden. The proposed
++capacity multiplier permits an absolute 32,000/tank and 34,000 combined oxygen,
++still finite; this equipment-specific saved capacity is not a device fluid-bank
++extension or an external provider allowance. `spaceSuitO2Buffer` becomes
++built-in active maximum in
+ units 1..2,000, default 2,000; `suitTankCapacity` becomes auxiliary tier
+ multiplier 1..4, default 1, snapshotted per created tank. Lowering configuration
+ does not discard previously stored gas: existing maxima remain snapshot values,
+-new fills stop at the supported saved maximum. Alternative: generalize provider
+-API/HUD capacity, requiring ADR-025/API version/migration revision and consumer
+-tests. The two alternatives have different integration semantics, not merely
+-UI choices; implement neither until owner decision and independent review.
++new auxiliary fills stop at the supported saved maximum. Lowering the active
++target stops refill above that target but does not erase a valid pre-existing
++0..2,000 balance. Refuse unsupported saved maxima rather than clamping away gas.
++Numeric tier/config choices require scoped contract review; D1 confirms the
++mechanism, not a generalized API migration or every proposed balance value.
+ 
+ `space_breathing` level 1 is applied only by the C16 chemical recipe, not
+ enchanting tables/books or a generic unrestricted enchanting loot. It seals
+ correctly worn armor across four slots but does not provide infinite oxygen or
+ climate/pressure/solar protection. Only CHEST owns finite oxygen, at most 2,000
+-under D1's recommendation; use the existing detached-owned-payload commit
+-principles. Existing registered external providers still use ADR-025 and take
++under D1's selected active-buffer policy; use the existing detached-owned-payload
++commit principles. Existing registered external providers still use ADR-025 and take
+ precedence; enchantment cannot override/alias their owned root. Proposed private
+ host eligibility extension: count an otherwise unclaimed native ArmorItem only
+ when unstackable/count 1, in its native slot, and actually enchanted at level 1;
+@@ -401,7 +519,10 @@
+ owned registry job, not a fake launched satellite and not an unbounded item
+ chip bearing minted yields. Extend the existing satellite registry schema
+ 3 -> 4 while preserving every satellite, mission, instance and research
+-account unchanged. A new `ground_surveys` section owns job identity, owner,
++account's identities and resource values. Instance schema 1 -> 2 changes only
++the source representation as specified below; saying its serialized records
++are unchanged would be incorrect. A new `ground_surveys` section owns job
++identity, owner,
+ source device UUID, source Level/position, source system, definition/table
+ fingerprints, seed, bounded snapshotted candidate/yield, timestamps, phase and
+ analysis-credit state. Ground surveys count inside the existing 16 live
+@@ -414,6 +535,56 @@
+ silently drop old records. At most 32 paid advances and 64 queue inspections
+ per server tick, fair across Levels; excess controllers show QUEUED. Progress
+ mutations use the existing coalesced flush budget, not one file save per tick.
++
++**ADR-051 source amendment, conditional on D2:** replace the mandatory ambiguous
++instance `sourceMission` with a bounded tagged origin, `SURVEY_MISSION` or
++`GROUND_SURVEY`, plus exactly one UUID. Instance schema 2 serializes exact
++`origin_kind`/`origin_id`; there is no nullable UUID, invented MissionState or
++placeholder satellite. Schema-1 instances migrate their original source UUID
++to SURVEY_MISSION and preserve instance/owner/system/type IDs, seed, versions,
++fingerprints, full yields, timestamps, state, expiry and allocatedMission.
++The registry 1/2 -> 3 existing migration runs before 3 -> 4; already-current
++registry/instance inputs are a no-op. Snapshot all current per-record budgets
++before admission: the new tagged envelope still fits each 4-KiB instance bound
++and the root's existing byte/node/section bounds, or start is refused. Unknown
++origin kinds/types and future schemas are raw-preserved, not downcast.
++
++The revised pure invariant plan checks origin and mining allocation separately:
++
++- PENDING/SURVEY_MISSION requires the existing unfinished SURVEY MissionState,
++  its exact payload backlink and matching owner/system; every survey payload
++  ID in turn requires that exact pending mission-origin instance. Do not relax
++  existing orphan/satellite/mission checks to permit ground jobs.
++- PENDING/GROUND_SURVEY requires one ACTIVE job whose UUID equals origin_id,
++  whose instanceId equals this exact instance UUID, and whose owner/system and
++  snapshotted source definitions agree. Every ACTIVE ground job must in turn
++  resolve its exact PENDING ground-origin instance. A duplicate source/backlink,
++  wrong owner/system/kind, missing job or mismatched ID quarantines affected
++  raw records without payment, deletion or global acceptance of broken roots.
++- Completing one ground job atomically changes instance to AVAILABLE and job
++  to READY with its single analysis credit. READY/PROCESSED jobs retain the
++  immutable origin/backlink while the corresponding instance is retained.
++  For AVAILABLE/ALLOCATED/retained DEPLETED or EXPIRED ground instances the
++  matching READY/PROCESSED job must exist; ALLOCATED additionally retains the
++  existing one-to-one unfinished mining mission/allocatedMission checks.
++- Mission-origin AVAILABLE/ALLOCATED/terminal records keep their exact original
++  origin UUID even if the finished source survey was pruned under existing
++  retention. Do not newly quarantine these valid old records merely because
++  a terminal survey mission is absent. Mining allocation remains independently
++  checked regardless of either origin kind.
++- Cancel ACTIVE only by one checked registry mutation removing its exact
++  matching PENDING instance and setting its job CANCELLED with no resource
++  award/refund. Preserve a bounded cancellation tombstone at least the existing
++  1,200 logical-tick retention; READY/PROCESSED origin jobs cannot be pruned
++  before their retained instance and all allocation/claim references are gone.
++  Instance terminal retention otherwise remains ADR-051. Prune deterministic
++  bounded records, never delete a live source to make room for new work.
++
++Required fixtures include legacy PENDING/AVAILABLE/ALLOCATED and terminal
++schema-1 migrations, ground PENDING save/restart, exact backlink permutations,
++duplicate/wrong-owner/wrong-system/wrong-kind origins, pruning/cancel/replay and
++old source-survey-pruned AVAILABLE/ALLOCATED records. D2 still requires owner
++choice and independent ADR-051 amendment review; this is not model code.
+ 
+ On authorized START at a formed loaded observatory, derive the actual surface
+ system (or permitted station's orbit system), current asteroid candidates and
+@@ -435,6 +606,12 @@
+ 
+ The processor selects the owner's completed unprocessed survey job through a
+ bounded server-held list, not a client-provided yield or research number.
++Its analysis subphase is WAITING/RUNNING/CREDITED within the READY/PROCESSED
++job, with one claimed processor UUID/Level/position and bounded paid progress;
++no second processor can advance/claim it. Job lifecycle remains ACTIVE, READY,
++PROCESSED, CANCELLED or QUARANTINED, so running analysis does not make a live
++ground-origin instance look orphaned. Rebind/claim changes require an explicit
++owner-authorized checked mutation and cannot reset paid work into new credits.
+ **Proposal** 200 loaded ticks/20 FE/t, then credit 120 owner research points
+ and mark that job PROCESSED in the *same* registry mutation. Account overflow
+ pauses without credit/state loss. Replaying the selection returns ALREADY_CLAIMED.
+@@ -444,10 +621,12 @@
+ discovery remains the data-satellite workflow. Analysis on a ground-survey job
+ does not change yield of an already allocated asteroid. Jobs' claim tombstones
+ remain while their instance/reference is live; only deterministic registry
+-retention after all references are gone can delete them. Controller copied from
+-NBT at a different position cannot claim an existing job; same UUID collision
+-quarantines instead of stealing ownership. Schema-3 input initializes no jobs;
+-future/malformed input refuses and preserves the whole registry. Old schema-3
++retention after all references are gone can delete them under the origin rules
++above. Controller copied from NBT at a different position cannot claim an
++existing job; same UUID collision
++quarantines instead of stealing ownership. Schema-3 input migrates instances
++losslessly and initializes no ground jobs; future/malformed input refuses and
++preserves the whole registry. Old schema-3
+ host rejects schema 4, so downgrade restores pre-upgrade backup/matched build.
+ 
+ The alternative is a registry-authoritative survey service that requires an
+@@ -484,23 +663,96 @@
+ | givingitallshesgot | station_warp | player present in authorized station at committed warp |
+ | flightofpheonix | first_station_warp | participant in first committed world station warp |
+ 
+-World-first flags need versioned world state, not static booleans. **Proposal**
+-add strict bounded schema-1 `advancedrocketrycommunity_classic_progression`
+-SavedData with two event receipts (transaction UUID and participant UUID list,
+-at most 4,096 participants/receipt and 256 KiB/depth 16/16,384 nodes per root;
+-existing lower passenger/server bounds still win). Preflight the participating
+-set before a first-event travel request starts; an over-budget first-event
+-request is explicitly refused without taking resources, not silently awarded
+-to a partial set. The receipt commits only
+-from an authoritative completed travel event and grants idempotently at login
+-for participants whose player advancement file was behind. Never re-award a
+-different later participant on a server restart. Historical worlds that already
+-contain actual committed Moon-visit/warp records initialize `occurred=true`
+-without inventing a retroactive participant list; worlds with no trustworthy
+-record await a real event. This is a migration policy requiring fixtures, not
+-a scan of player inventories. **Owner decision D3**: retain world-first
+-semantics with these receipts (recommended), or make both per-player first
+-events and revise the published player impact. Other advancements unaffected.
++World-first flags need versioned world state, not static booleans. **Owner
++decision D3 remains pending:** retain world-first semantics with the following
++commit-coupled receipts (recommended), or make both per-player first events and
++revise the published player impact. Other advancements are unaffected.
++
++**Conditional world-first design:** add strict bounded schema-1
++`advancedrocketrycommunity_classic_progression` SavedData containing two event
++receipts. Each records kind, immutable source transaction UUID, source identity,
++occurred flag and participant UUIDs: at most 4,096 participants/receipt and
++256 KiB/depth 16/16,384 nodes for the whole root; existing lower passenger/server
++bounds still win (rocket passengers remain <= 16). This is an acknowledgment and
++login-grant store, not a second authority allowed to elect a different winner.
++A post-travel callback alone is insufficient because its SavedData may not
++be durable when the travel source already is. Each source therefore owns one
++durably retained first-event slot, committed with the actual event:
++
++- Station warp: a bounded `classic_first_warp` source outbox in the station
++  registry root, not in the 8-KiB individual StationState. Include its immutable
++  event/participant record in the *same* CheckedSavedDataFile candidate,
++  fsync/replace and publish as checkedRelocation's orbit and FE debit. Compare
++  the first-event slot as empty inside that checked update; no later warp can
++  win while it contains an unacknowledged or acknowledged event. Join C17's
++  station registry 4 -> 5 migration once, not an unrelated second root bump.
++- Moon rocket landing: one `classic_first_moon_landing` source outbox in the
++  rocket-transfer journal root, not only a landed Entity/player callback.
++  Extend C17's journal 2 -> 3 migration once with a checked landing-completion
++  authority: validate safe actual descent completion and snapshot its terminal
++  rocket/transfer identity and participants, then persist that completion and
++  the empty-slot election in one checked source replacement before publishing
++  LANDED/advancement notifications. Recovery projects an already committed
++  terminal completion to the unique authoritative rocket if its chunk state
++  lags. A journal COMMITTED transfer phase is not itself a Moon landing and
++  cannot trigger the award. A failed source write leaves descent completion
++  pending/repair-required, not a successful landing with a forgotten receipt.
++  Never discard/supersede the only completion authority before the terminal
++  entity state is reconciled and the source first-event marker is durable.
++
++Each source outbox is schema 1, at most 128 KiB/depth 16/8,192 nodes, inside its
++existing whole-root byte/node budget (station 4 MiB; journal uses its current
++fixed RocketFlightLimits bound). It does not raise those budgets. Reserve
++headroom before accepting an eligible first-event request or taking resources;
++refuse over-budget participant/root state visibly, not partial awards. Capture
++the actual real connected passengers aboard the unique authoritative rocket at
++the checked Moon completion, or actual real connected players within the
++authorized committed station region with live VISIT permission at checked warp
++completion. Login recovery uses that immutable set, not later joiners or all
++members. Preflight request
++maximums and recheck the exact completion set; an empty set still records that
++the first committed event occurred, without inventing recipients.
++
++The source journal's exact checked writer and its coordination with ordinary
++SavedData/chunk saves must be frozen and independently reviewed before runtime.
++setDirty(), ChunkDataEvent.Save or ItemStack.save is not a durability barrier.
++Ordinary saves must serialize the latest acknowledged source authority and may
++not overwrite a checked first-event commit with stale memory. Station checked
++write failure/outcome-unknown semantics remain unchanged; journal outcome
++unknown similarly blocks conflicting completion/election until durable reload.
++This proposes that adapter work explicitly; it does not claim current journal
++put/remove methods already provide it.
++
++The progression receipt likewise uses a reviewed checked SavedData write/reload
++barrier for its source acknowledgment, not an in-memory setDirty observation.
++Its new managed type/key and strict schema participate in the existing migration
++catalog under root ownership, without changing external environment APIs.
++Delivery is source durable event -> durable matching progression receipt ->
++source acknowledgment. Until acknowledgment is durable, keep the complete source
++event and its participants plus an immutable participant-set fingerprint; no
++timeout/entry pruning can erase the recovery information. After acknowledgment,
++keep the immutable occurred/transaction
++marker forever and permit participant payload compaction only because the
++progression receipt is itself durable. Missing/mismatched/quarantined progression
++data holds source events and awards for repair, never elects another first event.
++Grants at login are idempotent while the player's advancement file lags.
++Canceled/failed travel before source completion does not occupy the winner slot;
++an outcome-unknown write is reconciled from its actual durable source, never
++blindly retried as a new transaction. Both write orders and cuts after source
++commit/before progression flush and after progression commit/before source ack
++must prove the same winner/participants after restart. These are required S2
++fixtures, not yet executed evidence.
++
++Historical initialization uses only trustworthy durable committed Moon *rocket
++landing* or station-warp source markers. A surface visit, inventory, current
++orbit or console grant is not a historical first-event record. A trusted marker
++without participants initializes occurred=true without retroactive awards;
++worlds with no trustworthy marker await a real event. Old schema-2 journal and
++schema-4 station roots initialize no fabricated source event, preserving their
++existing recovery/balances; migrate settled old transfers under C17's old
++checksum-first rules. Future/invalid source/receipt roots are raw-preserved and
++unusable until repair. D3's owner decision and this durability contract review
++both precede implementation.
+ 
+ ### 6.3 Reachability and player guide
+ 
+@@ -547,8 +799,13 @@
+   selected by server-approved body/station context: the committed station's
+   live orbit body must have a currently valid ADR-057 singularity profile.
+   A server-generated fixed sky-kind enum in the existing station snapshot
+-  supplies this distinction (C17/C18 protocol revision to freeze together);
+-  the client does not infer it from a body name, gravity or fuel/output value.
++  supplies this distinction. Coordinate one station sky payload schema 1 -> 2
++  containing this C18 sky-kind and C17's distance/phases/rates, and one
++  `celestial_snapshot` channel protocol 3 -> 4 in the frozen integration.
++  C17 separately owns `rocket_flight` channel 8 -> 9; C18 does not bump it again.
++  Validate fixed known sky-kind, bounded orbit fields and unknown/trailing data
++  in the same payload; no independently versioned parallel sky packet. The
++  client does not infer it from a body name, gravity or fuel/output value.
+   Do not add an inferred
+   black-hole star flag to the celestial model without its own ADR. Use one
+   dark disc plus bounded accretion/ring mesh at most 512 vertices, eight
+@@ -631,12 +888,12 @@
+ | Area | A0/A1 success and failure | S1/S2 and player/visual evidence |
+ |---|---|---|
+ | Scrubber | finite fourth debit, empty/charged cartridge, one/dual support, stale bindings, reentrant ports, phase preservation | cross-chunk vent/scrubber unload/restart and removal with exact inventory/gas counts |
+-| Detector/seals/torches | six loaded probes, PENDING/unknown, both door halves, redstone, loops and capability revoke, wall orientation/drop once | original-world door/torch upgrade, queued exhaustion/no force-load |
+-| Environment | player vs mob/bypass, spawn types, thresholds/damage priority, living gravity/no double fall, finite underwater gas | dimension/context/logout/reset, safe sleep/respawn/adrift recovery, no permission bypass |
++| Detector/seals/torches | exact mode truth table/240/330/2 boundaries and overlap, supplied versus ambient, six loaded probes, unknown/PENDING, door halves/redstone, loops/revoke, two source-pair torch identities/drop once | original-world upgrade; same-orientation custom-pair save/restart/break/relight; removed/future pair quarantine; canceled world changes; queue exhaustion/no force-load |
++| Environment | player vs mob/bypass, spawn types, exposure priority, living gravity/no double fall, finite underwater gas; nearest outside 32-name prefix, negative grids, authority removal | dimension/context/logout/reset, safe sleep/respawn; many adrift players with global query/probe budgets and generation changes; no tickets or permission bypass |
+ | Charge/equipment | whole resource conservation, detached install/partial quick-move, all gas tiers/root types/config reductions, ability expiry, enchantment mixed-provider precedence | source and player saves in both orders and crashes at every phase; supported future/oversized roots preserved |
+ | Tools | canceled break/PvP, item/target change, loaded ray boundary/rate/replay, actual loot/harvest | dedicated two-player contested target; no loot duplication/fake-player bypass |
+-| Ground research | limits/tables/seed snapshot, one instance, one owner credit, overflow/cancel/replay, no fake satellite | registry/chunk schema upgrade and crashes/rebinds/copies; old accounts/instances unchanged |
+-| Advancements | all 17 real triggers, failed travel not rewarded, world-first receipts/late login | player file/registry save order and existing-world initialization |
++| Ground research | limits/tables/seed snapshot, one instance/owner credit/processor claim, overflow/cancel/replay; tagged origin and both-direction wrong-owner/kind/system/source/orphan checks | registry 1/2/3 -> 4 and instance 1 -> 2 migration; ground PENDING restart; retained AVAILABLE/ALLOCATED/terminal records and pruned legacy source; crash/rebind/copy/raw-preserve cases |
++| Advancements | all 17 real triggers, failed/canceled travel not rewarded, serialized source first-event election/immutable participants/late login | cut after source travel commit before progression flush; after progression before source ack; entity/source/advancement save orders; source prune/supersede; historical initialization and unknown write outcome |
+ | Presentation | resource graph/provenance; NEW screening; enum/offset/wire bounds; caches clear | actual GPU V1, two-client V2; sound listen, GUI scale, reload, attachment/sky/capsule correctness |
+ | Progression | no unreachable ordinary item/hard cycle, energy/access/research prerequisites | complete new-survival tech route, JEI present/absent, actual report/video |
+ 
+@@ -649,33 +906,44 @@
+ S1 does not imply S2, V0 does not imply V1/V2, and a draft never satisfies G0-G9.
+ Full campaign remains scheduled under ADR-018; no existing Gate is checked here.
+ 
+-## 9. Unresolved decisions and integration dependencies
+-
+-1. **D1** active 2,000-oxygen API with finite built-in reserve (recommended)
+-   versus generalized provider capacities; owner choice before schema/API work.
++## 9. Decision status and integration dependencies
++
++1. **D1 OWNER-CONFIRMED**: keep the active 2,000-oxygen API/HUD with finite
++   built-in auxiliary reserve and bounded replenishment. Generalized provider
++   capacity/API migration was not selected. Numeric tier/config limits and
++   schema/migration details still require scoped contract review.
+ 2. **D2** new ground-owned registry jobs (recommended) versus a required survey
+    satellite; explicitly revise/extend ADR-051 and verify schema-4 migration.
+ 3. **D3** preserve world-first achievements (recommended) versus per-player
+    events; old-world initialization and crash-grant receipts need review.
+ 4. **D4** prove pad/player save durability protocol or approve an alternate
+    interaction with a stated non-crash-atomic limitation. No phantom atomicity.
+-5. **D5** finite savings with the fourth oxygen debit mandatory (recommended)
+-   versus legacy zero oxygen consumption with two scrubbers. This is a resource
+-   and progression choice for the owner, not an already accepted bug fix.
++5. **D5 OWNER-CONFIRMED**: finite scrubber savings with nonzero minimum
++   consumption. Zero consumption with two scrubbers was not selected. The
++   proposed fourth-debit schedule, cartridge balance and vent migration still
++   require scoped contract review; confirmation does not mark runtime complete.
+ 6. Exact pattern cells, recipe ingredients/JEI serializer forms, NEW art design
+    and per-file origin outcomes are implementation inputs to freeze and review,
+    not a permission to reduce any C18 unit.
+ 
+ C18a needs C15a steel fan and C16d user interface/carbon brick, C16 fluid/tag
+-conversion, existing vent migration and protection authority. C18b additionally
+-needs C16c special chemical recipes. C18c needs C16d circuitry/recipe graph,
+-existing ADR-050/051 registry invariants and C17 station/warp completion hooks.
++conversion, existing vent migration, bounded station access query and protection
++authority. C18b additionally needs C16c special chemical recipes and C17's
++beacon_finder identity/shared equipment summary, without adapter cycles. C18c
++needs C16d circuitry/recipe graph, reviewed ADR-050/051 origin invariants and
++C17 station/warp plus rocket-journal checked completion/outbox integration.
+ C18d needs every implemented batch's final IDs/state snapshots plus the C17
+ client contract; it must not invent a renderer packet schema contrary to that
+-contract. Central registration/network/build/status files belong to root.
++contract. Freeze station sky payload schema 2/celestial_snapshot channel 4 and
++retain C17's single rocket_flight channel 9 change; the pre-change payload schema
++is 1 and the two channel protocols are 3/8 as specified in their source contracts.
++Central registration/network/
++build/status files belong to root.
+ 
+ No commit/tag/push, Gate pass, runtime completion or asset license clearance is
+ authorized by this proposal alone. Conditional maintainer authorization can
+ accept a revised independently reviewed final contract with no unresolved
+ Critical/High/Medium, but these material owner alternatives require explicit
+-resolution rather than being described as already accepted.
++resolution rather than being described as already accepted. D1/D5 are the only
++newly owner-confirmed alternatives recorded in this revision; D2/D3 remain
++pending and D4 remains an unproven feasibility/possible-interaction decision.

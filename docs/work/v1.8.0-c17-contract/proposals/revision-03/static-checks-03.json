@@ -1,0 +1,49 @@
+{
+  "kind": "author_static_and_clock_specification_model_not_runtime",
+  "revision": 3,
+  "proposal_sha256": "92e706ae84e6565f605227f7794fb83850a23c4f2ca1915686d28c61fa72c321",
+  "exact_ledger_rows": 41,
+  "slice_counts": {
+    "C17a": 24,
+    "C17b": 9,
+    "C17c": 8
+  },
+  "coverage_unchanged": true,
+  "rehashed_approved_sources": 26,
+  "source_mismatches": [],
+  "model_fixtures": [
+    "root4_initialization_exact_fields_repeat_noop",
+    "positive_negative_zero_all_rates_long_elapsed_modular_arithmetic",
+    "clean_restart_zero_offline_advance_independent_time_ignored",
+    "same_root_epoch_ahead_future_missing_type_bounds_preserve_input",
+    "saturation_no_wrap_authorized_stop_preserves_phase",
+    "old_new_coherent_reload_unknown_refusal_autosave_visual_checkpoint",
+    "wire_epoch_sample_and_render_horizon40"
+  ],
+  "phase_arithmetic_cases": 2178,
+  "max_reduced_rate_product": 21599700,
+  "wire_bounds_unchanged": {
+    "flight": 31805,
+    "station_sky": 167
+  },
+  "modern_clock_baseline_sha256": {
+    "station/persistence/StationRegistrySavedData.java": "a3fb2a38f770511a125e3d464fbb039cba1b0839e9a5bc46eef47311706766b2",
+    "station/persistence/StationRegistryPayload.java": "90020ce2d9f11aedb3a1831afc57b54f5300f10d45586888dc299013b8487e1c",
+    "station/service/StationWriteBudget.java": "67c34bc90a60f7d1956e554667006a5e16551f256913d3604e2cefc42f712b43",
+    "satellite/mission/MonotonicMissionClock.java": "b6dbb34fe23df2d9f96485e960f63310740a7c70cb3064027f7ffcede96126eb"
+  },
+  "owner_confirmed": [
+    "D2-A"
+  ],
+  "owner_pending": [
+    "D1",
+    "D1-disassembly",
+    "D3"
+  ],
+  "proposal_status": "PROPOSED",
+  "runtime_tests_run": false,
+  "repository_writes": false,
+  "required_gates_satisfied": false,
+  "command": "python -B revision-03/probe-03.py",
+  "exit_code": 0
+}

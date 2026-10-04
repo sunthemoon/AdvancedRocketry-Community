@@ -1,0 +1,8 @@
+# Frozen unified-diff evidence includes literal space-prefixed context lines.
+# Preserve these patch payload bytes; they are not source-code text files.
+* -text
+*.diff binary
+*.json binary
+*.raw.txt binary
+proposals/** binary
+reviews/** binary

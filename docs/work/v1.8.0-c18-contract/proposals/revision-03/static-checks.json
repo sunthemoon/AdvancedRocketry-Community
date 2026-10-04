@@ -1,0 +1,44 @@
+{
+  "kind": "author_static_decision_only_scope_check_not_acceptance_or_independent_verdict",
+  "proposal_sha256": "ae4ac5a20983eac80881eeb63bbde83db60665537be48116fee3dc5aa5ce3034",
+  "base_revision2_unchanged": true,
+  "revision2_evidence_hashes_unchanged": true,
+  "root_owner_receipt_path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\OWNER-DECISIONS.md",
+  "root_owner_receipt_sha256": "ed4352ee786435afa6573f3aede578528e9ae78914cbae2147fccae98f4d028f",
+  "owner_confirmed": [
+    "D1",
+    "D2",
+    "D3",
+    "D5"
+  ],
+  "selected_branches": {
+    "D2": "independent_ground_jobs_no_survey_satellite",
+    "D3": "world_first_recorded_winning_participants"
+  },
+  "D4_durability_feasibility_proven": false,
+  "technical_numeric_regions_byte_identical": {
+    "sources_shared_devices_gas_equipment_all_numeric": "931604958c0e77dabca04d862d31add325d28696293f57ef8e2a7e49ec60fae8",
+    "ground_origin_codec_invariants": "19d410dc04729fd273356135a8f6239885f44d2b16b69cef5f327d2704e521ca",
+    "ground_work_and_processor": "b0c15ef4597cbaee936e8b5e9e46dd264fbb0b60afab9900d6f18a9b1259adb3",
+    "world_first_native_protocol": "c8ed515f9ad388bbd66c8674e418b90314ba9f88f07f2c0ba547cde92ba71193",
+    "reachability_assets_verification": "2b16f1c0c158ddcfe47eaa4113e35dcfa5877e30201cf0f0a6036a43c4a2c44a",
+    "shared_dependency_wire_ids": "7b14ea878c438a401d30bc3aef94e56f7c568211b7a63c3bae890efead836872"
+  },
+  "technical_behavior_added": false,
+  "companions_byte_identical_to_r2": true,
+  "current_c18_planned_ids_unchanged": 104,
+  "batch_counts_not_acceptance": {
+    "C18c": 19,
+    "C18a": 28,
+    "C18b": 23,
+    "C18d": 34
+  },
+  "proposal_status": "PROPOSED",
+  "accepted_at": "",
+  "root_current_version_sha256": "5932de89fd5d3329c03b3eab40d1b1ca8fc436b33ecff95e746fc2e733b2af10",
+  "root_implementation_log_sha256": "3de4720fb2d61f0b7e63409602b03d15f6bddf4ce30d6a9ba6cb709ffcef5bf4",
+  "root_writes_by_author": 0,
+  "runtime_native_gradle_jobs_run": 0,
+  "command": "python -B <own fresh revision3 Temp>/probe.py",
+  "exit_code": 0
+}

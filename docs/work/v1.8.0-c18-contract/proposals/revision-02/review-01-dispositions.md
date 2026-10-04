@@ -1,0 +1,47 @@
+# ADR-066 revision 2 - REVIEW-01 dispositions
+
+Reviewed revision 1: SHA-256
+`6f8c13b0aedf440420575cef377bc90ca68751e6c923fecf7b10608b026f7c86`.
+Independent REVIEW-01 (original source directory
+`C:/Users/Administrator/AppData/Local/Temp/arce-v180-c18-independent-review-902f3d2862bf4e83b8d55a09502a1bac`):
+SHA-256 `b891fff1c85690b4568d47a99475ae8aacaad3e9203b2778e931da9db462c262`,
+0 Critical / 1 High / 4 Medium. Author response date: 2026-10-03.
+
+Disposition here means **author-addressed in proposal text, awaiting independent
+revision-2 review**, not CLOSED/PASS, contract acceptance or a runtime fix.
+No root files, implementation, tests or asset files were changed by this worker.
+
+| Finding | Revision-2 change and evidence | Verification still required |
+|---|---|---|
+| H1 - ground PENDING origin | Section 6.1 explicitly proposes instance schema 1 -> 2 and tagged SURVEY_MISSION/GROUND_SURVEY UUIDs inside registry 3 -> 4. Preserves exact old identities/yields/state/allocation, keeps mission-origin pending invariants, adds exact owner/system/instance/job back-links, and distinguishes independent mining allocation from discovery origin. Defines READY/PROCESSED origin retention, cancellation and old finished-survey pruning. Current AsteroidInstance.sourceMission, SatelliteNbtCodec source_mission and RegistryInvariants are the actual incompatible baseline, not claimed already changed. | Owner D2; ADR-051 amendment review; codec/size fixtures, legacy state migration, ground PENDING restart, duplicate/orphan/wrong-kind/owner/system pairs, retained ground and pruned legacy origins. |
+| M1 - first-event commit gap | Section 6.2 makes progression SavedData a durable acknowledgment/grant sink, not winner authority. Source election/immutable participant outbox shares the station checkedRelocation commit, or the proposed checked journal landing-completion commit. Joins C17 station root 5 / journal 3 once. Requires source event -> durable matching progression receipt -> durable source acknowledgment and permanent occurred marker. Cancellation, outcome unknown, exact capture point, headroom and historical records are specified; COMMITTED transfer is not LANDED. | Owner D3; exact journal/receipt checked writers and ordinary-save serialization review; source/Entity/player crashes including travel durable before progression flush, receipt before source acknowledgment, pruning/superseding and late login. Existing put/remove and setDirty are explicitly not proven barriers. |
+| M2 - nonexistent nearest index | Section 3.3 removes the existing-index claim. Specifies a lifecycle-owned bounded owner/member reverse index, operator candidate set, complete stable-cursor pass, deterministic captured-position distance/UUID tie break, 64 jobs/32 candidate per pass/128 global candidates/256 global loaded probes, generation revalidation and no name-prefix truncation/tickets. | Pure index/query and lifecycle tests; >32 destinations with nearest beyond prefix, negative coordinates, removal/unload, simultaneous players, interruptible safety adapter and measured budgets. |
+| M3 - detector truth table | Section 3.1 replaces unfrozen LOW_OXYGEN proposal with NON_BREATHABLE_ATMOSPHERE rather than adding an oxygen-fraction model. Freezes known-cell predicates (pressure 0/>0/>2, temperature <240/>330, authoritative breathability), supplied-room override and unknown/PENDING/unloaded all-false. Space uses Space ambient definition, not orbit body's surface air. Analysis display separates ambient and controlled cell truth. | Predicate/boundary/overlap, known/unknown, six-neighbor aggregation, supplied-room versus exterior/orbit fixtures; server redstone and localized labels. |
+| M4 - torch source identity | Section 3.2 adds a 2-KiB schema-1 unlit-torch identity root and bounded 64-pair catalog. Preserves exact source block/item/pair plus mounting, validates allowed simple pairs, defines missing/future quarantine and exact break/relight/drop identity. All conversion paths require protection/cancellable event policy and cannot duplicate drops on cancellation. | Two distinct compatible pairs with identical orientation across restart/break/relight, removed pair/future root, placement/invalidation/removal permission and cancellation fixtures; environmental-change adapter review. |
+
+## Owner decisions and additional compatibility corrections
+
+- D1 OWNER-CONFIRMED, as relayed by root: keep existing 2,000-unit active
+  API/HUD with finite built-in auxiliary storage and bounded replenishment.
+  Generalized capacity migration was not selected. Numerical defaults remain
+  proposed; corrected arithmetic is default oxygen max 10,000, absolute proposed
+  max 34,000 with one oxygen tank and tier multiplier up to four (not 18,000).
+- D5 OWNER-CONFIRMED: finite scrubber savings with nonzero minimum debit; the
+  proposed fourth-debit/cartridge schedule still receives scoped review.
+- D2/D3 remain pending. D4 remains an unproven pad/player durable-save feasibility
+  gate with any interaction-changing alternative requiring owner confirmation.
+- C17 compatibility: beacon_finder uses one existing HEAD slot of two; no
+  additional slot/duplicate registration. Shared immutable equipment summary
+  publishes enabled only; C17 owns finder/waypoint semantics. Shared model/api
+  port avoids mutual adapter imports. Sky payload schema 2 combines sky-kind
+  and C17 orbit controls; celestial_snapshot 3 -> 4 and rocket_flight 8 -> 9
+  are integrated once, not independently bumped by C18.
+- Corrected vent migration to actual HEAD schema 1 -> proposed 2, preserving
+  oxygen/FE/canister counts/phase; schema 2 is not treated as a known old input.
+
+Static evidence: exact 104 ledger unit mappings, 155 first-match asset rows and
+34 manifest-matching upstream source files are regenerated in this new Temp
+directory. No recipe fixtures, actual migrations, crash cuts, Gradle/native
+commands, assets/audio origin approval, GPU V1 or two-client V2 were executed.
+
+Required Gates remain unfulfilled by a proposed contract and author response.

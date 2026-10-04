@@ -1,0 +1,53 @@
+--- reviewed-proposal/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md
++++ accepted-contract/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md
+@@ -1,7 +1,7 @@
+ # ADR-065 - Classic propulsion, station controls and solar content (C17)
+ 
+ ```yaml
+-status: PROPOSED
++status: ACCEPTED
+ revision: 4
+ date: 2026-10-03
+ owner: sunthemoon
+@@ -11,19 +11,21 @@
+ amends_if_accepted: [ADR-021, ADR-026, ADR-041, ADR-046, ADR-047, ADR-049, ADR-054, ADR-058]
+ owner_decisions_confirmed: [D1-A, D1-disassembly-A, D2-A, D3-A]
+ owner_decisions_pending: []
+-accepted_by: ""
+-accepted_at: ""
++accepted_by: sunthemoon
++accepted_at: 2026-10-03
++acceptance_basis: owner confirmed D1-A/D1-disassembly-A/D2-A/D3-A; independently reviewed final contract has no unresolved Critical/High/Medium; conditional authorization retains exact leaf and runtime admission requirements
+ ```
+ 
+-This is a contract proposal, not a runtime delivery, approval, ledger closure or
+-Gate result. The clauses below require independent review. The owner receipt
++This is an accepted conditional contract, not a runtime delivery, ledger closure
++or Gate result. Exact leaf inputs retain their independent admission review.
++The owner receipt
+ dated 2026-10-03 confirms D1-A, D1-disassembly-A, D2-A and D3-A against reviewed
+-revision 3. These are product selections, not acceptance of the entire ADR or
+-its implementation. This revision records their selected status without changing
+-technical or numeric behavior. The unselected alternatives are not fallbacks;
++revision 3. The integrator accepts the independently reviewed revision 4 under
++the owner's conditional authorization; this does not verify its implementation.
++Acceptance changes no technical or numeric behavior. The unselected alternatives are not fallbacks;
+ changing a selected product boundary requires a new explicit owner decision.
+-The existing accepted contracts prevail until the corresponding amendments are
+-accepted. No source or asset is imported by this document.
++Exact schema/writer/recovery amendments must satisfy section 13 before dependent
++runtime interactions are admitted. No source or asset is imported by this document.
+ 
+ ## 1. Scope and factual baseline
+ 
+@@ -1198,3 +1200,10 @@
+   accepted ADR-026/027/041/046/049/054/058/061/062/064, version coverage table and
+   current ledger. Unapproved sibling LibVulpes and the protected development-docs
+   directory were not inspected.
++
++## Acceptance record
++
++The [acceptance receipt](../work/v1.8.0-c17-contract/ACCEPTANCE.md) preserves
++the immutable proposals, independent reviews, selected owner branches and
++status-only integration diff. Section 13's exact schema/writer/recovery gates,
++including forced-stop verification before D3-A interactions open, remain required.

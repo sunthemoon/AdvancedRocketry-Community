@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "revision": 2,
+  "proposal_sha256": "24158c9bb75fe7455a3ddf2bf9781b1a4a33a99b313f8d830a381825e584f0e6",
+  "exact_ledger_rows": 41,
+  "slice_counts": {
+    "C17a": 24,
+    "C17b": 9,
+    "C17c": 8
+  },
+  "missing_unit_ids": [],
+  "coverage_byte_identical_to_revision_1": true,
+  "upstream_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+  "rehashed_approved_sources": 26,
+  "source_manifest_inventory_mismatches": [],
+  "proposal_status": "PROPOSED",
+  "owner_confirmed": [
+    "D2-A"
+  ],
+  "owner_pending": [
+    "D1",
+    "D1-disassembly",
+    "D3"
+  ],
+  "dispositions_present": [
+    "M1",
+    "M2",
+    "M3",
+    "M4",
+    "M5",
+    "L1",
+    "L2",
+    "L3"
+  ],
+  "proposal_trailing_whitespace": false,
+  "actual_protocol_table": "# ADR-046 UI-01: every ARCE network channel, its protocol version and its registered messages.\n# A change to this table needs an ADR and a protocol version bump (celestial_snapshot 3: ADR-047; satellite 1: ADR-049; endgame 1: ADR-054). Format:\n# channel | protocol | index | message class | direction\nadvancedrocketrycommunity:endgame|1|0|EndgameDeviceView|PLAY_TO_CLIENT\nadvancedrocketrycommunity:life_support_status|1|0|LifeSupportStatusPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:celestial_snapshot|3|0|CelestialSnapshotPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:celestial_snapshot|3|1|StationSkyContextPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:rocket_flight|8|0|RocketFlightIntentPacket|PLAY_TO_SERVER\nadvancedrocketrycommunity:rocket_flight|8|1|RocketFlightPlanPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:rocket_flight|8|2|CelestialSnapshotPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:rocket_visual|1|0|RocketVisualChunkPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:satellite|1|0|SatelliteTerminalViewPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:satellite|1|1|SurveyScanResultPacket|PLAY_TO_CLIENT\n",
+  "actual_api_version": "1.8",
+  "proposed_api_version": "1.9",
+  "proposed_protocol_transitions": {
+    "celestial_snapshot": [
+      3,
+      4
+    ],
+    "rocket_flight": [
+      8,
+      9
+    ],
+    "classic_controls": [
+      null,
+      1
+    ]
+  },
+  "static_wire_bounds": {
+    "old_flight_max": 31419,
+    "new_flight_max": 31805,
+    "bank_detail_actual_max": 177,
+    "sky_max": 167
+  },
+  "modern_source_sha256": {
+    "api/endgame/EndgameEffect.java": "19cb549841fa254cba3b2200cfda12d80f386c96c205e1178d8c9891103a617e",
+    "api/endgame/EndgameEffectEvent.java": "4a8aa4ed4b3819db4959f75e8e00980438831850d5797ee5289590b1e76fe245",
+    "api/version/ApiVersions.java": "0c75006cc5cdd3a08e55615fca98818c24a2bcd4bf12f32280975ec9a16f28df",
+    "api/rocket/RocketComponentDefinition.java": "75dfcefac6695e0d8bd5754c03bd317ecb9abc418e27b7aee846b448e9b9197c",
+    "rocket/server/RocketDisassemblyService.java": "2a15232de82b486e893a529f91159f78d90fb49428e1d9d8d2f821e2c0f82ae8",
+    "satellite/mission/SatelliteMissionRegistry.java": "e3623ffd48fd9e385d1df87d0f34eea9803b65980a14799e6efb1e668b4c83a5",
+    "celestial/network/StationSkyContextPacket.java": "10f881f0786e61180fa35b9448f374249a3f222304be85763e24a4d6f4487867",
+    "rocket/network/RocketFlightIntentPacket.java": "74ba939d7f0d15f0f7f3e0cd453394cc1d9f3ea0807c1f6592963b99e85317f3",
+    "rocket/network/RocketFlightPlanPacket.java": "886d869565d276a47d628cf6b0e13f10b521317fcb42fb3d25e468c09e9acedf",
+    "rocket/menu/RocketFlightQuotes.java": "3747eb7020a1c006966031484867b43176e54e4e3a093e48663e92d7707568de",
+    "station/model/StationLimits.java": "a05c7aa1bce6e7f15bfbe12e720d790a853ab42d1f7eb0e86047088e8502afa9"
+  },
+  "runtime_tests_run": false,
+  "native_performance_run": false,
+  "repository_writes": false,
+  "required_gates_satisfied": false,
+  "command": "python -B revision-02/probe-02.py",
+  "exit_code": 0
+}

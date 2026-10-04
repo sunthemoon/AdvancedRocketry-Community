@@ -1,0 +1,66 @@
+--- reviewed-proposal/ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md
++++ accepted-contract/ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md
+@@ -1,22 +1,23 @@
+ # ADR-066 - Classic life support, equipment, research and presentation (C18)
+ 
+ ```yaml
+-status: PROPOSED
++status: ACCEPTED
+ revision: 3
+ date: 2026-10-03
+ owner: sunthemoon
++deciders: [sunthemoon]
+ target_version: v1.8.0
+ slices: [C18a, C18b, C18c, C18d]
+-accepted_at: ""
+-acceptance_basis: ""
++accepted_at: 2026-10-03
++acceptance_basis: owner confirmed D1/D2/D3/D5; independently reviewed revision 3 has no unresolved Critical/High/Medium; conditional authorization permits this contract while its explicit leaf feasibility and runtime admission gates remain required
+ owner_confirmed_decisions: [D1, D2, D3, D5]
+ development_dependency: [ADR-024, ADR-025, ADR-034, ADR-037, ADR-049, ADR-050, ADR-051, ADR-052, ADR-054, ADR-057, ADR-058, ADR-059, ADR-061, ADR-062, ADR-063, ADR-064, C17-contract]
+ revisits: [ADR-025, ADR-051, ADR-057, ADR-059]
+ supersedes: ""
+ ```
+ 
+-This is a contract proposal, not approval, an implementation result, or a Gate
+-PASS. Numeric choices labelled **proposal** are modern balancing choices, not
++This is an accepted conditional contract, not an implementation result or a Gate
++PASS. Numeric choices labelled **proposal** remain leaf review inputs, not
+ claims about legacy values. Its companion coverage CSV enumerates the exact 104
+ currently PLANNED C18 ledger units: C18a 28, C18b 23, C18c 19, C18d 34. Asset
+ coverage is separately expanded with the ledger's ordered first-match rules.
+@@ -26,10 +27,10 @@
+ a survey-satellite prerequisite, and D3 preserved world-first Moon/warp milestones
+ with recorded winning participants. D1's existing 2,000-unit API/HUD buffer with
+ finite built-in reserves and D5's finite savings/nonzero minimum consumption were
+-already confirmed. These choices do not accept this whole ADR, its proposed
+-numeric balance or D4's unproven durability mechanism. No technical/numeric
+-behavior changes from revision 2 through this decision-only revision; final
+-independent diff review and root acceptance remain separate from author work.
++already confirmed. Acceptance does not freeze proposed numeric balance or prove
++D4's unprovided durability mechanism. No technical/numeric behavior changes
++from revision 2 through this decision-only revision. Independent review and the
++integrator acceptance are recorded in the linked acceptance receipt below.
+ 
+ ## 1. Sources and boundaries
+ 
+@@ -950,9 +951,15 @@
+ build/status files belong to root.
+ 
+ No commit/tag/push, Gate pass, runtime completion or asset license clearance is
+-authorized by this proposal alone. Conditional maintainer authorization permits
+-root to accept an independently reviewed final contract with no unresolved
+-Critical/High/Medium; author drafting or owner branch selection alone does not
+-accept this ADR. D1/D2/D3/D5 are owner-confirmed. D4 remains an unproven
++authorized by contract acceptance alone. The integrator accepts the independently
++reviewed final contract under the maintainer's conditional authorization with no
++unresolved Critical/High/Medium. D1/D2/D3/D5 are owner-confirmed. D4 remains an unproven
+ feasibility/possible-interaction decision, and an interaction-changing alternative
+ still requires owner confirmation rather than an implicit fallback approval.
++
++## Acceptance record
++
++The [acceptance receipt](../work/v1.8.0-c18-contract/ACCEPTANCE.md) binds the
++immutable revision-3 proposal, independent review, owner choices and the
++status-only integration diff. All explicit feasibility, exact leaf-input,
++writer/migration and native recovery requirements in this ADR remain required.

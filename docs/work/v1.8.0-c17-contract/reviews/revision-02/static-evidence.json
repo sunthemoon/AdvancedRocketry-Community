@@ -1,0 +1,146 @@
+{
+  "draft_sha256": "24158c9bb75fe7455a3ddf2bf9781b1a4a33a99b313f8d830a381825e584f0e6",
+  "dispositions_sha256": "8f150c3f80f2b1e813e0bc6bdc53ad026e1ee85419f361da3c219d407ba261da",
+  "covered_ledger_sha256": "3094547f0e4636c74e64f85cbb8305082e8cbaaec10cc84911da12905bb00eeb",
+  "joint_c18_draft_sha256": "7c6da4ab6f3974d537813ed3662f1f072f86c3cf13990b1d1afb685045ecb976",
+  "exact_current_ledger_rows": 41,
+  "unique_ids": 41,
+  "batches": {
+    "C17a": 24,
+    "C17b": 9,
+    "C17c": 8
+  },
+  "rehashed_approved_sources": [
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
+      "sha256": "78ce40293f42c5a13add1e09d8cca13dc0afa8ac462df1a05f43f9dfcde4e1d4"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockAdvancedBipropellantRocketMotor.java",
+      "sha256": "b7f966dfb7224eb215af39167755ba7794aa7914ac3ff0e2b4715fda903fe327"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockAdvancedRocketMotor.java",
+      "sha256": "c84e8a8540f1329eb9960531333e27b204c3e91da507bb5fd863089673fb1d4f"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockBipropellantRocketMotor.java",
+      "sha256": "c41926109624e67fcb6e1d659101b8c165e43975707d00a8ac1a6294ac69f219"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockFuelTank.java",
+      "sha256": "da45b2589c52b4d5811eff5583ca5716c3de5f9e7b95d07bbefb24d07fc09c4d"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockNuclearCore.java",
+      "sha256": "15be6aad43a9e3af59894cf4510634928bd8bb7f3165e57a8d446e73487b78aa"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockNuclearRocketMotor.java",
+      "sha256": "533ab0c7cc2d5e83d96378f3fed1fcdc132097490fe8c72b162c3d6f655e1d42"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockRocketMotor.java",
+      "sha256": "6e651186402613772d85b27f867e56c9c2ba9d9f7161bbc8854f6323f142a7b3"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+      "sha256": "5c5cfd39d5ddfe65d76c232090d19abd823c6b8ec4a679494253c18fcdbac73e"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/client/render/planet/RenderSpaceSky.java",
+      "sha256": "a1e5c0967a53da4e53c5be5639d6b7e050a1b5130a9184708029a7457a7f6502"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/entity/EntityRocket.java",
+      "sha256": "6363a7967193a95aa426e3f87e9c431b77bb31274f1973a416e20bf8f60d8248"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/ItemBeaconFinder.java",
+      "sha256": "a61608c42813bbdc5154a0c6b28e9de0ed4c556d5e3a418337b70c6d6cda3a8c"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/stations/SpaceStationObject.java",
+      "sha256": "2203db3bd4fa3b8da7b4a17c4b21af7c8b90e6180a9f973e2f664a59d4703447"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/hatch/TileSatelliteHatch.java",
+      "sha256": "ff7624e01b0eae6c6fe76074ec0f549fa408bf0896927051687f1bffb6fd6305"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileRocketLoader.java",
+      "sha256": "3c1d029ad12bf4012b6c642e5f5607bc1cd882d80757f5ce95ddc9a7e9d1649f"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileRocketMonitoringStation.java",
+      "sha256": "32f0893588a5fc0365d11283d80ca0957abd088cdb59243df12e0f416d4f888f"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/energy/TileSolarArray.java",
+      "sha256": "fbc0d5cd70fb2c432881701f1e2a7f1d8c599adfd9cae1ed795c01771d656713"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileBeacon.java",
+      "sha256": "8639bb39cf09026256f24d3df2304fe0e87bce03cee62796e394e1c3caa9e7da"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileSpaceElevator.java",
+      "sha256": "01cfcdeeb2d5a9bf44296c7ad812f921d4aba63263bfe9f2ce01ab1d95cf8e9a"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/station/TileLandingPad.java",
+      "sha256": "431c058f93c23657b5433e847b987db361ed86299082decb887394b6ad0624dc"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/station/TileStationAltitudeController.java",
+      "sha256": "1899b1f6208ee8ced83b431be21d34ccfc6414733e81a909ea33ecc843eb4d50"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/station/TileStationOrientationController.java",
+      "sha256": "cb1e22a842473b09250029fa318c62968d15b3fccbc38747677a5b141ad456fa"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/TileForceFieldProjector.java",
+      "sha256": "1f78f39cbc50b4c21a03c5b9cd55d7afd1360fd057e29a5c00c525152b6a39a3"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/TileRocketAssemblingMachine.java",
+      "sha256": "94c499bb14649be06ac6e416613f47f0dd1bb2b1d235e13dcb301f204fd660f0"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/TileSolarPanel.java",
+      "sha256": "6571cf17669e1981dc9a532da681a7c42b3a432c905a84dcbbd9087e988dcce8"
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/util/PlanetaryTravelHelper.java",
+      "sha256": "87e83775853ec8316dcd48c069b74a57fab7b8ddec2505bf315949f8d82124df"
+    }
+  ],
+  "current_network_table": "# ADR-046 UI-01: every ARCE network channel, its protocol version and its registered messages.\n# A change to this table needs an ADR and a protocol version bump (celestial_snapshot 3: ADR-047; satellite 1: ADR-049; endgame 1: ADR-054). Format:\n# channel | protocol | index | message class | direction\nadvancedrocketrycommunity:endgame|1|0|EndgameDeviceView|PLAY_TO_CLIENT\nadvancedrocketrycommunity:life_support_status|1|0|LifeSupportStatusPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:celestial_snapshot|3|0|CelestialSnapshotPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:celestial_snapshot|3|1|StationSkyContextPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:rocket_flight|8|0|RocketFlightIntentPacket|PLAY_TO_SERVER\nadvancedrocketrycommunity:rocket_flight|8|1|RocketFlightPlanPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:rocket_flight|8|2|CelestialSnapshotPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:rocket_visual|1|0|RocketVisualChunkPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:satellite|1|0|SatelliteTerminalViewPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:satellite|1|1|SurveyScanResultPacket|PLAY_TO_CLIENT\n",
+  "independent_static_wire_bounds": {
+    "old_flight_max": 31419,
+    "actual_bank_max": 177,
+    "new_flight_max": 31805,
+    "sky_max": 167
+  },
+  "modern_source_sha256": {
+    "api/endgame/EndgameEffect.java": "19cb549841fa254cba3b2200cfda12d80f386c96c205e1178d8c9891103a617e",
+    "api/endgame/EndgameEffectEvent.java": "4a8aa4ed4b3819db4959f75e8e00980438831850d5797ee5289590b1e76fe245",
+    "api/version/ApiVersions.java": "0c75006cc5cdd3a08e55615fca98818c24a2bcd4bf12f32280975ec9a16f28df",
+    "api/rocket/RocketComponentDefinition.java": "75dfcefac6695e0d8bd5754c03bd317ecb9abc418e27b7aee846b448e9b9197c",
+    "rocket/server/RocketDisassemblyService.java": "2a15232de82b486e893a529f91159f78d90fb49428e1d9d8d2f821e2c0f82ae8",
+    "satellite/mission/SatelliteMissionRegistry.java": "e3623ffd48fd9e385d1df87d0f34eea9803b65980a14799e6efb1e668b4c83a5",
+    "satellite/mission/MonotonicMissionClock.java": "b6dbb34fe23df2d9f96485e960f63310740a7c70cb3064027f7ffcede96126eb",
+    "station/orbit/StationSkyContextService.java": "48220ff52e056ac9204443f19f782e79de6c9544a01a6e3d770bbb0542c817ae",
+    "station/persistence/StationRegistrySavedData.java": "a3fb2a38f770511a125e3d464fbb039cba1b0839e9a5bc46eef47311706766b2",
+    "station/persistence/StationNbtCodec.java": "d46146100e826c5b4bb17f000aa6300bdef32b0aa580289b203f8d72308f38c8",
+    "rocket/network/RocketFlightPlanPacket.java": "886d869565d276a47d628cf6b0e13f10b521317fcb42fb3d25e468c09e9acedf",
+    "rocket/network/RocketFlightIntentPacket.java": "74ba939d7f0d15f0f7f3e0cd453394cc1d9f3ea0807c1f6592963b99e85317f3",
+    "travel/network/TravelTargetWireCodec.java": "64bfd229d4a5e04f67af47653af02858235836de6c63f61e1f2314b46016d0f3"
+  },
+  "runtime_tests_run": false,
+  "native_performance_run": false,
+  "repository_writes": false,
+  "command": "python -B <own review Temp>/probe.py",
+  "exit_code": 0
+}

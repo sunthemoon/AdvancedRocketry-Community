@@ -1,0 +1,825 @@
+{
+  "kind": "independent_decision_only_static_review_checks_not_runtime_or_acceptance",
+  "started_utc": "2026-10-03T10:03:03.597404+00:00",
+  "finished_utc": "2026-10-03T10:03:03.639588+00:00",
+  "python": "3.13.15",
+  "inputs": {
+    "r3": {
+      "ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md",
+        "bytes": 82145,
+        "sha256": "92e706ae84e6565f605227f7794fb83850a23c4f2ca1915686d28c61fa72c321"
+      },
+      "artifact-hashes.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\artifact-hashes.json",
+        "bytes": 693,
+        "sha256": "020b68db668769ca4a30018323933d185a836f92e6140fdcf9251200ce513a58"
+      },
+      "covered-ledger.csv": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\covered-ledger.csv",
+        "bytes": 4692,
+        "sha256": "3094547f0e4636c74e64f85cbb8305082e8cbaaec10cc84911da12905bb00eeb"
+      },
+      "DISPOSITIONS-03.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\DISPOSITIONS-03.md",
+        "bytes": 4246,
+        "sha256": "d7720d8a46ec603991aac41b96fcd01c7dd078d31f92e6c35451384dbe3b9e28"
+      },
+      "probe-03.py": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\probe-03.py",
+        "bytes": 10315,
+        "sha256": "e5fc63b2a92fdfd070b25819412793a82da3d6e5d9a34acaacda7c34ec9727c6"
+      },
+      "REPORT-03.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\REPORT-03.md",
+        "bytes": 3733,
+        "sha256": "71507a48dd6ed4b9fd76f65575a01460e38e1f00cc10cd2bcfe347801590f40a"
+      },
+      "static-checks-03.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\static-checks-03.json",
+        "bytes": 1862,
+        "sha256": "4387cea24a7236813f3e00dbb550c6b2c06794cc2717c1d45d858987b0e78ef9"
+      },
+      "upstream-source-checks.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\upstream-source-checks.json",
+        "bytes": 7815,
+        "sha256": "74362178f6393294fd067a859e47c12ce7526219c4aa9dde1f3142e9eef19277"
+      }
+    },
+    "r4": {
+      "ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md",
+        "bytes": 82614,
+        "sha256": "c50de31ea70a56749c55202bd75de258ff3d89a0ae4a9123ff8ee59e9d3545bb"
+      },
+      "covered-ledger.csv": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\covered-ledger.csv",
+        "bytes": 4692,
+        "sha256": "3094547f0e4636c74e64f85cbb8305082e8cbaaec10cc84911da12905bb00eeb"
+      },
+      "FILE-HASHES.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\FILE-HASHES.json",
+        "bytes": 780,
+        "sha256": "7c4ef39d5da155414e5e8c6b3622a656471b412de2ab0413091f5d069761630f"
+      },
+      "OWNER-DECISIONS-04.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\OWNER-DECISIONS-04.md",
+        "bytes": 2583,
+        "sha256": "077b39bfcd87c915ca8c4b47d4e8b9cb7d746403d3cb0df91eb3255a48ca2770"
+      },
+      "probe-04.py": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\probe-04.py",
+        "bytes": 10101,
+        "sha256": "57522d604c469f363cdaa761481f4bce0506093ab58699879bbdee3ebf927893"
+      },
+      "PROBE-RESULTS.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\PROBE-RESULTS.json",
+        "bytes": 1127,
+        "sha256": "8e56e7bec72a0ad576e6e93b4cc415364a21801050810acf5244a6257f78f190"
+      },
+      "REPORT-04.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\REPORT-04.md",
+        "bytes": 8179,
+        "sha256": "57a15fadb5ddf3d6d45a9fb9fe9e99d8b8cad58d11246685791071dc9765cb4a"
+      },
+      "revision-03-to-04.diff": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\revision-03-to-04.diff",
+        "bytes": 12660,
+        "sha256": "9df8d940384580bf869a32f8515e268e61c4be131dad35ccceeea2107ec8e039"
+      },
+      "upstream-source-checks.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\upstream-source-checks.json",
+        "bytes": 7815,
+        "sha256": "74362178f6393294fd067a859e47c12ce7526219c4aa9dde1f3142e9eef19277"
+      }
+    },
+    "prior_review": {
+      "original-file-hashes.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\reviews\\revision-03\\original-file-hashes.json",
+        "bytes": 367,
+        "sha256": "adc430eb2ee5c3cf7d3909f794fa3108277c1361c81c9a339c0cceea0acd8267"
+      },
+      "probe.py": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\reviews\\revision-03\\probe.py",
+        "bytes": 16408,
+        "sha256": "9bcbefa51adfa9421a257b8b19ff0347d54d9c6efe5189342a9aa7349da838dd"
+      },
+      "REVIEW-03.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\reviews\\revision-03\\REVIEW-03.md",
+        "bytes": 1040,
+        "sha256": "80f7b5d11c8a7aae044fe212c5f5711dc1303a62efbdcaecfeaa095f13e7426a"
+      },
+      "REVIEW-03.raw.txt": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\reviews\\revision-03\\REVIEW-03.raw.txt",
+        "bytes": 10557,
+        "sha256": "f22b9736e99b554d8d45fbdc3ec1b37e38ebd1f1f53b2af2ee87f7a343c00821"
+      },
+      "revision-02-to-03.diff": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\reviews\\revision-03\\revision-02-to-03.diff",
+        "bytes": 8795,
+        "sha256": "c581d63a08fb3bcf62fc4c0c642a0bb0dc1e8c3b978d2415ba2f60266691a829"
+      },
+      "static-evidence.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\reviews\\revision-03\\static-evidence.json",
+        "bytes": 4803,
+        "sha256": "cc38bf2f6a9c2f540248a62764cba5c6564b55a250757ba255550ad3dafb68ae"
+      }
+    },
+    "owner": {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\OWNER-DECISIONS.md",
+      "bytes": 1558,
+      "sha256": "279d7cb58682b0c0e4bc58abf93dce3a32effca4a7a94b12f5d4d246fe39c00c"
+    },
+    "c18_owner": {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\OWNER-DECISIONS.md",
+      "bytes": 1095,
+      "sha256": "ed4352ee786435afa6573f3aede578528e9ae78914cbae2147fccae98f4d028f"
+    },
+    "c18_canonical": {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\decisions\\ADR-066-CLASSIC-LIFE-SUPPORT-EQUIPMENT-RESEARCH-AND-PRESENTATION.md",
+      "bytes": 67237,
+      "sha256": "8a5e06789b94595f26ae04cd9bf0ee63ff37710835224a0750055427486bf63a"
+    },
+    "c18_acceptance": {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c18-contract\\ACCEPTANCE.md",
+      "bytes": 1830,
+      "sha256": "6ef2bde3fb1c8d19346ed73ba04c1e83b18ef0705e96b3a4d87531e050942ff7"
+    }
+  },
+  "input_bytes_unchanged_at_end": true,
+  "verified_manifest_entries": {
+    "r3": {
+      "ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md",
+        "bytes": 82145,
+        "sha256": "92e706ae84e6565f605227f7794fb83850a23c4f2ca1915686d28c61fa72c321"
+      },
+      "covered-ledger.csv": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\covered-ledger.csv",
+        "bytes": 4692,
+        "sha256": "3094547f0e4636c74e64f85cbb8305082e8cbaaec10cc84911da12905bb00eeb"
+      },
+      "DISPOSITIONS-03.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\DISPOSITIONS-03.md",
+        "bytes": 4246,
+        "sha256": "d7720d8a46ec603991aac41b96fcd01c7dd078d31f92e6c35451384dbe3b9e28"
+      },
+      "probe-03.py": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\probe-03.py",
+        "bytes": 10315,
+        "sha256": "e5fc63b2a92fdfd070b25819412793a82da3d6e5d9a34acaacda7c34ec9727c6"
+      },
+      "REPORT-03.md": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\REPORT-03.md",
+        "bytes": 3733,
+        "sha256": "71507a48dd6ed4b9fd76f65575a01460e38e1f00cc10cd2bcfe347801590f40a"
+      },
+      "static-checks-03.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\static-checks-03.json",
+        "bytes": 1862,
+        "sha256": "4387cea24a7236813f3e00dbb550c6b2c06794cc2717c1d45d858987b0e78ef9"
+      },
+      "upstream-source-checks.json": {
+        "path": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c17-contract\\proposals\\revision-03\\upstream-source-checks.json",
+        "bytes": 7815,
+        "sha256": "74362178f6393294fd067a859e47c12ce7526219c4aa9dde1f3142e9eef19277"
+      }
+    },
+    "r4": {
+      "ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md",
+        "bytes": 82614,
+        "sha256": "c50de31ea70a56749c55202bd75de258ff3d89a0ae4a9123ff8ee59e9d3545bb"
+      },
+      "covered-ledger.csv": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\covered-ledger.csv",
+        "bytes": 4692,
+        "sha256": "3094547f0e4636c74e64f85cbb8305082e8cbaaec10cc84911da12905bb00eeb"
+      },
+      "OWNER-DECISIONS-04.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\OWNER-DECISIONS-04.md",
+        "bytes": 2583,
+        "sha256": "077b39bfcd87c915ca8c4b47d4e8b9cb7d746403d3cb0df91eb3255a48ca2770"
+      },
+      "probe-04.py": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\probe-04.py",
+        "bytes": 10101,
+        "sha256": "57522d604c469f363cdaa761481f4bce0506093ab58699879bbdee3ebf927893"
+      },
+      "PROBE-RESULTS.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\PROBE-RESULTS.json",
+        "bytes": 1127,
+        "sha256": "8e56e7bec72a0ad576e6e93b4cc415364a21801050810acf5244a6257f78f190"
+      },
+      "REPORT-04.md": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\REPORT-04.md",
+        "bytes": 8179,
+        "sha256": "57a15fadb5ddf3d6d45a9fb9fe9e99d8b8cad58d11246685791071dc9765cb4a"
+      },
+      "revision-03-to-04.diff": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\revision-03-to-04.diff",
+        "bytes": 12660,
+        "sha256": "9df8d940384580bf869a32f8515e268e61c4be131dad35ccceeea2107ec8e039"
+      },
+      "upstream-source-checks.json": {
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\upstream-source-checks.json",
+        "bytes": 7815,
+        "sha256": "74362178f6393294fd067a859e47c12ce7526219c4aa9dde1f3142e9eef19277"
+      }
+    }
+  },
+  "actual_diff_byte_equal_to_supplied": true,
+  "actual_diff_sha256": "9df8d940384580bf869a32f8515e268e61c4be131dad35ccceeea2107ec8e039",
+  "diff_hunks": 12,
+  "changed_spans": [
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        5,
+        5
+      ],
+      "r4_lines_inclusive": [
+        5,
+        5
+      ],
+      "removed": "revision: 3\n",
+      "added": "revision: 4\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        12,
+        13
+      ],
+      "r4_lines_inclusive": [
+        12,
+        13
+      ],
+      "removed": "owner_decisions_confirmed: [D2-A]\nowner_decisions_pending: [D1, D1-disassembly, D3]\n",
+      "added": "owner_decisions_confirmed: [D1-A, D1-disassembly-A, D2-A, D3-A]\nowner_decisions_pending: []\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        19,
+        24
+      ],
+      "r4_lines_inclusive": [
+        19,
+        24
+      ],
+      "removed": "Gate result. The recommendation clauses below require independent review. D2-A\nwas expressly chosen by the owner on 2026-10-03: continuous three-axis analytic\nrotation and logical altitude, no physical block movement, with elevator endpoint\nconditions protected while linked/busy. This confirms that product choice, not\nthe entire ADR or its implementation. D1, its disassembly subchoice and D3 remain\nmaterial product choices that must not be silently accepted by an implementer.\n",
+      "added": "Gate result. The clauses below require independent review. The owner receipt\ndated 2026-10-03 confirms D1-A, D1-disassembly-A, D2-A and D3-A against reviewed\nrevision 3. These are product selections, not acceptance of the entire ADR or\nits implementation. This revision records their selected status without changing\ntechnical or numeric behavior. The unselected alternatives are not fallbacks;\nchanging a selected product boundary requires a new explicit owner decision.\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        153,
+        153
+      ],
+      "r4_lines_inclusive": [
+        153,
+        153
+      ],
+      "removed": "## 3. D1: propulsion and fuel representation (owner choice)\n",
+      "added": "## 3. D1: propulsion and fuel representation (owner-confirmed D1-A)\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        155,
+        155
+      ],
+      "r4_lines_inclusive": [
+        155,
+        155
+      ],
+      "removed": "**Recommendation D1-A:** preserve the current engine/tank baseline and item fuel\n",
+      "added": "**Owner-confirmed D1-A:** preserve the current engine/tank baseline and item fuel\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        160,
+        160
+      ],
+      "r4_lines_inclusive": [
+        160,
+        160
+      ],
+      "removed": "The proposed numeric baseline, subject to D1 acceptance:\n",
+      "added": "The proposed numeric baseline remains unchanged, subject to scoped contract acceptance:\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        182,
+        182
+      ],
+      "r4_lines_inclusive": [
+        182,
+        182
+      ],
+      "removed": "The D1-A compatibility recommendation is explicit and order-independent:\n",
+      "added": "The owner-selected D1-A compatibility boundary is explicit and order-independent:\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        199,
+        199
+      ],
+      "r4_lines_inclusive": [
+        199,
+        199
+      ],
+      "removed": "propulsion is a visible player/compatibility limit, included in the pending D1\n",
+      "added": "propulsion is a visible player/compatibility limit, included in the selected D1-A\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        249,
+        249
+      ],
+      "r4_lines_inclusive": [
+        249,
+        249
+      ],
+      "removed": "**Alternative D1-B:** restore legacy scale/formula and retune existing rocket\n",
+      "added": "**Unselected alternative D1-B:** restore legacy scale/formula and retune existing rocket\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        255,
+        256
+      ],
+      "r4_lines_inclusive": [
+        255,
+        257
+      ],
+      "removed": "Acceptance must name D1-A or D1-B and any adjusted numeric/efficiency values.\nUntil then, numeric runtime implementations are not authorized by this draft.\n",
+      "added": "D1-A is the selected product boundary; D1-B and numeric/efficiency retuning are\nnot selected. Scoped contract review and acceptance remain required before\nnumeric runtime implementation; this decision-only revision grants neither.\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        258,
+        258
+      ],
+      "r4_lines_inclusive": [
+        259,
+        259
+      ],
+      "removed": "### 3.1 D1-disassembly: remaining propulsion resources (owner subchoice)\n",
+      "added": "### 3.1 D1-disassembly: remaining propulsion resources (owner-confirmed D1-disassembly-A)\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        264,
+        264
+      ],
+      "r4_lines_inclusive": [
+        265,
+        265
+      ],
+      "removed": "**Recommended D1-disassembly-A, pending owner confirmation:** extend that policy\n",
+      "added": "**Owner-confirmed D1-disassembly-A:** extend that policy\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        293,
+        293
+      ],
+      "r4_lines_inclusive": [
+        294,
+        294
+      ],
+      "removed": "**Alternative D1-disassembly-B:** materialize actual propulsion Fluid into one\n",
+      "added": "**Unselected alternative D1-disassembly-B:** materialize actual propulsion Fluid into one\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        300,
+        301
+      ],
+      "r4_lines_inclusive": [
+        301,
+        303
+      ],
+      "removed": "Do not implement either typed materialization/disposal choice until the owner\nconfirms it and independent resource/recovery review is complete.\n",
+      "added": "D1-disassembly-A is selected; D1-disassembly-B is not an implementation fallback.\nIndependent resource/recovery review and scoped contract acceptance remain required\nbefore implementing the selected disposal policy.\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        414,
+        418
+      ],
+      "r4_lines_inclusive": [
+        416,
+        420
+      ],
+      "removed": "not make a two-store transfer crash-atomic. Therefore implementation must either\nadd an escrow/receipt authority with demonstrable durable barriers and full S2\ncut evidence, or explicitly obtain owner acceptance of the ADR-027/054 ordinary\ncontainer torn-save residual and publish it. In-tick conservation plus clean\nrestart is not an exactly-once crash claim. This is D3 below, not a test waiver.\n",
+      "added": "not make a two-store transfer crash-atomic. Owner-selected D3-A requires an\nescrow/receipt authority with demonstrable durable barriers and full S2 cut\nevidence before admission. No added ADR-027/054 ordinary-container torn-save\nresidual is selected. In-tick conservation plus clean restart is not an\nexactly-once crash claim. This is D3 below, not a test waiver.\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        590,
+        592
+      ],
+      "r4_lines_inclusive": [
+        592,
+        594
+      ],
+      "removed": "refuse migration/start intact. Conditional C18 first-event source outboxes must\njoin this same root-5/journal-3 field/migration freeze only if C18 D3 is selected;\nthis neither accepts that pending policy nor bumps the roots independently.\n",
+      "added": "refuse migration/start intact. Owner-selected C18 D3 first-event source outboxes\nmust join this same root-5/journal-3 field/migration freeze; the product selection\nneither accepts its shared technical contract nor bumps the roots independently.\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        863,
+        865
+      ],
+      "r4_lines_inclusive": [
+        865,
+        867
+      ],
+      "removed": "recovery-contract gate. D3-B retains matching in-memory/clean-restart receipts\nbut must disclose its owner-accepted torn-save residual and cannot claim durable\nexactly-once, with or without a current satellite identity.\n",
+      "added": "recovery-contract gate. Unselected D3-B would retain matching in-memory/clean-restart\nreceipts but require a new explicit owner decision on its added torn-save residual;\nit could not claim durable exactly-once, with or without a current satellite identity.\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        923,
+        923
+      ],
+      "r4_lines_inclusive": [
+        925,
+        925
+      ],
+      "removed": "## 10. D3: two-store crash durability decision\n",
+      "added": "## 10. D3: two-store crash durability decision (owner-confirmed D3-A)\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        925,
+        925
+      ],
+      "r4_lines_inclusive": [
+        927,
+        927
+      ],
+      "removed": "**Recommendation D3-A:** implement an explicit same-authority escrow/receipt\n",
+      "added": "**Owner-confirmed D3-A:** implement an explicit same-authority escrow/receipt\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        941,
+        941
+      ],
+      "r4_lines_inclusive": [
+        943,
+        943
+      ],
+      "removed": "**Alternative D3-B:** retain ordinary two-store in-tick atomicity/clean restart\n",
+      "added": "**Unselected alternative D3-B:** retain ordinary two-store in-tick atomicity/clean restart\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        947,
+        947
+      ],
+      "r4_lines_inclusive": [
+        949,
+        950
+      ],
+      "removed": "or malformed-data loss. No implementation may silently choose B to shorten tests.\n",
+      "added": "or malformed-data loss. The owner selected D3-A, not this added residual or a\nsame-tick-only substitute. No implementation may silently choose B to shorten tests.\n"
+    },
+    {
+      "operation": "replace",
+      "r3_lines_inclusive": [
+        1158,
+        1159
+      ],
+      "r4_lines_inclusive": [
+        1161,
+        1164
+      ],
+      "removed": "fixed verdict is prescribed. C17a production starts only after D1/D3 and its\nschema/recovery and D1-disassembly contracts are accepted; C17b orbital\n",
+      "added": "fixed verdict is prescribed. The owner-selected D1-A, D1-disassembly-A and D3-A\nproduct boundaries still require independent review and acceptance of their\nschema/recovery contracts, including D3-A forced-stop recovery verification\nbefore admitting its interactions. C17b orbital\n"
+    }
+  ],
+  "complete_technical_intervals_byte_identical": {
+    "sources_stable_id_limits": {
+      "bytes": 8513,
+      "sha256": "dc1a136a68168e7b4de64c207784946d1feb56573d15bf4a34396f9fee699224"
+    },
+    "numeric_propulsion_baseline": {
+      "bytes": 1276,
+      "sha256": "d11bdff0642e253b25552338dfe5a36757778d5c1ca06535ca7aefc9d5847c59"
+    },
+    "external_compatibility_table_and_precedence": {
+      "bytes": 1571,
+      "sha256": "b34f4e2f4283078372b1987d6036cdc8e8364128d1c263672c450d1c3df67307"
+    },
+    "fluid_catalogs_consumption_abstract_hand_refill": {
+      "bytes": 3146,
+      "sha256": "31a3ed56848e6437959cbaa5242d88420c0483ab406d69a5fc494e75763787ea"
+    },
+    "complete_disposal_vector_restoration_consent": {
+      "bytes": 2075,
+      "sha256": "90f3cfc557999dfa6ea97b942d5ce87af32e49a480774fb8e77cbb9bbd0ef588"
+    },
+    "resource_authority_snapshot_admission_loaders": {
+      "bytes": 7062,
+      "sha256": "76512ffd61db66c6b979705f7c78a655eba43e7daac6b7aa59fb435215e983d5"
+    },
+    "monitor_checked_station_controls": {
+      "bytes": 2423,
+      "sha256": "a97066e67600aa2b08fdb4a8329cdafe8573150b4fc46f4bb37938c864b8368e"
+    },
+    "d2_geometry_controls_elevator_wire": {
+      "bytes": 4413,
+      "sha256": "beb899d84897cab0407666db643e57f9d2c2fd60581fb8bf31cea238ad6852aa"
+    },
+    "same_root_clock_writer_unknown_save_migration": {
+      "bytes": 4944,
+      "sha256": "e9d8cdb03fd77f4652f3804eb2224255663d428231d2ae3cae52148dfde672ec"
+    },
+    "clock_phase_saturation_client_and_native_fixtures": {
+      "bytes": 2023,
+      "sha256": "0c3091165d13dc90b3fc5118fc35769a114af5b77f72b4d4eb37c9481f974ae9"
+    },
+    "localization_pad_protection_finder_bay_durable_receipts": {
+      "bytes": 17198,
+      "sha256": "05bb91f44387cbcde0018a8bad65e2199ad2dd8d4aec52831542ef7e1fd12353"
+    },
+    "solar": {
+      "bytes": 3183,
+      "sha256": "9b935a7f7ba405f99c3d7a7638ba106add7cb6c43d5f9c151c13071ff2b3370a"
+    },
+    "d3_exact_pending_coordinator_writer_admission": {
+      "bytes": 1000,
+      "sha256": "c970d952d46d451985c67a2a4902668b21741d7c96e1159549af237ee0093cde"
+    },
+    "network_provenance_native_verification_exact_coverage": {
+      "bytes": 14143,
+      "sha256": "40da54658c20d76cc95dcaf562e2efa5b5f1eb7a63ba5f8a95e3819c84aa35e9"
+    },
+    "rollback_and_source_appendix": {
+      "bytes": 1881,
+      "sha256": "3fa4dfde9cf131d3396522b9975867a0032b5f7a41c6b3c2d58bb0b7eba6572d"
+    }
+  },
+  "all_markdown_tables_byte_identical": 6,
+  "companions_byte_identical": {
+    "covered-ledger.csv": {
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\covered-ledger.csv",
+      "bytes": 4692,
+      "sha256": "3094547f0e4636c74e64f85cbb8305082e8cbaaec10cc84911da12905bb00eeb"
+    },
+    "upstream-source-checks.json": {
+      "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c17-contract-r4-b2e378bc196444a98b0822546749ba1a\\upstream-source-checks.json",
+      "bytes": 7815,
+      "sha256": "74362178f6393294fd067a859e47c12ce7526219c4aa9dde1f3142e9eef19277"
+    }
+  },
+  "exact_current_c17_planned_rows": 41,
+  "batch_counts": {
+    "C17a": 24,
+    "C17b": 9,
+    "C17c": 8
+  },
+  "approved_upstream_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+  "manifest_inventory_source_identity_checks": [
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/api/ARConfiguration.java",
+      "sha256": "78ce40293f42c5a13add1e09d8cca13dc0afa8ac462df1a05f43f9dfcde4e1d4",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockAdvancedBipropellantRocketMotor.java",
+      "sha256": "b7f966dfb7224eb215af39167755ba7794aa7914ac3ff0e2b4715fda903fe327",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockAdvancedRocketMotor.java",
+      "sha256": "c84e8a8540f1329eb9960531333e27b204c3e91da507bb5fd863089673fb1d4f",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockBipropellantRocketMotor.java",
+      "sha256": "c41926109624e67fcb6e1d659101b8c165e43975707d00a8ac1a6294ac69f219",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockFuelTank.java",
+      "sha256": "da45b2589c52b4d5811eff5583ca5716c3de5f9e7b95d07bbefb24d07fc09c4d",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockNuclearCore.java",
+      "sha256": "15be6aad43a9e3af59894cf4510634928bd8bb7f3165e57a8d446e73487b78aa",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockNuclearRocketMotor.java",
+      "sha256": "533ab0c7cc2d5e83d96378f3fed1fcdc132097490fe8c72b162c3d6f655e1d42",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/block/BlockRocketMotor.java",
+      "sha256": "6e651186402613772d85b27f867e56c9c2ba9d9f7161bbc8854f6323f142a7b3",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/client/ClientProxy.java",
+      "sha256": "5c5cfd39d5ddfe65d76c232090d19abd823c6b8ec4a679494253c18fcdbac73e",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/client/render/planet/RenderSpaceSky.java",
+      "sha256": "a1e5c0967a53da4e53c5be5639d6b7e050a1b5130a9184708029a7457a7f6502",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/entity/EntityRocket.java",
+      "sha256": "6363a7967193a95aa426e3f87e9c431b77bb31274f1973a416e20bf8f60d8248",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/item/ItemBeaconFinder.java",
+      "sha256": "a61608c42813bbdc5154a0c6b28e9de0ed4c556d5e3a418337b70c6d6cda3a8c",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/stations/SpaceStationObject.java",
+      "sha256": "2203db3bd4fa3b8da7b4a17c4b21af7c8b90e6180a9f973e2f664a59d4703447",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/hatch/TileSatelliteHatch.java",
+      "sha256": "ff7624e01b0eae6c6fe76074ec0f549fa408bf0896927051687f1bffb6fd6305",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileRocketLoader.java",
+      "sha256": "3c1d029ad12bf4012b6c642e5f5607bc1cd882d80757f5ce95ddc9a7e9d1649f",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/infrastructure/TileRocketMonitoringStation.java",
+      "sha256": "32f0893588a5fc0365d11283d80ca0957abd088cdb59243df12e0f416d4f888f",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/energy/TileSolarArray.java",
+      "sha256": "fbc0d5cd70fb2c432881701f1e2a7f1d8c599adfd9cae1ed795c01771d656713",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileBeacon.java",
+      "sha256": "8639bb39cf09026256f24d3df2304fe0e87bce03cee62796e394e1c3caa9e7da",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/multiblock/TileSpaceElevator.java",
+      "sha256": "01cfcdeeb2d5a9bf44296c7ad812f921d4aba63263bfe9f2ce01ab1d95cf8e9a",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/station/TileLandingPad.java",
+      "sha256": "431c058f93c23657b5433e847b987db361ed86299082decb887394b6ad0624dc",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/station/TileStationAltitudeController.java",
+      "sha256": "1899b1f6208ee8ced83b431be21d34ccfc6414733e81a909ea33ecc843eb4d50",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/station/TileStationOrientationController.java",
+      "sha256": "cb1e22a842473b09250029fa318c62968d15b3fccbc38747677a5b141ad456fa",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/TileForceFieldProjector.java",
+      "sha256": "1f78f39cbc50b4c21a03c5b9cd55d7afd1360fd057e29a5c00c525152b6a39a3",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/TileRocketAssemblingMachine.java",
+      "sha256": "94c499bb14649be06ac6e416613f47f0dd1bb2b1d235e13dcb301f204fd660f0",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/tile/TileSolarPanel.java",
+      "sha256": "6571cf17669e1981dc9a532da681a7c42b3a432c905a84dcbbd9087e988dcce8",
+      "manifest_inventory_match": true
+    },
+    {
+      "path": "src/main/java/zmaster587/advancedRocketry/util/PlanetaryTravelHelper.java",
+      "sha256": "87e83775853ec8316dcd48c069b74a57fab7b8ddec2505bf315949f8d82124df",
+      "manifest_inventory_match": true
+    }
+  ],
+  "prior_modern_baseline_current_observation": [
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\station\\orbit\\StationSkyContextService.java",
+      "previous_sha256": "48220ff52e056ac9204443f19f782e79de6c9544a01a6e3d770bbb0542c817ae",
+      "current_sha256": "48220ff52e056ac9204443f19f782e79de6c9544a01a6e3d770bbb0542c817ae",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\station\\persistence\\StationRegistrySavedData.java",
+      "previous_sha256": "a3fb2a38f770511a125e3d464fbb039cba1b0839e9a5bc46eef47311706766b2",
+      "current_sha256": "a3fb2a38f770511a125e3d464fbb039cba1b0839e9a5bc46eef47311706766b2",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\station\\persistence\\StationRegistryPayload.java",
+      "previous_sha256": "90020ce2d9f11aedb3a1831afc57b54f5300f10d45586888dc299013b8487e1c",
+      "current_sha256": "90020ce2d9f11aedb3a1831afc57b54f5300f10d45586888dc299013b8487e1c",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\station\\persistence\\StationNbtCodec.java",
+      "previous_sha256": "d46146100e826c5b4bb17f000aa6300bdef32b0aa580289b203f8d72308f38c8",
+      "current_sha256": "d46146100e826c5b4bb17f000aa6300bdef32b0aa580289b203f8d72308f38c8",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\station\\service\\StationWriteBudget.java",
+      "previous_sha256": "67c34bc90a60f7d1956e554667006a5e16551f256913d3604e2cefc42f712b43",
+      "current_sha256": "67c34bc90a60f7d1956e554667006a5e16551f256913d3604e2cefc42f712b43",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\station\\model\\StationLimits.java",
+      "previous_sha256": "a05c7aa1bce6e7f15bfbe12e720d790a853ab42d1f7eb0e86047088e8502afa9",
+      "current_sha256": "a05c7aa1bce6e7f15bfbe12e720d790a853ab42d1f7eb0e86047088e8502afa9",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\persistence\\migration\\ManagedSavedDataType.java",
+      "previous_sha256": "eedb3bc306d9b1cf0e75e62f0588d02ece660acc8788e3e4897907d45875da24",
+      "current_sha256": "eedb3bc306d9b1cf0e75e62f0588d02ece660acc8788e3e4897907d45875da24",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\persistence\\migration\\SavedDataSchemaMigrator.java",
+      "previous_sha256": "3a265db73271981bb5986a288915cf51d11334f50207461421f4ecc6ff2b47fc",
+      "current_sha256": "3a265db73271981bb5986a288915cf51d11334f50207461421f4ecc6ff2b47fc",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\satellite\\mission\\MonotonicMissionClock.java",
+      "previous_sha256": "b6dbb34fe23df2d9f96485e960f63310740a7c70cb3064027f7ffcede96126eb",
+      "current_sha256": "b6dbb34fe23df2d9f96485e960f63310740a7c70cb3064027f7ffcede96126eb",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\celestial\\network\\StationSkyContextPacket.java",
+      "previous_sha256": "10f881f0786e61180fa35b9448f374249a3f222304be85763e24a4d6f4487867",
+      "current_sha256": "10f881f0786e61180fa35b9448f374249a3f222304be85763e24a4d6f4487867",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\rocket\\network\\RocketFlightPlanPacket.java",
+      "previous_sha256": "886d869565d276a47d628cf6b0e13f10b521317fcb42fb3d25e468c09e9acedf",
+      "current_sha256": "886d869565d276a47d628cf6b0e13f10b521317fcb42fb3d25e468c09e9acedf",
+      "matches_previous": true
+    },
+    {
+      "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\main\\java\\io\\github\\sunthemoon\\advancedrocketrycommunity\\travel\\network\\TravelTargetWireCodec.java",
+      "previous_sha256": "64bfd229d4a5e04f67af47653af02858235836de6c63f61e1f2314b46016d0f3",
+      "current_sha256": "64bfd229d4a5e04f67af47653af02858235836de6c63f61e1f2314b46016d0f3",
+      "matches_previous": true
+    }
+  ],
+  "current_network_pin_identical_to_prior": {
+    "path": "D:\\GitHub\\AdvancedRocketry-Community\\src\\test\\resources\\network-protocols.txt",
+    "bytes": 1130,
+    "sha256": "224481cb8bcf1e35a950c3ce7f6d5c46f52ed9e4c3543879d4e01cc018551d3e"
+  },
+  "owner_branches": [
+    "D1-A",
+    "D1-disassembly-A",
+    "D2-A",
+    "D3-A"
+  ],
+  "author_status": "PROPOSED; acceptance fields empty",
+  "root_or_author_writes": 0,
+  "runtime_native_gradle_commands": 0,
+  "gate_acceptance_or_runtime_completion": false
+}

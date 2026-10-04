@@ -1,0 +1,76 @@
+{
+  "kind": "independent_static_and_specification_model_not_runtime_or_native_writer",
+  "proposal_sha256": "92e706ae84e6565f605227f7794fb83850a23c4f2ca1915686d28c61fa72c321",
+  "dispositions_sha256": "d7720d8a46ec603991aac41b96fcd01c7dd078d31f92e6c35451384dbe3b9e28",
+  "preceding_evidence_hashes_verified_unchanged": true,
+  "specification_model_groups": [
+    "ordered_nonzero_epochs_all_rates_modular_wrap_long_max_exact_reference",
+    "root4_zero_clock_epoch_migration_preserves_fields_repeat_current_noop",
+    "one_root_epoch_sample_checked_old_new_pairs_independent_world_rollback_unknown_hold",
+    "ordinary_checkpoint_clean_restart_zero_offline_unsaved_visual_rewind_disclosed",
+    "future_missing_exact_type_extra_field_epoch_ahead_even_zero_rate_preserved_input",
+    "increment_saturates_no_wrap_authorized_stop_exact_phase",
+    "clock_nbt_int_long_exact_layout_three_nodes_within128_bytes",
+    "joint_sky_schema2_exact167_bytes_strict_flags_ranges_epoch_decode_none_clear",
+    "client40_tick_horizon_hold_negative_time_clamp_longmax_saturation"
+  ],
+  "phase_reference_cases": 5315,
+  "max_reduced_product": 21599700,
+  "clock_compound_standard_nbt_bytes": 61,
+  "wire": {
+    "station_sky_max": 167,
+    "station_sky_limit": 256,
+    "station_none_bytes": 2,
+    "fallback_no_body_bytes": 37,
+    "flight_old_max": 31419,
+    "flight_new_max": 31805,
+    "flight_limit": 32768
+  },
+  "exact_current_ledger_rows_unchanged": 41,
+  "upstream_source_identity_list_byte_unchanged_from_reviewed_r2": true,
+  "batch_counts_not_acceptance": {
+    "C17a": 24,
+    "C17b": 9,
+    "C17c": 8
+  },
+  "proposed_station_root_record_schema": [
+    5,
+    3
+  ],
+  "proposed_clock_format": 1,
+  "proposed_sky_payload": 2,
+  "proposed_channel_transitions": {
+    "celestial_snapshot": [
+      3,
+      4
+    ],
+    "rocket_flight": [
+      8,
+      9
+    ]
+  },
+  "current_network_pin": "# ADR-046 UI-01: every ARCE network channel, its protocol version and its registered messages.\n# A change to this table needs an ADR and a protocol version bump (celestial_snapshot 3: ADR-047; satellite 1: ADR-049; endgame 1: ADR-054). Format:\n# channel | protocol | index | message class | direction\nadvancedrocketrycommunity:endgame|1|0|EndgameDeviceView|PLAY_TO_CLIENT\nadvancedrocketrycommunity:life_support_status|1|0|LifeSupportStatusPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:celestial_snapshot|3|0|CelestialSnapshotPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:celestial_snapshot|3|1|StationSkyContextPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:rocket_flight|8|0|RocketFlightIntentPacket|PLAY_TO_SERVER\nadvancedrocketrycommunity:rocket_flight|8|1|RocketFlightPlanPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:rocket_flight|8|2|CelestialSnapshotPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:rocket_visual|1|0|RocketVisualChunkPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:satellite|1|0|SatelliteTerminalViewPacket|PLAY_TO_CLIENT\nadvancedrocketrycommunity:satellite|1|1|SurveyScanResultPacket|PLAY_TO_CLIENT\n",
+  "modern_source_sha256": {
+    "station/orbit/StationSkyContextService.java": "48220ff52e056ac9204443f19f782e79de6c9544a01a6e3d770bbb0542c817ae",
+    "station/persistence/StationRegistrySavedData.java": "a3fb2a38f770511a125e3d464fbb039cba1b0839e9a5bc46eef47311706766b2",
+    "station/persistence/StationRegistryPayload.java": "90020ce2d9f11aedb3a1831afc57b54f5300f10d45586888dc299013b8487e1c",
+    "station/persistence/StationNbtCodec.java": "d46146100e826c5b4bb17f000aa6300bdef32b0aa580289b203f8d72308f38c8",
+    "station/service/StationWriteBudget.java": "67c34bc90a60f7d1956e554667006a5e16551f256913d3604e2cefc42f712b43",
+    "station/model/StationLimits.java": "a05c7aa1bce6e7f15bfbe12e720d790a853ab42d1f7eb0e86047088e8502afa9",
+    "persistence/migration/ManagedSavedDataType.java": "eedb3bc306d9b1cf0e75e62f0588d02ece660acc8788e3e4897907d45875da24",
+    "persistence/migration/SavedDataSchemaMigrator.java": "3a265db73271981bb5986a288915cf51d11334f50207461421f4ecc6ff2b47fc",
+    "satellite/mission/MonotonicMissionClock.java": "b6dbb34fe23df2d9f96485e960f63310740a7c70cb3064027f7ffcede96126eb",
+    "celestial/network/StationSkyContextPacket.java": "10f881f0786e61180fa35b9448f374249a3f222304be85763e24a4d6f4487867",
+    "rocket/network/RocketFlightPlanPacket.java": "886d869565d276a47d628cf6b0e13f10b521317fcb42fb3d25e468c09e9acedf",
+    "travel/network/TravelTargetWireCodec.java": "64bfd229d4a5e04f67af47653af02858235836de6c63f61e1f2314b46016d0f3"
+  },
+  "pending_owner_decisions": [
+    "D1",
+    "D1-disassembly",
+    "D3"
+  ],
+  "runtime_native_gradle_jobs_run": 0,
+  "root_writes_by_reviewer": 0,
+  "command": "python -B <own fresh review Temp>/probe.py",
+  "exit_code": 0
+}

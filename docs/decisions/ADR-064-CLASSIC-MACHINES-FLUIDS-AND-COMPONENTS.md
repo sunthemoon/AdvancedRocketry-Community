@@ -1,13 +1,15 @@
 # ADR-064 — Classic machines, fluids and components (C16)
 
 ```yaml
-status: PROPOSED
-revision: 1
-date: 2026-10-03
+status: ACCEPTED
+revision: 5
+date: 2026-10-04
 deciders: [sunthemoon]
 owner: sunthemoon
 target_version: v1.8.0
 slices: [C16a, C16b, C16c, C16d]
+accepted_at: 2026-10-04
+acceptance_basis: owner confirmed controller-owned resources, existing gas-giant nitrogen, retained Fluid banks and preservation without automatic migration for unproved legacy recipes; independently reviewed bounded menu compatibility and other amendments have no open Critical/High/Medium findings under the owner's conditional authorization
 development_dependency: ADR-016, ADR-019, ADR-025, ADR-051, ADR-052, ADR-054, ADR-061, ADR-062, ADR-063
 supersedes: ""
 ```
@@ -89,7 +91,7 @@ ports, the rolling machine, the precision assembler and the electrolyzer, the
 Hydrogen and oxygen exist as canister items: the electrolyzer turns two empty
 canisters and 1,000 mB of water into a hydrogen and an oxygen canister, the
 gas giant mission yields hydrogen canisters, and oxygen vents and suits use
-oxygen canisters. ADR-061 revision 7 (proposed) lets kernel machine recipes
+oxygen canisters. ADR-061 revision 7 (accepted in the C15 review continuation) lets kernel machine recipes
 name items only until C16a, which must restore tag ingredients.
 
 ## Decision
@@ -105,27 +107,55 @@ name items only until C16a, which must restore tag ingredients.
 2. **Hatches.** Five family blocks fill the legacy hatch cells:
    `item_input_hatch` and `item_output_hatch` (four slots each),
    `fluid_input_hatch` and `fluid_output_hatch` (one fluid, 16,000 mB each)
-   and `power_input_plug` (10,000 FE). A hatch holds its own resources (the
-   rolling machine's physical-port model, ADR-019), binds to at most one formed
-   machine at a time (the first to bind; a second machine that needs it does
-   not form), serves automation only while its machine is formed and not
-   running a step that holds the hatch, and drops its contents when broken.
+   and `power_input_plug` (10,000 FE). **Accepted ownership correction:** the
+   controller owns every Item/Fluid bank, resource
+   revision, process state and journal in the same chunk snapshot, as ADR-019
+   requires. Item/Fluid hatches are generation-scoped facades, never a second
+   persistent resource copy. At most 64 hatches bind to one controller; each
+   binds to at most one machine (a conflict refuses formation). Capabilities
+   require the exact loaded, formed binding and pause during a transaction.
+   Unforming or unloading retains the banks at their controller. Breaking an
+   Item hatch removes and drops its assigned Item bank at the controller once.
+   Breaking a Fluid hatch retains its Fluid bank at that controller; a rebuilt
+   corresponding hatch can access that same bank only after valid formation and
+   a new exact instance/generation binding. The retained bank is not a resource
+   copy in the removed or rebuilt hatch. Binding removal or generation changes
+   alone never empty or duplicate it. Retained inactive banks count toward the
+   existing 64-bank and 32,768-byte controller-resource limits. Their stable
+   identity and assignment must be independently reviewed in the C16a-03 leaf
+   contract before implementation; a rebuild cannot silently discard a bank or
+   reassign its fluid to an unrelated hatch. Breaking the controller drops all
+   remaining Items once and drains the remaining Fluids without spawning another
+   resource copy. Removal of a bound hatch while its controller is unavailable
+   or its root unsupported fails closed for ordinary players, explosions and
+   Forge-aware entity destruction; it never loads that chunk. An unbound new
+   hatch is empty.
+   The power plug remains physically persistent: external/per-tick FE
+   transfer is not covered by the Item/Fluid batch crash-atomicity claim.
    The rolling machine, precision assembler and electrolyzer keep their v1.2
    ports.
 3. **Processing.** A machine runs one recipe at a time through the kernel:
-   it looks up the first recipe whose inputs its input hatches hold, reserves
+   it looks up matching recipes in full resource-ID order, reserves
    nothing, draws the recipe's energy per tick from its plugs while running,
    and at the end moves inputs and outputs in one transaction, so a broken
    hatch or a full output pauses it without losing anything. Progress survives
    chunk unloads and restarts; unloading a hatch's chunk pauses the machine.
    A redstone signal at the controller pauses the machine, as it pauses the
    v1.2 machines.
+   The seven new types have at most 1,024 recipes each (64 KiB per recipe),
+   32 match checks per controller per tick and 256 per Level per tick through
+   a fair resumable queue; the controller starts only after the current
+   candidate set was checked. A reload invalidates pending lookup cursors.
+   Idle machines enqueue only on input/formation/reload changes. Existing
+   v1.2 types retain their ambiguity refusal rather than silently becoming
+   first-match machines. Malformed or over-limit catalogs fail closed with
+   bounded diagnostics; they do not discard a running process or its resources.
 4. **Recipe types.** One recipe type per machine
    (`advancedrocketrycommunity:arc_furnace`, `lathe`, `cutting`,
    `crystallizing`, `chemical_reacting`, `laser_etching`, `centrifuging`),
    with a bounded codec: at most 4 item inputs and 4 item outputs, 2 fluid
    inputs and 2 fluid outputs, counts up to 64, fluid amounts up to 16,000 mB,
-   time 1–72,000 ticks, energy 0–10,000 FE per tick, and (centrifuge only)
+   time 1–72,000 ticks, energy 1–10,000 FE per tick, and (centrifuge only)
    chance outputs with a weight of 1–100. Unknown fields fail the recipe.
 5. **Menus and JEI.** Each controller has a server-authoritative menu with the
    formed state, progress, energy and the reason it waits; there are no client
@@ -144,14 +174,37 @@ the v1.2 rolling, precision and electrolyzer recipes included:
    with a logged error until the next reload; the other recipes keep working.
 2. The client receives recipes in their JSON form and resolves them against
    its own synced tags, for JEI only.
-3. A running process stores the recipe's ID and a signature built from the
-   recipe's JSON form, not from its resolved items. After a reload with
-   changed tags, a process whose recipe still exists keeps running, and its
+3. A running process stores the recipe's ID and a SHA-256 signature built from
+   its validated JSON form, not from its resolved items: recursively sort
+   object keys, keep array order, write validated integer values canonically
+   and include all semantic fields (ingredients, outputs, chance candidates,
+   time, energy and machine-specific flags). Insignificant whitespace/object
+   key order does not change it. After a tag-only reload, a process whose
+   recipe still exists **and whose JSON signature still matches** keeps running, and its
    inputs are checked against the current resolution when it completes; inputs
    that no longer match pause the machine with a stated reason, nothing is
    consumed and the progress is kept (the C15aR2-I1 condition).
+   A same-ID recipe JSON/time/output change or removal preserves the original
+   progress and resources but pauses with `recipe_changed`/`recipe_missing`;
+   it is not mistaken for a tag-only reload or silently restarted.
 4. Built-in recipes use the common tags (`forge:ingots/titanium`, …) wherever
    a material is meant: the v1.2 rolling recipes move to tags in C16a.
+5. **Legacy signatures.** A new bounded `arce_recipe_signature` root
+   (schema 1) marks the JSON-signature format for supported new jobs. An
+   unmarked existing v1.2 progress/journal uses the legacy resolved-Item format.
+   A resolved-Item hash, even together with a built-in recipe ID, cannot prove
+   which authored JSON produced it: custom tag payloads may resolve identically.
+   Where provenance cannot be proved, preserve the original progress, journal
+   and resource roots, pause in an explicit repair-required state, and do not
+   automatically convert or add the new marker. Do not re-plan a retained
+   pending journal with current tags, reconcile it as a different new task,
+   or treat an unmarked active/pending machine as an empty new machine. No
+   migration-witness framework is added in this leaf. Supported new jobs store
+   their signature and marker in the controller's same snapshot. S1 must cover
+   all three v1.2 machines with unproved partial progress and pending journals,
+   preserved resources and roots across two restarts, as well as supported new
+   jobs and tag-only reload behavior. Automatic legacy conversion remains
+   unavailable without separately reviewed provenance evidence and admission.
 
 ### 3. Combustion generator (C16a)
 
@@ -195,9 +248,23 @@ power, which the recipe graph (§10) counts.
    (the Forge item fluid handler, as a bucket). Tanks, fluid hatches and
    machines therefore exchange gases with canisters, and existing canisters
    keep their meaning for vents and suits (ADR-025).
-3. **Nitrogen source.** A gas harvest table for Tau Ceti f (breathable,
-   1 atm) yields nitrogen and oxygen canisters (8 and 2 per 1,000 ticks), a
-   data revision of ADR-052's tables, so nitrogen has a source.
+   Existing canisters retain their stack limit of 16. A Fluid item handler
+   mutates only a detached count-1 unit; direct fill/drain of a stacked
+   container refuses both simulation and execution without changing it.
+   Player/machine interaction splits one unit, performs its 1,000 mB swap,
+   then rejoins/stows the result subject to ordinary inventory capacity,
+   preserving every other unit. Tests cover 16-unit stacks, partial amount
+   refusal, simulate/execute, full destination inventory and existing suit/
+   vent oxygen use; no legacy stack is silently made unstackable or discarded.
+3. **Nitrogen source (owner confirmed).** The data-only
+   correction adds 8 nitrogen canisters per 1,000 ticks to the existing
+   `advancedrocketrycommunity:gas_giant` table, retaining its 8 hydrogen
+   canisters per 1,000 ticks. Oxygen retains its existing electrolyzer route.
+   The owner confirmed use of the existing gas-giant table.
+   Tau Ceti f remains landable and `gas_giant:false`: ADR-051/052 and both
+   runtime eligibility checks reject a gas-harvest table there. Atmospheric
+   harvesting on f is an alternative requiring an explicit amendment to both
+   table and mission contracts, not a data-only change or a false body flag.
 
 ### 6. Pressurized tank (C16a)
 
@@ -205,9 +272,16 @@ power, which the recipe graph (§10) counts.
 `machines.tankCapacityMultiplier` (default 1.0, range 0.25–4.0, read when a
 tank is created or loaded; a tank holding more than its capacity keeps the
 fluid and accepts none). Buckets and canisters fill and empty it; it exposes
-the fluid to automation on every side. When it changes, it pulls the same fluid
-from the tank directly above it until it is full (one neighbour, no column
-scan). The item keeps the fluid and its amount, saved with a schema version.
+the fluid to automation on every side. A resource/neighbour change schedules
+one deduplicated transfer for a later server tick, never a reentrant callback.
+That transfer pulls at most 1,000 mB of compatible fluid from the loaded tank
+directly above (one neighbour, no column scan); it schedules a later retry
+only while both still permit transfer. At most one transfer per tank per tick
+and 64 transfers per Level per tick use a fair queue. Dirty requests beyond
+the queue's 1,024 entries stay dirty and retry on the bounded scheduler; they
+are not silently lost. The item keeps the fluid and its amount, saved with a
+schema version. External transfers between independently saved tanks retain
+the normal Forge automation guarantee, not an arbitrary-crash atomicity claim.
 
 ### 7. Pump (C16a)
 
@@ -216,9 +290,14 @@ straight down at most 64 blocks to the first non-air block; if that is a
 fluid, it searches connected blocks of that fluid breadth-first within 32
 blocks horizontally and 64 vertically, at most 4,096 blocks per search and 64
 per tick, through loaded chunks only. It drains one source block per
-operation, every 5 ticks while it has the energy, posting a standard block
-break event as its owner first: a cancelled event skips that block and stops
-the search. It never loads chunks, keeps no cache across unloads, pumps
+operation, every 5 ticks while it has the energy. Every candidate drain uses
+the complete ADR-054 section 5 chain required by ADR-061 section 6: FULL
+loaded chunk, world bounds, protected zones, station BUILD authority,
+dedicated-server spawn protection, the cancellable public effect event and
+the standard Forge block-break event through an owner-bound FakePlayer.
+A refusal leaves the source, energy and tank unchanged and stops that search
+with a stable reason code. Owner lookup is server-derived, never supplied by
+a client or inferred from a nearby player. It never loads chunks, keeps no cache across unloads, pumps
 vanilla water and lava (they are bucket fluids in 1.20.1) and pushes up to
 1,000 mB per tick into adjacent fluid receivers. The owner is the player who
 placed it; a pump without an owner (placed by a machine) drains nothing.
@@ -246,8 +325,10 @@ placed it; a pump without an owner (placed by a machine) drains nothing.
    nugget to a silicon boule. The COMMON value
    `machines.crystallizerMaximumGravity` (default 0 = no limit, range 0–10)
    stops it where the gravity at the controller exceeds the value: the body's
-   gravity multiplier, or a station's gravity as the area gravity rules
-   resolve it (ADR-058).
+   gravity multiplier, or the gravity of the station containing the controller.
+   ADR-058 area fields are player/trust-list effects, not machine gravity;
+   the machine never substitutes its owner or a nearby player. Field-driven
+   machine gravity would require a separately frozen contract.
 2. **Chemical reactor.** The legacy 2 × 2 × 3 layout; rocket fuel and bone
    meal with nitrogen with the legacy numbers. The carbon cartridge refresh
    waits for C18a's cartridge and the space protection recipe for C18b's
@@ -265,6 +346,26 @@ placed it; a pump without an owner (placed by a machine) drains nothing.
    chance (200 × 10), the chances in the data recipe, not a config list: the
    legacy weights over the nuggets this mod and vanilla register (copper 100,
    iron 100, tin 100, gold 75, iridium 1); data packs add other mods' nuggets.
+   Chance candidates are a separate ordered list of at most 16 entries, not
+   the four deterministic Item outputs. At completion, test each candidate
+   with one independent uniform 1-100 roll in JSON order and stop after four
+   successes; merge identical Items without exceeding stack limits. Built-ins
+   order copper, iron, tin, gold, iridium, so the cap makes iridium's effective
+   chance 0.25 percent (gold must fail), a disclosed balance difference.
+   The chosen outputs are recorded with the transaction ID in the controller
+   snapshot/journal before application; a full output, retry or recovery
+   reuses them and never re-rolls. Before a journal reaches `PREPARED`, a bank
+   revision/input change discards only the stale before/after resource plan:
+   re-simulate it against current resources/revisions with the retained chance
+   outcome when the inputs match again. Missing inputs preserve progress and
+   outcome while paused. Once `PREPARED`, ordinary bank mutation/removal is
+   locked until that exact plan is committed or recovered; never re-plan a
+   retained prepared journal. The etcher's retained lens uses
+   a same-channel input debit and output restoration in that same transaction.
+   The random seed derives from the machine UUID, recipe signature and
+   monotone batch ordinal retained when a process starts; the same incomplete
+   batch recomputes the same choices even if it stopped before saving a chosen
+   plan. Ordinal overflow refuses a new batch rather than wrapping.
 5. **Enriched lava source.** As legacy (`MapGenVolcano` 55–75, the conduit
    and the bulb under it), volcanoes hold enriched lava: from C16a the Venus
    volcano (ADR-063 §5) places enriched lava instead of lava in its core and
@@ -290,11 +391,36 @@ placed it; a pump without an owner (placed by a machine) drains nothing.
 
 ### 11. Persistence and migration
 
-Machines, hatches, the generator, the tank and the pump save schema version 1.
-A machine saves its recipe ID, signature and progress; hatches, the tank and
-the pump their resources. Unformed machines keep their hatches' contents. No
-existing block, item or saved data changes ID; the v1.2 rolling recipes keep
-their IDs when they move to tags.
+New roots are independent schema 1; existing shared process/journal schemas
+do not change. The root names and limits below are persistence identities, not
+registration placeholders. Every ID/string is bounded by the shared ID codec;
+UUIDs are fixed-size and Item/Fluid payloads count toward the aggregate root
+limit before capability insertion or recipe completion. Preflight also checks
+the existing 65,536-byte journal limit; overflow pauses without consuming.
+
+| Root | Fields and ownership | Maximum NBT bytes |
+|---|---|---|
+| `arce_classic_machine` | machine UUID, generation, monotone batch ordinal, at most 64 part positions/bindings, recipe ID, JSON signature, progress, refusal and chosen chance outputs | 65,536 |
+| `arce_classic_resources` | controller-owned Item/Fluid banks and resource revision; at most 64 banks, four Item slots or one 16,000 mB Fluid per bank | 32,768 |
+| `arce_classic_hatch` | machine UUID, controller position, generation, bank key; no Item/Fluid copy; a power plug additionally owns 0-10,000 FE | 4,096 |
+| `arce_combustion_generator` | fuel/container slot, 0-20,000 FE, burn duration/remaining ticks 0-1,000,000 (over-limit fuel refused intact), schema | 8,192 |
+| `arce_pressurized_tank` | Fluid ID/payload and nonnegative amount, retained capacity overflow, schema; same root in its dropped Item | 8,192 |
+| `arce_pump` | owner UUID, Fluid tank 0-16,000 mB, FE 0-10,000, operation cooldown, schema; no persisted search frontier | 8,192 |
+| `arce_recipe_signature` | recipe ID and format `json_v1`, format marker; same controller snapshot as new JSON-signature progress | 1,024 |
+
+All resource roots round-trip, reject impossible counts and keep unsupported
+future or corrupt roots verbatim in a bounded repair-required state: no ticking,
+capabilities or ordinary removal may overwrite/drop an unrecognized resource
+copy. Oversized on-disk input is refused without replacing the stored chunk;
+repair requires an explicit administrator workflow against a backup. Unformed
+machines keep controller-owned banks; transient search/lookup work is rebuilt
+within its budgets after restart. No existing block, Item or SavedData changes
+ID; the v1.2 recipes keep their IDs when they move to tags. The S1 fixture must
+prove supported current-format save/restart and pending-journal recovery,
+refusal and verbatim retention of unproved legacy progress/journals through
+repeated restarts, unknown/future refusal, supported new JSON-signature jobs
+and resource conservation separately. It must not claim legacy conversion
+from resolved-hash matching alone.
 
 ### 12. Generated data and assets
 
@@ -320,6 +446,39 @@ asset plan rules for them become `REGENERATE`.
 - S1: a packaged dedicated server runs each machine and the pump in a world
   upgraded from v1.7, with the existing rolling, precision and electrolyzer
   machines keeping their state.
+
+### 14. Bounded recipe-reason menu compatibility (C16a)
+
+Rolling, precision and electrolyzer menus gain display-only whitelisted reason
+IDs:0 generic/none,1 recipe_missing,2 recipe_changed,3 recipe_tags_invalid,
+4 signature_migration_pending,5 signature_migration_unproven,6 retained_plan_invalid.
+Unknown subjects/IDs use the existing generic fallback;no arbitrary subject
+string is transmitted and no reason authorizes work.
+
+Register a required message-empty Forge channel
+`advancedrocketrycommunity:machine_menu`,exact protocol `1`,during common setup
+on both physical sides. Both predicates reject absent,vanilla and other versions.
+Existing six channel names/protocols are unchanged. Clients and servers must
+update together;this does not promise mixed v1.7/v1.8 compatibility or alter
+world/process/resource schemas.
+
+Append only one reason data slot:rolling24/count25,precision22/count23,
+electrolyzer7/count8. Existing indices,enum IDs and structural/unsupported
+precedence remain unchanged. Enforce exact data-count equality explicitly;
+native checkContainerDataCount alone checks only a minimum.
+
+The local opening payload is exactly BlockPos plus unsigned-byte schema2 and
+the matching unsigned-byte menu count:10 bytes before unchanged Forge outer
+framing. Reject absent,truncated,unsupported,mismatched or trailing payloads
+before any usable menu is constructed. The opening writer,server data and
+client allocation must agree. Future incompatible layouts require a reviewed
+channel protocol change.
+
+This technical amendment follows the independently reviewed
+[proposal002](../work/v1.8.0-c16a-recipe-signatures/PROPOSED-CHANGE-002.md) under
+the owner's conditional authorization. Actual implementation,registered-menu
+and peer-refusal tests,localization,dedicated player flow and scheduled V1/V2
+remain required;no runtime,client or Required Gate is admitted by this decision.
 
 ## Alternatives
 
@@ -355,3 +514,42 @@ machines; the shared hatches match the legacy and stay bounded by binding.
 
 - Revision 1 (proposed, 2026-10-03): the C16 contract, before its
   independent review.
+- Revision 1 independent review: 3 High and 7 Medium findings
+  ([report](../work/v1.8.0-c16-contract/reviews/REVIEW-01.md)); changes requested.
+- Revision 2 (proposed, 2026-10-03): resource ownership alternatives submitted
+  to the owner; full pump protection, nitrogen eligibility, signature
+  conversion, bounded deterministic lookup, positive FE, machine gravity,
+  nonreentrant tank scheduling, chance-output persistence and stable bounded
+  roots clarified. Resource ownership and the nitrogen source remain owner
+  decisions; this revision is not a frozen implementation contract.
+- Revision 2 independent review found no additional unresolved
+  Critical/High/Medium technical issue; all original findings are answered
+  ([report](../work/v1.8.0-c16-contract/reviews/REVIEW-02.md)). The owner then
+  confirmed controller-owned Item/Fluid banks with cross-chunk structures and
+  nitrogen on the existing gas-giant table. The conditional authorization
+  therefore accepts revision 2. This freezes the C16 contract only: C16
+  runtime and all version Gates still need implementation and evidence.
+- Revision 3 (accepted, 2026-10-03): the owner selected retained controller
+  Fluid banks after Fluid-hatch removal. The complete amendment and corrected
+  absolute-position/exact-kind leaf identity were independently reviewed with
+  no unresolved Critical/High/Medium findings
+  ([acceptance record](../work/v1.8.0-c16a-hatches/ACCEPTANCE.md)). Other technical
+  sections, IDs, schema versions and limits are unchanged. Actual API/codec,
+  formation, recovery and native evidence remain required before runtime
+  admission; no version Gate or cross-store FE crash guarantee is added.
+- Revision 4 (accepted, 2026-10-03): the owner rejects automatic migration
+  when legacy authored-JSON provenance cannot be proved. The section 2.5
+  preservation policy and aligned section 11 root/test descriptions were
+  independently reviewed with no open Critical/High/Medium findings. The first
+  proposal's inconsistent conversion test requirement is corrected; no root
+  size, schema or ownership bound changes. Existing unsupported tasks pause
+  with original roots and resources, not a fabricated JSON marker. Actual
+  source revision and native persistence still require separate evidence
+  ([decision and proposal](../work/v1.8.0-c16a-recipe-signatures/LEGACY-POLICY-AMENDMENT.md)).
+- Revision5 (accepted,2026-10-04):the exact bounded recipe-reason menu
+  compatibility amendment has independently reviewed0 Critical/High/Medium/Low.
+  The pinned Forge handshake advertises required empty channels;native count
+  checks require explicit equality as above. This is technical contract
+  acceptance under the owner's existing conditional authorization,not code
+  or mixed-client evidence. Existing schemas/gameplay authority and six
+  protocols are unchanged ([acceptance receipt](../work/v1.8.0-c16a-recipe-signatures/MENU-ACCEPTANCE-01.md)).
