@@ -36,32 +36,32 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: 9fce551ea9389ce37a94f804aa0e817399586a7e
+tested_code_commit: a0873a30a2e1ad9fe0b42d11a0b89903fc478d5c
 last_updated: 2026-10-05
 ```
 
 ## Current development evidence
 
-The latest complete Root analyzer cohort tests the committed source above.
-[Source26 verification](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-01.md)
-records build/test/DataGen passing with 1,807 JUnit /339 suites /0FES, but the
-complete 477-test GameTest command fails with four required analyzer failures.
+The latest complete [Root Source27 regression](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-02.md)
+tests the committed source above with no-build-cache: actual clean build/test/DataGen
+passes with 1,807 JUnit /339 suites /0FES; all 477 required GameTests pass. Repeat
+DataGen has 781 files and zero changes, eight scoped static checks and package-member
+checks pass, and API is byte-exact. The 3,039 named inputs are not a whole repository
+snapshot; live owner AGENTS and one LF/CRLF wrapper expansion are qualified.
+Ledger closure and global dirty diff remain actual failures. The 61 ERROR headers
+are disclosed without blanket waiver. The [independent result audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-02.md)
+finds no additional receipt/source/artifact inconsistency within those limits;
+it does not replay Java or accept native/client/leaf or version Gates. Its
+portable 493-member thin packet is verified; older source ZIP/binary stdout
+remain exact separate references, not a complete publication-output closure.
 The [exact fixture correction](../work/v1.8.0-c18a-atmosphere-analyzer/FIX-REVIEW-DISPOSITION-01.md)
-has independent actual-source review with no introduced C/H/M/L, 477 required
-GameTests passing and separately executed uncached 19-case JUnit. Root has imported
-the three exact postimages; a new committed full regression is pending. Source26's
-four failures remain historical evidence, not waived. The 3,036 named inputs are not
-a whole repository snapshot. DataGen has 781 files and zero repeat changes;
-eight scoped static checks and package-member checks pass. Ledger closure and
-global dirty diff remain actual failures. The [independent result audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-01.md)
-confirms this failed cohort and its source/artifact boundaries without finding
-an additional receipt inconsistency; it does not rerun Java or accept the leaf.
-The 65 ERROR headers are disclosed, not waived. Live owner AGENTS and one
-LF/CRLF wrapper expansion are qualified. Previous passing cohorts are historical,
-not a substitute for the latest failed complete command.
+and its independent actual-source review preserve original conditions and budgets.
+The [Source26 four failures](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-01.md)
+and [failed-result audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-01.md)
+remain historical, not waived or overwritten.
 
 The development main JAR SHA-256 is
-`ba33be072bc9da427975d52ff351dce0ded9f36d88af7904980885f0280176a8`.
+`cb7d3b48148bea78cf5ffb0da18a6bb578db1f6f10040c894e7d9721df976206`.
 The API artifact remains unchanged. This is not a frozen release candidate.
 The content ledger has **186 PLANNED units /154 REVIEW assets**; its closure
 check still fails. v1.8 remains **IN_PROGRESS /IMPLEMENTING**, with **G0–G9 open**.
