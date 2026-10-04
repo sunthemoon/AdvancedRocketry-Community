@@ -240,7 +240,8 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertFalse(any("who is neither the owner" in error for error in self._errors()))
 
     def test_owning_units_are_not_delivered_after_the_asset(self) -> None:
-        self._set_rule("textures/blocks/liquidtank.png", units="config:CLIENT.advancedVFX")
+        # This check governs legacy imports; the shipped tank now uses NEW art.
+        self._set_rule("textures/blocks/liquidtank.png", handling="IMPORT", units="config:CLIENT.advancedVFX")
         self.assertTrue(any(error.endswith("owning unit config:CLIENT.advancedVFX is delivered in C18d, after the "
                                            "rule's batch C16a") for error in self._errors()))
 
