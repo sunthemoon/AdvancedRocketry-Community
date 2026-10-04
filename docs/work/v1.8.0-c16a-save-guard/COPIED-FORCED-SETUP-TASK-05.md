@@ -1,7 +1,8 @@
 # C16a-S1-GUARD-SETUP05: copied forced-mark isolation
 
 Date: 2026-10-04. Owner and sole integrator: Root. Status: IN_PROGRESS.
-Implementation baseline: `a385ba452ab756b5689a1cbf21e2177129b93dc9`.
+Author source baseline: `73fc017ac3b121b34216e660e66b0cb583ff289a`.
+Integrated Java cohort: Source25 at `a5abc34809891d6b10724ee60ab9b5e97f036bae`.
 
 ## Outcome, dependency and boundary
 
@@ -65,3 +66,26 @@ New helper/output/TEMP/TMP/TMPDIR use
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/guard-forced-setup-05/`.
 No version Gate, remaining shared-kernel unit or whole-v1.8 completion follows
 from this copied-world diagnostic.
+
+## Reviewed source integration checkpoint
+
+The exact two Python postimages and two author-only task records are integrated
+by Root. No Java, source-world or production guard changes occur. Independent
+actual-source review has zero introduced Critical/High/Medium/Low findings:
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/agsr-33e6a6f556/REVIEW-01.md`, 14,976 bytes,
+SHA-256 `5c42061039808970477f727e6b048fc766366b6bc76292e19b952c7f17b05122`;
+manifest SHA `7092069ced62d0c13b2a1705c9096eea39f184c24e309daffbfed096b41abf5d`.
+The reviewer independently runs 137 focused Python cases and fifteen separate
+controls, checks exact patch replay and 117 unchanged named inputs. All nine
+original oracle helper bodies, thirty old test methods and 55 assertions remain.
+Original author/reviewer failures are retained, not turned into passes.
+
+Root's actual four-module unittest command passes 137 cases in 2.090 seconds,
+zero failures/errors/skips. `D:/GitHub/ARCE-Task-Evidence/v1.8.0/guard-forced-setup-05/`
+holds the command/raw/result and separate 3,009-input Python setup manifest.
+All other Source25 inputs remain exact. The Java/JAR is not rebuilt by this
+Python-only phase; it remains pinned to Source25's actual full checks and main
+SHA-256 `61c5499318dcd17d929acd9f3d28ab1e99066ba2c29da1de34603096f10f3921`.
+Commit/non-force push precedes a fresh strict native attempt. Native execution,
+two-mark stopped metadata, true Unload, live restoration and restart remain
+unverified; the four historical native failures remain failures.

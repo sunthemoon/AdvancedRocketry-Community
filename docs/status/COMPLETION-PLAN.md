@@ -71,8 +71,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   - [ ] 四次实际专服仍未完成真实卸载、实时恢复和重启验证；原始失败全部保留。
   - [~] [C16a-S1-GUARD-OBS04](../work/v1.8.0-c16a-save-guard/STATE-OBSERVATION-TASK-04.md)：
     固定只读状态观测、完整自动回归和独立结果审核已存证；真实卸载仍失败，清理被策略拒绝。
-  - [ ] [C16a-S1-GUARD-SETUP05](../work/v1.8.0-c16a-save-guard/COPIED-FORCED-SETUP-TASK-05.md)：
-    仅移除测试副本三处近邻强制标记，保留目标与远端；实现和原有严格验证待完成。
+  - [~] [C16a-S1-GUARD-SETUP05](../work/v1.8.0-c16a-save-guard/COPIED-FORCED-SETUP-TASK-05.md)：
+    测试副本三处近邻标记隔离源码审核、集成与 Root 137 Python 通过；
+    保留目标与远端、不改 Java，原有真实卸载/恢复/两轮停服重启仍待执行。
   - [ ] 完整 hash/frame/native codec 和 GuardTicket 消费端。
   - [ ] 02 生命周期、首存观察、最终卸载和保存 writer。
   - [ ] 服务端 creative 输入的复制/覆盖前拦截与真实客户端、FE 守恒证明。
