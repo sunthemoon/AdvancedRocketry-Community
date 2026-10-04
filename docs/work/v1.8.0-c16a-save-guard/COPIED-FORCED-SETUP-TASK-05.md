@@ -1,6 +1,6 @@
 # C16a-S1-GUARD-SETUP05: copied forced-mark isolation
 
-Date: 2026-10-04. Owner and sole integrator: Root. Status: IN_PROGRESS.
+Date: 2026-10-04. Owner and sole integrator: Root. Status: VERIFIED_FIXED_DIAGNOSTIC.
 Author source baseline: `73fc017ac3b121b34216e660e66b0cb583ff289a`.
 Integrated Java cohort: Source25 at `a5abc34809891d6b10724ee60ab9b5e97f036bae`.
 
@@ -89,3 +89,8 @@ SHA-256 `61c5499318dcd17d929acd9f3d28ab1e99066ba2c29da1de34603096f10f3921`.
 Commit/non-force push precedes a fresh strict native attempt. Native execution,
 two-mark stopped metadata, true Unload, live restoration and restart remain
 unverified; the four historical native failures remain failures.
+
+Subsequent actual native05 and independent raw-result review verify only the
+fixed diagnostic obligations. See [result](SETUP05-VERIFICATION-01.md).
+Cleanup remains blocked; no wider S1/writer/BE-disposal/crash/Gate admission is
+made. This later result does not replace the source-only checkpoint above.

@@ -60,13 +60,16 @@ The API artifact remains unchanged. This is not a frozen release candidate.
 The content ledger has **186 PLANNED units /154 REVIEW assets**; its closure
 check still fails. v1.8 remains **IN_PROGRESS /IMPLEMENTING**, with **G0–G9 open**.
 
-All four copied-world lifecycle attempts fail. The latest actual state is
-no_save=false with an untruncated level36/full/INACCESSIBLE holder. The copied
-five-mark Forced metadata and primary propagation identify fixture eligibility
-gaps, not a unique production cause or a lifecycle PASS. A separately recorded
-three-neighbor isolation task preserves the original 60-second/event/live
-restoration/native-byte/restart oracles. Stopped retention remains observation
-only. No real client/crash recovery or new guarded writer admission is supplied.
+All four historical copied-world lifecycle attempts remain failures. New
+[SETUP05 fixed diagnostic](../work/v1.8.0-c16a-save-guard/SETUP05-VERIFICATION-01.md)
+passes in 70.746109 seconds with independent exact result review: first-host
+true unload/live restoration/clean stop, then same-copy second-host refusal
+retrigger and retained native bytes. Its separate Python commit is
+`f1d649238284bef515ff8fafafd65611ac37bc32`; Java remains the tested Source25
+artifact above. Metadata progresses five marks to exact target/far two marks.
+The old native04 stopped observation remains observation-only, not rewritten
+as PASS. Unique production cause, final BE disposal instrumentation, first-save
+writer, cross-store/crash/client and all version Gates remain unverified.
 
 Six C18 inventory tutorials now have exact reviewed source integrated by Root;
 12 scoped JUnit and integrated DataGen pass on the earlier intermediate check;

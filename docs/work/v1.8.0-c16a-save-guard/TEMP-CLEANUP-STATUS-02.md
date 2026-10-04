@@ -36,6 +36,14 @@ Separately, the checked stopped native04 copy's deletion was also rejected:
 source-world, sealed logs and failure packet are not cleanup candidates; see
 [state observation verification](STATE-OBSERVATION-VERIFICATION-04.md).
 
+The new successful fixed native05 run also leaves an owned stopped copy:
+265 regular files /211,865,779 bytes. Its fresh literal-path/reparse/two-clean-exit
+and unused-port precheck succeeds, and fixed stopped fragments are preserved.
+The native deletion request is rejected before OS execution; no alternate
+mechanism or cleanup success is claimed. See
+[native05 verification](SETUP05-VERIFICATION-01.md). This is new storage debt,
+not a retry or cleanup of any earlier rejected target.
+
 Only exact task-owned, inactive, unsealed temporary files are eligible for
 future native literal-path cleanup, with preservation and reparse checks.
 Rejected deletion remains explicit; no alternative mechanism bypasses it.
