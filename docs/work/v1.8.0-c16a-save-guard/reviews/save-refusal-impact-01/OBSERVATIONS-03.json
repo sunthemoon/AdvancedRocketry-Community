@@ -1,0 +1,801 @@
+{
+  "commit": "3f3d62aed3980186fe0acc9592cf93ca436405fb",
+  "read_only_postchecks": {
+    "live:AGENTS.md": {
+      "initial": {
+        "bytes": 12047,
+        "sha256": "1be0391c3f69f566ae3f627e37107adfbd0bbfa6f581b105ff6bd2a2c2630dc0"
+      },
+      "final": {
+        "bytes": 12047,
+        "sha256": "1be0391c3f69f566ae3f627e37107adfbd0bbfa6f581b105ff6bd2a2c2630dc0"
+      },
+      "unchanged": true
+    },
+    "live:PROJECT-CONFIG.md": {
+      "initial": {
+        "bytes": 3543,
+        "sha256": "44b2e383e1f57f28ff2f432b5702f854ac32bd0d9b51b53df30b88e6853cf22b"
+      },
+      "final": {
+        "bytes": 3543,
+        "sha256": "44b2e383e1f57f28ff2f432b5702f854ac32bd0d9b51b53df30b88e6853cf22b"
+      },
+      "unchanged": true
+    },
+    "live:PRODUCT.md": {
+      "initial": {
+        "bytes": 4325,
+        "sha256": "0afbb33a772ddaa60e654e2a55e7832ad2e1528eb1a5273b257cef4bb734e090"
+      },
+      "final": {
+        "bytes": 4325,
+        "sha256": "0afbb33a772ddaa60e654e2a55e7832ad2e1528eb1a5273b257cef4bb734e090"
+      },
+      "unchanged": true
+    },
+    "live:docs/01-PORTING-PRINCIPLES.md": {
+      "initial": {
+        "bytes": 4619,
+        "sha256": "a1ff595bdcc85335ef6124c4ca4d640d318d5fd8ca69af8c57d842186e629984"
+      },
+      "final": {
+        "bytes": 4619,
+        "sha256": "a1ff595bdcc85335ef6124c4ca4d640d318d5fd8ca69af8c57d842186e629984"
+      },
+      "unchanged": true
+    },
+    "live:docs/04-VERSION-ROADMAP.md": {
+      "initial": {
+        "bytes": 5260,
+        "sha256": "d3fd1539581db13cc807c613cf333f5c34aa75d6627dafd50bfb66d079ce2ab3"
+      },
+      "final": {
+        "bytes": 5260,
+        "sha256": "d3fd1539581db13cc807c613cf333f5c34aa75d6627dafd50bfb66d079ce2ab3"
+      },
+      "unchanged": true
+    },
+    "live:docs/versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md": {
+      "initial": {
+        "bytes": 8905,
+        "sha256": "902b0e65585f47c4e4beec39f365c5046346799a2e77dee276ebaa58e433b051"
+      },
+      "final": {
+        "bytes": 8905,
+        "sha256": "902b0e65585f47c4e4beec39f365c5046346799a2e77dee276ebaa58e433b051"
+      },
+      "unchanged": true
+    },
+    "live:docs/05-MASTER-TEST-PLAN.md": {
+      "initial": {
+        "bytes": 7695,
+        "sha256": "c84e282637842bb55c374949d3787e9459b5273b28d67fd756c05002018dca47"
+      },
+      "final": {
+        "bytes": 7695,
+        "sha256": "c84e282637842bb55c374949d3787e9459b5273b28d67fd756c05002018dca47"
+      },
+      "unchanged": true
+    },
+    "live:docs/06-RELEASE-AND-ACCEPTANCE-GATES.md": {
+      "initial": {
+        "bytes": 4069,
+        "sha256": "872980fc3ed6e264e25a7873c58c6439330ed19d8a7cc96564f9ec99e94890a1"
+      },
+      "final": {
+        "bytes": 4069,
+        "sha256": "872980fc3ed6e264e25a7873c58c6439330ed19d8a7cc96564f9ec99e94890a1"
+      },
+      "unchanged": true
+    },
+    "live:docs/16-POST-1.0-VERSION-ROADMAP.md": {
+      "initial": {
+        "bytes": 7281,
+        "sha256": "c436fef7e31b55cccbcea6a089e0c92c15fd597a87c72bcf1a6c956c838d7f37"
+      },
+      "final": {
+        "bytes": 7281,
+        "sha256": "c436fef7e31b55cccbcea6a089e0c92c15fd597a87c72bcf1a6c956c838d7f37"
+      },
+      "unchanged": true
+    },
+    "live:docs/17-V1PLUS-QUALITY-BUDGETS.md": {
+      "initial": {
+        "bytes": 7082,
+        "sha256": "5dc4f2a4f43006cfddff6d65795fd02b4c2437116b79828b6a85e7ddd316c42e"
+      },
+      "final": {
+        "bytes": 7082,
+        "sha256": "5dc4f2a4f43006cfddff6d65795fd02b4c2437116b79828b6a85e7ddd316c42e"
+      },
+      "unchanged": true
+    },
+    "live:docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md": {
+      "initial": {
+        "bytes": 10204,
+        "sha256": "0c3a3ee3175b9cbdbd61bbf80d8f6ca44634dc3ee4337be8b0be581ebb10580f"
+      },
+      "final": {
+        "bytes": 10204,
+        "sha256": "0c3a3ee3175b9cbdbd61bbf80d8f6ca44634dc3ee4337be8b0be581ebb10580f"
+      },
+      "unchanged": true
+    },
+    "live:docs/11-RISK-REGISTER.md": {
+      "initial": {
+        "bytes": 3937,
+        "sha256": "fc84e8d2233cccba1abd009cdcb4eecad02f2921fc5f46126e6cf3e0ee32d0f5"
+      },
+      "final": {
+        "bytes": 3937,
+        "sha256": "fc84e8d2233cccba1abd009cdcb4eecad02f2921fc5f46126e6cf3e0ee32d0f5"
+      },
+      "unchanged": true
+    },
+    "live:docs/decisions/ADR-064-CLASSIC-MACHINES-FLUIDS-AND-COMPONENTS.md": {
+      "initial": {
+        "bytes": 35702,
+        "sha256": "789522c7c982209df660745442ca96fa1f83cc57b29c7f9692b609219c7c37d0"
+      },
+      "final": {
+        "bytes": 35702,
+        "sha256": "789522c7c982209df660745442ca96fa1f83cc57b29c7f9692b609219c7c37d0"
+      },
+      "unchanged": true
+    },
+    "live:docs/work/v1.8.0-c16a-save-guard/TASK.md": {
+      "initial": {
+        "bytes": 3411,
+        "sha256": "ebad52afdc92e0251600e1cbb64fbf0acfd451ecaef8a98f6b55467e31771d53"
+      },
+      "final": {
+        "bytes": 3411,
+        "sha256": "ebad52afdc92e0251600e1cbb64fbf0acfd451ecaef8a98f6b55467e31771d53"
+      },
+      "unchanged": true
+    },
+    "live:docs/work/v1.8.0-c16a-save-guard/reviews/SOURCE-REVIEW-01.md": {
+      "initial": {
+        "bytes": 892,
+        "sha256": "84b42b59c1ce402e24eb9747493d97970ba788d17d6ecc2bb8bc01dfe27e07b1"
+      },
+      "final": {
+        "bytes": 892,
+        "sha256": "84b42b59c1ce402e24eb9747493d97970ba788d17d6ecc2bb8bc01dfe27e07b1"
+      },
+      "unchanged": true
+    },
+    "live:docs/work/v1.8.0-c16a-save-guard/reviews/NATIVE-CORRECTION-03.md": {
+      "initial": {
+        "bytes": 1338,
+        "sha256": "3e39957f8dc534dc635a3fb4b17977cfc18cc16617d1256e66c8c45fefa31f5f"
+      },
+      "final": {
+        "bytes": 1338,
+        "sha256": "3e39957f8dc534dc635a3fb4b17977cfc18cc16617d1256e66c8c45fefa31f5f"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/ChunkSaveDenials.java": {
+      "committed": {
+        "bytes": 1856,
+        "sha256": "96a66b34e46af0ae079802263e46b595eba83cae0ce179a22176165c49e15427"
+      },
+      "live": {
+        "bytes": 1856,
+        "sha256": "96a66b34e46af0ae079802263e46b595eba83cae0ce179a22176165c49e15427"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/GuardedChunkSaves.java": {
+      "committed": {
+        "bytes": 4047,
+        "sha256": "14132bf89fc3f4b6589a3ef227e70bc72bf287f94fe86336cb29de52c18aa487"
+      },
+      "live": {
+        "bytes": 4047,
+        "sha256": "14132bf89fc3f4b6589a3ef227e70bc72bf287f94fe86336cb29de52c18aa487"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/BoundedNbt.java": {
+      "committed": {
+        "bytes": 4850,
+        "sha256": "dea20587fa5034a30c2874cc6feaea32ee6f2e16c6f1cb051c34f73816cdbd1c"
+      },
+      "live": {
+        "bytes": 4850,
+        "sha256": "dea20587fa5034a30c2874cc6feaea32ee6f2e16c6f1cb051c34f73816cdbd1c"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/tank/TankProtection.java": {
+      "committed": {
+        "bytes": 2226,
+        "sha256": "2abf114c220cb1de0e829b9a987785fe10e820a6cca860e393b1d35e856404af"
+      },
+      "live": {
+        "bytes": 2226,
+        "sha256": "2abf114c220cb1de0e829b9a987785fe10e820a6cca860e393b1d35e856404af"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/tank/TankSave.java": {
+      "committed": {
+        "bytes": 4156,
+        "sha256": "a090a4152aac71b32a217f43e2bcf31f30c872c781e0edfea0e9613255e5696c"
+      },
+      "live": {
+        "bytes": 4156,
+        "sha256": "a090a4152aac71b32a217f43e2bcf31f30c872c781e0edfea0e9613255e5696c"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/tank/PressurizedTankBlockEntity.java": {
+      "committed": {
+        "bytes": 12609,
+        "sha256": "9b76b380710e729f827ea82c72344b502de54b3557293f122cb17c7de12196a3"
+      },
+      "live": {
+        "bytes": 12609,
+        "sha256": "9b76b380710e729f827ea82c72344b502de54b3557293f122cb17c7de12196a3"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/pump/PumpProtection.java": {
+      "committed": {
+        "bytes": 3698,
+        "sha256": "c8faa664809360ff827525f63581ed7491bd7aeeef14fa08c6160b605a2684d0"
+      },
+      "live": {
+        "bytes": 3698,
+        "sha256": "c8faa664809360ff827525f63581ed7491bd7aeeef14fa08c6160b605a2684d0"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/pump/PumpSave.java": {
+      "committed": {
+        "bytes": 5571,
+        "sha256": "2c0d3ec7b8abdd07faf2141e6d2eccd8bc3d08780a7e3a568f3a114fccc1ae72"
+      },
+      "live": {
+        "bytes": 5571,
+        "sha256": "2c0d3ec7b8abdd07faf2141e6d2eccd8bc3d08780a7e3a568f3a114fccc1ae72"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/pump/PumpBlockEntity.java": {
+      "committed": {
+        "bytes": 17914,
+        "sha256": "a1bfd56b63f297fac5e3811f25fb65c414f201e100d9905d1d1d6ce41c1c53a1"
+      },
+      "live": {
+        "bytes": 17914,
+        "sha256": "a1bfd56b63f297fac5e3811f25fb65c414f201e100d9905d1d1d6ce41c1c53a1"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionProtection.java": {
+      "committed": {
+        "bytes": 2624,
+        "sha256": "5197fbd70e879e2d5c7fcfe222fa59d45cbed0ad9bebcd955e54d822121a3eac"
+      },
+      "live": {
+        "bytes": 2624,
+        "sha256": "5197fbd70e879e2d5c7fcfe222fa59d45cbed0ad9bebcd955e54d822121a3eac"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionSave.java": {
+      "committed": {
+        "bytes": 4256,
+        "sha256": "1a172a826c5aab3ed541f10518d78e11c203ba9f8d442703964b891ddf896c7e"
+      },
+      "live": {
+        "bytes": 4256,
+        "sha256": "1a172a826c5aab3ed541f10518d78e11c203ba9f8d442703964b891ddf896c7e"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionGeneratorBlockEntity.java": {
+      "committed": {
+        "bytes": 12902,
+        "sha256": "a623810ece45a6532d492848ffce6c96f79fd5de49b20096199c28cfedd9ccee"
+      },
+      "live": {
+        "bytes": 12902,
+        "sha256": "a623810ece45a6532d492848ffce6c96f79fd5de49b20096199c28cfedd9ccee"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/RecipeSignatureProtection.java": {
+      "committed": {
+        "bytes": 3503,
+        "sha256": "51e41e64013d3c410c76a0a5d07f2c8b92d54e67737ad4ea30808d5d183641f9"
+      },
+      "live": {
+        "bytes": 3503,
+        "sha256": "51e41e64013d3c410c76a0a5d07f2c8b92d54e67737ad4ea30808d5d183641f9"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/RecipeSignatureMigration.java": {
+      "committed": {
+        "bytes": 5746,
+        "sha256": "fc249343b244ead3778c4919882742f522fd57f9b75031799adb50a46c207383"
+      },
+      "live": {
+        "bytes": 5746,
+        "sha256": "fc249343b244ead3778c4919882742f522fd57f9b75031799adb50a46c207383"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/GuardedChunkSaveGameTests.java": {
+      "committed": {
+        "bytes": 3322,
+        "sha256": "0370ab962bbead23ab54c9632d863a9b1914cbbed5822b538e33f157590869d7"
+      },
+      "live": {
+        "bytes": 3322,
+        "sha256": "0370ab962bbead23ab54c9632d863a9b1914cbbed5822b538e33f157590869d7"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RecipeSignatureSaveEventGameTests.java": {
+      "committed": {
+        "bytes": 4045,
+        "sha256": "715ff5fdd969ed321f887db9fb011e2c973ab47ab73ef0b5da76797ae27bdd5a"
+      },
+      "live": {
+        "bytes": 4045,
+        "sha256": "715ff5fdd969ed321f887db9fb011e2c973ab47ab73ef0b5da76797ae27bdd5a"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerManager.java": {
+      "committed": {
+        "bytes": 20001,
+        "sha256": "0d0c009d4a7257e40a85b42fe7dd2917a6dd9e153de8a4cc697b58186fe96bdc"
+      },
+      "live": {
+        "bytes": 20001,
+        "sha256": "0d0c009d4a7257e40a85b42fe7dd2917a6dd9e153de8a4cc697b58186fe96bdc"
+      },
+      "unchanged": true
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/ChunkSaveDenialsTest.java": {
+      "committed": {
+        "bytes": 2569,
+        "sha256": "df59f03ab88c3b8577440a268a5d22ef89ed19287e9eeeaf8d87a6e989087ad1"
+      },
+      "live": {
+        "bytes": 2569,
+        "sha256": "df59f03ab88c3b8577440a268a5d22ef89ed19287e9eeeaf8d87a6e989087ad1"
+      },
+      "unchanged": true
+    }
+  },
+  "primary_extra": {
+    "patches/net/minecraft/world/level/Level.java.patch": {
+      "bytes": 10454,
+      "sha256": "5c47a3a40d855417e4f953dc141967b222e67bb9a85d36c838ce97184bbbe682",
+      "lines": [
+        {
+          "line": 6,
+          "text": " "
+        },
+        {
+          "line": 7,
+          "text": "-public abstract class Level implements LevelAccessor, AutoCloseable {"
+        },
+        {
+          "line": 8,
+          "text": "+public abstract class Level extends net.minecraftforge.common.capabilities.CapabilityProvider<Level> implements LevelAccessor, AutoCloseable, net.minecraftforge.common.extensions.IForgeLevel {"
+        },
+        {
+          "line": 9,
+          "text": "    public static final Codec<ResourceKey<Level>> f_46427_ = ResourceKey.m_195966_(Registries.f_256858_);"
+        },
+        {
+          "line": 10,
+          "text": "    public static final ResourceKey<Level> f_46428_ = ResourceKey.m_135785_(Registries.f_256858_, new ResourceLocation(\"overworld\"));"
+        },
+        {
+          "line": 11,
+          "text": "    public static final ResourceKey<Level> f_46429_ = ResourceKey.m_135785_(Registries.f_256858_, new ResourceLocation(\"the_nether\"));"
+        },
+        {
+          "line": 12,
+          "text": "@@ -110,8 +_,14 @@"
+        },
+        {
+          "line": 13,
+          "text": "    private final RegistryAccess f_268710_;"
+        },
+        {
+          "line": 14,
+          "text": "    private final DamageSources f_268497_;"
+        }
+      ]
+    },
+    "patches/net/minecraft/server/level/ServerLevel.java.patch": {
+      "bytes": 11935,
+      "sha256": "9da199969072548a2aae546db661cf72d57515c27b26eef53e6f59774376e201",
+      "lines": [
+        {
+          "line": 11,
+          "text": "    private final boolean f_8561_;"
+        },
+        {
+          "line": 12,
+          "text": "    private final RandomSequences f_286969_;"
+        },
+        {
+          "line": 13,
+          "text": "+   private net.minecraftforge.common.util.LevelCapabilityData capabilityData;"
+        },
+        {
+          "line": 14,
+          "text": " "
+        },
+        {
+          "line": 15,
+          "text": "    public ServerLevel(MinecraftServer p_214999_, Executor p_215000_, LevelStorageSource.LevelStorageAccess p_215001_, ServerLevelData p_215002_, ResourceKey<Level> p_215003_, LevelStem p_215004_, ChunkProgressListener p_215005_, boolean p_215006_, long p_215007_, List<CustomSpawner> p_215008_, boolean p_215009_, @Nullable RandomSequences p_288977_) {"
+        },
+        {
+          "line": 16,
+          "text": "       super(p_215002_, p_215003_, p_214999_.m_206579_(), p_215004_.f_63975_(), p_214999_::m_129905_, false, p_215006_, p_215007_, p_214999_.m_213994_());"
+        },
+        {
+          "line": 17,
+          "text": "@@ -240,6 +_,7 @@"
+        },
+        {
+          "line": 18,
+          "text": "             return new RandomSequences(i);"
+        },
+        {
+          "line": 19,
+          "text": "          }, \"random_sequences\");"
+        },
+        {
+          "line": 20,
+          "text": "       });"
+        },
+        {
+          "line": 21,
+          "text": "+      this.initCapabilities();"
+        },
+        {
+          "line": 22,
+          "text": "    }"
+        },
+        {
+          "line": 23,
+          "text": " "
+        },
+        {
+          "line": 24,
+          "text": "    /** @deprecated */"
+        },
+        {
+          "line": 25,
+          "text": "@@ -275,8 +_,8 @@"
+        },
+        {
+          "line": 26,
+          "text": "       int i = this.m_46469_().m_46215_(GameRules.f_151486_);"
+        },
+        {
+          "line": 27,
+          "text": "       if (this.f_143245_.m_144002_(i) && this.f_143245_.m_144004_(i, this.f_8546_)) {"
+        },
+        {
+          "line": 193,
+          "text": "    }"
+        },
+        {
+          "line": 194,
+          "text": " "
+        },
+        {
+          "line": 195,
+          "text": "+   protected void initCapabilities() {"
+        },
+        {
+          "line": 196,
+          "text": "+      this.gatherCapabilities();"
+        },
+        {
+          "line": 197,
+          "text": "+      capabilityData = this.m_8895_().m_164861_(e -> net.minecraftforge.common.util.LevelCapabilityData.load(e, getCapabilities()), () -> new net.minecraftforge.common.util.LevelCapabilityData(getCapabilities()), net.minecraftforge.common.util.LevelCapabilityData.ID);"
+        },
+        {
+          "line": 198,
+          "text": "+      capabilityData.setCapabilities(getCapabilities());"
+        },
+        {
+          "line": 199,
+          "text": "+   }"
+        },
+        {
+          "line": 200,
+          "text": "+"
+        },
+        {
+          "line": 201,
+          "text": "    public LevelEntityGetter<Entity> m_142646_() {"
+        },
+        {
+          "line": 202,
+          "text": "       return this.f_143244_.m_157567_();"
+        },
+        {
+          "line": 203,
+          "text": "    }"
+        }
+      ]
+    },
+    "net/minecraftforge/common/util/LevelCapabilityData.java": {
+      "bytes": 1634,
+      "sha256": "aa3b68f99f78988b64f461c6e7f9171b19729a7ffaec706945102c923e91eeaf",
+      "lines": [
+        {
+          "line": 10,
+          "text": "import org.jetbrains.annotations.Nullable;"
+        },
+        {
+          "line": 11,
+          "text": ""
+        },
+        {
+          "line": 12,
+          "text": "public class LevelCapabilityData extends SavedData"
+        },
+        {
+          "line": 13,
+          "text": "{"
+        },
+        {
+          "line": 14,
+          "text": "    public static final String ID = \"capabilities\";"
+        },
+        {
+          "line": 15,
+          "text": ""
+        },
+        {
+          "line": 16,
+          "text": "    private INBTSerializable<CompoundTag> serializable;"
+        },
+        {
+          "line": 17,
+          "text": "    private CompoundTag capNBT = null;"
+        },
+        {
+          "line": 18,
+          "text": ""
+        },
+        {
+          "line": 19,
+          "text": "    public LevelCapabilityData(@Nullable INBTSerializable<CompoundTag> serializable)"
+        },
+        {
+          "line": 20,
+          "text": "    {"
+        },
+        {
+          "line": 21,
+          "text": "        this.serializable = serializable;"
+        },
+        {
+          "line": 22,
+          "text": "    }"
+        },
+        {
+          "line": 23,
+          "text": ""
+        },
+        {
+          "line": 24,
+          "text": "    public static LevelCapabilityData load(CompoundTag tag, @Nullable INBTSerializable<CompoundTag> serializable) {"
+        },
+        {
+          "line": 25,
+          "text": "        LevelCapabilityData data = new LevelCapabilityData(serializable);"
+        },
+        {
+          "line": 26,
+          "text": "        data.read(tag);"
+        },
+        {
+          "line": 27,
+          "text": "        return data;"
+        },
+        {
+          "line": 28,
+          "text": "    }"
+        },
+        {
+          "line": 29,
+          "text": ""
+        },
+        {
+          "line": 30,
+          "text": "    public void read(CompoundTag nbt)"
+        },
+        {
+          "line": 31,
+          "text": "    {"
+        },
+        {
+          "line": 33,
+          "text": "        if (serializable != null)"
+        },
+        {
+          "line": 34,
+          "text": "        {"
+        },
+        {
+          "line": 35,
+          "text": "            serializable.deserializeNBT(this.capNBT);"
+        },
+        {
+          "line": 36,
+          "text": "            this.capNBT = null;"
+        },
+        {
+          "line": 37,
+          "text": "        }"
+        },
+        {
+          "line": 38,
+          "text": "    }"
+        },
+        {
+          "line": 39,
+          "text": ""
+        },
+        {
+          "line": 40,
+          "text": "    @Override"
+        },
+        {
+          "line": 41,
+          "text": "    public CompoundTag m_7176_(CompoundTag nbt)"
+        },
+        {
+          "line": 42,
+          "text": "    {"
+        },
+        {
+          "line": 43,
+          "text": "        if (serializable != null)"
+        },
+        {
+          "line": 44,
+          "text": "            nbt = serializable.serializeNBT();"
+        },
+        {
+          "line": 45,
+          "text": "        return nbt;"
+        },
+        {
+          "line": 46,
+          "text": "    }"
+        },
+        {
+          "line": 47,
+          "text": ""
+        },
+        {
+          "line": 48,
+          "text": "    @Override"
+        },
+        {
+          "line": 49,
+          "text": "    public boolean m_77764_()"
+        },
+        {
+          "line": 50,
+          "text": "    {"
+        },
+        {
+          "line": 57,
+          "text": "        if (this.capNBT != null && serializable != null)"
+        },
+        {
+          "line": 58,
+          "text": "        {"
+        },
+        {
+          "line": 59,
+          "text": "            serializable.deserializeNBT(this.capNBT);"
+        },
+        {
+          "line": 60,
+          "text": "            this.capNBT = null;"
+        },
+        {
+          "line": 61,
+          "text": "        }"
+        },
+        {
+          "line": 62,
+          "text": "    }"
+        },
+        {
+          "line": 63,
+          "text": "}"
+        }
+      ]
+    }
+  },
+  "historical_native_marker_observation": {
+    "archive": "D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip",
+    "commands_identity": {
+      "bytes": 241,
+      "sha256": "7d4b33c19b7c6c3a88b73c99277bc17aca4fa315b66ab80662db34932791a409"
+    },
+    "commands": [
+      "forceload add 176 176",
+      "forceload query 176 176",
+      "execute if loaded 180 180 180 run say ARCE_TANK_FULL_LOADED",
+      "say ARCE_TANK_LOAD_PROBE_END_0",
+      "setblock 190 180 180 minecraft:stone",
+      "save-all flush",
+      "stop"
+    ],
+    "successful_marker_change": [
+      {
+        "line": 65,
+        "text": "[22:01:13] [Server thread/INFO] [minecraft/MinecraftServer]: Changed the block at 190, 180, 180"
+      }
+    ],
+    "host_inputs_identity": {
+      "bytes": 1516,
+      "sha256": "2e1b26d0703806fd99d50c3489b91628448731b35a38b907bb6667fefd269842"
+    },
+    "host_inputs": {
+      "current": {
+        "bytes": 5254967,
+        "name": "advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\guard-artifacts-05\\advancedrocketry-community-1.20.1-1.8.0-dev.jar",
+        "sha256": "edc06a9a5042349131a04d665321f51803319e4562deafbe4ec37b4dd071dc74"
+      },
+      "fixture": {
+        "bytes": 96772,
+        "name": "arce-adapter-compat-test-1.0.0.jar",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v160-c9-1d4b262cc75c4042b9945eebde09cd04\\attempt-04\\native-server\\mods\\arce-adapter-compat-test-1.0.0.jar",
+        "sha256": "765735d1254ed6f66049f45cc740208882195bff7a00bfd29e2245e264976fa4"
+      },
+      "java": "17.0.7",
+      "old": {
+        "bytes": 4366599,
+        "name": "advancedrocketry-community-1.20.1-1.7.0-dev.jar",
+        "path": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c15c-27e5d85d411242028299223ae71b0848\\v17-jar\\advancedrocketry-community-1.20.1-1.7.0-dev.jar",
+        "sha256": "4326d3d67edf417f4073af86329508fbfa19f8b9dc4d57548e82331a9ac13bbe"
+      },
+      "runtime_template": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v160-c9-1d4b262cc75c4042b9945eebde09cd04\\attempt-04\\native-server",
+      "server_properties_sha256": "b8fe7bf44d0d76ed932a940de6d3a678d7cc0512c88b81f5cd9957c3e44807d1",
+      "source_world": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v160-c9-1d4b262cc75c4042b9945eebde09cd04\\attempt-04\\native-server\\world"
+    }
+  },
+  "historical_patched_runtime_identity": {
+    "archive_member_identity": {
+      "bytes": 19636,
+      "sha256": "47bd4ff1df19b58dd2cab84421ebdb31b918dbe2d83bf59d7a144e73ae15f05b"
+    },
+    "declaration": [
+      {
+        "source": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\arce-v180-c16a-integrate-072fbcf821ce4ceb9fbcb3d98ec27d41\\tank-native-02\\server\\libraries\\net\\minecraftforge\\forge\\1.20.1-47.4.10\\forge-1.20.1-47.4.10-server.jar",
+        "sha256": "1dcf74ad4961877f5c79d29b361596fd4222c8849f6db31fbcf663d1ba5ff072",
+        "bytes": 4848366
+      }
+    ],
+    "runtime_JAR_reread": false,
+    "historical_disassembly_only": true
+  },
+  "Java_native_launches": 0
+}

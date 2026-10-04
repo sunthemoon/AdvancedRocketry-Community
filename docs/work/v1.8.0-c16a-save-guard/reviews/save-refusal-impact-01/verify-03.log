@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "D:\ARCE-Task-Evidence\v1.8.0\asrf-5ae80336d4\verify03.py", line 10, in <module>
+    exec(compile(source, str(Path(__file__).resolve()), 'exec'))
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\ARCE-Task-Evidence\v1.8.0\asrf-5ae80336d4\verify03.py", line 17, in <module>
+  File "D:\ARCE-Task-Evidence\v1.8.0\asrf-5ae80336d4\verify03.py", line 180
+    self.assertIn('BlockEntity::onChunkUnloaded', '
+                                                  ^
+SyntaxError: unterminated string literal (detected at line 180)

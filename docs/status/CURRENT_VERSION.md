@@ -36,26 +36,28 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: 3f3d62aed3980186fe0acc9592cf93ca436405fb
+tested_code_commit: 1ece7e9d2515003ca705b5634ef654a6bcae8f89
 last_updated: 2026-10-04
 ```
 
 ## Current development evidence
 
-The integrated development code, generated content, original art and bounded
-native probes are committed and pushed in four scoped commits. The latest code
-commit adds only K2 private canonical NBT computation after independent source
-review; it does not authorize consumers, full codecs or world persistence.
-[Current integration evidence](../work/v1.8.0-c16a-k2/VERIFICATION.md) records
-1,750 JUnit cases in 329 suites, 464 required GameTests and 90 focused Python
-cases passing; the repository validator reports 45 passed. DataGen has 771 files
-and zero repeat writes. The 61 ERROR logger lines remain disclosed, not waived.
-The different-agent [actual-evidence audit](../work/v1.8.0-c16a-k2/reviews/integration-21-evidence-audit-01/REVIEW-01.md)
-is complete with no findings in that evidence scope. No native/server/client
-run used the newly built main JAR; the audit does not substitute for one.
+The integrated development code, data/art, probes and reviewed contracts are
+committed and pushed in scoped phase commits. The latest code commit adds only
+K3 private SHA-256 calculation over unchanged canonical NBT bytes, after
+independent source review; it does not authorize consumers, full codecs or world
+persistence. [Current integration evidence](../work/v1.8.0-c16a-k3/VERIFICATION.md)
+records 1,765 JUnit cases in 330 suites, 464 required GameTests and 90 focused
+Python cases passing. DataGen has 771 files and zero repeat writes. The fresh
+bounded repository check reports 45 passed. The different-agent
+[actual-evidence audit](../work/v1.8.0-c16a-k3/reviews/integration-evidence-01.zip)
+is complete with no introduced evidence discrepancy in its limited scope;
+final publication checks are separately recorded. The 61 ERROR logger lines
+remain disclosed, not waived. No packaged native/server/client run used the
+newly built main JAR, and the evidence audit does not replay one.
 
 The development main JAR SHA-256 is
-`796c9611ec8d655398e5a046bfe6cc3f81b2c7880a19c835ea9ed301a990373e`.
+`26356660ef03e9e938067e8bb53ac085290300cdf947a27d0d85dd6c1355682a`.
 The API artifact remains unchanged. This is not a frozen release candidate.
 The content ledger has **186 PLANNED units /154 REVIEW assets**; its closure
 check still fails. v1.8 remains **IN_PROGRESS /IMPLEMENTING**, with **G0–G9 open**.
@@ -71,7 +73,7 @@ check still fails. v1.8 remains **IN_PROGRESS /IMPLEMENTING**, with **G0–G9 op
 - Recipe-signature preservation and paused unproven legacy tasks, bounded save
   refusal, menu reasons and transport compatibility are integrated. Historical
   restart/reload evidence applies only to its recorded artifact and scope.
-- Bank/value models, K1 ordering and K2 bounded bytes are private/model-only
+- Bank/value models, K1 ordering, K2 bounded bytes and K3 digest are private/model-only
   infrastructure, not completed physical hatch/controller or full codec APIs.
 
 ## Confirmed decisions and unfinished work
@@ -83,11 +85,13 @@ must refuse, while supported zero-energy operations retain vanilla behavior.
 The reviewed ordinary/mode inventories are technical dependencies only: server
 creative pre-transform interception and real FE conservation are unimplemented.
 
-ADR-064 revision 5, ADR-065 revision 4 and ADR-066 revision 3 have qualified
-contract acceptance after independent review. The owner's condition is no
-unresolved Critical/High/Medium in the reviewed final contract; major semantic
-changes still require separate confirmation. Those decisions do not supply
-runtime, migration or native recovery evidence. C18 D4 remains unproven.
+Earlier independent reviews record qualified contract acceptance for ADR-064
+revision 5, ADR-065 revision 4 and ADR-066 revision 3. The owner's condition is
+no unresolved Critical/High/Medium in the reviewed final contract; major semantic
+changes still require separate confirmation. The later save-refusal audit below
+leaves two disclosure/ADR findings open, so that historical record does not
+authorize new guarded runtime admission. These decisions do not supply runtime,
+migration or native recovery evidence. C18 D4 remains unproven.
 
 Remaining: Guard lifecycle and first-save/final-unload proof; full hash/frame/
 native codecs and resource consumers; physical hatches, lathe and motor-tier
@@ -98,9 +102,19 @@ its impact, repair workflow and release disposition remain open. Historical
 failures and oversized evidence-storage debt remain documented, not erased by
 passing automatic tests.
 
+The separate [save-refusal audit](../work/v1.8.0-c16a-save-guard/SAVE-REFUSAL-DISPOSITION-01.md)
+has two open Medium disclosure/ADR findings. After the 257th distinct refused
+chunk, the guard denies subsequent terrain saves throughout that ServerLevel.
+Historical attempts emit EventBus/ChunkMap ERROR pairs with no guard log quota;
+dirty state does not prevent unload or provide cross-store durability. No
+quarantine/reset/stop policy, runtime risk acceptance or repair proof is selected.
+
 The user assigns this agent sole integration of the existing v1.8 work and
 requires phase commits/pushes. User-maintained AGENTS.md and the private document
-bundle are excluded; newly observed external edits are not silently staged.
+bundle are excluded. On 2026-10-04 the owner allocates only R-021 correction and
+a proposed ADR disclosure amendment, with no save behavior, risk acceptance or
+other-row changes; that separate documentation implementation/review is pending.
+Other newly observed external edits are not silently staged.
 The [completion plan](COMPLETION-PLAN.md) lists the remaining leaves. Historical
 status checkpoints have moved to the implementation log, not this current-state
 summary. No version Gate, tag or release is approved.

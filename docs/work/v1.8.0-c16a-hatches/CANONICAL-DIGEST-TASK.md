@@ -1,6 +1,7 @@
 # C16a-03b-01-K3 private canonical NBT digest
 
-Date: 2026-10-04. Status: ready. Root owns integration and central files.
+Date: 2026-10-04. Status: private calculation verified and code committed.
+Root owns central files.
 
 ## Outcome and boundary
 
@@ -49,9 +50,23 @@ and Root regression precede application. Keep a small patch/log/XML/result/
 manifest report; no whole copied source tree or redundant large ZIP. Do not
 commit, push, change HEAD or remove another agent's files; Root integrates.
 
-- [ ] Exact two-file proposal and author checks.
-- [ ] Different-agent actual-source review and replay.
-- [ ] Root integration, current-version regression and phase commit/push.
+- [x] Exact two-file proposal and author checks.
+- [x] Different-agent actual-source review and replay.
+- [x] Root application, actual build/test/DataGen/GameTest and code commit/push.
+- [x] Fresh bounded repository check and different-agent regression-evidence audit.
+
+Final current-document links and scoped validators are publication checks for
+the separate documentation phase, not an unfinished calculation or repository run.
 
 Full codec/hash/Guard consumers, physical hatches, server creative interception,
 world/native/client validation, C16b–C19 and all Required Gates remain separate.
+
+The original task snapshot SHA is
+`5d1f7356c50b539859eb69cd7b821e624224d004d5dbb32c7dec4c38d7d761b2`;
+it remains in the frozen source review. This progress update does not alter
+that reviewed computation contract. [Qualified source acceptance](../v1.8.0-c16a-k3/SOURCE-ACCEPTANCE-01.md)
+records the exact delta and actual scoped results. The reviewed code is committed
+and non-force pushed at `1ece7e9d2515003ca705b5634ef654a6bcae8f89`.
+The fresh repository check and independent regression-evidence disposition are
+complete. The separate documentation phase preserves its final publication
+checks and input pins; no broader delivery or version Gate is inferred.

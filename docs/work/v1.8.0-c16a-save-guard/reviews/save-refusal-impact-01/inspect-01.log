@@ -1,0 +1,4 @@
+  File "D:\ARCE-Task-Evidence\v1.8.0\asrf-5ae80336d4\inspect01.py", line 57
+    'flushMigrationBarrier(', 'getChunkSource().save', 'loadedRootsMatch', 'preservesRecipeInput')))}
+                                                                                                   ^
+SyntaxError: closing parenthesis ')' does not match opening parenthesis '{' on line 54

@@ -1,0 +1,52 @@
+test_01_per_level_capacity_and_saturation_source (__main__.ConsistencyControls.test_01_per_level_capacity_and_saturation_source) ... ok
+test_02_lifecycle_not_saved_and_no_native_reset (__main__.ConsistencyControls.test_02_lifecycle_not_saved_and_no_native_reset) ... ok
+test_03_record_before_throw_and_retry_dirty (__main__.ConsistencyControls.test_03_record_before_throw_and_retry_dirty) ... ok
+test_04_actual_four_guard_consumers_and_six_be_ids (__main__.ConsistencyControls.test_04_actual_four_guard_consumers_and_six_be_ids) ... ok
+test_05_below_byte_cap_refusals_are_not_byte_only (__main__.ConsistencyControls.test_05_below_byte_cap_refusals_are_not_byte_only) ... FAIL
+test_06_native_event_catch_prevents_writer (__main__.ConsistencyControls.test_06_native_event_catch_prevents_writer) ... ok
+test_07_unload_ignores_save_boolean (__main__.ConsistencyControls.test_07_unload_ignores_save_boolean) ... ok
+test_08_failed_save_has_no_success_cooldown (__main__.ConsistencyControls.test_08_failed_save_has_no_success_cooldown) ... ok
+test_09_historical_native_log_pairs_and_clean_exit (__main__.ConsistencyControls.test_09_historical_native_log_pairs_and_clean_exit) ... ERROR
+test_10_historical_native03_original_compressed_chunk_preserved (__main__.ConsistencyControls.test_10_historical_native03_original_compressed_chunk_preserved) ... ERROR
+test_11_cross_store_and_be_clear_primary_controls (__main__.ConsistencyControls.test_11_cross_store_and_be_clear_primary_controls) ... ERROR
+test_12_precision_migration_has_disk_readback_not_only_save_void (__main__.ConsistencyControls.test_12_precision_migration_has_disk_readback_not_only_save_void) ... ok
+
+======================================================================
+ERROR: test_09_historical_native_log_pairs_and_clean_exit (__main__.ConsistencyControls.test_09_historical_native_log_pairs_and_clean_exit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\ARCE-Task-Evidence\v1.8.0\asrf-5ae80336d4\verify01.py", line 151, in test_09_historical_native_log_pairs_and_clean_exit
+    receipt = json.loads(self.native('native/tank-native-03/oversized-refusal/receipt.json'))
+                         ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: manifested_archive.<locals>.member() takes 1 positional argument but 2 were given
+
+======================================================================
+ERROR: test_10_historical_native03_original_compressed_chunk_preserved (__main__.ConsistencyControls.test_10_historical_native03_original_compressed_chunk_preserved)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\ARCE-Task-Evidence\v1.8.0\asrf-5ae80336d4\verify01.py", line 163, in test_10_historical_native03_original_compressed_chunk_preserved
+    before = self.native('native/tank-native-03/oversized-patch/chunk-11-11.nbt.zlib')
+TypeError: manifested_archive.<locals>.member() takes 1 positional argument but 2 were given
+
+======================================================================
+ERROR: test_11_cross_store_and_be_clear_primary_controls (__main__.ConsistencyControls.test_11_cross_store_and_be_clear_primary_controls)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\ARCE-Task-Evidence\v1.8.0\asrf-5ae80336d4\verify01.py", line 174, in test_11_cross_store_and_be_clear_primary_controls
+    level = self.incident('bytecode/patched-runtime-ServerLevel.txt').decode('utf-8')
+            ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: manifested_archive.<locals>.member() takes 1 positional argument but 2 were given
+
+======================================================================
+FAIL: test_05_below_byte_cap_refusals_are_not_byte_only (__main__.ConsistencyControls.test_05_below_byte_cap_refusals_are_not_byte_only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\ARCE-Task-Evidence\v1.8.0\asrf-5ae80336d4\verify01.py", line 116, in test_05_below_byte_cap_refusals_are_not_byte_only
+    self.assertIn('65_536, 20, 4_096', migration)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '65_536, 20, 4_096' not found in 'package io.github.sunthemoon.advancedrocketrycommunity.machine.recipe;\n\nimport io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;\nimport java.util.Set;\nimport javax.annotation.Nullable;\nimport net.minecraft.nbt.CompoundTag;\nimport net.minecraft.nbt.Tag;\nimport net.minecraft.resources.ResourceLocation;\n\n/** Marker codec and same-snapshot preservation guard; existing process/journal codecs remain unchanged. */\npublic final class RecipeSignatureMigration {\n    public static final String ROOT = "arce_recipe_signature";\n    public static final int SCHEMA = 1;\n    public static final int MAX_BYTES = 1_024;\n    private static final String PROCESS_ROOT = "arce_process";\n    private static final String JOURNAL_ROOT = "arce_process_journal";\n    private static final String LEGACY_ROOT = "arce_machine";\n    private static final Set<String> IDLE_FIELDS = Set.of("schema_version", "format", "converted");\n    private static final Set<String> ACTIVE_FIELDS = Set.of("schema_version", "format", "converted", "recipe_id");\n    private boolean current = true;\n    private boolean unsupported;\n    private boolean oversized;\n    private boolean converted;\n    private Tag rawMarker;\n    private Tag oldProcess;\n    private Tag oldJournal;\n    private Tag oldLegacy;\n\n    public void reset() {\n        current = true; unsupported = false; oversized = false; converted = false;\n        rawMarker = null; oldProcess = null; oldJournal = null; oldLegacy = null;\n    }\n\n    /** Must run before existing recursive codecs, copying, equality or item decoding. */\n    public static boolean bounded(CompoundTag parent) {\n        return boundedRoot(parent, ROOT) && boundedRoot(parent, PROCESS_ROOT)\n                && boundedRoot(parent, JOURNAL_ROOT) && boundedRoot(parent, LEGACY_ROOT);\n    }\n\n    private static boolean boundedRoot(CompoundTag parent, String key) {\n        Tag raw = parent.get(key);\n        return raw == null || BoundedNbt.fits(raw, ROOT.equals(key) ? MAX_BYTES : 65_536,\n                ROOT.equals(key) ? 16 : 20, ROOT.equals(key) ? 256 : 4_096);\n    }\n\n    public void load(CompoundTag parent, boolean hasWork, @Nullable String retainedRecipeId) {\n        reset();\n        current = false;\n        oversized = !bounded(parent);\n        // Hold unbounded roots by reference only; veto their outgoing chunk before storage writes.\n        // Throwing inside saveAdditional would instead let LevelChunk omit the BlockEntity.\n        rawMarker = capture(parent, ROOT);\n        oldProcess = capture(parent, PROCESS_ROOT);\n        oldJournal = capture(parent, JOURNAL_ROOT);\n        oldLegacy = capture(parent, LEGACY_ROOT);\n        if (oversized) { unsupported = true; return; }\n        if (rawMarker == null) {\n            if (!hasWork) { accept(); }\n            return;\n        }\n        if (!(rawMarker instanceof CompoundTag marker)\n                || !(hasWork ? ACTIVE_FIELDS : IDLE_FIELDS).equals(marker.getAllKeys())\n                || !marker.contains("schema_version", Tag.TAG_INT)\n                || marker.getInt("schema_version") != SCHEMA\n                || !marker.contains("format", Tag.TAG_STRING)\n                || !"json_v1".equals(marker.getString("format"))\n                || !marker.contains("converted", Tag.TAG_BYTE)\n                || marker.getByte("converted") < 0 || marker.getByte("converted") > 1\n                || hasWork && (!marker.contains("recipe_id", Tag.TAG_STRING)\n                    || !validRecipeId(marker.getString("recipe_id"))\n                    || !marker.getString("recipe_id").equals(retainedRecipeId))) {\n            unsupported = true;\n            return;\n        }\n        converted = marker.getBoolean("converted");\n        accept();\n    }\n\n    public boolean current() { return current; }\n    public boolean unsupported() { return unsupported; }\n    public boolean oversized() { return oversized; }\n\n    private void accept() {\n        if (unsupported) { throw new IllegalStateException("unsupported signature marker cannot be converted"); }\n        current = true;\n        rawMarker = null; oldProcess = null; oldJournal = null; oldLegacy = null;\n    }\n\n    /** Called after normal process/journal encoding, in the same controller snapshot. */\n    public void save(CompoundTag parent, @Nullable String retainedRecipeId) {\n        if (current) {\n            CompoundTag marker = new CompoundTag();\n            marker.putInt("schema_version", SCHEMA);\n            marker.putString("format", "json_v1");\n            marker.putBoolean("converted", converted);\n            if (retainedRecipeId != null) {\n                if (!validRecipeId(retainedRecipeId)) { throw new IllegalStateException("invalid marker recipe ID"); }\n                marker.putString("recipe_id", retainedRecipeId);\n            }\n            parent.put(ROOT, marker);\n            return;\n        }\n        restore(parent, ROOT, rawMarker);\n        restore(parent, PROCESS_ROOT, oldProcess);\n        restore(parent, JOURNAL_ROOT, oldJournal);\n        restore(parent, LEGACY_ROOT, oldLegacy);\n    }\n\n    private Tag capture(CompoundTag parent, String key) {\n        Tag raw = parent.get(key);\n        return raw == null || !boundedRoot(parent, key) ? raw : raw.copy();\n    }\n\n    private void restore(CompoundTag parent, String key, Tag raw) {\n        if (raw == null) { parent.remove(key); }\n        else { parent.put(key, oversized ? raw : raw.copy()); }\n    }\n\n    private static boolean validRecipeId(String value) {\n        ResourceLocation id = value.length() <= io.github.sunthemoon.advancedrocketrycommunity.machine.process\n                .ProcessResourceKey.MAX_RESOURCE_ID_CHARS ? ResourceLocation.tryParse(value) : null;\n        return id != null && id.toString().equals(value);\n    }\n}\n'
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.817s
+
+FAILED (failures=1, errors=3)

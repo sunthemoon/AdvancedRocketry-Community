@@ -1,0 +1,99 @@
+{
+  "immutable_code_commit": "3f3d62aed3980186fe0acc9592cf93ca436405fb",
+  "final_live_equal_source_count": 19,
+  "sources": {
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/ChunkSaveDenials.java": {
+      "bytes": 1856,
+      "sha256": "96a66b34e46af0ae079802263e46b595eba83cae0ce179a22176165c49e15427"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/GuardedChunkSaves.java": {
+      "bytes": 4047,
+      "sha256": "14132bf89fc3f4b6589a3ef227e70bc72bf287f94fe86336cb29de52c18aa487"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/BoundedNbt.java": {
+      "bytes": 4850,
+      "sha256": "dea20587fa5034a30c2874cc6feaea32ee6f2e16c6f1cb051c34f73816cdbd1c"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/tank/TankProtection.java": {
+      "bytes": 2226,
+      "sha256": "2abf114c220cb1de0e829b9a987785fe10e820a6cca860e393b1d35e856404af"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/tank/TankSave.java": {
+      "bytes": 4156,
+      "sha256": "a090a4152aac71b32a217f43e2bcf31f30c872c781e0edfea0e9613255e5696c"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/tank/PressurizedTankBlockEntity.java": {
+      "bytes": 12609,
+      "sha256": "9b76b380710e729f827ea82c72344b502de54b3557293f122cb17c7de12196a3"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/pump/PumpProtection.java": {
+      "bytes": 3698,
+      "sha256": "c8faa664809360ff827525f63581ed7491bd7aeeef14fa08c6160b605a2684d0"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/pump/PumpSave.java": {
+      "bytes": 5571,
+      "sha256": "2c0d3ec7b8abdd07faf2141e6d2eccd8bc3d08780a7e3a568f3a114fccc1ae72"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/pump/PumpBlockEntity.java": {
+      "bytes": 17914,
+      "sha256": "a1bfd56b63f297fac5e3811f25fb65c414f201e100d9905d1d1d6ce41c1c53a1"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionProtection.java": {
+      "bytes": 2624,
+      "sha256": "5197fbd70e879e2d5c7fcfe222fa59d45cbed0ad9bebcd955e54d822121a3eac"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionSave.java": {
+      "bytes": 4256,
+      "sha256": "1a172a826c5aab3ed541f10518d78e11c203ba9f8d442703964b891ddf896c7e"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionGeneratorBlockEntity.java": {
+      "bytes": 12902,
+      "sha256": "a623810ece45a6532d492848ffce6c96f79fd5de49b20096199c28cfedd9ccee"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/RecipeSignatureProtection.java": {
+      "bytes": 3503,
+      "sha256": "51e41e64013d3c410c76a0a5d07f2c8b92d54e67737ad4ea30808d5d183641f9"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/RecipeSignatureMigration.java": {
+      "bytes": 5746,
+      "sha256": "fc249343b244ead3778c4919882742f522fd57f9b75031799adb50a46c207383"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/GuardedChunkSaveGameTests.java": {
+      "bytes": 3322,
+      "sha256": "0370ab962bbead23ab54c9632d863a9b1914cbbed5822b538e33f157590869d7"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/RecipeSignatureSaveEventGameTests.java": {
+      "bytes": 4045,
+      "sha256": "715ff5fdd969ed321f887db9fb011e2c973ab47ab73ef0b5da76797ae27bdd5a"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerManager.java": {
+      "bytes": 20001,
+      "sha256": "0d0c009d4a7257e40a85b42fe7dd2917a6dd9e153de8a4cc697b58186fe96bdc"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/test/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/ChunkSaveDenialsTest.java": {
+      "bytes": 2569,
+      "sha256": "df59f03ab88c3b8577440a268a5d22ef89ed19287e9eeeaf8d87a6e989087ad1"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerMigrationSaveVerifier.java": {
+      "bytes": 5071,
+      "sha256": "e104742f35a69db9b448d27823b5a00f73efb5bfdfbb22e85e267563e2cbd976"
+    }
+  },
+  "live_docs_unchanged": 16,
+  "portable_report_links": 16,
+  "findings": {
+    "Critical": 0,
+    "High": 0,
+    "Medium": 2,
+    "Low": 0
+  },
+  "Java_native_launches": 0,
+  "production_or_document_edits": 0,
+  "current_runtime_or_risk_acceptance": false,
+  "actual_static_controls": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  }
+}

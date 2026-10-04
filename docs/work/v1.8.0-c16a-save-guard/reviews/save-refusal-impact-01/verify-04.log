@@ -1,0 +1,17 @@
+test_01_per_level_capacity_and_saturation_source (__main__.ConsistencyControls.test_01_per_level_capacity_and_saturation_source) ... ok
+test_02_lifecycle_not_saved_and_no_native_reset (__main__.ConsistencyControls.test_02_lifecycle_not_saved_and_no_native_reset) ... ok
+test_03_record_before_throw_and_retry_dirty (__main__.ConsistencyControls.test_03_record_before_throw_and_retry_dirty) ... ok
+test_04_actual_four_guard_consumers_and_six_be_ids (__main__.ConsistencyControls.test_04_actual_four_guard_consumers_and_six_be_ids) ... ok
+test_05_below_byte_cap_refusals_are_not_byte_only (__main__.ConsistencyControls.test_05_below_byte_cap_refusals_are_not_byte_only) ... ok
+test_06_native_event_catch_prevents_writer (__main__.ConsistencyControls.test_06_native_event_catch_prevents_writer) ... ok
+test_07_unload_ignores_save_boolean (__main__.ConsistencyControls.test_07_unload_ignores_save_boolean) ... ok
+test_08_failed_save_has_no_success_cooldown (__main__.ConsistencyControls.test_08_failed_save_has_no_success_cooldown) ... ok
+test_09_historical_native_log_pairs_and_clean_exit (__main__.ConsistencyControls.test_09_historical_native_log_pairs_and_clean_exit) ... ok
+test_10_historical_native03_original_compressed_chunk_preserved (__main__.ConsistencyControls.test_10_historical_native03_original_compressed_chunk_preserved) ... ok
+test_11_cross_store_and_be_clear_primary_controls (__main__.ConsistencyControls.test_11_cross_store_and_be_clear_primary_controls) ... ok
+test_12_precision_migration_has_disk_readback_not_only_save_void (__main__.ConsistencyControls.test_12_precision_migration_has_disk_readback_not_only_save_void) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.928s
+
+OK

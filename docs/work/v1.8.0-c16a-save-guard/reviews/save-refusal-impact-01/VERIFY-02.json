@@ -1,0 +1,227 @@
+{
+  "scope": "Static/pinned historical artifact controls only; no Java/native execution",
+  "commit": "3f3d62aed3980186fe0acc9592cf93ca436405fb",
+  "inputs": {
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/ChunkSaveDenials.java": {
+      "bytes": 1856,
+      "sha256": "96a66b34e46af0ae079802263e46b595eba83cae0ce179a22176165c49e15427"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/GuardedChunkSaves.java": {
+      "bytes": 4047,
+      "sha256": "14132bf89fc3f4b6589a3ef227e70bc72bf287f94fe86336cb29de52c18aa487"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/persistence/BoundedNbt.java": {
+      "bytes": 4850,
+      "sha256": "dea20587fa5034a30c2874cc6feaea32ee6f2e16c6f1cb051c34f73816cdbd1c"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/tank/TankProtection.java": {
+      "bytes": 2226,
+      "sha256": "2abf114c220cb1de0e829b9a987785fe10e820a6cca860e393b1d35e856404af"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/pump/PumpProtection.java": {
+      "bytes": 3698,
+      "sha256": "c8faa664809360ff827525f63581ed7491bd7aeeef14fa08c6160b605a2684d0"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionProtection.java": {
+      "bytes": 2624,
+      "sha256": "5197fbd70e879e2d5c7fcfe222fa59d45cbed0ad9bebcd955e54d822121a3eac"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/RecipeSignatureProtection.java": {
+      "bytes": 3503,
+      "sha256": "51e41e64013d3c410c76a0a5d07f2c8b92d54e67737ad4ea30808d5d183641f9"
+    },
+    "archive:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-incident-01-evidence.zip": {
+      "bytes": 665494,
+      "sha256": "56e2d09bf0e53c8026d549da1827643b20301e191aa25a765a3d3b23ada0542d"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-incident-01-evidence.zip!/EVIDENCE-MANIFEST.json": {
+      "bytes": 15042,
+      "sha256": "abf3243d98dbfbe71c07446c787c06ebafeada9a545bb95ae141289174d01191"
+    },
+    "archive:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip": {
+      "bytes": 814338,
+      "sha256": "212fdeb9a28ff426599f62ca2d44a32feea9737b1d6e5bb8fd3b2f5246e2fd77"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip!/EVIDENCE-MANIFEST.json": {
+      "bytes": 93218,
+      "sha256": "a4f0e614d48e3bf20ac4dce1ce416ba60d0eb6da7a7e1272b5abcae9e63d0fe2"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-incident-01-evidence.zip!/bytecode/patched-runtime-ChunkMap.txt": {
+      "bytes": 304254,
+      "sha256": "dc33705c1cc64c5b8b40792529f4a01ca6feb440f2f10ee71dee83b8b95a30bc"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-incident-01-evidence.zip!/bytecode/mapped-ChunkMap.txt": {
+      "bytes": 307797,
+      "sha256": "d3fb95147daf5b67684dabf8d5a7a4426226126cf4f17ac8a76178a04e8aebc0"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip!/native/tank-native-03/oversized-refusal/stdout.txt": {
+      "bytes": 57747,
+      "sha256": "b97afef681093f62fa285aebf3b58317802c96d8b0c412e436266d4953cf2a13"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/tank/TankSave.java": {
+      "bytes": 4156,
+      "sha256": "a090a4152aac71b32a217f43e2bcf31f30c872c781e0edfea0e9613255e5696c"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/pump/PumpSave.java": {
+      "bytes": 5571,
+      "sha256": "2c0d3ec7b8abdd07faf2141e6d2eccd8bc3d08780a7e3a568f3a114fccc1ae72"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/combustion/CombustionSave.java": {
+      "bytes": 4256,
+      "sha256": "1a172a826c5aab3ed541f10518d78e11c203ba9f8d442703964b891ddf896c7e"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/recipe/RecipeSignatureMigration.java": {
+      "bytes": 5746,
+      "sha256": "fc249343b244ead3778c4919882742f522fd57f9b75031799adb50a46c207383"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip!/native/tank-native-03/oversized-refusal/receipt.json": {
+      "bytes": 1995,
+      "sha256": "80578d705adc36d931485624a1f37c1a1d8c5dd03462fd2bc1cf8027e9fd209c"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip!/native/tank-native-03/oversized-patch/chunk-11-11.nbt.zlib": {
+      "bytes": 5898,
+      "sha256": "b5a1e68eb7a52fc47c87278bf67c92f0f327878c7c5ab057b41df9ca17c63199"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip!/native/tank-native-03/oversized-refusal/chunk-11-11.nbt.zlib": {
+      "bytes": 5898,
+      "sha256": "b5a1e68eb7a52fc47c87278bf67c92f0f327878c7c5ab057b41df9ca17c63199"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip!/native/independent-actual-chunk-11-11.nbt.zlib": {
+      "bytes": 5898,
+      "sha256": "b5a1e68eb7a52fc47c87278bf67c92f0f327878c7c5ab057b41df9ca17c63199"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip!/reviewed-source/io/github/sunthemoon/advancedrocketrycommunity/persistence/ChunkSaveDenials.java": {
+      "bytes": 1856,
+      "sha256": "96a66b34e46af0ae079802263e46b595eba83cae0ce179a22176165c49e15427"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-correction-03-evidence.zip!/reviewed-source/io/github/sunthemoon/advancedrocketrycommunity/persistence/GuardedChunkSaves.java": {
+      "bytes": 4047,
+      "sha256": "14132bf89fc3f4b6589a3ef227e70bc72bf287f94fe86336cb29de52c18aa487"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-incident-01-evidence.zip!/bytecode/patched-runtime-ServerLevel.txt": {
+      "bytes": 325997,
+      "sha256": "51daa04708cfbe8121455072d03792e68e9d074d8cf5fd4fe7bdd47cf8408c9d"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-incident-01-evidence.zip!/bytecode/patched-runtime-LevelChunk.txt": {
+      "bytes": 122322,
+      "sha256": "774765cd6723c2231aaa1a3fe0b06f62a117765d91a9e5c197ae2aafe1dcb84e"
+    },
+    "archive-member:D:\\GitHub\\AdvancedRocketry-Community\\docs\\work\\v1.8.0-c16a-save-guard\\reviews\\native-incident-01-evidence.zip!/bytecode/patched-runtime-MinecraftServer.txt": {
+      "bytes": 326444,
+      "sha256": "9f556e2293759758669eb20f09d3f59d86596f82782f19dea1fe33b465a60973"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerManager.java": {
+      "bytes": 20001,
+      "sha256": "0d0c009d4a7257e40a85b42fe7dd2917a6dd9e153de8a4cc697b58186fe96bdc"
+    },
+    "3f3d62aed3980186fe0acc9592cf93ca436405fb:src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/precision/PrecisionAssemblerMigrationSaveVerifier.java": {
+      "bytes": 5071,
+      "sha256": "e104742f35a69db9b448d27823b5a00f73efb5bfdfbb22e85e267563e2cbd976"
+    }
+  },
+  "observations": {
+    "capacity": {
+      "distinct_records": 256,
+      "overflow_scope": "all otherwise-unrecorded coordinates in that ServerLevel",
+      "basis": "source branch and existing unit boundary assertions, not new Java execution"
+    },
+    "guarded_be_ids": [
+      "pressurized_tank",
+      "pump",
+      "combustion_generator",
+      "rolling_machine",
+      "precision_assembler",
+      "electrolyzer"
+    ],
+    "refusal_classes": [
+      "bytes",
+      "depth/nodes",
+      "native nonlossless/foreign shape"
+    ],
+    "terrain_write_order": [
+      "POI flush",
+      "dirty false",
+      "serialize",
+      "Forge Save event",
+      "region write"
+    ],
+    "retry": {
+      "restored_dirty": true,
+      "guard_retry_limit": null,
+      "vanilla_success_cooldown_ms": 10000,
+      "failed_write_does_not_set_that_cooldown": true,
+      "no_claim_of_fixed_native_attempt_frequency": true
+    },
+    "historical_native03_log_headers": {
+      "EventBus": [
+        [
+          67,
+          "[22:01:13] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Refusing oversized tank chunk save; back up and repair first"
+        ],
+        [
+          150,
+          "[22:01:13] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Refusing oversized tank chunk save; back up and repair first"
+        ],
+        [
+          231,
+          "[22:01:13] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Refusing oversized tank chunk save; back up and repair first"
+        ],
+        [
+          314,
+          "[22:01:14] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Refusing oversized tank chunk save; back up and repair first"
+        ],
+        [
+          361,
+          "[22:01:14] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Refusing oversized tank chunk save; back up and repair first"
+        ],
+        [
+          412,
+          "[22:01:15] [Server thread/ERROR] [ne.mi.ev.EventBus/EVENTBUS]: Exception caught during firing event: Refusing oversized tank chunk save; back up and repair first"
+        ]
+      ],
+      "ChunkMap": [
+        [
+          114,
+          "[22:01:13] [Server thread/ERROR] [minecraft/ChunkMap]: Failed to save chunk 11,11"
+        ],
+        [
+          196,
+          "[22:01:13] [Server thread/ERROR] [minecraft/ChunkMap]: Failed to save chunk 11,11"
+        ],
+        [
+          269,
+          "[22:01:13] [Server thread/ERROR] [minecraft/ChunkMap]: Failed to save chunk 11,11"
+        ],
+        [
+          343,
+          "[22:01:14] [Server thread/ERROR] [minecraft/ChunkMap]: Failed to save chunk 11,11"
+        ],
+        [
+          392,
+          "[22:01:14] [Server thread/ERROR] [minecraft/ChunkMap]: Failed to save chunk 11,11"
+        ],
+        [
+          441,
+          "[22:01:15] [Server thread/ERROR] [minecraft/ChunkMap]: Failed to save chunk 11,11"
+        ]
+      ],
+      "total": 12,
+      "clean_exit": 0,
+      "host_sha256": "edc06a9a5042349131a04d665321f51803319e4562deafbe4ec37b4dd071dc74",
+      "current_commit_native_proof": false
+    },
+    "historical_native03_chunk_identity": {
+      "bytes": 5898,
+      "sha256": "b5a1e68eb7a52fc47c87278bf67c92f0f327878c7c5ab057b41df9ca17c63199"
+    },
+    "historical_guard_same_as_commit:ChunkSaveDenials.java": true,
+    "historical_guard_same_as_commit:GuardedChunkSaves.java": true,
+    "precision_legacy_migration": "separate disk-root verification after void save barrier"
+  },
+  "actual_result": {
+    "tests": 12,
+    "failures": 1,
+    "errors": 0,
+    "skips": 0
+  }
+}
