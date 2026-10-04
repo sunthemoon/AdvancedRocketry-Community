@@ -308,6 +308,10 @@ public final class CommonConfig {
             .comment("Allow pump source draining and fluid export; disabling retains resources and owner.")
             .define("machines.pumpEnabled", true);
 
+    public static final ForgeConfigSpec.BooleanValue CLASSIC_DEVICES_ENABLED = BUILDER
+            .comment("Allow classic life-support instruments; disabling retains their items and recipes.")
+            .define("lifeSupport.classicDevicesEnabled", true);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
@@ -434,7 +438,7 @@ public final class CommonConfig {
     /** ADR-063 section 3: whether the small plate press acts; the default until the COMMON config is loaded. */
     /** The server switches: the small plate press and the worldgen switches, which tests hold in memory. */
     private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED,
-            COMBUSTION_GENERATOR_ENABLED, PUMP_ENABLED,
+            COMBUSTION_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
             OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,
             CHARRED_TREES_ENABLED, LIGHTWOOD_TREES_ENABLED, SWAMP_TREES_ENABLED, INVERTED_PILLARS_ENABLED,
             CRYSTAL_CLUSTERS_ENABLED, ELECTRIC_MUSHROOMS_ENABLED);
@@ -466,6 +470,10 @@ public final class CommonConfig {
 
     public static boolean pumpEnabled() {
         return serverSwitchValue(PUMP_ENABLED);
+    }
+
+    public static boolean classicDevicesEnabled() {
+        return serverSwitchValue(CLASSIC_DEVICES_ENABLED);
     }
 
     /** ADR-063 section 4: whether the Overworld ores generate; the default until the COMMON config is loaded. */

@@ -38,8 +38,9 @@ class CommonConfigTest {
         // the three ADR-049 survey scan limits, the ten ADR-050 registry limits, the three ADR-051/052
         // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values,
         // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values, and the v1.8
-        // Classic settings: C15a/b/c (ADR-063), combustion, tank capacity and pump operation (ADR-064).
-        assertEquals(69, countValues(CommonConfig.SPEC.getValues()));
+        // Classic settings: C15a/b/c (ADR-063), combustion, tank capacity and pump operation (ADR-064),
+        // and the classic life-support instrument switch (ADR-066).
+        assertEquals(70, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test

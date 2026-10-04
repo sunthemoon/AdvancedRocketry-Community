@@ -152,9 +152,13 @@ separately published; the explanatory amendment remains PROPOSED.
 Other newly observed external edits are not silently staged.
 The separate [C18a analyzer task](../work/v1.8.0-c18a-atmosphere-analyzer/TASK.md)
 has an independently reviewed, narrowly adopted contract and pre-authoring
-original-resource record. Isolated implementation is active at committed base
-`9135c20c34a402b7cf0715148aeb6683a35c1f50`; exact source review and actual
-verification remain pending. No source/native/client or ledger delivery follows.
+original-resource record. Isolated implementation at committed base
+`9135c20c34a402b7cf0715148aeb6683a35c1f50` has exact independent source review
+with no unresolved C/H/M/L and 19 independently executed tests. Root integrates
+25 source/task postimages and six generated files. Intermediate 36 JUnit and
+781-file DataGen with zero repeat changes pass. Source commit and complete
+committed regression are being prepared; packaged use/restart, client and
+ledger delivery remain open. See the [source checkpoint](../work/v1.8.0-c18a-atmosphere-analyzer/SOURCE-INTEGRATION-01.md).
 It does not enable
 unproven refill/shared-save dependencies.
 The [completion plan](COMPLETION-PLAN.md) lists the remaining leaves. Historical

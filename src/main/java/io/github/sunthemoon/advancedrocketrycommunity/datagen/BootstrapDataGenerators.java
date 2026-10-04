@@ -48,6 +48,8 @@ public final class BootstrapDataGenerators {
                 blockTags.contentsGetter(), existingFiles));
         generator.addProvider(event.includeServer(), new V180MaterialRecipes(output));
         generator.addProvider(event.includeServer(), new V180ClassicAdvancementData(output));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180AtmosphereAnalyzerData(output, event.includeClient(), event.includeServer()));
         var worldgen = generator.addProvider(event.includeServer(), V180Worldgen.provider(output, event.getLookupProvider()));
         generator.addProvider(event.includeServer(), new V180BiomeTags(output, worldgen.getRegistryProvider(),
                 existingFiles));

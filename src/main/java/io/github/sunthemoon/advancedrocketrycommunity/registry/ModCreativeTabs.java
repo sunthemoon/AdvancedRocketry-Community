@@ -59,6 +59,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.GUIDANCE_COMPUTER.get());
                         output.accept(ModItems.SILICON_WAFER.get());
                         output.accept(ModItems.BASIC_CIRCUIT.get());
+                        output.accept(ModItems.ATMOSPHERE_ANALYZER.get());
                         output.accept(ModItems.ADVANCED_CIRCUIT.get());
                         output.accept(ModItems.DATA_STORAGE_UNIT.get());
                         output.accept(ModItems.SATELLITE_TERMINAL.get());

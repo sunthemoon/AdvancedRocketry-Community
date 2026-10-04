@@ -24,6 +24,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaDiagnostic
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaWorldMigrationEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaDataCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.command.AtmosphereCommands;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AtmosphereAnalyzerLifecycle;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereManager;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
@@ -173,6 +174,10 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(environmentQueries::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, environmentQueries::onServerStopping);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, environmentQueries::onServerStopped);
+        AtmosphereAnalyzerLifecycle analyzer = new AtmosphereAnalyzerLifecycle(celestialCatalogs, () -> atmosphereManager);
+        MinecraftForge.EVENT_BUS.addListener(analyzer::onServerStarted);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, analyzer::onServerStopping);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, analyzer::onServerStopped);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockBroken);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockPlaced);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onPlayerLoggedOut);
