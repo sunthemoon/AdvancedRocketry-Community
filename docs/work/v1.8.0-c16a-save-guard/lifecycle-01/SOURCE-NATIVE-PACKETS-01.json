@@ -1,0 +1,68 @@
+{
+  "cleanup_completed": false,
+  "files": {
+    "C-CLEANUP-DISPOSITION-01.zip": {
+      "bytes": 3134,
+      "sha256": "69b96871d1b589d4c0faec38f859fd583e2bf48df4d212c2cf7d5bcfa4204b6d"
+    },
+    "ROOT-NATIVE03-COMPACT-01.zip": {
+      "bytes": 213750,
+      "sha256": "bf823041fe0b1812bff06a71c493dc2ff270495715c0dbd2e639e42a4337e476"
+    },
+    "ROOT-SOURCE23-COMPACT-01.zip": {
+      "bytes": 804477,
+      "sha256": "949b5cfecbb2a19b0667869c02a5d726a4409b3ded6f8a173951217a7abbf94f"
+    },
+    "reviews/BUILD23-EVIDENCE-01.zip": {
+      "bytes": 87771,
+      "sha256": "7c2707bb972e5396a044373a9ec97bef61211d76d5c266c2888b5a18f3b54a88"
+    },
+    "reviews/COPIED-SPAWN-SOURCE-01.zip": {
+      "bytes": 84260,
+      "sha256": "b04b8fb36a15d9fecd9a6a4fb495519f59d15254bf2f0428c2000fcc96419545"
+    },
+    "reviews/LIFECYCLE-PRIMARY-01.zip": {
+      "bytes": 207494,
+      "sha256": "c0c1dc3e1507399afbb0d33e09c67f74ab3d4c8f293e3789639925c1ef570f9b"
+    },
+    "reviews/LIFECYCLE-PRIMARY-02.zip": {
+      "bytes": 134744,
+      "sha256": "1ce5fe409e9acdd75fcc4eeacd93bc6aaa1a4e5e98c036206079c5c2c3496fd7"
+    },
+    "reviews/LIFECYCLE-PRIMARY-03.zip": {
+      "bytes": 55627,
+      "sha256": "5405079d5b986091f8a5697e3b99e8361b0f549df1a792341bc6ff48d16296cd"
+    },
+    "reviews/NATIVE-FAILURE-01.zip": {
+      "bytes": 58937,
+      "sha256": "b3722222078ba544f9c390068387f15f66fdbf633cd23d109931606fd2f6ad3d"
+    },
+    "reviews/NATIVE-FAILURE-02.zip": {
+      "bytes": 69270,
+      "sha256": "fd0e81fb385beb80632737f431b582dad5862da2426b76000ee752ce870f6e23"
+    },
+    "reviews/NATIVE-FAILURE-03.zip": {
+      "bytes": 114927,
+      "sha256": "b0180f59ba1f72634ed079f4910ada5ef215a45f473287e569b7450134f4aa47"
+    },
+    "reviews/NEXT-LEAF-FEASIBILITY-01.zip": {
+      "bytes": 19585,
+      "sha256": "bd1e52cb5b6936404a6cb06aa1e6ab8582ffe5ab341e35144b1c582292be69b0"
+    },
+    "reviews/TOOL-SOURCE-CORRECTION-01.zip": {
+      "bytes": 30851,
+      "sha256": "5e6882c4529e80af0dcf8f2b6f649103c5a2eef06554ff5f24c8776fd9615b86"
+    },
+    "reviews/TOOL-SOURCE-ORIGINAL-01.zip": {
+      "bytes": 40543,
+      "sha256": "12d7cd5159c698942f6ca268e9c9cb0978d9d6642030b9c9c08e29e9f385a609"
+    },
+    "reviews/UNLOAD-SOURCE-01.zip": {
+      "bytes": 65201,
+      "sha256": "35d596b309e12d83a445634f61fd9968175c8ce597b685c41a64801070442277"
+    }
+  },
+  "required_gates_passed": false,
+  "scope": "15 source/native packets; later publication artifacts excluded",
+  "total_bytes": 1990571
+}

@@ -36,31 +36,41 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: 1ece7e9d2515003ca705b5634ef654a6bcae8f89
+tested_code_commit: 23bec1eb1452e8c8ef37c004606aaed3a2394063
 last_updated: 2026-10-04
 ```
 
 ## Current development evidence
 
 The integrated development code, data/art, probes and reviewed contracts are
-committed and pushed in scoped phase commits. The latest code commit adds only
-K3 private SHA-256 calculation over unchanged canonical NBT bytes, after
-independent source review; it does not authorize consumers, full codecs or world
-persistence. [Current integration evidence](../work/v1.8.0-c16a-k3/VERIFICATION.md)
-records 1,765 JUnit cases in 330 suites, 464 required GameTests and 90 focused
+committed and pushed in scoped phase commits. The latest Java addition is only
+an opt-in fixed-cell unload observer, without save-policy or resource changes.
+[Current verification](../work/v1.8.0-c16a-save-guard/NATIVE-LIFECYCLE-VERIFICATION-01.md)
+records 1,765 JUnit cases in 330 suites, 464 required GameTests and 114 focused
 Python cases passing. DataGen has 771 files and zero repeat writes. The fresh
-bounded repository check reports 45 passed. The different-agent
-[actual-evidence audit](../work/v1.8.0-c16a-k3/reviews/integration-evidence-01.zip)
-is complete with no introduced evidence discrepancy in its limited scope;
-final publication checks are separately recorded. The 61 ERROR logger lines
-remain disclosed, not waived. No packaged native/server/client run used the
-newly built main JAR, and the evidence audit does not replay one.
+bounded Source23 repository check reports 45 passed. The different-agent
+[build evidence audit](../work/v1.8.0-c16a-save-guard/lifecycle-01/reviews/BUILD23-EVIDENCE-01.zip)
+records no introduced discrepancy in that exact scope. The 61 ERROR logger
+lines remain disclosed, not waived. The two Python-only copied-spawn setup
+postimages have separate focused-test and native input pins; they do not claim
+a new Java build or another complete repository-check execution.
+Their exact source is committed and pushed at
+`f945dc1c33f09199da9d47663e891acf1cf4a475`, without runtime-delivery credit.
 
 The development main JAR SHA-256 is
-`26356660ef03e9e938067e8bb53ac085290300cdf947a27d0d85dd6c1355682a`.
+`5fd2a23dd02c8c4977efe9c03628edfe4c517bc1d3d02ba0e846aa89649aeee9`.
 The API artifact remains unchanged. This is not a frozen release candidate.
 The content ledger has **186 PLANNED units /154 REVIEW assets**; its closure
 check still fails. v1.8 remains **IN_PROGRESS /IMPLEMENTING**, with **G0–G9 open**.
+
+All three copied-world lifecycle attempts fail. The original immediate
+reacquisition fails live restoration; the new-JAR attempt and the separately
+reviewed copied-spawn setup attempt miss the actual unload event within the
+unchanged deadline. The last attempt confirms the spawn command, not unloading.
+Stopped record retention does not replace live restoration, clean stop or
+restart proof. Their logs, independent audits and original failures remain
+separate; the remaining cause is not established. No real client or crash
+recovery result is supplied, and new guarded writers are not opened.
 
 ## Implemented development scope
 
@@ -93,7 +103,8 @@ leaves two disclosure/ADR findings open, so that historical record does not
 authorize new guarded runtime admission. These decisions do not supply runtime,
 migration or native recovery evidence. C18 D4 remains unproven.
 
-Remaining: Guard lifecycle and first-save/final-unload proof; full hash/frame/
+Remaining: bounded observation of the unresolved native unload condition,
+Guard lifecycle and first-save/final-unload proof; full hash/frame/
 native codecs and resource consumers; physical hatches, lathe and motor-tier
 formation; steel and component acquisition; C16b–d, C17–C19; real clients/GPU,
 multiplayer, crash recovery, performance and inherited release acceptance.
@@ -101,6 +112,9 @@ Whole-chunk save refusal can prevent unrelated chunk changes from being saved;
 its impact, repair workflow and release disposition remain open. Historical
 failures and oversized evidence-storage debt remain documented, not erased by
 passing automatic tests.
+Future temporary helpers/output now use the owner's requested project-parent
+`D:/GitHub/ARCE-Task-Evidence` location. The tool rejects checked C-script
+removal before execution; C cleanup is not complete and no bypass is attempted.
 
 The separate [save-refusal audit](../work/v1.8.0-c16a-save-guard/SAVE-REFUSAL-DISPOSITION-01.md)
 records two original Medium disclosure/ADR findings. Their missing facts are now

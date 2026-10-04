@@ -1,5 +1,10 @@
 # C16a-S1-GUARD-02: existing save-guard lifecycle verification
 
+This is the original source-stage task and checkpoint. Later observer and
+copied-spawn amendments are separate scopes. The
+[current verification](NATIVE-LIFECYCLE-VERIFICATION-01.md) supersedes its
+progress description without changing the first failed native outcome.
+
 Date: 2026-10-04. Owner and sole integrator: Root. Status: IN_PROGRESS.
 Independent source/command review and result audit are assigned separately.
 Baseline: `355c4681a6cbddd380545a50e0f6e524bad6d295`; production code and
