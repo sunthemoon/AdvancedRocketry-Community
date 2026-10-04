@@ -103,6 +103,11 @@ thin packet is verified; ten duplicate Git stdout blobs remain precise immutable
 locators, not complete publication-output closure.
 File/JSON/NBT/transport,
 Java fixture, clean host selection and native execution remain pending.
+The separate [phase02a contract disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-PHASE02A.md)
+adopts only four new private-file paths for quiescent snapshot/preboot/stopped
+properties input, after exact independent0 C/H/M/L review. Its61-member contract
+packet is verified. Implementation assignment awaits committed contract publication;
+live, ownership, JSON/NBT, receipt/driver and native authority remain unimplemented.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
