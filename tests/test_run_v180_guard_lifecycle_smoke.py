@@ -186,5 +186,68 @@ class GuardLoggerTest(unittest.TestCase):
         self.assertEqual(result["chunk_map_error_headers"], 1)
 
 
+class NativeUnloadObservationTest(unittest.TestCase):
+    LINE = "[Server thread/INFO] [advancedrocketrycommunity/]: ARCE_GUARD_UNLOAD_BEGIN chunk=11,11"
+
+    def test_exact_info_logger_and_fixed_chunk_required(self):
+        self.assertIsNotNone(guard.UNLOAD_BEGIN.search(self.LINE))
+        for line in (info("ARCE_GUARD_UNLOAD_BEGIN chunk=11,11"),
+                     self.LINE.replace("/INFO]", "/ERROR]"),
+                     self.LINE.replace("advancedrocketrycommunity/", "example/Other"),
+                     self.LINE.replace("11,11", "11,12"), "echo " + self.LINE,
+                     self.LINE + " extra"):
+            self.assertIsNone(guard.UNLOAD_BEGIN.search(line))
+
+    def test_predicate_and_event_share_one_total_deadline(self):
+        class Process:
+            lines = [NativeUnloadObservationTest.LINE, NativeUnloadObservationTest.LINE]
+
+            def wait_for(self, pattern, timeout, start_at):
+                self.remaining, self.start = timeout, start_at
+                return 1
+
+        process = Process()
+        with patch.object(guard, "wait_chunk") as predicate, \
+                patch.object(guard.time, "monotonic", side_effect=[0, 40, 40.1]):
+            self.assertEqual(guard.wait_unload_begin(process, [], 1), self.LINE)
+        predicate.assert_called_once_with(process, [], False, 60)
+        self.assertEqual((process.remaining, process.start), (20, 1))
+
+    def test_old_marker_does_not_substitute_for_new_unload(self):
+        class Process:
+            lines = [NativeUnloadObservationTest.LINE]
+
+            def wait_for(self, pattern, timeout, start_at):
+                if not any(pattern.search(line) for line in self.lines[start_at:]):
+                    raise guard.server.SmokeError("No fresh native event")
+                return 0
+
+        with patch.object(guard, "wait_chunk"), patch.object(guard.time, "monotonic", return_value=0), \
+                self.assertRaisesRegex(guard.server.SmokeError, "No fresh"):
+            guard.wait_unload_begin(Process(), [], 1)
+
+    def test_predicate_exhausting_deadline_does_not_get_second_wait(self):
+        class Process:
+            def wait_for(self, *args, **kwargs):
+                raise AssertionError("A second observation budget was granted")
+
+        with patch.object(guard, "wait_chunk"), \
+                patch.object(guard.time, "monotonic", side_effect=[0, 60]), \
+                self.assertRaisesRegex(guard.server.SmokeError, "original deadline"):
+            guard.wait_unload_begin(Process(), [], 0)
+
+    def test_late_event_does_not_pass(self):
+        class Process:
+            lines = [NativeUnloadObservationTest.LINE]
+
+            def wait_for(self, *args, **kwargs):
+                return 0
+
+        with patch.object(guard, "wait_chunk"), \
+                patch.object(guard.time, "monotonic", side_effect=[0, 0, 61]), \
+                self.assertRaisesRegex(guard.server.SmokeError, "after its original deadline"):
+            guard.wait_unload_begin(Process(), [], 0)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -27,6 +27,8 @@ EVENT_ERROR = re.compile(ERROR_PREFIX
 CHUNK_ERROR = re.compile(ERROR_PREFIX
                         + r"\[(?:minecraft/ChunkMap|net\.minecraft\.server\.level\.ChunkMap/?)\]: "
                         + r"Failed to save chunk (?:11,11|\[11, 11\])\s*$")
+UNLOAD_BEGIN = re.compile(r"^(?:\[\d{2}:\d{2}:\d{2}\] )?\[Server thread/INFO\] "
+                          + r"\[advancedrocketrycommunity/\]: ARCE_GUARD_UNLOAD_BEGIN chunk=11,11\s*$")
 
 
 def marker(text: str) -> re.Pattern:
@@ -66,6 +68,19 @@ def wait_chunk(process, commands: list[str], loaded: bool, timeout: float = 60) 
             return
         time.sleep(min(0.25, max(0, deadline - time.monotonic())))
     raise server.SmokeError(f"Native loaded predicate did not become {loaded} within {timeout} seconds")
+
+
+def wait_unload_begin(process, commands: list[str], start_at: int, timeout: float = 60) -> str:
+    """One deadline covers both the predicate change and a fresh real unload event."""
+    deadline = time.monotonic() + timeout
+    wait_chunk(process, commands, False, timeout)
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise server.SmokeError("Native unload observation exhausted its original deadline")
+    index = process.wait_for(UNLOAD_BEGIN, remaining, start_at=start_at)
+    if time.monotonic() > deadline:
+        raise server.SmokeError("Native unload marker arrived after its original deadline")
+    return process.lines[index].rstrip()
 
 
 def check_fixture(chunk: dict) -> dict:
@@ -156,8 +171,9 @@ def native_cycle(runtime: Path, evidence: Path, command: list[str], expected: by
             send("setblock 186 180 180 minecraft:air")
             assert_block(CULPRIT, "minecraft:air", "ARCE_GUARD_ROOT_REMOVED")
             save("after_removal_refusal")
+            unload_start = len(process.lines)
             send("forceload remove 176 176")
-            wait_chunk(process, commands, False)
+            receipt["unload_begin_line"] = wait_unload_begin(process, commands, unload_start)
             send("forceload add 176 176")
             wait_chunk(process, commands, True)
             assert_block(CULPRIT, tanks.NS + ":pressurized_tank", "ARCE_GUARD_REMOVAL_ROLLED_BACK")
@@ -234,7 +250,8 @@ def main() -> None:
         write(work / "input-postcheck.json", {"world_unchanged": unchanged, "artifacts_unchanged": artifacts_unchanged})
         require(unchanged and artifacts_unchanged, "Original input changed")
     write(work / "summary.json", {"result": "PASS", "cycles": cycles,
-                                 "loaded_predicate_cut": True, "actual_unload_callbacks": "NOT_INSTRUMENTED",
+                                 "loaded_predicate_cut": True, "native_unload_begin": "OBSERVED",
+                                 "actual_block_entity_disposal_callbacks": "NOT_INSTRUMENTED",
                                  "cross_store_conservation": "NOT_VERIFIED", "crash_recovery": "NOT_VERIFIED",
                                  "first_save_writer": "NOT_VERIFIED", "required_gates_passed": False})
     print("PASS: fixed native removal, loaded-predicate cut, old terrain rollback and restart retrigger")
