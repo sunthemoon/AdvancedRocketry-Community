@@ -37,6 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 tested_code_commit: a0873a30a2e1ad9fe0b42d11a0b89903fc478d5c
+tested_python_commit: d0f9cbdeaf5921da7ee6157a99873dd47fb7f1ad
 last_updated: 2026-10-05
 ```
 
@@ -94,9 +95,13 @@ adopts the independently reviewed phase-bound contract only, committed and
 pushed at `d04a116e6e6001f166bbf5e8f31fb78623a6b392`. A fresh isolated fixture
 implementation has a [limited phase01 source disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-PHASE01.md):
 two Python modules/two records are independently reviewed with no C/H/M/L and
-imported byte-exact. Actual Root intermediate 39/16/8 pure checks pass; CLI2
-explicitly refuses to act as the unimplemented full driver. Source publication/
-committed Python checks remain separate obligations. File/JSON/NBT/transport,
+imported byte-exact and pushed at `d0f9cbde`. A separate [committed Python cohort](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-01.md)
+actually passes39/16/8 pure checks; CLI2 explicitly refuses the unimplemented
+full driver. Independent raw-result audit verifies the limited observations,
+including original observer/preparation failures. The119-member committed-result
+thin packet is verified; ten duplicate Git stdout blobs remain precise immutable
+locators, not complete publication-output closure.
+File/JSON/NBT/transport,
 Java fixture, clean host selection and native execution remain pending.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.

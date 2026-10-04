@@ -49,8 +49,12 @@ Root's imported-source intermediate at base
 `accda38883276e645394ad7a538294d1cef0c766` separately runs 39/16/8 methods, all
 exit0. Probe commands print/assert the actual loaded Root module path and exact
 hash; they do not reuse a copied reviewer production module. Direct CLI exits2
-with empty stdout. Source postchecks pass; no Java/native is run. Committed
-source publication and a separate committed Python cohort remain obligations.
+with empty stdout. Source postchecks pass; no Java/native is run. At that import
+checkpoint, committed publication and a committed Python cohort are pending.
+Subsequently the exact ten-path source publication is pushed at `d0f9cbde`,
+and [committed Python verification](NATIVE-PYTHON-VERIFICATION-01.md) separately
+executes39/16/8 successfully with CLI2. Original observer/preparation failures
+remain distinct; no full native driver or Java artifact acceptance follows.
 
 The [thin evidence packet](phase01-01/c18c-native-phase01-thin-collection-01.zip)
 is 763,236 bytes /386 members, SHA
