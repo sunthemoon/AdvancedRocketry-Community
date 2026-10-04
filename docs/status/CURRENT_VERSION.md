@@ -115,9 +115,12 @@ Its fresh D fixture is cleaned, 99,375 bytes, after a separately retained
 precheck correction. This is only private quiescent properties input. Live,
 ownership, JSON/NBT, receipt/driver and native authority remain unimplemented.
 The separate [pure JSON task](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-04-JSON.md)
-is independently reviewed and frozen. Its five role budgets, key-inclusive
-counting and immutable scalar/entry observations are private syntax policy,
-not file/live/native authority; no implementation assignment has started.
+is independently reviewed, frozen, committed and pushed at
+`e091f1b0abb2dc2068c8e7cf0f6e97e48d3aaa03`. Its five role budgets,
+key-inclusive counting and immutable scalar/entry observations are private
+syntax policy, not file/live/native authority. Four-file implementation is
+assigned in the isolated `codex/v1.8.0-inventory-json` worktree at that commit;
+actual-source review and committed replay have not yet occurred.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
