@@ -42,12 +42,15 @@ last_updated: 2026-10-05
 
 ## Current development evidence
 
-The latest analyzer source is committed and pushed at the tested commit above.
+The latest complete Root analyzer cohort tests the committed source above.
 [Source26 verification](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-01.md)
 records build/test/DataGen passing with 1,807 JUnit /339 suites /0FES, but the
 complete 477-test GameTest command fails with four required analyzer failures.
-Pending/supplied-room, frozen-item-registry and unloaded-eye assertions require
-isolated repair and a new committed regression. The 3,036 named inputs are not
+The [exact fixture correction](../work/v1.8.0-c18a-atmosphere-analyzer/FIX-REVIEW-DISPOSITION-01.md)
+has independent actual-source review with no introduced C/H/M/L, 477 required
+GameTests passing and separately executed uncached 19-case JUnit. Root has imported
+the three exact postimages; a new committed full regression is pending. Source26's
+four failures remain historical evidence, not waived. The 3,036 named inputs are not
 a whole repository snapshot. DataGen has 781 files and zero repeat changes;
 eight scoped static checks and package-member checks pass. Ledger closure and
 global dirty diff remain actual failures. The [independent result audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-01.md)

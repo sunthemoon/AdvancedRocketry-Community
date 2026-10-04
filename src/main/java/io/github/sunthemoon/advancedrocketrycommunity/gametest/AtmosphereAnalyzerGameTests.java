@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.Atmo
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AtmosphereAnalyzerLifecycle;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AtmosphereAnalyzerService;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereManager;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
@@ -23,7 +24,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationRegionBodyContextResolver;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -47,19 +50,50 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.gametest.ForgeGameTestHooks;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegisterEvent;
 
 /** Compile-only until Root registration/DataGen. Embedded connected players are not real-client evidence. */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class AtmosphereAnalyzerGameTests {
+    private static final ResourceLocation DISABLED_FIXTURE_ID = new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, "gametest_analyzer_disabled");
+    private static final ResourceLocation UNAVAILABLE_FIXTURE_ID = new ResourceLocation(AdvancedRocketryCommunity.MOD_ID, "gametest_analyzer_unavailable");
+    private static final AtomicInteger FIXTURE_QUERIES = new AtomicInteger();
+
     private AtmosphereAnalyzerGameTests() { }
+
+    /** Entries exist only in disposable dedicated GameTest registries, not ordinary profiles. */
+    @Mod.EventBusSubscriber(modid = AdvancedRocketryCommunity.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static final class FixtureItems {
+        private FixtureItems() { }
+
+        @SubscribeEvent
+        public static void onRegisterItems(RegisterEvent event) {
+            if (FMLEnvironment.dist != Dist.DEDICATED_SERVER || !ForgeGameTestHooks.isGametestServer()
+                    || !event.getRegistryKey().equals(ForgeRegistries.Keys.ITEMS)) { return; }
+            event.register(ForgeRegistries.Keys.ITEMS, DISABLED_FIXTURE_ID,
+                    () -> new AtmosphereAnalyzerItem(new Item.Properties(), () -> false, player -> {
+                        FIXTURE_QUERIES.incrementAndGet(); return AnalyzerReading.unavailable();
+                    }));
+            event.register(ForgeRegistries.Keys.ITEMS, UNAVAILABLE_FIXTURE_ID,
+                    () -> new AtmosphereAnalyzerItem(new Item.Properties(), () -> true, player -> {
+                        FIXTURE_QUERIES.incrementAndGet(); return AnalyzerReading.unavailable();
+                    }));
+        }
+    }
 
     @GameTest(template = "empty", batch = "atmosphere_analyzer", timeoutTicks = 40)
     public static void registeredUseSharesTwoTickCooldownAndPreservesHeldData(GameTestHelper helper) {
@@ -96,10 +130,11 @@ public final class AtmosphereAnalyzerGameTests {
     public static void disabledUnavailableAndInvalidUsesDoNotQueryOrMutate(GameTestHelper helper) {
         List<String> replies = new ArrayList<>();
         ServerPlayer player = join(helper, "analyzerFlags", replies);
-        AtomicInteger queries = new AtomicInteger();
-        var disabled = new AtmosphereAnalyzerItem(new Item.Properties(), () -> false, p -> { queries.incrementAndGet(); return AnalyzerReading.unavailable(); });
-        var unavailable = new AtmosphereAnalyzerItem(new Item.Properties(), () -> true, p -> { queries.incrementAndGet(); return AnalyzerReading.unavailable(); });
+        AtomicInteger queries = FIXTURE_QUERIES;
+        queries.set(0);
         try {
+            var disabled = fixtureItem(DISABLED_FIXTURE_ID);
+            var unavailable = fixtureItem(UNAVAILABLE_FIXTURE_ID);
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(disabled)); replies.clear();
             disabled.use(helper.getLevel(), player, InteractionHand.MAIN_HAND);
             helper.assertTrue(queries.get() == 0 && replies.size() == 1 && player.getCooldowns().isOnCooldown(disabled), "Disabled queried or skipped cooldown");
@@ -115,7 +150,7 @@ public final class AtmosphereAnalyzerGameTests {
             detached.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(unavailable));
             unavailable.use(helper.getLevel(), detached, InteractionHand.MAIN_HAND);
             helper.assertTrue(queries.get() == 1 && !detached.getCooldowns().isOnCooldown(unavailable), "Unconnected identity was admitted");
-        } finally { remove(helper, player); }
+        } finally { queries.set(0); remove(helper, player); }
         helper.succeed();
     }
 
@@ -170,7 +205,9 @@ public final class AtmosphereAnalyzerGameTests {
         helper.assertTrue(moon != null, "Moon is unavailable");
         BlockPos center = helper.absolutePos(new BlockPos(5, 1, 5));
         BlockPos ventPos = new BlockPos(center.getX(), 80, center.getZ());
+        Set<ChunkPos> forced = new LinkedHashSet<>();
         try {
+            prepareRoomChunks(moon, ventPos, 1, forced);
             for (int x = -1; x <= 1; x++) { for (int y = 0; y <= 2; y++) { for (int z = -1; z <= 1; z++) {
                 moon.setBlock(ventPos.offset(x, y, z), (x == 0 && y == 1 && z == 0 ? Blocks.AIR : Blocks.IRON_BLOCK).defaultBlockState(), Block.UPDATE_ALL);
             } } }
@@ -180,9 +217,7 @@ public final class AtmosphereAnalyzerGameTests {
             helper.assertTrue(input.insertItem(0, new ItemStack(ModItems.OXYGEN_CANISTER.get()), false).isEmpty(), "Vent input refused fixture");
             OxygenVentBlockEntity.serverTick(moon, ventPos, vent.getBlockState(), vent);
             vent.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new).receiveEnergy(AtmosphereLimits.VENT_ENERGY_CAPACITY, false);
-            // Allow ordinary registered manager observation before testing registered item use.
-            helper.runAfterDelay(2, () -> {
-                try {
+            awaitRuntimeFixture(helper, player, moon, vent, AnalyzerReading.State.BREATHABLE, true, () -> {
                     manager.observeVent(moon, vent);
                     manager.tick(helper.getLevel().getServer()); // Record balances after this explicit supply tick.
                     player.teleportTo(moon, ventPos.getX() + 0.5, ventPos.getY(), ventPos.getZ() + 0.5, 0, 0);
@@ -190,7 +225,9 @@ public final class AtmosphereAnalyzerGameTests {
                     var reading = service.read(player);
                     helper.assertTrue(reading.supplied() && reading.state() == AnalyzerReading.State.BREATHABLE
                             && reading.ambient().orElseThrow().pressure() == 0.0D && reading.ambient().orElseThrow().temperatureKelvin() == 220.0D,
-                            "Eye-cell supply was confused with feet or ambient profile");
+                            "Eye-cell supply was confused with feet or ambient profile: reading=" + reading
+                                    + " vent=" + vent.status() + " metrics=" + manager.metrics(moon.dimension())
+                                    + " eye=" + BlockPos.containing(player.getX(), player.getEyeY(), player.getZ()));
                     helper.assertTrue(!manager.controlledAt(moon, ventPos), "Feet fixture was unexpectedly in the indexed room");
                     helper.assertTrue(service.read(player).equals(reading) && vent.energyStored() == energy && vent.oxygenUnits() == oxygen,
                             "Analyzer queried by ticking or debiting a vent");
@@ -199,14 +236,9 @@ public final class AtmosphereAnalyzerGameTests {
                     moon.setBlock(ventPos.above(2), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
                     manager.markDirty(moon, ventPos.above(2));
                     helper.assertTrue(!service.read(player).supplied(), "Dirty wall retained positive supplied authority");
-                    helper.succeed();
-                } finally {
-                    service.close(); manager.clear(); remove(helper, player); clearRoom(moon, ventPos, 1, 2);
-                }
-            });
+            }, () -> cleanRoomFixture(helper, player, service, manager, moon, ventPos, 1, 2, forced));
         } catch (RuntimeException failed) {
-            service.close(); manager.clear(); remove(helper, player);
-            clearRoom(moon, ventPos, 1, 2);
+            cleanRoomFixture(helper, player, service, manager, moon, ventPos, 1, 2, forced);
             throw failed;
         }
     }
@@ -222,8 +254,10 @@ public final class AtmosphereAnalyzerGameTests {
         helper.assertTrue(moon != null, "Moon is unavailable");
         BlockPos center = helper.absolutePos(new BlockPos(5, 1, 5));
         BlockPos ventPos = new BlockPos(center.getX(), 80, center.getZ());
+        Set<ChunkPos> forced = new LinkedHashSet<>();
         // 343 traversable cells exceed one task's immutable 256-observation budget, but stay below the 4096-cell limit.
         try {
+            prepareRoomChunks(moon, ventPos, 4, forced);
             for (int x = -4; x <= 4; x++) { for (int y = 0; y <= 8; y++) { for (int z = -4; z <= 4; z++) {
                 boolean wall = Math.abs(x) == 4 || Math.abs(z) == 4 || y == 0 || y == 8;
                 moon.setBlock(ventPos.offset(x, y, z), (wall ? Blocks.IRON_BLOCK : Blocks.AIR).defaultBlockState(), Block.UPDATE_ALL);
@@ -231,8 +265,7 @@ public final class AtmosphereAnalyzerGameTests {
             moon.setBlock(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState(), Block.UPDATE_ALL);
             OxygenVentBlockEntity vent = (OxygenVentBlockEntity) moon.getBlockEntity(ventPos);
             OxygenVentBlockEntity.serverTick(moon, ventPos, vent.getBlockState(), vent);
-            helper.runAfterDelay(2, () -> {
-                try {
+            awaitRuntimeFixture(helper, player, moon, vent, AnalyzerReading.State.PENDING, false, () -> {
                     manager.observeVent(moon, vent);
                     manager.tick(helper.getLevel().getServer());
                     player.teleportTo(moon, ventPos.getX() + 0.5, ventPos.getY(), ventPos.getZ() + 0.5, 0, 0);
@@ -240,17 +273,17 @@ public final class AtmosphereAnalyzerGameTests {
                     int energy = vent.energyStored(), oxygen = vent.oxygenUnits();
                     var reading = service.read(player);
                     helper.assertTrue(reading.state() == AnalyzerReading.State.PENDING && !reading.supplied()
-                            && reading.ambient().orElseThrow().pressure() == 0.0D, "Incomplete scan made a positive or unknown ambient claim");
+                            && reading.ambient().orElseThrow().pressure() == 0.0D, "Incomplete scan made a positive or unknown ambient claim: reading="
+                                    + reading + " vent=" + vent.status() + " metrics=" + manager.metrics(moon.dimension())
+                                    + " eye=" + BlockPos.containing(player.getX(), player.getEyeY(), player.getZ()));
                     helper.assertTrue(service.read(player).equals(reading)
                             && manager.metrics(moon.dimension()).orElseThrow().totalInspections() == inspections
                             && vent.energyStored() == energy && vent.oxygenUnits() == oxygen, "Pending query scanned or spent resources");
                     nativeUse(helper, player, replies, reading);
                     helper.assertTrue(vent.energyStored() == energy && vent.oxygenUnits() == oxygen, "Registered pending use spent resources");
-                    helper.succeed();
-                } finally { service.close(); manager.clear(); remove(helper, player); clearRoom(moon, ventPos, 4, 8); }
-            });
+            }, () -> cleanRoomFixture(helper, player, service, manager, moon, ventPos, 4, 8, forced));
         } catch (RuntimeException failed) {
-            service.close(); manager.clear(); remove(helper, player); clearRoom(moon, ventPos, 4, 8); throw failed;
+            cleanRoomFixture(helper, player, service, manager, moon, ventPos, 4, 8, forced); throw failed;
         }
     }
 
@@ -313,13 +346,36 @@ public final class AtmosphereAnalyzerGameTests {
             BlockPos far = new BlockPos(25_000_000, 80, 25_000_000);
             helper.assertTrue(level.getChunkSource().getChunkNow(far.getX() >> 4, far.getZ() >> 4) == null, "Far fixture was loaded");
             int loaded = level.getChunkSource().getLoadedChunksCount();
-            player.setPos(far.getX(), far.getY(), far.getZ()); // Synchronous query fixture; do not teleport or tick a player ticket.
-            helper.assertTrue(service.read(player).state() == AnalyzerReading.State.UNAVAILABLE && manager.metrics(level.dimension()).isEmpty(),
-                    "Unknown eye queried an atmosphere service");
-            helper.assertTrue(level.getChunkSource().getLoadedChunksCount() == loaded
-                    && level.getChunkSource().getChunkNow(far.getX() >> 4, far.getZ() >> 4) == null
-                    && !level.getForcedChunks().contains(ChunkPos.asLong(far.getX() >> 4, far.getZ() >> 4)),
-                    "Analyzer changed chunk loading");
+            assertConnected(helper, player, level);
+            helper.assertTrue(player.isAddedToWorld(), "Connected fixture was not attached");
+            helper.assertTrue(level.getForcedChunks().size() <= 4096, "Forced snapshot fixture exceeds its 4096-mark bound");
+            Set<Long> forcedBefore = Set.copyOf(level.getForcedChunks()); // Not the unmodifiable backing view.
+            var original = player.position();
+            // Controlled detached-coordinate query, not a claim about normal client movement.
+            player.onRemovedFromWorld();
+            try {
+                player.setPos(far.getX(), far.getY(), far.getZ()); // Retains the native onMove callback.
+                assertConnected(helper, player, level);
+                helper.assertTrue(!player.isAddedToWorld()
+                                && BlockPos.containing(player.getX(), player.getEyeY(), player.getZ()).equals(far.above())
+                                && level.getChunkSource().getLoadedChunksCount() == loaded
+                                && level.getChunkSource().getChunkNow(far.getX() >> 4, far.getZ() >> 4) == null
+                                && level.getForcedChunks().size() <= 4096 && forcedBefore.equals(level.getForcedChunks()),
+                        "Movement setup loaded the target or changed the admitted fixture identity/tickets");
+                var reading = service.read(player);
+                helper.assertTrue(reading.state() == AnalyzerReading.State.UNAVAILABLE && manager.metrics(level.dimension()).isEmpty(),
+                        "Unknown eye queried an atmosphere service: reading=" + reading + " metrics=" + manager.metrics(level.dimension())
+                                + " actualPosition=" + player.position() + " eye=" + BlockPos.containing(player.getX(), player.getEyeY(), player.getZ())
+                                + " farLoaded=" + (level.getChunkSource().getChunkNow(far.getX() >> 4, far.getZ() >> 4) != null));
+                helper.assertTrue(level.getChunkSource().getLoadedChunksCount() == loaded
+                                && level.getChunkSource().getChunkNow(far.getX() >> 4, far.getZ() >> 4) == null
+                                && !level.getForcedChunks().contains(ChunkPos.asLong(far.getX() >> 4, far.getZ() >> 4))
+                                && level.getForcedChunks().size() <= 4096 && forcedBefore.equals(level.getForcedChunks()),
+                        "Analyzer changed chunk loading");
+            } finally {
+                try { player.setPos(original); } finally { player.onAddedToWorld(); }
+            }
+            helper.assertTrue(player.isAddedToWorld(), "Controlled fixture did not restore attachment");
         } finally { service.close(); manager.clear(); remove(helper, player); }
         helper.succeed();
     }
@@ -365,13 +421,30 @@ public final class AtmosphereAnalyzerGameTests {
         if (!(item instanceof AtmosphereAnalyzerItem)) { throw new IllegalStateException("Root analyzer registration is required"); }
         return item;
     }
+    private static AtmosphereAnalyzerItem fixtureItem(ResourceLocation id) {
+        var value = ForgeRegistries.ITEMS.getValue(id);
+        if (!(value instanceof AtmosphereAnalyzerItem analyzer) || !id.equals(ForgeRegistries.ITEMS.getKey(value))) {
+            throw new IllegalStateException("Dedicated GameTest analyzer item was not registered: " + id);
+        }
+        return analyzer;
+    }
+    private static void assertConnected(GameTestHelper helper, ServerPlayer player, ServerLevel level) {
+        var server = helper.getLevel().getServer();
+        helper.assertTrue(!(player instanceof FakePlayer) && !player.isRemoved() && !player.hasDisconnected()
+                        && player.isAlive() && !player.isSpectator() && player.connection != null
+                        && player.getServer() == server && server.getPlayerList().getPlayer(player.getUUID()) == player
+                        && player.serverLevel() == level && server.getLevel(level.dimension()) == level,
+                "Controlled fixture lost an admitted connected player/Level identity");
+    }
     private static ServerPlayer join(GameTestHelper helper, String name, List<String> replies) {
         return ConnectedTestPlayers.join(helper.getLevel().getServer(), UUID.randomUUID(), name, helper.getLevel(), helper.absolutePos(new BlockPos(1, 1, 1)), replies);
     }
     private static void remove(GameTestHelper helper, ServerPlayer player) { helper.getLevel().getServer().getPlayerList().remove(player); }
     private static void nativeUse(GameTestHelper helper, ServerPlayer player, List<String> replies, AnalyzerReading expected) {
         var item = registered();
-        helper.assertTrue(AtmosphereAnalyzerRuntime.read(player).equals(expected), "Registered runtime context differs from the fixture reading");
+        var actual = AtmosphereAnalyzerRuntime.read(player);
+        helper.assertTrue(actual.equals(expected), "Registered runtime context differs from the fixture reading: actual="
+                + actual + " expected=" + expected + " rootMetrics=" + AtmosphereRuntime.metrics(player.serverLevel()));
         var held = new ItemStack(item);
         held.getOrCreateTag().putLong("untouched", Long.MIN_VALUE);
         var before = held.save(new CompoundTag());
@@ -387,6 +460,69 @@ public final class AtmosphereAnalyzerGameTests {
         for (int x = -radius; x <= radius; x++) { for (int y = 0; y <= height; y++) { for (int z = -radius; z <= radius; z++) {
             level.removeBlock(origin.offset(x, y, z), false);
         } } }
+    }
+    /** Fixture setup only: pin the bounded shell before writes and permit ordinary vent ticks. */
+    private static void prepareRoomChunks(ServerLevel level, BlockPos center, int radius, Set<ChunkPos> added) {
+        for (int x = (center.getX() - radius) >> 4; x <= (center.getX() + radius) >> 4; x++) {
+            for (int z = (center.getZ() - radius) >> 4; z <= (center.getZ() + radius) >> 4; z++) {
+                ChunkPos chunk = new ChunkPos(x, z);
+                if (!level.getForcedChunks().contains(chunk.toLong())) {
+                    level.setChunkForced(x, z, true);
+                    added.add(chunk);
+                }
+                level.getChunk(x, z); // Finish fixture generation before creating BlockEntities.
+            }
+        }
+    }
+    private static void releaseRoomChunks(ServerLevel level, Set<ChunkPos> added) {
+        for (ChunkPos chunk : added) { level.setChunkForced(chunk.x, chunk.z, false); }
+    }
+    /** Only fixture producers run here; the installed manager scans on its ordinary ServerTick END. */
+    private static void awaitRuntimeFixture(GameTestHelper helper, ServerPlayer player, ServerLevel level,
+                                            OxygenVentBlockEntity vent, AnalyzerReading.State state, boolean supplied,
+                                            Runnable verify, Runnable cleanup) {
+        boolean[] finished = {false};
+        helper.onEachTick(() -> {
+            if (finished[0]) { return; }
+            try {
+                BlockPos position = vent.getBlockPos();
+                helper.assertTrue(level.getBlockEntity(position) == vent && !vent.isRemoved(),
+                        "Prepared vent was replaced before observation");
+                player.teleportTo(level, position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
+                OxygenVentBlockEntity.serverTick(level, position, vent.getBlockState(), vent);
+                int energy = vent.energyStored(), oxygen = vent.oxygenUnits();
+                long inspections = AtmosphereRuntime.metrics(level).orElseThrow().totalInspections();
+                var actual = AtmosphereAnalyzerRuntime.read(player);
+                helper.assertTrue(vent.energyStored() == energy && vent.oxygenUnits() == oxygen
+                                && AtmosphereRuntime.metrics(level).orElseThrow().totalInspections() == inspections,
+                        "Readiness query scanned or spent vent resources");
+                if (actual.state() != state || actual.supplied() != supplied) {
+                    // Fail and release fixtures before the unchanged 40-tick GameTest deadline.
+                    helper.assertTrue(helper.getTick() < 39, "Runtime fixture did not publish within 40 ticks: actual="
+                            + actual + " required=" + state + "/" + supplied + " metrics=" + AtmosphereRuntime.metrics(level));
+                    return;
+                }
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_ANALYZER_FIX_READY state={} supplied={} tick={} metrics={}",
+                        actual.state(), actual.supplied(), helper.getTick(), AtmosphereRuntime.metrics(level));
+                verify.run();
+                finished[0] = true;
+                cleanup.run();
+                helper.succeed();
+            } catch (RuntimeException failure) {
+                if (!finished[0]) {
+                    finished[0] = true;
+                    try { cleanup.run(); } catch (RuntimeException cleanupFailure) { failure.addSuppressed(cleanupFailure); }
+                }
+                throw failure;
+            }
+        });
+    }
+    private static void cleanRoomFixture(GameTestHelper helper, ServerPlayer player, AtmosphereAnalyzerService service,
+                                         AtmosphereManager manager, ServerLevel level, BlockPos position,
+                                         int radius, int height, Set<ChunkPos> forced) {
+        service.close(); manager.clear();
+        try { remove(helper, player); }
+        finally { try { clearRoom(level, position, radius, height); } finally { releaseRoomChunks(level, forced); } }
     }
     private static CelestialCatalogManager catalogs() {
         var catalogs = new CelestialCatalogManager(); catalogs.applyCandidate(CelestialCatalog.create(CelestialDefaults.definitions())); return catalogs;
