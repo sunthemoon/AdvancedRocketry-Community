@@ -93,9 +93,14 @@ out-of-height or unsupported candidates are skipped; no safe candidate means
 the launch is denied. If support is lost before destination spawning, the
 existing transfer service returns to the source with its original fuel ledger.
 Earth spawn-based and Moon fixed-height landing behavior remains unchanged.
-On Tau Ceti f and g a landing ground of radius 160 around the origin keeps
-these candidates clear: no tree, plant or crystal is generated there, and
-Tau Ceti f's ground there stays above the sea (ADR-063 revision 6).
+On Tau Ceti f and g a landing ground of radius 224 around the origin keeps
+feature origins outside that ground, leaving the permitted landing footprints
+clear of trees, plants and crystals. Tau Ceti f's ground under those footprints
+stays above the sea (ADR-063 revision 6).
+The expanded ground covers the existing allowed rectangular rocket footprints;
+it does not change rocket size limits. Previously generated chunks retain their
+terrain and plants, so an explored Tau Ceti world can have a transition between
+old and new landing ground. The selector still checks each site before landing.
 
 The Moon, Mars, Venus and Tau Ceti biomes have no cave or canyon carvers, as
 the legacy planets had none by default. A data pack may add vanilla carvers

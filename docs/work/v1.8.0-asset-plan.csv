@@ -45,8 +45,8 @@ order,pattern,handling,plan,units,reason
 44,textures/blocks/platepresser_top.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/furnace_top.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 0.99)"
 45,textures/blocks/precisionassemblerfront.png,REVIEW,C18d,block:precisionassemblingmachine,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
 46,textures/blocks/precisionassemblerfront_active.png,REVIEW,C18d,block:precisionassemblingmachine,"AR 16x texture set (#1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-47,textures/blocks/pumpbottom.png,REVIEW,C16a,block:blockPump,"AR 16x texture set (#1811), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
-48,textures/blocks/pumpside.png,REVIEW,C16a,block:blockPump,"AR 16x texture set (#1811, #1976), whose source chain credits an unmerged third-party pull request (LibVulpes 984d6747); authorship finding required (ADR-061 section 4.9)"
+47,textures/blocks/pumpbottom.png,REGENERATE,C16a,block:blockPump,NEW community pump faces under ADR-064 section 12; legacy bitmap not imported
+48,textures/blocks/pumpside.png,REGENERATE,C16a,block:blockPump,NEW community pump faces under ADR-064 section 12; legacy bitmap not imported
 49,textures/blocks/qcrucible_inner.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_inner.png, orientation 0 (overlap 0.00 over 0 colours, mask 1.00, rank 1.00)"
 50,textures/blocks/qcrucible_side.png,EXCLUDE,-,-,"vanilla-derived: 1.12.2:assets/minecraft/textures/blocks/cauldron_side.png, orientation 0 (overlap 0.00 over 0 colours, mask 0.97, rank 0.98)"
 51,textures/blocks/qcrucible_top.png,REVIEW,C16c,block:quartzcrucible,"possible vanilla derivation: 1.20.1:assets/minecraft/textures/block/composter_top.png, orientation 3 (overlap 0.00 over 0 colours, mask 1.00, rank 0.78); origin review"
@@ -211,7 +211,7 @@ order,pattern,handling,plan,units,reason
 210,textures/blocks/mushroom_electric.png,REGENERATE,C15c,block:electricMushroom,C15c draws the electric mushroom new; a batch may import fewer files (ADR-061 section 4.2)
 211,textures/blocks/blastbrick*.png,IMPORT,C16b,block:blastbrick block:arcfurnace,arc furnace
 212,textures/blocks/qcrucible_*.png,IMPORT,C16c,block:quartzcrucible,quartz crucible
-213,textures/blocks/liquidtank.png,IMPORT,C16a,block:liquidTank,fluid tank
+213,textures/blocks/liquidtank.png,REGENERATE,C16a,block:liquidTank,NEW community tank faces under ADR-064 section 12
 214,textures/blocks/intake.png,EXCLUDE,-,-,rocket intake redesigned (ADR-051)
 215,textures/blocks/landingfloat.png,EXCLUDE,-,-,landing float deferred (ADR-062)
 216,textures/blocks/combustion.png,IMPORT,C17a,block:rocketmotor,engine exhaust

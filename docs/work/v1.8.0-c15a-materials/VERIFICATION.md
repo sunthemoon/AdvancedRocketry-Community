@@ -1,5 +1,12 @@
 # V180 C15a — materials, ores and the small plate press: verification
 
+Subsequent2026-10-04 correction:the original missing press acquisition route
+is now independently source-reviewed and development-verified under accepted
+ADR-063 revision7,with1,642 Root JUnit and460 Root/independent GameTests;
+see [acquisition verification](PRESS-ACQUISITION-VERIFICATION.md).
+The dated historical result/proposed-contract statements below remain unchanged;
+they do not override the later conditional acceptances or approve version Gates.
+
 Date: 2026-10-03. Scope: slice C15a of ADR-062 §6 under
 [ADR-061](../../decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md),
 [ADR-062](../../decisions/ADR-062-CLASSIC-CONTENT-DISPOSITIONS-AND-BATCHES.md) and

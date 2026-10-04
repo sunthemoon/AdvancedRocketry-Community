@@ -63,7 +63,7 @@ block:bipropellantrocketmotor,PLANNED,C17a,bipropellant engine,ADR-062,propulsio
 block:blackholegenerator,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:black_hole_generator,ADR-057,,
 block:blastbrick,PLANNED,C16b,heat-proof brick,ADR-062,arc furnace structure,
 block:blockLens,REDESIGNED,v1.7.0,advancedrocketrycommunity:laser_lens,ADR-055,"lens is a laser drill component item, not a block",
-block:blockPump,PLANNED,C16a,fluid pump,ADR-062,bounded source-block drain with protection checks,
+block:blockPump,REDESIGNED,v1.8.0,advancedrocketrycommunity:pump,ADR-062 ADR-064,owner-bound loaded-only source drain with bounded search and protection checks,docs/work/v1.8.0-c16a-pump/VERIFICATION.md
 block:centrifuge,PLANNED,C16c,centrifuge,ADR-062,enriched lava separation,
 block:charcoalLog,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:charcoal_log,ADR-063,"volcanic flora; not flammable, as legacy",docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:chemicalReactor,PLANNED,C16c,chemical reactor,ADR-062,rocket fuel and chemistry,
@@ -76,7 +76,7 @@ block:deployableRocketBuilder,REJECTED,-,-,ADR-062,station-deployed mining rocke
 block:drill,REDESIGNED,v1.6.0,advancedrocketrycommunity:asteroid_drill_module,ADR-051,asteroid mining is a logical mission,
 block:electricMushroom,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:electric_mushroom,ADR-063,"stormland flora; sparks, and flashes in the rain",docs/work/v1.8.0-c15c-worlds/VERIFICATION.md
 block:electrolyser,IMPLEMENTED,v0.2.0,advancedrocketrycommunity:electrolyzer,ADR-016,single-block redesign kept in the v1.2 kernel,
-block:enrichedLavaFluid,PLANNED,C16a,enriched lava fluid block,ADR-062,volcanic resource fluid,
+block:enrichedLavaFluid,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:enriched_lava,ADR-062 ADR-064,source and flowing volcanic resource fluid block,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 block:forceField,PLANNED,C17b,force field block,ADR-062,placed only by the projector,
 block:forceFieldProjector,PLANNED,C17b,force field projector,ADR-062,bounded line of field blocks through the protection chain,
 block:fuelingStation,REDESIGNED,v0.6.0,advancedrocketrycommunity:fuel_loader,V0.6.0 ADR-062,fuel loader; fluid fuels added in C17a,
@@ -86,20 +86,20 @@ block:gravityController,PLANNED,C17b,station gravity controller,ADR-058 ADR-062,
 block:gravityMachine,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:gravity_field_controller,ADR-058,,
 block:guidanceComputer,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:guidance_computer,ADR-026,,
 block:hotTurf,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:ferric_sand,ADR-063,Mars surface block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
-block:hydrogenFluid,PLANNED,C16a,hydrogen fluid,ADR-062,"gaseous fluid, no placeable block",
+block:hydrogenFluid,REDESIGNED,v1.8.0,advancedrocketrycommunity:hydrogen,ADR-062 ADR-064,container-only Forge gas with no world block or bucket,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 block:intake,REDESIGNED,v1.6.0,advancedrocketrycommunity:gas_intake_module,ADR-051,gas collection is a logical mission,
 block:landingfloat,DEFERRED,post-2.0,-,ADR-062,landing on lava and other non-water liquids needs a landing-site rule change,
 block:landingPad,PLANNED,C17b,station landing pad,ADR-062,owned landing targets on stations,
 block:lathe,PLANNED,C16b,lathe,ADR-062,rods,
 block:launchpad,REDESIGNED,v0.5.0,advancedrocketrycommunity:rocket_assembler,V0.5.0 ADR-062,the assembler scans connected blocks; no pad bounds,
 block:lightSource,REJECTED,-,-,ADR-055 ADR-062,technical light block of the legacy laser drill,
-block:liquidTank,PLANNED,C16a,pressurized fluid tank,ADR-062,stackable fluid storage,
+block:liquidTank,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:pressurized_tank,ADR-062 ADR-064,stackable bounded fluid storage; retained overflow and dropped-Item resources,docs/work/v1.8.0-c16a-tank/VERIFICATION.md
 block:loader,MERGED,-,block_variant:loader/*,ADR-062,"seven variants, each with its own row",
 block:microwaveReciever,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:microwave_receiver,ADR-049,,
 block:monitoringStation,PLANNED,C17a,rocket monitoring station,ADR-062,rocket status and redstone launch through the server flight path,
 block:moonTurf,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:moon_turf,ADR-063,Moon surface block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
 block:moonTurf_dark,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:dark_moon_turf,ADR-063,Moon lowland block,docs/work/v1.8.0-c15b-surfaces/VERIFICATION.md
-block:nitrogenFluid,PLANNED,C16a,nitrogen fluid,ADR-062,gaseous fluid,
+block:nitrogenFluid,REDESIGNED,v1.8.0,advancedrocketrycommunity:nitrogen,ADR-062 ADR-064,container-only Forge gas with no world block or bucket,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 block:nuclearcore,PLANNED,C17a,nuclear thermal core,ADR-062,propulsion tier,
 block:nuclearfueltank,PLANNED,C17a,nuclear working fluid tank,ADR-062,propulsion tier,
 block:nuclearrocketmotor,PLANNED,C17a,nuclear thermal engine,ADR-062,propulsion tier,
@@ -108,7 +108,7 @@ block:orientationController,PLANNED,C17b,station orientation control,ADR-062,sta
 block:oxidizerfueltank,PLANNED,C17a,oxidizer tank,ADR-062,propulsion tier,
 block:oxygenCharger,PLANNED,C18a,gas charge pad,ADR-062,refills suit tanks,
 block:oxygenDetection,PLANNED,C18a,atmosphere detector,ADR-062,redstone output by atmosphere state,
-block:oxygenFluid,PLANNED,C16a,oxygen fluid,ADR-062,gaseous fluid,
+block:oxygenFluid,REDESIGNED,v1.8.0,advancedrocketrycommunity:oxygen,ADR-062 ADR-064,container-only Forge gas with no world block or bucket,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 block:oxygenScrubber,PLANNED,C18a,CO2 scrubber,ADR-062,cartridge-based vent support,
 block:oxygenVent,IMPLEMENTED,v0.4.0,advancedrocketrycommunity:oxygen_vent,ADR-024,,
 block:pipeSealer,PLANNED,C18a,pipe seal,ADR-062,sealing block that passes pipes,
@@ -123,7 +123,7 @@ block:quartzcrucible,PLANNED,C16c,quartz crucible block,ADR-062,crystallizer str
 block:railgun,IMPLEMENTED,v1.7.0,advancedrocketrycommunity:railgun,ADR-056,,
 block:rocketBuilder,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_assembler,V0.5.0,,
 block:rocketfire,REJECTED,-,-,ADR-062,technical fire block; launch effects are client particles,
-block:rocketFuel,PLANNED,C16a,rocket fuel fluid,ADR-062,liquid fuel,
+block:rocketFuel,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:rocket_fuel,ADR-062 ADR-064,source and flowing liquid fuel block,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 block:rocketmotor,IMPLEMENTED,v0.5.0,advancedrocketrycommunity:rocket_motor,ADR-026,,
 block:rollingMachine,IMPLEMENTED,v1.2.0,advancedrocketrycommunity:rolling_machine,ADR-016,,
 block:satelliteBuilder,IMPLEMENTED,v1.6.0,advancedrocketrycommunity:satellite_builder,ADR-049,,
@@ -243,7 +243,7 @@ command:root/setgravity,REDESIGNED,v1.5.0,/arce station gravity,ADR-041,planets 
 command:root/star,REDESIGNED,v1.5.0,star system data,ADR-043,,
 config:CATEGORY_GENERAL.allowTerraformingNonARWorlds,DEFERRED,post-2.0,-,ADR-062,terraforming family,
 config:CATEGORY_GENERAL.biomeUpdateSpeed,DEFERRED,post-2.0,-,ADR-062,terraforming family,
-config:CATEGORY_GENERAL.blockTankCapacity,PLANNED,C16a,fluid tank capacity,ADR-062,,
+config:CATEGORY_GENERAL.blockTankCapacity,REDESIGNED,v1.8.0,COMMON machines.tankCapacityMultiplier,ADR-062 ADR-064,bounded 0.25-4.0 multiplier; reducing capacity preserves drainable overflow,docs/work/v1.8.0-c16a-tank/VERIFICATION.md
 config:CATEGORY_GENERAL.buildSpeedMultiplier,REDESIGNED,v0.5.0,budgeted assembly scan,V0.5.0 ADR-062,no build timer,
 config:CATEGORY_GENERAL.crystalliserMaximumGravity,PLANNED,C16c,crystallizer gravity limit,ADR-062,,
 config:CATEGORY_GENERAL.enableGravityMachine,IMPLEMENTED,v1.7.0,endgame switches,ADR-054 ADR-055 ADR-058,,
@@ -442,11 +442,11 @@ event:TileLandingPad.onRocketDismantle(RocketDismantleEvent),MERGED,-,block:land
 event:TileLandingPad.onRocketLand(RocketLandedEvent),MERGED,-,block:landingPad,ADR-062,landing pad rocket events,
 event:TileLandingPad.onRocketLaunch(RocketPreLaunchEvent),MERGED,-,block:landingPad,ADR-062,landing pad rocket events,
 event:TileRocketAssemblingMachine.onRocketLand(RocketLandedEvent),REDESIGNED,v0.6.0,landing and disassembly transaction,V0.6.0 ADR-062,,
-fluid:enrichedLava,PLANNED,C16a,enriched lava,ADR-062,,
-fluid:hydrogen,PLANNED,C16a,hydrogen,ADR-062,canister items stay valid,
-fluid:nitrogen,PLANNED,C16a,nitrogen,ADR-062,,
-fluid:oxygen,PLANNED,C16a,oxygen,ADR-062,canister items stay valid,
-fluid:rocketFuel,PLANNED,C16a,rocket fuel,ADR-062,,
+fluid:enrichedLava,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:enriched_lava,ADR-062 ADR-064,audited physical values and bucket identity,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
+fluid:hydrogen,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:hydrogen,ADR-062 ADR-064,1000 mB canister capability and legacy ID compatibility,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
+fluid:nitrogen,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:nitrogen,ADR-062 ADR-064,1000 mB nitrogen canister and existing gas giant source,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
+fluid:oxygen,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:oxygen,ADR-062 ADR-064,1000 mB canister capability and suit vent compatibility,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
+fluid:rocketFuel,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:rocket_fuel,ADR-062 ADR-064,audited physical values and bucket identity,docs/work/v1.8.0-c16a-fluids/VERIFICATION.md
 integration:CompatibilityMgr,REDESIGNED,v1.3.0,public API and optional compat,ADR-021,,
 integration:GalacticCraftHandler,REJECTED,-,-,ADR-062,Galacticraft compatibility is a product non-goal,
 integration:jei/arcFurnace,PLANNED,C16b,JEI category,ADR-062,,
@@ -534,13 +534,13 @@ keybinding:turnRocketDown,REJECTED,-,-,ADR-062,manual rocket steering belongs to
 keybinding:turnRocketLeft,REJECTED,-,-,ADR-062,manual rocket steering belongs to free flight in space,
 keybinding:turnRocketRight,REJECTED,-,-,ADR-062,manual rocket steering belongs to free flight in space,
 keybinding:turnRocketUp,REJECTED,-,-,ADR-062,manual rocket steering belongs to free flight in space,
-libvulpes:gameplay/coalGenerator,PLANNED,C16a,combustion generator,ADR-062,burns furnace fuel into Forge Energy; the first power source,
+libvulpes:gameplay/coalGenerator,REDESIGNED,v1.8.0,advancedrocketrycommunity:combustion_generator,ADR-062 ADR-064,original furnace-fuel generator; bounded FE output and retained fuel containers,docs/work/v1.8.0-c16a-combustion/VERIFICATION.md
 libvulpes:java/blockAdvancedMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier,
-libvulpes:java/blockAdvStructureBlock,PLANNED,C16a,advanced machine casing,ADR-062,endgame devices already use endgame_casing,
+libvulpes:java/blockAdvStructureBlock,PLANNED,C16a,advancedrocketrycommunity:endgame_casing,ADR-064,stable ID and unique casing label verified; all-tier family formation remains open,
 libvulpes:java/blockCreativeInputPlug,REJECTED,-,-,ADR-062,creative-only infinite energy source,
 libvulpes:java/blockEliteMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier,
 libvulpes:java/blockEnhancedMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier,
-libvulpes:java/blockMotor,PLANNED,C16a,motor component tiers,ADR-062,crafting part and machine structure part,
+libvulpes:java/blockMotor,PLANNED,C16a,motor component tiers,ADR-064,four tiers and both tags and recipes verified; all-tier family formation remains open,
 libvulpes:java/blockStructureBlock,REDESIGNED,v0.1.0,advancedrocketrycommunity:machine_casing,V0.1.0 ADR-062,machine structure block,
 libvulpes:java/itemBattery,REDESIGNED,v1.6.0,advancedrocketrycommunity:satellite_battery advancedrocketrycommunity:large_satellite_battery,ADR-049,satellite power storage,
 libvulpes:java/itemHoloProjector,REDESIGNED,v1.2.0,multiblock pattern diagnostics,ADR-016,the validator reports each mismatched cell,

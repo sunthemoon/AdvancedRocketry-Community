@@ -2,10 +2,15 @@
 
 ```yaml
 status: ACCEPTED
-revision: 5
+revision: 7
 date: 2026-10-03
-revision_4: PROPOSED in C15a; the accepted text is revision 3 until the owner accepts revision 4
-revision_5: PROPOSED in C15b; section 5 as settled while implementing it
+revision_4: ACCEPTED after C15a review round 2 under the owner's conditional authorization in the 2026-10-03 review continuation
+revision_5: ACCEPTED after C15b review round 2 under the same owner authorization
+revisions_4_5_accepted_at: 2026-10-03
+revision_6: ACCEPTED after C15c independent remediation review and the owner's explicit landing-ground expansion decision
+revision_6_accepted_at: 2026-10-03
+revision_7: ACCEPTED after independent Small Plate Press acquisition-contract review under the owner's conditional authorization; source/runtime delivery remains separate
+revision_7_accepted_at: 2026-10-04
 deciders: [sunthemoon]
 owner: sunthemoon
 accepted_by: sunthemoon
@@ -155,6 +160,14 @@ or vanilla-derived file is used.
 ### 3. Small plate press (C15a)
 
 A full block `small_plate_press`, always facing down, without a block entity.
+Revision7 restores its missing acquisition recipe from the inventoried approved
+AR `recipes/platepress.json`:one vanilla piston centered above three
+`forge:ingots/iron` crafts one press. Normalized shaped rows are `" P "`/`"III"`;
+the all-blank original upper row is omitted, not an ingredient/layout change.
+The stable recipe ID is `advancedrocketrycommunity:small_plate_press`; an ordinary
+recipe-unlock advancement requires a piston. This does not change processing,
+protection or the later C18 advancement. See the accepted
+[acquisition amendment](../work/v1.8.0-c15a-materials/PRESS-ACQUISITION-CONTRACT-01.md).
 On a rising redstone edge it reads the block below and the block two below. If
 the block below matches a `small_plate_press` recipe (its block form is in the
 recipe's ingredient), has no block entity and a non-negative destroy speed,
@@ -446,7 +459,9 @@ endgame casing and a laser lens without crystals. The recipe graph check
 (ADR-061 §5.3) treats both Levels as reachable only after an interstellar warp
 and must still find every C16–C18 output reachable without them.
 
-*Revision 6 (proposed, C15c).* Settled while implementing §6:
+*Revision 6 (accepted, C15c).* Settled while implementing §6, independently
+reviewed and accepted under the owner's conditional authorization after the
+explicit radius-expansion decision:
 
 - **Bodies.** Both orbit Tau Ceti, are landable and orbitable, need
   discovery and have environment effects. `tau_ceti_f`: gravity 1.0, orbit
@@ -480,17 +495,24 @@ and must still find every C16–C18 output reachable without them.
   89 of 1,000 seeds, and its jungle grass, trees, mushrooms and crystals block
   most land pads on both worlds (in one GameTest run a rocket came down only on
   the fifth Tau Ceti f pad). Each world therefore keeps a landing ground of
-  radius 160 around the origin: the farthest pad's widest footprint (16
-  chunks, 64 blocks around a pad on a chunk corner) reaches about 136 blocks,
-  and a feature writes up to 12 blocks from where it starts. No Tau Ceti
+  radius 224 around the origin. The 16-chunk limit permits a 16-by-1 layout,
+  not just 4-by-4: a legitimate 255-by-4-by-1 rocket reaches radius 201.437
+  at an outer pad. Enumerating every integer-centred rectangular footprint
+  up to the existing 16-chunk limit over all eight pads gives a farthest
+  corner of about 201.758 blocks; a feature can reach another 12 blocks in
+  each horizontal axis (16.971 diagonally). Radius 224 covers that combined
+  envelope without adding a rocket-width restriction. No Tau Ceti
   feature, and no alien forest grass (the vanilla jungle patch, placed by this
   mod's `alien_forest_grass`), starts inside it (the
   `advancedrocketrycommunity:landing_ground` placement filter). On Tau Ceti f,
   `n` is raised to at least 0.2 inside it (the
   `advancedrocketrycommunity:landing_ground_floor` density function: 0.2 within
-  160 blocks, falling by one per 96 blocks beyond), so the pads stand on dry
+  224 blocks, falling by one per 96 blocks beyond), so the pads stand on dry
   alien forest grass at y 67 or above and the sea begins about 24 blocks
   farther out. Tau Ceti g has no sea and needs only the filter.
+  The owner selected this expansion in the C15c review continuation. Already
+  generated chunks retain their earlier terrain/plants, including the previous
+  160-block landing ground; the new radius applies to new generation only.
 - **Biomes.** The legacy surfaces and colours: alien forest (grass over dirt;
   grass `0x7777FF`, foliage `0x55FFE1`, water `0x8888FF`), marsh (grass over
   dirt, clay and lily pads), deep swamp (grass over dirt; water `0xE0FFAE`, sky
@@ -597,6 +619,10 @@ ID in this namespace fail startup through the existing binding checks.
 - A0: the data satellite definition lists both new bodies; the three Tau Ceti
   routes stay inside one system; the recipe graph check passes with both Tau
   Ceti Levels removed from the reachable set.
+- A0: the Tau Ceti reserve covers every selector-centred rectangular footprint
+  admitted by the unchanged 16-chunk limit, including an actual 255-by-4-by-1
+  RocketBounds regression, plus the diagonal feature-reach bound; floor/filter
+  codecs and generated resources retain exact radius 224 assertions.
 - A1: plate press (block → plates; ore → dust; no obsidian; block entity
   below; unpowered; repeated pulses; unloaded neighbour; a cancelled
   `PistonEvent.Pre` leaves the block in place; revision 4: an ambiguous match
@@ -711,3 +737,16 @@ need a new revision and review.
   mushroom's client effect, all textures drawn new, the recipe graph check in
   C16d) and alternative D. For the C15c implementation review and the owner's
   acceptance.
+- Revisions 4/5 accepted in the 2026-10-03 continuation after C15a round 2
+  and C15b round 2, under the owner's no-unresolved-Critical/High/Medium
+  authorization. Revision 6 then accepted after the C15c remediation review
+  and the explicit radius-224 decision. The follow-up independently verified
+  38 JUnit tests, 42 selected GameTests and the rectangular landing envelope
+  ([report](../work/v1.8.0-c15c-worlds/reviews/REVIEW-02.md)). This accepts the
+  C15 contract and reviewed implementation, not visual assets or version Gates.
+- Revision7 (accepted,2026-10-04):restores only the missing Small Plate Press
+  crafting recipe using the inventoried approved AR piston/three-iron facts.
+  Independent contract review has0 Critical/High/Medium/Low findings and111
+  static pattern cases. Existing source/processing/protection and other recipe
+  identities do not change; actual implementation/DataGen/Forge/package checks
+  are separate obligations, not results inferred from contract adoption.

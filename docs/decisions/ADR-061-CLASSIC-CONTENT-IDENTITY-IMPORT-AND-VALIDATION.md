@@ -4,7 +4,8 @@
 status: ACCEPTED
 revision: 7
 date: 2026-10-03
-revision_7: PROPOSED in C15a (C15aR1-M2); the accepted text is revision 6 until the owner accepts revision 7
+revision_7: ACCEPTED after C15a review round 2 under the owner's conditional authorization in the 2026-10-03 review continuation
+revision_7_accepted_at: 2026-10-03
 deciders: [sunthemoon]
 owner: sunthemoon
 accepted_by: sunthemoon
