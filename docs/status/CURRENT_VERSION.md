@@ -106,8 +106,11 @@ Java fixture, clean host selection and native execution remain pending.
 The separate [phase02a contract disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-PHASE02A.md)
 adopts only four new private-file paths for quiescent snapshot/preboot/stopped
 properties input, after exact independent0 C/H/M/L review. Its61-member contract
-packet is verified. Implementation assignment awaits committed contract publication;
-live, ownership, JSON/NBT, receipt/driver and native authority remain unimplemented.
+packet is verified. The contract is committed and pushed at
+`b6299c86f7bcb99b00b89b4dd38479e035321954`. Its four-file implementation is
+assigned in an isolated worktree at that fixed base; no implementation has yet
+been integrated or accepted. Live, ownership, JSON/NBT, receipt/driver and native
+authority remain unimplemented.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
@@ -152,9 +155,11 @@ Whole-chunk save refusal can prevent unrelated chunk changes from being saved;
 its impact, repair workflow and release disposition remain open. Historical
 failures and oversized evidence-storage debt remain documented, not erased by
 passing automatic tests.
-Future temporary helpers/output now use the owner's requested project-parent
-`D:/GitHub/ARCE-Task-Evidence` location. The tool rejects checked C-script
-removal before execution; C cleanup is not complete and no bypass is attempted.
+Future temporary helpers/output use the owner's requested project-parent
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0` location, including process temporary
+directories. The tool rejects checked C-script removal before execution;
+11 ordinary files, totaling 24,930 bytes, remain in the last read-only inventory.
+C cleanup is not complete and no bypass is attempted.
 The new stopped native04 runtime copy also remains 209,666,732 bytes of cleanup
 debt after its checked literal deletion was rejected before OS execution.
 Compact logs/captures are preserved; no source world or sealed evidence is removed.
@@ -183,9 +188,10 @@ original-resource record. Isolated implementation at committed base
 `9135c20c34a402b7cf0715148aeb6683a35c1f50` has exact independent source review
 with no unresolved C/H/M/L and 19 independently executed tests. Root integrates
 25 source/task postimages and six generated files, committed and pushed.
-Full build/JUnit and repeat DataGen pass, but four registered analyzer GameTests
-fail in the complete cohort above. Isolated repair and independent result review
-are active; packaged use/restart, client and ledger delivery remain open.
+The original full cohort's four analyzer GameTest failures are preserved.
+Their isolated fixture correction and independent review are published; the
+latest complete committed cohort passes all 477 required GameTests, as recorded
+above. Packaged use/restart, client and ledger delivery remain open.
 See the [source checkpoint](../work/v1.8.0-c18a-atmosphere-analyzer/SOURCE-INTEGRATION-01.md).
 It does not enable
 unproven refill/shared-save dependencies.

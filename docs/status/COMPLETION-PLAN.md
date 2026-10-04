@@ -117,11 +117,12 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   文件/JSON/NBT/transport/Java、适用干净主机和原生执行仍待验证。
   [phase02a 只读文件契约](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-PHASE02A.md)
   已按独立0 C/H/M/L限定接受，61成员证据核验；仅四新private路径、静止副本有界properties读取。
-  提交契约后另配隔离实现；不赋予live、ownership、JSON/NBT、receipt或native权限。
+  契约已提交并推送 `b6299c86`，四文件实现已分配固定该提交的独立 worktree；
+  实际源码尚未集成或接受。不赋予 live、ownership、JSON/NBT、receipt 或 native 权限。
 - [~] [C18a-01](../work/v1.8.0-c18a-atmosphere-analyzer/TASK.md)：单项手持大气分析仪的
   只读契约经独立审核无 C/H/M/L，并按既有授权限定接受；原创资源已登记，
   精确源码及八项中央集成已独立审核，真实独立 19 单测通过。Root 已集成，
-  中间检查后已提交并推送；完整构建及单测通过，完整 GameTest 有四项分析仪失败。
+  中间检查后已提交并推送；原完整 GameTest 的四项分析仪失败保留在历史证据中。
   [单 GT 精确修复](../work/v1.8.0-c18a-atmosphere-analyzer/FIX-REVIEW-DISPOSITION-01.md)
   已独立复核无新增 C/H/M/L；真实独立 477 GT 和另行禁用缓存的 19 JUnit 通过。
   Root 已提交并推送三个原样后像，新 Source27 完整回归通过；原失败、断言和预算不改写。
@@ -158,7 +159,8 @@ R-021 未接受或关闭，不能据此开放新 guarded 保存功能。
 不接受风险、不改其他条目。该事实文档修订和独立审核已完成，
 见 [限定处置](../work/v1.8.0-c16a-save-guard/DISCLOSURE-REVIEW-DISPOSITION-01.md)，不属于 K3 计算交付。
 历史超限证据包与外部存储整理尚未完成，不把代码推送当作这部分通过。
-用户要求后续临时文件放项目父目录，已改用 `D:/GitHub/ARCE-Task-Evidence`。
+用户要求后续临时文件放项目父目录，已改用 `D:/GitHub/ARCE-Task-Evidence/v1.8.0`；
+测试子进程的 TEMP/TMP/TMPDIR 和 Java 临时目录也只使用此处的自建子目录。
 C 盘已识别脚本和新专服副本的检查后删除命令均被工具策略拒绝，尚未删除；
 新副本清理欠项为 209,666,732 字节，原始清理失败有单独记录。其他代理、旧日志和封存证据不改。
 新的 native05 副本也因策略拒绝未删除，额外 211,865,779 字节；不把原生诊断通过称为清理通过。
