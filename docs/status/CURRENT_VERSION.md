@@ -76,13 +76,13 @@ Six C18 inventory tutorials now have exact reviewed source integrated by Root;
 committed complete tests above are a separate cohort. Three registered tests
 exercise the actual inventory listener. Packaged restart and ledger delivery
 remain pending. The original native draft's offline-player ownership finding
-is preserved. Its independently reviewed replacement has one constructor/join
-loaded-area Medium and is not adopted or implemented; exact proposal, controls,
-failure and selected primary facts are portable in the
-[native disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-02.md).
-The separate [third task revision](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-03.md)
-proposes copy-only native host/loaded-envelope and pre-join position admission;
-independent review is active. No setup, source or native execution is admitted.
+is preserved, as is the revision 2 constructor/join scene finding. The separate
+[revision 3 review](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-03.md)
+addresses that scene at contract/source level but identifies two Medium native
+lifecycle conflicts: startup properties rewriting and repeated reload forceload
+refusal. Revision 3 is not adopted/implemented; phase-specific corrections are
+being proposed. Exact proposal/failures/primary controls are portable. No setup,
+fixture source or native execution is admitted.
 See
 [source integration](../work/v1.8.0-c18c-tutorial-inventory/SOURCE-INTEGRATION-01.md).
 
