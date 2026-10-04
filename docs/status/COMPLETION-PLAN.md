@@ -113,12 +113,15 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   [phase01 精确源码](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-PHASE01.md)
   已独立审核无 C/H/M/L，四文件原样提交推送 `d0f9cbde`；Root
   [已提交 Python 回归](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-01.md)
-  39/16/8 通过并获限定独立结果复核，CLI2 仍明确拒绝完整驱动。工具/原失败保留，119 成员薄包已核验。
-  文件/JSON/NBT/transport/Java、适用干净主机和原生执行仍待验证。
+  旧 phase01 检查通过并获限定独立结果复核，CLI2 仍明确拒绝完整驱动。工具/原失败保留，119 成员薄包已核验。
+  其余文件角色/live 读取、JSON/NBT/transport/Java、适用干净主机和原生执行仍待验证。
   [phase02a 只读文件契约](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-PHASE02A.md)
   已按独立0 C/H/M/L限定接受，61成员证据核验；仅四新private路径、静止副本有界properties读取。
-  契约已提交并推送 `b6299c86`，四文件实现已分配固定该提交的独立 worktree；
-  实际源码尚未集成或接受。不赋予 live、ownership、JSON/NBT、receipt 或 native 权限。
+  契约已提交并推送 `b6299c86`，四文件隔离实现经独立实际源码审核无 C/H/M/L，
+  Root 原样提交推送 `254af9e4` 并完成固定提交 34 + 39 方法 /0FES；
+  [限定采用](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-PHASE02A.md)
+  仅为静止副本的私有 properties 读取，不赋予 live、ownership、JSON/NBT、receipt 或 native 权限。
+  Root 新夹具已清理 99,375 字节；首次清理预检失败和修订记录分别保留。
 - [~] [C18a-01](../work/v1.8.0-c18a-atmosphere-analyzer/TASK.md)：单项手持大气分析仪的
   只读契约经独立审核无 C/H/M/L，并按既有授权限定接受；原创资源已登记，
   精确源码及八项中央集成已独立审核，真实独立 19 单测通过。Root 已集成，

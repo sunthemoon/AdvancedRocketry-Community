@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 tested_code_commit: a0873a30a2e1ad9fe0b42d11a0b89903fc478d5c
-tested_python_commit: d0f9cbdeaf5921da7ee6157a99873dd47fb7f1ad
+tested_python_commit: 254af9e4b7f2fe007eea87989e1534a238b140b7
 last_updated: 2026-10-05
 ```
 
@@ -96,21 +96,24 @@ pushed at `d04a116e6e6001f166bbf5e8f31fb78623a6b392`. A fresh isolated fixture
 implementation has a [limited phase01 source disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-PHASE01.md):
 two Python modules/two records are independently reviewed with no C/H/M/L and
 imported byte-exact and pushed at `d0f9cbde`. A separate [committed Python cohort](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-01.md)
-actually passes39/16/8 pure checks; CLI2 explicitly refuses the unimplemented
+passes the phase01 pure checks; CLI2 explicitly refuses the unimplemented
 full driver. Independent raw-result audit verifies the limited observations,
 including original observer/preparation failures. The119-member committed-result
 thin packet is verified; ten duplicate Git stdout blobs remain precise immutable
 locators, not complete publication-output closure.
-File/JSON/NBT/transport,
+Other file-role/live acquisition, JSON/NBT/transport,
 Java fixture, clean host selection and native execution remain pending.
 The separate [phase02a contract disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-PHASE02A.md)
 adopts only four new private-file paths for quiescent snapshot/preboot/stopped
 properties input, after exact independent0 C/H/M/L review. Its61-member contract
 packet is verified. The contract is committed and pushed at
-`b6299c86f7bcb99b00b89b4dd38479e035321954`. Its four-file implementation is
-assigned in an isolated worktree at that fixed base; no implementation has yet
-been integrated or accepted. Live, ownership, JSON/NBT, receipt/driver and native
-authority remain unimplemented.
+`b6299c86f7bcb99b00b89b4dd38479e035321954`. The isolated four-file source has
+[limited committed adoption](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-PHASE02A.md)
+at `254af9e4`: exact independent source review finds no C/H/M/L, and Root's
+fixed-commit replay passes 34 focused + 39 unchanged phase01 methods /0FES.
+Its fresh D fixture is cleaned, 99,375 bytes, after a separately retained
+precheck correction. This is only private quiescent properties input. Live,
+ownership, JSON/NBT, receipt/driver and native authority remain unimplemented.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
