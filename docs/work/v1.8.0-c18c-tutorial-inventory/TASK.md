@@ -84,9 +84,11 @@ Only checkpoint metadata was added after that review. The frozen semantics,
 implementation boundaries and runtime obligations are unchanged; see
 [review disposition](REVIEW-DISPOSITION-01.md).
 
-Root has integrated the exact reviewed six source files, both central lines,
-six generated advancements and twelve new keys in each language. Actual scoped
-JUnit and integrated DataGen pass; registered GameTests, committed full checks,
-packaged restart and ledger delivery remain open. See
+Root has committed/pushed the exact reviewed six source files, both central
+lines, six generated advancements and twelve new keys in each language at
+`a5abc34809891d6b10724ee60ab9b5e97f036bae`. Fresh complete JUnit/DataGen and
+all 467 required GameTests pass, including three actual inventory-listener
+tests. Packaged restart and ledger delivery remain open. See
+[automatic verification](VERIFICATION-01.md) and
 [source integration](SOURCE-INTEGRATION-01.md). The separately reviewed native
 fixture draft has an unresolved ownership Medium and is not admitted unchanged.

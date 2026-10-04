@@ -36,26 +36,26 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: a385ba452ab756b5689a1cbf21e2177129b93dc9
+tested_code_commit: a5abc34809891d6b10724ee60ab9b5e97f036bae
 last_updated: 2026-10-04
 ```
 
 ## Current development evidence
 
-The latest integrated diagnostic source is committed and pushed at
-`50b46f091382d19fa683404fc3ace0896220b0c9`; full checks ran at the tested
-commit above. Its opt-in fixed-cell state command changes no policy, ticket or
-resource. [Current verification](../work/v1.8.0-c16a-save-guard/STATE-OBSERVATION-VERIFICATION-04.md)
-records 1,773 JUnit /331 suites, 464 required GameTests and 120 focused Python
-cases passing. Source24 denotes its 2,997 named inputs, not a whole repository.
-DataGen has 771 files and zero repeat writes; the bounded repository check
-reports 45 passed. Independent exact source/result audits are frozen with
-raw pins and preserved failed reviewer attempts. The 61 ERROR headers in each
-GameTest stream remain disclosed, not waived. The owner-modified AGENTS and
-the wrapper's exact 92 LF/CRLF expansions are individually qualified.
+The latest C18 inventory source is committed and pushed at the tested commit
+above. [Source25 verification](../work/v1.8.0-c18c-tutorial-inventory/VERIFICATION-01.md)
+records 1,785 JUnit /333 suites and all 467 required GameTests passing, including
+three actual inventory-listener tests. Its 3,009 named inputs are not a whole
+repository snapshot. DataGen has 777 files and zero repeat writes. The previous
+Source24 bounded repository check (45 passed) and 120 focused Python are
+historical, not newly rerun Source25 results. Exact source and separate result
+audits are frozen; historical collector wording is explicitly corrected.
+Failed collectors
+and 61 ERROR headers in each GameTest stream remain disclosed, not waived.
+The owner-modified AGENTS and 92 wrapper LF/CRLF expansions remain qualified.
 
 The development main JAR SHA-256 is
-`f8fe53aa38f2221488bcd1d4b52a3795ab9674c9dc64d3a02b9a347f613dc6c2`.
+`61c5499318dcd17d929acd9f3d28ab1e99066ba2c29da1de34603096f10f3921`.
 The API artifact remains unchanged. This is not a frozen release candidate.
 The content ledger has **186 PLANNED units /154 REVIEW assets**; its closure
 check still fails. v1.8 remains **IN_PROGRESS /IMPLEMENTING**, with **G0–G9 open**.
@@ -69,11 +69,11 @@ restoration/native-byte/restart oracles. Stopped retention remains observation
 only. No real client/crash recovery or new guarded writer admission is supplied.
 
 Six C18 inventory tutorials now have exact reviewed source integrated by Root;
-12 scoped JUnit and integrated DataGen (777 v1.8 files) pass on the uncommitted
-development check. These are not part of Source24. Three GameTests are compiled,
-not yet run; fresh committed full checks, actual triggers, packaged restart and
-ledger delivery remain pending. The native fixture draft has one unresolved
-offline-player file-ownership Medium and is not admitted unchanged. See
+12 scoped JUnit and integrated DataGen pass on the earlier intermediate check;
+committed complete tests above are a separate cohort. Three registered tests
+exercise the actual inventory listener. Packaged restart and ledger delivery
+remain pending. The native fixture draft has one unresolved offline-player
+file-ownership Medium and is not admitted unchanged. See
 [source integration](../work/v1.8.0-c18c-tutorial-inventory/SOURCE-INTEGRATION-01.md).
 
 ## Implemented development scope
