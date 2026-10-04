@@ -249,5 +249,49 @@ class NativeUnloadObservationTest(unittest.TestCase):
             guard.wait_unload_begin(Process(), [], 0)
 
 
+class CopiedSpawnSetupTest(unittest.TestCase):
+    LINE = "[Server thread/INFO] [minecraft/MinecraftServer]: Set the world spawn point to 256, 74, -256 [0.0]"
+
+    def test_exact_native_success_requires_logger_coordinates_and_angle(self):
+        self.assertIsNotNone(guard.COPY_SPAWN_SUCCESS.search(self.LINE))
+        for line in (self.LINE.replace("/INFO]", "/ERROR]"),
+                     self.LINE.replace("minecraft/MinecraftServer", "example/Other"),
+                     self.LINE.replace("-256", "-32"), self.LINE.replace("[0.0]", "[1.0]"),
+                     "echo " + self.LINE, self.LINE + " extra"):
+            self.assertIsNone(guard.COPY_SPAWN_SUCCESS.search(line))
+
+    def test_fixed_copy_command_and_barrier_precede_success_check(self):
+        class Process:
+            lines = [CopiedSpawnSetupTest.LINE]
+
+            def command(self, command):
+                self.commands.append(command)
+
+        process, commands = Process(), []
+        process.commands = []
+
+        def barrier(proc, rows, text):
+            self.assertEqual(text, "ARCE_GUARD_COPY_SPAWN_END")
+            self.assertEqual(rows, ["setworldspawn 256 74 -256 0"])
+            proc.lines.append(self.LINE)
+
+        with patch.object(guard, "say_barrier", side_effect=barrier):
+            self.assertEqual(guard.relocate_copy_spawn(process, commands), self.LINE)
+        self.assertEqual(process.commands, ["setworldspawn 256 74 -256 0"])
+
+    def test_stale_absent_wrong_or_duplicate_success_does_not_pass(self):
+        class Process:
+            def command(self, command):
+                pass
+
+        for new in ([], [self.LINE.replace("-256", "-32")], [self.LINE, self.LINE]):
+            process = Process()
+            process.lines = [self.LINE]
+            with self.subTest(new=new), \
+                    patch.object(guard, "say_barrier", side_effect=lambda *args: process.lines.extend(new)), \
+                    self.assertRaisesRegex(RuntimeError, "exactly once"):
+                guard.relocate_copy_spawn(process, [])
+
+
 if __name__ == "__main__":
     unittest.main()

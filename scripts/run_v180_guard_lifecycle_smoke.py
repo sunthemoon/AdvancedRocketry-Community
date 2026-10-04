@@ -20,6 +20,10 @@ require, write = tanks.require, tanks.write
 CHUNK = tanks.CHUNK
 REGION = Path("region/r.0.0.mca")
 CULPRIT = (186, 180, 180)
+COPY_SPAWN_COMMAND = "setworldspawn 256 74 -256 0"
+COPY_SPAWN_SUCCESS = re.compile(r"^(?:\[\d{2}:\d{2}:\d{2}\] )?\[Server thread/INFO\] "
+                                + r"\[minecraft/MinecraftServer\]: "
+                                + re.escape("Set the world spawn point to 256, 74, -256 [0.0]") + r"\s*$")
 ERROR_PREFIX = r"^(?:\[\d{2}:\d{2}:\d{2}\] )?\[Server thread/ERROR\] "
 EVENT_ERROR = re.compile(ERROR_PREFIX
                         + r"\[(?:ne\.mi\.ev\.EventBus|net\.minecraftforge\.eventbus\.EventBus)/EVENTBUS\]: "
@@ -81,6 +85,17 @@ def wait_unload_begin(process, commands: list[str], start_at: int, timeout: floa
     if time.monotonic() > deadline:
         raise server.SmokeError("Native unload marker arrived after its original deadline")
     return process.lines[index].rstrip()
+
+
+def relocate_copy_spawn(process, commands: list[str]) -> str:
+    """Remove the original START-ticket halo from the copied fixture's target."""
+    start = len(process.lines)
+    commands.append(COPY_SPAWN_COMMAND)
+    process.command(COPY_SPAWN_COMMAND)
+    say_barrier(process, commands, "ARCE_GUARD_COPY_SPAWN_END")
+    matches = [line.rstrip() for line in process.lines[start:] if COPY_SPAWN_SUCCESS.search(line)]
+    require(len(matches) == 1, "Native copied-world spawn relocation was not confirmed exactly once")
+    return matches[0]
 
 
 def check_fixture(chunk: dict) -> dict:
@@ -162,6 +177,7 @@ def native_cycle(runtime: Path, evidence: Path, command: list[str], expected: by
 
         send("forceload add 176 176")
         wait_chunk(process, commands, True)
+        receipt["copy_spawn_setup"] = relocate_copy_spawn(process, commands)
         assert_block(CULPRIT, tanks.NS + ":pressurized_tank", "ARCE_GUARD_ROOT_RELOADED")
         assert_block(tanks.SAVE_MARKER_POSITION, "minecraft:air", "ARCE_GUARD_MARKER_ABSENT")
         send("setblock 190 180 180 minecraft:stone")
