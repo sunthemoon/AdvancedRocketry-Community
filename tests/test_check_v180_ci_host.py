@@ -102,10 +102,32 @@ class WorkflowWiringTests(unittest.TestCase):
         self.assertIn("--no-build-cache", command.split())
 
     def test_runtime_temporary_directories_match_sampled_runner_temp(self):
-        env = re.search(r"    env:\n(.*?)    defaults:\n", self.workflow, re.DOTALL).group(1)
+        first_run = re.search(r"      - name: Verify checkout and execution host before setup\n(.*?)"
+                              r"      - name: Set up Java 17\n", self.workflow, re.DOTALL).group(1)
+        env = re.search(r"        env:\n(.*?)        run: \|\n", first_run, re.DOTALL).group(1)
         for key in ("TMPDIR", "TMP", "TEMP"):
-            self.assertIn(f"      {key}: ${{{{ runner.temp }}}}\n", env)
-        self.assertIn("      JAVA_TOOL_OPTIONS: -Djava.io.tmpdir=${{ runner.temp }}\n", env)
+            self.assertIn(f"          {key}: ${{{{ runner.temp }}}}\n", env)
+        self.assertIn("          JAVA_TOOL_OPTIONS: -Djava.io.tmpdir=${{ runner.temp }}\n", env)
+        for key in ("EVIDENCE_DIR", "TMPDIR", "TMP", "TEMP", "JAVA_TOOL_OPTIONS"):
+            self.assertIn(f'"{key}=${key}"', first_run)
+        self.assertIn('>> "$GITHUB_ENV"', first_run)
+
+    def test_job_environment_does_not_use_unavailable_runner_context(self):
+        env = re.search(r"    env:\n(.*?)    defaults:\n", self.workflow, re.DOTALL).group(1)
+        self.assertNotIn("runner.", env)
+
+    def test_failure_upload_is_bounded_without_checkout_or_preflight_exports(self):
+        upload = re.search(r"      - name: Upload raw regression evidence, including failed runs\n(.*?)"
+                           r"      - name: Upload the single external build artifact\n",
+                           self.workflow, re.DOTALL).group(1)
+        self.assertIn("        if: always()\n", upload)
+        paths = re.search(r"          path: \|\n(.*)", upload, re.DOTALL).group(1)
+        self.assertEqual([
+            "${{ runner.temp }}/arce-v180-regression/",
+            "build/reports/tests/test/",
+            "build/test-results/test/",
+            "build/gametest/logs/",
+        ], [line.strip() for line in paths.splitlines() if line.strip()])
 
 
 if __name__ == "__main__":

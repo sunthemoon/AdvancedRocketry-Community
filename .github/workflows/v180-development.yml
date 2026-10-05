@@ -28,12 +28,7 @@ jobs:
     timeout-minutes: 45
     env:
       REVIEW_COMMIT: ${{ github.sha }}
-      EVIDENCE_DIR: ${{ runner.temp }}/arce-v180-regression
       PYTHONDONTWRITEBYTECODE: "1"
-      TMPDIR: ${{ runner.temp }}
-      TMP: ${{ runner.temp }}
-      TEMP: ${{ runner.temp }}
-      JAVA_TOOL_OPTIONS: -Djava.io.tmpdir=${{ runner.temp }}
     defaults:
       run:
         shell: bash
@@ -45,9 +40,16 @@ jobs:
           persist-credentials: false
 
       - name: Verify checkout and execution host before setup
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/arce-v180-regression
+          TMPDIR: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
+          TEMP: ${{ runner.temp }}
+          JAVA_TOOL_OPTIONS: -Djava.io.tmpdir=${{ runner.temp }}
         run: |
           test "$(git rev-parse HEAD)" = "$REVIEW_COMMIT"
           python3 -B scripts/check_v180_ci_host.py
+          printf '%s\n' "EVIDENCE_DIR=$EVIDENCE_DIR" "TMPDIR=$TMPDIR" "TMP=$TMP" "TEMP=$TEMP" "JAVA_TOOL_OPTIONS=$JAVA_TOOL_OPTIONS" >> "$GITHUB_ENV"
           mkdir -p "$EVIDENCE_DIR"
           git rev-parse HEAD > "$EVIDENCE_DIR/tested-commit.txt"
           python3 -B scripts/check_v180_ci_host.py > "$EVIDENCE_DIR/host-setup.json"
@@ -109,7 +111,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: |
-            ${{ env.EVIDENCE_DIR }}/
+            ${{ runner.temp }}/arce-v180-regression/
             build/reports/tests/test/
             build/test-results/test/
             build/gametest/logs/

@@ -60,3 +60,39 @@ remain pending, not inferred from these changes.
 record all five primary repository API refs and the Gradle annotated-tag chain.
 The initial lightweight-only tag check failed; the bounded fresh dereference
 resolved v6 to commit `3f5f9adaf7d9fecd50b5935e54106014257a94e6`.
+
+## First hosted attempt and context correction
+
+The corrected four-file source was independently reviewed with 14 tests and
+six controls, then published in `33b690f001f5ecca88589d44582369a8d73f1785`.
+[Run 37318904441](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37318904441)
+failed workflow validation before any job, test or Java execution. Its annotation
+identifies five unsupported `runner.temp` expressions in job-level `env`.
+The [primary context table](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability)
+allows `runner` in step-level `env`, not job-level `env`.
+
+The follow-up moves the five bindings into the initial preflight step, where
+they cover its Python process, then persists them through `GITHUB_ENV` for later
+steps. The space floor, fresh-test cache flag, timeout and unfiltered tests are
+unchanged. A new context regression and revised temp-wiring test fail against
+the original workflow (15 tests: one failure, one error); follow-up results are
+recorded separately. The earlier hosted failure and source reviews remain
+unchanged. Independent correction review and actual next hosted results are
+still required; neither static checks nor a parsed workflow establish build,
+DataGen, GameTest or any version Gate success.
+
+The first post-patch test attempt still had one test-harness error: its new
+step-env parser omitted the YAML `run: |` block marker. That attempt is retained
+as `host-tests04-green.*` despite the prematurely chosen filename; the later
+parser correction and actual result use a new numbered receipt.
+
+The [independent context-fix review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-context-review-20261005-7c029e/REVIEW-01.md)
+finds a Medium failure path: checkout or preflight refusal skips `GITHUB_ENV`
+export, so the unconditional upload's missing `env.EVIDENCE_DIR` expands its
+first path to `/`. Its 15 focused tests pass, while two of eight independent
+controls fail on that same issue. No root scan or upload was executed.
+The separate repair binds that upload path directly to the supported step-level
+`runner.temp` context. A new regression fails against the vulnerable wiring
+(16 tests, one failure), then is replayed against the repair. The other three
+workspace-relative result paths, preflight rules and product-test assertions
+remain unchanged. This repair still needs independent review and hosted replay.
