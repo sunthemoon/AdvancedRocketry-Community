@@ -150,6 +150,7 @@ public final class V180MaterialData {
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.COMBUSTION_GENERATOR.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.COMBUSTION_GENERATOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.PRESSURIZED_TANK.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.STATION_LIGHT.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.BLOCK.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.BLOCK.get());
             for (var tier : io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorDefinition.values()) {

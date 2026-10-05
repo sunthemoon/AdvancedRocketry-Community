@@ -194,6 +194,7 @@ public final class ModItems {
     public static final RegistryObject<Item> PRESSURIZED_TANK = ITEMS.register("pressurized_tank", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTankItem(
                     ModBlocks.PRESSURIZED_TANK.get(), new Item.Properties()));
+    public static final RegistryObject<Item> STATION_LIGHT = blockItem("station_light", ModBlocks.STATION_LIGHT);
 
     private ModItems() {
     }

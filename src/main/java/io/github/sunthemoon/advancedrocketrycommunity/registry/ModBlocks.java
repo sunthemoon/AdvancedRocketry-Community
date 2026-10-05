@@ -257,6 +257,15 @@ public final class ModBlocks {
                     () -> ModBlockEntities.PRESSURIZED_TANK.get(),
                     io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig::tankCapacityMultiplier));
 
+    /** Ordinary full-cube station lighting; no owner, BlockEntity or active tick. */
+    public static final RegistryObject<Block> STATION_LIGHT = BLOCKS.register("station_light", () ->
+            new Block(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_LIGHT_GRAY)
+                    .strength(3.0F, 6.0F)
+                    .sound(SoundType.METAL)
+                    .requiresCorrectToolForDrops()
+                    .lightLevel(state -> 15)));
+
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()
                 .mapColor(MapColor.METAL)
