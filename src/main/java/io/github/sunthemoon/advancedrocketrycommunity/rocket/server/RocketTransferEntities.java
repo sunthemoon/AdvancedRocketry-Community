@@ -321,6 +321,16 @@ final class RocketTransferEntities {
         loadOrigin(level, snapshot);
     }
 
+    static boolean destinationEntityChunkReady(
+            ServerLevel level,
+            RocketStructureSnapshot snapshot
+    ) {
+        RocketPosition origin = snapshot.sourceOrigin();
+        BlockPos position = new BlockPos(origin.x(), origin.y(), origin.z());
+        return level.areEntitiesLoaded(ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4))
+                && level.isPositionEntityTicking(position);
+    }
+
     private static boolean entityChunkLoaded(
             MinecraftServer server,
             RocketStructureSnapshot snapshot,

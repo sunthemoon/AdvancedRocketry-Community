@@ -455,7 +455,7 @@ final class RocketTransferService {
         }
     }
 
-    private void spawnDestination(
+    void spawnDestination(
             MinecraftServer server,
             RocketTransferSavedData journal,
             RocketTransferRecord record,
@@ -465,6 +465,13 @@ final class RocketTransferService {
                 server,
                 record.destinationSnapshot().sourceDimension()
         );
+        // Block availability precedes entity visibility/ticking during an asynchronous chunk load.
+        // Retain PREPARED source authority until the exact destination origin is ready.
+        if (destinationLevel != null
+                && !RocketTransferEntities.destinationEntityChunkReady(
+                        destinationLevel, record.destinationSnapshot())) {
+            return;
+        }
         if (destinationLevel == null
                 || !pads.available(destinationLevel, record.destinationSnapshot(), null, false)) {
             failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_PAD_BLOCKED);
