@@ -109,11 +109,53 @@ Twenty fresh source/specification controls pass, not codec or runtime execution.
 T1-T7 remain substantive blockers. The separately sealed numeric candidate02 is
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-resolution-20261005-37a91f6b/PROPOSED-NUMERIC-02.md`,
 23,360 bytes /SHA `d7b1f36f2c419f51332af928cc468d7e16f9b37d8b42f1e8819cec5451ff4a28`.
-Root verifies 59 payloads /168,441 bytes /60 sums. Its 32 offered-branch model
-controls and 49 named input postchecks are authorship evidence, not an independent
-numeric freeze. Binary/decimal capture, product rounding and partial nuclear
-cost selectors remain unchosen. Native-frame eligibility and complete joint O3
-bindings/selected hold-policy coordination are separately being authored.
+Root verifies 59 payloads /168,441 bytes /60 sums. Its different-agent
+[numeric review disposition](NUMERIC-REVIEW-DISPOSITION-01.md) records one Low:
+the excluded historical L equation omits binary32 product rounding after the
+quotient round. Fresh 22 controls pass; 120 distinct inputs /140 rows are unchanged.
+Root reads the full review and verifies 38 payloads /244,724 bytes /39 sums.
+A minimal separately versioned correction is assigned; no sealed input changes.
+Binary/decimal capture, product rounding and partial nuclear cost selectors
+remain unchosen. Root asks the owner for the resource-affecting selection in one
+asynchronous question on 2026-10-05, without inferring its preselected answer.
+The separate T3 native-frame authorship proposal is now sealed at
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-frame-resolution-20261005-879da13f/PROPOSED-FRAME-01.md`,
+37,458 bytes /SHA `a56726d188a6625c2fed8a7143c514da7dc2b84e9dd22996c6cc0414af469996`.
+Root reads the report and verifies 88 payloads /591,394 bytes /89 sums;
+its different-agent full review completes at
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-frame-review-20261005-8e061f/REVIEW-01.md`,
+20,039 bytes /SHA `e20e9ad019977a083f7650c1ca7a700cebc1e6833849f3a9946187387e47e78a`.
+Root reads the complete report and verifies 50 payloads /348,435 bytes /51 sums.
+It identifies no C/H/M/L in the proposed text. Fresh 26 finite models and 15
+fixed-source controls pass; 128 distinct named inputs remain unchanged. Original
+reviewer source-control and locator failures are retained. The author's 30 model
+plus 12 source controls and these independent controls are not actual native
+compatibility, implementation or performance evidence. The review distinguishes
+the private NC1 inspection/encoding leaf, full typed hash projections, and runtime
+codec/writer dependencies. The first still needs an exact computation contract,
+Root adoption and actual Java/unit verification, but mere owned-Tag framing does
+not require T1/T2 numerical selection or T5 writer adoption. The latter scopes
+retain their numerical, joint-schema, lifecycle and recovery prerequisites.
+This dependency assessment does not assign source or adopt any new bound.
+Full typed O3 revision02 is separately sealed at
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-o3-typed-integration-20261005-72c143/PROPOSED-O3-TYPED-02.md`,
+60,041 bytes /SHA `5447201f53996f180eb73fe87be74a18aba1b9bb5e456b6294c17dc911544d43`.
+Root reads the complete proposal/report and verifies 68 payloads /312,278 bytes
+/69 sums. Different-agent full review completes at
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-o3-typed-review-20261005-a74f1c/REVIEW-02.md`,
+23,989 bytes /SHA `095197691c35942f624dfa08c95b12bbe2de865ee7ec168353a879449cda8ef9`.
+Root reads the complete report and verifies 87 payloads /799,002 bytes /88 sums.
+It finds one Low: OWNER-COORDINATION-02 lines 9-12 falsely attribute the proposed
+known-durable/live-publication-failure branch to the owner question. The actual
+compiled receipt covers uncertain writes; later candidate clauses correctly
+label the branch a proposed technical extension. Fresh independent 36 finite
+specification/source controls pass, author 68/69 and 116 named union inputs are
+unchanged. Original reviewer tool/assertion failures remain separately preserved.
+A minimal versioned wording correction is required, not a receipt/policy change.
+Exact source/receipt/reference tables and the proposed managed-root hold do not
+supply T3/T5 durability or an accepted ADR/risk amendment. Native-frame/O3
+authorship and T3 proposal review no longer await completion; O3 correction,
+precise technical adoption and exact joint acceptance remain open.
 Authorship sealing or an open-proposal review is not
 technical freeze or source permission. Existing flight plan schema3 is not typed
 flight schema3. Both Moon and

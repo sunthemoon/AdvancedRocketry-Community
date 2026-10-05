@@ -188,7 +188,21 @@ The [shared prerequisite status](../work/v1.8.0-c17-contract/SHARED-PREREQUISITE
 records independently reviewed open C17/C16 dependency inputs, not an exact
 contract freeze. The full typed rocket candidate has completed independent
 proposal review with no additional C/H/M/L, but T1-T7 remain substantive freeze
-prerequisites. C17b candidate03 independently resolves candidate02's Medium
+prerequisites. The [numeric candidate02 review](../work/v1.8.0-c17-contract/NUMERIC-REVIEW-DISPOSITION-01.md)
+finds one Low in its excluded historical binary32 equation; the separately
+versioned author correction and resource-affecting owner selection remain open.
+Its 22 fresh controls pass, not native or resource-writer tests. Root verifies
+38 review payloads /244,724 bytes /39 sums. The full native-frame proposal is
+separately sealed (88 /591,394 bytes /89); its completed different-agent review
+has no C/H/M/L findings in proposed text, with 26 finite and 15 source controls
+passing. Root verifies 50 review payloads /348,435 bytes /51 sums. A private NC1
+inspection/encoding leaf has distinct prerequisites from full typed hashes and
+runtime codecs; none is adopted or assigned by this review. Numeric selections
+and the writer/recovery prerequisites remain open;
+the full typed O3 author packet is verified (68 /312,278 bytes /69). Its completed
+independent review finds one Low owner-question attribution error; Root verifies
+87 review payloads /799,002 bytes /88 sums. Correction and adoption remain open.
+C17b candidate03 independently resolves candidate02's Medium
 zero/no-spacing and Low typed-equivalence wording in proposed text only;
 neither shared writer nor full contract freeze is admitted. Both first-event
 source/receipt contracts remain incomplete. On 2026-10-05 the owner answers the
