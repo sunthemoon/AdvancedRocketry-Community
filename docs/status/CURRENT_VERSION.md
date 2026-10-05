@@ -137,6 +137,10 @@ passes 165 tests /0FES with 18 named fixed-Git/live inputs unchanged. Root's
 fresh D fixture is cleaned, 99,375 regular bytes and six aliases. This verifies
 only the private terminal-field leaf; other report events, file acquisition,
 driver/native/ownership/receipt and full C18c delivery remain unfinished.
+The separate [temporary-copy cleanup](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TEMP-CLEANUP-04-REPORT-TERMINALS.md)
+records 34,922 logical bytes of author copies removed and normal non-force
+retirement of that clean checkout. The first statistics-precheck failure is
+preserved; old C/policy-refused targets are not retried or declared cleaned.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
