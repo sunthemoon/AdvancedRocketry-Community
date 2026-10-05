@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.EndgameInte
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.intent.IntentKind;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameAction;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameSystem;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -25,6 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
@@ -55,6 +57,8 @@ public final class GravityFieldGameTests {
             Comparator.comparing(UUID::toString));
     private static volatile UUID veto;
     private static final String[] LAST_ERROR = {""};
+    @Nullable
+    private static SwitchDiagnostics switchDiagnostics;
 
     static {
         MinecraftForge.EVENT_BUS.addListener(GravityFieldGameTests::onEffect);
@@ -71,8 +75,22 @@ public final class GravityFieldGameTests {
 
     @AfterBatch(batch = PLANET)
     public static void restoreSwitch(ServerLevel level) {
-        CommonConfig.ENDGAME_GRAVITY_FIELD.set(true);
-        veto = null;
+        SwitchDiagnostics diagnostics = switchDiagnostics;
+        try {
+            if (diagnostics != null) {
+                diagnostics.observe("after_batch_before_restore");
+            }
+        } finally {
+            try {
+                CommonConfig.ENDGAME_GRAVITY_FIELD.set(true);
+                veto = null;
+                if (diagnostics != null) {
+                    diagnostics.observe("after_batch_after_restore");
+                }
+            } finally {
+                switchDiagnostics = null;
+            }
+        }
     }
 
     @GameTest(template = "empty", batch = PLANET, timeoutTicks = 1200)
@@ -83,6 +101,8 @@ public final class GravityFieldGameTests {
         BlockPos pos = helper.absolutePos(new BlockPos(1, 14, 1));
         level.setBlockAndUpdate(pos, ModBlocks.GRAVITY_FIELD_CONTROLLER.get().defaultBlockState());
         GravityFieldBlockEntity device = (GravityFieldBlockEntity) level.getBlockEntity(pos);
+        SwitchDiagnostics diagnostics = new SwitchDiagnostics(helper, device);
+        switchDiagnostics = diagnostics;
         List<ServerPlayer> joined = new ArrayList<>();
         ServerPlayer owner = join(server, joined, "fieldOwner", level, pos.east(2));
         List<String> friendReplies = new ArrayList<>();
@@ -164,11 +184,14 @@ public final class GravityFieldGameTests {
                 .thenExecute(() -> {
                     expectGravity(helper, owner, BASE * 0.5D, "the owner again");
                     CommonConfig.ENDGAME_GRAVITY_FIELD.set(false);
+                    diagnostics.observe("disabled_set");
                 })
                 .thenExecuteAfter(2, () -> {
+                    diagnostics.observe("before_disable_assertions");
                     expectGravity(helper, owner, BASE, "a disabled system restores gravity");
                     helper.assertTrue(!device.active(), "A disabled field stayed active");
                     CommonConfig.ENDGAME_GRAVITY_FIELD.set(true);
+                    diagnostics.observe("enabled_set");
                 })
                 .thenWaitUntil(() -> helper.assertTrue(device.active(), "Not active after the switch"))
                 .thenExecute(() -> {
@@ -181,6 +204,40 @@ public final class GravityFieldGameTests {
                     level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                 })
                 .thenSucceed();
+    }
+
+    /** One fixture context, cleared by AfterBatch even when the original assertions fail. */
+    private static final class SwitchDiagnostics {
+        private final GameTestHelper helper;
+        private final GravityFieldBlockEntity device;
+        private int lines;
+
+        private SwitchDiagnostics(GameTestHelper helper, GravityFieldBlockEntity device) {
+            this.helper = helper;
+            this.device = device;
+        }
+
+        private void observe(String phase) {
+            if (lines >= 6) {
+                return;
+            }
+            lines++;
+            ServerLevel level = helper.getLevel();
+            BlockPos position = device.getBlockPos();
+            var runtime = EndgameRuntime.devices();
+            boolean indexed = runtime.map(devices -> device.deviceId().map(devices.fields()::contains)
+                    .orElse(false)).orElse(false);
+            String runtimeEnabled = runtime.map(devices -> Boolean.toString(devices.settings()
+                    .enabled(EndgameSystem.GRAVITY_FIELD))).orElse("UNAVAILABLE");
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_GRAVITY_SWITCH_FIXTURE phase={} test_tick={} world_tick={}"
+                            + " spec_loaded={} raw={} effective={} runtime_enabled={} active={} status={} indexed={}"
+                            + " removed={} loaded={} entities_loaded={} ticking={} level={} pos={}",
+                    phase, helper.getTick(), level.getGameTime(), CommonConfig.SPEC.isLoaded(),
+                    CommonConfig.ENDGAME_GRAVITY_FIELD.get(), CommonConfig.endgameSettings().gravityField(),
+                    runtimeEnabled, device.active(), device.status(), indexed, device.isRemoved(),
+                    level.hasChunkAt(position), level.areEntitiesLoaded(new ChunkPos(position).toLong()),
+                    level.isPositionEntityTicking(position), level.dimension().location(), position);
+        }
     }
 
     @GameTest(template = "empty", batch = "endgame_gravity_station", timeoutTicks = 900)
