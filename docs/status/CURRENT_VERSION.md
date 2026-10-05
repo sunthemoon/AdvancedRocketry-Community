@@ -184,6 +184,15 @@ shared-wire prerequisites must be demonstrated before production orbital
 implementation. Full-boundary readonly preparation is not acceptance or an
 A0 ordering waiver.
 
+The [shared prerequisite status](../work/v1.8.0-c17-contract/SHARED-PREREQUISITES-STATUS-01.md)
+records independently reviewed open C17/C16 dependency inputs, not an exact
+contract freeze. Full typed rocket and both first-event source/receipt contracts
+are being completed. The first-event-sensitive unknown-write/old-serialization
+policy requires owner coordination; the 2026-10-05 question remains unanswered.
+The remaining private report-field proposal has an independent limited technical
+review but is not adopted or assigned as source; native admission stays closed.
+No earlier orbital eligibility finding is closed.
+
 Remaining: full Guard lifecycle and first-save/final-disposal proof; full hash/frame/
 native codecs and resource consumers; physical hatches, lathe and motor-tier
 formation; steel and component acquisition; C16b–d, C17–C19; real clients/GPU,
