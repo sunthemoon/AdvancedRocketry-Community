@@ -42,7 +42,7 @@ public final class RocketDestinationReadinessGameTests {
     private static final BlockPos MOON_ORIGIN = new BlockPos(8192, 200, 8192);
     private static final int READINESS_ATTEMPTS = 80;
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create(
-            "arce_gametest_destination_readiness", Comparator.naturalOrder(), 300);
+            "arce_gametest_destination_readiness", Comparator.<UUID>naturalOrder(), 300);
 
     private RocketDestinationReadinessGameTests() {
     }

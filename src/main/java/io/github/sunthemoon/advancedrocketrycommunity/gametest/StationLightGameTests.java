@@ -190,7 +190,7 @@ public final class StationLightGameTests {
             AtmosphereBoundaryCatalog overrides;
             try (var registry = new AtmosphereBoundaryRegistry(key -> ForgeRegistries.BLOCKS.containsKey(key)
                     ? ForgeRegistries.BLOCKS.getValue(key) : null)) {
-                registry.forOwner("station_light_test").register(ModIdentity.id("station_light_test_open"),
+                registry.forOwner(ModIdentity.MOD_ID).register(ModIdentity.id("station_light_test_open"),
                         Set.of(ID), ignored -> AtmosphereBoundary.PERMEABLE);
                 overrides = registry.freeze();
             }
@@ -274,6 +274,11 @@ public final class StationLightGameTests {
         helper.assertTrue(stacks.size() <= 1, "Lamp loot produced multiple entries");
         int count = 0;
         for (ItemStack stack : stacks) {
+            // Native explosion decay can return a zero-count stack, whose exposed item is AIR.
+            if (stack.isEmpty()) {
+                helper.assertTrue(stack.getCount() == 0 && stack.getTag() == null, "Malformed empty lamp loot");
+                continue;
+            }
             helper.assertTrue(stack.is(item) && !stack.hasTag(), "Lamp loot identity/payload changed");
             count += stack.getCount();
         }
