@@ -233,7 +233,14 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ## 当前自动回归与风险
 
-[最新自动证据](../work/v1.8.0-ci/RESULT-07.md) 绑定已推送完整提交
+[失败时观察源码](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
+已经独立实际审核、分别提交并合并，非强制推送至
+`35a146fbbe1f2de94160f82307d041d2cd26e472`；单次有界缓存编译通过。
+完整回归 37369035893 /attempt 1 在最新 API 观察中为 QUEUED，尚无运行结果。
+原断言、时限和清理保留，诊断不是生产修复。两个干净工作树和审核者的
+25 个 class 输出已按各自限定记录清理；原失败与旧拒删欠项保留。
+
+[最近完成的自动证据](../work/v1.8.0-ci/RESULT-07.md) 绑定已推送完整提交
 `058cd67dacac4ac43ca6373d039fff1a2822e426`：clean build 实际通过
 1,883 JUnit /346 suites /0FES；首次 DataGen 写入 804 个输出，重复写入零，
 tracked/untracked 均干净。493 项 GameTest 完成，3 项 required 失败：

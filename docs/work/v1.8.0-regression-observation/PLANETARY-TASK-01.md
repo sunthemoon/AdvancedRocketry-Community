@@ -1,8 +1,11 @@
 # Planetary route failure observation
 
-Date: 2026-10-06. Task: V180-PLANETARY-OBS-01. Status: planned.
+Date: 2026-10-06. Task: V180-PLANETARY-OBS-01. Status: implemented-unverified.
 Owner: delegated planetary investigator. Independent reviewer: a different agent.
 Integrator: Root, sole committer and central/status writer.
+
+Published source and pending hosted execution are recorded in the
+[source checkpoint](SOURCE-INTEGRATION-01.md); no original failure is closed.
 
 ## Outcome and boundaries
 

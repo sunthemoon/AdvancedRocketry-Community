@@ -38,13 +38,24 @@ previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 tested_code_commit: 058cd67dacac4ac43ca6373d039fff1a2822e426
 latest_regression_result: FAILED
+pending_regression_code_commit: 35a146fbbe1f2de94160f82307d041d2cd26e472
+pending_regression_run: 37369035893
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-06
 ```
 
 ## Current development evidence
 
-The latest [hosted committed regression](../work/v1.8.0-ci/RESULT-07.md) is
+The independently reviewed [failure observers](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
+are committed, merged and normally pushed at `35a146fbbe1f2de94160f82307d041d2cd26e472`.
+One bounded cached javac succeeds; no production correction is claimed.
+Its exact-source hosted run 37369035893 /attempt 1 is QUEUED at the last API
+observation, without a build/GameTest result. Both clean source worktrees and
+the reviewer's 25 class outputs are removed under separately qualified receipts;
+old policy-refused C targets remain untouched. The completed metrics below
+remain bound to `058cd67d`, not the new pending source.
+
+The latest completed [hosted committed regression](../work/v1.8.0-ci/RESULT-07.md) is
 **FAILED**: clean build passes with 1,883 JUnit /346 suites /0FES. First DataGen
 writes 804 files; repeat writes zero. Both tracked/untracked trees are clean.
 493 GameTests finish with three required failures: planetary round trip,
