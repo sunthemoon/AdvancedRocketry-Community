@@ -36,7 +36,7 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: 86a819ca564c43206c6b9272c0b79076fceaa874
+tested_code_commit: 058cd67dacac4ac43ca6373d039fff1a2822e426
 latest_regression_result: FAILED
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-06
@@ -44,25 +44,26 @@ last_updated: 2026-10-06
 
 ## Current development evidence
 
-The latest [hosted committed regression](../work/v1.8.0-ci/RESULT-06.md) is
-**FAILED**: clean build passes with 1,861 JUnit /342 suites /0FES. First DataGen
-succeeds with 788 writes; tracked cleanliness fails on a historical captured
-diagnostic that was already dirty before build. Repeat DataGen, unfiltered
-GameTest and JAR upload are skipped. The exact-path preservation candidate
-keeps the historical capture bytes; no new fixture/runtime outcome is available.
-The [last complete GameTest cohort](../work/v1.8.0-ci/RESULT-05.md) retains
-483 tests/four required failures: Laser registration, planetary round trip,
-cold Tau Ceti and destination readiness. Its Tau observation is lookup-qualified,
-not a unique cause. Its separate raw review and original failures remain valid
-only for that recorded source. Absence of a gravity failure header establishes
-neither complete functionality nor restart delivery.
+The latest [hosted committed regression](../work/v1.8.0-ci/RESULT-07.md) is
+**FAILED**: clean build passes with 1,883 JUnit /346 suites /0FES. First DataGen
+writes 804 files; repeat writes zero. Both tracked/untracked trees are clean.
+493 GameTests finish with three required failures: planetary round trip,
+cold Tau Ceti and the new Solar surface-environment fixture. The fixture's
+ordinary producer fails the original 40-tick assertion; its cause/substage
+remain unestablished. Tau's PREPARED/source-TRANSIT observation is lookup-qualified,
+not a unique cause. GameTest retains 65 ERROR/FATAL headers without waiver.
+Conditional JAR upload is skipped; independent raw audit verifies the retained
+counts/bytes, not Solar source approval or runtime delivery. The exact-path
+preservation keeps original checksum bytes; prior [checkout failure](../work/v1.8.0-ci/RESULT-06.md)
+and [four-failure cohort](../work/v1.8.0-ci/RESULT-05.md) stay historical.
+Absence of new Laser/readiness/gravity failure headers establishes neither
+complete functionality nor dedicated restart delivery.
 Gravity's finite diagnostic snapshots do not establish the historical failure's
 unique cause; that investigation remains open. The earlier
 [cohorts](../work/v1.8.0-ci/RESULT-03.md) retain their actual compile and lamp
 fixture failures, and [repeat-only results](../work/v1.8.0-ci/RESULT-02.md) stay historical.
 Conditional JAR uploads were skipped; no independent JAR-byte/API comparison
-is claimed. The last complete native cohort contains 65 ERROR headers without blanket waiver. Assertions,
-deadlines and test selection are unchanged.
+is claimed. Assertions, deadlines and test selection are unchanged.
 
 The earlier successful [Source27 cohort](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-02.md)
 and [independent audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-02.md)
@@ -160,14 +161,18 @@ origin declaration are reviewed, committed and pushed at
 and two-stage installed-owner check resolve the earlier contract findings in
 separate immutable reviews. Eighteen final source/task postimages, twelve central
 bindings and twenty resource candidates have completed independent actual-source
-review; Root imports them byte-exact. Cached explicit compilation and 36
-development JUnit methods pass, not committed full regression or solar delivery.
+review; Root commits and normally pushes them separately, as recorded in the
+[source checkpoint](../work/v1.8.0-c17c-solar-generator/SOURCE-INTEGRATION-01.md).
+Root's fixed published-commit cached compilation and 36 JUnit methods pass;
+independent development replays cover 21 Solar and 15 configuration methods.
+These do not complete clean full regression or Solar delivery.
 Full C17c dependencies, native exposure/restart, real visuals and all Gates remain open.
 
 The separate [Laser save fixture](../work/v1.8.0-laser-save-fixture/HANDOFF.md)
 is reviewed and published at `86a819ca564c43206c6b9272c0b79076fceaa874`; its
-hosted replay stops at checkout cleanliness before GameTest. Targeted cached-dependency compilation
-passes, not a replacement for clean build/GameTest or proof of disk durability.
+latest complete hosted replay has no Laser failure header, but three other
+required tests fail. Targeted compilation and that cohort do not prove packaged
+disk durability or full Laser acceptance.
 
 - C15 materials, plate press acquisition, planetary surfaces and Tau Ceti worlds
   have submitted implementation and review fixes, including radius 224 coverage

@@ -1,7 +1,9 @@
 # C17c-SOLAR-01: single solar generator
 
 Date: 2026-10-06. Milestone: v1.8.0. Integrator/committer: Root.
-Status: READY for isolated source authoring; implementation and runtime checks remain open.
+Status: implemented-unverified. Source/resources are committed and pushed;
+runtime/restart/client checks remain open. See the
+[source checkpoint](SOURCE-INTEGRATION-01.md).
 Owner decision: [preservation scope](OWNER-DECISION-01.md), not whole R-021 acceptance.
 
 ## Outcome, authority and dependencies
