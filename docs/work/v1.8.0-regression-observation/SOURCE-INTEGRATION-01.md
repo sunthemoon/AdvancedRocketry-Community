@@ -3,6 +3,10 @@
 Date: 2026-10-06. Status: implemented-unverified.
 Tasks: V180-SOLAR-OBS-01 and V180-PLANETARY-OBS-01.
 
+The queued snapshot below is superseded for current execution status by
+[the separate terminal observation and rerun record](../v1.8.0-ci/RESULT-08.md).
+It remains the historical publication observation, not an executed result.
+
 ## Published source
 
 | Source | Source commit | Integration commit |
