@@ -74,9 +74,10 @@ The source-backed coordination note is
 It is an unaccepted author input, not an independently approved policy.
 
 On 2026-10-05 Root asked the owner through an asynchronous conversation question
-to choose between a narrow first-event-sensitive old-serialization hold until
-verified reload/repair, or unchanged save policy with first-event runtime left
-unadmitted. The owner answers through that same asynchronous conversation channel
+whether first-event-sensitive uncertain writes should pause old-data rewriting
+until verified reload/repair, with other actions retaining existing rules under
+confirmed coherence and with ADR synchronization and recovery verification.
+The owner answers through that same asynchronous conversation channel
 on 2026-10-05, verbatim: “保护首次记录，暂停不确定窗口的旧数据重写（推荐）”.
 Root's [reply receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIRST-EVENT-OWNER-REPLY-01.json),
 SHA `0d676b9d3c55536fd48d773e1487d423c6fc9757ef9970615d4ee713c6fa911b`,
@@ -183,11 +184,16 @@ compiled receipt covers uncertain writes; later candidate clauses correctly
 label the branch a proposed technical extension. Fresh independent 36 finite
 specification/source controls pass, author 68/69 and 116 named union inputs are
 unchanged. Original reviewer tool/assertion failures remain separately preserved.
-A minimal versioned wording correction is required, not a receipt/policy change.
+A separately versioned [attribution correction](O3-ATTRIBUTION-DISPOSITION-01.md)
+now resolves L1 in the replacement text only. Root reads the complete author and
+different-agent correction review and verifies author15/44,072 B/16 sums plus
+reviewer14/69,240 B/15 sums. The review identifies no introduced C/H/M/L;
+27 fresh text controls pass and37 named inputs have no drift. Original seals,
+finding and full O3 stay unchanged. This is not a receipt or policy change.
 Exact source/receipt/reference tables and the proposed managed-root hold do not
 supply T3/T5 durability or an accepted ADR/risk amendment. Native-frame/O3
-authorship and T3 proposal review no longer await completion; O3 correction,
-precise technical adoption and exact joint acceptance remain open.
+authorship and T3 proposal review no longer await completion; precise O3
+technical adoption and exact joint acceptance remain open.
 Authorship sealing or an open-proposal review is not
 technical freeze or source permission. Existing flight plan schema3 is not typed
 flight schema3. Both Moon and

@@ -235,7 +235,12 @@ full applicable integration checks and applicability/stage/schema freeze remain 
 The writer/recovery prerequisites remain open;
 the full typed O3 author packet is verified (68 /312,278 bytes /69). Its completed
 independent review finds one Low owner-question attribution error; Root verifies
-87 review payloads /799,002 bytes /88 sums. Correction and adoption remain open.
+87 review payloads /799,002 bytes /88 sums. The independently reviewed
+[versioned factual correction](../work/v1.8.0-c17-contract/O3-ATTRIBUTION-DISPOSITION-01.md)
+resolves that Low in replacement text only; original finding/seals/full O3 remain
+unchanged. Root verifies author15/44,072 B/16 sums and reviewer14/69,240 B/15 sums;
+27 fresh text controls pass with37 named inputs unchanged. Technical adoption
+of O3 and the known-durable/live-publication extension remains open.
 C17b candidate03 independently resolves candidate02's Medium
 zero/no-spacing and Low typed-equivalence wording in proposed text only;
 neither shared writer nor full contract freeze is admitted. Both first-event
