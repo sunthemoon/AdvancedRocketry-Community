@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceTags;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
@@ -9,16 +10,24 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndpointRecor
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.protection.ProtectedZone;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
+import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndpointObservations;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,6 +35,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -35,6 +45,8 @@ import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.level.ChunkDataEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -42,6 +54,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class LaserTargetGameTests {
+    private static RegistrationFixture registrationFixture;
+
     private LaserTargetGameTests() {
     }
 
@@ -49,61 +63,248 @@ public final class LaserTargetGameTests {
     public static void aTargetRegistersOnceSavedAndARemovedIdComesBackFrozen(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
-        BlockState state = ModBlocks.LASER_TARGET.get().defaultBlockState();
-        helper.assertTrue(state.is(BlockTags.WITHER_IMMUNE) && state.is(BlockTags.DRAGON_IMMUNE)
-                        && state.getPistonPushReaction() == PushReaction.BLOCK
-                        && state.getBlock().getExplosionResistance() >= 1200.0F,
-                "The target lacks the endpoint protections");
-        level.setBlockAndUpdate(pos, state);
-        LaserTargetBlockEntity target = (LaserTargetBlockEntity) level.getBlockEntity(pos);
-        UUID owner = UUID.randomUUID();
-        helper.assertTrue(target.assignOwner(owner), "The fixture owner was not assigned");
-        UUID id = target.deviceId().orElseThrow();
-        CompoundTag[] copy = new CompoundTag[1];
-        helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE,
-                        "Not awaiting a save: " + target.describe()))
-                .thenExecuteAfter(25, () -> helper.assertTrue(root().endpoint(id).isEmpty()
-                        && target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE, "Registered before any save"))
-                .thenWaitUntil(() -> {
-                    chunkSaved(level, pos);
-                    helper.assertTrue(target.endpointStatus() == EndgameCode.OK && target.endpointActive(),
-                            "Not registered after the save: " + target.describe());
-                })
-                .thenExecute(() -> {
-                    EndpointRecord record = root().endpoint(id).orElseThrow();
-                    helper.assertTrue(record.kind().equals(LaserTargetBlockEntity.KIND) && record.owner().equals(owner)
-                                    && record.pos() == pos.asLong() && record.level().equals(level.dimension().location()),
-                            "The record does not match the target");
-                    target.buffer().setStackInSlot(4, new ItemStack(Items.COBBLESTONE, 7));
-                    var items = target.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP)
-                            .orElseThrow(IllegalStateException::new);
-                    helper.assertTrue(items.insertItem(0, new ItemStack(Items.DIRT), false).getCount() == 1
-                            && items.extractItem(4, 2, false).getCount() == 2, "The buffer is not extract-only");
-                    copy[0] = target.saveWithoutMetadata();
-                    level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-                    helper.assertTrue(root().endpoint(id).isEmpty() && root().retired(id),
-                            "A removed target was not retired");
-                    int dropped = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2.0D)).stream()
-                            .mapToInt(entity -> entity.getItem().is(Items.COBBLESTONE) ? entity.getItem().getCount() : 0)
-                            .sum();
-                    helper.assertTrue(dropped == 5, "The buffer did not drop: " + dropped);
-                    // A copy of the removed target comes back (a crash or a block mover): it is retired and frozen.
-                    level.setBlockAndUpdate(pos, state);
-                    ((LaserTargetBlockEntity) level.getBlockEntity(pos)).load(copy[0]);
-                })
-                .thenWaitUntil(() -> {
-                    LaserTargetBlockEntity back = (LaserTargetBlockEntity) level.getBlockEntity(pos);
-                    helper.assertTrue(back.endpointStatus() == EndgameCode.ENDPOINT_RETIRED && back.frozen()
-                            && !back.endpointActive(), "A returning copy was not frozen: " + back.describe());
-                })
-                .thenExecute(() -> {
-                    helper.assertTrue(root().endpoint(id).isEmpty(), "A frozen copy registered again");
-                    ((LaserTargetBlockEntity) level.getBlockEntity(pos)).buffer().setStackInSlot(4, ItemStack.EMPTY);
-                    level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-                    level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2.0D)).forEach(ItemEntity::discard);
-                })
-                .thenSucceed();
+        helper.assertTrue(registrationFixture == null, "A previous registration fixture was not closed");
+        helper.assertTrue(level.getBlockState(pos).isAir(), "The registration fixture position is not empty");
+        RegistrationFixture fixture = new RegistrationFixture(level, pos);
+        registrationFixture = fixture;
+        try {
+            fixture.install();
+            BlockState state = ModBlocks.LASER_TARGET.get().defaultBlockState();
+            helper.assertTrue(state.is(BlockTags.WITHER_IMMUNE) && state.is(BlockTags.DRAGON_IMMUNE)
+                            && state.getPistonPushReaction() == PushReaction.BLOCK
+                            && state.getBlock().getExplosionResistance() >= 1200.0F,
+                    "The target lacks the endpoint protections");
+            try {
+                level.setBlockAndUpdate(pos, state);
+            } finally {
+                fixture.captureTarget();
+            }
+            LaserTargetBlockEntity target = fixture.target;
+            UUID owner = UUID.randomUUID();
+            helper.assertTrue(target.assignOwner(owner), "The fixture owner was not assigned");
+            UUID id = target.deviceId().orElseThrow();
+            fixture.watch(id, owner);
+            // A same-call negative control: native saves may happen after this call yields.
+            LaserTargetBlockEntity.serverTick(level, pos, state, target);
+            helper.assertTrue(target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE,
+                    "Not awaiting a save: " + target.describe());
+            helper.assertTrue(root().endpoint(id).isEmpty() && !target.endpointActive() && !fixture.saved,
+                    "Registered before a save observation in the placement call");
+            CompoundTag[] copy = new CompoundTag[1];
+            helper.startSequence()
+                    .thenExecuteAfter(25, () -> {
+                        var record = root().endpoint(id);
+                        if (record.isPresent()) {
+                            fixture.assertRegistration(helper, record.orElseThrow());
+                        } else {
+                            helper.assertTrue(target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE
+                                            && !target.endpointActive(), "Unregistered target is not awaiting a save");
+                        }
+                    })
+                    .thenWaitUntil(() -> {
+                        chunkSaved(level, pos);
+                        helper.assertTrue(target.endpointStatus() == EndgameCode.OK && target.endpointActive(),
+                                "Not registered after the save: " + target.describe());
+                        fixture.assertRegistration(helper, root().endpoint(id).orElseThrow());
+                    })
+                    .thenExecute(() -> {
+                        EndpointRecord record = root().endpoint(id).orElseThrow();
+                        helper.assertTrue(record.kind().equals(LaserTargetBlockEntity.KIND) && record.owner().equals(owner)
+                                        && record.pos() == pos.asLong() && record.level().equals(level.dimension().location()),
+                                "The record does not match the target");
+                        target.buffer().setStackInSlot(4, new ItemStack(Items.COBBLESTONE, 7));
+                        var items = target.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP)
+                                .orElseThrow(IllegalStateException::new);
+                        helper.assertTrue(items.insertItem(0, new ItemStack(Items.DIRT), false).getCount() == 1
+                                && items.extractItem(4, 2, false).getCount() == 2, "The buffer is not extract-only");
+                        copy[0] = target.saveWithoutMetadata();
+                        fixture.removeWithDrops();
+                        helper.assertTrue(root().endpoint(id).isEmpty() && root().retired(id),
+                                "A removed target was not retired");
+                        int dropped = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2.0D)).stream()
+                                .mapToInt(entity -> entity.getItem().is(Items.COBBLESTONE) ? entity.getItem().getCount() : 0)
+                                .sum();
+                        helper.assertTrue(dropped == 5, "The buffer did not drop: " + dropped);
+                        // A copy of the removed target comes back (a crash or a block mover): it is retired and frozen.
+                        try {
+                            level.setBlockAndUpdate(pos, state);
+                        } finally {
+                            fixture.captureTarget();
+                        }
+                        fixture.target.load(copy[0]);
+                    })
+                    .thenWaitUntil(() -> {
+                        LaserTargetBlockEntity back = (LaserTargetBlockEntity) level.getBlockEntity(pos);
+                        helper.assertTrue(back.endpointStatus() == EndgameCode.ENDPOINT_RETIRED && back.frozen()
+                                && !back.endpointActive(), "A returning copy was not frozen: " + back.describe());
+                    })
+                    .thenExecute(() -> {
+                        helper.assertTrue(root().endpoint(id).isEmpty(), "A frozen copy registered again");
+                        ((LaserTargetBlockEntity) level.getBlockEntity(pos)).buffer().setStackInSlot(4, ItemStack.EMPTY);
+                        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                        fixture.close();
+                    })
+                    .thenSucceed();
+        } catch (RuntimeException | Error failure) {
+            try {
+                fixture.close();
+            } catch (RuntimeException | Error cleanupFailure) {
+                failure.addSuppressed(cleanupFailure);
+            }
+            throw failure;
+        }
+    }
+
+    /** The one-test batch closes its observer even after an assertion or timeout fails. */
+    @AfterBatch(batch = "endgame_laser_target")
+    public static void closeRegistrationFixture(ServerLevel level) {
+        RegistrationFixture fixture = registrationFixture;
+        if (fixture != null && fixture.level == level) {
+            fixture.close();
+        }
+    }
+
+    /** Test-only, one owned target; no saved tags, growing event history or shared-root reset. */
+    private static final class RegistrationFixture {
+        private static final int MAX_CHUNK_BLOCK_ENTITIES = 1024;
+        private static final int MAX_NEARBY_ITEMS = 16;
+        private final ServerLevel level;
+        private final BlockPos pos;
+        private final long chunk;
+        private final Set<String> types = Set.of(ModBlockEntities.LASER_TARGET.getId().toString());
+        private final Consumer<ChunkDataEvent.Save> saveListener = this::onSave;
+        private final Consumer<ServerStoppingEvent> stoppingListener = this::onStopping;
+        private LaserTargetBlockEntity target;
+        private UUID id;
+        private UUID owner;
+        private Tag savedId;
+        private Tag savedOwner;
+        private List<ItemEntity> drops = List.of();
+        private boolean saved;
+        private long firstSavedTick = -1L;
+        private boolean closed;
+
+        private RegistrationFixture(ServerLevel level, BlockPos pos) {
+            this.level = level;
+            this.pos = pos.immutable();
+            this.chunk = new ChunkPos(pos).toLong();
+        }
+
+        private void install() {
+            MinecraftForge.EVENT_BUS.addListener(saveListener);
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, stoppingListener);
+        }
+
+        private void captureTarget() {
+            if (level.getBlockEntity(pos) instanceof LaserTargetBlockEntity placed) {
+                target = placed;
+            }
+        }
+
+        private void watch(UUID id, UUID owner) {
+            this.id = id;
+            this.owner = owner;
+            savedId = NbtUtils.createUUID(id);
+            savedOwner = NbtUtils.createUUID(owner);
+        }
+
+        private void onSave(ChunkDataEvent.Save event) {
+            if (closed || saved || id == null || event.getLevel() != level
+                    || event.getChunk().getPos().toLong() != chunk) {
+                return;
+            }
+            if (!(event.getData().get("block_entities") instanceof ListTag list)
+                    || list.getElementType() != Tag.TAG_COMPOUND || list.size() > MAX_CHUNK_BLOCK_ENTITIES) {
+                return;
+            }
+            for (int i = 0; i < list.size(); i++) {
+                CompoundTag entry = list.getCompound(i);
+                if (!entry.contains("id", Tag.TAG_STRING) || !types.contains(entry.getString("id"))
+                        || !entry.contains("x", Tag.TAG_INT) || entry.getInt("x") != pos.getX()
+                        || !entry.contains("y", Tag.TAG_INT) || entry.getInt("y") != pos.getY()
+                        || !entry.contains("z", Tag.TAG_INT) || entry.getInt("z") != pos.getZ()
+                        || !(entry.get(EndgameDeviceTags.ROOT) instanceof CompoundTag root)
+                        || !savedId.equals(root.get(EndgameDeviceTags.DEVICE_ID))
+                        || !savedOwner.equals(root.get(EndgameDeviceTags.OWNER_ID))
+                        || !root.contains(EndgameDeviceTags.FROZEN, Tag.TAG_BYTE)
+                        || root.getByte(EndgameDeviceTags.FROZEN) != 0) {
+                    continue;
+                }
+                if (EndpointObservations.persisted(event.getData(), types, id, pos.asLong())
+                        .filter(frozen -> !frozen).isPresent()) {
+                    saved = true;
+                    firstSavedTick = level.getGameTime();
+                }
+                return;
+            }
+        }
+
+        private void assertRegistration(GameTestHelper helper, EndpointRecord record) {
+            helper.assertTrue(saved && firstSavedTick >= 0L && firstSavedTick <= level.getGameTime(),
+                    "Registered without the exact target save observation");
+            helper.assertTrue(record.id().equals(id) && record.kind().equals(LaserTargetBlockEntity.KIND)
+                            && record.owner().equals(owner) && record.level().equals(level.dimension().location())
+                            && record.pos() == pos.asLong() && record.state() == EndpointRecord.State.ACTIVE,
+                    "The registered record does not match the observed target");
+        }
+
+        private List<ItemEntity> nearbyItems() {
+            List<ItemEntity> items = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2.0D));
+            if (items.size() > MAX_NEARBY_ITEMS) {
+                throw new IllegalStateException("The target fixture has too many nearby item entities");
+            }
+            return items;
+        }
+
+        private void removeWithDrops() {
+            List<ItemEntity> before = nearbyItems();
+            try {
+                level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+            } finally {
+                // No tick interleaves the owned target's native removal and this identity delta.
+                drops = nearbyItems().stream().filter(item -> !before.contains(item)
+                        && item.getItem().is(Items.COBBLESTONE)).toList();
+            }
+        }
+
+        private void onStopping(ServerStoppingEvent event) {
+            if (event.getServer() == level.getServer()) {
+                close();
+            }
+        }
+
+        private void close() {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            try {
+                try {
+                    if (level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null
+                            && target != null && level.getBlockEntity(pos) == target) {
+                        for (int slot = 0; slot < target.buffer().getSlots(); slot++) {
+                            target.buffer().setStackInSlot(slot, ItemStack.EMPTY);
+                        }
+                        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+                    }
+                } finally {
+                    drops.forEach(ItemEntity::discard);
+                    drops = List.of();
+                }
+            } finally {
+                try {
+                    try {
+                        MinecraftForge.EVENT_BUS.unregister(saveListener);
+                    } finally {
+                        MinecraftForge.EVENT_BUS.unregister(stoppingListener);
+                    }
+                } finally {
+                    if (registrationFixture == this) {
+                        registrationFixture = null;
+                    }
+                }
+            }
+        }
     }
 
     /**
