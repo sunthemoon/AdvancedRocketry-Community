@@ -132,11 +132,16 @@ reviewer source-control and locator failures are retained. The author's 30 model
 plus 12 source controls and these independent controls are not actual native
 compatibility, implementation or performance evidence. The review distinguishes
 the private NC1 inspection/encoding leaf, full typed hash projections, and runtime
-codec/writer dependencies. The first still needs an exact computation contract,
-Root adoption and actual Java/unit verification, but mere owned-Tag framing does
+codec/writer dependencies. The first has a separately reviewed exact contract and
+[narrow Root adoption](NC1-PRIVATE-ADOPTION-01.md), but still needs a separate
+source assignment, actual Java/source review and committed replay. Mere owned-Tag framing does
 not require T1/T2 numerical selection or T5 writer adoption. The latter scopes
 retain their numerical, joint-schema, lifecycle and recovery prerequisites.
-This dependency assessment does not assign source or adopt any new bound.
+The original T3 dependency assessment itself assigns no source or new bound.
+The separate private contract uses only the existing 262144 BE-data ceiling;
+Root verifies its independent contract review 55 /341,877 bytes /56 and original
+task review 25 /209,006 bytes /26, both with no unresolved C/H/M/L in their scopes.
+No wider typed/hash/reader/writer contract is adopted by the private leaf.
 Full typed O3 revision02 is separately sealed at
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-o3-typed-integration-20261005-72c143/PROPOSED-O3-TYPED-02.md`,
 60,041 bytes /SHA `5447201f53996f180eb73fe87be74a18aba1b9bb5e456b6294c17dc911544d43`.

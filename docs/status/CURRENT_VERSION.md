@@ -197,7 +197,13 @@ separately sealed (88 /591,394 bytes /89); its completed different-agent review
 has no C/H/M/L findings in proposed text, with 26 finite and 15 source controls
 passing. Root verifies 50 review payloads /348,435 bytes /51 sums. A private NC1
 inspection/encoding leaf has distinct prerequisites from full typed hashes and
-runtime codecs; none is adopted or assigned by this review. Numeric selections
+runtime codecs. Its separate exact computation contract and task have completed
+different-agent reviews with no unresolved C/H/M/L in their limited scopes;
+Root verifies 55 /341,877 bytes /56 and 25 /209,006 bytes /26 respectively.
+The [narrow private adoption](../work/v1.8.0-c17-contract/NC1-PRIVATE-ADOPTION-01.md)
+admits only two new uncalled computation/test files, not full T3 or a runtime
+caller. Source assignment and actual Java/source review/replay remain absent.
+Numeric selections
 and the writer/recovery prerequisites remain open;
 the full typed O3 author packet is verified (68 /312,278 bytes /69). Its completed
 independent review finds one Low owner-question attribution error; Root verifies
