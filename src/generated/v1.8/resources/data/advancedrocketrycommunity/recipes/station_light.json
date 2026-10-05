@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:glowstone"
+    }
+  },
+  "pattern": [
+    "IGI",
+    "GLG",
+    "IGI"
+  ],
+  "result": {
+    "count": 4,
+    "item": "advancedrocketrycommunity:station_light"
+  }
+}
