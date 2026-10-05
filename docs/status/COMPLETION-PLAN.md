@@ -134,6 +134,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   与[实际结果](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-03-JSON.md)
   仅证明私有纯字节解析；不授予文件/live/native 权限。Root 新夹具已清理
   99,375 字节和六个别名；字段验证、JSON 读取、NBT 和完整驱动仍未实现。
+  - [ ] [终态报告字段](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-TERMINALS.md)：
+    私有 READY_FOR_STOP/FAILED 契约已独立审核并冻结；四个新文件的隔离实现待开始。
+    只观察字段形状，不授予完成、停服、receipt 或 native 权限。
 - [~] [C18a-01](../work/v1.8.0-c18a-atmosphere-analyzer/TASK.md)：单项手持大气分析仪的
   只读契约经独立审核无 C/H/M/L，并按既有授权限定接受；原创资源已登记，
   精确源码及八项中央集成已独立审核，真实独立 19 单测通过。Root 已集成，

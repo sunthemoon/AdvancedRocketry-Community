@@ -125,6 +125,10 @@ fixture is cleaned, 99,375 regular bytes and six aliases. The five role budgets,
 key-inclusive counters and immutable numbers are private syntax observations,
 not JSON file acquisition, fixed-field validation, live/native or writer authority.
 Java results remain at their separate older commit; no whole-source rebind occurs.
+The [terminal-field contract](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-TERMINALS.md)
+is independently reviewed and technically frozen for four new private files.
+READY_FOR_STOP/FAILED shape observations convey no completion or native authority;
+isolated implementation and actual-source verification have not started.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
