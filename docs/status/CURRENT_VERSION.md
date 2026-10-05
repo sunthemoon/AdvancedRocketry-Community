@@ -36,24 +36,28 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: 516317a583d1626d114dc5e1d4a3670cb79d0b5a
+tested_code_commit: cfdcd8f546d7005b11c7bb1c8635eb3d1ee03339
 latest_regression_result: FAILED
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
-last_updated: 2026-10-05
+last_updated: 2026-10-06
 ```
 
 ## Current development evidence
 
-The latest [hosted committed regression](../work/v1.8.0-ci/RESULT-01.md) is
-**FAILED**: clean build and fresh 1,853 JUnit /341 suites /0FES pass; DataGen
-passes with clean tracked/untracked output, but 477 GameTests complete with
-one required failure, `No rocket at Tau Ceti f`. Different-agent raw-result
-audit independently verifies all retained files and the same XML/log counts.
-Cause investigation is open; assertions and budgets are not relaxed.
-Only one DataGen run was executed in this cohort. Its recorded JAR digest is
-`64ab06d4b3a5bb103baed2d54a19b7735213a2c7791589023ba2d45d5f5c0c73`;
-conditional JAR upload was skipped, so no independent JAR-byte/API comparison
-is claimed. Logs are not ERROR-free and have no blanket waiver.
+The latest [hosted committed regression](../work/v1.8.0-ci/RESULT-04.md) is
+**FAILED**: clean build passes with 1,861 JUnit /342 suites /0FES. Two clean
+DataGen runs produce 788 outputs and zero repeated writes. Unfiltered
+483 GameTests complete with two required failures: first-save target registration
+and cold Tau Ceti flight. The readiness admission does not resolve all cold-flight
+failures. Three independently audited streams agree; no failure header names a
+lamp, readiness or gravity test, but full feature/restart delivery is not proved.
+Gravity's finite diagnostic snapshots do not establish the historical failure's
+unique cause; that investigation remains open. The earlier
+[cohorts](../work/v1.8.0-ci/RESULT-03.md) retain their actual compile and lamp
+fixture failures, and [repeat-only results](../work/v1.8.0-ci/RESULT-02.md) stay historical.
+Conditional JAR uploads were skipped; no independent JAR-byte/API comparison
+is claimed. Native logs contain 63 ERROR headers without blanket waiver. Assertions,
+deadlines and test selection are unchanged.
 
 The earlier successful [Source27 cohort](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-02.md)
 and [independent audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-02.md)
@@ -315,19 +319,28 @@ with no unresolved C/H/M/L and 19 independently executed tests. Root integrates
 25 source/task postimages and six generated files, committed and pushed.
 The original full cohort's four analyzer GameTest failures are preserved.
 Their isolated fixture correction and independent review are published; the
-earlier Source27 success is retained, while the latest hosted failure above
-is in the separate Tau Ceti path. Packaged use/restart, client and ledger
+earlier Source27 success is retained, while newer hosted failures above
+remain distinct cohorts. Packaged use/restart, client and ledger
 delivery remain open.
 See the [source checkpoint](../work/v1.8.0-c18a-atmosphere-analyzer/SOURCE-INTEGRATION-01.md).
 It does not enable
 unproven refill/shared-save dependencies.
 The narrowly accepted [ordinary station-light leaf](../work/v1.8.0-c17b-station-light/TASK.md)
-and pre-authoring NEW provenance are committed/non-force pushed at
-`5f1cbefc30d59a35eed80023697a1f4a0c4687fc`. Its isolated source implementation
-has an uncommitted author candidate with eight JUnit and five GameTest declarations
-under independent source review. No source integration, executed lamp tests,
-native/client acceptance or ledger delivery is claimed. Root owns the six central
-integration files.
+has independently reviewed source/central integration and original resources
+committed/non-force pushed at `a9393281671d3f3be25b042e914a2cf736ce5918`
+and `7ae88260eaec44cb8692d82cd8d4545715efbddb`. Eight lamp JUnit tests pass;
+actual repeated Forge DataGen matches the generated resources. The preceding
+station-light cohort's two fixture failures remain historical; the latest
+committed full replay has no lamp failure header. Full native/client/restart/visual
+acceptance and ledger delivery remain open. The independently reviewed
+destination-readiness production gate and one bounded GameTest are published
+at its own source commit; its earlier comparator failure is historical. The
+corrected full replay executes that test without a failure header but still
+fails cold Tau Ceti flight. Bounded gravity diagnostics preserve
+all original assertions and the two-tick switch delay. Original cold-flight
+deadlines remain unchanged. The new isolated diagnostic checkout is normally
+retired after exact integration, removing 536,732,926 logical bytes; committed
+sources and thin D evidence remain available.
 The [completion plan](COMPLETION-PLAN.md) lists the remaining leaves. Historical
 status checkpoints have moved to the implementation log, not this current-state
 summary. No version Gate, tag or release is approved.
