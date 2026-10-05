@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
@@ -176,6 +177,9 @@ public final class TauCetiPathGameTests {
 
     private static RocketEntity landed(GameTestHelper helper, ServerLevel level, UUID logical, String where) {
         RocketEntity rocket = findLogicalRocket(level, logical);
+        if (rocket == null) {
+            describeMissingRocket(helper, level, logical, where);
+        }
         helper.assertTrue(rocket != null, "No rocket at " + where);
         var flight = rocket.flightData().orElseThrow();
         if (flight.state() != RocketFlightState.LANDED) {
@@ -187,6 +191,46 @@ public final class TauCetiPathGameTests {
                     + " at " + rocket.blockPosition());
         }
         return rocket;
+    }
+
+    /** One failure-only observation, after the existing fixture lookup has primed its pad chunks. */
+    private static void describeMissingRocket(GameTestHelper helper, ServerLevel expected, UUID logical, String where) {
+        RocketTransferSavedData journal = RocketTransferSavedData.get(expected.getServer());
+        var record = journal.findByLogicalRocket(logical).orElse(null);
+        if (record == null) {
+            AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_TAU_CETI_MISSING logical={} where={} test_tick={} journal={} record=none",
+                    logical, where, helper.getTick(), journal.operational());
+            return;
+        }
+        var source = expected.getServer().getLevel(ResourceKey.create(Registries.DIMENSION,
+                record.sourceSnapshot().sourceDimension()));
+        var destination = expected.getServer().getLevel(ResourceKey.create(Registries.DIMENSION,
+                record.destinationSnapshot().sourceDimension()));
+        var origin = record.destinationSnapshot().sourceOrigin();
+        BlockPos position = new BlockPos(origin.x(), origin.y(), origin.z());
+        AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_TAU_CETI_MISSING logical={} where={} test_tick={} journal={} phase={} source_level={}"
+                        + " source_entity={} destination_level={} destination_entity={} origin={}"
+                        + " loaded={} entities_loaded={} entity_ticking={} expected_time={} created_time={}",
+                logical, where, helper.getTick(), journal.operational(), record.phase(),
+                record.sourceSnapshot().sourceDimension(), entityStatus(source, record.sourceEntityId()),
+                record.destinationSnapshot().sourceDimension(),
+                record.destinationEntityId().map(id -> entityStatus(destination, id)).orElse("unassigned"), position,
+                destination != null && destination.getChunkSource().getChunkNow(origin.x() >> 4, origin.z() >> 4) != null,
+                destination != null && destination.areEntitiesLoaded(
+                        net.minecraft.world.level.ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4)),
+                destination != null && destination.isPositionEntityTicking(position),
+                expected.getGameTime(), record.createdAtGameTime());
+    }
+
+    private static String entityStatus(ServerLevel level, UUID id) {
+        var entity = level == null ? null : level.getEntity(id);
+        if (entity instanceof RocketEntity rocket) {
+            return rocket.flightData().map(flight -> flight.state().name()).orElse("no_flight")
+                    + ":removed=" + rocket.isRemoved() + ":pos=" + rocket.blockPosition();
+        }
+        return entity == null ? "absent" : "not_rocket";
     }
 
     private static void guarded(Runnable cleanup, Runnable action) {
