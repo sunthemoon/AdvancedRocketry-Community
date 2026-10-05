@@ -280,6 +280,20 @@ class RocketNativeFrameTest {
         assertEquals("Rocket NC1 refusal: UTF", error.getMessage()); assertNull(error.getCause());
     }
 
+    @Test void publicNullBackedArraysRefuseWithoutNormalization() {
+        ByteArrayTag bytes = new ByteArrayTag((byte[]) null);
+        IntArrayTag ints = new IntArrayTag((int[]) null);
+        LongArrayTag longs = new LongArrayTag((long[]) null);
+        assertNull(bytes.getAsByteArray()); assertNull(ints.getAsIntArray()); assertNull(longs.getAsLongArray());
+        for (Tag input : new Tag[]{bytes, ints, longs}) {
+            CompoundTag root = root("array", input);
+            assertSame(input, root.get("array"));
+            refusal(root, RocketNativeFrame.Reason.TYPE);
+            assertSame(input, root.get("array")); assertEquals(1, root.size());
+        }
+        assertNull(bytes.getAsByteArray()); assertNull(ints.getAsIntArray()); assertNull(longs.getAsLongArray());
+    }
+
     private static CompoundTag root(String key, Tag value) { CompoundTag root = new CompoundTag(); root.put(key, value); return root; }
     private static byte[] hex(String value) { return HexFormat.of().parseHex(value); }
     private static void refusal(CompoundTag root, RocketNativeFrame.Reason reason) {

@@ -220,6 +220,7 @@ final class RocketNativeFrame {
                 }
                 case 7 -> {
                     byte[] value = ((ByteArrayTag) tag).getAsByteArray();
+                    require(value != null, Reason.TYPE);
                     charge(4L + value.length);
                     number(value.length, 4);
                     if (output != null) {
@@ -237,12 +238,14 @@ final class RocketNativeFrame {
                 case 9, 10 -> container(tag, kind, depth, parentContainers + 1);
                 case 11 -> {
                     int[] value = ((IntArrayTag) tag).getAsIntArray();
+                    require(value != null, Reason.TYPE);
                     charge(4L + 4L * value.length);
                     number(value.length, 4);
                     if (output != null) { for (int element : value) { number(element, 4); } }
                 }
                 case 12 -> {
                     long[] value = ((LongArrayTag) tag).getAsLongArray();
+                    require(value != null, Reason.TYPE);
                     charge(4L + 8L * value.length);
                     number(value.length, 4);
                     if (output != null) { for (long element : value) { number(element, 8); } }
