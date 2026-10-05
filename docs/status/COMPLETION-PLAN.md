@@ -92,10 +92,13 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 保留 FE。无法守恒的带电操作拒绝，受支持零电量沿用原版。技术库存审核已完成，
 不替代未实现的服务端拦截、保存或 native 验证。
 
-### C17 推进与站点设备 `[ ]`
+### C17 推进与站点设备 `[~]`
 
 契约有条件接受，真实燃料/氧化剂、装卸器、监控、站点连续旋转与逻辑高度、
 灯与力场、卫星舱、太阳能和相应持久事务仍须实现、逐项验证。
+[普通空间站灯](../work/v1.8.0-c17b-station-light/TASK.md) 的限定契约与原创资产
+预登记已独立审核、提交并推送；四份新源码及两份任务记录分配给独立 worktree，
+六份中央注册/DataGen 文件由 Root 独占。源码实现中，尚无灯的编译、测试或交付。
 [轨道模型资格审核](../work/v1.8.0-c17-contract/ORBITAL-PHASE-ELIGIBILITY-DISPOSITION-01.md)
 有一项 Medium：精确 D2-A checked-transition/shared-wire 前置接受未被所列证据证明。
 模型提案未采用、未授权源码；[完整前置状态](../work/v1.8.0-c17-contract/SHARED-PREREQUISITES-STATUS-01.md)
@@ -169,7 +172,7 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 - [~] [C18c-01](../work/v1.8.0-c18c-tutorial-inventory/TASK.md)：六项库存教程成就，
   精确审核源码已提交、推送；前序限定自动回归与实际库存监听已有记录，
-  打包原生重启和台账交付仍开放。最新整包回归通过，前次分析仪失败仍保留历史证据。
+  打包原生重启和台账交付仍开放。前序 Source27 通过保留为历史；最新回归失败见下文。
   旧离线文件所有权及构造/join 资格问题保留历史证据。
   [第三版独立复审](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-03.md)
   有两项 Medium：原生启动重写配置哈希、重启重复强制加载命令拒绝。
@@ -219,15 +222,15 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ## 当前自动回归与风险
 
-[最新自动证据](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-02.md)：
-Source27 是已提交、推送 `a0873a30` 的 3,039 个列明输入检查批次，非全仓快照。
-禁用构建缓存后真实执行 1,807 JUnit /339 suites 和全部 477 必需 GameTest，均通过。
-DataGen 781 文件、重复零改动，八项限定静态校验和制品差异检查通过，API 字节不变。
-61 条 ERROR 不作整体豁免，台账 closure 和原始 dirty diff 仍失败。
-新批次[独立结果审计](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-02.md)
-未发现额外回执/源码/制品不一致；未重跑 Java 或接受功能。493 成员薄包已逐项核验，
-自动通过不替代原生/客户端或版本 Gate。
-前次 Source26 四项失败及其独立结果审计保留；不把旧失败改写为通过。
+[最新自动证据](../work/v1.8.0-ci/RESULT-01.md) 绑定已推送完整提交
+`516317a583d1626d114dc5e1d4a3670cb79d0b5a`：禁用构建缓存，真实构建和
+1,853 JUnit /341 suites /0FES 通过；DataGen 后 tracked/untracked 均干净。
+完整 GameTest 为 477 项完成、1 项 required 失败：`No rocket at Tau Ceti f`。
+独立原始结果审计核对全部保留文件、XML 与日志；原因仍在调查，不放宽断言、超时。
+只执行一次 DataGen；JAR 上传因失败而跳过，记录的构建侧审计不等于独立制品/API
+字节校验。日志 ERROR 无整体豁免，台账 closure 与本地用户 dirty diff 仍未通过。
+前序 Source27 的成功、重复 DataGen 和独立审计，以及 Source26 四项失败保留为
+各自提交上的历史证据，不把它们重绑到新失败批次。自动检查不替代原生、客户端或 Gate。
 四次历史复制世界专服仍失败：原始复票后实时恢复失败，后续均缺少真实卸载事件。
 新的 SETUP05 仅移除测试副本近邻标记，保留目标与远端；真实卸载/恢复、停服及
 第二主机重启拒存、原始字节保留实际通过且独立复核。它不建立唯一生产原因、

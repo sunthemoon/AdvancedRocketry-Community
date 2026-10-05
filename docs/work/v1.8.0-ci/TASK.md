@@ -1,6 +1,6 @@
 # V180-CI-01: hosted short-cycle development regression
 
-Date: 2026-10-05. Status: implemented-unverified. Owner/integrator: Root.
+Date: 2026-10-05. Status: implemented-regression-failed. Owner/integrator: Root.
 
 ## Outcome and scope
 
@@ -96,3 +96,14 @@ The separate repair binds that upload path directly to the supported step-level
 (16 tests, one failure), then is replayed against the repair. The other three
 workspace-relative result paths, preflight rules and product-test assertions
 remain unchanged. This repair still needs independent review and hosted replay.
+
+## Committed hosted observation
+
+The failure-upload repair completed different-agent source review with no
+introduced C/H/M/L and was committed/non-force pushed at
+`516317a583d1626d114dc5e1d4a3670cb79d0b5a`. Its hosted run executed real build,
+unit and DataGen checks but failed one required GameTest. The separate
+[result record](RESULT-01.md) retains the exact source, counts, raw receipt and
+independent result audit. Earlier future-tense review requirements above are
+historical checkpoints, superseded only for those actual checks. Full regression,
+failure correction/replay, native/client acceptance and all Gates remain open.

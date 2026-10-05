@@ -36,34 +36,31 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: a0873a30a2e1ad9fe0b42d11a0b89903fc478d5c
+tested_code_commit: 516317a583d1626d114dc5e1d4a3670cb79d0b5a
+latest_regression_result: FAILED
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-05
 ```
 
 ## Current development evidence
 
-The latest complete [Root Source27 regression](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-02.md)
-tests the committed source above with no-build-cache: actual clean build/test/DataGen
-passes with 1,807 JUnit /339 suites /0FES; all 477 required GameTests pass. Repeat
-DataGen has 781 files and zero changes, eight scoped static checks and package-member
-checks pass, and API is byte-exact. The 3,039 named inputs are not a whole repository
-snapshot; live owner AGENTS and one LF/CRLF wrapper expansion are qualified.
-Ledger closure and global dirty diff remain actual failures. The 61 ERROR headers
-are disclosed without blanket waiver. The [independent result audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-02.md)
-finds no additional receipt/source/artifact inconsistency within those limits;
-it does not replay Java or accept native/client/leaf or version Gates. Its
-portable 493-member thin packet is verified; older source ZIP/binary stdout
-remain exact separate references, not a complete publication-output closure.
-The [exact fixture correction](../work/v1.8.0-c18a-atmosphere-analyzer/FIX-REVIEW-DISPOSITION-01.md)
-and its independent actual-source review preserve original conditions and budgets.
-The [Source26 four failures](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-01.md)
-and [failed-result audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-01.md)
-remain historical, not waived or overwritten.
+The latest [hosted committed regression](../work/v1.8.0-ci/RESULT-01.md) is
+**FAILED**: clean build and fresh 1,853 JUnit /341 suites /0FES pass; DataGen
+passes with clean tracked/untracked output, but 477 GameTests complete with
+one required failure, `No rocket at Tau Ceti f`. Different-agent raw-result
+audit independently verifies all retained files and the same XML/log counts.
+Cause investigation is open; assertions and budgets are not relaxed.
+Only one DataGen run was executed in this cohort. Its recorded JAR digest is
+`64ab06d4b3a5bb103baed2d54a19b7735213a2c7791589023ba2d45d5f5c0c73`;
+conditional JAR upload was skipped, so no independent JAR-byte/API comparison
+is claimed. Logs are not ERROR-free and have no blanket waiver.
 
-The development main JAR SHA-256 is
-`cb7d3b48148bea78cf5ffb0da18a6bb578db1f6f10040c894e7d9721df976206`.
-The API artifact remains unchanged. This is not a frozen release candidate.
+The earlier successful [Source27 cohort](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-02.md)
+and [independent audit](../work/v1.8.0-c18a-atmosphere-analyzer/RESULT-REVIEW-02.md)
+remain historical evidence at their own commit. Their repeat DataGen/API results
+are not rebound to the newer failed run. Source26 analyzer failures and the
+separate reviewed fixture correction remain preserved. Ledger closure and the
+owner-dirty local diff are still failures; this is not a release candidate.
 The content ledger has **186 PLANNED units /154 REVIEW assets**; its closure
 check still fails. v1.8 remains **IN_PROGRESS /IMPLEMENTING**, with **G0–G9 open**.
 
@@ -318,11 +315,17 @@ with no unresolved C/H/M/L and 19 independently executed tests. Root integrates
 25 source/task postimages and six generated files, committed and pushed.
 The original full cohort's four analyzer GameTest failures are preserved.
 Their isolated fixture correction and independent review are published; the
-latest complete committed cohort passes all 477 required GameTests, as recorded
-above. Packaged use/restart, client and ledger delivery remain open.
+earlier Source27 success is retained, while the latest hosted failure above
+is in the separate Tau Ceti path. Packaged use/restart, client and ledger
+delivery remain open.
 See the [source checkpoint](../work/v1.8.0-c18a-atmosphere-analyzer/SOURCE-INTEGRATION-01.md).
 It does not enable
 unproven refill/shared-save dependencies.
+The narrowly accepted [ordinary station-light leaf](../work/v1.8.0-c17b-station-light/TASK.md)
+and pre-authoring NEW provenance are committed/non-force pushed at
+`5f1cbefc30d59a35eed80023697a1f4a0c4687fc`. Its isolated source implementation
+is assigned; no source integration, executed lamp tests, native/client acceptance
+or ledger delivery is claimed. Root owns the six central integration files.
 The [completion plan](COMPLETION-PLAN.md) lists the remaining leaves. Historical
 status checkpoints have moved to the implementation log, not this current-state
 summary. No version Gate, tag or release is approved.
