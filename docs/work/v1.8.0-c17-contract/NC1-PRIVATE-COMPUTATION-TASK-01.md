@@ -1,6 +1,6 @@
 # C17a NC1 private BE-data computation task
 
-Date: 2026-10-05. Status: **ADOPTED PRIVATE CONTRACT / NO SOURCE ASSIGNMENT**.
+Date: 2026-10-05. Status: **SOURCE CANDIDATE COMMITTED / SOURCE REVIEW IN PROGRESS**.
 Leaf ID: `C17a-NC1-01`. This is a narrow implementation-task definition, not
 acceptance of full typed rockets, resource persistence or version Gates.
 
@@ -33,7 +33,8 @@ Only these two NEW paths, in a Root-created isolated current-v1.8 worktree:
 Root is the only committer/integrator. The assigned worker would use apply_patch,
 write no central registration/build/protocol/status/ADR/ledger files, and keep
 commands/notes under its separately declared D project-parent evidence leaf.
-No worktree or source permission is assigned by this draft. A changed write scope
+The [separate assignment](NC1-SOURCE-ASSIGNMENT-01.md) now binds the actual isolated
+worktree/base and permits only these two source files, not Java execution. A changed write scope
 requires a separately reviewed assignment rather than silent additional files.
 
 ## Proposed API and bounded behavior
@@ -111,6 +112,17 @@ ordinary-save holds, R-021 and all version Gates are excluded and remain open.
   controls are not Java or native implementation evidence.
 - Independent contract/eligibility and original task reviews: complete, exact
   scopes and limitations recorded in the adoption; no unresolved C/H/M/L there.
-- Root narrow scope adoption: recorded; source assignment: not performed.
-- Source implementation/Java source tests/review/replay: not started.
+- Root narrow scope adoption: recorded and published at `3fd5df73`; separate
+  source-only assignment issued at that base, effective live user AGENTS pinned.
+- Source candidate01: committed/non-force pushed at
+  `4264a312098fe7ad4c35e84d928c00a33cfa8e3b` on the isolated task branch, not
+  integrated/delivered. Root development and independent committed A0 separately
+  compile/run22/22 tests0FES/no container failures or pin drift. Actual-source
+  review reports an open Medium: public-constructor null-backed arrays can throw
+  NPE instead of fixed refusal. Separate diagnostic is granted; repair, final
+  source adoption and Root fixed-commit replay are pending.
+- External source-runner original two Medium findings: preserved; separately
+  reviewed a003 addresses them, Root full-read/intake complete and tool eligibility
+  adopted separately from later exact small development/reviewer grants and
+  configs. Older instrument is separate; no wider command/runtime caller follows.
 - Ledger/version release: unchanged; v1.8 remains IN_PROGRESS.

@@ -190,7 +190,10 @@ contract freeze. The full typed rocket candidate has completed independent
 proposal review with no additional C/H/M/L, but T1-T7 remain substantive freeze
 prerequisites. The [numeric candidate02 review](../work/v1.8.0-c17-contract/NUMERIC-REVIEW-DISPOSITION-01.md)
 finds one Low in its excluded historical binary32 equation; the separately
-versioned author correction and resource-affecting owner selection remain open.
+versioned paired correction has completed independent text review. The owner's
+[received numeric selection](../work/v1.8.0-c17-contract/NUMERIC-OWNER-DECISION-01.md)
+chooses binary64 capture/R rounded products/P proportional partial cost; full
+representation/applicability/stage/schema adoption remains pending.
 Its 22 fresh controls pass, not native or resource-writer tests. Root verifies
 38 review payloads /244,724 bytes /39 sums. The full native-frame proposal is
 separately sealed (88 /591,394 bytes /89); its completed different-agent review
@@ -202,9 +205,25 @@ different-agent reviews with no unresolved C/H/M/L in their limited scopes;
 Root verifies 55 /341,877 bytes /56 and 25 /209,006 bytes /26 respectively.
 The [narrow private adoption](../work/v1.8.0-c17-contract/NC1-PRIVATE-ADOPTION-01.md)
 admits only two new uncalled computation/test files, not full T3 or a runtime
-caller. Source assignment and actual Java/source review/replay remain absent.
-Numeric selections
-and the writer/recovery prerequisites remain open;
+caller. Root publishes that exact seven-document adoption at `3fd5df73`, with
+non-force remote equality. A [separate source-only assignment](../work/v1.8.0-c17-contract/NC1-SOURCE-ASSIGNMENT-01.md)
+binds the isolated two-new-file worktree at that base. Candidate01's two files
+are now committed/non-force pushed on the task branch as
+`4264a312098fe7ad4c35e84d928c00a33cfa8e3b`, not integrated or delivered.
+Root's separately granted development A0 compiles/runs22/22 tests0FES;
+different-agent committed A0 also runs22/22 with no container failure or pin drift.
+Actual-source review reports an open Medium: null-backed arrays constructed with
+public native constructors can escape the fixed-refusal contract as NPE. A separate
+diagnostic is granted; repair/final source adoption and Root replay are pending.
+The new external source runner's two original Medium findings are
+addressed by separately reviewed a003; Root reads both reports and verifies
+93 /219,545 bytes /94 plus141 /394,259 bytes /142. Root adopts that exact limited
+tool eligibility; later exact development/reviewer grants bind only these small
+NC1 cohorts, not a wider command or runtime caller. Its earlier A0Harness/probe
+review is a separate instrument. Heavy commands remain
+prohibited while C is below10GB.
+The asked numeric selectors are chosen; their remaining technical freeze and
+the writer/recovery prerequisites remain open;
 the full typed O3 author packet is verified (68 /312,278 bytes /69). Its completed
 independent review finds one Low owner-question attribution error; Root verifies
 87 review payloads /799,002 bytes /88 sums. Correction and adoption remain open.

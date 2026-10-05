@@ -1,8 +1,8 @@
 # C17a numeric candidate02 independent-review disposition
 
-Date: 2026-10-05. Status: CHANGES_REQUESTED for the historical comparison text;
-numeric selection and implementation freeze remain open. No propulsion formula,
-source assignment, ADR/risk or Gate is adopted by this factual record.
+Date: 2026-10-05. Status: historical comparison correction independently reviewed;
+asked numeric selectors chosen, full technical implementation freeze pending.
+No source assignment, ADR/risk or Gate is adopted by this factual record.
 
 ## Exact review and Root intake
 
@@ -28,8 +28,16 @@ historical-world execution, nor proof every combination is a legal structure.
 
 L is expressly excluded from implementation because it can violate accepted
 effective=min. This Low neither changes P/I nor selects a production formula.
-A separately versioned minimal author correction and different-agent recheck
-are required; the sealed candidate02 remains unchanged.
+A separately versioned paired author correction has completed different-agent
+review; the sealed candidate02 and original Low remain unchanged.
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-correction-20261005-6f0a21bc/L1-CORRECTION-01.md`
+is5,008 B /SHA `cb6eb90451d7a35b567c912ab7205a76ea246e31c9c643a92634a121d22c158c`.
+Its paired row and qualifications address that Low in proposed text only.
+The separate review has no introduced C/H/M/L,19 finite controls0FES,20 payloads
+/189,332 B /21 sums, report SHA
+`3515074b807245955c06a0c60029c236559299bcc8b8a788d8b5a53d2cd81c6b`.
+Root's earlier fresh FINAL-PEER-INTAKES-01.json verifies that exact closure.
+Neither a row alone nor accurate excluded L becomes a production formula.
 
 ## Actual verification and limits
 
@@ -45,9 +53,13 @@ records fresh `python -B intake02.py` exit 0 for this review and the full O3 aut
 guessed O3 checksum filename; helper/raw streams remain. New helper uses literal
 SHA256SUMS-02.txt. No old sealed helper is rerun and no failure is waived.
 
-Binary/decimal capture, product rounding and partial nuclear cost remain
-unselected. Root poses one resource-affecting asynchronous owner question on
-2026-10-05; a preselected option is not an answer. Existing basic/external
+The owner now answers the resource-affecting asynchronous question on2026-10-05:
+“采用建议规则：binary64 舍入＋按支持比例节省（推荐）”. The
+[exact selection record](NUMERIC-OWNER-DECISION-01.md) supersedes that question's
+unanswered status, not all T1/T2 technical clauses or runtime adoption.
+Original binary64 capture, R product rounding and P partial cost are selected;
+remaining representation/applicability/stage/schema acceptance stays pending.
+Existing basic/external
 captured values and debit/remainders must remain unchanged. T3-T7, joint O3,
 scoped ADR/risk adoption and actual recovery remain prerequisites. Neither this
 review nor the owner-selected first-event protection accepts R-021, opens a

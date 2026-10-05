@@ -114,10 +114,12 @@ Root verifies 59 payloads /168,441 bytes /60 sums. Its different-agent
 the excluded historical L equation omits binary32 product rounding after the
 quotient round. Fresh 22 controls pass; 120 distinct inputs /140 rows are unchanged.
 Root reads the full review and verifies 38 payloads /244,724 bytes /39 sums.
-A minimal separately versioned correction is assigned; no sealed input changes.
-Binary/decimal capture, product rounding and partial nuclear cost selectors
-remain unchosen. Root asks the owner for the resource-affecting selection in one
-asynchronous question on 2026-10-05, without inferring its preselected answer.
+A minimal paired correction has completed independent proposed-text review;
+no sealed input changes. Root verifies its20 review payloads /189,332 B /21 sums.
+The owner now answers the asynchronous selection question on2026-10-05, verbatim:
+“采用建议规则：binary64 舍入＋按支持比例节省（推荐）”. The
+[selection record](NUMERIC-OWNER-DECISION-01.md) closes the asked binary64/R/P
+choices only; full representation/applicability/stage/schema adoption remains open.
 The separate T3 native-frame authorship proposal is now sealed at
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-frame-resolution-20261005-879da13f/PROPOSED-FRAME-01.md`,
 37,458 bytes /SHA `a56726d188a6625c2fed8a7143c514da7dc2b84e9dd22996c6cc0414af469996`.
@@ -133,8 +135,16 @@ plus 12 source controls and these independent controls are not actual native
 compatibility, implementation or performance evidence. The review distinguishes
 the private NC1 inspection/encoding leaf, full typed hash projections, and runtime
 codec/writer dependencies. The first has a separately reviewed exact contract and
-[narrow Root adoption](NC1-PRIVATE-ADOPTION-01.md), but still needs a separate
-source assignment, actual Java/source review and committed replay. Mere owned-Tag framing does
+[narrow Root adoption](NC1-PRIVATE-ADOPTION-01.md), but still requires
+actual Java/source review and committed replay. Its [separate source-only assignment](NC1-SOURCE-ASSIGNMENT-01.md)
+is now issued against the published `3fd5df73` isolated base, with two new paths
+only. Candidate01 is committed/non-force pushed on the task branch at
+`4264a312098fe7ad4c35e84d928c00a33cfa8e3b`, not integrated/delivered.
+Root development and independent committed-source A0 separately compile/run
+22/22 with0FES/container failures and no pin drift. Actual-source review reports
+an open Medium: public-constructor null-backed arrays can throw NPE instead of
+fixed refusal. A separate diagnostic is granted; repair/final adoption and Root
+replay are pending. Mere owned-Tag framing does
 not require T1/T2 numerical selection or T5 writer adoption. The latter scopes
 retain their numerical, joint-schema, lifecycle and recovery prerequisites.
 The original T3 dependency assessment itself assigns no source or new bound.
@@ -142,6 +152,12 @@ The separate private contract uses only the existing 262144 BE-data ceiling;
 Root verifies its independent contract review 55 /341,877 bytes /56 and original
 task review 25 /209,006 bytes /26, both with no unresolved C/H/M/L in their scopes.
 No wider typed/hash/reader/writer contract is adopted by the private leaf.
+The new external source runner's original review has two Medium tooling findings,
+addressed only in separately reviewed a003. Root reads both reports and verifies
+93 /219,545 bytes /94 and141 /394,259 bytes /142, adopting exact tool eligibility
+only; later exact development/reviewer configs and serial grants admit the small
+NC1 cohorts. No product result is inferred from the older separate synthetic
+A0Harness/probe review, and no wider command or runtime caller is admitted.
 Full typed O3 revision02 is separately sealed at
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-o3-typed-integration-20261005-72c143/PROPOSED-O3-TYPED-02.md`,
 60,041 bytes /SHA `5447201f53996f180eb73fe87be74a18aba1b9bb5e456b6294c17dc911544d43`.

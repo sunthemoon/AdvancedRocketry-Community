@@ -1,7 +1,7 @@
 # NC1 private BE-data computation: narrow technical adoption
 
 Date: 2026-10-05. Integrator: Root. Leaf: `C17a-NC1-01`.
-Status: **ADOPTED PRIVATE CONTRACT / NO SOURCE ASSIGNMENT**.
+Status: **ADOPTED PRIVATE CONTRACT / SOURCE AUTHORING ASSIGNED**.
 
 ## Authority and exact object
 
@@ -19,7 +19,7 @@ That file is the unchanged historical author proposal, including its proposed
 status; this record supersedes that status only for this narrow computation leaf.
 It does not adopt the broader T3 proposal or its ten purposes.
 
-The only production object admitted for a later separate assignment is the NEW
+The only production object admitted by this narrow adoption is the NEW
 package-private `rocket.model.RocketNativeFrame` and its matching NEW test.
 It has only `inspectOwned(CompoundTag)` and `encodeOwned(CompoundTag)`, one fixed
 existing BE-data byte ceiling of 262,144, exact standard native classes and a
@@ -41,8 +41,12 @@ runs fresh `intake01.py` with actual exit 0 in
 `REVIEW-INTAKE-01.json` checks every declared payload and checksum against the
 reported identities. Author closure remains 48 / 181,736 bytes / 49 checksums.
 Original reviewer failures remain in their sealed packets; finite controls are
-not Java/native implementation results. Root's updated task/adoption records
-require their own independent documentary review before publication.
+not Java/native implementation results. Root's original seven task/adoption
+records receive a separate independent documentary review, 37 payloads /
+225,139 bytes /38 checksums, report SHA
+`1322f0a06150b090b6ebe174dbdb2fef47d0a61bb0b94e3e77280cfa614263b4`.
+Fresh Root intake exits0, and actual publication `3fd5df73` verifies all exact
+postimages, non-force remote equality, empty index and protected ADR/AGENTS pins.
 
 ## Accepted clause applicability, not a waiver
 
@@ -69,12 +73,23 @@ The [task](NC1-PRIVATE-COMPUTATION-TASK-01.md) defines mandatory actual-source
 subjects and the two-file scope, not a worktree or command grant. Root must
 separately bind an isolated base, effective user AGENTS, dependency identities,
 worker permissions, exact JDK/native/JUnit classpath, D-only output and resource
-limits before implementation or Java execution. Committed source, different-
-agent source review and Root fixed-commit replay remain absent and required.
+limits before implementation or Java execution. The [source-only assignment](NC1-SOURCE-ASSIGNMENT-01.md)
+provides the isolated source base/worktree/permissions, not a command grant.
+New runner01's two Medium findings remain preserved; separate03 review addresses
+them in the corrected tool scope and Root adopts exact tool eligibility separately
+from later narrow development/reviewer configs/serial grants. Candidate01's two
+files are committed/non-force pushed at `4264a312098fe7ad4c35e84d928c00a33cfa8e3b`
+on the task branch. Development and independent committed A0 separately run22/22
+with0FES/container failures and no pin drift. Actual-source review reports one
+open Medium: public-constructor null-backed arrays can escape as NPE rather than
+fixed refusal. Separate diagnostic is granted; repair/final adoption and Root
+fixed-commit replay remain pending. No source integration/delivery is claimed.
 
 Existing cargo/size/hash/codec/save/migration behavior, all accepted ADR bytes,
-numeric selection, T1–T7, complete O3/C17b, native reader/durability, first-event
-hold implementation, R-021, ledger and Gates are unchanged. Pure signed-zero
+T1–T7 technical freeze, complete O3/C17b, native reader/durability, first-event
+hold implementation, R-021, ledger and Gates are unchanged. The owner's separate
+numeric selection closes only the asked binary64/R/P choices, not these remaining
+technical prerequisites. Pure signed-zero
 framing does not admit native reload or persistent signed-zero use.
 Full clean build/DataGen/GameTest and other applicable checks are not waived;
 C below 10 GB still prohibits heavy execution. v1.8 remains IN_PROGRESS with
