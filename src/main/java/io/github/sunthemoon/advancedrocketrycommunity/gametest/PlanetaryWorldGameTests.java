@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.Planetar
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.surface.SurfaceContent;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
@@ -120,6 +121,8 @@ public final class PlanetaryWorldGameTests {
             var result = RocketRuntime.requestAdminFlight(rocket, new TravelTarget.BodySurface(destination), UUID.randomUUID());
             helper.assertTrue(result.success(), "Planetary launch failed: " + result.code() + " to " + destination);
             helper.assertTrue(result.requiredFuel() > 0, "Planetary flight omitted its fuel debit");
+            // Successful native preparation has already initialized this server's journal.
+            var journal = RocketTransferSavedData.get(server);
             helper.runAfterDelay(270, () -> guarded(server, logical, () -> {
                 var matches = new ArrayList<RocketEntity>();
                 for (var level : server.getAllLevels()) {
@@ -129,14 +132,22 @@ public final class PlanetaryWorldGameTests {
                         }
                     }
                 }
-                helper.assertTrue(matches.size() == 1, "Planetary transfer did not retain exactly one logical rocket");
-                var landed = matches.get(0);
-                var state = landed.flightData().orElseThrow();
-                helper.assertTrue(state.state() == RocketFlightState.LANDED && state.currentBody().equals(destination),
-                        "Planetary flight did not land at the requested body");
-                helper.assertTrue(state.currentTarget().orElseThrow().equals(new TravelTarget.BodySurface(destination)), "Typed target changed");
-                helper.assertTrue(state.fuel().amount() == before.amount() - result.requiredFuel(), "Planetary fuel debit differs");
-                helper.assertTrue(landed.snapshot().orElseThrow().blocks().equals(blocks), "Travel changed the rocket blocks or payloads");
+                RocketEntity landed;
+                RocketFlightData observedState = null;
+                try {
+                    helper.assertTrue(matches.size() == 1, "Planetary transfer did not retain exactly one logical rocket");
+                    landed = matches.get(0);
+                    var state = landed.flightData().orElseThrow();
+                    observedState = state;
+                    helper.assertTrue(state.state() == RocketFlightState.LANDED && state.currentBody().equals(destination),
+                            "Planetary flight did not land at the requested body");
+                    helper.assertTrue(state.currentTarget().orElseThrow().equals(new TravelTarget.BodySurface(destination)), "Typed target changed");
+                    helper.assertTrue(state.fuel().amount() == before.amount() - result.requiredFuel(), "Planetary fuel debit differs");
+                    helper.assertTrue(landed.snapshot().orElseThrow().blocks().equals(blocks), "Travel changed the rocket blocks or payloads");
+                } catch (RuntimeException | Error failure) {
+                    observePlanetaryFailure(helper, journal, logical, destination, index, matches, observedState);
+                    throw failure;
+                }
                 if (index + 1 < route.size()) {
                     fly(helper, landed, logical, blocks, route, index + 1);
                 } else {
@@ -145,6 +156,63 @@ public final class PlanetaryWorldGameTests {
                 }
             }));
         });
+    }
+
+    /** Failure-only scalar observation: no tickets, world scans, ticking, or journal writes. */
+    private static void observePlanetaryFailure(GameTestHelper helper, RocketTransferSavedData journal,
+            UUID logical, net.minecraft.resources.ResourceLocation requested, int leg,
+            List<RocketEntity> matches, RocketFlightData observedState) {
+        try {
+            var record = journal.findByLogicalRocket(logical).orElse(null);
+            var matched = matches.size() == 1 ? matches.get(0) : null;
+            var origin = record == null ? null : record.destinationSnapshot().sourceOrigin();
+            var server = helper.getLevel().getServer();
+            var destinationLevel = record == null ? null : server.getLevel(net.minecraft.resources.ResourceKey.create(
+                    net.minecraft.core.registries.Registries.DIMENSION, record.destinationSnapshot().sourceDimension()));
+            var sourceLevel = record == null ? null : server.getLevel(net.minecraft.resources.ResourceKey.create(
+                    net.minecraft.core.registries.Registries.DIMENSION, record.sourceSnapshot().sourceDimension()));
+            boolean loaded = destinationLevel != null && destinationLevel.getChunkSource()
+                    .getChunkNow(origin.x() >> 4, origin.z() >> 4) != null;
+            boolean entitiesLoaded = destinationLevel != null && destinationLevel.areEntitiesLoaded(
+                    net.minecraft.world.level.ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4));
+            boolean ticking = destinationLevel != null && destinationLevel.isPositionEntityTicking(
+                    new BlockPos(origin.x(), origin.y(), origin.z()));
+            AdvancedRocketryCommunity.LOGGER.warn(
+                    "ARCE_PLANETARY_FAILURE leg={} logical={} requested={} matches={} test_tick={} "
+                            + "entity={} level={} level_time={} state={} body={} state_started={} "
+                            + "journal_operational={} phase={} transfer={} source_entity={} destination_entity={} "
+                            + "source_time={} destination_level={} origin={},{},{} destination_time={} "
+                            + "scheduled_transit={} scheduled_descent={} loaded={} entities_loaded={} ticking={}",
+                    leg, logical, planetaryDiagnosticId(requested), matches.size(), helper.getTick(),
+                    matched == null ? "none" : matched.getUUID(),
+                    matched == null ? "none" : planetaryDiagnosticId(matched.level().dimension().location()),
+                    matched == null ? -1L : matched.level().getGameTime(),
+                    observedState == null ? "none" : observedState.state().name(),
+                    observedState == null ? "none" : planetaryDiagnosticId(observedState.currentBody()),
+                    observedState == null ? -1L : observedState.stateStartedGameTime(),
+                    journal.operational(), record == null ? "none" : record.phase().name(),
+                    record == null ? "none" : record.transferId(), record == null ? "none" : record.sourceEntityId(),
+                    record == null ? "none" : record.destinationEntityId().map(UUID::toString).orElse("none"),
+                    sourceLevel == null ? -1L : sourceLevel.getGameTime(),
+                    record == null ? "none" : planetaryDiagnosticId(record.destinationSnapshot().sourceDimension()),
+                    origin == null ? 0 : origin.x(), origin == null ? 0 : origin.y(), origin == null ? 0 : origin.z(),
+                    destinationLevel == null ? -1L : destinationLevel.getGameTime(),
+                    record == null ? -1L : record.sourceFlightData().stateStartedGameTime(),
+                    record == null ? -1L : record.destinationFlightData().stateStartedGameTime(),
+                    loaded, entitiesLoaded, ticking);
+        } catch (RuntimeException | Error observationFailure) {
+            // Observation failures must never replace or decorate the original assertion.
+            try {
+                AdvancedRocketryCommunity.LOGGER.warn("ARCE_PLANETARY_FAILURE observation_unavailable");
+            } catch (RuntimeException | Error loggingFailure) {
+                // Retain the original assertion even when the logger itself is unavailable.
+            }
+        }
+    }
+
+    private static String planetaryDiagnosticId(net.minecraft.resources.ResourceLocation id) {
+        String value = id.toString();
+        return value.length() <= 96 ? value : "overlong";
     }
 
     private static void guarded(net.minecraft.server.MinecraftServer server, UUID logical, Runnable action) {
