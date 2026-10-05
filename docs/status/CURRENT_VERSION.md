@@ -128,7 +128,10 @@ Java results remain at their separate older commit; no whole-source rebind occur
 The [terminal-field contract](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-TERMINALS.md)
 is independently reviewed and technically frozen for four new private files.
 READY_FOR_STOP/FAILED shape observations convey no completion or native authority;
-isolated implementation and actual-source verification have not started.
+the contract is published at `3e5610e5`. Root creates the clean independent
+`D:/GitHub/arce-v180-c18c-report-terminals-20261005` checkout at that commit and
+assigns c16a04_fluids only the four new files. Isolated implementation is assigned;
+actual-source review, integration and committed replay remain pending.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
