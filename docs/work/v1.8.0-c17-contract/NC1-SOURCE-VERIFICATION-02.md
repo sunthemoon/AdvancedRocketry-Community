@@ -8,7 +8,9 @@ INTEGRATION PENDING**. Leaf `C17a-NC1-01`; focused correction `C17a-NC1-M1-02`.
 Current candidate is `451bddb6450819e1438f516989b68239529ac44a`, parent
 `4264a312098fe7ad4c35e84d928c00a33cfa8e3b`, on isolated task branch
 `codex/v1.8.0-nc1-computation`. Root actually commits and non-force pushes it;
-remote equality and clean task index are checked. Main source is not integrated.
+remote equality and clean task index are checked. Exact final postimages are now
+[introduced on the development branch](PRIVATE-INTEGRATION-CHECKPOINT-01.md);
+completed main integration and delivery remain unverified.
 
 | Exact repository path | Bytes / lines | SHA-256 |
 | --- | --- | --- |

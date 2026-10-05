@@ -3,8 +3,9 @@
 Date: 2026-10-05. Integrator and contract adopter: Root. Implementer:
 delegated `c18_contract`; independent source reviewer: delegated `c17_contract`.
 Status: **INTEGRATION_PENDING / NARROW TECHNICAL CONTRACT ADOPTED**. Isolated
-source is reviewed and replayed in the [verification record](NUMERIC-SOURCE-VERIFICATION-01.md);
-main integration and delivery remain open. This is an internal prerequisite, not full T1/T2.
+source is reviewed and replayed in the [verification record](NUMERIC-SOURCE-VERIFICATION-01.md).
+The exact files are now [introduced on the development branch](PRIVATE-INTEGRATION-CHECKPOINT-01.md);
+completed main integration and delivery remain open. This is an internal prerequisite, not full T1/T2.
 
 ## Authority and reviewed object
 

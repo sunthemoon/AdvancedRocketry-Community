@@ -215,7 +215,8 @@ Independent committed A0 and Root's separately granted fixed-commit replay each
 run23/23,0F/A/S/container failures and no pin drift. The unchanged separate control
 has six refusal observations/zero violations; original4264's six-NPE negative is
 retained. Root verifies68 review payloads/286,077 B/69 sums. This candidate remains
-unintegrated and undelivered; full applicable integration checks are not waived.
+introduced at the [private source checkpoint](../work/v1.8.0-c17-contract/PRIVATE-INTEGRATION-CHECKPOINT-01.md)
+with completed integration/delivery pending; full applicable checks are not waived.
 The new external source runner's two original Medium findings are
 addressed by separately reviewed a003; Root reads both reports and verifies
 93 /219,545 bytes /94 plus141 /394,259 bytes /142. Root adopts that exact limited
@@ -230,7 +231,8 @@ its [isolated source verification](../work/v1.8.0-c17-contract/NUMERIC-SOURCE-VE
 records committed/non-force pushed9b50488aa987fa47b0683a57ce8fec93f29c0e5c, exact
 different-agent source review with no unresolved C/H/M/L, independent committed
 A0 and Root fixed-commit replay each23/23 with0F/A/S/container failures and no pin drift.
-Own temporary classes/home are cleaned. Source remains unintegrated/undelivered;
+Own temporary classes/home are cleaned. Source is introduced at that same private
+checkpoint, with completed integration/delivery pending;
 full applicable integration checks and applicability/stage/schema freeze remain pending.
 The writer/recovery prerequisites remain open;
 the full typed O3 author packet is verified (68 /312,278 bytes /69). Its completed

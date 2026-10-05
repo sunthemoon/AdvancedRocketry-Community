@@ -11,7 +11,9 @@ Source commit `9b50488aa987fa47b0683a57ce8fec93f29c0e5c`, parent/task
 `codex/v1.8.0-propulsion-numbers`, worktree
 `D:/GitHub/arce-v180-propulsion-numbers-20261005`. Root stages only two additions,
 checks cached stat/check, commits and non-force pushes; remote equals local and
-task checkout/index are clean. The source is not merged to main.
+task checkout/index are clean. Exact postimages are now
+[introduced on the development branch](PRIVATE-INTEGRATION-CHECKPOINT-01.md);
+completed main integration and delivery remain unverified.
 
 | New path, relative to task worktree | Bytes / lines | SHA-256 |
 | --- | ---: | --- |

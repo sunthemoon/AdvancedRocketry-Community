@@ -128,7 +128,8 @@ committed/non-force pushed9b50488aa987fa47b0683a57ce8fec93f29c0e5c, no unresolve
 C/H/M/L in the different-agent source review, independent committed A0 and Root
 fixed-commit replay each23/23 with0F/A/S/container failures and no pin drift.
 Temporary class/home outputs are cleaned. Full integration checks remain absent;
-source is unintegrated/undelivered. Complete caller applicability/stage/schema
+source is introduced at the [private source checkpoint](PRIVATE-INTEGRATION-CHECKPOINT-01.md),
+with main validation/delivery pending. Complete caller applicability/stage/schema
 and typed/writer acceptance remain open.
 The separate T3 native-frame authorship proposal is now sealed at
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-frame-resolution-20261005-879da13f/PROPOSED-FRAME-01.md`,
@@ -156,7 +157,9 @@ no unresolved C/H/M/L in the exact malformed-array refusal scope; independent
 committed A0 and Root fixed-commit replay each run23/23 with0F/A/S/container
 failures and no pin drift. Unchanged separate control has six observations/zero
 violations. Root verifies68 review payloads/286,077 B/69 sums. Full integration
-checks and final integration acceptance remain pending. Mere owned-Tag framing does
+checks and final integration acceptance remain pending. Exact corrected NC1
+postimages are introduced in that same private source checkpoint, not delivered.
+Mere owned-Tag framing does
 not require T1/T2 numerical selection or T5 writer adoption. The latter scopes
 retain their numerical, joint-schema, lifecycle and recovery prerequisites.
 The original T3 dependency assessment itself assigns no source or new bound.
