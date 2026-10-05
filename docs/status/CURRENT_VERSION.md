@@ -226,7 +226,12 @@ prohibited while C is below10GB.
 The asked numeric selectors are chosen. The separately reviewed
 [C17a-NUM-01 private arithmetic task](../work/v1.8.0-c17-contract/NUMERIC-PRIVATE-TASK-01.md)
 has narrow Root technical adoption for its uncalled scalar representation/domains/errors;
-source implementation/review and full applicability/stage/schema freeze remain pending.
+its [isolated source verification](../work/v1.8.0-c17-contract/NUMERIC-SOURCE-VERIFICATION-01.md)
+records committed/non-force pushed9b50488aa987fa47b0683a57ce8fec93f29c0e5c, exact
+different-agent source review with no unresolved C/H/M/L, independent committed
+A0 and Root fixed-commit replay each23/23 with0F/A/S/container failures and no pin drift.
+Own temporary classes/home are cleaned. Source remains unintegrated/undelivered;
+full applicable integration checks and applicability/stage/schema freeze remain pending.
 The writer/recovery prerequisites remain open;
 the full typed O3 author packet is verified (68 /312,278 bytes /69). Its completed
 independent review finds one Low owner-question attribution error; Root verifies

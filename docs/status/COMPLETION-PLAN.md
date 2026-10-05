@@ -107,7 +107,11 @@ T1–T7 仍是实质性冻结前置项。[推进数值审核](../work/v1.8.0-c17
 [决定记录](../work/v1.8.0-c17-contract/NUMERIC-OWNER-DECISION-01.md)仅关闭所询问的
 数值选择。[C17a-NUM-01 私有计算任务](../work/v1.8.0-c17-contract/NUMERIC-PRIVATE-TASK-01.md)
 经不同代理契约审核后，Root 限定采纳未调用计算器的表示、算术域和错误规则；
-源码实施与审核待完成。完整适用性、阶段及 schema 的技术接受仍待完成。
+[源码验证](../work/v1.8.0-c17-contract/NUMERIC-SOURCE-VERIFICATION-01.md)：两文件已在
+`9b50488aa987fa47b0683a57ce8fec93f29c0e5c` 提交并非强制推送，独立源码审核无未解决
+C/H/M/L；独立已提交 A0 与 Root 固定提交复跑各23/23、零失败/中止/跳过/容器失败。
+临时 class/home 已清理，完整集成检查未运行，源码未集成或交付。
+完整适用性、阶段及 schema 的技术接受仍待完成。
 完整原生资源 frame 的独立提案审核已完成，无 C/H/M/L；26 项有限控制及 15 项
 源码控制通过，Root 校验 50 项审核载荷 /348,435 字节 /51 项校验和。私有 NC1
 检查/编码、完整 typed 哈希与运行时 codec 的前置条件分别记录。

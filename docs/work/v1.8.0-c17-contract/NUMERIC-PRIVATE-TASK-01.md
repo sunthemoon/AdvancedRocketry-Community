@@ -2,8 +2,9 @@
 
 Date: 2026-10-05. Integrator and contract adopter: Root. Implementer:
 delegated `c18_contract`; independent source reviewer: delegated `c17_contract`.
-Status: **READY / NARROW TECHNICAL CONTRACT ADOPTED**. No source is implemented
-or delivered by this record. This is a v1.8 internal prerequisite, not full T1/T2.
+Status: **INTEGRATION_PENDING / NARROW TECHNICAL CONTRACT ADOPTED**. Isolated
+source is reviewed and replayed in the [verification record](NUMERIC-SOURCE-VERIFICATION-01.md);
+main integration and delivery remain open. This is an internal prerequisite, not full T1/T2.
 
 ## Authority and reviewed object
 
