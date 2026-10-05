@@ -102,6 +102,10 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 契约有条件接受；辅助氧气储量、有限节省、装备工具、独立地面勘测、首次事件、
 科技树、声音/模型/GUI 等仍须实现。D4 未证明，不推断接受。
 
+- [ ] 水下生命支持：互斥 LivingTick/Breathe/END 方案已独立技术审核；
+  全部已连接存活玩家的同 tick 延后采样待维护者确认。未连接 ServerPlayer
+  保留旧立即模式的说明修订尚待定稿；未授权或开始源码实现。
+
 - [~] [C18c-01](../work/v1.8.0-c18c-tutorial-inventory/TASK.md)：六项库存教程成就，
   精确审核源码已提交、推送；前序限定自动回归与实际库存监听已有记录，
   打包原生重启和台账交付仍开放。最新整包回归通过，前次分析仪失败仍保留历史证据。
@@ -124,8 +128,12 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   Root 新夹具已清理 99,375 字节；首次清理预检失败和修订记录分别保留。
   [纯 JSON 任务](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-04-JSON.md)
   已独立审核无未解决 C/H/M/L 并冻结，契约提交推送为 `e091f1b0`。
-  四个新文件已分配给独立 `codex/v1.8.0-inventory-json` worktree，实施中；
-  不授予文件/live/native 权限，实际源码审核和固定提交复跑仍待完成。
+  四文件源码经独立审核无新增 C/H/M/L，125 测试及 14 项独立控制通过；
+  Root 原样提交推送 `7affd485`，固定提交复跑 52 + 39 + 34 测试 /0FES。
+  [限定源码采用](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-JSON.md)
+  与[实际结果](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-03-JSON.md)
+  仅证明私有纯字节解析；不授予文件/live/native 权限。Root 新夹具已清理
+  99,375 字节和六个别名；字段验证、JSON 读取、NBT 和完整驱动仍未实现。
 - [~] [C18a-01](../work/v1.8.0-c18a-atmosphere-analyzer/TASK.md)：单项手持大气分析仪的
   只读契约经独立审核无 C/H/M/L，并按既有授权限定接受；原创资源已登记，
   精确源码及八项中央集成已独立审核，真实独立 19 单测通过。Root 已集成，

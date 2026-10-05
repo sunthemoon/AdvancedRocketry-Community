@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 tested_code_commit: a0873a30a2e1ad9fe0b42d11a0b89903fc478d5c
-tested_python_commit: 254af9e4b7f2fe007eea87989e1534a238b140b7
+tested_python_commit: 7affd485fc99b944dd5d3b2e94ab6c4651d3903e
 last_updated: 2026-10-05
 ```
 
@@ -114,13 +114,17 @@ fixed-commit replay passes 34 focused + 39 unchanged phase01 methods /0FES.
 Its fresh D fixture is cleaned, 99,375 bytes, after a separately retained
 precheck correction. This is only private quiescent properties input. Live,
 ownership, JSON/NBT, receipt/driver and native authority remain unimplemented.
-The separate [pure JSON task](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-04-JSON.md)
-is independently reviewed, frozen, committed and pushed at
-`e091f1b0abb2dc2068c8e7cf0f6e97e48d3aaa03`. Its five role budgets,
-key-inclusive counting and immutable scalar/entry observations are private
-syntax policy, not file/live/native authority. Four-file implementation is
-assigned in the isolated `codex/v1.8.0-inventory-json` worktree at that commit;
-actual-source review and committed replay have not yet occurred.
+The [pure JSON source disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-JSON.md)
+adopts only the four-new-file byte consumer at the tested Python commit above.
+Independent actual-source review finds no introduced C/H/M/L and runs 125
+tests plus 14 separate controls. Root commits/pushes all four exact postimages;
+the [fixed-commit replay](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-03-JSON.md)
+passes 52 JSON + 39 unchanged phase01 + 34 unchanged properties tests /0FES.
+All 12 related source/task postimages match fixed Git before/after. The fresh D
+fixture is cleaned, 99,375 regular bytes and six aliases. The five role budgets,
+key-inclusive counters and immutable numbers are private syntax observations,
+not JSON file acquisition, fixed-field validation, live/native or writer authority.
+Java results remain at their separate older commit; no whole-source rebind occurs.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
@@ -161,6 +165,10 @@ Remaining: full Guard lifecycle and first-save/final-disposal proof; full hash/f
 native codecs and resource consumers; physical hatches, lathe and motor-tier
 formation; steel and component acquisition; C16b–d, C17–C19; real clients/GPU,
 multiplayer, crash recovery, performance and inherited release acceptance.
+The underwater mutual-routing proposal is technically reviewed but not adopted:
+connected alive deferred sampling awaits the owner choice. A separate correction
+must preserve non-current ServerPlayer immediate handling and restrict the new
+tick fence to the connected bridge. No underwater implementation is assigned.
 Whole-chunk save refusal can prevent unrelated chunk changes from being saved;
 its impact, repair workflow and release disposition remain open. Historical
 failures and oversized evidence-storage debt remain documented, not erased by
