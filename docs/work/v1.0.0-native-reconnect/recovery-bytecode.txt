@@ -455,12 +455,12 @@ final class io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketT
       65: aload         6
       67: invokevirtual #425                // Method io/github/sunthemoon/advancedrocketrycommunity/rocket/flight/RocketTransferRecoveryAction.ordinal:()I
       70: iaload
-      71: tableswitch   { // 1 to 6
-                     1: 108
-                     2: 108
-                     3: 212
-                     4: 264
-                     5: 264
+      71: tableswitch   { // 1 to 6
+                     1: 108
+                     2: 108
+                     3: 212
+                     4: 264
+                     5: 264
                      6: 264
                default: 454
           }
