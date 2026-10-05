@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "tag": "forge:ingots/copper"
+    },
+    "G": {
+      "tag": "forge:glass"
+    },
+    "S": {
+      "item": "advancedrocketrycommunity:silicon_wafer"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "SSS",
+    "CCC"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:solar_panel"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "advancedrocketrycommunity:block/solar_generator_bottom",
+    "east": "advancedrocketrycommunity:block/solar_generator_side",
+    "north": "advancedrocketrycommunity:block/solar_generator_side",
+    "particle": "advancedrocketrycommunity:block/solar_generator_side",
+    "south": "advancedrocketrycommunity:block/solar_generator_side",
+    "up": "advancedrocketrycommunity:block/solar_generator_top",
+    "west": "advancedrocketrycommunity:block/solar_generator_side"
+  }
+}
