@@ -97,6 +97,9 @@ jobs:
           ./gradlew runData --no-daemon --stacktrace 2>&1 | tee "$EVIDENCE_DIR/data.log"
           git diff --exit-code 2>&1 | tee "$EVIDENCE_DIR/datagen-diff.log"
           python -B scripts/check_clean_worktree.py | tee "$EVIDENCE_DIR/datagen-status.log"
+          ./gradlew runData --no-daemon --stacktrace 2>&1 | tee "$EVIDENCE_DIR/repeat-data.log"
+          git diff --exit-code 2>&1 | tee "$EVIDENCE_DIR/repeat-datagen-diff.log"
+          python -B scripts/check_clean_worktree.py | tee "$EVIDENCE_DIR/repeat-datagen-status.log"
 
       - name: Run all Forge GameTests
         run: |

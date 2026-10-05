@@ -116,6 +116,15 @@ class WorkflowWiringTests(unittest.TestCase):
         env = re.search(r"    env:\n(.*?)    defaults:\n", self.workflow, re.DOTALL).group(1)
         self.assertNotIn("runner.", env)
 
+    def test_repeat_datagen_checks_tracked_and_untracked_output(self):
+        step = self.workflow.split("- name: Generate data and require a clean tracked and untracked tree", 1)[1]
+        step = step.split("- name: Run all Forge GameTests", 1)[0]
+        self.assertEqual(2, step.count("./gradlew runData --no-daemon --stacktrace"))
+        self.assertEqual(2, step.count("git diff --exit-code"))
+        self.assertEqual(2, step.count("python -B scripts/check_clean_worktree.py"))
+        for log in ("repeat-data.log", "repeat-datagen-diff.log", "repeat-datagen-status.log"):
+            self.assertIn(log, step)
+
     def test_failure_upload_is_bounded_without_checkout_or_preflight_exports(self):
         upload = re.search(r"      - name: Upload raw regression evidence, including failed runs\n(.*?)"
                            r"      - name: Upload the single external build artifact\n",
