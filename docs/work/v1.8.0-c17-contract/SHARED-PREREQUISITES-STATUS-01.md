@@ -18,8 +18,28 @@ proposal scope. Root read both complete reports and verified all payload hashes:
 
 The first remains incomplete for O1-O7: root format/migration, compatible native
 preflight, both first-event authorities, cooldown, full shared wire/view tables,
-visual mapping and fair bounded context scheduling. A new technical candidate is
-being authored; no exact D2-A/shared prerequisite freeze has been accepted.
+visual mapping and fair bounded context scheduling. Candidate02 now covers the
+six obligations outside O3. Its independent review at
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17b-review-20261005-8a425d/REVIEW-02.md`,
+SHA `e591588f2e11209f1fced216eb0e3a715ac7d769bde76d8231e02f42eb9bb76f`,
+retains one Medium: configured zero means no write spacing in existing source,
+not disabled checked updates. One Low separates exact typed/value equivalence
+from canonical compound ordering and emission bytes. Root verifies 52 payloads /
+254,635 bytes /53 checksums. Independent corrected 23 controls and four framing
+controls pass; a separate three-control budget comparison has one finding failure.
+Original own parser failure remains preserved. A separately authored candidate03
+correction awaits independent review, not acceptance. Root verifies its 83
+payloads /723,372 bytes /84 sums at
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17b-contract-correction-20261005-68c094/`.
+`CANDIDATE-03.md` SHA is
+`7cf10050f1fd898ef2fc292a3aebdb22ba3db423583722102975c6dc8cf4dfda`.
+Its two normative replacements address zero/no-spacing and typed/value versus
+emission-byte distinctions only. The author's final 15 controls pass, while
+original 15/2 findings, checker failures and strict CRLF-patch refusal remain.
+The separate applicable LF patch does not overwrite that original patch.
+Author controls and Root checksum intake do not close the independent M1/L1.
+No exact D2-A/shared prerequisite freeze has
+been accepted.
 The [earlier orbital eligibility finding](ORBITAL-PHASE-ELIGIBILITY-DISPOSITION-01.md)
 is not closed by these open-proposal reviews.
 
@@ -56,9 +76,15 @@ proven whole-root coherence; unchanged event slots alone do not permit stale
 resource/clock rollback. This coordination does not close R-021 or enlarge any
 disk, data or tick guarantee.
 
-Full C17a Entity3/snapshot2/flight3/journal3 fields, frozen resource-consumption
-vectors, persistent transactions and terminal landing authority are also being
-authored. Existing flight plan schema3 is not typed flight schema3. Both Moon and
+Full C17a Entity3/snapshot2/flight3/plan4/journal3 fields, captured resource vectors,
+persistent transactions and terminal landing authority are now proposed at
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-typed-contract-20261005-2ebad943/PROPOSED-C17A-01.md`,
+SHA `fd9a9757d6be7ffae0c9d83615e4316e6b72c47fd364ae33f9bd4c00a4f1e9d5`.
+Root verifies 46 payloads /200,315 bytes /47 checksum entries (48 total files
+including both metadata). T1-T7 remain explicit unresolved freeze decisions;
+different-agent technical review is in progress. Authorship sealing is not
+technical freeze or source permission. Existing flight plan schema3 is not typed
+flight schema3. Both Moon and
 warp first-event completion must bind the exact shared source/receipt interfaces;
 an opaque legacy LANDED projection is not a joint typed contract freeze.
 
@@ -77,9 +103,15 @@ Root reads its full report and verifies 26 payloads /116,661 bytes /27 checksums
 The report is `D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-stages-review-20261005-6f742a8d/REVIEW-01.md`,
 SHA `517d003ac602ddcae788636bf68690fe65b7590c4b13af111b3b02a32bdedfff`.
 This establishes limited private-task technical eligibility, not actual parser
-or native tests. Four proposed source paths remain absent; Root task publication,
-source assignment and subsequent verification remain pending. No source,
-IO/cohort/receipt or host permission is adopted by this status record.
+or native tests. Root publishes the paired private task/disposition and current
+status as `6bddc0326247ba79df845bcd8c0c606f447854d2`, after independent original
+72/73 and narrow corrected 41/42 payload/checksum reviews. The original staged
+EOF check exits 2 and publisher exits 1 before commit; the one-LF-only correction
+and fresh successful publication do not overwrite that failure. Root separately
+creates a fresh D isolated checkout at the published commit and assigns only the
+four new private source/test/progress/handoff paths. Implementation is in progress,
+not delivered: actual-source independent review, source commit and fixed replay
+are pending. No IO/cohort/receipt, Java/native or host permission is adopted here.
 
 ## Preserved execution and limits
 

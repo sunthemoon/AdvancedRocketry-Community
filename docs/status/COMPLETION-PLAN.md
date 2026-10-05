@@ -99,7 +99,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 [轨道模型资格审核](../work/v1.8.0-c17-contract/ORBITAL-PHASE-ELIGIBILITY-DISPOSITION-01.md)
 有一项 Medium：精确 D2-A checked-transition/shared-wire 前置接受未被所列证据证明。
 模型提案未采用、未授权源码；[完整前置状态](../work/v1.8.0-c17-contract/SHARED-PREREQUISITES-STATUS-01.md)
-已记录开放提案的独立审核，O1–O7 和完整 typed 火箭契约仍未冻结，不能以 A0 标签放行。
+已记录开放提案的独立审核。完整 typed 候选已写成，T1–T7 仍开放并在独立审核；
+C17b candidate02 有一项 Medium 零值预算语义问题和一项 Low 字节等价说明歧义，
+独立新版本已成文，待独立复核。O1–O7 和完整 typed 火箭契约仍未冻结，不能以 A0 标签放行。
 
 ### C18 生命支持、研究与呈现 `[ ]`
 
@@ -112,8 +114,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 - [ ] Task04 其余私有报告字段：完整非终态字段候选和限定静态检查已存证，
   独立契约审核无未解决 C/H/M/L；[私有任务](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-04-REPORT-STAGES.md)
   与[限定处置](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-STAGES.md)
-  冻结字段与范围，发表并分配隔离源码工作树后才能实施。
-  四个提议源码文件未创建，不是解析器或原生交付。
+  冻结字段与范围，已在 `6bddc0326247ba79df845bcd8c0c606f447854d2` 提交并推送。
+  Root 已按该提交分配 D 盘隔离工作树的四个新私有文件，实现进行中；
+  实际源码审核、源码提交和固定回归尚未完成，不是解析器或原生交付。
 
 - [ ] 水下生命支持：互斥 LivingTick/Breathe/END 方案已独立技术审核；
   全部已连接存活玩家的同 tick 延后采样待维护者确认。未连接 ServerPlayer
