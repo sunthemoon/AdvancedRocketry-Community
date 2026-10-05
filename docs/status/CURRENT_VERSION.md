@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 tested_code_commit: a0873a30a2e1ad9fe0b42d11a0b89903fc478d5c
-tested_python_commit: 7affd485fc99b944dd5d3b2e94ab6c4651d3903e
+tested_python_commit: 3c5f20dc1558178a97db357c7d44188e1b36c01d
 last_updated: 2026-10-05
 ```
 
@@ -115,7 +115,8 @@ Its fresh D fixture is cleaned, 99,375 bytes, after a separately retained
 precheck correction. This is only private quiescent properties input. Live,
 ownership, JSON/NBT, receipt/driver and native authority remain unimplemented.
 The [pure JSON source disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-JSON.md)
-adopts only the four-new-file byte consumer at the tested Python commit above.
+adopts only the four-new-file byte consumer at its separate source commit
+`7affd485fc99b944dd5d3b2e94ab6c4651d3903e`.
 Independent actual-source review finds no introduced C/H/M/L and runs 125
 tests plus 14 separate controls. Root commits/pushes all four exact postimages;
 the [fixed-commit replay](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-03-JSON.md)
@@ -128,10 +129,14 @@ Java results remain at their separate older commit; no whole-source rebind occur
 The [terminal-field contract](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-TERMINALS.md)
 is independently reviewed and technically frozen for four new private files.
 READY_FOR_STOP/FAILED shape observations convey no completion or native authority;
-the contract is published at `3e5610e5`. Root creates the clean independent
-`D:/GitHub/arce-v180-c18c-report-terminals-20261005` checkout at that commit and
-assigns c16a04_fluids only the four new files. Isolated implementation is assigned;
-actual-source review, integration and committed replay remain pending.
+the contract is published at `3e5610e5`. Its [limited source disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-REPORT-TERMINALS.md)
+records exact different-agent review with no introduced C/H/M/L, 165 actual
+tests and 12 separate controls. Root commits/pushes four exact postimages at
+the tested Python commit above; [fixed replay](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-04-REPORT-TERMINALS.md)
+passes 165 tests /0FES with 18 named fixed-Git/live inputs unchanged. Root's
+fresh D fixture is cleaned, 99,375 regular bytes and six aliases. This verifies
+only the private terminal-field leaf; other report events, file acquisition,
+driver/native/ownership/receipt and full C18c delivery remain unfinished.
 Exact proposals/failures/primary controls are
 portable. No setup or native execution is admitted by this contract review.
 See
@@ -167,6 +172,13 @@ changes still require separate confirmation. The later save-refusal audit below
 leaves two disclosure/ADR findings open, so that historical record does not
 authorize new guarded runtime admission. These decisions do not supply runtime,
 migration or native recovery evidence. C18 D4 remains unproven.
+
+The [C17 orbital eligibility disposition](../work/v1.8.0-c17-contract/ORBITAL-PHASE-ELIGIBILITY-DISPOSITION-01.md)
+retains one Medium proposal-authorization finding. The arithmetic model is
+unadopted; exact independently reviewed and accepted D2-A checked-transition/
+shared-wire prerequisites must be demonstrated before production orbital
+implementation. Full-boundary readonly preparation is not acceptance or an
+A0 ordering waiver.
 
 Remaining: full Guard lifecycle and first-save/final-disposal proof; full hash/frame/
 native codecs and resource consumers; physical hatches, lathe and motor-tier

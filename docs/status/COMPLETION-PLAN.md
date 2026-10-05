@@ -96,6 +96,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 
 契约有条件接受，真实燃料/氧化剂、装卸器、监控、站点连续旋转与逻辑高度、
 灯与力场、卫星舱、太阳能和相应持久事务仍须实现、逐项验证。
+[轨道模型资格审核](../work/v1.8.0-c17-contract/ORBITAL-PHASE-ELIGIBILITY-DISPOSITION-01.md)
+有一项 Medium：精确 D2-A checked-transition/shared-wire 前置接受未被所列证据证明。
+模型提案未采用、未授权源码；完整前置说明只读准备中，不能以 A0 标签放行。
 
 ### C18 生命支持、研究与呈现 `[ ]`
 
@@ -133,10 +136,12 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   [限定源码采用](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-JSON.md)
   与[实际结果](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-03-JSON.md)
   仅证明私有纯字节解析；不授予文件/live/native 权限。Root 新夹具已清理
-  99,375 字节和六个别名；字段验证、JSON 读取、NBT 和完整驱动仍未实现。
-  - [ ] [终态报告字段](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-TERMINALS.md)：
-    私有 READY_FOR_STOP/FAILED 契约已独立审核并在 `3e5610e5` 提交推送；
-    四个新文件已分配至独立 D 工作树，实际源码审核、集成及固定提交复跑待完成。
+  99,375 字节和六个别名；其他字段、JSON 读取、NBT 和完整驱动仍未实现。
+  - [x] [终态报告字段](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-REPORT-TERMINALS.md)：
+    私有 READY_FOR_STOP/FAILED 四新文件已独立审核无新增 C/H/M/L；
+    Root 原样提交推送 `3c5f20dc`，固定提交复跑 40 + 52 + 39 + 34 测试 /0FES。
+    [实际结果](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-04-REPORT-TERMINALS.md)
+    仅验证私有字段叶；Root 新 D 夹具已清理 99,375 字节和六个别名。
     只观察字段形状，不授予完成、停服、receipt 或 native 权限。
 - [~] [C18a-01](../work/v1.8.0-c18a-atmosphere-analyzer/TASK.md)：单项手持大气分析仪的
   只读契约经独立审核无 C/H/M/L，并按既有授权限定接受；原创资源已登记，
