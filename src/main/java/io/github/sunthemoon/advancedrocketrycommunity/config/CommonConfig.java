@@ -299,6 +299,13 @@ public final class CommonConfig {
             .comment("Allow combustion generation and FE export; disabling retains blocks, fuel and burn credit.")
             .define("machines.combustionGeneratorEnabled", true);
 
+    public static final ForgeConfigSpec.BooleanValue SOLAR_GENERATOR_ENABLED = BUILDER
+            .comment("Allow solar generation and FE export; disabling retains blocks and stored energy.")
+            .define("machines.solarGeneratorEnabled", true);
+    public static final ForgeConfigSpec.IntValue SOLAR_GENERATOR_MULTIPLIER = BUILDER
+            .comment("Solar generator output multiplier; does not change stored energy capacity.")
+            .defineInRange("energy.solarGeneratorMultiplier", 1, 1, 4);
+
     /** ADR-064 section 6: reducing capacity retains existing overflow. */
     public static final ForgeConfigSpec.DoubleValue TANK_CAPACITY_MULTIPLIER = BUILDER
             .comment("Pressurized tank capacity multiplier; overflow remains drainable and refuses further fills.")
@@ -438,7 +445,7 @@ public final class CommonConfig {
     /** ADR-063 section 3: whether the small plate press acts; the default until the COMMON config is loaded. */
     /** The server switches: the small plate press and the worldgen switches, which tests hold in memory. */
     private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED,
-            COMBUSTION_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
+            COMBUSTION_GENERATOR_ENABLED, SOLAR_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
             OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,
             CHARRED_TREES_ENABLED, LIGHTWOOD_TREES_ENABLED, SWAMP_TREES_ENABLED, INVERTED_PILLARS_ENABLED,
             CRYSTAL_CLUSTERS_ENABLED, ELECTRIC_MUSHROOMS_ENABLED);
@@ -462,6 +469,14 @@ public final class CommonConfig {
 
     public static boolean combustionGeneratorEnabled() {
         return serverSwitchValue(COMBUSTION_GENERATOR_ENABLED);
+    }
+
+    public static boolean solarGeneratorEnabled() {
+        return serverSwitchValue(SOLAR_GENERATOR_ENABLED);
+    }
+
+    public static int solarGeneratorMultiplier() {
+        return SPEC.isLoaded() ? SOLAR_GENERATOR_MULTIPLIER.get() : SOLAR_GENERATOR_MULTIPLIER.getDefault();
     }
 
     public static double tankCapacityMultiplier() {

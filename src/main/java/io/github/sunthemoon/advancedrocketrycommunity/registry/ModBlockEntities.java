@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionGeneratorBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarGeneratorBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorAnchorBlockEntity;
@@ -36,6 +38,9 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<CombustionGeneratorBlockEntity>> COMBUSTION_GENERATOR =
             BLOCK_ENTITIES.register("combustion_generator", () -> BlockEntityType.Builder.of(
                     CombustionGeneratorBlockEntity::new, ModBlocks.COMBUSTION_GENERATOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<SolarGeneratorBlockEntity>> SOLAR_GENERATOR =
+            BLOCK_ENTITIES.register("solar_generator", () -> BlockEntityType.Builder.of(
+                    ModBlockEntities::solarGenerator, ModBlocks.SOLAR_GENERATOR.get()).build(null));
     public static final RegistryObject<BlockEntityType<ElectrolyzerBlockEntity>> ELECTROLYZER =
             BLOCK_ENTITIES.register(
                     "electrolyzer",
@@ -216,6 +221,13 @@ public final class ModBlockEntities {
                     ModBlocks.PRESSURIZED_TANK.get()).build(null));
 
     private ModBlockEntities() {
+    }
+
+    static SolarGeneratorBlockEntity solarGenerator(net.minecraft.core.BlockPos position,
+                                                    net.minecraft.world.level.block.state.BlockState state) {
+        return new SolarGeneratorBlockEntity(SOLAR_GENERATOR.get(), position, state,
+                () -> ModMenuTypes.SOLAR_GENERATOR.get(), CommonConfig::solarGeneratorEnabled,
+                CommonConfig::solarGeneratorMultiplier, () -> ModBlocks.SOLAR_EXPOSURE);
     }
 
     public static void register(IEventBus modBus) {

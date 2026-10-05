@@ -23,6 +23,8 @@ public final class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         output.accept(ModItems.MACHINE_CASING.get());
                         output.accept(ModItems.COMBUSTION_GENERATOR.get());
+                        output.accept(ModItems.SOLAR_GENERATOR.get());
+                        output.accept(ModItems.SOLAR_PANEL.get());
                         output.accept(ModItems.PRESSURIZED_TANK.get());
                         output.accept(ModItems.STATION_LIGHT.get());
                         output.accept(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.ITEM.get());

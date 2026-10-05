@@ -39,8 +39,22 @@ class CommonConfigTest {
         // resource mission values, the eleven ADR-054 framework values, the seven ADR-055 laser drill values,
         // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values, and the v1.8
         // Classic settings: C15a/b/c (ADR-063), combustion, tank capacity and pump operation (ADR-064),
-        // and the classic life-support instrument switch (ADR-066).
-        assertEquals(70, countValues(CommonConfig.SPEC.getValues()));
+        // the classic life-support instrument switch (ADR-066), and the single solar generator's
+        // enable switch and output multiplier (ADR-065).
+        assertEquals(72, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void solarGeneratorExposesItsExactEnableAndOutputBounds() {
+        ForgeConfigSpec.ValueSpec enabled = assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                CommonConfig.SPEC.getSpec().get("machines.solarGeneratorEnabled"));
+        assertTrue(enabled.test(true));
+        assertTrue(enabled.test(false));
+        assertTrue(CommonConfig.SOLAR_GENERATOR_ENABLED.getDefault());
+        assertTrue(CommonConfig.solarGeneratorEnabled());
+        assertTrue(CommonConfig.serverSwitch(CommonConfig.SOLAR_GENERATOR_ENABLED));
+        assertRangeAndDefault("energy.solarGeneratorMultiplier", CommonConfig.SOLAR_GENERATOR_MULTIPLIER, 1, 4, 1);
+        assertEquals(1, CommonConfig.solarGeneratorMultiplier());
     }
 
     @Test

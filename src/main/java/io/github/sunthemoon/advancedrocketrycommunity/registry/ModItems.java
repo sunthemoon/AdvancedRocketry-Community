@@ -27,6 +27,8 @@ public final class ModItems {
 
     public static final RegistryObject<Item> COMBUSTION_GENERATOR = blockItem("combustion_generator",
             ModBlocks.COMBUSTION_GENERATOR);
+    public static final RegistryObject<Item> SOLAR_GENERATOR = blockItem("solar_generator", ModBlocks.SOLAR_GENERATOR);
+    public static final RegistryObject<Item> SOLAR_PANEL = blockItem("solar_panel", ModBlocks.SOLAR_PANEL);
     public static final RegistryObject<Item> MACHINE_CASING = ITEMS.register(
             "machine_casing",
             () -> new BlockItem(ModBlocks.MACHINE_CASING.get(), new Item.Properties())

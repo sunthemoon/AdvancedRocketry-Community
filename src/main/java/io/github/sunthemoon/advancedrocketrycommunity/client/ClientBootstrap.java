@@ -41,6 +41,7 @@ public final class ClientBootstrap {
         });
         event.enqueueWork(() -> MenuScreens.register(ModMenuTypes.COMBUSTION_GENERATOR.get(),
                 CombustionGeneratorScreen::new));
+        event.enqueueWork(() -> MenuScreens.register(ModMenuTypes.SOLAR_GENERATOR.get(), SolarGeneratorScreen::new));
         event.enqueueWork(() -> MenuScreens.register(
                 ModMenuTypes.ELECTROLYZER.get(),
                 ElectrolyzerScreen::new

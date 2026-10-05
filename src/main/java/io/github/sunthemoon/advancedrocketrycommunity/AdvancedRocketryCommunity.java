@@ -84,6 +84,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.network.Satellit
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.ModList;
@@ -170,6 +172,9 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(stationWarp::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
+        MinecraftForge.EVENT_BUS.addListener(this::onSolarServerStarted);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onSolarServerStopping);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onSolarServerStopped);
         EnvironmentQueryLifecycle environmentQueries = new EnvironmentQueryLifecycle(celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(environmentQueries::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, environmentQueries::onServerStopping);
@@ -383,6 +388,19 @@ public final class AdvancedRocketryCommunity {
                     registry.forOwner(container.getModId())));
             return new SuitEquipmentService(registry.freeze());
         }
+    }
+
+    private void onSolarServerStarted(ServerStartedEvent event) {
+        io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.SOLAR_EXPOSURE
+                .start(event.getServer(), celestialCatalogs);
+    }
+
+    private void onSolarServerStopping(ServerStoppingEvent event) {
+        io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.SOLAR_EXPOSURE.close(event.getServer());
+    }
+
+    private void onSolarServerStopped(ServerStoppedEvent event) {
+        io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.SOLAR_EXPOSURE.close(event.getServer());
     }
 
     private void onServerStopped(ServerStoppedEvent event) {

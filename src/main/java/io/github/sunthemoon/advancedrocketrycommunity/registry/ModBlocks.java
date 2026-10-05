@@ -5,6 +5,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVent
 import io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.AdvancedMachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionGeneratorBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarExposure;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarGeneratorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorEndpointBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlock;
@@ -44,6 +46,14 @@ public final class ModBlocks {
             "combustion_generator", () -> new CombustionGeneratorBlock(metalProperties().requiresCorrectToolForDrops()
                     .pushReaction(PushReaction.BLOCK)
                     .lightLevel(state -> state.getValue(CombustionGeneratorBlock.LIT) ? 13 : 0)));
+    /** Inactive until the matching server starts; never initialized by a block factory. */
+    public static final SolarExposure SOLAR_EXPOSURE = new SolarExposure();
+    public static final RegistryObject<SolarGeneratorBlock> SOLAR_GENERATOR = BLOCKS.register(
+            "solar_generator", () -> new SolarGeneratorBlock(metalProperties().requiresCorrectToolForDrops()
+                    .pushReaction(PushReaction.BLOCK), ModBlockEntities::solarGenerator,
+                    () -> ModBlockEntities.SOLAR_GENERATOR.get()));
+    public static final RegistryObject<Block> SOLAR_PANEL = BLOCKS.register("solar_panel", () ->
+            new Block(metalProperties().requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> MACHINE_CASING = BLOCKS.register(
             "machine_casing",
             () -> new MachineCasingBlock(BlockBehaviour.Properties.of()
