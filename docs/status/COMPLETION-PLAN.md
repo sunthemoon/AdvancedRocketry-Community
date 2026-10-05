@@ -99,9 +99,10 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 [轨道模型资格审核](../work/v1.8.0-c17-contract/ORBITAL-PHASE-ELIGIBILITY-DISPOSITION-01.md)
 有一项 Medium：精确 D2-A checked-transition/shared-wire 前置接受未被所列证据证明。
 模型提案未采用、未授权源码；[完整前置状态](../work/v1.8.0-c17-contract/SHARED-PREREQUISITES-STATUS-01.md)
-已记录开放提案的独立审核。完整 typed 候选已写成，T1–T7 仍开放并在独立审核；
-C17b candidate02 有一项 Medium 零值预算语义问题和一项 Low 字节等价说明歧义，
-独立新版本已成文，待独立复核。O1–O7 和完整 typed 火箭契约仍未冻结，不能以 A0 标签放行。
+已记录开放提案的独立审核。完整 typed 候选独立提案审核无新增 C/H/M/L，
+T1–T7 仍是实质性冻结前置项。C17b candidate03 的独立审核已解决旧版 Medium
+零值预算和 Low 字节等价说明问题，仅关闭提案文本问题；O1–O7 和完整 typed
+火箭契约仍未冻结，不能以 A0 标签放行。
 
 ### C18 生命支持、研究与呈现 `[ ]`
 
@@ -109,14 +110,21 @@ C17b candidate02 有一项 Medium 零值预算语义问题和一项 Low 字节�
 科技树、声音/模型/GUI 等仍须实现。D4 未证明，不推断接受。
 
 - [ ] 首次事件：source/receipt/ACK 和完整 typed 着陆字段尚未冻结。
-  涉及首次记录的未知写入与旧数据重写策略已于 2026-10-05 提请维护者确认，
-  尚未回答或采用；不据此开放运行时。其他保存风险和 R-021 不变。
-- [ ] Task04 其余私有报告字段：完整非终态字段候选和限定静态检查已存证，
+  维护者于 2026-10-05 在异步答复中选择“保护首次记录，暂停不确定窗口的旧数据重写（推荐）”。
+  仅首次事件相关的不确定窗口暂停旧数据重写，校验重载或修复后恢复；其他动作必须证明一致。
+  限定 ADR 修订、风险登记、独立审核和实际恢复验证仍未完成，不据此开放运行时或接受 R-021。
+- [x] Task04 其余私有报告字段：status: verified，仅私有单行字段实现。
   独立契约审核无未解决 C/H/M/L；[私有任务](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-04-REPORT-STAGES.md)
   与[限定处置](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-STAGES.md)
   冻结字段与范围，已在 `6bddc0326247ba79df845bcd8c0c606f447854d2` 提交并推送。
-  Root 已按该提交分配 D 盘隔离工作树的四个新私有文件，实现进行中；
-  实际源码审核、源码提交和固定回归尚未完成，不是解析器或原生交付。
+  四个新文件已独立实际源码审核，无新增 C/H/M/L，200 测试及 14 项附加控制通过。
+  Root 原样提交、推送 `5582e3c49d548c5c002ef6c7cd45b1296f2f2703`，
+  [固定提交复跑](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-05-REPORT-STAGES.md)
+  35 +40 +52 +39 +34 测试 /0FES，24 个指定输入未改变；新 D 测试夹具已清理。
+  独立审核的原清理失败仍保留；另行核验的更正已移除其两个新临时目录。
+  作者四份 55,219 字节副本和工作树仍保留：原清理预检定位错误，另版 native 脚本被执行策略拒绝，
+  两次均未删除文件；不改执行策略、换 shell 重删或强制退役工作树。
+  这不授予文件读取、cohort、ownership、receipt、停服或原生权限，不完成 C18c。
 
 - [ ] 水下生命支持：互斥 LivingTick/Breathe/END 方案已独立技术审核；
   全部已连接存活玩家的同 tick 延后采样待维护者确认。未连接 ServerPlayer

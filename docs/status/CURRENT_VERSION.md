@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 tested_code_commit: a0873a30a2e1ad9fe0b42d11a0b89903fc478d5c
-tested_python_commit: 3c5f20dc1558178a97db357c7d44188e1b36c01d
+tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-05
 ```
 
@@ -132,7 +132,7 @@ READY_FOR_STOP/FAILED shape observations convey no completion or native authorit
 the contract is published at `3e5610e5`. Its [limited source disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-REPORT-TERMINALS.md)
 records exact different-agent review with no introduced C/H/M/L, 165 actual
 tests and 12 separate controls. Root commits/pushes four exact postimages at
-the tested Python commit above; [fixed replay](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-04-REPORT-TERMINALS.md)
+`3c5f20dc1558178a97db357c7d44188e1b36c01d`; [fixed replay](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-04-REPORT-TERMINALS.md)
 passes 165 tests /0FES with 18 named fixed-Git/live inputs unchanged. Root's
 fresh D fixture is cleaned, 99,375 regular bytes and six aliases. This verifies
 only the private terminal-field leaf; other report events, file acquisition,
@@ -186,20 +186,34 @@ A0 ordering waiver.
 
 The [shared prerequisite status](../work/v1.8.0-c17-contract/SHARED-PREREQUISITES-STATUS-01.md)
 records independently reviewed open C17/C16 dependency inputs, not an exact
-contract freeze. The full typed rocket candidate is authored with T1-T7 open
-and is under independent review. The C17b candidate02 review retains one Medium
-(configured zero must preserve no-spacing) and one Low (typed equivalence versus
-emission bytes); a separately authored correction awaits independent review. Both first-event
-source/receipt contracts remain incomplete. The first-event-sensitive unknown-write/old-serialization
-policy requires owner coordination; the 2026-10-05 question remains unanswered.
+contract freeze. The full typed rocket candidate has completed independent
+proposal review with no additional C/H/M/L, but T1-T7 remain substantive freeze
+prerequisites. C17b candidate03 independently resolves candidate02's Medium
+zero/no-spacing and Low typed-equivalence wording in proposed text only;
+neither shared writer nor full contract freeze is admitted. Both first-event
+source/receipt contracts remain incomplete. On 2026-10-05 the owner answers the
+asynchronous first-event question: “保护首次记录，暂停不确定窗口的旧数据重写（推荐）”.
+This selects the narrow first-event-sensitive uncertain-window hold until verified
+reload/repair; other actions retain existing rules only under proven coherence.
+Scoped ADR amendments, risk registration, independent review and actual recovery
+proof remain prerequisites. Accepted ADRs and runtime writers are unchanged.
 The [remaining private report-field task](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-04-REPORT-STAGES.md)
 and [limited disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-STAGES.md)
 freeze only the independently reviewed private contract. The exact five records
 are committed/non-force pushed as `6bddc0326247ba79df845bcd8c0c606f447854d2`.
-Root assigns the four new private paths in the fresh isolated D worktree
-`arce-v180-c18c-stages-20261005` at that commit. Implementation is in progress;
-actual-source review, source commit and fixed replay remain pending. Native
-admission stays closed.
+The four new private paths have [limited committed source adoption](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-SOURCE-REVIEW-DISPOSITION-04-REPORT-STAGES.md)
+at the tested Python commit above. Different-agent actual-source review finds
+no introduced C/H/M/L and executes 200 tests plus 14 controls; Root's separate
+[fixed-source replay](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-PYTHON-VERIFICATION-05-REPORT-STAGES.md)
+passes 200 tests /0FES with 24 selected inputs unchanged. Root's fresh D fixture
+is cleaned. The reviewer's original ordinary cleanup failure and 47,570-byte/
+one-alias snapshot remain sealed; a separately verified correction now removes
+those two owned scratch targets. The isolated author checkout and four 55,219-byte
+source copies remain: a guessed-metadata precheck fails before deletion, then a
+separate corrected precheck reaches a Windows PowerShell execution-policy refusal
+before its native script body. Both failures are preserved, with zero deletions;
+no policy change, shell fallback or worktree retirement is attempted. Native admission,
+file acquisition, cohort/ownership, NBT/driver and full C18c delivery stay closed.
 No earlier orbital eligibility finding is closed.
 
 Remaining: full Guard lifecycle and first-save/final-disposal proof; full hash/frame/

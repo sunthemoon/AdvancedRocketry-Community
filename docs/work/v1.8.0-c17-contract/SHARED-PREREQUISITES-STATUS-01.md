@@ -28,7 +28,7 @@ from canonical compound ordering and emission bytes. Root verifies 52 payloads /
 254,635 bytes /53 checksums. Independent corrected 23 controls and four framing
 controls pass; a separate three-control budget comparison has one finding failure.
 Original own parser failure remains preserved. A separately authored candidate03
-correction awaits independent review, not acceptance. Root verifies its 83
+correction has completed independent proposed-text review, not shared acceptance. Root verifies its 83
 payloads /723,372 bytes /84 sums at
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17b-contract-correction-20261005-68c094/`.
 `CANDIDATE-03.md` SHA is
@@ -37,7 +37,15 @@ Its two normative replacements address zero/no-spacing and typed/value versus
 emission-byte distinctions only. The author's final 15 controls pass, while
 original 15/2 findings, checker failures and strict CRLF-patch refusal remain.
 The separate applicable LF patch does not overwrite that original patch.
-Author controls and Root checksum intake do not close the independent M1/L1.
+The different-agent candidate03 review is
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17b-review03-20261005-50fc17/REVIEW-03.md`,
+SHA `a8c3b71d73dd0860f2a9278b31ace59d94de0c826df7df2822801e9c3c079a90`.
+Root reads the full report and verifies 32 payloads /292,909 bytes /33 sums.
+Its same 15 fresh controls retain old02 exit 1/two findings and new03 exit 0;
+exact inverse and LF patch checks identify only the declared text changes.
+M1/L1 are resolved in proposed text only, not by an implemented writer or native
+service. Unknown-save/O3, >640-player scheduling and cross-Level finder decisions
+remain prerequisites. Original candidate02 findings and failures remain immutable.
 No exact D2-A/shared prerequisite freeze has
 been accepted.
 The [earlier orbital eligibility finding](ORBITAL-PHASE-ELIGIBILITY-DISPOSITION-01.md)
@@ -49,7 +57,7 @@ unfrozen. Full guard/native codecs, raw-load/first-save observation, creative
 ingress, physical hatches/controller, lathe and acquisition remain open. R-021
 is unaccepted; no new guarded writer is admitted.
 
-## First-event save-policy coordination: owner choice pending
+## First-event save-policy coordination: owner choice recorded, adoption pending
 
 Root separately inspected the actual station branches and accepted ADR sections.
 At the fixed object, `StationRegistrySavedData.java:445-490` can dirty the old
@@ -68,10 +76,21 @@ It is an unaccepted author input, not an independently approved policy.
 On 2026-10-05 Root asked the owner through an asynchronous conversation question
 to choose between a narrow first-event-sensitive old-serialization hold until
 verified reload/repair, or unchanged save policy with first-event runtime left
-unadmitted. No answer is recorded here. Whole-root readback reconciliation can
+unadmitted. The owner answers through that same asynchronous conversation channel
+on 2026-10-05, verbatim: “保护首次记录，暂停不确定窗口的旧数据重写（推荐）”.
+Root's [reply receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIRST-EVENT-OWNER-REPLY-01.json),
+SHA `0d676b9d3c55536fd48d773e1487d423c6fc9757ef9970615d4ee713c6fa911b`,
+records the received question, answer and conversation item. It is a Root
+transcription, not an independently captured raw conversation export.
+This supersedes the earlier unanswered status. The limited uncertain-window hold
+is selected; other actions retain existing rules only under proven coherence.
+The exact affected authority roots, duration/release conditions, bounded logs and
+recovery checks still need a scoped ADR-065/066 proposal, risk registration and
+independent review before implementation. Accepted ADRs and source stay unchanged.
+Whole-root readback reconciliation can
 refine the hold but cannot turn unreadable, absent, future or divergent authority
-into a clean refusal. No alternative, ADR amendment, save gate or repair API is
-selected or implemented. Non-sensitive actions retain existing rules only under
+into a clean refusal. No ADR amendment, save gate or repair API is yet adopted
+or implemented. Non-sensitive actions retain existing rules only under
 proven whole-root coherence; unchanged event slots alone do not permit stale
 resource/clock rollback. This coordination does not close R-021 or enlarge any
 disk, data or tick guarantee.
@@ -82,7 +101,20 @@ persistent transactions and terminal landing authority are now proposed at
 SHA `fd9a9757d6be7ffae0c9d83615e4316e6b72c47fd364ae33f9bd4c00a4f1e9d5`.
 Root verifies 46 payloads /200,315 bytes /47 checksum entries (48 total files
 including both metadata). T1-T7 remain explicit unresolved freeze decisions;
-different-agent technical review is in progress. Authorship sealing is not
+different-agent proposal review has completed with no additional C/H/M/L.
+Root verifies 37 payloads /418,225 bytes /38 sums at
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-typed-review-20261005-43a971/REVIEW-01.md`,
+SHA `a13ab751cee0599f7e60b61a892db5f2abc138f01b3f477a315865d5510c813b`.
+Twenty fresh source/specification controls pass, not codec or runtime execution.
+T1-T7 remain substantive blockers. The separately sealed numeric candidate02 is
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-resolution-20261005-37a91f6b/PROPOSED-NUMERIC-02.md`,
+23,360 bytes /SHA `d7b1f36f2c419f51332af928cc468d7e16f9b37d8b42f1e8819cec5451ff4a28`.
+Root verifies 59 payloads /168,441 bytes /60 sums. Its 32 offered-branch model
+controls and 49 named input postchecks are authorship evidence, not an independent
+numeric freeze. Binary/decimal capture, product rounding and partial nuclear
+cost selectors remain unchosen. Native-frame eligibility and complete joint O3
+bindings/selected hold-policy coordination are separately being authored.
+Authorship sealing or an open-proposal review is not
 technical freeze or source permission. Existing flight plan schema3 is not typed
 flight schema3. Both Moon and
 warp first-event completion must bind the exact shared source/receipt interfaces;
@@ -109,9 +141,21 @@ status as `6bddc0326247ba79df845bcd8c0c606f447854d2`, after independent original
 EOF check exits 2 and publisher exits 1 before commit; the one-LF-only correction
 and fresh successful publication do not overwrite that failure. Root separately
 creates a fresh D isolated checkout at the published commit and assigns only the
-four new private source/test/progress/handoff paths. Implementation is in progress,
-not delivered: actual-source independent review, source commit and fixed replay
-are pending. No IO/cohort/receipt, Java/native or host permission is adopted here.
+four new private source/test/progress/handoff paths. Those four postimages are now
+independently reviewed without introduced C/H/M/L and committed/non-force pushed
+as `5582e3c49d548c5c002ef6c7cd45b1296f2f2703`. Independent actual-source suites
+pass 200 tests plus 14 separate controls; Root separately replays the committed
+five-module cohort, 200 tests /0FES, with 24 selected inputs unchanged.
+The fresh Root D fixture is cleaned, 99,375 regular bytes/six aliases. Original
+reviewer cleanup failure retains its immutable 47,570-byte/one-alias snapshot;
+the separately verified correction now removes only those two owned scratch
+targets, with original failures unchanged. Author checkout and four source copies
+remain retained: the initial guessed metadata locator fails before deletion, and
+the separately corrected native precheck is blocked by Windows PowerShell script
+execution policy before its body. Zero deletions, no execution-policy change or
+alternate-shell retry, and no worktree retirement are claimed. Only the private
+single-row field leaf is verified. No IO/cohort/receipt, Java/native or host
+permission is adopted here.
 
 ## Preserved execution and limits
 
@@ -122,7 +166,8 @@ The reviewed terminal cleanup records were normally committed/non-force pushed
 as `1770f5869d39157463a5136f2ac8a692f9c6dc33`; source/task pins stayed unchanged.
 C free space was 9,948,880,896 bytes in the later read-only check, below the heavy
 execution threshold; no new Java/Gradle/native/client/server run is admitted.
-Java evidence remains at `a0873a30`; Python terminal evidence remains at
-`3c5f20dc`. Ledger 186 PLANNED/154 REVIEW, older cleanup debt and all G0-G9 remain
+Java evidence remains at `a0873a30`; current private Python evidence is
+`5582e3c4`, while original terminal evidence remains separately at `3c5f20dc`.
+Ledger 186 PLANNED/154 REVIEW, older cleanup debt and all G0-G9 remain
 open. Current-version work is exact prerequisite completion/review followed by
 authorized source implementation and applicable runtime/client verification.
