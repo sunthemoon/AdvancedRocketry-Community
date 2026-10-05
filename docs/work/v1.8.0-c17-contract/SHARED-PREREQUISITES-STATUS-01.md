@@ -138,13 +138,15 @@ codec/writer dependencies. The first has a separately reviewed exact contract an
 [narrow Root adoption](NC1-PRIVATE-ADOPTION-01.md), but still requires
 actual Java/source review and committed replay. Its [separate source-only assignment](NC1-SOURCE-ASSIGNMENT-01.md)
 is now issued against the published `3fd5df73` isolated base, with two new paths
-only. Candidate01 is committed/non-force pushed on the task branch at
-`4264a312098fe7ad4c35e84d928c00a33cfa8e3b`, not integrated/delivered.
-Root development and independent committed-source A0 separately compile/run
-22/22 with0FES/container failures and no pin drift. Actual-source review reports
-an open Medium: public-constructor null-backed arrays can throw NPE instead of
-fixed refusal. A separate diagnostic is granted; repair/final adoption and Root
-replay are pending. Mere owned-Tag framing does
+only. Current candidate `451bddb6450819e1438f516989b68239529ac44a`, parent4264,
+is committed/non-force pushed on that task branch, not integrated/delivered.
+Its [bounded source verification](NC1-SOURCE-VERIFICATION-02.md) retains the
+original Medium and six NPE observations. Different-agent correction review has
+no unresolved C/H/M/L in the exact malformed-array refusal scope; independent
+committed A0 and Root fixed-commit replay each run23/23 with0F/A/S/container
+failures and no pin drift. Unchanged separate control has six observations/zero
+violations. Root verifies68 review payloads/286,077 B/69 sums. Full integration
+checks and final integration acceptance remain pending. Mere owned-Tag framing does
 not require T1/T2 numerical selection or T5 writer adoption. The latter scopes
 retain their numerical, joint-schema, lifecycle and recovery prerequisites.
 The original T3 dependency assessment itself assigns no source or new bound.

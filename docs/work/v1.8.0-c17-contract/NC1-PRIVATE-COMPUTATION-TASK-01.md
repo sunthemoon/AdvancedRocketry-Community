@@ -1,6 +1,6 @@
 # C17a NC1 private BE-data computation task
 
-Date: 2026-10-05. Status: **SOURCE CANDIDATE COMMITTED / SOURCE REVIEW IN PROGRESS**.
+Date: 2026-10-05. Status: **SOURCE REPLAYED IN ISOLATION / INTEGRATION PENDING**.
 Leaf ID: `C17a-NC1-01`. This is a narrow implementation-task definition, not
 acceptance of full typed rockets, resource persistence or version Gates.
 
@@ -114,13 +114,14 @@ ordinary-save holds, R-021 and all version Gates are excluded and remain open.
   scopes and limitations recorded in the adoption; no unresolved C/H/M/L there.
 - Root narrow scope adoption: recorded and published at `3fd5df73`; separate
   source-only assignment issued at that base, effective live user AGENTS pinned.
-- Source candidate01: committed/non-force pushed at
-  `4264a312098fe7ad4c35e84d928c00a33cfa8e3b` on the isolated task branch, not
-  integrated/delivered. Root development and independent committed A0 separately
-  compile/run22/22 tests0FES/no container failures or pin drift. Actual-source
-  review reports an open Medium: public-constructor null-backed arrays can throw
-  NPE instead of fixed refusal. Separate diagnostic is granted; repair, final
-  source adoption and Root fixed-commit replay are pending.
+- Current source candidate: committed/non-force pushed at
+  `451bddb6450819e1438f516989b68239529ac44a`, parent4264, not integrated/delivered.
+  [Source verification](NC1-SOURCE-VERIFICATION-02.md) records the different-agent
+  correction review and Root fixed-commit replay. The original Medium is resolved
+  only in the three public null-backed array refusal cases; original failure and
+  all22 tests are retained. Independent committed A0 and Root replay each23/23,
+  0F/A/S/container failures/no pin drift; unchanged separate control6/0 violations.
+  Full applicable checks and final integration acceptance remain pending.
 - External source-runner original two Medium findings: preserved; separately
   reviewed a003 addresses them, Root full-read/intake complete and tool eligibility
   adopted separately from later exact small development/reviewer grants and

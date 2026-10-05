@@ -2,7 +2,7 @@
 
 Date: 2026-10-05. Assigned worker: c18_contract. Integrator/committer: Root.
 Issued grant: **SOURCE AUTHORING ADMITTED / AUTHOR JAVA NOT ADMITTED**.
-Latest task state: candidate01 committed; independent source review in progress.
+Latest task state: candidate451b independently reviewed/replayed; integration pending.
 
 Root has published the independently reviewed seven documentary files at
 `3fd5df73c59c2a59ed9155f3fb86c0e1751237a9`, parent26df3883, non-force remote
@@ -51,7 +51,12 @@ Root subsequently grants the exact development and different-agent committed
 single-class A0 cohorts separately. Candidate01 is committed/non-force pushed
 at `4264a312098fe7ad4c35e84d928c00a33cfa8e3b`; neither source author Java
 permission nor wider runtime authority follows. The original external source-only
-grant remains unchanged. Actual-source review and final adoption are pending.
-Committed-source delivery/replay, different-agent source review (not this author),
-full applicable checks, ledger and version Gates remain open. Source authoring
+grant remains unchanged. The later focused repair is committed/non-force pushed
+at `451bddb6450819e1438f516989b68239529ac44a`, parent4264. Its different-agent
+review and Root fixed-commit replay are complete in the [bounded verification
+record](NC1-SOURCE-VERIFICATION-02.md); original M1 remains historical for4264,
+resolved only for the corrected three public null-backed array cases. This does
+not retroactively grant author Java or change this original source assignment.
+Committed-source delivery, full applicable checks, final integration acceptance,
+ledger and version Gates remain open. Source authoring
 does not adopt numeric/typed/hash/native writer/old-cargo/first-event semantics.

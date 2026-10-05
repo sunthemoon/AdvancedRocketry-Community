@@ -205,16 +205,17 @@ different-agent reviews with no unresolved C/H/M/L in their limited scopes;
 Root verifies 55 /341,877 bytes /56 and 25 /209,006 bytes /26 respectively.
 The [narrow private adoption](../work/v1.8.0-c17-contract/NC1-PRIVATE-ADOPTION-01.md)
 admits only two new uncalled computation/test files, not full T3 or a runtime
-caller. Root publishes that exact seven-document adoption at `3fd5df73`, with
-non-force remote equality. A [separate source-only assignment](../work/v1.8.0-c17-contract/NC1-SOURCE-ASSIGNMENT-01.md)
-binds the isolated two-new-file worktree at that base. Candidate01's two files
-are now committed/non-force pushed on the task branch as
-`4264a312098fe7ad4c35e84d928c00a33cfa8e3b`, not integrated or delivered.
-Root's separately granted development A0 compiles/runs22/22 tests0FES;
-different-agent committed A0 also runs22/22 with no container failure or pin drift.
-Actual-source review reports an open Medium: null-backed arrays constructed with
-public native constructors can escape the fixed-refusal contract as NPE. A separate
-diagnostic is granted; repair/final source adoption and Root replay are pending.
+caller. The [separate source-only assignment](../work/v1.8.0-c17-contract/NC1-SOURCE-ASSIGNMENT-01.md)
+binds an isolated worktree based on published `3fd5df73`. Its current candidate is
+committed/non-force pushed `451bddb6450819e1438f516989b68239529ac44a`, parent4264.
+The [source verification record](../work/v1.8.0-c17-contract/NC1-SOURCE-VERIFICATION-02.md)
+reports the focused correction's different-agent review with no unresolved C/H/M/L:
+the original Medium is resolved only for three public null-backed array refusals.
+Independent committed A0 and Root's separately granted fixed-commit replay each
+run23/23,0F/A/S/container failures and no pin drift. The unchanged separate control
+has six refusal observations/zero violations; original4264's six-NPE negative is
+retained. Root verifies68 review payloads/286,077 B/69 sums. This candidate remains
+unintegrated and undelivered; full applicable integration checks are not waived.
 The new external source runner's two original Medium findings are
 addressed by separately reviewed a003; Root reads both reports and verifies
 93 /219,545 bytes /94 plus141 /394,259 bytes /142. Root adopts that exact limited

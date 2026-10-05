@@ -1,7 +1,7 @@
 # NC1 private BE-data computation: narrow technical adoption
 
 Date: 2026-10-05. Integrator: Root. Leaf: `C17a-NC1-01`.
-Status: **ADOPTED PRIVATE CONTRACT / SOURCE AUTHORING ASSIGNED**.
+Status: **ADOPTED PRIVATE CONTRACT / SOURCE REPLAYED / INTEGRATION PENDING**.
 
 ## Authority and exact object
 
@@ -77,13 +77,16 @@ limits before implementation or Java execution. The [source-only assignment](NC1
 provides the isolated source base/worktree/permissions, not a command grant.
 New runner01's two Medium findings remain preserved; separate03 review addresses
 them in the corrected tool scope and Root adopts exact tool eligibility separately
-from later narrow development/reviewer configs/serial grants. Candidate01's two
-files are committed/non-force pushed at `4264a312098fe7ad4c35e84d928c00a33cfa8e3b`
-on the task branch. Development and independent committed A0 separately run22/22
-with0FES/container failures and no pin drift. Actual-source review reports one
-open Medium: public-constructor null-backed arrays can escape as NPE rather than
-fixed refusal. Separate diagnostic is granted; repair/final adoption and Root
-fixed-commit replay remain pending. No source integration/delivery is claimed.
+from later narrow development/reviewer configs/serial grants. The current two-file
+candidate is committed/non-force pushed at `451bddb6450819e1438f516989b68239529ac44a`,
+parent4264. [Source verification](NC1-SOURCE-VERIFICATION-02.md) records its
+different-agent focused correction review with no unresolved C/H/M/L, original
+Medium resolved only for public null-backed arrays, and Root fixed-commit replay.
+Independent committed A0 and Root replay each run23/23 with0F/A/S/container
+failures/no pin drift; unchanged separate control has six observations/zero
+violations. Original4264 report/negative are preserved. Full applicable checks,
+final source/integration acceptance and delivery remain pending, not inferred
+from the bounded A0. This record does not widen private contract adoption.
 
 Existing cargo/size/hash/codec/save/migration behavior, all accepted ADR bytes,
 T1–T7 technical freeze, complete O3/C17b, native reader/durability, first-event
