@@ -36,7 +36,7 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: cfdcd8f546d7005b11c7bb1c8635eb3d1ee03339
+tested_code_commit: 80463e28e27c16fda70f4aaf9954f986401247b8
 latest_regression_result: FAILED
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-06
@@ -44,19 +44,22 @@ last_updated: 2026-10-06
 
 ## Current development evidence
 
-The latest [hosted committed regression](../work/v1.8.0-ci/RESULT-04.md) is
+The latest [hosted committed regression](../work/v1.8.0-ci/RESULT-05.md) is
 **FAILED**: clean build passes with 1,861 JUnit /342 suites /0FES. Two clean
 DataGen runs produce 788 outputs and zero repeated writes. Unfiltered
-483 GameTests complete with two required failures: first-save target registration
-and cold Tau Ceti flight. The readiness admission does not resolve all cold-flight
-failures. Three independently audited streams agree; no failure header names a
-lamp, readiness or gravity test, but full feature/restart delivery is not proved.
+483 GameTests complete with four required failures: first-save target registration,
+planetary round trip, cold Tau Ceti flight and destination readiness. The readiness
+admission does not resolve all cold-flight failures. Tau's bounded observation
+shows PREPARED/source TRANSIT and unready destination entity state, not its unique
+cause. Different-agent raw-result review confirms the totals, failure sets and
+lookup qualification; no gravity failure header appears,
+but full feature/restart delivery is not proved.
 Gravity's finite diagnostic snapshots do not establish the historical failure's
 unique cause; that investigation remains open. The earlier
 [cohorts](../work/v1.8.0-ci/RESULT-03.md) retain their actual compile and lamp
 fixture failures, and [repeat-only results](../work/v1.8.0-ci/RESULT-02.md) stay historical.
 Conditional JAR uploads were skipped; no independent JAR-byte/API comparison
-is claimed. Native logs contain 63 ERROR headers without blanket waiver. Assertions,
+is claimed. Native logs contain 65 ERROR headers without blanket waiver. Assertions,
 deadlines and test selection are unchanged.
 
 The earlier successful [Source27 cohort](../work/v1.8.0-c18a-atmosphere-analyzer/VERIFICATION-02.md)
@@ -148,6 +151,19 @@ See
 [source integration](../work/v1.8.0-c18c-tutorial-inventory/SOURCE-INTEGRATION-01.md).
 
 ## Implemented development scope
+
+The [single solar leaf](../work/v1.8.0-c17c-solar-generator/TASK.md) and NEW
+origin declaration are reviewed, committed and pushed at
+`a2d23d1f2fbd17af13c9e1f7097d8ca2e11b79bd`. The concrete cached UP predicate
+and two-stage installed-owner check resolve the earlier contract findings in
+separate immutable reviews. Isolated source authoring is in progress; Root's
+central bindings are a draft, not solar delivery. Full C17c dependencies,
+native exposure/restart, real visuals and all Gates remain open.
+
+The separate [Laser save fixture](../work/v1.8.0-laser-save-fixture/HANDOFF.md)
+is reviewed and published at `86a819ca564c43206c6b9272c0b79076fceaa874`, with
+its committed hosted replay pending. Targeted cached-dependency compilation
+passes, not a replacement for clean build/GameTest or proof of disk durability.
 
 - C15 materials, plate press acquisition, planetary surfaces and Tau Ceti worlds
   have submitted implementation and review fixes, including radius 224 coverage
@@ -336,7 +352,8 @@ acceptance and ledger delivery remain open. The independently reviewed
 destination-readiness production gate and one bounded GameTest are published
 at its own source commit; its earlier comparator failure is historical. The
 corrected full replay executes that test without a failure header but still
-fails cold Tau Ceti flight. Bounded gravity diagnostics preserve
+fails cold Tau Ceti flight; the later diagnostic cohort also fails the dedicated
+readiness case and planetary round trip. Bounded gravity diagnostics preserve
 all original assertions and the two-tick switch delay. Original cold-flight
 deadlines remain unchanged. The new isolated diagnostic checkout is normally
 retired after exact integration, removing 536,732,926 logical bytes; committed
