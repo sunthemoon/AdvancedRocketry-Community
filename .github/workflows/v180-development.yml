@@ -1,0 +1,124 @@
+name: v1.8 development regression
+
+on:
+  push:
+    branches:
+      - codex/v1.8.0-classic-content
+    paths:
+      - .github/workflows/v180-development.yml
+      - src/**
+      - scripts/**
+      - tests/**
+      - build.gradle
+      - settings.gradle
+      - gradle.properties
+      - gradle/**
+      - gradlew
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v180-development-regression
+  cancel-in-progress: false
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      REVIEW_COMMIT: ${{ github.sha }}
+      EVIDENCE_DIR: ${{ runner.temp }}/arce-v180-regression
+      PYTHONDONTWRITEBYTECODE: "1"
+      TMPDIR: ${{ runner.temp }}
+      TMP: ${{ runner.temp }}
+      TEMP: ${{ runner.temp }}
+      JAVA_TOOL_OPTIONS: -Djava.io.tmpdir=${{ runner.temp }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out the exact pushed commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ env.REVIEW_COMMIT }}
+          persist-credentials: false
+
+      - name: Verify checkout and execution host before setup
+        run: |
+          test "$(git rev-parse HEAD)" = "$REVIEW_COMMIT"
+          python3 -B scripts/check_v180_ci_host.py
+          mkdir -p "$EVIDENCE_DIR"
+          git rev-parse HEAD > "$EVIDENCE_DIR/tested-commit.txt"
+          python3 -B scripts/check_v180_ci_host.py > "$EVIDENCE_DIR/host-setup.json"
+          git status --porcelain --untracked-files=all
+
+      - name: Set up Java 17
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.12"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6, dereferenced commit
+        with:
+          cache-read-only: true
+
+      - name: Record toolchain and check tooling
+        run: |
+          java -XshowSettings:properties -version 2>&1 | tee "$EVIDENCE_DIR/java-version.txt"
+          python -B -c 'import tempfile; print(tempfile.gettempdir())' | tee "$EVIDENCE_DIR/python-temp.txt"
+          python -B -m unittest discover -s tests -p test_check_v180_ci_host.py -v 2>&1 | tee "$EVIDENCE_DIR/host-tests.log"
+          python -B scripts/validate_v1plus_planning.py | tee "$EVIDENCE_DIR/planning.log"
+          python -B scripts/validate_v180_content_ledger.py --require-accepted | tee "$EVIDENCE_DIR/ledger.log"
+
+      - name: Clean build and fresh unit tests
+        run: |
+          python -B scripts/check_v180_ci_host.py | tee "$EVIDENCE_DIR/host-build.json"
+          ./gradlew clean build --no-build-cache --no-daemon --stacktrace 2>&1 | tee "$EVIDENCE_DIR/build.log"
+          python -B scripts/ci_artifact_identity.py --manifest "$EVIDENCE_DIR/build-identity.json" --github-env "$GITHUB_ENV"
+
+      - name: Audit the built artifact
+        run: |
+          python -B scripts/validate_build_artifact.py "$ARCE_ARTIFACT" --expected-version "$ARCE_BUILD_VERSION" --content-manifest "$EVIDENCE_DIR/jar-content-manifest.json" | tee "$EVIDENCE_DIR/artifact-audit.log"
+          sha256sum "$ARCE_ARTIFACT" > "$EVIDENCE_DIR/artifact-sha256.txt"
+          python -B scripts/check_client_imports.py | tee "$EVIDENCE_DIR/client-boundary.log"
+
+      - name: Generate data and require a clean tracked and untracked tree
+        run: |
+          python -B scripts/check_v180_ci_host.py | tee "$EVIDENCE_DIR/host-data.json"
+          ./gradlew runData --no-daemon --stacktrace 2>&1 | tee "$EVIDENCE_DIR/data.log"
+          git diff --exit-code 2>&1 | tee "$EVIDENCE_DIR/datagen-diff.log"
+          python -B scripts/check_clean_worktree.py | tee "$EVIDENCE_DIR/datagen-status.log"
+
+      - name: Run all Forge GameTests
+        run: |
+          python -B scripts/check_v180_ci_host.py | tee "$EVIDENCE_DIR/host-gametest.json"
+          ./gradlew runGameTestServer --no-daemon --stacktrace 2>&1 | tee "$EVIDENCE_DIR/gametest.log"
+
+      - name: Upload raw regression evidence, including failed runs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: v180-regression-${{ github.sha }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ env.EVIDENCE_DIR }}/
+            build/reports/tests/test/
+            build/test-results/test/
+            build/gametest/logs/
+
+      - name: Upload the single external build artifact
+        if: success()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: v180-build-${{ github.sha }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: ${{ env.ARCE_ARTIFACT }}
