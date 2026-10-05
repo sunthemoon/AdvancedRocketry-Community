@@ -110,7 +110,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   涉及首次记录的未知写入与旧数据重写策略已于 2026-10-05 提请维护者确认，
   尚未回答或采用；不据此开放运行时。其他保存风险和 R-021 不变。
 - [ ] Task04 其余私有报告字段：完整非终态字段候选和限定静态检查已存证，
-  独立契约审核无未解决 C/H/M/L；任务发表和源码分配尚待完成。
+  独立契约审核无未解决 C/H/M/L；[私有任务](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-04-REPORT-STAGES.md)
+  与[限定处置](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-STAGES.md)
+  冻结字段与范围，发表并分配隔离源码工作树后才能实施。
   四个提议源码文件未创建，不是解析器或原生交付。
 
 - [ ] 水下生命支持：互斥 LivingTick/Breathe/END 方案已独立技术审核；

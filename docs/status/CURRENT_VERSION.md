@@ -189,8 +189,11 @@ records independently reviewed open C17/C16 dependency inputs, not an exact
 contract freeze. Full typed rocket and both first-event source/receipt contracts
 are being completed. The first-event-sensitive unknown-write/old-serialization
 policy requires owner coordination; the 2026-10-05 question remains unanswered.
-The remaining private report-field proposal has an independent limited technical
-review but is not adopted or assigned as source; native admission stays closed.
+The [remaining private report-field task](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-TASK-04-REPORT-STAGES.md)
+and [limited disposition](../work/v1.8.0-c18c-tutorial-inventory/NATIVE-REVIEW-DISPOSITION-04-REPORT-STAGES.md)
+freeze only the independently reviewed private contract. Publication and a
+separately recorded isolated source assignment precede implementation; no such
+source exists or is assigned yet, and native admission stays closed.
 No earlier orbital eligibility finding is closed.
 
 Remaining: full Guard lifecycle and first-save/final-disposal proof; full hash/frame/
