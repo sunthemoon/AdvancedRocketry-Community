@@ -104,7 +104,9 @@ No old rejected cleanup target is eligible for a retry. Preserve original red
 attempts, raw outputs, exact source before/after pins and actual exit codes.
 Report counts as observations, not a preassigned verdict or test-method total.
 
-Root integrates only after independent actual-source review and fixed-commit
-replay, then commits/pushes source and its records before starting another leaf.
+After independent actual-source review, Root commits/pushes the frozen source,
+then replays that exact committed implementation. Delivery is recorded only
+after this replay; uncommitted development tests are not delivery evidence.
+The author does not commit, and Root publishes the results before another leaf.
 No Java/full-regression result is rebound to these pure Python checks. C18c-01
 delivery, native inventory/restarts, R-021, ledger and G0-G9 remain open.
