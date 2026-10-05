@@ -324,8 +324,10 @@ unproven refill/shared-save dependencies.
 The narrowly accepted [ordinary station-light leaf](../work/v1.8.0-c17b-station-light/TASK.md)
 and pre-authoring NEW provenance are committed/non-force pushed at
 `5f1cbefc30d59a35eed80023697a1f4a0c4687fc`. Its isolated source implementation
-is assigned; no source integration, executed lamp tests, native/client acceptance
-or ledger delivery is claimed. Root owns the six central integration files.
+has an uncommitted author candidate with eight JUnit and five GameTest declarations
+under independent source review. No source integration, executed lamp tests,
+native/client acceptance or ledger delivery is claimed. Root owns the six central
+integration files.
 The [completion plan](COMPLETION-PLAN.md) lists the remaining leaves. Historical
 status checkpoints have moved to the implementation log, not this current-state
 summary. No version Gate, tag or release is approved.

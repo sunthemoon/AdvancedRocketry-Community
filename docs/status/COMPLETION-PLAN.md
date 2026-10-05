@@ -98,7 +98,8 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 灯与力场、卫星舱、太阳能和相应持久事务仍须实现、逐项验证。
 [普通空间站灯](../work/v1.8.0-c17b-station-light/TASK.md) 的限定契约与原创资产
 预登记已独立审核、提交并推送；四份新源码及两份任务记录分配给独立 worktree，
-六份中央注册/DataGen 文件由 Root 独占。源码实现中，尚无灯的编译、测试或交付。
+六份中央注册/DataGen 文件由 Root 独占。四份源码、8 个 JUnit 与 5 个 GameTest
+已写成未提交候选，独立源码审核中；尚无灯的编译、执行测试或交付。
 [轨道模型资格审核](../work/v1.8.0-c17-contract/ORBITAL-PHASE-ELIGIBILITY-DISPOSITION-01.md)
 有一项 Medium：精确 D2-A checked-transition/shared-wire 前置接受未被所列证据证明。
 模型提案未采用、未授权源码；[完整前置状态](../work/v1.8.0-c17-contract/SHARED-PREREQUISITES-STATUS-01.md)
