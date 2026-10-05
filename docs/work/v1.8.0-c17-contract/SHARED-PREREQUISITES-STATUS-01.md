@@ -120,6 +120,10 @@ The owner now answers the asynchronous selection question on2026-10-05, verbatim
 “采用建议规则：binary64 舍入＋按支持比例节省（推荐）”. The
 [selection record](NUMERIC-OWNER-DECISION-01.md) closes the asked binary64/R/P
 choices only; full representation/applicability/stage/schema adoption remains open.
+The separately reviewed [C17a-NUM-01](NUMERIC-PRIVATE-TASK-01.md) now has narrow
+Root adoption for an uncalled private scalar representation/domain/error contract.
+Source implementation and review remain pending; complete caller applicability,
+stage/schema and typed/writer acceptance remain open.
 The separate T3 native-frame authorship proposal is now sealed at
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-frame-resolution-20261005-879da13f/PROPOSED-FRAME-01.md`,
 37,458 bytes /SHA `a56726d188a6625c2fed8a7143c514da7dc2b84e9dd22996c6cc0414af469996`.

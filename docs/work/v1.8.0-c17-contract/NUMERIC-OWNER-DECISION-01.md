@@ -31,3 +31,10 @@ retains the original Low and separately reviewed paired historical-text correcti
 That correction does not transplant L or provide implementation authority.
 T3-T7, full typed/O3/C17b, writer/recovery, first-event hold, R-021 and G0-G9 remain
 open. Accepted ADR/source bytes and the ledger are unchanged by this record.
+
+Subsequent narrow technical adoption is recorded in
+[C17a-NUM-01](NUMERIC-PRIVATE-TASK-01.md): only the reviewed, uncalled scalar
+helper's representation, arithmetic domains and fixed errors are adopted.
+This supersedes the pending representation status for that private scope only;
+full applicability/stage/schema acceptance remains pending. It does not expand
+the owner's original answer or claim source implementation.

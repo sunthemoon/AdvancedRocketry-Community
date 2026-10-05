@@ -223,8 +223,11 @@ tool eligibility; later exact development/reviewer grants bind only these small
 NC1 cohorts, not a wider command or runtime caller. Its earlier A0Harness/probe
 review is a separate instrument. Heavy commands remain
 prohibited while C is below10GB.
-The asked numeric selectors are chosen; their remaining technical freeze and
-the writer/recovery prerequisites remain open;
+The asked numeric selectors are chosen. The separately reviewed
+[C17a-NUM-01 private arithmetic task](../work/v1.8.0-c17-contract/NUMERIC-PRIVATE-TASK-01.md)
+has narrow Root technical adoption for its uncalled scalar representation/domains/errors;
+source implementation/review and full applicability/stage/schema freeze remain pending.
+The writer/recovery prerequisites remain open;
 the full typed O3 author packet is verified (68 /312,278 bytes /69). Its completed
 independent review finds one Low owner-question attribution error; Root verifies
 87 review payloads /799,002 bytes /88 sums. Correction and adoption remain open.
