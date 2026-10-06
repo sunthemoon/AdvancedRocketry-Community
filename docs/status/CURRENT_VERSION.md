@@ -36,12 +36,16 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 826f5f20fc26a7be6bfc3af5d91f8a81bd7df71c
-tested_code_commit: 33a3156e309ca2b8f6a1fcc766501968bc21f138
+latest_source_checkpoint: 60f1564528de782fa15269884fd1355d3c0b9ff1
+tested_code_commit: 826f5f20fc26a7be6bfc3af5d91f8a81bd7df71c
 latest_regression_result: FAILED
-latest_regression_run: 37506268620
+latest_regression_run: 37513453860
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
+pending_regression_source_commit: 60f1564528de782fa15269884fd1355d3c0b9ff1
+pending_regression_run: 37519061729
+pending_regression_attempt: 1
+pending_regression_observed_utc: 2026-10-06T19:34:28Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -65,11 +69,21 @@ development replays each pass 75/75; the clean merged source worktree is normall
 retired. No world writer or whole-hatch delivery is admitted. That failed cohort
 is historical in RESULT-09. The new
 [three-method common bridge](../work/v1.8.0-c16a-hatches/COMMON-GUARD-BRIDGE-SOURCE-01.md)
-is independently reviewed and normally pushed at the latest source checkpoint.
+is independently reviewed and normally pushed at `826f5f20fc26a7be6bfc3af5d91f8a81bd7df71c`.
 One bounded cached compilation and five unchanged pure-domain tests pass as
-development observations; five new event-bridge GameTests are compiled but
-unexecuted. Exact committed full regression and native terminal/restart behavior
-remain unverified; no writer, physical hatch or lathe is admitted.
+development observations. The exact committed full regression now executes
+the five new event-bridge fixtures without a terminal required failure in that
+batch; native terminal/restart behavior remains unverified. No writer, physical
+hatch or lathe is admitted.
+The [immutable recipe-row checkpoint](../work/v1.8.0-c16a-hatches/RECIPE-ROWS-SOURCE-01.md)
+is independently reviewed and normally pushed at the latest source checkpoint.
+Root's fixed-commit cached javac/Jupiter succeeds with nine actual subjects;
+the independent development replay passes 13 subjects including four reviewer
+controls. Full guarded recipe/owner/frame and physical machines remain incomplete.
+Its new hosted run is observed IN_PROGRESS at the timestamp above, running
+GameTests; API metadata alone reports successful build/DataGen steps, not
+audited counts or a terminal result. Latest completed raw-audited metrics below
+remain bound only to `826f5f20`, not the new row source.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
@@ -92,22 +106,26 @@ has independent static source review and is merged/pushed at the historical
 Tau source above. Its PRE/POST samples both retain PREPARED/source TRANSIT, destination
 UNASSIGNED and nonready entity flags, not a unique cause or production fix.
 The [detector source/resource checkpoint](../work/v1.8.0-c18a-seal-detector/SOURCE-INTEGRATION-01.md)
-is independently reviewed and normally pushed at the tested source above.
+is independently reviewed and normally pushed at `9cd5890bffe7e544a6b365bf47612dc13293401e`.
 One bounded five-source javac/plain Java generation succeeds; four resources
 and two locales match an independent pixel/JSON review.
 The historical tooltip fixture failure remains in [RESULT-12](../work/v1.8.0-ci/RESULT-12.md).
 The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.md)
-is reviewed and normally pushed at the tested source above, with unchanged
-assertions and product. Its [latest raw-audited regression](../work/v1.8.0-ci/RESULT-13.md),
-run 37506268620 /attempt 1 /job 112415607085, passes clean build and all
+is reviewed and normally pushed at `33a3156e309ca2b8f6a1fcc766501968bc21f138`, with unchanged
+assertions and product. Its original successful unit correction remains in
+[RESULT-13](../work/v1.8.0-ci/RESULT-13.md). The
+[latest raw-audited regression](../work/v1.8.0-ci/RESULT-14.md),
+run 37513453860 /attempt 1 /job 112440254798, passes clean build and all
 1,918 actual cases /351 suites /0 failures, errors or skips. First DataGen
 writes 808 entries, repeat writes 0; both worktree checks are clean.
-504 GameTests complete with one required Tau landing failure; the detector's
-eleven-test batch executes without a named terminal failure. Root independently
-rehashes all 394 retained files without mismatch. Main63 ERROR /0 FATAL has no
+509 GameTests complete with required Planetary and Tau landing failures; the
+five common-bridge and eleven detector fixtures execute without a named terminal
+required failure in those batches. Root independently rehashes all 394 retained
+files without mismatch. Main64 ERROR /0 FATAL has no
 blanket waiver; JAR upload is skipped and independent bytes are unavailable.
 Tau remains PREPARED with entities_loaded NO in both samples; entity_ticking
-changes NO to YES. This does not establish a unique cause or full detector acceptance.
+changes NO to YES; the Planetary sample also retains PREPARED/TRANSIT and an
+unready Venus entity chunk. This does not establish a unique cause or full acceptance.
 Own generation cleanup was policy-rejected before process creation;
 D temporary directories remain, with no retry or alternate mechanism.
 Detector installed-runtime custom-rule coverage remains explicitly unrun;

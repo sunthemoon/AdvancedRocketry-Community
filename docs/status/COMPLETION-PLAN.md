@@ -66,7 +66,7 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   - [~] [原始根无损预检修正](../work/v1.8.0-c16a-hatches/RAW-FIDELITY-TASK-01.md)：
     [四文件源码](../work/v1.8.0-c16a-hatches/RAW-FIDELITY-SOURCE-01.md)经独立审核后
     提交、合并并推送至 `a34de0ad`；作者及独立 Java 定向验证各 75/75 通过。
-    最新已提交构建的全部 JUnit 通过；整批 GameTest 仍有一项 Tau Ceti 失败，
+    精确提交的全部 JUnit 通过；整批 GameTest 仍失败，最新完成结果见下方回归记录，
     原始字节与计数已由 Root 独立审核。不开放保存 writer，不宣告物理 hatch 交付。
   - [x] K1：复合键排序的纯计算。
   - [x] K2：有界规范字节的私有计算、实际完整自动回归及独立证据审计。
@@ -80,11 +80,15 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   - [x] [C16a-S1-GUARD-SETUP05](../work/v1.8.0-c16a-save-guard/SETUP05-VERIFICATION-01.md)：
     测试副本三处近邻标记隔离源码审核、集成与 Root 137 Python 通过；
     仅固定两主机原生诊断及独立结果审核已验证，不改 Java/保存行为、不开放新 writer；清理仍被拒绝。
-  - [ ] 完整 hash/frame/native codec 和 GuardTicket 消费端。
+  - [~] 完整 hash/frame/native codec、GuardTicket 与真实 owner 生命周期：
+    在独立 worktree 实现；中央注册、FULL 区块观察和保存集成仍未完成。
   - [~] [公共保存接口](../work/v1.8.0-c16a-hatches/COMMON-GUARD-BRIDGE-SOURCE-01.md)：
     三个方法与五项新 GameTest 已独立审核、提交并正常推送至 `826f5f20`；
-    限定缓存编译和五项原有领域单测通过，新 GameTest 仅编译、尚未执行。
-    完整提交回归、停服/最终保存/重启资格及物理机器交付仍未完成。
+    限定缓存编译和五项原有领域单测通过；新五项 GameTest 已在精确提交上执行，
+    完整回归仍失败于 Planetary 和 Tau。停服/最终保存/重启资格及物理机器交付未完成。
+  - [x] [车床不可变配方行](../work/v1.8.0-c16a-hatches/RECIPE-ROWS-SOURCE-01.md)：
+    三个精确冻结 record 经独立审核后提交、推送至 `60f15645`；固定提交单测 9/9，
+    独立开发复跑 13/13。完整配方、native 解析、注册和首台车床仍未完成。
   - [ ] 02 生命周期、首存观察、最终卸载和保存 writer。
   - [ ] 服务端 creative 输入的复制/覆盖前拦截与真实客户端、FE 守恒证明。
   - [ ] 03/04 物理 hatch、capability、controller 与首台车床。
@@ -272,15 +276,20 @@ C17b candidate03 的独立审核已解决旧版 Medium
 [失败时观察源码](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
 已经独立实际审核、分别提交并合并，非强制推送至
 `35a146fbbe1f2de94160f82307d041d2cd26e472`；单次有界缓存编译通过。
-[最近完成的自动证据](../work/v1.8.0-ci/RESULT-13.md) 绑定已推送完整提交
-`33a3156e309ca2b8f6a1fcc766501968bc21f138`，run 37506268620 /attempt 1
-/job 112415607085，结果 FAILED：clean build 成功，1,918 个实际 JUnit
+[最近完成的自动证据](../work/v1.8.0-ci/RESULT-14.md) 绑定已推送完整提交
+`826f5f20fc26a7be6bfc3af5d91f8a81bd7df71c`，run 37513453860 /attempt 1
+/job 112440254798，结果 FAILED：clean build 成功，1,918 个实际 JUnit
 /351 suites /0 failures、errors、skips；首次 DataGen 写入 808，重复写入 0，
-两次工作区均干净。504 项 GameTest 仅有一项 required Tau 着陆失败；
-Root 独立核对全部 394 个保留成员和 XML。主日志 63 ERROR /0 FATAL 未获豁免；
+两次工作区均干净。509 项 GameTest 有两项 required 失败：Planetary 往返和 Tau 着陆；
+新增五项保存接口夹具已执行且不在完整失败列表。Root 独立核对全部 394 个保留成员
+和 XML。主日志 64 ERROR /0 FATAL 未获豁免；
 JAR 上传跳过，未独立验证产物字节。原 tooltip 失败在
 [RESULT-12](../work/v1.8.0-ci/RESULT-12.md)，不改写为通过；其测试专用修正已实际通过。
 原 40/270 tick 上限未改变，Tau 的两次未就绪观察不说明唯一原因。
+新配方行提交的 run 37519061729 /attempt 1 /job 112459397257 在
+2026-10-06T19:34:28Z 实际观察为 IN_PROGRESS，正在执行 GameTest；元数据仅报告
+build 和 DataGen 步骤成功，尚无终态或原始结果审计，不复用前一提交的数字。
+生产服务的请求分类和心跳诊断在另一独立 worktree 实现，断言、时限和保存行为不变。
 先前观察源码的 runner 分配失败及其已执行失败重跑分别保留在
 [原记录](../work/v1.8.0-ci/RESULT-08.md)和历史 RESULT-09 中；不再记为运行中。
 原断言、时限和清理保留，诊断不是生产修复。两个干净工作树和审核者的

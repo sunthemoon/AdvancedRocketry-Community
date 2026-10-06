@@ -1,6 +1,6 @@
 # Common save-guard bridge source checkpoint
 
-Date: 2026-10-07. Status: **implemented-unverified for event/native behavior**.
+Date: 2026-10-07. Status: **bounded GameTest fixtures executed; native qualification incomplete**.
 [Task](COMMON-GUARD-BRIDGE-TASK-01.md): C16a-03b-COMMON-GUARD-01.
 Root normally commits and pushes the two Java files and task at
 `826f5f20fc26a7be6bfc3af5d91f8a81bd7df71c`, after the documentation-only
@@ -58,11 +58,14 @@ below 10 GB, so no local full Gradle/GameTest/native run is admitted.
 
 ## Remaining qualification
 
-The unchanged hosted workflow is triggered by source-path pushes; no new run
-identity/result has been observed for this checkpoint in this record. New
-GameTests are compiled **but unexecuted**. The previous exact full regression
-remains [RESULT-13](../v1.8.0-ci/RESULT-13.md), including its required Tau failure,
-not a pass or metrics rebound to this new source.
+The exact committed [hosted regression](../v1.8.0-ci/RESULT-14.md) has now ended
+and been independently raw-audited: clean build/unit tests and repeated DataGen
+succeed. The five new `classic_save_admission` fixtures execute, with none in
+the complete terminal required-failure list. The full batch nevertheless fails
+Planetary and Tau flight. This does not certify every event/native requirement.
+The earlier development execution above remains an uncommitted observation,
+not a relabeled delivery replay. [RESULT-13](../v1.8.0-ci/RESULT-13.md) remains
+historical at its own source, not metrics for this bridge.
 
 Capability attachment, actual event/terminal iteration, missing/throwing
 providers, final native save/unload, dynamic teardown, late callbacks and

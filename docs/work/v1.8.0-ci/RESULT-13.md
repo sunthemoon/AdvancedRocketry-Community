@@ -5,6 +5,8 @@ Date: 2026-10-07. Source `33a3156e309ca2b8f6a1fcc766501968bc21f138`;
 attempt 1, job 112415607085. Result: **FAILED**, at the required Tau GameTest.
 This supersedes the dated running observation for this run, not the original
 failed source in [RESULT-12](RESULT-12.md).
+It is now historical: the later common-bridge source has its own two-failure
+regression in [RESULT-14](RESULT-14.md). No result below is rebound to that source.
 
 ## Actual results
 
