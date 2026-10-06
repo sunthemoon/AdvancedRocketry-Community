@@ -90,6 +90,13 @@ is independently reviewed and normally published at the latest source checkpoint
 All eight new and 39 unchanged resource cases execute in its complete hosted
 unit cohort. This is source/unit evidence, not physical-owner, save-writer or
 native admission; its overall regression remains FAILED below.
+The separate 38-file unintegrated owner candidate has four open Medium source
+findings in its [independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-owners-independent-review-20261007/REVIEW-01.md):
+ordinary capability transaction/quarantine isolation, complete active-hatch
+witnesses, retained hatch re-admission and terminal failed publication.
+The author is revising that fixed candidate in its separate worktree. Its 35
+tests remain unexecuted; none of these findings is claimed to be an executed
+resource debit or native save failure. Owner source admission stays open.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
