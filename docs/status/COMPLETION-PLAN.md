@@ -90,6 +90,11 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   - [x] [车床不可变配方行](../work/v1.8.0-c16a-hatches/RECIPE-ROWS-SOURCE-01.md)：
     三个精确冻结 record 经独立审核后提交、推送至 `60f15645`；固定提交单测 9/9，
     独立开发复跑 13/13。完整配方、native 解析、注册和首台车床仍未完成。
+  - [~] [共享资源守卫小切片](../work/v1.8.0-c16a-hatches/GUARDED-RESOURCE-CHECKPOINT-01.md)：
+    五个精确源码后像已接入；源码与测试修订已独立审核。三次本地定向尝试均失败，
+    最新两次各有三项 BankKey 通过、六个初始化容器失败；新增八项方法尚未执行。
+    状态为 implemented-unverified，完整托管回归待执行；不开放物理 owner、保存 writer，
+    不作台账交付或 Gate 批准。
   - [ ] 02 生命周期、首存观察、最终卸载和保存 writer。
   - [ ] 服务端 creative 输入的复制/覆盖前拦截与真实客户端、FE 守恒证明。
   - [ ] 03/04 物理 hatch、capability、controller 与首台车床。
