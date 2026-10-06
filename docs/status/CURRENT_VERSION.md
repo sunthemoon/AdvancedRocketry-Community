@@ -36,17 +36,16 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: e0c601e4d58cb906d79f744070316c0a2d810c06
+tested_code_commit: c6d60282afdd495acae56e05e56d2ccffdbd9959
 latest_regression_result: FAILED
-latest_regression_run: 37484998908
+latest_regression_run: 37496511702
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-pending_regression_source: c6d60282afdd495acae56e05e56d2ccffdbd9959
-pending_regression_run: 37496511702
+pending_regression_source: 9cd5890bffe7e544a6b365bf47612dc13293401e
+pending_regression_run: 37501874947
 pending_regression_attempt: 1
-pending_regression_status: COMPLETED
-pending_regression_result: FAILED
-pending_regression_evidence: METADATA_ONLY_RAW_AUDIT_PENDING
+pending_regression_status: IN_PROGRESS
+pending_regression_evidence: METADATA_ONLY
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -70,9 +69,10 @@ development replays each pass 75/75; the clean merged source worktree is normall
 retired. No world writer or whole-hatch delivery is admitted. That failed cohort
 is historical in RESULT-09. The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed at the tested source above.
-Its [latest complete result](../work/v1.8.0-ci/RESULT-10.md), run 37484998908
-/attempt 1 /job 112342646260, is **FAILED**. Root independently audits all
-389 retained members: clean build passes 1,895 JUnit /346 suites /0FES;
+Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
+The [latest complete Tau-observation result](../work/v1.8.0-ci/RESULT-11.md),
+run 37496511702 /attempt 1 /job 112382323227, is **FAILED**. Root independently
+audits all 389 retained members: clean build passes 1,895 JUnit /346 suites /0FES;
 DataGen writes 804 then zero, with both tracked/untracked trees clean.
 493 GameTests complete with one required failure, cold Tau Ceti. The required
 failure set no longer contains the Solar surface case; its original 40-tick
@@ -88,17 +88,17 @@ are normally published at `513f2ffbec25b3864367b820800fb22cd54091f7`.
 Their source assignments use separate clean fixed-base worktrees with source,
 build and workflow dependencies matching e0 at assignment. The one-file
 [Tau source checkpoint](../work/v1.8.0-tau-observation/SOURCE-INTEGRATION-01.md)
-has independent static source review and is merged/pushed at the pending source
-above. Its exact hosted run has completed FAILED: build/artifact audit/DataGen
-steps report success, GameTest failure and raw upload success. The
-[terminal metadata](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-tau-hosted-observation-20261007-02/OBSERVATION-02.json)
-does not supply raw test counts or failure names; its raw audit is pending.
-The earlier running observation remains dated history, and e0 above remains
-the last raw-audited cohort.
-Detector worker source and Root central bindings have completed independent
-static actual-source review, with no introduced C/H/M/L established in that scope.
-Compilation/resources/native/client delivery
-remain unverified and no whole detector acceptance is claimed.
+has independent static source review and is merged/pushed at the tested source
+above. Its PRE/POST samples both retain PREPARED/source TRANSIT, destination
+UNASSIGNED and nonready entity flags, not a unique cause or production fix.
+The [detector source/resource checkpoint](../work/v1.8.0-c18a-seal-detector/SOURCE-INTEGRATION-01.md)
+is independently reviewed and normally pushed at the pending source above.
+One bounded five-source javac/plain Java generation succeeds; four resources
+and two locales match an independent pixel/JSON review. Full compile/Jupiter/
+Forge DataGen/GameTest/native/client delivery remain unverified. Its exact hosted
+uncached build is running at the dated observation; no whole detector acceptance
+is claimed. Own generation cleanup was policy-rejected before process creation;
+D temporary directories remain, with no retry or alternate mechanism.
 Detector installed-runtime custom-rule coverage remains explicitly unrun;
 no new provider hook or prerequisite waiver is authorized.
 
@@ -221,8 +221,8 @@ Full C17c dependencies, native exposure/restart, real visuals and all Gates rema
 
 The separate [Laser save fixture](../work/v1.8.0-laser-save-fixture/HANDOFF.md)
 is reviewed and published at `86a819ca564c43206c6b9272c0b79076fceaa874`; its
-current [complete hosted replay](../work/v1.8.0-ci/RESULT-10.md), at tested source
-`e0c601e4d58cb906d79f744070316c0a2d810c06`, has no Laser failure header;
+current [complete hosted replay](../work/v1.8.0-ci/RESULT-11.md), at tested source
+`c6d60282afdd495acae56e05e56d2ccffdbd9959`, has no Laser failure header;
 the sole required failure is Tau Ceti. Targeted compilation and that cohort do not prove packaged
 disk durability or full Laser acceptance.
 
