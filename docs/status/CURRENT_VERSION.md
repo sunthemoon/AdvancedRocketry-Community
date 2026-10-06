@@ -36,13 +36,18 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 8d5214061c98fce0cf549a231eae7aaf312b3ba2
+latest_source_checkpoint: 3e2f6f1ba96508305b78cdb27d95ebbeabad6a38
 tested_code_commit: 8d5214061c98fce0cf549a231eae7aaf312b3ba2
 latest_regression_result: FAILED
 latest_regression_run: 37534775606
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
 latest_regression_observed_utc: 2026-10-06T21:49:30Z
+pending_regression_commit: 3e2f6f1ba96508305b78cdb27d95ebbeabad6a38
+pending_regression_run: 37541636327
+pending_regression_attempt: 1
+pending_regression_evidence: METADATA_ONLY
+pending_regression_observed_utc: 2026-10-06T22:37:02Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -86,17 +91,28 @@ assertions and flight timings remain unchanged. Its separate hosted run has
 historical raw-audited FAILED results in [RESULT-16](../work/v1.8.0-ci/RESULT-16.md).
 The previous row metrics are not rebound to this new source.
 The [guarded-resource data checkpoint](../work/v1.8.0-c16a-hatches/GUARDED-RESOURCE-CHECKPOINT-01.md)
-is independently reviewed and normally published at the latest source checkpoint.
+is independently reviewed and normally published at `8d521406`.
 All eight new and 39 unchanged resource cases execute in its complete hosted
 unit cohort. This is source/unit evidence, not physical-owner, save-writer or
 native admission; its overall regression remains FAILED below.
-The separate 38-file unintegrated owner candidate has four open Medium source
-findings in its [independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-owners-independent-review-20261007/REVIEW-01.md):
-ordinary capability transaction/quarantine isolation, complete active-hatch
-witnesses, retained hatch re-admission and terminal failed publication.
-The author is revising that fixed candidate in its separate worktree. Its 35
-tests remain unexecuted; none of these findings is claimed to be an executed
-resource debit or native save failure. Owner source admission stays open.
+The [bounded chunk metadata checkpoint](../work/v1.8.0-c16a-hatches/CHUNK-METADATA-CHECKPOINT-01.md)
+is independently reviewed, integrated and normally published at the latest source
+checkpoint. Root's fixed-commit cached javac/Jupiter executes the exact ten new
+subjects, all passing with 46 inputs unchanged. It introduces no provider, owner,
+FULL observation or native save writer. Its complete hosted workflow was observed
+in progress at the pending observation above; no full-cohort count or terminal
+result is assigned to this new source. The latest completed raw-audited metrics
+remain bound to the tested 8d521406 commit, separately below.
+The separate 39-file unintegrated owner successor addresses the four original
+Medium source findings in its [final independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-owners-successor-review-20261007/REVIEW-02.md).
+This is source inspection, not executed ordinary capability, complete-hatch,
+re-admission or publication-failure proof. Its original 35 tests are unchanged;
+six added policy declarations bring the uncompiled/unexecuted total to 41.
+Real central joins, whole compilation and installed/native qualification remain
+open. The outgoing-comparison/retained-observer proposal has one open Medium in
+its [final independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md):
+the exact LOAD-to-retained-owner recording join and witness timing are not frozen.
+The author is preparing a separate amendment; no such seam is adopted or implemented.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
@@ -257,6 +273,14 @@ See
 [source integration](../work/v1.8.0-c18c-tutorial-inventory/SOURCE-INTEGRATION-01.md).
 
 ## Implemented development scope
+
+The separate [oxygen reserve proposal review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md)
+has two open Medium text findings: bounded source-canister metadata/capability
+admission and empty-shell fidelity, and handled-input routing after rejected
+main-hand charging. Its separate technical proposal successor is sealed and
+awaits independent review; no equipment source is authorized. Tier capacities/config and paired interaction
+still await the owner's existing choice, and the proposed workstation save-veto
+extension remains unadmitted. The accepted working API/HUD buffer stays 2,000.
 
 The [single solar leaf](../work/v1.8.0-c17c-solar-generator/TASK.md) and NEW
 origin declaration are reviewed, committed and pushed at

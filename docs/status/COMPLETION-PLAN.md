@@ -81,11 +81,13 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     测试副本三处近邻标记隔离源码审核、集成与 Root 137 Python 通过；
     仅固定两主机原生诊断及独立结果审核已验证，不改 Java/保存行为、不开放新 writer；清理仍被拒绝。
   - [~] 完整 hash/frame/native codec、GuardTicket 与真实 owner 生命周期：
-    独立审核对未集成的 38 文件候选发现四项 Medium：普通能力的事务隔离、
-    完整 hatch 集合见证、保留 hatch 的重新准入和失败 ticket 的终止。
-    [审核报告](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-owners-independent-review-20261007/REVIEW-01.md)
-    已封存，作者正在独立 worktree 修订；35 项测试仍未执行。
-    中央注册、FULL 区块观察和保存集成未完成，候选尚未取得源码准入。
+    未集成的 39 文件后继经[独立源码复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-owners-successor-review-20261007/REVIEW-02.md)，
+    原四项 Medium 已在源码中处理；不替代实际权限、完整 hatch、重新准入或失败处置测试。
+    原有 35 项测试不变，新增六项纯策略声明；全部 41 项仍未编译或执行。
+    中央注册、FULL 区块观察、完整编译和保存集成未完成，候选尚未交付。
+    出站比较/保留观察提案的[独立审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md)
+    有一项 Medium：LOAD 到保留 owner 的实际记录接口与见证时序未冻结。
+    作者正在另版补充，不据此开放 writer。
   - [~] [公共保存接口](../work/v1.8.0-c16a-hatches/COMMON-GUARD-BRIDGE-SOURCE-01.md)：
     三个方法与五项新 GameTest 已独立审核、提交并正常推送至 `826f5f20`；
     限定缓存编译和五项原有领域单测通过；新五项 GameTest 已在精确提交上执行，
@@ -99,6 +101,10 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     新增八项与原有 39 项资源用例并通过。三次本地失败不改写，作者已清理自有结束输出。
     仅限数据源码/单测范围；整体回归仍因 Tau required 失败，不开放物理 owner、保存 writer，
     不作台账交付或 Gate 批准。
+  - [x] [有界原始区块元数据](../work/v1.8.0-c16a-hatches/CHUNK-METADATA-CHECKPOINT-01.md)：
+    两个精确后像经源码及集成审核后提交、推送至 `3e2f6f1b`；固定提交定向测试 10/10，
+    独立开发复测另有 10/10。只读取不可变坐标/type 记录，不安装 FULL 观察、owner 或保存接口。
+    新完整回归已启动，最近观察仍为运行中；结果不复用前一提交。
   - [ ] 02 生命周期、首存观察、最终卸载和保存 writer。
   - [ ] 服务端 creative 输入的复制/覆盖前拦截与真实客户端、FE 守恒证明。
   - [ ] 03/04 物理 hatch、capability、controller 与首台车床。
@@ -195,6 +201,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
 契约有条件接受；辅助氧气储量、有限节省、装备工具、独立地面勘测、首次事件、
 科技树、声音/模型/GUI 等仍须实现。D4 未证明，不推断接受。
 
+- [~] C18 D1 辅助氧气储量：保留已接受的 API/HUD 2,000 工作缓冲。
+  [独立提案审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md)
+  有两项 Medium 说明缺口：来源气罐有界元数据/能力准入及空罐保真、拒绝充气的输入路由。
+  技术后继提案已封存，待独立复审；四档容量/配置和配对充气仍待已有维护者选择，未授权装备源码。
+  新工作台的拒存与 R-021 扩展也未接受，不把文本模型检查记作原生交互证明。
 - [~] [C18a-SEAL-01](../work/v1.8.0-c18a-seal-detector/ADOPTION-01.md)：
   ADR-067、限定任务与 NEW 来源已独立审核并发布于 `513f2ffb`。
   独立固定 worktree 的十三个新增源码/测试文件及 Root 的六个中央绑定文件和新增资源测试
@@ -302,7 +313,10 @@ C17b candidate03 的独立审核已解决旧版 Medium
 经独立实际审核后已提交并正常推送至 `ca217afa`；19 项独立开发及固定提交
 pure-helper 单测分别通过，
 断言、时限和保存行为不变；其单独历史失败保留在 RESULT-16。
-最新已提交资源源码 `8d521406` 的 run 37534775606 /attempt 1 /job 112512823966
+最新元数据源码 `3e2f6f1b` 的完整 run 37541636327 /attempt 1 /job 112535778550
+在 2026-10-06T22:37:02Z 观察为运行中，仅有公共只读 GET 元数据；尚无新整批计数或终态。
+其固定提交缓存 javac/Jupiter 10/10 通过，46 个输入无漂移，不替代完整构建或原生验证。
+最近完成并审核的资源源码 `8d521406` 的 run 37534775606 /attempt 1 /job 112512823966
 已有[原始终态核对](../work/v1.8.0-ci/RESULT-17.md)：clean build 成功，354 XML
 /1,954 实际单测 /0FES，两次 DataGen 与工作区检查成功；509 GameTest 完成但
 一项 required Tau 往返失败。Root 独立核对 399 个保留 raw/receipt 输入无漂移。

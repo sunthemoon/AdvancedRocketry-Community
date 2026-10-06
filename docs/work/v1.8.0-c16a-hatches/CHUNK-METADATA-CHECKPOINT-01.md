@@ -3,10 +3,10 @@
 Task: C16a-03b-CHUNK-METADATA-01. Status: independently verified in the
 data-only source/unit scope; integrated full/native qualification remains open.
 Integration base: `bae82345381164db80bf9741a5d9a51b8618d6ed`.
-The source checkpoint is the commit containing the two new source files and
-this record. Its publication identity and subsequent fixed-commit checks are
-recorded separately in the implementation log; the observations below are
-explicitly pre-publication development snapshots.
+Published source: `3e2f6f1ba96508305b78cdb27d95ebbeabad6a38`, normally committed
+and pushed by Root (actual tool `c9691f`, exit 0), with exact remote equality.
+Source and integration reviews precede publication; the first two Java
+observations below remain explicitly pre-publication development snapshots.
 
 ## Scope and preserved boundaries
 
@@ -63,17 +63,23 @@ detached output, signed-coordinate/overflow edges and foreign/null tags.
   has fresh javac/Jupiter exits 0/0, the exact ten source method identities
   executed and passed, no failure/abort/skip or container failure, with 45 used
   inputs unchanged. Its final union postcheck retains 62 unchanged named inputs.
+- Root's subsequent [fixed-commit replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-fixed-check-20261007-01/VERIFICATION-01.md)
+  runs after publication, compares both source files with their committed Git
+  objects and passes the exact ten subjects with javac/Jupiter exits 0/0 and
+  46 named inputs unchanged. It is separately sealed, with verification SHA256
+  `95d8e01cc4f28bd03efacaa8e05650ca4773c689dc307bd00bdd5f82ff726d4d`.
 
-Both are bounded direct Java development runs of the uncommitted source
-postimages, using only the two sources, unchanged harness and existing cached
-JARs. They are not a clean build, GameTest, native server, save or restart test.
+All three are bounded direct Java development runs; the first two use
+uncommitted postimages and the third the published commit. Only the two sources,
+unchanged harness and existing cached JARs are used. These are not a clean build,
+GameTest, native server, save or restart test.
 Each compiler/JVM uses 256 MiB and two CPUs, a 120-second deadline and bounded
 streams; temporary/home/crash outputs are under its own external D: evidence
 directory. No Blocks bootstrap, project output or new dependency is used.
 The reviewer's comment-sensitive failed preflight is retained; it launched no
 Java child and does not replace either actual successful run.
 
-Root removes only its ended ten class files and eleven empty output directories;
+Each Root replay removes only its own ended ten class files and eleven empty output directories;
 the reviewer removes only its ended ten class files and nine empty class/temp
 directories. Raw streams, results, source and cache files remain. No C: or
 other-agent cleanup, sealed-member deletion or physical disk-reclaim claim occurs.
@@ -84,3 +90,8 @@ unfinished. The previous full regression is still FAILED at the required Tau
 roundtrip fixture; its counts are bound to `8d521406`, not this new source.
 No ledger delivery or G0-G9 approval is inferred. v1.8 remains
 IN_PROGRESS / IMPLEMENTING.
+
+The exact-source hosted run 37541636327 /attempt 1 /job 112535778550 was observed
+in progress at 2026-10-06T22:37:02Z. This is metadata only, not a new completed
+full regression or artifact-byte verification. Its pending observation does not
+overwrite the prior audited failure or qualify any new native consumer.
