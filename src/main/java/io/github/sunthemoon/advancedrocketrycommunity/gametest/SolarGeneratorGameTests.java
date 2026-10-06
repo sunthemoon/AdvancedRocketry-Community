@@ -225,36 +225,90 @@ public final class SolarGeneratorGameTests {
 
     @GameTest(template = "empty", batch = "solar_environment", timeoutTicks = 40)
     public static void nativeSurfaceDayRoofNightAndWeatherPublishScalarCredit(GameTestHelper helper) {
-        var generator = place(helper); var level = helper.getLevel();
+        var level = helper.getLevel(); BlockPos anchor = helper.absolutePos(POSITION);
+        BlockPos position = new BlockPos(anchor.getX(), level.getMaxBuildHeight() - 2, anchor.getZ());
+        BlockPos roof = position.above();
+        helper.assertTrue(level.isInWorldBounds(position) && level.isInWorldBounds(roof)
+                && level.getWorldBorder().isWithinBounds(position) && level.getWorldBorder().isWithinBounds(roof),
+                "Surface fixture cells are outside world bounds");
+        var chunk = level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
+        helper.assertTrue(chunk != null, "Surface fixture chunk is not already loaded");
+        BlockState before = level.getBlockState(position), roofBefore = level.getBlockState(roof);
+        helper.assertTrue(!before.hasBlockEntity() && !roofBefore.hasBlockEntity()
+                && !chunk.getBlockEntities().containsKey(position) && !chunk.getBlockEntities().containsKey(roof),
+                "Surface fixture cells contain BlockEntity data");
         long time = level.getDayTime(); float rain = level.getRainLevel(1), thunder = level.getThunderLevel(1);
-        BlockPos roof = generator.getBlockPos().above(); BlockState original = level.getBlockState(roof);
-        Runnable restore = () -> { level.setDayTime(time); level.setRainLevel(rain); level.setThunderLevel(thunder); level.setBlock(roof, original, Block.UPDATE_ALL); };
-        level.setDayTime(6_000); level.setRainLevel(0); level.setThunderLevel(0); level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-        await(helper, "DAY_SKY", roof, () -> level.isDay() && level.canSeeSky(roof), () -> {
-            state(generator, 0); tick(generator);
-            helper.assertTrue(generator.reason() == SolarGeneration.Reason.GENERATING && generator.actualCredit() > 0, "Native daytime did not generate");
-            int clear = generator.actualCredit();
-            level.setRainLevel(1); level.setThunderLevel(1); state(generator, 0); tick(generator);
-            helper.assertTrue(generator.environment().weatherPermille() == 250 && generator.actualCredit() <= clear, "Weather attenuation/display differs");
-            level.setRainLevel(0); level.setThunderLevel(0); level.setBlock(roof, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-            await(helper, "ROOF", roof, () -> !level.canSeeSky(roof), () -> {
-                state(generator, 777); tick(generator);
-                helper.assertTrue(generator.reason() == SolarGeneration.Reason.SKY_BLOCKED && generator.actualCredit() == 0
-                        && port(generator).extractEnergy(100, false) == 100, "Roof blocked stored export or allowed credit");
-                level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); level.setDayTime(18_000);
-                await(helper, "NIGHT_SKY", roof, () -> !level.isDay() && level.canSeeSky(roof), () -> {
+        Runnable restore = surfaceRestoration(helper, level, position, before, roof, roofBefore, time, rain, thunder);
+        try {
+            level.setBlock(position, ModBlocks.SOLAR_GENERATOR.get().defaultBlockState(), Block.UPDATE_ALL);
+            var installed = level.getBlockEntity(position);
+            helper.assertTrue(installed instanceof SolarGeneratorBlockEntity, "Registered surface generator was not installed");
+            var generator = (SolarGeneratorBlockEntity) installed;
+            level.setDayTime(6_000); level.setRainLevel(0); level.setThunderLevel(0); level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            await(helper, "DAY_SKY", roof, () -> level.isDay() && level.canSeeSky(roof), () -> {
+                state(generator, 0); tick(generator);
+                helper.assertTrue(generator.reason() == SolarGeneration.Reason.GENERATING && generator.actualCredit() > 0, "Native daytime did not generate");
+                int clear = generator.actualCredit();
+                level.setRainLevel(1); level.setThunderLevel(1); state(generator, 0); tick(generator);
+                helper.assertTrue(generator.environment().weatherPermille() == 250 && generator.actualCredit() <= clear, "Weather attenuation/display differs");
+                level.setRainLevel(0); level.setThunderLevel(0); level.setBlock(roof, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
+                await(helper, "ROOF", roof, () -> !level.canSeeSky(roof), () -> {
                     state(generator, 777); tick(generator);
-                    helper.assertTrue(generator.reason() == SolarGeneration.Reason.NOT_DAYLIGHT && generator.actualCredit() == 0,
-                            "Native night was replaced by a custom calendar or stale credit");
-                    var view = SolarGeneratorMenu.project(SolarGeneratorMenu.liveData(generator));
-                    helper.assertTrue(view.day() == 0 && view.context() == 1 && view.credit() == 0, "Live scalar menu differs");
-                    helper.succeed();
-                    return true;
+                    helper.assertTrue(generator.reason() == SolarGeneration.Reason.SKY_BLOCKED && generator.actualCredit() == 0
+                            && port(generator).extractEnergy(100, false) == 100, "Roof blocked stored export or allowed credit");
+                    level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); level.setDayTime(18_000);
+                    await(helper, "NIGHT_SKY", roof, () -> !level.isDay() && level.canSeeSky(roof), () -> {
+                        state(generator, 777); tick(generator);
+                        helper.assertTrue(generator.reason() == SolarGeneration.Reason.NOT_DAYLIGHT && generator.actualCredit() == 0,
+                                "Native night was replaced by a custom calendar or stale credit");
+                        var view = SolarGeneratorMenu.project(SolarGeneratorMenu.liveData(generator));
+                        helper.assertTrue(view.day() == 0 && view.context() == 1 && view.credit() == 0, "Live scalar menu differs");
+                        restore.run();
+                        helper.succeed();
+                        return true;
+                    }, restore);
+                    return false;
                 }, restore);
                 return false;
             }, restore);
-            return false;
-        }, restore);
+        } catch (RuntimeException | Error failed) { restorePreservingFailure(restore, failed); throw failed; }
+    }
+
+    private static Runnable surfaceRestoration(GameTestHelper helper, ServerLevel level, BlockPos position,
+                                               BlockState before, BlockPos roof, BlockState roofBefore,
+                                               long time, float rain, float thunder) {
+        boolean[] attempted = {false};
+        return () -> {
+            if (attempted[0]) { return; }
+            attempted[0] = true;
+            Runnable[] actions = {
+                    () -> level.setBlock(position, before, Block.UPDATE_ALL),
+                    () -> level.setBlock(roof, roofBefore, Block.UPDATE_ALL),
+                    () -> level.setDayTime(time), () -> level.setRainLevel(rain), () -> level.setThunderLevel(thunder),
+                    () -> helper.assertTrue(level.getBlockState(position).equals(before) && level.getBlockState(roof).equals(roofBefore)
+                            && level.getDayTime() == time && Float.floatToRawIntBits(level.getRainLevel(1)) == Float.floatToRawIntBits(rain)
+                            && Float.floatToRawIntBits(level.getThunderLevel(1)) == Float.floatToRawIntBits(thunder),
+                            "Surface fixture state was not completely restored")
+            };
+            Throwable failed = null;
+            for (Runnable action : actions) {
+                try { action.run(); }
+                catch (RuntimeException | Error error) {
+                    if (failed == null) { failed = error; }
+                    else if (failed != error) { failed.addSuppressed(error); }
+                }
+            }
+            if (failed instanceof RuntimeException error) { throw error; }
+            if (failed instanceof Error error) { throw error; }
+        };
+    }
+
+    private static void restorePreservingFailure(Runnable restore, Throwable original) {
+        try { restore.run(); }
+        catch (RuntimeException | Error cleanup) {
+            if (original == null) { throw cleanup; }
+            if (original != cleanup) { original.addSuppressed(cleanup); }
+        }
     }
 
     @GameTest(template = "empty", batch = "solar_space", timeoutTicks = 40)
@@ -374,6 +428,7 @@ public final class SolarGeneratorGameTests {
                               java.util.function.BooleanSupplier verify, Runnable restore) {
         helper.runAfterDelay(1, () -> {
             boolean pending = false;
+            Throwable failed = null;
             try {
                 boolean published = ready.getAsBoolean();
                 if (!published && helper.getTick() < 39) { await(helper, stage, roof, ready, verify, restore); pending = true; return; }
@@ -384,7 +439,8 @@ public final class SolarGeneratorGameTests {
                     throw assertion;
                 }
                 pending = !verify.getAsBoolean();
-            } finally { if (!pending) { restore.run(); } }
+            } catch (RuntimeException | Error assertion) { failed = assertion; throw assertion; }
+            finally { if (!pending) { restorePreservingFailure(restore, failed); } }
         });
     }
     private static void observeSurfaceFailure(GameTestHelper helper, String stage, BlockPos roof, boolean published) {
