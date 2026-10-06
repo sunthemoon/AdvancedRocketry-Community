@@ -36,16 +36,11 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: 9cd5890bffe7e544a6b365bf47612dc13293401e
+tested_code_commit: 33a3156e309ca2b8f6a1fcc766501968bc21f138
 latest_regression_result: FAILED
-latest_regression_run: 37501874947
+latest_regression_run: 37506268620
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-pending_regression_source: 33a3156e309ca2b8f6a1fcc766501968bc21f138
-pending_regression_run: 37506268620
-pending_regression_attempt: 1
-pending_regression_status: IN_PROGRESS
-pending_regression_evidence: METADATA_ONLY
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -91,16 +86,20 @@ UNASSIGNED and nonready entity flags, not a unique cause or production fix.
 The [detector source/resource checkpoint](../work/v1.8.0-c18a-seal-detector/SOURCE-INTEGRATION-01.md)
 is independently reviewed and normally pushed at the tested source above.
 One bounded five-source javac/plain Java generation succeeds; four resources
-and two locales match an independent pixel/JSON review. The
-[latest raw-audited regression](../work/v1.8.0-ci/RESULT-12.md), run 37501874947
-/attempt 1 /job 112400654061, compiles source/tests then fails `:test`:
-1,918 actual cases /351 suites /1 failure /0 errors /0 skips. Root rehashes all
-375 retained members without mismatch. Only the tooltip fixture fails before
-its assertions; artifact audit, DataGen/repeat/cleanliness, GameTest and JAR
-upload are skipped. The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.md)
-is reviewed and normally pushed at the pending source above, with unchanged
-assertions and product. Its exact new run is in clean build at the dated
-metadata observation; no pass or whole detector acceptance is claimed.
+and two locales match an independent pixel/JSON review.
+The historical tooltip fixture failure remains in [RESULT-12](../work/v1.8.0-ci/RESULT-12.md).
+The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.md)
+is reviewed and normally pushed at the tested source above, with unchanged
+assertions and product. Its [latest raw-audited regression](../work/v1.8.0-ci/RESULT-13.md),
+run 37506268620 /attempt 1 /job 112415607085, passes clean build and all
+1,918 actual cases /351 suites /0 failures, errors or skips. First DataGen
+writes 808 entries, repeat writes 0; both worktree checks are clean.
+504 GameTests complete with one required Tau landing failure; the detector's
+eleven-test batch executes without a named terminal failure. Root independently
+rehashes all 394 retained files without mismatch. Main63 ERROR /0 FATAL has no
+blanket waiver; JAR upload is skipped and independent bytes are unavailable.
+Tau remains PREPARED with entities_loaded NO in both samples; entity_ticking
+changes NO to YES. This does not establish a unique cause or full detector acceptance.
 Own generation cleanup was policy-rejected before process creation;
 D temporary directories remain, with no retry or alternate mechanism.
 Detector installed-runtime custom-rule coverage remains explicitly unrun;

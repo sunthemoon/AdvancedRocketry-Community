@@ -39,8 +39,8 @@ SHA `96277962b62b0bfd68d99fb22389169b72ecaa5b3e983e99f86f70d051caaba9`,
 records no input/plan drift, five class outputs and exactly six resources.
 Compile deprecation notes and SLF4J NOP warnings remain in stderr; success is
 not called warning-free. That local generation does not execute Jupiter or the
-eleven GameTests. The later hosted Jupiter failure is recorded below; GameTests
-remain unexecuted in that hosted cohort.
+eleven GameTests. The later historical hosted Jupiter failure is recorded below;
+a separate corrected-source cohort now executes the full regression.
 
 [Independent six-resource review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-generated-resources-review-20261007-c43e8b/REVIEW-01.md),
 SHA `f994b81f447ba3c28914393d1dc8d54d31e404dc1073fc286c5bcbb7d85929cb`,
@@ -59,15 +59,19 @@ uncached clean build was running. That observation is now superseded by the
 [actual failed result](../v1.8.0-ci/RESULT-12.md): main/tests compile, but Jupiter
 fails in the tooltip fixture; DataGen and GameTests are skipped, not passed.
 The independently [reviewed test-only correction](SOURCE-UNIT-FIX-01.md) is
-normally pushed at `33a3156e309ca2b8f6a1fcc766501968bc21f138`; its exact new
-regression is running at the separate dated metadata observation in RESULT-12.
+normally pushed at `33a3156e309ca2b8f6a1fcc766501968bc21f138`. Its
+[exact raw-audited result](../v1.8.0-ci/RESULT-13.md) succeeds in clean build,
+all unit tests and first/repeat DataGen with clean trees. The eleven-test detector
+batch executes; the full GameTest cohort fails only at required Tau landing.
+This supersedes running metadata, not the original failed fixture evidence.
 
 Root's own fresh generation cleanup request is
 [policy-rejected before process creation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-seal-generation-cleanup-deferred-20261007-01/OBSERVATION-01.json).
 No deletion or alternative mechanism ran; temporary directories remain in D.
 Source helpers, logs, existing sealed records and other-agent work are unchanged.
 
-Passing full build/Jupiter/DataGen/repeat/unfiltered GameTest and packaging remain pending.
+Passing the complete unfiltered GameTest cohort and independent packaged-byte
+validation remain pending; build/Jupiter/DataGen now have exact passing evidence.
 Required actor/thread/closed-host/post-query ownership/call-order coverage,
 installed-runtime custom rules, actual unlock, native/restart, V1/V2 and ledger
 delivery remain open. Static source/resources do not waive these or close R-021

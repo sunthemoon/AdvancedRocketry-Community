@@ -180,14 +180,14 @@ C17b candidate03 的独立审核已解决旧版 Medium
 - [~] [C18a-SEAL-01](../work/v1.8.0-c18a-seal-detector/ADOPTION-01.md)：
   ADR-067、限定任务与 NEW 来源已独立审核并发布于 `513f2ffb`。
   独立固定 worktree 的十三个新增源码/测试文件及 Root 的六个中央绑定文件和新增资源测试
-  已完成独立实际源码静态审核，该范围未发现新增 C/H/M/L；未编译或运行。
+  已完成独立实际源码静态审核，该范围未发现新增 C/H/M/L。
   [源码与资源](../work/v1.8.0-c18a-seal-detector/SOURCE-INTEGRATION-01.md)已分别提交并正常推送
   至 `9cd5890b`；限定五源码编译和普通 Java 生成成功，六项资源经独立像素/JSON 审核。
-  这不是完整物品适配编译或 Forge DataGen；随后精确 hosted 构建完成编译、
-  在 tooltip 单测夹具失败。该源的 DataGen 和 GameTest 均跳过，不记为通过。
+  限定本地生成不等于完整物品适配验证；原 tooltip 单测夹具失败保留为历史。
   [限定测试修正](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.md)
   经独立实际差异审核后已提交并正常推送至 `33a3156e`；原断言及产品不变。
-  新精确回归在其有日期的 metadata 观察中运行，修正通过尚待实际结果。
+  新精确回归已有原始结果审核，修正单测通过；完整物品的额外运行时覆盖、
+  原生/重启、真实客户端和台账交付仍未完成。
   自建 D 生成目录清理在启动前被策略拒绝，目录保留，未重试或换机制。
   已安装 runtime 的自定义边界规则验证明确未运行，不以局部 catalog 测试替代。
   完整自动检查、打包原生、真实客户端和台账交付仍开放。
@@ -268,14 +268,15 @@ C17b candidate03 的独立审核已解决旧版 Medium
 [失败时观察源码](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
 已经独立实际审核、分别提交并合并，非强制推送至
 `35a146fbbe1f2de94160f82307d041d2cd26e472`；单次有界缓存编译通过。
-[最近完成的自动证据](../work/v1.8.0-ci/RESULT-12.md) 绑定已推送完整提交
-`9cd5890bffe7e544a6b365bf47612dc13293401e`，run 37501874947 /attempt 1
-/job 112400654061，结果 FAILED：main/test 编译成功，1,918 个实际 JUnit
-/351 suites /1 failure /0 errors /0 skips；唯一失败是 tooltip 的未注册物品夹具。
-Root 独立核对全部 375 个保留成员和 XML；DataGen、GameTest、产物审核与 JAR
-上传均跳过，没有沿用旧源数字。[旧 Tau 批次](../work/v1.8.0-ci/RESULT-11.md)
-及其 required 失败保留为历史；原 40/270 tick 上限未改变，有限观察不说明唯一原因。
-测试专用修正已推送至 `33a3156e`，新回归仅有有日期的运行中 metadata，尚无通过结果。
+[最近完成的自动证据](../work/v1.8.0-ci/RESULT-13.md) 绑定已推送完整提交
+`33a3156e309ca2b8f6a1fcc766501968bc21f138`，run 37506268620 /attempt 1
+/job 112415607085，结果 FAILED：clean build 成功，1,918 个实际 JUnit
+/351 suites /0 failures、errors、skips；首次 DataGen 写入 808，重复写入 0，
+两次工作区均干净。504 项 GameTest 仅有一项 required Tau 着陆失败；
+Root 独立核对全部 394 个保留成员和 XML。主日志 63 ERROR /0 FATAL 未获豁免；
+JAR 上传跳过，未独立验证产物字节。原 tooltip 失败在
+[RESULT-12](../work/v1.8.0-ci/RESULT-12.md)，不改写为通过；其测试专用修正已实际通过。
+原 40/270 tick 上限未改变，Tau 的两次未就绪观察不说明唯一原因。
 先前观察源码的 runner 分配失败及其已执行失败重跑分别保留在
 [原记录](../work/v1.8.0-ci/RESULT-08.md)和历史 RESULT-09 中；不再记为运行中。
 原断言、时限和清理保留，诊断不是生产修复。两个干净工作树和审核者的

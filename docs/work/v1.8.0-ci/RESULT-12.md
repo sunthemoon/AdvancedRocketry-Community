@@ -1,5 +1,8 @@
 # Exact seal detector regression failure
 
+The dated pending-correction observation below is now superseded by
+[RESULT-13](RESULT-13.md). This source's failure remains unchanged.
+
 Date: 2026-10-07. Source `9cd5890bffe7e544a6b365bf47612dc13293401e`;
 [run 37501874947](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37501874947),
 attempt 1, job 112400654061. Result: **FAILED**, at `:test`, not compilation.

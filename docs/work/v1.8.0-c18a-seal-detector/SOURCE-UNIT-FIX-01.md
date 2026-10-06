@@ -1,6 +1,6 @@
 # Seal detector tooltip unit fixture correction
 
-Date: 2026-10-07. Status: **implemented-unverified** at the new source.
+Date: 2026-10-07. Status: **verified for the tooltip unit fixture only**.
 Published commit `33a3156e309ca2b8f6a1fcc766501968bc21f138`, following the
 reviewed records at `f40f0bdea2fb2c65d20815a65c933cdcd82893bc`.
 
@@ -33,6 +33,8 @@ observations (`501cfa`), not an invented exported original shell receipt.
 Scoped whitespace succeeds. C free space is below 10 GB, so no local full
 Gradle/GameTest/native execution is admitted.
 
-The original failed build remains failed. The unchanged hosted regression at
-this new commit is running at its dated observation in RESULT-12; a passing
-correction, full detector delivery, native/client checks and G0–G9 are not claimed.
+The original failed build remains failed. The [exact new regression](../v1.8.0-ci/RESULT-13.md)
+now executes the corrected tooltip test successfully, with all original
+assertions retained. Complete clean build/JUnit and DataGen pass; the whole
+regression fails at the required Tau GameTest. Full detector delivery,
+native/client checks and G0–G9 are not claimed.
