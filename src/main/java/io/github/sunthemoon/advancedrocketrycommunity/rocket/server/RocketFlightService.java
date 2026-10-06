@@ -529,6 +529,12 @@ final class RocketFlightService {
         return transfers.activeCount(server);
     }
 
+    // BEGIN transfer service diagnostics
+    String transferFailureDiagnostics(UUID transferId, boolean active) {
+        return transfers.transferFailureDiagnostics(transferId, active);
+    }
+    // END transfer service diagnostics
+
     Optional<RocketTransferInspection> inspectTransfer(
             net.minecraft.server.MinecraftServer server,
             UUID transferId

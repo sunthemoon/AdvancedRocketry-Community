@@ -37,6 +37,9 @@ final class RocketTransferService {
     private final RocketLandingPadSelector pads = new RocketLandingPadSelector();
     private final Set<UUID> liveTransfers = new HashSet<>();
     private final Set<UUID> settledTransfers = new HashSet<>();
+    // BEGIN transfer service diagnostics
+    private final TransferFailureDiagnostics diagnostics = new TransferFailureDiagnostics();
+    // END transfer service diagnostics
     private final RocketTransferRecoveryService recovery = new RocketTransferRecoveryService(
             liveTransfers,
             settledTransfers
@@ -147,6 +150,9 @@ final class RocketTransferService {
             rocket.updateFlightData(countdown);
             RocketFlightFeedback.countdownAccepted(rocket);
             liveTransfers.add(record.transferId());
+            // BEGIN transfer service diagnostics
+            diagnostics.prepared(record.transferId());
+            // END transfer service diagnostics
         } catch (RuntimeException exception) {
             try {
                 journal.remove(plan.requestId());
@@ -196,6 +202,9 @@ final class RocketTransferService {
 
     void tick(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
+        // BEGIN transfer service diagnostics
+        diagnostics.enterTick(server.getTickCount());
+        // END transfer service diagnostics
         RocketTransferSavedData journal = RocketTransferSavedData.get(server);
         if (!journal.operational()) {
             return;
@@ -210,8 +219,14 @@ final class RocketTransferService {
                 continue;
             }
             try {
+                // BEGIN transfer service diagnostics
+                diagnostics.dispatch(transferId);
+                // END transfer service diagnostics
                 tickLive(server, journal, record);
             } catch (RuntimeException exception) {
+                // BEGIN transfer service diagnostics
+                diagnostics.branch(transferId, TransferFailureDiagnostics.Branch.TICK_EXCEPTION);
+                // END transfer service diagnostics
                 liveTransfers.remove(transferId);
                 AdvancedRocketryCommunity.LOGGER.error(
                         "ARCE_TRANSFER_TICK_FAILED transfer={} phase={}",
@@ -221,6 +236,9 @@ final class RocketTransferService {
                 );
             }
         }
+        // BEGIN transfer service diagnostics
+        diagnostics.completeTick();
+        // END transfer service diagnostics
     }
 
     void onPlayerLoggedIn(ServerPlayer player) {
@@ -273,6 +291,13 @@ final class RocketTransferService {
     String journalDiagnostics(MinecraftServer server) {
         return journalDiagnostics(RocketTransferSavedData.get(server), liveTransfers, settledTransfers);
     }
+
+    // BEGIN transfer service diagnostics
+    String transferFailureDiagnostics(UUID transferId, boolean active) {
+        return diagnostics.snapshot(transferId, active,
+                liveTransfers.contains(transferId), settledTransfers.contains(transferId));
+    }
+    // END transfer service diagnostics
 
     /**
      * One bounded line. Unclassified records (which block every warp, ADR-044 §5 rule 2) are listed, at
@@ -387,6 +412,9 @@ final class RocketTransferService {
         liveTransfers.clear();
         settledTransfers.clear();
         recovery.clear();
+        // BEGIN transfer service diagnostics
+        diagnostics.clear();
+        // END transfer service diagnostics
     }
 
     private void tickLive(
@@ -421,11 +449,19 @@ final class RocketTransferService {
     ) {
         RocketEntity source = RocketTransferEntities.findSource(server, record);
         if (source == null) {
+            // BEGIN transfer service diagnostics
+            diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.SOURCE_UNAVAILABLE);
+            // END transfer service diagnostics
             liveTransfers.remove(record.transferId());
             return;
         }
         RocketFlightData flight = source.flightData().orElseThrow();
         long now = source.level().getGameTime();
+        // BEGIN transfer service diagnostics
+        if (flight.state() == RocketFlightState.TRANSIT) {
+            diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.TRANSIT_NOT_DUE);
+        }
+        // END transfer service diagnostics
         if (flight.state() == RocketFlightState.COUNTDOWN
                 && elapsed(now, flight.stateStartedGameTime()) >= RocketFlightLimits.COUNTDOWN_TICKS) {
             source.updateFlightData(flight.completeCountdown(now));
@@ -451,6 +487,9 @@ final class RocketTransferService {
         } else if (flight.state() != RocketFlightState.COUNTDOWN
                 && flight.state() != RocketFlightState.ASCENT
                 && flight.state() != RocketFlightState.TRANSIT) {
+            // BEGIN transfer service diagnostics
+            diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.SOURCE_STATE_UNEXPECTED);
+            // END transfer service diagnostics
             liveTransfers.remove(record.transferId());
         }
     }
@@ -467,17 +506,29 @@ final class RocketTransferService {
         );
         // Block availability precedes entity visibility/ticking during an asynchronous chunk load.
         // Retain PREPARED source authority until the exact destination origin is ready.
+        // BEGIN transfer service diagnostics
+        diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.DESTINATION_CHECK);
+        // END transfer service diagnostics
         if (destinationLevel != null
                 && !RocketTransferEntities.destinationEntityChunkReady(
                         destinationLevel, record.destinationSnapshot())) {
+            // BEGIN transfer service diagnostics
+            diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.WAIT_ENTITY_READY);
+            // END transfer service diagnostics
             return;
         }
         if (destinationLevel == null
                 || !pads.available(destinationLevel, record.destinationSnapshot(), null, false)) {
+            // BEGIN transfer service diagnostics
+            diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.DESTINATION_UNAVAILABLE);
+            // END transfer service diagnostics
             failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_PAD_BLOCKED);
             return;
         }
         RocketEntity destination = ModEntities.ROCKET.get().create(destinationLevel);
+        // BEGIN transfer service diagnostics
+        diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.SPAWN_ATTEMPT);
+        // END transfer service diagnostics
         if (destination == null) {
             failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_ENTITY_CREATE_FAILED);
             return;

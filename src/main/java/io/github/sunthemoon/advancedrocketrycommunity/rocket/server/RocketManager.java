@@ -247,6 +247,13 @@ public final class RocketManager implements RocketOperationService {
         return flights.activeTransferCount(server);
     }
 
+    // BEGIN transfer service diagnostics
+    /** Reads only this manager's lifecycle and scalar/membership observations. */
+    public String transferFailureDiagnostics(UUID transferId) {
+        return flights.transferFailureDiagnostics(transferId, flightLifecycle.active());
+    }
+    // END transfer service diagnostics
+
     public Optional<RocketTransferInspection> inspectTransfer(MinecraftServer server, UUID transferId) {
         return flights.inspectTransfer(server, transferId);
     }

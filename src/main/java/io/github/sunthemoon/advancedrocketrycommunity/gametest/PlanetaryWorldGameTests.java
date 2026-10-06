@@ -208,7 +208,43 @@ public final class PlanetaryWorldGameTests {
                 // Retain the original assertion even when the logger itself is unavailable.
             }
         }
+        // BEGIN transfer service diagnostics
+        observeServiceFailure(helper, journal, logical);
+        // END transfer service diagnostics
     }
+
+    // BEGIN transfer service diagnostics
+    /** One extra failure line; neither logging attempt retries nor world activation are permitted. */
+    private static void observeServiceFailure(GameTestHelper helper, RocketTransferSavedData journal, UUID logical) {
+        String line;
+        try {
+            var record = journal == null ? null : journal.findByLogicalRocket(logical).orElse(null);
+            UUID transferId = record == null ? null : record.transferId();
+            String state = transferId == null ? "installed=UNOBSERVED"
+                    : RocketRuntime.transferFailureDiagnostics(transferId);
+            line = "ARCE_TRANSFER_SERVICE_FAILURE fixture=PLANETARY transfer="
+                    + (transferId == null ? "UNOBSERVED" : transferId.toString())
+                    + " current_server_tick=" + helper.getLevel().getServer().getTickCount() + " " + state;
+            if (line.length() > 512) {
+                line = "ARCE_TRANSFER_SERVICE_FAILURE fixture=PLANETARY diagnostic=UNAVAILABLE";
+            } else {
+                for (int index = 0; index < line.length(); index++) {
+                    if (line.charAt(index) < 32 || line.charAt(index) > 126) {
+                        line = "ARCE_TRANSFER_SERVICE_FAILURE fixture=PLANETARY diagnostic=UNAVAILABLE";
+                        break;
+                    }
+                }
+            }
+        } catch (RuntimeException | Error observationFailure) {
+            line = "ARCE_TRANSFER_SERVICE_FAILURE fixture=PLANETARY diagnostic=UNAVAILABLE";
+        }
+        try {
+            AdvancedRocketryCommunity.LOGGER.warn("{}", line);
+        } catch (RuntimeException | Error loggingFailure) {
+            // Preserve the original assertion and cleanup; do not retry a possibly partial logging write.
+        }
+    }
+    // END transfer service diagnostics
 
     private static String planetaryDiagnosticId(net.minecraft.resources.ResourceLocation id) {
         String value = id.toString();

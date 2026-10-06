@@ -191,6 +191,9 @@ public final class TauCetiPathGameTests {
             String after = missingSample(helper, level, logical, where, observerJournal, "POST");
             emitMissing(before);
             emitMissing(after);
+            // BEGIN transfer service diagnostics
+            observeServiceFailure(helper, observerJournal, logical);
+            // END transfer service diagnostics
         }
         helper.assertTrue(rocket != null, "No rocket at " + where);
         var flight = rocket.flightData().orElseThrow();
@@ -204,6 +207,39 @@ public final class TauCetiPathGameTests {
         }
         return rocket;
     }
+
+    // BEGIN transfer service diagnostics
+    /** One extra failure line; no callback, world activation or assertion replacement. */
+    private static void observeServiceFailure(GameTestHelper helper, RocketTransferSavedData journal, UUID logical) {
+        String line;
+        try {
+            var record = journal == null ? null : journal.findByLogicalRocket(logical).orElse(null);
+            UUID transferId = record == null ? null : record.transferId();
+            String state = transferId == null ? "installed=UNOBSERVED"
+                    : RocketRuntime.transferFailureDiagnostics(transferId);
+            line = "ARCE_TRANSFER_SERVICE_FAILURE fixture=TAU transfer="
+                    + (transferId == null ? "UNOBSERVED" : transferId.toString())
+                    + " current_server_tick=" + helper.getLevel().getServer().getTickCount() + " " + state;
+            if (line.length() > 512) {
+                line = "ARCE_TRANSFER_SERVICE_FAILURE fixture=TAU diagnostic=UNAVAILABLE";
+            } else {
+                for (int index = 0; index < line.length(); index++) {
+                    if (line.charAt(index) < 32 || line.charAt(index) > 126) {
+                        line = "ARCE_TRANSFER_SERVICE_FAILURE fixture=TAU diagnostic=UNAVAILABLE";
+                        break;
+                    }
+                }
+            }
+        } catch (RuntimeException | Error observationFailure) {
+            line = "ARCE_TRANSFER_SERVICE_FAILURE fixture=TAU diagnostic=UNAVAILABLE";
+        }
+        try {
+            AdvancedRocketryCommunity.LOGGER.warn("{}", line);
+        } catch (RuntimeException | Error loggingFailure) {
+            // One logging attempt only: preserve the original assertion and cleanup even after a partial write.
+        }
+    }
+    // END transfer service diagnostics
 
     /** The original clearTransferJournal call has already initialized this fixture's journal. */
     private static RocketTransferSavedData observerJournal(MinecraftServer server) {

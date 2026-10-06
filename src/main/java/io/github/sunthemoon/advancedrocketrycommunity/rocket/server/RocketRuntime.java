@@ -35,6 +35,16 @@ public final class RocketRuntime {
         service = null;
     }
 
+    // BEGIN transfer service diagnostics
+    /** Internal failure observation; unsupported installed services are never invoked. */
+    public static String transferFailureDiagnostics(UUID transferId) {
+        RocketOperationService current = service;
+        return current instanceof RocketManager manager
+                ? manager.transferFailureDiagnostics(transferId)
+                : "installed=UNSUPPORTED";
+    }
+    // END transfer service diagnostics
+
     public static void requestAssembler(
             ServerPlayer player,
             BlockPos assemblerPosition,
