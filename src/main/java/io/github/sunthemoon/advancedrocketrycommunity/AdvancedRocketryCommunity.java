@@ -25,6 +25,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Beta
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.BetaDataCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.command.AtmosphereCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AtmosphereAnalyzerLifecycle;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.SealDetectorItem;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.SealDetectorLifecycle;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSupportNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereManager;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
@@ -41,6 +43,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMac
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineServerEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRegistries;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.command.RocketCommands;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketAdaptersEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RegisterRocketComponentsEvent;
@@ -52,6 +55,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.Ro
 import io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.RocketAdapterRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterAtmosphereBoundariesEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryRegistry;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.RegisterSuitEquipmentEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEquipmentService;
@@ -83,6 +87,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.resource.Resourc
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.network.SatelliteNetwork;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.AddReloadListenerEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -117,6 +122,7 @@ public final class AdvancedRocketryCommunity {
     private final CelestialEnvironmentService environments = new CelestialEnvironmentService(celestialCatalogs);
     private final LifeSupportNetwork lifeSupportNetwork;
     private AtmosphereManager atmosphereManager;
+    private AtmosphereBoundaryCatalog atmosphereBoundaries;
     private PlayerLifeSupportService playerLifeSupport;
     private RocketManager rocketManager;
     private final StationManager stationManager;
@@ -183,6 +189,11 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(analyzer::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, analyzer::onServerStopping);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, analyzer::onServerStopped);
+        SealDetectorLifecycle detector = new SealDetectorLifecycle(() -> atmosphereManager, () -> atmosphereBoundaries);
+        MinecraftForge.EVENT_BUS.addListener(detector::onServerStarted);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, detector::onServerStopping);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, detector::onServerStopped);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, this::onSealDetectorBlock);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockBroken);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onBlockPlaced);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onPlayerLoggedOut);
@@ -360,12 +371,14 @@ public final class AdvancedRocketryCommunity {
                 ForgeRegistries.BLOCKS.containsKey(id) ? ForgeRegistries.BLOCKS.getValue(id) : null)) {
             ModLoader.get().runEventGenerator(container -> new RegisterAtmosphereBoundariesEvent(
                     registry.forOwner(container.getModId())));
-            atmosphereManager = new AtmosphereManager(environments, registry.freeze());
+            atmosphereBoundaries = registry.freeze();
+            atmosphereManager = new AtmosphereManager(environments, atmosphereBoundaries);
             AtmosphereRuntime.install(atmosphereManager);
             SuitEquipmentService equipment = initializeSuitEquipment();
             SuitEquipmentRuntime.install(equipment);
             playerLifeSupport = new PlayerLifeSupportService(atmosphereManager, lifeSupportNetwork::send, equipment);
-            AtmosphereServerEvents events = new AtmosphereServerEvents(atmosphereManager);
+            AtmosphereServerEvents events = new AtmosphereServerEvents(atmosphereManager,
+                    stack -> ModItems.SEAL_DETECTOR.isPresent() && stack.getItem() == ModItems.SEAL_DETECTOR.get());
             MinecraftForge.EVENT_BUS.addListener(events::onServerTick);
             MinecraftForge.EVENT_BUS.addListener(events::onBlockBroken);
             MinecraftForge.EVENT_BUS.addListener(events::onBlockPlaced);
@@ -387,6 +400,12 @@ public final class AdvancedRocketryCommunity {
             ModLoader.get().runEventGenerator(container -> new RegisterSuitEquipmentEvent(
                     registry.forOwner(container.getModId())));
             return new SuitEquipmentService(registry.freeze());
+        }
+    }
+
+    private void onSealDetectorBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (ModItems.SEAL_DETECTOR.isPresent()) {
+            ((SealDetectorItem) ModItems.SEAL_DETECTOR.get()).onRightClickBlock(event);
         }
     }
 

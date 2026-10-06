@@ -1,8 +1,10 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server;
 
 import java.util.Objects;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
@@ -13,13 +15,20 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.common.util.BlockSnapshot;
+import net.minecraftforge.eventbus.api.Event;
 
 /** Forge event adapter for loaded-world invalidation and bounded server ticks. */
 public final class AtmosphereServerEvents {
     private final AtmosphereManager atmosphere;
+    private final Predicate<ItemStack> nonMutatingItem;
 
     public AtmosphereServerEvents(AtmosphereManager atmosphere) {
+        this(atmosphere, stack -> false);
+    }
+
+    public AtmosphereServerEvents(AtmosphereManager atmosphere, Predicate<ItemStack> nonMutatingItem) {
         this.atmosphere = Objects.requireNonNull(atmosphere, "atmosphere");
+        this.nonMutatingItem = Objects.requireNonNull(nonMutatingItem, "nonMutatingItem");
     }
 
     public void onServerTick(TickEvent.ServerTickEvent event) {
@@ -47,6 +56,10 @@ public final class AtmosphereServerEvents {
     }
 
     public void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        // ADR-067: only item-only measurement skips preemptive interaction invalidation.
+        if (nonMutatingItem.test(event.getItemStack()) && event.getUseBlock() == Event.Result.DENY) {
+            return;
+        }
         if (!(event.getLevel() instanceof ServerLevel level)) {
             return;
         }

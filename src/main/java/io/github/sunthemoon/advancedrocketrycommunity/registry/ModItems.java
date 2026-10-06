@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.OxygenCanisterItem;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitArmorItem;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AtmosphereAnalyzerItem;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.SealDetectorItem;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.content.DevelopmentComponentItem;
 import io.github.sunthemoon.advancedrocketrycommunity.fluid.GasCanisterItem;
@@ -140,6 +141,10 @@ public final class ModItems {
     public static final RegistryObject<Item> ATMOSPHERE_ANALYZER = ITEMS.register(
             "atmosphere_analyzer",
             () -> new AtmosphereAnalyzerItem(new Item.Properties(), CommonConfig::classicDevicesEnabled)
+    );
+    public static final RegistryObject<Item> SEAL_DETECTOR = ITEMS.register(
+            "seal_detector",
+            () -> new SealDetectorItem(new Item.Properties(), CommonConfig::classicDevicesEnabled)
     );
     public static final RegistryObject<Item> SILICON_WAFER = component("silicon_wafer");
     public static final RegistryObject<Item> BASIC_CIRCUIT = component("basic_circuit");
