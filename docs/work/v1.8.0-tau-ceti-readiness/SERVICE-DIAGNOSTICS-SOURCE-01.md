@@ -51,10 +51,18 @@ attempt 1 /job 112481271928, is observed IN_PROGRESS at
 2026-10-06T20:22:01Z, in clean build. Root's GET-only
 [observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-diagnostics-ci-observation-20261007-01/OBSERVATION-01.json),
 SHA `9a97a278ae3ff6361d38673142cd1e479edb5f4c802a1ef47a1c8f774a0b15ed`,
-exits 0 (tool `bd049c`). Dated metadata is not audited terminal evidence.
+exits 0 (tool `bd049c`). This immutable dated observation is superseded by
+[RESULT-16](../v1.8.0-ci/RESULT-16.md): fresh build and 1,946 actual JUnit cases
+succeed, both DataGen/worktree checks succeed, but 509 GameTests complete with
+one required Tau failure. Root independently verifies 398 retained raw/receipt
+identities. The emitted sample retains installed MANAGER, active flight, LIVE,
+completed service tick14939 and WAIT_ENTITY_READY. These are discrete samples,
+not a unique cause or production correction. Build-JAR upload is skipped;
+the reported manifest/hash is not independent JAR bytes.
 [RESULT-15](../v1.8.0-ci/RESULT-15.md) belongs only to the previous row source.
 
-Production bridge/GameTest compilation, actual logging/installed lifecycle,
-full hosted regression, packaged native/restart/client and Gates remain open.
+Hosted production bridge/GameTest compilation and the failure log execute.
+Installed lifecycle/restart, a passing full regression, packaged native/client
+and Gates remain open.
 Slot replacement may leave an older target unobserved. No historical cause,
 content-ledger item or Gate is closed by this checkpoint.

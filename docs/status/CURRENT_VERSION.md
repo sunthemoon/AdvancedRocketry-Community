@@ -37,15 +37,12 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: ca217afac7fc2034cf4740e18a0fe582af7285d7
-tested_code_commit: 60f1564528de782fa15269884fd1355d3c0b9ff1
-latest_regression_result: SUCCESS
-latest_regression_run: 37519061729
+tested_code_commit: ca217afac7fc2034cf4740e18a0fe582af7285d7
+latest_regression_result: FAILED
+latest_regression_run: 37525478437
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-pending_regression_source_commit: ca217afac7fc2034cf4740e18a0fe582af7285d7
-pending_regression_run: 37525478437
-pending_regression_attempt: 1
-pending_regression_observed_utc: 2026-10-06T20:22:01Z
+latest_regression_observed_utc: 2026-10-06T20:52:21Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -85,9 +82,9 @@ Its exact full regression is raw-audited below. The later
 are independently reviewed, committed and normally pushed at the latest
 source checkpoint. The independent development and separate fixed-commit
 pure-helper replays each pass 19 subjects;
-assertions and flight timings remain unchanged. Its separate hosted run is
-observed IN_PROGRESS at the timestamp above, in clean build, without audited
-terminal results. The previous row metrics are not rebound to this new source.
+assertions and flight timings remain unchanged. Its separate hosted run now has
+raw-audited FAILED terminal results in [RESULT-16](../work/v1.8.0-ci/RESULT-16.md).
+The previous row metrics are not rebound to this new source.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
@@ -118,7 +115,15 @@ The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.
 is reviewed and normally pushed at `33a3156e309ca2b8f6a1fcc766501968bc21f138`, with unchanged
 assertions and product. Its original successful unit correction remains in
 [RESULT-13](../work/v1.8.0-ci/RESULT-13.md). The
-[latest raw-audited regression](../work/v1.8.0-ci/RESULT-15.md),
+[latest raw-audited regression](../work/v1.8.0-ci/RESULT-16.md) belongs only to
+`ca217afa`: fresh build succeeds, 353 XML suites /1,946 actual cases /0FES,
+both DataGen/worktree checks succeed, but all 509 GameTests finish with one
+required Tau failure. Root rehashes 398 retained raw/receipt inputs without
+drift. The failure-only service sample is LIVE and last waits at
+WAIT_ENTITY_READY; it does not prove a unique native cause. Main63 ERROR /0 FATAL
+has no blanket waiver. Build-JAR upload is skipped: no new independent JAR-byte
+verification is claimed. No assertions, deadlines or test selection change.
+The [preceding recipe-row regression](../work/v1.8.0-ci/RESULT-15.md),
 run 37519061729 /attempt 1 /job 112459397257, passes clean build and all
 1,927 actual cases /352 suites /0 failures, errors or skips. First DataGen
 writes 808 entries, repeat writes 0; both worktree checks are clean.
