@@ -36,13 +36,13 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: ca217afac7fc2034cf4740e18a0fe582af7285d7
-tested_code_commit: ca217afac7fc2034cf4740e18a0fe582af7285d7
+latest_source_checkpoint: 8d5214061c98fce0cf549a231eae7aaf312b3ba2
+tested_code_commit: 8d5214061c98fce0cf549a231eae7aaf312b3ba2
 latest_regression_result: FAILED
-latest_regression_run: 37525478437
+latest_regression_run: 37534775606
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-06T20:52:21Z
+latest_regression_observed_utc: 2026-10-06T21:49:30Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -79,12 +79,17 @@ the independent development replay passes 13 subjects including four reviewer
 controls. Full guarded recipe/owner/frame and physical machines remain incomplete.
 Its exact full regression is raw-audited below. The later
 [bounded service diagnostics](../work/v1.8.0-tau-ceti-readiness/SERVICE-DIAGNOSTICS-SOURCE-01.md)
-are independently reviewed, committed and normally pushed at the latest
-source checkpoint. The independent development and separate fixed-commit
+are independently reviewed, committed and normally pushed at `ca217afa`.
+The independent development and separate fixed-commit
 pure-helper replays each pass 19 subjects;
-assertions and flight timings remain unchanged. Its separate hosted run now has
-raw-audited FAILED terminal results in [RESULT-16](../work/v1.8.0-ci/RESULT-16.md).
+assertions and flight timings remain unchanged. Its separate hosted run has
+historical raw-audited FAILED results in [RESULT-16](../work/v1.8.0-ci/RESULT-16.md).
 The previous row metrics are not rebound to this new source.
+The [guarded-resource data checkpoint](../work/v1.8.0-c16a-hatches/GUARDED-RESOURCE-CHECKPOINT-01.md)
+is independently reviewed and normally published at the latest source checkpoint.
+All eight new and 39 unchanged resource cases execute in its complete hosted
+unit cohort. This is source/unit evidence, not physical-owner, save-writer or
+native admission; its overall regression remains FAILED below.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
@@ -115,10 +120,10 @@ The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.
 is reviewed and normally pushed at `33a3156e309ca2b8f6a1fcc766501968bc21f138`, with unchanged
 assertions and product. Its original successful unit correction remains in
 [RESULT-13](../work/v1.8.0-ci/RESULT-13.md). The
-[latest raw-audited regression](../work/v1.8.0-ci/RESULT-16.md) belongs only to
-`ca217afa`: fresh build succeeds, 353 XML suites /1,946 actual cases /0FES,
+[latest raw-audited regression](../work/v1.8.0-ci/RESULT-17.md) belongs only to
+`8d521406`: fresh build succeeds, 354 XML suites /1,954 actual cases /0FES,
 both DataGen/worktree checks succeed, but all 509 GameTests finish with one
-required Tau failure. Root rehashes 398 retained raw/receipt inputs without
+required Tau failure. Root rehashes 399 retained raw/receipt inputs without
 drift. The failure-only service sample is LIVE and last waits at
 WAIT_ENTITY_READY; it does not prove a unique native cause. Main63 ERROR /0 FATAL
 has no blanket waiver. Build-JAR upload is skipped: no new independent JAR-byte

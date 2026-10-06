@@ -90,10 +90,10 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   - [x] [车床不可变配方行](../work/v1.8.0-c16a-hatches/RECIPE-ROWS-SOURCE-01.md)：
     三个精确冻结 record 经独立审核后提交、推送至 `60f15645`；固定提交单测 9/9，
     独立开发复跑 13/13。完整配方、native 解析、注册和首台车床仍未完成。
-  - [~] [共享资源守卫小切片](../work/v1.8.0-c16a-hatches/GUARDED-RESOURCE-CHECKPOINT-01.md)：
-    五个精确源码后像已接入；源码与测试修订已独立审核。三次本地定向尝试均失败，
-    最新两次各有三项 BankKey 通过、六个初始化容器失败；新增八项方法尚未执行。
-    状态为 implemented-unverified，完整托管回归待执行；不开放物理 owner、保存 writer，
+  - [x] [共享资源守卫数据与单测](../work/v1.8.0-c16a-hatches/GUARDED-RESOURCE-CHECKPOINT-01.md)：
+    五个精确源码后像经独立审核后提交、推送至 `8d521406`；完整托管单测实际执行
+    新增八项与原有 39 项资源用例并通过。三次本地失败不改写，作者已清理自有结束输出。
+    仅限数据源码/单测范围；整体回归仍因 Tau required 失败，不开放物理 owner、保存 writer，
     不作台账交付或 Gate 批准。
   - [ ] 02 生命周期、首存观察、最终卸载和保存 writer。
   - [ ] 服务端 creative 输入的复制/覆盖前拦截与真实客户端、FE 守恒证明。
@@ -297,10 +297,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
 新的[服务失败诊断](../work/v1.8.0-tau-ceti-readiness/SERVICE-DIAGNOSTICS-SOURCE-01.md)
 经独立实际审核后已提交并正常推送至 `ca217afa`；19 项独立开发及固定提交
 pure-helper 单测分别通过，
-断言、时限和保存行为不变。其 run 37525478437 /attempt 1 /job 112481271928
-已有[原始终态核对](../work/v1.8.0-ci/RESULT-16.md)：clean build 成功，353 XML
-/1,946 实际单测 /0FES，两次 DataGen 与工作区检查成功；509 GameTest 完成但
-一项 required Tau 往返失败。Root 独立核对 398 个保留 raw/receipt 输入无漂移。
+断言、时限和保存行为不变；其单独历史失败保留在 RESULT-16。
+最新已提交资源源码 `8d521406` 的 run 37534775606 /attempt 1 /job 112512823966
+已有[原始终态核对](../work/v1.8.0-ci/RESULT-17.md)：clean build 成功，354 XML
+/1,954 实际单测 /0FES，两次 DataGen 与工作区检查成功；509 GameTest 完成但
+一项 required Tau 往返失败。Root 独立核对 399 个保留 raw/receipt 输入无漂移。
 失败服务样本为 LIVE，最后分支 WAIT_ENTITY_READY；不说明唯一原生原因。
 主日志 63 ERROR /0 FATAL 未获豁免；JAR 上传跳过，不声称新 JAR 字节核对。
 不复用前一提交的数字，不把诊断认定为生产修复。

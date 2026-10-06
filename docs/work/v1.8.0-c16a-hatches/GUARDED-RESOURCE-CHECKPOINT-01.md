@@ -1,7 +1,10 @@
 # Guarded resource data-only checkpoint
 
-Task: C16a-03b-GUARDED-RESOURCE-01. Status: implemented-unverified.
+Task: C16a-03b-GUARDED-RESOURCE-01. Status: verified in the data-only source/unit
+scope; physical-owner/native qualification remains open.
 Integration base: `0cbbfb68446adf160a3a1007601e311173268313`.
+Published source: `8d5214061c98fce0cf549a231eae7aaf312b3ba2`, normally committed
+and pushed by Root (tool `1be3d0`, exit 0); exact remote equality verified.
 
 ## Scope and boundaries
 
@@ -53,18 +56,23 @@ Three bounded local attempts failed and remain separately retained:
 | [Second](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-check-successor-20261007-5c4a82/RESULT-01.json) | 0 / 1 / 1 | Missing Netty initialization dependency; three BankKey methods passed and six containers failed before their test bodies. |
 | [Third](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-check-successor03-20261007-62c118/RESULT-01.json) | 0 / 1 / 1 | Missing ModLauncher initialization dependency; three BankKey methods passed and six containers failed before their test bodies. |
 
-No new guarded-resource test body has actually run. There is no further local
+No new guarded-resource test body ran in those local attempts. There is no further local
 dependency retry, Bootstrap edit or test relaxation. C: has less than 10 GB
 available; no local full Gradle, GameTest or native server is started. New
 temporary scripts and retained outputs use the external D: task-evidence tree.
-The author's ended class outputs remain cleanup debt, not deleted by Root.
+The author subsequently removes only its ended own output trees: 66 classes /
+331,644 logical bytes and 32 empty directories, with 48 original flat records
+unchanged. The [cleanup receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-output-cleanup-20261007-317c6a/REPORT-01.md)
+has SHA256 `79be553f0d626ff2d27dedb09ca0d377f3b67a2dcf136238ab4ff1b02b8785d9`.
+No sealed source/raw member, C: target or other-agent output is removed.
 
-A clean hosted cohort bound to the resulting source commit must execute the
-eight new methods and unchanged resource suites and retain all initialization,
-container and domain failures. Hosted CI is pending, not inferred from static
-checks or earlier commits. The preceding diagnostic source's 1,946 unit cases
-and 509 GameTests with one required Tau failure remain separately bound to
-`ca217afac7fc2034cf4740e18a0fe582af7285d7`; they do not test this checkpoint.
+The exact published source's [hosted result](../v1.8.0-ci/RESULT-17.md) now executes
+all eight new and 39 unchanged resource cases with zero failure/error/skip.
+Root independently recounts the original XML and verifies raw identities.
+Clean build and repeated DataGen succeed, but the complete GameTest batch fails
+at the required Tau fixture. Overall CI is FAILED, not pending or passed.
+The preceding diagnostic cohort remains historical in RESULT-16 and is not
+rebound to this checkpoint. Native/world callback qualification is still open.
 
 Real owner/FULL observations, callback invalidation, physical capabilities,
 save/restart recovery and client validation remain open. No content-ledger
