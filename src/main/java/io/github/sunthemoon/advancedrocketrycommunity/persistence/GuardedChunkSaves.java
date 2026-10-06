@@ -14,6 +14,7 @@ import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.level.ChunkDataEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -57,6 +58,34 @@ public final class GuardedChunkSaves {
             state(level).deny(event.getChunk().getPos().toLong(), reason);
         }
         fail(event, reason);
+    }
+
+    /** Preserve an observed rejection before serialization can omit the rejected object. */
+    public static void recordObservedDenial(ServerLevel level, ChunkPos position, String reason) {
+        state(level).deny(position.toLong(), reason);
+    }
+
+    /** Call only while a coherent operation is actually held, never for a loaded pending record. */
+    public static void defer(ChunkDataEvent.Save event, String reason) {
+        beforeSave(event);
+        if (reason == null || reason.isBlank() || reason.length() > ChunkSaveDenials.MAX_REASON_CHARS) {
+            throw new IllegalArgumentException("Invalid bounded chunk-save deferral reason");
+        }
+        fail(event, reason);
+    }
+
+    /** Stopped follows the writer/Level-close attempt; ordinary unload retains admission state. */
+    @SubscribeEvent
+    public static void serverStopped(ServerStoppedEvent event) {
+        RuntimeException firstFailure = null;
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            try {
+                state(level).close();
+            } catch (RuntimeException failure) {
+                if (firstFailure == null) { firstFailure = failure; }
+            }
+        }
+        if (firstFailure != null) { throw firstFailure; }
     }
 
     private static void fail(ChunkDataEvent.Save event, String reason) {
