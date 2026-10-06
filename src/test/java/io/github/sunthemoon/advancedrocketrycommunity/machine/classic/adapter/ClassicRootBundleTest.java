@@ -1,7 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.nbt.*;
 import org.junit.jupiter.api.Test;
 
@@ -155,5 +157,185 @@ class ClassicRootBundleTest {
         CompoundTag emitted = new CompoundTag(); bundle.emitData(emitted, false);
         assertEquals(parent, emitted);
         // Position-shaped raw fixture only; no old controller codec/native/accounted equivalence claimed.
+    }
+
+    @Test void publicNullBackingsAtEveryManagedRootRetainTheEntireBundle() {
+        List<Tag> values = List.of(new ByteArrayTag((byte[]) null), new IntArrayTag((int[]) null),
+                new LongArrayTag((long[]) null));
+        for (String key : ClassicRootBundle.KEYS) {
+            for (Tag value : values) {
+                CompoundTag parent = minimalController(); parent.put(key, value);
+                assertUnsafeBundle(parent);
+                assertSame(value, parent.get(key));
+            }
+        }
+        assertNull(((ByteArrayTag) values.get(0)).getAsByteArray());
+        assertNull(((IntArrayTag) values.get(1)).getAsIntArray());
+        assertNull(((LongArrayTag) values.get(2)).getAsLongArray());
+    }
+
+    @Test void nativeLoadedTypedEmptyListsRetainEverySubtypeAndAllCompanionIdentities() throws IOException {
+        for (int type = Tag.TAG_BYTE; type <= Tag.TAG_LONG_ARRAY; type++) {
+            for (String key : ClassicRootBundle.KEYS) {
+                ListTag list = loadedEmptyList(type);
+                assertEquals(type, list.getElementType());
+                assertTrue(ClassicNbtShape.fits(list, ClassicRootBundle.limits(key)));
+                CompoundTag parent = minimalController(); parent.put(key, list);
+                assertUnsafeBundle(parent);
+                assertEquals(type, list.getElementType()); assertEquals(0, list.size());
+                // Do not write after refusal: native emission would normalize this retained input.
+            }
+        }
+        CompoundTag parent = minimalController(); parent.put("arce_machine", loadedEmptyList(Tag.TAG_END));
+        var safe = ClassicRootBundle.captureData(parent, ClassicRootBundle.OwnerType.CONTROLLER);
+        assertTrue(safe.bounded());
+        CompoundTag emitted = new CompoundTag(); safe.emitData(emitted, false);
+        assertEquals(Tag.TAG_END, ((ListTag) emitted.get("arce_machine")).getElementType());
+        assertNotSame(parent.get("arce_machine"), emitted.get("arce_machine"));
+    }
+
+    @Test void noncanonicalNanBitsAtEveryRootRefuseWithoutChangingTheInput() {
+        List<Tag> values = List.of(FloatTag.valueOf(Float.intBitsToFloat(0x7fc00001)),
+                FloatTag.valueOf(Float.intBitsToFloat(0xffc00001)),
+                DoubleTag.valueOf(Double.longBitsToDouble(0x7ff8000000000001L)),
+                DoubleTag.valueOf(Double.longBitsToDouble(0xfff8000000000001L)));
+        for (String key : ClassicRootBundle.KEYS) {
+            for (Tag value : values) {
+                long before = rawBits(value);
+                assertTrue(ClassicNbtShape.fits(value, ClassicRootBundle.limits(key)));
+                CompoundTag parent = minimalController(); parent.put(key, value);
+                assertUnsafeBundle(parent);
+                assertSame(value, parent.get(key)); assertEquals(before, rawBits(value));
+            }
+        }
+    }
+
+    @Test void canonicalNanSignedZerosAndInfinitiesKeepActualBitsAndDetachedCompanions()
+            throws ReflectiveOperationException {
+        // Native factories/load normalize -0; exact scalar constructors isolate emission/copy fidelity.
+        var floatConstructor = FloatTag.class.getDeclaredConstructor(float.class); floatConstructor.setAccessible(true);
+        var doubleConstructor = DoubleTag.class.getDeclaredConstructor(double.class); doubleConstructor.setAccessible(true);
+        List<Tag> values = List.of(FloatTag.valueOf(Float.NaN), DoubleTag.valueOf(Double.NaN),
+                FloatTag.valueOf(0.0f), DoubleTag.valueOf(0.0d),
+                floatConstructor.newInstance(-0.0f), doubleConstructor.newInstance(-0.0d),
+                FloatTag.valueOf(Float.POSITIVE_INFINITY), DoubleTag.valueOf(Double.NEGATIVE_INFINITY));
+        assertEquals(0x80000000L, Integer.toUnsignedLong(Float.floatToRawIntBits(((FloatTag) values.get(4)).getAsFloat())));
+        assertEquals(0x8000000000000000L, rawBits(values.get(5)));
+        for (Tag value : values) {
+            CompoundTag parent = minimalController(); parent.put(ClassicRootBundle.MACHINE, value);
+            parent.putByteArray("arce_machine", new byte[]{1, 2});
+            long before = rawBits(value);
+            var bundle = ClassicRootBundle.captureData(parent, ClassicRootBundle.OwnerType.CONTROLLER);
+            assertTrue(bundle.bounded()); assertFalse(bundle.requiresSaveRefusal(false));
+            parent.getByteArray("arce_machine")[0] = 9;
+            CompoundTag first = new CompoundTag(); bundle.emitData(first, false);
+            assertEquals(value.getId(), first.get(ClassicRootBundle.MACHINE).getId());
+            assertEquals(before, rawBits(first.get(ClassicRootBundle.MACHINE)));
+            assertArrayEquals(new byte[]{1, 2}, first.getByteArray("arce_machine"));
+            first.getByteArray("arce_machine")[0] = 8;
+            CompoundTag second = new CompoundTag(); bundle.emitData(second, false);
+            assertArrayEquals(new byte[]{1, 2}, second.getByteArray("arce_machine"));
+            assertEquals(before, rawBits(value));
+        }
+    }
+
+    @Test void foreignListChildrenCannotReachNativeGetIdCopyWriteOrEqualityDuringPreflight() {
+        AtomicInteger calls = new AtomicInteger();
+        CompoundTag foreign = new CompoundTag() {
+            @Override public byte getId() { calls.incrementAndGet(); return Tag.TAG_COMPOUND; }
+            @Override public CompoundTag copy() { calls.incrementAndGet(); fail("Foreign copy"); return null; }
+            @Override public void write(DataOutput output) { calls.incrementAndGet(); fail("Foreign write"); }
+            @Override public boolean equals(Object other) { calls.incrementAndGet(); fail("Foreign equality"); return false; }
+        };
+        ListTag list = new ListTag(); list.add(foreign); calls.set(0);
+        CompoundTag parent = minimalController(); parent.put("arce_machine", list);
+        assertUnsafeBundle(parent);
+        assertEquals(0, calls.get()); assertSame(foreign, list.get(0));
+    }
+
+    @Test void mismatchedNativeListSubtypeAndNamedEndRefuseBeforeAnyCopy() throws ReflectiveOperationException {
+        ListTag mismatched = new ListTag(); mismatched.add(IntTag.valueOf(7));
+        var field = ListTag.class.getDeclaredField("type"); field.setAccessible(true);
+        field.setByte(mismatched, (byte) Tag.TAG_LONG);
+        CompoundTag parent = minimalController(); parent.put("arce_machine", mismatched);
+        assertUnsafeBundle(parent);
+        assertEquals(Tag.TAG_LONG, mismatched.getElementType()); assertEquals(7, ((IntTag) mismatched.get(0)).getAsInt());
+        parent.put("arce_machine", EndTag.INSTANCE); assertUnsafeBundle(parent);
+        assertSame(EndTag.INSTANCE, parent.get("arce_machine"));
+    }
+
+    @Test void exactPerRootAndCompleteProjectionByteCeilingsRemainInclusive() throws IOException {
+        CompoundTag projection = new CompoundTag();
+        for (String key : ClassicRootBundle.KEYS) {
+            ClassicNbtLimits limits = ClassicRootBundle.limits(key);
+            Tag exact = new ByteArrayTag(new byte[limits.bytes() - 7]);
+            assertEquals(limits.bytes(), ClassicNbtShapeTest.nativeBytes(exact));
+            CompoundTag parent = minimalController(); parent.put(key, exact);
+            assertTrue(ClassicRootBundle.captureData(parent, ClassicRootBundle.OwnerType.CONTROLLER).bounded());
+            projection.put(key, exact);
+            parent.put(key, new ByteArrayTag(new byte[limits.bytes() - 6]));
+            assertUnsafeBundle(parent);
+        }
+        assertEquals(ClassicNbtLimits.REJECTED.bytes(), ClassicNbtShapeTest.nativeBytes(projection));
+        var bundle = ClassicRootBundle.captureData(projection, ClassicRootBundle.OwnerType.CONTROLLER);
+        assertTrue(bundle.bounded());
+        CompoundTag emitted = new CompoundTag(); bundle.emitData(emitted, true);
+        assertEquals(ClassicNbtLimits.REJECTED.bytes(), ClassicNbtShapeTest.nativeBytes(emitted));
+        assertNotSame(projection.getByteArray("arce_multiblock"), emitted.getByteArray("arce_multiblock"));
+        projection.putByteArray(ClassicRootBundle.HATCH, new byte[ClassicNbtLimits.HATCH.bytes() - 6]);
+        assertEquals(ClassicNbtLimits.REJECTED.bytes() + 1, ClassicNbtShapeTest.nativeBytes(projection));
+        assertUnsafeBundle(projection);
+    }
+
+    @Test void publicNullCompoundKeyAtEveryRootRetainsAllRootsAndRefusesEmission() {
+        for (String key : ClassicRootBundle.KEYS) {
+            CompoundTag malformed = new CompoundTag(); Tag child = IntTag.valueOf(7);
+            malformed.put(null, child); // Actual public native put route, not a forged map/subclass.
+            CompoundTag parent = minimalController(); parent.put(key, malformed);
+            assertUnsafeBundle(parent);
+            assertTrue(malformed.getAllKeys().contains(null)); assertSame(child, malformed.get(null));
+        }
+    }
+
+    @Test void constructedNullListChildAtEveryRootRetainsAllRootsAndRefusesEmission()
+            throws ReflectiveOperationException {
+        // Exact native class via its package-private constructor; not claimed to be naturally loaded data.
+        var constructor = ListTag.class.getDeclaredConstructor(List.class, byte.class); constructor.setAccessible(true);
+        for (String key : ClassicRootBundle.KEYS) {
+            List<Tag> children = new ArrayList<>(); children.add(null);
+            ListTag malformed = constructor.newInstance(children, (byte) Tag.TAG_INT);
+            CompoundTag parent = minimalController(); parent.put(key, malformed);
+            assertUnsafeBundle(parent);
+            assertEquals(1, malformed.size()); assertNull(malformed.get(0)); assertNull(children.get(0));
+            assertEquals(Tag.TAG_INT, malformed.getElementType());
+        }
+    }
+
+    private static void assertUnsafeBundle(CompoundTag parent) {
+        for (var type : ClassicRootBundle.OwnerType.values()) {
+            var bundle = ClassicRootBundle.captureData(parent, type);
+            assertFalse(bundle.bounded()); assertTrue(bundle.requiresSaveRefusal(false));
+            for (String key : ClassicRootBundle.KEYS) {
+                assertEquals(parent.contains(key), bundle.present(key));
+                if (parent.contains(key)) { assertTrue(bundle.retainsBorrowedIdentity(key, parent.get(key))); }
+            }
+            CompoundTag destination = new CompoundTag(); destination.putString("other", "untouched");
+            for (String key : ClassicRootBundle.KEYS) { destination.putInt(key, -1); }
+            CompoundTag before = destination.copy();
+            assertThrows(IllegalStateException.class, () -> bundle.emitData(destination, false));
+            assertEquals(before, destination);
+        }
+    }
+
+    private static ListTag loadedEmptyList(int type) throws IOException {
+        var bytes = new ByteArrayOutputStream(); var output = new DataOutputStream(bytes);
+        output.writeByte(Tag.TAG_COMPOUND); output.writeUTF(""); output.writeByte(Tag.TAG_LIST); output.writeUTF("value");
+        output.writeByte(type); output.writeInt(0); output.writeByte(Tag.TAG_END);
+        return (ListTag) NbtIo.read(new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()))).get("value");
+    }
+
+    private static long rawBits(Tag value) {
+        return value instanceof FloatTag scalar ? Float.floatToRawIntBits(scalar.getAsFloat())
+                : Double.doubleToRawLongBits(((DoubleTag) value).getAsDouble());
     }
 }
