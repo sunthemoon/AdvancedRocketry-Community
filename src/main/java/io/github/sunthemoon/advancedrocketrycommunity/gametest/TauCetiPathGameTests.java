@@ -25,7 +25,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -48,6 +51,8 @@ public final class TauCetiPathGameTests {
     private static final int[][] PADS = {{0, 0}, {64, 0}, {-64, 0}, {0, 64}, {0, -64}, {64, 64}, {-64, 64}, {64, -64}};
     /** Half the widest footprint a landing allows (16 chunks: 64 blocks around a pad on a chunk corner). */
     private static final int FOOTPRINT = 32;
+    private static final int OBSERVATION_BYTES = 2048;
+    private static final String OBSERVATION_PREFIX = "ARCE_TAU_CETI_MISSING";
 
     private TauCetiPathGameTests() {
     }
@@ -71,7 +76,9 @@ public final class TauCetiPathGameTests {
             clearTransferJournal(earth);
         };
         List<String> owner;
+        final RocketTransferSavedData observerJournal;
         try {
+            observerJournal = observerJournal(fixture.server);
             fixture.keepLoaded();
             fixture.core(fixture.pad.east(2));
             owner = fixture.join(fixture.ownerId, "tauCetiOwner");
@@ -93,7 +100,7 @@ public final class TauCetiPathGameTests {
             throw exception;
         }
         helper.runAfterDelay(FLIGHT, () -> guarded(cleanup, () -> {
-            landed(helper, fixture.space, logical[0], "the station");
+            landed(helper, fixture.space, logical[0], "the station", observerJournal);
             helper.assertTrue(SatelliteRuntime.claim(fixture.server.getPlayerList().getPlayer(fixture.ownerId),
                     satellite).success(), "The Tau Ceti f research claim failed");
             helper.assertTrue(SatelliteRuntime.discovered(fixture.server, ExoplanetContent.TAU_CETI_F),
@@ -109,12 +116,12 @@ public final class TauCetiPathGameTests {
                 helper.assertTrue(fixture.station().orbitBody().equals(ExoplanetContent.TAU_CETI_F)
                         && fixture.data.warpEnergy(fixture.id()) == 1_000_000,
                         "The station did not warp to Tau Ceti f's orbit once");
-                RocketEntity docked = landed(helper, fixture.space, logical[0], "the warped station");
+                RocketEntity docked = landed(helper, fixture.space, logical[0], "the warped station", observerJournal);
                 RocketFlightRequestResult down = RocketRuntime.requestAdminFlight(docked,
                         new TravelTarget.BodySurface(ExoplanetContent.TAU_CETI_F), UUID.randomUUID());
                 helper.assertTrue(down.success(), "Station-to-Tau Ceti f launch failed: " + down.code());
                 helper.runAfterDelay(FLIGHT, () -> guarded(cleanup, () -> {
-                    RocketEntity onF = landed(helper, surface, logical[0], "Tau Ceti f");
+                    RocketEntity onF = landed(helper, surface, logical[0], "Tau Ceti f", observerJournal);
                     helper.assertTrue(onF.flightData().orElseThrow().currentBody().equals(ExoplanetContent.TAU_CETI_F),
                             "The rocket did not land on Tau Ceti f");
                     // The first pad, at the origin: the landing ground keeps it free.
@@ -126,7 +133,8 @@ public final class TauCetiPathGameTests {
                             UUID.randomUUID());
                     helper.assertTrue(up.success(), "Tau Ceti f-to-station launch failed: " + up.code());
                     helper.runAfterDelay(FLIGHT, () -> guarded(cleanup, () -> {
-                        RocketEntity back = landed(helper, fixture.space, logical[0], "the station on return");
+                        RocketEntity back = landed(helper, fixture.space, logical[0], "the station on return",
+                                observerJournal);
                         helper.assertTrue(fixture.station().region().contains(back.blockPosition().getX(),
                                 back.blockPosition().getZ()), "The returning rocket landed outside the station");
                         helper.assertTrue(findLogicalRocket(surface, logical[0]) == null,
@@ -175,10 +183,14 @@ public final class TauCetiPathGameTests {
         });
     }
 
-    private static RocketEntity landed(GameTestHelper helper, ServerLevel level, UUID logical, String where) {
+    private static RocketEntity landed(GameTestHelper helper, ServerLevel level, UUID logical, String where,
+            RocketTransferSavedData observerJournal) {
+        String before = missingSample(helper, level, logical, where, observerJournal, "PRE");
         RocketEntity rocket = findLogicalRocket(level, logical);
         if (rocket == null) {
-            describeMissingRocket(helper, level, logical, where);
+            String after = missingSample(helper, level, logical, where, observerJournal, "POST");
+            emitMissing(before);
+            emitMissing(after);
         }
         helper.assertTrue(rocket != null, "No rocket at " + where);
         var flight = rocket.flightData().orElseThrow();
@@ -193,44 +205,163 @@ public final class TauCetiPathGameTests {
         return rocket;
     }
 
-    /** One failure-only observation, after the existing fixture lookup has primed its pad chunks. */
-    private static void describeMissingRocket(GameTestHelper helper, ServerLevel expected, UUID logical, String where) {
-        RocketTransferSavedData journal = RocketTransferSavedData.get(expected.getServer());
-        var record = journal.findByLogicalRocket(logical).orElse(null);
-        if (record == null) {
-            AdvancedRocketryCommunity.LOGGER.info(
-                    "ARCE_TAU_CETI_MISSING logical={} where={} test_tick={} journal={} record=none",
-                    logical, where, helper.getTick(), journal.operational());
-            return;
+    /** The original clearTransferJournal call has already initialized this fixture's journal. */
+    private static RocketTransferSavedData observerJournal(MinecraftServer server) {
+        try {
+            return RocketTransferSavedData.get(server);
+        } catch (RuntimeException | Error exception) {
+            return null;
         }
-        var source = expected.getServer().getLevel(ResourceKey.create(Registries.DIMENSION,
-                record.sourceSnapshot().sourceDimension()));
-        var destination = expected.getServer().getLevel(ResourceKey.create(Registries.DIMENSION,
-                record.destinationSnapshot().sourceDimension()));
-        var origin = record.destinationSnapshot().sourceOrigin();
-        BlockPos position = new BlockPos(origin.x(), origin.y(), origin.z());
-        AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_TAU_CETI_MISSING logical={} where={} test_tick={} journal={} phase={} source_level={}"
-                        + " source_entity={} destination_level={} destination_entity={} origin={}"
-                        + " loaded={} entities_loaded={} entity_ticking={} expected_time={} created_time={}",
-                logical, where, helper.getTick(), journal.operational(), record.phase(),
-                record.sourceSnapshot().sourceDimension(), entityStatus(source, record.sourceEntityId()),
-                record.destinationSnapshot().sourceDimension(),
-                record.destinationEntityId().map(id -> entityStatus(destination, id)).orElse("unassigned"), position,
-                destination != null && destination.getChunkSource().getChunkNow(origin.x() >> 4, origin.z() >> 4) != null,
-                destination != null && destination.areEntitiesLoaded(
-                        net.minecraft.world.level.ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4)),
-                destination != null && destination.isPositionEntityTicking(position),
-                expected.getGameTime(), record.createdAtGameTime());
     }
 
-    private static String entityStatus(ServerLevel level, UUID id) {
-        var entity = level == null ? null : level.getEntity(id);
-        if (entity instanceof RocketEntity rocket) {
-            return rocket.flightData().map(flight -> flight.state().name()).orElse("no_flight")
-                    + ":removed=" + rocket.isRemoved() + ":pos=" + rocket.blockPosition();
+    /** Immutable scalar text only; no world/entity/record survives a capture in the sample. */
+    private static String missingSample(GameTestHelper helper, ServerLevel expected, UUID logical, String where,
+            RocketTransferSavedData journal, String sample) {
+        try {
+            long nanos = System.nanoTime();
+            if (journal == null) {
+                return unavailableSample(sample, logical, "JOURNAL_UNAVAILABLE");
+            }
+            boolean operational = journal.operational();
+            var record = journal.findByLogicalRocket(logical).orElse(null);
+            var source = record == null ? null : expected.getServer().getLevel(ResourceKey.create(Registries.DIMENSION,
+                    record.sourceSnapshot().sourceDimension()));
+            var destination = record == null ? null : expected.getServer().getLevel(ResourceKey.create(
+                    Registries.DIMENSION, record.destinationSnapshot().sourceDimension()));
+            UUID destinationId = record == null ? null : record.destinationEntityId().orElse(null);
+            EntitySample sourceEntity = record == null ? unknownEntity("NA") : entitySample(source, record.sourceEntityId());
+            EntitySample destinationEntity = destinationId == null ? unknownEntity("NA") : entitySample(destination, destinationId);
+            var origin = record == null ? null : record.destinationSnapshot().sourceOrigin();
+            String loaded = "NA";
+            String entitiesLoaded = "NA";
+            String entityTicking = "NA";
+            if (destination != null && origin != null) {
+                loaded = yesNo(destination.getChunkSource().getChunkNow(origin.x() >> 4, origin.z() >> 4) != null);
+                entitiesLoaded = yesNo(destination.areEntitiesLoaded(ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4)));
+                entityTicking = yesNo(destination.isPositionEntityTicking(new BlockPos(origin.x(), origin.y(), origin.z())));
+            }
+            StringBuilder text = new StringBuilder(OBSERVATION_BYTES).append(OBSERVATION_PREFIX);
+            token(text, "sample", sample, 4);
+            token(text, "logical", logical.toString(), 36);
+            token(text, "where", whereToken(where), 32);
+            token(text, "test_tick", Long.toString(helper.getTick()), 20);
+            token(text, "journal", yesNo(operational), 3);
+            token(text, "record", record == null ? "NONE" : "FOUND", 11);
+            token(text, "transfer", record == null ? "NA" : record.transferId().toString(), 36);
+            token(text, "phase", record == null ? "NA" : record.phase().name(), 32);
+            token(text, "expected_level", dimensionId(expected.dimension().location()), 128);
+            token(text, "expected_time", Long.toString(expected.getGameTime()), 20);
+            token(text, "source_level", record == null ? "NA" : dimensionId(record.sourceSnapshot().sourceDimension()), 128);
+            token(text, "source_entity", record == null ? "NA" : record.sourceEntityId().toString(), 36);
+            token(text, "source_observed", sourceEntity.observed(), 36);
+            token(text, "source_kind", sourceEntity.kind(), 32);
+            token(text, "source_state", sourceEntity.state(), 32);
+            token(text, "source_removed", sourceEntity.removed(), 3);
+            token(text, "source_x", sourceEntity.x(), 11);
+            token(text, "source_y", sourceEntity.y(), 11);
+            token(text, "source_z", sourceEntity.z(), 11);
+            token(text, "source_time", source == null ? "NA" : Long.toString(source.getGameTime()), 20);
+            token(text, "destination_level", record == null ? "NA" : dimensionId(record.destinationSnapshot().sourceDimension()), 128);
+            token(text, "destination_entity", record == null ? "NA" : destinationId == null ? "UNASSIGNED" : destinationId.toString(), 36);
+            token(text, "destination_observed", destinationEntity.observed(), 36);
+            token(text, "destination_kind", destinationEntity.kind(), 32);
+            token(text, "destination_state", destinationEntity.state(), 32);
+            token(text, "destination_removed", destinationEntity.removed(), 3);
+            token(text, "destination_x", destinationEntity.x(), 11);
+            token(text, "destination_y", destinationEntity.y(), 11);
+            token(text, "destination_z", destinationEntity.z(), 11);
+            token(text, "destination_time", destination == null ? "NA" : Long.toString(destination.getGameTime()), 20);
+            token(text, "origin_x", origin == null ? "NA" : Integer.toString(origin.x()), 11);
+            token(text, "origin_y", origin == null ? "NA" : Integer.toString(origin.y()), 11);
+            token(text, "origin_z", origin == null ? "NA" : Integer.toString(origin.z()), 11);
+            token(text, "loaded", loaded, 3);
+            token(text, "entities_loaded", entitiesLoaded, 3);
+            token(text, "entity_ticking", entityTicking, 3);
+            token(text, "created_time", record == null ? "NA" : Long.toString(record.createdAtGameTime()), 20);
+            token(text, "sample_nanos", Long.toString(nanos), 20);
+            token(text, "diagnostic", record == null ? "NO_RECORD" : "OK", 32);
+            return text.toString();
+        } catch (ObservationFormatFailure exception) {
+            return unavailableSample(sample, logical, "FORMAT_FAILED");
+        } catch (RuntimeException | Error exception) {
+            return unavailableSample(sample, logical, "CAPTURE_FAILED");
         }
-        return entity == null ? "absent" : "not_rocket";
+    }
+
+    private static EntitySample entitySample(ServerLevel level, UUID id) {
+        if (level == null) {
+            return unknownEntity("LEVEL_MISSING");
+        }
+        var entity = level.getEntity(id);
+        if (entity instanceof RocketEntity rocket) {
+            BlockPos position = rocket.blockPosition();
+            return new EntitySample(rocket.getUUID().toString(), "ROCKET",
+                    rocket.flightData().map(flight -> flight.state().name()).orElse("NO_FLIGHT"), yesNo(rocket.isRemoved()),
+                    Integer.toString(position.getX()), Integer.toString(position.getY()), Integer.toString(position.getZ()));
+        }
+        return unknownEntity(entity == null ? "ABSENT" : "NOT_ROCKET");
+    }
+
+    private static EntitySample unknownEntity(String kind) {
+        return new EntitySample("NA", kind, "NA", "NA", "NA", "NA", "NA");
+    }
+
+    private static String whereToken(String where) {
+        return switch (where) {
+            case "the station" -> "the_station";
+            case "the warped station" -> "the_warped_station";
+            case "Tau Ceti f" -> "Tau_Ceti_f";
+            case "the station on return" -> "the_station_on_return";
+            default -> throw new ObservationFormatFailure();
+        };
+    }
+
+    private static String dimensionId(ResourceLocation id) {
+        String namespace = id.getNamespace();
+        String path = id.getPath();
+        if (namespace.length() > 127 || path.length() > 127 || namespace.length() > 127 - path.length()) {
+            return "OVERSIZE_ID";
+        }
+        return namespace + ":" + path;
+    }
+
+    private static void token(StringBuilder text, String key, String value, int maximum) {
+        if (value.length() > maximum) {
+            throw new ObservationFormatFailure();
+        }
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) <= 32 || value.charAt(i) > 126) {
+                throw new ObservationFormatFailure();
+            }
+        }
+        int remaining = OBSERVATION_BYTES - text.length();
+        if (remaining < key.length() + 2 || remaining - key.length() - 2 < value.length()) {
+            throw new ObservationFormatFailure();
+        }
+        text.append(' ').append(key).append('=').append(value);
+    }
+
+    private static String yesNo(boolean value) {
+        return value ? "YES" : "NO";
+    }
+
+    private static String unavailableSample(String sample, UUID logical, String diagnostic) {
+        return OBSERVATION_PREFIX + " sample=" + sample + " logical=" + (logical == null ? "NA" : logical.toString())
+                + " diagnostic=" + diagnostic;
+    }
+
+    private static void emitMissing(String text) {
+        try {
+            AdvancedRocketryCommunity.LOGGER.info(text);
+        } catch (RuntimeException | Error exception) {
+            // Diagnostics must not replace the original missing-rocket assertion or add another log attempt.
+        }
+    }
+
+    private record EntitySample(String observed, String kind, String state, String removed, String x, String y, String z) {
+    }
+
+    private static final class ObservationFormatFailure extends RuntimeException {
     }
 
     private static void guarded(Runnable cleanup, Runnable action) {
