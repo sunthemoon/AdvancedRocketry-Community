@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBoots
 import java.util.concurrent.atomic.AtomicInteger;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +40,8 @@ class SealDetectorItemTest {
 
     @Test void tooltipIsFixedAndDoesNotInspectHeldData() {
         var item = new SealDetectorItem(new Item.Properties(), () -> true);
-        ItemStack stack = new ItemStack(item);
+        // Plain JUnit has no mod registration; the tooltip must ignore any supplied stack.
+        ItemStack stack = new ItemStack(Items.PAPER);
         stack.getOrCreateTag().putString("player_note", "untouched");
         var before = stack.getTag().copy();
         var tooltip = new java.util.ArrayList<net.minecraft.network.chat.Component>();
