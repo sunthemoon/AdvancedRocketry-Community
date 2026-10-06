@@ -36,12 +36,11 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: 058cd67dacac4ac43ca6373d039fff1a2822e426
+tested_code_commit: a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43
 latest_regression_result: FAILED
-pending_regression_code_commit: 35a146fbbe1f2de94160f82307d041d2cd26e472
-pending_regression_run: 37369035893
-pending_regression_attempt: 2
-pending_regression_state: IN_PROGRESS
+latest_regression_run: 37475746093
+latest_regression_attempt: 1
+latest_regression_evidence: RAW_AUDITED
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-06
 ```
@@ -51,30 +50,35 @@ last_updated: 2026-10-06
 The independently reviewed [failure observers](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
 are committed, merged and normally pushed at `35a146fbbe1f2de94160f82307d041d2cd26e472`.
 One bounded cached javac succeeds; no production correction is claimed.
-Its [exact-source hosted run](../work/v1.8.0-ci/RESULT-08.md) has a failed
-attempt 1 without executed steps/artifacts: GitHub reports no hosted runner
-was acquired. One ordinary full rerun is accepted; attempt 2 /job 111969601905
-is IN_PROGRESS with clean build running at the recorded API observation.
-No new completed product result is available. Both clean source worktrees and
-the reviewer's 25 class outputs are removed under separately qualified receipts;
-old policy-refused C targets remain untouched. The completed metrics below
-remain bound to `058cd67d`, not the new pending source. The independently
-reviewed [four-file raw-fidelity task](../work/v1.8.0-c16a-hatches/RAW-FIDELITY-TASK-01.md)
-is published at `177684c32992d6200b9211b9a25545da90529fcc`; its implementation
-is in progress, not delivered or admitted as a world writer.
+Its [exact-source hosted result](../work/v1.8.0-ci/RESULT-09.md) records failed
+attempt 1 without product execution and completed FAILED attempt 2 /job
+111969601905. That observer-source cohort and its audited raw metrics remain
+separate historical evidence; they are not rebound to the later correction.
+Both observer source worktrees and the reviewer's 25 class outputs are removed
+under separately qualified receipts; old policy-refused C targets remain untouched.
 
-The latest completed [hosted committed regression](../work/v1.8.0-ci/RESULT-07.md) is
-**FAILED**: clean build passes with 1,883 JUnit /346 suites /0FES. First DataGen
-writes 804 files; repeat writes zero. Both tracked/untracked trees are clean.
-493 GameTests finish with three required failures: planetary round trip,
-cold Tau Ceti and the new Solar surface-environment fixture. The fixture's
-ordinary producer fails the original 40-tick assertion; its cause/substage
-remain unestablished. Tau's PREPARED/source-TRANSIT observation is lookup-qualified,
-not a unique cause. GameTest retains 65 ERROR/FATAL headers without waiver.
-Conditional JAR upload is skipped; independent raw audit verifies the retained
-counts/bytes, not Solar source approval or runtime delivery. The exact-path
-preservation keeps original checksum bytes; prior [checkout failure](../work/v1.8.0-ci/RESULT-06.md)
-and [four-failure cohort](../work/v1.8.0-ci/RESULT-05.md) stay historical.
+The [four-file raw-fidelity source correction](../work/v1.8.0-c16a-hatches/RAW-FIDELITY-SOURCE-01.md)
+is independently reviewed, committed and normally pushed at
+`a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43`. Author and independent cached Java
+development replays each pass 75/75; the clean merged source worktree is normally
+retired. No world writer or whole-hatch delivery is admitted. Its latest hosted
+run 37475746093 /attempt 1 /job 112310559331 is completed **FAILED**. Root
+independently audits all 389 retained members and actual XML/terminal records:
+fresh clean build passes 1,895 JUnit /346 suites /0FES, including the 75 helper
+subjects; DataGen writes 804 then zero and both tracked/untracked trees are clean.
+493 GameTests complete with two required failures, cold Tau Ceti and Solar
+surface environment. Solar's original 40-tick DAY_SKY assertion observes
+native_day=true and roof_sky=0; no unique cause or native repair is established.
+Main console retains 64 ERROR headers /0 FATAL without waiver; overlapping
+streams are not summed. JAR upload is skipped, so independent JAR bytes remain
+unavailable. Solar fixture ownership and Tau readiness are separate active
+investigations; no assertions, deadlines or selected subjects are relaxed.
+
+The preceding [three-failure cohort](../work/v1.8.0-ci/RESULT-07.md),
+[checkout failure](../work/v1.8.0-ci/RESULT-06.md) and
+[four-failure cohort](../work/v1.8.0-ci/RESULT-05.md) stay historical.
+Absence of planetary/cold Tau failure headers in the observer cohort does not
+establish their causes fixed or erase their failed evidence.
 Absence of new Laser/readiness/gravity failure headers establishes neither
 complete functionality nor dedicated restart delivery.
 Gravity's finite diagnostic snapshots do not establish the historical failure's
@@ -189,8 +193,9 @@ Full C17c dependencies, native exposure/restart, real visuals and all Gates rema
 
 The separate [Laser save fixture](../work/v1.8.0-laser-save-fixture/HANDOFF.md)
 is reviewed and published at `86a819ca564c43206c6b9272c0b79076fceaa874`; its
-latest complete hosted replay has no Laser failure header, but three other
-required tests fail. Targeted compilation and that cohort do not prove packaged
+current [complete hosted replay](../work/v1.8.0-ci/RESULT-09.md), at tested source
+`a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43`, has no Laser failure header;
+the two required failures are Tau Ceti and Solar. Targeted compilation and that cohort do not prove packaged
 disk durability or full Laser acceptance.
 
 - C15 materials, plate press acquisition, planetary surfaces and Tau Ceti worlds

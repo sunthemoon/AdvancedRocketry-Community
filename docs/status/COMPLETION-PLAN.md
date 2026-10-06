@@ -64,7 +64,10 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 - [~] C16a-03b：物理适配和共享保存。
   - [x] 01 数据范围：不可变值、原始根保留、固定容量。
   - [~] [原始根无损预检修正](../work/v1.8.0-c16a-hatches/RAW-FIDELITY-TASK-01.md)：
-    四文件任务独立审核、提交并推送，源码与定向验证实施中；不开放保存 writer。
+    [四文件源码](../work/v1.8.0-c16a-hatches/RAW-FIDELITY-SOURCE-01.md)经独立审核后
+    提交、合并并推送至 `a34de0ad`；作者及独立 Java 定向验证各 75/75 通过。
+    最新已提交构建实际执行 75 项对应 JUnit 且通过；整批 GameTest 仍有两项失败，
+    原始字节与计数已由 Root 独立审核。不开放保存 writer，不宣告物理 hatch 交付。
   - [x] K1：复合键排序的纯计算。
   - [x] K2：有界规范字节的私有计算、实际完整自动回归及独立证据审计。
   - [x] K3：私有 SHA-256 计算；源码审核、完整自动回归、独立证据审计与代码推送。
@@ -103,8 +106,11 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 18 个源码/记录、12 项中央绑定及 20 项资源已完成独立实际审核，并由 Root
 分别提交和非强制推送；[源码检查点](../work/v1.8.0-c17c-solar-generator/SOURCE-INTEGRATION-01.md)
 记录固定已发布提交的定向编译和 36 项 JUnit 通过。独立开发复跑另有 21 项太阳能
-和 15 项配置检查通过。[完整已提交回归](../work/v1.8.0-ci/RESULT-07.md) 的新增太阳能
-地表环境测试失败，原因仍待定位；原生/重启、视觉、台账及整个 C17c 依赖仍开放。
+和 15 项配置检查通过。[观察器完整回归](../work/v1.8.0-ci/RESULT-09.md) 的太阳能
+地表环境测试在 DAY_SKY 失败，原因仍待定位；最新完整回归的原始计数已独立审核，
+仍有太阳能和冷启动 Tau Ceti 两项 required 失败。仅修正自有测试夹具的天空前提，
+不修改生产判定或 40-tick 上限；其源码与运行验证未完成。
+原生/重启、视觉、台账及整个 C17c 依赖仍开放。
 用户的保存选择仅覆盖太阳能数据，R-021 仍开放。
 [普通空间站灯](../work/v1.8.0-c17b-station-light/TASK.md) 的限定契约与原创资产
 预登记、源码、中央注册和原创资源均已独立审核、提交并推送。8 个 JUnit 实际
@@ -238,20 +244,19 @@ C17b candidate03 的独立审核已解决旧版 Medium
 [失败时观察源码](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
 已经独立实际审核、分别提交并合并，非强制推送至
 `35a146fbbe1f2de94160f82307d041d2cd26e472`；单次有界缓存编译通过。
-完整回归 [37369035893](../work/v1.8.0-ci/RESULT-08.md) /attempt 1 因 GitHub
-未获取 hosted runner 而 FAILED，没有执行步骤或产物。一次普通完整重跑已获接受；
-attempt 2 /job 111969601905 的记录观察为 IN_PROGRESS，正在 clean build，
-尚无新完整测试结果。未改变 workflow、原断言、预算或失败记录。
+[最近完成的自动证据](../work/v1.8.0-ci/RESULT-09.md) 绑定已推送完整提交
+`a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43`，run 37475746093 /attempt 1
+/job 112310559331，结果 FAILED：clean build 实际通过 1,895 JUnit
+/346 suites /0FES；首次 DataGen 写入 804 个输出，重复写入零，
+tracked/untracked 均干净。493 项 GameTest 完成，2 项 required 失败：
+Tau Ceti 和太阳能地表环境。太阳能在原 40 tick 内的 DAY_SKY 阶段未发布，
+roof_sky=0；源码调查确认夹具未建立开放天空列，但未证明唯一遮挡来源。
+Tau 的 lookup 后有限观察为 PREPARED/source TRANSIT 与未就绪实体，
+不说明唯一原因。64 个 ERROR 标题无整体豁免。
+先前观察源码的 runner 分配失败及其已执行失败重跑分别保留在
+[原记录](../work/v1.8.0-ci/RESULT-08.md)和上述结果记录中；不再记为运行中。
 原断言、时限和清理保留，诊断不是生产修复。两个干净工作树和审核者的
 25 个 class 输出已按各自限定记录清理；原失败与旧拒删欠项保留。
-
-[最近完成的自动证据](../work/v1.8.0-ci/RESULT-07.md) 绑定已推送完整提交
-`058cd67dacac4ac43ca6373d039fff1a2822e426`：clean build 实际通过
-1,883 JUnit /346 suites /0FES；首次 DataGen 写入 804 个输出，重复写入零，
-tracked/untracked 均干净。493 项 GameTest 完成，3 项 required 失败：
-行星往返、Tau Ceti 和新太阳能地表环境。太阳能普通 producer 在原 40 tick 内
-未发布，具体阶段与生产/夹具原因仍待查明。Tau 的 lookup 后有限观察为
-PREPARED/source TRANSIT 与未就绪实体，不说明唯一原因。65 个 ERROR 标题无整体豁免。
 原始结果独立审核验证本批次的字节、计数和失败事实，不是太阳能源代码自审。
 旧诊断换行修正不改变原始字节，旧失败结果保留。
 本批次没有激光、目标就绪或重力失败标题，不等于完整功能或原生重启交付。
