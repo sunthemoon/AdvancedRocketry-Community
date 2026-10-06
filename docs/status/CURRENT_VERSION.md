@@ -41,6 +41,12 @@ latest_regression_result: FAILED
 latest_regression_run: 37484998908
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
+pending_regression_source: c6d60282afdd495acae56e05e56d2ccffdbd9959
+pending_regression_run: 37496511702
+pending_regression_attempt: 1
+pending_regression_status: COMPLETED
+pending_regression_result: FAILED
+pending_regression_evidence: METADATA_ONLY_RAW_AUDIT_PENDING
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -79,9 +85,20 @@ unverified. No assertions, deadlines or selected subjects are relaxed.
 Reviewed [detector adoption](../work/v1.8.0-c18a-seal-detector/ADOPTION-01.md)
 and [Tau observation adoption](../work/v1.8.0-tau-observation/ADOPTION-01.md)
 are normally published at `513f2ffbec25b3864367b820800fb22cd54091f7`.
-Their source assignments use separate clean fixed-base worktrees; all source,
-build and workflow dependencies still match e0. Authoring is in progress;
-source/build/native/client verification and delivery are not claimed.
+Their source assignments use separate clean fixed-base worktrees with source,
+build and workflow dependencies matching e0 at assignment. The one-file
+[Tau source checkpoint](../work/v1.8.0-tau-observation/SOURCE-INTEGRATION-01.md)
+has independent static source review and is merged/pushed at the pending source
+above. Its exact hosted run has completed FAILED: build/artifact audit/DataGen
+steps report success, GameTest failure and raw upload success. The
+[terminal metadata](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-tau-hosted-observation-20261007-02/OBSERVATION-02.json)
+does not supply raw test counts or failure names; its raw audit is pending.
+The earlier running observation remains dated history, and e0 above remains
+the last raw-audited cohort.
+Detector worker source and Root central bindings have completed independent
+static actual-source review, with no introduced C/H/M/L established in that scope.
+Compilation/resources/native/client delivery
+remain unverified and no whole detector acceptance is claimed.
 Detector installed-runtime custom-rule coverage remains explicitly unrun;
 no new provider hook or prerequisite waiver is authorized.
 
