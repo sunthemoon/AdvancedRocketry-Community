@@ -41,6 +41,10 @@ latest_regression_result: FAILED
 latest_regression_run: 37475746093
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
+pending_regression_source: e0c601e4d58cb906d79f744070316c0a2d810c06
+pending_regression_run: 37484998908
+pending_regression_attempt: 1
+pending_regression_status: IN_PROGRESS
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-06
 ```
@@ -61,7 +65,7 @@ The [four-file raw-fidelity source correction](../work/v1.8.0-c16a-hatches/RAW-F
 is independently reviewed, committed and normally pushed at
 `a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43`. Author and independent cached Java
 development replays each pass 75/75; the clean merged source worktree is normally
-retired. No world writer or whole-hatch delivery is admitted. Its latest hosted
+retired. No world writer or whole-hatch delivery is admitted. Its latest completed hosted
 run 37475746093 /attempt 1 /job 112310559331 is completed **FAILED**. Root
 independently audits all 389 retained members and actual XML/terminal records:
 fresh clean build passes 1,895 JUnit /346 suites /0FES, including the 75 helper
@@ -71,8 +75,12 @@ surface environment. Solar's original 40-tick DAY_SKY assertion observes
 native_day=true and roof_sky=0; no unique cause or native repair is established.
 Main console retains 64 ERROR headers /0 FATAL without waiver; overlapping
 streams are not summed. JAR upload is skipped, so independent JAR bytes remain
-unavailable. Solar fixture ownership and Tau readiness are separate active
-investigations; no assertions, deadlines or selected subjects are relaxed.
+unavailable. The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
+is independently reviewed, committed and pushed at the pending source above;
+one cached javac passes, but its unchanged hosted clean build is still running
+at the dated observation. Native light/restoration and the complete result remain
+unverified. Tau readiness has a bounded observation follow-up, not a production
+repair. No assertions, deadlines or selected subjects are relaxed.
 
 The preceding [three-failure cohort](../work/v1.8.0-ci/RESULT-07.md),
 [checkout failure](../work/v1.8.0-ci/RESULT-06.md) and
