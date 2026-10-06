@@ -86,12 +86,16 @@ other-agent cleanup, sealed-member deletion or physical disk-reclaim claim occur
 
 The actual raw capture/FULL expectation consumer, installed owner comparison,
 unload/final-save retention, quiesce/stop/restart and physical machines remain
-unfinished. The previous full regression is still FAILED at the required Tau
-roundtrip fixture; its counts are bound to `8d521406`, not this new source.
+unfinished. The [new full regression](../v1.8.0-ci/RESULT-18.md) is FAILED at the
+required Tau roundtrip fixture. Its 355 XML suites /1,964 actual cases /0FES
+include all ten new metadata cases passing; both DataGen/worktree checks pass.
+All 509 GameTests complete with one required failure. These counts belong to
+`3e2f6f1b`; the earlier resource-source cohort remains historical at `8d521406`.
 No ledger delivery or G0-G9 approval is inferred. v1.8 remains
 IN_PROGRESS / IMPLEMENTING.
 
 The exact-source hosted run 37541636327 /attempt 1 /job 112535778550 was observed
-in progress at 2026-10-06T22:37:02Z. This is metadata only, not a new completed
-full regression or artifact-byte verification. Its pending observation does not
-overwrite the prior audited failure or qualify any new native consumer.
+in progress at 2026-10-06T22:37:02Z. That historical metadata-only observation is
+superseded by the completed FAILED observation at 2026-10-06T23:00:03Z and Root's
+402-input raw audit. The new terminal result does not rewrite earlier bytes,
+establish independent build-JAR verification or qualify any new native consumer.

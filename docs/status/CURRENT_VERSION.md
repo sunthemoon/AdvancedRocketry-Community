@@ -37,17 +37,12 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 3e2f6f1ba96508305b78cdb27d95ebbeabad6a38
-tested_code_commit: 8d5214061c98fce0cf549a231eae7aaf312b3ba2
+tested_code_commit: 3e2f6f1ba96508305b78cdb27d95ebbeabad6a38
 latest_regression_result: FAILED
-latest_regression_run: 37534775606
+latest_regression_run: 37541636327
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-06T21:49:30Z
-pending_regression_commit: 3e2f6f1ba96508305b78cdb27d95ebbeabad6a38
-pending_regression_run: 37541636327
-pending_regression_attempt: 1
-pending_regression_evidence: METADATA_ONLY
-pending_regression_observed_utc: 2026-10-06T22:37:02Z
+latest_regression_observed_utc: 2026-10-06T23:00:03Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -99,20 +94,22 @@ The [bounded chunk metadata checkpoint](../work/v1.8.0-c16a-hatches/CHUNK-METADA
 is independently reviewed, integrated and normally published at the latest source
 checkpoint. Root's fixed-commit cached javac/Jupiter executes the exact ten new
 subjects, all passing with 46 inputs unchanged. It introduces no provider, owner,
-FULL observation or native save writer. Its complete hosted workflow was observed
-in progress at the pending observation above; no full-cohort count or terminal
-result is assigned to this new source. The latest completed raw-audited metrics
-remain bound to the tested 8d521406 commit, separately below.
+FULL observation or native save writer. Its complete hosted workflow has ended;
+the new ten cases also pass in the exact-source full unit cohort. The terminal
+raw-audited result below supersedes its earlier metadata-only observation without
+rewriting that historical capture or assigning an installed-owner qualification.
 The separate 39-file unintegrated owner successor addresses the four original
 Medium source findings in its [final independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-owners-successor-review-20261007/REVIEW-02.md).
 This is source inspection, not executed ordinary capability, complete-hatch,
 re-admission or publication-failure proof. Its original 35 tests are unchanged;
 six added policy declarations bring the uncompiled/unexecuted total to 41.
 Real central joins, whole compilation and installed/native qualification remain
-open. The outgoing-comparison/retained-observer proposal has one open Medium in
-its [final independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md):
-the exact LOAD-to-retained-owner recording join and witness timing are not frozen.
-The author is preparing a separate amendment; no such seam is adopted or implemented.
+open. The outgoing-comparison/retained-observer proposal's original Medium stays
+in its [historical review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md).
+The separate LOAD-join amendment has completed [independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)
+with no introduced C/H/M/L, addressing the missing recording join and timing in
+proposed text only. Technical adoption, actual source joins and native evidence
+remain prerequisites; no such seam is adopted or implemented.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
@@ -143,14 +140,16 @@ The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.
 is reviewed and normally pushed at `33a3156e309ca2b8f6a1fcc766501968bc21f138`, with unchanged
 assertions and product. Its original successful unit correction remains in
 [RESULT-13](../work/v1.8.0-ci/RESULT-13.md). The
-[latest raw-audited regression](../work/v1.8.0-ci/RESULT-17.md) belongs only to
-`8d521406`: fresh build succeeds, 354 XML suites /1,954 actual cases /0FES,
+[latest raw-audited regression](../work/v1.8.0-ci/RESULT-18.md) belongs only to
+`3e2f6f1b`: fresh build succeeds, 355 XML suites /1,964 actual cases /0FES,
 both DataGen/worktree checks succeed, but all 509 GameTests finish with one
-required Tau failure. Root rehashes 399 retained raw/receipt inputs without
+required Tau failure. Root rehashes 402 named raw/receipt/observation inputs without
 drift. The failure-only service sample is LIVE and last waits at
-WAIT_ENTITY_READY; it does not prove a unique native cause. Main63 ERROR /0 FATAL
+WAIT_ENTITY_READY; it does not prove a unique native cause. Main64 ERROR /0 FATAL
 has no blanket waiver. Build-JAR upload is skipped: no new independent JAR-byte
 verification is claimed. No assertions, deadlines or test selection change.
+The preceding [resource-source result](../work/v1.8.0-ci/RESULT-17.md) remains
+historical at its own commit; its counts are not rebound to this source.
 The [preceding recipe-row regression](../work/v1.8.0-ci/RESULT-15.md),
 run 37519061729 /attempt 1 /job 112459397257, passes clean build and all
 1,927 actual cases /352 suites /0 failures, errors or skips. First DataGen
@@ -274,11 +273,12 @@ See
 
 ## Implemented development scope
 
-The separate [oxygen reserve proposal review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md)
-has two open Medium text findings: bounded source-canister metadata/capability
-admission and empty-shell fidelity, and handled-input routing after rejected
-main-hand charging. Its separate technical proposal successor is sealed and
-awaits independent review; no equipment source is authorized. Tier capacities/config and paired interaction
+The original [oxygen reserve proposal review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md)
+retains its two historical Medium findings. The separate [successor independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-successor-independent-review-20261007/REVIEW-01.md)
+addresses those missing metadata/routing rules in proposed text only, with no
+Critical/High/Medium and one Low: callback stale-refusal wording exceeds its
+enumerated observable witnesses. That wording still needs clarification before
+implementation-contract use; no equipment source is authorized. Tier capacities/config and paired interaction
 still await the owner's existing choice, and the proposed workstation save-veto
 extension remains unadmitted. The accepted working API/HUD buffer stays 2,000.
 
