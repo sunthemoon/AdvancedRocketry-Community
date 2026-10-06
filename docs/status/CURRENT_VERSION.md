@@ -36,17 +36,13 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43
+tested_code_commit: e0c601e4d58cb906d79f744070316c0a2d810c06
 latest_regression_result: FAILED
-latest_regression_run: 37475746093
+latest_regression_run: 37484998908
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-pending_regression_source: e0c601e4d58cb906d79f744070316c0a2d810c06
-pending_regression_run: 37484998908
-pending_regression_attempt: 1
-pending_regression_status: IN_PROGRESS
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
-last_updated: 2026-10-06
+last_updated: 2026-10-07
 ```
 
 ## Current development evidence
@@ -65,22 +61,29 @@ The [four-file raw-fidelity source correction](../work/v1.8.0-c16a-hatches/RAW-F
 is independently reviewed, committed and normally pushed at
 `a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43`. Author and independent cached Java
 development replays each pass 75/75; the clean merged source worktree is normally
-retired. No world writer or whole-hatch delivery is admitted. Its latest completed hosted
-run 37475746093 /attempt 1 /job 112310559331 is completed **FAILED**. Root
-independently audits all 389 retained members and actual XML/terminal records:
-fresh clean build passes 1,895 JUnit /346 suites /0FES, including the 75 helper
-subjects; DataGen writes 804 then zero and both tracked/untracked trees are clean.
-493 GameTests complete with two required failures, cold Tau Ceti and Solar
-surface environment. Solar's original 40-tick DAY_SKY assertion observes
-native_day=true and roof_sky=0; no unique cause or native repair is established.
-Main console retains 64 ERROR headers /0 FATAL without waiver; overlapping
-streams are not summed. JAR upload is skipped, so independent JAR bytes remain
-unavailable. The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
-is independently reviewed, committed and pushed at the pending source above;
-one cached javac passes, but its unchanged hosted clean build is still running
-at the dated observation. Native light/restoration and the complete result remain
-unverified. Tau readiness has a bounded observation follow-up, not a production
-repair. No assertions, deadlines or selected subjects are relaxed.
+retired. No world writer or whole-hatch delivery is admitted. That failed cohort
+is historical in RESULT-09. The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
+is independently reviewed, committed and pushed at the tested source above.
+Its [latest complete result](../work/v1.8.0-ci/RESULT-10.md), run 37484998908
+/attempt 1 /job 112342646260, is **FAILED**. Root independently audits all
+389 retained members: clean build passes 1,895 JUnit /346 suites /0FES;
+DataGen writes 804 then zero, with both tracked/untracked trees clean.
+493 GameTests complete with one required failure, cold Tau Ceti. The required
+failure set no longer contains the Solar surface case; its original 40-tick
+oracle is unchanged. Main console retains 63 ERROR headers /0 FATAL without
+waiver. JAR upload is skipped; independent JAR bytes remain unavailable.
+Tau readiness has a bounded observation follow-up, not a production repair.
+Historical unique causes, packaged restart/recovery and real clients remain
+unverified. No assertions, deadlines or selected subjects are relaxed.
+
+Reviewed [detector adoption](../work/v1.8.0-c18a-seal-detector/ADOPTION-01.md)
+and [Tau observation adoption](../work/v1.8.0-tau-observation/ADOPTION-01.md)
+are normally published at `513f2ffbec25b3864367b820800fb22cd54091f7`.
+Their source assignments use separate clean fixed-base worktrees; all source,
+build and workflow dependencies still match e0. Authoring is in progress;
+source/build/native/client verification and delivery are not claimed.
+Detector installed-runtime custom-rule coverage remains explicitly unrun;
+no new provider hook or prerequisite waiver is authorized.
 
 The preceding [three-failure cohort](../work/v1.8.0-ci/RESULT-07.md),
 [checkout failure](../work/v1.8.0-ci/RESULT-06.md) and
@@ -201,9 +204,9 @@ Full C17c dependencies, native exposure/restart, real visuals and all Gates rema
 
 The separate [Laser save fixture](../work/v1.8.0-laser-save-fixture/HANDOFF.md)
 is reviewed and published at `86a819ca564c43206c6b9272c0b79076fceaa874`; its
-current [complete hosted replay](../work/v1.8.0-ci/RESULT-09.md), at tested source
-`a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43`, has no Laser failure header;
-the two required failures are Tau Ceti and Solar. Targeted compilation and that cohort do not prove packaged
+current [complete hosted replay](../work/v1.8.0-ci/RESULT-10.md), at tested source
+`e0c601e4d58cb906d79f744070316c0a2d810c06`, has no Laser failure header;
+the sole required failure is Tau Ceti. Targeted compilation and that cohort do not prove packaged
 disk durability or full Laser acceptance.
 
 - C15 materials, plate press acquisition, planetary surfaces and Tau Ceti worlds
