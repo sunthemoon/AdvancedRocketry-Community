@@ -71,15 +71,15 @@ and other agents' outputs are not touched or retried.
 
 Complete guarded owner/lifecycle/frame/native-hash integration, recipe-wide
 validation and native planning, physical hatches/lathe, registration and
-restart/client/content acceptance remain incomplete. Latest completed full
-regression is separately bound to source `826f5f20` in
-[RESULT-14](../v1.8.0-ci/RESULT-14.md); its metrics are not rebound to this
-row commit. C below 10 GB prevents local full/native runs. All G0-G9 remain open.
+restart/client/content acceptance remain incomplete. The exact committed full
+regression now succeeds with audited raw/JAR results in
+[RESULT-15](../v1.8.0-ci/RESULT-15.md); previous failures remain historical in
+RESULT-14, not rebound to this row commit. C below 10 GB prevents local
+full/native runs. All G0-G9 remain open.
 
 The [new source workflow](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37519061729)
-is actually observed at 2026-10-06T19:34:28Z: attempt 1 /job 112459397257,
-IN_PROGRESS, running GameTests. API metadata reports successful clean-build
-and DataGen steps, not audited counts or a terminal result. Root's GET-only
+was observed at 2026-10-06T19:34:28Z as IN_PROGRESS, attempt 1 /job 112459397257.
+That dated observation is superseded by RESULT-15. Root's original GET-only
 [observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-row-ci-observation-20261007-01/OBSERVATION-01.json),
 SHA `98b11d8c3456fa81ec9c214fd6e948bf39ac470a9eeedc7906f3a5d5cc9f67be`,
 exits 0 (tool `6ff743`). No retry, workflow mutation or Gate result is inferred.

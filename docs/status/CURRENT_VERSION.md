@@ -36,16 +36,16 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 60f1564528de782fa15269884fd1355d3c0b9ff1
-tested_code_commit: 826f5f20fc26a7be6bfc3af5d91f8a81bd7df71c
-latest_regression_result: FAILED
-latest_regression_run: 37513453860
+latest_source_checkpoint: ca217afac7fc2034cf4740e18a0fe582af7285d7
+tested_code_commit: 60f1564528de782fa15269884fd1355d3c0b9ff1
+latest_regression_result: SUCCESS
+latest_regression_run: 37519061729
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-pending_regression_source_commit: 60f1564528de782fa15269884fd1355d3c0b9ff1
-pending_regression_run: 37519061729
+pending_regression_source_commit: ca217afac7fc2034cf4740e18a0fe582af7285d7
+pending_regression_run: 37525478437
 pending_regression_attempt: 1
-pending_regression_observed_utc: 2026-10-06T19:34:28Z
+pending_regression_observed_utc: 2026-10-06T20:22:01Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -76,14 +76,18 @@ the five new event-bridge fixtures without a terminal required failure in that
 batch; native terminal/restart behavior remains unverified. No writer, physical
 hatch or lathe is admitted.
 The [immutable recipe-row checkpoint](../work/v1.8.0-c16a-hatches/RECIPE-ROWS-SOURCE-01.md)
-is independently reviewed and normally pushed at the latest source checkpoint.
+is independently reviewed and normally pushed at `60f1564528de782fa15269884fd1355d3c0b9ff1`.
 Root's fixed-commit cached javac/Jupiter succeeds with nine actual subjects;
 the independent development replay passes 13 subjects including four reviewer
 controls. Full guarded recipe/owner/frame and physical machines remain incomplete.
-Its new hosted run is observed IN_PROGRESS at the timestamp above, running
-GameTests; API metadata alone reports successful build/DataGen steps, not
-audited counts or a terminal result. Latest completed raw-audited metrics below
-remain bound only to `826f5f20`, not the new row source.
+Its exact full regression is raw-audited below. The later
+[bounded service diagnostics](../work/v1.8.0-tau-ceti-readiness/SERVICE-DIAGNOSTICS-SOURCE-01.md)
+are independently reviewed, committed and normally pushed at the latest
+source checkpoint. The independent development and separate fixed-commit
+pure-helper replays each pass 19 subjects;
+assertions and flight timings remain unchanged. Its separate hosted run is
+observed IN_PROGRESS at the timestamp above, in clean build, without audited
+terminal results. The previous row metrics are not rebound to this new source.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
@@ -114,18 +118,20 @@ The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.
 is reviewed and normally pushed at `33a3156e309ca2b8f6a1fcc766501968bc21f138`, with unchanged
 assertions and product. Its original successful unit correction remains in
 [RESULT-13](../work/v1.8.0-ci/RESULT-13.md). The
-[latest raw-audited regression](../work/v1.8.0-ci/RESULT-14.md),
-run 37513453860 /attempt 1 /job 112440254798, passes clean build and all
-1,918 actual cases /351 suites /0 failures, errors or skips. First DataGen
+[latest raw-audited regression](../work/v1.8.0-ci/RESULT-15.md),
+run 37519061729 /attempt 1 /job 112459397257, passes clean build and all
+1,927 actual cases /352 suites /0 failures, errors or skips. First DataGen
 writes 808 entries, repeat writes 0; both worktree checks are clean.
-509 GameTests complete with required Planetary and Tau landing failures; the
+All 509 required GameTests complete and pass; the
 five common-bridge and eleven detector fixtures execute without a named terminal
-required failure in those batches. Root independently rehashes all 394 retained
-files without mismatch. Main64 ERROR /0 FATAL has no
-blanket waiver; JAR upload is skipped and independent bytes are unavailable.
-Tau remains PREPARED with entities_loaded NO in both samples; entity_ticking
-changes NO to YES; the Planetary sample also retains PREPARED/TRANSIT and an
-unready Venus entity chunk. This does not establish a unique cause or full acceptance.
+required failure in those batches. Root independently rehashes all 398 retained
+files and available JAR bytes without mismatch. Main62 ERROR /0 FATAL has no
+blanket waiver. JAR SHA is `cebbe1df6140654057740a31f07573338c37d5219e493b6f56907d53c0689204`;
+all 3,435 member sizes/hashes match the hosted manifest; native ZIP CRC
+validation separately succeeds. The
+[preceding failed cohort](../work/v1.8.0-ci/RESULT-14.md) retains its original
+Planetary/Tau samples. One successful cohort does not prove their unique cause,
+close intermittent readiness risk or establish full acceptance.
 Own generation cleanup was policy-rejected before process creation;
 D temporary directories remain, with no retry or alternate mechanism.
 Detector installed-runtime custom-rule coverage remains explicitly unrun;

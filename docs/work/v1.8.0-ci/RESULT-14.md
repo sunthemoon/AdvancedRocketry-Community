@@ -3,6 +3,8 @@
 Date: 2026-10-07. Source `826f5f20fc26a7be6bfc3af5d91f8a81bd7df71c`;
 [run 37513453860](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37513453860),
 attempt 1, job 112440254798. Result: **FAILED**, at two required GameTests.
+This is now historical: the later row source passes in [RESULT-15](RESULT-15.md).
+That success does not rewrite these failures or establish their cause.
 This supersedes the dated unobserved-run state for that source. The earlier
 corrected-detector cohort remains historical in [RESULT-13](RESULT-13.md).
 
