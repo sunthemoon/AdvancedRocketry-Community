@@ -36,13 +36,13 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-tested_code_commit: c6d60282afdd495acae56e05e56d2ccffdbd9959
+tested_code_commit: 9cd5890bffe7e544a6b365bf47612dc13293401e
 latest_regression_result: FAILED
-latest_regression_run: 37496511702
+latest_regression_run: 37501874947
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-pending_regression_source: 9cd5890bffe7e544a6b365bf47612dc13293401e
-pending_regression_run: 37501874947
+pending_regression_source: 33a3156e309ca2b8f6a1fcc766501968bc21f138
+pending_regression_run: 37506268620
 pending_regression_attempt: 1
 pending_regression_status: IN_PROGRESS
 pending_regression_evidence: METADATA_ONLY
@@ -68,16 +68,13 @@ is independently reviewed, committed and normally pushed at
 development replays each pass 75/75; the clean merged source worktree is normally
 retired. No world writer or whole-hatch delivery is admitted. That failed cohort
 is historical in RESULT-09. The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
-is independently reviewed, committed and pushed at the tested source above.
+is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
-The [latest complete Tau-observation result](../work/v1.8.0-ci/RESULT-11.md),
-run 37496511702 /attempt 1 /job 112382323227, is **FAILED**. Root independently
-audits all 389 retained members: clean build passes 1,895 JUnit /346 suites /0FES;
-DataGen writes 804 then zero, with both tracked/untracked trees clean.
-493 GameTests complete with one required failure, cold Tau Ceti. The required
-failure set no longer contains the Solar surface case; its original 40-tick
-oracle is unchanged. Main console retains 63 ERROR headers /0 FATAL without
-waiver. JAR upload is skipped; independent JAR bytes remain unavailable.
+The [earlier complete Tau-observation result](../work/v1.8.0-ci/RESULT-11.md)
+is historical at `c6d60282afdd495acae56e05e56d2ccffdbd9959`, run 37496511702.
+Its clean build/DataGen and required cold-Tau failure remain at that identity;
+they are not metrics or passes for the newer detector source. Solar's original
+40-tick oracle is unchanged. No error waiver or independent JAR bytes are claimed.
 Tau readiness has a bounded observation follow-up, not a production repair.
 Historical unique causes, packaged restart/recovery and real clients remain
 unverified. No assertions, deadlines or selected subjects are relaxed.
@@ -88,16 +85,23 @@ are normally published at `513f2ffbec25b3864367b820800fb22cd54091f7`.
 Their source assignments use separate clean fixed-base worktrees with source,
 build and workflow dependencies matching e0 at assignment. The one-file
 [Tau source checkpoint](../work/v1.8.0-tau-observation/SOURCE-INTEGRATION-01.md)
-has independent static source review and is merged/pushed at the tested source
-above. Its PRE/POST samples both retain PREPARED/source TRANSIT, destination
+has independent static source review and is merged/pushed at the historical
+Tau source above. Its PRE/POST samples both retain PREPARED/source TRANSIT, destination
 UNASSIGNED and nonready entity flags, not a unique cause or production fix.
 The [detector source/resource checkpoint](../work/v1.8.0-c18a-seal-detector/SOURCE-INTEGRATION-01.md)
-is independently reviewed and normally pushed at the pending source above.
+is independently reviewed and normally pushed at the tested source above.
 One bounded five-source javac/plain Java generation succeeds; four resources
-and two locales match an independent pixel/JSON review. Full compile/Jupiter/
-Forge DataGen/GameTest/native/client delivery remain unverified. Its exact hosted
-uncached build is running at the dated observation; no whole detector acceptance
-is claimed. Own generation cleanup was policy-rejected before process creation;
+and two locales match an independent pixel/JSON review. The
+[latest raw-audited regression](../work/v1.8.0-ci/RESULT-12.md), run 37501874947
+/attempt 1 /job 112400654061, compiles source/tests then fails `:test`:
+1,918 actual cases /351 suites /1 failure /0 errors /0 skips. Root rehashes all
+375 retained members without mismatch. Only the tooltip fixture fails before
+its assertions; artifact audit, DataGen/repeat/cleanliness, GameTest and JAR
+upload are skipped. The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.md)
+is reviewed and normally pushed at the pending source above, with unchanged
+assertions and product. Its exact new run is in clean build at the dated
+metadata observation; no pass or whole detector acceptance is claimed.
+Own generation cleanup was policy-rejected before process creation;
 D temporary directories remain, with no retry or alternate mechanism.
 Detector installed-runtime custom-rule coverage remains explicitly unrun;
 no new provider hook or prerequisite waiver is authorized.
