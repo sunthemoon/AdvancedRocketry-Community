@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,12 +45,12 @@ final class ClassicRootBundle {
         }
         boolean bounded = true;
         for (Map.Entry<String, Tag> entry : captured.entrySet()) {
-            if (!ClassicNbtShape.fits(entry.getValue(), limits(entry.getKey()))) { bounded = false; }
+            if (!canCopyLosslessly(entry.getValue(), limits(entry.getKey()))) { bounded = false; }
         }
         if (bounded) {
             CompoundTag projection = new CompoundTag();
             captured.forEach(projection::put);
-            bounded = ClassicNbtShape.fits(projection, ClassicNbtLimits.REJECTED);
+            bounded = canCopyLosslessly(projection, ClassicNbtLimits.REJECTED);
         }
         if (bounded) {
             Map<String, Tag> detached = new LinkedHashMap<>();
@@ -57,6 +58,12 @@ final class ClassicRootBundle {
             captured = detached;
         }
         return new ClassicRootBundle(captured, type, bounded);
+    }
+
+    private static boolean canCopyLosslessly(Tag root, ClassicNbtLimits limits) {
+        // Shape screens foreign/malformed data before the native getters in lossless preflight.
+        return ClassicNbtShape.fits(root, limits)
+                && BoundedNbt.fits(root, limits.bytes(), limits.depth(), limits.nodes());
     }
 
     static ClassicNbtLimits limits(String key) {

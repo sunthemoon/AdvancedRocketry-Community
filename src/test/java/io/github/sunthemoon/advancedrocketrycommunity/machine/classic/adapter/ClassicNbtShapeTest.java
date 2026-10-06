@@ -128,6 +128,45 @@ class ClassicNbtShapeTest {
         // Raw capture/copy is not proof that a later vanilla writer can preserve the stored subtype.
     }
 
+    @Test void publicNullArrayBackingsRefuseWithoutNormalizationAtRootOrNestedPositions() {
+        List<Tag> values = List.of(new ByteArrayTag((byte[]) null), new IntArrayTag((int[]) null),
+                new LongArrayTag((long[]) null));
+        for (Tag value : values) {
+            assertFalse(ClassicNbtShape.fits(value, ClassicNbtLimits.REJECTED));
+            CompoundTag compound = new CompoundTag(); compound.put("value", value);
+            assertFalse(ClassicNbtShape.fits(compound, ClassicNbtLimits.REJECTED));
+            ListTag list = new ListTag(); list.add(value);
+            assertFalse(ClassicNbtShape.fits(list, ClassicNbtLimits.REJECTED));
+            assertSame(value, compound.get("value")); assertSame(value, list.get(0));
+        }
+        assertNull(((ByteArrayTag) values.get(0)).getAsByteArray());
+        assertNull(((IntArrayTag) values.get(1)).getAsIntArray());
+        assertNull(((LongArrayTag) values.get(2)).getAsLongArray());
+        for (Tag empty : List.of(new ByteArrayTag(new byte[0]), new IntArrayTag(new int[0]),
+                new LongArrayTag(new long[0]))) {
+            assertTrue(ClassicNbtShape.fits(empty, new ClassicNbtLimits(7, 1, 1)));
+        }
+    }
+
+    @Test void publicCompoundPutNullKeyRefusesShapeWithoutRemovingIt() {
+        CompoundTag value = new CompoundTag(); Tag child = IntTag.valueOf(7);
+        value.put(null, child);
+        assertTrue(value.getAllKeys().contains(null)); assertSame(child, value.get(null));
+        assertFalse(ClassicNbtShape.fits(value, ClassicNbtLimits.REJECTED));
+        assertTrue(value.getAllKeys().contains(null)); assertSame(child, value.get(null));
+    }
+
+    @Test void constructedMalformedNativeListNullChildRefusesShapeWithoutNormalization()
+            throws ReflectiveOperationException {
+        // Package-private constructor fixture only: public add/set and native loading are not asserted to produce null.
+        var constructor = ListTag.class.getDeclaredConstructor(List.class, byte.class); constructor.setAccessible(true);
+        List<Tag> children = new java.util.ArrayList<>(); children.add(null);
+        ListTag value = constructor.newInstance(children, (byte) Tag.TAG_INT);
+        assertFalse(ClassicNbtShape.fits(value, ClassicNbtLimits.REJECTED));
+        assertEquals(1, value.size()); assertNull(value.get(0)); assertNull(children.get(0));
+        assertEquals(Tag.TAG_INT, value.getElementType());
+    }
+
     static byte[] namedBytes(Tag tag) throws IOException {
         var buffer = new ByteArrayOutputStream(); var output = new DataOutputStream(buffer);
         output.writeByte(tag.getId()); output.writeUTF(""); tag.write(output);

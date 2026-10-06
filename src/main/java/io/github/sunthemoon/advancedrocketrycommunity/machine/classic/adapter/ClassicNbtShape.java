@@ -21,6 +21,7 @@ final class ClassicNbtShape {
                 bytes++; // native TAG_End terminator
                 if (compound.size() > limit.nodes() - nodes - pending.size()) { return false; }
                 for (String key : compound.getAllKeys()) {
+                    if (key == null) { return false; }
                     int keyBytes = utfBytes(key);
                     if (keyBytes < 0) { return false; }
                     bytes += 3L + keyBytes; // child type + writeUTF key
@@ -32,14 +33,27 @@ final class ClassicNbtShape {
                 ListTag list = (ListTag) tag;
                 bytes += 5;
                 if (list.size() > limit.nodes() - nodes - pending.size()) { return false; }
-                for (Tag child : list) { pending.push(new Node(child, node.depth() + 1)); }
+                for (Tag child : list) {
+                    if (child == null) { return false; }
+                    pending.push(new Node(child, node.depth() + 1));
+                }
             } else if (type == StringTag.class) {
                 int length = utfBytes(tag.getAsString());
                 if (length < 0) { return false; }
                 bytes += 2L + length;
-            } else if (type == ByteArrayTag.class) { bytes += 4L + ((ByteArrayTag) tag).getAsByteArray().length; }
-            else if (type == IntArrayTag.class) { bytes += 4L + 4L * ((IntArrayTag) tag).getAsIntArray().length; }
-            else if (type == LongArrayTag.class) { bytes += 4L + 8L * ((LongArrayTag) tag).getAsLongArray().length; }
+            } else if (type == ByteArrayTag.class) {
+                byte[] value = ((ByteArrayTag) tag).getAsByteArray();
+                if (value == null) { return false; }
+                bytes += 4L + value.length;
+            } else if (type == IntArrayTag.class) {
+                int[] value = ((IntArrayTag) tag).getAsIntArray();
+                if (value == null) { return false; }
+                bytes += 4L + 4L * value.length;
+            } else if (type == LongArrayTag.class) {
+                long[] value = ((LongArrayTag) tag).getAsLongArray();
+                if (value == null) { return false; }
+                bytes += 4L + 8L * value.length;
+            }
             else if (type == ByteTag.class) { bytes++; }
             else if (type == ShortTag.class) { bytes += 2; }
             else if (type == IntTag.class || type == FloatTag.class) { bytes += 4; }
