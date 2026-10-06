@@ -36,6 +36,7 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
+latest_source_checkpoint: 826f5f20fc26a7be6bfc3af5d91f8a81bd7df71c
 tested_code_commit: 33a3156e309ca2b8f6a1fcc766501968bc21f138
 latest_regression_result: FAILED
 latest_regression_run: 37506268620
@@ -62,7 +63,14 @@ is independently reviewed, committed and normally pushed at
 `a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43`. Author and independent cached Java
 development replays each pass 75/75; the clean merged source worktree is normally
 retired. No world writer or whole-hatch delivery is admitted. That failed cohort
-is historical in RESULT-09. The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
+is historical in RESULT-09. The new
+[three-method common bridge](../work/v1.8.0-c16a-hatches/COMMON-GUARD-BRIDGE-SOURCE-01.md)
+is independently reviewed and normally pushed at the latest source checkpoint.
+One bounded cached compilation and five unchanged pure-domain tests pass as
+development observations; five new event-bridge GameTests are compiled but
+unexecuted. Exact committed full regression and native terminal/restart behavior
+remain unverified; no writer, physical hatch or lathe is admitted.
+The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
 The [earlier complete Tau-observation result](../work/v1.8.0-ci/RESULT-11.md)

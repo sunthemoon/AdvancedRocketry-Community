@@ -81,6 +81,10 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     测试副本三处近邻标记隔离源码审核、集成与 Root 137 Python 通过；
     仅固定两主机原生诊断及独立结果审核已验证，不改 Java/保存行为、不开放新 writer；清理仍被拒绝。
   - [ ] 完整 hash/frame/native codec 和 GuardTicket 消费端。
+  - [~] [公共保存接口](../work/v1.8.0-c16a-hatches/COMMON-GUARD-BRIDGE-SOURCE-01.md)：
+    三个方法与五项新 GameTest 已独立审核、提交并正常推送至 `826f5f20`；
+    限定缓存编译和五项原有领域单测通过，新 GameTest 仅编译、尚未执行。
+    完整提交回归、停服/最终保存/重启资格及物理机器交付仍未完成。
   - [ ] 02 生命周期、首存观察、最终卸载和保存 writer。
   - [ ] 服务端 creative 输入的复制/覆盖前拦截与真实客户端、FE 守恒证明。
   - [ ] 03/04 物理 hatch、capability、controller 与首台车床。
