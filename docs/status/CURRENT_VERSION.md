@@ -136,8 +136,13 @@ Three smaller TASK-03 proposal leaves are now directly dispatched in separate
 all three returned within runner caps with exact file scopes, but disclose
 incomplete mandatory governance reads. The graph's interactive-session label
 also conflicts with actual fresh CLI evidence. These deviations stay open;
-I/O success is not compliance or acceptance. Independent return review and
-adoption remain separate. Full regression/V1/V2/Gates,
+I/O success is not compliance or acceptance. Completed
+[independent narrow reviews](../work/v1.8.0-claude-cli-coordination/REVIEW-03-01.md)
+find graph 3 Medium/1 Low, audio 4 Medium/1 Low and equipment 3 Medium/1 Low;
+all remain CHANGES_REQUESTED, with earlier full-contract findings still open.
+Exact unchanged candidates are separately committed/pushed, not integrated or
+accepted. Three smaller two-document TASK-04 successors are prospectively
+registered, not dispatched. Full regression/V1/V2/Gates,
 186 PLANNED /154 REVIEW and CSV
 allocations are unchanged.
 

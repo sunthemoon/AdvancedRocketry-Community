@@ -2,8 +2,10 @@
 
 Date: 2026-10-08. Task registration was independently reviewed, corrected and
 non-force pushed on main at a8219e75d19d61d3056e3901dc99491d14f20b7b before
-these calls. Each assigned clean worktree stays at fixed 2e397a49; Root main
-may integrate unrelated same-version files without moving any worker HEAD.
+these calls. Each author executed in its clean assigned worktree at fixed
+2e397a49; Root did not move worker HEADs while those calls were running.
+After author/reviewer releases, Root archived the unchanged returns at
+c9b2c001 (graph), 3a607583 (audio) and 9903b3f6 (equipment) in those worktrees.
 Original author worktrees/sealed packets and the owner's large session stay
 unchanged. No proposal is accepted or counted as implementation here.
 
@@ -50,8 +52,10 @@ consolidated correction/adoption remain separate before source authority.
 Author time uncertainty is not a measured timeout; runner terminal receipts
 show no cap termination. Failed author lookups remain disclosed in handoffs.
 
-Root will review each small result and register any independent reviewer or
-implementation leaf with exact scope. No return is adopted by this checkpoint.
+The completed independent reviews and prospective smaller successors are now
+recorded in [REVIEW-03-01](REVIEW-03-01.md). All three narrow proposals remain
+CHANGES_REQUESTED; no return is adopted. The original dispatch and author bytes
+are preserved in sealed packets and isolated pushed candidate commits.
 There is no persistent scheduler or promise of polling after a session ends.
 
 Graph catalog/budget/AND-OR findings, audio oracle/coverage/one-shot/assets,
