@@ -2,7 +2,7 @@
 
 ```yaml
 status: PROPOSED
-revision: 1
+revision: 2
 date: 2026-10-07
 owner: sunthemoon
 deciders: [sunthemoon]
@@ -35,6 +35,13 @@ exception automatically rolls back native mutations. No old coremod or native
 method body is copied.
 
 ## Proposed exception
+
+The maintainer selected the narrowly scoped interception option on 2026-10-07;
+the exact reply and its conditions are in the
+[owner decision record](../work/v1.8.0-c16a-hatches/OUTER-HOOK-OWNER-DECISION-01.md).
+This resolves the architecture question only. Final independent review and the
+operation/save/recovery contracts below still precede implementation; the ADR
+remains PROPOSED and does not authorize physical activation or accept R-021.
 
 Intercept only these three invocation sites, preserving the original receiver,
 arguments and native return/throwable, and delegate exactly once inside ordinary
@@ -141,11 +148,14 @@ automatic support for other versions.
 
 ## Decision status and expiry
 
-The maintainer's outer-hook architecture choice remains unanswered. This file
-is **PROPOSED**, not a bytecode exception, implementation authorization or Gate
-approval. Acceptance requires that decision and a different-agent review of
-the final text; acceptance of interception alone does not freeze the unresolved
-operation/save/risk contracts or authorize physical activation.
+The maintainer's outer-hook architecture choice is now confirmed, as recorded
+above; revision 2 supersedes revision 1's unanswered-choice statement. This file
+is still **PROPOSED**, not final implementation authorization or Gate approval.
+Acceptance requires a different-agent review of the final text and resolution
+of its remaining bounded operation/save/recovery/dependency contracts. The
+selected interception option alone does not freeze those contracts, accept or
+extend R-021, or authorize physical activation. The original revision/proposal
+and primary evidence remain available unchanged in Git/external records.
 
 If accepted, the exception is limited to v1.8.0 and must be re-evaluated before
 v1.9.0, supported-version expansion or target changes. An incompatible leaf

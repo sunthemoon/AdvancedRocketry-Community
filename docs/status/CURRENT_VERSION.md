@@ -39,11 +39,11 @@ runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 61ae5001532c2a95c3393030be8f2d36521a446a
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
 latest_regression_target_commit: 61ae5001532c2a95c3393030be8f2d36521a446a
-latest_regression_result: RUNNING
+latest_regression_result: FAILED
 latest_regression_run: 37590839225
 latest_regression_attempt: 1
-latest_regression_evidence: METADATA_ONLY
-latest_regression_observed_utc: 2026-10-07T08:02:17Z
+latest_regression_evidence: RAW_AUDITED
+latest_regression_observed_utc: 2026-10-07T08:11:53Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -71,10 +71,21 @@ provider-test, central and resource reviews report no actionable scoped finding;
 their limitations and actual source associations are in the
 [integration record](../work/v1.8.0-c18a-airlock/SOURCE-INTEGRATION-01.md).
 The complete source/resource checkpoint is normally pushed at `61ae5001`;
-its [hosted regression observation](../work/v1.8.0-ci/RESULT-25.md) is running
-at clean build. No unit/native counts or terminal outcome are yet available.
+its [terminal regression](../work/v1.8.0-ci/RESULT-26.md) fails four required
+GameTests. Clean build, 372 XML /2,097 unit cases with zero failures/errors/skips,
+artifact/client audits and both native DataGen/clean checks pass. All fourteen
+new unit methods match the fixed declarations. The 525-case native cohort
+fails the existing Earth-Mars-Venus and Tau trips plus two new airlock subjects:
+finite loot outcomes and initial installed supply. Seven airlock tests execute;
+individual native pass XML is absent. Canonical 67 ERROR /zero FATAL remain
+unwaived. Root and different-agent raw audits agree with zero retained-input
+drift. The two new failures are assigned to an isolated fixture
+follow-up: bounded loot seed spacing and initial-supply scalar observations,
+preserving assertions/deadlines/budgets. Supply cause remains unresolved and no
+native repair is yet proven.
+The dated [running observation](../work/v1.8.0-ci/RESULT-25.md) remains historical.
 Own ended source worktree is normally removed after clean/merged checks.
-Hosted compilation, native generation/GameTests, restart and V1/V2 remain open.
+Full GameTest qualification, restart and V1/V2 remain open.
 No compiled/runtime or Gate delivery is claimed.
 
 The [empty-removal admission checkpoint](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-INTEGRATION-01.md)
@@ -87,9 +98,13 @@ rebound to the later living-gravity source. Physical registration, save/native
 joins, previous readiness failures and all Gates remain open; successful
 inactive-source regression is not hatch delivery.
 The [outer-operation ADR](../decisions/ADR-068-V180-CLASSIC-NATIVE-OUTER-OPERATIONS.md)
-is PROPOSED only. The owner architecture choice, private birth/save/recovery
-contracts, risk disposition and actual transformed/native verification remain
-required before assigning or activating physical interception.
+is PROPOSED, revision 2. The owner has selected only the three listed
+ordinary-player interception sites under the
+[2026-10-07 conditions](../work/v1.8.0-c16a-hatches/OUTER-HOOK-OWNER-DECISION-01.md).
+Its bounded owner/architecture revision has different-agent review with no
+actionable finding; final private birth/save/recovery/dependency review, risk
+disposition and actual transformed/native verification remain required before
+assigning or activating physical interception; no R-021 acceptance is inferred.
 
 The [living-gravity parent task](../work/v1.8.0-c18a-living-gravity/TASK-01.md)
 separates the actual living-tick extension from fall handling. Leaf A's

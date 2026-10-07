@@ -44,13 +44,15 @@ Its [exact-source hosted verification](../v1.8.0-ci/RESULT-22.md) has passed,
 including the new declaration/data tests; this is not completion of the physical
 lifecycle. The pre-serialization/native-operation bridge remains unsettled and
 is not adopted from the separate design investigation. The owner architecture
-question about a narrowly version-bound outer hook remains pending; neither
-that exception nor native implementation is inferred from CI success.
+question is now resolved by the
+[2026-10-07 decision](OUTER-HOOK-OWNER-DECISION-01.md): allow only the three listed
+ordinary-player interception sites, after review and contract/actual verification.
+Neither final ADR acceptance nor native implementation is inferred from CI success.
 The bounded [primary callsite investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-native-outer-hook-feasibility-20261007/REPORT-01.md)
 identifies one placement invocation and two removal invocations (including delayed
 mining completion). These are static version-bound facts, not installed hook,
-compatibility, rollback or restart verification. A proposed exception still
-requires owner confirmation, an ADR and independent review before implementation.
+compatibility, rollback or restart verification. The selected exception still
+requires final ADR/private-contract independent review before implementation.
 The canonical [ADR-068](../../decisions/ADR-068-V180-CLASSIC-NATIVE-OUTER-OPERATIONS.md)
 now records that proposal and its event/AT evidence, exact invocation scope,
 two save consumers, unknown-outcome/risk limits and activation prerequisites.

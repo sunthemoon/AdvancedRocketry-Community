@@ -19,6 +19,11 @@ remote HEAD and unchanged user AGENTS. The
 Root normally removes only its ended clean/merged airlock source worktree;
 [cleanup receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-and-airlock-root-progress-20261007-01/AIRLOCK-WORKTREE-CLEANUP-01.json)
 retains exact resolved scope, normal non-force removal and unchanged main dirt.
+The later [terminal result](../v1.8.0-ci/RESULT-26.md) supersedes running status:
+clean build/new unit cases/repeated native generation pass; full GameTests fail
+two existing rocket subjects and two new airlock subjects. It does not supply
+native airlock delivery. Original source and failed run remain unchanged while
+an isolated correction is investigated.
 
 ## Committed source and exact review association
 
@@ -60,8 +65,10 @@ isolation is claimed by this one-manager bridge.
 Original three grids, eight block models, item/blockstate, six iron -> three
 doors recipe, lower-only loot/unlock and additive tags/language use the
 [predeclared NEW provenance](../../provenance/v1.8.0-c18a-airlock-new-resources.md).
-The 21 prepared outputs are a Python mirror with matching old controls, not
-executed Java DataGen. Native parent model IDs are references, not copied bodies.
+The initial 21 prepared outputs are a Python mirror with matching old controls,
+not then-executed Java DataGen. The later terminal cohort separately records
+actual repeated native generation with unchanged output. Native parent model
+IDs are references, not copied bodies.
 
 No BlockEntity, schema, packet, FE/fluid transaction, new config key, automatic
 airlock cycle, public hook or physical hatch/native interception is introduced.

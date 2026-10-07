@@ -5,6 +5,12 @@ Status: implemented-unverified; independently reviewed source integration.
 See [integration record](SOURCE-INTEGRATION-01.md). No compiled/runtime delivery.
 Required Gates remain open.
 
+The exact published cohort's [terminal result](../v1.8.0-ci/RESULT-26.md) passes
+all fourteen new JUnit methods and twice native DataGen/clean checks, but fails
+two of this batch's seven native subjects. Full GameTests also fail two existing
+rocket trips. Source remains unqualified; the isolated fixture correction
+changes no production contract, assertion, deadline or performance budget.
+
 ## Narrow technical adoption
 
 Root adopts [LEAF-SPEC-02](LEAF-SPEC-02.md), SHA-256
