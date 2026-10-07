@@ -39,11 +39,11 @@ runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 22f7d1cae0735a8b8c072165e7a3cf8089e3719c
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
 latest_regression_target_commit: 22f7d1cae0735a8b8c072165e7a3cf8089e3719c
-latest_regression_result: RUNNING
+latest_regression_result: FAILED
 latest_regression_run: 37605098496
 latest_regression_attempt: 1
-latest_regression_evidence: METADATA_ONLY
-latest_regression_observed_utc: 2026-10-07T10:10:42Z
+latest_regression_evidence: ROOT_RAW_AUDITED_INDEPENDENT_PENDING
+latest_regression_observed_utc: 2026-10-07T10:16:53Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -84,20 +84,24 @@ are recorded below, not inherited from old cohorts.
 The separate bounded [fixture lifecycle experiment](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-TASK-01.md)
 has [reviewed publication](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-INTEGRATION-01.md)
 at `22f7d1ca`; its clean ended owned worktree is normally removed, source retained.
-The [new exact-source run](../work/v1.8.0-ci/RESULT-32.md) is RUNNING with metadata
-only. Native authority, predicates, limits and cleanup obligations remain;
-no unique cause, native restoration result or production change is adopted.
+The [new exact-source terminal](../work/v1.8.0-ci/RESULT-33.md) fails full regression:
+372 XML/2,104 units pass; build, artifact and twice DataGen/clean checks pass.
+525 native subjects complete with two required failures, Tau travel and loader
+drop/place; canonical 64 ERROR/zero FATAL remains unwaived. Root raw derivation
+is complete and different-agent audit is pending. All seven airlock subjects
+are absent from the complete failure list; committed installed-case sequencing
+reaches all six original supply/revoke/no-republication/recovery cases before
+normal cleanup/success. No individual native PASS XML or abnormal-stop/timeout
+cleanup proof exists. No unique cause or production change is adopted.
 The accepted-category [sky switch task](../work/v1.8.0-c18d-sky-switches/TASK-01.md)
 has [reviewed source integration](../work/v1.8.0-c18d-sky-switches/SOURCE-INTEGRATION-01.md).
 Five worker files are committed/cherry-picked without byte changes; Root's
 three central bindings accompany their qualified metadata checkpoint. Different-agent
 central and combined actual-diff reviews find no actionable scoped issue.
 Complete source is normally published at `cbbb78e1`; its exact-source
-[independently audited terminal](../work/v1.8.0-ci/RESULT-31.md) passes clean build,
-2,104 unit cases and twice DataGen/clean checks. The ten adapter/config methods
-match and pass. Complete GameTests fail three required cases: Earth-Mars-Venus,
-Tau and initial airlock supply, with 65 unwaived ERROR/zero FATAL. Root and the
-different-agent retained raw audits agree with no input drift. Real clients remain open;
+[independently audited terminal](../work/v1.8.0-ci/RESULT-31.md) is historical;
+its passed build/unit/DataGen checks and failed complete GameTests remain bound
+to that source. Current metrics appear above. Real clients remain open;
 raw selection and ambience are outside that presentation gate.
 The dated [running observation](../work/v1.8.0-ci/RESULT-25.md) remains historical.
 Own ended source worktree is normally removed after clean/merged checks.

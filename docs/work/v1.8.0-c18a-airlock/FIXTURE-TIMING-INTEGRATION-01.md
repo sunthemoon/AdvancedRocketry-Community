@@ -40,9 +40,12 @@ remote checks, Root normally removes only its ended worktree without force
 has SHA-256 `06e317dd68b7d6519b2293578b7f188b0f7d5adc675de16d8b404a98844540bb`.
 No other worktree, branch, user data or inherited evidence is removed.
 
-The [new source-bound CI observation](../v1.8.0-ci/RESULT-32.md) is separate from
-old failed cohorts. Native supply/revocation/recovery, packaged restart,
-V1/V2, Tau readiness and all G0-G9 remain open until actual evidence exists.
+The [new source-bound terminal](../v1.8.0-ci/RESULT-33.md) retains seven airlock
+subjects absent from the complete failure list, with all six installed cases
+preceding committed success/normal cleanup. Different-agent raw audit is pending;
+there is no independent native PASS XML or abnormal cleanup/restart proof.
+Full regression still fails Tau and loader drop/place. Packaged restart,
+V1/V2, Tau readiness and all G0-G9 remain open.
 Local C is below 10 GB; no local JVM/Gradle/native/client runs. New scratch and
 logs stay under D's project parent. No production, contract, risk, registry,
 asset or ledger changes accompany this test-only source.
