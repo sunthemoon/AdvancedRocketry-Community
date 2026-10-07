@@ -207,7 +207,7 @@ public final class AdvancedRocketryCommunity {
         CelestialGravityController gravityController = new CelestialGravityController(environments,
                 stationManager::effectiveGravity, player -> io.github.sunthemoon.advancedrocketrycommunity.endgame
                 .service.EndgameRuntime.devices().map(devices -> devices.fieldGravity(player))
-                .orElse(java.util.OptionalDouble.empty()));
+                .orElse(java.util.OptionalDouble.empty()), CommonConfig::classicGravityEnabled);
         MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingTick);
         CelestialCommands celestialCommands = new CelestialCommands(
                 celestialCatalogs,
