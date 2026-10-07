@@ -37,13 +37,13 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-tested_code_commit: 7ab1b0879527f4d8d3e88f09f9360015175b911a
+tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
 latest_regression_target_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_result: IN_PROGRESS
+latest_regression_result: PASSED
 latest_regression_run: 37568695086
 latest_regression_attempt: 1
-latest_regression_evidence: METADATA_ONLY
-latest_regression_observed_utc: 2026-10-07T03:51:55Z
+latest_regression_evidence: RAW_AUDITED
+latest_regression_observed_utc: 2026-10-07T04:10:12Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -53,10 +53,17 @@ last_updated: 2026-10-07
 The [empty-removal admission checkpoint](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-INTEGRATION-01.md)
 is independently reviewed, committed and normally pushed at `7d7b474e`.
 Its post-provider physical block-state check addresses the source review's Medium
-finding. The new exact-source hosted run is in progress; no new test outcome is
-claimed. `tested_code_commit` above retains the last completed audited cohort,
-not this pending target. Physical registration, save/native joins and all Gates
-remain open. The prior successful source metrics below are not rebound.
+finding. The [exact-source terminal result](../work/v1.8.0-ci/RESULT-22.md) binds
+run 37568695086 /attempt 1 /job 112622219034 to completed automatic regression
+success. Actual raw recount finds 368 XML /2,073 testcase children, zero testcase
+failures, errors or skips and zero container failures/errors. Six new and seven
+maintained subjects match fixed source and pass. Clean build, artifact audit,
+both DataGen/clean-worktree checks and 509/509 required GameTests pass. The
+canonical stream retains 62 ERROR /zero FATAL, unwaived. The downloaded JAR's
+whole-byte receipt agrees with hosted checksum/manifest identity; no independent
+inner-JAR reparse is claimed. Physical registration, save/native joins, previous
+readiness failures and all Gates remain open. The first running capture stays
+historical; a successful inactive-source regression is not hatch delivery.
 
 The [inactive guarded-save integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
 combines the independently reviewed owner/comparator/central source and explicit
@@ -71,18 +78,11 @@ Root's fixed formatter/Jupiter run passes nine matching methods with eighteen
 unchanged inputs; its independent raw audit agrees. That run does not compile/run
 the native Tau fixture. Both own ended output sets are cleaned, with separate
 count-only corrections retaining original receipts. Main index and user AGENTS
-are preserved. The separate [terminal result](../work/v1.8.0-ci/RESULT-21.md)
-binds source `7ab1b087`, run 37560119538 /attempt 1 /job 112595248301 and the
-02:17:33Z capture: completed automatic regression success. Actual raw recount
-finds 367 XML /2,067 testcase children /zero testcase failures, errors or skips
-and zero container failures/errors; eleven changed suites /79 matching cases pass. Clean build,
-artifact audit, both DataGen/clean-worktree checks and 509/509 required GameTests
-pass. The canonical stream retains 62 ERROR /zero FATAL, not waived. The actual
-downloaded JAR whole-byte digest matches hosted metadata/checksum/manifest; no
-independent inner-JAR reparse is claimed. One successful cohort is not a Tau
-repair, new failure-branch execution or physical machine activation. The dated
-02:06 running record and earlier failures remain unchanged. Physical
-placement/removal/final-save/restart, R-021 and all Required Gates remain open.
+are preserved. Its preceding [terminal result](../work/v1.8.0-ci/RESULT-21.md)
+retains its own exact source, raw metrics and independent audit as history.
+A successful cohort is not a Tau repair, new failure-branch execution or
+physical machine activation. Physical placement/removal/final-save/restart,
+R-021 and all Required Gates remain open.
 
 The [readiness-wait history checkpoint](../work/v1.8.0-transfer-wait-history/SOURCE-INTEGRATION-01.md)
 has independent actual-source review with no C/H/M/L, private source `f43ecefb`

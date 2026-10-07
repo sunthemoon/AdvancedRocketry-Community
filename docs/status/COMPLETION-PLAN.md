@@ -118,7 +118,8 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     [独立空 hatch 权限衔接](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-IMPLEMENTATION-01.md)
     的[源码检查点](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-INTEGRATION-01.md)
     已完成独立审核、修正回调后的实际方块状态检查并提交、推送至 `7d7b474e`；
-    精确提交的远程回归进行中，尚无新测试结果。保存前置保护、生成/磁盘 Proto 观察、放置/取消/拆除
+    精确提交的[终态回归](../work/v1.8.0-ci/RESULT-22.md)已通过，新增权限边界测试实际执行。
+    这不是物理生命周期交付。保存前置保护、生成/磁盘 Proto 观察、放置/取消/拆除
     期望记录、真实接入、最终卸载、保存 writer 与重启仍未实现或验证。
   - [x] [带电插口格式数据检查](../work/v1.8.0-c16a-hatches/POWER-CARRIER-FORMAT-SOURCE-01.md)：
     三个精确后像经独立源码审核后提交、正常推送并集成至 `257e7b3a`；
@@ -339,13 +340,14 @@ pure-helper 单测分别通过，
 `7ab1b087`。十八个输入无漂移；旧断言、时限、ticket 和 2048/512 输出不变。
 单次新原生查询只在缺失分支，标签为 POST_LOOKUP；不是飞行或原生就绪修复。
 自有七个 class 和九个目录已清理，原统计和另版更正保留；定向测试不执行 native fixture。
-新精确源码的[终态回归](../work/v1.8.0-ci/RESULT-21.md)绑定 run 37560119538 /attempt 1 /
-job 112595248301，2026-10-07T02:17:33Z 捕获为 completed success。
-实际原始报告核对 367 XML /2,067 单测 /零 testcase 失败、错误或跳过，零 container 失败或错误；
-十一份新增测试的 79 个名称与固定源码一致，其中机器 70 项、文本九项。
+该前序源码的[终态结果](../work/v1.8.0-ci/RESULT-21.md)保留为历史，不重绑其指标。
+最新空 hatch 权限源码 `7d7b474e` 的[终态回归](../work/v1.8.0-ci/RESULT-22.md)
+绑定 run 37568695086 /attempt 1 /job 112622219034，2026-10-07T04:10:12Z 捕获为 completed success。
+实际原始报告核对 368 XML /2,073 单测 /零 testcase 失败、错误或跳过，零 container 失败或错误；
+六项新增和七项维护测试的名称与固定源码一致。
 clean build、产物检查、两次 DataGen/干净工作树和 509/509 required GameTest 通过；
-canonical 62 ERROR /零 FATAL 未豁免。新 JAR 实际整字节摘要与 hosted 清单一致，
-不声称独立重解析内部条目。一次成功不证明就绪修复、缺失分支执行或物理机器可用；
+canonical 62 ERROR /零 FATAL 未豁免。新 JAR 的整字节回执摘要与 hosted 清单一致，
+不声称独立重解析内部条目或再次读取未保留的 JAR。一次成功不证明就绪修复、缺失分支执行或物理机器可用；
 旧运行中捕获和失败保留。失败原因、物理保存和全部 Gate 仍开放。
 [前序格式源码结果](../work/v1.8.0-ci/RESULT-19.md)保留两项 required 失败；
 目的地夹具在新批次不再出现失败标题，不据此认定修复。

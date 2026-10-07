@@ -1,7 +1,11 @@
 # Empty-hatch removal admission source checkpoint
 
-Date: 2026-10-07. Status: committed source; hosted verification in progress.
+Date: 2026-10-07. Publication-time status: committed source; hosted verification in progress.
 This is the internal admission dependency, not physical hatch delivery.
+
+The later [terminal result](../v1.8.0-ci/RESULT-22.md) supersedes the pending
+execution status below. It records actual completed regression for this source;
+the dated first capture remains unchanged. Physical hatch delivery stays open.
 
 ## Implementation and review
 

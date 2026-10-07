@@ -1,6 +1,6 @@
 # C16a-03b-02-EMPTY: physical empty-hatch lifecycle
 
-Date: 2026-10-07. Status: in-progress; admission source committed, hosted verification pending, not installed delivery.
+Date: 2026-10-07. Status: in-progress; admission source committed and automatic regression passed, not installed delivery.
 
 ## Outcome and scope
 
@@ -40,9 +40,17 @@ adopt physical birth/removal descriptors or close the save/native dependencies.
 
 The [admission source checkpoint](EMPTY-REMOVAL-GUARD-INTEGRATION-01.md) is now
 independently reviewed, corrected, committed and normally pushed at `7d7b474e`.
-Its exact-source hosted verification is in progress; this is not completion of
-the physical lifecycle. The pre-serialization/native-operation bridge remains
-unsettled and is not adopted from the separate design investigation.
+Its [exact-source hosted verification](../v1.8.0-ci/RESULT-22.md) has passed,
+including the new declaration/data tests; this is not completion of the physical
+lifecycle. The pre-serialization/native-operation bridge remains unsettled and
+is not adopted from the separate design investigation. The owner architecture
+question about a narrowly version-bound outer hook remains pending; neither
+that exception nor native implementation is inferred from CI success.
+The bounded [primary callsite investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-native-outer-hook-feasibility-20261007/REPORT-01.md)
+identifies one placement invocation and two removal invocations (including delayed
+mining completion). These are static version-bound facts, not installed hook,
+compatibility, rollback or restart verification. A proposed exception still
+requires owner confirmation, an ADR and independent review before implementation.
 
 No public factory, success boolean, LOAD/EMIT substitution, reset of sticky denial,
 new persistent ID/schema, broad source-mode policy, power Item lease reuse,
