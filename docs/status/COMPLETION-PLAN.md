@@ -131,7 +131,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     已按固定源码形成提案；[独立分配审核](../work/v1.8.0-c16a-hatches/PRIVATE-OPERATION-REVIEW-01.md)
     留有两项 Medium：真实放置/结果认证和 provisional LOAD/可用性/终态绑定。
     未知结果与覆盖失败政策、源物品边界及跨存储守恒也未决定或证明；
-    原生放置与拦截兼容事实并行核对，不分配未接入的操作 helper。
+    [原生放置事实](../work/v1.8.0-c16a-hatches/PLACEMENT-ENTRY-FACTS-01.md)已明确真实 pre-write context
+    与同 context 直接调用边界，但未证明来源认证。完整后继契约与拦截兼容事实
+    并行处理，不分配未接入的操作 helper。
   - [x] [带电插口格式数据检查](../work/v1.8.0-c16a-hatches/POWER-CARRIER-FORMAT-SOURCE-01.md)：
     三个精确后像经独立源码审核后提交、正常推送并集成至 `257e7b3a`；
     独立开发和固定已发布提交的缓存 javac/Jupiter 各 13/13 通过，后者 49 个输入无漂移。

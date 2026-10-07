@@ -67,6 +67,11 @@ The future coupled writer, if authorized, must implement actual entry, two
 LOADs, two save consumers, terminal classification and focused recovery tests
 together. Root retains central dependency/registration/status ownership.
 
+[Primary placement facts](PLACEMENT-ENTRY-FACTS-01.md) now identify the actual
+native pre-write context/target seam and same-context first-use provenance
+counterexample. They do not close either assignment gap. A coupled successor
+design is in progress; no call-site authentication mechanism is yet adopted.
+
 No FE/power, controller bank, automation, new schema/public API, source body,
 asset or dependency is added here. Physical hatch, first lathe and dependent
 C16 machine families remain unfinished; saved data and user AGENTS are untouched.
