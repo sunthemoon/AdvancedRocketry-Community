@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.CellObserv
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePosition;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeWorldView;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockTags;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Block;
@@ -47,6 +48,9 @@ public final class ServerLevelVolumeWorldView implements VolumeWorldView {
         }
 
         BlockState state = level.getBlockState(blockPosition);
+        if (ModBlocks.AIRLOCK_DOOR.isPresent() && state.is(ModBlocks.AIRLOCK_DOOR.get())) {
+            return ModBlocks.AIRLOCK_DOOR.get().observeBoundary(level, blockPosition, state);
+        }
         if (state.is(ModBlockTags.ATMOSPHERE_SEALING)) {
             return CellObservation.SEALED;
         }

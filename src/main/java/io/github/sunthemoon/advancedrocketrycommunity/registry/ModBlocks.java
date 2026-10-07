@@ -1,7 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.AirlockDoorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.AdvancedMachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.content.MachineCasingBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionGeneratorBlock;
@@ -42,6 +44,9 @@ public final class ModBlocks {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<AirlockDoorBlock> AIRLOCK_DOOR = BLOCKS.register(
+            "airlock_door", () -> new AirlockDoorBlock(metalProperties().requiresCorrectToolForDrops()
+                    .noOcclusion(), CommonConfig::classicDevicesEnabled));
     public static final RegistryObject<CombustionGeneratorBlock> COMBUSTION_GENERATOR = BLOCKS.register(
             "combustion_generator", () -> new CombustionGeneratorBlock(metalProperties().requiresCorrectToolForDrops()
                     .pushReaction(PushReaction.BLOCK)

@@ -26,6 +26,7 @@ public final class ModItems {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<Item> AIRLOCK_DOOR = blockItem("airlock_door", ModBlocks.AIRLOCK_DOOR);
     public static final RegistryObject<Item> COMBUSTION_GENERATOR = blockItem("combustion_generator",
             ModBlocks.COMBUSTION_GENERATOR);
     public static final RegistryObject<Item> SOLAR_GENERATOR = blockItem("solar_generator", ModBlocks.SOLAR_GENERATOR);

@@ -1,7 +1,9 @@
 # C18a-AIRLOCK-01: airlock source implementation
 
 Date: 2026-10-07. Integrator/contract owner: Root. Version: v1.8.0.
-Status: ready; implementation has not started. Required Gates remain open.
+Status: implemented-unverified; independently reviewed source integration.
+See [integration record](SOURCE-INTEGRATION-01.md). No compiled/runtime delivery.
+Required Gates remain open.
 
 ## Narrow technical adoption
 
@@ -59,10 +61,13 @@ priority change. No Tau fix or Gate acceptance is part of this source assignment
 
 ## Ownership and isolated setup
 
-Source worktree planned: `D:/GitHub/arce-v180-airlock-20261007`; branch planned:
-`codex/v1.8.0-airlock-source`. Root creates it after this adoption/provenance
-checkpoint is committed. The actual base SHA and setup receipt are recorded
-before the worker starts; the existing Java basis is unchanged from tested 8b3.
+Source worktree: `D:/GitHub/arce-v180-airlock-20261007`; branch:
+`codex/v1.8.0-airlock-source`; actual committed base:
+`0f9f46a5cb201b76cb17c80354b3d879a9abdd2b`. Root's
+[setup receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-and-airlock-root-progress-20261007-01/AIRLOCK-WORKTREE-SETUP-01.json)
+records the fresh worktree/branch and clean status before assigning worker
+`c16a04_fluids`. The adoption/provenance checkpoint was normally pushed before
+worker art authoring; the existing Java basis at setup is unchanged from 8b3.
 No shared-checkout worker write permission is granted.
 
 Worker owns only these NEW files in that isolated worktree:
@@ -100,3 +105,10 @@ Gradle or native server/client. Worker uses only PowerShell/Git reads/Python -B,
 apply_patch, and task-owned D TEMP/TMP/TMPDIR; no network/install/process cleanup.
 Root records actual command exits and failed runs. All G0-G9, real player/GPU,
 packaged restart and full v1.8 delivery remain open.
+
+Controlled native fixtures may read the already-installed runtime manager,
+existing Level service and coordinator fields using test-only reflection. No
+reflected write, runtime replacement, second authority or mutable-owner accessor
+is permitted. Existing bounded scheduling methods may establish queue states;
+report that as a controlled installed-service witness, not natural server-tick
+proof. Door callbacks, not direct test markDirty, must perform the revocation.

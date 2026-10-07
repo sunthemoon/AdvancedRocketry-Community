@@ -58,13 +58,20 @@ repair is not established. The source and latest failed regression association
 below remain unchanged. Primary static facts retain the all-world tick route,
 entity-load processing after the playerless branch and GameTest-before-END
 ordering; actual pending-load progress remains unobserved.
-The C18a [airlock source task](../work/v1.8.0-c18a-airlock/TASK-01.md) is ready
+The C18a [airlock source task](../work/v1.8.0-c18a-airlock/TASK-01.md) is implemented-unverified
 under the user's existing conditional authorization. Root narrowly adopts the
 unchanged revision 2 leaf after different-agent successor review reports no
 unresolved C/H/M and the separate placement primary check establishes the
 native null-to-FAIL branch before placement/debit. The original two Medium
 findings remain historical, not runtime pass evidence. Original resource
-declaration precedes authoring; no airlock source or Gate delivery is claimed.
+declaration precedes authoring. Its six-file source is committed by Root at
+`c263f7d9d33d52a1bfe650679d71dd407c925abd` and fast-forward integrated without
+changing the reviewed bytes or unrelated work. Different-agent behavior,
+provider-test, central and resource reviews report no actionable scoped finding;
+their limitations and actual source associations are in the
+[integration record](../work/v1.8.0-c18a-airlock/SOURCE-INTEGRATION-01.md).
+Hosted compilation, native generation/GameTests, restart and V1/V2 remain open.
+No compiled/runtime or Gate delivery is claimed.
 
 The [empty-removal admission checkpoint](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-INTEGRATION-01.md)
 is independently reviewed, committed and normally pushed at `7d7b474e`.

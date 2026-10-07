@@ -225,10 +225,13 @@ C17b candidate03 的独立审核已解决旧版 Medium
 科技树、声音/模型/GUI 等仍须实现。D4 未证明，不推断接受。
 
 - [ ] [C18a-AIRLOCK-01](../work/v1.8.0-c18a-airlock/TASK-01.md)：
-  status: ready。双半气闸门第二版技术契约经独立复审，无未解决 C/H/M；
+  status: implemented-unverified。双半气闸门第二版技术契约经独立复审，无未解决 C/H/M；
   放置接口及 null-to-FAIL 原生顺序已另行核对。Root 按已有有条件授权限定采纳，
   原两项 Medium 和原版证据保留。原创来源与独立工作树写入范围在实现前登记，
-  尚未交付源码或原生验证，不依赖未接受的物理 hatch 接入。
+  六个新增文件经 Root 提交至 `c263f7d9` 并原样 fast-forward 集成。
+  行为、provider 测试、中央接入及资源的独立静态审核均未发现可操作缺陷；
+  [集成记录](../work/v1.8.0-c18a-airlock/SOURCE-INTEGRATION-01.md)保留精确关联与限制。
+  尚未交付编译、原生生成、GameTest、重启或 V1/V2，不依赖未接受的物理 hatch 接入。
 - [~] Tau 冷目标调查：生产与夹具独立读证一致，失败停在目标实体就绪前，
   源火箭和 PREPARED 事务仍在。原生静态事实已核对正常 tick 与就绪处理调用关系，
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；

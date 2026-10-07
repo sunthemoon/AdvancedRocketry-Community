@@ -139,6 +139,8 @@ public final class AdvancedRocketryCommunity {
         modBus.addListener(this::onCommonSetup);
         MinecraftForge.EVENT_BUS.addListener(this::onAddReloadListeners);
         MinecraftForge.EVENT_BUS.addListener(this::onServerStopped);
+        MinecraftForge.EVENT_BUS.addListener(this::onAtmosphereServerStarted);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onAtmosphereServerStopping);
         MinecraftForge.EVENT_BUS.addListener(new BetaWorldMigrationEvents()::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(new PlanetaryBindingLifecycle(planetaryCatalogs)::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(new BetaDataCommands()::register);
@@ -422,7 +424,22 @@ public final class AdvancedRocketryCommunity {
         io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.SOLAR_EXPOSURE.close(event.getServer());
     }
 
+    private void onAtmosphereServerStarted(ServerStartedEvent event) {
+        if (atmosphereManager != null) {
+            AtmosphereRuntime.install(atmosphereManager);
+        }
+    }
+
+    private void onAtmosphereServerStopping(ServerStoppingEvent event) {
+        if (atmosphereManager != null) {
+            AtmosphereRuntime.uninstall(atmosphereManager);
+        }
+    }
+
     private void onServerStopped(ServerStoppedEvent event) {
+        if (atmosphereManager != null) {
+            AtmosphereRuntime.uninstall(atmosphereManager);
+        }
         if (playerLifeSupport != null) {
             playerLifeSupport.clear();
         }

@@ -151,6 +151,8 @@ public final class V180MaterialData {
             tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.COMBUSTION_GENERATOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.PRESSURIZED_TANK.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.STATION_LIGHT.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.AIRLOCK_DOOR.get());
+            tag(BlockTags.DOORS).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOLAR_GENERATOR.get(), ModBlocks.SOLAR_PANEL.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.SOLAR_GENERATOR.get(), ModBlocks.SOLAR_PANEL.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.BLOCK.get());
@@ -219,6 +221,7 @@ public final class V180MaterialData {
 
         @Override
         protected void addTags(HolderLookup.Provider provider) {
+            copy(BlockTags.DOORS, ItemTags.DOORS);
             copy(BlockTags.LOGS_THAT_BURN, ItemTags.LOGS_THAT_BURN);
             copy(BlockTags.PLANKS, ItemTags.PLANKS);
             copy(BlockTags.LEAVES, ItemTags.LEAVES);
