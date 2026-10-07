@@ -58,8 +58,10 @@ remain unchanged. No part is frozen merely by naming these private states.
 
 ## Next bounded work and unchanged scope
 
-Independently review this complete private proposal and the missing primary
-facts before any coupled source assignment. Obtain only the necessary owner
+The [independent assignment review](PRIVATE-OPERATION-REVIEW-01.md) is complete:
+two Medium technical gaps remain in authentic admission/outcome and exact
+provisional LOAD/availability/terminal joins. Complete those bindings and missing
+primary facts before any coupled source assignment. Obtain only the necessary owner
 decisions after technical review; do not ask acceptance to stand in for proof.
 The future coupled writer, if authorized, must implement actual entry, two
 LOADs, two save consumers, terminal classification and focused recovery tests

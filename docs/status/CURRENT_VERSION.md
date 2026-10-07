@@ -122,7 +122,9 @@ actionable finding; final private birth/save/recovery/dependency review, risk
 disposition and actual transformed/native verification remain required before
 assigning or activating physical interception; no R-021 acceptance is inferred.
 The fixed-source [coupled private contract research](../work/v1.8.0-c16a-hatches/PRIVATE-OPERATION-RESEARCH-01.md)
-is complete as a proposal only. Actual placement-origin authentication,
+has [independent assignment review](../work/v1.8.0-c16a-hatches/PRIVATE-OPERATION-REVIEW-01.md):
+two Medium technical gaps remain in authentic placement/outcome and exact
+provisional LOAD/availability/terminal bindings. Actual placement-origin authentication,
 unknown/coverage-failure policy, source Item bounds and cross-store conservation
 remain open; no operation helper, new save policy or physical writer is assigned.
 

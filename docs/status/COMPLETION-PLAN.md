@@ -128,8 +128,10 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     ADR 第 2 版的限定架构/决定范围已独立审核，未发现可操作问题，仍为 PROPOSED；
     具体契约、依赖和风险处置仍待审核，不安装 hook、不接受 R-021。
     [完整私有操作研究](../work/v1.8.0-c16a-hatches/PRIVATE-OPERATION-RESEARCH-01.md)
-    已按固定源码形成提案；真实放置来源认证、未知结果与覆盖失败政策、
-    源物品边界及跨存储守恒尚未决定或证明，不分配未接入的操作 helper。
+    已按固定源码形成提案；[独立分配审核](../work/v1.8.0-c16a-hatches/PRIVATE-OPERATION-REVIEW-01.md)
+    留有两项 Medium：真实放置/结果认证和 provisional LOAD/可用性/终态绑定。
+    未知结果与覆盖失败政策、源物品边界及跨存储守恒也未决定或证明；
+    原生放置与拦截兼容事实并行核对，不分配未接入的操作 helper。
   - [x] [带电插口格式数据检查](../work/v1.8.0-c16a-hatches/POWER-CARRIER-FORMAT-SOURCE-01.md)：
     三个精确后像经独立源码审核后提交、正常推送并集成至 `257e7b3a`；
     独立开发和固定已发布提交的缓存 javac/Jupiter 各 13/13 通过，后者 49 个输入无漂移。
