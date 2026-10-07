@@ -98,23 +98,25 @@ FULL observation or native save writer. Its complete hosted workflow has ended;
 the new ten cases also pass in the exact-source full unit cohort. The terminal
 raw-audited result below supersedes its earlier metadata-only observation without
 rewriting that historical capture or assigning an installed-owner qualification.
-The separate 39-file unintegrated owner successor addresses the four original
-Medium source findings in its [final independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-owners-successor-review-20261007/REVIEW-02.md).
-This is source inspection, not executed ordinary capability, complete-hatch,
-re-admission or publication-failure proof. Its original 35 tests are unchanged;
-six added policy declarations bring the uncompiled/unexecuted total to 41.
-Real central joins, whole compilation and installed/native qualification remain
-open. The outgoing-comparison/retained-observer proposal's original Medium stays
+The private generation40 owner checkpoint preserves the preceding successor's
+four Medium fixes and adds the separately reviewed two-LOAD recording and EMIT
+comparison joins. Its 48 Jupiter declarations remain uncompiled/unexecuted;
+source inspection is not ordinary capability, complete-hatch, re-admission or
+publication-failure execution. Real physical joins, whole compilation and
+installed/native qualification remain open. The outgoing-comparison proposal's original Medium stays
 in its [historical review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md).
 The separate LOAD-join amendment has completed [independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)
 with no introduced C/H/M/L, addressing the missing recording join and timing in
 proposed text only. Root's [limited implementation intake](../work/v1.8.0-c16a-hatches/LOAD-JOIN-IMPLEMENTATION-01.md)
 adopts that private technical amendment and the comparator seam under the
-recorded conditional authority. Owner, comparator and real chunk-observation
-sources are being implemented in three disjoint worktrees. They are uncompiled,
-unintegrated and unregistered; actual source review, physical/placement/removal
-joins, complete lifecycle disposal and native evidence remain prerequisites.
-No save writer or installed-owner admission is opened by this intake.
+recorded conditional authority. The three disjoint source portions are written,
+independently reviewed within their stated scopes and normally pushed as
+[private unverified checkpoints](../work/v1.8.0-c16a-hatches/PRIVATE-SOURCE-CHECKPOINTS-01.md).
+Comparator's 22 test declarations also remain uncompiled/unexecuted. None of the
+new owner/provider/event source is main-integrated or runtime-registered.
+Physical/placement/removal joins, complete lifecycle disposal, compilation and
+native evidence remain prerequisites. No save writer or installed-owner
+admission is opened by these private backups.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.

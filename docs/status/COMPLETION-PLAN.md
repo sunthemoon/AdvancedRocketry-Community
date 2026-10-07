@@ -81,17 +81,18 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     测试副本三处近邻标记隔离源码审核、集成与 Root 137 Python 通过；
     仅固定两主机原生诊断及独立结果审核已验证，不改 Java/保存行为、不开放新 writer；清理仍被拒绝。
   - [~] 完整 hash/frame/native codec、GuardTicket 与真实 owner 生命周期：
-    未集成的 39 文件后继经[独立源码复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-owners-successor-review-20261007/REVIEW-02.md)，
-    原四项 Medium 已在源码中处理；不替代实际权限、完整 hatch、重新准入或失败处置测试。
-    原有 35 项测试不变，新增六项纯策略声明；全部 41 项仍未编译或执行。
-    中央注册、FULL 区块观察、完整编译和保存集成未完成，候选尚未交付。
+    私有 40 文件 owner 检查点保留前序后继的四项 Medium 修订，新增另经独立审核的
+    双 LOAD 记录与 EMIT 比较接入；全部 48 项 owner 测试仍未编译或执行。
+    不替代实际权限、完整 hatch、重新准入或失败处置测试。
+    中央注册、物理接入、完整编译和保存集成未完成，候选尚未交付。
     出站比较/保留观察提案的[原审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md)
     保留历史 Medium；LOAD 记录接口的另版补充已完成[独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)，
     提案文本补全记录接口和见证时序，无新增 C/H/M/L。
     [限定实施记录](../work/v1.8.0-c16a-hatches/LOAD-JOIN-IMPLEMENTATION-01.md)已按条件授权
-    采纳私有技术补充，owner、精确根比较及真实区块观察器在三个独立工作区并行实现。
-    新源码未编译、未集成、未注册；实际源码审核、物理/放置/拆除接入、完整生命周期
-    处置与原生验证仍开放，不据此开放 writer。
+    采纳私有技术补充；owner、精确根比较及真实区块观察器已在三个独立工作区写成，
+    分别完成限定范围源码审核，并提交、正常推送为[私有未验证检查点](../work/v1.8.0-c16a-hatches/PRIVATE-SOURCE-CHECKPOINTS-01.md)。
+    比较器另有 22 项未编译、未执行测试。新 owner/provider/event 源码未编译、未集成、
+    未注册；物理/放置/拆除接入、完整生命周期处置与原生验证仍开放，不据此开放 writer。
   - [~] [公共保存接口](../work/v1.8.0-c16a-hatches/COMMON-GUARD-BRIDGE-SOURCE-01.md)：
     三个方法与五项新 GameTest 已独立审核、提交并正常推送至 `826f5f20`；
     限定缓存编译和五项原有领域单测通过；新五项 GameTest 已在精确提交上执行，
