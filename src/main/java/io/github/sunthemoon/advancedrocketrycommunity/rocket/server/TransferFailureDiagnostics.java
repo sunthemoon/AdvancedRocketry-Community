@@ -26,16 +26,22 @@ final class TransferFailureDiagnostics {
     private int completedTick;
     private int dispatchTick;
     private Branch branch = Branch.UNOBSERVED;
+    private int firstWaitTick;
+    private int lastWaitTick;
+    private int waitAttempts;
+    private boolean waitDispatchCurrent;
 
     void prepared(UUID transferId) {
         latestPrepared = transferId;
         dispatched = false;
         branch = transferId == null ? Branch.UNOBSERVED : Branch.PREPARED;
+        clearWaitHistory();
     }
 
     void enterTick(int tick) {
         entered = true;
         enteredTick = tick;
+        waitDispatchCurrent = false;
     }
 
     void completeTick() {
@@ -43,6 +49,7 @@ final class TransferFailureDiagnostics {
             completed = true;
             completedTick = enteredTick;
         }
+        waitDispatchCurrent = false;
     }
 
     void dispatch(UUID transferId) {
@@ -50,12 +57,28 @@ final class TransferFailureDiagnostics {
             dispatched = true;
             dispatchTick = enteredTick;
             branch = Branch.LIVE_DISPATCH;
+            waitDispatchCurrent = true;
         }
     }
 
     void branch(UUID transferId, Branch observed) {
         if (tracks(transferId)) {
             branch = observed == null ? Branch.UNOBSERVED : observed;
+        }
+    }
+
+    void readinessWait(UUID transferId) {
+        if (!tracks(transferId) || !entered || !dispatched || !waitDispatchCurrent
+                || dispatchTick != enteredTick) {
+            return;
+        }
+        branch = Branch.WAIT_ENTITY_READY;
+        if (waitAttempts == 0) {
+            firstWaitTick = enteredTick;
+        }
+        lastWaitTick = enteredTick;
+        if (waitAttempts < Integer.MAX_VALUE) {
+            waitAttempts++;
         }
     }
 
@@ -69,7 +92,11 @@ final class TransferFailureDiagnostics {
                 + " service_completed_tick=" + tick(completed, completedTick)
                 + " tracked=" + (tracked ? "YES" : "NO")
                 + " target_last_tick=" + tick(tracked && dispatched, dispatchTick)
-                + " target_branch=" + (tracked ? branch.name() : "UNOBSERVED");
+                + " target_branch=" + (tracked ? branch.name() : "UNOBSERVED")
+                + " target_wait_first_tick=" + tick(tracked && waitAttempts > 0, firstWaitTick)
+                + " target_wait_last_tick=" + tick(tracked && waitAttempts > 0, lastWaitTick)
+                + " target_wait_attempts=" + (tracked && waitAttempts > 0
+                        ? Integer.toString(waitAttempts) : "UNOBSERVED");
     }
 
     void clear() {
@@ -81,6 +108,14 @@ final class TransferFailureDiagnostics {
         completedTick = 0;
         dispatchTick = 0;
         branch = Branch.UNOBSERVED;
+        clearWaitHistory();
+    }
+
+    private void clearWaitHistory() {
+        firstWaitTick = 0;
+        lastWaitTick = 0;
+        waitAttempts = 0;
+        waitDispatchCurrent = false;
     }
 
     private boolean tracks(UUID transferId) {

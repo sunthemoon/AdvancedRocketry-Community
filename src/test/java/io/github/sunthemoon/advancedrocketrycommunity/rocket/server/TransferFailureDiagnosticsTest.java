@@ -205,6 +205,197 @@ class TransferFailureDiagnosticsTest {
         assertEquals("WAIT_ENTITY_READY", fields(data, equal, true, true, false).get("target_branch"));
     }
 
+    @Test
+    void waitHistoryRequiresAnObservedCurrentTargetDispatch() {
+        var data = new TransferFailureDiagnostics();
+        data.readinessWait(A);
+        assertUnobservedWait(data, A);
+        data.prepared(A);
+        data.readinessWait(A);
+        data.dispatch(A);
+        data.readinessWait(A);
+        assertUnobservedWait(data, A);
+        data.enterTick(10);
+        data.readinessWait(A);
+        data.dispatch(B);
+        data.readinessWait(A);
+        assertUnobservedWait(data, A);
+        data.dispatch(A);
+        data.readinessWait(A);
+        assertEquals("1", fields(data, A, true, true, false).get("target_wait_attempts"));
+        data.enterTick(11);
+        data.readinessWait(A);
+        var current = fields(data, A, true, true, false);
+        assertEquals("10", current.get("target_wait_first_tick"));
+        assertEquals("10", current.get("target_wait_last_tick"));
+        assertEquals("1", current.get("target_wait_attempts"));
+    }
+
+    @Test
+    void waitHistoryRecordsFirstLastAndActualAttemptCount() {
+        var data = dispatched(A, 10);
+        data.readinessWait(A);
+        var first = fields(data, A, true, true, false);
+        assertEquals("WAIT_ENTITY_READY", first.get("target_branch"));
+        assertEquals("10", first.get("target_wait_first_tick"));
+        assertEquals("10", first.get("target_wait_last_tick"));
+        assertEquals("1", first.get("target_wait_attempts"));
+        data.enterTick(13);
+        data.dispatch(A);
+        data.readinessWait(A);
+        data.readinessWait(A);
+        var repeated = fields(data, A, true, true, false);
+        assertEquals("10", repeated.get("target_wait_first_tick"));
+        assertEquals("13", repeated.get("target_wait_last_tick"));
+        assertEquals("3", repeated.get("target_wait_attempts"));
+    }
+
+    @Test
+    void repeatedTickValueCannotReuseAPreviousDispatch() {
+        var data = dispatched(A, 10);
+        data.readinessWait(A);
+        data.enterTick(10);
+        data.readinessWait(A);
+        assertEquals("1", fields(data, A, true, true, false).get("target_wait_attempts"));
+        data.dispatch(A);
+        data.readinessWait(A);
+        assertEquals("2", fields(data, A, true, true, false).get("target_wait_attempts"));
+    }
+
+    @Test
+    void completionCannotBeReusedAsACurrentWaitDispatch() {
+        var data = dispatched(A, 10);
+        data.completeTick();
+        data.readinessWait(A);
+        assertUnobservedWait(data, A);
+        data.enterTick(11);
+        data.dispatch(A);
+        data.readinessWait(A);
+        assertEquals("11", fields(data, A, true, true, false).get("target_wait_first_tick"));
+    }
+
+    @Test
+    void foreignAndNullWaitsCannotBorrowOrOverwriteHistory() {
+        var data = dispatched(A, 10);
+        data.readinessWait(A);
+        String before = data.snapshot(A, true, true, false);
+        data.readinessWait(B);
+        data.readinessWait(null);
+        assertEquals(before, data.snapshot(A, true, true, false));
+        assertUnobservedWait(data, B);
+        assertUnobservedWait(data, null);
+    }
+
+    @Test
+    void preparationReplacementAlwaysResetsWaitHistory() {
+        for (UUID replacement : new UUID[]{A, B, null}) {
+            var data = dispatched(A, 10);
+            data.readinessWait(A);
+            data.completeTick();
+            data.prepared(replacement);
+            assertUnobservedWait(data, A);
+            assertUnobservedWait(data, replacement);
+            data.readinessWait(replacement);
+            assertUnobservedWait(data, replacement);
+            assertEquals("10", fields(data, replacement, true, true, false).get("service_completed_tick"));
+        }
+    }
+
+    @Test
+    void clearDisposesRecordedWaitHistory() {
+        var data = dispatched(A, 10);
+        data.readinessWait(A);
+        data.completeTick();
+        data.clear();
+        assertUnobservedWait(data, A);
+        assertEquals(new TransferFailureDiagnostics().snapshot(A, false, false, false),
+                data.snapshot(A, false, false, false));
+    }
+
+    @Test
+    void waitTicksPreserveExactSignedValuesWithoutDurationArithmetic() {
+        var data = dispatched(A, Integer.MAX_VALUE);
+        data.readinessWait(A);
+        data.enterTick(Integer.MIN_VALUE);
+        data.dispatch(A);
+        data.readinessWait(A);
+        var current = fields(data, A, true, true, false);
+        assertEquals(Integer.toString(Integer.MAX_VALUE), current.get("target_wait_first_tick"));
+        assertEquals(Integer.toString(Integer.MIN_VALUE), current.get("target_wait_last_tick"));
+        assertEquals("2", current.get("target_wait_attempts"));
+    }
+
+    @Test
+    void waitAttemptsSaturateWhileLastTickStillUpdates() throws ReflectiveOperationException {
+        var data = dispatched(A, Integer.MIN_VALUE);
+        data.readinessWait(A);
+        var attempts = TransferFailureDiagnostics.class.getDeclaredField("waitAttempts");
+        attempts.setAccessible(true);
+        attempts.setInt(data, Integer.MAX_VALUE - 1);
+        data.enterTick(0);
+        data.dispatch(A);
+        data.readinessWait(A);
+        assertEquals(Integer.toString(Integer.MAX_VALUE),
+                fields(data, A, true, true, false).get("target_wait_attempts"));
+        data.enterTick(Integer.MAX_VALUE);
+        data.dispatch(A);
+        data.readinessWait(A);
+        var saturated = fields(data, A, true, true, false);
+        assertEquals(Integer.toString(Integer.MIN_VALUE), saturated.get("target_wait_first_tick"));
+        assertEquals(Integer.toString(Integer.MAX_VALUE), saturated.get("target_wait_last_tick"));
+        assertEquals(Integer.toString(Integer.MAX_VALUE), saturated.get("target_wait_attempts"));
+    }
+
+    @Test
+    void snapshotsAndGenericBranchesDoNotFabricateWaitAttempts() {
+        var data = dispatched(A, 10);
+        data.branch(A, TransferFailureDiagnostics.Branch.WAIT_ENTITY_READY);
+        assertUnobservedWait(data, A);
+        data.readinessWait(A);
+        String before = data.snapshot(A, true, true, false);
+        for (int index = 0; index < 100; index++) {
+            assertEquals(before, data.snapshot(A, true, true, false));
+            data.snapshot(B, false, false, true);
+            data.snapshot(null, false, true, true);
+        }
+        assertEquals(before, data.snapshot(A, true, true, false));
+    }
+
+    @Test
+    void observedWaitPayloadsStayPrintableAsciiWithin512Bytes() throws ReflectiveOperationException {
+        for (int tick : new int[]{Integer.MIN_VALUE, -1, 0, Integer.MAX_VALUE}) {
+            var data = dispatched(A, tick);
+            data.readinessWait(A);
+            var attempts = TransferFailureDiagnostics.class.getDeclaredField("waitAttempts");
+            attempts.setAccessible(true);
+            attempts.setInt(data, Integer.MAX_VALUE);
+            data.completeTick();
+            for (var branch : TransferFailureDiagnostics.Branch.values()) {
+                data.branch(A, branch);
+                for (boolean active : new boolean[]{false, true}) {
+                    for (boolean live : new boolean[]{false, true}) {
+                        for (boolean settled : new boolean[]{false, true}) {
+                            for (String fixture : new String[]{"TAU", "PLANETARY"}) {
+                                String payload = "ARCE_TRANSFER_SERVICE_FAILURE fixture=" + fixture + " transfer=" + A
+                                        + " current_server_tick=" + tick + " " + data.snapshot(A, active, live, settled);
+                                assertTrue(payload.length() <= 512, payload);
+                                assertTrue(payload.chars().allMatch(value -> value >= 32 && value <= 126));
+                                assertFalse(payload.contains("\n"));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static void assertUnobservedWait(TransferFailureDiagnostics data, UUID id) {
+        var current = fields(data, id, true, true, false);
+        assertEquals("UNOBSERVED", current.get("target_wait_first_tick"));
+        assertEquals("UNOBSERVED", current.get("target_wait_last_tick"));
+        assertEquals("UNOBSERVED", current.get("target_wait_attempts"));
+    }
+
     private static TransferFailureDiagnostics dispatched(UUID id, int tick) {
         var data = new TransferFailureDiagnostics();
         data.prepared(id);

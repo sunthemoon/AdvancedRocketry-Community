@@ -513,7 +513,7 @@ final class RocketTransferService {
                 && !RocketTransferEntities.destinationEntityChunkReady(
                         destinationLevel, record.destinationSnapshot())) {
             // BEGIN transfer service diagnostics
-            diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.WAIT_ENTITY_READY);
+            diagnostics.readinessWait(record.transferId());
             // END transfer service diagnostics
             return;
         }
