@@ -1,9 +1,11 @@
 # C18d-HUD-ENV-O2-01: bounded implementation handoff
 
 Date: 2026-10-07. Version: v1.8.0. Integrator/sole Git writer: Root/Codex.
-Status: contract-frozen, execution-unclaimed. Candidate executor: Claude.
-[CONTRACT-02](CONTRACT-02.md) is the complete technical input; no source exists
-for this leaf, worktree is claimed or Claude model session started by this task.
+Status: contract-frozen, author-returned-unreviewed; integration not started.
+[ASSIGNMENT-01](ASSIGNMENT-01.md) records the later owner-supplied interactive
+Claude return and execution deviations, without backdating a claim or adopting
+source. [CONTRACT-02](CONTRACT-02.md) remains the complete technical input.
+No source patch is applied, worktree claimed or Claude run launched by Root.
 Eight environment/oxygen settings only, within the remaining v1.8 assignment.
 
 ## Identity, source basis and write boundaries

@@ -1,6 +1,10 @@
 # Environment/oxygen HUD: bounded contract adoption record
 
-Date: 2026-10-07. Status: contract-frozen, execution-unclaimed; no source delivery.
+Date: 2026-10-07. Historical status: contract-frozen, execution-unclaimed; no source delivery.
+The later [ASSIGNMENT-01](ASSIGNMENT-01.md) supersedes this record's no-return
+wording with author-returned-unreviewed. The earlier contract adoption facts
+below remain historical; no source acceptance or execution authorization is
+retroactively attributed to them.
 Root adopts the effective original CONTRACT-01 plus ADDENDUM-02 technical leaf
 after the different-agent successor contract review reports no open C/H/M.
 The existing conditional owner authorization is quoted in CONTRACT-02; no new

@@ -294,11 +294,12 @@ C17b candidate03 的独立审核已解决旧版 Medium
   client 实际分发及 V1/V2 未验证。
 
 - [~] [C18d-HUD-ENV-O2-01](../work/v1.8.0-c18d-hud-layout/TASK-01.md)：
-  status: contract-frozen，execution-unclaimed。只覆盖环境/氧气八项 CLIENT 布局设置；
+  status: contract-frozen，author-returned-unreviewed，尚未开始集成。只覆盖环境/氧气八项 CLIENT 布局设置；
   原契约三个 Medium 已经独立后续审核处理，投影的测试矩阵 Medium 已另行修订；
   [技术采纳记录](../work/v1.8.0-c18d-hud-layout/ADOPTION-01.md)保留原证据及清洁性文字更正。
-  Claude 候选只写新纯布局 helper、测试及自己的源码记录；Root 独占现有 HUD/config 绑定。
-  未创建工作树或启动模型会话；实现、真实配置修正/重载、Font/pose、V1/V2 和整版 Gate 均开放。
+  [事后交接登记](../work/v1.8.0-c18d-hud-layout/ASSIGNMENT-01.md)绑定 Claude 外部三个新文件，尚未应用 patch。
+  用户转交交互会话报告；未事前登记/隔离工作树和禁止的作者 JVM 检查仍记录，不追认授权。
+  独立源码审核已分配，Root 独占现有 HUD/config 绑定；真实配置修正/重载、Font/pose、V1/V2 和 Gate 均开放。
 
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
   A 的[完整源码](../work/v1.8.0-c18a-living-gravity/SOURCE-INTEGRATION-01.md)已独立审核、
@@ -407,15 +408,15 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ### Claude 并发分工 `[ ]`
 
-[分工建议与逐项清单](../work/v1.8.0-claude-parallel-handoff.md)：status: planned，尚未领取。
+[分工建议与逐项清单](../work/v1.8.0-claude-parallel-handoff.md)：整体仍 planned；仅 HUD 环境/氧气外部作者返回已事后登记，其他包未领取。
 全部 186 项开放台账拟分 Claude 121 /Root 65；排除 16 项已有源码但未交付的重复实现后，
 170 项实施续作拟分 Claude 113（66.47%）/Root 57。按单位数而非工时分配；
 16 项续验、154 个具体资产和 C19/Gate 工作没有被删除或宣告完成。
 Root 保留共享保存/hatch、typed 推进、站点核心、生命支持权威、真实旅行首次事件与中央集成/提交。
 独立工作树、逐文件范围和公共契约须先冻结；仅既有库存/天空/来源只读续验可直接准备，
 其他包明确区分契约先行与依赖未就绪。不启动 Claude、不授予广泛生产写入、不建未使用框架。
-环境/氧气八项的具体契约与 proposed 文件范围已经另立 HUD TASK，仍未领取；
-原 CSV 的 readiness 不自动升级，模型执行方式/用量限制与实际 checkout/claim 必须另行记录。
+环境/氧气八项的外部 helper 返回、实际作者基线/位置、执行偏差与待审核状态见 HUD ASSIGNMENT-01；
+原 CSV 的 readiness 不自动升级。后续写入仍须事前登记实际工作树、范围及执行边界。
 
 ## 当前自动回归与风险
 

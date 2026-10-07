@@ -75,10 +75,14 @@ with Tau/airlock and unwaived errors open. Its loader count branch did not run;
 absence from that failure list establishes neither observation nor repair.
 
 The eight-key environment/oxygen [HUD task](../work/v1.8.0-c18d-hud-layout/TASK-01.md)
-has a bounded adopted contract and proposed disjoint files, execution-unclaimed.
-It is the first prepared Claude implementation candidate, not source delivery:
-no worktree/model session, config/renderer implementation or runtime/Gate pass.
-The whole remaining-task proposal and CSV allocations remain planned/unclaimed.
+has a bounded adopted contract and a later external Claude author return,
+[registered after authoring](../work/v1.8.0-c18d-hud-layout/ASSIGNMENT-01.md).
+Status: author-returned-unreviewed; patch not applied, integration not started.
+The owner supplied the interactive-session report; Root did not launch that run.
+Missing pre-authoring worktree/claim and prohibited author JVM checks remain
+recorded, not retrospectively authorized or formal test evidence. Separate code
+review is assigned; Root config/renderer, runtime and V1/V2 are not implemented
+or qualified. Other packages remain unclaimed; CSV allocations are unchanged.
 
 The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)
