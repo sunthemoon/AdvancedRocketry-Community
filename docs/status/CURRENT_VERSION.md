@@ -39,11 +39,11 @@ runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: cbbb78e1fdc8dd88128162d43d88125c7aee9b60
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
 latest_regression_target_commit: cbbb78e1fdc8dd88128162d43d88125c7aee9b60
-latest_regression_result: RUNNING
+latest_regression_result: FAILED
 latest_regression_run: 37600300782
 latest_regression_attempt: 1
-latest_regression_evidence: METADATA_ONLY
-latest_regression_observed_utc: 2026-10-07T09:25:35Z
+latest_regression_evidence: ROOT_RAW_AUDITED
+latest_regression_observed_utc: 2026-10-07T09:31:47Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -72,22 +72,15 @@ provider-test, central and resource reviews report no actionable scoped finding;
 their limitations and actual source associations are in the
 [integration record](../work/v1.8.0-c18a-airlock/SOURCE-INTEGRATION-01.md).
 The complete source/resource checkpoint is normally pushed at `61ae5001`;
-its [first terminal regression](../work/v1.8.0-ci/RESULT-26.md) retains four
-required failures and the original unwaived errors as history, without rebinding
-its counts to a successor. The two new airlock subjects are assigned to an isolated fixture
-follow-up: bounded loot seed spacing and initial-supply scalar observations,
-preserving assertions/deadlines/budgets. The two-file correction has a separate
-different-agent actual-diff review, is committed and normally pushed at
-`01521d6c`, and its [successor regression](../work/v1.8.0-ci/RESULT-28.md) fails
-two required native cases: Tau and initial installed airlock supply. Clean build,
-372 XML /2,097 unit cases with zero failures/errors/skips, artifact/client audits
-and twice DataGen/clean checks pass. All fourteen new unit methods match the
-fixed declarations. Seven airlock subjects execute in the 525-case native
-cohort; sampling is no longer a named failure. No individual native pass XML is
-retained. Canonical 64 ERROR /zero FATAL remain unwaived. Supply
-status is OPEN with resources present, but its native cause remains unresolved.
-Root and different-agent raw audits agree with zero retained-input drift. No supply
-repair or full native qualification is proven.
+the [original terminal](../work/v1.8.0-ci/RESULT-26.md) and
+[first fixture successor](../work/v1.8.0-ci/RESULT-28.md) remain historical
+failed evidence. The reviewed bounded seed-spacing/scalar-diagnostic correction
+is normally published at `01521d6c`, without changing assertions/deadlines/budgets.
+The latest native source still fails the first airlock initial-supply combination;
+sampling is not a named failure. Supply status OPEN with resources present does
+not establish the native cause, later revocation/recovery qualification or repair.
+No individual native pass XML is retained; the current source-bound metrics
+are recorded below, not inherited from old cohorts.
 The separate bounded [fixture lifecycle experiment](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-TASK-01.md)
 is in progress in its own worktree. It retains native authority, all predicates,
 limits and cleanup obligations; no unique cause or production change is adopted.
@@ -97,8 +90,11 @@ Five worker files are committed/cherry-picked without byte changes; Root's
 three central bindings accompany their qualified metadata checkpoint. Different-agent
 central and combined actual-diff reviews find no actionable scoped issue.
 Complete source is normally published at `cbbb78e1`; its exact-source
-[fresh regression](../work/v1.8.0-ci/RESULT-29.md) is running. Compilation/tests
-and real clients are still unqualified for the new combination;
+[terminal regression](../work/v1.8.0-ci/RESULT-30.md) passes clean build,
+2,104 unit cases and twice DataGen/clean checks. The ten adapter/config methods
+match and pass. Complete GameTests fail three required cases: Earth-Mars-Venus,
+Tau and initial airlock supply, with 65 unwaived ERROR/zero FATAL. Root retained
+raw audit is complete; different-agent raw audit and real clients remain open;
 raw selection and ambience are outside that presentation gate.
 The dated [running observation](../work/v1.8.0-ci/RESULT-25.md) remains historical.
 Own ended source worktree is normally removed after clean/merged checks.

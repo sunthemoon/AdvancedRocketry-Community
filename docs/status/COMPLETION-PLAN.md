@@ -255,8 +255,9 @@ C17b candidate03 的独立审核已解决旧版 Medium
   独立工作树四项适配/测试文件与 Root 三项配置/注册文件互不重叠；
   五个 worker 文件经 Root 提交、原字节 cherry-pick；三项中央绑定也已经独立审核，
   [完整集成](../work/v1.8.0-c18d-sky-switches/SOURCE-INTEGRATION-01.md)保留源码关联。
-  完整组合已正常推送至 `cbbb78e1`，[精确提交 CI](../work/v1.8.0-ci/RESULT-29.md)正在运行；
-  自有已结束工作树已正常清理。主 API 事实已核对，但新组合编译、
+  完整组合已正常推送至 `cbbb78e1`，[精确提交 CI](../work/v1.8.0-ci/RESULT-30.md)的
+  构建、十项适配/配置单测和重复原生生成通过；完整 GameTest 仍失败。
+  Root 原始审核完成，独立原始审核待执行。自有已结束工作树已正常清理，
   client 实际分发及 V1/V2 未验证。
 
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
@@ -366,13 +367,16 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ## 当前自动回归与风险
 
-最新源码 `01521d6cf56bfac0d88d05ac74389f2c36dc4887` 的
-[精确终态回归](../work/v1.8.0-ci/RESULT-28.md)绑定 run 37595775604 /attempt 1
-/job 112707924073，捕获 completed failure。372 XML /2,097 单测零失败错误跳过，
-编译、产物和两次原生生成/干净检查通过；525 GameTest 完成，Tau 与气闸供气两项
-required 失败。64 ERROR /零 FATAL 未豁免，Root 与不同代理原始审核一致，输入无漂移。
-前一源码的[四项失败回归](../work/v1.8.0-ci/RESULT-26.md)和
-[运行中观察](../work/v1.8.0-ci/RESULT-25.md)保留为历史，原计数与来源不重绑。
+最新源码 `cbbb78e1fdc8dd88128162d43d88125c7aee9b60` 的
+[终态原始审核](../work/v1.8.0-ci/RESULT-30.md)绑定 run 37600300782 /attempt 1
+/job 112722759189，捕获 completed failure。372 XML /2,104 单测零失败错误跳过；
+构建、产物和两次原生生成/干净检查通过。525 GameTest 完成，地火金往返、
+Tau 与气闸供气三项 required 失败，65 ERROR /零 FATAL 未豁免。
+Root 原始审核完成且输入无漂移，不同代理原始审核仍待执行。
+前序源码的[两项失败终态](../work/v1.8.0-ci/RESULT-28.md)、
+[四项失败回归](../work/v1.8.0-ci/RESULT-26.md)和
+[运行中观察](../work/v1.8.0-ci/RESULT-25.md)保留为历史，原计数与来源不重绑；
+目标就绪、初始供气及未豁免日志仍开放。
 供气修复和唯一失败原因均未证明。
 
 [失败时观察源码](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
