@@ -240,6 +240,10 @@ C17b candidate03 的独立审核已解决旧版 Medium
   精确提交完整复跑仍失败，不改变断言、期限或预算。有限采样不再列为失败；
   供气仅增诊断，状态为 OPEN、资源仍在，原因未定。
   完整 GameTest、重启或 V1/V2 未交付，不依赖未接受的物理 hatch 接入。
+- [ ] [C18a-AIRLOCK-FIXTURE-02](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-TASK-01.md)：
+  status: in-progress。仅在独立工作树做有限的建房与首轮安装/扫描 tick 分离实验；
+  六组断言、原期限及预算不变，异步结束、异常及超时清理必须独立审核。
+  不把静态调查视作原生原因或生产修复。
 - [~] Tau 冷目标调查：生产与夹具独立读证一致，失败停在目标实体就绪前，
   源火箭和 PREPARED 事务仍在。原生静态事实已核对正常 tick 与就绪处理调用关系，
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；
@@ -251,7 +255,9 @@ C17b candidate03 的独立审核已解决旧版 Medium
   独立工作树四项适配/测试文件与 Root 三项配置/注册文件互不重叠；
   五个 worker 文件经 Root 提交、原字节 cherry-pick；三项中央绑定也已经独立审核，
   [完整集成](../work/v1.8.0-c18d-sky-switches/SOURCE-INTEGRATION-01.md)保留源码关联。
-  主 API 事实已核对，但精确组合编译、client 实际分发及 V1/V2 未验证。
+  完整组合已正常推送至 `cbbb78e1`，[精确提交 CI](../work/v1.8.0-ci/RESULT-29.md)正在运行；
+  自有已结束工作树已正常清理。主 API 事实已核对，但新组合编译、
+  client 实际分发及 V1/V2 未验证。
 
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
   A 的[完整源码](../work/v1.8.0-c18a-living-gravity/SOURCE-INTEGRATION-01.md)已独立审核、

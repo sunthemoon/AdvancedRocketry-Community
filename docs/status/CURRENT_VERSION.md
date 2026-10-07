@@ -36,14 +36,14 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 01521d6cf56bfac0d88d05ac74389f2c36dc4887
+latest_source_checkpoint: cbbb78e1fdc8dd88128162d43d88125c7aee9b60
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: 01521d6cf56bfac0d88d05ac74389f2c36dc4887
-latest_regression_result: FAILED
-latest_regression_run: 37595775604
+latest_regression_target_commit: cbbb78e1fdc8dd88128162d43d88125c7aee9b60
+latest_regression_result: RUNNING
+latest_regression_run: 37600300782
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-07T08:56:09Z
+latest_regression_evidence: METADATA_ONLY
+latest_regression_observed_utc: 2026-10-07T09:25:35Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -54,8 +54,9 @@ The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)
 and [fixture](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-path-fixture-investigation-20261007-01/REPORT-01.md)
 investigations to cold destination entity readiness; a unique native cause or
-repair is not established. The latest failed regression association is the
-61ae5001 cohort; the previous 8b3 result remains historical. Primary static facts retain the all-world tick route,
+repair is not established. The preceding failed regression is retained in
+[RESULT-28](../work/v1.8.0-ci/RESULT-28.md); earlier cohorts remain historical.
+Primary static facts retain the all-world tick route,
 entity-load processing after the playerless branch and GameTest-before-END
 ordering; actual pending-load progress remains unobserved.
 The C18a [airlock source task](../work/v1.8.0-c18a-airlock/TASK-01.md) is implemented-unverified
@@ -87,12 +88,17 @@ retained. Canonical 64 ERROR /zero FATAL remain unwaived. Supply
 status is OPEN with resources present, but its native cause remains unresolved.
 Root and different-agent raw audits agree with zero retained-input drift. No supply
 repair or full native qualification is proven.
+The separate bounded [fixture lifecycle experiment](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-TASK-01.md)
+is in progress in its own worktree. It retains native authority, all predicates,
+limits and cleanup obligations; no unique cause or production change is adopted.
 The accepted-category [sky switch task](../work/v1.8.0-c18d-sky-switches/TASK-01.md)
 has [reviewed source integration](../work/v1.8.0-c18d-sky-switches/SOURCE-INTEGRATION-01.md).
 Five worker files are committed/cherry-picked without byte changes; Root's
 three central bindings accompany their qualified metadata checkpoint. Different-agent
 central and combined actual-diff reviews find no actionable scoped issue.
-Exact-source hosted compilation/tests and real clients are still unqualified;
+Complete source is normally published at `cbbb78e1`; its exact-source
+[fresh regression](../work/v1.8.0-ci/RESULT-29.md) is running. Compilation/tests
+and real clients are still unqualified for the new combination;
 raw selection and ambience are outside that presentation gate.
 The dated [running observation](../work/v1.8.0-ci/RESULT-25.md) remains historical.
 Own ended source worktree is normally removed after clean/merged checks.
