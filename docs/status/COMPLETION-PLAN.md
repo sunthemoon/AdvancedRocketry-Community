@@ -257,6 +257,9 @@ C17b candidate03 的独立审核已解决旧版 Medium
   源火箭和 PREPARED 事务仍在。原生静态事实已核对正常 tick 与就绪处理调用关系，
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；
   原延时、就绪谓词与完整往返测试保留，不据此勾选功能或 Gate。
+- [ ] [装载器掉落实测数量诊断](../work/v1.8.0-regression-observation/FUEL-DROP-DIAGNOSTIC-TASK-01.md)：
+  status: in-progress。仅给现有失败断言补已查询列表的数量，不新增世界查询、
+  过滤实体或更改原守恒断言。独立审核后才发布和实际复跑，不推断复制或修复。
 
 - [ ] [C18d-SKY-01](../work/v1.8.0-c18d-sky-switches/TASK-01.md)：status: implemented-unverified。
   仅实施 ADR-066 已接受的 planet/station 两项 CLIENT 开关。按既有 effects 注册分类，
