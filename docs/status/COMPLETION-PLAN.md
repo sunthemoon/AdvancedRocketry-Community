@@ -231,6 +231,7 @@ C17b candidate03 的独立审核已解决旧版 Medium
   六个新增文件经 Root 提交至 `c263f7d9` 并原样 fast-forward 集成。
   行为、provider 测试、中央接入及资源的独立静态审核均未发现可操作缺陷；
   [集成记录](../work/v1.8.0-c18a-airlock/SOURCE-INTEGRATION-01.md)保留精确关联与限制。
+  完整源码与资源已正常推送至 `61ae5001`，精确提交 hosted CI 已启动；自有结束工作树已清理。
   尚未交付编译、原生生成、GameTest、重启或 V1/V2，不依赖未接受的物理 hatch 接入。
 - [~] Tau 冷目标调查：生产与夹具独立读证一致，失败停在目标实体就绪前，
   源火箭和 PREPARED 事务仍在。原生静态事实已核对正常 tick 与就绪处理调用关系，
@@ -343,6 +344,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
 整包专服/客户端/性能及 G0–G9 均未结束。
 
 ## 当前自动回归与风险
+
+最新源码 `61ae5001532c2a95c3393030be8f2d36521a446a` 的
+[CI 观察](../work/v1.8.0-ci/RESULT-25.md)绑定 run 37590839225 /attempt 1
+/job 112691678476；2026-10-07T08:02:17Z 仍在 clean build。
+仅有运行状态，尚无单测、生成或原生终态指标；下述 8b3 失败是前序事实，不重绑。
 
 [失败时观察源码](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
 已经独立实际审核、分别提交并合并，非强制推送至

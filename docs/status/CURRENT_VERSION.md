@@ -36,14 +36,14 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: f65877f78b02697518b2c41bf8cd539c98800b73
+latest_source_checkpoint: 61ae5001532c2a95c3393030be8f2d36521a446a
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: 8b3fdca990be3880ff04aae5a2354657d499b60f
-latest_regression_result: FAILED
-latest_regression_run: 37580341390
+latest_regression_target_commit: 61ae5001532c2a95c3393030be8f2d36521a446a
+latest_regression_result: RUNNING
+latest_regression_run: 37590839225
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-07T06:23:59Z
+latest_regression_evidence: METADATA_ONLY
+latest_regression_observed_utc: 2026-10-07T08:02:17Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -70,6 +70,10 @@ changing the reviewed bytes or unrelated work. Different-agent behavior,
 provider-test, central and resource reviews report no actionable scoped finding;
 their limitations and actual source associations are in the
 [integration record](../work/v1.8.0-c18a-airlock/SOURCE-INTEGRATION-01.md).
+The complete source/resource checkpoint is normally pushed at `61ae5001`;
+its [hosted regression observation](../work/v1.8.0-ci/RESULT-25.md) is running
+at clean build. No unit/native counts or terminal outcome are yet available.
+Own ended source worktree is normally removed after clean/merged checks.
 Hosted compilation, native generation/GameTests, restart and V1/V2 remain open.
 No compiled/runtime or Gate delivery is claimed.
 

@@ -10,6 +10,15 @@ records all ten reviewed postimage hashes, exact fifteen-file stage/stat,
 planning/accepted-ledger/client/diff exits 0 and unchanged user AGENTS.
 Resource outputs/provenance are committed separately with this metadata update;
 normal publication and hosted execution are subsequent observations.
+The complete combination is normally pushed at
+`61ae5001532c2a95c3393030be8f2d36521a446a`; the
+[publication receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-and-airlock-root-progress-20261007-01/RESOURCE-PUBLICATION-01.json)
+checks exact 25-file stage/stat and all 21 committed resource hashes, matching
+remote HEAD and unchanged user AGENTS. The
+[hosted observation](../v1.8.0-ci/RESULT-25.md) is running only, not a pass.
+Root normally removes only its ended clean/merged airlock source worktree;
+[cleanup receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-and-airlock-root-progress-20261007-01/AIRLOCK-WORKTREE-CLEANUP-01.json)
+retains exact resolved scope, normal non-force removal and unchanged main dirt.
 
 ## Committed source and exact review association
 
