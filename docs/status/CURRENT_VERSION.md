@@ -36,31 +36,38 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 10eb561a5112ee6226e2c52fef1c1cc358c5ef3f
+latest_source_checkpoint: 2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: 10eb561a5112ee6226e2c52fef1c1cc358c5ef3f
+latest_regression_target_commit: 2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7
 latest_regression_result: FAILED
-latest_regression_run: 37608847289
+latest_regression_run: 37618804027
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED_INDEPENDENT
-latest_regression_observed_utc: 2026-10-07T10:51:42Z
+latest_regression_evidence: RAW_AUDITED_ROOT
+latest_regression_observed_utc: 2026-10-07T12:19:44Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
 
 ## Current development evidence
 
-The bounded loader-count [diagnostic publication](../work/v1.8.0-regression-observation/FUEL-DROP-DIAGNOSTIC-INTEGRATION-01.md)
-is independently reviewed, committed and normally pushed at `10eb561a`.
-It changes only a failure message's already-queried count, preserving the exact
-predicate/query/deadlines and all six tests. The [new source-bound terminal](../work/v1.8.0-ci/RESULT-36.md)
-fails full regression: 372 XML/2,104 units, build/artifact and twice DataGen/clean
-checks pass; 525 native tests complete, Tau travel and installed-airlock initial
-supply fail. The loader is absent from the complete failure list and no count
-message is emitted; this is not a count observation or repair. Canonical 64 ERROR
-/zero FATAL remain unwaived. Root and [independent retained-stream audit](../work/v1.8.0-ci/RESULT-37.md)
-agree with zero input drift; the complete failed result remains failed. The clean
-ended owned worktree is normally removed, source retained.
+The bounded installed-airlock [supply snapshot publication](../work/v1.8.0-c18a-airlock/SUPPLY-DIAGNOSTIC-INTEGRATION-01.md)
+is independently source-reviewed, committed and normally pushed at `2a59cfac`.
+It adds fixed failure-only retained-scan/cell/door observations, preserving the
+original predicate, deadlines, budgets and six cases; no production repair is
+claimed. The exact-source [terminal/raw derivation](../work/v1.8.0-ci/RESULT-39.md)
+binds run 37618804027 /attempt 1 /job 112783570613: completed failure.
+372 XML/2,104 units, build/audits and two DataGen/clean checks pass;
+525 native tests complete, with Tau travel, installed-airlock initial supply
+and loader drop/place failing. Canonical 65 ERROR/zero FATAL remain unwaived.
+The airlock snapshot and loader count=0 failure branches execute; these are
+observations, not unique causes or repair. Root raw derivation is complete,
+different-agent raw audit is pending. No historical counts are rebound to this
+source. The earlier dated running observation stays in RESULT-38. The owned ended worktree
+is normally removed, with committed source and thin D evidence retained.
+The last completed [loader-diagnostic cohort](../work/v1.8.0-ci/RESULT-36.md)
+and [different-agent raw audit](../work/v1.8.0-ci/RESULT-37.md) remain failed,
+with Tau/airlock and unwaived errors open. Its loader count branch did not run;
+absence from that failure list establishes neither observation nor repair.
 
 The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)
@@ -96,11 +103,10 @@ are recorded below, not inherited from old cohorts.
 The separate bounded [fixture lifecycle experiment](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-TASK-01.md)
 has [reviewed publication](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-INTEGRATION-01.md)
 at `22f7d1ca`; its clean ended owned worktree is normally removed, source retained.
-The [preceding exact-source terminal](../work/v1.8.0-ci/RESULT-33.md) fails full regression:
-372 XML/2,104 units pass; build, artifact and twice DataGen/clean checks pass.
-525 native subjects complete with two required failures, Tau travel and loader
-drop/place; canonical 64 ERROR/zero FATAL remains unwaived. Root raw derivation
-and [different-agent audit](../work/v1.8.0-ci/RESULT-34.md) agree, inputs unchanged. All seven airlock subjects
+The [historical exact-source terminal](../work/v1.8.0-ci/RESULT-33.md) fails full regression
+in Tau travel and loader drop/place, retaining its own build/unit/DataGen results
+and unwaived errors. Root and the [different-agent audit](../work/v1.8.0-ci/RESULT-34.md)
+agree, inputs unchanged. All seven airlock subjects
 are absent from the complete failure list; committed installed-case sequencing
 reaches all six original supply/revoke/no-republication/recovery cases before
 normal cleanup/success. No individual native PASS XML or abnormal-stop/timeout

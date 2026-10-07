@@ -1,7 +1,9 @@
 # Installed-airlock supply snapshot: source development record
 
 Date: 2026-10-07. Task: C18a-AIRLOCK-SUPPLY-DIAG-01. Status:
-implemented-unverified, independent source review and hosted execution pending.
+implemented-unverified. This is the pre-publication development snapshot;
+subsequent independent review, publication and hosted observation are recorded
+in [SUPPLY-DIAGNOSTIC-INTEGRATION-01](SUPPLY-DIAGNOSTIC-INTEGRATION-01.md).
 Base: `f9117b599e10b1f25789741248a6b73db60a0785`.
 
 Only AirlockDoorGameTests.java changes runtime instructions, on its existing

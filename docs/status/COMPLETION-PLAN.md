@@ -256,6 +256,13 @@ C17b candidate03 的独立审核已解决旧版 Medium
   执行六组原始供气/撤销/恢复断言和正常清理。[独立原始审核](../work/v1.8.0-ci/RESULT-34.md)已完成且一致；
   无独立 native PASS XML、异常/超时清理或崩服恢复证据，不宣告生产原因或修复。
   后续 `10eb561a` 完整回归再次失败在下半门/phase 1 的首次供气，后续组合未获验证。
+- [~] [C18a-AIRLOCK-SUPPLY-DIAG-01](../work/v1.8.0-c18a-airlock/SUPPLY-DIAGNOSTIC-TASK-01.md)：
+  status: implemented-unverified。仅在原供气失败分支观察保留扫描结果、有限邻接分类和两半门状态，
+  不改变生产服务、原断言、期限、预算或六组顺序。独立实际源码审核完成；
+  [四文件原字节提交与正常推送](../work/v1.8.0-c18a-airlock/SUPPLY-DIAGNOSTIC-INTEGRATION-01.md)
+  至 `2a59cfac`。自有已结束工作树正常移除，源码与 D 盘薄证据保留；
+  精确提交 hosted CI 的构建/单测/重复生成通过，完整 GameTest 失败；
+  原供气失败诊断分支已触发，但唯一原因、修复与全部 Gate 仍未证明。
 - [~] Tau 冷目标调查：生产与夹具独立读证一致，失败停在目标实体就绪前，
   源火箭和 PREPARED 事务仍在。原生静态事实已核对正常 tick 与就绪处理调用关系，
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；
@@ -397,21 +404,19 @@ Root 保留共享保存/hatch、typed 推进、站点核心、生命支持权威
 
 ## 当前自动回归与风险
 
-最新源码 `10eb561a5112ee6226e2c52fef1c1cc358c5ef3f` 的
-[终态原始结果](../work/v1.8.0-ci/RESULT-36.md)绑定 run 37608847289 /attempt 1
-/job 112750895284，completed failure。372 XML /2,104 单测零失败错误跳过；
-构建、产物和两次原生生成/干净检查通过。525 GameTest 完成，Tau 与气闸初次供气
-两项 required 失败，64 ERROR /零 FATAL 未豁免。装载器未列为失败，数量消息未触发；
-Root 与[独立原始审核](../work/v1.8.0-ci/RESULT-37.md)一致、输入无漂移。
-气闸下半门/cached 第一组有源码约束的执行推论，下半门/in-flight 第二组在供气前置断言失败，
-该组撤销/恢复及后四组均未获验证。不据前序偶发通过宣告修复。
-上一完成源码 `22f7d1cae0735a8b8c072165e7a3cf8089e3719c` 的
-[终态原始结果](../work/v1.8.0-ci/RESULT-33.md)绑定 run 37605098496 /attempt 1
-/job 112738525112，completed failure。372 XML /2,104 单测零失败错误跳过；
-构建、产物和两次原生生成/干净检查通过。525 GameTest 完成，Tau 与装载器
-掉落/放置两项 required 失败，64 ERROR /零 FATAL 未豁免。
-七项气闸不在完整失败列表，六组供气/撤销/恢复有源代码约束的聚合执行证据。
-Root 与[不同代理原始审核](../work/v1.8.0-ci/RESULT-34.md)一致、输入无漂移；异常清理与重启仍未验证。
+最新源码 `2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7` 的
+[失败终态与 Root 原始推导](../work/v1.8.0-ci/RESULT-39.md)绑定 run 37618804027 /attempt 1
+/job 112783570613。372 XML/2,104 JUnit 零失败错误跳过；构建/审计、两次原生生成与
+tracked/untracked 干净检查通过。525 GameTest 完成，Tau、气闸首次供气与装载器掉落/放置
+三项 required 失败；canonical 65 ERROR/零 FATAL 未豁免。气闸保留结果与种子格为 OPEN、
+六个邻格为 SEALED，两半门均关闭；装载器失败数量为 0。这些只是失败时观测，
+不证明唯一原因或修复。不同代理原始审核待完成；[运行中观察](../work/v1.8.0-ci/RESULT-38.md)
+保留为同一源码的较早时间点。打包恢复、真实客户端和全部 G0-G9 均开放。
+上一完成源码 `10eb561a` 的[失败终态](../work/v1.8.0-ci/RESULT-36.md)与
+[独立原始审核](../work/v1.8.0-ci/RESULT-37.md)保留各自计数和来源，失败在 Tau 与气闸。
+该批次装载器数量消息未触发；气闸第二组前置供气失败，后续撤销/恢复与四组未获验证。
+更早 `22f7d1ca` 的[失败终态](../work/v1.8.0-ci/RESULT-33.md)与
+[不同代理审核](../work/v1.8.0-ci/RESULT-34.md)保持历史关联，不能证明异常清理或永久修复。
 前序源码的[独立审核](../work/v1.8.0-ci/RESULT-31.md)保留原来源与计数。
 前序源码的[两项失败终态](../work/v1.8.0-ci/RESULT-28.md)、
 [四项失败回归](../work/v1.8.0-ci/RESULT-26.md)和
