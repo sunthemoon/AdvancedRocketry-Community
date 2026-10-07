@@ -36,18 +36,34 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 3e2f6f1ba96508305b78cdb27d95ebbeabad6a38
-tested_code_commit: 3e2f6f1ba96508305b78cdb27d95ebbeabad6a38
+latest_source_checkpoint: 257e7b3adb54dc693d815434394f311d28e800cc
+tested_code_commit: 257e7b3adb54dc693d815434394f311d28e800cc
 latest_regression_result: FAILED
-latest_regression_run: 37541636327
+latest_regression_run: 37551957636
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-06T23:00:03Z
+latest_regression_observed_utc: 2026-10-07T00:38:15Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
 
 ## Current development evidence
+
+The [power-carrier format checkpoint](../work/v1.8.0-c16a-hatches/POWER-CARRIER-FORMAT-SOURCE-01.md)
+is independently reviewed, committed and normally pushed, then integrated at
+`257e7b3adb54dc693d815434394f311d28e800cc`. Its 13 data-only tests pass in
+independent development and Root's separately pinned published-commit replay;
+the latter has 49 unchanged named inputs. Only stable-root shape/scalars are
+inspected, not an Item, ticket, placement/drop or resource authority. Root's
+own ended outputs are cleaned; the statistical receipt correction is retained.
+The [exact-source full regression](../work/v1.8.0-ci/RESULT-19.md), run
+37551957636 /attempt 1 /job 112569285797, is completed FAILED in the 00:38:15Z
+observation. Root's raw recount has 356 XML /1,977 actual cases /0FES including
+all 13 new tests. Both DataGen/worktree checks pass; 509 GameTests complete with
+two required failures: Tau roundtrip and destination readiness/reserved pad.
+403 named inputs rehash unchanged. Main 64 ERROR /0 FATAL is not waived; new
+build-JAR bytes are unavailable. The previous running capture remains historical.
+Physical conservation and all Gates remain open.
 
 The independently reviewed [failure observers](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
 are committed, merged and normally pushed at `35a146fbbe1f2de94160f82307d041d2cd26e472`.
@@ -91,8 +107,8 @@ All eight new and 39 unchanged resource cases execute in its complete hosted
 unit cohort. This is source/unit evidence, not physical-owner, save-writer or
 native admission; its overall regression remains FAILED below.
 The [bounded chunk metadata checkpoint](../work/v1.8.0-c16a-hatches/CHUNK-METADATA-CHECKPOINT-01.md)
-is independently reviewed, integrated and normally published at the latest source
-checkpoint. Root's fixed-commit cached javac/Jupiter executes the exact ten new
+is independently reviewed, integrated and normally published at `3e2f6f1b`.
+Root's fixed-commit cached javac/Jupiter executes the exact ten new
 subjects, all passing with 46 inputs unchanged. It introduces no provider, owner,
 FULL observation or native save writer. Its complete hosted workflow has ended;
 the new ten cases also pass in the exact-source full unit cohort. The terminal
@@ -147,7 +163,7 @@ The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.
 is reviewed and normally pushed at `33a3156e309ca2b8f6a1fcc766501968bc21f138`, with unchanged
 assertions and product. Its original successful unit correction remains in
 [RESULT-13](../work/v1.8.0-ci/RESULT-13.md). The
-[latest raw-audited regression](../work/v1.8.0-ci/RESULT-18.md) belongs only to
+[previous chunk-metadata raw-audited regression](../work/v1.8.0-ci/RESULT-18.md) belongs only to
 `3e2f6f1b`: fresh build succeeds, 355 XML suites /1,964 actual cases /0FES,
 both DataGen/worktree checks succeed, but all 509 GameTests finish with one
 required Tau failure. Root rehashes 402 named raw/receipt/observation inputs without
