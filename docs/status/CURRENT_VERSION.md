@@ -39,11 +39,11 @@ runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 01521d6cf56bfac0d88d05ac74389f2c36dc4887
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
 latest_regression_target_commit: 01521d6cf56bfac0d88d05ac74389f2c36dc4887
-latest_regression_result: RUNNING
+latest_regression_result: FAILED
 latest_regression_run: 37595775604
 latest_regression_attempt: 1
-latest_regression_evidence: METADATA_ONLY
-latest_regression_observed_utc: 2026-10-07T08:44:49Z
+latest_regression_evidence: RAW_AUDITED
+latest_regression_observed_utc: 2026-10-07T08:56:09Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -71,20 +71,27 @@ provider-test, central and resource reviews report no actionable scoped finding;
 their limitations and actual source associations are in the
 [integration record](../work/v1.8.0-c18a-airlock/SOURCE-INTEGRATION-01.md).
 The complete source/resource checkpoint is normally pushed at `61ae5001`;
-its [terminal regression](../work/v1.8.0-ci/RESULT-26.md) fails four required
-GameTests. Clean build, 372 XML /2,097 unit cases with zero failures/errors/skips,
-artifact/client audits and both native DataGen/clean checks pass. All fourteen
-new unit methods match the fixed declarations. The 525-case native cohort
-fails the existing Earth-Mars-Venus and Tau trips plus two new airlock subjects:
-finite loot outcomes and initial installed supply. Seven airlock tests execute;
-individual native pass XML is absent. Canonical 67 ERROR /zero FATAL remain
-unwaived. Root and different-agent raw audits agree with zero retained-input
-drift. The two new failures are assigned to an isolated fixture
+its [first terminal regression](../work/v1.8.0-ci/RESULT-26.md) retains four
+required failures and the original unwaived errors as history, without rebinding
+its counts to a successor. The two new airlock subjects are assigned to an isolated fixture
 follow-up: bounded loot seed spacing and initial-supply scalar observations,
 preserving assertions/deadlines/budgets. The two-file correction has a separate
 different-agent actual-diff review, is committed and normally pushed at
-`01521d6c`, and its [successor regression](../work/v1.8.0-ci/RESULT-27.md) is
-running. Supply cause remains unresolved and no native repair is yet proven.
+`01521d6c`, and its [successor regression](../work/v1.8.0-ci/RESULT-28.md) fails
+two required native cases: Tau and initial installed airlock supply. Clean build,
+372 XML /2,097 unit cases with zero failures/errors/skips, artifact/client audits
+and twice DataGen/clean checks pass. All fourteen new unit methods match the
+fixed declarations. Seven airlock subjects execute in the 525-case native
+cohort; sampling is no longer a named failure. No individual native pass XML is
+retained. Canonical 64 ERROR /zero FATAL remain unwaived. Supply
+status is OPEN with resources present, but its native cause remains unresolved.
+Root and different-agent raw audits agree with zero retained-input drift. No supply
+repair or full native qualification is proven.
+The accepted-category [sky switch task](../work/v1.8.0-c18d-sky-switches/TASK-01.md)
+is in progress in a separate worktree. Root's three config/registration/test
+postimages have different-agent static review; worker adapters/tests are
+frozen for separate actual-diff review. No full combination is yet committed,
+compiled or client-qualified. Raw selection and ambience are outside that gate.
 The dated [running observation](../work/v1.8.0-ci/RESULT-25.md) remains historical.
 Own ended source worktree is normally removed after clean/merged checks.
 Full GameTest qualification, restart and V1/V2 remain open.

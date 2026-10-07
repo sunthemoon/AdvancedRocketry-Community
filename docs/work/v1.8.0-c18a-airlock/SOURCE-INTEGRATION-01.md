@@ -48,6 +48,10 @@ SHA-256 `568e9ea8d90c1ca77d0762214907ab9ec02cb802cf2c53627893e5247ffa677d`,
 checks planning/accepted-ledger/client boundaries/diff and matching remote HEAD.
 The exact-source [successor run](../v1.8.0-ci/RESULT-27.md) is running; the four
 original required failures remain historical and unmodified.
+The later [terminal result](../v1.8.0-ci/RESULT-28.md) supersedes that running
+status: full native regression still fails Tau and initial supply. Root and
+different-agent retained-raw audits agree, without native cause/repair or
+revocation qualification. Original failures remain unchanged.
 
 ## Committed source and exact review association
 

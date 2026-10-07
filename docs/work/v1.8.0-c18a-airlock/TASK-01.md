@@ -5,11 +5,16 @@ Status: implemented-unverified; independently reviewed source integration.
 See [integration record](SOURCE-INTEGRATION-01.md). No compiled/runtime delivery.
 Required Gates remain open.
 
-The exact published cohort's [terminal result](../v1.8.0-ci/RESULT-26.md) passes
+The first published cohort's [terminal result](../v1.8.0-ci/RESULT-26.md) passes
 all fourteen new JUnit methods and twice native DataGen/clean checks, but fails
 two of this batch's seven native subjects. Full GameTests also fail two existing
 rocket trips. Source remains unqualified; the isolated fixture correction
 changes no production contract, assertion, deadline or performance budget.
+The reviewed two-file successor is committed and normally pushed at `01521d6c`;
+its [terminal result](../v1.8.0-ci/RESULT-28.md) still fails initial installed
+supply and existing Tau. Sampling is no longer a named failure. Supply OPEN
+with resources does not establish a native cause or repair; revocation remains
+unqualified. Original failed evidence is unchanged.
 
 ## Narrow technical adoption
 
