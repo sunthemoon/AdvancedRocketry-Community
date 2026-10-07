@@ -54,6 +54,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -67,6 +68,7 @@ import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /** Registered native fixtures; installed-service phase setup is controlled, not natural tick proof. */
 @GameTestHolder(ModIdentity.MOD_ID)
@@ -366,11 +368,44 @@ public final class AirlockDoorGameTests {
                         .append("/powered:").append(state.getValue(DoorBlock.POWERED))
                         .append("/open:").append(state.getValue(DoorBlock.OPEN));
             }
+            details.append(currentSeedInputs(level, cell));
         } catch (ReflectiveOperationException | RuntimeException | AssertionError | LinkageError unavailable) {
             // Diagnostics must not replace the original supplied-air assertion or its terminal cleanup.
             details.append(" diagnostic=UNAVAILABLE");
         }
         return details.toString();
+    }
+
+    /** Later native operand samples, not provenance of the scan's original OPEN branch. */
+    private static String currentSeedInputs(ServerLevel level, BlockPos cell) {
+        try {
+            if (level.isOutsideBuildHeight(cell)) { return " seedInputs=OUTSIDE_BUILD_HEIGHT"; }
+            var chunk = level.getChunkSource().getChunkNow(cell.getX() >> 4, cell.getZ() >> 4);
+            if (chunk == null || !level.hasChunkAt(cell)) { return " seedInputs=UNLOADED"; }
+            BlockState state = chunk.getBlockState(cell);
+            var key = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+            String blockId = key == null ? "UNREGISTERED"
+                    : (long) key.getNamespace().length() + 1 + key.getPath().length() <= 256
+                    ? key.toString() : "OVERSIZED_BLOCK_ID";
+            StringBuilder inputs = new StringBuilder(" seedBlock=").append(blockId)
+                    .append(" seedIsAir=").append(state.isAir());
+            if (state.is(door())) {
+                inputs.append(" seedDoor=").append(state.getValue(DoorBlock.HALF)).append('/')
+                        .append(state.getValue(DoorBlock.FACING)).append('/').append(state.getValue(DoorBlock.HINGE))
+                        .append("/powered:").append(state.getValue(DoorBlock.POWERED))
+                        .append("/open:").append(state.getValue(DoorBlock.OPEN));
+            }
+            inputs.append(" seedCanSeeSky=").append(level.canSeeSky(cell));
+            if (!level.hasChunkAt(cell)) { inputs.append(" seedInputs=UNLOADED"); }
+            else {
+                int surface = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, cell.getX(), cell.getZ());
+                inputs.append(" seedMotionBlockingNoLeavesHeight=").append(surface)
+                        .append(" seedYAtOrAboveHeight=").append(cell.getY() >= surface);
+            }
+            return inputs.length() <= 1024 ? inputs.toString() : " seedInputs=OVERSIZED";
+        } catch (RuntimeException | AssertionError | LinkageError unavailable) {
+            return " seedInputs=UNAVAILABLE";
+        }
     }
 
     /** Six delayed cases share one terminal owner; no running callback schedules another callback. */

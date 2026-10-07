@@ -4,6 +4,12 @@ Date: 2026-10-07. Status: in-progress; diagnostic source only, not repair.
 Root is author/integrator. Base: `f9117b599e10b1f25789741248a6b73db60a0785`.
 Owned worktree: `D:/GitHub/arce-v180-airlock-supply-diagnostic-20261007`.
 
+Historical scope: the published source/replay are recorded in
+[SUPPLY-DIAGNOSTIC-INTEGRATION-01](SUPPLY-DIAGNOSTIC-INTEGRATION-01.md).
+[SEED-INPUTS-TASK-02](SEED-INPUTS-TASK-02.md) separately admits one additional
+guarded current-seed identity/native-operand segment with explicit text caps;
+it does not change this original seven-classification/two-half scope or tests.
+
 ## Outcome and basis
 
 The exact code cohort `10eb561a5112ee6226e2c52fef1c1cc358c5ef3f`
