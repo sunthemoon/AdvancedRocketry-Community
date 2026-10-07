@@ -225,9 +225,15 @@ C17b candidate03 的独立审核已解决旧版 Medium
 科技树、声音/模型/GUI 等仍须实现。D4 未证明，不推断接受。
 
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
-  A 的实际 living-tick 扩展契约已独立审核，无新增 Critical/High/Medium；
-  Low 补充同 UUID、数值与操作的永久 modifier 残留转换测试。源码与原生验证仍待完成。
-  B 保留载具/乘客传播中一次缩放的 Medium，未分配摔落监听器；两项台账与整版 Gate 不变。
+  A 的[完整源码](../work/v1.8.0-c18a-living-gravity/SOURCE-INTEGRATION-01.md)已独立审核、
+  提交并正常推送至 `1b6071d1`；测试观察 Low 修复后独立复审通过。
+  新增七项 controller、三项 config 单测及九项 GameTest。
+  原批次的 controller/config 单测通过，但配置总数检查失败，DataGen/GameTest 未执行。
+  总数夹具的严格修订经独立审核后已提交、推送至 `8b3fdca9`，新单测与重复 DataGen 通过。
+  九项新增原生测试已执行，没有列入终态失败；完整 GameTest 仍因既有 Tau 往返失败。
+  完整回归、实际维度转移、自然 tick、打包/客户端和重启资格仍开放；自有已结束 worktree 已清理。
+  原生事实已证明载具向乘客传入修改后的参数，但一次缩放的补救与 Medium 未解决，
+  B 未分配摔落监听器；两项台账与整版 Gate 不变。
 
 - [~] C18 D1 辅助氧气储量：保留已接受的 API/HUD 2,000 工作缓冲。
   [原独立提案审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md)
@@ -349,14 +355,16 @@ pure-helper 单测分别通过，
 单次新原生查询只在缺失分支，标签为 POST_LOOKUP；不是飞行或原生就绪修复。
 自有七个 class 和九个目录已清理，原统计和另版更正保留；定向测试不执行 native fixture。
 该前序源码的[终态结果](../work/v1.8.0-ci/RESULT-21.md)保留为历史，不重绑其指标。
-最新空 hatch 权限源码 `7d7b474e` 的[终态回归](../work/v1.8.0-ci/RESULT-22.md)
-绑定 run 37568695086 /attempt 1 /job 112622219034，2026-10-07T04:10:12Z 捕获为 completed success。
-实际原始报告核对 368 XML /2,073 单测 /零 testcase 失败、错误或跳过，零 container 失败或错误；
-六项新增和七项维护测试的名称与固定源码一致。
-clean build、产物检查、两次 DataGen/干净工作树和 509/509 required GameTest 通过；
-canonical 62 ERROR /零 FATAL 未豁免。新 JAR 的整字节回执摘要与 hosted 清单一致，
-不声称独立重解析内部条目或再次读取未保留的 JAR。一次成功不证明就绪修复、缺失分支执行或物理机器可用；
-旧运行中捕获和失败保留。失败原因、物理保存和全部 Gate 仍开放。
+前序空 hatch 权限源码 `7d7b474e` 的[终态回归](../work/v1.8.0-ci/RESULT-22.md)
+保留其独立审核的通过指标、产物身份和未豁免错误；不重绑到生物重力源码。
+一次成功不证明就绪修复、缺失分支执行或物理机器可用，原失败仍保留。
+生物重力 `1b6071d1` 的[原始终态回归](../work/v1.8.0-ci/RESULT-23.md)保留其配置总数失败。
+后继严格夹具修订 `8b3fdca9` 的[终态结果](../work/v1.8.0-ci/RESULT-24.md)绑定
+run 37580341390 /attempt 1 /job 112658310596，2026-10-07T06:23:59Z 捕获 completed failure。
+clean build、369 XML /2,083 单测 /零失败错误跳过、产物检查、两次 DataGen 与干净检查通过；
+518 GameTest 完成，一项既有 Tau 往返失败，新增九项 living-gravity 批次未列入终态失败。
+canonical 63 ERROR /零 FATAL 未豁免。Root 与独立后继原始审计一致，输入无漂移；
+原失败不改成通过，完整回归、实际维度转移/自然 tick、打包重启和全部 Gate 尚未证明。
 [前序格式源码结果](../work/v1.8.0-ci/RESULT-19.md)保留两项 required 失败；
 目的地夹具在新批次不再出现失败标题，不据此认定修复。
 [元数据源码结果](../work/v1.8.0-ci/RESULT-18.md)仍是其自己提交的历史事实，

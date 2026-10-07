@@ -36,14 +36,14 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
+latest_source_checkpoint: 8b3fdca990be3880ff04aae5a2354657d499b60f
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_result: PASSED
-latest_regression_run: 37568695086
+latest_regression_target_commit: 8b3fdca990be3880ff04aae5a2354657d499b60f
+latest_regression_result: FAILED
+latest_regression_run: 37580341390
 latest_regression_attempt: 1
 latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-07T04:10:12Z
+latest_regression_observed_utc: 2026-10-07T06:23:59Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -53,17 +53,12 @@ last_updated: 2026-10-07
 The [empty-removal admission checkpoint](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-INTEGRATION-01.md)
 is independently reviewed, committed and normally pushed at `7d7b474e`.
 Its post-provider physical block-state check addresses the source review's Medium
-finding. The [exact-source terminal result](../work/v1.8.0-ci/RESULT-22.md) binds
-run 37568695086 /attempt 1 /job 112622219034 to completed automatic regression
-success. Actual raw recount finds 368 XML /2,073 testcase children, zero testcase
-failures, errors or skips and zero container failures/errors. Six new and seven
-maintained subjects match fixed source and pass. Clean build, artifact audit,
-both DataGen/clean-worktree checks and 509/509 required GameTests pass. The
-canonical stream retains 62 ERROR /zero FATAL, unwaived. The downloaded JAR's
-whole-byte receipt agrees with hosted checksum/manifest identity; no independent
-inner-JAR reparse is claimed. Physical registration, save/native joins, previous
-readiness failures and all Gates remain open. The first running capture stays
-historical; a successful inactive-source regression is not hatch delivery.
+finding. The [preceding exact-source terminal result](../work/v1.8.0-ci/RESULT-22.md)
+retains its independently audited successful regression, own metrics/artifact
+identity and unwaived errors at `7d7b474e`. Those historical counts are not
+rebound to the later living-gravity source. Physical registration, save/native
+joins, previous readiness failures and all Gates remain open; successful
+inactive-source regression is not hatch delivery.
 The [outer-operation ADR](../decisions/ADR-068-V180-CLASSIC-NATIVE-OUTER-OPERATIONS.md)
 is PROPOSED only. The owner architecture choice, private birth/save/recovery
 contracts, risk disposition and actual transformed/native verification remain
@@ -71,11 +66,26 @@ required before assigning or activating physical interception.
 
 The [living-gravity parent task](../work/v1.8.0-c18a-living-gravity/TASK-01.md)
 separates the actual living-tick extension from fall handling. Leaf A's
-independent contract review finds no new Critical/High/Medium; its Low adds an
-explicit owned-permanent-residue regression to the required transient semantics.
-Source, movement, entity save/reload and committed-source regression remain
-unverified. Leaf B retains the Medium mounted/passenger argument-flow gap;
-there is no fall listener assignment, parent delivery or Gate change.
+[complete source integration](../work/v1.8.0-c18a-living-gravity/SOURCE-INTEGRATION-01.md)
+is independently reviewed, committed and normally pushed at `1b6071d1`.
+The backing-attribute observation Low is corrected and independently re-reviewed;
+seven controller and three config JUnit tests plus nine GameTests are added.
+Its [original audited cohort](../work/v1.8.0-ci/RESULT-23.md) retains the strict
+inventory failure at `1b6071d1`. The separate one-file cardinality/registered-key
+correction is independently reviewed, committed and normally pushed at `8b3fdca9`.
+Its [exact-source terminal result](../work/v1.8.0-ci/RESULT-24.md), run 37580341390
+/attempt 1 /job 112658310596, passes clean build, 369 XML /2,083 unit cases with
+zero failures/errors/skips, artifact audit and both DataGen/clean checks. The
+new nine-test living-gravity batch executes without a named terminal failure;
+the 518-case GameTest cohort fails solely the existing Tau roundtrip. Canonical
+63 ERROR /zero FATAL remain unwaived. Root and different-agent raw audits agree
+with zero input drift; individual native pass records are absent. Full regression,
+actual dimension transfer,
+natural scheduling, packaged/client and dedicated restart qualification remain
+open. Native facts establish mounted/passenger argument propagation, not
+the once-only fall remedy; leaf B's Medium remains open. There is no fall
+listener assignment, parent delivery or Gate change. The owned ended source
+worktree is normally retired; committed source and evidence remain available.
 
 The [inactive guarded-save integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
 combines the independently reviewed owner/comparator/central source and explicit
