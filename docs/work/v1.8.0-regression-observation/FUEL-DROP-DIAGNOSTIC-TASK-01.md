@@ -1,6 +1,6 @@
 # Fuel-loader native drop failure: bounded count diagnostic
 
-Date: 2026-10-07. Status: in-progress. Integrator/author: Root.
+Date: 2026-10-07. Status: implemented-unverified. Integrator/author: Root.
 Source base: `22f7d1cae0735a8b8c072165e7a3cf8089e3719c`.
 
 The [new terminal stream](../v1.8.0-ci/RESULT-33.md) fails the existing assertion
@@ -33,5 +33,6 @@ including whole-file exact single-message replacement, original predicate/query,
 six identical annotations/deadlines, empty index and owned scope. The
 [static receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-author-20261007-01/CHECKS-01.json)
 has SHA-256 `2e045f155277164f96edfdaf10712be8d096e259714a41886a6259b462b8bd1e`.
-Independent exact-diff review is requested separately; no source publication or
-new native result is yet claimed.
+Independent exact-diff review is complete. The [publication record](FUEL-DROP-DIAGNOSTIC-INTEGRATION-01.md)
+binds the unchanged two-file source to `10eb561a` and its new running hosted CI;
+no new native result is yet claimed.

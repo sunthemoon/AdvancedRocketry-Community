@@ -36,19 +36,26 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 22f7d1cae0735a8b8c072165e7a3cf8089e3719c
+latest_source_checkpoint: 10eb561a5112ee6226e2c52fef1c1cc358c5ef3f
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: 22f7d1cae0735a8b8c072165e7a3cf8089e3719c
-latest_regression_result: FAILED
-latest_regression_run: 37605098496
+latest_regression_target_commit: 10eb561a5112ee6226e2c52fef1c1cc358c5ef3f
+latest_regression_result: RUNNING
+latest_regression_run: 37608847289
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-07T10:16:53Z
+latest_regression_evidence: METADATA_ONLY
+latest_regression_observed_utc: 2026-10-07T10:40:21Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
 
 ## Current development evidence
+
+The bounded loader-count [diagnostic publication](../work/v1.8.0-regression-observation/FUEL-DROP-DIAGNOSTIC-INTEGRATION-01.md)
+is independently reviewed, committed and normally pushed at `10eb561a`.
+It changes only a failure message's already-queried count, preserving the exact
+predicate/query/deadlines and all six tests. The [new source-bound CI](../work/v1.8.0-ci/RESULT-35.md)
+is RUNNING with metadata only; no new-source raw totals/drop count or repair
+is inferred. The clean owned ended worktree is normally removed, source retained.
 
 The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)
@@ -84,7 +91,7 @@ are recorded below, not inherited from old cohorts.
 The separate bounded [fixture lifecycle experiment](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-TASK-01.md)
 has [reviewed publication](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-INTEGRATION-01.md)
 at `22f7d1ca`; its clean ended owned worktree is normally removed, source retained.
-The [new exact-source terminal](../work/v1.8.0-ci/RESULT-33.md) fails full regression:
+The [preceding exact-source terminal](../work/v1.8.0-ci/RESULT-33.md) fails full regression:
 372 XML/2,104 units pass; build, artifact and twice DataGen/clean checks pass.
 525 native subjects complete with two required failures, Tau travel and loader
 drop/place; canonical 64 ERROR/zero FATAL remains unwaived. Root raw derivation

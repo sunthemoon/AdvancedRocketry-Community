@@ -260,8 +260,9 @@ C17b candidate03 的独立审核已解决旧版 Medium
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；
   原延时、就绪谓词与完整往返测试保留，不据此勾选功能或 Gate。
 - [ ] [装载器掉落实测数量诊断](../work/v1.8.0-regression-observation/FUEL-DROP-DIAGNOSTIC-TASK-01.md)：
-  status: in-progress。仅给现有失败断言补已查询列表的数量，不新增世界查询、
-  过滤实体或更改原守恒断言。独立审核后才发布和实际复跑，不推断复制或修复。
+  status: implemented-unverified。仅给现有失败断言补已查询列表的数量，不新增世界查询、
+  过滤实体或更改原守恒断言。独立实际审核无新增问题后，[两文件原字节发布](../work/v1.8.0-regression-observation/FUEL-DROP-DIAGNOSTIC-INTEGRATION-01.md)
+  至 `10eb561a`，自有结束工作树已正常清理，完整原生 CI 运行中，不推断复制或修复。
 
 - [ ] [C18d-SKY-01](../work/v1.8.0-c18d-sky-switches/TASK-01.md)：status: implemented-unverified。
   仅实施 ADR-066 已接受的 planet/station 两项 CLIENT 开关。按既有 effects 注册分类，
@@ -382,7 +383,10 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ## 当前自动回归与风险
 
-最新源码 `22f7d1cae0735a8b8c072165e7a3cf8089e3719c` 的
+最新源码 `10eb561a5112ee6226e2c52fef1c1cc358c5ef3f` 的
+[运行中观察](../work/v1.8.0-ci/RESULT-35.md)绑定 run 37608847289 /attempt 1
+/job 112750895284；仅元数据，不借用上一源码的通过计数或宣告修复。
+上一完成源码 `22f7d1cae0735a8b8c072165e7a3cf8089e3719c` 的
 [终态原始结果](../work/v1.8.0-ci/RESULT-33.md)绑定 run 37605098496 /attempt 1
 /job 112738525112，completed failure。372 XML /2,104 单测零失败错误跳过；
 构建、产物和两次原生生成/干净检查通过。525 GameTest 完成，Tau 与装载器
