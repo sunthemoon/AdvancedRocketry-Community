@@ -110,8 +110,8 @@ worktrees: components/graph 10, audio 10 and equipment 20 units, linked from
 the [canonical handoff](../work/v1.8.0-claude-parallel-handoff.md#7-forward-contract-assignments).
 They authorize draft files only, not source implementation. On 2026-10-08 the
 owner reported all nine drafts returned in their registered worktrees. All three
-different-agent reviews are complete: graph 2 High/4 Medium, audio 7 Medium,
-equipment 7 Medium/2 Low. All are CHANGES_REQUESTED, still PROPOSED/not frozen.
+draft-01 different-agent reviews are archived in the Root receipt. The current
+draft-02 counts and proposed state are recorded below, not replaced by archive.
 [Root receipt and successor assignments](../work/v1.8.0-claude-return-review/REVIEW-01.md)
 bind exact bytes/reports; three TASK-02 registrations permit only new revision
 documents/evidence. Twenty pinned MIT recipe bodies are verified; the two owner
@@ -126,11 +126,19 @@ binds session IDs, errors/cost estimates, exact nine revision-02 archives and
 independent reviews: graph 1 High/3 Medium/1 Low, equipment 2 Medium/1 Low,
 audio 6 Medium/4 Low. All three stay PROPOSED and CHANGES_REQUESTED, not frozen.
 A separate fresh test-only sky-bootstrap author returned exactly two files;
-candidate 493df490 is pushed on its isolated branch, not integrated here.
+candidate 493df490 is independently reviewed and integrated on main at d2b4324f.
 Separately authorized targeted execution at that SHA passes 20 actual JUnit
-cases (5 new /7 adapter /8 config); final source-review/adoption is separate.
-Three smaller TASK-03 proposal leaves are registered, not started at this
-checkpoint. Full regression/V1/V2/Gates, 186 PLANNED /154 REVIEW and CSV
+cases (5 new /7 adapter /8 config); no introduced source findings. The
+[integration record](../work/v1.8.0-c18d-sky-switches/BINDING-INTEGRATION-01.md)
+proves merged src/build-input equivalence without claiming a new execution.
+Three smaller TASK-03 proposal leaves are now directly dispatched in separate
+[fresh sessions](../work/v1.8.0-claude-cli-coordination/DISPATCH-03-01.md);
+all three returned within runner caps with exact file scopes, but disclose
+incomplete mandatory governance reads. The graph's interactive-session label
+also conflicts with actual fresh CLI evidence. These deviations stay open;
+I/O success is not compliance or acceptance. Independent return review and
+adoption remain separate. Full regression/V1/V2/Gates,
+186 PLANNED /154 REVIEW and CSV
 allocations are unchanged.
 
 The retained Tau failure is localized by independent

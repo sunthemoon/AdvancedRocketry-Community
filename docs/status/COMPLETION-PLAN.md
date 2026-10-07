@@ -423,8 +423,8 @@ Root 保留共享保存/hatch、typed 推进、站点核心、生命支持权威
 [配方图 10 项](../work/v1.8.0-c16d-components-graph/TASK-01.md)、
 [音效 10 项](../work/v1.8.0-c18d-audio/TASK-01.md)、
 [装备模块 20 项](../work/v1.8.0-c18b-equipment/TASK-01.md)。
-只允许契约/测试设计/交接文档。九份原稿按原字节归档；三个独立审核已完成：
-配方图 2 High/4 Medium，音效 7 Medium，装备 7 Medium/2 Low，均 CHANGES_REQUESTED。
+只允许契约/测试设计/交接文档。九份原稿按原字节归档；第 1 版独立审核已归档，
+具体历史发现见 Root 审核关联；第 2 版的当前发现及状态见下文。
 [Root 审核关联与 TASK-02](../work/v1.8.0-claude-return-review/REVIEW-01.md) 已事前登记三组后继文档范围；
 作者工作树与原封存包不改，音效历史封存缺口保留。装备生产实现仍 DEPENDENCY_BLOCKED。
 20 份旧配方正文已独立核验；用户已选择显式验证下界入口及标签互操作/数据包额外配方。
@@ -434,12 +434,18 @@ Root 按用户新授权直接派发有范围、时间和成本估算上限的小
 [CLI 实际回执](../work/v1.8.0-claude-cli-coordination/REPORT-01.md)记录新会话和短追问成功、
 第 2 版九份原字节归档及独立发现：图 1 High/3 Medium/1 Low、装备 2 Medium/1 Low、
 音效 6 Medium/4 Low，均仍 PROPOSED/CHANGES_REQUESTED。天空两项只读续验已取回；
-实际 bootstrap 绑定测试作者返回两份新增文件，候选 493df490 已推到隔离分支，尚未合入。
+实际 bootstrap 绑定测试作者返回两份新增文件，候选 493df490 经独立审核无新增发现，
+已于 d2b4324f 合入并正常推送；[源码/证据关联](../work/v1.8.0-c18d-sky-switches/BINDING-INTEGRATION-01.md)
+证明合并后 src/构建输入等同于被测候选，不声称重新执行了合并提交。
 另行授权的定向执行在该 SHA 通过 20 个实际 JUnit 用例（新增 5/适配器 7/配置 8）；
-最终源码审核、采纳和真实客户端验证另计，不作交付。
+真实客户端、打包和完整回归仍未资格确认，不作内容交付。
 较小的 [图访问](../work/v1.8.0-c16d-components-graph/TASK-03.md)、
 [音效生命周期](../work/v1.8.0-c18d-audio/TASK-03.md)、
-[装备完整输出边界](../work/v1.8.0-c18b-equipment/TASK-03.md)草案任务已登记、尚未启动。
+[装备完整输出边界](../work/v1.8.0-c18b-equipment/TASK-03.md)草案任务已直接并发派发，
+[实际会话登记](../work/v1.8.0-claude-cli-coordination/DISPATCH-03-01.md)关联三个新会话；
+三组均已返回、写入范围/终态检查通过，但作者自述未读完必读治理文件；
+配方图交接的交互会话身份也与实际新 CLI 回执不符。偏差保持 OPEN，
+不因 I/O 检查通过而豁免规约；独立审核/采纳仍另计。
 Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端口/协议仍须审核。
 其他包保持规划状态；共享保存/hatch、装备持久化、资产和全部 Gate 的依赖不解除。
 环境/氧气八项的外部 helper 返回、实际作者基线/位置、执行偏差与待审核状态见 HUD ASSIGNMENT-01；
