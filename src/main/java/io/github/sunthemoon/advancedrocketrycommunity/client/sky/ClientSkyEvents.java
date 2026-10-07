@@ -31,7 +31,7 @@ public final class ClientSkyEvents {
 
     @SubscribeEvent(priority = EventPriority.LOW) public static void fogColor(ViewportEvent.ComputeFogColor event) {
         var level = Minecraft.getInstance().level;
-        var selection = PlanetarySkyClient.selection(level);
+        var selection = PlanetarySkyClient.visualSelection(level);
         if (selection == null || !PlanetarySkyClient.clearView(event.getCamera())
                 || event.getCamera().getPosition().y < level.getMinBuildHeight() + 8) {
             return;
@@ -47,7 +47,7 @@ public final class ClientSkyEvents {
         if (event.getMode() != FogRenderer.FogMode.FOG_TERRAIN || !PlanetarySkyClient.clearView(event.getCamera())) {
             return;
         }
-        var selection = PlanetarySkyClient.selection(Minecraft.getInstance().level);
+        var selection = PlanetarySkyClient.visualSelection(Minecraft.getInstance().level);
         if (selection == null) { return; }
         var fog = SkyMath.fog(selection.profile(), event.getNearPlaneDistance(), event.getFarPlaneDistance());
         if (Float.compare(fog.near(), event.getNearPlaneDistance()) != 0

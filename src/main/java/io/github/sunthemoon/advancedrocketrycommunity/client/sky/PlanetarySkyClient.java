@@ -28,6 +28,15 @@ public final class PlanetarySkyClient {
 
     private PlanetarySkyClient() { }
 
+    /** Presentation switches do not clear the raw selection consumed by ambience. */
+    public static Selection visualSelection(ClientLevel level) {
+        if (level == null || !(level.effects() instanceof PlanetaryDimensionEffects effects)
+                || !effects.overridesSky()) {
+            return null;
+        }
+        return selection(level);
+    }
+
     public static Selection selection(ClientLevel level) {
         if (level == null || !(level.effects() instanceof PlanetaryDimensionEffects)) {
             SELECTION.clear();
