@@ -36,18 +36,30 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 257e7b3adb54dc693d815434394f311d28e800cc
+latest_source_checkpoint: 046fc477ab80a9bc10d4170092bed6e0ad4e34ef
 tested_code_commit: 257e7b3adb54dc693d815434394f311d28e800cc
-latest_regression_result: FAILED
-latest_regression_run: 37551957636
+latest_regression_result: IN_PROGRESS
+latest_regression_run: 37554222038
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-07T00:38:15Z
+latest_regression_evidence: METADATA_ONLY
+latest_regression_observed_utc: 2026-10-07T00:52:58Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
 
 ## Current development evidence
+
+The [readiness-wait history checkpoint](../work/v1.8.0-transfer-wait-history/SOURCE-INTEGRATION-01.md)
+has independent actual-source review with no C/H/M/L, private source `f43ecefb`
+and unchanged main integration `046fc477`, both normally pushed. Independent
+development and Root's separate published-commit helper/test replays each pass
+30/30; Root's 17 named inputs remain unchanged. All 19 old tests and native
+readiness/ticket/flight behavior are preserved. First/last ticks and saturating
+wait-call count are observations, not continuity, I/O or a repair. Own ended
+outputs are cleaned. Its exact-source run 37554222038 /attempt 1 /job 112576587243
+is IN_PROGRESS in the 00:52:58Z metadata capture; no whole Service/full result is
+claimed. `tested_code_commit` still names the last completed raw-audited full
+cohort at `257e7b3a`, not this new source. Native causes and all Gates remain open.
 
 The [power-carrier format checkpoint](../work/v1.8.0-c16a-hatches/POWER-CARRIER-FORMAT-SOURCE-01.md)
 is independently reviewed, committed and normally pushed, then integrated at
