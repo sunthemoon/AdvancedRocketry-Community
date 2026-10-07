@@ -64,6 +64,10 @@ whole-byte receipt agrees with hosted checksum/manifest identity; no independent
 inner-JAR reparse is claimed. Physical registration, save/native joins, previous
 readiness failures and all Gates remain open. The first running capture stays
 historical; a successful inactive-source regression is not hatch delivery.
+The [outer-operation ADR](../decisions/ADR-068-V180-CLASSIC-NATIVE-OUTER-OPERATIONS.md)
+is PROPOSED only. The owner architecture choice, private birth/save/recovery
+contracts, risk disposition and actual transformed/native verification remain
+required before assigning or activating physical interception.
 
 The [inactive guarded-save integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
 combines the independently reviewed owner/comparator/central source and explicit

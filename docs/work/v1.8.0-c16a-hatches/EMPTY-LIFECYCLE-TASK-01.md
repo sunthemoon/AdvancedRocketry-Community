@@ -51,6 +51,10 @@ identifies one placement invocation and two removal invocations (including delay
 mining completion). These are static version-bound facts, not installed hook,
 compatibility, rollback or restart verification. A proposed exception still
 requires owner confirmation, an ADR and independent review before implementation.
+The canonical [ADR-068](../../decisions/ADR-068-V180-CLASSIC-NATIVE-OUTER-OPERATIONS.md)
+now records that proposal and its event/AT evidence, exact invocation scope,
+two save consumers, unknown-outcome/risk limits and activation prerequisites.
+It remains PROPOSED; no physical source or bytecode exception is assigned by it.
 
 No public factory, success boolean, LOAD/EMIT substitution, reset of sticky denial,
 new persistent ID/schema, broad source-mode policy, power Item lease reuse,
