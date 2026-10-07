@@ -103,7 +103,7 @@ public final class FuelLoaderPlacementGameTests {
         var level = helper.getLevel(); var pos = loader.getBlockPos();
         helper.assertTrue(level.destroyBlock(pos, true), "Native destruction failed");
         var drops = level.getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(1.5));
-        helper.assertTrue(drops.size() == 1, "Native drop duplicated visible inventory or omitted loader");
+        helper.assertTrue(drops.size() == 1, "Native drop duplicated visible inventory or omitted loader count=" + drops.size());
         ItemStack carried = drops.get(0).getItem().copy(); drops.get(0).discard();
         helper.assertTrue(carried.getItem() instanceof BlockItem && carried.getCount() == 1, "Expected one loader BlockItem");
         helper.assertTrue(BlockItem.getBlockEntityData(carried).get(FuelLoaderStorage.DATA_KEY).equals(raw), "Dropped root differs");
