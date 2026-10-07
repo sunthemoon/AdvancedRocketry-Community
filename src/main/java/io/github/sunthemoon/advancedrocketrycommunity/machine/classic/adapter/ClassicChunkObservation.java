@@ -164,6 +164,76 @@ final class ClassicChunkObservation implements AutoCloseable {
         }
     }
 
+    /** Fresh LIFECYCLE selection only; neither a LOAD substitute nor a removal outcome. */
+    static EmptyRemovalSelection selectEmptyHatchRemoval(ClassicFamilyService service, ClassicHatchBlockEntity owner,
+                                                         GuardTicket ticket) {
+        if (ticket == null || !ticket.verifyEmptyRemovalAcquisition(service, owner)) { return null; }
+        LevelChunk chunk = service.world().fullChunk(owner.getBlockPos()).orElse(null);
+        if (chunk == null || !ticket.verifyEmptyRemovalAcquisition(service, owner)) { return null; }
+        ClassicChunkObservation found = find(chunk);
+        if (found == null || found.level != service.level() || !ticket.verifyEmptyRemovalAcquisition(service, owner)) {
+            return null;
+        }
+        // The last provider lookup is followed only by current local/nonloading identity checks.
+        if (find(chunk) != found || !ticket.emptyRemovalAfterCallbackCurrent(service, owner, chunk)) { return null; }
+        synchronized (found) {
+            Capture selected = found.capture;
+            RetainedOwner retained = found.retained.get(position(owner.getBlockPos()));
+            Object heldWitness = ticket.emptyRemovalWitnessIdentity(service, owner, chunk);
+            if (heldWitness == null || !found.rawMatches(owner) || found.retained.size() > found.capacity
+                    || selected == null || found.capture != selected || retained == null || retained.owner() != owner
+                    || retained.service() != service || retained.chunk() != chunk || !retained.type().equals(typeId(owner))) {
+                return null;
+            }
+            return new EmptyRemovalSelection(found, ticket, service, owner, chunk, selected, retained, heldWitness);
+        }
+    }
+
+    /** No full-ticket call here: that would recursively reenter joined validation. */
+    static boolean emptyRemovalSelectionMatches(EmptyRemovalSelection selected, GuardTicket ticket) {
+        if (selected == null || selected.ticket != ticket || find(selected.chunk) != selected.observation
+                || !ticket.emptyRemovalAfterCallbackCurrent(selected.service, selected.owner, selected.chunk)) {
+            return false;
+        }
+        return selected.locallyCurrent(ticket);
+    }
+
+    /** Exact private identities only; no NBT storage or native success flag. */
+    static final class EmptyRemovalSelection {
+        private final ClassicChunkObservation observation;
+        private final GuardTicket ticket;
+        private final ClassicFamilyService service;
+        private final ClassicHatchBlockEntity owner;
+        private final LevelChunk chunk;
+        private final Capture capture;
+        private final RetainedOwner retained;
+        private final Object heldWitness;
+
+        private EmptyRemovalSelection(ClassicChunkObservation observation, GuardTicket ticket, ClassicFamilyService service,
+                ClassicHatchBlockEntity owner, LevelChunk chunk, Capture capture, RetainedOwner retained, Object heldWitness) {
+            this.observation = observation; this.ticket = ticket; this.service = service; this.owner = owner;
+            this.chunk = chunk; this.capture = capture; this.retained = retained; this.heldWitness = heldWitness;
+        }
+
+        boolean belongsTo(GuardTicket expectedTicket, ClassicFamilyService expectedService, ClassicHatchBlockEntity expectedOwner,
+                          LevelChunk expectedChunk, Object expectedWitness) {
+            return ticket == expectedTicket && service == expectedService && owner == expectedOwner
+                    && chunk == expectedChunk && heldWitness == expectedWitness;
+        }
+
+        /** Only local identity/type checks run under this lock, never provider calls or NBT getters. */
+        boolean locallyCurrent(GuardTicket expectedTicket) {
+            synchronized (observation) {
+                return ticket == expectedTicket && observation.chunk == chunk && observation.level == service.level()
+                        && !observation.closed && observation.capture == capture && observation.retained.size() <= observation.capacity
+                        && observation.retained.get(position(owner.getBlockPos())) == retained && observation.rawMatches(owner)
+                        && retained.owner() == owner && retained.service() == service && retained.chunk() == chunk
+                        && retained.type().equals(typeId(owner))
+                        && ticket.emptyRemovalWitnessIdentity(service, owner, chunk) == heldWitness;
+            }
+        }
+    }
+
     private static boolean running(ClassicFamilyService service, BlockEntity owner) {
         if (service == null || owner == null || owner.getLevel() != service.level()
                 || !service.level().getServer().isSameThread() || service.state() != ClassicServiceState.RUNNING) {

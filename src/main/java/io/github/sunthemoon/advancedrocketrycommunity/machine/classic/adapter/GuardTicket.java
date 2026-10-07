@@ -21,6 +21,8 @@ final class GuardTicket implements AutoCloseable {
     private final Object recipeEpoch;
     private final MultiblockPatternCatalog catalog;
     private final long catalogGeneration;
+    private final EmptyRemovalWitness emptyRemoval;
+    private ClassicChunkObservation.EmptyRemovalSelection emptyRemovalSelection;
     private final java.util.Map<ClassicOwnerState, Object> expectedValues = new java.util.IdentityHashMap<>();
     private ClassicNativePlan sealedPlan;
     private Publication publication;
@@ -29,8 +31,14 @@ final class GuardTicket implements AutoCloseable {
 
     private GuardTicket(ClassicFamilyService service, ClassicTicketPurpose purpose,
                         List<Witness> witnesses, List<LevelChunk> chunks) {
+        this(service, purpose, witnesses, chunks, null);
+    }
+
+    private GuardTicket(ClassicFamilyService service, ClassicTicketPurpose purpose,
+                        List<Witness> witnesses, List<LevelChunk> chunks, EmptyRemovalWitness emptyRemoval) {
         this.service = service; this.level = service.level(); this.purpose = purpose;
         this.witnesses = List.copyOf(witnesses); this.chunks = List.copyOf(chunks);
+        this.emptyRemoval = emptyRemoval;
         this.serviceEpoch = service.epoch(); this.recipeEpoch = service.recipeEpoch();
         this.catalog = service.catalog(); this.catalogGeneration = service.catalogGeneration();
         for (Witness witness : witnesses) { expectedValues.put(witness.state(), witness.value()); }
@@ -49,6 +57,32 @@ final class GuardTicket implements AutoCloseable {
     static Optional<GuardTicket> acquireAudit(ClassicFamilyService service, ClassicControllerBlockEntity controller,
                                              List<ClassicHatchBlockEntity> hatches) {
         return acquire(service, controller, hatches, ClassicTicketPurpose.LOAD, true);
+    }
+
+    /** Acquisition-only candidate; ordinary validation/guard access requires observer attachment. */
+    static Optional<GuardTicket> acquireEmptyHatchRemoval(ClassicFamilyService service, ClassicHatchBlockEntity hatch) {
+        if (service == null || hatch == null) { return Optional.empty(); }
+        ClassicHatchBlockEntity.EmptyRemovalState snapshot = hatch.captureEmptyRemovalState(service);
+        if (snapshot == null || !service.running() || !snapshot.fullyCurrent(service)) { return Optional.empty(); }
+        ClassicLoadedWorld world = service.world(); ClassicOwnerState state = hatch.ownerState();
+        if (state.busy() || !installed(world, hatch) || !snapshot.fullyCurrent(service)) { return Optional.empty(); }
+        LevelChunk chunk = world.fullChunk(hatch.getBlockPos()).orElse(null);
+        if (chunk == null || state.busy() || !snapshot.fullyCurrent(service)) { return Optional.empty(); }
+        List<Witness> acquired = new ArrayList<>();
+        GuardTicket ticket = null;
+        try {
+            Object guard = state.acquire();
+            if (guard == null) { return Optional.empty(); }
+            acquired.add(new Witness(state, state.lifetime(), guard, value(hatch)));
+            ticket = new GuardTicket(service, ClassicTicketPurpose.LIFECYCLE, acquired, List.of(chunk),
+                    new EmptyRemovalWitness(hatch, snapshot));
+            if (!ticket.verifyEmptyRemovalAcquisition(service, hatch)) { ticket.close(); return Optional.empty(); }
+            return Optional.of(ticket);
+        } catch (RuntimeException | Error failure) {
+            try { if (ticket == null) { release(acquired); } else { ticket.close(); } }
+            catch (RuntimeException | Error disposal) { failure.addSuppressed(disposal); }
+            throw failure;
+        }
     }
 
     private static Optional<GuardTicket> acquire(ClassicFamilyService service, ClassicControllerBlockEntity controller,
@@ -136,13 +170,26 @@ final class GuardTicket implements AutoCloseable {
     }
 
     boolean witnessesStillValid() {
+        if (emptyRemoval != null && emptyRemovalSelection == null) { return false; }
+        return validateWitnesses(false);
+    }
+
+    /** Internal construction verifier only; never publishes a usable ticket or owner guard. */
+    boolean verifyEmptyRemovalAcquisition(ClassicFamilyService expectedService, ClassicHatchBlockEntity expectedOwner) {
+        return emptyRemoval != null && emptyRemovalSelection == null && service == expectedService
+                && emptyRemoval.owner() == expectedOwner && validateWitnesses(true);
+    }
+
+    private boolean validateWitnesses(boolean acquisition) {
         if (closed || invalid) { return false; }
+        if (emptyRemoval != null && (acquisition ? emptyRemovalSelection != null : emptyRemovalSelection == null)) { return false; }
         try {
             if (!service.running() || service.level() != level || service.epoch() != serviceEpoch
                     || service.recipeEpoch() != recipeEpoch || service.catalog() != catalog
                     || service.catalogGeneration() != catalogGeneration || !level.getServer().isSameThread()) {
                 invalid = true; return false;
             }
+            if (!emptyRemovalFullyCurrent()) { invalid = true; return false; }
             for (LevelChunk chunk : chunks) {
                 var position = chunk.getPos().getWorldPosition();
                 // Build-height independent chunk key: use a legal Y for this actual Level.
@@ -150,7 +197,9 @@ final class GuardTicket implements AutoCloseable {
                 if (service.world().fullChunk(position).orElse(null) != chunk) { invalid = true; return false; }
             }
             for (Witness witness : witnesses) {
-                if (!local(witness) || !installed(service.world(), witness.state().owner()) || !local(witness)) {
+                if (!local(witness) || !emptyRemovalFullyCurrent()
+                        || !installed(service.world(), witness.state().owner())
+                        || !local(witness) || !emptyRemovalFullyCurrent()) {
                     invalid = true; return false;
                 }
             }
@@ -168,6 +217,10 @@ final class GuardTicket implements AutoCloseable {
                     || service.catalog() != catalog || service.catalogGeneration() != catalogGeneration) {
                 invalid = true; return false;
             }
+            if (!emptyRemovalFullyCurrent() || (emptyRemoval != null && !acquisition
+                    && !ClassicSaveProtection.emptyRemovalSelectionMatches(emptyRemovalSelection, this))) {
+                invalid = true; return false;
+            }
             // The final map pass has no observer/provider callback; it catches changes to earlier owners.
             for (Witness witness : witnesses) {
                 BlockEntity owner = witness.state().owner();
@@ -180,6 +233,10 @@ final class GuardTicket implements AutoCloseable {
                 var position = new net.minecraft.core.BlockPos(key.getX(), level.getMinBuildHeight(), key.getZ());
                 if (service.world().fullChunk(position).orElse(null) != chunk) { invalid = true; return false; }
             }
+            if (emptyRemoval != null && (!emptyRemovalLocal(service, emptyRemoval.owner(), chunks.get(0))
+                    || (!acquisition && !emptyRemovalSelection.locallyCurrent(this)))) {
+                invalid = true; return false;
+            }
             return true;
         } catch (RuntimeException failure) { invalid = true; return false; }
     }
@@ -189,6 +246,45 @@ final class GuardTicket implements AutoCloseable {
                 && witness.state().owner().getLevel() == level && !witness.state().owner().isRemoved()
                 && value(witness.state().owner()) == expectedValues.get(witness.state())
                 && (purpose == ClassicTicketPurpose.LOAD || purpose == ClassicTicketPurpose.LIFECYCLE || witness.state().available());
+    }
+
+    private boolean emptyRemovalFullyCurrent() {
+        return emptyRemoval == null || emptyRemoval.snapshot().fullyCurrent(service);
+    }
+
+    /** NBT/provider/world-lookup-free tail; the immutable Witness identity also binds its exact guard. */
+    boolean emptyRemovalLocal(ClassicFamilyService expectedService, ClassicHatchBlockEntity owner, LevelChunk chunk) {
+        return !closed && !invalid && emptyRemoval != null && purpose == ClassicTicketPurpose.LIFECYCLE
+                && service == expectedService && emptyRemoval.owner() == owner && witnesses.size() == 1 && chunks.size() == 1
+                && chunks.get(0) == chunk && witnesses.get(0).state() == owner.ownerState()
+                && service.level() == level && service.state() == ClassicServiceState.RUNNING
+                && level.getServer().isSameThread() && service.epoch() == serviceEpoch && service.recipeEpoch() == recipeEpoch
+                && service.catalog() == catalog && service.catalogGeneration() == catalogGeneration
+                && local(witnesses.get(0)) && emptyRemoval.snapshot().locallyCurrent(service);
+    }
+
+    /** Opaque construction identity, not the held guard token or joined-only guard access. */
+    Object emptyRemovalWitnessIdentity(ClassicFamilyService expectedService, ClassicHatchBlockEntity owner, LevelChunk chunk) {
+        return emptyRemovalLocal(expectedService, owner, chunk) ? witnesses.get(0) : null;
+    }
+
+    /** Run outside the observer monitor, after a provider-dependent lookup. */
+    boolean emptyRemovalAfterCallbackCurrent(ClassicFamilyService expectedService, ClassicHatchBlockEntity owner, LevelChunk chunk) {
+        return emptyRemovalLocal(expectedService, owner, chunk) && emptyRemovalFullyCurrent()
+                && service.world().containsOwner(owner) && owner.actualKindMatches()
+                && service.world().fullChunk(owner.getBlockPos()).orElse(null) == chunk
+                && chunk.getBlockState(owner.getBlockPos()) == owner.getBlockState()
+                && emptyRemovalLocal(expectedService, owner, chunk);
+    }
+
+    boolean attachEmptyRemovalSelection(ClassicChunkObservation.EmptyRemovalSelection selection) {
+        if (emptyRemoval == null || emptyRemovalSelection != null || selection == null
+                || !selection.belongsTo(this, service, emptyRemoval.owner(), chunks.get(0), witnesses.get(0))) {
+            invalid = true; close(); return false;
+        }
+        emptyRemovalSelection = selection;
+        if (!witnessesStillValid()) { invalid = true; close(); return false; }
+        return true;
     }
 
     void requireValid() {
@@ -223,7 +319,8 @@ final class GuardTicket implements AutoCloseable {
 
     ClassicHatchBlockEntity hatch() {
         requireValid();
-        if (witnesses.size() != 1 || !(witnesses.get(0).state().owner() instanceof ClassicHatchBlockEntity hatch)) {
+        if (purpose != ClassicTicketPurpose.LOAD || witnesses.size() != 1
+                || !(witnesses.get(0).state().owner() instanceof ClassicHatchBlockEntity hatch)) {
             throw new IllegalStateException("Not a single-hatch load ticket");
         }
         return hatch;
@@ -272,6 +369,7 @@ final class GuardTicket implements AutoCloseable {
     }
 
     private record Witness(ClassicOwnerState state, Object lifetime, Object guard, Object value) { }
+    private record EmptyRemovalWitness(ClassicHatchBlockEntity owner, ClassicHatchBlockEntity.EmptyRemovalState snapshot) { }
     private record Publication(ClassicControllerBlockEntity owner, ClassicControllerFrame before,
                                ClassicControllerFrame after, net.minecraft.nbt.CompoundTag output) { }
 }

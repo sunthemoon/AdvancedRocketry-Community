@@ -28,9 +28,9 @@ public final class ClassicHatchBlockEntity extends BlockEntity {
     private CompoundTag encoded;
     private boolean preparingLoad;
     private LoadJoinCandidate loadJoinCandidate;
-    private ClassicFamilyService joinedService;
-    private Object joinedLifetime;
-    private Object joinedStorageEpoch;
+    private CompletedLoadJoin completedLoadJoin;
+
+    private record CompletedLoadJoin(ClassicFamilyService service, Object lifetime, Object storageEpoch) { }
 
     private record LoadJoinCandidate(ClassicFamilyService service, Object serviceEpoch, Object recipeEpoch,
             MultiblockPatternCatalog catalog, long generation, Object lifetime, Object storageEpoch,
@@ -108,7 +108,7 @@ public final class ClassicHatchBlockEntity extends BlockEntity {
                     || !ClassicSaveProtection.recordValidatedLoad(service, this, ticket)) { return false; }
             ticket.requireValid();
             if (!loadJoinStillCurrent(service, ticket)) { return false; }
-            joinedService = service; joinedLifetime = storage.lifetime(); joinedStorageEpoch = storage.storageEpoch();
+            completedLoadJoin = new CompletedLoadJoin(service, storage.lifetime(), storage.storageEpoch());
             if (loadJoinCandidate.pending() == null) { storage.installed(); }
             ticket.requireValid();
             return loadJoinStillCurrent(service, ticket) && hasCurrentLoadJoin(service)
@@ -141,11 +141,58 @@ public final class ClassicHatchBlockEntity extends BlockEntity {
     }
 
     private boolean hasCurrentLoadJoin(ClassicFamilyService service) {
-        return service != null && joinedService == service && joinedLifetime == storage.lifetime()
-                && joinedStorageEpoch == storage.storageEpoch();
+        CompletedLoadJoin joined = completedLoadJoin;
+        return service != null && joined != null && joined.service() == service && joined.lifetime() == storage.lifetime()
+                && joined.storageEpoch() == storage.storageEpoch();
     }
 
-    private void clearLoadJoin() { joinedService = null; joinedLifetime = null; joinedStorageEpoch = null; }
+    private void clearLoadJoin() { completedLoadJoin = null; }
+
+    /** Local eligibility only: installation and retained provenance belong to the fresh ticket. */
+    private boolean emptyRemovalReadyLocal(ClassicFamilyService service) {
+        return service != null && service.state() == ClassicServiceState.RUNNING && getLevel() == service.level()
+                && service.level().getServer().isSameThread() && !isRemoved() && hasCurrentLoadJoin(service)
+                && !preparingLoad && loadJoinCandidate == null && storage.available() && storage.pending().isEmpty()
+                && rejected == null && checkpoint != null && encoded != null && kind != ClassicHatchKind.POWER_INPUT
+                && checkpoint.view().kind() == kind && checkpoint.view().binding().isEmpty()
+                && checkpoint.view().bankKey().isEmpty() && checkpoint.view().energy().isEmpty()
+                && checkpoint.handoff().isEmpty();
+    }
+
+    EmptyRemovalState captureEmptyRemovalState(ClassicFamilyService service) {
+        if (!emptyRemovalReadyLocal(service) || !ClassicFrameCodec.preflightHatch(encoded)
+                || !emptyRemovalReadyLocal(service)) { return null; }
+        return new EmptyRemovalState(this, service, checkpoint, encoded, storage.storageEpoch(), completedLoadJoin);
+    }
+
+    /** Opaque identity snapshot, never a decoded checkpoint or installed-owner authority. */
+    static final class EmptyRemovalState {
+        private final ClassicHatchBlockEntity owner;
+        private final ClassicFamilyService service;
+        private final ClassicHatchCheckpoint checkpoint;
+        private final Object encoding;
+        private final Object storageEpoch;
+        private final CompletedLoadJoin completedJoin;
+
+        private EmptyRemovalState(ClassicHatchBlockEntity owner, ClassicFamilyService service,
+                ClassicHatchCheckpoint checkpoint, Object encoding, Object storageEpoch, CompletedLoadJoin completedJoin) {
+            this.owner = owner; this.service = service; this.checkpoint = checkpoint; this.encoding = encoding;
+            this.storageEpoch = storageEpoch; this.completedJoin = completedJoin;
+        }
+
+        /** Callback-free and NBT-free; suitable only as a tail after external validation. */
+        boolean locallyCurrent(ClassicFamilyService expectedService) {
+            return service == expectedService && owner.emptyRemovalReadyLocal(service)
+                    && owner.checkpoint == checkpoint && owner.encoded == encoding
+                    && owner.storage.storageEpoch() == storageEpoch && owner.completedLoadJoin == completedJoin;
+        }
+
+        /** The preflight is deliberately outside observer-locked local checks. */
+        boolean fullyCurrent(ClassicFamilyService expectedService) {
+            return locallyCurrent(expectedService) && ClassicFrameCodec.preflightHatch(owner.encoded)
+                    && locallyCurrent(expectedService);
+        }
+    }
 
     boolean matchesOutgoingCheckpoint(ClassicFamilyService expectedService, CompoundTag outgoing) {
         if (expectedService == null || outgoing == null || !(getLevel() instanceof ServerLevel level)

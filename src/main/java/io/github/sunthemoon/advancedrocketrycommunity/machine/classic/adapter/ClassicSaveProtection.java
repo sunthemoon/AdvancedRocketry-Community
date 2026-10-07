@@ -67,6 +67,16 @@ public final class ClassicSaveProtection {
         return ClassicChunkObservation.retainedOwnerMatches(service, owner, ticket);
     }
 
+    static ClassicChunkObservation.EmptyRemovalSelection selectEmptyHatchRemoval(ClassicFamilyService service,
+            ClassicHatchBlockEntity owner, GuardTicket ticket) {
+        if (service == null || owner == null || ticket == null) { return null; }
+        return ClassicChunkObservation.selectEmptyHatchRemoval(service, owner, ticket);
+    }
+
+    static boolean emptyRemovalSelectionMatches(ClassicChunkObservation.EmptyRemovalSelection selected, GuardTicket ticket) {
+        return selected != null && ticket != null && ClassicChunkObservation.emptyRemovalSelectionMatches(selected, ticket);
+    }
+
     @SubscribeEvent public static void chunkUnload(ChunkEvent.Unload event) {
         if (!(event.getLevel() instanceof ServerLevel level)) { return; }
         LevelChunk chunk = actualChunk(event.getChunk());

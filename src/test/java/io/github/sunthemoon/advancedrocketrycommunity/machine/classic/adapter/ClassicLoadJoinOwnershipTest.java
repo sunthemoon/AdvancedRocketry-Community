@@ -89,8 +89,26 @@ class ClassicLoadJoinOwnershipTest {
             for (var field : candidate.getDeclaredFields()) {
                 assertTrue(Modifier.isFinal(field.getModifiers())); assertNotEquals(GuardTicket.class, field.getType());
             }
-            for (String name : new String[] {"loadJoinCandidate", "preparingLoad", "joinedService", "joinedLifetime", "joinedStorageEpoch"}) {
+            for (String name : new String[] {"loadJoinCandidate", "preparingLoad"}) {
                 assertTrue(Modifier.isPrivate(owner.getDeclaredField(name).getModifiers()));
+            }
+            if (owner == ClassicControllerBlockEntity.class) {
+                for (String name : new String[] {"joinedService", "joinedLifetime", "joinedStorageEpoch"}) {
+                    assertTrue(Modifier.isPrivate(owner.getDeclaredField(name).getModifiers()));
+                }
+            } else {
+                var stamp = owner.getDeclaredField("completedLoadJoin");
+                assertTrue(Modifier.isPrivate(stamp.getModifiers()));
+                Class<?> completed = stamp.getType();
+                assertEquals("CompletedLoadJoin", completed.getSimpleName());
+                assertTrue(completed.isRecord()); assertTrue(Modifier.isPrivate(completed.getModifiers()));
+                for (var constructor : completed.getDeclaredConstructors()) {
+                    assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+                }
+                for (var field : completed.getDeclaredFields()) {
+                    assertTrue(Modifier.isPrivate(field.getModifiers())); assertTrue(Modifier.isFinal(field.getModifiers()));
+                    assertNotEquals(GuardTicket.class, field.getType());
+                }
             }
             for (var field : owner.getDeclaredFields()) { assertNotEquals(GuardTicket.class, field.getType()); }
         }

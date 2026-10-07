@@ -34,6 +34,24 @@ final class ClassicAccessCoordinator {
         return GuardTicket.acquire(service, null, List.of(hatch), ClassicTicketPurpose.LOAD);
     }
 
+    /** Admission only: no native removal outcome, resource mutation or expectation retirement. */
+    Optional<GuardTicket> enterEmptyHatchRemoval(ClassicHatchBlockEntity hatch) {
+        var acquired = GuardTicket.acquireEmptyHatchRemoval(service, hatch);
+        if (acquired.isEmpty()) { return Optional.empty(); }
+        GuardTicket ticket = acquired.orElseThrow();
+        try {
+            var selected = ClassicSaveProtection.selectEmptyHatchRemoval(service, hatch, ticket);
+            if (!ticket.attachEmptyRemovalSelection(selected) || !ticket.witnessesStillValid()) {
+                ticket.close(); return Optional.empty();
+            }
+            return Optional.of(ticket);
+        } catch (RuntimeException | Error failure) {
+            try { ticket.close(); }
+            catch (RuntimeException | Error disposal) { failure.addSuppressed(disposal); }
+            throw failure;
+        }
+    }
+
     Optional<GuardTicket> enterCompletion(ClassicControllerBlockEntity owner) {
         return transaction(owner, ClassicTicketPurpose.COMPLETION);
     }
