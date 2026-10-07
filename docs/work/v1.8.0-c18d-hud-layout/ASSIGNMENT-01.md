@@ -1,6 +1,8 @@
 # C18d-HUD-ENV-O2-01: late author-return registration
 
-Date: 2026-10-07. Status: author-returned-unreviewed; integration not started.
+Date: 2026-10-07. Original receipt: author-returned-unreviewed; integration not started.
+Current disposition: [ADOPTION-02](ADOPTION-02.md) records independent source
+review and the narrowly adopted interface additions; patch still not applied.
 This is a factual receipt and review assignment, not a backdated execution claim
 or source acceptance. Root/Codex remains the sole integrator and Git writer.
 
@@ -72,9 +74,10 @@ sealed report; the author claims a strengthened successor, not a clean first run
 
 A separate Codex worker (`review_claude_hud_return`) is assigned read-only review
 of the actual helper, tests and proposal against [CONTRACT-02](CONTRACT-02.md).
-Its conclusion is not yet adopted here. In particular, proposed public bounds
-and package-private `arrangements(...)` are not automatically added to the frozen
-interface. Root has not adopted the proposal's direct-set handling, compact
+Its completed independent review and the explicit decision on public bounds
+and package-private `arrangements(...)` are now associated by ADOPTION-02;
+the original receipt did not automatically freeze them. Root has not adopted
+the proposal's direct-set handling, compact
 accent-padding or extreme-font arithmetic fragments.
 
 Independent source review, Root's three actual bindings, combined diff review,
@@ -82,7 +85,8 @@ committed-source build/unit, twice DataGen with tracked/untracked cleanliness,
 full GameTests and V1/V2 remain required. No eight-key delivery, other HUD key,
 parent C18d completion, content/asset ledger promotion or G0-G9 acceptance.
 The 121/65 and 113/57 allocations and both CSV projections are unchanged.
-Other Claude packages remain unclaimed; this record reserves no broader scope.
+This receipt reserves no broader scope. Later forward contract-only assignments
+are recorded separately in the canonical Claude handoff; no author start is inferred.
 
 This registration supersedes only the old execution-unclaimed/no-return wording
 in TASK-01, ADOPTION-01 and current status projections. Historical contract and

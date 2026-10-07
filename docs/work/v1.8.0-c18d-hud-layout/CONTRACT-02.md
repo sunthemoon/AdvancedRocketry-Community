@@ -5,6 +5,9 @@ authorization to implement reviewed contracts without unresolved C/H/M;
 major semantics still require separate confirmation. Root HUD/config binding is
 not implemented. The later external helper return is recorded separately in
 [ASSIGNMENT-01](ASSIGNMENT-01.md), not accepted by this technical contract.
+The subsequent [ADOPTION-02](ADOPTION-02.md) explicitly accepts only the two
+bound constants and internal candidate seam after independent source review;
+the rest of this technical body and all runtime obligations remain unchanged.
 Code basis: `2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7`; the relevant HUD/config
 postimages are unchanged from the reviewed `f9117b599e10b1f25789741248a6b73db60a0785`.
 This leaf implements only eight of ADR-066 section 7.2's presentation settings.

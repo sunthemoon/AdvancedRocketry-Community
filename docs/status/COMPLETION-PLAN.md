@@ -294,12 +294,13 @@ C17b candidate03 的独立审核已解决旧版 Medium
   client 实际分发及 V1/V2 未验证。
 
 - [~] [C18d-HUD-ENV-O2-01](../work/v1.8.0-c18d-hud-layout/TASK-01.md)：
-  status: contract-frozen，author-returned-unreviewed，尚未开始集成。只覆盖环境/氧气八项 CLIENT 布局设置；
+  status: contract-frozen，source-reviewed / interface-adopted，尚未开始集成。只覆盖环境/氧气八项 CLIENT 布局设置；
   原契约三个 Medium 已经独立后续审核处理，投影的测试矩阵 Medium 已另行修订；
   [技术采纳记录](../work/v1.8.0-c18d-hud-layout/ADOPTION-01.md)保留原证据及清洁性文字更正。
   [事后交接登记](../work/v1.8.0-c18d-hud-layout/ASSIGNMENT-01.md)绑定 Claude 外部三个新文件，尚未应用 patch。
   用户转交交互会话报告；未事前登记/隔离工作树和禁止的作者 JVM 检查仍记录，不追认授权。
-  独立源码审核已分配，Root 独占现有 HUD/config 绑定；真实配置修正/重载、Font/pose、V1/V2 和 Gate 均开放。
+  [后继技术补记](../work/v1.8.0-c18d-hud-layout/ADOPTION-02.md)关联独立源码审核并明确接受两个边界常量和内部候选入口。
+  Root 补独立候选生成器并独占现有 HUD/config 绑定；真实配置修正/重载、Font/pose、V1/V2 和 Gate 均开放。
 
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
   A 的[完整源码](../work/v1.8.0-c18a-living-gravity/SOURCE-INTEGRATION-01.md)已独立审核、
@@ -408,15 +409,21 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ### Claude 并发分工 `[ ]`
 
-[分工建议与逐项清单](../work/v1.8.0-claude-parallel-handoff.md)：整体仍 planned；仅 HUD 环境/氧气外部作者返回已事后登记，其他包未领取。
+[分工建议与逐项清单](../work/v1.8.0-claude-parallel-handoff.md)：整体仍 planned；HUD 外部返回已登记并完成限定源码/接口处置，尚未集成。
 全部 186 项开放台账拟分 Claude 121 /Root 65；排除 16 项已有源码但未交付的重复实现后，
 170 项实施续作拟分 Claude 113（66.47%）/Root 57。按单位数而非工时分配；
 16 项续验、154 个具体资产和 C19/Gate 工作没有被删除或宣告完成。
 Root 保留共享保存/hatch、typed 推进、站点核心、生命支持权威、真实旅行首次事件与中央集成/提交。
 独立工作树、逐文件范围和公共契约须先冻结；仅既有库存/天空/来源只读续验可直接准备，
-其他包明确区分契约先行与依赖未就绪。不启动 Claude、不授予广泛生产写入、不建未使用框架。
+已事前登记三个独立工作树和各三个新增文档的契约任务：
+[配方图 10 项](../work/v1.8.0-c16d-components-graph/TASK-01.md)、
+[音效 10 项](../work/v1.8.0-c18d-audio/TASK-01.md)、
+[装备模块 20 项](../work/v1.8.0-c18b-equipment/TASK-01.md)。
+只允许契约/测试设计/交接文档，作者开始时间尚未报告；装备生产实现仍 DEPENDENCY_BLOCKED。
+Root 不启动 Claude、不授予广泛生产写入、不建未使用框架；其他包保持规划状态。
 环境/氧气八项的外部 helper 返回、实际作者基线/位置、执行偏差与待审核状态见 HUD ASSIGNMENT-01；
-原 CSV 的 readiness 不自动升级。后续写入仍须事前登记实际工作树、范围及执行边界。
+原 CSV 的 readiness 不自动升级。上述任务以已发布 TASK 为执行边界，禁止 JVM/缓存/中央文件写入；
+其余任务和后续源码实施仍须分别登记，不以三组文档授权代替实现契约。
 
 ## 当前自动回归与风险
 

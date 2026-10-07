@@ -1,10 +1,12 @@
 # C18d-HUD-ENV-O2-01: bounded implementation handoff
 
 Date: 2026-10-07. Version: v1.8.0. Integrator/sole Git writer: Root/Codex.
-Status: contract-frozen, author-returned-unreviewed; integration not started.
+Status: contract-frozen, source-reviewed / interface-adopted; integration not started.
+The completed source review and narrow interface disposition are recorded in
+[ADOPTION-02](ADOPTION-02.md); this is not executed-source qualification.
 [ASSIGNMENT-01](ASSIGNMENT-01.md) records the later owner-supplied interactive
-Claude return and execution deviations, without backdating a claim or adopting
-source. [CONTRACT-02](CONTRACT-02.md) remains the complete technical input.
+Claude return and execution deviations, without backdating a claim.
+[CONTRACT-02](CONTRACT-02.md) plus ADOPTION-02 is the technical integration input.
 No source patch is applied, worktree claimed or Claude run launched by Root.
 Eight environment/oxygen settings only, within the remaining v1.8 assignment.
 
@@ -41,7 +43,8 @@ and edits within the claimed worktree are eligible. No Git writes, nested agents
 arbitrary shell/network/install, native/cache/archive inspection, JVM/Gradle,
 server/client, credential inspection or cleanup of others. Any approved light
 check is recorded with its exact argv/result; production tests run separately
-on qualified nonroot CI because local C is below the space floor.
+on qualified nonroot CI. The historical C-space preflight was below the floor;
+future runtime tasks must check actual free space again before any heavy run.
 Temporary scripts/results belong to a fresh owned direct leaf under
 D:/GitHub/ARCE-Task-Evidence/v1.8.0/, with process-local TEMP/TMP/TMPDIR.
 

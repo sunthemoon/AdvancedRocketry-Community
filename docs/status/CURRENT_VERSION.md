@@ -77,12 +77,18 @@ absence from that failure list establishes neither observation nor repair.
 The eight-key environment/oxygen [HUD task](../work/v1.8.0-c18d-hud-layout/TASK-01.md)
 has a bounded adopted contract and a later external Claude author return,
 [registered after authoring](../work/v1.8.0-c18d-hud-layout/ASSIGNMENT-01.md).
-Status: author-returned-unreviewed; patch not applied, integration not started.
+Status: source-reviewed / interface-adopted; patch not applied, integration not started.
 The owner supplied the interactive-session report; Root did not launch that run.
 Missing pre-authoring worktree/claim and prohibited author JVM checks remain
-recorded, not retrospectively authorized or formal test evidence. Separate code
-review is assigned; Root config/renderer, runtime and V1/V2 are not implemented
-or qualified. Other packages remain unclaimed; CSV allocations are unchanged.
+recorded, not retrospectively authorized or formal test evidence.
+[ADOPTION-02](../work/v1.8.0-c18d-hud-layout/ADOPTION-02.md) associates the independent
+geometry review and Root's narrow acceptance of bounds/internal candidate seam;
+independent-oracle tests and actual Root config/renderer integration remain open.
+Three separate Claude contract/test-design assignments now have registered
+worktrees: components/graph 10, audio 10 and equipment 20 units, linked from
+the [canonical handoff](../work/v1.8.0-claude-parallel-handoff.md#7-forward-contract-assignments).
+They authorize draft files only, not source implementation; no author start or
+Root model launch is claimed. Runtime/V1/V2/Gates and CSV allocations are unchanged.
 
 The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)
