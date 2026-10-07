@@ -6,14 +6,17 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimit
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.AirlockDoorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.CellObservation;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.CompletedVolumeScan;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeBounds;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePosition;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanCoordinator;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeScanOutcome;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereLevelService;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereManager;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.ServerLevelVolumeWorldView;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -281,13 +284,15 @@ public final class AirlockDoorGameTests {
         }
         VolumeScanCoordinator coordinator = (VolumeScanCoordinator) readField(service, "coordinator"); VolumePosition seed = volume(cell);
         var supplyMetrics = service.metrics();
-        helper.assertTrue(manager.controlledAt(level, cell), "Installed producer did not establish supplied chamber"
+        boolean supplied = manager.controlledAt(level, cell);
+        helper.assertTrue(supplied, "Installed producer did not establish supplied chamber"
                 + " upperOnly=" + upperOnly + " phase=" + phase + " status=" + vent.status()
                 + " oxygen=" + vent.oxygenUnits() + " energy=" + vent.energyStored()
-                + " scan=" + coordinator.outcomeForSeed(seed).map(Enum::name).orElse("NONE")
+                + " activeTaskOutcome=" + coordinator.outcomeForSeed(seed).map(Enum::name).orElse("NONE")
                 + " indexed=" + service.volumeAt(cell).isPresent() + " tracked=" + supplyMetrics.trackedVents()
                 + " active=" + supplyMetrics.activeScanTasks() + " pending=" + supplyMetrics.pendingScanTasks()
-                + " dirty=" + supplyMetrics.dirtyPositions() + " inspections=" + supplyMetrics.totalInspections());
+                + " dirty=" + supplyMetrics.dirtyPositions() + " inspections=" + supplyMetrics.totalInspections()
+                + (supplied ? "" : initialSupplyDiagnostic(service, level, ventPos, cell, lower)));
         if (phase > 0) {
             coordinator.schedule(seed); coordinator.tick(new ServerLevelVolumeWorldView(level, false), phase == 1 ? 1 : 64);
             helper.assertTrue(phase == 1 ? coordinator.taskForSeed(seed).isPresent() : completedContains(coordinator, seed), "Controlled scan phase not established");
@@ -320,6 +325,52 @@ public final class AirlockDoorGameTests {
             OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent); service.tick();
         }
         helper.assertTrue(manager.controlledAt(level, cell), "Installed atmosphere did not recover within 32 controlled service ticks");
+    }
+
+    /** Failure-only current snapshot; it does not identify the historical OPEN observation. */
+    private static String initialSupplyDiagnostic(AtmosphereLevelService service, ServerLevel level,
+            BlockPos ventPos, BlockPos cell, BlockPos lower) {
+        StringBuilder details = new StringBuilder();
+        try {
+            Object retained = ((Map<?, ?>) readField(service, "vents")).get(ventPos);
+            details.append(" seed=").append(volume(cell)).append(" retainedOutcome=");
+            if (retained == null) { details.append("NONE"); }
+            else {
+                details.append(((VolumeScanOutcome) readField(retained, "outcome")).name());
+                details.append(" needsScan=").append((Boolean) readField(retained, "needsScan"));
+                Field boundsField = retained.getClass().getDeclaredField("lastScanBounds"); boundsField.setAccessible(true);
+                VolumeBounds bounds = (VolumeBounds) boundsField.get(retained);
+                details.append(" lastScanBounds=").append(bounds == null ? "NONE" : bounds);
+            }
+            boolean sky = (Boolean) readField(service, "exposedSkyIsOpen");
+            boolean climate = (Boolean) readField(service, "climateControlRequired");
+            var boundaries = (AtmosphereBoundaryCatalog) readField(service, "boundaries");
+            var view = new ServerLevelVolumeWorldView(level, sky || climate, boundaries);
+            details.append(" exposedSkyIsOpen=").append(sky).append(" climateControlRequired=").append(climate);
+            for (BlockPos position : List.of(cell, cell.east(), cell.west(), cell.above(), cell.below(), cell.south(), cell.north())) {
+                details.append(" cell[").append(volume(position)).append("]=");
+                if (level.isOutsideBuildHeight(position)) { details.append("OUTSIDE_BUILD_HEIGHT"); }
+                else if (level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4) == null) {
+                    details.append("UNLOADED");
+                } else { details.append(view.observe(volume(position)).name()); }
+            }
+            for (BlockPos position : List.of(lower, lower.above())) {
+                details.append(" half[").append(volume(position)).append("]=");
+                if (level.isOutsideBuildHeight(position)) { details.append("OUTSIDE_BUILD_HEIGHT"); continue; }
+                var chunk = level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
+                if (chunk == null) { details.append("UNLOADED"); continue; }
+                BlockState state = chunk.getBlockState(position);
+                if (!state.is(door())) { details.append("NOT_AIRLOCK"); continue; }
+                details.append(state.getValue(DoorBlock.HALF)).append('/')
+                        .append(state.getValue(DoorBlock.FACING)).append('/').append(state.getValue(DoorBlock.HINGE))
+                        .append("/powered:").append(state.getValue(DoorBlock.POWERED))
+                        .append("/open:").append(state.getValue(DoorBlock.OPEN));
+            }
+        } catch (ReflectiveOperationException | RuntimeException | AssertionError | LinkageError unavailable) {
+            // Diagnostics must not replace the original supplied-air assertion or its terminal cleanup.
+            details.append(" diagnostic=UNAVAILABLE");
+        }
+        return details.toString();
     }
 
     /** Six delayed cases share one terminal owner; no running callback schedules another callback. */
