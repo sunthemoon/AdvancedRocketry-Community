@@ -84,15 +84,18 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     私有 40 文件 owner 检查点保留前序后继的四项 Medium 修订，新增另经独立审核的
     双 LOAD 记录与 EMIT 比较接入；全部 48 项 owner 测试仍未编译或执行。
     不替代实际权限、完整 hatch、重新准入或失败处置测试。
-    中央注册、物理接入、完整编译和保存集成未完成，候选尚未交付。
+    中央注册、物理接入、完整测试和保存运行集成未完成，候选尚未交付。
     出站比较/保留观察提案的[原审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md)
     保留历史 Medium；LOAD 记录接口的另版补充已完成[独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)，
     提案文本补全记录接口和见证时序，无新增 C/H/M/L。
     [限定实施记录](../work/v1.8.0-c16a-hatches/LOAD-JOIN-IMPLEMENTATION-01.md)已按条件授权
     采纳私有技术补充；owner、精确根比较及真实区块观察器已在三个独立工作区写成，
     分别完成限定范围源码审核，并提交、正常推送为[私有未验证检查点](../work/v1.8.0-c16a-hatches/PRIVATE-SOURCE-CHECKPOINTS-01.md)。
-    比较器另有 22 项未编译、未执行测试。新 owner/provider/event 源码未编译、未集成、
-    未注册；物理/放置/拆除接入、完整生命周期处置与原生验证仍开放，不据此开放 writer。
+    比较器另有 22 项未执行测试。后继[未启用保存源码](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
+    已独立核验组合和真实类型依赖，固定源码 139 个生产文件的有界编译通过；
+    171 个输入无漂移，生成 189 个 class、保留一项警告，未执行这七十项测试。
+    49 个实际改动文件合入 `8f7e1d10` 并正常推送，注册/入口不变；
+    物理/放置/拆除接入、完整生命周期处置与原生验证仍开放，不据此开放 writer。
   - [~] [公共保存接口](../work/v1.8.0-c16a-hatches/COMMON-GUARD-BRIDGE-SOURCE-01.md)：
     三个方法与五项新 GameTest 已独立审核、提交并正常推送至 `826f5f20`；
     限定缓存编译和五项原有领域单测通过；新五项 GameTest 已在精确提交上执行，
@@ -320,18 +323,20 @@ C17b candidate03 的独立审核已解决旧版 Medium
 经独立实际审核后已提交并正常推送至 `ca217afa`；19 项独立开发及固定提交
 pure-helper 单测分别通过，
 断言、时限和保存行为不变；其单独历史失败保留在 RESULT-16。
-最新[等待历史诊断源码](../work/v1.8.0-transfer-wait-history/SOURCE-INTEGRATION-01.md)
+前序[等待历史诊断源码](../work/v1.8.0-transfer-wait-history/SOURCE-INTEGRATION-01.md)
 经独立源码审核后正常提交、推送并集成至 `046fc477`；只替换一处观察调用，
 保留全部十九项旧测试并新增十一项。独立开发与固定提交 javac/Jupiter 各 30/30 通过，
 后者十七个输入无漂移；自有结束输出已清理。该诊断不是飞行或原生就绪修复。
-精确源码 run 37554222038 /attempt 1 /job 112576587243 在 2026-10-07T01:04:33Z
-已观察为结束 FAILED，并完成[Root 原始结果核对](../work/v1.8.0-ci/RESULT-20.md)：
-clean build 成功，356 XML /1,988 实际单测 /零 FES，三十项诊断单测全部通过，
-实际 Service 纳入托管完整编译；两次 DataGen 与工作区检查成功；509 GameTest
-完成但一项 required Tau 往返失败。403 个输入无漂移，主日志 63 ERROR /零 FATAL
-未获豁免；JAR 上传跳过，无新 JAR 字节核对。两次 Tau 端点样本仍未实体就绪，
-LIVE manager 记录等待首 tick 14841、末 tick 14950、110 次限定调用，不证明连续
-原生 I/O 状态或唯一原因。旧运行中捕获保留，不替代完整物理设备、守恒或 Gate。
+该提交的[完整失败结果](../work/v1.8.0-ci/RESULT-20.md)保留原始计数和 required Tau
+往返失败，不把旧批次数字重绑到新源码。
+新的[缺失时 holder 观察](../work/v1.8.0-tau-holder-observation/SOURCE-INTEGRATION-01.md)
+经独立源码审核、固定提交文本单测 9/9 及独立原始结果核验后，合入并正常推送至
+`7ab1b087`。十八个输入无漂移；旧断言、时限、ticket 和 2048/512 输出不变。
+单次新原生查询只在缺失分支，标签为 POST_LOOKUP；不是飞行或原生就绪修复。
+自有七个 class 和九个目录已清理，原统计和另版更正保留；定向测试不执行 native fixture。
+新精确源码 run 37560119538 /attempt 1 /job 112595248301 在 2026-10-07T02:06:03Z
+捕获中为 IN_PROGRESS，clean build 运行中，后续步骤待执行；只有元数据，没有
+本批次已完成的单测、DataGen、GameTest 或 JAR 结果。失败原因、物理保存和全部 Gate 仍开放。
 [前序格式源码结果](../work/v1.8.0-ci/RESULT-19.md)保留两项 required 失败；
 目的地夹具在新批次不再出现失败标题，不据此认定修复。
 [元数据源码结果](../work/v1.8.0-ci/RESULT-18.md)仍是其自己提交的历史事实，

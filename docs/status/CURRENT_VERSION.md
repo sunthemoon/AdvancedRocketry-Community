@@ -36,18 +36,36 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 046fc477ab80a9bc10d4170092bed6e0ad4e34ef
-tested_code_commit: 046fc477ab80a9bc10d4170092bed6e0ad4e34ef
-latest_regression_result: FAILED
-latest_regression_run: 37554222038
+latest_source_checkpoint: 7ab1b0879527f4d8d3e88f09f9360015175b911a
+tested_code_commit: 7ab1b0879527f4d8d3e88f09f9360015175b911a
+latest_regression_result: RUNNING
+latest_regression_run: 37560119538
 latest_regression_attempt: 1
-latest_regression_evidence: ROOT_RAW_AUDITED
-latest_regression_observed_utc: 2026-10-07T01:04:33Z
+latest_regression_evidence: METADATA_ONLY
+latest_regression_observed_utc: 2026-10-07T02:06:03Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
 
 ## Current development evidence
+
+The [inactive guarded-save integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
+combines the independently reviewed owner/comparator/central source and explicit
+native hatch type injection at main `8f7e1d10`. Actual private fixed-source javac
+passes: 139 production sources, 171 unchanged inputs, 189 classes, one warning,
+zero executed tests. Its seventy owner/comparator declarations await full hosted
+execution. Actual compile/fixed-recipient review finds no unresolved inactive
+source issue; physical hooks/writers are not registered or admitted.
+The disjoint [failure-only Tau holder observer](../work/v1.8.0-tau-holder-observation/SOURCE-INTEGRATION-01.md)
+is independently reviewed, normally pushed and integrated unchanged at `7ab1b087`.
+Root's fixed formatter/Jupiter run passes nine matching methods with eighteen
+unchanged inputs; its independent raw audit agrees. That run does not compile/run
+the native Tau fixture. Both own ended output sets are cleaned, with separate
+count-only corrections retaining original receipts. Main index and user AGENTS
+are preserved. Run 37560119538 /attempt 1 /job 112595248301 is IN_PROGRESS in
+the dated 02:06:03Z capture: clean build running, later steps pending, metadata
+only. No completed new regression/JAR or Gate result is claimed. Tau, physical
+placement/removal/final-save/restart, R-021 and all Required Gates remain open.
 
 The [readiness-wait history checkpoint](../work/v1.8.0-transfer-wait-history/SOURCE-INTEGRATION-01.md)
 has independent actual-source review with no C/H/M/L, private source `f43ecefb`
@@ -56,17 +74,10 @@ development and Root's separate published-commit helper/test replays each pass
 30/30; Root's 17 named inputs remain unchanged. All 19 old tests and native
 readiness/ticket/flight behavior are preserved. First/last ticks and saturating
 wait-call count are observations, not continuity, I/O or a repair. Own ended
-outputs are cleaned. Its [exact-source full result](../work/v1.8.0-ci/RESULT-20.md)
-binds run 37554222038 /attempt 1 /job 112576587243, completed FAILED in the
-01:04:33Z capture. Root recounts 356 XML /1,988 actual cases /zero FES and both
-successful DataGen/worktree checks; 509 GameTests complete with one required Tau
-roundtrip failure. All 403 inputs rehash unchanged; canonical 63 ERROR /zero
-FATAL is not waived, and new external JAR bytes are unavailable. Hosted build
-includes the actual Service, unlike the pure helper replays. The Tau manager
-records WAIT_ENTITY_READY first tick 14841, last 14950, 110 qualified calls;
-both endpoint samples have entities-loaded NO /entity-ticking NO. This is not
-continuous native-I/O or unique-cause proof. Native causes and all Gates stay open.
-The separate earlier pending capture remains historical, not a current status.
+outputs are cleaned. Its preceding [exact-source failed result](../work/v1.8.0-ci/RESULT-20.md)
+retains its own complete metrics and required Tau roundtrip failure. Those counts,
+the qualified wait calls and earlier running capture are historical, not metrics
+for the new source. Continuous native-I/O, a unique cause and all Gates stay open.
 
 The [power-carrier format checkpoint](../work/v1.8.0-c16a-hatches/POWER-CARRIER-FORMAT-SOURCE-01.md)
 is independently reviewed, committed and normally pushed, then integrated at
@@ -134,7 +145,7 @@ The private generation40 owner checkpoint preserves the preceding successor's
 four Medium fixes and adds the separately reviewed two-LOAD recording and EMIT
 comparison joins. Its 48 Jupiter declarations remain uncompiled/unexecuted;
 source inspection is not ordinary capability, complete-hatch, re-admission or
-publication-failure execution. Real physical joins, whole compilation and
+publication-failure execution. Real physical joins, full test execution and
 installed/native qualification remain open. The outgoing-comparison proposal's original Medium stays
 in its [historical review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md).
 The separate LOAD-join amendment has completed [independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)
@@ -144,11 +155,14 @@ adopts that private technical amendment and the comparator seam under the
 recorded conditional authority. The three disjoint source portions are written,
 independently reviewed within their stated scopes and normally pushed as
 [private unverified checkpoints](../work/v1.8.0-c16a-hatches/PRIVATE-SOURCE-CHECKPOINTS-01.md).
-Comparator's 22 test declarations also remain uncompiled/unexecuted. None of the
-new owner/provider/event source is main-integrated or runtime-registered.
-Physical/placement/removal joins, complete lifecycle disposal, compilation and
-native evidence remain prerequisites. No save writer or installed-owner
-admission is opened by these private backups.
+Comparator's 22 test declarations also remain unexecuted in the production-only
+cohort. The successor [inactive source integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
+combines these portions and the explicit native type injection, with real
+production compilation and unchanged main integration now recorded. This
+supersedes pending assembly/compile status, not the dated original backups or
+their unrun tests. Runtime registration, physical/placement/removal joins,
+complete lifecycle disposal and native evidence remain prerequisites. No save
+writer or installed-owner admission is opened by the source integration.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
