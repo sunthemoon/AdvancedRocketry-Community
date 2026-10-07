@@ -287,6 +287,13 @@ C17b candidate03 的独立审核已解决旧版 Medium
   自有已结束工作树已正常清理，
   client 实际分发及 V1/V2 未验证。
 
+- [~] [C18d-HUD-ENV-O2-01](../work/v1.8.0-c18d-hud-layout/TASK-01.md)：
+  status: contract-frozen，execution-unclaimed。只覆盖环境/氧气八项 CLIENT 布局设置；
+  原契约三个 Medium 已经独立后续审核处理，投影的测试矩阵 Medium 已另行修订；
+  [技术采纳记录](../work/v1.8.0-c18d-hud-layout/ADOPTION-01.md)保留原证据及清洁性文字更正。
+  Claude 候选只写新纯布局 helper、测试及自己的源码记录；Root 独占现有 HUD/config 绑定。
+  未创建工作树或启动模型会话；实现、真实配置修正/重载、Font/pose、V1/V2 和整版 Gate 均开放。
+
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
   A 的[完整源码](../work/v1.8.0-c18a-living-gravity/SOURCE-INTEGRATION-01.md)已独立审核、
   提交并正常推送至 `1b6071d1`；测试观察 Low 修复后独立复审通过。
@@ -401,6 +408,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
 Root 保留共享保存/hatch、typed 推进、站点核心、生命支持权威、真实旅行首次事件与中央集成/提交。
 独立工作树、逐文件范围和公共契约须先冻结；仅既有库存/天空/来源只读续验可直接准备，
 其他包明确区分契约先行与依赖未就绪。不启动 Claude、不授予广泛生产写入、不建未使用框架。
+环境/氧气八项的具体契约与 proposed 文件范围已经另立 HUD TASK，仍未领取；
+原 CSV 的 readiness 不自动升级，模型执行方式/用量限制与实际 checkout/claim 必须另行记录。
 
 ## 当前自动回归与风险
 
@@ -410,7 +419,8 @@ Root 保留共享保存/hatch、typed 推进、站点核心、生命支持权威
 tracked/untracked 干净检查通过。525 GameTest 完成，Tau、气闸首次供气与装载器掉落/放置
 三项 required 失败；canonical 65 ERROR/零 FATAL 未豁免。气闸保留结果与种子格为 OPEN、
 六个邻格为 SEALED，两半门均关闭；装载器失败数量为 0。这些只是失败时观测，
-不证明唯一原因或修复。不同代理原始审核待完成；[运行中观察](../work/v1.8.0-ci/RESULT-38.md)
+不证明唯一原因或修复。[不同代理原始审核](../work/v1.8.0-ci/RESULT-40.md)已完成且一致、
+输入无漂移，完整回归仍失败；[运行中观察](../work/v1.8.0-ci/RESULT-38.md)
 保留为同一源码的较早时间点。打包恢复、真实客户端和全部 G0-G9 均开放。
 上一完成源码 `10eb561a` 的[失败终态](../work/v1.8.0-ci/RESULT-36.md)与
 [独立原始审核](../work/v1.8.0-ci/RESULT-37.md)保留各自计数和来源，失败在 Tau 与气闸。

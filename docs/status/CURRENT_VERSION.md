@@ -42,7 +42,7 @@ latest_regression_target_commit: 2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7
 latest_regression_result: FAILED
 latest_regression_run: 37618804027
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED_ROOT
+latest_regression_evidence: RAW_AUDITED_INDEPENDENT
 latest_regression_observed_utc: 2026-10-07T12:19:44Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
@@ -60,14 +60,21 @@ binds run 37618804027 /attempt 1 /job 112783570613: completed failure.
 525 native tests complete, with Tau travel, installed-airlock initial supply
 and loader drop/place failing. Canonical 65 ERROR/zero FATAL remain unwaived.
 The airlock snapshot and loader count=0 failure branches execute; these are
-observations, not unique causes or repair. Root raw derivation is complete,
-different-agent raw audit is pending. No historical counts are rebound to this
+observations, not unique causes or repair. Root derivation and the
+[different-agent raw audit](../work/v1.8.0-ci/RESULT-40.md) agree, with zero input
+drift; the complete regression remains failed. No historical counts are rebound to this
 source. The earlier dated running observation stays in RESULT-38. The owned ended worktree
 is normally removed, with committed source and thin D evidence retained.
 The last completed [loader-diagnostic cohort](../work/v1.8.0-ci/RESULT-36.md)
 and [different-agent raw audit](../work/v1.8.0-ci/RESULT-37.md) remain failed,
 with Tau/airlock and unwaived errors open. Its loader count branch did not run;
 absence from that failure list establishes neither observation nor repair.
+
+The eight-key environment/oxygen [HUD task](../work/v1.8.0-c18d-hud-layout/TASK-01.md)
+has a bounded adopted contract and proposed disjoint files, execution-unclaimed.
+It is the first prepared Claude implementation candidate, not source delivery:
+no worktree/model session, config/renderer implementation or runtime/Gate pass.
+The whole remaining-task proposal and CSV allocations remain planned/unclaimed.
 
 The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)
