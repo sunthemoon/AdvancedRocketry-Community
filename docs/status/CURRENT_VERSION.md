@@ -69,6 +69,14 @@ is PROPOSED only. The owner architecture choice, private birth/save/recovery
 contracts, risk disposition and actual transformed/native verification remain
 required before assigning or activating physical interception.
 
+The [living-gravity parent task](../work/v1.8.0-c18a-living-gravity/TASK-01.md)
+separates the actual living-tick extension from fall handling. Leaf A's
+independent contract review finds no new Critical/High/Medium; its Low adds an
+explicit owned-permanent-residue regression to the required transient semantics.
+Source, movement, entity save/reload and committed-source regression remain
+unverified. Leaf B retains the Medium mounted/passenger argument-flow gap;
+there is no fall listener assignment, parent delivery or Gate change.
+
 The [inactive guarded-save integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
 combines the independently reviewed owner/comparator/central source and explicit
 native hatch type injection at main `8f7e1d10`. Actual private fixed-source javac

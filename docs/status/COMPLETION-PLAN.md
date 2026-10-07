@@ -224,6 +224,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
 契约有条件接受；辅助氧气储量、有限节省、装备工具、独立地面勘测、首次事件、
 科技树、声音/模型/GUI 等仍须实现。D4 未证明，不推断接受。
 
+- [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
+  A 的实际 living-tick 扩展契约已独立审核，无新增 Critical/High/Medium；
+  Low 补充同 UUID、数值与操作的永久 modifier 残留转换测试。源码与原生验证仍待完成。
+  B 保留载具/乘客传播中一次缩放的 Medium，未分配摔落监听器；两项台账与整版 Gate 不变。
+
 - [~] C18 D1 辅助氧气储量：保留已接受的 API/HUD 2,000 工作缓冲。
   [原独立提案审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md)
   的两项 Medium 保留为历史；[后继独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-successor-independent-review-20261007/REVIEW-01.md)
