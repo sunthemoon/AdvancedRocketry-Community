@@ -42,7 +42,7 @@ latest_regression_target_commit: f9f2d9d2c5eb0de2c9f5d28160ab7804fc57eaef
 latest_regression_result: FAILED
 latest_regression_run: 37653204825
 latest_regression_attempt: 1
-latest_regression_evidence: METADATA_ONLY_FAILURE
+latest_regression_evidence: RAW_INDEPENDENT_AUDIT_FAILED
 latest_regression_observed_utc: 2026-10-07T16:47:12Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-08
@@ -51,12 +51,14 @@ last_updated: 2026-10-08
 ## Current development evidence
 
 HUD source checkpoint `f9f2d9d2` is committed and normally pushed; run
-37653204825 /attempt 1 is bound to it and was observed completed/failure at
-16:47:12 UTC, with the GameTests step failed. The closed
-[terminal receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-12.json),
-SHA `4487aae21af0bbebdfca7d333b9d1f71b5c2af43c6e857df3b38c9b482b1f25e`,
-is metadata only: raw counts, failure identities and log disposition are not yet
-verified. The earlier running observation remains a dated historical receipt.
+37653204825 /attempt 1 is bound to it and observed completed/failure at
+16:47:12 UTC; that is the monitor observation, not the job completion timestamp.
+The [Root raw result](../work/v1.8.0-ci/RESULT-44.md) and
+[different-agent audit](../work/v1.8.0-ci/RESULT-45.md) agree: 374 XML /2,129
+actual JUnit cases pass; build, twice DataGen and both clean checks pass.
+525 native tests complete with one required lower/phase-1 airlock supply failure;
+63 ERROR/zero FATAL remain unwaived. No unique cause or durable repair is proved.
+The earlier metadata/running observations remain dated history, not raw evidence.
 See [SOURCE-INTEGRATION-03](../work/v1.8.0-c18d-hud-layout/SOURCE-INTEGRATION-03.md).
 The ended owned build-copy cleanup was rejected before execution; it remains
 pending normal permitted retirement. No C temporary script or other agent tree
@@ -90,13 +92,13 @@ The eight-key environment/oxygen [HUD task](../work/v1.8.0-c18d-hud-layout/TASK-
 has a bounded adopted contract and a later external Claude author return,
 [registered after authoring](../work/v1.8.0-c18d-hud-layout/ASSIGNMENT-01.md).
 Status: implemented-unverified bounded Root HUD source checkpoint at f9f2d9d2,
-committed/pushed with metadata-only terminal regression failure; raw verification
-remains open. The exact
+committed/pushed with independently raw-audited failed full regression. The exact
 original patch is applied in ROOT-TASK-03's isolated worktree; config/renderer
 bindings and independent-oracle tests have different-agent source review and
-intermediate 28/28 JUnit passing. See
+intermediate 28/28 JUnit passing. A separate clean detached committed-source
+different-agent Gradle rerun also passes actual 28/28; see RESULT-45. See
 [SOURCE-INTEGRATION-03](../work/v1.8.0-c18d-hud-layout/SOURCE-INTEGRATION-03.md).
-No committed-source/runtime/client qualification is inferred from that run.
+No renderer/file-watcher/client or Gate qualification is inferred from these runs.
 The owner supplied the interactive-session report; Root did not launch that run.
 Missing pre-authoring worktree/claim and prohibited author JVM checks remain
 recorded, not retrospectively authorized or formal test evidence.

@@ -294,7 +294,7 @@ C17b candidate03 的独立审核已解决旧版 Medium
   client 实际分发及 V1/V2 未验证。
 
 - [~] [C18d-HUD-ENV-O2-01](../work/v1.8.0-c18d-hud-layout/TASK-01.md)：
-  status: implemented-unverified，源码已审核并提交、正常推送至 `f9f2d9d2`，固定提交 CI 终态失败，原始结果待核验。
+  status: implemented-unverified，源码已审核并提交、正常推送至 `f9f2d9d2`，固定提交完整 CI 失败，原始结果已独立核验。
   只覆盖环境/氧气八项 CLIENT 布局设置；
   原契约三个 Medium 已经独立后续审核处理，投影的测试矩阵 Medium 已另行修订；
   [技术采纳记录](../work/v1.8.0-c18d-hud-layout/ADOPTION-01.md)保留原证据及清洁性文字更正。
@@ -303,8 +303,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   用户转交交互会话报告；未事前登记/隔离工作树和禁止的作者 JVM 检查仍记录，不追认授权。
   [后继技术补记](../work/v1.8.0-c18d-hud-layout/ADOPTION-02.md)关联独立源码审核并明确接受两个边界常量和内部候选入口。
   Root 已补独立候选生成器和现有 HUD/config 绑定；合并后六个源码/测试后像经不同代理审核，
-  28 项定向 JUnit 全通过。未提交运行仅作中间检查；固定提交完整回归、真实文件重载、
-  Font/pose 客户端、V1/V2 和 Gate 均开放。
+  Root 未提交时的 28 项定向 JUnit 仅作中间检查；不同代理在干净固定提交另跑 28/28 通过。
+  固定提交完整 CI 已执行并失败；真实文件重载、Font/pose 客户端、V1/V2 和 Gate 均开放。
 
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
   A 的[完整源码](../work/v1.8.0-c18a-living-gravity/SOURCE-INTEGRATION-01.md)已独立审核、
@@ -437,11 +437,16 @@ Root 不启动 Claude、不授予广泛生产写入、不建未使用框架；�
 ## 当前自动回归与风险
 
 最新源码 `f9f2d9d2c5eb0de2c9f5d28160ab7804fc57eaef` 已正常推送，
-CI run 37653204825 /attempt 1 在 16:47:12 UTC 观察到 completed/failure，GameTests 步骤失败。
-[终态回执](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-12.json)
-仅为 metadata；原始计数、失败名称与日志处置仍待核验，不复用前一批数字。
+CI run 37653204825 /attempt 1 在 16:47:12 UTC 观察到终态失败；
+该时间为监测记录的观察时间，不是 job 的完成时间。
+[Root 原始推导](../work/v1.8.0-ci/RESULT-44.md)与
+[不同代理审核](../work/v1.8.0-ci/RESULT-45.md)一致、输入无漂移。
+374 XML /2,129 实际 JUnit 全通过，构建、两次 DataGen 和干净检查通过；
+525 GameTest 完成、524 通过、1 项气闸 lower/phase-1 阶段供气前置失败。
+canonical 63 ERROR/零 FATAL 的资格处置仍开放；不把缺席的旧失败认定为永久修复。
 自有已结束 HUD build 副本的清理命令被工具策略在执行前拒绝，清理仍待允许的正常处理；
 未创建 C 临时脚本，不删除其他代理的旧目录。
+独立定向审核者同样遭遇执行前清理拒绝；其自有 62,083,720 B 输出仍保留，未绕过策略。
 上一次完成回归的源码 `b8136f0b8a41e64d51798f18e03127ebdd35693f` 的
 [失败终态与 Root 原始推导](../work/v1.8.0-ci/RESULT-42.md)绑定 run 37628727531 /attempt 1
 /job 112817138488；13:37:34 UTC 完成失败。2,104 JUnit、构建/审计、重复原生生成与

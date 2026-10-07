@@ -1,7 +1,8 @@
 # C18d-HUD-ENV-O2-03: bounded HUD source checkpoint
 
 Updated: 2026-10-08. Owner/integrator: Root/Codex. Status:
-implemented-unverified; source review and intermediate targeted JUnit passed.
+implemented-unverified; source review and committed-source targeted JUnit passed,
+full CI failed. Client and release qualification remain open.
 This record accompanies the source checkpoint; it does not deliver the eight
 ledger units, qualify a client, or close any v1.8.0 Required Gate.
 
@@ -90,10 +91,19 @@ development run is intermediate evidence only, not committed-source acceptance.
 
 ## Open qualification and preserved risks
 
-Exact committed-source hosted clean build/all JUnit, twice runData with tracked
-and untracked cleanliness, and full native GameTests are still required.
-Different-agent executable rerun, actual file reload, Font/client dispatch,
-real-GPU V1 and two-client V2 remain unrun. Tiny UNFIT viewports may clip;
+The later [full CI result](../v1.8.0-ci/RESULT-44.md) and
+[independent raw/targeted association](../v1.8.0-ci/RESULT-45.md) bind only
+committed source f9f2d9d2: 2,129 JUnit, clean build and both actual DataGen/clean
+checks pass; 525 native tests complete with one required airlock failure and
+63 unwaived ERRORs. The separate clean detached different-agent targeted run
+passes actual 28/28 JUnit cases; report SHA d9962b90, unchanged six hashes.
+This does not turn the intermediate uncommitted run into delivery evidence.
+Its owned build/.gradle cleanup is also rejected before execution; 62,083,720 B
+remain pending, with no bypass. Earlier running observations remain historical.
+
+Actual file reload, Font/client dispatch, real-GPU V1 and two-client V2 remain
+unrun. Full native/log qualification and dedicated/restart/performance remain
+open. Tiny UNFIT viewports may clip;
 huge font metrics may exceed checked native int extents and pose/GPU precision
 remains a platform limit. Default placement does not guarantee avoidance of
 expanded other overlays; that remains a V1 observation obligation.
