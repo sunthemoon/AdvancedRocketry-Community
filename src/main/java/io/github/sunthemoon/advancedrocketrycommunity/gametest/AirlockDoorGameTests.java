@@ -242,7 +242,8 @@ public final class AirlockDoorGameTests {
         grid.setItem(8, new ItemStack(Items.IRON_INGOT)); helper.assertTrue(!recipe.matches(grid, helper.getLevel()), "Extra iron accepted");
         var table = helper.getLevel().getServer().getLootData().getLootTable(ModIdentity.id("blocks/airlock_door"));
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1)); int kept = 0, decayed = 0;
-        for (int seed = 1; seed <= 64; seed++) {
+        for (int sample = 1; sample <= 64; sample++) {
+            long seed = 0x9E3779B97F4A7C15L * sample;
             BlockState lower = door().defaultBlockState(), upper = lower.setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
             helper.assertTrue(dropCount(helper, table.getRandomItems(loot(helper.getLevel(), lower, pos, null), seed)) == 1, "Lower loot differs");
             helper.assertTrue(dropCount(helper, table.getRandomItems(loot(helper.getLevel(), upper, pos, null), seed)) == 0, "Upper loot duplicated");
@@ -289,8 +290,15 @@ public final class AirlockDoorGameTests {
             for (int tick = 0; tick < 32 && !manager.controlledAt(level, cell); tick++) {
                 OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent); service.tick();
             }
-            helper.assertTrue(manager.controlledAt(level, cell), "Installed producer did not establish supplied chamber");
             VolumeScanCoordinator coordinator = (VolumeScanCoordinator) readField(service, "coordinator"); VolumePosition seed = volume(cell);
+            var supplyMetrics = service.metrics();
+            helper.assertTrue(manager.controlledAt(level, cell), "Installed producer did not establish supplied chamber"
+                    + " upperOnly=" + upperOnly + " phase=" + phase + " status=" + vent.status()
+                    + " oxygen=" + vent.oxygenUnits() + " energy=" + vent.energyStored()
+                    + " scan=" + coordinator.outcomeForSeed(seed).map(Enum::name).orElse("NONE")
+                    + " indexed=" + service.volumeAt(cell).isPresent() + " tracked=" + supplyMetrics.trackedVents()
+                    + " active=" + supplyMetrics.activeScanTasks() + " pending=" + supplyMetrics.pendingScanTasks()
+                    + " dirty=" + supplyMetrics.dirtyPositions() + " inspections=" + supplyMetrics.totalInspections());
             if (phase > 0) {
                 coordinator.schedule(seed); coordinator.tick(new ServerLevelVolumeWorldView(level, false), phase == 1 ? 1 : 64);
                 helper.assertTrue(phase == 1 ? coordinator.taskForSeed(seed).isPresent() : completedContains(coordinator, seed), "Controlled scan phase not established");
