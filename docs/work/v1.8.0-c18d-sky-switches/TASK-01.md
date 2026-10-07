@@ -7,7 +7,8 @@ Contract basis: accepted ADR-066 revision 3 section 7.2.
 No Required Gate, content-ledger delivery or new semantic approval is claimed.
 Exact source `cbbb78e1` passes build and the ten adapter/config JUnit methods,
 plus repeat DataGen/clean checks; full GameTests fail. Root raw audit is in
-[RESULT-30](../v1.8.0-ci/RESULT-30.md), independent raw/client checks pending.
+[RESULT-30](../v1.8.0-ci/RESULT-30.md); the separate independent raw audit is
+[RESULT-31](../v1.8.0-ci/RESULT-31.md). Real-client checks remain pending.
 
 ## Outcome and narrow binding
 

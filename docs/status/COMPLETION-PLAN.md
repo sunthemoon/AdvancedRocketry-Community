@@ -261,7 +261,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   [完整集成](../work/v1.8.0-c18d-sky-switches/SOURCE-INTEGRATION-01.md)保留源码关联。
   完整组合已正常推送至 `cbbb78e1`，[精确提交 CI](../work/v1.8.0-ci/RESULT-30.md)的
   构建、十项适配/配置单测和重复原生生成通过；完整 GameTest 仍失败。
-  Root 原始审核完成，独立原始审核待执行。自有已结束工作树已正常清理，
+  Root 与[独立原始审核](../work/v1.8.0-ci/RESULT-31.md)一致且输入无漂移。
+  自有已结束工作树已正常清理，
   client 实际分发及 V1/V2 未验证。
 
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
@@ -372,11 +373,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
 ## 当前自动回归与风险
 
 最新源码 `cbbb78e1fdc8dd88128162d43d88125c7aee9b60` 的
-[终态原始审核](../work/v1.8.0-ci/RESULT-30.md)绑定 run 37600300782 /attempt 1
+[独立终态原始审核](../work/v1.8.0-ci/RESULT-31.md)绑定 run 37600300782 /attempt 1
 /job 112722759189，捕获 completed failure。372 XML /2,104 单测零失败错误跳过；
 构建、产物和两次原生生成/干净检查通过。525 GameTest 完成，地火金往返、
 Tau 与气闸供气三项 required 失败，65 ERROR /零 FATAL 未豁免。
-Root 原始审核完成且输入无漂移，不同代理原始审核仍待执行。
+Root 与不同代理原始审核完成且一致，输入无漂移。
 前序源码的[两项失败终态](../work/v1.8.0-ci/RESULT-28.md)、
 [四项失败回归](../work/v1.8.0-ci/RESULT-26.md)和
 [运行中观察](../work/v1.8.0-ci/RESULT-25.md)保留为历史，原计数与来源不重绑；

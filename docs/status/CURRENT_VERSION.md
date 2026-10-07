@@ -42,7 +42,7 @@ latest_regression_target_commit: cbbb78e1fdc8dd88128162d43d88125c7aee9b60
 latest_regression_result: FAILED
 latest_regression_run: 37600300782
 latest_regression_attempt: 1
-latest_regression_evidence: ROOT_RAW_AUDITED
+latest_regression_evidence: RAW_AUDITED
 latest_regression_observed_utc: 2026-10-07T09:31:47Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
@@ -90,11 +90,11 @@ Five worker files are committed/cherry-picked without byte changes; Root's
 three central bindings accompany their qualified metadata checkpoint. Different-agent
 central and combined actual-diff reviews find no actionable scoped issue.
 Complete source is normally published at `cbbb78e1`; its exact-source
-[terminal regression](../work/v1.8.0-ci/RESULT-30.md) passes clean build,
+[independently audited terminal](../work/v1.8.0-ci/RESULT-31.md) passes clean build,
 2,104 unit cases and twice DataGen/clean checks. The ten adapter/config methods
 match and pass. Complete GameTests fail three required cases: Earth-Mars-Venus,
-Tau and initial airlock supply, with 65 unwaived ERROR/zero FATAL. Root retained
-raw audit is complete; different-agent raw audit and real clients remain open;
+Tau and initial airlock supply, with 65 unwaived ERROR/zero FATAL. Root and the
+different-agent retained raw audits agree with no input drift. Real clients remain open;
 raw selection and ambience are outside that presentation gate.
 The dated [running observation](../work/v1.8.0-ci/RESULT-25.md) remains historical.
 Own ended source worktree is normally removed after clean/merged checks.
