@@ -30,6 +30,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GameTestInfo;
+import net.minecraft.gametest.framework.GameTestListener;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
@@ -259,79 +261,140 @@ public final class AirlockDoorGameTests {
         ServerLevel moon = helper.getLevel().getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon unavailable");
         BlockPos allocated = helper.absolutePos(new BlockPos(1, 1, 1));
-        ChunkPos chunk = new ChunkPos(allocated); boolean forced = !moon.getForcedChunks().contains(chunk.toLong());
-        try {
-            if (forced) { moon.setChunkForced(chunk.x, chunk.z, true); }
-            moon.getChunk(chunk.x, chunk.z); // Exactly one fixture chunk; observation/callbacks never request chunks.
-            for (boolean upperOnly : new boolean[] {false, true}) {
-                for (int phase = 0; phase < 3; phase++) { revokeCase(helper, moon, chunk, upperOnly, phase); }
-            }
-        } finally { if (forced) { moon.setChunkForced(chunk.x, chunk.z, false); } }
-        helper.succeed();
+        new InstalledCases(helper, moon, new ChunkPos(allocated)).start();
     }
 
-    private static void revokeCase(GameTestHelper helper, ServerLevel level, ChunkPos chunk, boolean upperOnly, int phase) {
+    private static void revokeCase(GameTestHelper helper, ServerLevel level, ChunkPos chunk, Fixture fixture, boolean upperOnly, int phase) {
         BlockPos cell = new BlockPos(chunk.getMinBlockX() + 8, 180, chunk.getMinBlockZ() + 8);
         BlockPos lower = cell.east().offset(0, upperOnly ? -1 : 0, 0), ventPos = cell.below();
-        try (Fixture fixture = new Fixture(helper, level, cell)) {
-            for (int x = -1; x <= 1; x++) { for (int y = -1; y <= 1; y++) { for (int z = -1; z <= 1; z++) {
-                fixture.set(cell.offset(x, y, z), Blocks.IRON_BLOCK.defaultBlockState());
-            } } }
-            fixture.set(cell, Blocks.AIR.defaultBlockState()); pair(fixture, lower);
-            fixture.set(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState());
-            var vent = (OxygenVentBlockEntity) level.getBlockEntity(ventPos);
-            vent.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP).orElseThrow(IllegalStateException::new)
-                    .insertItem(0, new ItemStack(ModItems.OXYGEN_CANISTER.get()), false);
-            vent.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new)
-                    .receiveEnergy(AtmosphereLimits.VENT_ENERGY_CAPACITY, false);
-            OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent);
-            AtmosphereManager manager = installedManager(); AtmosphereLevelService service = installedService(manager, level);
-            helper.assertTrue(!manager.baseAtmosphereBreathable(level), "Ambient air cannot prove supplied-air revocation");
-            for (int tick = 0; tick < 32 && !manager.controlledAt(level, cell); tick++) {
-                OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent); service.tick();
-            }
-            VolumeScanCoordinator coordinator = (VolumeScanCoordinator) readField(service, "coordinator"); VolumePosition seed = volume(cell);
-            var supplyMetrics = service.metrics();
-            helper.assertTrue(manager.controlledAt(level, cell), "Installed producer did not establish supplied chamber"
-                    + " upperOnly=" + upperOnly + " phase=" + phase + " status=" + vent.status()
-                    + " oxygen=" + vent.oxygenUnits() + " energy=" + vent.energyStored()
-                    + " scan=" + coordinator.outcomeForSeed(seed).map(Enum::name).orElse("NONE")
-                    + " indexed=" + service.volumeAt(cell).isPresent() + " tracked=" + supplyMetrics.trackedVents()
-                    + " active=" + supplyMetrics.activeScanTasks() + " pending=" + supplyMetrics.pendingScanTasks()
-                    + " dirty=" + supplyMetrics.dirtyPositions() + " inspections=" + supplyMetrics.totalInspections());
-            if (phase > 0) {
-                coordinator.schedule(seed); coordinator.tick(new ServerLevelVolumeWorldView(level, false), phase == 1 ? 1 : 64);
-                helper.assertTrue(phase == 1 ? coordinator.taskForSeed(seed).isPresent() : completedContains(coordinator, seed), "Controlled scan phase not established");
-            }
-            // Twenty-five native door placements create >256 unrelated queued dirty positions, below the 8192 cap.
-            for (int x = 0; x < 5; x++) { for (int z = 0; z < 5; z++) {
-                pair(fixture, new BlockPos(chunk.getMinBlockX() + 1 + x * 3, 80, chunk.getMinBlockZ() + 1 + z * 3));
-            } }
-            helper.assertTrue(service.metrics().dirtyPositions() > AtmosphereLimits.MAX_DIRTY_POSITIONS_PER_TICK
-                    && manager.controlledAt(level, cell), "Unrelated backlog not established without revoking chamber");
-            BlockPos caller = upperOnly ? lower : lower.above(); long serviceTicks = service.metrics().completedServiceTicks();
-            if (phase == 0) { door().setOpen(null, level, level.getBlockState(caller), caller, true); }
-            else if (phase == 1) {
-                BlockPos signal = caller.east(); fixture.remember(signal); level.setBlock(signal, Blocks.REDSTONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
-            } else { level.removeBlock(caller, false); }
-            helper.assertTrue(service.metrics().completedServiceTicks() == serviceTicks && !manager.controlledAt(level, cell)
-                    && coordinator.taskForSeed(seed).isEmpty() && !completedContains(coordinator, seed),
-                    "Native opposite-half callback left cached/in-flight/completed authority before another tick");
-            for (int tick = 0; tick < 8; tick++) {
-                OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent); service.tick();
-                helper.assertTrue(!manager.controlledAt(level, cell), "Dirty backlog republished an invalidated chamber");
-            }
-            if (phase == 1) { level.removeBlock(caller.east(), false); }
-            if (level.getBlockState(lower).is(door()) && level.getBlockState(lower.above()).is(door())) {
-                door().setOpen(null, level, level.getBlockState(lower), lower, false);
-            } else { pair(fixture, lower); }
-            helper.assertTrue(door().observeBoundary(level, lower, level.getBlockState(lower)) == CellObservation.SEALED,
-                    "Ordinary repair/close did not restore a consistent pair");
-            for (int tick = 0; tick < 32 && !manager.controlledAt(level, cell); tick++) {
-                OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent); service.tick();
-            }
-            helper.assertTrue(manager.controlledAt(level, cell), "Installed atmosphere did not recover within 32 controlled service ticks");
+        fixture.set(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState());
+        var vent = (OxygenVentBlockEntity) level.getBlockEntity(ventPos);
+        vent.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP).orElseThrow(IllegalStateException::new)
+                .insertItem(0, new ItemStack(ModItems.OXYGEN_CANISTER.get()), false);
+        vent.getCapability(ForgeCapabilities.ENERGY).orElseThrow(IllegalStateException::new)
+                .receiveEnergy(AtmosphereLimits.VENT_ENERGY_CAPACITY, false);
+        OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent);
+        AtmosphereManager manager = installedManager(); AtmosphereLevelService service = installedService(manager, level);
+        helper.assertTrue(!manager.baseAtmosphereBreathable(level), "Ambient air cannot prove supplied-air revocation");
+        for (int tick = 0; tick < 32 && !manager.controlledAt(level, cell); tick++) {
+            OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent); service.tick();
         }
+        VolumeScanCoordinator coordinator = (VolumeScanCoordinator) readField(service, "coordinator"); VolumePosition seed = volume(cell);
+        var supplyMetrics = service.metrics();
+        helper.assertTrue(manager.controlledAt(level, cell), "Installed producer did not establish supplied chamber"
+                + " upperOnly=" + upperOnly + " phase=" + phase + " status=" + vent.status()
+                + " oxygen=" + vent.oxygenUnits() + " energy=" + vent.energyStored()
+                + " scan=" + coordinator.outcomeForSeed(seed).map(Enum::name).orElse("NONE")
+                + " indexed=" + service.volumeAt(cell).isPresent() + " tracked=" + supplyMetrics.trackedVents()
+                + " active=" + supplyMetrics.activeScanTasks() + " pending=" + supplyMetrics.pendingScanTasks()
+                + " dirty=" + supplyMetrics.dirtyPositions() + " inspections=" + supplyMetrics.totalInspections());
+        if (phase > 0) {
+            coordinator.schedule(seed); coordinator.tick(new ServerLevelVolumeWorldView(level, false), phase == 1 ? 1 : 64);
+            helper.assertTrue(phase == 1 ? coordinator.taskForSeed(seed).isPresent() : completedContains(coordinator, seed), "Controlled scan phase not established");
+        }
+        // Twenty-five native door placements create >256 unrelated queued dirty positions, below the 8192 cap.
+        for (int x = 0; x < 5; x++) { for (int z = 0; z < 5; z++) {
+            pair(fixture, new BlockPos(chunk.getMinBlockX() + 1 + x * 3, 80, chunk.getMinBlockZ() + 1 + z * 3));
+        } }
+        helper.assertTrue(service.metrics().dirtyPositions() > AtmosphereLimits.MAX_DIRTY_POSITIONS_PER_TICK
+                && manager.controlledAt(level, cell), "Unrelated backlog not established without revoking chamber");
+        BlockPos caller = upperOnly ? lower : lower.above(); long serviceTicks = service.metrics().completedServiceTicks();
+        if (phase == 0) { door().setOpen(null, level, level.getBlockState(caller), caller, true); }
+        else if (phase == 1) {
+            BlockPos signal = caller.east(); fixture.remember(signal); level.setBlock(signal, Blocks.REDSTONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+        } else { level.removeBlock(caller, false); }
+        helper.assertTrue(service.metrics().completedServiceTicks() == serviceTicks && !manager.controlledAt(level, cell)
+                && coordinator.taskForSeed(seed).isEmpty() && !completedContains(coordinator, seed),
+                "Native opposite-half callback left cached/in-flight/completed authority before another tick");
+        for (int tick = 0; tick < 8; tick++) {
+            OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent); service.tick();
+            helper.assertTrue(!manager.controlledAt(level, cell), "Dirty backlog republished an invalidated chamber");
+        }
+        if (phase == 1) { level.removeBlock(caller.east(), false); }
+        if (level.getBlockState(lower).is(door()) && level.getBlockState(lower.above()).is(door())) {
+            door().setOpen(null, level, level.getBlockState(lower), lower, false);
+        } else { pair(fixture, lower); }
+        helper.assertTrue(door().observeBoundary(level, lower, level.getBlockState(lower)) == CellObservation.SEALED,
+                "Ordinary repair/close did not restore a consistent pair");
+        for (int tick = 0; tick < 32 && !manager.controlledAt(level, cell); tick++) {
+            OxygenVentBlockEntity.serverTick(level, ventPos, vent.getBlockState(), vent); service.tick();
+        }
+        helper.assertTrue(manager.controlledAt(level, cell), "Installed atmosphere did not recover within 32 controlled service ticks");
+    }
+
+    /** Six delayed cases share one terminal owner; no running callback schedules another callback. */
+    private static final class InstalledCases implements GameTestListener {
+        private final GameTestHelper helper;
+        private final ServerLevel level;
+        private final ChunkPos chunk;
+        private Fixture active;
+        private int nextCase;
+        private boolean ownsForce;
+        private boolean closed;
+
+        private InstalledCases(GameTestHelper helper, ServerLevel level, ChunkPos chunk) {
+            this.helper = helper; this.level = level; this.chunk = chunk;
+        }
+        private void start() {
+            try {
+                ((GameTestInfo) readField(helper, "testInfo")).addListener(this);
+                for (int index = 0; index < 6; index++) {
+                    int selected = index; helper.runAfterDelay(index + 1L, () -> runCase(selected));
+                }
+                if (!level.getForcedChunks().contains(chunk.toLong())) {
+                    ownsForce = true; level.setChunkForced(chunk.x, chunk.z, true);
+                }
+                level.getChunk(chunk.x, chunk.z); // Exactly one fixture chunk, not an observation request.
+                prepare(0);
+            } catch (RuntimeException | Error failure) { close(failure); throw failure; }
+        }
+        private void prepare(int index) {
+            BlockPos cell = new BlockPos(chunk.getMinBlockX() + 8, 180, chunk.getMinBlockZ() + 8);
+            active = new Fixture(helper, level, cell);
+            for (int x = -1; x <= 1; x++) { for (int y = -1; y <= 1; y++) { for (int z = -1; z <= 1; z++) {
+                active.set(cell.offset(x, y, z), Blocks.IRON_BLOCK.defaultBlockState());
+            } } }
+            active.set(cell, Blocks.AIR.defaultBlockState());
+            pair(active, cell.east().offset(0, index >= 3 ? -1 : 0, 0));
+        }
+        private void runCase(int index) {
+            if (closed) { return; }
+            try {
+                helper.assertTrue(index == nextCase && active != null, "Deferred fixture case order changed");
+                revokeCase(helper, level, chunk, active, index >= 3, index % 3);
+                closeActive();
+                nextCase++;
+                if (index == 5) { close(null); helper.succeed(); }
+                else { prepare(index + 1); }
+            } catch (RuntimeException | Error failure) { close(failure); throw failure; }
+        }
+        private void closeActive() {
+            Fixture retiring = active; active = null;
+            if (retiring != null) { retiring.close(); }
+        }
+        private void close(Throwable primary) {
+            if (closed) { return; }
+            closed = true; Throwable first = primary;
+            try { closeActive(); }
+            catch (RuntimeException | Error failure) { first = combine(first, failure); }
+            if (ownsForce) {
+                ownsForce = false;
+                try { level.setChunkForced(chunk.x, chunk.z, false); }
+                catch (RuntimeException | Error failure) { first = combine(first, failure); }
+            }
+            if (primary == null) {
+                if (first instanceof RuntimeException failure) { throw failure; }
+                if (first instanceof Error failure) { throw failure; }
+            }
+        }
+        private static Throwable combine(Throwable first, Throwable next) {
+            if (first == null) { return next; }
+            if (first != next) { first.addSuppressed(next); }
+            return first;
+        }
+        @Override public void testStructureLoaded(GameTestInfo info) { }
+        @Override public void testPassed(GameTestInfo info) { close(null); }
+        @Override public void testFailed(GameTestInfo info) { close(info.getError()); }
     }
 
     private static void pair(Fixture fixture, BlockPos lower) {
