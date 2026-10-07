@@ -1,7 +1,10 @@
 # HUD helper: bounded interface disposition after independent source review
 
 Date: 2026-10-07. Status: source-reviewed / interface-adopted for integration;
-patch not applied, Root binding not implemented, runtime qualification open.
+the former not-applied/not-implemented observation is superseded by
+[SOURCE-INTEGRATION-03](SOURCE-INTEGRATION-03.md): implemented-unverified Root
+bindings, source review and intermediate JUnit passed, runtime qualification open.
+The decision-time body below records historical obligations, now partly executed.
 This supersedes pending source-review/interface-decision wording only in
 ASSIGNMENT-01, TASK-01 and ADOPTION-01; historical process facts stay intact.
 

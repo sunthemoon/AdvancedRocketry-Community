@@ -1,13 +1,17 @@
 # C18d-HUD-ENV-O2-01: bounded implementation handoff
 
 Date: 2026-10-07. Version: v1.8.0. Integrator/sole Git writer: Root/Codex.
-Status: contract-frozen, source-reviewed / interface-adopted; integration not started.
+Status: contract-frozen; bounded Root source checkpoint implemented-unverified.
 The completed source review and narrow interface disposition are recorded in
 [ADOPTION-02](ADOPTION-02.md); this is not executed-source qualification.
 [ASSIGNMENT-01](ASSIGNMENT-01.md) records the later owner-supplied interactive
 Claude return and execution deviations, without backdating a claim.
 [CONTRACT-02](CONTRACT-02.md) plus ADOPTION-02 is the technical integration input.
-No source patch is applied, worktree claimed or Claude run launched by Root.
+Root's separate [ROOT-TASK-03](ROOT-TASK-03.md) and
+[SOURCE-INTEGRATION-03](SOURCE-INTEGRATION-03.md) supersede the former
+not-applied/not-started observation: patch applied, bindings/source review and
+intermediate 28-case JUnit completed. Committed-source/runtime/V1/V2 remain open;
+Root launched no Claude run. The worker boundaries below remain historical.
 Eight environment/oxygen settings only, within the remaining v1.8 assignment.
 
 ## Identity, source basis and write boundaries

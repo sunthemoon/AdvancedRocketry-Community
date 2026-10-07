@@ -2,8 +2,10 @@
 
 Date: 2026-10-07. Technical leaf adopted by Root under the owner's existing
 authorization to implement reviewed contracts without unresolved C/H/M;
-major semantics still require separate confirmation. Root HUD/config binding is
-not implemented. The later external helper return is recorded separately in
+major semantics still require separate confirmation. Root's
+[SOURCE-INTEGRATION-03](SOURCE-INTEGRATION-03.md) records implemented-unverified
+HUD/config binding and intermediate JUnit/source review; committed-source
+runtime/V1/V2 obligations remain open. The later external helper return is recorded separately in
 [ASSIGNMENT-01](ASSIGNMENT-01.md), not accepted by this technical contract.
 The subsequent [ADOPTION-02](ADOPTION-02.md) explicitly accepts only the two
 bound constants and internal candidate seam after independent source review;

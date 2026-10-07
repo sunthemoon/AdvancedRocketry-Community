@@ -2,7 +2,10 @@
 
 Date: 2026-10-07. Original receipt: author-returned-unreviewed; integration not started.
 Current disposition: [ADOPTION-02](ADOPTION-02.md) records independent source
-review and the narrowly adopted interface additions; patch still not applied.
+review and the narrowly adopted interface additions. Root's later
+[SOURCE-INTEGRATION-03](SOURCE-INTEGRATION-03.md) records patch application and
+implemented-unverified config/renderer bindings; it supersedes the not-applied
+receipt observation below, not the recorded author process deviations.
 This is a factual receipt and review assignment, not a backdated execution claim
 or source acceptance. Root/Codex remains the sole integrator and Git writer.
 
@@ -40,9 +43,11 @@ Gradle, native or client qualification. No existing failure is waived.
 | `src/test/java/io/github/sunthemoon/advancedrocketrycommunity/client/LifeSupportHudLayoutTest.java` | 23533 | `5402593d74f3ddf921bac5ddc9179d9c8d99a670d0d08db8198f7b86f271c948` |
 | `docs/work/v1.8.0-c18d-hud-layout/SOURCE-01.md` | 5816 | `296efc678e850b1f0e2fd29a6b936541bda28f69f1871b0c55eafe9da031e630` |
 
-All three are still absent from the Root checkout. The source package and
-standalone integration proposal are not applied. Root's later source integration
-requires a fresh declared branch/worktree and separate exact-source review.
+At receipt all three were absent and neither the source package nor the
+standalone integration proposal was applied. That dated observation is
+superseded by ROOT-TASK-03's isolated application and source review; the author
+proposal was not adopted wholesale. Committed-source/runtime qualification
+remains separate.
 The existing `LifeSupportHud.java`, `ClientConfig.java` and `ClientConfigTest.java`
 remain exclusively Root's adapter/config scope; no worker edits are authorized.
 
