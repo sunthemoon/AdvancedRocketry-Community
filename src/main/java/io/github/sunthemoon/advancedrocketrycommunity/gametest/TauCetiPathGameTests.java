@@ -188,12 +188,18 @@ public final class TauCetiPathGameTests {
         String before = missingSample(helper, level, logical, where, observerJournal, "PRE");
         RocketEntity rocket = findLogicalRocket(level, logical);
         if (rocket == null) {
-            String after = missingSample(helper, level, logical, where, observerJournal, "POST");
+            // BEGIN failure-only holder observation
+            HolderContext[] holder = new HolderContext[1];
+            // END failure-only holder observation
+            String after = missingSample(helper, level, logical, where, observerJournal, "POST", holder);
             emitMissing(before);
             emitMissing(after);
             // BEGIN transfer service diagnostics
             observeServiceFailure(helper, observerJournal, logical);
             // END transfer service diagnostics
+            // BEGIN failure-only holder observation
+            observeHolder(logical, holder[0]);
+            // END failure-only holder observation
         }
         helper.assertTrue(rocket != null, "No rocket at " + where);
         var flight = rocket.flightData().orElseThrow();
@@ -253,6 +259,13 @@ public final class TauCetiPathGameTests {
     /** Immutable scalar text only; no world/entity/record survives a capture in the sample. */
     private static String missingSample(GameTestHelper helper, ServerLevel expected, UUID logical, String where,
             RocketTransferSavedData journal, String sample) {
+        // BEGIN failure-only holder observation
+        return missingSample(helper, expected, logical, where, journal, sample, null);
+    }
+
+    private static String missingSample(GameTestHelper helper, ServerLevel expected, UUID logical, String where,
+            RocketTransferSavedData journal, String sample, HolderContext[] holder) {
+        // END failure-only holder observation
         try {
             long nanos = System.nanoTime();
             if (journal == null) {
@@ -275,6 +288,12 @@ public final class TauCetiPathGameTests {
                 loaded = yesNo(destination.getChunkSource().getChunkNow(origin.x() >> 4, origin.z() >> 4) != null);
                 entitiesLoaded = yesNo(destination.areEntitiesLoaded(ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4)));
                 entityTicking = yesNo(destination.isPositionEntityTicking(new BlockPos(origin.x(), origin.y(), origin.z())));
+                // BEGIN failure-only holder observation
+                if (holder != null) {
+                    holder[0] = new HolderContext(destination, record.transferId(),
+                            dimensionId(record.destinationSnapshot().sourceDimension()), origin.x() >> 4, origin.z() >> 4);
+                }
+                // END failure-only holder observation
             }
             StringBuilder text = new StringBuilder(OBSERVATION_BYTES).append(OBSERVATION_PREFIX);
             token(text, "sample", sample, 4);
@@ -393,6 +412,37 @@ public final class TauCetiPathGameTests {
             // Diagnostics must not replace the original missing-rocket assertion or add another log attempt.
         }
     }
+
+    // BEGIN failure-only holder observation
+    /** One query after the failed original lookup; no pre-priming holder sample or second journal lookup. */
+    private static void observeHolder(UUID logical, HolderContext context) {
+        String diagnostic = "MISSING_CONTEXT";
+        String holder = null;
+        if (context != null) {
+            try {
+                if (!context.level().getServer().isSameThread()) {
+                    diagnostic = "OFF_THREAD";
+                } else {
+                    holder = context.level().getChunkSource().getChunkDebugData(new ChunkPos(context.chunkX(), context.chunkZ()));
+                    diagnostic = "QUERY_OK";
+                }
+            } catch (RuntimeException | Error observationFailure) {
+                diagnostic = "QUERY_FAILED";
+            }
+        }
+        try {
+            String line = TauHolderObservationText.format(logical, context == null ? null : context.transfer(),
+                    context == null ? null : context.dimension(), context == null ? null : context.chunkX(),
+                    context == null ? null : context.chunkZ(), diagnostic, holder);
+            AdvancedRocketryCommunity.LOGGER.info("{}", line);
+        } catch (RuntimeException | Error loggingFailure) {
+            // One attempt only; diagnostics must not replace the original assertion or guarded cleanup.
+        }
+    }
+
+    private record HolderContext(ServerLevel level, UUID transfer, String dimension, int chunkX, int chunkZ) {
+    }
+    // END failure-only holder observation
 
     private record EntitySample(String observed, String kind, String state, String removed, String x, String y, String z) {
     }
