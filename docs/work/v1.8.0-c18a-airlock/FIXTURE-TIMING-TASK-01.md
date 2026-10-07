@@ -1,8 +1,10 @@
 # C18a-AIRLOCK-FIXTURE-02: bounded setup lifecycle experiment
 
-Date: 2026-10-07. Version: v1.8.0. Status: in-progress.
+Date: 2026-10-07. Version: v1.8.0. Status: implemented-unverified.
 Integrator: Root. Source base: `cbbb78e1fdc8dd88128162d43d88125c7aee9b60`.
 This is a fixture-only experiment, not an adopted production cause or repair.
+The [reviewed publication](FIXTURE-TIMING-INTEGRATION-01.md) binds source
+`22f7d1cae0735a8b8c072165e7a3cf8089e3719c` and its separate running hosted CI.
 
 ## Observable outcome and evidence
 

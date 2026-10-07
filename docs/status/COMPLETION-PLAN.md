@@ -244,10 +244,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
   供气仅增诊断，状态为 OPEN、资源仍在，原因未定。
   完整 GameTest、重启或 V1/V2 未交付，不依赖未接受的物理 hatch 接入。
 - [ ] [C18a-AIRLOCK-FIXTURE-02](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-TASK-01.md)：
-  status: in-progress。仅在独立工作树做有限的建房与首轮安装/扫描 tick 分离实验；
+  status: implemented-unverified。仅做有限的建房与首轮安装/扫描 tick 分离实验；
   六组断言、原期限及预算不变，异步结束、异常及超时清理必须独立审核。
-  两文件已冻结并交独立实际差异审核；作者完成 29 项静态/纯模型检查，
-  不把它们或静态调查视作原生原因、恢复验证或生产修复。
+  两文件经独立实际差异审核后，[原字节提交、集成和正常推送](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-INTEGRATION-01.md)
+  至 `22f7d1ca`；独立 126 项源/有限模型和 16 项映射标量检查通过。
+  自有结束工作树已正常清理，原生 CI 运行中；不把静态结果当作恢复或生产修复。
 - [~] Tau 冷目标调查：生产与夹具独立读证一致，失败停在目标实体就绪前，
   源火箭和 PREPARED 事务仍在。原生静态事实已核对正常 tick 与就绪处理调用关系，
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；
@@ -372,8 +373,10 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ## 当前自动回归与风险
 
-最新源码 `cbbb78e1fdc8dd88128162d43d88125c7aee9b60` 的
-[独立终态原始审核](../work/v1.8.0-ci/RESULT-31.md)绑定 run 37600300782 /attempt 1
+最新源码 `22f7d1cae0735a8b8c072165e7a3cf8089e3719c` 的
+[运行中观察](../work/v1.8.0-ci/RESULT-32.md)绑定 run 37605098496 /attempt 1
+/job 112738525112；仅元数据，不借用旧源码计数或宣告原生通过。
+前序源码的[独立终态原始审核](../work/v1.8.0-ci/RESULT-31.md)绑定 run 37600300782 /attempt 1
 /job 112722759189，捕获 completed failure。372 XML /2,104 单测零失败错误跳过；
 构建、产物和两次原生生成/干净检查通过。525 GameTest 完成，地火金往返、
 Tau 与气闸供气三项 required 失败，65 ERROR /零 FATAL 未豁免。

@@ -36,14 +36,14 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: cbbb78e1fdc8dd88128162d43d88125c7aee9b60
+latest_source_checkpoint: 22f7d1cae0735a8b8c072165e7a3cf8089e3719c
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: cbbb78e1fdc8dd88128162d43d88125c7aee9b60
-latest_regression_result: FAILED
-latest_regression_run: 37600300782
+latest_regression_target_commit: 22f7d1cae0735a8b8c072165e7a3cf8089e3719c
+latest_regression_result: RUNNING
+latest_regression_run: 37605098496
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-07T09:31:47Z
+latest_regression_evidence: METADATA_ONLY
+latest_regression_observed_utc: 2026-10-07T10:10:42Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -76,14 +76,17 @@ the [original terminal](../work/v1.8.0-ci/RESULT-26.md) and
 [first fixture successor](../work/v1.8.0-ci/RESULT-28.md) remain historical
 failed evidence. The reviewed bounded seed-spacing/scalar-diagnostic correction
 is normally published at `01521d6c`, without changing assertions/deadlines/budgets.
-The latest native source still fails the first airlock initial-supply combination;
+The preceding independently audited source fails the first airlock initial-supply combination;
 sampling is not a named failure. Supply status OPEN with resources present does
 not establish the native cause, later revocation/recovery qualification or repair.
 No individual native pass XML is retained; the current source-bound metrics
 are recorded below, not inherited from old cohorts.
 The separate bounded [fixture lifecycle experiment](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-TASK-01.md)
-is in progress in its own worktree. It retains native authority, all predicates,
-limits and cleanup obligations; no unique cause or production change is adopted.
+has [reviewed publication](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-INTEGRATION-01.md)
+at `22f7d1ca`; its clean ended owned worktree is normally removed, source retained.
+The [new exact-source run](../work/v1.8.0-ci/RESULT-32.md) is RUNNING with metadata
+only. Native authority, predicates, limits and cleanup obligations remain;
+no unique cause, native restoration result or production change is adopted.
 The accepted-category [sky switch task](../work/v1.8.0-c18d-sky-switches/TASK-01.md)
 has [reviewed source integration](../work/v1.8.0-c18d-sky-switches/SOURCE-INTEGRATION-01.md).
 Five worker files are committed/cherry-picked without byte changes; Root's
