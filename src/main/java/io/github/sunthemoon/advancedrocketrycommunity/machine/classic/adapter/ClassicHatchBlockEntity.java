@@ -1,7 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves;
-import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.MultiblockPatternCatalog;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -37,8 +37,8 @@ public final class ClassicHatchBlockEntity extends BlockEntity {
             ClassicPendingLoad pending, ClassicHatchCheckpoint checkpoint, CompoundTag encoded,
             ClassicHatchDecode rejected) { }
 
-    public ClassicHatchBlockEntity(BlockPos position, BlockState state) {
-        super(ModBlockEntities.CLASSIC_HATCH.get(), position, state);
+    public ClassicHatchBlockEntity(BlockEntityType<ClassicHatchBlockEntity> type, BlockPos position, BlockState state) {
+        super(Objects.requireNonNull(type, "type"), position, state);
         kind = ClassicHatchKind.fromBlockId(BuiltInRegistries.BLOCK.getKey(state.getBlock()))
                 .orElseThrow(() -> new IllegalArgumentException("Not a physical classic hatch block"));
     }
