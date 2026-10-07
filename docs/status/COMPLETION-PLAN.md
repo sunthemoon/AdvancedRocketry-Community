@@ -116,7 +116,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     整批仍因 required Tau 往返失败，不复用前一提交的结果。
   - [ ] [02 真实空 hatch 生命周期](../work/v1.8.0-c16a-hatches/EMPTY-LIFECYCLE-TASK-01.md)（in-progress）：
     [独立空 hatch 权限衔接](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-IMPLEMENTATION-01.md)
-    已完成契约审核并进入隔离实现；保存前置保护、生成/磁盘 Proto 观察、放置/取消/拆除
+    的[源码检查点](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-INTEGRATION-01.md)
+    已完成独立审核、修正回调后的实际方块状态检查并提交、推送至 `7d7b474e`；
+    精确提交的远程回归进行中，尚无新测试结果。保存前置保护、生成/磁盘 Proto 观察、放置/取消/拆除
     期望记录、真实接入、最终卸载、保存 writer 与重启仍未实现或验证。
   - [x] [带电插口格式数据检查](../work/v1.8.0-c16a-hatches/POWER-CARRIER-FORMAT-SOURCE-01.md)：
     三个精确后像经独立源码审核后提交、正常推送并集成至 `257e7b3a`；

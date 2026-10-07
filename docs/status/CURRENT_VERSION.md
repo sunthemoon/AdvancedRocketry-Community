@@ -36,18 +36,27 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 7ab1b0879527f4d8d3e88f09f9360015175b911a
+latest_source_checkpoint: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
 tested_code_commit: 7ab1b0879527f4d8d3e88f09f9360015175b911a
-latest_regression_result: PASSED
-latest_regression_run: 37560119538
+latest_regression_target_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
+latest_regression_result: IN_PROGRESS
+latest_regression_run: 37568695086
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_IDENTITY_AUDITED_AND_EXTERNAL_JAR_DIGEST
-latest_regression_observed_utc: 2026-10-07T02:17:33Z
+latest_regression_evidence: METADATA_ONLY
+latest_regression_observed_utc: 2026-10-07T03:51:55Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
 
 ## Current development evidence
+
+The [empty-removal admission checkpoint](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-INTEGRATION-01.md)
+is independently reviewed, committed and normally pushed at `7d7b474e`.
+Its post-provider physical block-state check addresses the source review's Medium
+finding. The new exact-source hosted run is in progress; no new test outcome is
+claimed. `tested_code_commit` above retains the last completed audited cohort,
+not this pending target. Physical registration, save/native joins and all Gates
+remain open. The prior successful source metrics below are not rebound.
 
 The [inactive guarded-save integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
 combines the independently reviewed owner/comparator/central source and explicit

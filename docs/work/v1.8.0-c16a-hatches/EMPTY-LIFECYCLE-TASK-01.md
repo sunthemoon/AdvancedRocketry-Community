@@ -1,6 +1,6 @@
 # C16a-03b-02-EMPTY: physical empty-hatch lifecycle
 
-Date: 2026-10-07. Status: in-progress; technical amendment and native ordering under review, not installed delivery.
+Date: 2026-10-07. Status: in-progress; admission source committed, hosted verification pending, not installed delivery.
 
 ## Outcome and scope
 
@@ -37,6 +37,12 @@ has now received a different-agent final review and its separate
 [implementation disposition](EMPTY-REMOVAL-GUARD-IMPLEMENTATION-01.md). Only this
 internal authority dependency is adopted for isolated source work. It does not
 adopt physical birth/removal descriptors or close the save/native dependencies.
+
+The [admission source checkpoint](EMPTY-REMOVAL-GUARD-INTEGRATION-01.md) is now
+independently reviewed, corrected, committed and normally pushed at `7d7b474e`.
+Its exact-source hosted verification is in progress; this is not completion of
+the physical lifecycle. The pre-serialization/native-operation bridge remains
+unsettled and is not adopted from the separate design investigation.
 
 No public factory, success boolean, LOAD/EMIT substitution, reset of sticky denial,
 new persistent ID/schema, broad source-mode policy, power Item lease reuse,
