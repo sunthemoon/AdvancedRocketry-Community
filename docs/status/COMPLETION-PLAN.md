@@ -311,15 +311,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
 [失败时观察源码](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
 已经独立实际审核、分别提交并合并，非强制推送至
 `35a146fbbe1f2de94160f82307d041d2cd26e472`；单次有界缓存编译通过。
-[前序配方行自动证据](../work/v1.8.0-ci/RESULT-15.md) 绑定已推送完整提交
-`60f1564528de782fa15269884fd1355d3c0b9ff1`，run 37519061729 /attempt 1
-/job 112459397257，结果 SUCCESS：clean build 成功，1,927 个实际 JUnit
-/352 suites /0 failures、errors、skips；首次 DataGen 写入 808，重复写入 0，
-两次工作区均干净。509 项 required GameTest 全部通过。Root 独立核对全部
-398 个保留成员和 XML；主日志 62 ERROR /0 FATAL 未获豁免。
-可用 JAR 的实际字节、3,435 项内容的大小/SHA 与 hosted 清单一致；
-原生 ZIP CRC 校验另行通过。JAR SHA 为
-`cebbe1df6140654057740a31f07573338c37d5219e493b6f56907d53c0689204`。
+[前序成功配方行自动证据](../work/v1.8.0-ci/RESULT-15.md)保留其原始计数、
+结果及独立历史 JAR 字节审核，不把旧指标重绑到新源码；错误未获豁免。
 前序 Planetary/Tau 失败保留在 RESULT-14；单次通过不关闭偶发就绪性风险。原 tooltip 失败在
 [RESULT-12](../work/v1.8.0-ci/RESULT-12.md)，不改写为通过；其测试专用修正已实际通过。
 原 40/270 tick 上限未改变，Tau 的两次未就绪观察不说明唯一原因。
@@ -331,23 +324,18 @@ pure-helper 单测分别通过，
 经独立源码审核后正常提交、推送并集成至 `046fc477`；只替换一处观察调用，
 保留全部十九项旧测试并新增十一项。独立开发与固定提交 javac/Jupiter 各 30/30 通过，
 后者十七个输入无漂移；自有结束输出已清理。该诊断不是飞行或原生就绪修复。
-精确源码 run 37554222038 /attempt 1 /job 112576587243 在 2026-10-07T00:52:58Z
-观察为 IN_PROGRESS，仅有元数据，不复用前序结果；完整 Service 编译与实际全量回归待定。
-最后完成的格式源码 `257e7b3a` 的 run 37551957636 /attempt 1 /job 112569285797
-在 2026-10-07T00:38:15Z 观察为结束，并完成[Root 原始结果核对](../work/v1.8.0-ci/RESULT-19.md)：
-clean build 成功，356 XML /1,977 实际单测 /0FES，十三项新格式单测全部通过；
-两次 DataGen 与工作区检查成功；509 GameTest 完成但 required Tau 往返和目的地就绪测试失败。
-403 个输入核对无漂移，主日志 64 ERROR /0 FATAL 未获豁免；JAR 上传跳过，无新 JAR 字节核对。
-此前运行中捕获保留为历史，不替代完整物理设备、守恒或 Gate 证明。
-前序完整原始审计属于元数据源码 `3e2f6f1b`，run 37541636327 /attempt 1 /job 112535778550
-在 2026-10-06T23:00:03Z 观察为结束，已作[原始终态核对](../work/v1.8.0-ci/RESULT-18.md)：
-clean build 成功，355 XML /1,964 实际单测 /0FES，十项新单测全部通过；
-两次 DataGen 与工作区检查成功；509 GameTest 完成但一项 required Tau 往返失败。
-Root 核对 402 个 raw/receipt/observation 输入无漂移；此前的运行中观察已被此终态取代。
-其固定提交缓存 javac/Jupiter 10/10、46 个输入无漂移仍是单独的有限验证。
-失败服务样本为 LIVE，最后分支 WAIT_ENTITY_READY；不说明唯一原生原因。
-主日志 64 ERROR /0 FATAL 未获豁免；JAR 上传跳过，不声称新 JAR 字节核对。
-不复用前一提交的数字，不把诊断认定为生产修复。
+精确源码 run 37554222038 /attempt 1 /job 112576587243 在 2026-10-07T01:04:33Z
+已观察为结束 FAILED，并完成[Root 原始结果核对](../work/v1.8.0-ci/RESULT-20.md)：
+clean build 成功，356 XML /1,988 实际单测 /零 FES，三十项诊断单测全部通过，
+实际 Service 纳入托管完整编译；两次 DataGen 与工作区检查成功；509 GameTest
+完成但一项 required Tau 往返失败。403 个输入无漂移，主日志 63 ERROR /零 FATAL
+未获豁免；JAR 上传跳过，无新 JAR 字节核对。两次 Tau 端点样本仍未实体就绪，
+LIVE manager 记录等待首 tick 14841、末 tick 14950、110 次限定调用，不证明连续
+原生 I/O 状态或唯一原因。旧运行中捕获保留，不替代完整物理设备、守恒或 Gate。
+[前序格式源码结果](../work/v1.8.0-ci/RESULT-19.md)保留两项 required 失败；
+目的地夹具在新批次不再出现失败标题，不据此认定修复。
+[元数据源码结果](../work/v1.8.0-ci/RESULT-18.md)仍是其自己提交的历史事实，
+不复用前序数字，不把诊断认定为生产修复。
 资源源码 `8d521406` 的[前序失败结果](../work/v1.8.0-ci/RESULT-17.md)保留为历史。
 先前观察源码的 runner 分配失败及其已执行失败重跑分别保留在
 [原记录](../work/v1.8.0-ci/RESULT-08.md)和历史 RESULT-09 中；不再记为运行中。

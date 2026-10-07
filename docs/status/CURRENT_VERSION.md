@@ -37,12 +37,12 @@ development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 046fc477ab80a9bc10d4170092bed6e0ad4e34ef
-tested_code_commit: 257e7b3adb54dc693d815434394f311d28e800cc
-latest_regression_result: IN_PROGRESS
+tested_code_commit: 046fc477ab80a9bc10d4170092bed6e0ad4e34ef
+latest_regression_result: FAILED
 latest_regression_run: 37554222038
 latest_regression_attempt: 1
-latest_regression_evidence: METADATA_ONLY
-latest_regression_observed_utc: 2026-10-07T00:52:58Z
+latest_regression_evidence: ROOT_RAW_AUDITED
+latest_regression_observed_utc: 2026-10-07T01:04:33Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -56,10 +56,17 @@ development and Root's separate published-commit helper/test replays each pass
 30/30; Root's 17 named inputs remain unchanged. All 19 old tests and native
 readiness/ticket/flight behavior are preserved. First/last ticks and saturating
 wait-call count are observations, not continuity, I/O or a repair. Own ended
-outputs are cleaned. Its exact-source run 37554222038 /attempt 1 /job 112576587243
-is IN_PROGRESS in the 00:52:58Z metadata capture; no whole Service/full result is
-claimed. `tested_code_commit` still names the last completed raw-audited full
-cohort at `257e7b3a`, not this new source. Native causes and all Gates remain open.
+outputs are cleaned. Its [exact-source full result](../work/v1.8.0-ci/RESULT-20.md)
+binds run 37554222038 /attempt 1 /job 112576587243, completed FAILED in the
+01:04:33Z capture. Root recounts 356 XML /1,988 actual cases /zero FES and both
+successful DataGen/worktree checks; 509 GameTests complete with one required Tau
+roundtrip failure. All 403 inputs rehash unchanged; canonical 63 ERROR /zero
+FATAL is not waived, and new external JAR bytes are unavailable. Hosted build
+includes the actual Service, unlike the pure helper replays. The Tau manager
+records WAIT_ENTITY_READY first tick 14841, last 14950, 110 qualified calls;
+both endpoint samples have entities-loaded NO /entity-ticking NO. This is not
+continuous native-I/O or unique-cause proof. Native causes and all Gates stay open.
+The separate earlier pending capture remains historical, not a current status.
 
 The [power-carrier format checkpoint](../work/v1.8.0-c16a-hatches/POWER-CARRIER-FORMAT-SOURCE-01.md)
 is independently reviewed, committed and normally pushed, then integrated at
@@ -68,14 +75,11 @@ independent development and Root's separately pinned published-commit replay;
 the latter has 49 unchanged named inputs. Only stable-root shape/scalars are
 inspected, not an Item, ticket, placement/drop or resource authority. Root's
 own ended outputs are cleaned; the statistical receipt correction is retained.
-The [exact-source full regression](../work/v1.8.0-ci/RESULT-19.md), run
-37551957636 /attempt 1 /job 112569285797, is completed FAILED in the 00:38:15Z
-observation. Root's raw recount has 356 XML /1,977 actual cases /0FES including
-all 13 new tests. Both DataGen/worktree checks pass; 509 GameTests complete with
-two required failures: Tau roundtrip and destination readiness/reserved pad.
-403 named inputs rehash unchanged. Main 64 ERROR /0 FATAL is not waived; new
-build-JAR bytes are unavailable. The previous running capture remains historical.
-Physical conservation and all Gates remain open.
+The [preceding format-source full regression](../work/v1.8.0-ci/RESULT-19.md)
+retains its two required failures at its own exact commit. The destination
+fixture's absence from the newer terminal failure list is not a demonstrated
+repair. Previous numbers are not rebound; physical conservation and all Gates
+remain open.
 
 The independently reviewed [failure observers](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
 are committed, merged and normally pushed at `35a146fbbe1f2de94160f82307d041d2cd26e472`.
@@ -175,27 +179,15 @@ The [test-only correction](../work/v1.8.0-c18a-seal-detector/SOURCE-UNIT-FIX-01.
 is reviewed and normally pushed at `33a3156e309ca2b8f6a1fcc766501968bc21f138`, with unchanged
 assertions and product. Its original successful unit correction remains in
 [RESULT-13](../work/v1.8.0-ci/RESULT-13.md). The
-[previous chunk-metadata raw-audited regression](../work/v1.8.0-ci/RESULT-18.md) belongs only to
-`3e2f6f1b`: fresh build succeeds, 355 XML suites /1,964 actual cases /0FES,
-both DataGen/worktree checks succeed, but all 509 GameTests finish with one
-required Tau failure. Root rehashes 402 named raw/receipt/observation inputs without
-drift. The failure-only service sample is LIVE and last waits at
-WAIT_ENTITY_READY; it does not prove a unique native cause. Main64 ERROR /0 FATAL
-has no blanket waiver. Build-JAR upload is skipped: no new independent JAR-byte
-verification is claimed. No assertions, deadlines or test selection change.
+[previous chunk-metadata raw-audited regression](../work/v1.8.0-ci/RESULT-18.md)
+remains historical only at `3e2f6f1b`, with its required Tau failure and retained
+raw observations. It is not the current source result. No assertions, deadlines
+or test selection change.
 The preceding [resource-source result](../work/v1.8.0-ci/RESULT-17.md) remains
 historical at its own commit; its counts are not rebound to this source.
-The [preceding recipe-row regression](../work/v1.8.0-ci/RESULT-15.md),
-run 37519061729 /attempt 1 /job 112459397257, passes clean build and all
-1,927 actual cases /352 suites /0 failures, errors or skips. First DataGen
-writes 808 entries, repeat writes 0; both worktree checks are clean.
-All 509 required GameTests complete and pass; the
-five common-bridge and eleven detector fixtures execute without a named terminal
-required failure in those batches. Root independently rehashes all 398 retained
-files and available JAR bytes without mismatch. Main62 ERROR /0 FATAL has no
-blanket waiver. JAR SHA is `cebbe1df6140654057740a31f07573338c37d5219e493b6f56907d53c0689204`;
-all 3,435 member sizes/hashes match the hosted manifest; native ZIP CRC
-validation separately succeeds. The
+The [preceding successful recipe-row regression](../work/v1.8.0-ci/RESULT-15.md)
+retains its actual counts and independent historical JAR-byte audit there;
+neither is rebound to the newer source, and errors have no blanket waiver. The
 [preceding failed cohort](../work/v1.8.0-ci/RESULT-14.md) retains its original
 Planetary/Tau samples. One successful cohort does not prove their unique cause,
 close intermittent readiness risk or establish full acceptance.
