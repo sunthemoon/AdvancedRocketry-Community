@@ -120,6 +120,104 @@ final class ClassicNativePayload {
         return id;
     }
 
+    static CompoundTag item(ItemStack stack, Runnable check) {
+        Objects.requireNonNull(stack, "stack");
+        if (ClassicGuardedResourceAccess.nativeCall(check, stack::getTag) != null
+                && !ClassicResourcesCodec.bounded(ClassicGuardedResourceAccess.nativeCall(check, stack::getTag))) {
+            throw new IllegalArgumentException("Unbounded Item metadata");
+        }
+        if (!ClassicGuardedResourceAccess.nativeCall(check, stack::isEmpty)
+                && (ClassicGuardedResourceAccess.nativeCall(check, stack::getCount) < 1
+                || ClassicGuardedResourceAccess.nativeCall(check, stack::getCount)
+                    > Math.min(64, ClassicGuardedResourceAccess.nativeCall(check, stack::getMaxStackSize)))) {
+            throw new IllegalArgumentException("Original Item count exceeds native slot limit");
+        }
+        CompoundTag encoded = ClassicGuardedResourceAccess.nativeCall(check, stack::serializeNBT);
+        requireBounded(encoded);
+        if (ClassicGuardedResourceAccess.nativeCall(check, stack::isEmpty)) {
+            if (!encoded.contains("Count", Tag.TAG_BYTE) || encoded.getByte("Count") != 0 || encoded.contains("ForgeCaps")) {
+                throw new IllegalArgumentException("Noncanonical empty Item");
+            }
+            return new CompoundTag();
+        }
+        decodeItem(encoded, check);
+        return encoded.copy();
+    }
+
+    static ItemStack decodeItem(CompoundTag encoded, Runnable check) {
+        preflightItem(encoded, check);
+        if (encoded.isEmpty()) { return ItemStack.EMPTY; }
+        ItemStack stack = ClassicGuardedResourceAccess.nativeCall(check, () -> ItemStack.of(encoded.copy()));
+        if (ClassicGuardedResourceAccess.nativeCall(check, stack::isEmpty)
+                || ClassicGuardedResourceAccess.nativeCall(check, stack::getCount)
+                    > Math.min(64, ClassicGuardedResourceAccess.nativeCall(check, stack::getMaxStackSize))
+                || !encoded.equals(ClassicGuardedResourceAccess.nativeCall(check, stack::serializeNBT))) {
+            throw new IllegalArgumentException("Native Item cannot be decoded losslessly");
+        }
+        return stack;
+    }
+
+    static void preflightItem(CompoundTag encoded, Runnable check) {
+        requireBounded(encoded);
+        if (encoded.isEmpty()) { return; }
+        if (!ITEM_FIELDS.containsAll(encoded.getAllKeys()) || !encoded.contains("id", Tag.TAG_STRING)
+                || !encoded.contains("Count", Tag.TAG_BYTE)
+                || (encoded.contains("tag") && !encoded.contains("tag", Tag.TAG_COMPOUND))) {
+            throw new IllegalArgumentException("Invalid or unsupported native Item envelope");
+        }
+        ResourceLocation resource = id(encoded.getString("id"));
+        if (!ClassicGuardedResourceAccess.nativeCall(check, () -> ForgeRegistries.ITEMS.containsKey(resource))
+                || encoded.getByte("Count") <= 0 || encoded.getByte("Count") > 64) {
+            throw new IllegalArgumentException("Unknown Item identity or invalid count");
+        }
+    }
+
+    static CompoundTag fluid(FluidStack stack, Runnable check) {
+        Objects.requireNonNull(stack, "stack");
+        if (ClassicGuardedResourceAccess.nativeCall(check, stack::hasTag)
+                && !ClassicResourcesCodec.bounded(ClassicGuardedResourceAccess.nativeCall(check, stack::getTag))) {
+            throw new IllegalArgumentException("Unbounded Fluid metadata");
+        }
+        CompoundTag encoded = ClassicGuardedResourceAccess.nativeCall(check, () -> stack.writeToNBT(new CompoundTag()));
+        requireBounded(encoded);
+        if (ClassicGuardedResourceAccess.nativeCall(check, stack::isEmpty)) {
+            if (!encoded.contains("Amount", Tag.TAG_INT) || encoded.getInt("Amount") != 0) {
+                throw new IllegalArgumentException("Noncanonical empty Fluid");
+            }
+            return new CompoundTag();
+        }
+        decodeFluid(encoded, check);
+        return encoded.copy();
+    }
+
+    static FluidStack decodeFluid(CompoundTag encoded, Runnable check) {
+        preflightFluid(encoded, check);
+        if (encoded.isEmpty()) { return FluidStack.EMPTY; }
+        FluidStack stack = ClassicGuardedResourceAccess.nativeCall(check,
+                () -> FluidStack.loadFluidStackFromNBT(encoded.copy()));
+        if (ClassicGuardedResourceAccess.nativeCall(check, stack::isEmpty)
+                || !encoded.equals(ClassicGuardedResourceAccess.nativeCall(check, () -> stack.writeToNBT(new CompoundTag())))) {
+            throw new IllegalArgumentException("Native Fluid cannot be decoded losslessly");
+        }
+        return stack;
+    }
+
+    static void preflightFluid(CompoundTag encoded, Runnable check) {
+        requireBounded(encoded);
+        if (encoded.isEmpty()) { return; }
+        if (!FLUID_FIELDS.containsAll(encoded.getAllKeys()) || !encoded.contains("FluidName", Tag.TAG_STRING)
+                || !encoded.contains("Amount", Tag.TAG_INT) || encoded.getInt("Amount") <= 0
+                || encoded.getInt("Amount") > ClassicResourceBank.FLUID_CAPACITY
+                || (encoded.contains("Tag") && !encoded.contains("Tag", Tag.TAG_COMPOUND))) {
+            throw new IllegalArgumentException("Invalid native Fluid envelope");
+        }
+        ResourceLocation resource = id(encoded.getString("FluidName"));
+        if (!ClassicGuardedResourceAccess.nativeCall(check, () -> ForgeRegistries.FLUIDS.containsKey(resource))
+                || ClassicGuardedResourceAccess.nativeCall(check, () -> ForgeRegistries.FLUIDS.getValue(resource)) == Fluids.EMPTY) {
+            throw new IllegalArgumentException("Unknown or empty Fluid identity");
+        }
+    }
+
     private static void requireBounded(Tag encoded) {
         if (!ClassicResourcesCodec.bounded(encoded)) {
             throw new IllegalArgumentException("Native payload exceeds structural or byte budget");

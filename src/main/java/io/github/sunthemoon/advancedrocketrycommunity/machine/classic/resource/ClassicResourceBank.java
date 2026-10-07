@@ -97,4 +97,23 @@ public final class ClassicResourceBank {
             throw new IllegalArgumentException("Invalid Item bank slot");
         }
     }
+
+    static ClassicResourceBank items(ClassicBankKey key, List<ItemStack> items, Runnable check) {
+        Objects.requireNonNull(key, "key");
+        if (!key.kind().isItem() || items.size() != ITEM_SLOTS) {
+            throw new IllegalArgumentException("Item bank requires its exact kind and four slots");
+        }
+        List<CompoundTag> owned = new ArrayList<>(ITEM_SLOTS);
+        for (ItemStack stack : items) { owned.add(ClassicNativePayload.item(stack, check)); }
+        ClassicGuardedResourceAccess.check(check);
+        return new ClassicResourceBank(key, owned, null);
+    }
+
+    static ClassicResourceBank fluid(ClassicBankKey key, FluidStack fluid, Runnable check) {
+        Objects.requireNonNull(key, "key");
+        if (key.kind().isItem()) { throw new IllegalArgumentException("Fluid bank requires a Fluid kind"); }
+        CompoundTag encoded = ClassicNativePayload.fluid(fluid, check);
+        ClassicGuardedResourceAccess.check(check);
+        return new ClassicResourceBank(key, List.of(), encoded);
+    }
 }

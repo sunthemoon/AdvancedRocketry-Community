@@ -116,4 +116,31 @@ final class ClassicRootBundle {
     boolean retainsBorrowedIdentity(String key, Tag original) {
         return !bounded && present(key) && roots.get(key) == original;
     }
+
+    static ClassicRootBundle captureBounded(CompoundTag parent, OwnerType type, ClassicRawPermit permit) {
+        permit.requireCurrent();
+        if (permit.purpose() != ClassicRawPurpose.CAPTURE) { throw new IllegalStateException("Not a capture lease"); }
+        ClassicRootBundle result = captureData(parent, type);
+        permit.requireCurrent(); return result;
+    }
+
+    void emitRetainedRoots(CompoundTag destination, boolean planRequiresJournal, ClassicRawPermit permit) {
+        permit.requireCurrent();
+        if (permit.purpose() != ClassicRawPurpose.EMIT) { throw new IllegalStateException("Not an emission lease"); }
+        emitData(destination, planRequiresJournal); permit.requireCurrent();
+    }
+
+    CompoundTag forDecode(GuardTicket ticket) {
+        ticket.requireValid();
+        if (!bounded) { throw new IllegalStateException("Unbounded roots cannot be copied for decode"); }
+        CompoundTag result = new CompoundTag(); roots.forEach((key, value) -> result.put(key, value.copy()));
+        ticket.requireValid(); return result;
+    }
+
+    boolean controllerPlanRequiresJournal() {
+        if (ownerType != OwnerType.CONTROLLER || !bounded) { return false; }
+        Tag value = roots.get(MACHINE);
+        return value instanceof CompoundTag root && root.contains("schema_version", Tag.TAG_INT)
+                && root.getInt("schema_version") == 1 && root.contains("native_plan", Tag.TAG_COMPOUND);
+    }
 }

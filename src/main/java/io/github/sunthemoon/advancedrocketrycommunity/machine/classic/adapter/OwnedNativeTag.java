@@ -4,6 +4,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.resource.C
 import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /** Owned pure-NBT data. Guard-bound capture/detach and native registry validation belong to 03b-02. */
 final class OwnedNativeTag {
@@ -47,5 +51,48 @@ final class OwnedNativeTag {
         String key = item ? "tag" : "Tag";
         return value.contains(key) == other.value.contains(key)
                 && (!value.contains(key) || value.get(key).equals(other.value.get(key)));
+    }
+
+    static OwnedNativeTag captureBounded(CompoundTag raw, ClassicBankKind kind, GuardTicket ticket) {
+        ticket.requireValid();
+        OwnedNativeTag result = captureData(raw, kind);
+        if (result.amount == 0) { ticket.requireValid(); return result; }
+        var id = ClassicValueChecks.id(result.resourceId);
+        if (result.item) {
+            boolean known = ForgeRegistries.ITEMS.containsKey(id); ticket.requireValid();
+            ClassicValueChecks.require(known, "Unknown native Item");
+            ItemStack stack = ItemStack.of(result.value.copy()); ticket.requireValid();
+            boolean empty = stack.isEmpty(); ticket.requireValid();
+            int maximum = stack.getMaxStackSize(); ticket.requireValid();
+            int count = stack.getCount(); ticket.requireValid();
+            CompoundTag encoded = stack.serializeNBT(); ticket.requireValid();
+            ClassicValueChecks.require(!empty && maximum > 0 && count == result.amount
+                    && count <= Math.min(64, maximum) && ClassicNbtShape.fits(encoded, ClassicNbtLimits.RESOURCES)
+                    && result.value.equals(encoded), "Lossy native Item");
+        } else {
+            boolean known = ForgeRegistries.FLUIDS.containsKey(id); ticket.requireValid();
+            var fluid = ForgeRegistries.FLUIDS.getValue(id); ticket.requireValid();
+            ClassicValueChecks.require(known && fluid != null && fluid != Fluids.EMPTY, "Unknown native Fluid");
+            FluidStack stack = FluidStack.loadFluidStackFromNBT(result.value.copy()); ticket.requireValid();
+            boolean empty = stack.isEmpty(); ticket.requireValid();
+            CompoundTag encoded = stack.writeToNBT(new CompoundTag()); ticket.requireValid();
+            ClassicValueChecks.require(!empty && ClassicNbtShape.fits(encoded, ClassicNbtLimits.RESOURCES)
+                    && result.value.equals(encoded), "Lossy native Fluid");
+        }
+        ticket.requireValid(); return result;
+    }
+
+    CompoundTag detached(GuardTicket ticket) {
+        ticket.requireValid(); CompoundTag result = value.copy(); ticket.requireValid(); return result;
+    }
+
+    int capacity(GuardTicket ticket) {
+        ticket.requireValid();
+        if (!item) { return 16_000; }
+        if (amount == 0) { throw new IllegalStateException("Empty Item cannot select native capacity"); }
+        ItemStack stack = ItemStack.of(value.copy()); ticket.requireValid();
+        int result = stack.getMaxStackSize(); ticket.requireValid();
+        ClassicValueChecks.require(result >= 1, "Invalid native Item capacity");
+        return Math.min(64, result);
     }
 }

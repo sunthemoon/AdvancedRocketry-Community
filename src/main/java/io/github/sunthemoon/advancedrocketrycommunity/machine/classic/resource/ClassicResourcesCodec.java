@@ -129,4 +129,88 @@ public final class ClassicResourcesCodec {
     }
 
     private ClassicResourcesCodec() { }
+
+    static ClassicResourcesDecode decode(Tag raw, UUID expectedMachineId, Runnable check) {
+        Objects.requireNonNull(expectedMachineId, "expectedMachineId");
+        ClassicGuardedResourceAccess.check(check);
+        if (raw == null) { return ClassicResourcesDecode.refused(ClassicResourcesDecode.Status.MISSING, null); }
+        if (!bounded(raw)) { return ClassicResourcesDecode.refused(ClassicResourcesDecode.Status.UNBOUNDED, raw); }
+        if (!(raw instanceof CompoundTag root) || !root.contains("schema_version", Tag.TAG_INT)) {
+            return ClassicResourcesDecode.refused(ClassicResourcesDecode.Status.INVALID_DATA, raw);
+        }
+        if (root.getInt("schema_version") != SCHEMA_VERSION) {
+            return ClassicResourcesDecode.refused(ClassicResourcesDecode.Status.UNSUPPORTED_SCHEMA, raw);
+        }
+        try {
+            if (!root.getAllKeys().equals(ROOT_FIELDS) || !root.hasUUID("machine_uuid")
+                    || !root.contains("revision", Tag.TAG_LONG) || root.getLong("revision") < 0
+                    || !root.contains("banks", Tag.TAG_LIST)) {
+                throw new IllegalArgumentException("Invalid resource root fields/types");
+            }
+            UUID machineId = root.getUUID("machine_uuid");
+            if (!expectedMachineId.equals(machineId)) {
+                return ClassicResourcesDecode.refused(ClassicResourcesDecode.Status.OWNER_CONFLICT, raw);
+            }
+            ListTag list = (ListTag) root.get("banks");
+            if (list.size() > ClassicResources.MAX_BANKS
+                    || list.getElementType() != (list.isEmpty() ? Tag.TAG_END : Tag.TAG_COMPOUND)) {
+                throw new IllegalArgumentException("Invalid retained bank list");
+            }
+            var seen = new HashSet<ClassicBankKey>();
+            for (Tag element : list) {
+                if (!seen.add(preflightBank((CompoundTag) element, check))) {
+                    throw new IllegalArgumentException("Duplicate retained bank key");
+                }
+            }
+            List<ClassicResourceBank> banks = new ArrayList<>(list.size());
+            for (Tag element : list) { banks.add(decodeBank((CompoundTag) element, check)); }
+            ClassicGuardedResourceAccess.check(check);
+            ClassicResources resources = ClassicResources.restore(machineId, root.getLong("revision"), banks);
+            if (!root.equals(frame(resources))) { throw new IllegalArgumentException("Lossy resource root decoding"); }
+            ClassicGuardedResourceAccess.check(check);
+            return ClassicResourcesDecode.supported(resources);
+        } catch (ClassicGuardedResourceAccess.WitnessFailure failed) {
+            throw failed;
+        } catch (RuntimeException invalid) {
+            ClassicGuardedResourceAccess.check(check);
+            return ClassicResourcesDecode.refused(ClassicResourcesDecode.Status.INVALID_DATA, raw);
+        }
+    }
+
+    private static ClassicBankKey preflightBank(CompoundTag bank, Runnable check) {
+        if (!bank.contains("channel", Tag.TAG_STRING) || !bank.contains("kind", Tag.TAG_STRING)
+                || !bank.contains("x", Tag.TAG_INT) || !bank.contains("y", Tag.TAG_INT) || !bank.contains("z", Tag.TAG_INT)) {
+            throw new IllegalArgumentException("Invalid bank key field types");
+        }
+        ClassicBankKey key = ClassicBankKey.parse(bank.getString("channel"));
+        if (!key.kind().id().equals(bank.getString("kind")) || key.x() != bank.getInt("x")
+                || key.y() != bank.getInt("y") || key.z() != bank.getInt("z")
+                || !bank.getAllKeys().equals(key.kind().isItem() ? ITEM_FIELDS : FLUID_FIELDS)) {
+            throw new IllegalArgumentException("Conflicting bank identity or fields");
+        }
+        if (key.kind().isItem()) {
+            if (!bank.contains("items", Tag.TAG_LIST)) { throw new IllegalArgumentException("Missing Item slots"); }
+            ListTag slots = (ListTag) bank.get("items");
+            if (slots.size() != ClassicResourceBank.ITEM_SLOTS || slots.getElementType() != Tag.TAG_COMPOUND) {
+                throw new IllegalArgumentException("Item bank requires four compound slots");
+            }
+            for (Tag slot : slots) { ClassicNativePayload.preflightItem((CompoundTag) slot, check); }
+        } else {
+            if (!bank.contains("fluid", Tag.TAG_COMPOUND)) { throw new IllegalArgumentException("Missing Fluid payload"); }
+            ClassicNativePayload.preflightFluid(bank.getCompound("fluid"), check);
+        }
+        return key;
+    }
+
+    private static ClassicResourceBank decodeBank(CompoundTag bank, Runnable check) {
+        ClassicBankKey key = ClassicBankKey.parse(bank.getString("channel"));
+        if (key.kind().isItem()) {
+            List<ItemStack> items = new ArrayList<>(ClassicResourceBank.ITEM_SLOTS);
+            for (Tag slot : (ListTag) bank.get("items")) {
+                items.add(ClassicNativePayload.decodeItem((CompoundTag) slot, check));
+            }
+            return ClassicResourceBank.items(key, items, check);
+        }
+        return ClassicResourceBank.fluid(key, ClassicNativePayload.decodeFluid(bank.getCompound("fluid"), check), check);
+    }
 }
