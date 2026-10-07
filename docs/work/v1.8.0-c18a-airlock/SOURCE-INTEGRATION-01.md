@@ -25,6 +25,30 @@ two existing rocket subjects and two new airlock subjects. It does not supply
 native airlock delivery. Original source and failed run remain unchanged while
 an isolated correction is investigated.
 
+## Reviewed fixture-only successor
+
+The isolated correction is committed by Root at
+`c3e582b9eab25d71c7357f1837ba451503c011bb` and cherry-picked without byte changes
+onto main at `01521d6cf56bfac0d88d05ac74389f2c36dc4887`. Exactly the GameTest and
+[correction record](FIXTURE-CORRECTION-01.md) change: 64 spaced deterministic
+loot seeds retain every oracle, and fixed scalar observations augment the same
+initial-supply assertion. Supply remains diagnostic-only, not a repair.
+
+Different-agent [actual-diff review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-airlock-fixture-correction-independent-review-20261007-01/REVIEW-01.md),
+SHA-256 `95991f1f2df82dec93010b53a3cd0aee7a23d3254765dd8d21d382f0213b2c08`,
+independently executes 20 static checks with zero failures and preserves seven
+declarations and 55 assertion predicates. Two failed read commands are retained;
+no native execution or causal conclusion is claimed. Root reads and hashes the
+complete report before integrating. The
+[integration receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-source-ci-regression-20261007-01/FIXTURE-INTEGRATION-01.json),
+SHA-256 `5441feb2dad68b2fa9600eae2f10d305f2e6a00f18d4342c32ddbdce1a638bac`,
+checks both frozen/committed/main blobs, exact stage/stat and unchanged unrelated
+status/bytes. The [normal publication](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-source-ci-regression-20261007-01/FIXTURE-PUBLICATION-01.json),
+SHA-256 `568e9ea8d90c1ca77d0762214907ab9ec02cb802cf2c53627893e5247ffa677d`,
+checks planning/accepted-ledger/client boundaries/diff and matching remote HEAD.
+The exact-source [successor run](../v1.8.0-ci/RESULT-27.md) is running; the four
+original required failures remain historical and unmodified.
+
 ## Committed source and exact review association
 
 Root commits the isolated worker's six NEW files at
@@ -93,9 +117,10 @@ runData with tracked and untracked cleanliness, and full GameTests are required.
 No local Java/JVM/Gradle/native/client runs while C free space is below 10 GB.
 Own D-parent scratch is used; existing user/other-agent files are untouched.
 
-The last audited source remains 8b3: unit/DataGen pass but full GameTests fail
-the existing Tau roundtrip, with unwaived ERRORs. Those counts are not rebound
-to the new airlock. Native restart/real survival/client GPU V1/V2, performance,
+The preceding 8b3 audit retains its own failed Tau roundtrip in RESULT-24.
+The exact 61ae5001 terminal audit passes units/repeated DataGen but fails four
+native subjects in RESULT-26; historical counts are not rebound. Native
+restart/real survival/client GPU V1/V2, performance,
 license/full-content qualification and all whole-version G0-G9 remain open.
 The next current-version step is hosted execution of the complete committed
 source/resource combination and evidence-preserving repairs of actual failures.

@@ -36,14 +36,14 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 61ae5001532c2a95c3393030be8f2d36521a446a
+latest_source_checkpoint: 01521d6cf56bfac0d88d05ac74389f2c36dc4887
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: 61ae5001532c2a95c3393030be8f2d36521a446a
-latest_regression_result: FAILED
-latest_regression_run: 37590839225
+latest_regression_target_commit: 01521d6cf56bfac0d88d05ac74389f2c36dc4887
+latest_regression_result: RUNNING
+latest_regression_run: 37595775604
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED
-latest_regression_observed_utc: 2026-10-07T08:11:53Z
+latest_regression_evidence: METADATA_ONLY
+latest_regression_observed_utc: 2026-10-07T08:44:49Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -54,8 +54,8 @@ The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)
 and [fixture](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-path-fixture-investigation-20261007-01/REPORT-01.md)
 investigations to cold destination entity readiness; a unique native cause or
-repair is not established. The latest failed regression association remains
-at 8b3; the new source is not yet tested. Primary static facts retain the all-world tick route,
+repair is not established. The latest failed regression association is the
+61ae5001 cohort; the previous 8b3 result remains historical. Primary static facts retain the all-world tick route,
 entity-load processing after the playerless branch and GameTest-before-END
 ordering; actual pending-load progress remains unobserved.
 The C18a [airlock source task](../work/v1.8.0-c18a-airlock/TASK-01.md) is implemented-unverified
@@ -81,8 +81,10 @@ individual native pass XML is absent. Canonical 67 ERROR /zero FATAL remain
 unwaived. Root and different-agent raw audits agree with zero retained-input
 drift. The two new failures are assigned to an isolated fixture
 follow-up: bounded loot seed spacing and initial-supply scalar observations,
-preserving assertions/deadlines/budgets. Supply cause remains unresolved and no
-native repair is yet proven.
+preserving assertions/deadlines/budgets. The two-file correction has a separate
+different-agent actual-diff review, is committed and normally pushed at
+`01521d6c`, and its [successor regression](../work/v1.8.0-ci/RESULT-27.md) is
+running. Supply cause remains unresolved and no native repair is yet proven.
 The dated [running observation](../work/v1.8.0-ci/RESULT-25.md) remains historical.
 Own ended source worktree is normally removed after clean/merged checks.
 Full GameTest qualification, restart and V1/V2 remain open.
