@@ -42,7 +42,7 @@ latest_regression_target_commit: 10eb561a5112ee6226e2c52fef1c1cc358c5ef3f
 latest_regression_result: FAILED
 latest_regression_run: 37608847289
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED_PENDING_INDEPENDENT
+latest_regression_evidence: RAW_AUDITED_INDEPENDENT
 latest_regression_observed_utc: 2026-10-07T10:51:42Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
@@ -58,8 +58,9 @@ fails full regression: 372 XML/2,104 units, build/artifact and twice DataGen/cle
 checks pass; 525 native tests complete, Tau travel and installed-airlock initial
 supply fail. The loader is absent from the complete failure list and no count
 message is emitted; this is not a count observation or repair. Canonical 64 ERROR
-/zero FATAL remain unwaived. Root raw audit has zero drift; independent audit is
-pending. The clean ended owned worktree is normally removed, source retained.
+/zero FATAL remain unwaived. Root and [independent retained-stream audit](../work/v1.8.0-ci/RESULT-37.md)
+agree with zero input drift; the complete failed result remains failed. The clean
+ended owned worktree is normally removed, source retained.
 
 The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)

@@ -35,7 +35,8 @@ No other worktree, source world or inherited evidence is cleaned.
 DataGen but fails complete GameTests at Tau and installed-airlock initial supply.
 No loader count assertion failure occurs; the new message branch is not exercised.
 Previous failed results keep their original source/counts. Root raw audit has
-zero drift; independent raw audit is pending. No observed entity count, production
+zero drift; [independent raw audit](../v1.8.0-ci/RESULT-37.md) is complete and agrees.
+No observed entity count, production
 duplication/omission or repair is inferred. All v1.8 G0-G9, packaged restart,
 real-client/performance and physical hatch remain open. No local Java/native
 executes while C has under 10 GB free; scratch/evidence is D-parent-local.

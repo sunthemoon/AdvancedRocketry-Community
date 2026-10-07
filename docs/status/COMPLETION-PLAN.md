@@ -265,7 +265,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   过滤实体或更改原守恒断言。独立实际审核无新增问题后，[两文件原字节发布](../work/v1.8.0-regression-observation/FUEL-DROP-DIAGNOSTIC-INTEGRATION-01.md)
   至 `10eb561a`，自有结束工作树已正常清理。[精确源码终态](../work/v1.8.0-ci/RESULT-36.md)
   的构建/单测/两次生成通过，完整 GameTest 失败在 Tau 与气闸；装载器未列为失败，
-  未触发数量消息，不能据此声明复现诊断、唯一原因或修复。独立原始审核待完成。
+  未触发数量消息，不能据此声明复现诊断、唯一原因或修复。[独立原始审核](../work/v1.8.0-ci/RESULT-37.md)
+  已完成且一致、输入无漂移；仅诊断源码/检查/回归/审核部分已发布。
 
 - [ ] [C18d-SKY-01](../work/v1.8.0-c18d-sky-switches/TASK-01.md)：status: implemented-unverified。
   仅实施 ADR-066 已接受的 planet/station 两项 CLIENT 开关。按既有 effects 注册分类，
@@ -391,7 +392,9 @@ C17b candidate03 的独立审核已解决旧版 Medium
 /job 112750895284，completed failure。372 XML /2,104 单测零失败错误跳过；
 构建、产物和两次原生生成/干净检查通过。525 GameTest 完成，Tau 与气闸初次供气
 两项 required 失败，64 ERROR /零 FATAL 未豁免。装载器未列为失败，数量消息未触发；
-Root 原始核验输入无漂移，独立审核待完成。不据前序偶发通过宣告修复。
+Root 与[独立原始审核](../work/v1.8.0-ci/RESULT-37.md)一致、输入无漂移。
+气闸下半门/cached 第一组有源码约束的执行推论，下半门/in-flight 第二组在供气前置断言失败，
+该组撤销/恢复及后四组均未获验证。不据前序偶发通过宣告修复。
 上一完成源码 `22f7d1cae0735a8b8c072165e7a3cf8089e3719c` 的
 [终态原始结果](../work/v1.8.0-ci/RESULT-33.md)绑定 run 37605098496 /attempt 1
 /job 112738525112，completed failure。372 XML /2,104 单测零失败错误跳过；

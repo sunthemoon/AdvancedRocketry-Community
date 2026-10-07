@@ -38,5 +38,6 @@ binds the unchanged two-file source to `10eb561a`. Its
 [new exact-source terminal](../v1.8.0-ci/RESULT-36.md) passes build/unit/DataGen
 checks and fails complete GameTests at Tau and airlock initial supply. The loader
 count failure does not recur, so no observed count or message-branch validation
-is claimed. Source/check/replay work is published; independent raw audit is
-pending and regression repair remains outside this diagnostic-only scope.
+is claimed. [Different-agent raw audit](../v1.8.0-ci/RESULT-37.md) is complete,
+agrees and has zero input drift. Source/check/replay/audit work is published;
+regression repair remains outside this diagnostic-only scope.
