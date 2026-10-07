@@ -3,9 +3,10 @@
 Date: 2026-10-07. Milestone: v1.8.0 / C18b. Task type: contract/test design.
 Owner: Claude, delegated external worker. Integrator/sole Git writer: Root/Codex.
 Reviewer: a different read-only Codex session on actual draft return.
-Status: READY for draft authoring after publication; production implementation
-remains DEPENDENCY_BLOCKED. Contract status: proposed, not frozen. No author
-start/model execution or delivered source is inferred.
+Current status: author-returned / CHANGES_REQUESTED after independent review:
+seven Medium and two Low. Original READY registration remains historical.
+See [Root review](../v1.8.0-claude-return-review/REVIEW-01.md) and [TASK-02](TASK-02.md).
+Production remains DEPENDENCY_BLOCKED; contract proposed, not frozen.
 
 ## Registered checkout and ownership
 

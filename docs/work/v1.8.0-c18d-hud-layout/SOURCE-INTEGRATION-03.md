@@ -5,6 +5,20 @@ implemented-unverified; source review and intermediate targeted JUnit passed.
 This record accompanies the source checkpoint; it does not deliver the eight
 ledger units, qualify a client, or close any v1.8.0 Required Gate.
 
+Publication observation: Root committed the 17-file checkpoint and non-force
+pushed `f9f2d9d2c5eb0de2c9f5d28160ab7804fc57eaef` on the isolated source branch,
+then fast-forwarded/non-force pushed the same SHA on the main development branch.
+Exact staged stat, publication receipt and remote SHA checks are retained in
+the Root evidence leaf; user AGENTS hash and unrelated tracked/index work are
+unchanged. At 2026-10-07T16:35:54Z, public API bound hosted run 37653204825 /
+attempt 1 to this SHA, clean-build step in progress. This is metadata-only,
+not a terminal/runtime result. The closed first
+[MONITOR-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-01.json)
+retains that exact source/run association separately from the active monitor log;
+do not reuse b8136f0b's passing units for f9f2d9d2.
+The subsequent own ended build-copy cleanup request was rejected before script
+execution by tool policy; CLEANUP-01-NOT-EXECUTED.md records that it remains.
+
 ## Source identity and changes
 
 Isolated branch/worktree and pre-edit scope are in [ROOT-TASK-03](ROOT-TASK-03.md).

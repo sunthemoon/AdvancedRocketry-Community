@@ -36,21 +36,33 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: b8136f0b8a41e64d51798f18e03127ebdd35693f
+latest_source_checkpoint: f9f2d9d2c5eb0de2c9f5d28160ab7804fc57eaef
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: b8136f0b8a41e64d51798f18e03127ebdd35693f
+latest_regression_target_commit: f9f2d9d2c5eb0de2c9f5d28160ab7804fc57eaef
 latest_regression_result: FAILED
-latest_regression_run: 37628727531
+latest_regression_run: 37653204825
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED_INDEPENDENT
-latest_regression_observed_utc: 2026-10-07T13:37:34Z
+latest_regression_evidence: METADATA_ONLY_FAILURE
+latest_regression_observed_utc: 2026-10-07T16:47:12Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
-last_updated: 2026-10-07
+last_updated: 2026-10-08
 ```
 
 ## Current development evidence
 
-The bounded airlock [current-seed input amendment](../work/v1.8.0-c18a-airlock/SEED-INPUTS-INTEGRATION-02.md)
+HUD source checkpoint `f9f2d9d2` is committed and normally pushed; run
+37653204825 /attempt 1 is bound to it and was observed completed/failure at
+16:47:12 UTC, with the GameTests step failed. The closed
+[terminal receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-12.json),
+SHA `4487aae21af0bbebdfca7d333b9d1f71b5c2af43c6e857df3b38c9b482b1f25e`,
+is metadata only: raw counts, failure identities and log disposition are not yet
+verified. The earlier running observation remains a dated historical receipt.
+See [SOURCE-INTEGRATION-03](../work/v1.8.0-c18d-hud-layout/SOURCE-INTEGRATION-03.md).
+The ended owned build-copy cleanup was rejected before execution; it remains
+pending normal permitted retirement. No C temporary script or other agent tree
+was cleaned or claimed cleaned.
+
+The previous completed airlock [current-seed input amendment](../work/v1.8.0-c18a-airlock/SEED-INPUTS-INTEGRATION-02.md)
 is independently source-reviewed, committed and normally pushed at `b8136f0b`.
 It appends failure-only guarded identity/native sky-height samples after the old
 observations, preserving all original tests and budgets; no repair is claimed.
@@ -77,7 +89,9 @@ absence from that failure list establishes neither observation nor repair.
 The eight-key environment/oxygen [HUD task](../work/v1.8.0-c18d-hud-layout/TASK-01.md)
 has a bounded adopted contract and a later external Claude author return,
 [registered after authoring](../work/v1.8.0-c18d-hud-layout/ASSIGNMENT-01.md).
-Status: implemented-unverified bounded Root HUD source checkpoint. The exact
+Status: implemented-unverified bounded Root HUD source checkpoint at f9f2d9d2,
+committed/pushed with metadata-only terminal regression failure; raw verification
+remains open. The exact
 original patch is applied in ROOT-TASK-03's isolated worktree; config/renderer
 bindings and independent-oracle tests have different-agent source review and
 intermediate 28/28 JUnit passing. See
@@ -93,9 +107,14 @@ Three separate Claude contract/test-design assignments now have registered
 worktrees: components/graph 10, audio 10 and equipment 20 units, linked from
 the [canonical handoff](../work/v1.8.0-claude-parallel-handoff.md#7-forward-contract-assignments).
 They authorize draft files only, not source implementation. On 2026-10-08 the
-owner reported all nine drafts returned in their registered worktrees; three
-different-agent read-only reviews are underway. Their content is still PROPOSED,
-not frozen or delivered; author seals and unresolved semantics require review.
+owner reported all nine drafts returned in their registered worktrees. All three
+different-agent reviews are complete: graph 2 High/4 Medium, audio 7 Medium,
+equipment 7 Medium/2 Low. All are CHANGES_REQUESTED, still PROPOSED/not frozen.
+[Root receipt and successor assignments](../work/v1.8.0-claude-return-review/REVIEW-01.md)
+bind exact bytes/reports; three TASK-02 registrations permit only new revision
+documents/evidence. Twenty pinned MIT recipe bodies are verified; the two owner
+graph choices are recorded separately. Original files/seals stay unchanged;
+the audio seal-history evidence gap remains, not retroactively repaired.
 Root launched no Claude run. Runtime/V1/V2/Gates and CSV allocations are unchanged.
 
 The retained Tau failure is localized by independent

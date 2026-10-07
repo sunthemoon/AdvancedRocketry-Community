@@ -3,8 +3,10 @@
 Date: 2026-10-07. Milestone: v1.8.0 / C16d. Task type: contract/test design.
 Owner: Claude, delegated external worker. Integrator/sole Git writer: Root/Codex.
 Reviewer: a different read-only Codex session, assigned when the actual draft returns.
-Status: READY for authoring after Root publishes this registration. No author
-start or model run is inferred. Contract status: proposed, not frozen.
+Current status: author-returned / CHANGES_REQUESTED after independent review:
+two High and four Medium. Original READY registration below remains historical.
+See [Root review](../v1.8.0-claude-return-review/REVIEW-01.md) and [TASK-02](TASK-02.md).
+Contract remains proposed, not frozen; no source implementation authorized.
 
 ## Registered checkout and ownership
 

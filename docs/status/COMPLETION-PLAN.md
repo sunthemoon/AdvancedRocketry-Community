@@ -1,6 +1,6 @@
 # 至完成的分会话计划
 
-更新：2026-10-07。活动开发版本为 v1.8.0，并行推进剩余设备和原生失败修订；
+更新：2026-10-08。活动开发版本为 v1.8.0，并行推进剩余设备和原生失败修订；
 验收游标仍在 v1.0.0。分支为 `codex/v1.8.0-classic-content`。
 已验证的开发进度按功能提交和非强制推送，不把提交当作 Gate 批准。
 本计划只记录现状；历史运行与失败保留在各版本实施日志及证据中。
@@ -294,7 +294,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   client 实际分发及 V1/V2 未验证。
 
 - [~] [C18d-HUD-ENV-O2-01](../work/v1.8.0-c18d-hud-layout/TASK-01.md)：
-  status: implemented-unverified，Root 已在隔离工作树接入。只覆盖环境/氧气八项 CLIENT 布局设置；
+  status: implemented-unverified，源码已审核并提交、正常推送至 `f9f2d9d2`，固定提交 CI 终态失败，原始结果待核验。
+  只覆盖环境/氧气八项 CLIENT 布局设置；
   原契约三个 Medium 已经独立后续审核处理，投影的测试矩阵 Medium 已另行修订；
   [技术采纳记录](../work/v1.8.0-c18d-hud-layout/ADOPTION-01.md)保留原证据及清洁性文字更正。
   [事后交接登记](../work/v1.8.0-c18d-hud-layout/ASSIGNMENT-01.md)绑定 Claude 外部三个新文件；
@@ -422,8 +423,12 @@ Root 保留共享保存/hatch、typed 推进、站点核心、生命支持权威
 [配方图 10 项](../work/v1.8.0-c16d-components-graph/TASK-01.md)、
 [音效 10 项](../work/v1.8.0-c18d-audio/TASK-01.md)、
 [装备模块 20 项](../work/v1.8.0-c18b-equipment/TASK-01.md)。
-只允许契约/测试设计/交接文档。2026-10-08 用户报告九份文档全部返回，三个独立只读审核已分配；
-作者记录、实际后像和封存证据仍须核查，不把报告当作冻结或交付。装备生产实现仍 DEPENDENCY_BLOCKED。
+只允许契约/测试设计/交接文档。九份原稿按原字节归档；三个独立审核已完成：
+配方图 2 High/4 Medium，音效 7 Medium，装备 7 Medium/2 Low，均 CHANGES_REQUESTED。
+[Root 审核关联与 TASK-02](../work/v1.8.0-claude-return-review/REVIEW-01.md) 已事前登记三组后继文档范围；
+作者工作树与原封存包不改，音效历史封存缺口保留。装备生产实现仍 DEPENDENCY_BLOCKED。
+20 份旧配方正文已独立核验；用户已选择显式验证下界入口及标签互操作/数据包额外配方。
+这只解决输入和两项选择，不冻结整份契约、接受新 ADR 或交付内容。
 Root 不启动 Claude、不授予广泛生产写入、不建未使用框架；其他包保持规划状态。
 环境/氧气八项的外部 helper 返回、实际作者基线/位置、执行偏差与待审核状态见 HUD ASSIGNMENT-01；
 原 CSV 的 readiness 不自动升级。上述任务以已发布 TASK 为执行边界，禁止 JVM/缓存/中央文件写入；
@@ -431,7 +436,13 @@ Root 不启动 Claude、不授予广泛生产写入、不建未使用框架；�
 
 ## 当前自动回归与风险
 
-最新源码 `b8136f0b8a41e64d51798f18e03127ebdd35693f` 的
+最新源码 `f9f2d9d2c5eb0de2c9f5d28160ab7804fc57eaef` 已正常推送，
+CI run 37653204825 /attempt 1 在 16:47:12 UTC 观察到 completed/failure，GameTests 步骤失败。
+[终态回执](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-12.json)
+仅为 metadata；原始计数、失败名称与日志处置仍待核验，不复用前一批数字。
+自有已结束 HUD build 副本的清理命令被工具策略在执行前拒绝，清理仍待允许的正常处理；
+未创建 C 临时脚本，不删除其他代理的旧目录。
+上一次完成回归的源码 `b8136f0b8a41e64d51798f18e03127ebdd35693f` 的
 [失败终态与 Root 原始推导](../work/v1.8.0-ci/RESULT-42.md)绑定 run 37628727531 /attempt 1
 /job 112817138488；13:37:34 UTC 完成失败。2,104 JUnit、构建/审计、重复原生生成与
 tracked/untracked 检查通过；525 GameTest 完成，Tau、初始气闸供气和目的地实体就绪失败。
