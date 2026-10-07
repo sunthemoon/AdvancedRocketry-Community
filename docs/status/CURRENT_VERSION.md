@@ -36,7 +36,7 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 8b3fdca990be3880ff04aae5a2354657d499b60f
+latest_source_checkpoint: f65877f78b02697518b2c41bf8cd539c98800b73
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
 latest_regression_target_commit: 8b3fdca990be3880ff04aae5a2354657d499b60f
 latest_regression_result: FAILED
@@ -54,8 +54,8 @@ The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)
 and [fixture](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-path-fixture-investigation-20261007-01/REPORT-01.md)
 investigations to cold destination entity readiness; a unique native cause or
-repair is not established. The source and latest failed regression association
-below remain unchanged. Primary static facts retain the all-world tick route,
+repair is not established. The latest failed regression association remains
+at 8b3; the new source is not yet tested. Primary static facts retain the all-world tick route,
 entity-load processing after the playerless branch and GameTest-before-END
 ordering; actual pending-load progress remains unobserved.
 The C18a [airlock source task](../work/v1.8.0-c18a-airlock/TASK-01.md) is implemented-unverified

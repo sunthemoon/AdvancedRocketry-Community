@@ -3,6 +3,14 @@
 Date: 2026-10-07. Integrator: Root. Status: IMPLEMENTED_UNVERIFIED.
 This records source integration, not accepted delivery or release qualification.
 
+Root's ten central Java files and qualified integration records are committed
+at `f65877f78b02697518b2c41bf8cd539c98800b73`. The
+[central commit receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-and-airlock-root-progress-20261007-01/CENTRAL-COMMIT-01.json)
+records all ten reviewed postimage hashes, exact fifteen-file stage/stat,
+planning/accepted-ledger/client/diff exits 0 and unchanged user AGENTS.
+Resource outputs/provenance are committed separately with this metadata update;
+normal publication and hosted execution are subsequent observations.
+
 ## Committed source and exact review association
 
 Root commits the isolated worker's six NEW files at
