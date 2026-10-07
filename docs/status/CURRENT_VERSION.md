@@ -117,7 +117,21 @@ bind exact bytes/reports; three TASK-02 registrations permit only new revision
 documents/evidence. Twenty pinned MIT recipe bodies are verified; the two owner
 graph choices are recorded separately. Original files/seals stay unchanged;
 the audio seal-history evidence gap remains, not retroactively repaired.
-Root launched no Claude run. Runtime/V1/V2/Gates and CSV allocations are unchanged.
+The original interactive author route remains historical. Under the owner's
+2026-10-08 direct-dispatch authority, Root now launches fresh bounded Claude
+sessions: smoke, short same-small-session resume, partial audio inspection and
+two-switch sky continuation all return exit 0 /is_error false. The large owner
+session is not resumed or forked. [Actual receipt](../work/v1.8.0-claude-cli-coordination/REPORT-01.md)
+binds session IDs, errors/cost estimates, exact nine revision-02 archives and
+independent reviews: graph 1 High/3 Medium/1 Low, equipment 2 Medium/1 Low,
+audio 6 Medium/4 Low. All three stay PROPOSED and CHANGES_REQUESTED, not frozen.
+A separate fresh test-only sky-bootstrap author returned exactly two files;
+candidate 493df490 is pushed on its isolated branch, not integrated here.
+Separately authorized targeted execution at that SHA passes 20 actual JUnit
+cases (5 new /7 adapter /8 config); final source-review/adoption is separate.
+Three smaller TASK-03 proposal leaves are registered, not started at this
+checkpoint. Full regression/V1/V2/Gates, 186 PLANNED /154 REVIEW and CSV
+allocations are unchanged.
 
 The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)
