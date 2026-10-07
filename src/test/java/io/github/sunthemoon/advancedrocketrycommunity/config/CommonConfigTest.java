@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
@@ -40,8 +41,10 @@ class CommonConfigTest {
         // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values, and the v1.8
         // Classic settings: C15a/b/c (ADR-063), combustion, tank capacity and pump operation (ADR-064),
         // the classic life-support instrument switch (ADR-066), and the single solar generator's
-        // enable switch and output multiplier (ADR-065).
-        assertEquals(72, countValues(CommonConfig.SPEC.getValues()));
+        // enable switch and output multiplier (ADR-065), plus the accepted C18a living-tick gravity switch.
+        assertSame(CommonConfig.CLASSIC_GRAVITY_ENABLED,
+                CommonConfig.SPEC.getValues().get("environment.classicGravityEnabled"));
+        assertEquals(73, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
