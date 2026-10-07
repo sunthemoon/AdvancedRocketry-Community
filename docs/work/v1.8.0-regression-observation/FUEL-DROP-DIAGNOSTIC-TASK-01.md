@@ -34,5 +34,9 @@ six identical annotations/deadlines, empty index and owned scope. The
 [static receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-author-20261007-01/CHECKS-01.json)
 has SHA-256 `2e045f155277164f96edfdaf10712be8d096e259714a41886a6259b462b8bd1e`.
 Independent exact-diff review is complete. The [publication record](FUEL-DROP-DIAGNOSTIC-INTEGRATION-01.md)
-binds the unchanged two-file source to `10eb561a` and its new running hosted CI;
-no new native result is yet claimed.
+binds the unchanged two-file source to `10eb561a`. Its
+[new exact-source terminal](../v1.8.0-ci/RESULT-36.md) passes build/unit/DataGen
+checks and fails complete GameTests at Tau and airlock initial supply. The loader
+count failure does not recur, so no observed count or message-branch validation
+is claimed. Source/check/replay work is published; independent raw audit is
+pending and regression repair remains outside this diagnostic-only scope.

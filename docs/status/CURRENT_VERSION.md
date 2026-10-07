@@ -39,11 +39,11 @@ runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 10eb561a5112ee6226e2c52fef1c1cc358c5ef3f
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
 latest_regression_target_commit: 10eb561a5112ee6226e2c52fef1c1cc358c5ef3f
-latest_regression_result: RUNNING
+latest_regression_result: FAILED
 latest_regression_run: 37608847289
 latest_regression_attempt: 1
-latest_regression_evidence: METADATA_ONLY
-latest_regression_observed_utc: 2026-10-07T10:40:21Z
+latest_regression_evidence: RAW_AUDITED_PENDING_INDEPENDENT
+latest_regression_observed_utc: 2026-10-07T10:51:42Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -53,9 +53,13 @@ last_updated: 2026-10-07
 The bounded loader-count [diagnostic publication](../work/v1.8.0-regression-observation/FUEL-DROP-DIAGNOSTIC-INTEGRATION-01.md)
 is independently reviewed, committed and normally pushed at `10eb561a`.
 It changes only a failure message's already-queried count, preserving the exact
-predicate/query/deadlines and all six tests. The [new source-bound CI](../work/v1.8.0-ci/RESULT-35.md)
-is RUNNING with metadata only; no new-source raw totals/drop count or repair
-is inferred. The clean owned ended worktree is normally removed, source retained.
+predicate/query/deadlines and all six tests. The [new source-bound terminal](../work/v1.8.0-ci/RESULT-36.md)
+fails full regression: 372 XML/2,104 units, build/artifact and twice DataGen/clean
+checks pass; 525 native tests complete, Tau travel and installed-airlock initial
+supply fail. The loader is absent from the complete failure list and no count
+message is emitted; this is not a count observation or repair. Canonical 64 ERROR
+/zero FATAL remain unwaived. Root raw audit has zero drift; independent audit is
+pending. The clean ended owned worktree is normally removed, source retained.
 
 The retained Tau failure is localized by independent
 [production](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-transfer-production-investigation-20261007-01/REPORT-01.md)

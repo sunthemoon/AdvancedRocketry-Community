@@ -252,9 +252,10 @@ C17b candidate03 的独立审核已解决旧版 Medium
   六组断言、原期限及预算不变，异步结束、异常及超时清理必须独立审核。
   两文件经独立实际差异审核后，[原字节提交、集成和正常推送](../work/v1.8.0-c18a-airlock/FIXTURE-TIMING-INTEGRATION-01.md)
   至 `22f7d1ca`；独立 126 项源/有限模型和 16 项映射标量检查通过。
-  自有结束工作树已正常清理；新 CI 七项气闸均未列为失败，固定源码在成功前
+  自有结束工作树已正常清理；`22f7d1ca` CI 七项气闸均未列为失败，固定源码在成功前
   执行六组原始供气/撤销/恢复断言和正常清理。[独立原始审核](../work/v1.8.0-ci/RESULT-34.md)已完成且一致；
   无独立 native PASS XML、异常/超时清理或崩服恢复证据，不宣告生产原因或修复。
+  后续 `10eb561a` 完整回归再次失败在下半门/phase 1 的首次供气，后续组合未获验证。
 - [~] Tau 冷目标调查：生产与夹具独立读证一致，失败停在目标实体就绪前，
   源火箭和 PREPARED 事务仍在。原生静态事实已核对正常 tick 与就绪处理调用关系，
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；
@@ -262,7 +263,9 @@ C17b candidate03 的独立审核已解决旧版 Medium
 - [ ] [装载器掉落实测数量诊断](../work/v1.8.0-regression-observation/FUEL-DROP-DIAGNOSTIC-TASK-01.md)：
   status: implemented-unverified。仅给现有失败断言补已查询列表的数量，不新增世界查询、
   过滤实体或更改原守恒断言。独立实际审核无新增问题后，[两文件原字节发布](../work/v1.8.0-regression-observation/FUEL-DROP-DIAGNOSTIC-INTEGRATION-01.md)
-  至 `10eb561a`，自有结束工作树已正常清理，完整原生 CI 运行中，不推断复制或修复。
+  至 `10eb561a`，自有结束工作树已正常清理。[精确源码终态](../work/v1.8.0-ci/RESULT-36.md)
+  的构建/单测/两次生成通过，完整 GameTest 失败在 Tau 与气闸；装载器未列为失败，
+  未触发数量消息，不能据此声明复现诊断、唯一原因或修复。独立原始审核待完成。
 
 - [ ] [C18d-SKY-01](../work/v1.8.0-c18d-sky-switches/TASK-01.md)：status: implemented-unverified。
   仅实施 ADR-066 已接受的 planet/station 两项 CLIENT 开关。按既有 effects 注册分类，
@@ -384,8 +387,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
 ## 当前自动回归与风险
 
 最新源码 `10eb561a5112ee6226e2c52fef1c1cc358c5ef3f` 的
-[运行中观察](../work/v1.8.0-ci/RESULT-35.md)绑定 run 37608847289 /attempt 1
-/job 112750895284；仅元数据，不借用上一源码的通过计数或宣告修复。
+[终态原始结果](../work/v1.8.0-ci/RESULT-36.md)绑定 run 37608847289 /attempt 1
+/job 112750895284，completed failure。372 XML /2,104 单测零失败错误跳过；
+构建、产物和两次原生生成/干净检查通过。525 GameTest 完成，Tau 与气闸初次供气
+两项 required 失败，64 ERROR /零 FATAL 未豁免。装载器未列为失败，数量消息未触发；
+Root 原始核验输入无漂移，独立审核待完成。不据前序偶发通过宣告修复。
 上一完成源码 `22f7d1cae0735a8b8c072165e7a3cf8089e3719c` 的
 [终态原始结果](../work/v1.8.0-ci/RESULT-33.md)绑定 run 37605098496 /attempt 1
 /job 112738525112，completed failure。372 XML /2,104 单测零失败错误跳过；

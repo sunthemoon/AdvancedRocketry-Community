@@ -31,8 +31,11 @@ only its ended worktree without force (`003e8a`, exit 0), retaining the branch.
 has SHA-256 `7c4ba8aaacc7d896859003f48114e98c71272748534f6a94188890cafb1ec181`.
 No other worktree, source world or inherited evidence is cleaned.
 
-[New exact-source CI](../v1.8.0-ci/RESULT-35.md) is running; previous failed
-results keep their original source/counts. No observed entity count, production
+[New exact-source terminal](../v1.8.0-ci/RESULT-36.md) passes build/units/twice
+DataGen but fails complete GameTests at Tau and installed-airlock initial supply.
+No loader count assertion failure occurs; the new message branch is not exercised.
+Previous failed results keep their original source/counts. Root raw audit has
+zero drift; independent raw audit is pending. No observed entity count, production
 duplication/omission or repair is inferred. All v1.8 G0-G9, packaged restart,
 real-client/performance and physical hatch remain open. No local Java/native
 executes while C has under 10 GB free; scratch/evidence is D-parent-local.
