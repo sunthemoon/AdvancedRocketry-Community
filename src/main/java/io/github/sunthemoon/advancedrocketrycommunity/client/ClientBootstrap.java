@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.config.ClientConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
@@ -130,8 +131,10 @@ public final class ClientBootstrap {
 
     @SubscribeEvent
     public static void onRegisterDimensionEffects(RegisterDimensionSpecialEffectsEvent event) {
-        event.register(SkyProfiles.SURFACE_EFFECTS, new PlanetaryDimensionEffects(new DimensionSpecialEffects.OverworldEffects()));
-        event.register(SkyProfiles.SPACE_EFFECTS, new PlanetaryDimensionEffects(new DimensionSpecialEffects.EndEffects()));
+        event.register(SkyProfiles.SURFACE_EFFECTS, new PlanetaryDimensionEffects(
+                new DimensionSpecialEffects.OverworldEffects(), ClientConfig::planetSkyOverride));
+        event.register(SkyProfiles.SPACE_EFFECTS, new PlanetaryDimensionEffects(
+                new DimensionSpecialEffects.EndEffects(), ClientConfig::stationSkyOverride));
     }
 
     @SubscribeEvent

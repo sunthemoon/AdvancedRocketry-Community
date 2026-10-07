@@ -1,7 +1,9 @@
 # C18d-SKY-01: existing planet and station sky switches
 
 Date: 2026-10-07. Version: v1.8.0. Integrator: Root.
-Status: in-progress. Contract basis: accepted ADR-066 revision 3 section 7.2.
+Status: implemented-unverified; source independently reviewed and integrated.
+See [source integration](SOURCE-INTEGRATION-01.md).
+Contract basis: accepted ADR-066 revision 3 section 7.2.
 No Required Gate, content-ledger delivery or new semantic approval is claimed.
 
 ## Outcome and narrow binding

@@ -245,11 +245,13 @@ C17b candidate03 的独立审核已解决旧版 Medium
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；
   原延时、就绪谓词与完整往返测试保留，不据此勾选功能或 Gate。
 
-- [ ] [C18d-SKY-01](../work/v1.8.0-c18d-sky-switches/TASK-01.md)：status: in-progress。
+- [ ] [C18d-SKY-01](../work/v1.8.0-c18d-sky-switches/TASK-01.md)：status: implemented-unverified。
   仅实施 ADR-066 已接受的 planet/station 两项 CLIENT 开关。按既有 effects 注册分类，
   关闭后还原对应 fallback hook、云高度与雾处理，不更改原始选择、环境或环境音。
   独立工作树四项适配/测试文件与 Root 三项配置/注册文件互不重叠；
-  主 API 事实已核对，但完整组合编译、client 实际分发及 V1/V2 未验证。
+  五个 worker 文件经 Root 提交、原字节 cherry-pick；三项中央绑定也已经独立审核，
+  [完整集成](../work/v1.8.0-c18d-sky-switches/SOURCE-INTEGRATION-01.md)保留源码关联。
+  主 API 事实已核对，但精确组合编译、client 实际分发及 V1/V2 未验证。
 
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
   A 的[完整源码](../work/v1.8.0-c18a-living-gravity/SOURCE-INTEGRATION-01.md)已独立审核、

@@ -88,10 +88,12 @@ status is OPEN with resources present, but its native cause remains unresolved.
 Root and different-agent raw audits agree with zero retained-input drift. No supply
 repair or full native qualification is proven.
 The accepted-category [sky switch task](../work/v1.8.0-c18d-sky-switches/TASK-01.md)
-is in progress in a separate worktree. Root's three config/registration/test
-postimages have different-agent static review; worker adapters/tests are
-frozen for separate actual-diff review. No full combination is yet committed,
-compiled or client-qualified. Raw selection and ambience are outside that gate.
+has [reviewed source integration](../work/v1.8.0-c18d-sky-switches/SOURCE-INTEGRATION-01.md).
+Five worker files are committed/cherry-picked without byte changes; Root's
+three central bindings accompany their qualified metadata checkpoint. Different-agent
+central and combined actual-diff reviews find no actionable scoped issue.
+Exact-source hosted compilation/tests and real clients are still unqualified;
+raw selection and ambience are outside that presentation gate.
 The dated [running observation](../work/v1.8.0-ci/RESULT-25.md) remains historical.
 Own ended source worktree is normally removed after clean/merged checks.
 Full GameTest qualification, restart and V1/V2 remain open.
