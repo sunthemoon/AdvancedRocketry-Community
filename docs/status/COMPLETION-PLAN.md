@@ -81,19 +81,19 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     测试副本三处近邻标记隔离源码审核、集成与 Root 137 Python 通过；
     仅固定两主机原生诊断及独立结果审核已验证，不改 Java/保存行为、不开放新 writer；清理仍被拒绝。
   - [~] 完整 hash/frame/native codec、GuardTicket 与真实 owner 生命周期：
-    私有 40 文件 owner 检查点保留前序后继的四项 Medium 修订，新增另经独立审核的
-    双 LOAD 记录与 EMIT 比较接入；全部 48 项 owner 测试仍未编译或执行。
-    不替代实际权限、完整 hatch、重新准入或失败处置测试。
-    中央注册、物理接入、完整测试和保存运行集成未完成，候选尚未交付。
+    owner 与比较器的双 LOAD 记录、EMIT 比较接入已独立审核并组合，
+    相关测试已在终态托管回归实际执行；不替代已安装权限、完整 hatch、
+    原生重新准入或失败处置验证。中央注册、物理接入和保存运行集成未完成，候选尚未交付。
     出站比较/保留观察提案的[原审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md)
     保留历史 Medium；LOAD 记录接口的另版补充已完成[独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)，
     提案文本补全记录接口和见证时序，无新增 C/H/M/L。
     [限定实施记录](../work/v1.8.0-c16a-hatches/LOAD-JOIN-IMPLEMENTATION-01.md)已按条件授权
     采纳私有技术补充；owner、精确根比较及真实区块观察器已在三个独立工作区写成，
-    分别完成限定范围源码审核，并提交、正常推送为[私有未验证检查点](../work/v1.8.0-c16a-hatches/PRIVATE-SOURCE-CHECKPOINTS-01.md)。
-    比较器另有 22 项未执行测试。后继[未启用保存源码](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
+    分别完成限定范围源码审核；[原私有检查点](../work/v1.8.0-c16a-hatches/PRIVATE-SOURCE-CHECKPOINTS-01.md)保留为历史。
+    后继[未启用保存源码](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
     已独立核验组合和真实类型依赖，固定源码 139 个生产文件的有界编译通过；
-    171 个输入无漂移，生成 189 个 class、保留一项警告，未执行这七十项测试。
+    171 个输入无漂移，生成 189 个 class、保留一项警告；该局部编译不执行测试，
+    而[终态托管结果](../work/v1.8.0-ci/RESULT-21.md)实际通过对应全部机器测试。
     49 个实际改动文件合入 `8f7e1d10` 并正常推送，注册/入口不变；
     物理/放置/拆除接入、完整生命周期处置与原生验证仍开放，不据此开放 writer。
   - [~] [公共保存接口](../work/v1.8.0-c16a-hatches/COMMON-GUARD-BRIDGE-SOURCE-01.md)：
@@ -334,9 +334,14 @@ pure-helper 单测分别通过，
 `7ab1b087`。十八个输入无漂移；旧断言、时限、ticket 和 2048/512 输出不变。
 单次新原生查询只在缺失分支，标签为 POST_LOOKUP；不是飞行或原生就绪修复。
 自有七个 class 和九个目录已清理，原统计和另版更正保留；定向测试不执行 native fixture。
-新精确源码 run 37560119538 /attempt 1 /job 112595248301 在 2026-10-07T02:06:03Z
-捕获中为 IN_PROGRESS，clean build 运行中，后续步骤待执行；只有元数据，没有
-本批次已完成的单测、DataGen、GameTest 或 JAR 结果。失败原因、物理保存和全部 Gate 仍开放。
+新精确源码的[终态回归](../work/v1.8.0-ci/RESULT-21.md)绑定 run 37560119538 /attempt 1 /
+job 112595248301，2026-10-07T02:17:33Z 捕获为 completed success。
+实际原始报告核对 367 XML /2,067 单测 /零 testcase 失败、错误或跳过，零 container 失败或错误；
+十一份新增测试的 79 个名称与固定源码一致，其中机器 70 项、文本九项。
+clean build、产物检查、两次 DataGen/干净工作树和 509/509 required GameTest 通过；
+canonical 62 ERROR /零 FATAL 未豁免。新 JAR 实际整字节摘要与 hosted 清单一致，
+不声称独立重解析内部条目。一次成功不证明就绪修复、缺失分支执行或物理机器可用；
+旧运行中捕获和失败保留。失败原因、物理保存和全部 Gate 仍开放。
 [前序格式源码结果](../work/v1.8.0-ci/RESULT-19.md)保留两项 required 失败；
 目的地夹具在新批次不再出现失败标题，不据此认定修复。
 [元数据源码结果](../work/v1.8.0-ci/RESULT-18.md)仍是其自己提交的历史事实，

@@ -38,11 +38,11 @@ previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 7ab1b0879527f4d8d3e88f09f9360015175b911a
 tested_code_commit: 7ab1b0879527f4d8d3e88f09f9360015175b911a
-latest_regression_result: RUNNING
+latest_regression_result: PASSED
 latest_regression_run: 37560119538
 latest_regression_attempt: 1
-latest_regression_evidence: METADATA_ONLY
-latest_regression_observed_utc: 2026-10-07T02:06:03Z
+latest_regression_evidence: RAW_IDENTITY_AUDITED_AND_EXTERNAL_JAR_DIGEST
+latest_regression_observed_utc: 2026-10-07T02:17:33Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
@@ -53,8 +53,8 @@ The [inactive guarded-save integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE
 combines the independently reviewed owner/comparator/central source and explicit
 native hatch type injection at main `8f7e1d10`. Actual private fixed-source javac
 passes: 139 production sources, 171 unchanged inputs, 189 classes, one warning,
-zero executed tests. Its seventy owner/comparator declarations await full hosted
-execution. Actual compile/fixed-recipient review finds no unresolved inactive
+zero executed tests. Its seventy owner/comparator declarations now pass in the
+separate hosted cohort below. Actual compile/fixed-recipient review finds no unresolved inactive
 source issue; physical hooks/writers are not registered or admitted.
 The disjoint [failure-only Tau holder observer](../work/v1.8.0-tau-holder-observation/SOURCE-INTEGRATION-01.md)
 is independently reviewed, normally pushed and integrated unchanged at `7ab1b087`.
@@ -62,9 +62,17 @@ Root's fixed formatter/Jupiter run passes nine matching methods with eighteen
 unchanged inputs; its independent raw audit agrees. That run does not compile/run
 the native Tau fixture. Both own ended output sets are cleaned, with separate
 count-only corrections retaining original receipts. Main index and user AGENTS
-are preserved. Run 37560119538 /attempt 1 /job 112595248301 is IN_PROGRESS in
-the dated 02:06:03Z capture: clean build running, later steps pending, metadata
-only. No completed new regression/JAR or Gate result is claimed. Tau, physical
+are preserved. The separate [terminal result](../work/v1.8.0-ci/RESULT-21.md)
+binds source `7ab1b087`, run 37560119538 /attempt 1 /job 112595248301 and the
+02:17:33Z capture: completed automatic regression success. Actual raw recount
+finds 367 XML /2,067 testcase children /zero testcase failures, errors or skips
+and zero container failures/errors; eleven changed suites /79 matching cases pass. Clean build,
+artifact audit, both DataGen/clean-worktree checks and 509/509 required GameTests
+pass. The canonical stream retains 62 ERROR /zero FATAL, not waived. The actual
+downloaded JAR whole-byte digest matches hosted metadata/checksum/manifest; no
+independent inner-JAR reparse is claimed. One successful cohort is not a Tau
+repair, new failure-branch execution or physical machine activation. The dated
+02:06 running record and earlier failures remain unchanged. Physical
 placement/removal/final-save/restart, R-021 and all Required Gates remain open.
 
 The [readiness-wait history checkpoint](../work/v1.8.0-transfer-wait-history/SOURCE-INTEGRATION-01.md)
@@ -141,26 +149,23 @@ FULL observation or native save writer. Its complete hosted workflow has ended;
 the new ten cases also pass in the exact-source full unit cohort. The terminal
 raw-audited result below supersedes its earlier metadata-only observation without
 rewriting that historical capture or assigning an installed-owner qualification.
-The private generation40 owner checkpoint preserves the preceding successor's
-four Medium fixes and adds the separately reviewed two-LOAD recording and EMIT
-comparison joins. Its 48 Jupiter declarations remain uncompiled/unexecuted;
-source inspection is not ordinary capability, complete-hatch, re-admission or
-publication-failure execution. Real physical joins, full test execution and
-installed/native qualification remain open. The outgoing-comparison proposal's original Medium stays
+The current inactive owner/comparator source includes the separately reviewed
+two-LOAD recording and EMIT comparison joins. Its focused tests now execute
+successfully in the terminal cohort linked above; this does not establish
+ordinary installed capability, complete-hatch re-admission or native
+publication-failure execution. Physical joins and installed/native qualification
+remain open. The outgoing-comparison proposal's original Medium stays
 in its [historical review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md).
 The separate LOAD-join amendment has completed [independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)
 with no introduced C/H/M/L, addressing the missing recording join and timing in
 proposed text only. Root's [limited implementation intake](../work/v1.8.0-c16a-hatches/LOAD-JOIN-IMPLEMENTATION-01.md)
 adopts that private technical amendment and the comparator seam under the
-recorded conditional authority. The three disjoint source portions are written,
-independently reviewed within their stated scopes and normally pushed as
-[private unverified checkpoints](../work/v1.8.0-c16a-hatches/PRIVATE-SOURCE-CHECKPOINTS-01.md).
-Comparator's 22 test declarations also remain unexecuted in the production-only
-cohort. The successor [inactive source integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
-combines these portions and the explicit native type injection, with real
-production compilation and unchanged main integration now recorded. This
-supersedes pending assembly/compile status, not the dated original backups or
-their unrun tests. Runtime registration, physical/placement/removal joins,
+recorded conditional authority. The [inactive source integration](../work/v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md)
+combines all three portions and explicit native type injection, with actual
+production compilation, main integration and now full hosted regression.
+The [original private checkpoints](../work/v1.8.0-c16a-hatches/PRIVATE-SOURCE-CHECKPOINTS-01.md)
+remain dated history, not a current uncompiled/unexecuted claim.
+Runtime registration, physical/placement/removal joins,
 complete lifecycle disposal and native evidence remain prerequisites. No save
 writer or installed-owner admission is opened by the source integration.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
