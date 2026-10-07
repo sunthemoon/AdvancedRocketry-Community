@@ -42,7 +42,7 @@ No other worktree, branch, user data or inherited evidence is removed.
 
 The [new source-bound terminal](../v1.8.0-ci/RESULT-33.md) retains seven airlock
 subjects absent from the complete failure list, with all six installed cases
-preceding committed success/normal cleanup. Different-agent raw audit is pending;
+preceding committed success/normal cleanup. The [different-agent raw audit](../v1.8.0-ci/RESULT-34.md) agrees;
 there is no independent native PASS XML or abnormal cleanup/restart proof.
 Full regression still fails Tau and loader drop/place. Packaged restart,
 V1/V2, Tau readiness and all G0-G9 remain open.

@@ -42,7 +42,7 @@ latest_regression_target_commit: 22f7d1cae0735a8b8c072165e7a3cf8089e3719c
 latest_regression_result: FAILED
 latest_regression_run: 37605098496
 latest_regression_attempt: 1
-latest_regression_evidence: ROOT_RAW_AUDITED_INDEPENDENT_PENDING
+latest_regression_evidence: RAW_AUDITED
 latest_regression_observed_utc: 2026-10-07T10:16:53Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
@@ -88,7 +88,7 @@ The [new exact-source terminal](../work/v1.8.0-ci/RESULT-33.md) fails full regre
 372 XML/2,104 units pass; build, artifact and twice DataGen/clean checks pass.
 525 native subjects complete with two required failures, Tau travel and loader
 drop/place; canonical 64 ERROR/zero FATAL remains unwaived. Root raw derivation
-is complete and different-agent audit is pending. All seven airlock subjects
+and [different-agent audit](../work/v1.8.0-ci/RESULT-34.md) agree, inputs unchanged. All seven airlock subjects
 are absent from the complete failure list; committed installed-case sequencing
 reaches all six original supply/revoke/no-republication/recovery cases before
 normal cleanup/success. No individual native PASS XML or abnormal-stop/timeout
