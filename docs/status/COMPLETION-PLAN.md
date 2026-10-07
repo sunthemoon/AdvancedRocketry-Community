@@ -236,12 +236,19 @@ C17b candidate03 的独立审核已解决旧版 Medium
   [集成记录](../work/v1.8.0-c18a-airlock/SOURCE-INTEGRATION-01.md)保留精确关联与限制。
   完整源码与资源已正常推送至 `61ae5001`，精确提交 hosted CI 已启动；自有结束工作树已清理。
   精确提交的十四项新单测及重复原生生成通过；七项原生测试执行但两项失败，
-  失败记录保留，正在独立工作树修订夹具，不改变断言、期限或预算。
+  失败记录保留；两文件夹具修订已经独立审核、提交并正常推送至 `01521d6c`，
+  精确提交完整复跑正在运行，不改变断言、期限或预算。供气仅增诊断，原因未定。
   完整 GameTest、重启或 V1/V2 未交付，不依赖未接受的物理 hatch 接入。
 - [~] Tau 冷目标调查：生产与夹具独立读证一致，失败停在目标实体就绪前，
   源火箭和 PREPARED 事务仍在。原生静态事实已核对正常 tick 与就绪处理调用关系，
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；
   原延时、就绪谓词与完整往返测试保留，不据此勾选功能或 Gate。
+
+- [ ] [C18d-SKY-01](../work/v1.8.0-c18d-sky-switches/TASK-01.md)：status: in-progress。
+  仅实施 ADR-066 已接受的 planet/station 两项 CLIENT 开关。按既有 effects 注册分类，
+  关闭后还原对应 fallback hook、云高度与雾处理，不更改原始选择、环境或环境音。
+  独立工作树四项适配/测试文件与 Root 三项配置/注册文件互不重叠；
+  主 API 事实已核对，但完整组合编译、client 实际分发及 V1/V2 未验证。
 
 - [~] [C18a 生物重力与摔落](../work/v1.8.0-c18a-living-gravity/TASK-01.md)：
   A 的[完整源码](../work/v1.8.0-c18a-living-gravity/SOURCE-INTEGRATION-01.md)已独立审核、
@@ -350,13 +357,16 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ## 当前自动回归与风险
 
-最新源码 `61ae5001532c2a95c3393030be8f2d36521a446a` 的
+最新源码 `01521d6cf56bfac0d88d05ac74389f2c36dc4887` 的
+[精确回归](../work/v1.8.0-ci/RESULT-27.md)绑定 run 37595775604 /attempt 1
+/job 112707924073，仍在运行，不赋予终态指标。
+前一源码 `61ae5001532c2a95c3393030be8f2d36521a446a` 的
 [终态回归](../work/v1.8.0-ci/RESULT-26.md)绑定 run 37590839225 /attempt 1
 /job 112691678476；2026-10-07T08:11:53Z 捕获 completed failure。
 372 XML /2,097 单测零失败错误跳过，编译、产物和两次原生生成/干净检查通过；
 525 GameTest 完成、四项 required 失败：既有 Earth-Mars-Venus 与 Tau 往返，
 以及气闸有限 loot 采样与初始安装供气。canonical 67 ERROR /零 FATAL 未豁免。
-Root 与独立原始审核一致、输入无漂移；气闸两项失败正在限定夹具修订。
+Root 与独立原始审核一致、输入无漂移；气闸限定夹具修订已经发布，供气修复未证明。
 [运行中观察](../work/v1.8.0-ci/RESULT-25.md)保留为历史，下述 8b3 指标不重绑。
 
 [失败时观察源码](../work/v1.8.0-regression-observation/SOURCE-INTEGRATION-01.md)
