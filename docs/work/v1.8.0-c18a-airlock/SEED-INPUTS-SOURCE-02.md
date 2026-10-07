@@ -4,6 +4,10 @@ Date: 2026-10-07. Task: [SEED-INPUTS-TASK-02](SEED-INPUTS-TASK-02.md).
 Status: implemented-unverified; pre-publication source snapshot, not repair.
 Base: `ff56fd7e2d394bc4dc31005b3be05186597f7cd1`.
 
+This historical development snapshot precedes review/publication; the separate
+[SEED-INPUTS-INTEGRATION-02](SEED-INPUTS-INTEGRATION-02.md) binds the later exact
+source commit, different-author review, normal cleanup and dated hosted status.
+
 Only the existing native GameTest family's initial-supply failure diagnostic
 changes executable instructions. A private helper appended after all previous
 observations captures one guarded current seed block registry ID/isAir, its

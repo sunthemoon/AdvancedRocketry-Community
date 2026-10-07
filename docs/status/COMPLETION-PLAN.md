@@ -263,6 +263,12 @@ C17b candidate03 的独立审核已解决旧版 Medium
   至 `2a59cfac`。自有已结束工作树正常移除，源码与 D 盘薄证据保留；
   精确提交 hosted CI 的构建/单测/重复生成通过，完整 GameTest 失败；
   原供气失败诊断分支已触发，但唯一原因、修复与全部 Gate 仍未证明。
+- [~] [气闸当前种子输入补充](../work/v1.8.0-c18a-airlock/SEED-INPUTS-TASK-02.md)：
+  status: implemented-unverified。只在旧诊断之后增加有界种子身份、sky/height 原生标量，
+  原断言、期限、预算及六组顺序不变。不同代理实际五文件审核与独立静态检查完成后，
+  [原字节提交、正常推送和自有工作树移除](../work/v1.8.0-c18a-airlock/SEED-INPUTS-INTEGRATION-02.md)
+  已完成；精确源码 b8136f0b 的托管构建/单测/重复生成通过，完整 GameTest 仍失败。
+  新当前种子标量分支已触发，不宣告唯一原因、生产修复或 Gate。
 - [~] Tau 冷目标调查：生产与夹具独立读证一致，失败停在目标实体就绪前，
   源火箭和 PREPARED 事务仍在。原生静态事实已核对正常 tick 与就绪处理调用关系，
   实际加载 future/inbox 尚未观测，未证明唯一原因或修复；
@@ -413,7 +419,15 @@ Root 保留共享保存/hatch、typed 推进、站点核心、生命支持权威
 
 ## 当前自动回归与风险
 
-最新源码 `2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7` 的
+最新源码 `b8136f0b8a41e64d51798f18e03127ebdd35693f` 的
+[失败终态与 Root 原始推导](../work/v1.8.0-ci/RESULT-42.md)绑定 run 37628727531 /attempt 1
+/job 112817138488；13:37:34 UTC 完成失败。2,104 JUnit、构建/审计、重复原生生成与
+tracked/untracked 检查通过；525 GameTest 完成，Tau、初始气闸供气和目的地实体就绪失败。
+canonical 65 ERROR/零 FATAL 未豁免，新批次不同代理原始审核待完成。诊断分支记录空气种子
+在 y180、sky=true、高度182、y比较=false；只提供当前取证，不证明唯一原因、修复、
+原生 getter 无副作用或 Gate。装载器未在新失败清单中，旧失败不因此关闭。
+[较早运行时间点](../work/v1.8.0-ci/RESULT-41.md)保持原样，不借用前序结果。
+前一源码 `2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7` 的
 [失败终态与 Root 原始推导](../work/v1.8.0-ci/RESULT-39.md)绑定 run 37618804027 /attempt 1
 /job 112783570613。372 XML/2,104 JUnit 零失败错误跳过；构建/审计、两次原生生成与
 tracked/untracked 干净检查通过。525 GameTest 完成，Tau、气闸首次供气与装载器掉落/放置

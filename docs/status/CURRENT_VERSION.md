@@ -36,35 +36,38 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7
+latest_source_checkpoint: b8136f0b8a41e64d51798f18e03127ebdd35693f
 tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: 2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7
+latest_regression_target_commit: b8136f0b8a41e64d51798f18e03127ebdd35693f
 latest_regression_result: FAILED
-latest_regression_run: 37618804027
+latest_regression_run: 37628727531
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED_INDEPENDENT
-latest_regression_observed_utc: 2026-10-07T12:19:44Z
+latest_regression_evidence: RAW_AUDITED_ROOT
+latest_regression_observed_utc: 2026-10-07T13:37:34Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
 ```
 
 ## Current development evidence
 
-The bounded installed-airlock [supply snapshot publication](../work/v1.8.0-c18a-airlock/SUPPLY-DIAGNOSTIC-INTEGRATION-01.md)
-is independently source-reviewed, committed and normally pushed at `2a59cfac`.
-It adds fixed failure-only retained-scan/cell/door observations, preserving the
-original predicate, deadlines, budgets and six cases; no production repair is
-claimed. The exact-source [terminal/raw derivation](../work/v1.8.0-ci/RESULT-39.md)
-binds run 37618804027 /attempt 1 /job 112783570613: completed failure.
-372 XML/2,104 units, build/audits and two DataGen/clean checks pass;
-525 native tests complete, with Tau travel, installed-airlock initial supply
-and loader drop/place failing. Canonical 65 ERROR/zero FATAL remain unwaived.
-The airlock snapshot and loader count=0 failure branches execute; these are
-observations, not unique causes or repair. Root derivation and the
-[different-agent raw audit](../work/v1.8.0-ci/RESULT-40.md) agree, with zero input
-drift; the complete regression remains failed. No historical counts are rebound to this
-source. The earlier dated running observation stays in RESULT-38. The owned ended worktree
-is normally removed, with committed source and thin D evidence retained.
+The bounded airlock [current-seed input amendment](../work/v1.8.0-c18a-airlock/SEED-INPUTS-INTEGRATION-02.md)
+is independently source-reviewed, committed and normally pushed at `b8136f0b`.
+It appends failure-only guarded identity/native sky-height samples after the old
+observations, preserving all original tests and budgets; no repair is claimed.
+The exact-source [failed terminal/Root raw derivation](../work/v1.8.0-ci/RESULT-42.md)
+binds run 37628727531 /attempt 1 /job 112817138488 at 13:37:34 UTC.
+Build, 2,104 units and both DataGen/clean checks pass; 525 native tests complete,
+failing Tau arrival, initial airlock supply and ticketed destination readiness.
+Canonical 65 ERROR/zero FATAL remain unwaived; different-agent new raw audit
+is pending. The added seed segment executes: air at y180, sky true, height182,
+y comparison false. This is current exposure evidence, not cause or repair.
+RESULT-41 keeps its earlier dated metadata-only observation. The own ended worktree is normally removed; the
+source commit/branch and thin D evidence remain. The prior 2a59cfac
+[different-agent failed raw audit](../work/v1.8.0-ci/RESULT-40.md) remains
+historical, not rebound: Tau, initial supply, loader drop/place and unwaived
+errors are still open. Loader absence from this new failure list is not closure.
+Source/current diagnostics prove no unique cause,
+native getter purity or repair. All v1.8 G0-G9 remain open.
 The last completed [loader-diagnostic cohort](../work/v1.8.0-ci/RESULT-36.md)
 and [different-agent raw audit](../work/v1.8.0-ci/RESULT-37.md) remain failed,
 with Tau/airlock and unwaived errors open. Its loader count branch did not run;
