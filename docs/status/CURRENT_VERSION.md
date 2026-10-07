@@ -42,7 +42,7 @@ latest_regression_target_commit: b8136f0b8a41e64d51798f18e03127ebdd35693f
 latest_regression_result: FAILED
 latest_regression_run: 37628727531
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_AUDITED_ROOT
+latest_regression_evidence: RAW_AUDITED_INDEPENDENT
 latest_regression_observed_utc: 2026-10-07T13:37:34Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-07
@@ -58,8 +58,9 @@ The exact-source [failed terminal/Root raw derivation](../work/v1.8.0-ci/RESULT-
 binds run 37628727531 /attempt 1 /job 112817138488 at 13:37:34 UTC.
 Build, 2,104 units and both DataGen/clean checks pass; 525 native tests complete,
 failing Tau arrival, initial airlock supply and ticketed destination readiness.
-Canonical 65 ERROR/zero FATAL remain unwaived; different-agent new raw audit
-is pending. The added seed segment executes: air at y180, sky true, height182,
+Canonical 65 ERROR/zero FATAL remain unwaived; the separate
+[different-agent raw audit](../work/v1.8.0-ci/RESULT-43.md) agrees, with zero input drift.
+The added seed segment executes: air at y180, sky true, height182,
 y comparison false. This is current exposure evidence, not cause or repair.
 RESULT-41 keeps its earlier dated metadata-only observation. The own ended worktree is normally removed; the
 source commit/branch and thin D evidence remain. The prior 2a59cfac

@@ -423,7 +423,8 @@ Root 保留共享保存/hatch、typed 推进、站点核心、生命支持权威
 [失败终态与 Root 原始推导](../work/v1.8.0-ci/RESULT-42.md)绑定 run 37628727531 /attempt 1
 /job 112817138488；13:37:34 UTC 完成失败。2,104 JUnit、构建/审计、重复原生生成与
 tracked/untracked 检查通过；525 GameTest 完成，Tau、初始气闸供气和目的地实体就绪失败。
-canonical 65 ERROR/零 FATAL 未豁免，新批次不同代理原始审核待完成。诊断分支记录空气种子
+canonical 65 ERROR/零 FATAL 未豁免；[新不同代理原始审核](../work/v1.8.0-ci/RESULT-43.md)
+已完成且与 Root 一致，输入零漂移。诊断分支记录空气种子
 在 y180、sky=true、高度182、y比较=false；只提供当前取证，不证明唯一原因、修复、
 原生 getter 无副作用或 Gate。装载器未在新失败清单中，旧失败不因此关闭。
 [较早运行时间点](../work/v1.8.0-ci/RESULT-41.md)保持原样，不借用前序结果。
