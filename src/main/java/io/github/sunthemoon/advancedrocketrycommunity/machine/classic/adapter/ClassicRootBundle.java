@@ -116,4 +116,92 @@ final class ClassicRootBundle {
     boolean retainsBorrowedIdentity(String key, Tag original) {
         return !bounded && present(key) && roots.get(key) == original;
     }
+
+    static ClassicRootBundle captureBounded(CompoundTag parent, OwnerType type, ClassicRawPermit permit) {
+        permit.requireCurrent();
+        if (permit.purpose() != ClassicRawPurpose.CAPTURE) { throw new IllegalStateException("Not a capture lease"); }
+        ClassicRootBundle result = captureData(parent, type);
+        permit.requireCurrent(); return result;
+    }
+
+    void emitRetainedRoots(CompoundTag destination, boolean planRequiresJournal, ClassicRawPermit permit) {
+        permit.requireCurrent();
+        if (permit.purpose() != ClassicRawPurpose.EMIT) { throw new IllegalStateException("Not an emission lease"); }
+        emitData(destination, planRequiresJournal); permit.requireCurrent();
+    }
+
+    CompoundTag forDecode(GuardTicket ticket) {
+        ticket.requireValid();
+        if (!bounded) { throw new IllegalStateException("Unbounded roots cannot be copied for decode"); }
+        CompoundTag result = new CompoundTag(); roots.forEach((key, value) -> result.put(key, value.copy()));
+        ticket.requireValid(); return result;
+    }
+
+    boolean controllerPlanRequiresJournal() {
+        if (ownerType != OwnerType.CONTROLLER || !bounded) { return false; }
+        Tag value = roots.get(MACHINE);
+        return value instanceof CompoundTag root && root.contains("schema_version", Tag.TAG_INT)
+                && root.getInt("schema_version") == 1 && root.contains("native_plan", Tag.TAG_COMPOUND);
+    }
+
+    /** Equality of retained data only; owner identity and selected checkpoint stay fenced by the caller. */
+    boolean matchesRetained(CompoundTag outgoing, boolean planRequiresJournal, ClassicRawPermit permit) {
+        requireEmission(permit);
+        try {
+            return !requiresSaveRefusal(planRequiresJournal) && matchesManaged(roots, outgoing);
+        } finally {
+            permit.requireCurrent();
+        }
+    }
+
+    /** Supported encoding is already owned. A hatch encoding is the root, not a managed parent. */
+    static boolean matchesEncoded(CompoundTag encoded, OwnerType type, CompoundTag outgoing,
+                                  ClassicRawPermit permit) {
+        requireEmission(permit);
+        try {
+            if (encoded == null || encoded.getClass() != CompoundTag.class || type == null) { return false; }
+            Map<String, Tag> expected = new LinkedHashMap<>();
+            if (type == OwnerType.HATCH) {
+                if (!canCopyLosslessly(encoded, ClassicNbtLimits.HATCH)
+                        || !ClassicFrameCodec.preflightHatch(encoded)) { return false; }
+                expected.put(HATCH, encoded);
+            } else {
+                // Bound the exact native parent before the existing strict key/type preflight scans it.
+                if (!canCopyLosslessly(encoded, ClassicNbtLimits.CONTROLLER)
+                        || !ClassicFrameCodec.preflightController(encoded)) { return false; }
+                for (String key : KEYS) {
+                    if (encoded.contains(key)) { expected.put(key, encoded.get(key)); }
+                }
+            }
+            return matchesManaged(expected, outgoing);
+        } finally {
+            permit.requireCurrent();
+        }
+    }
+
+    private static void requireEmission(ClassicRawPermit permit) {
+        Objects.requireNonNull(permit, "permit").requireCurrent();
+        if (permit.purpose() != ClassicRawPurpose.EMIT) { throw new IllegalStateException("Not an emission lease"); }
+    }
+
+    private static boolean matchesManaged(Map<String, Tag> expected, CompoundTag outgoing) {
+        if (outgoing == null || outgoing.getClass() != CompoundTag.class) { return false; }
+        CompoundTag expectedProjection = new CompoundTag();
+        CompoundTag outgoingProjection = new CompoundTag();
+        // Twelve literal lookups only: vanilla/provider keys are not scanned or copied.
+        for (String key : KEYS) {
+            boolean present = expected.containsKey(key);
+            if (present != outgoing.contains(key)) { return false; }
+            if (present) {
+                Tag retained = expected.get(key);
+                Tag actual = outgoing.get(key);
+                ClassicNbtLimits limit = limits(key);
+                if (!canCopyLosslessly(retained, limit) || !canCopyLosslessly(actual, limit)) { return false; }
+                // Borrow references only within this synchronous, exclusively owned comparison.
+                expectedProjection.put(key, retained);
+                outgoingProjection.put(key, actual);
+            }
+        }
+        return ClassicNbtExactComparison.matches(expectedProjection, outgoingProjection, ClassicNbtLimits.REJECTED);
+    }
 }
