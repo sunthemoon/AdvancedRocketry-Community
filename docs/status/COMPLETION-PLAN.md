@@ -87,8 +87,11 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     中央注册、FULL 区块观察、完整编译和保存集成未完成，候选尚未交付。
     出站比较/保留观察提案的[原审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md)
     保留历史 Medium；LOAD 记录接口的另版补充已完成[独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)，
-    提案文本补全记录接口和见证时序，无新增 C/H/M/L。技术采纳、真实源码接入与
-    原生验证仍未完成，不据此开放 writer。
+    提案文本补全记录接口和见证时序，无新增 C/H/M/L。
+    [限定实施记录](../work/v1.8.0-c16a-hatches/LOAD-JOIN-IMPLEMENTATION-01.md)已按条件授权
+    采纳私有技术补充，owner、精确根比较及真实区块观察器在三个独立工作区并行实现。
+    新源码未编译、未集成、未注册；实际源码审核、物理/放置/拆除接入、完整生命周期
+    处置与原生验证仍开放，不据此开放 writer。
   - [~] [公共保存接口](../work/v1.8.0-c16a-hatches/COMMON-GUARD-BRIDGE-SOURCE-01.md)：
     三个方法与五项新 GameTest 已独立审核、提交并正常推送至 `826f5f20`；
     限定缓存编译和五项原有领域单测通过；新五项 GameTest 已在精确提交上执行，
@@ -207,7 +210,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   [原独立提案审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md)
   的两项 Medium 保留为历史；[后继独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-successor-independent-review-20261007/REVIEW-01.md)
   已在提案文本中补全元数据/空罐保真和拒绝充气路由规则，无 C/H/M，但有一项 Low：
-  回调变化的拒绝承诺大于列明的可观察输入，需要限定措辞后才能用作实施契约。
+  回调变化的拒绝承诺大于列明的可观察输入。另立的[可观察见证措辞修订](../work/v1.8.0-c18-contract/OXYGEN-WITNESS-CLARIFICATION-01.md)
+  已完成独立复审，无新增 C/H/M/L，Root 仅采纳技术措辞；原 Low 和证据保留为历史。
   四档容量/配置和配对充气仍待已有维护者选择，未授权装备源码。
   新工作台的拒存与 R-021 扩展也未接受，不把文本模型检查记作原生交互证明。
 - [~] [C18a-SEAL-01](../work/v1.8.0-c18a-seal-detector/ADOPTION-01.md)：

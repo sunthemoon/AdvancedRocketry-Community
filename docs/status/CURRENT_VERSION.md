@@ -108,8 +108,13 @@ open. The outgoing-comparison/retained-observer proposal's original Medium stays
 in its [historical review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md).
 The separate LOAD-join amendment has completed [independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)
 with no introduced C/H/M/L, addressing the missing recording join and timing in
-proposed text only. Technical adoption, actual source joins and native evidence
-remain prerequisites; no such seam is adopted or implemented.
+proposed text only. Root's [limited implementation intake](../work/v1.8.0-c16a-hatches/LOAD-JOIN-IMPLEMENTATION-01.md)
+adopts that private technical amendment and the comparator seam under the
+recorded conditional authority. Owner, comparator and real chunk-observation
+sources are being implemented in three disjoint worktrees. They are uncompiled,
+unintegrated and unregistered; actual source review, physical/placement/removal
+joins, complete lifecycle disposal and native evidence remain prerequisites.
+No save writer or installed-owner admission is opened by this intake.
 The [Solar fixture correction](../work/v1.8.0-c17c-solar-surface-fixture/SOURCE-INTEGRATION-01.md)
 is independently reviewed, committed and pushed, and retained in the historical source below.
 Its [own complete result](../work/v1.8.0-ci/RESULT-10.md) remains historical.
@@ -277,8 +282,10 @@ The original [oxygen reserve proposal review](D:/GitHub/ARCE-Task-Evidence/v1.8.
 retains its two historical Medium findings. The separate [successor independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-successor-independent-review-20261007/REVIEW-01.md)
 addresses those missing metadata/routing rules in proposed text only, with no
 Critical/High/Medium and one Low: callback stale-refusal wording exceeds its
-enumerated observable witnesses. That wording still needs clarification before
-implementation-contract use; no equipment source is authorized. Tier capacities/config and paired interaction
+enumerated observable witnesses. The separate [literal clarification](../work/v1.8.0-c18-contract/OXYGEN-WITNESS-CLARIFICATION-01.md)
+has independent review with no introduced C/H/M/L and is accepted as limited
+technical wording only; the original finding/seals remain historical. No
+equipment source is authorized. Tier capacities/config and paired interaction
 still await the owner's existing choice, and the proposed workstation save-veto
 extension remains unadmitted. The accepted working API/HUD buffer stays 2,000.
 
