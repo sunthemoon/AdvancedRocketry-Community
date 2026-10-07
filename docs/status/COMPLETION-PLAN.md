@@ -115,8 +115,9 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     [精确源码完整回归](../work/v1.8.0-ci/RESULT-18.md)已结束，十项新单测也全部通过；
     整批仍因 required Tau 往返失败，不复用前一提交的结果。
   - [ ] [02 真实空 hatch 生命周期](../work/v1.8.0-c16a-hatches/EMPTY-LIFECYCLE-TASK-01.md)（in-progress）：
-    放置/取消/拆除的期望记录变更、独立空 hatch 的 LIFECYCLE 权限和 native 顺序正在审核；
-    真实接入、首存观察、最终卸载、保存 writer 与重启尚未实现或验证。
+    [独立空 hatch 权限衔接](../work/v1.8.0-c16a-hatches/EMPTY-REMOVAL-GUARD-IMPLEMENTATION-01.md)
+    已完成契约审核并进入隔离实现；保存前置保护、生成/磁盘 Proto 观察、放置/取消/拆除
+    期望记录、真实接入、最终卸载、保存 writer 与重启仍未实现或验证。
   - [x] [带电插口格式数据检查](../work/v1.8.0-c16a-hatches/POWER-CARRIER-FORMAT-SOURCE-01.md)：
     三个精确后像经独立源码审核后提交、正常推送并集成至 `257e7b3a`；
     独立开发和固定已发布提交的缓存 javac/Jupiter 各 13/13 通过，后者 49 个输入无漂移。

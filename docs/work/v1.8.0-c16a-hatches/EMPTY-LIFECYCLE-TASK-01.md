@@ -32,7 +32,11 @@ LIFECYCLE removal and held-operation/save coordination as proposed dependencies.
 Its descriptors are not accepted APIs. A different agent reviews the actual
 proposal while primary native inspection establishes final placement/cancellation,
 before-unbind destruction/drop, capability dispatch and new/disk chunk LOAD order.
-Only then can a concrete amendment and source scope be frozen.
+The isolated [empty-removal admission amendment](EMPTY-REMOVAL-GUARD-AMENDMENT-01.md)
+has now received a different-agent final review and its separate
+[implementation disposition](EMPTY-REMOVAL-GUARD-IMPLEMENTATION-01.md). Only this
+internal authority dependency is adopted for isolated source work. It does not
+adopt physical birth/removal descriptors or close the save/native dependencies.
 
 No public factory, success boolean, LOAD/EMIT substitution, reset of sticky denial,
 new persistent ID/schema, broad source-mode policy, power Item lease reuse,
