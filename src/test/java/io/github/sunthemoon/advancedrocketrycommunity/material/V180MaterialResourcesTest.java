@@ -112,6 +112,14 @@ class V180MaterialResourcesTest {
         assertEquals(Set.of("values"), umbrella.keySet(), "the common umbrella must stay additive");
         assertEquals(1L, tagValues("items", "forge:dusts").stream()
                 .filter("#forge:dusts/thermite"::equals).count(), "thermite umbrella reference must be unique");
+        int requiredReferences = 0;
+        for (JsonElement value : umbrella.getAsJsonArray("values")) {
+            if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()
+                    && value.getAsString().equals("#forge:dusts/thermite")) {
+                requiredReferences++;
+            }
+        }
+        assertEquals(1, requiredReferences, "thermite must use a required, plain-string umbrella reference");
     }
 
     @Test
