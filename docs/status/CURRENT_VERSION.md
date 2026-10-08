@@ -579,7 +579,16 @@ Critical/High/Medium and one Low: callback stale-refusal wording exceeds its
 enumerated observable witnesses. The separate [literal clarification](../work/v1.8.0-c18-contract/OXYGEN-WITNESS-CLARIFICATION-01.md)
 has independent review with no introduced C/H/M/L and is accepted as limited
 technical wording only; the original finding/seals remain historical. No
-equipment source is authorized. Tier capacities/config and paired interaction
+equipment runtime is authorized. The separately reviewed
+[pure reserve transition](../work/v1.8.0-c18b-reserve-transition/ADOPTION-01.md)
+is now narrowly adopted for two new uncalled calculation/test files; its isolated
+Claude assignment and actual Java checks remain pending. This selects no tank
+tiers, persistent representation, configuration or native publication.
+The separately reviewed
+[test-side forward graph](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)
+is narrowly adopted for two new pure test files only, not whole-contract,
+extractor/access/SCC or real survival coverage. Neither leaf delivers a unit.
+Tier capacities/config and paired interaction
 still await the owner's existing choice, and the proposed workstation save-veto
 extension remains unadmitted. The accepted working API/HUD buffer stays 2,000.
 
