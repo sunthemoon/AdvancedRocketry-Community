@@ -17,7 +17,7 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.minecraftforge.registries.ForgeRegistries;
 
-/** Existing material remains craftable when the active press is disabled. */
+/** Existing material remains craftable when active classic devices are disabled. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class ThermiteCraftingGameTests {
@@ -32,6 +32,19 @@ public final class ThermiteCraftingGameTests {
             assertRecipe(helper, "thermite_torch", 4, "thermite", "minecraft:stick");
         } finally {
             SwitchOverrides.clear(CommonConfig.SMALL_PLATE_PRESS_ENABLED);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "thermite_crafting_disabled", timeoutTicks = 20)
+    public static void disabledClassicDevicesDoNotDisableOrdinaryCrafting(GameTestHelper helper) {
+        SwitchOverrides.set(CommonConfig.CLASSIC_DEVICES_ENABLED, false);
+        try {
+            helper.assertTrue(!CommonConfig.classicDevicesEnabled(), "Classic device override is not disabled");
+            assertRecipe(helper, "thermite", 1, "aluminum_dust", "iron_dust");
+            assertRecipe(helper, "thermite_torch", 4, "thermite", "minecraft:stick");
+        } finally {
+            SwitchOverrides.clear(CommonConfig.CLASSIC_DEVICES_ENABLED);
         }
         helper.succeed();
     }
@@ -51,10 +64,10 @@ public final class ThermiteCraftingGameTests {
         ResourceLocation id = ResourceLocation.tryParse(ModIdentity.MOD_ID + ":" + result);
         var recipe = helper.getLevel().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, grid, helper.getLevel())
                 .orElseThrow();
-        helper.assertTrue(recipe.getId().equals(id), "Disabled press selected another crafting recipe");
+        helper.assertTrue(recipe.getId().equals(id), "Disabled device selected another crafting recipe");
         ItemStack output = recipe.assemble(grid, helper.getLevel().registryAccess());
         helper.assertTrue(output.is(ForgeRegistries.ITEMS.getValue(id)) && output.getCount() == count
-                && !output.hasTag(), "Disabled press changed ordinary crafting output");
+                && !output.hasTag(), "Disabled device changed ordinary crafting output");
         for (int slot = 0; slot < grid.getContainerSize(); slot++) {
             helper.assertTrue(ItemStack.matches(before.get(slot), grid.getItem(slot)), "Matching/assembly mutated input " + slot);
         }
