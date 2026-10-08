@@ -240,7 +240,7 @@ public final class ThermiteAcquisitionGameTests {
 
         @Override
         public void close() {
-            List<RuntimeException> failures = new ArrayList<>();
+            List<Throwable> failures = new ArrayList<>();
             FakePlayer owned = player;
             if (owned != null) {
                 attempt(failures, () -> owned.inventoryMenu.setCarried(ItemStack.EMPTY));
@@ -286,10 +286,10 @@ public final class ThermiteAcquisitionGameTests {
             }
         }
 
-        private static void attempt(List<RuntimeException> failures, Runnable step) {
+        private static void attempt(List<Throwable> failures, Runnable step) {
             try {
                 step.run();
-            } catch (RuntimeException failure) {
+            } catch (Throwable failure) {
                 failures.add(failure);
             }
         }
