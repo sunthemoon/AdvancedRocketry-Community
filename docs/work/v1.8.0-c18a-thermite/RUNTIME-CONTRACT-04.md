@@ -1,11 +1,14 @@
 # Ordinary thermite material and light: runtime contract proposal 04
 
-Root proposal, 2026-10-08. Production baseline9c816af9. Replaces proposed
-contract03 only after independent review and explicit ADOPTION-04. Original
+Root contract, 2026-10-08. Production baseline
+9c816af94bee0798d3c22d179fb40652c7648246. Reviewed proposal at
+517dc651cf5dcd4a290c96e013fbc22a32ec6ebf is adopted with ADOPTION-04.md's
+clarifications. It replaces RUNTIME-CONTRACT-03.md. Original
 commits/sealed evidence remain unchanged. No source/pixels/asset/unit/Gate
-adoption follows from this proposal. The first contract03 reviewer returned
+adoption follows from contract review alone. The RUNTIME-CONTRACT-03.md reviewer returned
 2 Medium/5 Low and omitted mandatory live-main reads; its failed runner and
-original report remain unwaived. This successor needs a fresh complete review.
+original report remain unwaived. The fresh complete review and scoped decision
+are recorded in ADOPTION-04.md; source/art and native validation remain required.
 
 ## 1. Scope and dependencies
 
@@ -13,8 +16,8 @@ One plain thermite item and ordinary standing/wall vacuum-compatible light;
 registration, recipes/tags/unlocks, NEW resources and automated checks. Consume
 existing C15a aluminum/iron dust/tags and world-block press acquisition. No steel
 fan, C16d UI/carbon, fluid/vent migration, station query, equipment or shared
-hatch/save consumption. Freeze this subleaf under ADR-066 section8 and record
-this dependency disposition under section9; other C18a obligations stay open.
+hatch/save consumption. Freeze this subleaf under ADR-066 section 8 and record
+this dependency disposition under section 9; other C18a obligations stay open.
 
 No unlit conversion, combustion tags/catalog/queues, fire interception, pipe
 seal, new world-change adapter, heat/explosion, machines, BlockEntity, SavedData,
@@ -29,14 +32,17 @@ paired item thermite_torch; wall block thermite_wall_torch, no own item.
 Root holder symbols: ModItems.THERMITE/THERMITE_TORCH and
 ModBlocks.THERMITE_TORCH/THERMITE_WALL_TORCH.
 
-Root proposes ADR-066 section3.2 numbers: light14; two vanilla shapeless recipes,
+ADOPTION-04.md adopts ADR-066 section 3.2 numbers: light 14; two vanilla shapeless recipes,
 IDs thermite/thermite_torch. One forge:dusts/aluminum plus one forge:dusts/iron
-produces one thermite. One minecraft:stick plus one forge:dusts/thermite produces
+produces one thermite. One forge:rods/wooden member plus one forge:dusts/thermite produces
 four thermite_torch. Material ingredients are tags; result.item is a literal ID.
 Wrong/missing/extra ingredients reject by vanilla matching rules. Match/assemble
 do not mutate input stacks. Thermite unlock is either input dust tag; torch
 unlock is the thermite tag. Include recipe-unlocked OR criterion and only the
-corresponding recipe reward. Existing press/machine/cooking recipes unchanged.
+corresponding recipe reward. Recipe categories are misc for thermite and building
+for thermite_torch. Advancement paths are recipes/misc/thermite.json and
+recipes/building_blocks/thermite_torch.json within this namespace. Existing
+press/machine/cooking recipes unchanged.
 
 Root's single V180MaterialData.Items writer emits the NEW thermite tag and adds
 its required reference to forge:dusts in the same TagsProvider. The NEW file
@@ -71,7 +77,7 @@ disable rule. No whole-ADR exception. Reload never rewrites placed states/items.
 Direct public TorchBlock(Properties, ParticleOptions), WallTorchBlock with
 same signature, one StandingAndWallBlockItem(standing, wall, properties,
 Direction.DOWN). No subclass needed. Properties: no collision, instant break,
-wood sound, constant light14, push reaction DESTROY. Each block keeps its own
+wood sound, constant light 14, push reaction DESTROY. Each block keeps its own
 default registered loot ID; no dropsLike/lootFrom sharing. Each distinct loot
 table returns one paired thermite_torch with native survives_explosion.
 Normal support loss/removal drops one; creative removal drops none. Paired item
@@ -86,8 +92,8 @@ No official bitmap or implementation copied into product.
 
 Standing blockstate one variant; wall four facing variants. Reference template
 parents minecraft:block/template_torch and template_torch_wall, torch texture
-slot, explicit render_type minecraft:cutout. Wall yaw east0/south90/west180/
-north270. Item models use minecraft:item/generated with layer0 pointing at the
+slot, explicit render_type minecraft:cutout. Wall yaw east 0/south 90/west 180/
+north 270. Item models use minecraft:item/generated with layer0 pointing at the
 NEW item/torch texture. Reference identifiers only, not official geometry/UVs.
 
 Exact platform report is
@@ -117,22 +123,21 @@ block.advancedrocketrycommunity.thermite_torch and block...thermite_wall_torch;
 English Thermite/Thermite Torch/Thermite Wall Torch; Chinese
 铝热剂/铝热火把/壁挂铝热火把. Existing keys untouched.
 
-Root wires provider/language and tracks both NEW PNG texture identifiers via
-ExistingFileHelper.trackGenerated with its PNG texture ResourceType before
-provider/model use. Raw JSON author does not guess registry/helper integration.
+Root wires provider/language. Raw JSON models have no ModelProvider or
+ExistingFileHelper consumer; no unused trackGenerated duty is imposed.
 Root owns registry/tabs/tags/generated output/adapter/native-test wiring.
 Claude's separate TASK-03 grants only new provider/language/A0/report files.
 
 ## 6. Original art and prior asset boundary
 
 Pre-authoring NEW MIT declaration lists textures/item/thermite.png and
-textures/block/thermite_torch.png, original16x16 dust heap/narrow shaft/capped
+textures/block/thermite_torch.png, original 16x16 dust heap/narrow shaft/capped
 bright tip. No legacy/vanilla/third-party pixel/grid read, tracing or transform.
 Reuse only V180MaterialArt.png encoder: one RGB tint multiplied by its ten grey
-levels per digit, '.' alpha0, other pixels alpha255. Literal grids/tint produce
+levels per digit, '.' alpha 0, other pixels alpha 255. Literal grids/tint produce
 bounded deterministic RGBA PNGs, no multi-hue palette or replacement encoder.
 References to vanilla parents/particles are not imports. Originality and final
-bytes/hashes need independent review. Old IMPORT226/229 remain unresolved and
+bytes/hashes need independent review. The classic asset-plan IMPORT rows 226/229 remain unresolved and
 unchanged; NEW does not close those dispositions, assets or release Gates.
 
 ## 7. Verification and admission conditions
@@ -147,7 +152,7 @@ A1: literal registered identities/pairing/no BE; native ItemStack.useOn with
 survival-configured player (Forge snapshots/cancellation), floor/four-wall
 placement/fallback, isolated ceiling/no-support count-preserving refusal, normal/
 creative/support-loss drops. Dark loaded fixture emission14 and propagated
-light14/neighbor13 within unchanged40ticks; return to measured baseline after
+light 14/neighbor 13 within unchanged 40 ticks; return to measured baseline after
 removal. Both disabled switches get their distinct expected outcomes from §3.
 Actual RecipeManager matching/assembly/tag substitution and input immutability;
 press conservation/no-input/disabled behavior, not only recipe arithmetic.
@@ -169,7 +174,7 @@ local AtmosphereLevelService oracle. Finite chunk setup is test-only loading.
 
 S1 survival crafting/pickup, reload, save/stop/restart, prior-world placement;
 real-GPU V1 and applicable V2 remain actual-evidence obligations. A0/A1 do not
-prove crash atomicity or whole graph. Java17 build/test, twice DataGen/no second
+prove crash atomicity or whole graph. Java 17 build/test, twice DataGen/no second
 diff, GameTests, strict repository/provenance/resource checks; preserve failures,
 unrun conditions and inherited Gates. No R-021, ledger, whole C18 or release
 acceptance. ADOPTION-04 must pin exact reviewed commit/reports/rotation and

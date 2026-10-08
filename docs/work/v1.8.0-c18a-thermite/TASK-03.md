@@ -9,9 +9,26 @@ D:/GitHub/arce-v180-claude-thermite-data-20261008 on branch
 codex/v1.8.0-claude-thermite-data-20261008 at that exact adoption commit before
 starting the call. Do not use older draft author trees as native source baseline.
 
-Before writing read live main-checkout AGENTS and all its mandatory governance:
-PROJECT-CONFIG, PRODUCT, docs01/04/05/06/14/16/17, current V1.8 and inherited
-V1.0 version documents; UPSTREAM, NOTICE, docs02/08, ADR060. Then read fixed
+Before writing read each complete live-main file (not the older worktree copies):
+- D:/GitHub/AdvancedRocketry-Community/AGENTS.md
+- D:/GitHub/AdvancedRocketry-Community/PROJECT-CONFIG.md
+- D:/GitHub/AdvancedRocketry-Community/PRODUCT.md
+- D:/GitHub/AdvancedRocketry-Community/docs/01-PORTING-PRINCIPLES.md
+- D:/GitHub/AdvancedRocketry-Community/docs/04-VERSION-ROADMAP.md
+- D:/GitHub/AdvancedRocketry-Community/docs/versions/V1.8.0-CLASSIC-CONTENT-COMPLETION.md
+- D:/GitHub/AdvancedRocketry-Community/docs/versions/V1.0.0-COMMUNITY-MVP.md
+- D:/GitHub/AdvancedRocketry-Community/docs/05-MASTER-TEST-PLAN.md
+- D:/GitHub/AdvancedRocketry-Community/docs/06-RELEASE-AND-ACCEPTANCE-GATES.md
+- D:/GitHub/AdvancedRocketry-Community/docs/16-POST-1.0-VERSION-ROADMAP.md
+- D:/GitHub/AdvancedRocketry-Community/docs/17-V1PLUS-QUALITY-BUDGETS.md
+- D:/GitHub/AdvancedRocketry-Community/docs/14-PARALLEL-DEVELOPMENT-AND-WORKTREE-COORDINATION.md
+- D:/GitHub/AdvancedRocketry-Community/UPSTREAM.md
+- D:/GitHub/AdvancedRocketry-Community/NOTICE.md
+- D:/GitHub/AdvancedRocketry-Community/docs/02-UPSTREAM-TREE-AND-ASSET-AUDIT.md
+- D:/GitHub/AdvancedRocketry-Community/docs/08-ASSET-LICENSE-AND-PROVENANCE.md
+- D:/GitHub/AdvancedRocketry-Community/docs/decisions/ADR-060-V180-DEVELOPMENT-BASELINE-EXCEPTION.md
+
+Then read fixed
 worktree RUNTIME-CONTRACT-04, ADOPTION-04, the pre-authoring NEW declaration,
 its named independent platform/contract reports and scoped project provider,
 encoder, language and JUnit conventions. Complete full required reads before
