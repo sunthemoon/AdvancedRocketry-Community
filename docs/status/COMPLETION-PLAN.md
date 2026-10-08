@@ -157,6 +157,12 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
   合入并正常推送至 `79cb3e91`。新放置的同步 onLoad 与整块 fresh 队列区分；
   两次 hatch LOAD 是一次调用中的新票据，不是两次回调。未证明真实 hatch 准入、
   provisional 可用性或保存/终态绑定，不关闭父任务或两项 Medium。
+- [x] [C16a-PLACEMENT-PROVENANCE-22](../work/v1.8.0-c16a-hatches/PLACEMENT-PROVENANCE-VERIFICATION-22.md)：
+  仅测试侧原生调用资格。修订源码 `7f5c5b18` 经独立实际 diff 审核及完整复跑，
+  合入并正常推送至 `71594573`。三项新测试观察普通 survival/creative 与 first-use
+  直接放置；相同实际 context/外层调用不能充当内层来源或终态结果认证。
+  初版探针注册副作用已修正并复核，原始通过批次及 Medium 保留。没有生产改动，
+  不关闭完整 U1、父任务、两项 Medium 或保存/终态前置。
 - [ ] C16a-07b：全部电机等级的机器形成验证。
 - [ ] C16b：电弧炉、车床、切割机等机器家族；共享依赖先完成。
 - [ ] C16c：结晶器、化学反应器、激光蚀刻机、离心机等。
@@ -528,20 +534,22 @@ Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端
 
 ## 当前自动回归与风险
 
-最新开发回归见[原生 LOAD 时序资格证据](../work/v1.8.0-c16a-hatches/NATIVE-LOAD-ORDER-VERIFICATION-21.md)。
-实际被测代码 `3939dd55` 的完整 src 和七项 Gradle 输入等于已推送的 `79cb3e91`；
-合并 SHA 未另行复跑。Root 和独立 Codex 各自通过 clean build、2,179 个 JUnit、
-548 个必需 GameTest、两次 DataGen 和空生成 diff。新增两项使用原生玩家和
-嵌入式连接验证普通 survival/creative 放置；不是物理 hatch 或真实客户端验证。
+最新开发回归见[原生放置调用资格证据](../work/v1.8.0-c16a-hatches/PLACEMENT-PROVENANCE-VERIFICATION-22.md)。
+实际被测源码 `7f5c5b18` 的完整 src 和七项 Gradle 输入等于已推送的 `71594573`；
+合并 SHA 未另行复跑。Root 和独立 Codex 各自通过 clean build、551 个必需
+GameTest、两次 DataGen 和空生成 diff。Root 修订 build 的 test 为 FROM-CACHE，
+另行强制禁缓存执行 2,179 个实际 JUnit；独立禁缓存 build 执行相同数量。
+新增三项使用原生玩家、嵌入式连接和有界调用记录，不是物理 hatch、来源权限或真实客户端验证。
 
-原始两个 helper 登录失败与审核者启动失败均保留；修订后无未解决的新增代码发现。
-严格仓库校验仍为 44 项通过、一项既有链接失败；两份修订后日志各有 62 条
-未豁免 ERROR、零 FATAL。历史产品失败未被逐个解释或永久消除。
-Root 和独立审核者分别一次清理成功，仅删除各自新建、已结束的临时输出。
-旧拒绝清理目标与继承债务未动；本任务没有新增临时输出债务。
+原始通过批次的探针注册 Medium 已修正；审核者原启动失败与误报更正保留。
+修订后无未解决的新增代码发现。严格仓库校验仍为 44 项通过、一项既有链接失败；
+两份修订后原生日志各有 62 条未豁免 ERROR、零 FATAL。
+历史产品失败未被逐个解释或永久消除。Root 和独立审核者分别一次清理成功，
+只删除各自新建、已结束的临时输出。旧拒绝清理目标与继承债务未动；本任务没有新增临时输出债务。
 
 共享保存 R-021、真实放置/结果认证、provisional LOAD 与生命周期终态绑定、
 完整 S1/S2、迁移、V1/V2、性能、完整科技流程和资产交付仍未完成。
+两项完整 Medium、完整 U1 与 U3–U7、O1/O2/O3 仍开放；异步政策问题尚无所有者决定。
 v1.8 保持 IN_PROGRESS / IMPLEMENTING；没有批准任何 Required Gate。
 先前回归数字和详细风险历史已移入[实施日志](../work/v1.8.0-implementation-log.md)，
 不再作为本文件的现状指标。

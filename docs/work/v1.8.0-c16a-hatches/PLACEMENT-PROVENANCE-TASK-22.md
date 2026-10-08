@@ -1,6 +1,6 @@
 # C16a-PLACEMENT-PROVENANCE-22
 
-Date: 2026-10-08. Implementer/integrator: Root. Status: in-progress.
+Date: 2026-10-08. Implementer/integrator: Root. Status: verified test-side qualification.
 Base: 4ab2ef8ec5a82e79b4244d92e89320848f4c0564.
 Branch: test/v1.8.0-placement-provenance.
 Worktree: D:/GitHub/arce-v180-placement-provenance-20261008.
@@ -55,3 +55,13 @@ sustained commands. Preserve all failures and actual command SHAs under
 D:/GitHub/ARCE-Task-Evidence/v1.8.0/placement-provenance-root-20261008-01.
 Native embedded players are not packet/V1/V2 or dedicated-restart evidence.
 Retire only this task's own ended disposable outputs once; no old cleanup retry.
+
+## Completion association
+
+Corrected committed source 7f5c5b1802e5d63a26a306c7ec8e1a1d49b6865e is
+independently actual-diff reviewed, fully rerun and integrated/normally pushed
+at 715945736ed1201ec5aa2ee1821c5fca985f50b9. See the
+[verification](PLACEMENT-PROVENANCE-VERIFICATION-22.md) for exact commands,
+sealed evidence, original failures/finding, correction and cleanup.
+Only measured invocation paths are qualified. Both full Medium prerequisites,
+full U1, owner policies and physical hatch remain open; no Gate is approved.
