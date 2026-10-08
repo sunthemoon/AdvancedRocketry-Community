@@ -2,13 +2,24 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.ResultContainer;
@@ -39,9 +50,9 @@ public final class ThermiteAcquisitionGameTests {
     public static void survivalMenuTakesThermiteThenTorchFromLoadedResultSlot(GameTestHelper helper) {
         Item aluminum = item(helper, "aluminum_dust"), iron = item(helper, "iron_dust");
         Item thermite = item(helper, "thermite"), torch = item(helper, "thermite_torch");
-        FakePlayer player = survival(helper);
-        InventoryMenu menu = player.inventoryMenu;
-        try {
+        try (SurvivalFixture fixture = SurvivalFixture.create(helper)) {
+            FakePlayer player = fixture.player();
+            InventoryMenu menu = player.inventoryMenu;
             menu.getSlot(STORE_A).set(marked(aluminum, 2));
             menu.getSlot(STORE_B).set(marked(iron, 1));
             menu.getSlot(STORE_C).set(marked(Items.STICK, 3));
@@ -89,8 +100,6 @@ public final class ThermiteAcquisitionGameTests {
                     && player.getInventory().countItem(torch) == 4 && player.getInventory().countItem(thermite) == 0
                     && player.getInventory().countItem(iron) == 0 && player.getInventory().countItem(aluminum) == 1
                     && player.getInventory().countItem(Items.STICK) == 2, "Final survival inventory differs");
-        } finally {
-            release(player);
         }
         helper.succeed();
     }
@@ -99,9 +108,9 @@ public final class ThermiteAcquisitionGameTests {
     public static void survivalMenuWrongInputsAndBlockedCursorTakeNothing(GameTestHelper helper) {
         Item aluminum = item(helper, "aluminum_dust"), iron = item(helper, "iron_dust");
         Item thermite = item(helper, "thermite"), torch = item(helper, "thermite_torch");
-        FakePlayer player = survival(helper);
-        InventoryMenu menu = player.inventoryMenu;
-        try {
+        try (SurvivalFixture fixture = SurvivalFixture.create(helper)) {
+            FakePlayer player = fixture.player();
+            InventoryMenu menu = player.inventoryMenu;
             List<List<ItemStack>> wrong = List.of(
                     List.of(marked(aluminum, 1), marked(aluminum, 1)),
                     List.of(marked(aluminum, 1), marked(iron, 1), marked(Items.STICK, 1)),
@@ -132,8 +141,6 @@ public final class ThermiteAcquisitionGameTests {
                     "Blocked-cursor take consumed inputs or replaced the cursor");
             helper.assertTrue(!player.getRecipeBook().contains(ModIdentity.id("thermite"))
                     && !player.getRecipeBook().contains(ModIdentity.id("thermite_torch")), "Refused takes awarded a recipe");
-        } finally {
-            release(player);
         }
         helper.succeed();
     }
@@ -185,22 +192,134 @@ public final class ThermiteAcquisitionGameTests {
         return value;
     }
 
-    private static FakePlayer survival(GameTestHelper helper) {
-        BlockPos pos = helper.absolutePos(BlockPos.ZERO);
-        FakePlayer player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "ThermiteCrafter"));
-        player.setGameMode(GameType.SURVIVAL);
-        player.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
-        helper.assertTrue(player.gameMode.getGameModeForPlayer() == GameType.SURVIVAL && !player.isCreative()
-                && !player.isSpectator() && player.containerMenu == player.inventoryMenu && gridEmpty(player.inventoryMenu),
-                "Fixture is not a fresh survival player on its own crafting menu");
-        return player;
-    }
+    /**
+     * Owns one unjoined survival FakePlayer and what its construction registers. The installed ServerPlayer constructor
+     * inserts a stats counter and a PlayerAdvancements (which retains the player) into private PlayerList caches; only
+     * PlayerList.remove deletes them, for a joined player, after logout and save. close() releases exactly this
+     * fixture's two entries by test-only reflection: the UUID was absent before construction, never joined and still
+     * maps to this player's own objects. Every step is attempted; try-with-resources keeps a body failure primary.
+     */
+    private static final class SurvivalFixture implements AutoCloseable {
+        private final UUID id = UUID.randomUUID();
+        private final PlayerList players;
+        private final Map<?, ?> stats, advancements;
+        private FakePlayer player;
 
-    /** The fixture player is never added to the level; drop its menu/inventory contents and advancement listeners. */
-    private static void release(FakePlayer player) {
-        player.inventoryMenu.setCarried(ItemStack.EMPTY);
-        player.inventoryMenu.clearCraftingContent();
-        player.getInventory().clearContent();
-        player.getAdvancements().stopListening();
+        private SurvivalFixture(PlayerList players) {
+            this.players = players;
+            this.stats = cache(players, ServerStatsCounter.class);
+            this.advancements = cache(players, PlayerAdvancements.class);
+        }
+
+        /** Setup failures after construction release the same entries and rethrow the setup failure. */
+        static SurvivalFixture create(GameTestHelper helper) {
+            ServerLevel level = helper.getLevel();
+            helper.assertTrue(level.getServer().isSameThread(), "Fixture players must be owned on the server thread");
+            SurvivalFixture fixture = new SurvivalFixture(level.getServer().getPlayerList());
+            helper.assertTrue(fixture.players.getPlayer(fixture.id) == null && !fixture.stats.containsKey(fixture.id)
+                    && !fixture.advancements.containsKey(fixture.id), "Fresh fixture UUID already has player-list state");
+            try {
+                BlockPos pos = helper.absolutePos(BlockPos.ZERO);
+                FakePlayer player = fixture.player = new FakePlayer(level, new GameProfile(fixture.id, "ThermiteCrafter"));
+                player.setGameMode(GameType.SURVIVAL);
+                player.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+                helper.assertTrue(fixture.stats.get(fixture.id) == player.getStats()
+                        && fixture.advancements.get(fixture.id) == player.getAdvancements(),
+                        "Fixture construction did not register exactly its own player-list entries");
+                helper.assertTrue(player.gameMode.getGameModeForPlayer() == GameType.SURVIVAL && !player.isCreative()
+                        && !player.isSpectator() && player.containerMenu == player.inventoryMenu && gridEmpty(player.inventoryMenu),
+                        "Fixture is not a fresh survival player on its own crafting menu");
+                return fixture;
+            } catch (Throwable failure) {
+                fixture.closeAfter(failure);
+                throw failure;
+            }
+        }
+
+        FakePlayer player() { return player; }
+
+        @Override
+        public void close() {
+            List<RuntimeException> failures = new ArrayList<>();
+            FakePlayer owned = player;
+            if (owned != null) {
+                attempt(failures, () -> owned.inventoryMenu.setCarried(ItemStack.EMPTY));
+                attempt(failures, () -> owned.inventoryMenu.clearCraftingContent());
+                attempt(failures, () -> owned.getInventory().clearContent());
+                attempt(failures, () -> owned.getAdvancements().stopListening());
+            }
+            attempt(failures, () -> release(advancements, PlayerAdvancements.class, owned == null ? null : owned.getAdvancements()));
+            attempt(failures, () -> release(stats, ServerStatsCounter.class, owned == null ? null : owned.getStats()));
+            if (!failures.isEmpty()) {
+                IllegalStateException failure = new IllegalStateException("Fixture " + id + " release failed in "
+                        + failures.size() + " step(s); remaining entries are reported, not cleared globally");
+                failures.forEach(failure::addSuppressed);
+                throw failure;
+            }
+        }
+
+        private void closeAfter(Throwable primary) {
+            try {
+                close();
+            } catch (Throwable cleanup) {
+                primary.addSuppressed(cleanup);
+            }
+        }
+
+        /**
+         * Removes this UUID's entry only when it is this fixture's: never joined and identical to the player's own object.
+         * A null expected value means the constructor threw; the entry then exists only because this fixture created it.
+         */
+        private <T> void release(Map<?, ?> cache, Class<T> type, T expected) {
+            Object entry = cache.get(id);
+            if (entry == null) {
+                return;
+            }
+            if (players.getPlayer(id) != null || !type.isInstance(entry) || expected != null && entry != expected) {
+                throw new IllegalStateException("Player-list " + type.getSimpleName() + " for " + id + " is not this fixture's; left in place");
+            }
+            if (expected == null && entry instanceof PlayerAdvancements orphan) {
+                orphan.stopListening();
+            }
+            if (!cache.remove(id, entry)) {
+                throw new IllegalStateException("Player-list " + type.getSimpleName() + " for " + id + " survived release");
+            }
+        }
+
+        private static void attempt(List<RuntimeException> failures, Runnable step) {
+            try {
+                step.run();
+            } catch (RuntimeException failure) {
+                failures.add(failure);
+            }
+        }
+
+        /**
+         * Test-only reflection qualified against Forge 1.20.1-47.4.10 mapped official 1.20.1: PlayerList declares exactly
+         * one private final instance Map<UUID, ServerStatsCounter> (stats) and one Map<UUID, PlayerAdvancements>
+         * (advancements). Matching that declared shape, not a mapped name, fails before any player exists if it changes.
+         */
+        private static Map<?, ?> cache(PlayerList players, Class<?> valueType) {
+            Type[] shape = {UUID.class, valueType};
+            List<Field> matches = Arrays.stream(PlayerList.class.getDeclaredFields()).filter(field -> {
+                int modifiers = field.getModifiers();
+                return Modifier.isPrivate(modifiers) && Modifier.isFinal(modifiers) && !Modifier.isStatic(modifiers)
+                        && field.getType() == Map.class && field.getGenericType() instanceof ParameterizedType type
+                        && Arrays.equals(type.getActualTypeArguments(), shape);
+            }).toList();
+            if (matches.size() != 1) {
+                throw new IllegalStateException("PlayerList lacks exactly one Map<UUID, " + valueType.getSimpleName() + ">: " + matches);
+            }
+            try {
+                Field field = matches.get(0);
+                field.setAccessible(true);
+                if (field.get(players) instanceof Map<?, ?> cache) {
+                    return cache;
+                }
+            } catch (IllegalAccessException | RuntimeException failure) {
+                throw new IllegalStateException("PlayerList " + valueType.getSimpleName() + " cache is not readable", failure);
+            }
+            throw new IllegalStateException("PlayerList " + valueType.getSimpleName() + " cache is absent");
+        }
     }
 }
