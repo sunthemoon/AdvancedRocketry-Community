@@ -55,6 +55,17 @@ last_updated: 2026-10-08
 
 ## Current development evidence
 
+The latest [coupled private successor](../work/v1.8.0-c16a-hatches/COUPLED-CONTRACT-DISPOSITION-23.md)
+binds genuine entry/allocation, two fresh LOADs, both save consumers and terminal
+publication at base a0170336. It remains PROPOSED, not source-assignment-ready.
+Original draft findings are retained; a fresh complete revision review confirms
+the three specification corrections without granting runtime/assignment proof.
+Pinned static primary facts distinguish the disk FULL event from Proto promotion;
+isNewChunk and attachment-time emptiness are not origin authority. Outcome caps,
+authentic origin/final writer, both Medium prerequisites and O1/O2/O3 remain open.
+No runtime source, hook, dependency, writer, policy, ADR/risk acceptance or Gate
+changes. This is documentation/primary inspection, not a newer game regression.
+
 The [native placement invocation qualification](../work/v1.8.0-c16a-hatches/PLACEMENT-PROVENANCE-VERIFICATION-22.md)
 is independently actual-source reviewed and integrated/normally pushed at
 `715945736ed1201ec5aa2ee1821c5fca985f50b9`. Actual tested source is
