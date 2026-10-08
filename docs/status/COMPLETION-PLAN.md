@@ -234,6 +234,16 @@ C17b candidate03 的独立审核已解决旧版 Medium
 契约有条件接受；辅助氧气储量、有限节省、装备工具、独立地面勘测、首次事件、
 科技树、声音/模型/GUI 等仍须实现。D4 未证明，不推断接受。
 
+- [~] C18a-THERMITE-01：status: implemented-unverified。
+  普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、
+  外部标签适配夹具、九项原生测试及原创生成资源已分别提交和正常推送。
+  精确 `e82e5682` 的完整构建有 2,145 项单测通过；两次 DataGen 无第二次差异，
+  538 项 required GameTest 全部通过，62 ERROR/零 FATAL 尚未放行。
+  独立源码审核 06 因规约读取缺失、未经允许的只读 shell 和策略阻止验证而不完整；
+  原始失败保留。修订 `5e61d8cd` 增加禁用压板机时的配方测试，尚未执行。
+  [TASK-07](../work/v1.8.0-c18a-thermite/TASK-07.md)已登记全新独立审核和实际复跑。
+  该源码尚未并入主开发分支；S1、重启、真实 V1/V2、来源审核及整版 Gate 仍开放。
+
 - [ ] [C18a-AIRLOCK-01](../work/v1.8.0-c18a-airlock/TASK-01.md)：
   status: implemented-unverified。双半气闸门第二版技术契约经独立复审，无未解决 C/H/M；
   放置接口及 null-to-FAIL 原生顺序已另行核对。Root 按已有有条件授权限定采纳，

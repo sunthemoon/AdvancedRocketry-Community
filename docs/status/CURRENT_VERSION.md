@@ -50,6 +50,20 @@ last_updated: 2026-10-08
 
 ## Current development evidence
 
+The separate pushed thermite candidate e82e5682 has actual Root Java 17 clean
+build results: 376 XML /2,145 tests, all passing; two DataGen runs with no second
+diff; all 538 required native tests passing, 62 ERROR/zero FATAL unwaived.
+This is isolated source development, not a main integration or release Gate.
+Its new 5e61d8cd source successor adds a disabled-press crafting case and has
+not yet run. Independent source review06 is incomplete: omitted governance,
+unauthorized read-only shell and a policy-blocked verifier remain recorded;
+fresh [TASK-07](../work/v1.8.0-c18a-thermite/TASK-07.md) is registered, not started.
+Audio/equipment successor05 documentary reviews each have zero C/H/M/three Low;
+whole contracts stay proposed. Their TASK-06 registrations authorize only two
+new correction files each. See [actual dispatch record](../work/v1.8.0-claude-cli-coordination/DISPATCH-05-01.md)
+and the implementation log for exact branch/evidence bindings. No inherited
+airlock/Tau flake, R-021, ledger or G0-G9 closure follows from this passing run.
+
 HUD source checkpoint `f9f2d9d2` is committed and normally pushed; run
 37653204825 /attempt 1 is bound to it and observed completed/failure at
 16:47:12 UTC; that is the monitor observation, not the job completion timestamp.
