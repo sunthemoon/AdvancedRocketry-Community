@@ -97,3 +97,20 @@ must be joined before diagnostic cleanup. Existing wait/join/tick budgets remain
 unchanged; no forced thread stop, new hook, periodic poller or production seam.
 Test actual helper completion, exception, unresolved-worker cleanup refusal and
 terminal-state recovery using finite owned threads. No Required Gate is waived.
+
+## Candidate checkpoints
+
+Preparation is committed/pushed at 77154351. Original source is
+`e456ffc0eab1c0752fa5e6e57b4c63ddedbac964`; its complete Root cohort ends with
+2,179 actual JUnit in each forced build/test and all 565 required GameTests
+passing. Strict repository exit 1 and 62 native ERROR records remain unwaived.
+Those results do not dispose of the independent Medium lifetime finding.
+
+Corrective scope is committed/pushed at a2e3c476 before correction. The separate
+corrected source is `452fd2a0dc12895c2e2b955c80115457459888bb`, complete src tree
+`f085b52691c4f72814566841f2d0ff69394a99e3`. Both actual resource closers check
+their fixture-owned worker gate before cleanup. Four finite unit cases use the
+actual helper/gate; exceptional retention is not automatic world recovery.
+The unchanged full command sequence is running on that fixed source, with
+distinct evidence files. Corrected review/results and source integration are
+pending. Neither candidate is a delivered item or release acceptance.
