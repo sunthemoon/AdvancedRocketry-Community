@@ -1,5 +1,15 @@
 # Small parallel platform studies and native cleanup successor
 
+Final later observation, 2026-10-08: correction09 returns CLI/runner exit 0,
+all 17 reads/nine I/O observations; 49 turns, client USD 1.9889464000000001.
+Different-agent review of its exact report finds no C/H/M and two Low wording
+issues; the prior F4 citation defect is independently withdrawn in the new
+review because LF and ReadLine count lone CRs differently. No whole-contract
+or native qualification follows. Final native-source review12 finds no new
+C/H/M/Low, actually runs 2,146 units/542 native passes and releases all interests.
+Its source is now [integrated](../v1.8.0-c18a-thermite/SOURCE-INTEGRATION-13.md)
+at `ead0ece2`; the running/not-admitted observations below are historical.
+
 Later observation, 2026-10-08: platform08's independent review completes with
 one Medium/three Low in report qualification precision. Original reports stay
 unadopted and unchanged. Root prospectively registers and starts fresh bounded

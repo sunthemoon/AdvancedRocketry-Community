@@ -36,27 +36,34 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: a6675a4eb7497a3626840e150ca3a464c1feab74
-tested_code_commit: 230afbf0f3e27675d23ba98f1de0b560ccdff306
-latest_regression_target_commit: 230afbf0f3e27675d23ba98f1de0b560ccdff306
-latest_regression_result: AUTOMATED_TESTS_PASSED_GATES_OPEN
-latest_regression_run: c18a-thermite-correction09-independent-20261008-01
+latest_source_checkpoint: ead0ece21da8ccd189c4df5512e3a335b7f171ee
+tested_code_commit: ead0ece21da8ccd189c4df5512e3a335b7f171ee
+native_tested_code_commit: 4fedf29572282aedf86a217d9cfb78b75f70e5bb
+latest_regression_target_commit: ead0ece21da8ccd189c4df5512e3a335b7f171ee
+latest_regression_result: SOURCE_EQUIVALENT_AUTOMATED_REGRESSION_PASSED_GATES_OPEN
+latest_regression_run: c18a-thermite-final-build14-fix01-root-20261008-01
 latest_regression_attempt: 1
-latest_regression_evidence: SEALED_INDEPENDENT_LOCAL_RESULTS
-latest_regression_observed_utc: 2026-10-08T04:43:20Z
+latest_regression_evidence: SEALED_ROOT_BUILD_DATA_AND_INDEPENDENT_SOURCE_EQUIVALENT_NATIVE
+latest_regression_observed_utc: 2026-10-08T06:00:02Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-08
 ```
 
 ## Current development evidence
 
-Ordinary thermite and paired torches are merged and normally pushed at
-`a6675a4e`. Its source and Gradle inputs exactly match independently tested
-`230afbf0`: clean build passes 2,146 JUnit cases; both DataGen runs/diffs pass;
-all 540 required native tests pass. The final different-agent review finds no
-correction-introduced defect. Compilation uses cache; JUnit and native tests
-actually execute. The 62 ERROR / zero FATAL native headers remain unwaived.
-See [source integration 09](../work/v1.8.0-c18a-thermite/SOURCE-INTEGRATION-09.md).
+Ordinary thermite, paired torches and the reviewed server-side survival-menu
+supplement are merged and normally pushed at `ead0ece2`. Source/Gradle inputs
+equal independently tested `4fedf295`: compileJava/test executes 2,146 JUnit
+cases; all 542 required native tests pass. Root additionally executes actual
+clean build/2,146 units and twice DataGen/clean diffs on integrated `ead0ece2`;
+nine compilation tasks use cache, `:test` executes. Source/Gradle inputs equal
+the native-tested `4fedf295`; each command keeps its actual commit identity.
+The final different-agent source review finds no new C/H/M/Low. Its 62 native
+ERROR records remain unwaived. Exceptional fixture faults and universal
+disposal are not proved. See
+[source integration 13](../work/v1.8.0-c18a-thermite/SOURCE-INTEGRATION-13.md).
+The earlier `230afbf0` full clean build/twice DataGen/540-native cohort stays
+historical in integration09 and is not rebound to the new test-source commit.
 Packaged S1/restart, prior-world, art/provenance approval and real V1/V2 remain open.
 
 Strict repository validation on a clean integration copy at `a6675a4e` exits 1:
@@ -76,16 +83,13 @@ contracts stay proposed. Each author discloses reading a shared
 memory note; ten I/O controls pass, but do not prove full task conformance.
 The platform-07 studies remain unadopted with incomplete required reads.
 Both fresh platform-08 calls complete all 17 live reads and nine I/O checks.
-Their different-agent report review finds one Medium/three Low in qualification
-precision, not production defects. A fresh correction-09 call is running;
-the original reports remain unchanged and unadopted, not contracts.
-The separate native candidate `f535a130` completes independent review with zero
-C/H/M, two Low, 2,146 unit and 542 native passes. It is not merged, and its
-author's missed reads remain recorded. Claude's owned-cleanup successor and a
-three-line Root error-path amendment are backed up at `4fedf295`; independent
-exact-source/runtime review is running. Its original capture fails a trimmed
-porcelain-prefix check; a separate raw-status/postimage correction preserves
-that failure and passes all eleven observations, not code acceptance. See
+The later correction09 also returns and is independently reviewed: no C/H/M,
+two Low remain in report wording. Its replacement qualifies the original Medium;
+the original F4 citation finding is withdrawn only in the new review because
+LF/ReadLine counts differ. Whole contracts and native platform behavior stay
+unqualified. Original reports/deviations remain unchanged. The earlier native
+author's missed reads and later capture-prefix failure remain recorded, not
+retrospectively authorized. See
 [current dispatch](../work/v1.8.0-claude-cli-coordination/DISPATCH-08-01.md) and the
 implementation log. Historical source-specific regression cohorts below are
 not rebound to this snapshot; no airlock/Tau cause, R-021, ledger or Gate closes.
