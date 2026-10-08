@@ -89,9 +89,8 @@ public final class ServerLevelVolumeWorldView implements VolumeWorldView {
         if (!exposedSkyIsOpen) {
             return false;
         }
-        if (level.canSeeSky(position)) {
-            return true;
-        }
+        // canSeeSky reads sky light, which crosses glass and can lag behind roof edits.
+        // Only current geometry may shortcut the bounded boundary scan as open.
         // getHeight rechecks hasChunk before reading its already-loaded LevelChunk.
         int surface = level.getHeight(
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
