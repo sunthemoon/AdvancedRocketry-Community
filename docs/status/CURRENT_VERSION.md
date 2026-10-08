@@ -36,25 +36,41 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: ead0ece21da8ccd189c4df5512e3a335b7f171ee
-tested_code_commit: ead0ece21da8ccd189c4df5512e3a335b7f171ee
-native_tested_code_commit: 4fedf29572282aedf86a217d9cfb78b75f70e5bb
-latest_regression_target_commit: ead0ece21da8ccd189c4df5512e3a335b7f171ee
-latest_regression_result: SOURCE_EQUIVALENT_AUTOMATED_REGRESSION_PASSED_GATES_OPEN
-latest_regression_run: c18a-thermite-final-build14-fix01-root-20261008-01
+latest_source_checkpoint: eb90c6436689e68bc03affc275094053369bf3ef
+pending_graph_source_candidate: 00749afac4f1edd6b39042e0608584979cbf5f2b
+tested_code_commit: e91ddc16eccd714a936f93db838975f6e6e7ccdb
+native_tested_code_commit: e91ddc16eccd714a936f93db838975f6e6e7ccdb
+latest_regression_target_commit: e91ddc16eccd714a936f93db838975f6e6e7ccdb
+latest_regression_result: FAILED_REQUIRED_AIRLOCK_GATES_OPEN
+latest_regression_run: reserve-forward-integration17-root-20261008-01
 latest_regression_attempt: 1
-latest_regression_evidence: SEALED_ROOT_BUILD_DATA_AND_INDEPENDENT_SOURCE_EQUIVALENT_NATIVE
-latest_regression_observed_utc: 2026-10-08T06:00:02Z
+latest_regression_evidence: SEALED_ROOT_BUILD_DATA_NATIVE_FAILURE
+latest_regression_observed_utc: 2026-10-08T07:14:59.994605Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-08
 ```
 
 ## Current development evidence
 
-Ordinary thermite, paired torches and the reviewed server-side survival-menu
+The [pure reserve source](../work/v1.8.0-c18b-reserve-transition/SOURCE-INTEGRATION-17.md)
+is independently reviewed with no C/H/M/Low, actually passes 21 focused JUnit,
+and is integrated/non-force pushed at eb90c643. Graph `00749afa` is committed and
+pushed but not integrated. The separate [combined candidate regression17](../work/v1.8.0-claude-cli-coordination/REGRESSION-17.md)
+at e91ddc16 passes clean build/2,179 actual JUnit/twice DataGen/clean diffs,
+but fails one required upper/phase0 airlock supply prerequisite among 542 completed
+GameTests. 63 ERROR headers and the strict-link failure remain open. Runtime and
+named Gradle inputs equal main eb90c643, but complete test trees differ; neither
+result is rebound. Graph independent execution is unproved: its configuration-only
+attempt is interrupted by a prospectively authorized own-process stop, without
+test/XML. Its diagnostic TEMP deviation and observer errors are retained.
+Fresh [Claude triage18](../work/v1.8.0-claude-cli-coordination/DISPATCH-18.md) returns
+at `c7b99a2d` and is under different-agent review, with no cause/fix adopted. No Gate closes.
+
+Earlier ordinary thermite, paired torches and the reviewed server-side survival-menu
 supplement are merged and normally pushed at `ead0ece2`. Source/Gradle inputs
 equal independently tested `4fedf295`: compileJava/test executes 2,146 JUnit
-cases; all 542 required native tests pass. Root additionally executes actual
+cases; all 542 required native tests pass in that older cohort, not regression17.
+Root additionally executes actual
 clean build/2,146 units and twice DataGen/clean diffs on integrated `ead0ece2`;
 nine compilation tasks use cache, `:test` executes. Source/Gradle inputs equal
 the native-tested `4fedf295`; each command keeps its actual commit identity.
@@ -584,13 +600,16 @@ equipment runtime is authorized. The separately reviewed
 is now narrowly adopted for two new uncalled calculation/test files. Its
 [registered fresh Claude assignment](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md)
 returns within scope; Root preserves/pushes original source707c389b and separate
-comment precision correction78347054. Different-agent actual-source/JUnit review
-is assigned; no main integration or Java execution is asserted yet. This selects no tank
+comment precision correction78347054. Different-agent source review and actual 21
+focused JUnit pass; [limited source integration17](../work/v1.8.0-c18b-reserve-transition/SOURCE-INTEGRATION-17.md)
+is committed/pushed at main eb90c643. This selects no tank
 tiers, persistent representation, configuration or native publication.
 The separately reviewed
 [test-side forward graph](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)
 is narrowly adopted for two new pure test files only. Its separately registered
-fresh Claude source16 session is running, not delivered. This is not whole-contract,
+fresh Claude source16 returns and is preserved/pushed at `00749afa`, not integrated.
+Its independent actual JUnit remains unexecuted after configuration interruption; Root's
+separate candidate's 2,179-unit pass does not replace it. This is not whole-contract,
 extractor/access/SCC or real survival coverage. Neither leaf delivers a unit.
 Tier capacities/config and paired interaction
 still await the owner's existing choice, and the proposed workstation save-veto

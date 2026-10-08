@@ -149,10 +149,12 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 - [ ] C16b：电弧炉、车床、切割机等机器家族；共享依赖先完成。
 - [ ] C16c：结晶器、化学反应器、激光蚀刻机、离心机等。
 - [ ] C16d：钢的初始来源、组件/controller/hatch 获取、配方图和进阶平衡。
-  - [ ] C16d-FORWARD-15：status: in-progress。Root 在不同代理限定审核后
+  - [ ] C16d-FORWARD-15：status: implemented-unverified。Root 在不同代理限定审核后
     [采纳测试侧纯可达性接口](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)。
     仅两个新增算法/测试文件；[源码任务16](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md)
-    已事前登记并实际启动独立 Claude 会话，尚待返回、源码审核和实际 JUnit。
+    已实际返回，三文件原字节提交、推送至 `00749afa`，尚未合入 main。
+    独立源码审核已读实际后像；独立定向调用在配置阶段经事前补充许可停止，JUnit 未执行。
+    Root 的组合候选有实际2,179-unit 通过，但有一项 required 气闸失败，不能替代独立执行。
     提取器、上下文、循环诊断、
     真实配方覆盖和整份图契约均未完成，不改变 C16d 台账状态。
 
@@ -350,12 +352,14 @@ C17b candidate03 的独立审核已解决旧版 Medium
   回调变化的拒绝承诺大于列明的可观察输入。另立的[可观察见证措辞修订](../work/v1.8.0-c18-contract/OXYGEN-WITNESS-CLARIFICATION-01.md)
   已完成独立复审，无新增 C/H/M/L，Root 仅采纳技术措辞；原 Low 和证据保留为历史。
   四档容量/配置和配对充气仍待已有维护者选择，未授权装备运行时。
-  - [ ] C18b-RESERVE-15：status: implemented-unverified。不同代理审核无 C/H/M/Low 后，Root
+  - [x] C18b-RESERVE-15：status: verified，仅未调用的纯计算源码。不同代理审核无 C/H/M/Low 后，Root
     [限定采纳纯计算接口](../work/v1.8.0-c18b-reserve-transition/ADOPTION-01.md)。
     只允许新增未调用的参数化储量转换及测试，不修改 engine、API/HUD 或保存。
     [独立 Claude 源码任务16](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md) 已返回；
     原字节提交、推送至 `707c389b`，另版仅注释/证据措辞修正至 `78347054`。
-    不同代理实际源码审核和定向 JUnit 已分配；尚未合入 main，实际 Java/原生验证和装备交付均未完成。
+    [实际源码审核和定向21 JUnit](../work/v1.8.0-c18b-reserve-transition/SOURCE-INTEGRATION-17.md)
+    无 C/H/M/Low、零 F/E/S，精确后像合入并正常推送至 `eb90c643`。
+    验证只限 A0 计算；装备原生适配、保存和交付仍未完成，不改变内容台账。
   新工作台的拒存与 R-021 扩展也未接受，不把文本模型检查记作原生交互证明。
 - [~] [C18a-SEAL-01](../work/v1.8.0-c18a-seal-detector/ADOPTION-01.md)：
   ADR-067、限定任务与 NEW 来源已独立审核并发布于 `513f2ffb`。
@@ -439,6 +443,14 @@ C17b candidate03 的独立审核已解决旧版 Medium
   打包原生使用/重启、真实客户端与台账交付仍开放，其他生命支持持久事务不在此项范围。
 
 ### C19 矩阵、审核与交付 `[ ]`
+
+最新[组合候选回归17](../work/v1.8.0-claude-cli-coordination/REGRESSION-17.md)
+在 `e91ddc16` 实际通过 clean build、2,179 JUnit、两次 DataGen 和空 diff，
+GameTest 完成542项但有一项 required 气闸失败。原始失败/63 ERROR 不改写；
+[新的 Claude 分析任务18](../work/v1.8.0-claude-cli-coordination/DISPATCH-18.md) 已返回、
+两份原字节文档提交推送至 `c7b99a2d`，独立审核进行中，不作为原因确认或修复。
+Root 清理本任务新输出272,079,187字节，独立储量审核另清理62,445,360字节；
+不计重复副本，不重试历史拒删项，也未改用户 AGENTS。
 
 台账剩余 **186 PLANNED /154 REVIEW**。内容可达性、来源资产复核、代表科技流程、
 整包专服/客户端/性能及 G0–G9 均未结束。
