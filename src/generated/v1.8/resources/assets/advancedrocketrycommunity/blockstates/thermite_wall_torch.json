@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/thermite_wall_torch"
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/thermite_wall_torch",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/thermite_wall_torch",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/thermite_wall_torch",
+      "y": 180
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "forge:rods/wooden"
+    },
+    {
+      "tag": "forge:dusts/thermite"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "item": "advancedrocketrycommunity:thermite_torch"
+  }
+}

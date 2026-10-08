@@ -11,10 +11,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.fluid.GasCanisterItem;
 import io.github.sunthemoon.advancedrocketrycommunity.station.content.StationDeploymentKitItem;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.DataSatellitePackageItem;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteControlChipItem;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -203,6 +205,10 @@ public final class ModItems {
             new io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTankItem(
                     ModBlocks.PRESSURIZED_TANK.get(), new Item.Properties()));
     public static final RegistryObject<Item> STATION_LIGHT = blockItem("station_light", ModBlocks.STATION_LIGHT);
+    public static final RegistryObject<Item> THERMITE = ITEMS.register("thermite", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> THERMITE_TORCH = ITEMS.register("thermite_torch", () ->
+            new StandingAndWallBlockItem(ModBlocks.THERMITE_TORCH.get(), ModBlocks.THERMITE_WALL_TORCH.get(),
+                    new Item.Properties(), Direction.DOWN));
 
     private ModItems() {
     }

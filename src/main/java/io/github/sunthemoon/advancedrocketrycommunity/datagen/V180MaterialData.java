@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.P
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialTags;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -226,6 +227,9 @@ public final class V180MaterialData {
             copy(BlockTags.PLANKS, ItemTags.PLANKS);
             copy(BlockTags.LEAVES, ItemTags.LEAVES);
             copy(BlockTags.SAPLINGS, ItemTags.SAPLINGS);
+            TagKey<Item> thermite = itemTag(ResourceLocation.tryParse("forge:dusts/thermite"));
+            tag(thermite).add(ModItems.THERMITE.get());
+            tag(Tags.Items.DUSTS).addTag(thermite);
             for (Entry entry : MaterialCatalog.entries()) {
                 Item item = MaterialContent.item(entry.id());
                 Material material = entry.material();

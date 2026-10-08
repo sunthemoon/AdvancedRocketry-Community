@@ -103,6 +103,26 @@ class V180MaterialResourcesTest {
     }
 
     @Test
+    void thermiteProductionTagsHaveExactlyOneMemberAndOneUmbrellaReference() throws IOException {
+        JsonObject thermite = json(DATA.resolve("forge/tags/items/dusts/thermite.json"));
+        assertEquals(Set.of("values"), thermite.keySet(), "thermite must not replace a common tag");
+        assertEquals(1, thermite.getAsJsonArray("values").size());
+        assertEquals(NS + ":thermite", thermite.getAsJsonArray("values").get(0).getAsString());
+        JsonObject umbrella = json(DATA.resolve("forge/tags/items/dusts.json"));
+        assertEquals(Set.of("values"), umbrella.keySet(), "the common umbrella must stay additive");
+        assertEquals(1L, tagValues("items", "forge:dusts").stream()
+                .filter("#forge:dusts/thermite"::equals).count(), "thermite umbrella reference must be unique");
+        int requiredReferences = 0;
+        for (JsonElement value : umbrella.getAsJsonArray("values")) {
+            if (value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()
+                    && value.getAsString().equals("#forge:dusts/thermite")) {
+                requiredReferences++;
+            }
+        }
+        assertEquals(1, requiredReferences, "thermite must use a required, plain-string umbrella reference");
+    }
+
+    @Test
     void rutileNeverSmeltsAndOtherOresSmeltAndBlast() throws IOException {
         Set<String> cooking = names("").stream().filter(name -> name.endsWith("_smelting")
                 || name.endsWith("_blasting")).collect(Collectors.toSet());
