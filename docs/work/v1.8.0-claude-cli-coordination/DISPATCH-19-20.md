@@ -58,6 +58,43 @@ No genuine placement authentication, O1/O2/O3, saving policy, ADR-068, physical
 activation, R-021, ledger unit or Gate is adopted. No source task is ready merely
 because this bounded specification is being written.
 
+## Later returns and session closeout
+
+This later record does not change the preceding pending-return checkpoint.
+Binding20 finishes naturally at 08:20:58.214848 UTC, exit 0/is_error false/no cap.
+The public receipt records all ten controls true, 17 complete pre-write reads,
+Read35/Glob2/Grep10/Write4, 52 turns and estimated USD2.795815. No JVM or Git
+command is authorized or executed by the author. Root reads the three documents
+and public report, checks scope/postimages and commits/normally pushes their
+original bytes at `932600d91632e8f28ebbcff0132af9fd8dcfe079` on the isolated draft
+branch. That branch is not merged; no independent binding20 review is complete.
+Public report SHA-256 is
+`53d0deab02e49f8d98f273537f864f1aeee2c83d69f00cded1919e73e3bf3d28` in
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/hatch-binding20-claude-author-20261008-01/`.
+U1–U7 and O1/O2/O3 remain unresolved; no source-readiness or policy is adopted.
+
+Next19's separate independent review is complete, with two Low findings and no
+C/H/M. Its report SHA-256 is
+`45e5af3fb02fd05485b83db0ec9c99dcd0e8eca62424a83d5acfcf34d04edd1f` in
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-next19-contract-independent-20261008-01/reviewer-01/`.
+The proposal incorrectly assigns 40 ticks to two subjects whose existing limit
+is 20, and literally prohibits existing vent/service tick calls. Preserve every
+original timeout and existing call when clarifying the text. No successor
+clarification, adoption, Java assignment or native rerun occurs in this session.
+
+The independent `3815db7d..fc3acf65` metadata audit has two Low current-state
+wording findings, no C/H/M metadata/evidence finding. Report SHA-256:
+`f4872669e439b97a0cab09448bc1eb6dc4d56ce186763e194bf971636381d65d` in
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/graph19-next20-metadata-independent-20261008-01/reviewer-01/`.
+Root corrects the stale graph integration/JUnit and triage-review paragraphs in
+newer current-state files, leaving this fixed report and all original evidence
+unchanged. This is not a new source or Gate finding.
+
+All Root-dispatched Claude calls have finished. On the owner's later instruction,
+Root starts no new author task here and prepares a
+[fresh-session handoff](../v1.8.0-session-handoff-20261008.md). Any unrelated
+interactive Claude process is neither controlled nor resumed by this closeout.
+
 ## Completed Root output retirement, with preserved correction
 
 The released Root e91 regression source copy is normally removed only after

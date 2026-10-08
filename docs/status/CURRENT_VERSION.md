@@ -34,6 +34,7 @@ phase: IMPLEMENTING
 execution_state: ACTIVE
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
+session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 3815db7d09014f2f5f4b8af2a34459fa3bc77113
@@ -68,10 +69,14 @@ are retained. Jupiter19's cleanup was rejected before execution; 61,868 B of
 class output remains sealed, without retry or a cleaned claim.
 Fresh [Claude triage18](../work/v1.8.0-claude-cli-coordination/DISPATCH-18.md) returns
 at `c7b99a2d`; different-agent review identifies two Low description issues and
-no C/H/M. A fresh successor specification `5bbad2b5` remains under independent
-review, not implementation. No cause/fix or Gate is adopted. Separately registered
-Claude LOAD-binding20 handles only a shared-hatch design sub-scope; the two
-Medium physical-admission prerequisites and owner/save decisions remain open.
+no C/H/M. Successor specification `5bbad2b5` has a completed independent review
+with two Low findings and no C/H/M; it is not adopted or implemented. LOAD-binding20
+returns three proposal documents, committed/normally pushed on its draft branch
+at `932600d9`, without independent review or adoption. The two Medium physical-
+admission prerequisites and owner/save decisions remain open. Root has completed
+all calls it dispatched and starts no new worker or implementation task in this
+session. The [fresh-session handoff](../work/v1.8.0-session-handoff-20261008.md)
+records the owner's direction to continue with Root-led implementation.
 
 Earlier ordinary thermite, paired torches and the reviewed server-side survival-menu
 supplement are merged and normally pushed at `ead0ece2`. Source/Gradle inputs
@@ -614,10 +619,12 @@ tiers, persistent representation, configuration or native publication.
 The separately reviewed
 [test-side forward graph](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)
 is narrowly adopted for two new pure test files only. Its separately registered
-fresh Claude source16 returns and is preserved/pushed at `00749afa`, not integrated.
-Its independent actual JUnit remains unexecuted after configuration interruption; Root's
-separate candidate's 2,179-unit pass does not replace it. This is not whole-contract,
-extractor/access/SCC or real survival coverage. Neither leaf delivers a unit.
+fresh Claude source16 is preserved/pushed at `00749afa` and integrated/pushed at
+`3815db7d`. Original Gradle review17 remains configuration-interrupted, with JUnit
+UNEXECUTED. Separate, prospectively authorized direct Jupiter19 actually passes
+17 cases; it does not repair or rewrite review17. Root's separate 2,179-unit cohort
+keeps its actual e91 identity. This is not whole-contract, extractor/access/SCC
+or real survival coverage. Neither leaf delivers a content unit.
 Tier capacities/config and paired interaction
 still await the owner's existing choice, and the proposed workstation save-veto
 extension remains unadmitted. The accepted working API/HUD buffer stays 2,000.
