@@ -36,8 +36,8 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: eb90c6436689e68bc03affc275094053369bf3ef
-pending_graph_source_candidate: 00749afac4f1edd6b39042e0608584979cbf5f2b
+latest_source_checkpoint: 3815db7d09014f2f5f4b8af2a34459fa3bc77113
+pending_graph_source_candidate: ""
 tested_code_commit: e91ddc16eccd714a936f93db838975f6e6e7ccdb
 native_tested_code_commit: e91ddc16eccd714a936f93db838975f6e6e7ccdb
 latest_regression_target_commit: e91ddc16eccd714a936f93db838975f6e6e7ccdb
@@ -54,17 +54,24 @@ last_updated: 2026-10-08
 
 The [pure reserve source](../work/v1.8.0-c18b-reserve-transition/SOURCE-INTEGRATION-17.md)
 is independently reviewed with no C/H/M/Low, actually passes 21 focused JUnit,
-and is integrated/non-force pushed at eb90c643. Graph `00749afa` is committed and
-pushed but not integrated. The separate [combined candidate regression17](../work/v1.8.0-claude-cli-coordination/REGRESSION-17.md)
+and is integrated/non-force pushed at eb90c643. The [bounded graph source](../work/v1.8.0-c16d-forward-reachability/SOURCE-INTEGRATION-19.md)
+has independent actual-code review and 17 executed direct Jupiter cases, zero F/E/S;
+it is integrated/normally pushed at `3815db7d`. The separate [combined candidate regression17](../work/v1.8.0-claude-cli-coordination/REGRESSION-17.md)
 at e91ddc16 passes clean build/2,179 actual JUnit/twice DataGen/clean diffs,
 but fails one required upper/phase0 airlock supply prerequisite among 542 completed
 GameTests. 63 ERROR headers and the strict-link failure remain open. Runtime and
-named Gradle inputs equal main eb90c643, but complete test trees differ; neither
-result is rebound. Graph independent execution is unproved: its configuration-only
-attempt is interrupted by a prospectively authorized own-process stop, without
-test/XML. Its diagnostic TEMP deviation and observer errors are retained.
+named Gradle inputs and the complete src tree now equal main `3815db7d`; the
+actual cohort identity is retained, not rebound. Graph review17's configuration-only
+attempt remains interrupted without test/XML; the separate direct-Jupiter19
+execution does not repair it. Its diagnostic TEMP deviation and observer errors
+are retained. Jupiter19's cleanup was rejected before execution; 61,868 B of
+class output remains sealed, without retry or a cleaned claim.
 Fresh [Claude triage18](../work/v1.8.0-claude-cli-coordination/DISPATCH-18.md) returns
-at `c7b99a2d` and is under different-agent review, with no cause/fix adopted. No Gate closes.
+at `c7b99a2d`; different-agent review identifies two Low description issues and
+no C/H/M. A fresh successor specification `5bbad2b5` remains under independent
+review, not implementation. No cause/fix or Gate is adopted. Separately registered
+Claude LOAD-binding20 handles only a shared-hatch design sub-scope; the two
+Medium physical-admission prerequisites and owner/save decisions remain open.
 
 Earlier ordinary thermite, paired torches and the reviewed server-side survival-menu
 supplement are merged and normally pushed at `ead0ece2`. Source/Gradle inputs

@@ -145,16 +145,22 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 - [x] C16a 储罐、泵和容量开发切片。
 - [x] C16a-07a：电机和机壳组件定义。
 - [x] C16a-R021-DOC01：仅更正 R-021 并提出 ADR 说明；独立事实审核，不是风险接受。
+- [ ] C16a-LOAD-BINDING-20：status: in-progress。独立只读资格复核确认两个既有
+  Medium 接入前置仍开放。Root 在独立新工作树登记并启动 Claude，限定写耦合设计的
+  LOAD/可用性/终态绑定提案；不接管旧作者文件，不授权 Java、物理 hatch 或 O1/O2/O3。
 - [ ] C16a-07b：全部电机等级的机器形成验证。
 - [ ] C16b：电弧炉、车床、切割机等机器家族；共享依赖先完成。
 - [ ] C16c：结晶器、化学反应器、激光蚀刻机、离心机等。
 - [ ] C16d：钢的初始来源、组件/controller/hatch 获取、配方图和进阶平衡。
-  - [ ] C16d-FORWARD-15：status: implemented-unverified。Root 在不同代理限定审核后
+  - [x] C16d-FORWARD-15：status: verified，仅测试侧数学源码/单测。Root 在不同代理限定审核后
     [采纳测试侧纯可达性接口](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)。
     仅两个新增算法/测试文件；[源码任务16](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md)
-    已实际返回，三文件原字节提交、推送至 `00749afa`，尚未合入 main。
-    独立源码审核已读实际后像；独立定向调用在配置阶段经事前补充许可停止，JUnit 未执行。
-    Root 的组合候选有实际2,179-unit 通过，但有一项 required 气闸失败，不能替代独立执行。
+    已实际返回，三文件原字节提交、推送至 `00749afa`，经独立源码审核后
+    [合入并正常推送](../work/v1.8.0-c16d-forward-reachability/SOURCE-INTEGRATION-19.md)至 `3815db7d`。
+    原 Gradle 配置阶段停止和诊断偏差保留；另行事前授权的直接 javac/Jupiter
+    实际执行 17 项单测，零失败、错误或跳过。清理被执行前拒绝，61,868 B 类文件仍保留，未重试。
+    完整 src/Gradle 输入等同于 Root 被测候选 `e91ddc16`；该批 2,179 项单测通过，
+    但有一项 required 气闸失败。独立纯 Java 成功不解决配置、原生或整版 Gate。
     提取器、上下文、循环诊断、
     真实配方覆盖和整份图契约均未完成，不改变 C16d 台账状态。
 
