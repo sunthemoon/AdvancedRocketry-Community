@@ -343,7 +343,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
   已在提案文本中补全元数据/空罐保真和拒绝充气路由规则，无 C/H/M，但有一项 Low：
   回调变化的拒绝承诺大于列明的可观察输入。另立的[可观察见证措辞修订](../work/v1.8.0-c18-contract/OXYGEN-WITNESS-CLARIFICATION-01.md)
   已完成独立复审，无新增 C/H/M/L，Root 仅采纳技术措辞；原 Low 和证据保留为历史。
-  四档容量/配置和配对充气仍待已有维护者选择，未授权装备源码。
+  四档容量/配置和配对充气仍待已有维护者选择，未授权装备运行时。
+  - [ ] C18b-RESERVE-15：status: ready。不同代理审核无 C/H/M/Low 后，Root
+    [限定采纳纯计算接口](../work/v1.8.0-c18b-reserve-transition/ADOPTION-01.md)。
+    只允许新增未调用的参数化储量转换及测试，不修改 engine、API/HUD 或保存。
+    新 Claude 源码工作树尚待登记；实际 Java/原生验证和装备闭环均未完成。
   新工作台的拒存与 R-021 扩展也未接受，不把文本模型检查记作原生交互证明。
 - [~] [C18a-SEAL-01](../work/v1.8.0-c18a-seal-detector/ADOPTION-01.md)：
   ADR-067、限定任务与 NEW 来源已独立审核并发布于 `513f2ffb`。
