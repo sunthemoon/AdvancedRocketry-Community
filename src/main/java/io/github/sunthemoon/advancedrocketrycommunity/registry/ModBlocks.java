@@ -28,11 +28,11 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.builder.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.receiver.MicrowaveReceiverBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.SatelliteTerminalBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.WarpCoreBlock;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.TorchBlock;
 import net.minecraft.world.level.block.WallTorchBlock;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;

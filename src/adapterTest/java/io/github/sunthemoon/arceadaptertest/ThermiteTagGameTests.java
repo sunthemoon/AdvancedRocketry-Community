@@ -85,7 +85,8 @@ public final class ThermiteTagGameTests {
         var snapshot = EnvironmentQueryFixture.queries().at(moon, net.minecraft.core.BlockPos.ZERO).orElseThrow();
         helper.assertTrue(snapshot.bodyId().equals(id("moon")) && snapshot.vacuum()
                 && !snapshot.atmosphere().orElseThrow().breathable(), "Configured Moon vacuum is unavailable or differs");
-        helper.assertTrue(ForgeRegistries.BLOCKS.getValue(id("thermite_torch")).defaultBlockState().getLightEmission() == 14,
+        helper.assertTrue(ForgeRegistries.BLOCKS.getValue(id("thermite_torch")).defaultBlockState()
+                        .getLightEmission(helper.getLevel(), net.minecraft.core.BlockPos.ZERO) == 14,
                 "Registered passive light differs");
         helper.succeed();
     }

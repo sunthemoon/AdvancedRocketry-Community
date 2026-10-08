@@ -85,7 +85,7 @@ public final class ThermiteTorchGameTests {
         for (Block value : List.of(standing, wall)) {
             BlockState state = value.defaultBlockState();
             helper.assertTrue(!state.hasBlockEntity() && !state.isRandomlyTicking() && !state.isSignalSource()
-                    && state.getLightEmission() == 14 && state.getCollisionShape(helper.getLevel(), pos).isEmpty()
+                    && state.getLightEmission(helper.getLevel(), pos) == 14 && state.getCollisionShape(helper.getLevel(), pos).isEmpty()
                     && state.getDestroySpeed(helper.getLevel(), pos) == 0.0F
                     && state.getSoundType() == SoundType.WOOD && state.getPistonPushReaction() == PushReaction.DESTROY,
                     "Passive torch properties differ");
@@ -276,7 +276,7 @@ public final class ThermiteTorchGameTests {
                         fixture.baseline = List.of(centreLight, neighbourLight);
                         if (disabled || moon) { place(helper, fixture, survival(level, fixture.pos), fixture.pos.below(), Direction.UP); }
                         else { fixture.set(fixture.pos, block(helper, "thermite_torch").defaultBlockState(), Block.UPDATE_ALL); }
-                        helper.assertTrue(level.getBlockState(fixture.pos).getLightEmission() == 14 && level.getBlockEntity(fixture.pos) == null,
+                        helper.assertTrue(level.getBlockState(fixture.pos).getLightEmission(level, fixture.pos) == 14 && level.getBlockEntity(fixture.pos) == null,
                                 "Loaded torch did not emit fourteen or acquired a BlockEntity");
                         fixture.set(fixture.pos.west(), Blocks.IRON_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
                         fixture.set(fixture.pos.west(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
@@ -297,7 +297,7 @@ public final class ThermiteTorchGameTests {
         return first.size() == second.size() && (first.isEmpty() || ItemStack.matches(first.get(0), second.get(0)));
     }
     private static BlockPos centre(GameTestHelper helper) { return helper.absolutePos(new BlockPos(8, 8, 8)); }
-    private static ResourceLocation id(String name) { return new ResourceLocation(ModIdentity.MOD_ID, name); }
+    private static ResourceLocation id(String name) { return ResourceLocation.tryParse(ModIdentity.MOD_ID + ":" + name); }
     private static Item item(GameTestHelper helper, String name) {
         helper.assertTrue(ForgeRegistries.ITEMS.containsKey(id(name)), "Literal item ID absent: " + name);
         Item value = ForgeRegistries.ITEMS.getValue(id(name));
@@ -351,7 +351,7 @@ public final class ThermiteTorchGameTests {
         private void pin() {
             ChunkPos chunk = new ChunkPos(pos);
             if (!level.getForcedChunks().contains(chunk.toLong())) { ownsForce = true; level.setChunkForced(chunk.x, chunk.z, true); }
-            level.getChunk(chunk.x, chunk.z); // One finite test-owned chunk, not production query loading.
+            level.getChunk(chunk.x, chunk.z); // One explicitly forced fixture chunk; a joined observer also has player tickets.
             oldDrops = level.getEntitiesOfClass(ItemEntity.class, bounds).stream().map(ItemEntity::getUUID).collect(Collectors.toSet());
         }
         private void set(BlockPos position, BlockState state, int flags) {
