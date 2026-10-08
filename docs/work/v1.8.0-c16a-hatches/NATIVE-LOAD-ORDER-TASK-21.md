@@ -1,6 +1,6 @@
 # C16a-HATCH-NATIVE-LOAD-21
 
-Date: 2026-10-08. Owner/implementer: Root. Status: in-progress.
+Date: 2026-10-08. Owner/implementer: Root. Status: verified test-side qualification.
 Base: 355766c6841137c8e8b5977be1fc3e25bc074fa7.
 Branch: test/v1.8.0-hatch-native-load-order.
 Worktree: D:/GitHub/arce-v180-hatch-load-order-20261008.
@@ -58,3 +58,12 @@ An observation qualifies only its measured route/version, not all custom block
 callbacks, final writer/disposal, crash recovery, real clients or release Gates.
 After independent review, record the concrete disposition of the pending
 two-LOAD binding while keeping full physical lifecycle and v1.8 scope open.
+
+## Completion record
+
+The [verification](NATIVE-LOAD-ORDER-VERIFICATION-21.md) identifies corrected
+tested source 3939dd55, independently reviewed/rerun and integrated/normally
+pushed at 79cb3e91. Original helper-login failures remain retained. Qualification
+is limited to normal in-Level native scheduling; both Medium admission
+prerequisites and full physical LOAD/save/terminal authority remain open.
+No Required Gate, ADR-068, R-021 or ledger delivery is accepted here.
