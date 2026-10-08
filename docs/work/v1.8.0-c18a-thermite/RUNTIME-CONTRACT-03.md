@@ -133,11 +133,15 @@ drops, no BlockEntity, constant light and loaded native-light publication,
 ordinary recipes/tag substitution without input mutation, press conservation
 and disabled behavior. A separate adapter-only foreign-item fixture contributes
 foreign aluminum/iron/thermite tag members and tests the actual RecipeManager.
-It must never be packaged in production. The adapter's existing ready-event
-EnvironmentQueryFixture provides the actual installed service: query actual
-Moon Level as vacuum, then test loaded torch light there with a bounded separate
-fixture and restoration, never a local AtmosphereLevelService stand-in. Native
-fixture loading is finite setup, not product chunk-loading behavior.
+It must never be packaged in production. EnvironmentQueryFixture's ready-event
+handle can observe the installed configured Moon vacuum definition, not room
+oxygen. A main GameTest additionally uses the actual installed
+AtmosphereAnalyzerRuntime.read(player) in a bounded loaded Moon fixture: ambient
+pressure zero, unsupplied/non-breathable eye cell, unchanged after torch placement
+and neighbour invalidation. Test native torch light there and restore the fixture
+and test player; no local AtmosphereLevelService stand-in. Native fixture loading
+is finite setup, not product chunk-loading behavior. Body-definition evidence
+alone is not an effective-air observation.
 
 S1 survival acquisition, reload, normal save/stop/restart and upgrade placement;
 real-GPU V1 particle/model/light checks and any applicable V2 remain unrun until
