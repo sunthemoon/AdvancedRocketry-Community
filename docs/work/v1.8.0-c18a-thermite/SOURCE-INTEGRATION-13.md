@@ -76,4 +76,17 @@ manifest `3acc637295aa5f7cc99db3231d074de8f80e01f689d29d400fbe9597ae18b63f`.
 The original launcher helper exits 1 with a command syntax error before Gradle;
 the separate fixed helper normalizes the Windows executable path. Original
 helper/failure log remain unchanged. No source/config/permission change or
-policy bypass. Root evidence and this metadata await different-agent audit.
+policy bypass. Different-agent audit of committed `9b41d90e` verifies all 45
+cited payload hashes, actual XML/test execution, source equivalence and the
+retirement sums. Its one Low is the completion plan's unmarked predecessor
+admission state; Root replaces that stale state in a separate follow-up commit.
+Original findings and seals remain unchanged. No native rerun or Gate verdict
+is inferred from this documentary review.
+
+Audit report:
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-thermite-integration13-metadata-review-20261008-01/reviewer-01/REPORT-01.md`;
+SHA-256 `dbf01ac2028e37cb616f393578cb11878149cedf602148e2bc7599f4333af485`,
+manifest `57b2dc07b3bd3595538e4145641c37ef7ccfed2a061f473c654297c12ccb946f`.
+The sealed runner copies retain execution provenance, not a standalone replay
+layout: the fixed helper names `verify_final14.py`, which is retained under
+`RUNNER14.py` in the packet; the original-name used pair remains externally.
