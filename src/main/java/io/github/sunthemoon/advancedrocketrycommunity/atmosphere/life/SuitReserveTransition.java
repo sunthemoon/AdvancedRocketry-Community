@@ -31,7 +31,7 @@ public final class SuitReserveTransition {
         }
 
         // Both operands are within 0..2000, so the deficit cannot overflow and
-        // active plus transfer never exceeds the target.
+        // active plus transfer never exceeds max(active, target).
         int transferred = 0;
         if (transferAdmitted(input, reserveEligible)) {
             int deficit = Math.max(0, targetUnits - input.oxygenUnits());
