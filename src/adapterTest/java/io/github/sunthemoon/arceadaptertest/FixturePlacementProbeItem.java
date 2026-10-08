@@ -1,6 +1,7 @@
 package io.github.sunthemoon.arceadaptertest;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
@@ -8,6 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.Event;
@@ -27,6 +29,10 @@ public final class FixturePlacementProbeItem extends BlockItem {
 
     private FixturePlacementProbeItem() { super(Blocks.CHEST, new Item.Properties()); }
     static void register(IEventBus bus) { ITEMS.register(bus); }
+
+    // The probe has its own Item registry identity, never the native chest's block-to-item entry.
+    @Override public void registerBlocks(Map<Block, Item> map, Item item) { }
+    @Override public void removeFromBlockToItemMap(Map<Block, Item> map, Item item) { }
 
     @Override public InteractionResult onItemUseFirst(net.minecraft.world.item.ItemStack stack, UseOnContext context) {
         observe("FIRST", context);

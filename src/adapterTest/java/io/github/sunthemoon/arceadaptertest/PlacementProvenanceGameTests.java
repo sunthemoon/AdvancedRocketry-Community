@@ -22,6 +22,8 @@ import net.minecraft.server.level.ServerPlayerGameMode;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -140,6 +142,8 @@ public final class PlacementProvenanceGameTests {
             source.getOrCreateTag().putBoolean("DirectFirst", directFirst);
             sourceTag = source.getTag().copy();
             try {
+                helper.assertTrue(Item.byBlock(Blocks.CHEST) == Items.CHEST,
+                        "Development probe changed the native chest block-to-item mapping");
                 Field field = GameTestHelper.class.getDeclaredField("testInfo");
                 field.setAccessible(true);
                 ((GameTestInfo) field.get(helper)).addListener(this);
@@ -205,6 +209,8 @@ public final class PlacementProvenanceGameTests {
         }
 
         private void source(GameTestHelper helper, int remaining) {
+            helper.assertTrue(Item.byBlock(Blocks.CHEST) == Items.CHEST,
+                    "Native chest mapping changed during the probe");
             helper.assertTrue(player.getItemInHand(InteractionHand.MAIN_HAND) == source
                     && source.is(FixturePlacementProbeItem.ITEM.get()) && source.getCount() == remaining
                     && sourceTag.equals(source.getTag()), "Native source identity/count/tag changed");
