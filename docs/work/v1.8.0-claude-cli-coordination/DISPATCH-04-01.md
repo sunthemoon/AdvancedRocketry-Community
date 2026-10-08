@@ -75,6 +75,25 @@ The completed separate technical review finds 2 Medium/1 Low; the exact sealed
 report and remaining platform/source prerequisites are in REVIEW-04-01.
 This new task does not grant a fourth large implementation or alter allocation.
 
+## Later bounded thermite correction
+
+Root registers and normally pushes a separate TASK-02 at d4a7aea9 before
+starting fresh session a724c8b9-a682-40e9-9802-912ad0210ce4, not an old-session
+resume. Its unchanged three-document return is committed/pushed at
+a8133ec107e07b1b471b82b9263c8e1287c36f36 in
+D:/GitHub/arce-v180-claude-thermite-correction02-20261008. CLI exit 0/is_error
+false/no time-output cap, nine I/O controls pass. Independent public observations
+confirm all seventeen mandatory full live-main reads before first Write; five
+Write payloads stay within their 6/4/4 KiB limits. The author's size uncertainty
+is not an observed cap breach. Actual result is 53 turns and USD 1.813109 client
+estimate, not the author's approximate 19 turns or a verified invoice. All five
+calls described here total USD 10.5609534 in client estimates, not billed cost.
+The separate unchanged once-sealed author capture and Root registration/intake
+are at c18a-thermite-correction02-claude-author-20261008-01 and
+c18a-thermite-correction02-root-20261008-01 under the D evidence root.
+Its completed independent technical review is recorded in REVIEW-04-01; no
+source, test or art is authored, adopted or delivered by this return.
+
 v1.8 remains IN_PROGRESS, 186 PLANNED /154 REVIEW; Claude's 121-unit allocation,
 inherited release acceptance, R-021 and all G0-G9 remain unchanged. No persistent
 scheduler or unattended polling after this Root session is promised.

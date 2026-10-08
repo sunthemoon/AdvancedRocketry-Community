@@ -74,6 +74,32 @@ qualification before freezing a source task. Passive-switch policy and precise
 leaf dependency disposition also remain undecided. Full frozen-input/C18 requirements and the seven-unit
 torch family are not silently reduced by this narrower preparation.
 
+## Later thermite correction and limited test clarification
+
+The separately registered fresh call returns candidate
+a8133ec107e07b1b471b82b9263c8e1287c36f36, parent d4a7aea9. Its completed
+[independent actual-diff report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-correction02-independent-20261008-01/reviewer-01/REPORT-01.md),
+SHA-256 e79cc44edb686eb28e71155d5b3cb9a3c77ecb0e57b54a93b25267300427586b,
+finds 0 Critical/High/Medium and 1 new Low. Original tag/art/acquisition findings
+are addressed in replacement text only, not whole-contract/runtime acceptance.
+Its 181 documentary controls and 89 final checks pass; product tests are zero.
+All author/reviewer interests are released, and old omission/seals stay unchanged.
+
+New Low: T12's whole-recipe item prohibition also rejects required result.item.
+Root's limited clarification supersedes only that T12 wording for a later
+implementation: inspect ingredient selectors for an exact thermite item ID;
+do not inspect the result as an ingredient. Keep result ID/count assertions
+separate. This clarification requires its own independent actual-diff review;
+the unchanged author file is not rewritten or represented as already corrected.
+It selects no new recipe value, fallback, asset, switch or save behavior.
+
+Foreign-tag fixture, TagKey/umbrella ownership, accepted numeric inputs,
+disabled-acquisition and passive-switch decisions, narrow dependencies,
+version-qualified native torch/model/loot, installed vacuum, exact paths and
+NEW resource declaration/review remain prerequisites. No source task is
+admitted through this scoped result; earlier full-contract/Gate requirements
+and the remaining torch family are unchanged.
+
 ## Source, ownership, evidence and Gates
 
 Root's corrected 122 documentary controls verify postimages, seals, source

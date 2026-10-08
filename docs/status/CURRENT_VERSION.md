@@ -150,9 +150,12 @@ The [current disposition](../work/v1.8.0-claude-cli-coordination/REVIEW-04-01.md
 separates remaining draft findings from implementation/adoption. Root directly
 dispatches a separately registered thermite-only prerequisite; its unchanged
 return is backed up but has an open mandatory-read deviation and no adoption.
-Its completed independent review finds 2 Medium/1 Low; platform and dependency
-qualification remain open. No runtime implementation or Gate is inferred from
-that documentary preparation.
+Original draft-01 review remains 2 Medium/1 Low history. The later unchanged
+thermite correction a8133ec1 is separately committed/pushed and independently
+reviewed: 0 Critical/High/Medium, 1 Low; replacement text addresses the original
+findings only in its scope. Ingredient-only T12 clarification, platform and
+dependency qualification remain separate from runtime adoption. No runtime
+implementation or Gate is inferred from that documentary preparation.
 Full regression/V1/V2/Gates,
 186 PLANNED /154 REVIEW and CSV
 allocations are unchanged.
