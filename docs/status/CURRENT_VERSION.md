@@ -55,6 +55,14 @@ last_updated: 2026-10-09
 
 ## Current development evidence
 
+The separate [detector admission candidate](../work/v1.8.0-c18a-seal-detector/ADMISSION-TASK-03.md)
+is IN_PROGRESS at unintegrated original e456ffc0. Preparation 77154351 is
+published before source authoring. Independent review identifies a Medium
+exceptional harness-worker cleanup-order finding; corrective scope is recorded
+before correction. Original full cohorts are still running. This does not
+replace the last completed regression below, describe a normal detector failure,
+approve delivery or close the inherited preparation deviation or any Gate.
+
 The [installed detector rule qualification](../work/v1.8.0-c18a-seal-detector/INSTALLED-RUNTIME-VERIFICATION-02.md)
 is independently actual-source reviewed and integrated/normally pushed at
 `c554e810780f0f9b5b8b6cd290bddd6e0822b2eb`. Actual tested source is

@@ -34,6 +34,7 @@ Root alone owns a NEW isolated worktree
 `test/v1.8.0-seal-admission`, created from the committed preparation record.
 
 - NEW `src/main/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/instrument/SealDetectorAdmissionGameTests.java`.
+- NEW `src/test/java/io/github/sunthemoon/advancedrocketrycommunity/atmosphere/instrument/SealDetectorAdmissionWorkerGateTest.java` for exceptional worker/cleanup ordering.
 - This task and NEW `ADMISSION-VERIFICATION-03.md` in this directory.
 - NEW compact evidence archives for this task in this directory.
 - Narrow preparation/integration records in `docs/status/COMPLETION-PLAN.md`,
@@ -76,3 +77,23 @@ disposable, source-world inputs are not. Native PowerShell cleanup requires
 ended-process, ownership, containment and reparse checks, one attempt, no
 retry of denied targets. Keep compact evidence with relative manifests, not
 whole reproducible source/build/world copies; enforce repository size budgets.
+
+## Corrective verification scope (2026-10-09)
+
+Independent actual review of original e456ffc0 identifies a Medium exceptional
+harness-lifecycle issue: a worker surviving cancellation/join can throw while
+outer try-with-resources still closes its local reader and restores fixture
+cells. The external diagnostic invokes the actual helper and an external
+resource-unwinding witness, not the Minecraft cleanup body or a normal detector
+hang. Original source, diagnosis and complete cohort remain separately pinned.
+
+The additional pure Java test path above is declared before correction.
+Require each actual local-reader/fixture close to check its owned worker's
+terminal state before any cleanup. If termination cannot be established, fail
+and retain the owned fixture rather than close/restore it while a worker lives;
+do not claim automatic recovery of that exceptional fixture. Normal checks must
+finish their workers before cleanup. Explicitly released diagnostic workers
+must be joined before diagnostic cleanup. Existing wait/join/tick budgets remain
+unchanged; no forced thread stop, new hook, periodic poller or production seam.
+Test actual helper completion, exception, unresolved-worker cleanup refusal and
+terminal-state recovery using finite owned threads. No Required Gate is waived.
