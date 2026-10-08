@@ -581,12 +581,16 @@ has independent review with no introduced C/H/M/L and is accepted as limited
 technical wording only; the original finding/seals remain historical. No
 equipment runtime is authorized. The separately reviewed
 [pure reserve transition](../work/v1.8.0-c18b-reserve-transition/ADOPTION-01.md)
-is now narrowly adopted for two new uncalled calculation/test files; its isolated
-Claude assignment and actual Java checks remain pending. This selects no tank
+is now narrowly adopted for two new uncalled calculation/test files. Its
+[registered fresh Claude assignment](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md)
+returns within scope; Root preserves/pushes original source707c389b and separate
+comment precision correction78347054. Different-agent actual-source/JUnit review
+is assigned; no main integration or Java execution is asserted yet. This selects no tank
 tiers, persistent representation, configuration or native publication.
 The separately reviewed
 [test-side forward graph](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)
-is narrowly adopted for two new pure test files only, not whole-contract,
+is narrowly adopted for two new pure test files only. Its separately registered
+fresh Claude source16 session is running, not delivered. This is not whole-contract,
 extractor/access/SCC or real survival coverage. Neither leaf delivers a unit.
 Tier capacities/config and paired interaction
 still await the owner's existing choice, and the proposed workstation save-veto

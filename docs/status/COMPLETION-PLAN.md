@@ -149,9 +149,11 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 - [ ] C16b：电弧炉、车床、切割机等机器家族；共享依赖先完成。
 - [ ] C16c：结晶器、化学反应器、激光蚀刻机、离心机等。
 - [ ] C16d：钢的初始来源、组件/controller/hatch 获取、配方图和进阶平衡。
-  - [ ] C16d-FORWARD-15：status: ready。Root 在不同代理限定审核后
+  - [ ] C16d-FORWARD-15：status: in-progress。Root 在不同代理限定审核后
     [采纳测试侧纯可达性接口](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)。
-    仅两个新增算法/测试文件；新 Claude 源码任务待登记，提取器、上下文、循环诊断、
+    仅两个新增算法/测试文件；[源码任务16](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md)
+    已事前登记并实际启动独立 Claude 会话，尚待返回、源码审核和实际 JUnit。
+    提取器、上下文、循环诊断、
     真实配方覆盖和整份图契约均未完成，不改变 C16d 台账状态。
 
 已确认 controller 统一保存资源、流体 hatch 破坏后保留库存；带电插口在物品中
@@ -348,10 +350,12 @@ C17b candidate03 的独立审核已解决旧版 Medium
   回调变化的拒绝承诺大于列明的可观察输入。另立的[可观察见证措辞修订](../work/v1.8.0-c18-contract/OXYGEN-WITNESS-CLARIFICATION-01.md)
   已完成独立复审，无新增 C/H/M/L，Root 仅采纳技术措辞；原 Low 和证据保留为历史。
   四档容量/配置和配对充气仍待已有维护者选择，未授权装备运行时。
-  - [ ] C18b-RESERVE-15：status: ready。不同代理审核无 C/H/M/Low 后，Root
+  - [ ] C18b-RESERVE-15：status: implemented-unverified。不同代理审核无 C/H/M/Low 后，Root
     [限定采纳纯计算接口](../work/v1.8.0-c18b-reserve-transition/ADOPTION-01.md)。
     只允许新增未调用的参数化储量转换及测试，不修改 engine、API/HUD 或保存。
-    新 Claude 源码工作树尚待登记；实际 Java/原生验证和装备闭环均未完成。
+    [独立 Claude 源码任务16](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md) 已返回；
+    原字节提交、推送至 `707c389b`，另版仅注释/证据措辞修正至 `78347054`。
+    不同代理实际源码审核和定向 JUnit 已分配；尚未合入 main，实际 Java/原生验证和装备交付均未完成。
   新工作台的拒存与 R-021 扩展也未接受，不把文本模型检查记作原生交互证明。
 - [~] [C18a-SEAL-01](../work/v1.8.0-c18a-seal-detector/ADOPTION-01.md)：
   ADR-067、限定任务与 NEW 来源已独立审核并发布于 `513f2ffb`。
