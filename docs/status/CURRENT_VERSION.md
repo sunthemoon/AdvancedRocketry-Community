@@ -74,12 +74,17 @@ their unchanged two-file proposals are backed up and independently reviewed:
 audio has zero C/H/M, two Low; equipment has zero C/H/M, five Low. Whole
 contracts stay proposed. Each author discloses reading a shared
 memory note; ten I/O controls pass, but do not prove full task conformance.
-The subsequent platform-07 studies and survival-menu test candidate are not
-adopted: their required live-governance reads are incomplete. Root's generic
-task wording is corrected to explicit absolute live-main paths for successors.
-The two-file native candidate is backed up at `f535a130` and is under independent
-actual-source/runtime review, not merged. See
-[current dispatch](../work/v1.8.0-claude-cli-coordination/DISPATCH-07-01.md) and the
+The platform-07 studies remain unadopted with incomplete required reads.
+Both fresh platform-08 calls complete all 17 live reads and nine I/O checks;
+their actual API observations are under different-agent review, not contracts.
+The separate native candidate `f535a130` completes independent review with zero
+C/H/M, two Low, 2,146 unit and 542 native passes. It is not merged, and its
+author's missed reads remain recorded. Claude's owned-cleanup successor and a
+three-line Root error-path amendment are backed up at `4fedf295`; independent
+exact-source/runtime review is running. Its original capture fails a trimmed
+porcelain-prefix check; a separate raw-status/postimage correction preserves
+that failure and passes all eleven observations, not code acceptance. See
+[current dispatch](../work/v1.8.0-claude-cli-coordination/DISPATCH-08-01.md) and the
 implementation log. Historical source-specific regression cohorts below are
 not rebound to this snapshot; no airlock/Tau cause, R-021, ledger or Gate closes.
 

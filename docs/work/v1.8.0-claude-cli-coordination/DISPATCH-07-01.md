@@ -1,5 +1,8 @@
 # Current focused Claude returns and source integration
 
+Historical checkpoint. [DISPATCH-08-01](DISPATCH-08-01.md) supersedes its pending
+native-review and platform-call state with actual later returns, 2026-10-08.
+
 2026-10-08. Root coordinates fresh small CLI sessions, files for context and
 all commits/pushes. The owner's interactive session is not resumed or forked.
 This record supersedes pending/current descriptions in DISPATCH-05/06; their

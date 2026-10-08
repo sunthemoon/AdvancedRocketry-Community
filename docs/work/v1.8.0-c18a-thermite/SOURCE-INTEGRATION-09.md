@@ -104,6 +104,7 @@ dedicated/multiplayer S2, real V1/V2, artwork/provenance acceptance and complete
 version Gates are unproven. No R-021/save/shared-hatch risk closes. Ledger
 allocations and delivery statuses are unchanged; v1.8 remains IN_PROGRESS.
 
-Claude's separate two-file survival-menu supplement at `f535a130` is backed up
-and undergoing independent review. It is not part of this integration and its
+Claude's separate two-file survival-menu supplement at `f535a130` is not part of
+this integration. Its later completed review and cleanup successor are recorded
+in [dispatch 08](../v1.8.0-claude-cli-coordination/DISPATCH-08-01.md); that separate
 test cohort cannot be substituted for the 540-test source evidence above.
