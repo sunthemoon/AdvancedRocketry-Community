@@ -167,7 +167,7 @@ public final class SealDetectorAdmissionGameTests {
         try (Fixture f = new Fixture(helper); LocalReader local = new LocalReader(f)) {
             local.control(f);
             Probe context = f.probe(f.actor.player, f.level, true);
-            helper.assertTrue(offThread(() -> local.service.read(context)).equals(SealDetectorReading.unavailable()),
+            helper.assertTrue(offThread(f.workers, () -> local.service.read(context)).equals(SealDetectorReading.unavailable()),
                     "Off-thread local reader responded");
             context.untouched(helper, true);
         }
@@ -202,14 +202,21 @@ public final class SealDetectorAdmissionGameTests {
     private static final class LocalReader implements AutoCloseable {
         private final AtmosphereManager manager = new AtmosphereManager(new CelestialEnvironmentService(new CelestialCatalogManager()));
         private final SealDetectorService service;
+        private final WorkerGate workers;
 
-        private LocalReader(Fixture f) { service = new SealDetectorService(f.level.getServer(), manager, AtmosphereBoundaryCatalog.empty()); }
+        private LocalReader(Fixture f) {
+            workers = f.workers;
+            service = new SealDetectorService(f.level.getServer(), manager, AtmosphereBoundaryCatalog.empty());
+        }
         private void control(Fixture f) {
             f.helper.assertTrue(service.read(new UseOnContext(f.actor.player, InteractionHand.MAIN_HAND, f.hit()))
                     .equals(SealDetectorReading.measured(SealDetectorReading.Boundary.SEALED,
                             SealDetectorReading.Supply.NOT_KNOWN_SUPPLIED)), "Admitted local control did not measure");
         }
-        @Override public void close() { try { service.close(); } finally { manager.clear(); } }
+        @Override public void close() {
+            workers.requireStopped();
+            try { service.close(); } finally { manager.clear(); }
+        }
     }
 
     /** A refusal must stop before selected position/face/hit access; local handle guards also stop actor/Level access. */
@@ -249,6 +256,7 @@ public final class SealDetectorAdmissionGameTests {
         private final BlockPos target;
         private final Map<BlockPos, BlockState> before = new LinkedHashMap<>();
         private final SealDetectorItem item;
+        private final WorkerGate workers = new WorkerGate();
         private Actor actor;
         private Actor peer;
 
@@ -298,7 +306,7 @@ public final class SealDetectorAdmissionGameTests {
             CompoundTag mainData = main.save(new CompoundTag()), offData = off.save(new CompoundTag());
             var metrics = AtmosphereRuntime.metrics(level);
             helper.assertTrue(!subject.getCooldowns().isOnCooldown(item), "Refusal precondition is already on cooldown");
-            InteractionResult result = worker ? offThread(() -> item.useOn(context)) : item.useOn(context);
+            InteractionResult result = worker ? offThread(workers, () -> item.useOn(context)) : item.useOn(context);
             helper.assertTrue(result == InteractionResult.FAIL && actor.replies.isEmpty() && peer.replies.isEmpty()
                     && !subject.getCooldowns().isOnCooldown(item), "Refused item request responded or set cooldown");
             context.untouched(helper, false);
@@ -307,6 +315,7 @@ public final class SealDetectorAdmissionGameTests {
                     && metrics.equals(AtmosphereRuntime.metrics(level)), "Refusal changed held data or atmosphere metrics");
         }
         @Override public void close() {
+            workers.requireStopped();
             Throwable first = null;
             for (Actor owned : new Actor[] {actor, peer}) {
                 if (owned == null) { continue; }
@@ -358,11 +367,29 @@ public final class SealDetectorAdmissionGameTests {
         }
     }
 
-    private static <T> T offThread(Callable<T> action) {
+    /** An unresolved owned worker retains its fixture; cleanup is not safe until termination is established. */
+    static final class WorkerGate {
+        private Thread worker;
+
+        void start(Thread next) {
+            requireStopped();
+            worker = next;
+            try { next.start(); }
+            catch (RuntimeException | Error failure) { worker = null; throw failure; }
+        }
+
+        void requireStopped() {
+            if (worker != null && worker.getState() != Thread.State.TERMINATED) {
+                throw new IllegalStateException("Guard worker has not terminated");
+            }
+        }
+    }
+
+    static <T> T offThread(WorkerGate workers, Callable<T> action) {
         FutureTask<T> task = new FutureTask<>(action);
         Thread worker = new Thread(task, "arce-seal-guard-check");
         worker.setDaemon(true);
-        worker.start();
+        workers.start(worker);
         try { return task.get(2, TimeUnit.SECONDS); }
         catch (Exception failure) { throw new IllegalStateException("Owned guard worker failed", failure); }
         finally {
