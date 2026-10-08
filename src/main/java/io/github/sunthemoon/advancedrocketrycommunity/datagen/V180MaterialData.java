@@ -227,7 +227,7 @@ public final class V180MaterialData {
             copy(BlockTags.PLANKS, ItemTags.PLANKS);
             copy(BlockTags.LEAVES, ItemTags.LEAVES);
             copy(BlockTags.SAPLINGS, ItemTags.SAPLINGS);
-            TagKey<Item> thermite = itemTag(new ResourceLocation("forge", "dusts/thermite"));
+            TagKey<Item> thermite = itemTag(ResourceLocation.tryParse("forge:dusts/thermite"));
             tag(thermite).add(ModItems.THERMITE.get());
             tag(Tags.Items.DUSTS).addTag(thermite);
             for (Entry entry : MaterialCatalog.entries()) {

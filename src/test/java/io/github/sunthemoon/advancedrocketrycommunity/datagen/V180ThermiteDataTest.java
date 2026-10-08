@@ -229,10 +229,11 @@ class V180ThermiteDataTest {
                 row++;
                 assertTrue(y >= 6 && y <= 14 && x >= 1 && x <= 14, "dust outside heap margin at " + x + "," + y);
             }
-            if (y >= 8) {
+            if (y >= 8 && y <= 14) {
                 assertTrue(row >= widest, "heap narrows downward at row " + y);
                 widest = row;
             }
+            if (y == 15) { assertEquals(0, row, "dust bottom margin must stay transparent"); }
             opaque += row;
         }
         assertTrue(widest >= 12 && opaque >= 40 && opaque <= 120, "heap " + widest + "/" + opaque);

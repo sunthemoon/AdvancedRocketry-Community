@@ -119,8 +119,8 @@ public final class ThermiteTagGameTests {
         helper.assertTrue(new ItemStack(item).is(tag(path)), "Missing loaded Forge tag " + path);
     }
 
-    private static TagKey<Item> tag(String path) { return TagKey.create(Registries.ITEM, new ResourceLocation("forge", path)); }
-    private static ResourceLocation id(String path) { return new ResourceLocation(HOST, path); }
+    private static TagKey<Item> tag(String path) { return TagKey.create(Registries.ITEM, ResourceLocation.tryParse("forge:" + path)); }
+    private static ResourceLocation id(String path) { return ResourceLocation.tryParse(HOST + ":" + path); }
     private static Item item(String path) {
         Item item = ForgeRegistries.ITEMS.getValue(id(path));
         if (item == null || item == Items.AIR) { throw new IllegalStateException("Missing host item " + path); }
