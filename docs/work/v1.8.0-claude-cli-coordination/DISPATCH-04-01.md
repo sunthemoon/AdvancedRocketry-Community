@@ -71,6 +71,8 @@ three-document return is backed up at d9d97eed7ae9580a9922f5334b6dd3c44fd4d9c9,
 not accepted. Max-turns argv 48 versus result num_turns 57 is retained as an
 unqualified enforcement discrepancy. Exact review/adoption, narrow
 dependency disposition and original resources must precede runtime authority.
+The completed separate technical review finds 2 Medium/1 Low; the exact sealed
+report and remaining platform/source prerequisites are in REVIEW-04-01.
 This new task does not grant a fourth large implementation or alter allocation.
 
 v1.8 remains IN_PROGRESS, 186 PLANNED /154 REVIEW; Claude's 121-unit allocation,

@@ -54,12 +54,24 @@ written. The fresh call ends successfully, but the required full live-main
 AGENTS read is omitted: seven scope/identity controls pass, the eighth read
 control fails and the runner exits 1. This actual deviation is not the earlier
 EOF observer bug. Turn-limit/result discrepancy is retained without claiming
-its enforcement proved. Different-agent technical review is separately assigned.
+its enforcement proved. Different-agent technical review has now completed:
+[sealed report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-contract-independent-20261008-01/reviewer-01/REPORT-01.md),
+SHA-256 a695e66581b4bbf1f966cd8a80c6a4e9ce54d7e82b6c0449933c302f82eebec9,
+finds 0 Critical/High, 2 Medium and 1 Low. The exact-item thermite ingredient
+conflicts with accepted material-tag interoperability; NEW art preparation is
+incorrectly blocked on changing an unused legacy IMPORT candidate; the survival
+fixture omits the press's ore-block/obsidian/loaded-cell/redstone prerequisites.
+Both independent 167-control documentary rounds pass, not product tests. All
+reviewer interests are released. These findings and the actual author workflow
+deviation remain open; the returned contract is not frozen or adopted.
 
 The author proposes recipes, passive switch behavior, material/tag acquisition,
 NEW resources and a narrow dependency disposition, not an accepted exception.
 Exact review/adoption, source/provenance decisions and a new implementation task
-remain prerequisites. Full frozen-input/C18 requirements and the seven-unit
+remain prerequisites. The exact 1.20.1/Forge 47.4.10 native torch placement,
+support, particles, model/loot behavior and installed-vacuum fixture still need
+qualification before freezing a source task. Passive-switch policy and precise
+leaf dependency disposition also remain undecided. Full frozen-input/C18 requirements and the seven-unit
 torch family are not silently reduced by this narrower preparation.
 
 ## Source, ownership, evidence and Gates
@@ -80,7 +92,14 @@ build copy is created and no rejected cleanup is retried.
 
 Author/runner packets are sealed once; source candidates and exact command/
 hash/backup receipts are named in the new dispatch and Root disposition evidence
-under D:/GitHub/ARCE-Task-Evidence/v1.8.0. Source and documentary results do not
+under D:/GitHub/ARCE-Task-Evidence/v1.8.0. The prior six-file metadata candidate
+0e03254d has [independent actual-commit review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-revision04-metadata-independent-20261008-01/reviewer-01/REPORT-01.md),
+SHA-256 8adadea98348fac6b530889acfb1fbebdaafb133b47e3e9ef454a94663c02679:
+no introduced metadata finding, 458 documentary controls and 251 final drift
+controls pass. Its reviewer's transient 104,468,269-byte own evidence-cap breach
+remains OPEN; retained sealed evidence is 1,914,925 bytes. This review accepts
+no proposal or product Gate. This later thermite-result amendment requires its
+own actual-diff review before publication. Source and documentary results do not
 claim Gradle/build/DataGen/GameTest/S1/S2/V1/V2 execution. Earlier sky's 20 actual
 targeted cases and f9f2d9d2's failed full campaign remain distinct source-bound
 evidence. Native airlock failure and 63 unwaived ERRORs are not repaired here.
@@ -88,5 +107,5 @@ evidence. Native airlock failure and 63 unwaived ERRORs are not repaired here.
 v1.8 remains IN_PROGRESS, 186 PLANNED /154 REVIEW; Claude's 121-unit allocation,
 v1.0 release acceptance cursor, shared hatch/save admission, R-021 and all G0-G9
 remain unchanged. Next work stays inside v1.8: narrow corrections/dependency
-qualification, exact thermite contract review and then independently authorized
+qualification, thermite corrections and then independently authorized
 implementation, not a registration-only claim of delivered content.
