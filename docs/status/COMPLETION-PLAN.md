@@ -237,14 +237,16 @@ C17b candidate03 的独立审核已解决旧版 Medium
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、
   外部标签适配夹具、九项原生测试及原创生成资源已分别提交和正常推送。
-  后继 `5e61d8cd` 的独立编译、11 项资源单测和 539 项 required GameTest 全部通过，
-  62 ERROR / 零 FATAL 尚未放行。审核报告无 Critical/High/Medium、两项 Low；
-  审核者未经允许的只读启动命令仍导致 runner exit 1，不追认授权。
-  最新 `51796934` 增加精确生产标签和经典设备禁用时的合成测试，尚未运行；
-  [TASK-08](../work/v1.8.0-c18a-thermite/TASK-08.md)已登记独立实际差异审核和完整回归。
+  [源码已合入并正常推送](../work/v1.8.0-c18a-thermite/SOURCE-INTEGRATION-09.md)至 `a6675a4e`，
+  与独立被测 `230afbf0` 的源码及 Gradle 输入完全相同。实际 clean build 通过
+  2,146 项单测；两次 runData 和差异检查通过；540 项 required GameTest 全部通过。
+  最终不同代理审核未发现修订引入的缺陷；编译使用缓存，但测试实际执行。
+  62 ERROR / 零 FATAL 尚未放行；历史运行偏差和失败证据保留，不追认授权。
   严格仓库校验因既有缺失或不安全的证据链接失败；台账、bootstrap 来源和空白检查通过。
   自有结束 build/run-data 清理被工具策略拒绝，仍待正常允许的清理，不改称已清理。
-  该源码尚未并入主开发分支；S1、重启、真实 V1/V2、来源审核及整版 Gate 仍开放。
+  两个已释放的干净源码副本已正常移除，不等于清理被拒绝的构建或世界输出。
+  生存菜单两项补测候选 `f535a130` 已备份，独立审核中，尚未合入；
+  S1、重启、真实 V1/V2、美术和来源批准及整版 Gate 仍开放。
 
 - [ ] [C18a-AIRLOCK-01](../work/v1.8.0-c18a-airlock/TASK-01.md)：
   status: implemented-unverified。双半气闸门第二版技术契约经独立复审，无未解决 C/H/M；

@@ -36,43 +36,50 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 development_log: docs/work/v1.8.0-implementation-log.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: f9f2d9d2c5eb0de2c9f5d28160ab7804fc57eaef
-tested_code_commit: 7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678
-latest_regression_target_commit: f9f2d9d2c5eb0de2c9f5d28160ab7804fc57eaef
-latest_regression_result: FAILED
-latest_regression_run: 37653204825
+latest_source_checkpoint: a6675a4eb7497a3626840e150ca3a464c1feab74
+tested_code_commit: 230afbf0f3e27675d23ba98f1de0b560ccdff306
+latest_regression_target_commit: 230afbf0f3e27675d23ba98f1de0b560ccdff306
+latest_regression_result: AUTOMATED_TESTS_PASSED_GATES_OPEN
+latest_regression_run: c18a-thermite-correction09-independent-20261008-01
 latest_regression_attempt: 1
-latest_regression_evidence: RAW_INDEPENDENT_AUDIT_FAILED
-latest_regression_observed_utc: 2026-10-07T16:47:12Z
+latest_regression_evidence: SEALED_INDEPENDENT_LOCAL_RESULTS
+latest_regression_observed_utc: 2026-10-08T04:43:20Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-08
 ```
 
 ## Current development evidence
 
-Latest isolated thermite source snapshot is 51796934, committed and normally
-pushed; its two new Low follow-up tests have not run. Its parent 5e61d8cd has
-actual independent compilation, 11 passing resource JUnit cases and all 539
-required GameTests passing, with 62 ERROR / zero FATAL headers unwaived.
-The source-review-07 report has zero Critical/High/Medium and two Low, but the
-runner exits 1 on an unauthorized read-only startup command; all 17 required
-reads precede the authorized verifier and report Write. This deviation is
-recorded, not retrospectively authorized. Fresh [TASK-08](../work/v1.8.0-c18a-thermite/TASK-08.md)
-registers review and complete regression on the corrected source, not started.
-Main source admission, packaged S1/restart, prior-world and real V1/V2 remain open.
+Ordinary thermite and paired torches are merged and normally pushed at
+`a6675a4e`. Its source and Gradle inputs exactly match independently tested
+`230afbf0`: clean build passes 2,146 JUnit cases; both DataGen runs/diffs pass;
+all 540 required native tests pass. The final different-agent review finds no
+correction-introduced defect. Compilation uses cache; JUnit and native tests
+actually execute. The 62 ERROR / zero FATAL native headers remain unwaived.
+See [source integration 09](../work/v1.8.0-c18a-thermite/SOURCE-INTEGRATION-09.md).
+Packaged S1/restart, prior-world, art/provenance approval and real V1/V2 remain open.
 
-Strict repository validation on 5e61d8cd exits 1: 44 checks pass, one Markdown
+Strict repository validation on a clean integration copy at `a6675a4e` exits 1:
+44 checks pass, one Markdown
 link check fails, stopping after 256 missing or unsafe external evidence links.
 The ledger --require-accepted, bootstrap-provenance and whitespace checks pass.
 Commands/logs/results are in v180-thermite-source-execution-20261008-01 under
 D:/GitHub/ARCE-Task-Evidence/v1.8.0. This open failure and the tool-policy-blocked
 retirement of Root's ended build/run-data outputs are not waived or called clean.
+Two released, clean source-only worker copies were normally retired; this does
+not retire blocked build/world or reviewer TEMP outputs.
 
 Audio/equipment clarification-06 calls actually return in fresh sessions;
-their unchanged two-file proposals are backed up and awaiting independent
-review. Whole contracts stay proposed. Each author discloses reading a shared
+their unchanged two-file proposals are backed up and independently reviewed:
+audio has zero C/H/M, two Low; equipment has zero C/H/M, five Low. Whole
+contracts stay proposed. Each author discloses reading a shared
 memory note; ten I/O controls pass, but do not prove full task conformance.
-See [dispatch](../work/v1.8.0-claude-cli-coordination/DISPATCH-06-01.md) and the
+The subsequent platform-07 studies and survival-menu test candidate are not
+adopted: their required live-governance reads are incomplete. Root's generic
+task wording is corrected to explicit absolute live-main paths for successors.
+The two-file native candidate is backed up at `f535a130` and is under independent
+actual-source/runtime review, not merged. See
+[current dispatch](../work/v1.8.0-claude-cli-coordination/DISPATCH-07-01.md) and the
 implementation log. Historical source-specific regression cohorts below are
 not rebound to this snapshot; no airlock/Tau cause, R-021, ledger or Gate closes.
 
@@ -173,9 +180,10 @@ been committed/pushed unchanged and completed independent narrow review. A separ
 corrected read-interval audit proves the twelve required reads before first
 write; original faulty EOF counts and historical deviations are preserved.
 The [current disposition](../work/v1.8.0-claude-cli-coordination/REVIEW-04-01.md)
-separates remaining draft findings from implementation/adoption. Root directly
-dispatches a separately registered thermite-only prerequisite; its unchanged
-return is backed up but has an open mandatory-read deviation and no adoption.
+separates remaining draft findings from implementation/adoption. Its thermite
+prerequisite disposition is historical and superseded by scoped contract-04
+adoption and [source integration 09](../work/v1.8.0-c18a-thermite/SOURCE-INTEGRATION-09.md).
+The original mandatory-read deviation remains recorded, not retrospectively authorized.
 Original draft-01 review remains 2 Medium/1 Low history. The later unchanged
 thermite correction a8133ec1 is separately committed/pushed and independently
 reviewed: 0 Critical/High/Medium, 1 Low; replacement text addresses the original

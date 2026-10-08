@@ -1,5 +1,9 @@
 # Actual focused successor returns and thermite admission review
 
+Historical dispatch, retained unchanged below. Current source admission and
+later actual outcomes are in [DISPATCH-07-01](DISPATCH-07-01.md), 2026-10-08;
+the earlier not-started/not-adopted statements are not current status.
+
 2026-10-08. Prospective registration d527805db6c13e61867d06d5e3cd1ce65b7f54c5
 has independent actual-diff review with no introduced documentary finding.
 Main normally fast-forwards/pushes after readers release; owner AGENTS untouched.

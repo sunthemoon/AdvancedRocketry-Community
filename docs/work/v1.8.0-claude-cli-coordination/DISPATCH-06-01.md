@@ -1,5 +1,9 @@
 # Actual clarification returns and thermite successor registration
 
+Historical dispatch, retained unchanged below. [DISPATCH-07-01](DISPATCH-07-01.md)
+records the completed source/clarification reviews and later actual calls as of
+2026-10-08; the pending/not-started statements below are superseded there.
+
 2026-10-08. The three registered fresh calls now complete; none resumes the
 owner's interactive session. Registration-only wording in the prior commit is
 superseded by these actual results:
