@@ -75,8 +75,10 @@ audio has zero C/H/M, two Low; equipment has zero C/H/M, five Low. Whole
 contracts stay proposed. Each author discloses reading a shared
 memory note; ten I/O controls pass, but do not prove full task conformance.
 The platform-07 studies remain unadopted with incomplete required reads.
-Both fresh platform-08 calls complete all 17 live reads and nine I/O checks;
-their actual API observations are under different-agent review, not contracts.
+Both fresh platform-08 calls complete all 17 live reads and nine I/O checks.
+Their different-agent report review finds one Medium/three Low in qualification
+precision, not production defects. A fresh correction-09 call is running;
+the original reports remain unchanged and unadopted, not contracts.
 The separate native candidate `f535a130` completes independent review with zero
 C/H/M, two Low, 2,146 unit and 542 native passes. It is not merged, and its
 author's missed reads remain recorded. Claude's owned-cleanup successor and a

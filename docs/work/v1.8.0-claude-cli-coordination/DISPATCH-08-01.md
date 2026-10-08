@@ -1,5 +1,14 @@
 # Small parallel platform studies and native cleanup successor
 
+Later observation, 2026-10-08: platform08's independent review completes with
+one Medium/three Low in report qualification precision. Original reports stay
+unadopted and unchanged. Root prospectively registers and starts fresh bounded
+correction09, session `a5e1c2bc-9ee9-4ed4-97f8-041c01539bd8`, in
+`v180-platform-correction09-claude-20261008-01` under the evidence parent.
+The independent report SHA-256 is
+`9dbc55b2659ae8db7861561a3beec544a05751333c3cec8633c1485e57e24402`;
+it does not establish native defects, opposite behavior or readiness.
+
 Root actual coordination record, 2026-10-08. Main thermite source and reviewed
 integration metadata are normally pushed at `be2d45f8`; the production source
 still equals independently tested `230afbf0` (2,146 unit / 540 native passes).
@@ -52,7 +61,8 @@ JUnit tests with zero failures/errors/skips; the single native run passes all
 and author governance failure are unwaived. It is not main or packaged S1.
 
 Once-sealed report packet:
-`c18a-thermite-acquisition10-independent-20261008-01/reviewer-01/`, 33 payloads,
+`c18a-thermite-acquisition10-independent-20261008-01/reviewer-01/`, 33 payloads
+totaling 7,929,587 bytes; including its 2,861-byte manifest the packet totals
 7,932,448 bytes. Report SHA-256
 `c0a3e47929e5a7beb2b7ef176874fd01bb01d727c536664ca4d981e6df9a70cb`;
 manifest `6f23f3ecc2c4fb33c23fd6c8a049b005357ab226bdfc62c5df6929b48450c810`.
