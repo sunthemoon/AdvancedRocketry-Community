@@ -63,6 +63,7 @@ public final class AdapterTestMod {
         BLOCKS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
         FixtureThermiteItems.register(modBus);
+        FixturePlacementProbeItem.register(modBus);
         modBus.addListener(this::registerRocketAdapters);
         modBus.addListener(this::registerAtmosphereBoundaries);
         modBus.addListener(this::registerSuitEquipment);
