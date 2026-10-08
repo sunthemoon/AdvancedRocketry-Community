@@ -31,8 +31,21 @@ Isolated pushed candidate292a3de0cbbe31306bcf612db48f2c2757f51c36 contains only
 the complete proposed ordinary-thermite contract, NEW pre-authoring declaration
 and conditional resource/JUnit TASK-03. Fresh independent Claude reviewer
 e662be85-560b-40f5-b8c5-f408a6094be9 actually starts on that fixed three-file
-delta and qualified platform evidence; its result is PENDING here. No source
-or pixels may start before scoped review/adoption. No Gate or ledger follows.
+delta and qualified platform evidence. It returns 2 Medium/5 Low; CLI exit0 but
+runner exit1 because mandatory live-main governance reads are absent. Eight
+other I/O controls pass, no cap terminates the call; actual39turns/USD1.5954048.
+The author's cap explanation is not supported by the captured no-cap receipt.
+Original report SHA6bd7242506c1f613697211dff8e513b5da933b3f16b80450ad9ed8113d3298fe
+is preserved, not adopted or retrospectively repaired.
+
+Root's unchanged pushed successor517dc651cf5dcd4a290c96e013fbc22a32ec6ebf
+proposes one central required-tag writer, exact raw-JSON provider interface,
+fourteen leaf outputs, explicit single-tint/placement/light/foreign-fixture
+observations and switch interpretation. Fresh complete review session
+9b47b2b9-6f27-4d8c-a0ac-b9af2e784d0d is actually started with full absolute
+mandatory reads before Write,15minutes/96turns/USD4 estimate caps; result PENDING.
+No source or pixels may start before scoped review/adoption. No Gate or ledger
+follows. The first review remains a historical failed instruction/read result.
 
 Evidence base: D:/GitHub/ARCE-Task-Evidence/v1.8.0, leaves
 v180-goal-execution-20261008-01; c18d-audio-oracle05-claude-author-20261008-01;
