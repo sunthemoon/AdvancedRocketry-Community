@@ -141,8 +141,16 @@ I/O success is not compliance or acceptance. Completed
 find graph 3 Medium/1 Low, audio 4 Medium/1 Low and equipment 3 Medium/1 Low;
 all remain CHANGES_REQUESTED, with earlier full-contract findings still open.
 Exact unchanged candidates are separately committed/pushed, not integrated or
-accepted. Three smaller two-document TASK-04 successors are prospectively
-registered, not dispatched. Full regression/V1/V2/Gates,
+accepted. Three smaller two-document TASK-04 successors have actually returned
+through [fresh direct calls](../work/v1.8.0-claude-cli-coordination/DISPATCH-04-01.md),
+been committed/pushed unchanged and completed independent narrow review. A separate
+corrected read-interval audit proves the twelve required reads before first
+write; original faulty EOF counts and historical deviations are preserved.
+The [current disposition](../work/v1.8.0-claude-cli-coordination/REVIEW-04-01.md)
+separates remaining draft findings from implementation/adoption. Root directly
+dispatches a separately registered thermite-only prerequisite; its unchanged
+return is backed up but has an open mandatory-read deviation and no adoption.
+Full regression/V1/V2/Gates,
 186 PLANNED /154 REVIEW and CSV
 allocations are unchanged.
 

@@ -448,7 +448,10 @@ Root 按用户新授权直接派发有范围、时间和成本估算上限的小
 不因 I/O 检查通过而豁免规约。[第三版限定审核](../work/v1.8.0-claude-cli-coordination/REVIEW-03-01.md)
 已完成：图 3 Medium/1 Low、音效 4 Medium/1 Low、装备 3 Medium/1 Low，均 CHANGES_REQUESTED；
 先前整份契约的问题仍开放。九份原稿已在三个分支提交并推送，但没有合入或接受。
-三个更小的双文档 TASK-04 已事前登记，尚未派发，不作实现进度。
+三个更小的双文档 TASK-04 已实际派发、返回，原字节分别提交推送；
+[直接派发记录](../work/v1.8.0-claude-cli-coordination/DISPATCH-04-01.md)保留会话、范围及 EOF 计数更正。
+[第四版限定审核](../work/v1.8.0-claude-cli-coordination/REVIEW-04-01.md)与源码采纳分开，
+不作内容交付。Root 另登记铝热物品/普通照明契约，不包含熄灭转换或共享保存。
 Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端口/协议仍须审核。
 其他包保持规划状态；共享保存/hatch、装备持久化、资产和全部 Gate 的依赖不解除。
 环境/氧气八项的外部 helper 返回、实际作者基线/位置、执行偏差与待审核状态见 HUD ASSIGNMENT-01；
