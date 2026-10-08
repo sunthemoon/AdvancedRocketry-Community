@@ -34,6 +34,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180AtmosphereAnalyzerLanguage.translations(chinese).forEach(this::add);
         V180SealDetectorLanguage.translations(chinese).forEach(this::add);
         V180StationLightLanguage.translations(chinese).forEach(this::add);
+        V180ThermiteLanguage.translations(chinese).forEach(this::add);
         V180SolarLanguage.entries(chinese).forEach(this::add);
         V180AirlockData.language(chinese).forEach(this::add);
         add("itemGroup." + NS + ".materials", chinese ? "高级火箭：材料" : "Advanced Rocketry: Materials");

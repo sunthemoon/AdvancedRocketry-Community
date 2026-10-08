@@ -62,6 +62,7 @@ public final class AdapterTestMod {
         IEventBus modBus = context.getModEventBus();
         BLOCKS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
+        FixtureThermiteItems.register(modBus);
         modBus.addListener(this::registerRocketAdapters);
         modBus.addListener(this::registerAtmosphereBoundaries);
         modBus.addListener(this::registerSuitEquipment);

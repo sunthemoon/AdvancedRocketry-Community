@@ -27,6 +27,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.SOLAR_PANEL.get());
                         output.accept(ModItems.PRESSURIZED_TANK.get());
                         output.accept(ModItems.STATION_LIGHT.get());
+                        output.accept(ModItems.THERMITE.get());
+                        output.accept(ModItems.THERMITE_TORCH.get());
                         output.accept(ModItems.AIRLOCK_DOOR.get());
                         output.accept(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.ITEM.get());
                         for (var motor : io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorDefinition.values()) {

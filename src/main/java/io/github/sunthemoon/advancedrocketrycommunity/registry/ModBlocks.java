@@ -30,6 +30,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.terminal.Satelli
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.WarpCoreBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.TorchBlock;
+import net.minecraft.world.level.block.WallTorchBlock;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
@@ -280,6 +283,17 @@ public final class ModBlocks {
                     .sound(SoundType.METAL)
                     .requiresCorrectToolForDrops()
                     .lightLevel(state -> 15)));
+
+    /** Passive ordinary lights: native support/placement, distinct registered loot tables. */
+    public static final RegistryObject<TorchBlock> THERMITE_TORCH = BLOCKS.register("thermite_torch", () ->
+            new TorchBlock(thermiteTorchProperties(), ParticleTypes.FLAME));
+    public static final RegistryObject<WallTorchBlock> THERMITE_WALL_TORCH = BLOCKS.register("thermite_wall_torch", () ->
+            new WallTorchBlock(thermiteTorchProperties(), ParticleTypes.FLAME));
+
+    private static BlockBehaviour.Properties thermiteTorchProperties() {
+        return BlockBehaviour.Properties.of().noCollission().instabreak().sound(SoundType.WOOD)
+                .lightLevel(state -> 14).pushReaction(PushReaction.DESTROY);
+    }
 
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()
