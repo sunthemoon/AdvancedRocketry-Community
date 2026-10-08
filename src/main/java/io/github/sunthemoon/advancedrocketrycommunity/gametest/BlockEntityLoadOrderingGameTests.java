@@ -1,16 +1,21 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import com.mojang.authlib.GameProfile;
+import io.netty.channel.embedded.EmbeddedChannel;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestListener;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -49,6 +54,10 @@ public final class BlockEntityLoadOrderingGameTests {
             ItemStack source = new ItemStack(Items.CHEST, 2);
             player.setItemInHand(InteractionHand.MAIN_HAND, source);
             player.gameMode.changeGameModeForPlayer(mode);
+            helper.assertTrue(player.gameMode.getGameModeForPlayer() == mode
+                    && player.isCreative() == (mode == GameType.CREATIVE)
+                    && player.getAbilities().instabuild == (mode == GameType.CREATIVE),
+                    "Fixture player/game-mode abilities disagree");
             BlockPos support = fixture.target.below();
             var result = player.gameMode.useItemOn(player, fixture.level, source, InteractionHand.MAIN_HAND,
                     new BlockHitResult(Vec3.atCenterOf(support).add(0, 0.5D, 0), Direction.UP, support, false));
@@ -97,12 +106,13 @@ public final class BlockEntityLoadOrderingGameTests {
         }
     }
 
-    /** Owns two loaded BE-free cells and one helper-created mock server player. */
+    /** Owns two loaded BE-free cells, a native server player and an embedded test connection. */
     private static final class Fixture implements GameTestListener {
         private final ServerLevel level;
         private final BlockPos target;
         private final Map<BlockPos, BlockState> before = new LinkedHashMap<>();
         private ServerPlayer player;
+        private EmbeddedChannel channel;
         private boolean closed;
 
         private Fixture(GameTestHelper helper) {
@@ -122,8 +132,12 @@ public final class BlockEntityLoadOrderingGameTests {
                         || level.getBlockState(target).isAir(), "Fixture target was not cleared");
                 helper.assertTrue(level.setBlock(target.below(), Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL)
                         || level.getBlockState(target.below()).is(Blocks.STONE), "Fixture support was not installed");
-                player = helper.makeMockServerPlayerInLevel();
-                player.setPos(target.getX() + 0.5D, target.getY(), target.getZ() + 2.5D);
+                player = new ServerPlayer(level.getServer(), level,
+                        new GameProfile(UUID.randomUUID(), "loadProbe"));
+                Connection connection = new Connection(PacketFlow.SERVERBOUND);
+                channel = new EmbeddedChannel(connection);
+                level.getServer().getPlayerList().placeNewPlayer(connection, player);
+                player.teleportTo(level, target.getX() + 0.5D, target.getY(), target.getZ() + 2.5D, 0, 0);
             } catch (ReflectiveOperationException failure) {
                 close(failure);
                 throw new IllegalStateException("Fixture terminal listener unavailable", failure);
@@ -137,8 +151,12 @@ public final class BlockEntityLoadOrderingGameTests {
             if (closed) { return; }
             closed = true;
             Throwable first = primary;
-            if (player != null) {
+            if (player != null && level.getServer().getPlayerList().getPlayer(player.getUUID()) == player) {
                 try { level.getServer().getPlayerList().remove(player); }
+                catch (RuntimeException | Error failure) { first = retain(first, failure); }
+            }
+            if (channel != null) {
+                try { channel.finishAndReleaseAll(); }
                 catch (RuntimeException | Error failure) { first = retain(first, failure); }
             }
             for (var entry : before.entrySet()) {

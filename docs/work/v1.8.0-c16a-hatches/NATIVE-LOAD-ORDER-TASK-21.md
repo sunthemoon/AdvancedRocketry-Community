@@ -35,7 +35,7 @@ save policy, source cap, hook/dependency or physical hatch activation change.
 No reflected writes to a native queue, synthetic onLoad invocation, world
 configuration override, existing-test change or chunk ticket. Probe fixtures
 own only their bounded BE-free cells and restore them on terminal outcomes.
-Fixture players are mock server game-mode callers, not connected multiplayer
+Fixture players are native server game-mode callers on embedded test connections, not real multiplayer
 or real packet evidence. Reflection, if used, is read-only test observation.
 
 ## Verification
