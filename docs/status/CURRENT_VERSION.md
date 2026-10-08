@@ -50,21 +50,33 @@ last_updated: 2026-10-08
 
 ## Current development evidence
 
-The separate pushed thermite candidate e82e5682 has actual Root Java 17 clean
-build results: 376 XML /2,145 tests, all passing; two DataGen runs with no second
-diff; all 538 required native tests passing, 62 ERROR/zero FATAL unwaived.
-This is isolated source development, not a main integration or release Gate.
-Its new 5e61d8cd source successor adds a disabled-press crafting case and has
-not yet run. Independent source review06 is incomplete: omitted governance,
-unauthorized read-only shell and a policy-blocked verifier remain recorded;
-fresh [TASK-07](../work/v1.8.0-c18a-thermite/TASK-07.md) is registered, not started.
-Audio/equipment successor05 documentary reviews each have zero C/H/M/three Low;
-whole contracts stay proposed. Their TASK-06 registrations authorize only two
-new correction files each. See [actual dispatch record](../work/v1.8.0-claude-cli-coordination/DISPATCH-05-01.md)
-and the implementation log for exact branch/evidence bindings. No inherited
-airlock/Tau flake, R-021, ledger or G0-G9 closure follows from this passing run.
+Latest isolated thermite source snapshot is 51796934, committed and normally
+pushed; its two new Low follow-up tests have not run. Its parent 5e61d8cd has
+actual independent compilation, 11 passing resource JUnit cases and all 539
+required GameTests passing, with 62 ERROR / zero FATAL headers unwaived.
+The source-review-07 report has zero Critical/High/Medium and two Low, but the
+runner exits 1 on an unauthorized read-only startup command; all 17 required
+reads precede the authorized verifier and report Write. This deviation is
+recorded, not retrospectively authorized. Fresh [TASK-08](../work/v1.8.0-c18a-thermite/TASK-08.md)
+registers review and complete regression on the corrected source, not started.
+Main source admission, packaged S1/restart, prior-world and real V1/V2 remain open.
 
-HUD source checkpoint `f9f2d9d2` is committed and normally pushed; run
+Strict repository validation on 5e61d8cd exits 1: 44 checks pass, one Markdown
+link check fails, stopping after 256 missing or unsafe external evidence links.
+The ledger --require-accepted, bootstrap-provenance and whitespace checks pass.
+Commands/logs/results are in v180-thermite-source-execution-20261008-01 under
+D:/GitHub/ARCE-Task-Evidence/v1.8.0. This open failure and the tool-policy-blocked
+retirement of Root's ended build/run-data outputs are not waived or called clean.
+
+Audio/equipment clarification-06 calls actually return in fresh sessions;
+their unchanged two-file proposals are backed up and awaiting independent
+review. Whole contracts stay proposed. Each author discloses reading a shared
+memory note; ten I/O controls pass, but do not prove full task conformance.
+See [dispatch](../work/v1.8.0-claude-cli-coordination/DISPATCH-06-01.md) and the
+implementation log. Historical source-specific regression cohorts below are
+not rebound to this snapshot; no airlock/Tau cause, R-021, ledger or Gate closes.
+
+Historical main HUD source checkpoint `f9f2d9d2` is committed and normally pushed; run
 37653204825 /attempt 1 is bound to it and observed completed/failure at
 16:47:12 UTC; that is the monitor observation, not the job completion timestamp.
 The [Root raw result](../work/v1.8.0-ci/RESULT-44.md) and

@@ -237,11 +237,13 @@ C17b candidate03 的独立审核已解决旧版 Medium
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、
   外部标签适配夹具、九项原生测试及原创生成资源已分别提交和正常推送。
-  精确 `e82e5682` 的完整构建有 2,145 项单测通过；两次 DataGen 无第二次差异，
-  538 项 required GameTest 全部通过，62 ERROR/零 FATAL 尚未放行。
-  独立源码审核 06 因规约读取缺失、未经允许的只读 shell 和策略阻止验证而不完整；
-  原始失败保留。修订 `5e61d8cd` 增加禁用压板机时的配方测试，尚未执行。
-  [TASK-07](../work/v1.8.0-c18a-thermite/TASK-07.md)已登记全新独立审核和实际复跑。
+  后继 `5e61d8cd` 的独立编译、11 项资源单测和 539 项 required GameTest 全部通过，
+  62 ERROR / 零 FATAL 尚未放行。审核报告无 Critical/High/Medium、两项 Low；
+  审核者未经允许的只读启动命令仍导致 runner exit 1，不追认授权。
+  最新 `51796934` 增加精确生产标签和经典设备禁用时的合成测试，尚未运行；
+  [TASK-08](../work/v1.8.0-c18a-thermite/TASK-08.md)已登记独立实际差异审核和完整回归。
+  严格仓库校验因既有缺失或不安全的证据链接失败；台账、bootstrap 来源和空白检查通过。
+  自有结束 build/run-data 清理被工具策略拒绝，仍待正常允许的清理，不改称已清理。
   该源码尚未并入主开发分支；S1、重启、真实 V1/V2、来源审核及整版 Gate 仍开放。
 
 - [ ] [C18a-AIRLOCK-01](../work/v1.8.0-c18a-airlock/TASK-01.md)：
