@@ -71,7 +71,8 @@ recipes and unlocks never rewrites placed torch BlockState or held items.
 Use public TorchBlock(Properties, ParticleOptions), WallTorchBlock with the
 same public signature, and StandingAndWallBlockItem(standing, wall, properties,
 Direction.DOWN). No subclass is needed. Properties: no collision, instant
-break, wood sound, lightLevel 14, push reaction DESTROY; wall dropsLike standing.
+break, wood sound, lightLevel 14, push reaction DESTROY. Keep distinct default
+registered-block loot IDs for both blocks; no dropsLike/lootFrom sharing.
 Reference ParticleTypes.FLAME, inheriting native visual flame/smoke behavior
 without heat, ignition, damage or explosions. No official art bytes are copied.
 Standing support/floor, wall horizontal facing/support, neighbour removal and
@@ -86,7 +87,10 @@ creative removal produces none. Wall block asItem/clone is mapped to the paired
 item by StandingAndWallBlockItem; no wall-torch item ID is created. Standing
 blockstate has one variant; wall has four horizontal facing variants. Models
 reference minecraft:block/template_torch/template_torch_wall by identifier and
-the NEW torch texture through their torch slot. Item torch is generated from
+the NEW torch texture through their torch slot, with explicit
+render_type minecraft:cutout. Wall yaw is east 0, south 90, west 180, north 270,
+matching the installed baseline blockstate interface; native V1 remains unrun.
+Item torch is generated from
 that NEW texture; thermite item is generated from its NEW item texture.
 
 API signatures/fallback were observed in the installed baseline mapped JAR by
@@ -94,6 +98,11 @@ the separately registered read-only platform task and its javap extension;
 they are binary/API facts, not an actual placement result. The final report,
 artifact SHA and any remaining model-slot/loot/support fact qualifications must
 be attached before adoption. No latest-lane API inference is substituted.
+Platform report: D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-platform-qualification-20261008-01/reviewer-01/REPORT-01.md,
+SHA-256 e170d21f313804ba25eff15cb3b1185a946e1fb0dea836a5ce4abf2729c33a72.
+The separate Root ROTATION-01.json in the v180-goal-execution-20261008-01 packet
+records the narrowly read wall_torch blockstate interface and artifact/entry
+hash; no official resource body, element, UV or bitmap is copied into product.
 
 ## 5. Exact resources and authoring boundary
 
