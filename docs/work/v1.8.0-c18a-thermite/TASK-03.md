@@ -2,7 +2,7 @@
 
 Root prospective assignment, 2026-10-08; REGISTERED_NOT_STARTED. Fresh delegated
 Claude worker, not Root, reviewer or approver; no nested agents or pet calls.
-Dispatch is conditional on a published ADOPTION-03.md that names the reviewed
+Dispatch is conditional on a published ADOPTION-04.md that names the reviewed
 runtime contract, platform report and fixed source commit. Until then no source
 or pixels may be authored. Root creates a separate clean worktree
 D:/GitHub/arce-v180-claude-thermite-data-20261008 on branch
@@ -12,12 +12,12 @@ starting the call. Do not use older draft author trees as native source baseline
 Before writing read live main-checkout AGENTS and all its mandatory governance:
 PROJECT-CONFIG, PRODUCT, docs01/04/05/06/14/16/17, current V1.8 and inherited
 V1.0 version documents; UPSTREAM, NOTICE, docs02/08, ADR060. Then read fixed
-worktree RUNTIME-CONTRACT-03, ADOPTION-03, the pre-authoring NEW declaration,
+worktree RUNTIME-CONTRACT-04, ADOPTION-04, the pre-authoring NEW declaration,
 its named independent platform/contract reports and scoped project provider,
 encoder, language and JUnit conventions. Complete full required reads before
 first Write; if the condition or reads fail, stop without source authoring.
 
-Implement the contract's leaf-owned resource provider, delegated language map
+Implement contract04's exact fourteen-file leaf provider/integration interface, delegated language map
 and A0 tests. These are original MIT resources: no upstream asset/code or
 official bitmap/model-body copying. Refer to ordinary parent/particle IDs only.
 Reuse only V180MaterialArt.png encoder, not existing pixel grids. Keep generated
