@@ -64,7 +64,7 @@ public final class SealDetectorRuntimeGameTests {
             fixture.unchanged();
             System.out.println("ARCE_SEAL_INSTALLED_RULE hand=" + hand
                     + " states=closed,open,closed replies=" + fixture.actor.replies.size()
-                    + " peerReplies=" + fixture.peer.replies.size());
+                    + " peerReplies=" + fixture.peer.replies.size() + " payloads=" + fixture.actor.replies);
         }
         helper.succeed();
     }
@@ -137,11 +137,12 @@ public final class SealDetectorRuntimeGameTests {
             int count = actor.replies.size();
             BlockState state = level.getBlockState(target);
             helper.assertTrue(invoke(hand).consumesAction(), "Native detector use did not respond");
-            String expected = Component.translatable(PREFIX + "reading",
+            Component expected = Component.translatable(PREFIX + "reading",
                     Component.translatable(PREFIX + "boundary." + boundary),
-                    Component.translatable(PREFIX + "supply.not_known_supplied")).getString();
+                    Component.translatable(PREFIX + "supply.not_known_supplied"));
             helper.assertTrue(actor.replies.size() == count + 1
-                    && actor.replies.get(count).equals(new Reply(expected, false)) && peer.replies.isEmpty(),
+                    && actor.replies.get(count).equals(new Reply(Component.Serializer.toJson(expected), false))
+                    && peer.replies.isEmpty(),
                     "Installed rule, ambient supply or actor-only system-chat response differs");
             helper.assertTrue(level.getBlockState(target) == state && level.getBlockState(target.west()).isAir(),
                     "Measurement mutated the selected cells");
@@ -194,7 +195,7 @@ public final class SealDetectorRuntimeGameTests {
         }
     }
 
-    private record Reply(String text, boolean overlay) { }
+    private record Reply(String json, boolean overlay) { }
 
     private static final class JoinedPlayer implements AutoCloseable {
         private final ServerLevel level;
@@ -205,9 +206,11 @@ public final class SealDetectorRuntimeGameTests {
         private JoinedPlayer(ServerLevel level, BlockPos target, String name) {
             this.level = level;
             player = new ServerPlayer(level.getServer(), level, new GameProfile(UUID.randomUUID(), name)) {
-                @Override public void sendSystemMessage(Component message) { replies.add(new Reply(message.getString(), false)); }
+                @Override public void sendSystemMessage(Component message) {
+                    replies.add(new Reply(Component.Serializer.toJson(message), false));
+                }
                 @Override public void sendSystemMessage(Component message, boolean overlay) {
-                    replies.add(new Reply(message.getString(), overlay));
+                    replies.add(new Reply(Component.Serializer.toJson(message), overlay));
                 }
             };
             Connection connection = new Connection(PacketFlow.SERVERBOUND);
