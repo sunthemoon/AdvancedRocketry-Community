@@ -80,9 +80,15 @@ offline JSON candidate37, addendum43 and complete independent40/49 reviews are s
 [Normative disposition52](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-CONTRACT-FREEZE-52.md)
 freezes the generic decoder/API/diagnostic and unchanged finite qualification
 contract only. Low R01 is addressed at the normative level; no decoder/tests are
-implemented or qualified. Actual44 qualifies only named local peak-so-far queries;
+integrated or qualified. Actual44 qualifies only named local peak-so-far queries;
 R49-01/U01/U02 remain open. Separately sealed50 post-exit observations await
 independent55 assessment; no terminal resource, helper/quota or native authority.
+[Assignment checkpoint54](../work/v1.8.0-c18a-sleep/FUNCTIONAL-SOURCE-ASSIGNMENT-54.md)
+records active two-file functional53 in its isolated e21fdbd7 worktree and static
+M1 feasibility56. No source commit/tests or production mechanism is accepted.
+The [Space supplied-gap question04](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-04.md)
+awaits an actual owner answer; no policy is selected. Independent55's final
+assessment and all downstream resource/source/runtime requirements remain open.
 [Completed provenance audit38](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-AND-DIAGNOSTICS-STATUS-42.md)
 distinguishes injected native saves from direct event posts, with three recipe
 attribution gaps and existing High log/R-021 policy/evidence admission obligations

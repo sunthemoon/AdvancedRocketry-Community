@@ -342,8 +342,9 @@ C17b candidate03 的独立审核已解决旧版 Medium
           退出后覆盖未由这三次查询证明；R49-01/U01/U02 及完整资源资格仍开放。
         - [ ] C18a-SLEEP-JSON-TERMINAL50：status: in-progress。两次原始持有句柄的退出后查询已封存，
           独立 55 审查已分配；未采纳平台辅助实现，不测解码器或提供 OS 硬分配权限。
-        - [ ] C18a-SLEEP-JSON-FUNCTIONAL53：status: ready。冻结提交后另行分配两个脚本的纯功能实现，
-          不接原生驱动；资源、独立实际源码审核及后续验收仍须分别执行。
+        - [ ] C18a-SLEEP-JSON-FUNCTIONAL53：status: in-progress。
+          [独立工作树的两个脚本已分配](../work/v1.8.0-c18a-sleep/FUNCTIONAL-SOURCE-ASSIGNMENT-54.md)，
+          仅纯功能实现；未集成或接受源码与测试，不接原生驱动，资源与独立源码审核仍必需。
       - [x] C18a-SLEEP-LOG-PROVENANCE38：status: verified，仅既有原生日志的独立静态来源审查。
         完整报告/发生记录已封存；五次注入式原生保存失败与二十六次直接事件拒绝分别记录。
         三条配方诊断归因、日志政策和 R-021 验收缺口仍开放；未重跑、抑制、降级或豁免错误。
@@ -356,6 +357,10 @@ C17b candidate03 的独立审核已解决旧版 Medium
       - [x] C18a-SLEEP-D1-CONTRACT33：status: verified，仅约定结果冻结和独立静态审核。
         [处置33](../work/v1.8.0-c18a-sleep/D1-OUTCOME-FREEZE-33.md)绑定完整提案29、审核31及原始用户决定。
         验证范围不包含资源作者实现、原生运行、旧世界、客户端、完整睡眠或版本 Gate。
+    - [ ] C18a-SLEEP-M1-FEASIBILITY56：status: in-progress。
+      仅既有空气撤销、注册床和邻接门的源码支持实施可行性提案，不改生产代码或增加预算。
+      B1/R1/M1/M2 仍未合格；[Space 站外供氧房间政策](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-04.md)
+      等待用户实际答复，未据默认选项认定批准。
 
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、
