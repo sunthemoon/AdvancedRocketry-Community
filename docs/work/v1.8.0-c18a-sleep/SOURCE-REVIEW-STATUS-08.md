@@ -1,5 +1,9 @@
 # Corrected passive observation source and development qualification 08
 
+Later [qualification/integration32](NESTED-QUALIFICATION-32.md) records actual
+final-d57 standard tests and Main ce64a8eb integration. The older 5b results and
+then-isolated state below remain historical, not a current unmerged candidate.
+
 Later [nested source checkpoint27](NESTED-BOUNDARY-STATUS-27.md) records the
 additive final d57 candidate and completed independent patch review. Its new
 qualification is separate; this checkpoint's actual results remain at 5b.

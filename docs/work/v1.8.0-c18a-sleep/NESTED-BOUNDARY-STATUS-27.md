@@ -1,5 +1,9 @@
 # Nested observation source and contract checkpoint 27
 
+Later [qualification/integration32](NESTED-QUALIFICATION-32.md) supersedes this
+checkpoint's pending qualification/D1-review and unmerged states. Its actual
+results and source integration do not rewrite these historical receipts or Gates.
+
 Date: 2026-10-09. The complete observation leaf remains implemented-unverified.
 This supersedes the pending Task19/20 state in [disposition18](DRIVER-REVIEW-STATUS-18.md),
 not its historical findings, receipts or permissions. No observation source is

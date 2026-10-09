@@ -282,7 +282,7 @@ C17b candidate03 的独立审核已解决旧版 Medium
   合并源码与被测提交相同，不声称在合并 SHA 上重跑。严格校验仍超时、真实客户端和完整工具未验收。
   钛初始来源仍依赖未完成的 C16b 电弧炉，不以创造给予材料替代生存获取。
 
-- [ ] C18a-SLEEP-01：status: in-progress，仅契约、资格研究与隔离测试源码。
+- [ ] C18a-SLEEP-01：status: in-progress，仅契约、资格研究与集成测试源码。
   可观察目标是玩家在服务端确认有空气的外星房间中真正睡眠；
   用户已选择[这个目标](../work/v1.8.0-c18a-sleep/OWNER-DECISION-01.md)，条件是实施前另行冻结并审核
   维度、出生点和时间行为；[只读契约提案](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md)已封存，
@@ -297,14 +297,17 @@ C17b candidate03 的独立审核已解决旧版 Medium
   仍以冻结和审核该明确范围为条件；不跳过地球夜晚、不改已有出生点。
   依赖 M1、M2、B1/R1、D1 的证明和冻结；原 S01-S21/R01-R02 及新增资格矩阵均未执行。
   不做出生点迁移、全局跳夜或直接躺下的显示替代；尚未改动策略或分配睡眠实现源码。
-  - [ ] C18a-SLEEP-B1-OBS01：status: implemented-unverified，仅隔离测试源码。
+  - [ ] C18a-SLEEP-B1-OBS01：status: implemented-unverified，仅默认关闭的测试源码。
     [测试专用观测提案](../work/v1.8.0-c18a-sleep/PROPOSED-OBSERVATION-01.md)仅观察主世界
     原生 Java 调用；嵌入连接不是真实 TCP 客户端。
     [独立提案审核](../work/v1.8.0-c18a-sleep/OBSERVATION-REVIEW-STATUS-04.md)已完成，
     [二十项首阶段源码分配](../work/v1.8.0-c18a-sleep/OBSERVATION-ASSIGNMENT-05.md)仅允许隔离测试适配类与编译，
     [修订源码与资格记录](../work/v1.8.0-c18a-sleep/SOURCE-REVIEW-STATUS-08.md)保留原有候选与两个 Medium，
     并记录 5b451320 的实际修正、完整独立源码审核及双方分别执行的短开发回归。
-    新增守卫/边界 GameTest 已执行；严格校验、日志和独立输出清理问题仍开放。候选尚未合入，二十项控制台观察尚未执行。
+    [最终源码与实际资格32](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)已合入并推送至 ce64a8eb，
+    与被测 d57 的完整 src 和构建输入相同，不声称合并 SHA 重跑。
+    守卫/边界 GameTest 在全部594项必需测试中通过；严格校验、日志和旧独立清理问题仍开放。
+    二十项控制台观察尚未执行，生产行为未改变。
     [任务 16/17 的完整审核与处置](../work/v1.8.0-c18a-sleep/DRIVER-REVIEW-STATUS-18.md)已完成：
     两项 Medium、一项 Low 契约问题仍开放，另有嵌套接收者预检与整份 trace 节点预算前置项。
     修订驱动契约仍为 PROPOSED；原生 raw stdout 路由及 SpawnDimension 类型已静态核对，不代表实际捕获或磁盘通过。
@@ -314,14 +317,18 @@ C17b candidate03 的独立审核已解决旧版 Medium
     - [ ] C18a-SLEEP-CHAT19：status: implemented-unverified。
       [最终 d57 修正与完整独立审核](../work/v1.8.0-c18a-sleep/NESTED-BOUNDARY-STATUS-27.md)已封存，
       历史接收者问题已在源码修正，作者三次与审核者两次编译通过；这些源码审核任务仅编译六个新增测试。
-      新的固定提交标准回归 Task28 正在执行，未借用旧 5b 的通过记录；尚未集成或执行二十项观察。
+      新的固定提交回归 28 已封存并由 Root 核对：build/test 各 2192 项 JUnit、两次 DataGen、594 项 GameTest 通过。
+      已集成测试源码，未借用旧 5b 的结果；二十项观察、严格超时和日志问题仍开放。
       两代独立输出清理被策略拒绝并保留，不重试或接管。
     - [ ] C18a-SLEEP-DRIVER20：status: in-progress。提案03及完整独立审核26已封存；
       压缩日志轮转的解释/展开/诊断策略仍有 Medium，标识符可达上限的 Low 已在记录27补充更正。
       未接受、冻结或授权驱动/解析器执行；OS硬分配、运行权限与
       包含新增证据的实际容量清单仍必需。外部37字节误建文件的一次纠正被策略拒绝，事故未清理。
+      独立外部任务 34 只准备压缩日志契约修订，不运行驱动或修改既有封存文件。
     - [ ] C18a-SLEEP-D1-29：status: in-progress。按用户明确选择单独准备维度/出生点/时间子契约；
-      仍为静态提案，须独立审核，不解决 B1/R1/M1/M2、不选 Space 政策、不授权生产实现。
+      [提案29与完整独立审核31](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)已封存；
+      未发现新的实质契约问题，但仍须 Root 单独冻结约定结果；十三项 D1 验证未执行。
+      不解决 B1/R1/M1/M2、不选 Space 政策、不授权生产实现。
 
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、

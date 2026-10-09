@@ -37,27 +37,43 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 80bbf16d9e76708b7e39c50d21b3cff1a66432ef
+latest_source_checkpoint: ce64a8eb79c0f6fb53f000f0c2a0e4e947ef9985
 pending_graph_source_candidate: ""
-pending_sleep_observation_source_candidate: d57ecda1f11dab76d882f945b0de606534ef4fb9
-pending_sleep_observation_qualification: FINAL_SOURCE_REVIEWED_NEW_STANDARD_QUALIFICATION_IN_PROGRESS_NOT_INTEGRATED
-tested_code_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
-native_tested_code_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
-latest_regression_target_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
+pending_sleep_observation_source_candidate: ""
+pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
+tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
+native_tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
+latest_regression_target_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
 latest_regression_result: NATIVE_PASS_STRICT_TIMEOUT_GATES_OPEN
-latest_regression_run: jackhammer-root-20261009-01/native-04
-latest_regression_attempt: 4
-latest_regression_evidence: SEALED_ROOT_AND_INDEPENDENT_DEVELOPMENT_REGRESSION
-latest_regression_observed_utc: 2026-10-09T02:57:20.031453Z
-actual_unit_rerun: jackhammer-root-20261009-01/build-04/command.log
-actual_unit_rerun_observed_utc: 2026-10-09T02:48:27.328362Z
+latest_regression_run: sleep-nested-source-qualification-20261009-28/native-01
+latest_regression_attempt: 1
+latest_regression_evidence: SEALED_FRESH_VERIFIER_STANDARD_REGRESSION_ROOT_PAYLOAD_AUDITED
+latest_regression_observed_utc: 2026-10-09T07:30:06.547652Z
+actual_unit_rerun: sleep-nested-source-qualification-20261009-28/test-01.command.json
+actual_unit_rerun_observed_utc: 2026-10-09T07:22:55.516Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-09
 ```
 
 ## Current development evidence
 
-The [ordinary tool development integration](../work/v1.8.0-c18b-jackhammer/SOURCE-INTEGRATION-01.md)
+The [final observation test-source integration32](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)
+is normally merged/pushed at ce64a8eb. Actual fresh standard qualification is at
+d57ecda1; the complete src tree and ten build/consumer inputs match Main, without
+a merge-SHA rerun claim. Forced clean build and separate explicit test each run
+2192 JUnit /381 XML /zero failures/errors/skips. Both forced DataGen/diff cohorts
+pass; all 594 required GameTests pass in 151 discovered batches. Native logs
+retain 62 unwaived ERROR /zero FATAL; strict remains 180-second TIMEOUT. Corrected
+offline publication/API consumer pass, with the original split-argument failure
+retained. Only the separate adapter fixture contains the new observation classes;
+production host/API/sources are unchanged. The opt-in property and twenty console
+rows are unexecuted. Task28's six owned disposable outputs are cleaned once;
+old denied peer outputs/incidents remain. Complete D1 proposal29 and independent31
+review are sealed, with no new material correction and all implementation/runtime
+prerequisites open; Root freeze is still a separate disposition. Static compressed
+log revision34 is assigned, not runtime/parser authority. All Gates remain open.
+
+The preceding [ordinary tool development integration](../work/v1.8.0-c18b-jackhammer/SOURCE-INTEGRATION-01.md)
 is normally merged/pushed at `80bbf16d9e76708b7e39c50d21b3cff1a66432ef` after
 complete independent actual-source and native-receipt reviews. Actual tested
 source remains 3b18a6bc; complete src, ten Gradle/consumer inputs and two provenance/
@@ -132,8 +148,9 @@ has been changed and no production sleep implementation source is assigned.
 The separate [C18a-SLEEP-01](COMPLETION-PLAN.md) leaf now has
 [sealed spawn-boundary research](../work/v1.8.0-c18a-sleep/SPAWN-RESEARCH-STATUS-02.md).
 Its stateless public caller candidate has no runtime/coexistence/indeterminate
-failure qualification; B1 and the separate dimension/spawn/time freeze and review
-remain open. The [exact ancillary question](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)
+failure qualification; B1 and dimension/spawn/time implementation/runtime proof
+remain open. D1's narrowed candidate is independently reviewed, not frozen here.
+The [exact ancillary question](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)
 is answered by decision 03. This research is not current game regression evidence.
 
 The [sealed atmosphere/access proposal](../work/v1.8.0-c18a-sleep/AIR-RESEARCH-STATUS-02.md)
@@ -151,35 +168,32 @@ sleep is assigned. No off-world dimension, spawn or time
 implementation is authorized by that observation review or the conditional
 ancillary owner answer.
 
-The [corrected observation source checkpoint](../work/v1.8.0-c18a-sleep/SOURCE-REVIEW-STATUS-08.md)
-preserves old findings and their additive correction at fixed 5b451320. Complete
-independent source review finds no remaining material defect in that narrowed
-candidate; Root and a fresh verifier separately complete short development
-qualification, including the new guard/bound GameTests. It is not merged and
-does not execute the twenty console rows or any off-world sleep behavior.
-Candidate-specific counts/artifacts/receipts are kept in that checkpoint, not
-substituted for Main's integrated behavioral regression above. Strict timeout,
-unwaived native ERROR logs and policy-denied independent output retention remain.
-A corrected-schema driver proposal is sealed but not executable-frozen. Complete
+The [older corrected checkpoint08](../work/v1.8.0-c18a-sleep/SOURCE-REVIEW-STATUS-08.md)
+preserves actual 5b findings, corrections and two separate historical short
+qualification cohorts. The current d57 integration/result is in32 above, not a
+rebound 5b run. No twenty console rows or off-world behavior were executed.
+Strict timeout, unwaived native ERROR logs and policy-denied output retention
+remain. A corrected-schema driver proposal is sealed but not executable-frozen. Complete
 [contract/wire disposition 18](../work/v1.8.0-c18a-sleep/DRIVER-REVIEW-STATUS-18.md)
 records two Medium and one Low contract findings, supported raw Forge routing
 and typed SpawnDimension, plus an additional nested-receiver preflight boundary
 and unfinished whole-trace token proof. The later
-[checkpoint27](../work/v1.8.0-c18a-sleep/NESTED-BOUNDARY-STATUS-27.md) records
-final isolated d57 source and complete independent patch review, with historical
+[checkpoint27](../work/v1.8.0-c18a-sleep/NESTED-BOUNDARY-STATUS-27.md) preserves
+the then-isolated d57 source and complete independent patch review, with historical
 receiver findings source-addressed, not universal runtime proof. Five compiles
-pass; their source-review cohorts only compile the six new tests. Separate final-source standard
-qualification28 and D1 preparation29 are in progress. Complete independent
+pass; their source-review cohorts only compile the six new tests. Separate
+standard qualification28 and D1 preparation29/review31 are now sealed in32.
+Complete independent
 proposal03 review26 identifies Medium compressed-log rotation interpretation
 and Low reachable-identifier wording; the latter is additively clarified in27.
-No observation driver/parser, source merge or production change is
-authorized. Two independent cleanup generations remain policy-denied/retained;
+No observation driver/parser or production change is authorized. Only the
+reviewed adapter test source is merged. Two independent cleanup generations remain policy-denied/retained;
 Task20's external 37-byte miscreation remains after a denied one-time correction.
 Its proposal is sealed but not accepted, with runtime allocation authority and
 actual cumulative pre-run evidence accounting still required.
 The owner-record review also reports fifteen pre-existing historical log links
 to locally untracked ZIPs absent from its fixed Git trees; whole-log portability
-is not approved. No production policy, source merge, ledger delivery or Gate closes.
+is not approved. No production policy, ledger delivery or Gate closes.
 
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior
 current-state evidence is preserved in the
