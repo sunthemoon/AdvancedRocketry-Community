@@ -647,9 +647,12 @@ C17b candidate03 的独立审核已解决旧版 Medium
 - [ ] R14-OPS01（Medium）：Root12 清理只检查目标/后代及三个自有根至卷根，
   未单独检查嵌套 .cache 的每级父目录；词法 GetFullPath/prefix 不等于物理解析。
   未观察到重定向或越界删除。另立更正记录，未来 helper 需补齐，旧清理/封存包不重试或修改。
-- [ ] C19 checksum 本地/Git 输入边界：只读 review13 的两项静态 Medium 仍开放。
+- [ ] [C19-CHECKSUM-INPUT-16](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-TASK-16.md)：
+  status: in-progress，本地/Git 输入边界；只读 review13/15 的静态缺口仍开放。
   分别涉及资源/终止上限及父目录 reparse/读取稳定性；未复现或认定为超时原因。
   单独冻结脚本/相邻测试范围，保持完整覆盖、可选 artifact 与已接受历史证据。
+  一份独立 helper 避免循环依赖；委托 ZIP 构建仍有单独的资源资格义务，
+  不把有限本地/Git 修正认作全部 artifact 有界验证。
 - [ ] C19 可移植已提交证据引用：实际 Markdown 检查在 256 错误前缀后停止。
   绝对/越界及缺失 ZIP/manifest 需逐项核对所有者；不拷贝未知归属的未跟踪材料。
 - [x] [C19-STRICT-DIAGNOSTICS-08](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-TASK-08.md)
