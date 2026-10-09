@@ -637,6 +637,10 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ### C19 矩阵、审核与交付 `[ ]`
 
+- [ ] [C19-INVENTORY-TEST-11](../work/v1.8.0-c19-strict-validator/INVENTORY-TEST-TASK-11.md)：
+  status: in-progress，修正历史资源清单测试的输入适用范围。只改一份测试文件，
+  保留空未声明清单断言，绑定已接受历史快照，增加未声明文本/二进制及版本分发覆盖。
+  不改变生产白名单、内容来源判定或原180秒资格预算；真实结果和独立审核待取得。
 - [ ] [C19-STRICT-DIAGNOSTICS-08](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-TASK-08.md)：
   status: in-progress，限定诊断源码已在 Main `af363704` 提交并正常推送。
   [检查点](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-CHECKPOINT-08.md)
