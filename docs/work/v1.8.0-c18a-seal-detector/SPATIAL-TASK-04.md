@@ -58,3 +58,20 @@ installed precedence/lifecycle, unlock, reload/unload, packaged/restart, V1/V2,
 survival progression or full detector delivery. All v1.8 Required Gates remain
 open; the acceptance cursor remains v1.0.0. Report source/records SHAs, actual
 commands and findings, failures/limitations, cleanup, evidence and remaining work.
+
+## Additive correction scope after independent source inspection
+
+Original committed source fd585a9820bbde8998daaf1ac30ad13127b76e19 adds three cases
+and retains existing tests. Its actual forced clean build passes; that does not
+dispose of a test-discrimination gap reported by independent Codex
+`/root/seal_spatial_review04`: an unloaded far target can be refused at the later
+chunk preflight even if the read path omits the target-AABB reach check.
+
+Before corrective source edits Root extends only that new method's fixture:
+preserve its unloaded-cell observation, then move the same owned actual actor
+in setup and test a near hit carrying the already-loaded original target beyond
+six blocks. Assert loaded target/adjacent, finite valid eye, admissible target
+and explicit over-reach preconditions, then whole refusal without a fresh local
+atmosphere service. Do not alter production, older cases, deadlines or budgets.
+The same one-file write scope applies. Commit a successor and independently
+review/rerun it; original source, build and finding remain separately attributed.
