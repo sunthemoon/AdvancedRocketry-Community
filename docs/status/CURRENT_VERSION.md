@@ -65,10 +65,26 @@ tested_python_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
 latest_python_qualification_result: CHECKSUM43_REPOSITORY148_PEER_PACKET_PASS_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_HISTORICAL_CUSTODY_GAPS_OPEN
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
 sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_INDEPENDENT_REVIEW_COMPLETE_RESOURCE_OPEN
+c19_cost_observation_commit: 631494559a808938b631eab07f0877225d4f6d9a
+c19_cost_observation_result: TWO_UNCHANGED_TARGETS_PASS_INSTRUMENTED_ONLY_PACKET_REVIEW_COMPLETE_ATTRIBUTION_CORRECTED
+c19_git_object_transport: READY_NOT_IMPLEMENTED
 last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [G4/G0 cost checkpoint33](../work/v1.8.0-c19-strict-validator/G4-PROFILE-CHECKPOINT-33.md)
+records two unchanged-source instrumented target results at fixed631, not a
+replacement of latest whole-qualification fields below. G4 returns 0 in about 53
+seconds with 1134 profiled subprocess initializations; one original G0 test
+returns 0 in about 7 seconds. Declared 3226 inputs match; independent packet review
+is complete. Its historical Low module-attribution finding is addressed only by
+an additive interpretation correction; missing code-object attribution remains
+unavailable. Root reads and rehashes the sealed review/correction; original
+evidence is unchanged. Task34's bounded transport scope is ready/not implemented. Static
+R32-02 malformed-ADR diagnostics and R32-03 wrapper coverage remain open;
+neither is executed or established as timeout cause. Whole broad/strict remains
+failed, and no current Gate, source delivery or acceptance result changes.
 
 The [checksum16 checkpoint](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)
 records actual runtime at 0cefe86e and the exact three postimages integrated and

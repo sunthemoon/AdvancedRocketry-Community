@@ -660,6 +660,17 @@ C17b candidate03 的独立审核已解决旧版 Medium
   完整父目录证明、显式主机/退出回执和实际结果，两份最新证据包已封存。
   独立31已复核最新包、21 份回执/42 份输出及源码别名，未发现新的实质问题；
   Root 已完整阅读、复核其封存包。旧操作证明、委托 ZIP 资源和完整资格仍开放。
+- [x] [C19-G4-PROFILE-33](../work/v1.8.0-c19-strict-validator/G4-PROFILE-TASK-33.md)：
+  status: reviewed-observation-only。固定 `63149455` 的 G4 调用约 53 秒、原 G0 确定性测试约 7 秒通过；
+  [检查点33](../work/v1.8.0-c19-strict-validator/G4-PROFILE-CHECKPOINT-33.md)保留两份回执、
+  四份输出及 3226 项输入前后哈希；独立35包复核完成，Root 已完整阅读并复核封存包。
+  历史 Low R35-01 的模块归属解释由独立更正记录修正，缺失的归属数据未恢复；
+  仅完成有限观测任务，不当作全量资格、C19 或版本 Gate 通过。
+- [ ] [C19-GIT-OBJECT-SESSION-34](../work/v1.8.0-c19-strict-validator/GIT-OBJECT-SESSION-TASK-34.md)：
+  status: ready。选择有生命周期的 Git 对象传输以减少重复启动；保留每次请求的类型、
+  大小、OID 和哈希验证、终态/尾部字节拒绝，不缓存 approval 或可变 bundle；尚未实施。
+- [ ] R32-02（静态 Medium）、R32-03（Low）：ADR 枚举数组/对象及解析递归可能异常，
+  G4 文件系统 wrapper 缺少直接测试。尚未执行负向复现，不作为超时原因；另立修订。
 - [ ] C19 可移植已提交证据引用：实际 Markdown 检查在 256 错误前缀后停止。
   绝对/越界及缺失 ZIP/manifest 需逐项核对所有者；不拷贝未知归属的未跟踪材料。
 - [x] [C19-STRICT-DIAGNOSTICS-08](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-TASK-08.md)
