@@ -637,6 +637,12 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ### C19 矩阵、审核与交付 `[ ]`
 
+- [ ] [C19-STRICT-DIAGNOSTICS-08](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-TASK-08.md)：
+  status: in-progress，仅既有33项与可选包检查的有界、即时刷新 stderr 阶段诊断。
+  保留全部检查顺序、参数、判定、最终 stdout 与180秒外部预算；真实失败不改写。
+  Root 在独立 worktree 实施，使用现有 Python 单测覆盖编排、输出与异常传播，
+  提交后独立审核并实际测量。嵌套 Git 约束、优化、Java/睡眠/资源及 Gate 不在范围内。
+
 最新短回归与独立复验见下方“当前自动回归与风险”。
 [历史组合回归17](../work/v1.8.0-claude-cli-coordination/REGRESSION-17.md)的 required
 气闸失败和原始 ERROR 保持原样，不因后续通过而改写。
@@ -701,22 +707,22 @@ Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端
 
 ## 当前自动回归与风险
 
-最新开发回归见[已安装检测器规则资格证据](../work/v1.8.0-c18a-seal-detector/INSTALLED-RUNTIME-VERIFICATION-02.md)。
-实际被测源码 `794dd123` 的完整 src 和七项 Gradle 输入等于已推送的 `c554e810`；
-合并 SHA 未另行复跑。Root 和独立 Codex 各自禁缓存 clean build，执行 2,179 个实际
-JUnit、553 个必需 GameTest、两次 DataGen 和空生成 diff。
-两个新增用例使用原生物品调用与嵌入式连接，检查已有启动规则和结构化消息，
-不是物理 hatch、真实客户端或打包 S1/S2 验证。原局部目录测试保留。
-
-原 Medium 渲染投影断言缺口已修正并独立验证；原始通过批次与失败启动/提取更正保留。
-准备时序的 Low 偏差保持未豁免。严格仓库校验仍为 44 项通过、一项既有链接失败；
-两份修订后原生日志各有 62 条未豁免 ERROR、零 FATAL。
-历史产品失败未被逐个解释或永久消除。Root 和独立审核者分别一次清理成功，
-只删除各自新建、已结束的临时输出。旧拒绝清理目标与继承债务未动；本任务没有新增临时输出债务。
+最新开发回归见[测试源码集成05](../work/v1.8.0-c18a-seal-detector/TEST-SOURCE-INTEGRATION-05.md)。
+实际被测候选 `0b02c513` 的完整 src 与十项构建输入等于 Main `2f137f99`；
+不声称 Main SHA 复跑。Root 和独立 Codex 各自强制构建/测试，均执行2,192项实际
+JUnit/381 XML；全部597项必需 GameTest、两次 DataGen 与空生成 diff 通过。
+独立07实际源码/回执审核完成，但严格校验双方仍在180秒超时，原始部分终止失败
+与后来 PID 缺席分开记录。每份原生日志62条 ERROR/零 FATAL，均未豁免。
+新增空间守卫和所有者夹具不替代物理 hatch、真实客户端或打包 S1/S2。
+历史不同原生失败、物品来源/COMMON watcher 和准备时序偏差仍未关闭。
+Root06以独立更正包清理实际 v1.8 缓存及已复制日志；旧拒绝目录、独立05残留
+日志/缓存和继承债务保留，不接手清理。静态诊断03完成但未证明旧超时原因；
+限定阶段诊断08开始实施，不改变原预算或降低检查标准。
 
 共享保存 R-021、真实放置/结果认证、provisional LOAD 与生命周期终态绑定、
 完整 S1/S2、迁移、V1/V2、性能、完整科技流程和资产交付仍未完成。
-两项完整 Medium、完整 U1 与 U3–U7、O1/O2/O3 仍开放；异步政策问题尚无所有者决定。
+两项完整 Medium、完整 U1 与 U3–U7、O1/O2/O3 仍开放；已记录的所有者选择
+不代替对应实施、资格证据与 Gate。
 v1.8 保持 IN_PROGRESS / IMPLEMENTING；没有批准任何 Required Gate。
 先前回归数字和详细风险历史已移入[实施日志](../work/v1.8.0-implementation-log.md)，
 不再作为本文件的现状指标。
