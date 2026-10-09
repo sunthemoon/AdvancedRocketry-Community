@@ -81,6 +81,9 @@ c19_bootstrap_fixture_candidate_commit: 8062781ca0cfc3157212f6f313c509cd0e522c7c
 c19_bootstrap_fixture_candidate_module: COMMITTED806_ROOT56_FULL95_PASS_UNCHANGED180_NOT_INTEGRATED
 c19_bootstrap_fixture_candidate_review: SOURCE51_MEDIUM_RETAINED_SUCCESSOR54_FOCUSED2_PASS_ADDITIVE_SEAL_ERRATUM_AUDIT57_COMPLETE
 c19_bootstrap_fixture_candidate_broad: ROOT53_ORIGINAL180_TIMEOUT_CHILD_EXIT_NULL_INCOMPLETE_STREAMS_OWN_TEMP_OPEN
+c19_g4_adr_candidate_commit: d605be33f9b1e25f28241caabe75789b767c0e66
+c19_g4_adr_candidate_qualification: COMMITTED_ROOT65_MODULE17_PASS_REPOSITORY20_POSTIMAGE_PASS_NOT_INTEGRATED_WHOLE_OPEN
+c19_g4_adr_candidate_review: SOURCE66_MODULE17_PASS_R69_01_MEDIUM_RUNTIME_SCOPE_DEVIATION_AUDITED_RETAINED_ORIGINAL64_EXIT_GAP
 last_updated: 2026-10-10
 ```
 
@@ -113,8 +116,15 @@ consistency finding and independently corroborates R37-01. Root reads its full
 report and rehashes exact four-payload/five-file coverage,46678 bytes. Failed
 development snapshots have retained hashes/tracebacks, not reconstructible full
 source payloads; construction narratives are not immutable runtime proof. Static
-R32-02 malformed-ADR diagnostics and R32-03 wrapper coverage remain open;
-neither is executed or established as timeout cause. Whole broad/strict remains
+R32-02's earlier static state is superseded by
+[checkpoint68](../work/v1.8.0-c19-strict-validator/G4-MALFORMED-ADR-CHECKPOINT-68.md):
+the separate committed candidate d605be33 reproduces malformed enums/parser
+recursion and passes corrected module17, repository20 and independent17.
+Actual committed module17 also passes; Main source integration/whole qualification
+remain open. Original64 observer exit gap and review66's unassigned C: runtime
+are retained; additive audit69 confirms Medium R69-01. Full review66 write-scope
+compliance is not claimed; Root reads/rehashes the separate correction. R32-03 wrapper coverage remains
+unexecuted/open. Neither finding is established as an old-timeout cause. Whole broad/strict remains
 failed, and no current Gate, integrated-source delivery or acceptance result changes.
 
 [Checkpoint41](../work/v1.8.0-c19-strict-validator/OBJECT-QUALIFICATION-CHECKPOINT-41.md)

@@ -708,8 +708,17 @@ C17b candidate03 的独立审核已解决旧版 Medium
   不把模块通过、相同src树或源码提交当作全量资格、Main交付、C19或版本Gate通过。
   既有测试类超过800行的[ADR-070说明](../decisions/ADR-070-BOOTSTRAP-FIXTURE-LIFECYCLE-AND-SIZE.md)
   仅为 PROPOSED；Main 集成前的规模处置仍待解决，不接受长期或继续增长豁免。
-- [ ] R32-02（静态 Medium）、R32-03（Low）：ADR 枚举数组/对象及解析递归可能异常，
-  G4 文件系统 wrapper 缺少直接测试。尚未执行负向复现，不作为超时原因；另立修订。
+- [~] [C19-G4-ADR-64](../work/v1.8.0-c19-strict-validator/G4-MALFORMED-ADR-TASK-64.md)：
+  status: committed-focused-qualified-main-open。R32-02 的负向复现确认数组/对象 TypeError
+  及两记录的解析 RecursionError；三行修正与三方法回归已单独提交、正常推送至 d605be33。
+  [检查点68](../work/v1.8.0-c19-strict-validator/G4-MALFORMED-ADR-CHECKPOINT-68.md)
+  区分原64观察器失败、另立65的实际负向退出1、修正17项/仓库20项/独立17项及实际提交后17项通过。
+  原14方法/23断言不变；未合入Main，不批准整版资格。独立66未发现限定源码问题，
+  但其自有C:临时目录与指定D:目录不符；附加69确认 Medium R69-01，Root已读取、复核更正。
+  原记录不改，不宣称完整写入范围合规；该历史偏差不由测试通过关闭。
+  Root已读取、复核五份封存包；两项手工证据耗时观察和独立61静态分类不当作全仓超时原因。
+- [ ] R32-03（Low）：G4 文件系统/delegation wrapper 直接覆盖仍待另项实施验证；
+  R32-02 的 focused 通过不关闭该项，也不证明旧超时原因。
 - [ ] C19 可移植已提交证据引用：实际 Markdown 检查在 256 错误前缀后停止。
   绝对/越界及缺失 ZIP/manifest 需逐项核对所有者；不拷贝未知归属的未跟踪材料。
 - [x] [C19-STRICT-DIAGNOSTICS-08](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-TASK-08.md)
