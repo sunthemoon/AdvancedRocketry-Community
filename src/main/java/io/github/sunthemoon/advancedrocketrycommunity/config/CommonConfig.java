@@ -324,6 +324,10 @@ public final class CommonConfig {
                     "Existing player field, station and Level gravity remain enabled.")
             .define("environment.classicGravityEnabled", true);
 
+    public static final ForgeConfigSpec.BooleanValue CLASSIC_EQUIPMENT_ENABLED = BUILDER
+            .comment("Allow classic equipment use; disabling retains items, recipes and safe repair.")
+            .define("equipment.classicEnabled", true);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
@@ -451,7 +455,7 @@ public final class CommonConfig {
     /** Server switches whose tests can hold an ephemeral in-memory value. */
     private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED,
             COMBUSTION_GENERATOR_ENABLED, SOLAR_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
-            CLASSIC_GRAVITY_ENABLED,
+            CLASSIC_GRAVITY_ENABLED, CLASSIC_EQUIPMENT_ENABLED,
             OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,
             CHARRED_TREES_ENABLED, LIGHTWOOD_TREES_ENABLED, SWAMP_TREES_ENABLED, INVERTED_PILLARS_ENABLED,
             CRYSTAL_CLUSTERS_ENABLED, ELECTRIC_MUSHROOMS_ENABLED);
@@ -499,6 +503,10 @@ public final class CommonConfig {
 
     public static boolean classicGravityEnabled() {
         return serverSwitchValue(CLASSIC_GRAVITY_ENABLED);
+    }
+
+    public static boolean classicEquipmentEnabled() {
+        return serverSwitchValue(CLASSIC_EQUIPMENT_ENABLED);
     }
 
     /** ADR-063 section 4: whether the Overworld ores generate; the default until the COMMON config is loaded. */

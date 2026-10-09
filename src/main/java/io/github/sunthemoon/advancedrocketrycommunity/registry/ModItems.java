@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.Seal
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.content.DevelopmentComponentItem;
 import io.github.sunthemoon.advancedrocketrycommunity.fluid.GasCanisterItem;
+import io.github.sunthemoon.advancedrocketrycommunity.equipment.tool.JackhammerItem;
 import io.github.sunthemoon.advancedrocketrycommunity.station.content.StationDeploymentKitItem;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.DataSatellitePackageItem;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteControlChipItem;
@@ -28,6 +29,7 @@ public final class ModItems {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<Item> JACKHAMMER = ITEMS.register("jackhammer", JackhammerItem::new);
     public static final RegistryObject<Item> AIRLOCK_DOOR = blockItem("airlock_door", ModBlocks.AIRLOCK_DOOR);
     public static final RegistryObject<Item> COMBUSTION_GENERATOR = blockItem("combustion_generator",
             ModBlocks.COMBUSTION_GENERATOR);

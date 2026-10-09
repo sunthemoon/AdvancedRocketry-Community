@@ -67,6 +67,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.BASIC_CIRCUIT.get());
                         output.accept(ModItems.ATMOSPHERE_ANALYZER.get());
                         output.accept(ModItems.SEAL_DETECTOR.get());
+                        output.accept(ModItems.JACKHAMMER.get());
                         output.accept(ModItems.ADVANCED_CIRCUIT.get());
                         output.accept(ModItems.DATA_STORAGE_UNIT.get());
                         output.accept(ModItems.SATELLITE_TERMINAL.get());
