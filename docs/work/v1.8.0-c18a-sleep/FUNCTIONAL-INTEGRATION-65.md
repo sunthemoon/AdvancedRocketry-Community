@@ -97,3 +97,40 @@ User AGENTS.md and inherited untracked work are untouched. No cleanup or Gate/
 ledger/ADR/risk/release acceptance. Ledger 186 PLANNED /154 REVIEW remains.
 **All current-version Required Gates satisfied: NO.** Next v1.8 work is fixed
 integration review66 and the separate finite resource/public-boundary obligations.
+
+## Additive completed fixed integration review
+
+Independent66's sealed report is 122 lines /19889 bytes, SHA256
+3ac5b0cba1c4e74c2bf7f630bd32ca39f01b6d0704387a3392095447435b2968.
+Root completely reads the actual stable text and hash before custody ACK. It
+identifies no new material integration finding in fixed f7's exact a1 postimages.
+Its own fixed exported bytes pass 33 paired plus 52 adjacent pure JSON methods,
+not borrowed Root runs. The resource/native/full driver/version scope stays open.
+This later record supersedes only the pending-review state above; the earlier
+Root65 report and sealed custody packet remain historical and unchanged.
+
+Actual66 custody is arce.task66.custody-seal.v1, exit 0, UTC 12:31:04.768693 to
+12:31:04.858098, 65 covered files /376008 bytes, physical 67 /383780. Manifest
+SHA256 is 76545aeb9d66ac5a53c018f3907b22243b5761990b45201a46cf191b447fe971;
+result SHA256 is 3cbb2b7cdfa6e3f9f4bcbf2b2dff0a263b1cb47a83cbb7d1e0a2e296bb2e91e1.
+Exact exclusions are manifest and result only. Embedded 375-byte stdout hash is
+54565541db46a0aa56fcd959e6bf204aedcba9e0b84c33d03cc660b0b4597f5e;
+stderr is empty, timeout/overflow false and drains complete. A subsequent inline
+read-only audit fails because comprehension exec does not accumulate its outer
+total; distinct sum-based verification passes. This post-seal tool-only failure
+is retained, not rewritten into the sealed report or called a test/seal failure.
+
+Independent64's actual helper03 custody also completes: 196 covered files /847926
+bytes, physical 201 /871176, manifest SHA256
+0150379b001bd7d7c33244dbd9185b18455cf9da4b81788779d8f9a438bddfc8,
+result SHA256 9b4d62e1674930bfe68b7a023934cdc9cd9e1a6498f216d13162171a17ad69f3.
+Its exact five exclusions are manifest/result/new03 command/stdout.raw/stderr.raw.
+The original no-child executable-array failure, second child's pin-guard exit 1,
+parser drafts, both additive corrections and original stable report remain covered.
+Helper03 only corrects case-insensitive parameter/local-variable collision and
+necessary new custody identities. Actual child 16404 exits 0 with both EOF true,
+no timeout/overflow, UTC 12:29:24.2917138 to 12:29:25.1135685. This custody is not
+protocol/helper adoption or resolution of R64-01/R64-02. Required Gates stay open.
+
+Next v1.8 work is the separate resource measurement-window and ordinary-operation
+boundary qualification, not another functional-source implementation or a release.

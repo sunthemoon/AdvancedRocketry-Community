@@ -54,7 +54,7 @@ actual_unit_rerun: sleep-nested-source-qualification-20261009-28/test-01.command
 actual_unit_rerun_observed_utc: 2026-10-09T07:22:55.516Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
-sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_ONLY_RESOURCE_AND_FRESH_INTEGRATION_REVIEW_OPEN
+sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_INDEPENDENT_REVIEW_COMPLETE_RESOURCE_OPEN
 last_updated: 2026-10-09
 ```
 
@@ -95,8 +95,11 @@ Test-only successor59 at a1ea5b35 has 33 author methods passing; fresh independe
 runs 33+5 methods and addresses the two Low coverage findings at that successor.
 [Pure functional integration65](../work/v1.8.0-c18a-sleep/FUNCTIONAL-INTEGRATION-65.md)
 normally commits/pushes both exact postimages at f7f02cda. Root's 33 paired plus 166
-existing adjacent methods and separate committed 33 pass; fresh integration
-review66 is pending. No resource/platform helper or full driver is qualified.
+existing adjacent methods and separate committed 33 pass. Fresh fixed integration
+review66 is complete: own 33+52 methods pass, no new material integration finding;
+actual custody is sealed. Its post-seal audit construction failure and distinct
+corrected read-only verification remain disclosed. No resource/platform helper
+or full driver is qualified.
 Original63's whole-leaf-cap wording correction and Task59 oracle-custody limitation
 remain explicit. Complete feasibility56 and independent60
 do not establish a complete ordinary bed/neighbor receipt producer on inspected
