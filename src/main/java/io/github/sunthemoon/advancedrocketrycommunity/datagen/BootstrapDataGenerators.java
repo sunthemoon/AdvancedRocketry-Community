@@ -53,6 +53,8 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180SealDetectorData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180JackhammerData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180StationLightData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180ThermiteData(output, event.includeClient(), event.includeServer()));

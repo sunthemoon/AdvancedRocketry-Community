@@ -109,6 +109,7 @@
   "item.advancedrocketrycommunity.iron_plate": "Iron Plate",
   "item.advancedrocketrycommunity.iron_rod": "Iron Rod",
   "item.advancedrocketrycommunity.iron_sheet": "Iron Sheet",
+  "item.advancedrocketrycommunity.jackhammer": "Jackhammer",
   "item.advancedrocketrycommunity.nitrogen_canister": "Nitrogen Canister",
   "item.advancedrocketrycommunity.raw_aluminum": "Raw Aluminum",
   "item.advancedrocketrycommunity.raw_iridium": "Raw Iridium",
@@ -170,6 +171,7 @@
   "message.advancedrocketrycommunity.atmosphere_analyzer.state.unavailable": "Unavailable",
   "message.advancedrocketrycommunity.atmosphere_analyzer.supplied": "Controlled air supply",
   "message.advancedrocketrycommunity.atmosphere_analyzer.unavailable": "Atmosphere analyzer: %s",
+  "message.advancedrocketrycommunity.jackhammer.disabled": "Jackhammer: disabled",
   "message.advancedrocketrycommunity.pump.status": "%s | %s FE | %s mB",
   "message.advancedrocketrycommunity.seal_detector.boundary.open": "OPEN",
   "message.advancedrocketrycommunity.seal_detector.boundary.sealed": "SEALED",
@@ -238,6 +240,8 @@
   "status.advancedrocketrycommunity.pump.target_out_of_bounds": "Target outside world bounds",
   "status.advancedrocketrycommunity.pump.target_protected": "Target protected",
   "status.advancedrocketrycommunity.pump.target_unloaded": "Target chunk not loaded",
+  "tooltip.advancedrocketrycommunity.jackhammer.mining": "Fast mining of pickaxe blocks",
+  "tooltip.advancedrocketrycommunity.jackhammer.repair": "Repair with titanium rods",
   "tooltip.advancedrocketrycommunity.seal_detector.measurement_only": "One boundary does not certify a room",
   "tooltip.advancedrocketrycommunity.tank.contents": "%s: %s mB"
 }

@@ -117,6 +117,29 @@ Root owns all central bindings; no delegated implementation or Claude.
 - This task, leaf adoption/verification/review evidence, pre-authoring/final
   provenance records, and narrow canonical plan/status/implementation log edits.
 
+2026-10-09 corrective scope extension, published before corrective edits:
+the exact configuration inventory assertion in existing
+`src/test/.../config/CommonConfigTest.java` is Root-owned for the one adopted
+addition (73 to 74), with new switch-contract cases in the owned tool test
+package. No lifecycle assertion is removed. Root may also add a single opt-in
+`src/adapterTest/java/io/github/sunthemoon/arceadaptertest/JackhammerContinuationFixture.java`
+for packaged clean-stop/restart/native-use evidence. It must use registry lookup,
+ordinary connected native players, a bounded console-only stage command and a
+stable test UUID, without modifying production commands/API/registries/build.
+Existing compat-test-mod packages that separate fixture; its JVM property is off
+by default. No reseeding on continuation, FakePlayer mining, shared static world
+state, copied input-world mutation, crash guarantee or real-client claim.
+
+2026-10-09 record consistency extension, published before editing: Root owns
+one exact first-match `recipes/jackhammer.json` exception in
+`docs/work/v1.8.0-asset-plan.csv`, with subsequent order numbers mechanically
+shifted and every other asset's effective handling unchanged. The recorded
+MIT-derived recipe is classified as an existing derived import in v1.8.0,
+not NEW-only data, a full item/legacy bitmap delivery or human asset approval.
+The provenance review stays PENDING_HUMAN_REVIEW; the import allowlist, origin
+findings, other recipes and ledger units do not change. Keep the original
+accepted-ledger failure and independently check this consistency correction.
+
 Root NEW evidence leaf:
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/jackhammer-root-20261009-01`.
 Independent contract/source reviewers use separate NEW leaves/private checkouts.

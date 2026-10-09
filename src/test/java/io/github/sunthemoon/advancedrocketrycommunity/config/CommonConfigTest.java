@@ -41,10 +41,13 @@ class CommonConfigTest {
         // the five ADR-058 gravity field caps and the three ADR-057 black-hole generator values, and the v1.8
         // Classic settings: C15a/b/c (ADR-063), combustion, tank capacity and pump operation (ADR-064),
         // the classic life-support instrument switch (ADR-066), and the single solar generator's
-        // enable switch and output multiplier (ADR-065), plus the accepted C18a living-tick gravity switch.
+        // enable switch and output multiplier (ADR-065), plus the accepted C18a living-tick gravity switch
+        // and the consumed C18b ordinary-equipment switch (ADR-066).
         assertSame(CommonConfig.CLASSIC_GRAVITY_ENABLED,
                 CommonConfig.SPEC.getValues().get("environment.classicGravityEnabled"));
-        assertEquals(73, countValues(CommonConfig.SPEC.getValues()));
+        assertSame(CommonConfig.CLASSIC_EQUIPMENT_ENABLED,
+                CommonConfig.SPEC.getValues().get("equipment.classicEnabled"));
+        assertEquals(74, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
