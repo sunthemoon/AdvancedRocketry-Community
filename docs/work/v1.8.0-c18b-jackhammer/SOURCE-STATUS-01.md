@@ -66,8 +66,10 @@ inventory Damage 18 then 19 after same-UUID native continuation. The
 [sealed Root qualification](ROOT-QUALIFICATION-01.md) and
 [independent receipt audit](PACKAGED-REVIEW-STATUS-01.md) preserve their exact
 scope, failures and cleanup limits. The fresh complete source reviewer also
-passes its build/test/DataGen and all 579 required native cases; its final report/
-seal is pending before Main integration. No complete item delivery is inferred.
+passes its build/test/DataGen and all 579 required native cases; its
+[complete sealed report](CORRECTED-REVIEW-STATUS-04.md) identifies no new
+change-required source finding. Main integration is pending. No complete item
+delivery is inferred.
 
 The [packaged driver assignment](PACKAGED-DRIVER-TASK-01.md) separately freezes
 its external harness before two-process same-world native inventory continuation.

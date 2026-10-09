@@ -32,8 +32,8 @@ or custom tier is created. Missing titanium/steel/motor survival roots, above-ti
 mod interactions, unsynced COMMON client display, native wear-before-removal,
 upgrade/V1/V2/soak and human provenance obligations remain open.
 
-Root waits for the complete independent fixed-source report/seal before Main
-integration. The separate packaged receipt review corroborates only its stated
+The [complete independent fixed-source report](CORRECTED-REVIEW-STATUS-04.md)
+and seal are now published before Main integration. The separate packaged receipt review corroborates only its stated
 narrow diagnostic, not an independent native launch or full source acceptance.
 
 Archive: 3,022,690 compressed /17,878,918 uncompressed bytes, 2,496 entries.
