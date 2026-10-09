@@ -123,14 +123,17 @@ implementation. Read-only research has produced a
 [proposed contract](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md). Its
 [independent review](../work/v1.8.0-c18a-sleep/CONTRACT-REVIEW-STATUS-01.md) identifies
 occupancy/air and Space-context corrections; both exact bed/spawn and atmosphere
-feasibility reports are sealed, and the ancillary owner choice remains pending. Those
-policies are unchanged and no sleep implementation source is assigned.
+feasibility reports are sealed. The owner has subsequently
+[accepted the exact native ancillary candidate](../work/v1.8.0-c18a-sleep/OWNER-DECISION-03.md),
+still requiring dimension/spawn/time freezing and review. No gameplay policy
+has been changed and no production sleep implementation source is assigned.
 
 The separate [C18a-SLEEP-01](COMPLETION-PLAN.md) leaf now has
 [sealed spawn-boundary research](../work/v1.8.0-c18a-sleep/SPAWN-RESEARCH-STATUS-02.md).
 Its stateless public caller candidate has no runtime/coexistence/indeterminate
-failure qualification; B1 and the [exact ancillary question](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)
-remain open. This research is not new current game regression evidence.
+failure qualification; B1 and the separate dimension/spawn/time freeze and review
+remain open. The [exact ancillary question](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)
+is answered by decision 03. This research is not current game regression evidence.
 
 The [sealed atmosphere/access proposal](../work/v1.8.0-c18a-sleep/AIR-RESEARCH-STATUS-02.md)
 retains M1's unproved neutral transition and distinguishes registered-bed
@@ -144,7 +147,8 @@ has [complete independent review](../work/v1.8.0-c18a-sleep/OBSERVATION-REVIEW-S
 and a [narrow source-only assignment](../work/v1.8.0-c18a-sleep/OBSERVATION-ASSIGNMENT-05.md)
 for two opt-in adapter fixtures/twenty cases. No game/driver or actual off-world
 sleep is assigned. No off-world dimension, spawn or time
-implementation is authorized by that review or the still-unanswered question.
+implementation is authorized by that observation review or the conditional
+ancillary owner answer.
 
 The [isolated observation source checkpoint](../work/v1.8.0-c18a-sleep/SOURCE-REVIEW-STATUS-07.md)
 is implemented-unverified: two committed author compile cohorts return 0, but

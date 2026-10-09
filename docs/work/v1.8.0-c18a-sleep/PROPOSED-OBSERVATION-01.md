@@ -4,7 +4,9 @@ Date: 2026-10-09. Status: **PROPOSED / no source or runtime assignment**.
 This is a smaller test-only stage of the [spawn-boundary plan](SPAWN-RESEARCH-STATUS-02.md),
 not a replacement for its connected-client positive or Q01-Q18 qualification.
 The owner selected actual off-world sleep conditional on separate behavior
-freeze/review; the [ancillary choice](OWNER-QUESTION-02.md) is still unanswered.
+freeze/review; the subsequent [ancillary answer](OWNER-DECISION-03.md) accepts only
+the exact native candidate, still subject to that freeze/review. It does not
+extend this proposal's observation-only scope or grant runtime permission.
 This observation changes no shipped dimension, spawn/time or gameplay policy.
 
 ## Outcome and precise evidence class

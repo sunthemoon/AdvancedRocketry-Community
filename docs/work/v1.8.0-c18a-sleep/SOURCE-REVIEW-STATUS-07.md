@@ -68,4 +68,6 @@ server/world/client or native observation are launched by these assignments.
 Main's current behavioral regression remains bound to 3b18a6bc, not either new
 adapter candidate. No shipping dimension, spawn/time/air policy, API, schema,
 asset, ledger or Required Gate changes. B1/R1/M1/M2/D1 and the
-[unanswered ancillary choice](OWNER-QUESTION-02.md) remain open.
+dimension/spawn/time freeze and review remain open. The subsequent
+[ancillary owner answer](OWNER-DECISION-03.md) changes only that product input,
+not this historical source checkpoint's test/runtime permissions or findings.

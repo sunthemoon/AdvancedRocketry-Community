@@ -29,7 +29,8 @@ blanket bed/door exclusion, direct sleeping bypass or physics cancellation is
 an adopted correction. Registered-bed pre-admission invalidation must also be
 qualified, not only occupancy/wake. M1-01..06/M2-01..05 supplement the original
 S01-S21/R01-R02; all runtime cases remain UNEXECUTED. B1 spawn provenance and
-the [pending ancillary disposition](OWNER-QUESTION-02.md) remain prerequisites.
+the dimension/spawn/time freeze and review required by the
+[accepted ancillary disposition](OWNER-DECISION-03.md) remain prerequisites.
 
 Archive: 146,434 compressed /694,307 uncompressed bytes, sixteen entries.
 Archive SHA-256: d272e2a94129279416b01c5b489c788acbd6c2d117d62715f1b3ff7323b6c39d.

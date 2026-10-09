@@ -1,5 +1,9 @@
 # v1.8 off-world actual sleep owner direction
 
+Later scope clarification: [decision 03](OWNER-DECISION-03.md) accepts the
+separately presented native dimension ancillary effects, still conditional on
+freezing/reviewing that exact scope. It does not remove the conditions below.
+
 Date: 2026-10-09 (Asia/Taipei). Source: the owner's asynchronous question reply
 in the active Root Codex conversation. This record covers the off-world sleep
 product target only; it does not cover physical hatches, save writers or O1/O2/O3.

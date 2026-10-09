@@ -1,4 +1,4 @@
-# Actual sleep ancillary dimension behavior: pending owner choice
+# Actual sleep ancillary dimension behavior: answered by decision 03
 
 Date: 2026-10-09 (Asia/Taipei). Channel: asynchronous question UI in the active
 Root Codex conversation, after the complete contract-01 independent review.
@@ -14,8 +14,9 @@ Exact offered choices:
 1. 接受原生维度行为，按上述范围冻结并审核。
 2. 保持原有指南针、时钟和传送门行为，另行研究睡眠适配。
 
-No owner answer has been received for this question. A preselected UI choice is
-not a submitted answer. Neither choice grants B1/M1 proof, implementation/Gate
-approval, off-world respawn options, shared-night skipping, existing spawn-record
-migration or unrelated hatch/writer O1/O2/O3 policy. Any actual response must have
-its own exact source/date/scope record and update all pending current references.
+The owner has submitted the first choice, recorded verbatim with its source and
+scope in [decision 03](OWNER-DECISION-03.md). The former pending-answer statement
+is superseded. This answer requires freezing/reviewing the stated scope; it grants
+no B1/M1 proof, implementation/Gate approval, off-world respawn options,
+shared-night skipping, existing spawn-record migration or unrelated hatch/writer
+O1/O2/O3 policy. A preselected UI choice alone would not have been an answer.

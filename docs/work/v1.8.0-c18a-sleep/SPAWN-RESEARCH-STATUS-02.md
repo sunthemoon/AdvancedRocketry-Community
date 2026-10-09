@@ -28,8 +28,8 @@ synthetic events, exceptions, remapping, bounded failure behavior and saved nati
 Spawn fields. All such runtime/implementation cases are UNEXECUTED; static signature
 and manifest checks are not substitutes. M1 occupancy-air ordering and M2 Space
 host/access correction remain separate prerequisites. The
-[ancillary owner choice](OWNER-QUESTION-02.md) is pending; wanting actual sleep is
-not permission to choose those dimension effects or a new respawn policy.
+[ancillary owner decision](OWNER-DECISION-03.md) accepts the stated native effects
+subject to freezing/review; it grants no new respawn policy or B1 qualification.
 
 Archive: 229,539 compressed /1,152,513 uncompressed bytes, 84 entries.
 Archive SHA-256: 101452b8fcef931dbae693dd4be45937ff9f58958a4ee041d1ce561a6e7bc0e8.
@@ -46,5 +46,6 @@ an explicit callback-argument/inherited-receiver qualification gap within B1.
 Native declaring-class signatures alone are not object authentication. The
 test-only observation proposal includes controls/exclusions, not proof or adoption.
 Before an enforcing task, freeze the exact indeterminate/coexistence behavior.
-Production dimension changes also require the authorized ancillary disposition.
+Production dimension changes still require the accepted ancillary scope to be
+frozen and independently reviewed before an implementation assignment.
 No sleep policy/code, migration, new API/schema/C2S, ledger unit or G0-G9 is delivered.

@@ -20,7 +20,9 @@ requires disposition of accepted ADR-024 semantics. M2 is coherent only for its
 proposed gap branch, not a selected product policy; guard scope and footprint
 permissions still require freezing. B1's indeterminate/cancellation/coexistence
 strategy, the pre-normalization loaded-half boundary and D1's
-[unanswered ancillary choice](OWNER-QUESTION-02.md) remain open.
+[dimension/spawn/time freeze and review](OWNER-DECISION-03.md) remain open. The
+owner has subsequently accepted the exact ancillary candidate; the earlier
+sealed review's pending-answer state is historical, not the current choice.
 
 Enough static context exists to define a separate finite observation-only
 Overworld assignment, not an enforcing sleep implementation. The review lists

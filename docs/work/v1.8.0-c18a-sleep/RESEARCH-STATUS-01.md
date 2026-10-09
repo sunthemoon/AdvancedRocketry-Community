@@ -12,7 +12,8 @@ air-invalidation and Space host/context corrections. The
 [cause-boundary research](SPAWN-RESEARCH-STATUS-02.md) is sealed but establishes no
 approved/runtime-qualified discriminator; the [atmosphere/access research](AIR-RESEARCH-STATUS-02.md)
 is also sealed with proposed corrections and open qualification prerequisites. The
-[ancillary owner choice](OWNER-QUESTION-02.md) is pending.
+[ancillary owner choice](OWNER-DECISION-03.md) is now answered for the exact native
+candidate; separate dimension/spawn/time freezing and review remain required.
 No dimension flag,
 spawn field, time service, Forge interceptor, resource/build input or gameplay
 implementation is changed by publishing this research.

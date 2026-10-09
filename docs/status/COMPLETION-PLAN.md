@@ -293,8 +293,9 @@ C17b candidate03 的独立审核已解决旧版 Medium
   区分注册床的交互前失效与占用/邻门通知，尚未建立安全的中性更新识别。
   两份候选的[独立只读审核](../work/v1.8.0-c18a-sleep/BOUNDARY-REVIEW-STATUS-03.md)已封存，
   新增 R1 回调参数/继承接收者资格细节，仍未授权运行时资格夹具或生产实现。
-  [维度连带行为的用户决定](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)待答。
-  依赖 M1、M2、B1、D1 的证明和冻结；原 S01-S21/R01-R02 及新增资格矩阵均未执行。
+  用户已[接受原生维度连带行为](../work/v1.8.0-c18a-sleep/OWNER-DECISION-03.md)，
+  仍以冻结和审核该明确范围为条件；不跳过地球夜晚、不改已有出生点。
+  依赖 M1、M2、B1/R1、D1 的证明和冻结；原 S01-S21/R01-R02 及新增资格矩阵均未执行。
   不做出生点迁移、全局跳夜或直接躺下的显示替代；尚未改动策略或分配睡眠实现源码。
   - [ ] C18a-SLEEP-B1-OBS01：status: implemented-unverified，仅隔离测试源码。
     [测试专用观测提案](../work/v1.8.0-c18a-sleep/PROPOSED-OBSERVATION-01.md)仅观察主世界

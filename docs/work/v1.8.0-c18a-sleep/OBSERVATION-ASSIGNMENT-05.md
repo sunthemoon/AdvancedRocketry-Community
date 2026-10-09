@@ -46,8 +46,9 @@ Explicitly unexecuted/excluded in this first stage: inherited/custom beds and
 cached receiver changes, monsters/item-first/secondary mods, interpreted/JIT or
 development qualification, real clients, restart/death/prior worlds, six actual
 hosts/Space access and M1/M2. Callback controls do not close R1/B1. M1 neutral
-transition, M2 branch freeze, B1 indeterminate/coexistence and D1's unanswered
-ancillary choice stay open. No incomplete row is silently counted as full matrix.
+transition, M2 branch freeze, B1 indeterminate/coexistence and D1's separate
+dimension/spawn/time freeze/review stay open. The later [ancillary owner answer](OWNER-DECISION-03.md)
+does not expand this assignment. No incomplete row is counted as full matrix.
 
 Allowed execution is source inspection, bounded own evidence and the isolated
 compileAdapterTestJava command after committing the two-file candidate/checking

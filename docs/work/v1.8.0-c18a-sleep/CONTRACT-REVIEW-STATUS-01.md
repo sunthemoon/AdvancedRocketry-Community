@@ -16,10 +16,12 @@ new Medium contract corrections and preserves two previously open inputs:
 - B1: the exact ordinary-bed-only spawn-update boundary remains unproved.
   Blanket vetoes, lasting flags, direct sleeping bypass and private/AT hooks
   are not implementation authority.
-- D1: the actual-sleep choice does not approve natural=true's compass/clock/portal
-  effects, global time changes or a respawn policy. A separate owner question
-  [recorded question](OWNER-QUESTION-02.md) describes the native local-rest/unchanged-spawn candidate and its ancillary
-  effects; no answer or integration authorization is inferred here.
+- D1: the owner has subsequently [accepted the exact native ancillary candidate](OWNER-DECISION-03.md)
+  from [question 02](OWNER-QUESTION-02.md), including its compass/clock/portal
+  effects and no Earth-night skipping or existing-spawn changes. Dimension,
+  spawn-point and time behavior must still be frozen/reviewed before implementation.
+  No new respawn policy, global time change or integration approval is inferred.
+  The sealed review's earlier pending-answer statement remains historical.
 
 Root assigns separate read-only public spawn-boundary and atmosphere/context
 feasibility tasks to fresh workers. The [spawn-boundary report](SPAWN-RESEARCH-STATUS-02.md)
