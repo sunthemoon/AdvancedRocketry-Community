@@ -41,7 +41,10 @@ or raw proof is invented. No game/build/world/native process, source write, clea
 or Python cache is created. Five small reproducibility scripts are retained as
 immutable evidence inputs, not disposable runtime/source copies.
 
-Before an isolated qualification task, independently review the proposed
-classifier/ordinary-action definition and exact indeterminate/coexistence behavior.
+The [complete independent boundary review](BOUNDARY-REVIEW-STATUS-03.md) adds R1,
+an explicit callback-argument/inherited-receiver qualification gap within B1.
+Native declaring-class signatures alone are not object authentication. The
+test-only observation proposal includes controls/exclusions, not proof or adoption.
+Before an enforcing task, freeze the exact indeterminate/coexistence behavior.
 Production dimension changes also require the authorized ancillary disposition.
 No sleep policy/code, migration, new API/schema/C2S, ledger unit or G0-G9 is delivered.

@@ -135,8 +135,11 @@ The [sealed atmosphere/access proposal](../work/v1.8.0-c18a-sleep/AIR-RESEARCH-S
 retains M1's unproved neutral transition and distinguishes registered-bed
 pre-admission invalidation from occupancy/adjacent-door notifications. M2 proposes
 bounded actual-host/live-access checks, with the gap/station policy not selected.
-Both task-02 boundary proposals receive fresh independent review before a finite
-observation-only qualification assignment. No off-world dimension, spawn or time
+The [complete task-03 review](../work/v1.8.0-c18a-sleep/BOUNDARY-REVIEW-STATUS-03.md)
+preserves these prerequisites and adds R1 callback-argument/inherited-receiver
+qualification within B1. A separate
+[test-only observation proposal](../work/v1.8.0-c18a-sleep/PROPOSED-OBSERVATION-01.md)
+is independently reviewed before a finite assignment. No off-world dimension, spawn or time
 implementation is authorized by that review or the still-unanswered question.
 
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior

@@ -44,7 +44,9 @@ Only 21 own temporary governance extracts are normally removed after containment
 reparse and process checks; remaining scratch/native process counts are zero.
 No game/build/world, production source, policy, ledger or Gate is changed.
 
-A fresh independent read-only review of both task-02 boundary proposals is
-assigned before a finite observation-only qualification task. It may assess
+The [complete independent read-only review](BOUNDARY-REVIEW-STATUS-03.md) of both
+task-02 boundary proposals preserves M1/M2/B1/D1 and adds the R1 identity-control
+gap. It supports preparation, not assignment, of a finite observation-only task.
+The separate unassigned proposal assesses
 ordinary Overworld bed observations without approving off-world dimension/spawn/
 time changes. Research and pure integrity PASS are not gameplay/Gate acceptance.
