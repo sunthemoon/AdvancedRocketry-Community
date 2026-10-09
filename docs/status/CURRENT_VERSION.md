@@ -76,8 +76,11 @@ separately freezes only its intended outcomes, not implementation or runtime pro
 log revision34 and final independent35 are sealed; [disposition39](../work/v1.8.0-c18a-sleep/NATIVE-LOG-DISPOSITION-39.md)
 freezes only narrowed refusal requirements. Whole-driver adoption/executable
 freeze and actual runtime/cumulative admission remain open. Separately assigned
-offline JSON contract37 and diagnostic provenance audit38 grant no implementation
-or error waiver. Task28's .log-only retained files do not prove
+offline JSON candidate37 is sealed and under fresh independent40 review.
+[Completed provenance audit38](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-AND-DIAGNOSTICS-STATUS-42.md)
+distinguishes injected native saves from direct event posts, with three recipe
+attribution gaps and existing High log/R-021 policy/evidence admission obligations
+still open. No implementation or error waiver. Task28's .log-only retained files do not prove
 original rotation completeness; standard-test and capture-runtime evidence are
 distinct. All Gates remain open.
 

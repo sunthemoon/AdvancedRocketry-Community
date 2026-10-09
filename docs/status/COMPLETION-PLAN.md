@@ -330,10 +330,14 @@ C17b candidate03 的独立审核已解决旧版 Medium
       保留固定预算、实际累计容量不满足、日志编码/EOF/文件身份及运行分配等开放项。
       - [x] C18a-SLEEP-LOG-CONTRACT39：status: verified，仅限定拒绝规则及独立静态审核。
         不包括捕获实现、原生执行、错误豁免、运行容量或版本 Gate。
-      - [ ] C18a-SLEEP-JSON-CORE37：status: in-progress。独立外部任务只准备有界离线 JSON
-        核心契约；不处理源码 schema/Gson、帧关联、NBT/日志或运行，不推断采纳或实现。
-      - [ ] C18a-SLEEP-LOG-PROVENANCE38：status: in-progress。独立只读审查既有原生日志
-        的实际错误来源；不重跑测试，不抑制、降级或豁免错误。
+      - [ ] C18a-SLEEP-JSON-CORE37：status: in-progress。有界离线 JSON 核心提案和完整
+        报告已封存，[独立审核 40 正在执行](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-AND-DIAGNOSTICS-STATUS-42.md)；
+        不处理源码 schema/Gson、帧关联、NBT/日志或运行，不推断采纳或实现。
+      - [x] C18a-SLEEP-LOG-PROVENANCE38：status: verified，仅既有原生日志的独立静态来源审查。
+        完整报告/发生记录已封存；五次注入式原生保存失败与二十六次直接事件拒绝分别记录。
+        三条配方诊断归因、日志政策和 R-021 验收缺口仍开放；未重跑、抑制、降级或豁免错误。
+      - [ ] C18a-SLEEP-LOG-DISPOSITION42：status: in-progress。错误政策、生产保存影响/
+        日志预算/恢复决定及缺失的运行时证据仍须分别冻结、审核和分配。
     - [ ] C18a-SLEEP-D1-29：status: in-progress。按用户明确选择单独准备维度/出生点/时间子契约；
       [提案29与完整独立审核31](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)已封存；
       未发现新的实质契约问题；Root 已按用户明确范围冻结约定结果，十三项 D1 验证未执行。

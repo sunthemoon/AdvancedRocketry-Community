@@ -1,5 +1,10 @@
 # Native-log narrowed requirements disposition 39
 
+Later [checkpoint42](OFFLINE-CORE-AND-DIAGNOSTICS-STATUS-42.md) publishes sealed
+candidate37, fresh review40 and completed diagnostic audit38 with open findings.
+It supersedes only the pending task states and historical inventory below; no
+offline implementation, error waiver or runtime/production authority is added.
+
 Date: 2026-10-09. Root disposition: **NARROW REFUSAL REQUIREMENTS FROZEN AND
 INDEPENDENTLY REVIEWED; IMPLEMENTATION AND RUNTIME ADMISSION OPEN.** The whole
 driver proposal03 is not adopted or executable-frozen. This disposition adds no
