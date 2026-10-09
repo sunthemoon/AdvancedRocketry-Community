@@ -281,11 +281,17 @@ C17b candidate03 的独立审核已解决旧版 Medium
   [开发源码已合入并正常推送](../work/v1.8.0-c18b-jackhammer/SOURCE-INTEGRATION-01.md)至 `80bbf16d`；
   合并源码与被测提交相同，不声称在合并 SHA 上重跑。严格校验仍超时、真实客户端和完整工具未验收。
   钛初始来源仍依赖未完成的 C16b 电弧炉，不以创造给予材料替代生存获取。
-  用户已选择[外星真正睡眠](../work/v1.8.0-c18a-sleep/OWNER-DECISION-01.md)，条件是实施前另行冻结并审核
+
+- [ ] C18a-SLEEP-01：status: in-progress，仅契约与技术研究。
+  可观察目标是玩家在服务端确认有空气的外星房间中真正睡眠；
+  用户已选择[这个目标](../work/v1.8.0-c18a-sleep/OWNER-DECISION-01.md)，条件是实施前另行冻结并审核
   维度、出生点和时间行为；[只读契约提案](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md)已封存，
   [独立审核](../work/v1.8.0-c18a-sleep/CONTRACT-REVIEW-STATUS-01.md)提出床占用导致空气失效、
-  Space 上下文两项 Medium；精确床操作/出生点原因和大气适配的只读技术研究继续。
-  维度连带行为的用户决定待答，尚未改动策略或分配睡眠实现源码。
+  Space 上下文两项 Medium；[出生点原因研究](../work/v1.8.0-c18a-sleep/SPAWN-RESEARCH-STATUS-02.md)
+  的公开无状态候选尚未通过运行时与失败策略验证，大气适配研究继续。
+  [维度连带行为的用户决定](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)待答。
+  依赖 M1、M2、B1、D1 的证明和冻结；原 S01-S21/R01-R02 及新增资格矩阵均未执行。
+  不做出生点迁移、全局跳夜或直接躺下的显示替代；尚未改动策略或分配睡眠实现源码。
 
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、

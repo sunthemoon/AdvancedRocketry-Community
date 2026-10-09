@@ -122,6 +122,12 @@ occupancy/air and Space-context corrections; exact bed/spawn and atmosphere
 feasibility research continue, and the ancillary owner choice remains pending. Those
 policies are unchanged and no sleep implementation source is assigned.
 
+The separate [C18a-SLEEP-01](COMPLETION-PLAN.md) leaf now has
+[sealed spawn-boundary research](../work/v1.8.0-c18a-sleep/SPAWN-RESEARCH-STATUS-02.md).
+Its stateless public caller candidate has no runtime/coexistence/indeterminate
+failure qualification; B1 and the [exact ancillary question](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)
+remain open. This research is not new current game regression evidence.
+
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior
 current-state evidence is preserved in the
 [implementation log](../work/v1.8.0-implementation-log.md). No tag is created.
