@@ -6,8 +6,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
@@ -31,9 +35,13 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.gametest.GameTestHolder;
+import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /** Separate opt-in packaged-server fixture: native login/save and continued use, never a gameplay command. */
 @Mod.EventBusSubscriber(modid = AdapterTestMod.MOD_ID)
+@GameTestHolder(AdapterTestMod.MOD_ID)
+@PrefixGameTestTemplate(false)
 public final class JackhammerContinuationFixture {
     private static final UUID ID = UUID.fromString("914adf94-5147-49a3-bf78-ff21cd948719");
     private static final BlockPos TARGET = new BlockPos(12, 180, 12);
@@ -45,9 +53,23 @@ public final class JackhammerContinuationFixture {
     @SubscribeEvent public static void commands(RegisterCommandsEvent event) {
         if (!Boolean.getBoolean("arce.jackhammerSmoke")) { return; }
         event.getDispatcher().register(Commands.literal("arce_jackhammer_test")
-                .requires(source -> source.hasPermission(4) && source.getEntity() == null)
+                .requires(JackhammerContinuationFixture::console)
                 .then(Commands.literal("seed").executes(context -> run(context.getSource().getServer(), true)))
                 .then(Commands.literal("continue").executes(context -> run(context.getSource().getServer(), false))));
+    }
+
+    private static boolean console(CommandSourceStack source) {
+        // Native withSource preserves identity only when the underlying CommandSource already matches.
+        return source.hasPermission(4) && source.getEntity() == null && source.withSource(source.getServer()) == source;
+    }
+
+    @GameTest(template = "empty", batch = "jackhammer_console", timeoutTicks = 100)
+    public static void nativeConsoleIdentityAndPermissionAreBothRequired(GameTestHelper helper) {
+        var nativeConsole = helper.getLevel().getServer().createCommandSourceStack();
+        helper.assertTrue(console(nativeConsole), "Native console control was refused");
+        helper.assertTrue(!console(nativeConsole.withPermission(3))
+                && !console(nativeConsole.withSource(CommandSource.NULL)), "Non-console or lower permission source was admitted");
+        helper.succeed();
     }
 
     private static int run(MinecraftServer server, boolean seed) {

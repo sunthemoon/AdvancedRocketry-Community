@@ -13,10 +13,12 @@ class JackhammerConfigTest {
         assertTrue(CommonConfig.classicEquipmentEnabled());
     }
 
-    @Test void acceptedBooleanSwitchRejectsOtherTypes() {
+    @Test void nativeBooleanSwitchAcceptsOnlyBooleanAndRecognizedStringForms() {
         var spec = assertInstanceOf(ForgeConfigSpec.ValueSpec.class, CommonConfig.SPEC.getSpec().get("equipment.classicEnabled"));
         assertTrue(spec.test(true)); assertTrue(spec.test(false));
-        assertFalse(spec.test("true")); assertFalse(spec.test(1));
+        assertTrue(spec.test("true")); assertTrue(spec.test("FALSE"));
+        assertFalse(spec.test("yes")); assertFalse(spec.test(" true "));
+        assertFalse(spec.test(1)); assertFalse(spec.test(null));
     }
 
     @Test void registeredOverrideDisablesOnlyEquipmentAndClearsWithoutConfigWrite() {
