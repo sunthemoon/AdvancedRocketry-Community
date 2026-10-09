@@ -2,6 +2,10 @@
 
 Date: 2026-10-09. **REVIEW COMPLETE; LOW R01 OPEN; CANDIDATE PROPOSED.**
 No decoder/tests, source/schema/native runtime, production sleep or Gate authority.
+Later [disposition52](OFFLINE-CORE-CONTRACT-FREEZE-52.md) supersedes the pending
+43/44/49 and normative Low R01 state here, freezing only candidate37 plus additive43.
+It does not rebind fixed historical inputs, repair preparation gaps or qualify
+decoder/resources. The 36-archive sample below is historical, not current admission.
 [Checkpoint42](OFFLINE-CORE-AND-DIAGNOSTICS-STATUS-42.md) preserves the predecessor
 candidate, diagnostic provenance and existing R-021/log acceptance obligations.
 

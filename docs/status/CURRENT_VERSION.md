@@ -76,12 +76,13 @@ separately freezes only its intended outcomes, not implementation or runtime pro
 log revision34 and final independent35 are sealed; [disposition39](../work/v1.8.0-c18a-sleep/NATIVE-LOG-DISPOSITION-39.md)
 freezes only narrowed refusal requirements. Whole-driver adoption/executable
 freeze and actual runtime/cumulative admission remain open. Separately assigned
-offline JSON candidate37 and complete independent40 review are sealed.
-[Review disposition45](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-INDEPENDENT-STATUS-45.md)
-retains Low diagnostic-accounting R01; candidate adoption, decoder/tests and
-resource qualification remain open. Separate evidence-only addendum43 and
-bounded self-process counter task44/clarification46 are in progress, without
-anticipated outcomes or native/helper/quota authority.
+offline JSON candidate37, addendum43 and complete independent40/49 reviews are sealed.
+[Normative disposition52](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-CONTRACT-FREEZE-52.md)
+freezes the generic decoder/API/diagnostic and unchanged finite qualification
+contract only. Low R01 is addressed at the normative level; no decoder/tests are
+implemented or qualified. Actual44 qualifies only named local peak-so-far queries;
+R49-01/U01/U02 remain open. Separately sealed50 post-exit observations await
+independent55 assessment; no terminal resource, helper/quota or native authority.
 [Completed provenance audit38](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-AND-DIAGNOSTICS-STATUS-42.md)
 distinguishes injected native saves from direct event posts, with three recipe
 attribution gaps and existing High log/R-021 policy/evidence admission obligations

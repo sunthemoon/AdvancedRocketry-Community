@@ -330,16 +330,20 @@ C17b candidate03 的独立审核已解决旧版 Medium
       保留固定预算、实际累计容量不满足、日志编码/EOF/文件身份及运行分配等开放项。
       - [x] C18a-SLEEP-LOG-CONTRACT39：status: verified，仅限定拒绝规则及独立静态审核。
         不包括捕获实现、原生执行、错误豁免、运行容量或版本 Gate。
-      - [ ] C18a-SLEEP-JSON-CORE37：status: in-progress。有界离线 JSON 提案和完整
-        [独立审核 40 已封存](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-INDEPENDENT-STATUS-45.md)，
-        Low R01 的拒绝诊断计数约定仍须补充、审核和处置；尚未采纳或分配解码器/测试。
+      - [ ] C18a-SLEEP-JSON-CORE37：status: in-progress。有界离线 JSON 的
+        [契约与诊断约定已限定冻结](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-CONTRACT-FREEZE-52.md)。
+        独立审核 40/49 已完成；Low R01 仅在约定层处理，解码器/测试与资源资格尚未完成。
         不处理源码 schema/Gson、帧关联、NBT/日志或原生运行。
         - [x] C18a-SLEEP-JSON-REVIEW40：status: verified，仅候选的独立静态审核与实际证据封存。
           未发现 Critical/High/Medium 契约矛盾，不等于实现、资源资格、原生行为或 Gate 通过。
-        - [ ] C18a-SLEEP-JSON-DIAGNOSTICS43：status: in-progress。限定诊断约定的新增提案任务，
-          不重开输入、资源或时间上限，不改旧封存文件；独立复审与处置尚未完成。
-        - [ ] C18a-SLEEP-JSON-COUNTER44：status: in-progress。独立核对 Windows 自身进程峰值计数器。
-          最多三次有界探针；不测解码器、不提供 OS 硬分配或原生驱动运行权限。
+        - [x] C18a-SLEEP-JSON-DIAGNOSTICS43：status: verified，仅约定冻结及独立静态复审。
+          输入、资源与时间上限不变；不代表实际解码、诊断断言或 Gate 通过。
+        - [x] C18a-SLEEP-JSON-COUNTER44：status: verified，仅三次本机自身进程查询的测量评估。
+          退出后覆盖未由这三次查询证明；R49-01/U01/U02 及完整资源资格仍开放。
+        - [ ] C18a-SLEEP-JSON-TERMINAL50：status: in-progress。两次原始持有句柄的退出后查询已封存，
+          独立 55 审查已分配；未采纳平台辅助实现，不测解码器或提供 OS 硬分配权限。
+        - [ ] C18a-SLEEP-JSON-FUNCTIONAL53：status: ready。冻结提交后另行分配两个脚本的纯功能实现，
+          不接原生驱动；资源、独立实际源码审核及后续验收仍须分别执行。
       - [x] C18a-SLEEP-LOG-PROVENANCE38：status: verified，仅既有原生日志的独立静态来源审查。
         完整报告/发生记录已封存；五次注入式原生保存失败与二十六次直接事件拒绝分别记录。
         三条配方诊断归因、日志政策和 R-021 验收缺口仍开放；未重跑、抑制、降级或豁免错误。
