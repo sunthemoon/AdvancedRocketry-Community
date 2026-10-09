@@ -1,5 +1,9 @@
 # Passive observation source review checkpoint 07
 
+Historical checkpoint at Main 608f0436. The later
+[corrected-source disposition 08](SOURCE-REVIEW-STATUS-08.md) supersedes pending
+correction/review/test states below without changing original source/receipts.
+
 Date: 2026-10-09. Status: implemented-unverified; not integrated or runtime-ready.
 This is the narrow [source-only assignment](OBSERVATION-ASSIGNMENT-05.md), not
 implementation of the owner's [actual-sleep target](OWNER-DECISION-01.md).
