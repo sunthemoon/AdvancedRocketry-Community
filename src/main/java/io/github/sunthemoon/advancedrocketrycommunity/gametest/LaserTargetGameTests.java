@@ -55,6 +55,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class LaserTargetGameTests {
     private static RegistrationFixture registrationFixture;
+    private static WaitingOwnerFixture waitingOwnerFixture;
 
     private LaserTargetGameTests() {
     }
@@ -573,35 +574,189 @@ public final class LaserTargetGameTests {
         ServerLevel level = helper.getLevel();
         MinecraftServer server = level.getServer();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 2, 1));
-        level.setBlockAndUpdate(pos, ModBlocks.LASER_TARGET.get().defaultBlockState());
-        LaserTargetBlockEntity target = (LaserTargetBlockEntity) level.getBlockEntity(pos);
-        helper.assertTrue(target.assignOwner(UUID.randomUUID()), "The fixture owner was not assigned");
-        UUID id = target.deviceId().orElseThrow();
-        ServerPlayer newOwner = ConnectedTestPlayers.join(server, UUID.randomUUID(), "waitingNewOwner", level,
-                pos.east(3), new ArrayList<>());
-        helper.startSequence()
-                .thenExecuteAfter(25, () -> {
-                    helper.assertTrue(root().endpoint(id).isEmpty(), "Registered before the owner change");
-                    int result;
-                    try {
-                        result = server.getCommands().getDispatcher().execute("arce endgame device owner "
-                                + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " @a[name=waitingNewOwner]",
-                                server.createCommandSourceStack().withSuppressedOutput());
-                    } catch (CommandSyntaxException exception) {
-                        result = -1;
+        helper.assertTrue(waitingOwnerFixture == null, "A previous waiting-owner fixture was not closed");
+        helper.assertTrue(level.getBlockState(pos).isAir(), "The waiting-owner fixture position is not empty");
+        WaitingOwnerFixture fixture = new WaitingOwnerFixture(level, pos);
+        waitingOwnerFixture = fixture;
+        fixture.run(() -> {
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, fixture.stoppingListener);
+            try {
+                level.setBlockAndUpdate(pos, ModBlocks.LASER_TARGET.get().defaultBlockState());
+            } finally {
+                if (level.getBlockEntity(pos) instanceof LaserTargetBlockEntity target) {
+                    fixture.target = target;
+                }
+            }
+            helper.assertTrue(fixture.target != null, "No native target was placed: " + fixture.describe());
+            LaserTargetBlockEntity target = fixture.target;
+            helper.assertTrue(target.assignOwner(fixture.originalOwner), "Owner assignment failed: " + fixture.describe());
+            fixture.id = target.deviceId().orElseThrow();
+            helper.assertTrue(server.getPlayerList().getPlayer(fixture.newOwner) == null,
+                    "The fixture player UUID is already connected: " + fixture.describe());
+            try {
+                fixture.player = ConnectedTestPlayers.join(server, fixture.newOwner, "waitingNewOwner", level,
+                        pos.east(3), new ArrayList<>());
+            } finally {
+                fixture.player = server.getPlayerList().getPlayer(fixture.newOwner);
+            }
+            // Establish the waiting candidate and change its owner before this initiating call yields to native saves.
+            LaserTargetBlockEntity.serverTick(level, pos, level.getBlockState(pos), target);
+            fixture.unregisteredBeforeCommand = root().endpoint(fixture.id).isEmpty();
+            helper.assertTrue(fixture.unregisteredBeforeCommand && !target.endpointActive()
+                            && target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE
+                            && target.ownerId().filter(fixture.originalOwner::equals).isPresent()
+                            && level.getBlockEntity(pos) == target
+                            && server.getPlayerList().getPlayer(fixture.newOwner) == fixture.player,
+                    "The unregistered command prerequisite failed: " + fixture.describe());
+            fixture.commandTick = level.getGameTime();
+            fixture.commandAttempted = true;
+            try {
+                fixture.result = server.getCommands().getDispatcher().execute("arce endgame device owner "
+                        + pos.getX() + " " + pos.getY() + " " + pos.getZ() + " @a[name=waitingNewOwner]",
+                        server.createCommandSourceStack().withLevel(level).withSource(fixture.capture));
+            } catch (CommandSyntaxException exception) {
+                fixture.result = -1;
+                fixture.reply(exception.getMessage());
+            }
+            fixture.liveOwnerAfterCommand = target.ownerId().orElse(null);
+            fixture.rootOwnerAfterCommand = root().endpoint(fixture.id).map(EndpointRecord::owner).orElse(null);
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_OWNER_CHANGE_FIXTURE command {}", fixture.describe());
+            helper.assertTrue(fixture.result == 1 && fixture.newOwner.equals(fixture.liveOwnerAfterCommand),
+                    "The owner command did not assign the intended live owner: " + fixture.describe());
+            fixture.injectedSaveTick = level.getGameTime();
+            chunkSaved(level, pos); // Injected save event only; no native writer, disk or restart claim.
+            helper.onEachTick(() -> fixture.run(() -> {
+                var record = root().endpoint(fixture.id);
+                if (record.isEmpty()) {
+                    return;
+                }
+                EndpointRecord registered = record.orElseThrow();
+                helper.assertTrue(registered.owner().equals(fixture.newOwner),
+                        "The record did not register for the intended new owner: " + fixture.describe());
+                helper.assertTrue(registered.id().equals(fixture.id) && registered.kind().equals(LaserTargetBlockEntity.KIND)
+                                && registered.level().equals(level.dimension().location()) && registered.pos() == pos.asLong()
+                                && registered.state() == EndpointRecord.State.ACTIVE && level.getBlockEntity(pos) == target
+                                && target.deviceId().filter(fixture.id::equals).isPresent()
+                                && target.ownerId().filter(fixture.newOwner::equals).isPresent(),
+                        "The registered target identity changed: " + fixture.describe());
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_OWNER_CHANGE_FIXTURE registration {}", fixture.describe());
+                fixture.close();
+                helper.succeed();
+            }));
+        });
+    }
+
+    @AfterBatch(batch = "endgame_laser_target_owner_waiting")
+    public static void closeWaitingOwnerFixture(ServerLevel level) {
+        WaitingOwnerFixture fixture = waitingOwnerFixture;
+        if (fixture != null && fixture.level == level) {
+            try {
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_OWNER_CHANGE_FIXTURE batch_cleanup {}", fixture.describe());
+            } finally {
+                fixture.close();
+            }
+        }
+    }
+
+    /** One owned player/target; bounded command receipts, no save observer or shared-root cleanup. */
+    private static final class WaitingOwnerFixture {
+        private final ServerLevel level;
+        private final BlockPos pos;
+        private final UUID originalOwner = UUID.randomUUID();
+        private final UUID newOwner = UUID.randomUUID();
+        private final long placementTick;
+        private final List<String> replies = new ArrayList<>();
+        private final CommandSource capture = new CommandSource() {
+            @Override public void sendSystemMessage(net.minecraft.network.chat.Component message) { reply(message.getString()); }
+            @Override public boolean acceptsSuccess() { return true; }
+            @Override public boolean acceptsFailure() { return true; }
+            @Override public boolean shouldInformAdmins() { return false; }
+        };
+        private final Consumer<ServerStoppingEvent> stoppingListener = this::onStopping;
+        private LaserTargetBlockEntity target;
+        private ServerPlayer player;
+        private UUID id;
+        private UUID liveOwnerAfterCommand;
+        private UUID rootOwnerAfterCommand;
+        private long commandTick = -1L;
+        private long injectedSaveTick = -1L;
+        private int result = -1;
+        private int replyCount;
+        private boolean unregisteredBeforeCommand;
+        private boolean commandAttempted;
+        private boolean closed;
+        private Throwable firstFailure;
+
+        private WaitingOwnerFixture(ServerLevel level, BlockPos pos) {
+            this.level = level;
+            this.pos = pos.immutable();
+            placementTick = level.getGameTime();
+        }
+
+        private void reply(String message) {
+            replyCount++;
+            if (replies.size() < 4) {
+                String text = String.valueOf(message).replace('\n', ' ').replace('\r', ' ');
+                replies.add(text.substring(0, Math.min(text.length(), 256)));
+            }
+        }
+
+        private String describe() {
+            var currentRoot = EndgameRuntime.operational().flatMap(EndgameService::root);
+            var record = currentRoot.flatMap(root -> id == null ? java.util.Optional.<EndpointRecord>empty() : root.endpoint(id));
+            return "level=" + level.dimension().location() + " pos=" + pos.toShortString() + " id=" + id
+                    + " target_identity=" + System.identityHashCode(target) + " original_owner=" + originalOwner
+                    + " new_owner=" + newOwner + " placement_tick=" + placementTick + " tick=" + level.getGameTime()
+                    + " unregistered_before_command=" + unregisteredBeforeCommand + " command_attempted=" + commandAttempted
+                    + " command_tick=" + commandTick + " result=" + result + " reply_count=" + replyCount + " replies=" + replies
+                    + " live_after_command=" + liveOwnerAfterCommand + " root_after_command=" + rootOwnerAfterCommand
+                    + " live_owner=" + (target == null ? null : target.ownerId().orElse(null))
+                    + " root_available=" + currentRoot.isPresent() + " root_owner=" + record.map(EndpointRecord::owner).orElse(null)
+                    + " injected_save_tick=" + injectedSaveTick;
+        }
+
+        private void run(Runnable action) {
+            if (closed) { return; }
+            try {
+                action.run();
+            } catch (RuntimeException | Error failure) {
+                firstFailure = failure;
+                try {
+                    AdvancedRocketryCommunity.LOGGER.info("ARCE_OWNER_CHANGE_FIXTURE failure {}", describe());
+                } catch (RuntimeException | Error diagnosticFailure) {
+                    firstFailure.addSuppressed(diagnosticFailure);
+                }
+                try { close(); } catch (RuntimeException | Error cleanupFailure) { firstFailure.addSuppressed(cleanupFailure); }
+                throw failure;
+            }
+        }
+
+        private void close() {
+            if (closed) { return; }
+            closed = true; // Later scheduled callbacks cannot replace a failed prerequisite or succeed after it.
+            try {
+                if (player != null && level.getServer().getPlayerList().getPlayer(player.getUUID()) == player) {
+                    level.getServer().getPlayerList().remove(player);
+                }
+            } finally {
+                try {
+                    if (target != null && level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null
+                            && level.getBlockEntity(pos) == target) {
+                        level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
                     }
-                    helper.assertTrue(result == 1, "The owner command failed: " + result);
-                    // The save comes before the marker's next status check.
-                    chunkSaved(level, pos);
-                })
-                .thenWaitUntil(() -> helper.assertTrue(root().endpoint(id).isPresent(), "Not registered"))
-                .thenExecute(() -> {
-                    boolean newOwnerRecord = root().endpoint(id).orElseThrow().owner().equals(newOwner.getUUID());
-                    server.getPlayerList().remove(newOwner);
-                    level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-                    helper.assertTrue(newOwnerRecord, "The record registered for the old owner");
-                })
-                .thenSucceed();
+                } finally {
+                    try {
+                        MinecraftForge.EVENT_BUS.unregister(stoppingListener);
+                    } finally {
+                        if (waitingOwnerFixture == this) { waitingOwnerFixture = null; }
+                    }
+                }
+            }
+        }
+
+        private void onStopping(ServerStoppingEvent event) {
+            if (event.getServer() == level.getServer()) { close(); }
+        }
     }
 
     /**
