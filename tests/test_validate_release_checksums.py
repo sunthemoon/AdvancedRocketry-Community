@@ -324,6 +324,22 @@ class ChecksumInputBoundaryTests(unittest.TestCase):
         with self.assertRaisesRegex(bounded.ChecksumInputError, 'repository root'):
             session.target(self.root.parent / 'outside.txt')
 
+    def test_relative_depth_limit_is_independent_of_root_ancestors(self) -> None:
+        relative = Path(*(['d'] * (bounded.MAX_PATH_DEPTH - 1)), 'f')
+        path = self.root / relative
+        path.parent.mkdir(parents=True)
+        path.write_bytes(b'ordinary')
+        session = bounded.ChecksumInputs(self.root)
+        self.assertEqual(bounded.MAX_PATH_DEPTH, len(relative.parts))
+        self.assertGreater(len(path.parts), bounded.MAX_PATH_DEPTH)
+        self.assertEqual(b'ordinary', session.read(path, 8))
+        session.assert_stable()
+        with self.assertRaisesRegex(bounded.ChecksumInputError, 'byte/depth'):
+            session.target(relative / 'extra')
+        excessive_root = Path(self.root.anchor, *(['d'] * bounded.MAX_PATH_DEPTH))
+        with self.assertRaisesRegex(bounded.ChecksumInputError, 'root exceeds absolute depth'):
+            bounded.ChecksumInputs(excessive_root)
+
     def test_read_byte_and_session_boundaries(self) -> None:
         path = self.root / 'ordinary.txt'
         path.write_bytes(b'1234')

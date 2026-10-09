@@ -67,6 +67,8 @@ class ChecksumInputs:
         if '..' in root.parts:
             raise ChecksumInputError('Repository root must not contain traversal')
         self.root = root.absolute()
+        if len(self.root.parts) > MAX_PATH_DEPTH:
+            raise ChecksumInputError('Repository root exceeds absolute depth limit')
         self.deadline = time.monotonic() + INPUT_TIMEOUT_SECONDS
         self.total_bytes = 0
         self.directories: dict[Path, tuple[int, ...]] = {}
@@ -100,8 +102,6 @@ class ChecksumInputs:
     def inspect(self, path: Path, *, directory: bool = False,
                 missing: bool = False) -> os.stat_result | None:
         target = self.target(path)
-        if len(target.parts) > MAX_PATH_DEPTH:
-            raise ChecksumInputError('Absolute input path exceeds depth limit')
         current = Path(target.anchor)
         for index, part in enumerate((None, *target.parts[1:])):
             self.check_time()
