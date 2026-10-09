@@ -42,19 +42,19 @@ pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: 770b3134cae99ab603ccde610c3731a98d63f524
 pending_laser_owner_fixture_source_candidate: 0b02c513b573cf474690e8d0801152acebf8d692
-pending_laser_owner_fixture_qualification: ROOT_RUNNING_INDEPENDENT_STATIC_REVIEW
+pending_laser_owner_fixture_qualification: ROOT_PEER_NATIVE_PASS_STRICT_TIMEOUT_FINAL_REVIEW_PENDING
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
 tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
 native_tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
-latest_regression_target_commit: 770b3134cae99ab603ccde610c3731a98d63f524
-latest_regression_result: NATIVE_FAILED_STRICT_TIMEOUT_GATES_OPEN
-latest_regression_run: seal-spatial-boundary-root-20261009-04/native-01
+latest_regression_target_commit: 0b02c513b573cf474690e8d0801152acebf8d692
+latest_regression_result: NATIVE_PASSED_STRICT_TIMEOUT_FINAL_REVIEW_PENDING_GATES_OPEN
+latest_regression_run: laser-owner-fixture-root-20261009-05/native-01
 latest_regression_attempt: 1
-latest_regression_evidence: TWO_FAILED_FIXED_SOURCE_NATIVE_COHORTS_INDEPENDENT_SEALED
-latest_regression_observed_utc: 2026-10-09T13:22:39.182045Z
-actual_unit_rerun: seal-spatial-boundary-root-20261009-04/test-01.command.json
-actual_unit_rerun_observed_utc: 2026-10-09T13:15:28.040846Z
+latest_regression_evidence: ACTUAL_SUCCESSOR_SOURCE_ROOT_NATIVE_PASS_SEALED_PARENT_FAILURES_RETAINED
+latest_regression_observed_utc: 2026-10-09T14:11:43.011152Z
+actual_unit_rerun: laser-owner-fixture-root-20261009-05/test-01.command.json
+actual_unit_rerun_observed_utc: 2026-10-09T14:04:45.338567Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
 sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_INDEPENDENT_REVIEW_COMPLETE_RESOURCE_OPEN
@@ -63,20 +63,19 @@ last_updated: 2026-10-09
 
 ## Current development evidence
 
-The latest [selected-cell candidate checkpoint04](../work/v1.8.0-c18a-seal-detector/SPATIAL-VERIFICATION-04.md)
-is fixed 770b3134 in its isolated branch, not Main source integration. Root build
-and forced test each pass 2192 JUnit/381 XML; both DataGen/generated diffs pass.
-Native completes 597 tests but fails the existing waiting-owner LaserTarget case;
-logs retain 63 ERROR/0 FATAL per log, strict 180-second TIMEOUT. Independent04 is
-complete and sealed: its build/test each pass 2192/381, but its native597 run
-fails the hanging-layer world-item assertion and separately records a COMMON
-duplicate-table watcher exception. Item provenance and malformed-file producer
-remain unqualified; strict also times out. Root770 cleanup is partial with the
-final scratch launch refused; no retry. The separate one-file waiting-owner
-[candidate05](../work/v1.8.0-c18a-seal-detector/LASER-OWNER-VERIFICATION-05.md)
-is committed/pushed at 0b02c513 after actual-source review, not integrated.
-Fresh Root qualification is running; independent05 starts read-only review.
-Neither a production verdict nor native/resource/Gate pass is inferred.
+The latest [waiting-owner candidate05](../work/v1.8.0-c18a-seal-detector/LASER-OWNER-VERIFICATION-05.md)
+is committed/pushed at 0b02c513, not Main integration. Root forced build/test each
+pass 2192 JUnit/381 XML and both DataGen/generated diffs pass. All 597 required
+GameTests pass; exact command/registration receipts show the intended new owner.
+Logs retain 62 ERROR/0 FATAL per log, strict180 TIMEOUT/taskkill255 remain; later
+named-PID checks show absence, not successful historical tree termination.
+Independent05 own build/test, repeated DataGen and native pass; its stable final
+report/strict outcome remains pending. The two failed parent770 cohorts are
+retained in [checkpoint04](../work/v1.8.0-c18a-seal-detector/SPATIAL-VERIFICATION-04.md),
+with hanging-item provenance and COMMON malformed-file writer unresolved.
+Root04 refused scratch remains untouched; own05 outputs and old distinct run-data
+are cleaned once. Static strict diagnosis is pending. No production, resource,
+sleep/durability/restart or Gate acceptance is inferred from the automated pass.
 The earlier d57 regression below remains historical at d57, not the latest result.
 
 The [final observation test-source integration32](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)

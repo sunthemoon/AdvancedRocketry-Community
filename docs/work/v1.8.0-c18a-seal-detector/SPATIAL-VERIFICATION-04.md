@@ -35,7 +35,7 @@ use no-daemon/offline/no build-cache, with forced build/test/DataGen execution.
 | ledger-01 | exit 0; accepted-contract ledger validator PASS, 653 units; no delivery count change |
 | provenance-01 | exit 0 in 27.112 s |
 | whitespace-01 | exit 0 |
-| strict-01 | 180-second TIMEOUT, controlled owned child termination; not PASS |
+| strict-01 | 180-second TIMEOUT, one owned taskkill exits 255 with unsupported child; not PASS or successful whole-tree proof |
 
 The original build-02 files/helper remain unchanged. A distinct build-03 uses
 the native Windows executable path from the successful original build. The
@@ -115,6 +115,22 @@ author write release and Root actual diff/full-postimage review. Its
 [checkpoint05](LASER-OWNER-VERIFICATION-05.md) starts fresh fixed-source
 qualification. It does not repair the hanging-layer/config issue or rewrite
 these two failed 770 cohorts. Spatial and fixture candidates remain unintegrated.
+The new Root05 cohort now passes 2192 JUnit and all 597 required GameTests,
+strict still times out. Independent05's native also passes; stable final report
+and strict outcome remain pending. This does not change the two failed parent
+cohorts or close the provenance/config issues.
+
+Root04's [completed custody report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04/REPORT.md)
+is SHA-256 8c83e1bafee852481abc7afbfce863a0d9889eb0cecf1d3359596d49c96a661f,
+manifest eb1d194f68eafa193ec542b6a9d28f20a3a38ea4b34e7a497200f5012f193293:
+1223 covered /9876465 bytes, whole leaf 1225 /10118000 bytes. All hashes verified.
+Its final scratch remains an existing empty refused directory, not deleted.
+Later Root05 cleanup removes the distinct old run-data output only; sealed Root04
+files and the refused scratch are unchanged. Root04 strict termination transport
+returns 255, reports primary18100/child21932 success and child17320 unsupported;
+later read-only PID observation finds all three absent at 14:15:41 UTC. This
+does not retrospectively make that whole-tree termination successful or identify
+the silent validator's reached phase. Separate static diagnosis03 is pending.
 
 No detector source integration/full delivery, resource-window case, native sleep,
 dedicated/restart/V1/V2/survival or release acceptance. All v1.8 Required Gates
