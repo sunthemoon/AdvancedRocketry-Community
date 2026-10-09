@@ -1,8 +1,9 @@
 # C18b jackhammer isolated source qualification status
 
-Date: 2026-10-09. This is committed development status, not Main integration,
-item delivery, asset approval or release acceptance. Main's accepted development
-source regression remains the preceding detector cohort; the tool is isolated.
+Date: 2026-10-09. This is committed development status, not item delivery, asset
+approval or release acceptance. The tested tool source has
+[development Main integration](SOURCE-INTEGRATION-01.md); all original isolated
+cohorts and qualification limitations remain separately preserved.
 
 ## Original failed cohort
 
@@ -68,7 +69,8 @@ inventory Damage 18 then 19 after same-UUID native continuation. The
 scope, failures and cleanup limits. The fresh complete source reviewer also
 passes its build/test/DataGen and all 579 required native cases; its
 [complete sealed report](CORRECTED-REVIEW-STATUS-04.md) identifies no new
-change-required source finding. Main integration is pending. No complete item
+change-required source finding. Main integration is committed and normally pushed,
+with complete tested-source/build-input equivalence rather than a merge-SHA rerun. No complete item
 delivery is inferred.
 
 The [packaged driver assignment](PACKAGED-DRIVER-TASK-01.md) separately freezes

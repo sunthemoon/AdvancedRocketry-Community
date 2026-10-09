@@ -32,8 +32,15 @@ Root's separate read-only byte inspection establishes 103 CRLF endings /11,314
 actual bytes; only an LF-normalized representation is 11,211 bytes with reported
 hash 9eb4c5db35bcf12b29d6f2067cbd9db4444a26bdd21ebeffa873b8b2fa95c7b4.
 No sealed file is normalized or edited. The original notification discrepancy
-is preserved and a separate reviewer correction is requested; no receipt result
+is preserved; the [separate reviewer erratum](PACKAGED-MANIFEST-ERRATUM-01.zip)
+independently confirms the original writer hashes the pre-write LF string while
+default Windows text output adds CR bytes. All 103 entries reverify unchanged; no receipt result
 is manufactured from either text representation.
+
+Erratum archive: 9,240 compressed /24,905 uncompressed bytes, four entries.
+Archive SHA-256: f8c6befe5189c87131693107e6ca87a4dab8a0675e2a087406c91d5e1c56e055.
+Erratum SHA-256: 6e389bbe88c897221e2c508883fce937b2f876c29ab52ea928330bcf956ef5e7.
+Supplemental manifest: 8c074d9843c66d5bc9ae6e052f3ec6cec92e8513d3d7b3592e7c436e863c1c43.
 
 The reviewer's original library-count audit failed before a corrected actual
 enumeration verifies all 104 files; both attempts remain disclosed. Its one

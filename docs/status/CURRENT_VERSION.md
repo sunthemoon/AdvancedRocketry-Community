@@ -37,48 +37,47 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: b001316102d064545fb81d9f4f2141ae52931118
+latest_source_checkpoint: 80bbf16d9e76708b7e39c50d21b3cff1a66432ef
 pending_graph_source_candidate: ""
-tested_code_commit: 452fd2a0dc12895c2e2b955c80115457459888bb
-native_tested_code_commit: 452fd2a0dc12895c2e2b955c80115457459888bb
-latest_regression_target_commit: 452fd2a0dc12895c2e2b955c80115457459888bb
-latest_regression_result: NATIVE_PASS_STRICT_LINK_FAILURE_GATES_OPEN
-latest_regression_run: seal-admission-root-20261009-01/cohort-02
-latest_regression_attempt: 2
+tested_code_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
+native_tested_code_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
+latest_regression_target_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
+latest_regression_result: NATIVE_PASS_STRICT_TIMEOUT_GATES_OPEN
+latest_regression_run: jackhammer-root-20261009-01/native-04
+latest_regression_attempt: 4
 latest_regression_evidence: SEALED_ROOT_AND_INDEPENDENT_DEVELOPMENT_REGRESSION
-latest_regression_observed_utc: 2026-10-08T17:31:42.070196Z
-actual_unit_rerun: seal-admission-root-20261009-01/cohort-02/build.log
-actual_unit_rerun_observed_utc: 2026-10-08T17:15:05.092363Z
+latest_regression_observed_utc: 2026-10-09T02:57:20.031453Z
+actual_unit_rerun: jackhammer-root-20261009-01/build-04/command.log
+actual_unit_rerun_observed_utc: 2026-10-09T02:48:27.328362Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-09
 ```
 
 ## Current development evidence
 
-The [detector admission qualification](../work/v1.8.0-c18a-seal-detector/ADMISSION-VERIFICATION-03.md)
-is independently actual-source reviewed and integrated/normally pushed at
-`b001316102d064545fb81d9f4f2141ae52931118`. Actual tested source is 452fd2a0;
-complete src and seven Gradle inputs match, without rerunning the merge SHA.
-Preparation and corrective scope are published before their respective edits.
-The original Medium exceptional worker-cleanup finding is addressed only for
-retaining unresolved fixtures before cleanup, not automatic world recovery.
-The new main-source GameTest enters normal JARs; production behavior, IDs,
-assets and API JAR remain unchanged. No Claude is called.
+The [ordinary tool development integration](../work/v1.8.0-c18b-jackhammer/SOURCE-INTEGRATION-01.md)
+is normally merged/pushed at `80bbf16d9e76708b7e39c50d21b3cff1a66432ef` after
+complete independent actual-source and native-receipt reviews. Actual tested
+source remains 3b18a6bc; complete src, ten Gradle/consumer inputs and two provenance/
+plan blobs match the merge, without claiming a merge-SHA Gradle/native rerun.
+Root and fresh independent forced clean build/explicit test each execute 2,192
+JUnit /381 XML /zero failures/errors/skips; all 579 required GameTests pass.
+Twice forced DataGen leaves empty diffs. Strict is the unchanged 180-second
+TIMEOUT, not a passed link report. Native logs retain 62 unwaived ERROR headers /
+zero FATAL. Publication and API consumer pass; API artifact remains unchanged.
+Actual two-process native inventory continuation is independently receipt-audited,
+not independently launched: native logout saves Damage 18, next process loads it
+before ordinary use reaches 19. It is not online-stop-first-save, crash, preserved
+mined terrain/loot or real-client proof. Human asset, survival and full-item
+acceptance remain open. All original failed cohorts/setup/record corrections and
+owned cleanup limits remain in immutable evidence; no Claude is called.
 
-Root and independent corrected forced build/test each execute 2,183 actual
-JUnit /379 XML /zero failures, errors or skips; all 565 required GameTests pass.
-Repeated DataGen leaves empty diffs; first-run cache write counters are separately
-attributed. Strict validation retains 44 passing checks/one inherited link
-failure and each native log retains 62 unwaived ERROR headers/zero FATAL.
-Original independent narrative counter error is corrected by a separate erratum,
-not an edit to its immutable report. Original findings/setup failures remain
-distinct. Source evidence and the exact-preimage independent record review are
-sealed; compact review evidence accompanies the qualification record. No new
-scoped record finding is identified. The reviewer's native cleanup launcher is
-policy-denied before script loading: its unsealed temporary clone remains,
-excluded from the bounded manifest/archive, with no retry or Root takeover.
-The earlier interrupted record reviewer is not counted as completed. No
-records-only result substitutes for a new Gradle/native or full-item check.
+The preceding [detector admission qualification](../work/v1.8.0-c18a-seal-detector/ADMISSION-VERIFICATION-03.md)
+remains an integrated test slice. Its exceptional worker cleanup correction retains
+unresolved fixtures rather than recovering worlds automatically. Historical counts,
+strict failures, original/erratum records and policy-denied own temporary retention
+remain in the implementation log/evidence, not new current regression claims.
+The interrupted earlier record reviewer is not counted as completed.
 
 Previous [installed detector rule qualification](../work/v1.8.0-c18a-seal-detector/INSTALLED-RUNTIME-VERIFICATION-02.md)
 remains completed only as a test slice. Its Low preparation-log timing deviation
@@ -103,18 +102,16 @@ packages; they are not replaced or rebound to the newer detector commit.
 The ledger stays 186 PLANNED /154 REVIEW assets. C16-C19 and both full Medium
 physical prerequisites remain open. U1 is only narrowly measured; U1/U3-U7,
 O1/O2/O3, ADR-068 PROPOSED and R-021 OPEN remain. No owner policy response is
-recorded. Packaged/restart, prior-world, installed continuation, V1/V2,
+recorded for those hatch decisions. Full-slice packaged/restart, prior-world, installed continuation, V1/V2,
 progression, performance and all Required Gates are unfinished. No content
 delivery, release approval or completion of v1.8 is inferred from this slice.
 
-The next [ordinary jackhammer leaf](../work/v1.8.0-c18b-jackhammer/TASK-01.md)
-has [bounded adoption](../work/v1.8.0-c18b-jackhammer/ADOPTION-01.md) after fresh
-independent static numeric/data/config/visual review. The committed isolated
-[source qualification](../work/v1.8.0-c18b-jackhammer/SOURCE-STATUS-01.md) retains
-the original failed candidates. Corrective forced source/Root commands and all
-579 required native cases pass; Root's bounded two-process inventory continuation
-is independently receipt-audited. Final complete source sealing and a checksum-
-notification correction remain pending. No tool source has been integrated into Main.
+The [ordinary jackhammer leaf](../work/v1.8.0-c18b-jackhammer/TASK-01.md)
+has [bounded adoption](../work/v1.8.0-c18b-jackhammer/ADOPTION-01.md) and integrated
+[source qualification](../work/v1.8.0-c18b-jackhammer/SOURCE-STATUS-01.md).
+Its checksum-notification discrepancy is corrected by a separate immutable erratum,
+without altering the original CRLF manifest or any receipt. Full tool acceptance,
+above-tier/mod/native permission coverage and COMMON client synchronization are open.
 Titanium/motor survival progression remains unfinished. The owner has selected
 [actual off-world sleep](../work/v1.8.0-c18a-sleep/OWNER-DECISION-01.md), conditional
 on separate freezing/review of dimension, spawn-point and time behavior before

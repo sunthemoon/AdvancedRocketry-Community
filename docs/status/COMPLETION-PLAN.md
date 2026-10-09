@@ -272,12 +272,14 @@ C17b candidate03 的独立审核已解决旧版 Medium
 契约有条件接受；辅助氧气储量、有限节省、装备工具、独立地面勘测、首次事件、
 科技树、声音/模型/GUI 等仍须实现。D4 未证明，不推断接受。
 
-- [~] [C18b-JACKHAMMER-01](../work/v1.8.0-c18b-jackhammer/TASK-01.md)：status: implementing。
+- [~] [C18b-JACKHAMMER-01](../work/v1.8.0-c18b-jackhammer/TASK-01.md)：status: implemented-unverified。
   原生单方块钻锤、钛棒修理、配置禁用和配方/原创开发资源已完成独立静态契约审核，
   [受限采纳](../work/v1.8.0-c18b-jackhammer/ADOPTION-01.md)后由 Root 在独立分支编写并提交；
   [源码资格记录](../work/v1.8.0-c18b-jackhammer/SOURCE-STATUS-01.md)保留原始失败；Root 与独立修订源码
   的构建、数据生成及原生测试已通过，Root 的两次专服原生库存延续已由独立记录审计核实。
-  完整源码报告封存及记录更正尚待完成，未合入 Main 或交付完整工具。
+  [完整源码报告](../work/v1.8.0-c18b-jackhammer/CORRECTED-REVIEW-STATUS-04.md)与独立通知更正已封存，
+  [开发源码已合入并正常推送](../work/v1.8.0-c18b-jackhammer/SOURCE-INTEGRATION-01.md)至 `80bbf16d`；
+  合并源码与被测提交相同，不声称在合并 SHA 上重跑。严格校验仍超时、真实客户端和完整工具未验收。
   钛初始来源仍依赖未完成的 C16b 电弧炉，不以创造给予材料替代生存获取。
   用户已选择[外星真正睡眠](../work/v1.8.0-c18a-sleep/OWNER-DECISION-01.md)，条件是实施前另行冻结并审核
   维度、出生点和时间行为；[只读契约提案](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md)已封存，
