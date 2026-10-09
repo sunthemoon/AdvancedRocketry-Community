@@ -356,7 +356,10 @@ C17b candidate03 的独立审核已解决旧版 Medium
         - [ ] C18a-SLEEP-JSON-RESOURCE61：status: in-progress，仅固定 12 类有限资源资格协议准备。
           修订 02 的整叶 4 MiB 约定及独立 64 静态复核已完成；12 类/16 次调用只核对静态算式。
           traced 包含范围的 Medium 与历史采集器 drain 截止的 Low 保留，未运行资源测试。
-          尚未采用 counter/helper、实现执行器或运行解码器资源测量；完整约定和预算不变。
+          用户已[选择明确双窗口](../work/v1.8.0-c18a-sleep/OWNER-DECISION-07.md)：启动 tracing 至退出前最终采样，
+          加原始句柄退出后的原生生命周期峰值；各限 256 MiB，不声称全生命周期 traced。
+          [ADR-069 修订提案](../decisions/ADR-069-V180-OFFLINE-JSON-MEMORY-WINDOWS.md)待独立审核和明确采纳，
+          尚未采用 counter/helper、实现执行器或运行解码器资源测量；数值预算不变。
       - [x] C18a-SLEEP-LOG-PROVENANCE38：status: verified，仅既有原生日志的独立静态来源审查。
         完整报告/发生记录已封存；五次注入式原生保存失败与二十六次直接事件拒绝分别记录。
         三条配方诊断归因、日志政策和 R-021 验收缺口仍开放；未重跑、抑制、降级或豁免错误。
