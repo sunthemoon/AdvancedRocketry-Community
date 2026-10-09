@@ -14,6 +14,8 @@ from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
+from tests.manual_evidence_fixture import ManualRepositoryFixtureMixin
+
 from scripts.collect_v002_manual_evidence import (
     _profile_inventory_sha256,
     APPLICABILITY,
@@ -109,7 +111,7 @@ def make_png(
     return b"\x89PNG\r\n\x1a\n" + b"".join(chunks)
 
 
-class ManualEvidenceTests(unittest.TestCase):
+class ManualEvidenceTests(ManualRepositoryFixtureMixin, unittest.TestCase):
     artifact_name = "advancedrocketry-community-1.20.1-0.0.2-dev.jar"
 
     def setUp(self) -> None:
@@ -138,66 +140,9 @@ class ManualEvidenceTests(unittest.TestCase):
         self.root = Path(temporary.name)
         self.build = self.root / "build"
         self.build.mkdir()
-        (self.root / ".gitattributes").write_bytes(b"* text eol=lf\n")
-        (self.root / "README.md").write_bytes(
-            b"# Test repository\n\nBound manual evidence fixture.\n"
-        )
-        (self.root / ".gitignore").write_bytes(b"/build/\n")
         self.artifact_content = b"final-distributable-v002"
         self.artifact_hash = hashlib.sha256(self.artifact_content).hexdigest()
-        manifest = self.root / CONTENT_MANIFEST
-        manifest.parent.mkdir(parents=True)
-        manifest.write_text(
-            json.dumps(
-                {
-                    "schema_version": 1,
-                    "artifact": self.artifact_name,
-                    "artifact_sha256": self.artifact_hash,
-                    "entry_count": 0,
-                    "entries": [],
-                },
-                indent=2,
-                sort_keys=True,
-            )
-            + "\n",
-            encoding="utf-8",
-            newline="\n",
-        )
-        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
-        subprocess.run(
-            [
-                "git",
-                "add",
-                ".gitattributes",
-                ".gitignore",
-                "README.md",
-                CONTENT_MANIFEST.as_posix(),
-            ],
-            cwd=self.root,
-            check=True,
-        )
-        subprocess.run(
-            [
-                "git",
-                "-c",
-                "user.name=Evidence Fixture",
-                "-c",
-                "user.email=evidence@example.invalid",
-                "commit",
-                "-q",
-                "-m",
-                "test fixture",
-            ],
-            cwd=self.root,
-            check=True,
-        )
-        self.source_commit = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=self.root,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
+        self.source_commit = self.copy_repository_fixture(self.root)
         self.jar_paths: dict[str, Path] = {}
         for role in ("source", "server", "client"):
             role_root = self.build / role
