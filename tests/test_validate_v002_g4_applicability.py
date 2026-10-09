@@ -123,6 +123,35 @@ class G4ApplicabilityTests(unittest.TestCase):
             "ADR-005 must contain exactly two machine-readable JSON blocks", errors
         )
 
+    def test_metadata_status_rejects_nonstring_json_values(self) -> None:
+        for value in ([], {}, None, True, 1, 1.5):
+            with self.subTest(value=value):
+                metadata, acceptance = self.pending_records()
+                metadata["status"] = value
+                errors, _ = self.validate(metadata, acceptance)
+                self.assertTrue(any("metadata status is invalid" in item for item in errors), errors)
+
+    def test_case_decision_rejects_nonstring_json_values(self) -> None:
+        for case_id in MODULE.CASE_IDS:
+            for value in ([], {}, None, True, 1, 1.5):
+                with self.subTest(case_id=case_id, value=value):
+                    metadata, acceptance = self.pending_records()
+                    acceptance[case_id]["decision"] = value
+                    errors, _ = self.validate(metadata, acceptance)
+                    self.assertIn(f"ADR acceptance {case_id} decision is invalid", errors)
+
+    def test_parser_recursion_in_either_record_is_a_validation_error(self) -> None:
+        metadata, acceptance = self.pending_records()
+        deep_record = '{"nested":' + '[' * 3000 + '0' + ']' * 3000 + '}'
+        for position in (0, 1):
+            with self.subTest(position=position):
+                payloads = [json.dumps(metadata), json.dumps(acceptance)]
+                payloads[position] = deep_record
+                text = '\n'.join(f'```json\n{payload}\n```' for payload in payloads)
+                errors, details = MODULE.validate_adr_text(text)
+                self.assertTrue(any(item.startswith("invalid ADR ") for item in errors), errors)
+                self.assertEqual({}, details)
+
     def test_pending_decision_rejects_reviewer_metadata(self) -> None:
         _, acceptance = self.pending_records()
         acceptance[MODULE.CASE_IDS[0]]["reviewed_by"] = "someone"
