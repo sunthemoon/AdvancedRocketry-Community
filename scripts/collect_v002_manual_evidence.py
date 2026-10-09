@@ -30,6 +30,8 @@ if __package__:
     )
     from .validate_bootstrap_provenance import (
         APPROVED_RECORD_STATUS,
+        MAX_SOURCE_BLOB_BYTES,
+        read_git_blobs_at_commit,
         validate_bootstrap_provenance_at_commit,
     )
     from .validate_v002_final_g0_review import (
@@ -47,6 +49,8 @@ else:
     )
     from validate_bootstrap_provenance import (
         APPROVED_RECORD_STATUS,
+        MAX_SOURCE_BLOB_BYTES,
+        read_git_blobs_at_commit,
         validate_bootstrap_provenance_at_commit,
     )
     from validate_v002_final_g0_review import (
@@ -1240,14 +1244,9 @@ def _git_text(repository_root: Path, *arguments: str) -> str:
 
 
 def _git_blob(repository_root: Path, commit: str, relative: str) -> tuple[str, bytes]:
-    blob = _git_text(repository_root, "rev-parse", f"{commit}:{relative}")
-    if re.fullmatch(r"[0-9a-f]{40,64}", blob) is None:
-        raise ValueError(f"git returned an invalid blob id for {relative}")
-    completed = _git(repository_root, "show", f"{commit}:{relative}", text=False)
-    if completed.returncode != 0:
-        stderr = completed.stderr.decode("utf-8", errors="replace").strip()
-        raise ValueError(f"cannot read {relative} from source commit {commit}: {stderr}")
-    return blob, completed.stdout
+    return read_git_blobs_at_commit(
+        repository_root, commit, (relative,), MAX_SOURCE_BLOB_BYTES
+    )[relative]
 
 
 def load_content_manifest_at_commit(
@@ -1294,9 +1293,13 @@ def build_source_revision(
                 f"worktree outside ignored build inputs; first finding: {first}"
             )
 
+    paths = ("README.md", CONTENT_MANIFEST.as_posix())
+    source_blobs = read_git_blobs_at_commit(
+        repository_root, source_commit, paths, MAX_SOURCE_BLOB_BYTES
+    )
     files: dict[str, dict[str, Any]] = {}
-    for relative in ("README.md", CONTENT_MANIFEST.as_posix()):
-        blob_id, payload = _git_blob(repository_root, source_commit, relative)
+    for relative in paths:
+        blob_id, payload = source_blobs[relative]
         if require_head:
             working_path = repository_root.resolve() / relative
             if _is_link(working_path) or not working_path.is_file():

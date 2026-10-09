@@ -19,7 +19,7 @@ import threading
 import unicodedata
 from datetime import date
 from pathlib import Path, PurePosixPath, PureWindowsPath
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -201,6 +201,7 @@ MAX_SELECTED_RESOURCE_RECORD_BYTES = 2_048
 MAX_WORKTREE_RESOURCE_DIRECTORIES = 512
 GIT_STREAM_CHUNK_BYTES = 64 * 1024
 MAX_PROVENANCE_BLOB_BYTES = 32 * 1024 * 1024
+MAX_SOURCE_BLOB_BYTES = 16 * 1024 * 1024
 MAX_PROVENANCE_PATH_BYTES = 512
 MAX_PROVENANCE_PATH_DEPTH = 32
 MAX_PROVENANCE_PATH_COMPONENT_BYTES = 255
@@ -936,12 +937,13 @@ class _GitObjectSession:
 
 
 _git_object_scope = threading.local()
+_ObjectReadResult = TypeVar("_ObjectReadResult")
 
 
 def _with_git_object_session(
     repository_root: Path,
-    operation: Callable[[], tuple[list[str], dict[str, int | str]]],
-) -> tuple[list[str], dict[str, int | str]]:
+    operation: Callable[[], tuple[list[str], _ObjectReadResult]],
+) -> tuple[list[str], _ObjectReadResult]:
     previous = getattr(_git_object_scope, "session", None)
     session = _GitObjectSession(repository_root)
     _git_object_scope.session = session
@@ -952,6 +954,68 @@ def _with_git_object_session(
         session.close()
     errors.extend(message for message in session.failures if message not in errors)
     return errors, details
+
+
+def read_git_blobs_at_commit(
+    repository_root: Path,
+    commit: str,
+    paths: tuple[str, ...],
+    maximum_size: int,
+) -> dict[str, tuple[str, bytes]]:
+    """Read a bounded group of regular blobs, admitting results only after close.
+
+    Every path re-verifies its commit/tree/object bytes; this is not a cache.
+    Separate callers and validation phases always receive separate sessions.
+    """
+    if not isinstance(commit, str) or COMMIT.fullmatch(commit) is None:
+        raise ValueError("source commit must be a lowercase 40-character commit")
+    if (
+        not isinstance(paths, tuple)
+        or not 1 <= len(paths) <= 16
+        or any(not isinstance(path, str) for path in paths)
+        or len(set(paths)) != len(paths)
+    ):
+        raise ValueError("source blob group must contain 1 to 16 unique paths")
+    if (
+        not isinstance(maximum_size, int)
+        or isinstance(maximum_size, bool)
+        or not 1 <= maximum_size <= MAX_SOURCE_BLOB_BYTES
+    ):
+        raise ValueError("source blob size bound must be within the source limit")
+    for path in paths:
+        problem = relative_path_error(path)
+        if problem:
+            raise ValueError(f"unsafe source blob path {path!r}: {problem}")
+    repository_root = repository_root.resolve()
+
+    def read_group() -> tuple[list[str], dict[str, tuple[str, bytes]]]:
+        errors: list[str] = []
+        blobs: dict[str, tuple[str, bytes]] = {}
+        for path in paths:
+            label = f"source-bound {path}"
+            valid, entry = _git_tree_entry(
+                repository_root, commit, path, label, errors
+            )
+            if not valid:
+                continue
+            if entry is None:
+                errors.append(f"{label} is missing from Git commit {commit}")
+                continue
+            mode, object_type, oid = entry
+            if mode not in GIT_REGULAR_FILE_MODES or object_type != "blob":
+                errors.append(f"{label} must be a regular Git blob")
+                continue
+            payload = _read_verified_git_object(
+                repository_root, oid, "blob", maximum_size, label, errors
+            )
+            if payload is not None:
+                blobs[path] = oid, payload
+        return errors, blobs
+
+    errors, blobs = _with_git_object_session(repository_root, read_group)
+    if errors:
+        raise ValueError("; ".join(errors))
+    return blobs
 
 
 def _read_verified_git_object(
