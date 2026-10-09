@@ -914,6 +914,11 @@ with zero PLANNED and separately records every asset's terminal handling.
 S1 does not imply S2, V0 does not imply V1/V2, and a draft never satisfies G0-G9.
 Full campaign remains scheduled under ADR-018; no existing Gate is checked here.
 
+The offline JSON resource traced-window interpretation is separately amended by
+[ADR-069](ADR-069-V180-OFFLINE-JSON-MEMORY-WINDOWS.md). Its owner-selected,
+independently reviewed dual windows do not accept a helper or resource result,
+change numeric ceilings or satisfy these runtime/version Gates.
+
 ## 9. Decision status and integration dependencies
 
 1. **D1 OWNER-CONFIRMED**: keep the active 2,000-oxygen API/HUD with finite

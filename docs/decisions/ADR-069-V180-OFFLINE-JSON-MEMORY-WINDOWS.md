@@ -1,7 +1,7 @@
 # ADR-069 - v1.8 offline JSON resource measurement windows
 
 ```yaml
-status: PROPOSED
+status: ACCEPTED
 revision: 1
 date: 2026-10-09
 owner: sunthemoon
@@ -9,7 +9,8 @@ deciders: [sunthemoon]
 target_version: v1.8.0
 slice: C18a-SLEEP-JSON-RESOURCE61
 amends: [ADR-066, OFFLINE-CORE-CONTRACT-FREEZE-52]
-acceptance_basis: ""
+accepted_at: 2026-10-09
+acceptance_basis: actual owner decision07 and complete independent69 static review; normative window amendment only, resource execution and Gates remain open
 ```
 
 ## Context and decision authority
@@ -26,9 +27,11 @@ Independent64's Medium R64-01 records that startup tracing followed by a final
 pre-exit sample cannot establish birth-to-exit traced allocations. Existing
 50/55 normal-exit native observations do not extend that traced window. The
 original requirements and reports remain immutable historical inputs. This
-amendment is not normative until separately reviewed and explicitly adopted.
+amendment was not normative at proposal. The separate
+[adoption disposition69](../work/v1.8.0-c18a-sleep/MEMORY-WINDOW-ADOPTION-69.md)
+records completed independent review and explicit limited adoption.
 
-## Proposed normative amendment
+## Normative amendment
 
 Each of at most twelve fresh resource-case processes must supply BOTH of the
 following independent observations. Either missing, indeterminate or over-limit

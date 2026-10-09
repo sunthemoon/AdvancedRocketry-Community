@@ -17,7 +17,8 @@ This selects the two explicitly different measurement windows and the stated
 ADR amendment/independent review procedure. The recommendation suffix is part
 of the actual answer, not evidence inferred from a UI default.
 [ADR-069](../../decisions/ADR-069-V180-OFFLINE-JSON-MEMORY-WINDOWS.md) records the
-precise proposed normative amendment. It is not yet accepted or implemented.
+precise normative amendment. [Adoption69](MEMORY-WINDOW-ADOPTION-69.md) records
+later completed independent review and limited contract adoption, not implementation.
 
 Both peaks retain independent 268435456-byte ceilings. The traced observation
 excludes allocations before tracing starts and after the final pre-exit sample;

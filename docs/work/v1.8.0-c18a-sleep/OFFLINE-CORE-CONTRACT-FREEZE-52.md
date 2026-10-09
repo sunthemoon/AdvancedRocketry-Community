@@ -6,6 +6,12 @@ observation source remains d57ecda1, with no production sleep/dimension/air/
 spawn/time/API/schema change. This is a narrow prerequisite, not whole-driver
 adoption or evidence that any observation or D1 runtime row has executed.
 
+Later [adoption69](MEMORY-WINDOW-ADOPTION-69.md) expressly amends only the traced
+measurement-window interpretation under ADR-069 after actual owner decision07
+and independent review. The original requirements below remain historical;
+numeric limits and all executable/resource/runtime qualification remain required.
+The windowed traced peak is not a complete birth-to-exit traced inventory.
+
 ## Normative documents and independent review
 
 The complete 271-line /19096-byte proposal in

@@ -1,0 +1,5 @@
+# Preserve the independently hashed evidence bytes, including original TSV line endings.
+REPORT.md -text
+INPUTS.tsv binary -eol
+COMMANDS.md -text
+SHA256SUMS.txt binary -eol

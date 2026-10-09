@@ -112,8 +112,10 @@ The [actual resource-window decision07](../work/v1.8.0-c18a-sleep/OWNER-DECISION
 selects startup-enabled tracing through a final pre-exit sample and an original-handle
 post-exit native lifetime peak, each <=268435456 bytes. Traced prefix/tail exclusions
 remain explicit. [ADR-069](../decisions/ADR-069-V180-OFFLINE-JSON-MEMORY-WINDOWS.md)
-is PROPOSED for independent review, not normative adoption or resource acceptance.
-The policy choice is answered; executable/helper/deadline/case qualification remains open.
+is independently reviewed and [limitedly adopted](../work/v1.8.0-c18a-sleep/MEMORY-WINDOW-ADOPTION-69.md)
+as a normative window amendment, not a helper or resource acceptance. R64-01's
+policy interpretation is answered explicitly; executable/helper/deadline/case
+qualification and R64-02 remain open.
 The [actual Space decision05](../work/v1.8.0-c18a-sleep/OWNER-DECISION-05.md)
 answers question04: supplied/sealed station-exterior rooms are eligible;
 in-region live VISIT, unavailable-registry rejection and unchanged drift/spawn
