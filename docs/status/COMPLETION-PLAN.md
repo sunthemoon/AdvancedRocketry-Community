@@ -296,9 +296,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
   [维度连带行为的用户决定](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)待答。
   依赖 M1、M2、B1、D1 的证明和冻结；原 S01-S21/R01-R02 及新增资格矩阵均未执行。
   不做出生点迁移、全局跳夜或直接躺下的显示替代；尚未改动策略或分配睡眠实现源码。
-  - [ ] C18a-SLEEP-B1-OBS01：status: planned。
+  - [ ] C18a-SLEEP-B1-OBS01：status: in-progress，仅测试源码分配。
     [测试专用观测提案](../work/v1.8.0-c18a-sleep/PROPOSED-OBSERVATION-01.md)仅观察主世界
-    原生 Java 调用；嵌入连接不是真实 TCP 客户端。实施依赖独立提案审核和明确的隔离分配，
+    原生 Java 调用；嵌入连接不是真实 TCP 客户端。
+    [独立提案审核](../work/v1.8.0-c18a-sleep/OBSERVATION-REVIEW-STATUS-04.md)已完成，
+    [二十项首阶段源码分配](../work/v1.8.0-c18a-sleep/OBSERVATION-ASSIGNMENT-05.md)仅允许隔离测试适配类与编译，
     验证需真实命令、原生字段/帧记录及独立实际差异审核；不关闭 B1 或改动生产睡眠策略。
 
 - [~] C18a-THERMITE-01：status: implemented-unverified。

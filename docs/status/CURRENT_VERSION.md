@@ -139,7 +139,10 @@ The [complete task-03 review](../work/v1.8.0-c18a-sleep/BOUNDARY-REVIEW-STATUS-0
 preserves these prerequisites and adds R1 callback-argument/inherited-receiver
 qualification within B1. A separate
 [test-only observation proposal](../work/v1.8.0-c18a-sleep/PROPOSED-OBSERVATION-01.md)
-is independently reviewed before a finite assignment. No off-world dimension, spawn or time
+has [complete independent review](../work/v1.8.0-c18a-sleep/OBSERVATION-REVIEW-STATUS-04.md)
+and a [narrow source-only assignment](../work/v1.8.0-c18a-sleep/OBSERVATION-ASSIGNMENT-05.md)
+for two opt-in adapter fixtures/twenty cases. No game/driver or actual off-world
+sleep is assigned. No off-world dimension, spawn or time
 implementation is authorized by that review or the still-unanswered question.
 
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior
