@@ -305,6 +305,16 @@ class SleepObservationJsonCoreTests(unittest.TestCase):
                 self.assertEqual(result.metrics.max_number_bytes, len(lexeme))
         self.assertEqual(self.accepted(b'{"x":"NaN Infinity"}').value["x"], "NaN Infinity")
 
+    def test_lexical_limit_huge_exponent_remains_inert(self):
+        lexeme = b"7E+" + b"8" * 61
+        self.assertEqual(len(lexeme), 64)
+        raw = b'{"v":' + lexeme + b"}"
+        self.assertEqual(len(raw), 70)
+        result = self.accepted(raw)
+        self.assertEqual(result.value, {"v": core.JsonNumber("7E+" + "8" * 61, 5, 69)})
+        self.assertNotIsInstance(result.value["v"], (int, float, bool))
+        self.metrics(result, 70, 70, 2, 1, 1, 1, 64)
+
     def test_number_grammar_prefixes_and_bound_precedence(self):
         for lexeme, prefix in ((b"-", 1), (b"01", 1), (b"1.", 2), (b"1e", 2),
                                (b"1e+", 3), (b"1e-X", 3), (b"1X", 1),
@@ -395,14 +405,23 @@ class SleepObservationJsonCoreTests(unittest.TestCase):
             with self.assertRaises(core._Stop) as stopped:
                 scanner.reserve_name(frame)
         self.assertEqual(stopped.exception.error.code, "OBJECT_NAMES")
+        self.assertEqual(stopped.exception.error, core.DecodeError("OBJECT_NAMES", 0, (), None,
+                                                                  "object_names", 64, 65))
+        self.assertEqual(scanner.metrics(), core.DecodeMetrics(3, 0, 0, 65536, 0, 0, 0))
         self.assertEqual((scanner.names, frame.ordinal), (65536, 64))
         scanner.nodes = 65536
         scanner.stack = [core._Frame([], ()) for _ in range(64)]
+        stack_before = tuple(scanner.stack)
         with patch.object(core, "_monotonic_ns", return_value=100):
             with self.assertRaises(core._Stop) as stopped:
                 scanner.reserve_value(True)
         self.assertEqual(stopped.exception.error.code, "NODES")
+        self.assertEqual(stopped.exception.error, core.DecodeError("NODES", 0, (), None,
+                                                                  "nodes", 65536, 65537))
+        self.assertEqual(scanner.metrics(), core.DecodeMetrics(3, 0, 65536, 65536, 0, 0, 0))
         self.assertEqual((scanner.nodes, scanner.depth), (65536, 0))
+        self.assertEqual(len(scanner.stack), 64)
+        self.assertTrue(all(after is before for after, before in zip(scanner.stack, stack_before)))
 
     def test_nested_locations_do_not_retain_outer_name_span(self):
         self.refused(b'{"outer":[{"inner":}]}', "SYNTAX", 19, (0, 0, 0), (11, 18))
