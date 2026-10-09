@@ -181,6 +181,8 @@ public final class SleepBoundaryObservationFixture {
             boolean night = index >= 4;
             BlockPos target = index < 8 && (index & 2) != 0 ? FOOT : HEAD;
             trace.begin(index, observing);
+            trace.route(index == 10 || index == 11 || index == 12 || index == 19 ? "public native setRespawnPosition" : "public native handleUseItemOn",
+                    index >= 8 ? NAMES.get(index) : "observer off/on pair");
             Control control = index >= 13 && index <= 17 ? new Control(this, index) : null;
             boolean listener = false, intervention = false, success = false;
             try {
@@ -302,25 +304,34 @@ public final class SleepBoundaryObservationFixture {
             ownedListeners.clear(); trace.end();
             for (Actor actor : actors) {
                 if (actor == null) { continue; }
-                success &= cleanup("owned_native_wake", () -> {
+                String actorSuffix = "_" + actor.player.getUUID();
+                success &= cleanup("owned_native_wake" + actorSuffix, () -> {
                     if (actor.player.isSleeping()) { trace.action("teardown_native_owned_wake", true, () -> actor.player.stopSleepInBed(true, false)); }
                 });
-                success &= cleanup("owned_native_spawn_restore", () -> {
+                success &= cleanup("owned_native_spawn_restore" + actorSuffix, () -> {
                     if (actor.loadedSpawn != null) {
                         trace.action("teardown_fixture_restore_loaded_spawn", true,
                                 () -> actor.player.setRespawnPosition(actor.loadedDimension, actor.loadedSpawn.pos(),
                                         actor.loadedSpawn.angle(), actor.loadedSpawn.forced(), false));
+                        require(java.util.Objects.equals(actor.player.getRespawnPosition(), actor.loadedSpawn.pos())
+                                && actor.player.getRespawnDimension() == actor.loadedDimension
+                                && Float.floatToRawIntBits(actor.player.getRespawnAngle()) == Float.floatToRawIntBits(actor.loadedSpawn.angle())
+                                && actor.player.isRespawnForced() == actor.loadedSpawn.forced(), "Native loaded Spawn fixture fields not restored");
                     }
                 });
-                success &= cleanup("native_remove_logout_save", () -> {
+                success &= cleanup("native_remove_logout_save" + actorSuffix, () -> {
                     var registered = server.getPlayerList().getPlayer(actor.player.getUUID());
                     boolean listed = server.getPlayerList().getPlayers().stream().anyMatch(value -> value == actor.player);
                     require(registered == null || registered == actor.player, "Cleanup will not remove an unowned UUID occupant");
-                    if (registered == actor.player || listed) { server.getPlayerList().remove(actor.player); }
+                    if (registered == actor.player || listed) {
+                        trace.lifecycle(object("stage", "native_logout_save_input", "actor", trace.token(actor.player),
+                                "uuid", actor.player.getUUID().toString(), "spawnGetterProjection", SleepBoundaryTrace.spawn(actor.player)));
+                        server.getPlayerList().remove(actor.player);
+                    }
                     require(server.getPlayerList().getPlayer(actor.player.getUUID()) != actor.player
                             && level.players().stream().noneMatch(value -> value == actor.player), "Own actor remains registered after native removal");
                 });
-                success &= cleanup("own_channel_close_release", actor.channel::finishAndReleaseAll);
+                success &= cleanup("own_channel_close_release" + actorSuffix, actor.channel::finishAndReleaseAll);
             }
             for (var entry : cells.entrySet()) {
                 success &= cleanup("restore_cell_" + entry.getKey().toShortString(), () -> {
@@ -372,7 +383,8 @@ public final class SleepBoundaryObservationFixture {
                     if (packet instanceof ClientboundPlayerPositionPacket position) { actualPositionId = position.getId(); }
                     if (packet instanceof ClientboundSystemChatPacket chat && replies++ < 16) {
                         String json = Component.Serializer.toJson(chat.content());
-                        if (json.length() <= 2048) { trace.output(object("actor", trace.token(player), "systemChat", json, "overlay", chat.overlay())); }
+                        if (json.length() <= 2048) { trace.output(object("actor", trace.token(player), "systemChat", json, "overlay", chat.overlay(),
+                                "phase", acknowledge ? "fixture_preparation_before_public_ack" : "post_action_case_teardown")); }
                         else { trace.incomplete("owned native system chat size cap"); }
                     }
                 } finally { ReferenceCountUtil.release(packet); }

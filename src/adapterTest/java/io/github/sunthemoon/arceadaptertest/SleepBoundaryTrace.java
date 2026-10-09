@@ -47,6 +47,7 @@ public final class SleepBoundaryTrace {
     private int events, caseEvents;
     int depth;
     String context = "native_action";
+    private String route = "none", control = "none";
 
     SleepBoundaryTrace(List<String> names) {
         root.add("cases", rows); root.add("lifecycle", new JsonArray());
@@ -79,7 +80,11 @@ public final class SleepBoundaryTrace {
         current.addProperty("observerReceiver", token(this));
     }
 
-    void end() { enabled = false; failOnce = false; depth = 0; context = "native_action"; current = null; }
+    void route(String declaredRoute, String declaredControl) {
+        route = declaredRoute; control = declaredControl;
+        current.addProperty("declaredRoute", route); current.addProperty("declaredControl", control);
+    }
+    void end() { enabled = false; failOnce = false; depth = 0; context = "native_action"; route = "none"; control = "none"; current = null; }
     void failureIntervention() { failOnce = true; }
     void status(String status) { current.addProperty("status", status); }
     void note(String key, JsonElement value) { append(current, "preparation", object("kind", key, "value", value)); }
@@ -132,6 +137,7 @@ public final class SleepBoundaryTrace {
                         "actor", token(event.getEntity()), "level", token(event.getEntity().level()),
                         "spawnLevel", event.getSpawnLevel().location().toString(), "newSpawn", position(event.getNewSpawn()),
                         "forced", event.isForced(), "canceledAtObserver", event.isCanceled(),
+                        "declaredRoute", route, "declaredControl", control,
                         "declaredContext", context, "nestedDepth", depth, "receiver", token(this),
                         "nativeAtCallback", snapshot(false), "frames", stack, "durationNanos", System.nanoTime() - start,
                         "allocatedBytes", allocation < 0 || afterAllocation < 0 ? null : afterAllocation - allocation);
