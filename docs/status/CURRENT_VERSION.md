@@ -37,56 +37,54 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: c554e810780f0f9b5b8b6cd290bddd6e0822b2eb
+latest_source_checkpoint: b001316102d064545fb81d9f4f2141ae52931118
 pending_graph_source_candidate: ""
-tested_code_commit: 794dd123f9af0047adbab385eddeb1c9d5089773
-native_tested_code_commit: 794dd123f9af0047adbab385eddeb1c9d5089773
-latest_regression_target_commit: 794dd123f9af0047adbab385eddeb1c9d5089773
+tested_code_commit: 452fd2a0dc12895c2e2b955c80115457459888bb
+native_tested_code_commit: 452fd2a0dc12895c2e2b955c80115457459888bb
+latest_regression_target_commit: 452fd2a0dc12895c2e2b955c80115457459888bb
 latest_regression_result: NATIVE_PASS_STRICT_LINK_FAILURE_GATES_OPEN
-latest_regression_run: seal-installed-runtime-root-20261008-01/cohort-03
-latest_regression_attempt: 3
+latest_regression_run: seal-admission-root-20261009-01/cohort-02
+latest_regression_attempt: 2
 latest_regression_evidence: SEALED_ROOT_AND_INDEPENDENT_DEVELOPMENT_REGRESSION
-latest_regression_observed_utc: 2026-10-08T15:42:27.726670Z
-actual_unit_rerun: seal-installed-runtime-root-20261008-01/cohort-03/build.log
-actual_unit_rerun_observed_utc: 2026-10-08T15:29:27.798186Z
+latest_regression_observed_utc: 2026-10-08T17:31:42.070196Z
+actual_unit_rerun: seal-admission-root-20261009-01/cohort-02/build.log
+actual_unit_rerun_observed_utc: 2026-10-08T17:15:05.092363Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 last_updated: 2026-10-09
 ```
 
 ## Current development evidence
 
-The separate [detector admission candidate](../work/v1.8.0-c18a-seal-detector/ADMISSION-TASK-03.md)
-is IN_PROGRESS at unintegrated corrected source 452fd2a0. Preparation 77154351
-and corrective scope a2e3c476 are published before their respective source edits.
-The original e456ffc0 Root cohort passes unit/native commands but retains strict
-failure and an independent Medium exceptional harness-worker cleanup-order
-finding. The correction checks terminal state before both actual closers and
-adds finite worker-gate tests; its distinct full cohort and independent review
-are pending. This does not replace the completed integrated regression below,
-describe a normal detector failure, approve delivery or close any Gate.
-
-The [installed detector rule qualification](../work/v1.8.0-c18a-seal-detector/INSTALLED-RUNTIME-VERIFICATION-02.md)
+The [detector admission qualification](../work/v1.8.0-c18a-seal-detector/ADMISSION-VERIFICATION-03.md)
 is independently actual-source reviewed and integrated/normally pushed at
-`c554e810780f0f9b5b8b6cd290bddd6e0822b2eb`. Actual tested source is
-`794dd123f9af0047adbab385eddeb1c9d5089773`; complete src and seven Gradle
-inputs match, without rerunning the merge SHA. No Claude is called.
-Only two new development-adapter cases and their task change; production and
-all normal artifact identities remain unchanged. Both native hands read the
-startup-installed external full-collision rule through registered-item use;
-serialized closed/open/closed payloads, held data and embedded reply callbacks
-are checked. This is not real-client delivery, packaged S1/S2 or V1/V2 proof.
+`b001316102d064545fb81d9f4f2141ae52931118`. Actual tested source is 452fd2a0;
+complete src and seven Gradle inputs match, without rerunning the merge SHA.
+Preparation and corrective scope are published before their respective edits.
+The original Medium exceptional worker-cleanup finding is addressed only for
+retaining unresolved fixtures before cleanup, not automatic world recovery.
+The new main-source GameTest enters normal JARs; production behavior, IDs,
+assets and API JAR remain unchanged. No Claude is called.
 
-Root and independent Codex genuinely execute uncached clean builds with 2,179
-JUnit, two DataGen runs/empty diffs and all 553 required native GameTests.
-The original Medium rendered-projection assertion limit is corrected and
-independently rechecked; original passing cohorts, launcher/setup failures and
-console-extractor corrections remain sealed. Strict validation still has 44
-passing checks/one inherited link failure; each corrected native log retains
-62 unwaived ERROR headers/zero FATAL. The Low preparation-log timing deviation
-remains explicit, unwaived and separately attributed. Both owned cleanup
-attempts succeed once; no previous refused target or user work is changed.
-Full detector actor/lifecycle/query-order, installed precedence, unlock,
-packaged/restart and actual client obligations remain unfinished.
+Root and independent corrected forced build/test each execute 2,183 actual
+JUnit /379 XML /zero failures, errors or skips; all 565 required GameTests pass.
+Repeated DataGen leaves empty diffs; first-run cache write counters are separately
+attributed. Strict validation retains 44 passing checks/one inherited link
+failure and each native log retains 62 unwaived ERROR headers/zero FATAL.
+Original independent narrative counter error is corrected by a separate erratum,
+not an edit to its immutable report. Original findings/setup failures remain
+distinct. Source evidence and the exact-preimage independent record review are
+sealed; compact review evidence accompanies the qualification record. No new
+scoped record finding is identified. The reviewer's native cleanup launcher is
+policy-denied before script loading: its unsealed temporary clone remains,
+excluded from the bounded manifest/archive, with no retry or Root takeover.
+The earlier interrupted record reviewer is not counted as completed. No
+records-only result substitutes for a new Gradle/native or full-item check.
+
+Previous [installed detector rule qualification](../work/v1.8.0-c18a-seal-detector/INSTALLED-RUNTIME-VERIFICATION-02.md)
+remains completed only as a test slice. Its Low preparation-log timing deviation
+is still explicit and unwaived. Remaining detector Level/chunk/cell/query-order,
+installed precedence/lifecycle, unlock, packaged/restart and actual client
+obligations are unfinished. No full item/ledger delivery or Required Gate closes.
 
 The latest [coupled private successor](../work/v1.8.0-c16a-hatches/COUPLED-CONTRACT-DISPOSITION-23.md)
 binds genuine entry/allocation, two fresh LOADs, both save consumers and terminal

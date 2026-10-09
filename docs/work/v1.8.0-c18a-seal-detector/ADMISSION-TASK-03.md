@@ -2,7 +2,8 @@
 
 Date: 2026-10-09. Owner/implementer/integrator: Root.
 Preparation base: `9429d00b6b24e9bd7de3b747d63528b7b7d06fa1`.
-Status: IN_PROGRESS; no source or result exists at preparation.
+Status: scoped source integrated; independent record review complete, Gates open.
+No source or result existed at preparation.
 
 ## Outcome, dependencies and boundaries
 
@@ -43,6 +44,9 @@ Root alone owns a NEW isolated worktree
 
 Root evidence belongs only to the NEW external leaf
 `D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-admission-root-20261009-01`.
+After that source leaf is sealed, publication-only observations belong to the
+NEW Root leaf `D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-admission-record-publication-root-20261009-02`.
+It may record packaging and final document checks, not change sealed inputs.
 Independent reviewer uses a different NEW leaf and disposable checkout.
 No other source, event/registry/build/API/schema, asset, provenance or ledger
 write. User-owned dirty AGENTS.md, inherited untracked files, other worktrees
@@ -114,3 +118,17 @@ actual helper/gate; exceptional retention is not automatic world recovery.
 The unchanged full command sequence is running on that fixed source, with
 distinct evidence files. Corrected review/results and source integration are
 pending. Neither candidate is a delivered item or release acceptance.
+
+That checkpoint is superseded by the completed qualification: corrected Root
+and independent full cohorts pass unit/native commands, with strict failure and
+native ERROR obligations retained. Independent actual-diff review addresses the
+original Medium only for declared exceptional retention. Corrected source is
+integrated/normally pushed at b0013161; complete src and seven Gradle inputs
+match actual tested 452fd2a0, without rerunning the merge. An original independent
+DataGen narrative error is corrected by a new erratum; sealed files are unchanged.
+See ADMISSION-VERIFICATION-03.md for per-cohort counts and evidence limitations.
+
+Independent record review subsequently completes on the exact five preimages
+at b0013161. Only review/packaging status, precise review attribution and retained
+execution limitations are added afterward; those additions are not substituted
+for its reviewed preimage hashes. No new implementation or product policy.
