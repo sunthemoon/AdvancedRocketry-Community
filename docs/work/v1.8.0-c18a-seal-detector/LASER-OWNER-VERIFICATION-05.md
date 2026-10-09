@@ -1,12 +1,14 @@
 # Waiting-owner test-source candidate 05
 
-Date: 2026-10-09. **ROOT/PEER NATIVE PASS; STRICT TIMEOUT; FINAL REVIEW PENDING.**
+Date: 2026-10-09. **TEST SOURCE INTEGRATED; ROOT/PEER NATIVE PASS; STRICT/LOGS OPEN.**
 Source 0b02c513b573cf474690e8d0801152acebf8d692, parent
 770b3134cae99ab603ccde610c3731a98d63f524, src tree
 a7b7d83a67fb02403f5aaee9c2d21987a06b1f6a. Root normally commits/pushes the
 sole changed file after author release, full postimage/diff review, clean index
-and cached-stat/check. Main source is unchanged; no qualification is borrowed
-from the two differently failed 770b3134 cohorts.
+and cached-stat/check. The exact postimage is subsequently integrated/pushed at
+Main2f137f99 in [integration05](TEST-SOURCE-INTEGRATION-05.md); actual runtime is
+at candidate0b02c513, not a Main-SHA rerun. No qualification is borrowed from
+the two differently failed 770b3134 cohorts.
 
 ## Scope and source review
 
@@ -47,7 +49,9 @@ Neither lookup/display failure is a test result.
 
 Root exclusive [qualification leaf05](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-root-20261009-05)
 records new source/config/helpers and pre-execution absent build/.gradle/run-data/
-generated .cache. Java17.0.7 and installed Python3.13.15, no-daemon/offline/no
+generic src/generated/resources/.cache. That last locator does not cover the
+actual v1.8 cache; the additive correction06 below is explicit. Java17.0.7 and
+installed Python3.13.15, no-daemon/offline/no
 build-cache, forced clean build/explicit test/two DataGen and empty diffs,
 unfiltered GameTest, ledger/provenance/strict checks run serially. Current bounds
 and source/input/disk/raw receipts remain explicit; no old label is overwritten.
@@ -59,8 +63,9 @@ fixed detached checkout at this SHA. Its initial source/contract review is
 read-only; JVM execution is released after Root's native command ends and a
 read-only process check finds no matching Root Java/cmd process. Its exclusive
 assignment/evidence leaf is separate from source author05. Own build/test each
-pass 2192/381, repeated DataGen/diffs and native597 pass; strict is still running.
-These intermediate observations are not a final report or qualification. No self-review,
+pass 2192/381, repeated DataGen/diffs and native597 pass; strict180 also times out.
+Its final independent source/runtime report and custody are complete below.
+Neither aggregate qualification is an all-command PASS. No self-review,
 Main central edit, HEAD movement or implicit production repair is permitted.
 
 ## Actual Root results and custody
@@ -99,6 +104,44 @@ commands, exact containment/reparse and ownership before removing own05 outputs
 plus the old Root04 source's remaining own run-data (first attempt for that
 distinct target). Original04 refused scratch remains untouched. No inherited,
 user, peer, source checkout or global cache is deleted.
+
+## Completed independent custody and additive output correction
+
+[Independent05 REPORT](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-independent-20261009-05/REPORT.md)
+is 15992 bytes, SHA-256 d9d476a9bac0833acf94aa6b4ad46377286fcfebadba68bc2ee34b7bfbb6d397.
+Root fully reads it and acknowledges the exact hash before its sole seal;
+manifest 2ac5a63c6f7b0fb47ea855ed36383f6f221df7e44858519f88b91d927809328b
+covers 859 payload files /9533057 bytes, whole leaf 860 /9697446. Root verifies
+every covered hash. Full actual 774-line source/diff and adjacent production are
+reviewed; no material test-only source finding is established in that scope.
+
+Own forced build/test exit 0 in 221.148 /210.316 s, each 2192 tests /381 XML;
+two DataGen runs in 55.972 /55.554 s and empty generated diffs pass. Unfiltered native
+exits 0 in 278.569 s, all 597 required cases pass, with exact same-call owner
+command/registration identities. Main artifact SHA matches Root's e965c5fb.
+Each native log retains 62 ERROR/0 FATAL, without per-case native XML. Strict
+is 180-second TIMEOUT; aggregate exits 1. Sole taskkill255 reports primary10020/
+child28108 success and child28580 unsupported; later absence is a separate fact.
+Its one owned cleanup leaves checkout logs: 4 files /904225 bytes and actual v1.8
+cache: 32 files /94517 bytes, total 998742. Copies/identities are retained separately;
+Root does not delete these peer outputs or treat the passing cohort as closure
+of the earlier watcher/item issue.
+
+[Root correction06](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-root-output-addendum-20261009-06/REPORT.md)
+corrects the generic cache locator and incomplete Root04/05 output inventory.
+Ten available Root checkout log files are copied byte for byte; actual v1.8
+cache identities are cataloged. Four distinct first-removal targets are removed
+once after ended-process, absolute containment/reparse and ownership checks:
+74 files /2033453 logical bytes, exit 0 /1.600 s. Sealed original04/05 records,
+peer outputs and the refused empty Root04 scratch are untouched. New 19-payload
+leaf, 1890305 bytes, is separately sealed and verified. This is output accounting,
+not a source/runtime/Gate amendment.
+
+[Completed diagnosis03](D:/GitHub/ARCE-Task-Evidence/v1.8.0/strict-validator-diagnosis-20261009-03/REPORT.md)
+establishes two source-level Mediums: terminal-only/buffered reporting and a
+nested release-checksum Git query lacking timeout/output bounds. Five payload
+hashes are verified; original timeout's executed phase/cause is not established.
+No runtime probe, source fix, omitted check, timeout extension or waiver follows.
 
 The independent770 hanging-layer item-provenance issue, COMMON watcher exception,
 strict timeouts and unwaived native ERRORs remain open. Root770 final scratch

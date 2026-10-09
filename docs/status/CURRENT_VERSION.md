@@ -37,21 +37,21 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: ce64a8eb79c0f6fb53f000f0c2a0e4e947ef9985
+latest_source_checkpoint: 2f137f993a40eb4aa08316ed8d018d30501d1863
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
-pending_seal_spatial_source_candidate: 770b3134cae99ab603ccde610c3731a98d63f524
-pending_laser_owner_fixture_source_candidate: 0b02c513b573cf474690e8d0801152acebf8d692
-pending_laser_owner_fixture_qualification: ROOT_PEER_NATIVE_PASS_STRICT_TIMEOUT_FINAL_REVIEW_PENDING
+pending_seal_spatial_source_candidate: ""
+pending_laser_owner_fixture_source_candidate: ""
+pending_laser_owner_fixture_qualification: TEST_SOURCE_INTEGRATED_ROOT_PEER_NATIVE_PASS_STRICT_LOGS_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
-native_tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
+tested_code_commit: 0b02c513b573cf474690e8d0801152acebf8d692
+native_tested_code_commit: 0b02c513b573cf474690e8d0801152acebf8d692
 latest_regression_target_commit: 0b02c513b573cf474690e8d0801152acebf8d692
-latest_regression_result: NATIVE_PASSED_STRICT_TIMEOUT_FINAL_REVIEW_PENDING_GATES_OPEN
+latest_regression_result: ROOT_PEER_NATIVE_PASSED_STRICT_TIMEOUT_GATES_OPEN
 latest_regression_run: laser-owner-fixture-root-20261009-05/native-01
 latest_regression_attempt: 1
-latest_regression_evidence: ACTUAL_SUCCESSOR_SOURCE_ROOT_NATIVE_PASS_SEALED_PARENT_FAILURES_RETAINED
+latest_regression_evidence: ACTUAL_CANDIDATE_RUNTIME_MAIN_SOURCE_INPUT_ALIAS_PARENT_FAILURES_RETAINED
 latest_regression_observed_utc: 2026-10-09T14:11:43.011152Z
 actual_unit_rerun: laser-owner-fixture-root-20261009-05/test-01.command.json
 actual_unit_rerun_observed_utc: 2026-10-09T14:04:45.338567Z
@@ -63,19 +63,29 @@ last_updated: 2026-10-09
 
 ## Current development evidence
 
-The latest [waiting-owner candidate05](../work/v1.8.0-c18a-seal-detector/LASER-OWNER-VERIFICATION-05.md)
-is committed/pushed at 0b02c513, not Main integration. Root forced build/test each
-pass 2192 JUnit/381 XML and both DataGen/generated diffs pass. All 597 required
-GameTests pass; exact command/registration receipts show the intended new owner.
-Logs retain 62 ERROR/0 FATAL per log, strict180 TIMEOUT/taskkill255 remain; later
-named-PID checks show absence, not successful historical tree termination.
-Independent05 own build/test, repeated DataGen and native pass; its stable final
-report/strict outcome remains pending. The two failed parent770 cohorts are
-retained in [checkpoint04](../work/v1.8.0-c18a-seal-detector/SPATIAL-VERIFICATION-04.md),
+The [two-file test-source integration05](../work/v1.8.0-c18a-seal-detector/TEST-SOURCE-INTEGRATION-05.md)
+is normally committed/pushed through Main 2f137f99. Its complete src tree and ten
+build/consumer inputs exactly match actual candidate 0b02c513; no Main-SHA runtime
+rerun is claimed. Root and fresh independent05 each force build/test with 2192
+JUnit/381 XML, repeated DataGen/empty diffs and all-597-required-pass native runs.
+Exact command/registration receipts show the intended new owner. Both retain 62
+ERROR/0 FATAL per log and strict180 TIMEOUT/partial taskkill255. Stable independent05
+report is fully read, exact-hash acknowledged and sealed; all 859 payload hashes
+are verified. Later named-PID absence is not historical whole-tree termination.
+The latest run fields above retain the exact Root05 receipt, not a combined run.
+Fresh fixed-object independent07 completes the integration alias/receipt audit;
+Root fully reads its report/commands/inputs and verifies all four payload hashes.
+Whole repositories differ in documentation, so no Main validator equivalence,
+new consumer run or artifact rehash is claimed. Its finite commit-count wording
+correction is recorded additively in integration05; sealed originals are unchanged.
+The two failed parent770 cohorts remain in [checkpoint04](../work/v1.8.0-c18a-seal-detector/SPATIAL-VERIFICATION-04.md),
 with hanging-item provenance and COMMON malformed-file writer unresolved.
-Root04 refused scratch remains untouched; own05 outputs and old distinct run-data
-are cleaned once. Static strict diagnosis is pending. No production, resource,
-sleep/durability/restart or Gate acceptance is inferred from the automated pass.
+Separate Root correction06 retires the actual v1.8 caches and copied checkout logs;
+it corrects the old generic cache locator without editing sealed originals.
+Peer05 own logs/cache 998742 bytes and Root04 empty refused scratch remain.
+Completed static strict diagnosis03 identifies terminal-only/buffered reporting
+and a nested unbounded Git query; original executed phase/cause is unproven.
+No production, resource, sleep/durability/restart or Gate acceptance follows.
 The earlier d57 regression below remains historical at d57, not the latest result.
 
 The [final observation test-source integration32](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)

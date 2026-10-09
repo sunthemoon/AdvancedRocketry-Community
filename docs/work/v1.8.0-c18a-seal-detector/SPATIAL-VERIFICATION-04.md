@@ -1,11 +1,14 @@
 # Selected-cell native qualification04 checkpoint
 
-Date: 2026-10-09. **CANDIDATE IN PROGRESS; FULL REGRESSION FAILED.**
+Date: 2026-10-09. **PARENT REGRESSIONS FAILED; TEST SOURCE INTEGRATED; GATES OPEN.**
 Fixed successor 770b3134cae99ab603ccde610c3731a98d63f524 is committed/pushed in
-its isolated task branch, not integrated into Main. Its parent is fd585a98;
+its isolated task branch. Its parent is fd585a98;
 the complete src tree is 99675f8801c669f67380d830bce9e8c9ad2b75e9.
 Only SealDetectorAdmissionGameTests.java changes: three native cases and the
 loaded-overreach discriminator, class 480 lines. Production and budgets are unchanged.
+The exact detector changes subsequently integrate/push through Mainf77975fa;
+the final two-file source checkpoint is Main2f137f99. [Integration05](TEST-SOURCE-INTEGRATION-05.md)
+records candidate0b02c513 runtime and exact source/input alias, not a Main-SHA rerun.
 
 ## Source, review and actual Root checks
 
@@ -114,11 +117,11 @@ The waiting-owner correction is separately committed/pushed as 0b02c513, after
 author write release and Root actual diff/full-postimage review. Its
 [checkpoint05](LASER-OWNER-VERIFICATION-05.md) starts fresh fixed-source
 qualification. It does not repair the hanging-layer/config issue or rewrite
-these two failed 770 cohorts. Spatial and fixture candidates remain unintegrated.
-The new Root05 cohort now passes 2192 JUnit and all 597 required GameTests,
-strict still times out. Independent05's native also passes; stable final report
-and strict outcome remain pending. This does not change the two failed parent
-cohorts or close the provenance/config issues.
+these two failed 770 cohorts. Both test-source candidates are now integrated in
+Main 2f137f99. New Root05 and independent05 each pass forced build/test, 2192 JUnit,
+and all 597 required GameTests; both strict checks time out. Independent05 stable
+final report/custody is complete and all 859 covered hashes verified. This does
+not change the failed parent cohorts or close the provenance/config/log issues.
 
 Root04's [completed custody report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04/REPORT.md)
 is SHA-256 8c83e1bafee852481abc7afbfce863a0d9889eb0cecf1d3359596d49c96a661f,
@@ -130,9 +133,13 @@ files and the refused scratch are unchanged. Root04 strict termination transport
 returns 255, reports primary18100/child21932 success and child17320 unsupported;
 later read-only PID observation finds all three absent at 14:15:41 UTC. This
 does not retrospectively make that whole-tree termination successful or identify
-the silent validator's reached phase. Separate static diagnosis03 is pending.
+the silent validator's reached phase. Completed static diagnosis03 establishes
+terminal-only/buffered reporting and a nested unbounded Git query, not the actual
+timeout phase/cause. Separate Root output correction06 catalogs/copies checkout
+logs and retires actual v1.8 caches in distinct first-removal targets; sealed
+originals and refused scratch are untouched. Peer05 logs/cache 998742 bytes remain.
 
-No detector source integration/full delivery, resource-window case, native sleep,
+Test-source integration is complete; no full detector delivery, resource-window case, native sleep,
 dedicated/restart/V1/V2/survival or release acceptance. All v1.8 Required Gates
 remain open, with the inherited acceptance cursor at v1.0.0.
 **All current-version Required Gates satisfied: NO.**
