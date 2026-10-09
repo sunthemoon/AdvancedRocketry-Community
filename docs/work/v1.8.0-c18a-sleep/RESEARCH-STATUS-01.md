@@ -8,8 +8,10 @@ The read-only fixed-source research at 96236acb produces the frozen
 [proposal](PROPOSED-CONTRACT-01.md) and [sealed research archive](CONTRACT-RESEARCH-01.zip).
 The proposal is PROPOSED, not adopted or source-assignment-ready. The
 [complete independent review](CONTRACT-REVIEW-STATUS-01.md) identifies occupancy/
-air-invalidation and Space host/context corrections; separate cause-boundary and
-atmosphere feasibility research continue. The ancillary owner choice is pending.
+air-invalidation and Space host/context corrections. The
+[cause-boundary research](SPAWN-RESEARCH-STATUS-02.md) is sealed but establishes no
+approved/runtime-qualified discriminator; atmosphere research continues. The
+[ancillary owner choice](OWNER-QUESTION-02.md) is pending.
 No dimension flag,
 spawn field, time service, Forge interceptor, resource/build input or gameplay
 implementation is changed by publishing this research.
