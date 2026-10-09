@@ -39,6 +39,7 @@ previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 80bbf16d9e76708b7e39c50d21b3cff1a66432ef
 pending_graph_source_candidate: ""
+pending_sleep_observation_source_candidate: 0c05cc27112f5f4a71faa66bc16b5f7f4390f345
 tested_code_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
 native_tested_code_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
 latest_regression_target_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
@@ -144,6 +145,14 @@ and a [narrow source-only assignment](../work/v1.8.0-c18a-sleep/OBSERVATION-ASSI
 for two opt-in adapter fixtures/twenty cases. No game/driver or actual off-world
 sleep is assigned. No off-world dimension, spawn or time
 implementation is authorized by that review or the still-unanswered question.
+
+The [isolated observation source checkpoint](../work/v1.8.0-c18a-sleep/SOURCE-REVIEW-STATUS-07.md)
+is implemented-unverified: two committed author compile cohorts return 0, but
+pre-allocation trace bounds, setup-marker ownership and measurement attribution
+require a new correction.
+Complete independent source review and read-only driver design are in progress.
+No source merge, executed fixture test or native/runtime/Gate qualification is
+claimed. Current behavioral regression remains the committed tool cohort above.
 
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior
 current-state evidence is preserved in the
