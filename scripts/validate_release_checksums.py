@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import re
 import subprocess
@@ -15,11 +14,13 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Collection
 
 if __package__:
+    from . import release_checksum_inputs as inputs_api
     from .validate_build_artifact import (
         CONTENT_MANIFEST_SCHEMA_VERSION,
         build_content_manifest,
     )
 else:
+    import release_checksum_inputs as inputs_api  # type: ignore[no-redef]
     from validate_build_artifact import (  # type: ignore[no-redef]
         CONTENT_MANIFEST_SCHEMA_VERSION,
         build_content_manifest,
@@ -55,14 +56,11 @@ class ArtifactMetadata:
     manifest: dict[str, object]
 
 
-def file_sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        while True:
-            chunk = stream.read(HASH_CHUNK_SIZE)
-            if not chunk:
-                return digest.hexdigest()
-            digest.update(chunk)
+def file_sha256(path: Path, *, _inputs: inputs_api.ChecksumInputs | None = None,
+                _maximum: int | None = None) -> str:
+    session = _inputs or inputs_api.ChecksumInputs(path.absolute().parent)
+    return session.digest(path.absolute(), _maximum if _maximum is not None
+                          else inputs_api.MAX_EVIDENCE_FILE_BYTES)
 
 
 def relative_path_error(value: str) -> str | None:
@@ -89,14 +87,32 @@ def relative_path_error(value: str) -> str | None:
     return None
 
 
-def parse_checksum_text(text: str) -> tuple[list[ChecksumEntry], list[str]]:
+def parse_checksum_text(text: str, *,
+                        _inputs: inputs_api.ChecksumInputs | None = None) -> tuple[list[ChecksumEntry], list[str]]:
+    try:
+        oversized = (len(text) > inputs_api.MAX_CHECKSUM_BYTES
+                     or len(text.encode('utf-8')) > inputs_api.MAX_CHECKSUM_BYTES)
+    except UnicodeError as exc:
+        return [], [f'Checksum list is not UTF-8 text: {exc}']
+    if oversized:
+        return [], ['Checksum list exceeds byte limit']
     entries: list[ChecksumEntry] = []
     errors: list[str] = []
     seen: dict[str, int] = {}
 
+    records = 0
     for line_number, line in enumerate(text.splitlines(), start=1):
+        if _inputs is not None:
+            try:
+                _inputs.check_time()
+            except inputs_api.ChecksumInputError as exc:
+                return entries, errors + [str(exc)]
         if not line.strip() or line.lstrip().startswith("#"):
             continue
+
+        records += 1
+        if records > inputs_api.MAX_CHECKSUM_ENTRIES:
+            return entries, errors + ['Checksum record count exceeds limit']
 
         match = CHECKSUM_LINE.fullmatch(line)
         if not match:
@@ -107,6 +123,8 @@ def parse_checksum_text(text: str) -> tuple[list[ChecksumEntry], list[str]]:
 
         checksum, relative = match.groups()
         path_error = relative_path_error(relative)
+        if len(relative.encode('utf-8')) > inputs_api.MAX_PATH_BYTES or len(relative.split('/')) > inputs_api.MAX_PATH_DEPTH:
+            path_error = 'path exceeds byte/depth limit'
         if path_error:
             errors.append(f"line {line_number}: unsafe path {relative!r}: {path_error}")
             continue
@@ -125,33 +143,49 @@ def parse_checksum_text(text: str) -> tuple[list[ChecksumEntry], list[str]]:
     return entries, errors
 
 
-def read_tracked_files(repository_root: Path) -> tuple[set[str], str | None]:
-    command = (
-        "git",
-        "-c",
-        f"safe.directory={repository_root.as_posix()}",
-        "-C",
-        str(repository_root),
-        "ls-files",
-        "-z",
-        "--cached",
-    )
+def _tracked_paths(values: Collection[str], session: inputs_api.ChecksumInputs,
+                   *, normalize_backslashes: bool = True) -> set[str]:
+    paths: set[str] = set()
+    count = total = 0
+    for value in values:
+        session.check_time()
+        count += 1
+        path = str(value)
+        if normalize_backslashes:
+            path = path.replace('\\', '/')
+        encoded_size = len(path.encode('utf-8'))
+        total += encoded_size + 1
+        if count > inputs_api.MAX_TRACKED_PATHS or total > inputs_api.MAX_GIT_BYTES:
+            raise inputs_api.ChecksumInputError('Tracked inventory exceeds count/byte limit')
+        error = relative_path_error(path)
+        if error:
+            raise inputs_api.ChecksumInputError(f'Unsafe tracked path {path!r}: {error}')
+        session.target(Path(path))
+        paths.add(path)
+    return paths
+
+
+def read_tracked_files(repository_root: Path, *,
+                       _inputs: inputs_api.ChecksumInputs | None = None) -> tuple[set[str], str | None]:
     try:
-        completed = subprocess.run(command, check=True, capture_output=True)
-        paths = {
-            value.decode("utf-8")
-            for value in completed.stdout.split(b"\0")
-            if value
-        }
-        return paths, None
-    except (OSError, subprocess.CalledProcessError, UnicodeError) as exc:
+        session = _inputs or inputs_api.ChecksumInputs(repository_root)
+        payload = session.git_paths()
+        if len(payload) > inputs_api.MAX_GIT_BYTES or (payload and not payload.endswith(b'\0')):
+            raise inputs_api.ChecksumInputError('Git index exceeds byte limit or is not NUL-terminated')
+        if payload.count(b'\0') > inputs_api.MAX_TRACKED_PATHS:
+            raise inputs_api.ChecksumInputError('Git index path count exceeds limit')
+        values = payload[:-1].decode('utf-8').split('\0') if payload else []
+        if any(not value for value in values):
+            raise inputs_api.ChecksumInputError('Git index contains an empty path')
+        return _tracked_paths(values, session, normalize_backslashes=False), None
+    except (OSError, subprocess.SubprocessError, UnicodeError, inputs_api.ChecksumInputError) as exc:
         return set(), f"Cannot enumerate committed repository files: {exc}"
 
 
 def repository_relative(path: Path, repository_root: Path) -> tuple[str | None, str | None]:
     try:
-        relative = path.resolve().relative_to(repository_root.resolve()).as_posix()
-    except (OSError, ValueError) as exc:
+        relative = inputs_api.ChecksumInputs(repository_root).relative(path)
+    except (OSError, ValueError, UnicodeError) as exc:
         return None, f"Path must remain under the repository root: {path} ({exc})"
     return relative, None
 
@@ -179,11 +213,25 @@ def archive_entry_path_error(value: str) -> str | None:
     return None
 
 
-def load_artifact_metadata(path: Path) -> tuple[ArtifactMetadata | None, list[str]]:
+def load_artifact_metadata(path: Path, *,
+                           _inputs: inputs_api.ChecksumInputs | None = None) -> tuple[ArtifactMetadata | None, list[str]]:
+    try:
+        session = _inputs or inputs_api.ChecksumInputs(path.absolute().parent)
+        result = _load_artifact_metadata(path, _inputs=session)
+        session.assert_stable()
+        return result
+    except (OSError, UnicodeError, ValueError, RecursionError) as exc:
+        return None, [f"Cannot read committed JAR content manifest {path}: {exc}"]
+
+
+def _load_artifact_metadata(path: Path, *,
+                            _inputs: inputs_api.ChecksumInputs) -> tuple[ArtifactMetadata | None, list[str]]:
     errors: list[str] = []
     try:
-        document = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        session = _inputs
+        document = json.loads(session.read(path.absolute(), inputs_api.MAX_MANIFEST_BYTES).decode('utf-8'))
+        session.check_time()
+    except (OSError, UnicodeError, ValueError, RecursionError) as exc:
         return None, [f"Cannot read committed JAR content manifest {path}: {exc}"]
 
     if not isinstance(document, dict):
@@ -239,6 +287,7 @@ def load_artifact_metadata(path: Path) -> tuple[ArtifactMetadata | None, list[st
     else:
         entry_paths: list[str] = []
         for index, entry in enumerate(entries):
+            session.check_time()
             prefix = f"JAR content manifest entries[{index}]"
             if not isinstance(entry, dict):
                 errors.append(f"{prefix} must be an object")
@@ -292,65 +341,37 @@ def render_release_checksums(
     content_manifest_path: Path = DEFAULT_CONTENT_MANIFEST,
 ) -> tuple[str | None, list[str]]:
     """Render the deterministic checksum list for the distributable and evidence."""
-    repository_root = repository_root.resolve()
-    evidence_dir = _absolute_from_root(evidence_dir, repository_root)
-    content_manifest_path = _absolute_from_root(
-        content_manifest_path, repository_root
-    )
-    errors: list[str] = []
+    try:
+        session = inputs_api.ChecksumInputs(repository_root)
+        result = _render_release_checksums(session, evidence_dir, content_manifest_path)
+        session.assert_stable()
+        return result
+    except (OSError, UnicodeError, ValueError) as exc:
+        return None, [f"Cannot render release checksums: {exc}"]
 
-    evidence_relative, path_error = repository_relative(
-        evidence_dir, repository_root
-    )
-    if path_error:
-        errors.append(path_error)
-    if evidence_dir.is_symlink() or not evidence_dir.is_dir():
-        errors.append(f"Evidence directory is missing or unsafe: {evidence_dir}")
 
-    metadata, metadata_errors = load_artifact_metadata(content_manifest_path)
-    errors.extend(metadata_errors)
-    if errors or evidence_relative is None or metadata is None:
+def _render_release_checksums(session: inputs_api.ChecksumInputs, evidence_dir: Path,
+                              content_manifest_path: Path) -> tuple[str | None, list[str]]:
+    evidence_dir = session.target(evidence_dir)
+    content_manifest_path = session.target(content_manifest_path)
+    paths = session.scan(evidence_dir)
+    metadata, errors = load_artifact_metadata(content_manifest_path, _inputs=session)
+    if errors or metadata is None:
         return None, errors
-
-    entries: list[tuple[str, str]] = [
-        (
-            metadata.sha256,
-            f"build/libs/{metadata.filename}",
-        )
-    ]
-    evidence_files: list[tuple[str, Path]] = []
-    for path in evidence_dir.rglob("*"):
-        if path.is_symlink():
-            errors.append(f"Evidence path must not be a symlink: {path}")
-            continue
-        if not path.is_file():
-            continue
-        relative, relative_error = repository_relative(path, repository_root)
-        if relative_error:
-            errors.append(relative_error)
-            continue
-        assert relative is not None
-        portable_error = relative_path_error(relative)
-        if portable_error:
-            errors.append(
-                f"Unsafe evidence path {relative!r}: {portable_error}"
-            )
-            continue
-        evidence_files.append((relative, path))
-
-    expected_manifest = content_manifest_path.resolve()
-    if all(path.resolve() != expected_manifest for _, path in evidence_files):
-        errors.append("Evidence tree does not contain the JAR content manifest")
-    if errors:
-        return None, errors
-
-    entries.extend(
-        (file_sha256(path), relative)
-        for relative, path in sorted(evidence_files, key=lambda item: item[0])
-    )
-    lines = [CHECKSUM_HEADER.rstrip("\n")]
-    lines.extend(f"{checksum}  {relative}" for checksum, relative in entries)
-    return "\n".join(lines) + "\n", []
+    if content_manifest_path not in paths:
+        return None, ["Evidence tree does not contain the JAR content manifest"]
+    lines = [CHECKSUM_HEADER.rstrip("\n"),
+             f"{metadata.sha256}  build/libs/{metadata.filename}"]
+    for path in paths:
+        relative = session.relative(path)
+        error = relative_path_error(relative)
+        if error:
+            return None, [f"Unsafe evidence path {relative!r}: {error}"]
+        lines.append(f"{file_sha256(path, _inputs=session)}  {relative}")
+    text = "\n".join(lines) + "\n"
+    if len(text.encode('utf-8')) > inputs_api.MAX_CHECKSUM_BYTES:
+        return None, ['Rendered checksum list exceeds byte limit']
+    return text, []
 
 
 def update_release_checksums(
@@ -360,30 +381,19 @@ def update_release_checksums(
     content_manifest_path: Path = DEFAULT_CONTENT_MANIFEST,
 ) -> list[str]:
     """Write the deterministic checksum list without changing any Gate status."""
-    repository_root = repository_root.resolve()
-    checksums_path = _absolute_from_root(checksums_path, repository_root)
-    relative, path_error = repository_relative(checksums_path, repository_root)
-    if path_error:
-        return [path_error]
-    assert relative is not None
-    portable_error = relative_path_error(relative)
-    if portable_error:
-        return [f"Unsafe checksum output path {relative!r}: {portable_error}"]
-    if checksums_path.is_symlink():
-        return [f"Checksum output must not be a symlink: {relative}"]
-
-    text, errors = render_release_checksums(
-        repository_root=repository_root,
-        evidence_dir=evidence_dir,
-        content_manifest_path=content_manifest_path,
-    )
-    if errors or text is None:
-        return errors
     try:
-        checksums_path.parent.mkdir(parents=True, exist_ok=True)
-        checksums_path.write_text(text, encoding="utf-8", newline="\n")
-    except OSError as exc:
-        return [f"Cannot write checksum list {relative}: {exc}"]
+        session = inputs_api.ChecksumInputs(repository_root)
+        relative = session.relative(checksums_path)
+        portable_error = relative_path_error(relative)
+        if portable_error:
+            return [f"Unsafe checksum output path {relative!r}: {portable_error}"]
+        session.inspect(checksums_path, missing=True)
+        text, errors = _render_release_checksums(session, evidence_dir, content_manifest_path)
+        if errors or text is None:
+            return errors
+        session.write(checksums_path, text.encode('utf-8'))
+    except (OSError, UnicodeError, ValueError) as exc:
+        return [f"Cannot write checksum list {checksums_path}: {exc}"]
     return []
 
 
@@ -396,7 +406,30 @@ def validate_release_checksums(
     tracked_files: Collection[str] | None = None,
 ) -> tuple[list[str], dict[str, int | str | bool]]:
     """Validate committed evidence and the one external distributable JAR entry."""
-    repository_root = repository_root.resolve()
+    details: dict[str, int | str | bool] = {
+        "entries": 0, "committed_files_checked": 0,
+        "evidence_files": 0, "artifact_verified": False,
+    }
+    try:
+        session = inputs_api.ChecksumInputs(repository_root)
+        errors, details = _validate_release_checksums(
+            session, checksums_path, evidence_dir, content_manifest_path,
+            artifact_path, tracked_files, details,
+        )
+        session.assert_stable()
+        return errors, details
+    except (OSError, UnicodeError, ValueError, subprocess.SubprocessError) as exc:
+        details['artifact_verified'] = False
+        return [f"Cannot validate release checksum inputs: {exc}"], details
+
+
+def _validate_release_checksums(
+    session: inputs_api.ChecksumInputs, checksums_path: Path, evidence_dir: Path,
+    content_manifest_path: Path, artifact_path: Path | None,
+    tracked_files: Collection[str] | None,
+    details: dict[str, int | str | bool],
+) -> tuple[list[str], dict[str, int | str | bool]]:
+    repository_root = session.root
     checksums_path = _absolute_from_root(checksums_path, repository_root)
     evidence_dir = _absolute_from_root(evidence_dir, repository_root)
     content_manifest_path = _absolute_from_root(
@@ -404,13 +437,6 @@ def validate_release_checksums(
     )
 
     errors: list[str] = []
-    details: dict[str, int | str | bool] = {
-        "entries": 0,
-        "committed_files_checked": 0,
-        "evidence_files": 0,
-        "artifact_verified": False,
-    }
-
     checksums_relative, path_error = repository_relative(
         checksums_path, repository_root
     )
@@ -430,12 +456,12 @@ def validate_release_checksums(
         return errors, details
 
     if tracked_files is None:
-        tracked, tracked_error = read_tracked_files(repository_root)
+        tracked, tracked_error = read_tracked_files(repository_root, _inputs=session)
         if tracked_error:
             errors.append(tracked_error)
             return errors, details
     else:
-        tracked = {str(path).replace("\\", "/") for path in tracked_files}
+        tracked = _tracked_paths(tracked_files, session)
 
     assert checksums_relative is not None
     assert evidence_relative is not None
@@ -445,12 +471,12 @@ def validate_release_checksums(
         errors.append(f"Checksum list is not committed: {checksums_relative}")
 
     try:
-        checksum_text = checksums_path.read_text(encoding="utf-8")
+        checksum_text = session.read(checksums_path, inputs_api.MAX_CHECKSUM_BYTES).decode('utf-8')
     except (OSError, UnicodeError) as exc:
         errors.append(f"Cannot read checksum list {checksums_relative}: {exc}")
         return errors, details
 
-    entries, parse_errors = parse_checksum_text(checksum_text)
+    entries, parse_errors = parse_checksum_text(checksum_text, _inputs=session)
     errors.extend(parse_errors)
     details["entries"] = len(entries)
     entries_by_path = {entry.path: entry for entry in entries}
@@ -462,17 +488,9 @@ def validate_release_checksums(
     evidence_files = {
         path for path in tracked if path.startswith(evidence_prefix)
     }
-    if evidence_dir.is_dir():
-        for path in evidence_dir.rglob("*"):
-            if not (path.is_file() or path.is_symlink()):
-                continue
-            relative, relative_error = repository_relative(path, repository_root)
-            if relative_error:
-                errors.append(relative_error)
-            elif relative is not None:
-                evidence_files.add(relative)
-    else:
-        errors.append(f"Evidence directory does not exist: {evidence_relative}")
+    evidence_files.update(session.relative(path) for path in session.scan(evidence_dir))
+    if len(evidence_files) > inputs_api.MAX_EVIDENCE_FILES:
+        raise inputs_api.ChecksumInputError('Index/local evidence union exceeds file count limit')
 
     details["evidence_files"] = len(evidence_files)
     omitted_evidence = sorted(evidence_files - entries_by_path.keys())
@@ -485,6 +503,7 @@ def validate_release_checksums(
     artifact_entries: list[ChecksumEntry] = []
     committed_checked = 0
     for entry in entries:
+        session.check_time()
         if entry.path == checksums_relative:
             continue
         if entry.path not in tracked:
@@ -497,16 +516,9 @@ def validate_release_checksums(
             continue
 
         candidate = repository_root / entry.path
-        if candidate.is_symlink():
-            errors.append(f"Committed checksum target must not be a symlink: {entry.path}")
-            continue
-        if not candidate.is_file():
-            errors.append(f"Committed checksum target is missing: {entry.path}")
-            continue
-
         try:
-            actual = file_sha256(candidate)
-        except OSError as exc:
+            actual = file_sha256(candidate, _inputs=session)
+        except (OSError, ValueError) as exc:
             errors.append(f"Cannot hash committed file {entry.path}: {exc}")
             continue
         committed_checked += 1
@@ -532,7 +544,7 @@ def validate_release_checksums(
             f"JAR content manifest is omitted from checksum list: {manifest_relative}"
         )
 
-    metadata, metadata_errors = load_artifact_metadata(content_manifest_path)
+    metadata, metadata_errors = load_artifact_metadata(content_manifest_path, _inputs=session)
     errors.extend(metadata_errors)
 
     artifact_entry = artifact_entries[0] if len(artifact_entries) == 1 else None
@@ -571,13 +583,9 @@ def validate_release_checksums(
         )
         canonical_path_matches = (
             canonical_artifact_path is not None
-            and supplied_artifact_path.resolve() == canonical_artifact_path.resolve()
+            and session.target(supplied_artifact_path) == canonical_artifact_path
         )
-        if supplied_artifact_path.is_symlink():
-            errors.append(
-                f"Built artifact path must not be a symbolic link: {supplied_artifact_path}"
-            )
-        elif not canonical_path_matches:
+        if not canonical_path_matches:
             expected = (
                 str(canonical_artifact_path)
                 if canonical_artifact_path is not None
@@ -587,13 +595,12 @@ def validate_release_checksums(
                 "Built artifact path must be the canonical repository path: "
                 f"expected {expected}, got {supplied_artifact_path}"
             )
-        elif not supplied_artifact_path.is_file():
-            errors.append(f"Artifact does not exist: {supplied_artifact_path}")
         else:
             artifact_manifest_matches = False
             try:
-                artifact_sha256 = file_sha256(supplied_artifact_path)
-            except OSError as exc:
+                artifact_sha256 = file_sha256(supplied_artifact_path, _inputs=session,
+                                              _maximum=inputs_api.MAX_ARTIFACT_BYTES)
+            except (OSError, ValueError) as exc:
                 errors.append(f"Cannot hash artifact {supplied_artifact_path}: {exc}")
             else:
                 details["artifact_sha256"] = artifact_sha256
@@ -615,6 +622,9 @@ def validate_release_checksums(
                         )
                     try:
                         actual_manifest = build_content_manifest(supplied_artifact_path)
+                        # Archive expansion is delegated and not made bounded by
+                        # this local-input slice. Recheck ordinary identity after it.
+                        session.assert_stable()
                     except (
                         OSError,
                         RuntimeError,
