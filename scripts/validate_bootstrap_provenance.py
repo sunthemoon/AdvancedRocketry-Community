@@ -211,6 +211,9 @@ MAX_GIT_COMMIT_PARENTS = 64
 MAX_GIT_ANCESTRY_COMMITS = 100_000
 MAX_GIT_ANCESTRY_BYTES = 256 * 1024 * 1024
 MAX_GIT_BATCH_HEADER_BYTES = 128
+MAX_GIT_OBJECT_SESSION_REQUESTS = 4_096
+MAX_GIT_OBJECT_SESSION_BYTES = 16 * 1024 * 1024 * 1024
+GIT_OBJECT_SESSION_TIMEOUT_SECONDS = 180
 MAX_GIT_TREE_OBJECT_BYTES = 8 * 1024 * 1024
 MAX_GIT_TREE_LOOKUP_BYTES = 64 * 1024 * 1024
 MAX_SELECTED_RESOURCE_TREE_BYTES = 64 * 1024 * 1024
@@ -706,7 +709,269 @@ def _git_object_sha1(object_type: str, content: bytes) -> str:
     return hashlib.sha1(header + content).hexdigest()
 
 
+class _GitObjectProtocolError(ValueError):
+    """A response cannot be admitted as the requested exact object."""
+
+
+class _GitObjectSession:
+    """One validation's transport, never an object or approval cache.
+
+    Returned objects remain provisional until close verifies EOF and exit.
+    Timers control only our child, not process creation or descendants.
+    """
+
+    def __init__(self, repository_root: Path) -> None:
+        self.root = repository_root
+        self.process: subprocess.Popen[bytes] | None = None
+        self.failures: list[str] = []
+        self.failure_lock = threading.Lock()
+        self.requests = 0
+        self.payload_bytes = 0
+        self.failed = False
+        self.closed = False
+        self.expired = threading.Event()
+        self.lifetime_timer = threading.Timer(
+            GIT_OBJECT_SESSION_TIMEOUT_SECONDS, self._expire
+        )
+        self.lifetime_timer.daemon = True
+        self.lifetime_timer.start()
+
+    def _fail(self, message: str) -> None:
+        with self.failure_lock:
+            self.failed = True
+            if message not in self.failures and len(self.failures) < 8:
+                self.failures.append(message)
+
+    def _kill(self) -> None:
+        process = self.process
+        if process is not None:
+            try:
+                if process.poll() is None:
+                    process.kill()
+            except OSError as exc:
+                self._fail(f"cannot terminate bounded Git object session: {exc}")
+
+    def _expire(self) -> None:
+        self.expired.set()
+        self._kill()
+
+    def _start(self, label: str) -> bool:
+        try:
+            self.process = subprocess.Popen(
+                [
+                    _git_executable(self.root),
+                    "-c", "core.commitGraph=false",
+                    "-c", "core.fsmonitor=false",
+                    "-c", "core.untrackedCache=false",
+                    "-C", str(self.root), "cat-file", "--batch",
+                ],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                env=_git_environment(),
+            )
+        except OSError as exc:
+            self._fail(f"cannot start bounded Git object read for {label}: {exc}")
+            return False
+        if self.expired.is_set():
+            self._fail("bounded Git object session lifetime timed out")
+            self._kill()
+            return False
+        return True
+
+    def _response(
+        self, oid: str, object_type: str, maximum_size: int, label: str
+    ) -> bytes:
+        assert self.process is not None and self.process.stdout is not None
+        output = self.process.stdout
+        header = output.readline(MAX_GIT_BATCH_HEADER_BYTES + 1)
+        if not header or len(header) > MAX_GIT_BATCH_HEADER_BYTES or not header.endswith(b"\n"):
+            raise _GitObjectProtocolError(f"bounded Git object header for {label} is malformed")
+        fields = header[:-1].split()
+        if len(fields) != 3:
+            raise _GitObjectProtocolError(f"{label} does not exist as a local Git object: {oid}")
+        try:
+            observed_oid = fields[0].decode("ascii", errors="strict")
+            observed_type = fields[1].decode("ascii", errors="strict")
+            size = int(fields[2].decode("ascii", errors="strict"))
+        except (UnicodeError, ValueError) as exc:
+            raise _GitObjectProtocolError(f"cannot parse Git object header for {label}: {exc}") from exc
+        if observed_oid != oid or observed_type != object_type:
+            raise _GitObjectProtocolError(
+                f"{label} must be an exact Git {object_type}; observed {observed_oid} {observed_type}"
+            )
+        if size < 0 or size > maximum_size:
+            raise _GitObjectProtocolError(f"{label} exceeds the {maximum_size}-byte Git object limit")
+        if self.payload_bytes + size > MAX_GIT_OBJECT_SESSION_BYTES:
+            raise _GitObjectProtocolError("bounded Git object session exceeds its aggregate byte limit")
+        self.payload_bytes += size
+        chunks: list[bytes] = []
+        remaining = size
+        while remaining:
+            chunk = output.read(min(remaining, GIT_STREAM_CHUNK_BYTES))
+            if not chunk:
+                raise _GitObjectProtocolError(f"bounded Git object read for {label} ended early")
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        if output.read(1) != b"\n":
+            raise _GitObjectProtocolError(f"bounded Git object read for {label} emitted undeclared bytes")
+        content = b"".join(chunks)
+        recomputed_oid = _git_object_sha1(object_type, content)
+        if recomputed_oid != oid:
+            raise _GitObjectProtocolError(
+                f"Git object identity mismatch for {label}: expected {oid}, recomputed {recomputed_oid}"
+            )
+        return content
+
+    def read(
+        self, oid: str, object_type: str, maximum_size: int, label: str,
+        errors: list[str],
+    ) -> bytes | None:
+        if self.closed:
+            self._fail("bounded Git object session is already closed")
+        if self.expired.is_set():
+            self._fail("bounded Git object session lifetime timed out")
+        if self.failed:
+            errors.extend(message for message in self.failures if message not in errors)
+            return None
+        if GIT_OBJECT_ID.fullmatch(oid) is None:
+            errors.append(f"{label} has an invalid SHA-1 Git object ID")
+            return None
+        if self.requests >= MAX_GIT_OBJECT_SESSION_REQUESTS:
+            self._fail("bounded Git object session exceeds its request count limit")
+            errors.extend(message for message in self.failures if message not in errors)
+            return None
+        self.requests += 1
+        if self.process is None and not self._start(label):
+            errors.extend(message for message in self.failures if message not in errors)
+            return None
+        assert self.process is not None and self.process.stdin is not None
+        timed_out = threading.Event()
+
+        def expire_request() -> None:
+            timed_out.set()
+            self._kill()
+
+        timer = threading.Timer(GIT_TIMEOUT_SECONDS, expire_request)
+        timer.daemon = True
+        timer.start()
+        content = None
+        try:
+            request = oid.encode("ascii") + b"\n"
+            if self.process.stdin.write(request) != len(request):
+                raise _GitObjectProtocolError("bounded Git object request was not completely written")
+            self.process.stdin.flush()
+            content = self._response(oid, object_type, maximum_size, label)
+        except (_GitObjectProtocolError, OSError) as exc:
+            self._fail(f"cannot read bounded Git object for {label}: {exc}")
+        finally:
+            timer.cancel()
+            timer.join()
+        if timed_out.is_set():
+            self._fail(f"bounded Git object read timed out for {label}")
+        if self.expired.is_set():
+            self._fail("bounded Git object session lifetime timed out")
+        if self.failed:
+            self._kill()
+            errors.extend(message for message in self.failures if message not in errors)
+            return None
+        return content
+
+    def close(self) -> None:
+        if self.closed:
+            return
+        self.closed = True
+        process = self.process
+        timer: threading.Timer | None = None
+        timed_out = threading.Event()
+
+        def expire_close() -> None:
+            timed_out.set()
+            self._kill()
+
+        try:
+            if process is not None:
+                assert process.stdin is not None and process.stdout is not None
+                timer = threading.Timer(GIT_TIMEOUT_SECONDS, expire_close)
+                timer.daemon = True
+                timer.start()
+                if self.failed:
+                    self._kill()
+                try:
+                    process.stdin.close()
+                except OSError as exc:
+                    self._fail(f"cannot close bounded Git object input: {exc}")
+                    self._kill()
+                if not self.failed and process.stdout.read(1):
+                    self._fail("bounded Git object session emitted trailing bytes")
+                    self._kill()
+                return_code = process.wait(timeout=GIT_TIMEOUT_SECONDS)
+                if return_code != 0:
+                    self._fail(f"bounded Git object session failed with exit {return_code}")
+        except (OSError, subprocess.SubprocessError) as exc:
+            self._fail(f"cannot finalize bounded Git object session: {exc}")
+            self._kill()
+        finally:
+            if timer is not None:
+                timer.cancel()
+                timer.join()
+            self.lifetime_timer.cancel()
+            self.lifetime_timer.join()
+            if timed_out.is_set():
+                self._fail("bounded Git object session finalization timed out")
+            if self.expired.is_set():
+                self._fail("bounded Git object session lifetime timed out")
+            if process is not None:
+                for stream in (process.stdin, process.stdout):
+                    if stream is not None:
+                        try:
+                            stream.close()
+                        except OSError as exc:
+                            self._fail(f"cannot close bounded Git object pipe: {exc}")
+                self._kill()
+                try:
+                    process.wait(timeout=GIT_TIMEOUT_SECONDS)
+                except (OSError, subprocess.SubprocessError) as exc:
+                    self._fail(f"cannot reap bounded Git object session: {exc}")
+
+
+_git_object_scope = threading.local()
+
+
+def _with_git_object_session(
+    repository_root: Path,
+    operation: Callable[[], tuple[list[str], dict[str, int | str]]],
+) -> tuple[list[str], dict[str, int | str]]:
+    previous = getattr(_git_object_scope, "session", None)
+    session = _GitObjectSession(repository_root)
+    _git_object_scope.session = session
+    try:
+        errors, details = operation()
+    finally:
+        _git_object_scope.session = previous
+        session.close()
+    errors.extend(message for message in session.failures if message not in errors)
+    return errors, details
+
+
 def _read_verified_git_object(
+    repository_root: Path,
+    oid: str,
+    object_type: str,
+    maximum_size: int,
+    label: str,
+    errors: list[str],
+) -> bytes | None:
+    session = getattr(_git_object_scope, "session", None)
+    if session is not None and session.root == repository_root:
+        return session.read(oid, object_type, maximum_size, label, errors)
+    # Direct/foreign-root helper calls retain the original isolated EOF contract.
+    return _read_verified_git_object_once(
+        repository_root, oid, object_type, maximum_size, label, errors
+    )
+
+
+def _read_verified_git_object_once(
     repository_root: Path,
     oid: str,
     object_type: str,
@@ -3464,7 +3729,7 @@ def _validate_provenance_document(
     details["review_status"] = review_status
 
 
-def validate_bootstrap_provenance(
+def _validate_bootstrap_provenance_worktree(
     repository_root: Path = ROOT,
     manifest_path: Path = DEFAULT_MANIFEST,
 ) -> tuple[list[str], dict[str, int | str]]:
@@ -3492,7 +3757,7 @@ def validate_bootstrap_provenance(
     return errors, details
 
 
-def validate_bootstrap_provenance_at_commit(
+def _validate_bootstrap_provenance_commit(
     repository_root: Path,
     selected_commit: str,
     manifest_path: Path = DEFAULT_MANIFEST,
@@ -3541,6 +3806,33 @@ def validate_bootstrap_provenance_at_commit(
         comparison_commit=selected_commit,
     )
     return errors, details
+
+
+def validate_bootstrap_provenance(
+    repository_root: Path = ROOT,
+    manifest_path: Path = DEFAULT_MANIFEST,
+) -> tuple[list[str], dict[str, int | str]]:
+    """Validate mutable inputs, finalizing all owned transport before returning."""
+    repository_root = repository_root.resolve()
+    return _with_git_object_session(
+        repository_root,
+        lambda: _validate_bootstrap_provenance_worktree(repository_root, manifest_path),
+    )
+
+
+def validate_bootstrap_provenance_at_commit(
+    repository_root: Path,
+    selected_commit: str,
+    manifest_path: Path = DEFAULT_MANIFEST,
+) -> tuple[list[str], dict[str, int | str]]:
+    """Validate one explicit commit without caching object or approval results."""
+    repository_root = repository_root.resolve()
+    return _with_git_object_session(
+        repository_root,
+        lambda: _validate_bootstrap_provenance_commit(
+            repository_root, selected_commit, manifest_path
+        ),
+    )
 
 
 def _manifest_has_null_review_digest(

@@ -2096,6 +2096,51 @@ reviewed_at: 2026-08-28"""
         )
 
 
+    def test_scoped_validation_reuses_transport_but_executes_every_object_check(self) -> None:
+        launches = []
+        original = subprocess.Popen
+
+        def observe(*arguments, **keywords):
+            if arguments[0][-2:] == ["cat-file", "--batch"]:
+                launches.append(arguments[0])
+            return original(*arguments, **keywords)
+
+        with patch.object(validator_module.subprocess, "Popen", side_effect=observe), patch.object(
+            validator_module, "_read_verified_git_object", wraps=validator_module._read_verified_git_object
+        ) as read:
+            errors, details = self.validate()
+
+        self.assertEqual([], errors)
+        self.assertEqual(11, details["targets"])
+        self.assertGreater(read.call_count, 100)
+        self.assertLess(len(launches), read.call_count)
+        self.assertIsNone(validator_module._git_object_scope.session)
+
+    def test_public_result_contains_transport_failure_discovered_after_checks(self) -> None:
+        original_close = validator_module._GitObjectSession.close
+
+        def inject_terminal_failure(session):
+            original_close(session)
+            session._fail("injected terminal transport failure")
+
+        with patch.object(validator_module._GitObjectSession, "close", inject_terminal_failure):
+            errors, details = self.validate()
+
+        self.assertIn("injected terminal transport failure", errors)
+        self.assertEqual(11, details["targets"])
+        self.assertIsNone(validator_module._git_object_scope.session)
+
+    def test_selected_public_validation_restores_transport_after_early_failure(self) -> None:
+        errors, _ = validate_bootstrap_provenance_at_commit(self.root, self.scope_commit)
+        self.assertTrue(errors)
+        self.assertIsNone(validator_module._git_object_scope.session)
+        self.write_manifest()
+        selected = self.commit_current_fixture("scoped valid selection after failure")
+        errors, _ = self.validate_selected(selected)
+        self.assertEqual([], errors)
+        self.assertIsNone(validator_module._git_object_scope.session)
+
+
 class RealBootstrapProvenanceValidationTests(unittest.TestCase):
     def test_real_historical_repository_record_validates_without_presuming_review_state(self) -> None:
         repository_root = Path(__file__).resolve().parents[1]
