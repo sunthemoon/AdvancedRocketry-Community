@@ -14,6 +14,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -35,6 +36,12 @@ public final class SleepBoundaryChatBounds {
             if (text.length() > 1024 || budget[1] + text.length() * 6L > 8192) { throw new IllegalStateException("chat string preflight cap"); }
             budget[1] += text.length() * 6;
         }
+    }
+    private static void chatIdentifier(ResourceLocation identifier, int[] budget) {
+        if (identifier == null || identifier.getClass() != ResourceLocation.class) {
+            throw new IllegalStateException("unsupported native chat resource identifier");
+        }
+        chatText(identifier.getNamespace(), budget); chatText(identifier.getPath(), budget);
     }
     private static void chatPreflight(Component component, int depth, int[] budget) {
         if (component == null || component.getClass() != MutableComponent.class || depth > 8 || ++budget[0] > 32) {
@@ -59,7 +66,7 @@ public final class SleepBoundaryChatBounds {
         var style = component.getStyle();
         if (style.getClass() != Style.class) { throw new IllegalStateException("unsupported native chat style"); }
         chatText(style.getInsertion(), budget);
-        chatText(style.getFont().getNamespace(), budget); chatText(style.getFont().getPath(), budget);
+        chatIdentifier(style.getFont(), budget);
         ClickEvent click = style.getClickEvent();
         if (click != null) {
             if (click.getClass() != ClickEvent.class) { throw new IllegalStateException("unsupported click receiver"); }
@@ -76,7 +83,7 @@ public final class SleepBoundaryChatBounds {
                 }
                 var type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.type);
                 if (type == null || entity.id == null) { throw new IllegalStateException("hover entity metadata unavailable"); }
-                chatText(type.getNamespace(), budget); chatText(type.getPath(), budget);
+                chatIdentifier(type, budget);
                 if (entity.name != null) { chatPreflight(entity.name, depth + 1, budget); }
             } else { throw new IllegalStateException("unsupported hover contents; no item/NBT serialization"); }
         }
@@ -133,6 +140,37 @@ public final class SleepBoundaryChatBounds {
         helper.succeed();
     }
 
+    @GameTest(templateNamespace = "advancedrocketrycommunity", template = "empty", batch = "sleep_trace", timeoutTicks = 20)
+    public static void ordinaryNativeResourceIdentifiersRemainSerializable(GameTestHelper helper) {
+        var trace = new SleepBoundaryTrace(List.of("ordinary-resource-identifiers"));
+        try {
+            for (String font : List.of("minecraft:default", "minecraft:uniform")) {
+                ResourceLocation identifier = ResourceLocation.tryParse(font);
+                Component component = Component.literal("font").withStyle(style -> style.withFont(identifier));
+                helper.assertTrue(trace.boundedChat(component).getAsJsonObject().get("font").getAsString().equals(font),
+                        "Ordinary native font identifier serialization differs");
+            }
+            var key = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.PIG);
+            chatIdentifier(key, new int[2]);
+            helper.assertTrue(key.getClass() == ResourceLocation.class && key.toString().equals("minecraft:pig"),
+                    "Pinned ordinary registry identifier differs");
+        } finally { trace.clear(); }
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = "advancedrocketrycommunity", template = "empty", batch = "sleep_trace", timeoutTicks = 20)
+    public static void unsupportedFontReceiversAreRefusedBeforeIdentifierMethods(GameTestHelper helper) {
+        var identifier = new RecordingResourceLocation();
+        Component component = Component.literal("font").withStyle(style -> style.withFont(identifier));
+        assertRefusedInComponentRoutes(helper, component, "unsupported native chat resource identifier");
+        boolean refused = false;
+        try { chatIdentifier(identifier, new int[2]); }
+        catch (IllegalStateException failure) { refused = "unsupported native chat resource identifier".equals(failure.getMessage()); }
+        helper.assertTrue(refused && identifier.namespaceCalls == 0 && identifier.pathCalls == 0 && identifier.stringCalls == 0,
+                "Unsupported resource identifier methods ran");
+        helper.succeed();
+    }
+
     private static void assertRefusedInComponentRoutes(GameTestHelper helper, Component nested, String reason) {
         UUID id = UUID.fromString("5c499464-a93c-4a09-af52-86de593d18a6");
         var trace = new SleepBoundaryTrace(List.of("unsupported-nested-receivers"));
@@ -162,5 +200,13 @@ public final class SleepBoundaryChatBounds {
         RecordingEntityTooltipInfo() { super(EntityType.PIG, UUID.fromString("5c499464-a93c-4a09-af52-86de593d18a6"), null); }
         @Override public JsonElement serialize() { serializeCalls++; throw new AssertionError("Unsupported entity serializer invoked"); }
         @Override public List<Component> getTooltipLines() { tooltipCalls++; throw new AssertionError("Unsupported tooltip getter invoked"); }
+    }
+
+    private static final class RecordingResourceLocation extends ResourceLocation {
+        int namespaceCalls, pathCalls, stringCalls;
+        RecordingResourceLocation() { super("arce_adapter_test", "receiver_probe"); }
+        @Override public String getNamespace() { namespaceCalls++; throw new AssertionError("Unsupported namespace getter invoked"); }
+        @Override public String getPath() { pathCalls++; throw new AssertionError("Unsupported path getter invoked"); }
+        @Override public String toString() { stringCalls++; throw new AssertionError("Unsupported identifier conversion invoked"); }
     }
 }
