@@ -1,6 +1,6 @@
 # 至完成的分会话计划
 
-更新：2026-10-09。活动开发版本为 v1.8.0，后续由 Root 直接实施剩余设备和原生失败修订；
+更新：2026-10-10。活动开发版本为 v1.8.0，后续由 Root 直接实施剩余设备和原生失败修订；
 验收游标仍在 v1.0.0。分支为 `codex/v1.8.0-classic-content`。
 已验证的开发进度按功能提交和非强制推送，不把提交当作 Gate 批准。
 本计划只记录现状；历史运行与失败保留在各版本实施日志及证据中。
@@ -637,18 +637,30 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ### C19 矩阵、审核与交付 `[ ]`
 
-- [ ] [C19-INVENTORY-TEST-11](../work/v1.8.0-c19-strict-validator/INVENTORY-TEST-TASK-11.md)：
-  status: in-progress，修正历史资源清单测试的输入适用范围。只改一份测试文件，
-  保留空未声明清单断言，绑定已接受历史快照，增加未声明文本/二进制及版本分发覆盖。
-  不改变生产白名单、内容来源判定或原180秒资格预算；真实结果和独立审核待取得。
-- [ ] [C19-STRICT-DIAGNOSTICS-08](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-TASK-08.md)：
-  status: in-progress，限定诊断源码已在 Main `af363704` 提交并正常推送。
+- [x] [C19-INVENTORY-TEST-11](../work/v1.8.0-c19-strict-validator/INVENTORY-TEST-TASK-11.md)
+  的限定测试源码：一文件修正已提交、独立审核、集成并推送至 Main `ffadaca3`。
+  [检查点](../work/v1.8.0-c19-strict-validator/INVENTORY-CHECKPOINT-11.md)记录固定候选
+  Root 17/148、独立 17/148/18 方法通过；保留历史非空输入及负向/分发断言。
+  不改变生产白名单、来源判定或原 180 秒预算。完整 Python/strict 仍超时，C19 未完成。
+- [ ] R11-OPS01：独立清理 launcher 未启动，exit 125，零删除/重试；四份缓存
+  535508 bytes 和十个自有临时目录保留。源码审核不等于操作任务全部接受，Root 不接管。
+- [ ] R14-OPS01（Medium）：Root12 清理只检查目标/后代及三个自有根至卷根，
+  未单独检查嵌套 .cache 的每级父目录；词法 GetFullPath/prefix 不等于物理解析。
+  未观察到重定向或越界删除。另立更正记录，未来 helper 需补齐，旧清理/封存包不重试或修改。
+- [ ] C19 checksum 本地/Git 输入边界：只读 review13 的两项静态 Medium 仍开放。
+  分别涉及资源/终止上限及父目录 reparse/读取稳定性；未复现或认定为超时原因。
+  单独冻结脚本/相邻测试范围，保持完整覆盖、可选 artifact 与已接受历史证据。
+- [ ] C19 可移植已提交证据引用：实际 Markdown 检查在 256 错误前缀后停止。
+  绝对/越界及缺失 ZIP/manifest 需逐项核对所有者；不拷贝未知归属的未跟踪材料。
+- [x] [C19-STRICT-DIAGNOSTICS-08](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-TASK-08.md)
+  的限定诊断源码已在 Main `af363704` 提交并正常推送。
   [检查点](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-CHECKPOINT-08.md)
-  记录 Root 与独立审核各14项针对性测试通过，完整140项各保留既存资源断言失败，
-  广泛 Python 和严格180秒超时。真实严格执行有13个进入/12个返回，末项为
-  `check_v002_g4_applicability`，不据此归因旧超时。原检查/判定/预算不变。
-  实际标准子集在候选 `945e07c6` 通过，源码关联不等于 Main SHA 复跑。
-  嵌套 Git、资源清单适用性修正、完整资格及 Gate 仍开放；不实施睡眠或资源 helper。
+  保留其历史测试、限定审核和失败记录；原检查、判定、顺序和预算不变。
+  历史资源适用性由上述限定修正处理；嵌套 Git、完整资格及 Gate 仍开放，
+  不实施睡眠或资源 helper，不把限定源码交付当作 C19 完成。
+- [ ] C19 完整 Python/strict 资格：最新固定候选的两项 180 秒超时仍失败。
+  严格执行记录 13 个进入/12 个返回，末项 `check_v002_g4_applicability`；
+  不据此归因旧超时或内部调用。来源审核、链接与全部 Required Gate 不能由标准子集替代。
 
 最新短回归与独立复验见下方“当前自动回归与风险”。
 [历史组合回归17](../work/v1.8.0-claude-cli-coordination/REGRESSION-17.md)的 required
@@ -714,16 +726,20 @@ Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端
 
 ## 当前自动回归与风险
 
-最新开发回归见[诊断08检查点](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-CHECKPOINT-08.md)。
-实际被测候选 `945e07c6` 与 Main `af363704` 关联 src、诊断源码及十二项输入；
+最新开发回归见[库存11检查点](../work/v1.8.0-c19-strict-validator/INVENTORY-CHECKPOINT-11.md)。
+实际被测候选 `5c0dee24` 与 Main `ffadaca3` 关联 src、scripts/tests 和十二项输入；
 不声称 Main SHA 复跑或文档敏感的严格校验等同。Root 强制构建/独立测试各执行
 2,192项实际 JUnit/381 XML，全部597项必需 GameTest、两次 DataGen/空 diff 通过。
-Root 与独立08的14项针对性 Python 通过，但完整140项各保留一项既存清单失败；
-广泛 Python 与严格180秒超时，部分终止失败不改写。每份原生日志62条 ERROR/
-零 FATAL，未豁免。三个证据包已封存并逐项核验；Root08/09只清理自身八个新产物，
-保留源码、旧拒绝目录、独立05残留及继承债务。独立固定对象10完成源码/回执/清单审核；
-一项 Low 测试构成文字错误已新增更正记录，封存原文不改，没有诊断特定代码发现。
-清单适用性与历史快照/Git 约束须另立小切片，不能扩大白名单、删断言或延长预算。
+Root 17/148、独立 17/148/18 Python 方法通过，广泛 Python 与严格 180 秒仍超时；
+部分终止失败不改写。Markdown 诊断实际 FAIL，256 条仅为有界前缀。
+每份原生日志 62 条 ERROR/零 FATAL，未豁免。三个新证据包已封存并逐项核验；
+Root11/12 只清理自身八个新产物，完整父目录解析证明缺口保留，不能补造旧观察。
+独立11清理未启动的 R11-OPS01 及四份缓存保留；源码、旧拒绝目录、独立05残留
+和继承债务不接管。历史诊断08/09与原 Low 更正保持封存，不能替代最新资格。
+独立固定对象14核对 26 回执/52 原始流和三个完整清单；测试修正/精确集成无 material
+源码发现，R14-OPS01 的 Medium 操作证明缺口继续开放。
+checksum 两项静态 Medium、历史 Git 和可移植引用须另立小切片，
+不能扩大白名单、删断言、盲目合并不同历史身份或延长预算。
 此前05通过和更早原生失败仍作为历史证据，物品来源/COMMON watcher 等风险不关闭。
 上述自动测试和观察夹具不替代物理 hatch、资源验收、真实客户端或打包 S1/S2。
 

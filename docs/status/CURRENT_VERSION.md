@@ -37,30 +37,30 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: af363704b712c2bd0791f05d71a541bd8d904be5
+latest_source_checkpoint: ffadaca36411c6d5edf8d1912f424405883ed6d8
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
 pending_laser_owner_fixture_source_candidate: ""
 pending_laser_owner_fixture_qualification: TEST_SOURCE_INTEGRATED_ROOT_PEER_NATIVE_PASS_STRICT_LOGS_OPEN
 pending_strict_diagnostics_source_candidate: ""
-pending_strict_diagnostics_qualification: SOURCE_INTEGRATED_DIAGNOSTICS14_PASS_REPOSITORY_FAILURE_SUITE_STRICT_TIMEOUT
-pending_inventory_test_source_candidate: 5c0dee248d8fcf5851fdcd5d1aabd113b6e45457
-pending_inventory_test_qualification: COMMITTED_REPOSITORY148_PASS_BROAD_STRICT_REVIEW_PENDING
+pending_strict_diagnostics_qualification: SOURCE_INTEGRATED_OBSERVATION_VERIFIED_FULL_QUALIFICATION_OPEN
+pending_inventory_test_source_candidate: ""
+pending_inventory_test_qualification: SOURCE_INTEGRATED_REPOSITORY148_PEER_PASS_BROAD_STRICT_TIMEOUT_OPERATIONAL_RETENTION_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: 945e07c6bc8b69e51f4819235e70577f217226f0
-native_tested_code_commit: 945e07c6bc8b69e51f4819235e70577f217226f0
-latest_regression_target_commit: 945e07c6bc8b69e51f4819235e70577f217226f0
-latest_regression_result: ROOT_NATIVE_PASSED_REPOSITORY_FAILURE_SUITE_STRICT_TIMEOUT_GATES_OPEN
-latest_regression_run: strict-phase-standard-root-20261009-09/native-01
+tested_code_commit: 5c0dee248d8fcf5851fdcd5d1aabd113b6e45457
+native_tested_code_commit: 5c0dee248d8fcf5851fdcd5d1aabd113b6e45457
+latest_regression_target_commit: 5c0dee248d8fcf5851fdcd5d1aabd113b6e45457
+latest_regression_result: ROOT_NATIVE_REPOSITORY_PASSED_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_GATES_OPEN
+latest_regression_run: inventory-standard-root-20261010-12/native-01
 latest_regression_attempt: 1
-latest_regression_evidence: ACTUAL_945_RUNTIME_MAIN_SOURCE_INPUT_ALIAS_FULL_PYTHON_STRICT_FAILURES_RETAINED
-latest_regression_observed_utc: 2026-10-09T15:44:21.206887Z
-actual_unit_rerun: strict-phase-standard-root-20261009-09/test-01.command.json
-actual_unit_rerun_observed_utc: 2026-10-09T15:37:39.935683Z
-tested_python_commit: 945e07c6bc8b69e51f4819235e70577f217226f0
-latest_python_qualification_result: DIAGNOSTICS14_PASS_REPOSITORY140_FAILURE_SUITE_TIMEOUT
+latest_regression_evidence: ACTUAL_5C_RUNTIME_MAIN_SOURCE_INPUT_ALIAS_FULL_PYTHON_STRICT_FAILURES_RETAINED
+latest_regression_observed_utc: 2026-10-09T16:29:24.703327Z
+actual_unit_rerun: inventory-standard-root-20261010-12/test-01.command.json
+actual_unit_rerun_observed_utc: 2026-10-09T16:22:44.884762Z
+tested_python_commit: 5c0dee248d8fcf5851fdcd5d1aabd113b6e45457
+latest_python_qualification_result: REPOSITORY148_PASS_SUITE_TIMEOUT_MARKDOWN_FAILURE_OPERATIONAL_RETENTION_OPEN
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
 sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_INDEPENDENT_REVIEW_COMPLETE_RESOURCE_OPEN
 last_updated: 2026-10-10
@@ -68,40 +68,40 @@ last_updated: 2026-10-10
 
 ## Current development evidence
 
-The [diagnostics08 checkpoint](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-CHECKPOINT-08.md)
-records the two-file source normally integrated/pushed at Main af363704. Actual
-execution is fixed candidate945, not a Main-SHA rerun. Root and fresh independent08
-each pass fourteen targeted methods; their full repository140 each fails the
-same inherited resource-inventory assertion, and broader Python/strict180 time
-out. New diagnostics show thirteen entries/twelve returns, ending at
-check_v002_g4_applicability entry; this is not the cause of older timeout cohorts.
-Partial taskkill128 observations remain failures; later PID absence is separate.
-The standard Root09 subset forces build/test with 2192 JUnit/381 XML/0 F/E/S,
-two DataGen/empty diffs and all597 required native passes. Each native log retains
-62 ERROR/0 FATAL without waiver. Source/twelve-input and raw/copy/artifact hashes
-are audited; the latest fields identify only those exact candidate945 receipts.
-Independent08 is fully read, hash-acknowledged and sealed; all three manifests
-and payloads are verified. Root retires eight exact owned output targets once,
-after copying checkout logs. Historical packets, refused/peer/user/global outputs
-stay untouched. Source binding does not establish Main validator equivalence,
-new consumer execution, resource, sleep/durability/restart, clients or Gates.
-Fixed-object integration10 completes actual diff/receipt/manifests review. Its
-Low test-caption correction is recorded additively; sealed report bytes stay
-unchanged. No diagnostic-specific code defect is established in the finite review.
-The preceding [test-source integration05](../work/v1.8.0-c18a-seal-detector/TEST-SOURCE-INTEGRATION-05.md)
+The [inventory11 checkpoint](../work/v1.8.0-c19-strict-validator/INVENTORY-CHECKPOINT-11.md)
+records the test-only source integrated/pushed at Main ffadaca3. Actual fixed
+candidate 5c passes Root 17/148 and fresh independent 17/148/18 methods, without
+changing a production classifier or allowlist. Forced build/separate test each
+execute 2192 JUnit/381 XML/0 F/E/S, two DataGen/empty diffs and all 597 required
+native tests pass. Each native log retains 62 ERROR/0 FATAL, unwaived. Broad
+Python and strict still time out at 180 seconds; a distinct Markdown diagnostic
+fails with a bounded 256-error prefix of unsafe/missing references. Two static
+checksum Mediums concern resource bounds and parent-reparse/read stability;
+neither is reproduced or established as timeout cause. Independent R11-OPS01
+cleanup launch fails before deletion: four caches/535508 bytes and ten own
+temporary directories remain, with no retry or Root takeover. Source review and
+operational completion are separate. Three immutable manifests are verified;
+Root retires only its own eight exact outputs once. Source/Main input binding
+does not mean Main-SHA strict execution, resource/sleep/writer/client Gate PASS.
+Independent fixed-object review14 verifies 26 receipts/52 streams and all three
+manifests, with no material test-source/integration defect. Its R14-OPS01 Medium
+records Root12 cleanup's lexical containment and target/descendant reparse, with
+a separate tool-only own-root ancestor observation; nested .cache parent-chain
+resolution is not proved. This operational limitation remains open, with no
+observed escape, cleanup retry or modification to sealed records.
+
+Historical diagnostics/standard metrics and the additive Low caption correction
+remain in the [diagnostics08 checkpoint](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-CHECKPOINT-08.md)
+and implementation log, not latest execution fields. Earlier
+[test-source integration05](../work/v1.8.0-c18a-seal-detector/TEST-SOURCE-INTEGRATION-05.md)
 and [failed parent770 cohorts](../work/v1.8.0-c18a-seal-detector/SPATIAL-VERIFICATION-04.md)
-are historical, with hanging-item/COMMON-writer and older process/cleanup risks
-still open. The earlier d57 regression below is also historical, not latest.
+retain unresolved hanging-item/COMMON-writer and historical process/cleanup
+risks. Sealed observations and failed cohorts are not rebound or rewritten.
 
 The [final observation test-source integration32](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)
-is normally merged/pushed at ce64a8eb. Actual fresh standard qualification is at
-d57ecda1; the complete src tree and ten build/consumer inputs match Main, without
-a merge-SHA rerun claim. Forced clean build and separate explicit test each run
-2192 JUnit /381 XML /zero failures/errors/skips. Both forced DataGen/diff cohorts
-pass; all 594 required GameTests pass in 151 discovered batches. Native logs
-retain 62 unwaived ERROR /zero FATAL; strict remains 180-second TIMEOUT. Corrected
-offline publication/API consumer pass, with the original split-argument failure
-retained. Only the separate adapter fixture contains the new observation classes;
+is normally merged/pushed at ce64a8eb. Its historical standard qualification and
+corrected publication/API consumer results remain in that checkpoint, with the
+original split-argument failure retained. Only the separate adapter fixture contains the new observation classes;
 production host/API/sources are unchanged. The opt-in property and twenty console
 rows are unexecuted. Task28's six owned disposable outputs are cleaned once;
 old denied peer outputs/incidents remain. Complete D1 proposal29 and independent31
