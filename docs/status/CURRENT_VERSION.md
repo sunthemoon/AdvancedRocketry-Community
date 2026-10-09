@@ -116,8 +116,10 @@ and native/packaged checks continue. No tool source has been integrated into Mai
 Titanium/motor survival progression remains unfinished. The owner has selected
 [actual off-world sleep](../work/v1.8.0-c18a-sleep/OWNER-DECISION-01.md), conditional
 on separate freezing/review of dimension, spawn-point and time behavior before
-implementation. Separate read-only contract research has started; those policies
-are unchanged and no sleep implementation source is assigned.
+implementation. Read-only research has produced a
+[proposed contract](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md); independent
+review and the exact bed/spawn-operation proof obligation remain open. Those
+policies are unchanged and no sleep implementation source is assigned.
 
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior
 current-state evidence is preserved in the
