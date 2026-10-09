@@ -199,6 +199,66 @@ public final class SealDetectorAdmissionGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "empty", batch = "seal_detector_admission", timeoutTicks = 20)
+    public static void localHandleRejectsForeignLevelBeforeSelectedCellAccess(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper); LocalReader control = new LocalReader(f); LocalReader local = new LocalReader(f)) {
+            control.control(f);
+            ServerLevel other = f.level.getServer().getLevel(Level.NETHER);
+            helper.assertTrue(other != null && other != f.level, "Foreign actual Level is unavailable");
+            Probe context = f.probe(f.actor.player, other, false);
+            helper.assertTrue(local.service.owns(f.level.getServer())
+                    && local.service.read(context).equals(SealDetectorReading.unavailable()), "Foreign Level local read responded");
+            context.untouched(helper, false);
+            helper.assertTrue(local.manager.metrics(f.level.dimension()).isEmpty()
+                    && local.manager.metrics(other.dimension()).isEmpty(), "Foreign Level refusal created a local atmosphere service");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "seal_detector_admission", timeoutTicks = 20)
+    public static void nearbyHitCannotAuthorizeAnUnloadedFarSelectedCell(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper); LocalReader control = new LocalReader(f); LocalReader local = new LocalReader(f)) {
+            control.control(f);
+            BlockPos far = new BlockPos(25_000_000, f.target.getY(), 25_000_000);
+            helper.assertTrue(f.level.getChunkSource().getChunkNow(far.getX() >> 4, far.getZ() >> 4) == null,
+                    "Far selected chunk was already loaded");
+            int loaded = f.level.getChunkSource().getLoadedChunksCount();
+            helper.assertTrue(f.level.getForcedChunks().size() <= 4096, "Forced-mark snapshot exceeds the fixture bound");
+            var forced = java.util.Set.copyOf(f.level.getForcedChunks());
+            Vec3 eye = f.actor.player.getEyePosition();
+            UseOnContext context = new UseOnContext(f.actor.player, InteractionHand.MAIN_HAND,
+                    new BlockHitResult(eye, Direction.UP, far, false));
+            helper.assertTrue(eye.distanceToSqr(context.getClickLocation()) == 0D
+                    && SealDetectorService.distanceToCellSquared(eye, far) > 36D, "Inconsistent near-hit fixture differs");
+            helper.assertTrue(local.service.read(context).equals(SealDetectorReading.unavailable())
+                    && local.manager.metrics(f.level.dimension()).isEmpty(), "Far cell was authorized by a near hit");
+            helper.assertTrue(f.level.getChunkSource().getLoadedChunksCount() == loaded
+                    && f.level.getChunkSource().getChunkNow(far.getX() >> 4, far.getZ() >> 4) == null
+                    && forced.equals(f.level.getForcedChunks()), "Refusal loaded the selected chunk or changed forced marks");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "seal_detector_admission", timeoutTicks = 20)
+    public static void outOfBuildTargetRefusesBeforeTheLegacyOpenFallback(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper); LocalReader control = new LocalReader(f); LocalReader local = new LocalReader(f)) {
+            control.control(f);
+            BlockPos target = new BlockPos(f.target.getX(), f.level.getMaxBuildHeight(), f.target.getZ());
+            // Setup moves an owned connected player within the already-loaded fixture chunk.
+            f.actor.player.teleportTo(f.level, target.getX() - 1.5D, target.getY() - 2D, target.getZ() + 0.5D, 0, 0);
+            UseOnContext context = new UseOnContext(f.actor.player, InteractionHand.MAIN_HAND,
+                    new BlockHitResult(Vec3.atCenterOf(target).add(-0.5D, 0, 0), Direction.WEST, target, false));
+            helper.assertTrue(SealDetectorService.validEye(f.actor.player.getEyePosition(), f.level.getMinBuildHeight(), f.level.getMaxBuildHeight())
+                    && SealDetectorService.inReach(f.actor.player.getEyePosition(), context.getClickLocation(), target)
+                    && f.level.isOutsideBuildHeight(target)
+                    && f.level.getChunkSource().getChunkNow(target.getX() >> 4, target.getZ() >> 4) != null,
+                    "Height refusal must have a valid eye/reach and loaded horizontal chunk");
+            helper.assertTrue(local.service.read(context).equals(SealDetectorReading.unavailable())
+                    && local.manager.metrics(f.level.dimension()).isEmpty(), "Invalid height became a measured OPEN boundary");
+        }
+        helper.succeed();
+    }
+
     private static final class LocalReader implements AutoCloseable {
         private final AtmosphereManager manager = new AtmosphereManager(new CelestialEnvironmentService(new CelestialCatalogManager()));
         private final SealDetectorService service;
