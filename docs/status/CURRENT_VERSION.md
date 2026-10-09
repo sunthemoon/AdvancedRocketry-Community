@@ -37,58 +37,59 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 2f137f993a40eb4aa08316ed8d018d30501d1863
+latest_source_checkpoint: af363704b712c2bd0791f05d71a541bd8d904be5
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
 pending_laser_owner_fixture_source_candidate: ""
 pending_laser_owner_fixture_qualification: TEST_SOURCE_INTEGRATED_ROOT_PEER_NATIVE_PASS_STRICT_LOGS_OPEN
-pending_strict_diagnostics_source_candidate: 945e07c6bc8b69e51f4819235e70577f217226f0
-pending_strict_diagnostics_qualification: DIAGNOSTICS14_PASS_RESOURCE_FAILURE_SUITE_STRICT_TIMEOUT_REVIEW_RUNNING
+pending_strict_diagnostics_source_candidate: ""
+pending_strict_diagnostics_qualification: SOURCE_INTEGRATED_DIAGNOSTICS14_PASS_REPOSITORY_FAILURE_SUITE_STRICT_TIMEOUT
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: 0b02c513b573cf474690e8d0801152acebf8d692
-native_tested_code_commit: 0b02c513b573cf474690e8d0801152acebf8d692
-latest_regression_target_commit: 0b02c513b573cf474690e8d0801152acebf8d692
-latest_regression_result: ROOT_PEER_NATIVE_PASSED_STRICT_TIMEOUT_GATES_OPEN
-latest_regression_run: laser-owner-fixture-root-20261009-05/native-01
+tested_code_commit: 945e07c6bc8b69e51f4819235e70577f217226f0
+native_tested_code_commit: 945e07c6bc8b69e51f4819235e70577f217226f0
+latest_regression_target_commit: 945e07c6bc8b69e51f4819235e70577f217226f0
+latest_regression_result: ROOT_NATIVE_PASSED_REPOSITORY_FAILURE_SUITE_STRICT_TIMEOUT_GATES_OPEN
+latest_regression_run: strict-phase-standard-root-20261009-09/native-01
 latest_regression_attempt: 1
-latest_regression_evidence: ACTUAL_CANDIDATE_RUNTIME_MAIN_SOURCE_INPUT_ALIAS_PARENT_FAILURES_RETAINED
-latest_regression_observed_utc: 2026-10-09T14:11:43.011152Z
-actual_unit_rerun: laser-owner-fixture-root-20261009-05/test-01.command.json
-actual_unit_rerun_observed_utc: 2026-10-09T14:04:45.338567Z
-tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
+latest_regression_evidence: ACTUAL_945_RUNTIME_MAIN_SOURCE_INPUT_ALIAS_FULL_PYTHON_STRICT_FAILURES_RETAINED
+latest_regression_observed_utc: 2026-10-09T15:44:21.206887Z
+actual_unit_rerun: strict-phase-standard-root-20261009-09/test-01.command.json
+actual_unit_rerun_observed_utc: 2026-10-09T15:37:39.935683Z
+tested_python_commit: 945e07c6bc8b69e51f4819235e70577f217226f0
+latest_python_qualification_result: DIAGNOSTICS14_PASS_REPOSITORY140_FAILURE_SUITE_TIMEOUT
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
 sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_INDEPENDENT_REVIEW_COMPLETE_RESOURCE_OPEN
-last_updated: 2026-10-09
+last_updated: 2026-10-10
 ```
 
 ## Current development evidence
 
-The [two-file test-source integration05](../work/v1.8.0-c18a-seal-detector/TEST-SOURCE-INTEGRATION-05.md)
-is normally committed/pushed through Main 2f137f99. Its complete src tree and ten
-build/consumer inputs exactly match actual candidate 0b02c513; no Main-SHA runtime
-rerun is claimed. Root and fresh independent05 each force build/test with 2192
-JUnit/381 XML, repeated DataGen/empty diffs and all-597-required-pass native runs.
-Exact command/registration receipts show the intended new owner. Both retain 62
-ERROR/0 FATAL per log and strict180 TIMEOUT/partial taskkill255. Stable independent05
-report is fully read, exact-hash acknowledged and sealed; all 859 payload hashes
-are verified. Later named-PID absence is not historical whole-tree termination.
-The latest run fields above retain the exact Root05 receipt, not a combined run.
-Fresh fixed-object independent07 completes the integration alias/receipt audit;
-Root fully reads its report/commands/inputs and verifies all four payload hashes.
-Whole repositories differ in documentation, so no Main validator equivalence,
-new consumer run or artifact rehash is claimed. Its finite commit-count wording
-correction is recorded additively in integration05; sealed originals are unchanged.
-The two failed parent770 cohorts remain in [checkpoint04](../work/v1.8.0-c18a-seal-detector/SPATIAL-VERIFICATION-04.md),
-with hanging-item provenance and COMMON malformed-file writer unresolved.
-Separate Root correction06 retires the actual v1.8 caches and copied checkout logs;
-it corrects the old generic cache locator without editing sealed originals.
-Peer05 own logs/cache 998742 bytes and Root04 empty refused scratch remain.
-Completed static strict diagnosis03 identifies terminal-only/buffered reporting
-and a nested unbounded Git query; original executed phase/cause is unproven.
-No production, resource, sleep/durability/restart or Gate acceptance follows.
-The earlier d57 regression below remains historical at d57, not the latest result.
+The [diagnostics08 checkpoint](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-CHECKPOINT-08.md)
+records the two-file source normally integrated/pushed at Main af363704. Actual
+execution is fixed candidate945, not a Main-SHA rerun. Root and fresh independent08
+each pass fourteen targeted methods; their full repository140 each fails the
+same inherited resource-inventory assertion, and broader Python/strict180 time
+out. New diagnostics show thirteen entries/twelve returns, ending at
+check_v002_g4_applicability entry; this is not the cause of older timeout cohorts.
+Partial taskkill128 observations remain failures; later PID absence is separate.
+The standard Root09 subset forces build/test with 2192 JUnit/381 XML/0 F/E/S,
+two DataGen/empty diffs and all597 required native passes. Each native log retains
+62 ERROR/0 FATAL without waiver. Source/twelve-input and raw/copy/artifact hashes
+are audited; the latest fields identify only those exact candidate945 receipts.
+Independent08 is fully read, hash-acknowledged and sealed; all three manifests
+and payloads are verified. Root retires eight exact owned output targets once,
+after copying checkout logs. Historical packets, refused/peer/user/global outputs
+stay untouched. Source binding does not establish Main validator equivalence,
+new consumer execution, resource, sleep/durability/restart, clients or Gates.
+Fixed-object integration10 completes actual diff/receipt/manifests review. Its
+Low test-caption correction is recorded additively; sealed report bytes stay
+unchanged. No diagnostic-specific code defect is established in the finite review.
+The preceding [test-source integration05](../work/v1.8.0-c18a-seal-detector/TEST-SOURCE-INTEGRATION-05.md)
+and [failed parent770 cohorts](../work/v1.8.0-c18a-seal-detector/SPATIAL-VERIFICATION-04.md)
+are historical, with hanging-item/COMMON-writer and older process/cleanup risks
+still open. The earlier d57 regression below is also historical, not latest.
 
 The [final observation test-source integration32](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)
 is normally merged/pushed at ce64a8eb. Actual fresh standard qualification is at

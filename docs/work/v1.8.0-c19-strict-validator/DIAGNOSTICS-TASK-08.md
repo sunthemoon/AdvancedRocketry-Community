@@ -4,6 +4,11 @@ Date: 2026-10-09. Status: IN_PROGRESS. Root implementation; independent Codex
 review and fixed-source execution required. No Claude. This is current v1.8
 qualification tooling, not a release or new-version feature.
 
+Source implementation and limited integration are committed/pushed at Main
+af363704b712c2bd0791f05d71a541bd8d904be5. Actual results and independent review are
+in [checkpoint08](DIAGNOSTICS-CHECKPOINT-08.md). Overall status remains IN_PROGRESS
+because complete Python/strict qualification does not pass; no Gate is approved.
+
 ## Scope and ownership
 
 Preparation base: Main 9b8b5a28f03964a81f0074342ffd95e63f31ca4c. The source task

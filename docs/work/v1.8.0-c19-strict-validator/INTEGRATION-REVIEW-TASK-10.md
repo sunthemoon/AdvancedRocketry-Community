@@ -3,6 +3,11 @@
 Date: 2026-10-09. Independent Codex read-only worker; no Claude, delegation,
 source writes, runtime qualification, process control or cleanup.
 
+Completed mailbox report is recorded in
+[checkpoint08](DIAGNOSTICS-CHECKPOINT-08.md): actual fixed-object/source and
+receipt/custody comparisons, one Low report-caption correction and finite limits.
+This is not new runtime qualification or Gate approval.
+
 Read AGENTS and mandatory v1.8 governance. Compare actual source commit
 945e07c6bc8b69e51f4819235e70577f217226f0 with Main integration
 af363704b712c2bd0791f05d71a541bd8d904be5 and its direct parent

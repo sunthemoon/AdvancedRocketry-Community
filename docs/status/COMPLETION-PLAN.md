@@ -638,10 +638,13 @@ C17b candidate03 的独立审核已解决旧版 Medium
 ### C19 矩阵、审核与交付 `[ ]`
 
 - [ ] [C19-STRICT-DIAGNOSTICS-08](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-TASK-08.md)：
-  status: in-progress，仅既有33项与可选包检查的有界、即时刷新 stderr 阶段诊断。
-  保留全部检查顺序、参数、判定、最终 stdout 与180秒外部预算；真实失败不改写。
-  Root 在独立 worktree 实施，使用现有 Python 单测覆盖编排、输出与异常传播，
-  提交后独立审核并实际测量。嵌套 Git 约束、优化、Java/睡眠/资源及 Gate 不在范围内。
+  status: in-progress，限定诊断源码已在 Main `af363704` 提交并正常推送。
+  [检查点](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-CHECKPOINT-08.md)
+  记录 Root 与独立审核各14项针对性测试通过，完整140项各保留既存资源断言失败，
+  广泛 Python 和严格180秒超时。真实严格执行有13个进入/12个返回，末项为
+  `check_v002_g4_applicability`，不据此归因旧超时。原检查/判定/预算不变。
+  实际标准子集在候选 `945e07c6` 通过，源码关联不等于 Main SHA 复跑。
+  嵌套 Git、资源清单适用性修正、完整资格及 Gate 仍开放；不实施睡眠或资源 helper。
 
 最新短回归与独立复验见下方“当前自动回归与风险”。
 [历史组合回归17](../work/v1.8.0-claude-cli-coordination/REGRESSION-17.md)的 required
@@ -707,17 +710,18 @@ Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端
 
 ## 当前自动回归与风险
 
-最新开发回归见[测试源码集成05](../work/v1.8.0-c18a-seal-detector/TEST-SOURCE-INTEGRATION-05.md)。
-实际被测候选 `0b02c513` 的完整 src 与十项构建输入等于 Main `2f137f99`；
-不声称 Main SHA 复跑。Root 和独立 Codex 各自强制构建/测试，均执行2,192项实际
-JUnit/381 XML；全部597项必需 GameTest、两次 DataGen 与空生成 diff 通过。
-独立07实际源码/回执审核完成，但严格校验双方仍在180秒超时，原始部分终止失败
-与后来 PID 缺席分开记录。每份原生日志62条 ERROR/零 FATAL，均未豁免。
-新增空间守卫和所有者夹具不替代物理 hatch、真实客户端或打包 S1/S2。
-历史不同原生失败、物品来源/COMMON watcher 和准备时序偏差仍未关闭。
-Root06以独立更正包清理实际 v1.8 缓存及已复制日志；旧拒绝目录、独立05残留
-日志/缓存和继承债务保留，不接手清理。静态诊断03完成但未证明旧超时原因；
-限定阶段诊断08开始实施，不改变原预算或降低检查标准。
+最新开发回归见[诊断08检查点](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-CHECKPOINT-08.md)。
+实际被测候选 `945e07c6` 与 Main `af363704` 关联 src、诊断源码及十二项输入；
+不声称 Main SHA 复跑或文档敏感的严格校验等同。Root 强制构建/独立测试各执行
+2,192项实际 JUnit/381 XML，全部597项必需 GameTest、两次 DataGen/空 diff 通过。
+Root 与独立08的14项针对性 Python 通过，但完整140项各保留一项既存清单失败；
+广泛 Python 与严格180秒超时，部分终止失败不改写。每份原生日志62条 ERROR/
+零 FATAL，未豁免。三个证据包已封存并逐项核验；Root08/09只清理自身八个新产物，
+保留源码、旧拒绝目录、独立05残留及继承债务。独立固定对象10完成源码/回执/清单审核；
+一项 Low 测试构成文字错误已新增更正记录，封存原文不改，没有诊断特定代码发现。
+清单适用性与历史快照/Git 约束须另立小切片，不能扩大白名单、删断言或延长预算。
+此前05通过和更早原生失败仍作为历史证据，物品来源/COMMON watcher 等风险不关闭。
+上述自动测试和观察夹具不替代物理 hatch、资源验收、真实客户端或打包 S1/S2。
 
 共享保存 R-021、真实放置/结果认证、provisional LOAD 与生命周期终态绑定、
 完整 S1/S2、迁移、V1/V2、性能、完整科技流程和资产交付仍未完成。

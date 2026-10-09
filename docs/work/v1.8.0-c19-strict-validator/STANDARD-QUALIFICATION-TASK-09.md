@@ -5,6 +5,11 @@ Date: 2026-10-09. Root execution only, current v1.8. Source remains exactly
 No source/code, predicate, assets, production or Gate change is authorized here.
 Independent08's fixed checkout/source review and own Python commands stay separate.
 
+Execution ends with thirteen zero-classification receipts at the fixed source.
+[Checkpoint08](DIAGNOSTICS-CHECKPOINT-08.md) records actual results and sealed
+custody. This completed standard subset excludes the failed Root08 Python/strict
+qualification and does not complete the version or a Required Gate.
+
 ## Actual command scope and custody
 
 Run standard forced clean build and separate test, twice-forced runData with
