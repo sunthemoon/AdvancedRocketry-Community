@@ -109,6 +109,7 @@
   "item.advancedrocketrycommunity.iron_plate": "铁板",
   "item.advancedrocketrycommunity.iron_rod": "铁棒",
   "item.advancedrocketrycommunity.iron_sheet": "铁薄板",
+  "item.advancedrocketrycommunity.jackhammer": "钻锤",
   "item.advancedrocketrycommunity.nitrogen_canister": "氮气罐",
   "item.advancedrocketrycommunity.raw_aluminum": "粗铝",
   "item.advancedrocketrycommunity.raw_iridium": "粗铱",
@@ -170,6 +171,7 @@
   "message.advancedrocketrycommunity.atmosphere_analyzer.state.unavailable": "信息不可用",
   "message.advancedrocketrycommunity.atmosphere_analyzer.supplied": "受控供气",
   "message.advancedrocketrycommunity.atmosphere_analyzer.unavailable": "大气分析仪：%s",
+  "message.advancedrocketrycommunity.jackhammer.disabled": "钻锤：已禁用",
   "message.advancedrocketrycommunity.pump.status": "%s | %s FE | %s mB",
   "message.advancedrocketrycommunity.seal_detector.boundary.open": "开放",
   "message.advancedrocketrycommunity.seal_detector.boundary.sealed": "密封",
@@ -238,6 +240,8 @@
   "status.advancedrocketrycommunity.pump.target_out_of_bounds": "目标超出世界边界",
   "status.advancedrocketrycommunity.pump.target_protected": "目标受保护",
   "status.advancedrocketrycommunity.pump.target_unloaded": "区块未加载",
+  "tooltip.advancedrocketrycommunity.jackhammer.mining": "快速挖掘镐类方块",
+  "tooltip.advancedrocketrycommunity.jackhammer.repair": "使用钛棒修理",
   "tooltip.advancedrocketrycommunity.seal_detector.measurement_only": "单个边界不能证明整个房间密封",
   "tooltip.advancedrocketrycommunity.tank.contents": "%s：%s mB"
 }

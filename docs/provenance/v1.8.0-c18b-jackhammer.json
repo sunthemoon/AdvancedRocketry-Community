@@ -1,0 +1,148 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-c18b-jackhammer-01",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-jackhammer",
+  "source_commit": "106d31653f8bce66761c919742629a75a047e2ca",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2017; Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "authoring_commit": "5d0f2b136791cca282f1b5516840a0cea8d285b8",
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/jackhammer.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-jackhammer",
+      "source_commit": "106d31653f8bce66761c919742629a75a047e2ca",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180JackhammerData.java",
+      "source_sha256": "d1605feb96878e8a02ae1335e96bf4ec4fc9d7b23b674f78578684b756aacb9e",
+      "authoring_commit": "5d0f2b136791cca282f1b5516840a0cea8d285b8",
+      "target_sha256": "b4e4a60f67e091f80a76e187db854286429b176dde3c521d40be5eb8097fa8fa",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Reference minecraft:item/handheld by resource ID and the new tool texture; no official model copied."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/jackhammer.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-jackhammer",
+      "source_commit": "106d31653f8bce66761c919742629a75a047e2ca",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180JackhammerData.java",
+      "source_sha256": "d1605feb96878e8a02ae1335e96bf4ec4fc9d7b23b674f78578684b756aacb9e",
+      "authoring_commit": "5d0f2b136791cca282f1b5516840a0cea8d285b8",
+      "target_sha256": "771eaebb41fcc90c4d9622f8c807705cca67d51ca3b64784e7ee4057cfb53563",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Draw the adopted new 16x16 82-opaque-pixel grid using V180MaterialArt.png and tint 0xBDD0DE; no input bitmap."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-jackhammer",
+      "source_commit": "106d31653f8bce66761c919742629a75a047e2ca",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180JackhammerLanguage.java",
+      "source_sha256": "34c4beeca52d7f8e6b0a3e9aa2f99c6fbcc0aa42e3e10aebcb4bd829d978f99c",
+      "authoring_commit": "5d0f2b136791cca282f1b5516840a0cea8d285b8",
+      "target_sha256": "106de5dd92206663143d9b14df939598b1bc081e84d4e4537f752b4b947cb613",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Add four bilingual jackhammer keys; all existing values are unchanged."
+      ],
+      "new_keys": [
+        "item.advancedrocketrycommunity.jackhammer",
+        "message.advancedrocketrycommunity.jackhammer.disabled",
+        "tooltip.advancedrocketrycommunity.jackhammer.mining",
+        "tooltip.advancedrocketrycommunity.jackhammer.repair"
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-jackhammer",
+      "source_commit": "106d31653f8bce66761c919742629a75a047e2ca",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180JackhammerLanguage.java",
+      "source_sha256": "34c4beeca52d7f8e6b0a3e9aa2f99c6fbcc0aa42e3e10aebcb4bd829d978f99c",
+      "authoring_commit": "5d0f2b136791cca282f1b5516840a0cea8d285b8",
+      "target_sha256": "c9efe66b99d80062c9f01455ed539dcb98ea2f08e5d513c5c3309365bd8b6643",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Add four bilingual jackhammer keys; all existing values are unchanged."
+      ],
+      "new_keys": [
+        "item.advancedrocketrycommunity.jackhammer",
+        "message.advancedrocketrycommunity.jackhammer.disabled",
+        "tooltip.advancedrocketrycommunity.jackhammer.mining",
+        "tooltip.advancedrocketrycommunity.jackhammer.repair"
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/tools/jackhammer.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-jackhammer",
+      "source_commit": "106d31653f8bce66761c919742629a75a047e2ca",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180JackhammerData.java",
+      "source_sha256": "d1605feb96878e8a02ae1335e96bf4ec4fc9d7b23b674f78578684b756aacb9e",
+      "authoring_commit": "5d0f2b136791cca282f1b5516840a0cea8d285b8",
+      "target_sha256": "a0b03744e03ed8e4d23fa0962bfac1ae62f3ed631c49b792ca6bcbee953c45e8",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Deterministic DataGen from newly authored source; no copied bitmap or official model."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/jackhammer.json",
+      "status": "UPSTREAM_AR_MIT",
+      "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
+      "source_branch": "1.12",
+      "source_commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "source_path": "src/main/resources/assets/advancedrocketry/recipes/jackhammer.json",
+      "source_sha256": "a2d717f1afe921977dfced20123272c8ceca26b457b2d52d37d23b9f6e249a45",
+      "authoring_commit": "5d0f2b136791cca282f1b5516840a0cea8d285b8",
+      "target_sha256": "56482a839e28193a90947b409f3f44a0ab6ec2c84eeced6a71dbed82e56f7824",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2017",
+      "transformation": [
+        "Retain shaped rows ' pt', 'imp', 'di ' and all ingredient counts and output count one.",
+        "Convert ore-dictionary diamond, titanium rod, iron rod, aluminum plate and motor inputs to the five adopted modern tags.",
+        "Use the stable modern result ID, crafting_shaped serializer and equipment category; discard obsolete Forge ore-dictionary wrapper."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/data/minecraft/tags/items/pickaxes.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-jackhammer",
+      "source_commit": "106d31653f8bce66761c919742629a75a047e2ca",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180JackhammerData.java",
+      "source_sha256": "d1605feb96878e8a02ae1335e96bf4ec4fc9d7b23b674f78578684b756aacb9e",
+      "authoring_commit": "5d0f2b136791cca282f1b5516840a0cea8d285b8",
+      "target_sha256": "57a2f8e410710a4a290611849ca78e335399853608cb1d1f9a27b97faa0077c3",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Deterministic DataGen from newly authored source; no copied bitmap or official model."
+      ]
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "b176422d37beb327b4ee0879028097973709b20b4aa63936b4f7984926654b46",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Development icon only; legacy IMPORT asset and real-client V1/V2 remain open."
+    ]
+  }
+}

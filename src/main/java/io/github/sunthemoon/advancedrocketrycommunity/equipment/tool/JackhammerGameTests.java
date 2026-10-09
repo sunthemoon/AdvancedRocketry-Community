@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.equipment.tool;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorContent;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -222,19 +225,55 @@ public final class JackhammerGameTests {
     @GameTest(template = "empty", batch = "jackhammer_native", timeoutTicks = 100)
     public static void nativeSameItemAndBookCombinationRetainLeftData(GameTestHelper helper) {
         try (var f = new JackhammerFixture(helper)) {
+            f.player.experienceLevel = 30;
             var menu = new AnvilMenu(43, f.player.getInventory(), ContainerLevelAccess.NULL);
             menu.getSlot(0).set(annotated(f.tool().copy(), 800));
             ItemStack right = f.tool().copy(); right.setDamageValue(900);
             menu.getSlot(1).set(right); menu.createResult();
             ItemStack combined = menu.getSlot(2).getItem(); assertAnnotation(helper, combined);
             helper.assertTrue(combined.getDamageValue() < 800, "Same-item native repair failed");
+            menu.clicked(2, 0, ClickType.PICKUP, f.player);
+            assertAnnotation(helper, menu.getCarried());
+            helper.assertTrue(menu.getSlot(0).getItem().isEmpty() && menu.getSlot(1).getItem().isEmpty()
+                    && f.player.experienceLevel < 30, "Same-item take did not consume inputs and XP");
+            var bookMenu = new AnvilMenu(44, f.player.getInventory(), ContainerLevelAccess.NULL);
+            bookMenu.getSlot(0).set(annotated(f.tool().copy(), 800));
             ItemStack book = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(Enchantments.BLOCK_EFFICIENCY, 3));
-            menu.getSlot(1).set(book); menu.createResult();
-            ItemStack enchanted = menu.getSlot(2).getItem();
+            bookMenu.getSlot(1).set(book); bookMenu.createResult();
+            bookMenu.clicked(2, 0, ClickType.PICKUP, f.player);
+            ItemStack enchanted = bookMenu.getCarried();
             helper.assertTrue(!enchanted.isEmpty() && enchanted.getDamageValue() == 800
                     && "retain left".equals(enchanted.getTag().getString("fixture_note"))
-                    && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, enchanted) == 3,
+                    && EnchantmentHelper.getItemEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, enchanted) == 3
+                    && bookMenu.getSlot(0).getItem().isEmpty() && bookMenu.getSlot(1).getItem().isEmpty(),
                     "Native book application or left-data semantics differ");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "jackhammer_native", timeoutTicks = 100)
+    public static void nativeCraftingTakesReviewedTaggedInputsEvenDisabled(GameTestHelper helper) {
+        try (var f = new JackhammerFixture(helper)) {
+            SwitchOverrides.set(CommonConfig.CLASSIC_EQUIPMENT_ENABLED, false);
+            try {
+                for (MotorDefinition motor : MotorDefinition.values()) {
+                    var menu = new CraftingMenu(45, f.player.getInventory(), ContainerLevelAccess.NULL);
+                    menu.getSlot(2).set(new ItemStack(MaterialContent.item("aluminum_plate")));
+                    menu.getSlot(3).set(new ItemStack(MaterialContent.item("titanium_rod")));
+                    menu.getSlot(4).set(new ItemStack(MaterialContent.item("iron_rod")));
+                    menu.getSlot(5).set(new ItemStack(MotorContent.item(motor).get()));
+                    menu.getSlot(6).set(new ItemStack(MaterialContent.item("aluminum_plate")));
+                    menu.getSlot(7).set(new ItemStack(Items.DIAMOND));
+                    menu.getSlot(8).set(new ItemStack(MaterialContent.item("iron_rod")));
+                    helper.assertTrue(menu.getSlot(0).getItem().getItem() == f.item, "Native tagged recipe did not match motor " + motor);
+                    menu.clicked(0, 0, ClickType.PICKUP, f.player);
+                    helper.assertTrue(menu.getCarried().getItem() == f.item && menu.getCarried().getCount() == 1
+                            && menu.getCarried().getDamageValue() == 0, "Native crafting take/output differs");
+                    for (int slot = 1; slot <= 9; slot++) {
+                        helper.assertTrue(menu.getSlot(slot).getItem().isEmpty(), "Native craft did not consume exactly its supplied ingredients");
+                    }
+                }
+            } finally { SwitchOverrides.clear(CommonConfig.CLASSIC_EQUIPMENT_ENABLED); }
         }
         helper.succeed();
     }
