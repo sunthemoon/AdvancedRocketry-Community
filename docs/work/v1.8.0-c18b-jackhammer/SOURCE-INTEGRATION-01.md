@@ -50,9 +50,11 @@ Original failed cohorts, corrective source history and reviewer setup/cleanup
 limits are immutable and separately retained. A
 [notification erratum](PACKAGED-MANIFEST-ERRATUM-01.zip) corrects only the reported
 LF manifest identity to actual CRLF bytes; all original covered hashes remain
-valid, and no original seal/archive is edited. Every packaged payload hash and
-CRC verifies. The eleven compact archives total 10,062,671 compressed /
-60,714,962 uncompressed bytes, below the 100 MiB slice budget; none contains a
+valid, and no original seal/archive is edited. The subsequent
+[independent fixed integration-record audit](INTEGRATION-REVIEW-STATUS-01.md)
+identifies no new change-required record finding and reparses the actual cohorts.
+Every packaged payload hash and CRC verifies. The twelve compact archives total
+10,164,794 compressed /61,359,162 uncompressed bytes, below the 100 MiB slice budget; none contains a
 whole runtime/source/world/build copy. Peer-denied temporary retention is excluded.
 
 Publication archive: 25,968 compressed /55,613 uncompressed bytes, 62 entries.

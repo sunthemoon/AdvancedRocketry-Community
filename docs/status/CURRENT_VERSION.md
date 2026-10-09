@@ -70,7 +70,10 @@ not independently launched: native logout saves Damage 18, next process loads it
 before ordinary use reaches 19. It is not online-stop-first-save, crash, preserved
 mined terrain/loot or real-client proof. Human asset, survival and full-item
 acceptance remain open. All original failed cohorts/setup/record corrections and
-owned cleanup limits remain in immutable evidence; no Claude is called.
+owned cleanup limits remain in immutable evidence; no Claude is called. A fresh
+[fixed integration-record audit](../work/v1.8.0-c18b-jackhammer/INTEGRATION-REVIEW-STATUS-01.md)
+independently verifies the archived source/merge/cohort/receipt attribution without
+new runtime or Gate acceptance.
 
 The preceding [detector admission qualification](../work/v1.8.0-c18a-seal-detector/ADMISSION-VERIFICATION-03.md)
 remains an integrated test slice. Its exceptional worker cleanup correction retains
@@ -118,8 +121,8 @@ on separate freezing/review of dimension, spawn-point and time behavior before
 implementation. Read-only research has produced a
 [proposed contract](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md). Its
 [independent review](../work/v1.8.0-c18a-sleep/CONTRACT-REVIEW-STATUS-01.md) identifies
-occupancy/air and Space-context corrections; exact bed/spawn and atmosphere
-feasibility research continue, and the ancillary owner choice remains pending. Those
+occupancy/air and Space-context corrections; both exact bed/spawn and atmosphere
+feasibility reports are sealed, and the ancillary owner choice remains pending. Those
 policies are unchanged and no sleep implementation source is assigned.
 
 The separate [C18a-SLEEP-01](COMPLETION-PLAN.md) leaf now has
@@ -127,6 +130,14 @@ The separate [C18a-SLEEP-01](COMPLETION-PLAN.md) leaf now has
 Its stateless public caller candidate has no runtime/coexistence/indeterminate
 failure qualification; B1 and the [exact ancillary question](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)
 remain open. This research is not new current game regression evidence.
+
+The [sealed atmosphere/access proposal](../work/v1.8.0-c18a-sleep/AIR-RESEARCH-STATUS-02.md)
+retains M1's unproved neutral transition and distinguishes registered-bed
+pre-admission invalidation from occupancy/adjacent-door notifications. M2 proposes
+bounded actual-host/live-access checks, with the gap/station policy not selected.
+Both task-02 boundary proposals receive fresh independent review before a finite
+observation-only qualification assignment. No off-world dimension, spawn or time
+implementation is authorized by that review or the still-unanswered question.
 
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior
 current-state evidence is preserved in the

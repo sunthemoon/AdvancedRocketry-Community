@@ -288,7 +288,10 @@ C17b candidate03 的独立审核已解决旧版 Medium
   维度、出生点和时间行为；[只读契约提案](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md)已封存，
   [独立审核](../work/v1.8.0-c18a-sleep/CONTRACT-REVIEW-STATUS-01.md)提出床占用导致空气失效、
   Space 上下文两项 Medium；[出生点原因研究](../work/v1.8.0-c18a-sleep/SPAWN-RESEARCH-STATUS-02.md)
-  的公开无状态候选尚未通过运行时与失败策略验证，大气适配研究继续。
+  的公开无状态候选尚未通过运行时与失败策略验证；
+  [大气适配研究](../work/v1.8.0-c18a-sleep/AIR-RESEARCH-STATUS-02.md)已封存，
+  区分注册床的交互前失效与占用/邻门通知，尚未建立安全的中性更新识别。
+  两份候选正在接受独立只读审核，未授权运行时资格夹具或生产实现。
   [维度连带行为的用户决定](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)待答。
   依赖 M1、M2、B1、D1 的证明和冻结；原 S01-S21/R01-R02 及新增资格矩阵均未执行。
   不做出生点迁移、全局跳夜或直接躺下的显示替代；尚未改动策略或分配睡眠实现源码。

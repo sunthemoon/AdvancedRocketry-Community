@@ -24,7 +24,8 @@ new Medium contract corrections and preserves two previously open inputs:
 Root assigns separate read-only public spawn-boundary and atmosphere/context
 feasibility tasks to fresh workers. The [spawn-boundary report](SPAWN-RESEARCH-STATUS-02.md)
 is sealed, with a stateless public-introspection candidate but B1 still open;
-atmosphere/context research continues. They can propose precise corrections and
+the [atmosphere/context report](AIR-RESEARCH-STATUS-02.md) is also sealed. Both
+task-02 proposals now receive a fresh read-only independent review. They can propose precise corrections and
 qualification evidence, but cannot edit source, run a world, approve product
 choices or grant source assignment. Proposal 01 and its original research seal
 remain unchanged. No dimension/spawn/time/runtime policy has been modified.

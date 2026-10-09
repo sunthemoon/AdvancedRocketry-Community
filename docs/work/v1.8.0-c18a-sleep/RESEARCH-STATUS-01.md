@@ -10,7 +10,8 @@ The proposal is PROPOSED, not adopted or source-assignment-ready. The
 [complete independent review](CONTRACT-REVIEW-STATUS-01.md) identifies occupancy/
 air-invalidation and Space host/context corrections. The
 [cause-boundary research](SPAWN-RESEARCH-STATUS-02.md) is sealed but establishes no
-approved/runtime-qualified discriminator; atmosphere research continues. The
+approved/runtime-qualified discriminator; the [atmosphere/access research](AIR-RESEARCH-STATUS-02.md)
+is also sealed with proposed corrections and open qualification prerequisites. The
 [ancillary owner choice](OWNER-QUESTION-02.md) is pending.
 No dimension flag,
 spawn field, time service, Forge interceptor, resource/build input or gameplay
