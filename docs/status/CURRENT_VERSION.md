@@ -53,6 +53,8 @@ latest_regression_observed_utc: 2026-10-09T07:30:06.547652Z
 actual_unit_rerun: sleep-nested-source-qualification-20261009-28/test-01.command.json
 actual_unit_rerun_observed_utc: 2026-10-09T07:22:55.516Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
+sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
+sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_ONLY_RESOURCE_AND_FRESH_INTEGRATION_REVIEW_OPEN
 last_updated: 2026-10-09
 ```
 
@@ -79,8 +81,9 @@ freeze and actual runtime/cumulative admission remain open. Separately assigned
 offline JSON candidate37, addendum43 and complete independent40/49 reviews are sealed.
 [Normative disposition52](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-CONTRACT-FREEZE-52.md)
 freezes the generic decoder/API/diagnostic and unchanged finite qualification
-contract only. Low R01 is addressed at the normative level; no decoder/tests are
-integrated or qualified. Actual44 qualifies only named local peak-so-far queries;
+contract only. Low R01 is addressed at the normative level; the pure functional
+component is now integrated separately, with complete resource qualification open.
+Actual44 qualifies only named local peak-so-far queries;
 R49-01/U01/U02 remain open. [Checkpoint62](../work/v1.8.0-c18a-sleep/FUNCTIONAL-REVIEW-CHECKPOINT-62.md)
 publishes complete sealed53/54/55/56/57/58 packets. Independent55 confirms only
 four named local normal-exit native peak observations; no platform helper, full
@@ -88,12 +91,20 @@ terminal/traced resource qualification, quota or native authority is adopted.
 Functional53 is committed/pushed at fa83657f in its isolated worktree: 32 paired
 methods pass. Independent57 runs those 32 plus 42 independent methods and finds
 two Low test-coverage gaps, not a material decoder defect in its finite review.
-Test-only successor59 at a1ea5b35 is committed/pushed with 33 author methods
-passing; a fresh independent successor review is still required. No Python source
-is integrated or resource-qualified. Complete feasibility56 and independent60
+Test-only successor59 at a1ea5b35 has 33 author methods passing; fresh independent63
+runs 33+5 methods and addresses the two Low coverage findings at that successor.
+[Pure functional integration65](../work/v1.8.0-c18a-sleep/FUNCTIONAL-INTEGRATION-65.md)
+normally commits/pushes both exact postimages at f7f02cda. Root's 33 paired plus 166
+existing adjacent methods and separate committed 33 pass; fresh integration
+review66 is pending. No resource/platform helper or full driver is qualified.
+Original63's whole-leaf-cap wording correction and Task59 oracle-custody limitation
+remain explicit. Complete feasibility56 and independent60
 do not establish a complete ordinary bed/neighbor receipt producer on inspected
 public surfaces. No universal API impossibility or private-instrumentation need
-is inferred. M1 remains open; resource protocol61 is still preparation only.
+is inferred. M1 remains open; resource protocol61 is preparation only. Fresh
+independent64 completes finite static recipe/custody review, retaining Medium
+traced-window and Low historical drain-deadline gaps; no resource execution or
+helper/measurement-window adoption follows.
 The [actual Space decision05](../work/v1.8.0-c18a-sleep/OWNER-DECISION-05.md)
 answers question04: supplied/sealed station-exterior rooms are eligible;
 in-region live VISIT, unavailable-registry rejection and unchanged drift/spawn

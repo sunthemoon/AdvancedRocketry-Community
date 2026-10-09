@@ -334,7 +334,7 @@ C17b candidate03 的独立审核已解决旧版 Medium
         不包括捕获实现、原生执行、错误豁免、运行容量或版本 Gate。
       - [ ] C18a-SLEEP-JSON-CORE37：status: in-progress。有界离线 JSON 的
         [契约与诊断约定已限定冻结](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-CONTRACT-FREEZE-52.md)。
-        独立审核 40/49 已完成；Low R01 仅在约定层处理，解码器/测试与资源资格尚未完成。
+        独立审核 40/49 已完成；Low R01 仅在约定层处理，纯功能源码已集成，完整资源资格尚未完成。
         不处理源码 schema/Gson、帧关联、NBT/日志或原生运行。
         - [x] C18a-SLEEP-JSON-REVIEW40：status: verified，仅候选的独立静态审核与实际证据封存。
           未发现 Critical/High/Medium 契约矛盾，不等于实现、资源资格、原生行为或 Gate 通过。
@@ -345,11 +345,16 @@ C17b candidate03 的独立审核已解决旧版 Medium
         - [x] C18a-SLEEP-JSON-TERMINAL50：status: verified，仅两次作者观察及独立 55 的两次本机正常退出查询。
           [完整限定记录62](../work/v1.8.0-c18a-sleep/FUNCTIONAL-REVIEW-CHECKPOINT-62.md)
           不采用平台辅助实现、不关闭 R49/U 或完整终态/解码器资源资格，不提供 OS 硬分配权限。
-        - [ ] C18a-SLEEP-JSON-FUNCTIONAL53：status: in-progress。
+        - [ ] C18a-SLEEP-JSON-FUNCTIONAL53：status: implemented-unverified。
           独立工作树候选 fa83657f 已提交推送，作者 32 项、独立 57 的 32+42 项通过。
-          两项 Low 回归覆盖问题由测试后继 a1ea5b35 增补，作者 33 项通过，仍需新独立复审。
-          仅纯功能范围；未集成或接受源码，不接原生驱动，资源资格仍开放。
+          两项 Low 由测试后继 a1ea5b35 增补；独立 63 的 33+5 项通过并处理这两项覆盖问题。
+          [纯功能集成65](../work/v1.8.0-c18a-sleep/FUNCTIONAL-INTEGRATION-65.md)已正常提交推送至 f7f02cda，
+          两文件与后继逐字节一致，Root 33 项与相邻 166 项、另行提交后 33 项通过。
+          新的固定提交集成复核 66 仍在进行；仅采用纯功能组件，不接原生驱动、不交付完整资源资格。
+          原报告的整叶 4 MiB 更正和作者 oracle 首次哈希晚于测试的限制保留。
         - [ ] C18a-SLEEP-JSON-RESOURCE61：status: in-progress，仅固定 12 类有限资源资格协议准备。
+          修订 02 的整叶 4 MiB 约定及独立 64 静态复核已完成；12 类/16 次调用只核对静态算式。
+          traced 包含范围的 Medium 与历史采集器 drain 截止的 Low 保留，未运行资源测试。
           尚未采用 counter/helper、实现执行器或运行解码器资源测量；完整约定和预算不变。
       - [x] C18a-SLEEP-LOG-PROVENANCE38：status: verified，仅既有原生日志的独立静态来源审查。
         完整报告/发生记录已封存；五次注入式原生保存失败与二十六次直接事件拒绝分别记录。
