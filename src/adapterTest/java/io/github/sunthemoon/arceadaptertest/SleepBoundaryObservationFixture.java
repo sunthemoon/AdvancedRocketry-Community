@@ -281,6 +281,11 @@ public final class SleepBoundaryObservationFixture {
                 actor.drain(trace, true);
             }
             trace.verify();
+            for (Actor actor : actors) {
+                require(actor.player.isAlive() && actor.player.gameMode.getGameModeForPlayer() == GameType.SURVIVAL
+                        && actor.player.getMainHandItem().isEmpty() && actor.player.getOffhandItem().isEmpty(),
+                        "Native alive/survival/empty-hand fixture setup unavailable");
+            }
             require(level.getChunkSource().getChunkNow(0, 0) != null && !level.isOutsideBuildHeight(HEAD)
                     && !level.isOutsideBuildHeight(FOOT) && level.getBlockState(HEAD).is(Blocks.WHITE_BED)
                     && level.getBlockState(FOOT).is(Blocks.WHITE_BED)
@@ -323,7 +328,7 @@ public final class SleepBoundaryObservationFixture {
                     var registered = server.getPlayerList().getPlayer(actor.player.getUUID());
                     boolean listed = server.getPlayerList().getPlayers().stream().anyMatch(value -> value == actor.player);
                     require(registered == null || registered == actor.player, "Cleanup will not remove an unowned UUID occupant");
-                    if (registered == actor.player || listed) {
+                    if (registered == actor.player || listed || actor.player.serverLevel().players().stream().anyMatch(value -> value == actor.player)) {
                         trace.lifecycle(object("stage", "native_logout_save_input", "actor", trace.token(actor.player),
                                 "uuid", actor.player.getUUID().toString(), "spawnGetterProjection", SleepBoundaryTrace.spawn(actor.player)));
                         server.getPlayerList().remove(actor.player);
@@ -331,7 +336,10 @@ public final class SleepBoundaryObservationFixture {
                     require(server.getPlayerList().getPlayer(actor.player.getUUID()) != actor.player
                             && level.players().stream().noneMatch(value -> value == actor.player), "Own actor remains registered after native removal");
                 });
-                success &= cleanup("own_channel_close_release" + actorSuffix, actor.channel::finishAndReleaseAll);
+                success &= cleanup("own_channel_close_release" + actorSuffix, () -> {
+                    actor.channel.finishAndReleaseAll();
+                    require(!actor.channel.isOpen() && !actor.connection.isConnected(), "Own simulated transport remains open");
+                });
             }
             for (var entry : cells.entrySet()) {
                 success &= cleanup("restore_cell_" + entry.getKey().toShortString(), () -> {
