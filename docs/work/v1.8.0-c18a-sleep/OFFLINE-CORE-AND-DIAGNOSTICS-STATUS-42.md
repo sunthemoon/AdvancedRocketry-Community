@@ -4,6 +4,10 @@ Date: 2026-10-09. **OFFLINE CORE PROPOSED, INDEPENDENT REVIEW IN PROGRESS;
 DIAGNOSTIC AUDIT COMPLETE, FINDINGS AND ALL ACCEPTANCE OBLIGATIONS OPEN.**
 Production sleep/natural/air/spawn/time and qualified source remain unchanged.
 No parser, test, native runtime, diagnostic waiver or R-021 acceptance is granted.
+Later [checkpoint45](OFFLINE-CORE-INDEPENDENT-STATUS-45.md) records actual completed
+independent40 review, open Low R01 and the separate diagnostic/counter tasks.
+It supersedes this checkpoint's pending-review state and 34-archive volume sample,
+not its fixed historical evidence or independent38 findings.
 [D1 outcomes33](D1-OUTCOME-FREEZE-33.md) and
 [narrow log requirements39](NATIVE-LOG-DISPOSITION-39.md) remain separately frozen.
 
