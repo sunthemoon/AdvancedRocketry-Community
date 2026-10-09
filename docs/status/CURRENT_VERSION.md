@@ -87,11 +87,31 @@ c19_g4_adr_candidate_review: SOURCE66_MODULE17_PASS_R69_01_MEDIUM_RUNTIME_SCOPE_
 c19_source_blob_candidate_commit: 18bde6da456d853af08b39e75c07a7866557954c
 c19_source_blob_candidate_qualification: ROOT_CORRECTED9_26_95_PEER9_26_138_COMMITTED9_PASS_LITERAL_BROAD180_TIMEOUT_NOT_INTEGRATED
 c19_source_blob_candidate_review: SOURCE74_CAP_MEDIUM_RESOLVED_PACKET80_REVIEWED_R80_01_LOW_HISTORICAL_UNTRACKED_GAP_CORRECTION82_RECORDED
+c19_manual_fixture_candidate_commit: f2587b54b753d77bb985e652612003eee54cc769
+c19_manual_fixture_candidate_qualification: ROOT3_138_9_26_PEER3_138_COMMITTED3_PASS_LITERAL_WHOLE180_TIMEOUT_NOT_INTEGRATED
+c19_manual_fixture_candidate_review: SOURCE88_EVIDENCE89_REVIEWED_STATIC_HELPER_MUTATION_DISCLOSED_OVERSIZED_ORGANIZATION_ADR071_PROPOSED_OPEN
 c19_whole_lifecycle_observation: CLEAN806_INSTRUMENTED180_TIMEOUT_275_COMPLETED_ONE_UNFINISHED_1033_UNSTARTED_PACKET75_REVIEWED
 last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [manual fixture checkpoint87](../work/v1.8.0-c19-strict-validator/MANUAL-FIXTURE-CHECKPOINT-87.md)
+records separate normally pushed candidate f2587b54, three test files only, not
+Main integration. All original137 manual/one CLI bodies/names and non-setUp helpers
+remain; only initial repository construction moves into a class fixture, with
+full independent raw file/Git copies per case and no approval/result cache.
+Root3/138/9/26, peer3/138 and actual committed3 pass; scoped manual observations
+are88.14/87.07 seconds, not a controlled speedup comparison. Actual literal whole
+still times out at180.006 seconds without final summary;338 complete ok rows do
+not qualify it. Original execution exitnull, separate owned wait1/full streams and
+retained own tmp10iodyn3 are disclosed, not historical repairs. Peer88's static
+helper mutation is retained; runner/source/raw streams remain unchanged, not an
+all-helper immutable claim. Oversized3,784-line organization and proposed ADR071/
+070 remain prerequisites before integration. Independent89 audits exact packets,
+eight recorded authored intervals and source/blob attribution, retaining limits;
+Root reads its full report and rehashes all five sealed packets separately.
+latest Main/runtime qualification, all Gates and delivery counts stay unchanged.
 
 The [G4/G0 cost checkpoint33](../work/v1.8.0-c19-strict-validator/G4-PROFILE-CHECKPOINT-33.md)
 records two unchanged-source instrumented target results at fixed631, not a
