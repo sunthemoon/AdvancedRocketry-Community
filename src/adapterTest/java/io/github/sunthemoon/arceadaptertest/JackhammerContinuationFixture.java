@@ -63,7 +63,7 @@ public final class JackhammerContinuationFixture {
         return source.hasPermission(4) && source.getEntity() == null && source.withSource(source.getServer()) == source;
     }
 
-    @GameTest(template = "empty", batch = "jackhammer_console", timeoutTicks = 100)
+    @GameTest(templateNamespace = "advancedrocketrycommunity", template = "empty", batch = "jackhammer_console", timeoutTicks = 100)
     public static void nativeConsoleIdentityAndPermissionAreBothRequired(GameTestHelper helper) {
         var nativeConsole = helper.getLevel().getServer().createCommandSourceStack();
         helper.assertTrue(console(nativeConsole), "Native console control was refused");

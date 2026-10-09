@@ -117,7 +117,16 @@
         "Retain shaped rows ' pt', 'imp', 'di ' and all ingredient counts and output count one.",
         "Convert ore-dictionary diamond, titanium rod, iron rod, aluminum plate and motor inputs to the five adopted modern tags.",
         "Use the stable modern result ID, crafting_shaped serializer and equipment category; discard obsolete Forge ore-dictionary wrapper."
-      ]
+      ],
+      "upstream_history": [
+        {
+          "commit": "12d238cb2a883533be5b3dabb8c5b7fb3297a99e",
+          "authored_at": "2019-01-20T04:42:45-05:00",
+          "author": "zmaster587",
+          "subject": "Switch recipes over to the 1.12+ JSON system"
+        }
+      ],
+      "upstream_history_evidence": "docs/work/v1.8.0-c18b-jackhammer/RECIPE-HISTORY-01.md"
     },
     {
       "target_path": "src/generated/v1.8/resources/data/minecraft/tags/items/pickaxes.json",
@@ -138,7 +147,7 @@
   ],
   "review": {
     "status": "PENDING_HUMAN_REVIEW",
-    "content_digest": "b176422d37beb327b4ee0879028097973709b20b4aa63936b4f7984926654b46",
+    "content_digest": "405f659a116d4292bc7cb8706e075b8243055d8cb7e9badeab19dbf3b4110b34",
     "reviewer": null,
     "reviewed_at": null,
     "findings": [
