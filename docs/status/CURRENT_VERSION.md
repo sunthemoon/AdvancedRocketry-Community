@@ -111,14 +111,18 @@ The next [ordinary jackhammer leaf](../work/v1.8.0-c18b-jackhammer/TASK-01.md)
 has [bounded adoption](../work/v1.8.0-c18b-jackhammer/ADOPTION-01.md) after fresh
 independent static numeric/data/config/visual review. The committed isolated
 [source qualification](../work/v1.8.0-c18b-jackhammer/SOURCE-STATUS-01.md) retains
-the original failed candidates; a corrective candidate's complete source review
-and native/packaged checks continue. No tool source has been integrated into Main.
+the original failed candidates. Corrective forced source/Root commands and all
+579 required native cases pass; Root's bounded two-process inventory continuation
+is independently receipt-audited. Final complete source sealing and a checksum-
+notification correction remain pending. No tool source has been integrated into Main.
 Titanium/motor survival progression remains unfinished. The owner has selected
 [actual off-world sleep](../work/v1.8.0-c18a-sleep/OWNER-DECISION-01.md), conditional
 on separate freezing/review of dimension, spawn-point and time behavior before
 implementation. Read-only research has produced a
-[proposed contract](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md); independent
-review and the exact bed/spawn-operation proof obligation remain open. Those
+[proposed contract](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md). Its
+[independent review](../work/v1.8.0-c18a-sleep/CONTRACT-REVIEW-STATUS-01.md) identifies
+occupancy/air and Space-context corrections; exact bed/spawn and atmosphere
+feasibility research continue, and the ancillary owner choice remains pending. Those
 policies are unchanged and no sleep implementation source is assigned.
 
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior

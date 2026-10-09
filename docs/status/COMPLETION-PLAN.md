@@ -275,12 +275,15 @@ C17b candidate03 的独立审核已解决旧版 Medium
 - [~] [C18b-JACKHAMMER-01](../work/v1.8.0-c18b-jackhammer/TASK-01.md)：status: implementing。
   原生单方块钻锤、钛棒修理、配置禁用和配方/原创开发资源已完成独立静态契约审核，
   [受限采纳](../work/v1.8.0-c18b-jackhammer/ADOPTION-01.md)后由 Root 在独立分支编写并提交；
-  [源码资格记录](../work/v1.8.0-c18b-jackhammer/SOURCE-STATUS-01.md)保留原始失败，修订的完整审核、
-  原生与专服重启验证仍在进行，尚未合入 Main 或交付完整工具。
+  [源码资格记录](../work/v1.8.0-c18b-jackhammer/SOURCE-STATUS-01.md)保留原始失败；Root 与独立修订源码
+  的构建、数据生成及原生测试已通过，Root 的两次专服原生库存延续已由独立记录审计核实。
+  完整源码报告封存及记录更正尚待完成，未合入 Main 或交付完整工具。
   钛初始来源仍依赖未完成的 C16b 电弧炉，不以创造给予材料替代生存获取。
   用户已选择[外星真正睡眠](../work/v1.8.0-c18a-sleep/OWNER-DECISION-01.md)，条件是实施前另行冻结并审核
   维度、出生点和时间行为；[只读契约提案](../work/v1.8.0-c18a-sleep/RESEARCH-STATUS-01.md)已封存，
-  独立审核和精确床操作/出生点原因的技术证明仍开放，尚未改动策略或分配睡眠实现源码。
+  [独立审核](../work/v1.8.0-c18a-sleep/CONTRACT-REVIEW-STATUS-01.md)提出床占用导致空气失效、
+  Space 上下文两项 Medium；精确床操作/出生点原因和大气适配的只读技术研究继续。
+  维度连带行为的用户决定待答，尚未改动策略或分配睡眠实现源码。
 
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、

@@ -62,16 +62,20 @@ native cases pass. Native logs retain 161 WARN/62 ERROR/zero FATAL without a Gat
 waiver. Ledger/bootstrap/whitespace pass; strict again reaches its unchanged
 180-second deadline, not a passed link report. Publication and the separate API
 consumer build pass. Two clean native dedicated processes produce stopped player
-inventory Damage 18 then 19 after same-UUID native continuation; the complete
-independent source review and independent receipt audit are still in progress.
-Root's detailed final qualification/evidence record and all applicable independent
-checks must finish before Main integration. No complete item delivery is inferred.
+inventory Damage 18 then 19 after same-UUID native continuation. The
+[sealed Root qualification](ROOT-QUALIFICATION-01.md) and
+[independent receipt audit](PACKAGED-REVIEW-STATUS-01.md) preserve their exact
+scope, failures and cleanup limits. The fresh complete source reviewer also
+passes its build/test/DataGen and all 579 required native cases; its final report/
+seal is pending before Main integration. No complete item delivery is inferred.
 
 The [packaged driver assignment](PACKAGED-DRIVER-TASK-01.md) separately freezes
 its external harness before two-process same-world native inventory continuation.
-No independently qualified packaged result, survival acquisition, V1/V2, human
-asset approval or G0-G9 completion is claimed. Native wear-before-removal, COMMON synchronization limits,
+The receipt audit corroborates only narrow native inventory continuation, not an
+independently launched restart. No survival acquisition, V1/V2, human asset
+approval or G0-G9 completion is claimed. Native wear-before-removal, COMMON synchronization limits,
 missing titanium/steel/motor roots and above-tier/mod evidence remain explicit.
 The owner's [actual sleep direction](../v1.8.0-c18a-sleep/OWNER-DECISION-01.md)
-is now in separate read-only contract research; dimension/spawn/time policies
+has a separate [complete proposed-contract review](../v1.8.0-c18a-sleep/CONTRACT-REVIEW-STATUS-01.md);
+technical corrections/research and the ancillary owner choice remain open. Dimension/spawn/time policies
 and sleep implementation remain unchanged. No Claude is dispatched.
