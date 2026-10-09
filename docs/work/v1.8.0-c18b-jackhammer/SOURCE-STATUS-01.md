@@ -37,7 +37,8 @@ Committed bab14562 retains separate failing Root/independent build cohorts:
 2,192 JUnit/381 XML with one new Boolean-spec expectation failure. Its native
 fixture corrections independently pass all 578 required cases, but that native
 result does not repair the JUnit, recipe-record or console-only boundary findings.
-Its full independent report remains pending publication; no old result is replaced.
+Its [full independent report](CORRECTED-REVIEW-STATUS-02.md) is preserved; no old
+result is replaced.
 
 Corrective isolated candidate: 53523bcf68af203934845521e97af2f824b2958d, normally pushed.
 It corrects the native Boolean expectation, restricts adapter commands to the
@@ -48,18 +49,28 @@ unchanged, and human provenance review stays pending. Root's fresh clean build
 and explicit test exit 0 with 2,192 JUnit/381 XML and zero failures/errors/skips;
 both DataGen/empty diffs pass. Its native run aborts with a missing adapter-namespace
 empty template before final completion. The fresh reviewer independently reproduces
-that failure and identifies missing recipe-touch history; those results are kept.
+that failure and identifies missing recipe-touch history; those results are
+[preserved with the additive seal correction](CORRECTED-REVIEW-STATUS-03.md).
 
 Latest isolated candidate is 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7, normally pushed
 after correction preparation. Its sole Java edit uses the existing host template
 namespace; provenance adds actual pinned upstream-touch history and a recomputed
 pending digest. The earlier omission is recorded, not credited retroactively.
-Full Root and new applicable independent qualification must finish before integration.
+Root's separate full clean build/explicit test pass 2,192 cases/381 XML, zero
+failures/errors/skips; both forced DataGen/separate empty diffs and all 579 required
+native cases pass. Native logs retain 161 WARN/62 ERROR/zero FATAL without a Gate
+waiver. Ledger/bootstrap/whitespace pass; strict again reaches its unchanged
+180-second deadline, not a passed link report. Publication and the separate API
+consumer build pass. Two clean native dedicated processes produce stopped player
+inventory Damage 18 then 19 after same-UUID native continuation; the complete
+independent source review and independent receipt audit are still in progress.
+Root's detailed final qualification/evidence record and all applicable independent
+checks must finish before Main integration. No complete item delivery is inferred.
 
 The [packaged driver assignment](PACKAGED-DRIVER-TASK-01.md) separately freezes
 its external harness before two-process same-world native inventory continuation.
-No packaged result, survival acquisition, V1/V2, human asset approval or G0-G9
-completion is claimed. Native wear-before-removal, COMMON synchronization limits,
+No independently qualified packaged result, survival acquisition, V1/V2, human
+asset approval or G0-G9 completion is claimed. Native wear-before-removal, COMMON synchronization limits,
 missing titanium/steel/motor roots and above-tier/mod evidence remain explicit.
 The owner's [actual sleep direction](../v1.8.0-c18a-sleep/OWNER-DECISION-01.md)
 is now in separate read-only contract research; dimension/spawn/time policies
