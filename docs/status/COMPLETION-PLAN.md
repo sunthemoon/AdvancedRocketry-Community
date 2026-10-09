@@ -666,9 +666,22 @@ C17b candidate03 的独立审核已解决旧版 Medium
   四份输出及 3226 项输入前后哈希；独立35包复核完成，Root 已完整阅读并复核封存包。
   历史 Low R35-01 的模块归属解释由独立更正记录修正，缺失的归属数据未恢复；
   仅完成有限观测任务，不当作全量资格、C19 或版本 Gate 通过。
-- [ ] [C19-GIT-OBJECT-SESSION-34](../work/v1.8.0-c19-strict-validator/GIT-OBJECT-SESSION-TASK-34.md)：
-  status: ready。选择有生命周期的 Git 对象传输以减少重复启动；保留每次请求的类型、
-  大小、OID 和哈希验证、终态/尾部字节拒绝，不缓存 approval 或可变 bundle；尚未实施。
+- [~] [C19-GIT-OBJECT-SESSION-34](../work/v1.8.0-c19-strict-validator/GIT-OBJECT-SESSION-TASK-34.md)：
+  status: implemented-unverified。三文件候选 `607c626d` 已在独立分支提交、正常推送，未合入 Main。
+  原 bootstrap90 和候选完整93 项均在原 180 秒窗口超时；
+  写代码前冻结 4096 次请求、16 GiB 总字节及 180 秒 session 上限，原逐次 15 秒不变。
+  实现留在已绑定 validator 文件内，避免增加未绑定运行依赖；保留每次请求的类型、
+  大小、OID 和哈希验证、终态/尾部字节拒绝，不缓存 approval 或可变 bundle。
+  Root 协议26、定向24 通过，最初协议23 项的一项夹具错误保留；原90 方法 AST 不变。
+  固定607 的 G4 约7 秒结束，两模块各507 次验证、各启动一个对象传输；
+  strict 完整结束，44 PASS/1 Markdown FAIL，不再超时；广泛 Python 仍超时。
+  独立37 的26/19/5 项通过，但 packet 夹具 clone 退出128，测试正文未执行；
+  原因未查明，Medium R37-01 保留；Root 已完整阅读并复核封存包。
+  原90 方法的三组测试均通过，不替代完整93 项的超时结果。
+  [检查点34](../work/v1.8.0-c19-strict-validator/GIT-OBJECT-SESSION-CHECKPOINT-34.md)
+  记录封存 Root34 的11 次实际命令；独立38证据包审核完成，未发现新的实质一致性问题。
+  Root 已完整阅读、复核其封存包；旧失败快照只有哈希/回溯，不能完整独立还原。
+  标准 Gradle/DataGen/GameTest 尚未在607 执行，不标交付。
 - [ ] R32-02（静态 Medium）、R32-03（Low）：ADR 枚举数组/对象及解析递归可能异常，
   G4 文件系统 wrapper 缺少直接测试。尚未执行负向复现，不作为超时原因；另立修订。
 - [ ] C19 可移植已提交证据引用：实际 Markdown 检查在 256 错误前缀后停止。
@@ -679,8 +692,9 @@ C17b candidate03 的独立审核已解决旧版 Medium
   保留其历史测试、限定审核和失败记录；原检查、判定、顺序和预算不变。
   历史资源适用性由上述限定修正处理；嵌套 Git、完整资格及 Gate 仍开放，
   不实施睡眠或资源 helper，不把限定源码交付当作 C19 完成。
-- [ ] C19 完整 Python/strict 资格：最新固定候选的两项 180 秒超时仍失败。
-  严格执行记录 13 个进入/12 个返回，末项 `check_v002_g4_applicability`；
+- [ ] C19 完整 Python/strict 资格：Main 的历史0ce 两项180 秒超时仍失败；
+  新607 候选的广泛 Python 仍超时，strict 已完整结束但 Markdown 失败。
+  新 strict 有33 个进入/33 个返回；历史13 个进入/12 个返回保持原记录，
   不据此归因旧超时或内部调用。来源审核、链接与全部 Required Gate 不能由标准子集替代。
 
 最新短回归与独立复验见下方“当前自动回归与风险”。

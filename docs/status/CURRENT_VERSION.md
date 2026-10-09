@@ -67,7 +67,12 @@ sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
 sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_INDEPENDENT_REVIEW_COMPLETE_RESOURCE_OPEN
 c19_cost_observation_commit: 631494559a808938b631eab07f0877225d4f6d9a
 c19_cost_observation_result: TWO_UNCHANGED_TARGETS_PASS_INSTRUMENTED_ONLY_PACKET_REVIEW_COMPLETE_ATTRIBUTION_CORRECTED
-c19_git_object_transport: READY_NOT_IMPLEMENTED
+c19_git_object_transport: CANDIDATE607_PUSHED_NOT_INTEGRATED_WHOLE_QUALIFICATION_OPEN
+c19_git_object_candidate_commit: 607c626d246477887bf2a501ae68c3d908feaf02
+c19_git_object_candidate_strict: COMPLETED_44_PASS_1_MARKDOWN_FAIL_NO_TIMEOUT
+c19_git_object_candidate_broad: ORIGINAL180_TIMEOUT_NO_FINAL_SUMMARY
+c19_git_object_candidate_review: SOURCE_REVIEW_COMPLETE_FOCUSED50_PASS_R37_01_BOUND_PACKET_SETUP_ERROR_OPEN
+c19_git_object_candidate_packet: ROOT34_SEALED_INDEPENDENT_AUDIT38_COMPLETE_R37_01_OPEN
 last_updated: 2026-10-10
 ```
 
@@ -81,10 +86,28 @@ returns 0 in about 7 seconds. Declared 3226 inputs match; independent packet rev
 is complete. Its historical Low module-attribution finding is addressed only by
 an additive interpretation correction; missing code-object attribution remains
 unavailable. Root reads and rehashes the sealed review/correction; original
-evidence is unchanged. Task34's bounded transport scope is ready/not implemented. Static
+evidence is unchanged. [Task34](../work/v1.8.0-c19-strict-validator/GIT-OBJECT-SESSION-TASK-34.md)
+and [checkpoint34](../work/v1.8.0-c19-strict-validator/GIT-OBJECT-SESSION-CHECKPOINT-34.md)
+now record a committed/pushed three-file candidate607 in its separate checkout,
+not integrated into Main. Pre-edit count/aggregate/lifetime limits remain frozen.
+Canonical G4 completes in about7 seconds with two explicitly distinguished
+507-request sessions, each using one object transport. Candidate strict completes
+all33 phases in35.757 seconds:44 PASS/1 Markdown FAIL. Candidate broad and full
+bootstrap still time out at their unchanged180-second ceilings; separate original
+method shards are focused coverage, not a replacement whole-command result.
+Independent source reviewer37 reports26/19/5 focused methods passing, but the
+required packet test body does not execute because setup's clone exits128;
+underlying Git stderr is unavailable. Root reads and rehashes the complete sealed
+source review; its Medium verification finding remains open. All90 original
+methods pass across three disjoint focused commands, not the full93 command.
+Independent38 completes the finite Root34 packet audit with no new material
+consistency finding and independently corroborates R37-01. Root reads its full
+report and rehashes exact four-payload/five-file coverage,46678 bytes. Failed
+development snapshots have retained hashes/tracebacks, not reconstructible full
+source payloads; construction narratives are not immutable runtime proof. Static
 R32-02 malformed-ADR diagnostics and R32-03 wrapper coverage remain open;
 neither is executed or established as timeout cause. Whole broad/strict remains
-failed, and no current Gate, source delivery or acceptance result changes.
+failed, and no current Gate, integrated-source delivery or acceptance result changes.
 
 The [checksum16 checkpoint](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)
 records actual runtime at 0cefe86e and the exact three postimages integrated and
