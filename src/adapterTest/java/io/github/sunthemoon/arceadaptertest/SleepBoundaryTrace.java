@@ -18,10 +18,6 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.LiteralContents;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
@@ -238,61 +234,12 @@ public final class SleepBoundaryTrace {
 
     /** Native serialization is admitted only after a finite public-component preflight and budget reservation. */
     JsonElement boundedChat(Component component) {
-        int[] budget = new int[2]; chatPreflight(component, 0, budget);
-        long upper = 4096L + budget[0] * 1024L + budget[1];
+        long upper = SleepBoundaryChatBounds.preflight(component);
         if (upper > available()) { throw new IllegalStateException("chat budget before native JSON allocation"); }
         JsonElement result = Component.Serializer.toJsonTree(component);
         if (bytes(result, CASE_BYTES) > upper - 4096) { throw new IllegalStateException("native chat exceeded preflight bound"); }
         return result;
     }
-    private static void chatText(String text, int[] budget) {
-        if (text != null) {
-            if (text.length() > 1024 || budget[1] + text.length() * 6L > 8192) { throw new IllegalStateException("chat string preflight cap"); }
-            budget[1] += text.length() * 6;
-        }
-    }
-    private static void chatPreflight(Component component, int depth, int[] budget) {
-        if (component == null || component.getClass() != MutableComponent.class || depth > 8 || ++budget[0] > 32) {
-            throw new IllegalStateException("unsupported or oversized native chat component tree");
-        }
-        var content = component.getContents();
-        if (content instanceof LiteralContents literal) { chatText(literal.text(), budget); }
-        else if (content.getClass() == TranslatableContents.class) {
-            var translated = (TranslatableContents) content;
-            chatText(translated.getKey(), budget); chatText(translated.getFallback(), budget);
-            Object[] args = translated.getArgs();
-            if (args.length > 4) { throw new IllegalStateException("chat argument preflight cap"); }
-            for (Object arg : args) {
-                if (arg instanceof Component nested) { chatPreflight(nested, depth + 1, budget); }
-                else if (arg instanceof String text) { chatText(text, budget); }
-                else if (arg != null && !(arg instanceof Boolean || arg instanceof Integer || arg instanceof Long
-                        || arg instanceof Short || arg instanceof Byte || arg instanceof Float || arg instanceof Double)) {
-                    throw new IllegalStateException("unsupported native chat argument");
-                }
-            }
-        } else if (content != net.minecraft.network.chat.ComponentContents.EMPTY) { throw new IllegalStateException("unsupported native chat contents"); }
-        var style = component.getStyle();
-        if (style.getClass() != net.minecraft.network.chat.Style.class) { throw new IllegalStateException("unsupported native chat style"); }
-        chatText(style.getInsertion(), budget);
-        chatText(style.getFont().getNamespace(), budget); chatText(style.getFont().getPath(), budget);
-        if (style.getClickEvent() != null) { chatText(style.getClickEvent().getValue(), budget); }
-        HoverEvent hover = style.getHoverEvent();
-        if (hover != null) {
-            if (hover.getClass() != HoverEvent.class) { throw new IllegalStateException("unsupported hover receiver"); }
-            if (hover.getAction() == HoverEvent.Action.SHOW_TEXT) { chatPreflight(hover.getValue(HoverEvent.Action.SHOW_TEXT), depth + 1, budget); }
-            else if (hover.getAction() == HoverEvent.Action.SHOW_ENTITY) {
-                var entity = hover.getValue(HoverEvent.Action.SHOW_ENTITY);
-                var type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.type);
-                if (type == null || entity.id == null) { throw new IllegalStateException("hover entity metadata unavailable"); }
-                chatText(type.getNamespace(), budget); chatText(type.getPath(), budget);
-                if (entity.name != null) { chatPreflight(entity.name, depth + 1, budget); }
-            } else { throw new IllegalStateException("unsupported hover contents; no item/NBT serialization"); }
-        }
-        List<Component> siblings = component.getSiblings();
-        if (siblings.size() > 32) { throw new IllegalStateException("chat sibling preflight cap"); }
-        for (Component sibling : siblings) { chatPreflight(sibling, depth + 1, budget); }
-    }
-
     void action(String label, boolean preparation, Runnable action) {
         JsonObject record = object("label", label, "declaredContext", context, "nestedDepth", depth,
                 "before", safeSnapshot(preparation));
