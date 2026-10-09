@@ -1,3 +1,4 @@
+import argparse
 import hashlib
 import io
 import os
@@ -5,7 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import ExitStack, contextmanager, redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -335,9 +336,49 @@ class RepositoryCliTests(unittest.TestCase):
 
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertIn("--require-approved-identity", completed.stdout)
+        self.assertEqual("", completed.stderr)
+
+
+class FlushRecordingStream(io.StringIO):
+    def __init__(self) -> None:
+        super().__init__()
+        self.flush_snapshots: list[str] = []
+
+    def flush(self) -> None:
+        self.flush_snapshots.append(self.getvalue())
+        super().flush()
 
 
 class ResultsReportTests(unittest.TestCase):
+    def test_exact_grouped_report_preserves_lists_and_flushes_each_line(self) -> None:
+        results = Results()
+        output = FlushRecordingStream()
+        error_output = io.StringIO()
+        with redirect_stdout(output), redirect_stderr(error_output):
+            results.fail("failure one")
+            results.pending_state("pending one")
+            results.passed("pass one")
+            results.warn("warning one")
+            results.passed("pass two")
+            results.fail("failure two")
+            self.assertEqual("", output.getvalue())
+            results.print_report()
+
+        self.assertEqual(
+            "[PASS] pass one\n[PASS] pass two\n"
+            "[PENDING] pending one\n[WARN] warning one\n"
+            "[FAIL] failure one\n[FAIL] failure two\n"
+            "Summary: 2 passed, 1 pending, 1 warnings, 2 failed\n",
+            output.getvalue(),
+        )
+        self.assertEqual(["pass one", "pass two"], results.passes)
+        self.assertEqual(["pending one"], results.pending)
+        self.assertEqual(["warning one"], results.warnings)
+        self.assertEqual(["failure one", "failure two"], results.failures)
+        self.assertEqual(7, len(output.flush_snapshots))
+        self.assertEqual(output.getvalue(), output.flush_snapshots[-1])
+        self.assertEqual("", error_output.getvalue())
+
     def test_pending_results_are_not_reported_as_passes_or_warnings(self) -> None:
         results = Results()
         results.passed("complete")
@@ -353,6 +394,233 @@ class ResultsReportTests(unittest.TestCase):
             "Summary: 1 passed, 1 pending, 0 warnings, 0 failed",
             output.getvalue(),
         )
+
+
+class ResultsPhaseTests(unittest.TestCase):
+    def test_begin_is_flushed_before_body_and_return_reports_counts_and_duration(self) -> None:
+        results = Results()
+        output = io.StringIO()
+        error_output = FlushRecordingStream()
+        with (
+            redirect_stdout(output), redirect_stderr(error_output),
+            patch("scripts.validate_repository.time.monotonic", side_effect=[10.0, 10.125]),
+        ):
+            with results.phase("check_identity"):
+                self.assertEqual("[PHASE] check_identity begin\n", error_output.getvalue())
+                self.assertEqual([error_output.getvalue()], error_output.flush_snapshots)
+                results.passed("private pass message")
+                results.pending_state("private pending message")
+                results.warn("private warning message")
+                results.fail("private failure message")
+
+        self.assertEqual(
+            "[PHASE] check_identity begin\n"
+            "[PHASE] check_identity returned elapsed_seconds=0.125 "
+            "passed=1 pending=1 warnings=1 failed=1\n",
+            error_output.getvalue(),
+        )
+        self.assertEqual(2, len(error_output.flush_snapshots))
+        self.assertEqual(error_output.getvalue(), error_output.flush_snapshots[-1])
+        self.assertNotIn("private", error_output.getvalue())
+        self.assertEqual("", output.getvalue())
+
+    def test_exception_propagates_unchanged_without_return_marker(self) -> None:
+        for sentinel in (RuntimeError("sentinel"), KeyboardInterrupt(), SystemExit(7)):
+            with self.subTest(exception=type(sentinel).__name__):
+                results = Results()
+                error_output = FlushRecordingStream()
+                with redirect_stderr(error_output):
+                    with self.assertRaises(type(sentinel)) as caught:
+                        with results.phase("check_identity"):
+                            raise sentinel
+                self.assertIs(sentinel, caught.exception)
+                self.assertEqual("[PHASE] check_identity begin\n", error_output.getvalue())
+                self.assertEqual(1, len(error_output.flush_snapshots))
+
+    def test_noop_return_does_not_invent_a_pass(self) -> None:
+        results = Results()
+        error_output = FlushRecordingStream()
+        with (
+            redirect_stderr(error_output),
+            patch("scripts.validate_repository.time.monotonic", return_value=2.0),
+        ):
+            with results.phase("check_identity"):
+                pass
+        self.assertEqual([], results.passes)
+        self.assertIn(
+            "returned elapsed_seconds=0.000 passed=0 pending=0 warnings=0 failed=0",
+            error_output.getvalue(),
+        )
+        self.assertNotIn("[PASS]", error_output.getvalue())
+
+    def test_invalid_identifiers_are_rejected_before_output_or_body(self) -> None:
+        for name in (
+            "check_" + "a" * 59, "check_a\nsecret", "check_\u00e9", "check_a/path", "unknown",
+        ):
+            with self.subTest(name=name):
+                error_output = io.StringIO()
+                entered = False
+                with redirect_stderr(error_output):
+                    with self.assertRaises(ValueError):
+                        with Results().phase(name):
+                            entered = True
+                self.assertFalse(entered)
+                self.assertEqual("", error_output.getvalue())
+
+    def test_maximum_identifier_has_two_finite_ascii_lines(self) -> None:
+        error_output = io.StringIO()
+        name = "check_" + "a" * 58
+        with redirect_stderr(error_output):
+            with Results().phase(name):
+                pass
+        lines = error_output.getvalue().splitlines()
+        self.assertEqual(2, len(lines))
+        self.assertTrue(all(
+            line.isascii() and len(line.encode("ascii")) <= 256 for line in lines
+        ))
+
+
+class RepositoryMainDiagnosticsTests(unittest.TestCase):
+    # Baseline call order is independent of the implementation's phase wrappers.
+    CHECKS = (
+        "check_required_paths", "check_identity", "check_public_statements",
+        "check_license_and_upstream", "check_markdown_links", "check_repository_contents",
+        "check_forge_bootstrap", "check_issue_templates", "check_workflow",
+        "check_bootstrap_provenance", "check_v002_final_g0_review",
+        "check_optional_v002_client_evidence", "check_v002_g4_applicability",
+        "check_v002_gate_status", "check_release_checksums", "check_v010_asset_baseline",
+        "check_v020_generated_resources", "check_v030_generated_resources",
+        "check_v040_generated_resources", "check_v050_generated_resources",
+        "check_v060_generated_resources", "check_v070_generated_resources",
+        "check_v080_generated_resources", "check_v090_migration_fixtures",
+        "check_v090_resources", "check_v020_gate_status", "check_v030_gate_status",
+        "check_v040_gate_status", "check_v050_gate_status", "check_v060_gate_status",
+        "check_v070_gate_status", "check_v080_gate_status", "check_v090_gate_status",
+    )
+
+    @contextmanager
+    def stubbed_checks(self, *, strict=False, package_root=None, on_check=None):
+        calls = []
+        shared_results = []
+        output = FlushRecordingStream()
+        error_output = FlushRecordingStream()
+
+        def callback(name):
+            def check(*args):
+                results = args[1] if name == "check_package_checksums" else args[0]
+                self.assertIsInstance(results, Results)
+                if shared_results:
+                    self.assertIs(shared_results[0], results)
+                else:
+                    shared_results.append(results)
+                expected_args = (results, strict) if name == "check_identity" else (results,)
+                if name == "check_package_checksums":
+                    expected_args = (package_root, results)
+                self.assertEqual(expected_args, args)
+                self.assertEqual(
+                    f"[PHASE] {name} begin", error_output.getvalue().splitlines()[-1],
+                )
+                self.assertEqual(error_output.getvalue(), error_output.flush_snapshots[-1])
+                calls.append(name)
+                if on_check is not None:
+                    on_check(name, results)
+            return check
+
+        with ExitStack() as stack:
+            stack.enter_context(redirect_stdout(output))
+            stack.enter_context(redirect_stderr(error_output))
+            stack.enter_context(patch(
+                "scripts.validate_repository.parse_args",
+                return_value=argparse.Namespace(
+                    require_approved_identity=strict, package_root=package_root,
+                ),
+            ))
+            stack.enter_context(patch("scripts.validate_repository.time.monotonic", return_value=1.0))
+            for name in (*self.CHECKS, "check_package_checksums"):
+                stack.enter_context(patch.object(repository_validator, name, side_effect=callback(name)))
+            yield calls, output, error_output
+
+    def test_main_preserves_all_33_checks_shared_results_arguments_and_flushed_boundaries(self) -> None:
+        with self.stubbed_checks() as (calls, output, error_output):
+            self.assertEqual(0, repository_validator.main())
+        self.assertEqual(list(self.CHECKS), calls)
+        lines = error_output.getvalue().splitlines()
+        self.assertEqual(66, len(lines))
+        self.assertEqual(66, len(error_output.flush_snapshots))
+        for index, name in enumerate(self.CHECKS):
+            self.assertEqual(f"[PHASE] {name} begin", lines[index * 2])
+            self.assertEqual(
+                f"[PHASE] {name} returned elapsed_seconds=0.000 passed=0 pending=0 warnings=0 failed=0",
+                lines[index * 2 + 1],
+            )
+        self.assertTrue(all(len(line.encode("ascii")) <= 256 for line in lines))
+        self.assertEqual(
+            "Summary: 0 passed, 0 pending, 0 warnings, 0 failed\n", output.getvalue(),
+        )
+        self.assertEqual(1, len(output.flush_snapshots))
+
+    def test_main_forwards_the_strict_flag(self) -> None:
+        with self.stubbed_checks(strict=True) as (calls, _, _):
+            self.assertEqual(0, repository_validator.main())
+        self.assertEqual(list(self.CHECKS), calls)
+
+    def test_optional_package_check_is_last_with_original_argument_order(self) -> None:
+        package_root = Path("private package path\nnot a diagnostic identifier")
+        with self.stubbed_checks(package_root=package_root) as (calls, _, error_output):
+            self.assertEqual(0, repository_validator.main())
+        self.assertEqual([*self.CHECKS, "check_package_checksums"], calls)
+        self.assertEqual(68, len(error_output.getvalue().splitlines()))
+        self.assertEqual(68, len(error_output.flush_snapshots))
+        self.assertNotIn("private package", error_output.getvalue())
+
+    def test_recorded_failure_does_not_skip_later_checks_and_still_returns_one(self) -> None:
+        def fail_first(name, results):
+            if name == self.CHECKS[0]:
+                results.fail("recorded failure")
+        with self.stubbed_checks(on_check=fail_first) as (calls, output, error_output):
+            self.assertEqual(1, repository_validator.main())
+        self.assertEqual(list(self.CHECKS), calls)
+        self.assertEqual(66, len(error_output.getvalue().splitlines()))
+        self.assertNotIn("recorded failure", error_output.getvalue())
+        self.assertEqual(
+            "[FAIL] recorded failure\nSummary: 0 passed, 0 pending, 0 warnings, 1 failed\n",
+            output.getvalue(),
+        )
+        self.assertTrue(all(
+            "failed=1" in line for line in error_output.getvalue().splitlines()[1::2]
+        ))
+
+    def test_pass_pending_and_warning_do_not_change_success_exit(self) -> None:
+        def record_first(name, results):
+            if name == self.CHECKS[0]:
+                results.passed("complete")
+                results.pending_state("not accepted")
+                results.warn("warning")
+        with self.stubbed_checks(on_check=record_first) as (calls, output, _):
+            self.assertEqual(0, repository_validator.main())
+        self.assertEqual(list(self.CHECKS), calls)
+        self.assertEqual(
+            "[PASS] complete\n[PENDING] not accepted\n[WARN] warning\n"
+            "Summary: 1 passed, 1 pending, 1 warnings, 0 failed\n",
+            output.getvalue(),
+        )
+
+    def test_unexpected_exception_keeps_identity_and_stops_without_report_or_return_marker(self) -> None:
+        sentinel = RuntimeError("private exception message")
+        def interrupt(name, results):
+            if name == "check_markdown_links":
+                raise sentinel
+        with self.stubbed_checks(on_check=interrupt) as (calls, output, error_output):
+            with self.assertRaises(RuntimeError) as caught:
+                repository_validator.main()
+        self.assertIs(sentinel, caught.exception)
+        self.assertEqual(list(self.CHECKS[:5]), calls)
+        self.assertEqual("", output.getvalue())
+        self.assertEqual(9, len(error_output.getvalue().splitlines()))
+        self.assertTrue(error_output.getvalue().endswith(
+            "[PHASE] check_markdown_links begin\n",
+        ))
+        self.assertNotIn("private exception", error_output.getvalue())
 
 
 class IdentityParsingTests(unittest.TestCase):
