@@ -160,8 +160,12 @@ does not execute the twenty console rows or any off-world sleep behavior.
 Candidate-specific counts/artifacts/receipts are kept in that checkpoint, not
 substituted for Main's integrated behavioral regression above. Strict timeout,
 unwaived native ERROR logs and policy-denied independent output retention remain.
-A corrected-schema driver proposal is sealed but not executable-frozen; fresh
-independent contract review and primary wire qualification are in progress.
+A corrected-schema driver proposal is sealed but not executable-frozen. Complete
+[contract/wire disposition 18](../work/v1.8.0-c18a-sleep/DRIVER-REVIEW-STATUS-18.md)
+records two Medium and one Low contract findings, supported raw Forge routing
+and typed SpawnDimension, plus an additional nested-receiver preflight boundary
+and unfinished whole-trace token proof. Separate isolated source correction 19
+and static contract revision 20 are in progress, not accepted or runtime-authorized.
 The owner-record review also reports fifteen pre-existing historical log links
 to locally untracked ZIPs absent from its fixed Git trees; whole-log portability
 is not approved. No production policy, source merge, ledger delivery or Gate closes.

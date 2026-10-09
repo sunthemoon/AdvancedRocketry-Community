@@ -1,5 +1,10 @@
 # Corrected passive observation source and development qualification 08
 
+Later [contract/wire disposition 18](DRIVER-REVIEW-STATUS-18.md) replaces the
+pending Tasks16/17 state below and records an additional nested-receiver
+preflight boundary. This checkpoint's narrowed review and actual regressions
+remain historical evidence at 5b451320, not universal serializer closure.
+
 Date: 2026-10-09. Status: implemented-unverified for the complete observation leaf.
 The source is isolated and normally pushed, not merged into Main. No production
 sleep implementation or twenty-case observation command has been executed.

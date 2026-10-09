@@ -305,10 +305,16 @@ C17b candidate03 的独立审核已解决旧版 Medium
     [修订源码与资格记录](../work/v1.8.0-c18a-sleep/SOURCE-REVIEW-STATUS-08.md)保留原有候选与两个 Medium，
     并记录 5b451320 的实际修正、完整独立源码审核及双方分别执行的短开发回归。
     新增守卫/边界 GameTest 已执行；严格校验、日志和独立输出清理问题仍开放。候选尚未合入，二十项控制台观察尚未执行。
-    修订驱动契约为 PROPOSED；任务 16 独立只读审核与任务 17 原生 stdout/component/SpawnDimension 资格研究进行中。
+    [任务 16/17 的完整审核与处置](../work/v1.8.0-c18a-sleep/DRIVER-REVIEW-STATUS-18.md)已完成：
+    两项 Medium、一项 Low 契约问题仍开放，另有嵌套接收者预检与整份 trace 节点预算前置项。
+    修订驱动契约仍为 PROPOSED；原生 raw stdout 路由及 SpawnDimension 类型已静态核对，不代表实际捕获或磁盘通过。
     驱动、解析器和有限原生执行仍须分别冻结、审核和分配。
     验证需真实命令、原生字段/帧记录及完整独立审核；不关闭 B1 或改动生产睡眠策略。
     记录审核另有十五处既存历史日志链接指向未入库 ZIP；本地文件不接管，不声称整个日志可从 Git 复现。
+    - [ ] C18a-SLEEP-CHAT19：status: in-progress。隔离修正嵌套聊天接收者预检与测试；
+      仅授权编译，测试实际执行、独立源码审核和集成尚未完成。
+    - [ ] C18a-SLEEP-DRIVER20：status: in-progress。只读输入下修订有界编码/存储/JSON/NBT 契约；
+      原记录不改，修订仍需独立审核，不授权驱动、解析器、测试或服务器。
 
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、
