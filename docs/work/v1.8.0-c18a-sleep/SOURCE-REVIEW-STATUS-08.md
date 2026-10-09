@@ -1,5 +1,9 @@
 # Corrected passive observation source and development qualification 08
 
+Later [nested source checkpoint27](NESTED-BOUNDARY-STATUS-27.md) records the
+additive final d57 candidate and completed independent patch review. Its new
+qualification is separate; this checkpoint's actual results remain at 5b.
+
 Later [contract/wire disposition 18](DRIVER-REVIEW-STATUS-18.md) replaces the
 pending Tasks16/17 state below and records an additional nested-receiver
 preflight boundary. This checkpoint's narrowed review and actual regressions

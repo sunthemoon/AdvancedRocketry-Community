@@ -39,8 +39,8 @@ previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: 80bbf16d9e76708b7e39c50d21b3cff1a66432ef
 pending_graph_source_candidate: ""
-pending_sleep_observation_source_candidate: 5b45132000ade1e3c8d130a6b8ccb29f07535124
-pending_sleep_observation_qualification: SEALED_ROOT_AND_INDEPENDENT_SHORT_REGRESSION_NOT_INTEGRATED
+pending_sleep_observation_source_candidate: d57ecda1f11dab76d882f945b0de606534ef4fb9
+pending_sleep_observation_qualification: FINAL_SOURCE_REVIEWED_NEW_STANDARD_QUALIFICATION_IN_PROGRESS_NOT_INTEGRATED
 tested_code_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
 native_tested_code_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
 latest_regression_target_commit: 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7
@@ -164,8 +164,19 @@ A corrected-schema driver proposal is sealed but not executable-frozen. Complete
 [contract/wire disposition 18](../work/v1.8.0-c18a-sleep/DRIVER-REVIEW-STATUS-18.md)
 records two Medium and one Low contract findings, supported raw Forge routing
 and typed SpawnDimension, plus an additional nested-receiver preflight boundary
-and unfinished whole-trace token proof. Separate isolated source correction 19
-and static contract revision 20 are in progress, not accepted or runtime-authorized.
+and unfinished whole-trace token proof. The later
+[checkpoint27](../work/v1.8.0-c18a-sleep/NESTED-BOUNDARY-STATUS-27.md) records
+final isolated d57 source and complete independent patch review, with historical
+receiver findings source-addressed, not universal runtime proof. Five compiles
+pass; their source-review cohorts only compile the six new tests. Separate final-source standard
+qualification28 and D1 preparation29 are in progress. Complete independent
+proposal03 review26 identifies Medium compressed-log rotation interpretation
+and Low reachable-identifier wording; the latter is additively clarified in27.
+No observation driver/parser, source merge or production change is
+authorized. Two independent cleanup generations remain policy-denied/retained;
+Task20's external 37-byte miscreation remains after a denied one-time correction.
+Its proposal is sealed but not accepted, with runtime allocation authority and
+actual cumulative pre-run evidence accounting still required.
 The owner-record review also reports fifteen pre-existing historical log links
 to locally untracked ZIPs absent from its fixed Git trees; whole-log portability
 is not approved. No production policy, source merge, ledger delivery or Gate closes.

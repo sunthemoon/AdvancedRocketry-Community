@@ -1,5 +1,10 @@
 # Passive sleep observation contract review disposition 18
 
+Later [checkpoint27](NESTED-BOUNDARY-STATUS-27.md) supersedes the pending
+Task19/20 state below with completed source/proposal evidence, fresh review
+and qualification assignments, and explicit retained cleanup/incident state.
+The historical findings, limits and sealed inputs below remain unchanged.
+
 Date: 2026-10-09. Status: in-progress; no executable freeze or packaged launch.
 This updates the pending driver/wire work in [checkpoint 08](SOURCE-REVIEW-STATUS-08.md).
 The isolated source remains 5b45132000ade1e3c8d130a6b8ccb29f07535124;
