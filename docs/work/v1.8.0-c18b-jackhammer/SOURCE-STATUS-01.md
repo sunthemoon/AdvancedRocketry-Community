@@ -39,15 +39,22 @@ fixture corrections independently pass all 578 required cases, but that native
 result does not repair the JUnit, recipe-record or console-only boundary findings.
 Its full independent report remains pending publication; no old result is replaced.
 
-Latest isolated candidate: 53523bcf68af203934845521e97af2f824b2958d, normally pushed.
+Corrective isolated candidate: 53523bcf68af203934845521e97af2f824b2958d, normally pushed.
 It corrects the native Boolean expectation, restricts adapter commands to the
 actual native console and adds a native authority case. One exact first-match
 MIT-derived recipe asset row changes REGENERATE to IMPORTED with mechanical
 following rule numbers; all other effective handling and ledger units stay
 unchanged, and human provenance review stays pending. Root's fresh clean build
-exits 0 with 2,192 JUnit/381 XML and zero failures/errors/skips; explicit test,
-two DataGen/diffs, native qualification and fresh complete source review continue.
-The complete candidate's source and record checks must finish before integration.
+and explicit test exit 0 with 2,192 JUnit/381 XML and zero failures/errors/skips;
+both DataGen/empty diffs pass. Its native run aborts with a missing adapter-namespace
+empty template before final completion. The fresh reviewer independently reproduces
+that failure and identifies missing recipe-touch history; those results are kept.
+
+Latest isolated candidate is 3b18a6bc8b58424d647053d6c6f1833ba14d9dc7, normally pushed
+after correction preparation. Its sole Java edit uses the existing host template
+namespace; provenance adds actual pinned upstream-touch history and a recomputed
+pending digest. The earlier omission is recorded, not credited retroactively.
+Full Root and new applicable independent qualification must finish before integration.
 
 The [packaged driver assignment](PACKAGED-DRIVER-TASK-01.md) separately freezes
 its external harness before two-process same-world native inventory continuation.
