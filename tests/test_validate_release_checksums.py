@@ -668,6 +668,51 @@ class ChecksumInputBoundaryTests(unittest.TestCase):
         self.assertEqual([], update_release_checksums(self.root, checksums_path=output))
         self.assertEqual(first, (self.root / output).read_bytes())
 
+    def test_render_uses_case_sensitive_posix_path_order(self) -> None:
+        for name in ('README.md', 'a-note.txt', 'Z-last.txt'):
+            (self.fixture.evidence_dir / name).write_bytes(name.encode('ascii'))
+        text, errors = render_release_checksums(self.root)
+        self.assertEqual([], errors)
+        self.assertIsNotNone(text)
+        entries, errors = parse_checksum_text(text)
+        self.assertEqual([], errors)
+        evidence_paths = [entry.path for entry in entries[1:]]
+        self.assertEqual(sorted(evidence_paths), evidence_paths)
+        self.assertLess(evidence_paths.index('docs/releases/v0.0.2/evidence/README.md'),
+                        evidence_paths.index('docs/releases/v0.0.2/evidence/a-note.txt'))
+
+    def test_intentional_output_inside_evidence_keeps_updater_return(self) -> None:
+        for preexisting in (False, True):
+            with self.subTest(preexisting=preexisting):
+                output = self.fixture.evidence_dir / f'nested-{preexisting}/checksums.txt'
+                if preexisting:
+                    output.parent.mkdir()
+                    output.write_bytes(b'old checksum list\n')
+                text, errors = render_release_checksums(self.root)
+                self.assertEqual([], errors)
+                self.assertEqual([], update_release_checksums(self.root, checksums_path=output))
+                self.assertEqual(text.encode('utf-8'), output.read_bytes())
+                # An updater side effect does not approve a self-referential list.
+                tracked = self.fixture.tracked_files | {output.relative_to(self.root).as_posix()}
+                validation_errors, _ = validate_release_checksums(
+                    self.root, checksums_path=output, tracked_files=tracked)
+                self.assertTrue(validation_errors)
+
+    def test_intentional_output_does_not_mask_other_tree_additions(self) -> None:
+        session = bounded.ChecksumInputs(self.root)
+        session.scan(self.fixture.evidence_dir)
+        output = self.fixture.evidence_dir / 'new/output.txt'
+        original = session._record_output_change
+
+        def record(target, status):
+            original(target, status)
+            if target == output:
+                (self.fixture.evidence_dir / 'unrelated.txt').write_bytes(b'unrelated')
+
+        with patch.object(session, '_record_output_change', side_effect=record):
+            with self.assertRaisesRegex(bounded.ChecksumInputError, 'tree changed'):
+                session.write(output, b'explicit output')
+
     def test_artifact_physical_limit_and_delegated_mutation_fail(self) -> None:
         with patch.object(bounded, 'MAX_ARTIFACT_BYTES', self.fixture.artifact.stat().st_size - 1):
             errors, details = validate_release_checksums(

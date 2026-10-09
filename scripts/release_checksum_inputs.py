@@ -227,7 +227,7 @@ class ChecksumInputs:
         previous = self.trees.setdefault(directory, observed_tree)
         if previous != observed_tree:
             raise ChecksumInputError(f'Evidence tree changed during validation: {directory}')
-        return sorted(files)
+        return sorted(files, key=self.relative)
 
     def assert_stable(self) -> None:
         for directory in tuple(self.trees):
@@ -252,12 +252,16 @@ class ChecksumInputs:
         target = self.target(path)
         if len(payload) > MAX_CHECKSUM_BYTES:
             raise ChecksumInputError('Rendered checksum list exceeds byte limit')
+        self.assert_stable()
         parent = self.root
         for part in target.parent.relative_to(self.root).parts:
             self.inspect(parent, directory=True)
             parent /= part
             if self.inspect(parent, directory=True, missing=True) is None:
                 parent.mkdir()
+                created = self.inspect(parent, directory=True)
+                assert created is not None
+                self._record_output_change(parent, created)
             self.inspect(parent, directory=True)
         before = self.inspect(target, missing=True)
         self.assert_stable()
@@ -279,7 +283,22 @@ class ChecksumInputs:
         # An existing checksum can also be an input to a caller's evidence tree.
         # The intentional output change must not retain its old input identity.
         self.files.pop(target, None)
+        self._record_output_change(target, final)
         self.assert_stable()
+
+    def _record_output_change(self, target: Path, status: os.stat_result) -> None:
+        """Only explicit output/created parents change a prior tree snapshot."""
+        for tree, signature in tuple(self.trees.items()):
+            if target.is_relative_to(tree):
+                expected = dict(signature)
+                expected[self.relative(target)] = _identity(status)
+                for parent in target.parents:
+                    if parent == tree:
+                        break
+                    status = self.inspect(parent, directory=True)
+                    assert status is not None
+                    expected[self.relative(parent)] = _identity(status)
+                self.trees[tree] = tuple(sorted(expected.items()))
 
     def git_paths(self) -> bytes:
         self.check_time()
