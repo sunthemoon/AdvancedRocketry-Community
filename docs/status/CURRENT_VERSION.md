@@ -40,18 +40,19 @@ runtime_build: 1.20.1-1.8.0-dev
 latest_source_checkpoint: ce64a8eb79c0f6fb53f000f0c2a0e4e947ef9985
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
+pending_seal_spatial_source_candidate: 770b3134cae99ab603ccde610c3731a98d63f524
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
 tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
 native_tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
-latest_regression_target_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
-latest_regression_result: NATIVE_PASS_STRICT_TIMEOUT_GATES_OPEN
-latest_regression_run: sleep-nested-source-qualification-20261009-28/native-01
+latest_regression_target_commit: 770b3134cae99ab603ccde610c3731a98d63f524
+latest_regression_result: NATIVE_FAILED_STRICT_TIMEOUT_GATES_OPEN
+latest_regression_run: seal-spatial-boundary-root-20261009-04/native-01
 latest_regression_attempt: 1
-latest_regression_evidence: SEALED_FRESH_VERIFIER_STANDARD_REGRESSION_ROOT_PAYLOAD_AUDITED
-latest_regression_observed_utc: 2026-10-09T07:30:06.547652Z
-actual_unit_rerun: sleep-nested-source-qualification-20261009-28/test-01.command.json
-actual_unit_rerun_observed_utc: 2026-10-09T07:22:55.516Z
+latest_regression_evidence: ACTUAL_FIXED_SOURCE_FAILED_NATIVE_LOGS_RETAINED_INDEPENDENT_RUNNING
+latest_regression_observed_utc: 2026-10-09T13:22:39.182045Z
+actual_unit_rerun: seal-spatial-boundary-root-20261009-04/test-01.command.json
+actual_unit_rerun_observed_utc: 2026-10-09T13:15:28.040846Z
 tested_python_commit: 5582e3c49d548c5c002ef6c7cd45b1296f2f2703
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
 sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_INDEPENDENT_REVIEW_COMPLETE_RESOURCE_OPEN
@@ -59,6 +60,15 @@ last_updated: 2026-10-09
 ```
 
 ## Current development evidence
+
+The latest [selected-cell candidate checkpoint04](../work/v1.8.0-c18a-seal-detector/SPATIAL-VERIFICATION-04.md)
+is fixed 770b3134 in its isolated branch, not Main source integration. Root build
+and forced test each pass 2192 JUnit/381 XML; both DataGen/generated diffs pass.
+Native completes 597 tests but fails the existing waiting-owner LaserTarget case;
+logs retain 63 ERROR/0 FATAL per log, strict 180-second TIMEOUT. Independent source
+and command review remains running. A separate test-only correction scope is
+published before edits; no production diagnosis/repair or native pass is inferred.
+The earlier d57 regression below remains historical at d57, not the latest result.
 
 The [final observation test-source integration32](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)
 is normally merged/pushed at ce64a8eb. Actual fresh standard qualification is at

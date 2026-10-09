@@ -44,8 +44,8 @@ does not turn those allocations into traced observations or a hard allocation ca
 
 This explicitly supersedes only frozen37/43/52's ambiguous whole-lifecycle traced
 inclusion interpretation. Numeric limits, API/diagnostic/recipe requirements,
-at most12 fresh case processes, cooperative60/external180 seconds, split262144
-raw streams and ONE4194304-byte aggregate resource evidence leaf remain.
+at most 12 fresh case processes, cooperative 60/external 180 seconds, split 262144
+raw streams and ONE 4194304-byte aggregate resource evidence leaf remain.
 First payload/result aliases are released before the second call without resetting
 the peak; final live-retention applies to the applicable last input/result.
 No two-AST retention permission follows. The proposal's exact semantics are
