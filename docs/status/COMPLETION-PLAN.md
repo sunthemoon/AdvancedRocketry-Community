@@ -647,12 +647,19 @@ C17b candidate03 的独立审核已解决旧版 Medium
 - [ ] R14-OPS01（Medium）：Root12 清理只检查目标/后代及三个自有根至卷根，
   未单独检查嵌套 .cache 的每级父目录；词法 GetFullPath/prefix 不等于物理解析。
   未观察到重定向或越界删除。另立更正记录，未来 helper 需补齐，旧清理/封存包不重试或修改。
-- [ ] [C19-CHECKSUM-INPUT-16](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-TASK-16.md)：
-  status: in-progress，本地/Git 输入边界；只读 review13/15 的静态缺口仍开放。
-  分别涉及资源/终止上限及父目录 reparse/读取稳定性；未复现或认定为超时原因。
-  单独冻结脚本/相邻测试范围，保持完整覆盖、可选 artifact 与已接受历史证据。
-  一份独立 helper 避免循环依赖；委托 ZIP 构建仍有单独的资源资格义务，
-  不把有限本地/Git 修正认作全部 artifact 有界验证。
+- [~] [C19-CHECKSUM-INPUT-16](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-TASK-16.md)：
+  status: in-progress。三文件源码 `0cefe86e` 的精确后像已集成、正常推送至 `a38f1dc9`；
+  [检查点](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)
+  记录本地/Git 准入、完整父目录检查和普通读取稳定性，保留完整覆盖与原 artifact 判定。
+  排序/显式输出/相对深度的前序审核发现已有后继修订；最新 Root 43/148 通过，
+  独立25实际差异审核无 material 源码发现，原八项夹具设定错误与四项既有跳过保留。
+  较早 `804c4a18` 的十三项标准子集已通过，不冒充最新 SHA 的运行。
+  最新十三项标准子集已通过，实际构建/单独测试各 2192 项，原生 597 项通过；
+  最新完整 Python/strict 各 180 秒超时仍失败，原生日志各 62 ERROR 未豁免。
+  独立30实际运行包审核及最新清理 helper 的限定检查完成；最新十目标清理已有
+  完整父目录证明、显式主机/退出回执和实际结果，两份最新证据包已封存。
+  独立31已复核最新包、21 份回执/42 份输出及源码别名，未发现新的实质问题；
+  Root 已完整阅读、复核其封存包。旧操作证明、委托 ZIP 资源和完整资格仍开放。
 - [ ] C19 可移植已提交证据引用：实际 Markdown 检查在 256 错误前缀后停止。
   绝对/越界及缺失 ZIP/manifest 需逐项核对所有者；不拷贝未知归属的未跟踪材料。
 - [x] [C19-STRICT-DIAGNOSTICS-08](../work/v1.8.0-c19-strict-validator/DIAGNOSTICS-TASK-08.md)
@@ -729,19 +736,20 @@ Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端
 
 ## 当前自动回归与风险
 
-最新开发回归见[库存11检查点](../work/v1.8.0-c19-strict-validator/INVENTORY-CHECKPOINT-11.md)。
-实际被测候选 `5c0dee24` 与 Main `ffadaca3` 关联 src、scripts/tests 和十二项输入；
-不声称 Main SHA 复跑或文档敏感的严格校验等同。Root 强制构建/独立测试各执行
-2,192项实际 JUnit/381 XML，全部597项必需 GameTest、两次 DataGen/空 diff 通过。
-Root 17/148、独立 17/148/18 Python 方法通过，广泛 Python 与严格 180 秒仍超时；
-部分终止失败不改写。Markdown 诊断实际 FAIL，256 条仅为有界前缀。
-每份原生日志 62 条 ERROR/零 FATAL，未豁免。三个新证据包已封存并逐项核验；
-Root11/12 只清理自身八个新产物，完整父目录解析证明缺口保留，不能补造旧观察。
+最新开发回归见[校验器16检查点](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)。
+实际被测候选为 `0cefe86e`，精确源码后像已集成至 Main `a38f1dc9`；不声称 Main SHA 复跑或文档敏感的
+严格校验等同。Root 强制构建/独立测试各执行 2192 项实际 JUnit/381 XML，
+全部 597 项必需 GameTest、两次 DataGen/空 diff 通过。Root 校验器 43/仓库 148、
+独立实际差异及十三项深度/公共契约探针通过；原始夹具失败、四项 artifact 跳过保留。
+广泛 Python 与严格各 180 秒超时仍失败，部分终止失败不改写；Markdown 的
+256 条失败仅为有界前缀。每份原生日志 62 条 ERROR/零 FATAL，未豁免。
+前序[库存11检查点](../work/v1.8.0-c19-strict-validator/INVENTORY-CHECKPOINT-11.md)
+保留历史源码审核与完整运行；Root11/12 的父目录证明缺口不能补造旧观察。
 独立11清理未启动的 R11-OPS01 及四份缓存保留；源码、旧拒绝目录、独立05残留
 和继承债务不接管。历史诊断08/09与原 Low 更正保持封存，不能替代最新资格。
-独立固定对象14核对 26 回执/52 原始流和三个完整清单；测试修正/精确集成无 material
-源码发现，R14-OPS01 的 Medium 操作证明缺口继续开放。
-checksum 两项静态 Medium、历史 Git 和可移植引用须另立小切片，
+独立固定对象14的历史审核及 R14-OPS01 Medium 操作证明缺口继续保留。
+checksum 的限定本地/Git 源码已有独立审核、正常推送和标准子集验证；
+最新封存包/源码别名已有独立复核；旧操作证明、委托归档资源和可移植引用仍开放。
 不能扩大白名单、删断言、盲目合并不同历史身份或延长预算。
 此前05通过和更早原生失败仍作为历史证据，物品来源/COMMON watcher 等风险不关闭。
 上述自动测试和观察夹具不替代物理 hatch、资源验收、真实客户端或打包 S1/S2。

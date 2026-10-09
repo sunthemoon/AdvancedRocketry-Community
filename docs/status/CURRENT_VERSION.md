@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: ffadaca36411c6d5edf8d1912f424405883ed6d8
+latest_source_checkpoint: a38f1dc96444f6e92479a350833bd38a7bdc893b
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
@@ -47,20 +47,22 @@ pending_strict_diagnostics_source_candidate: ""
 pending_strict_diagnostics_qualification: SOURCE_INTEGRATED_OBSERVATION_VERIFIED_FULL_QUALIFICATION_OPEN
 pending_inventory_test_source_candidate: ""
 pending_inventory_test_qualification: SOURCE_INTEGRATED_REPOSITORY148_PEER_PASS_BROAD_STRICT_TIMEOUT_OPERATIONAL_RETENTION_OPEN
+pending_checksum_input_source_candidate: ""
+pending_checksum_input_qualification: SOURCE_INTEGRATED_ROOT43_REPOSITORY148_PEER_STANDARD_PASS_SUITE_STRICT_TIMEOUT_OPERATIONAL_GAPS_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: 5c0dee248d8fcf5851fdcd5d1aabd113b6e45457
-native_tested_code_commit: 5c0dee248d8fcf5851fdcd5d1aabd113b6e45457
-latest_regression_target_commit: 5c0dee248d8fcf5851fdcd5d1aabd113b6e45457
+tested_code_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
+native_tested_code_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
+latest_regression_target_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
 latest_regression_result: ROOT_NATIVE_REPOSITORY_PASSED_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_GATES_OPEN
-latest_regression_run: inventory-standard-root-20261010-12/native-01
+latest_regression_run: checksum-depth-standard-root-20261010-27/native-01
 latest_regression_attempt: 1
-latest_regression_evidence: ACTUAL_5C_RUNTIME_MAIN_SOURCE_INPUT_ALIAS_FULL_PYTHON_STRICT_FAILURES_RETAINED
-latest_regression_observed_utc: 2026-10-09T16:29:24.703327Z
-actual_unit_rerun: inventory-standard-root-20261010-12/test-01.command.json
-actual_unit_rerun_observed_utc: 2026-10-09T16:22:44.884762Z
-tested_python_commit: 5c0dee248d8fcf5851fdcd5d1aabd113b6e45457
-latest_python_qualification_result: REPOSITORY148_PASS_SUITE_TIMEOUT_MARKDOWN_FAILURE_OPERATIONAL_RETENTION_OPEN
+latest_regression_evidence: ACTUAL_0CE_RUNTIME_EXACT_MAIN_A38_SOURCE_POSTIMAGE_ALIAS_FULL_PYTHON_STRICT_FAILURES_RETAINED
+latest_regression_observed_utc: 2026-10-09T18:01:50.644945Z
+actual_unit_rerun: checksum-depth-standard-root-20261010-27/test-01.command.json
+actual_unit_rerun_observed_utc: 2026-10-09T17:55:46.346381Z
+tested_python_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
+latest_python_qualification_result: CHECKSUM43_REPOSITORY148_PEER_PACKET_PASS_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_HISTORICAL_CUSTODY_GAPS_OPEN
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
 sleep_json_functional_qualification: INTEGRATED_FUNCTIONAL_INDEPENDENT_REVIEW_COMPLETE_RESOURCE_OPEN
 last_updated: 2026-10-10
@@ -68,6 +70,23 @@ last_updated: 2026-10-10
 
 ## Current development evidence
 
+The [checksum16 checkpoint](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)
+records actual runtime at 0cefe86e and the exact three postimages integrated and
+normally pushed at Main a38f1dc9. Checksum43/repository148, all thirteen standard
+cohorts, forced build/separate test each 2192 cases/381 XML/zero F/E/S, two
+DataGen/empty diffs and all 597 required native tests pass. Broad Python and
+strict retain their original 180-second TIMEOUTs, classification 124/child exit 1;
+strict taskkill 128, four adjacent artifact skips and native 62 ERROR/zero FATAL
+remain unwaived. Independent31 verifies both latest sealed packets, all 21
+receipts/42 streams, source/input aliases and actual selected custody, with no
+new material finding. Its complete report and exact twelve-payload manifest
+are read/rehashed by Root. This is ordinary retained-evidence consistency, not
+Main-SHA runtime, full historical process proof, delegated archive resources or
+Required Gate acceptance. Earlier R11-OPS01/R14-OPS01 remain open; sealed packets
+and old refused/peer targets are not modified or retried.
+
+The following inventory checkpoint is historical and is superseded only for
+latest execution metrics by checksum16; its unresolved obligations remain.
 The [inventory11 checkpoint](../work/v1.8.0-c19-strict-validator/INVENTORY-CHECKPOINT-11.md)
 records the test-only source integrated/pushed at Main ffadaca3. Actual fixed
 candidate 5c passes Root 17/148 and fresh independent 17/148/18 methods, without

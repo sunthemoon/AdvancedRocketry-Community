@@ -34,8 +34,9 @@ No selected-commit replacement for the current index API or newline conversion.
 Keep coverage as the union of index and local evidence, including missing/index
 and untracked/local evidence. Existing positive and negative tests remain.
 
-Task-specific caps: Git stdout 4 MiB/32768 paths/30-second query, UTF-8 path
-4096 bytes/64 components; checksum text 2 MiB/8192 records, metadata 8 MiB;
+Task-specific caps: Git stdout 4 MiB/32768 paths/30-second query, UTF-8 relative
+path 4096 bytes/64 components and separate absolute-root 64 components;
+checksum text 2 MiB/8192 records, metadata 8 MiB;
 evidence 8192 filesystem entries/4096 files/512 directories/50 MiB per file/
 100 MiB aggregate; hashed/read session total 512 MiB, optional artifact physical
 file 256 MiB. Local loops use a shared 60-second cooperative deadline; OS calls
@@ -94,3 +95,50 @@ Independent R11-OPS01 retained outputs are not this task's property.
 
 Final checkpoint reports actual source/diff/tests/commands/custody, independent
 findings and remaining risks. No release, tag, ADR acceptance or ledger delivery.
+
+## Fixed source progress (2026-10-10)
+
+The initial checkout remains fixed at 5049c27af79dd8aee5aa2505f0d20c1be6c22a4e.
+Finite compatibility corrections use separate Root checkouts, without moving
+the source under active review or verification:
+
+- 804c4a188ddc07a7cc3ba46ea483a47ee376cd26, branch
+  fix/v1.8.0-checksum-ordering, checkout
+  D:/GitHub/arce-v180-checksum-input-revision-20261010-20.
+- 0cefe86e79a872fd4dc24cb81d851c5f74ed7104, branch
+  fix/v1.8.0-checksum-relative-depth, checkout
+  D:/GitHub/arce-v180-checksum-depth-20261010-24.
+
+The exact latest three source postimages are integrated and normally pushed at
+Main a38f1dc96444f6e92479a350833bd38a7bdc893b. Runtime remains actual 0ce source,
+not Main-SHA execution. Full C19 qualification remains in progress. The source
+scope and frozen contract remain unchanged. Root owns distinct external evidence
+leaves checksum-input-root-20261010-16, checksum-standard-root-20261010-19,
+checksum-input-revision-root-20261010-20,
+checksum-revision-standard-root-20261010-22,
+checksum-depth-root-20261010-24 and
+checksum-depth-standard-root-20261010-27 beneath
+D:/GitHub/ARCE-Task-Evidence/v1.8.0. Reviewers own their separate leaves/Temp;
+Root does not clean them. Source receipts and runtime are never rebound to a
+different candidate or Main SHA. Standard Root27 ends thirteen managed cohorts
+0; its once-only broad Python and strict attempts each time out at the original
+180-second limits, classification 124 / child exit 1. Initial observations
+remain exact: Root22 and Root27 each
+observe scripts/__pycache__ already present, not seven absent targets.
+
+The prospective Root22 cleanup revision selects only its ended revision checkout
+outputs and own standard scratch. Root5049 outputs and Root16/Root19/development
+scratch remain excluded where individual historical command/custody proof is
+incomplete. After finite independent revision review, Root22's amended helper
+is executed once: seven targets removed / one already absent, final tracked
+status empty and exit 0. Sixteen full-chain target proofs and retained logs are
+sealed with its actual result. After independent30's finite inspection, Root27's
+separate binding is executed once: nine targets removed/one absent, with twenty
+full-chain proofs, an explicit native host/argv/PID/exit receipt and zero survivors.
+Latest packets are sealed; independent31 completes actual payload/receipt/custody
+and immutable source-alias verification, establishing no new material finding.
+Its twelve payloads/thirteen-file packet is rehashed by Root; runtime, failure
+and ordinary-observation boundaries remain in the checkpoint. The original helper's
+static findings and successive revisions remain distinct; none changes
+R14-OPS01 or old sealed evidence. See the additive
+[checksum checkpoint](CHECKSUM-INPUT-CHECKPOINT-16.md).
