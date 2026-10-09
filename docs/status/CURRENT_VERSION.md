@@ -111,9 +111,10 @@ The next [ordinary jackhammer leaf](../work/v1.8.0-c18b-jackhammer/TASK-01.md)
 has [bounded adoption](../work/v1.8.0-c18b-jackhammer/ADOPTION-01.md) after fresh
 independent static numeric/data/config/visual review. Root implementation starts
 after publication; no source/registration or runtime result exists at adoption. Titanium/motor survival
-progression remains unfinished. Off-world actual sleep versus refusal-only
-behavior is an unanswered maintainer question; dimension and respawn policies
-are unchanged and no sleep source is assigned.
+progression remains unfinished. The owner has selected
+[actual off-world sleep](../work/v1.8.0-c18a-sleep/OWNER-DECISION-01.md), conditional
+on separate freezing/review of dimension, spawn-point and time behavior before
+implementation. Those policies are unchanged and no sleep source is assigned.
 
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior
 current-state evidence is preserved in the
