@@ -15,6 +15,9 @@ import stat
 import subprocess
 import sys
 import threading
+import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath, PureWindowsPath
 from urllib.parse import unquote
@@ -397,21 +400,40 @@ class Results:
     def fail(self, message: str) -> None:
         self.failures.append(message)
 
+    @contextmanager
+    def phase(self, name: str) -> Iterator[None]:
+        """Report trusted main-check boundaries, not validation verdicts."""
+        if re.fullmatch(r"check_[a-z0-9_]{1,58}", name) is None:
+            raise ValueError("phase name must be a bounded ASCII check identifier")
+        started = time.monotonic()
+        print(f"[PHASE] {name} begin", file=sys.stderr, flush=True)
+        yield
+        # An unexpected exception propagates without a fabricated return marker.
+        elapsed = time.monotonic() - started
+        print(
+            f"[PHASE] {name} returned elapsed_seconds={elapsed:.3f} "
+            f"passed={len(self.passes)} pending={len(self.pending)} "
+            f"warnings={len(self.warnings)} failed={len(self.failures)}",
+            file=sys.stderr,
+            flush=True,
+        )
+
     def print_report(self) -> None:
         for message in self.passes:
-            print(f"[PASS] {message}")
+            print(f"[PASS] {message}", flush=True)
         for message in self.pending:
-            print(f"[PENDING] {message}")
+            print(f"[PENDING] {message}", flush=True)
         for message in self.warnings:
-            print(f"[WARN] {message}")
+            print(f"[WARN] {message}", flush=True)
         for message in self.failures:
-            print(f"[FAIL] {message}")
+            print(f"[FAIL] {message}", flush=True)
         print(
             "Summary: "
             f"{len(self.passes)} passed, "
             f"{len(self.pending)} pending, "
             f"{len(self.warnings)} warnings, "
-            f"{len(self.failures)} failed"
+            f"{len(self.failures)} failed",
+            flush=True,
         )
 
 
@@ -4245,41 +4267,75 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     results = Results()
-    check_required_paths(results)
-    check_identity(results, args.require_approved_identity)
-    check_public_statements(results)
-    check_license_and_upstream(results)
-    check_markdown_links(results)
-    check_repository_contents(results)
-    check_forge_bootstrap(results)
-    check_issue_templates(results)
-    check_workflow(results)
-    check_bootstrap_provenance(results)
-    check_v002_final_g0_review(results)
-    check_optional_v002_client_evidence(results)
-    check_v002_g4_applicability(results)
-    check_v002_gate_status(results)
-    check_release_checksums(results)
-    check_v010_asset_baseline(results)
-    check_v020_generated_resources(results)
-    check_v030_generated_resources(results)
-    check_v040_generated_resources(results)
-    check_v050_generated_resources(results)
-    check_v060_generated_resources(results)
-    check_v070_generated_resources(results)
-    check_v080_generated_resources(results)
-    check_v090_migration_fixtures(results)
-    check_v090_resources(results)
-    check_v020_gate_status(results)
-    check_v030_gate_status(results)
-    check_v040_gate_status(results)
-    check_v050_gate_status(results)
-    check_v060_gate_status(results)
-    check_v070_gate_status(results)
-    check_v080_gate_status(results)
-    check_v090_gate_status(results)
+    with results.phase("check_required_paths"):
+        check_required_paths(results)
+    with results.phase("check_identity"):
+        check_identity(results, args.require_approved_identity)
+    with results.phase("check_public_statements"):
+        check_public_statements(results)
+    with results.phase("check_license_and_upstream"):
+        check_license_and_upstream(results)
+    with results.phase("check_markdown_links"):
+        check_markdown_links(results)
+    with results.phase("check_repository_contents"):
+        check_repository_contents(results)
+    with results.phase("check_forge_bootstrap"):
+        check_forge_bootstrap(results)
+    with results.phase("check_issue_templates"):
+        check_issue_templates(results)
+    with results.phase("check_workflow"):
+        check_workflow(results)
+    with results.phase("check_bootstrap_provenance"):
+        check_bootstrap_provenance(results)
+    with results.phase("check_v002_final_g0_review"):
+        check_v002_final_g0_review(results)
+    with results.phase("check_optional_v002_client_evidence"):
+        check_optional_v002_client_evidence(results)
+    with results.phase("check_v002_g4_applicability"):
+        check_v002_g4_applicability(results)
+    with results.phase("check_v002_gate_status"):
+        check_v002_gate_status(results)
+    with results.phase("check_release_checksums"):
+        check_release_checksums(results)
+    with results.phase("check_v010_asset_baseline"):
+        check_v010_asset_baseline(results)
+    with results.phase("check_v020_generated_resources"):
+        check_v020_generated_resources(results)
+    with results.phase("check_v030_generated_resources"):
+        check_v030_generated_resources(results)
+    with results.phase("check_v040_generated_resources"):
+        check_v040_generated_resources(results)
+    with results.phase("check_v050_generated_resources"):
+        check_v050_generated_resources(results)
+    with results.phase("check_v060_generated_resources"):
+        check_v060_generated_resources(results)
+    with results.phase("check_v070_generated_resources"):
+        check_v070_generated_resources(results)
+    with results.phase("check_v080_generated_resources"):
+        check_v080_generated_resources(results)
+    with results.phase("check_v090_migration_fixtures"):
+        check_v090_migration_fixtures(results)
+    with results.phase("check_v090_resources"):
+        check_v090_resources(results)
+    with results.phase("check_v020_gate_status"):
+        check_v020_gate_status(results)
+    with results.phase("check_v030_gate_status"):
+        check_v030_gate_status(results)
+    with results.phase("check_v040_gate_status"):
+        check_v040_gate_status(results)
+    with results.phase("check_v050_gate_status"):
+        check_v050_gate_status(results)
+    with results.phase("check_v060_gate_status"):
+        check_v060_gate_status(results)
+    with results.phase("check_v070_gate_status"):
+        check_v070_gate_status(results)
+    with results.phase("check_v080_gate_status"):
+        check_v080_gate_status(results)
+    with results.phase("check_v090_gate_status"):
+        check_v090_gate_status(results)
     if args.package_root:
-        check_package_checksums(args.package_root, results)
+        with results.phase("check_package_checksums"):
+            check_package_checksums(args.package_root, results)
     results.print_report()
     return 1 if results.failures else 0
 
