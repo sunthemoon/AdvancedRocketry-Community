@@ -107,6 +107,13 @@ recorded. Packaged/restart, prior-world, installed continuation, V1/V2,
 progression, performance and all Required Gates are unfinished. No content
 delivery, release approval or completion of v1.8 is inferred from this slice.
 
+The next [ordinary jackhammer leaf](../work/v1.8.0-c18b-jackhammer/TASK-01.md)
+is PLANNED and awaits independent numeric/data/config/visual review and adoption.
+No new source/registration or runtime result exists. Titanium/motor survival
+progression remains unfinished. Off-world actual sleep versus refusal-only
+behavior is an unanswered maintainer question; dimension and respawn policies
+are unchanged and no sleep source is assigned.
+
 The [completion plan](COMPLETION-PLAN.md) remains the execution list; prior
 current-state evidence is preserved in the
 [implementation log](../work/v1.8.0-implementation-log.md). No tag is created.
