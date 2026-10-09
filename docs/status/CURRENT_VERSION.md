@@ -81,18 +81,29 @@ offline JSON candidate37, addendum43 and complete independent40/49 reviews are s
 freezes the generic decoder/API/diagnostic and unchanged finite qualification
 contract only. Low R01 is addressed at the normative level; no decoder/tests are
 integrated or qualified. Actual44 qualifies only named local peak-so-far queries;
-R49-01/U01/U02 remain open. Separately sealed50 post-exit observations and the
-completed independent55 review await Root disposition; no terminal resource,
-helper/quota or native authority is inferred.
-[Assignment checkpoint54](../work/v1.8.0-c18a-sleep/FUNCTIONAL-SOURCE-ASSIGNMENT-54.md)
-records active two-file functional53 in its isolated e21fdbd7 worktree and static
-M1 feasibility56. No source commit/tests or production mechanism is accepted.
+R49-01/U01/U02 remain open. [Checkpoint62](../work/v1.8.0-c18a-sleep/FUNCTIONAL-REVIEW-CHECKPOINT-62.md)
+publishes complete sealed53/54/55/56/57/58 packets. Independent55 confirms only
+four named local normal-exit native peak observations; no platform helper, full
+terminal/traced resource qualification, quota or native authority is adopted.
+Functional53 is committed/pushed at fa83657f in its isolated worktree: 32 paired
+methods pass. Independent57 runs those 32 plus 42 independent methods and finds
+two Low test-coverage gaps, not a material decoder defect in its finite review.
+Test-only successor59 at a1ea5b35 is committed/pushed with 33 author methods
+passing; a fresh independent successor review is still required. No Python source
+is integrated or resource-qualified. Complete feasibility56 and independent60
+do not establish a complete ordinary bed/neighbor receipt producer on inspected
+public surfaces. No universal API impossibility or private-instrumentation need
+is inferred. M1 remains open; resource protocol61 is still preparation only.
 The [actual Space decision05](../work/v1.8.0-c18a-sleep/OWNER-DECISION-05.md)
 answers question04: supplied/sealed station-exterior rooms are eligible;
 in-region live VISIT, unavailable-registry rejection and unchanged drift/spawn
 conditions remain. No sleep/air production implementation or Gate is authorized.
-Root disposition of that review and all downstream resource/source/runtime
-requirements remain open.
+The stale disposition33 pending-choice wording is explicitly superseded only for
+that product choice; live permission-footprint implementation remains open.
+All downstream resource/source/runtime requirements remain open. Actual 49 sleep
+ZIPs total 14672794 compressed /70364130 expanded bytes; unchanged reserve yields
+135375842 conservative expanded-plus FAIL before loose/later sets. This static
+sample is not launch admission, an atomic inventory, cleanup or a budget waiver.
 [Completed provenance audit38](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-AND-DIAGNOSTICS-STATUS-42.md)
 distinguishes injected native saves from direct event posts, with three recipe
 attribution gaps and existing High log/R-021 policy/evidence admission obligations

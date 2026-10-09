@@ -4,6 +4,14 @@ Later [native-log checkpoint36](NATIVE-LOG-REVISION-STATUS-36.md) records sealed
 proposal34, assigned independent35 and the later archive inventory. D1 outcomes
 remain frozen only in this scope; no driver or production authority is added.
 
+Later [actual owner decision05](OWNER-DECISION-05.md) supersedes the historical
+pending Space gap/station product choice below: supplied, sealed station-exterior
+rooms are eligible. In-region live VISIT, unavailable-registry rejection and
+unchanged drift/spawn conditions remain. This additive correction does not change
+canonical proposal29, the frozen D1 outcomes, permission implementation or runtime
+requirements. [Checkpoint62](FUNCTIONAL-REVIEW-CHECKPOINT-62.md) records the
+independent fixed-fdaa finding and this later records-only correction.
+
 Date: 2026-10-09. Integrator disposition: **D1 OUTCOMES FROZEN AND INDEPENDENTLY
 REVIEWED; IMPLEMENTATION PREREQUISITES AND RUNTIME QUALIFICATION OPEN.** This
 freezes only the owner's selected, narrowed D1 outcomes. No production source,
@@ -76,9 +84,12 @@ No implementation-ready assignment follows this freeze. Provider/exclusion
 ownership and the allowed implementation delta require an explicit scoped task.
 B1's cause/unknown/final-writer behavior, R1's callback/inherited-receiver boundary,
 M1's registered-bed admission and occupancy/adjacent-door air revocation, and
-M2's actual-host/live-access projection remain unqualified. Space gap/station and
-permission-footprint choices are not selected. A dimension flag cannot establish
-breathable sleep. Any data repair/save-load control needs its own risk/ADR scope.
+M2's actual-host/live-access projection remain unqualified. At disposition33,
+Space gap/station and permission-footprint choices were not selected. Decision05
+later selects only the supplied station-exterior-room product choice; exact live
+permission-footprint implementation and qualification remain open. A dimension
+flag cannot establish breathable sleep. Any data repair/save-load control needs
+its own risk/ADR scope.
 
 **All D1-V01 through D1-V13 remain UNEXECUTED.** These require actual packaging,
 fresh/prior-world native holder/disk readback, bed operations, spawn preservation,

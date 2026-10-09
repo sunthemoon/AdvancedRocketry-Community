@@ -342,11 +342,15 @@ C17b candidate03 的独立审核已解决旧版 Medium
           输入、资源与时间上限不变；不代表实际解码、诊断断言或 Gate 通过。
         - [x] C18a-SLEEP-JSON-COUNTER44：status: verified，仅三次本机自身进程查询的测量评估。
           退出后覆盖未由这三次查询证明；R49-01/U01/U02 及完整资源资格仍开放。
-        - [ ] C18a-SLEEP-JSON-TERMINAL50：status: in-progress。两次原始持有句柄的退出后查询已封存，
-          独立 55 审查已分配；未采纳平台辅助实现，不测解码器或提供 OS 硬分配权限。
+        - [x] C18a-SLEEP-JSON-TERMINAL50：status: verified，仅两次作者观察及独立 55 的两次本机正常退出查询。
+          [完整限定记录62](../work/v1.8.0-c18a-sleep/FUNCTIONAL-REVIEW-CHECKPOINT-62.md)
+          不采用平台辅助实现、不关闭 R49/U 或完整终态/解码器资源资格，不提供 OS 硬分配权限。
         - [ ] C18a-SLEEP-JSON-FUNCTIONAL53：status: in-progress。
-          [独立工作树的两个脚本已分配](../work/v1.8.0-c18a-sleep/FUNCTIONAL-SOURCE-ASSIGNMENT-54.md)，
-          仅纯功能实现；未集成或接受源码与测试，不接原生驱动，资源与独立源码审核仍必需。
+          独立工作树候选 fa83657f 已提交推送，作者 32 项、独立 57 的 32+42 项通过。
+          两项 Low 回归覆盖问题由测试后继 a1ea5b35 增补，作者 33 项通过，仍需新独立复审。
+          仅纯功能范围；未集成或接受源码，不接原生驱动，资源资格仍开放。
+        - [ ] C18a-SLEEP-JSON-RESOURCE61：status: in-progress，仅固定 12 类有限资源资格协议准备。
+          尚未采用 counter/helper、实现执行器或运行解码器资源测量；完整约定和预算不变。
       - [x] C18a-SLEEP-LOG-PROVENANCE38：status: verified，仅既有原生日志的独立静态来源审查。
         完整报告/发生记录已封存；五次注入式原生保存失败与二十六次直接事件拒绝分别记录。
         三条配方诊断归因、日志政策和 R-021 验收缺口仍开放；未重跑、抑制、降级或豁免错误。
@@ -359,10 +363,13 @@ C17b candidate03 的独立审核已解决旧版 Medium
       - [x] C18a-SLEEP-D1-CONTRACT33：status: verified，仅约定结果冻结和独立静态审核。
         [处置33](../work/v1.8.0-c18a-sleep/D1-OUTCOME-FREEZE-33.md)绑定完整提案29、审核31及原始用户决定。
         验证范围不包含资源作者实现、原生运行、旧世界、客户端、完整睡眠或版本 Gate。
-    - [ ] C18a-SLEEP-M1-FEASIBILITY56：status: in-progress。
-      仅既有空气撤销、注册床和邻接门的源码支持实施可行性提案，不改生产代码或增加预算。
+    - [x] C18a-SLEEP-M1-FEASIBILITY56：status: verified，仅完整静态研究及独立 60 的限定审核。
+      未在已检查公共入口建立完整普通床操作及邻居更新完成凭据，不等于证明所有公共 API 不可能。
+      M1 生产机制未实现或授权，不改生产代码、不采用 private instrumentation、不增加预算。
       B1/R1/M1/M2 仍未合格；[Space 站外供氧房间选择](../work/v1.8.0-c18a-sleep/OWNER-DECISION-05.md)
       已由实际用户答复确定，不代表已实现、运行资格或生产授权。
+      D1 历史待选语句已补明确取代说明，原封存文本不改。
+      49 份睡眠 ZIP 的保守展开加预留为 135375842 字节，仍失败；不是运行准入或预算豁免。
 
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、
