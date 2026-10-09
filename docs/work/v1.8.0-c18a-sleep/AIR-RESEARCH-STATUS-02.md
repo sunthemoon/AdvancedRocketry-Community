@@ -20,7 +20,10 @@ loaded cells and an operational Space registry, then live VISIT at each distinct
 entry-eye/head-eye sample. Continued sleep uses the actual current eye. Optional
 orbit context is not required by the proposed supplied-gap branch; blocked empty
 reads are not operational gaps. This branch and the station-only alternative are
-not owner-approved. No BodyContext, analyzer, station schema or public API changes.
+not owner-approved at that research checkpoint. The later
+[actual owner decision05](OWNER-DECISION-05.md) selects the supplied-gap product
+branch only; it does not qualify M2 or change the sealed research.
+No BodyContext, analyzer, station schema or public API changes.
 
 No neutral-transition mechanism is established or authorized. Unknown/genuine
 loss must retain immediate fail-closed revocation and unchanged inspection,

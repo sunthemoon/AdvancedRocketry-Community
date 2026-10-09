@@ -295,6 +295,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   新增 R1 回调参数/继承接收者资格细节，仍未授权运行时资格夹具或生产实现。
   用户已[接受原生维度连带行为](../work/v1.8.0-c18a-sleep/OWNER-DECISION-03.md)，
   [D1 约定结果已冻结并完成独立审核](../work/v1.8.0-c18a-sleep/D1-OUTCOME-FREEZE-33.md)；不跳过地球夜晚、不改已有出生点。
+  用户的[实际答复 05](../work/v1.8.0-c18a-sleep/OWNER-DECISION-05.md)允许供氧且密闭的站外房间；
+  站内逐点校验 VISIT、注册表不可用时拒绝，漂流/安全返回规则不变。
   仍依赖 M1、M2、B1/R1 和 D1 实施资格；原 S01-S21/R01-R02 及新增资格矩阵均未执行。
   不做出生点迁移、全局跳夜或直接躺下的显示替代；尚未改动策略或分配睡眠实现源码。
   - [ ] C18a-SLEEP-B1-OBS01：status: implemented-unverified，仅默认关闭的测试源码。
@@ -359,8 +361,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
         验证范围不包含资源作者实现、原生运行、旧世界、客户端、完整睡眠或版本 Gate。
     - [ ] C18a-SLEEP-M1-FEASIBILITY56：status: in-progress。
       仅既有空气撤销、注册床和邻接门的源码支持实施可行性提案，不改生产代码或增加预算。
-      B1/R1/M1/M2 仍未合格；[Space 站外供氧房间政策](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-04.md)
-      等待用户实际答复，未据默认选项认定批准。
+      B1/R1/M1/M2 仍未合格；[Space 站外供氧房间选择](../work/v1.8.0-c18a-sleep/OWNER-DECISION-05.md)
+      已由实际用户答复确定，不代表已实现、运行资格或生产授权。
 
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、

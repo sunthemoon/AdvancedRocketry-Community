@@ -2,6 +2,9 @@
 
 Date: 2026-10-09. **ASSIGNMENTS ACTIVE; NO SOURCE/RESOURCE/NATIVE DELIVERY.**
 Root is sole integrator, base e21fdbd75043c1f626fa6ab7d2894a75f5d9dba1.
+The then-pending Space question below is subsequently answered by
+[actual owner decision05](OWNER-DECISION-05.md). Original checkpoint54 and its
+sealed publication retain their historical inputs; no production grant follows.
 [Disposition52](OFFLINE-CORE-CONTRACT-FREEZE-52.md) remains the generic37+43
 normative freeze; D1 outcomes and narrowed log refusal requirements stay distinct.
 No production sleep/natural/air/spawn/time/API/schema/build/asset change here.
@@ -51,8 +54,9 @@ implementation-ready assignment. Registered-bed admission, occupancy/wake and
 adjacent doors/genuine unknown loss require separate evidence; all existing
 fail-closed revocation, loaded-only queries and scan/per-tick budgets remain.
 B1/R1/M1/M2 remain unqualified. No neutral transition or compatibility exception
-is chosen. The [Space supplied-gap question04](OWNER-QUESTION-04.md) awaits an
-actual owner answer; no recommended-option approval is inferred. D1 alone does
+is chosen. The [Space supplied-gap question04](OWNER-QUESTION-04.md) awaited an
+actual owner answer at checkpoint54; later decision05 supplies that answer.
+No recommended-option approval was inferred. D1 alone does
 not establish breathable sleep, station policy or spawn-operation attribution.
 
 ## Immutable custody and current volume

@@ -17,7 +17,9 @@ includes these controls/exclusions; text additions alone do not close R1/B1.
 
 M1 remains unqualified; changing coarse interaction/neighbor invalidation also
 requires disposition of accepted ADR-024 semantics. M2 is coherent only for its
-proposed gap branch, not a selected product policy; guard scope and footprint
+proposed gap branch, not a selected product policy at the sealed review's time.
+The later [actual owner decision05](OWNER-DECISION-05.md) selects that product
+choice only; guard scope and footprint
 permissions still require freezing. B1's indeterminate/cancellation/coexistence
 strategy, the pre-normalization loaded-half boundary and D1's
 [dimension/spawn/time freeze and review](OWNER-DECISION-03.md) remain open. The

@@ -81,14 +81,18 @@ offline JSON candidate37, addendum43 and complete independent40/49 reviews are s
 freezes the generic decoder/API/diagnostic and unchanged finite qualification
 contract only. Low R01 is addressed at the normative level; no decoder/tests are
 integrated or qualified. Actual44 qualifies only named local peak-so-far queries;
-R49-01/U01/U02 remain open. Separately sealed50 post-exit observations await
-independent55 assessment; no terminal resource, helper/quota or native authority.
+R49-01/U01/U02 remain open. Separately sealed50 post-exit observations and the
+completed independent55 review await Root disposition; no terminal resource,
+helper/quota or native authority is inferred.
 [Assignment checkpoint54](../work/v1.8.0-c18a-sleep/FUNCTIONAL-SOURCE-ASSIGNMENT-54.md)
 records active two-file functional53 in its isolated e21fdbd7 worktree and static
 M1 feasibility56. No source commit/tests or production mechanism is accepted.
-The [Space supplied-gap question04](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-04.md)
-awaits an actual owner answer; no policy is selected. Independent55's final
-assessment and all downstream resource/source/runtime requirements remain open.
+The [actual Space decision05](../work/v1.8.0-c18a-sleep/OWNER-DECISION-05.md)
+answers question04: supplied/sealed station-exterior rooms are eligible;
+in-region live VISIT, unavailable-registry rejection and unchanged drift/spawn
+conditions remain. No sleep/air production implementation or Gate is authorized.
+Root disposition of that review and all downstream resource/source/runtime
+requirements remain open.
 [Completed provenance audit38](../work/v1.8.0-c18a-sleep/OFFLINE-CORE-AND-DIAGNOSTICS-STATUS-42.md)
 distinguishes injected native saves from direct event posts, with three recipe
 attribution gaps and existing High log/R-021 policy/evidence admission obligations
@@ -181,7 +185,8 @@ is answered by decision 03. This research is not current game regression evidenc
 The [sealed atmosphere/access proposal](../work/v1.8.0-c18a-sleep/AIR-RESEARCH-STATUS-02.md)
 retains M1's unproved neutral transition and distinguishes registered-bed
 pre-admission invalidation from occupancy/adjacent-door notifications. M2 proposes
-bounded actual-host/live-access checks, with the gap/station policy not selected.
+bounded actual-host/live-access checks. The later decision05 selects the supplied
+station-exterior product branch, not M2 implementation or qualification.
 The [complete task-03 review](../work/v1.8.0-c18a-sleep/BOUNDARY-REVIEW-STATUS-03.md)
 preserves these prerequisites and adds R1 callback-argument/inherited-receiver
 qualification within B1. A separate

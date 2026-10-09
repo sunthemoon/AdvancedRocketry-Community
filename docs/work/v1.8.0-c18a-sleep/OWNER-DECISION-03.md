@@ -30,7 +30,9 @@ implementation. This is not production source assignment, an accepted sleep
 contract, runtime proof, release/Gate approval, spawn-record migration, a new
 respawn policy, direct sleeping bypass or global time advancement. M1/M2/B1/R1
 and D1's dimension/spawn/time qualification and contract review remain open.
-The supplied Space gap/station choice and hatch/writer O1/O2/O3 are not answered.
+The then-unanswered supplied Space gap/station choice is subsequently answered
+only by [actual decision05](OWNER-DECISION-05.md). Hatch/writer O1/O2/O3 remain
+unanswered by these sleep replies.
 Observation-only assignments retain their existing permissions and exclusions.
 
 Earlier pending-answer statements are superseded only for this ancillary owner
