@@ -43,6 +43,12 @@ public final class SleepBoundaryChatBounds {
         }
         chatText(identifier.getNamespace(), budget); chatText(identifier.getPath(), budget);
     }
+    private static EntityType<?> chatEntityType(Object receiver) {
+        if (receiver == null || receiver.getClass() != EntityType.class) {
+            throw new IllegalStateException("unsupported native hover entity type receiver");
+        }
+        return (EntityType<?>) receiver;
+    }
     private static void chatPreflight(Component component, int depth, int[] budget) {
         if (component == null || component.getClass() != MutableComponent.class || depth > 8 || ++budget[0] > 32) {
             throw new IllegalStateException("unsupported or oversized native chat component tree");
@@ -81,7 +87,7 @@ public final class SleepBoundaryChatBounds {
                 if (entity == null || entity.getClass() != HoverEvent.EntityTooltipInfo.class) {
                     throw new IllegalStateException("unsupported hover entity receiver");
                 }
-                var type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.type);
+                var type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(chatEntityType(entity.type));
                 if (type == null || entity.id == null) { throw new IllegalStateException("hover entity metadata unavailable"); }
                 chatIdentifier(type, budget);
                 if (entity.name != null) { chatPreflight(entity.name, depth + 1, budget); }
@@ -171,6 +177,19 @@ public final class SleepBoundaryChatBounds {
         helper.succeed();
     }
 
+    @GameTest(templateNamespace = "advancedrocketrycommunity", template = "empty", batch = "sleep_trace", timeoutTicks = 20)
+    public static void unsupportedRegistryValuesAreRefusedBeforeReceiverBehavior(GameTestHelper helper) {
+        helper.assertTrue(chatEntityType(EntityType.PIG) == EntityType.PIG, "Ordinary native entity type admission differs");
+        // EntityType constructors allocate global intrusive holders; use an owned value probe at the shared admission boundary.
+        var receiver = new RecordingRegistryValue();
+        boolean refused = false;
+        try { chatEntityType(receiver); }
+        catch (IllegalStateException failure) { refused = "unsupported native hover entity type receiver".equals(failure.getMessage()); }
+        helper.assertTrue(refused && receiver.hashCalls == 0 && receiver.equalsCalls == 0 && receiver.stringCalls == 0,
+                "Unsupported registry value behavior ran");
+        helper.succeed();
+    }
+
     private static void assertRefusedInComponentRoutes(GameTestHelper helper, Component nested, String reason) {
         UUID id = UUID.fromString("5c499464-a93c-4a09-af52-86de593d18a6");
         var trace = new SleepBoundaryTrace(List.of("unsupported-nested-receivers"));
@@ -208,5 +227,12 @@ public final class SleepBoundaryChatBounds {
         @Override public String getNamespace() { namespaceCalls++; throw new AssertionError("Unsupported namespace getter invoked"); }
         @Override public String getPath() { pathCalls++; throw new AssertionError("Unsupported path getter invoked"); }
         @Override public String toString() { stringCalls++; throw new AssertionError("Unsupported identifier conversion invoked"); }
+    }
+
+    private static final class RecordingRegistryValue {
+        int hashCalls, equalsCalls, stringCalls;
+        @Override public int hashCode() { hashCalls++; throw new AssertionError("Unsupported registry value hash invoked"); }
+        @Override public boolean equals(Object other) { equalsCalls++; throw new AssertionError("Unsupported registry value equality invoked"); }
+        @Override public String toString() { stringCalls++; throw new AssertionError("Unsupported registry value conversion invoked"); }
     }
 }
