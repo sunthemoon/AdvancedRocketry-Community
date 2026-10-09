@@ -42,3 +42,7 @@ The legacy IMPORT bitmap is not delivered by new art.
 No source has yet been authored at this adoption. No ledger unit or G0-G9 is
 closed; v1.8 remains IN_PROGRESS / IMPLEMENTING. The separate sleep product
 question remains unanswered, and dimension/respawn policy is unchanged.
+
+That unanswered state describes adoption time only. It is superseded by the
+[2026-10-09 owner reply](../v1.8.0-c18a-sleep/OWNER-DECISION-01.md), which requires
+separate dimension/spawn/time contract freezing and review before implementation.
