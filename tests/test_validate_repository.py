@@ -1692,18 +1692,156 @@ class V090GateStatusTests(unittest.TestCase):
 
 
 class V002ResourceInventoryTests(unittest.TestCase):
-    def test_all_current_text_and_binary_resources_are_allowlisted(self) -> None:
-        paths = [
-            path.relative_to(ROOT).as_posix()
-            for resource_root in (
-                ROOT / "src/main/resources",
-                ROOT / "src/generated/resources",
-            )
-            for path in resource_root.rglob("*")
-            if path.is_file()
-        ]
+    LATER_RESOURCE_PATHS = (
+        "src/main/resources/assets/advancedrocketrycommunity_v110/lang/en_us.json",
+        "src/main/resources/assets/advancedrocketrycommunity_v110/lang/zh_cn.json",
+        "src/main/resources/data/advancedrocketrycommunity/machine_patterns/black_hole_generator.json",
+        "src/main/resources/data/advancedrocketrycommunity/machine_patterns/elevator_anchor.json",
+        "src/main/resources/data/advancedrocketrycommunity/machine_patterns/orbital_laser_drill.json",
+        "src/main/resources/data/advancedrocketrycommunity/machine_patterns/precision_assembler.json",
+        "src/main/resources/data/advancedrocketrycommunity/machine_patterns/railgun.json",
+        "src/main/resources/data/advancedrocketrycommunity/machine_patterns/rolling_machine.json",
+        "src/main/resources/data/advancedrocketrycommunity/travel_routes/earth_moon.json",
+        "src/main/resources/data/advancedrocketrycommunity/travel_routes/earth_surface_orbit.json",
+        "src/main/resources/data/advancedrocketrycommunity/travel_routes/moon_earth_orbit.json",
+        "src/main/resources/data/advancedrocketrycommunity/travel_routes/moon_surface_orbit.json",
+    )
 
+    def test_historical_bootstrap_text_and_binary_resources_are_allowlisted(
+        self,
+    ) -> None:
+        historical_commit = "9359257b9fe1eccf7e0043dfa7f626cf1ee44be9"
+        self.assertEqual(
+            historical_commit, repository_validator.V002_HISTORICAL_RECORD_COMMIT
+        )
+        payload = repository_validator._bounded_git_stdout(
+            [
+                *repository_validator._git_inventory_command(ROOT),
+                "ls-tree", "-r", "--name-only", "-z", historical_commit, "--",
+                "src/main/resources", "src/generated/resources",
+            ],
+            max_bytes=4096,
+            description="historical bootstrap resource test inventory",
+        )
+        paths = [name.decode("utf-8") for name in payload.split(b"\0") if name]
+        self.assertEqual(
+            [
+                "src/generated/resources/data/advancedrocketrycommunity/structures/empty.nbt",
+                "src/main/resources/META-INF/mods.toml",
+                "src/main/resources/advancedrocketrycommunity.png",
+                "src/main/resources/pack.mcmeta",
+            ],
+            paths,
+        )
         self.assertEqual([], find_unlisted_v002_resources(paths))
+
+    def test_v010_managed_prefixes_delegate_text_and_binary_resources(self) -> None:
+        paths = [
+            "src/main/resources/assets/advancedrocketrycommunity/lang/en_us.json",
+            "src/generated/resources/assets/advancedrocketrycommunity/textures/block/material.png",
+            "src/generated/resources/data/advancedrocketrycommunity/recipes/material.json",
+            "src/generated/resources/data/minecraft/tags/blocks/mineable/pickaxe.json",
+        ]
+        self.assertEqual([], find_unlisted_v002_resources(paths))
+
+    def test_later_version_resources_are_not_added_to_the_historical_allowlist(
+        self,
+    ) -> None:
+        self.assertEqual(
+            sorted(self.LATER_RESOURCE_PATHS),
+            find_unlisted_v002_resources(list(self.LATER_RESOURCE_PATHS)),
+        )
+
+    def test_unknown_text_and_binary_resources_are_rejected_in_both_roots(
+        self,
+    ) -> None:
+        for resource_root in ("src/main/resources", "src/generated/resources"):
+            for extension in ("json", "txt", "png", "ogg", "nbt", "bin"):
+                with self.subTest(root=resource_root, extension=extension):
+                    path = f"{resource_root}/assets/example/unlisted.{extension}"
+                    self.assertEqual([path], find_unlisted_v002_resources([path]))
+
+    def test_similar_bootstrap_paths_do_not_inherit_exact_path_acceptance(
+        self,
+    ) -> None:
+        paths = [
+            "src/main/resources/META-INF/mods.toml.bak",
+            "src/main/resources/advancedrocketrycommunity.png.bak",
+            "src/main/resources/pack.mcmeta.bak",
+        ]
+        self.assertEqual(sorted(paths), find_unlisted_v002_resources(paths))
+
+    def test_mixed_input_returns_only_unlisted_paths_in_sorted_order(self) -> None:
+        first = "src/main/resources/assets/example/z.json"
+        last = "src/generated/resources/assets/example/a.png"
+        paths = [
+            first, "src/main/resources/pack.mcmeta",
+            "src/generated/resources/.cache/datagen-state", last,
+        ]
+        self.assertEqual(sorted([first, last]), find_unlisted_v002_resources(paths))
+
+    def run_repository_check(self, version: str, paths: list[str]):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence_index = root / "docs/releases/v0.0.1/evidence/README.md"
+            evidence_index.parent.mkdir(parents=True)
+            evidence_index.write_text("", encoding="utf-8")
+            status = root / "docs/status/CURRENT_VERSION.md"
+            status.parent.mkdir(parents=True)
+            status.write_text(
+                f"current_version: {version}\nactive_development_version: v1.8.0\n",
+                encoding="utf-8",
+            )
+            results = Results()
+            with (
+                patch.object(repository_validator, "ROOT", root),
+                patch.object(
+                    repository_validator, "repository_files",
+                    return_value=[root / path for path in paths],
+                ),
+                patch.object(
+                    repository_validator, "find_unlisted_v002_resources",
+                    wraps=find_unlisted_v002_resources,
+                ) as inventory,
+            ):
+                repository_validator.check_repository_contents(results)
+            return results, inventory
+
+    def test_v002_dispatch_applies_real_historical_resource_rejection(self) -> None:
+        path = self.LATER_RESOURCE_PATHS[0]
+        results, inventory = self.run_repository_check("v0.0.2", [path])
+        inventory.assert_called_once_with([path])
+        self.assertEqual(1, len(results.failures))
+        self.assertIn(path, results.failures[0])
+
+    def test_later_versions_do_not_dispatch_the_historical_resource_allowlist(
+        self,
+    ) -> None:
+        for version in ("v0.1.0", "v1.0.0", "v1.8.0"):
+            with self.subTest(version=version):
+                results, inventory = self.run_repository_check(
+                    version, list(self.LATER_RESOURCE_PATHS)
+                )
+                inventory.assert_not_called()
+                self.assertEqual([], results.failures)
+                self.assertEqual(2, len(results.passes))
+
+    def test_later_versions_preserve_noninventory_rejections(self) -> None:
+        cases = (
+            (["src/main/resources/assets/example/unapproved.jar"], "unapproved.jar"),
+            (["src/main/resources/assets/example/compiled.class"], "compiled.class"),
+            (["src/main/java/zmaster587/Legacy.java"], "zmaster587/Legacy.java"),
+            (["src/main/resources/Foo.txt", "src/main/resources/foo.txt"], "collisions"),
+        )
+        for version in ("v0.1.0", "v1.0.0", "v1.8.0"):
+            for paths, diagnostic in cases:
+                with self.subTest(version=version, paths=paths):
+                    results, inventory = self.run_repository_check(version, paths)
+                    inventory.assert_not_called()
+                    self.assertTrue(
+                        any(diagnostic in failure for failure in results.failures),
+                        results.failures,
+                    )
 
     def test_unlisted_json_resource_is_rejected_regardless_of_extension(self) -> None:
         path = "src/main/resources/assets/example/lang/en_us.json"
