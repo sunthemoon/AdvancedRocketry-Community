@@ -108,8 +108,9 @@ progression, performance and all Required Gates are unfinished. No content
 delivery, release approval or completion of v1.8 is inferred from this slice.
 
 The next [ordinary jackhammer leaf](../work/v1.8.0-c18b-jackhammer/TASK-01.md)
-is PLANNED and awaits independent numeric/data/config/visual review and adoption.
-No new source/registration or runtime result exists. Titanium/motor survival
+has [bounded adoption](../work/v1.8.0-c18b-jackhammer/ADOPTION-01.md) after fresh
+independent static numeric/data/config/visual review. Root implementation starts
+after publication; no source/registration or runtime result exists at adoption. Titanium/motor survival
 progression remains unfinished. Off-world actual sleep versus refusal-only
 behavior is an unanswered maintainer question; dimension and respawn policies
 are unchanged and no sleep source is assigned.

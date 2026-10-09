@@ -2,8 +2,9 @@
 
 Date: 2026-10-09 (Asia/Taipei). Owner/implementer/integrator: Root.
 Base: `30dd002841a6d0dbabad7c72e1774d5f3cb17330`, normally pushed.
-Status: PLANNED; proposed leaf awaiting fresh independent review/adoption.
-No source, registration, generated output or runtime result exists at preparation.
+Status: ADOPTED for bounded Root implementation after fresh independent review.
+See [ADOPTION-01](ADOPTION-01.md). No source, registration, generated output or
+runtime result exists at adoption; the source checkout starts afterward.
 
 ## Outcome and authority
 
