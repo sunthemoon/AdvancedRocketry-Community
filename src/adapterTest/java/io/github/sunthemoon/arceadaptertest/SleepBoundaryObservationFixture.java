@@ -22,7 +22,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
@@ -95,7 +94,18 @@ public final class SleepBoundaryObservationFixture {
         require(eligible(source), "Native console, permission 4, owning thread, no players and non-reentrancy required");
         MinecraftServer server = source.getServer();
         for (UUID id : IDS) { require(server.getPlayerList().getPlayer(id) == null, "Owned UUID already registered"); }
+        return withInvocation(() -> observe(server));
+    }
+    private static int withInvocation(java.util.function.IntSupplier action) {
         INVOKING.set(Boolean.TRUE);
+        try { return action.getAsInt(); }
+        catch (RuntimeException | Error failure) {
+            String message = failure.getMessage();
+            if (message != null && message.length() > 256) { message = message.substring(0, 256); }
+            System.out.println("ARCE_SLEEP_BOUNDARY_SETUP_FAILURE type=" + failure.getClass().getName() + " message=" + message); return 0;
+        } finally { INVOKING.remove(); }
+    }
+    private static int observe(MinecraftServer server) {
         SleepBoundaryTrace trace = new SleepBoundaryTrace(NAMES);
         Fixture fixture = new Fixture(server, trace);
         boolean failed = false;
@@ -110,16 +120,14 @@ public final class SleepBoundaryObservationFixture {
                 failed |= trace.isIncomplete();
                 trace.finish(failed ? "HAS_FAILURE_OR_INCOMPLETE_CASE" : "NATIVE_ACTIONS_RETURNED_NOT_A_GATE");
                 try { System.out.println("ARCE_SLEEP_BOUNDARY_OBSERVATION " + trace.json()); }
-                finally { trace.clear(); INVOKING.remove(); }
+                finally { trace.clear(); }
             }
         }
         return failed ? 0 : 1;
     }
-
     private record Spawn(BlockPos pos, float angle, boolean forced) {
         static Spawn read(ServerPlayer player) { return new Spawn(player.getRespawnPosition(), player.getRespawnAngle(), player.isRespawnForced()); }
     }
-
     /** All mutable world/action ownership ends synchronously, including partial acquisition. */
     private static final class Fixture {
         private final MinecraftServer server;
@@ -368,7 +376,6 @@ public final class SleepBoundaryObservationFixture {
             catch (RuntimeException | Error failure) { trace.lifecycle(object("stage", stage, "failure", error(failure))); return false; }
         }
     }
-
     private static final class Actor {
         final ServerPlayer player;
         final Connection connection = new Connection(PacketFlow.SERVERBOUND);
@@ -390,10 +397,9 @@ public final class SleepBoundaryObservationFixture {
                 try {
                     if (packet instanceof ClientboundPlayerPositionPacket position) { actualPositionId = position.getId(); }
                     if (packet instanceof ClientboundSystemChatPacket chat && replies++ < 16) {
-                        String json = Component.Serializer.toJson(chat.content());
-                        if (json.length() <= 2048) { trace.output(object("actor", trace.token(player), "systemChat", json, "overlay", chat.overlay(),
+                        try { trace.output(object("actor", trace.token(player), "systemChat", trace.boundedChat(chat.content()), "overlay", chat.overlay(),
                                 "phase", acknowledge ? "fixture_preparation_before_public_ack" : "post_action_case_teardown")); }
-                        else { trace.incomplete("owned native system chat size cap"); }
+                        catch (RuntimeException | LinkageError failure) { trace.incomplete("native chat capture: " + failure.getClass().getName()); }
                     }
                 } finally { ReferenceCountUtil.release(packet); }
             }
@@ -479,6 +485,13 @@ public final class SleepBoundaryObservationFixture {
         Thread worker = new Thread(() -> admitted.set(eligible(source)), "sleep-console-gating-fixture");
         worker.start(); worker.join(1000);
         helper.assertTrue(!worker.isAlive() && Boolean.FALSE.equals(admitted.get()), "Off-thread console was admitted");
+        helper.succeed();
+    }
+    @GameTest(templateNamespace = "advancedrocketrycommunity", template = "empty", batch = "sleep_console", timeoutTicks = 20)
+    public static void setupFailureReleasesTheExactInvocationMarker(GameTestHelper helper) {
+        int failed = withInvocation(() -> { throw new IllegalStateException("declared setup guard unit intervention"); });
+        helper.assertTrue(failed == 0 && INVOKING.get() == null, "Setup failure retained invocation marker");
+        helper.assertTrue(withInvocation(() -> 7) == 7 && INVOKING.get() == null, "Later independent invocation remained blocked");
         helper.succeed();
     }
 }

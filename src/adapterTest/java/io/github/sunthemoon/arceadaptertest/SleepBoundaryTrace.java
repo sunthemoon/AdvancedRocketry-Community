@@ -4,9 +4,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonWriter;
+import java.io.Writer;
 import java.lang.invoke.MethodType;
 import java.lang.management.ManagementFactory;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -15,6 +17,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Blocks;
@@ -34,6 +41,7 @@ public final class SleepBoundaryTrace {
     private static final StackWalker WALKER = StackWalker.getInstance(Set.of(
             StackWalker.Option.RETAIN_CLASS_REFERENCE, StackWalker.Option.SHOW_HIDDEN_FRAMES,
             StackWalker.Option.SHOW_REFLECT_FRAMES));
+    private static final com.google.gson.Gson JSON = new GsonBuilder().serializeNulls().disableHtmlEscaping().create();
     private final IdentityHashMap<Object, Integer> identities = new IdentityHashMap<>();
     private final List<Frame> retainedMetadata = new ArrayList<>();
     private final JsonObject root = object("format", "ARCE_SLEEP_BOUNDARY_OBSERVATION_1",
@@ -94,14 +102,46 @@ public final class SleepBoundaryTrace {
     void declared(JsonObject value) { append(current, "preparation", value); }
 
     boolean append(JsonObject target, String collection, JsonObject value) {
-        JsonArray array = target.getAsJsonArray(collection); array.add(value);
-        if (bytes(root) > TOTAL_BYTES - 4096 || (current != null && bytes(current) > CASE_BYTES - 512)) {
-            array.remove(array.size() - 1); incomplete("structured byte cap"); return false;
-        }
-        return true;
+        JsonArray array = target.getAsJsonArray(collection);
+        long added = bytes(value, CASE_BYTES) + (array.isEmpty() ? 0 : 1);
+        if (added > available()) { incomplete("structured byte cap before attachment/serialization"); return false; }
+        array.add(value); return true;
     }
-
-    private static int bytes(JsonElement value) { return value.toString().getBytes(StandardCharsets.UTF_8).length; }
+    private long available() {
+        return Math.min(TOTAL_BYTES - 4096L - bytes(root, TOTAL_BYTES),
+                current == null ? CASE_BYTES - 512L : CASE_BYTES - 512L - bytes(current, CASE_BYTES));
+    }
+    /** Counts through public JsonWriter without retaining text, UTF-8 arrays or an oversized output buffer. */
+    private static long bytes(JsonElement value, int cap) {
+        BudgetWriter counter = new BudgetWriter(cap, 0);
+        try { JSON.toJson(value, new JsonWriter(counter)); return counter.bytes; }
+        catch (ByteCap exceeded) { return cap + 1L; }
+    }
+    private static final class ByteCap extends RuntimeException { }
+    private static final class BudgetWriter extends Writer {
+        final int cap;
+        final StringBuilder output;
+        long bytes;
+        boolean high;
+        BudgetWriter(int cap, int capacity) { this.cap = cap; output = capacity == 0 ? null : new StringBuilder(capacity); }
+        private void accept(char value) {
+            int width = Character.isLowSurrogate(value) ? (high ? 3 : 1)
+                    : Character.isHighSurrogate(value) ? 1 : value < 128 ? 1 : value < 2048 ? 2 : 3;
+            if (bytes + width > cap) { throw new ByteCap(); }
+            bytes += width; high = Character.isHighSurrogate(value);
+        }
+        @Override public void write(String value, int offset, int length) {
+            for (int i = offset; i < offset + length; i++) { accept(value.charAt(i)); }
+            if (output != null) { output.append(value, offset, offset + length); }
+        }
+        @Override public void write(char[] value, int offset, int length) {
+            for (int i = offset; i < offset + length; i++) { accept(value[i]); }
+            if (output != null) { output.append(value, offset, length); }
+        }
+        @Override public void write(int value) { accept((char) value); if (output != null) { output.append((char) value); } }
+        @Override public void flush() { }
+        @Override public void close() { }
+    }
     void incomplete(String reason) {
         stopped = true; root.addProperty("traceStopped", true);
         if (!root.has("incomplete")) { root.addProperty("incomplete", brief(reason)); }
@@ -126,6 +166,14 @@ public final class SleepBoundaryTrace {
                     throw new IllegalStateException("unowned event actor");
                 }
                 List<Frame> frames = frames();
+                long metadataUpper = 32768;
+                for (Frame frame : frames) {
+                    if (!frame.overflow()) {
+                        metadataUpper += 256L + 6L * (boundedMetadata(frame.owner().getName()).length()
+                                + boundedMetadata(frame.member()).length() + descriptorLength(frame.type()));
+                    }
+                }
+                if (metadataUpper > available()) { throw new IllegalStateException("frame metadata budget before descriptor allocation"); }
                 JsonArray stack = new JsonArray();
                 for (Frame frame : frames) {
                     if (frame.overflow()) { stack.add(object("overflow", true)); }
@@ -133,14 +181,16 @@ public final class SleepBoundaryTrace {
                             "descriptor", frame.type().descriptorString(), "member", frame.member())); }
                 }
                 long afterAllocation = allocated();
+                long prefixDuration = System.nanoTime() - start;
                 JsonObject record = object("event", token(event), "eventClass", event.getClass().getName(),
                         "actor", token(event.getEntity()), "level", token(event.getEntity().level()),
                         "spawnLevel", event.getSpawnLevel().location().toString(), "newSpawn", position(event.getNewSpawn()),
                         "forced", event.isForced(), "canceledAtObserver", event.isCanceled(),
                         "declaredRoute", route, "declaredControl", control,
                         "declaredContext", context, "nestedDepth", depth, "receiver", token(this),
-                        "nativeAtCallback", snapshot(false), "frames", stack, "durationNanos", System.nanoTime() - start,
-                        "allocatedBytes", allocation < 0 || afterAllocation < 0 ? null : afterAllocation - allocation);
+                        "nativeAtCallback", snapshot(false), "frames", stack, "capturePrefixDurationNanos", prefixDuration,
+                        "capturePrefixAllocatedBytes", allocation < 0 || afterAllocation < 0 ? null : afterAllocation - allocation,
+                        "measurementScope", "ownership validation, StackWalker, metadata preflight/accounting and frame JSON; includes measurement queries; excludes native snapshot, event record, append accounting and output serialization");
                 if (append(current, "events", record)) { retainedMetadata.addAll(frames); }
                 if (frames.get(frames.size() - 1).overflow()) { incomplete("frame cap overflow sentinel"); }
             } catch (RuntimeException | LinkageError failure) {
@@ -155,6 +205,19 @@ public final class SleepBoundaryTrace {
     }
 
     private record Frame(Class<?> owner, MethodType type, String member, boolean overflow) { }
+    private static String boundedMetadata(String value) {
+        if (value.length() > 1024) { throw new IllegalStateException("metadata string cap before copy"); }
+        return value;
+    }
+    private static int descriptorLength(MethodType type) {
+        int length = 2 + typeLength(type.returnType());
+        for (int i = 0; i < type.parameterCount(); i++) { length += typeLength(type.parameterType(i)); }
+        if (length > 1024) { throw new IllegalStateException("method descriptor cap before allocation"); }
+        return length;
+    }
+    private static int typeLength(Class<?> type) {
+        return type.isPrimitive() ? 1 : boundedMetadata(type.getName()).length() + (type.isArray() ? 0 : 2);
+    }
     private static List<Frame> frames() {
         List<Frame> result = new ArrayList<>(WALKER.walk(stream -> stream.limit(FRAME_CAP + 1L).map(frame ->
                 new Frame(frame.getDeclaringClass(), frame.getMethodType(), frame.getMethodName(), false)).toList()));
@@ -173,6 +236,63 @@ public final class SleepBoundaryTrace {
         return -1;
     }
 
+    /** Native serialization is admitted only after a finite public-component preflight and budget reservation. */
+    JsonElement boundedChat(Component component) {
+        int[] budget = new int[2]; chatPreflight(component, 0, budget);
+        long upper = 4096L + budget[0] * 1024L + budget[1];
+        if (upper > available()) { throw new IllegalStateException("chat budget before native JSON allocation"); }
+        JsonElement result = Component.Serializer.toJsonTree(component);
+        if (bytes(result, CASE_BYTES) > upper - 4096) { throw new IllegalStateException("native chat exceeded preflight bound"); }
+        return result;
+    }
+    private static void chatText(String text, int[] budget) {
+        if (text != null) {
+            if (text.length() > 1024 || budget[1] + text.length() * 6L > 8192) { throw new IllegalStateException("chat string preflight cap"); }
+            budget[1] += text.length() * 6;
+        }
+    }
+    private static void chatPreflight(Component component, int depth, int[] budget) {
+        if (component == null || component.getClass() != MutableComponent.class || depth > 8 || ++budget[0] > 32) {
+            throw new IllegalStateException("unsupported or oversized native chat component tree");
+        }
+        var content = component.getContents();
+        if (content instanceof LiteralContents literal) { chatText(literal.text(), budget); }
+        else if (content.getClass() == TranslatableContents.class) {
+            var translated = (TranslatableContents) content;
+            chatText(translated.getKey(), budget); chatText(translated.getFallback(), budget);
+            Object[] args = translated.getArgs();
+            if (args.length > 4) { throw new IllegalStateException("chat argument preflight cap"); }
+            for (Object arg : args) {
+                if (arg instanceof Component nested) { chatPreflight(nested, depth + 1, budget); }
+                else if (arg instanceof String text) { chatText(text, budget); }
+                else if (arg != null && !(arg instanceof Boolean || arg instanceof Integer || arg instanceof Long
+                        || arg instanceof Short || arg instanceof Byte || arg instanceof Float || arg instanceof Double)) {
+                    throw new IllegalStateException("unsupported native chat argument");
+                }
+            }
+        } else if (content != net.minecraft.network.chat.ComponentContents.EMPTY) { throw new IllegalStateException("unsupported native chat contents"); }
+        var style = component.getStyle();
+        if (style.getClass() != net.minecraft.network.chat.Style.class) { throw new IllegalStateException("unsupported native chat style"); }
+        chatText(style.getInsertion(), budget);
+        chatText(style.getFont().getNamespace(), budget); chatText(style.getFont().getPath(), budget);
+        if (style.getClickEvent() != null) { chatText(style.getClickEvent().getValue(), budget); }
+        HoverEvent hover = style.getHoverEvent();
+        if (hover != null) {
+            if (hover.getClass() != HoverEvent.class) { throw new IllegalStateException("unsupported hover receiver"); }
+            if (hover.getAction() == HoverEvent.Action.SHOW_TEXT) { chatPreflight(hover.getValue(HoverEvent.Action.SHOW_TEXT), depth + 1, budget); }
+            else if (hover.getAction() == HoverEvent.Action.SHOW_ENTITY) {
+                var entity = hover.getValue(HoverEvent.Action.SHOW_ENTITY);
+                var type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.type);
+                if (type == null || entity.id == null) { throw new IllegalStateException("hover entity metadata unavailable"); }
+                chatText(type.getNamespace(), budget); chatText(type.getPath(), budget);
+                if (entity.name != null) { chatPreflight(entity.name, depth + 1, budget); }
+            } else { throw new IllegalStateException("unsupported hover contents; no item/NBT serialization"); }
+        }
+        List<Component> siblings = component.getSiblings();
+        if (siblings.size() > 32) { throw new IllegalStateException("chat sibling preflight cap"); }
+        for (Component sibling : siblings) { chatPreflight(sibling, depth + 1, budget); }
+    }
+
     void action(String label, boolean preparation, Runnable action) {
         JsonObject record = object("label", label, "declaredContext", context, "nestedDepth", depth,
                 "before", safeSnapshot(preparation));
@@ -185,12 +305,10 @@ public final class SleepBoundaryTrace {
             else { append(current, preparation ? "preparation" : "actions", record); }
         }
     }
-
     private JsonElement safeSnapshot(boolean small) {
         try { return snapshot(small); }
         catch (RuntimeException | LinkageError failure) { incomplete("native snapshot capture: " + failure); return error(failure); }
     }
-
     void verify() {
         if (level == null || !level.getServer().isSameThread()) { throw new IllegalStateException("not owning server thread"); }
         for (int i = 0; i < actors.length; i++) {
@@ -206,7 +324,6 @@ public final class SleepBoundaryTrace {
         }
         if (level.getServer().getPlayerList().getPlayers().size() != 2) { throw new IllegalStateException("ordinary player present"); }
     }
-
     JsonObject snapshot(boolean small) {
         JsonArray players = new JsonArray();
         for (int i = 0; i < actors.length; i++) {
@@ -236,7 +353,6 @@ public final class SleepBoundaryTrace {
         }
         return result;
     }
-
     private JsonObject bed(BlockPos position) {
         if (level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4) == null) {
             throw new IllegalStateException("snapshot bed chunk unavailable");
@@ -246,13 +362,11 @@ public final class SleepBoundaryTrace {
                 "ordinaryWhiteBedIdentity", state.getBlock() == Blocks.WHITE_BED,
                 "receiverQualification", "loaded block identity is not a callback receiver proof");
     }
-
     static JsonObject spawn(ServerPlayer actor) {
         return object("dimension", actor.getRespawnDimension().location().toString(), "position", position(actor.getRespawnPosition()),
                 "angleBits", Float.floatToRawIntBits(actor.getRespawnAngle()), "forced", actor.isRespawnForced(),
                 "source", "native getters, not serialized player NBT");
     }
-
     boolean isIncomplete() { return stopped; }
     void finish(String outcome) {
         root.addProperty("outcome", outcome); root.addProperty("eventCaptureAttempts", events);
@@ -260,7 +374,12 @@ public final class SleepBoundaryTrace {
         for (JsonElement row : rows) { persisted += row.getAsJsonObject().getAsJsonArray("events").size(); }
         root.addProperty("persistedEventRecords", persisted);
     }
-    String json() { return root.toString(); }
+    String json() {
+        long size = bytes(root, TOTAL_BYTES);
+        if (size > TOTAL_BYTES) { throw new ByteCap(); }
+        BudgetWriter writer = new BudgetWriter(TOTAL_BYTES, Math.max(1, (int) size));
+        JSON.toJson(root, new JsonWriter(writer)); return writer.output.toString();
+    }
     void clear() { end(); identities.clear(); retainedMetadata.clear(); root.entrySet().clear(); level = null;
         java.util.Arrays.fill(actors, null); java.util.Arrays.fill(connections, null); }
 
@@ -335,12 +454,14 @@ public final class SleepBoundaryTrace {
         try {
             trace.begin(0, false);
             helper.assertTrue(!trace.append(trace.current, "preparation", object("unit", "x".repeat(CASE_BYTES)))
-                    && bytes(trace.root) <= TOTAL_BYTES && bytes(trace.current) <= CASE_BYTES && trace.stopped, "Byte cap differs");
+                    && bytes(trace.root, TOTAL_BYTES) <= TOTAL_BYTES && bytes(trace.current, CASE_BYTES) <= CASE_BYTES
+                    && trace.current.getAsJsonArray("preparation").isEmpty() && trace.stopped, "Byte cap differs");
         } finally { trace.clear(); }
         trace = new SleepBoundaryTrace(List.of("total-byte-unit"));
         try {
             helper.assertTrue(!trace.append(trace.root, "lifecycle", object("unit", "x".repeat(TOTAL_BYTES)))
-                    && bytes(trace.root) <= TOTAL_BYTES && trace.stopped, "Invocation byte cap differs");
+                    && bytes(trace.root, TOTAL_BYTES) <= TOTAL_BYTES && trace.root.getAsJsonArray("lifecycle").isEmpty()
+                    && trace.stopped, "Invocation byte cap differs");
         } finally { trace.clear(); }
         helper.succeed();
     }
@@ -351,6 +472,26 @@ public final class SleepBoundaryTrace {
         helper.assertTrue(frames.size() == FRAME_CAP + 1 && frames.get(FRAME_CAP).overflow()
                 && frames.subList(0, FRAME_CAP).stream().allMatch(frame -> frame.owner() != null && frame.type() != null
                 && frame.type().descriptorString() != null && frame.member() != null), "Frame metadata/cap differs");
+        helper.succeed();
+    }
+    @GameTest(templateNamespace = "advancedrocketrycommunity", template = "empty", batch = "sleep_trace", timeoutTicks = 20)
+    public static void byteAccountingMatchesEscapesUtf8AndSplitSurrogates(GameTestHelper helper) {
+        JsonObject value = object("text", "\u0000\"\\\u2028\u00e9\ud83d\ude00\ud800", "null", null);
+        int expected = value.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+        helper.assertTrue(bytes(value, expected) == expected && bytes(value, expected - 1) > expected - 1, "Exact UTF-8/escape accounting differs");
+        BudgetWriter writer = new BudgetWriter(4, 0); writer.write(0xd83d); writer.write(0xde00);
+        helper.assertTrue(writer.bytes == 4, "Split surrogate accounting differs"); helper.succeed();
+    }
+    @GameTest(templateNamespace = "advancedrocketrycommunity", template = "empty", batch = "sleep_trace", timeoutTicks = 20)
+    public static void oversizedDescriptorAndChatAreRefusedBeforeSerialization(GameTestHelper helper) {
+        boolean descriptorRefused = false, chatRefused = false;
+        try { descriptorLength(MethodType.methodType(void.class, java.util.Collections.nCopies(255, String.class))); }
+        catch (IllegalStateException cap) { descriptorRefused = true; }
+        var trace = new SleepBoundaryTrace(List.of("preflight-unit"));
+        try {
+            try { trace.boundedChat(Component.literal("x".repeat(1025))); } catch (IllegalStateException cap) { chatRefused = true; }
+            helper.assertTrue(descriptorRefused && chatRefused && trace.root.getAsJsonArray("lifecycle").isEmpty(), "Pre-allocation caps differ");
+        } finally { trace.clear(); }
         helper.succeed();
     }
     private static List<Frame> deepFrames(int remaining) { return remaining == 0 ? frames() : deepFrames(remaining - 1); }
