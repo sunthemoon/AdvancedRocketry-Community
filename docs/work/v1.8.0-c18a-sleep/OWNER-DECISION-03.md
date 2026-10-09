@@ -1,5 +1,10 @@
 # Actual sleep: accepted native ancillary dimension behavior
 
+Later [D1 outcome disposition33](D1-OUTCOME-FREEZE-33.md) records separate
+outcome freezing after complete independent review. The original question/answer
+and then-pending conditions below remain unchanged; production prerequisites and
+all runtime qualifications are still open.
+
 Date: 2026-10-09 (Asia/Taipei). Source: a submitted asynchronous question reply
 in the active Root Codex conversation. The reply itself supplies no submission
 timestamp. Question item ID:

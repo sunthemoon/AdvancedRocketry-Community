@@ -294,8 +294,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   两份候选的[独立只读审核](../work/v1.8.0-c18a-sleep/BOUNDARY-REVIEW-STATUS-03.md)已封存，
   新增 R1 回调参数/继承接收者资格细节，仍未授权运行时资格夹具或生产实现。
   用户已[接受原生维度连带行为](../work/v1.8.0-c18a-sleep/OWNER-DECISION-03.md)，
-  仍以冻结和审核该明确范围为条件；不跳过地球夜晚、不改已有出生点。
-  依赖 M1、M2、B1/R1、D1 的证明和冻结；原 S01-S21/R01-R02 及新增资格矩阵均未执行。
+  [D1 约定结果已冻结并完成独立审核](../work/v1.8.0-c18a-sleep/D1-OUTCOME-FREEZE-33.md)；不跳过地球夜晚、不改已有出生点。
+  仍依赖 M1、M2、B1/R1 和 D1 实施资格；原 S01-S21/R01-R02 及新增资格矩阵均未执行。
   不做出生点迁移、全局跳夜或直接躺下的显示替代；尚未改动策略或分配睡眠实现源码。
   - [ ] C18a-SLEEP-B1-OBS01：status: implemented-unverified，仅默认关闭的测试源码。
     [测试专用观测提案](../work/v1.8.0-c18a-sleep/PROPOSED-OBSERVATION-01.md)仅观察主世界
@@ -327,8 +327,11 @@ C17b candidate03 的独立审核已解决旧版 Medium
       独立外部任务 34 只准备压缩日志契约修订，不运行驱动或修改既有封存文件。
     - [ ] C18a-SLEEP-D1-29：status: in-progress。按用户明确选择单独准备维度/出生点/时间子契约；
       [提案29与完整独立审核31](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)已封存；
-      未发现新的实质契约问题，但仍须 Root 单独冻结约定结果；十三项 D1 验证未执行。
+      未发现新的实质契约问题；Root 已按用户明确范围冻结约定结果，十三项 D1 验证未执行。
       不解决 B1/R1/M1/M2、不选 Space 政策、不授权生产实现。
+      - [x] C18a-SLEEP-D1-CONTRACT33：status: verified，仅约定结果冻结和独立静态审核。
+        [处置33](../work/v1.8.0-c18a-sleep/D1-OUTCOME-FREEZE-33.md)绑定完整提案29、审核31及原始用户决定。
+        验证范围不包含资源作者实现、原生运行、旧世界、客户端、完整睡眠或版本 Gate。
 
 - [~] C18a-THERMITE-01：status: implemented-unverified。
   普通热剂/火把契约第 4 版经独立审核后限定采纳；Claude 四文件源码、Root 中央接入、

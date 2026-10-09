@@ -41,6 +41,7 @@ latest_source_checkpoint: ce64a8eb79c0f6fb53f000f0c2a0e4e947ef9985
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
+sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
 tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
 native_tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
 latest_regression_target_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
@@ -70,7 +71,8 @@ production host/API/sources are unchanged. The opt-in property and twenty consol
 rows are unexecuted. Task28's six owned disposable outputs are cleaned once;
 old denied peer outputs/incidents remain. Complete D1 proposal29 and independent31
 review are sealed, with no new material correction and all implementation/runtime
-prerequisites open; Root freeze is still a separate disposition. Static compressed
+prerequisites open. [D1 disposition33](../work/v1.8.0-c18a-sleep/D1-OUTCOME-FREEZE-33.md)
+separately freezes only its intended outcomes, not implementation or runtime proof. Static compressed
 log revision34 is assigned, not runtime/parser authority. All Gates remain open.
 
 The preceding [ordinary tool development integration](../work/v1.8.0-c18b-jackhammer/SOURCE-INTEGRATION-01.md)
@@ -142,14 +144,16 @@ implementation. Read-only research has produced a
 occupancy/air and Space-context corrections; both exact bed/spawn and atmosphere
 feasibility reports are sealed. The owner has subsequently
 [accepted the exact native ancillary candidate](../work/v1.8.0-c18a-sleep/OWNER-DECISION-03.md),
-still requiring dimension/spawn/time freezing and review. No gameplay policy
+with [narrowed D1 outcomes now frozen and independently reviewed](../work/v1.8.0-c18a-sleep/D1-OUTCOME-FREEZE-33.md).
+Implementation and native verification prerequisites remain open. No gameplay policy
 has been changed and no production sleep implementation source is assigned.
 
 The separate [C18a-SLEEP-01](COMPLETION-PLAN.md) leaf now has
 [sealed spawn-boundary research](../work/v1.8.0-c18a-sleep/SPAWN-RESEARCH-STATUS-02.md).
 Its stateless public caller candidate has no runtime/coexistence/indeterminate
 failure qualification; B1 and dimension/spawn/time implementation/runtime proof
-remain open. D1's narrowed candidate is independently reviewed, not frozen here.
+remain open. D1's narrowed outcomes are independently reviewed and frozen in33;
+all thirteen D1 runtime rows remain UNEXECUTED.
 The [exact ancillary question](../work/v1.8.0-c18a-sleep/OWNER-QUESTION-02.md)
 is answered by decision 03. This research is not current game regression evidence.
 

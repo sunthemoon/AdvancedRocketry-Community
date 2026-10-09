@@ -1,5 +1,9 @@
 # Final observation test-source integration and qualification 32
 
+Later [D1 outcome disposition33](D1-OUTCOME-FREEZE-33.md) supersedes only this
+checkpoint's pending Root-freeze state and updates the archive inventory. Its
+static outcome freeze does not authorize production or change these test results.
+
 Date: 2026-10-09. The **test source is integrated**; the complete twenty-row
 observation leaf remains implemented-unverified. Production sleep, dimension,
 spawn, time, air, API and persistence behavior is unchanged. This supersedes
