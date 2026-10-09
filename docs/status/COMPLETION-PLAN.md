@@ -676,12 +676,25 @@ C17b candidate03 的独立审核已解决旧版 Medium
   固定607 的 G4 约7 秒结束，两模块各507 次验证、各启动一个对象传输；
   strict 完整结束，44 PASS/1 Markdown FAIL，不再超时；广泛 Python 仍超时。
   独立37 的26/19/5 项通过，但 packet 夹具 clone 退出128，测试正文未执行；
-  原因未查明，Medium R37-01 保留；Root 已完整阅读并复核封存包。
+  其历史原因未查明，Medium R37-01 原回执保留；Root 已完整阅读并复核封存包。
   原90 方法的三组测试均通过，不替代完整93 项的超时结果。
   [检查点34](../work/v1.8.0-c19-strict-validator/GIT-OBJECT-SESSION-CHECKPOINT-34.md)
   记录封存 Root34 的11 次实际命令；独立38证据包审核完成，未发现新的实质一致性问题。
   Root 已完整阅读、复核其封存包；旧失败快照只有哈希/回溯，不能完整独立还原。
-  标准 Gradle/DataGen/GameTest 尚未在607 执行，不标交付。
+  [标准资格39](../work/v1.8.0-c19-strict-validator/OBJECT-STANDARD-QUALIFICATION-TASK-39.md)
+  启动器失败保留；[另行修订41](../work/v1.8.0-c19-strict-validator/OBJECT-STANDARD-LAUNCHER-REVISION-TASK-41.md)
+  的固定 607 标准命令全退出 0：build/test 各 2192 项、两次 DataGen 空差异、597 项 required 通过。
+  每份原生日志仍有 62 ERROR 未处置；自有结束输出已按明确范围清理，独立证据审核 44 完成。
+  Root 已完整阅读、复核其封存包；审查未发现新的实质证据问题，不批准日志或整版 Gate。
+  [检查点41](../work/v1.8.0-c19-strict-validator/OBJECT-QUALIFICATION-CHECKPOINT-41.md)
+  区分标准子集、完整Python失败、历史操作和Gate；不改原Main的完整资格字段。
+  独立40的单次观测保留clone128/Ran0及255条长文件名错误，不补造37的缺失stderr。
+  [夹具43](../work/v1.8.0-c19-strict-validator/PACKET-SEED-CHECKOUT-TASK-43.md)
+  两行修正单独提交、推送至 `e28fd8a6`，原四方法实际通过；35 项断言/正文不变，未合入 Main。
+  独立 45 未发现限定源码问题，但其四方法 OK 输出缺少原 child 退出状态，Medium 证据缺口保留；
+  [另行终态资格46](../work/v1.8.0-c19-strict-validator/PACKET-SEED-TERMINAL-TASK-46.md)
+  在已提交的 `e28fd8a6` 单次运行四方法通过，原 child wait 退出 0、完整双 EOF，Root 已完整复核封存包。
+  仅证明后继候选规定正文的终态，不重写旧回执或替代其余 31 项、全量资格及 Main 集成。
 - [ ] R32-02（静态 Medium）、R32-03（Low）：ADR 枚举数组/对象及解析递归可能异常，
   G4 文件系统 wrapper 缺少直接测试。尚未执行负向复现，不作为超时原因；另立修订。
 - [ ] C19 可移植已提交证据引用：实际 Markdown 检查在 256 错误前缀后停止。

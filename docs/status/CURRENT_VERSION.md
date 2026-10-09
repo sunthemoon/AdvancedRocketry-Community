@@ -73,6 +73,10 @@ c19_git_object_candidate_strict: COMPLETED_44_PASS_1_MARKDOWN_FAIL_NO_TIMEOUT
 c19_git_object_candidate_broad: ORIGINAL180_TIMEOUT_NO_FINAL_SUMMARY
 c19_git_object_candidate_review: SOURCE_REVIEW_COMPLETE_FOCUSED50_PASS_R37_01_BOUND_PACKET_SETUP_ERROR_OPEN
 c19_git_object_candidate_packet: ROOT34_SEALED_INDEPENDENT_AUDIT38_COMPLETE_R37_01_OPEN
+c19_git_object_candidate_standard: ROOT39_LAUNCHER_FAIL_RETAINED_FIXED607_ROOT41_STANDARD_SUBSET_ZERO_AUDIT44_COMPLETE_LOGS_OPEN
+c19_git_object_packet_observation: SEALED40_RAN0_CLONE128_FILENAME_TOO_LONG_255_ORIGINAL37_STDERR_UNAVAILABLE
+c19_packet_seed_candidate_commit: e28fd8a658679482fb4471265d83a57f4d491c54
+c19_packet_seed_candidate_qualification: ROOT_POSTIMAGE_FOCUSED4_PASS_SOURCE45_COMPLETE_COMMITTED46_FOCUSED4_TERMINAL_PASS_NOT_INTEGRATED_WHOLE_OPEN
 last_updated: 2026-10-10
 ```
 
@@ -108,6 +112,28 @@ source payloads; construction narratives are not immutable runtime proof. Static
 R32-02 malformed-ADR diagnostics and R32-03 wrapper coverage remain open;
 neither is executed or established as timeout cause. Whole broad/strict remains
 failed, and no current Gate, integrated-source delivery or acceptance result changes.
+
+[Checkpoint41](../work/v1.8.0-c19-strict-validator/OBJECT-QUALIFICATION-CHECKPOINT-41.md)
+supersedes the earlier standard-commands-pending statement only: failed launcher39
+remains sealed; separate fixed607 standard41 succeeds, build/test each2192 cases,
+two empty tracked DataGen diffs and597 required GameTests. Both complete native
+logs retain62 ERROR/0 FATAL each, unwaived. Own assigned terminal outputs are
+removed once after explicit ownership/ordinary-ancestor/retained-results checks;
+separate DataGen on-disk logs were not collected. Independent44 completes finite
+evidence reconciliation with no new material finding; Root reads and rehashes
+its exact sealed10-file packet.
+Sealed observation40 exposes its own clone128/Ran0 and255 Filename-too-long errors,
+decoded exception strings, not missing historical37 stderr or original raw pipes.
+Separate two-line fixture candidatee28 is committed/pushed, Root focused4 returns0,
+and all35 authored method bodies are unchanged. Independent45 finds no finite
+source issue, but its runnerOK/dualEOF does not supply the uncaptured child exit:
+exit_code:null is a Medium historical evidence gap. New independent terminal46
+executes once at committed e28:original owned child exit0 via wait, focused4/OK,
+43.245 seconds, complete dualEOF/reader completion and matching bindings. Root
+reads and rehashes its sealed22-file packet, including three later matching
+contract snapshots. This separately verifies the current focused obligation,
+not remaining31 methods or the old receipt. Neither candidate is Main-integrated,
+and existing whole-Main runtime/qualification fields remain unchanged.
 
 The [checksum16 checkpoint](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)
 records actual runtime at 0cefe86e and the exact three postimages integrated and

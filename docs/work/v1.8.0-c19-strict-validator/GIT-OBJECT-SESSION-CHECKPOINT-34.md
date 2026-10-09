@@ -134,7 +134,12 @@ Sealed peer/Root evidence, user AGENTS and inherited untracked materials are not
 modified. User AGENTS SHA-256 remains
 c2448e9357ec77d062ab52ecefbb24724fb5c767fb4955a4cd23ef0efbd8ff09.
 
-## Remaining scope and Gate conclusion
+## Historical scope and Gate conclusion at checkpoint34
+
+The standards-not-executed statement below describes this historical checkpoint.
+[Checkpoint41](OBJECT-QUALIFICATION-CHECKPOINT-41.md) now records separately actual
+fixed607 standards, preserved launcher failure39 and packet fixture candidatee28.
+It does not rewrite sealed Root34/source37 failures or supply their missing bytes.
 
 This candidate is not Main-integrated or delivered. Required build, explicit
 test, two DataGen/empty diffs and unfiltered GameTest have not executed at607.
