@@ -87,8 +87,10 @@ public final class JackhammerGameTests {
             CompoundTag before = f.tool().save(new CompoundTag());
             f.start(); f.tickProgress(5); f.action(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK);
             f.tickProgress(35); f.unchanged(Blocks.BEDROCK, before);
-            f.action(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK);
-            f.setTarget(Blocks.STONE);
+        }
+        // Native ABORT does not clear delayed destruction. A fresh actor separates the reach admission.
+        try (var f = new JackhammerFixture(helper)) {
+            CompoundTag before = f.tool().save(new CompoundTag());
             f.player.teleportTo(f.level, f.target.getX() - 20.0D, f.target.getY(), f.target.getZ(), 0, 0);
             f.start(); f.tickProgress(5); f.unchanged(Blocks.STONE, before);
         }
@@ -198,10 +200,12 @@ public final class JackhammerGameTests {
     @GameTest(template = "empty", batch = "jackhammer_native", timeoutTicks = 100)
     public static void nativeAnvilRepairsConsumesRodAndXpEvenDisabled(GameTestHelper helper) {
         try (var f = new JackhammerFixture(helper)) {
-            var menu = new AnvilMenu(42, f.player.getInventory(), ContainerLevelAccess.NULL);
+            f.setTarget(Blocks.ANVIL);
+            var menu = new AnvilMenu(42, f.player.getInventory(), ContainerLevelAccess.create(f.level, f.target));
             f.player.experienceLevel = 30;
             ItemStack left = annotated(f.tool().copy(), 700);
-            menu.getSlot(0).set(left); menu.getSlot(1).set(new ItemStack(Items.DIAMOND)); menu.createResult();
+            menu.getSlot(0).set(left); menu.setItemName("Owned tool");
+            menu.getSlot(1).set(new ItemStack(Items.DIAMOND)); menu.createResult();
             helper.assertTrue(menu.getSlot(2).getItem().isEmpty(), "Default diamond repair was admitted");
             menu.getSlot(1).set(new ItemStack(MaterialContent.item("iron_rod"))); menu.createResult();
             helper.assertTrue(menu.getSlot(2).getItem().isEmpty(), "Wrong rod repair was admitted");
@@ -226,8 +230,11 @@ public final class JackhammerGameTests {
     public static void nativeSameItemAndBookCombinationRetainLeftData(GameTestHelper helper) {
         try (var f = new JackhammerFixture(helper)) {
             f.player.experienceLevel = 30;
-            var menu = new AnvilMenu(43, f.player.getInventory(), ContainerLevelAccess.NULL);
+            f.setTarget(Blocks.ANVIL);
+            var access = ContainerLevelAccess.create(f.level, f.target);
+            var menu = new AnvilMenu(43, f.player.getInventory(), access);
             menu.getSlot(0).set(annotated(f.tool().copy(), 800));
+            menu.setItemName("Owned tool");
             ItemStack right = f.tool().copy(); right.setDamageValue(900);
             menu.getSlot(1).set(right); menu.createResult();
             ItemStack combined = menu.getSlot(2).getItem(); assertAnnotation(helper, combined);
@@ -236,8 +243,9 @@ public final class JackhammerGameTests {
             assertAnnotation(helper, menu.getCarried());
             helper.assertTrue(menu.getSlot(0).getItem().isEmpty() && menu.getSlot(1).getItem().isEmpty()
                     && f.player.experienceLevel < 30, "Same-item take did not consume inputs and XP");
-            var bookMenu = new AnvilMenu(44, f.player.getInventory(), ContainerLevelAccess.NULL);
+            var bookMenu = new AnvilMenu(44, f.player.getInventory(), access);
             bookMenu.getSlot(0).set(annotated(f.tool().copy(), 800));
+            bookMenu.setItemName("Owned tool");
             ItemStack book = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(Enchantments.BLOCK_EFFICIENCY, 3));
             bookMenu.getSlot(1).set(book); bookMenu.createResult();
             bookMenu.clicked(2, 0, ClickType.PICKUP, f.player);
@@ -257,7 +265,8 @@ public final class JackhammerGameTests {
             SwitchOverrides.set(CommonConfig.CLASSIC_EQUIPMENT_ENABLED, false);
             try {
                 for (MotorDefinition motor : MotorDefinition.values()) {
-                    var menu = new CraftingMenu(45, f.player.getInventory(), ContainerLevelAccess.NULL);
+                    f.setTarget(Blocks.CRAFTING_TABLE);
+                    var menu = new CraftingMenu(45, f.player.getInventory(), ContainerLevelAccess.create(f.level, f.target));
                     menu.getSlot(2).set(new ItemStack(MaterialContent.item("aluminum_plate")));
                     menu.getSlot(3).set(new ItemStack(MaterialContent.item("titanium_rod")));
                     menu.getSlot(4).set(new ItemStack(MaterialContent.item("iron_rod")));
