@@ -1,5 +1,10 @@
 # Narrow native-log revision and review checkpoint 36
 
+Later [disposition39](NATIVE-LOG-DISPOSITION-39.md) supersedes this checkpoint's
+pending independent35 state only: final review is sealed and narrowed refusal
+requirements are frozen. Whole-driver adoption, implementation/runtime admission,
+observations and Gates remain open; the historical sample below is unchanged.
+
 Date: 2026-10-09. Driver proposal03 and additive native-log proposal04 remain
 **PROPOSED, NOT ADOPTED OR EXECUTABLE-FROZEN**. Root completely reads and rehosts
 author34; fresh independent review35 is in progress. No result is inferred from

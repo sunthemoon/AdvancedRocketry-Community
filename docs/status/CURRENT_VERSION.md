@@ -73,9 +73,11 @@ old denied peer outputs/incidents remain. Complete D1 proposal29 and independent
 review are sealed, with no new material correction and all implementation/runtime
 prerequisites open. [D1 disposition33](../work/v1.8.0-c18a-sleep/D1-OUTCOME-FREEZE-33.md)
 separately freezes only its intended outcomes, not implementation or runtime proof. Static compressed
-log revision34 is now [sealed and under fresh independent review35](../work/v1.8.0-c18a-sleep/NATIVE-LOG-REVISION-STATUS-36.md),
-not adopted or runtime/parser authority. Its refusal policy and actual cumulative
-admission remain unqualified. Task28's .log-only retained files do not prove
+log revision34 and final independent35 are sealed; [disposition39](../work/v1.8.0-c18a-sleep/NATIVE-LOG-DISPOSITION-39.md)
+freezes only narrowed refusal requirements. Whole-driver adoption/executable
+freeze and actual runtime/cumulative admission remain open. Separately assigned
+offline JSON contract37 and diagnostic provenance audit38 grant no implementation
+or error waiver. Task28's .log-only retained files do not prove
 original rotation completeness; standard-test and capture-runtime evidence are
 distinct. All Gates remain open.
 
