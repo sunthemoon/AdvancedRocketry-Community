@@ -73,7 +73,11 @@ old denied peer outputs/incidents remain. Complete D1 proposal29 and independent
 review are sealed, with no new material correction and all implementation/runtime
 prerequisites open. [D1 disposition33](../work/v1.8.0-c18a-sleep/D1-OUTCOME-FREEZE-33.md)
 separately freezes only its intended outcomes, not implementation or runtime proof. Static compressed
-log revision34 is assigned, not runtime/parser authority. All Gates remain open.
+log revision34 is now [sealed and under fresh independent review35](../work/v1.8.0-c18a-sleep/NATIVE-LOG-REVISION-STATUS-36.md),
+not adopted or runtime/parser authority. Its refusal policy and actual cumulative
+admission remain unqualified. Task28's .log-only retained files do not prove
+original rotation completeness; standard-test and capture-runtime evidence are
+distinct. All Gates remain open.
 
 The preceding [ordinary tool development integration](../work/v1.8.0-c18b-jackhammer/SOURCE-INTEGRATION-01.md)
 is normally merged/pushed at `80bbf16d9e76708b7e39c50d21b3cff1a66432ef` after

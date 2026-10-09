@@ -1,5 +1,9 @@
 # D1 dimension, spawn and time outcome freeze 33
 
+Later [native-log checkpoint36](NATIVE-LOG-REVISION-STATUS-36.md) records sealed
+proposal34, assigned independent35 and the later archive inventory. D1 outcomes
+remain frozen only in this scope; no driver or production authority is added.
+
 Date: 2026-10-09. Integrator disposition: **D1 OUTCOMES FROZEN AND INDEPENDENTLY
 REVIEWED; IMPLEMENTATION PREREQUISITES AND RUNTIME QUALIFICATION OPEN.** This
 freezes only the owner's selected, narrowed D1 outcomes. No production source,
