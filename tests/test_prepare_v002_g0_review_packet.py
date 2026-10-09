@@ -43,12 +43,14 @@ class V002G0ReviewPacketTests(unittest.TestCase):
         cls.source_root = Path(__file__).resolve().parents[1]
         cls.class_temporary = tempfile.TemporaryDirectory()
         cls.seed_root = Path(cls.class_temporary.name) / "seed"
+        # Materialize only the historical fixture checked out below, not current HEAD.
         cls.run_command(
             [
                 "git",
                 "clone",
                 "--quiet",
                 "--shared",
+                "--no-checkout",
                 "--",
                 str(cls.source_root),
                 str(cls.seed_root),
