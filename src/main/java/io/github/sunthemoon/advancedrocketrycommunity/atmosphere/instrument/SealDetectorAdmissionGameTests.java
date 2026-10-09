@@ -235,6 +235,19 @@ public final class SealDetectorAdmissionGameTests {
             helper.assertTrue(f.level.getChunkSource().getLoadedChunksCount() == loaded
                     && f.level.getChunkSource().getChunkNow(far.getX() >> 4, far.getZ() >> 4) == null
                     && forced.equals(f.level.getForcedChunks()), "Refusal loaded the selected chunk or changed forced marks");
+            // A loaded counterexample prevents later chunk refusal from masking the reach guard.
+            f.actor.player.teleportTo(f.level, f.target.getX() - 9.5D, f.target.getY(), f.target.getZ() + 0.5D, 0, 0);
+            Vec3 distantEye = f.actor.player.getEyePosition();
+            UseOnContext loadedTarget = new UseOnContext(f.actor.player, InteractionHand.MAIN_HAND,
+                    new BlockHitResult(distantEye, Direction.WEST, f.target, false));
+            helper.assertTrue(SealDetectorService.validEye(distantEye, f.level.getMinBuildHeight(), f.level.getMaxBuildHeight())
+                    && distantEye.distanceToSqr(loadedTarget.getClickLocation()) == 0D
+                    && SealDetectorService.distanceToCellSquared(distantEye, f.target) > 36D
+                    && f.level.getChunkSource().getChunkNow(f.target.getX() >> 4, f.target.getZ() >> 4) != null
+                    && f.level.getChunkSource().getChunkNow(f.target.west().getX() >> 4, f.target.west().getZ() >> 4) != null
+                    && f.level.mayInteract(f.actor.player, f.target), "Loaded target must isolate the target-AABB reach guard");
+            helper.assertTrue(local.service.read(loadedTarget).equals(SealDetectorReading.unavailable())
+                    && local.manager.metrics(f.level.dimension()).isEmpty(), "Loaded far target was authorized by a near hit");
         }
         helper.succeed();
     }
