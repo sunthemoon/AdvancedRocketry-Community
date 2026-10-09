@@ -15,8 +15,9 @@ JUnit/381 XML. Independent Codex review04 identifies Low R04-01 in the original
 unloaded-target test: chunk refusal could mask an omitted target-AABB check.
 The successor retains that observation and adds a loaded overreach target with
 explicit eye/hit/distance/loaded/permission preconditions. Independent static
-review regards that discriminator as source-addressing R04-01; its own full
-commands and stable final report remain pending at this checkpoint.
+review regards that discriminator as source-addressing R04-01. Its own full
+commands and stable final report are now complete, with the distinct failures
+below; neither cohort qualifies the whole regression.
 
 Root evidence is the [external qualification leaf](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04).
 Receipts bind fixed source/tree, ten build inputs, Java17, exact argv/cwd,
@@ -69,7 +70,51 @@ another distinctly identified fixed-source run. Source remains unmodified here.
 Original command transports for early source authoring/staging are tool-visible,
 not all separately retained raw receipts. Prospective source/corrective patch
 captures are retained; no earlier transport is reconstructed. Root's disposable
-output retirement and the independent final packet are still pending here.
+output retirement is partial: cleanup-01 exits 0 and removes the owned source
+build/.gradle and ended scratch children. A later direct PowerShell launch for
+the remaining scratch is rejected by policy before child creation. The
+[incident](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04/CLEANUP-FINAL-SCRATCH-BLOCKED.md)
+is retained; no final receipt or complete scratch deletion is claimed. Do not
+retry that refused target through another shell/helper or ancestor deletion.
+
+## Completed independent cohort and separate open issues
+
+[Independent04 REPORT](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-independent-20261009-04/REPORT.md)
+is fully read and hash-acknowledged by Root before its sole custody seal.
+Report SHA-256 is cdae4f596f7f0a3ebd00d23e3263626905b068e9c8d321b07dc7e07dcfdf749c;
+manifest f2b0c02e25ba8ef9cbb3efe52434096826e3d61769b4111b97c17b6bb72028dc.
+Root independently verifies all 843 covered hashes and whole-leaf arithmetic:
+845 files /9062096 bytes, largest 2037542. This is custody, not acceptance.
+
+Its own corrected build and forced test each pass 2192 JUnit/381 XML; two forced
+DataGen runs write 846 then 0 files, both generated diffs empty. Its original
+immediate cmd syntax failure is preserved separately. Its unfiltered native
+command exits 1 after 284.061 s: 597 complete, one required failure in
+LaserPhysicalGameTests.blocksHangingOnTheirLayerAreCollectedOnce, diagnostic
+`1 items dropped into the world: [1 rail@-4, 1, -5]`. The actual peer receipt's
+process deadline is 2400 seconds, distinct from Root's 1800; neither expires.
+There is no per-case native XML. Latest/debug each retain 63 ERROR/0 FATAL.
+Stderr separately records COMMON ConfigWatcher duplicate-table
+`[endgame, railgun]` ParsingException. Its cause/relationship is unresolved.
+Strict check remains 180-second TIMEOUT. Its sole owned taskkill attempt returns
+128 with unsupported child errors; a later read-only check finds all named PIDs
+absent, no retry. Own generated outputs are cleaned successfully and source fixed.
+
+[Diagnosis02](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-native-peer-failure-diagnosis-20261009-02/REPORT.md)
+is a separate read-only packet, SHA-256
+7444c5511952892a4294b88ba501b72d8b4b1e76cb4e545cd9f25971b9df86d2.
+Root fully reads it and verifies all six manifest entries /46395 whole-leaf bytes.
+The hanging-layer test queries/discards every nearby item without provenance;
+neither ambient contamination nor a production neighbor drop is established.
+The config exception lacks exact malformed bytes/writer/timing. Existing in-memory
+overrides reject endgame switches; no unchanged replacement is authorized.
+Both Medium issues remain open and require separate bounded assignments.
+
+The waiting-owner correction is separately committed/pushed as 0b02c513, after
+author write release and Root actual diff/full-postimage review. Its
+[checkpoint05](LASER-OWNER-VERIFICATION-05.md) starts fresh fixed-source
+qualification. It does not repair the hanging-layer/config issue or rewrite
+these two failed 770 cohorts. Spatial and fixture candidates remain unintegrated.
 
 No detector source integration/full delivery, resource-window case, native sleep,
 dedicated/restart/V1/V2/survival or release acceptance. All v1.8 Required Gates

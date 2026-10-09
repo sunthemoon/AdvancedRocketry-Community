@@ -41,6 +41,8 @@ latest_source_checkpoint: ce64a8eb79c0f6fb53f000f0c2a0e4e947ef9985
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: 770b3134cae99ab603ccde610c3731a98d63f524
+pending_laser_owner_fixture_source_candidate: 0b02c513b573cf474690e8d0801152acebf8d692
+pending_laser_owner_fixture_qualification: ROOT_RUNNING_INDEPENDENT_STATIC_REVIEW
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
 tested_code_commit: d57ecda1f11dab76d882f945b0de606534ef4fb9
@@ -49,7 +51,7 @@ latest_regression_target_commit: 770b3134cae99ab603ccde610c3731a98d63f524
 latest_regression_result: NATIVE_FAILED_STRICT_TIMEOUT_GATES_OPEN
 latest_regression_run: seal-spatial-boundary-root-20261009-04/native-01
 latest_regression_attempt: 1
-latest_regression_evidence: ACTUAL_FIXED_SOURCE_FAILED_NATIVE_LOGS_RETAINED_INDEPENDENT_RUNNING
+latest_regression_evidence: TWO_FAILED_FIXED_SOURCE_NATIVE_COHORTS_INDEPENDENT_SEALED
 latest_regression_observed_utc: 2026-10-09T13:22:39.182045Z
 actual_unit_rerun: seal-spatial-boundary-root-20261009-04/test-01.command.json
 actual_unit_rerun_observed_utc: 2026-10-09T13:15:28.040846Z
@@ -65,9 +67,16 @@ The latest [selected-cell candidate checkpoint04](../work/v1.8.0-c18a-seal-detec
 is fixed 770b3134 in its isolated branch, not Main source integration. Root build
 and forced test each pass 2192 JUnit/381 XML; both DataGen/generated diffs pass.
 Native completes 597 tests but fails the existing waiting-owner LaserTarget case;
-logs retain 63 ERROR/0 FATAL per log, strict 180-second TIMEOUT. Independent source
-and command review remains running. A separate test-only correction scope is
-published before edits; no production diagnosis/repair or native pass is inferred.
+logs retain 63 ERROR/0 FATAL per log, strict 180-second TIMEOUT. Independent04 is
+complete and sealed: its build/test each pass 2192/381, but its native597 run
+fails the hanging-layer world-item assertion and separately records a COMMON
+duplicate-table watcher exception. Item provenance and malformed-file producer
+remain unqualified; strict also times out. Root770 cleanup is partial with the
+final scratch launch refused; no retry. The separate one-file waiting-owner
+[candidate05](../work/v1.8.0-c18a-seal-detector/LASER-OWNER-VERIFICATION-05.md)
+is committed/pushed at 0b02c513 after actual-source review, not integrated.
+Fresh Root qualification is running; independent05 starts read-only review.
+Neither a production verdict nor native/resource/Gate pass is inferred.
 The earlier d57 regression below remains historical at d57, not the latest result.
 
 The [final observation test-source integration32](../work/v1.8.0-c18a-sleep/NESTED-QUALIFICATION-32.md)
