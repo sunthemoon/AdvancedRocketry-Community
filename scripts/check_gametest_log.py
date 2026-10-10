@@ -50,7 +50,8 @@ BATCH_START = re.compile(r"^Running test batch '(?P<name>.+):\d+' \(\d+ tests\)\
 COMPLETE = re.compile(r"^=+ (?P<count>\d+) GAME TESTS COMPLETE =+$")
 TEST_FRAME = re.compile(r"(?:GameTests?|Fixtures?)(?:\$[\w$]+)?\.[\w$]+$")
 STACK_FRAME = re.compile(r"^\s+at\s+(?:[^\s/]*/)*(?P<frame>(?:[a-z_]\w*\.)+[A-Z][\w$]*\.[\w$]+)\(")
-HEADER_LIKE = re.compile(r"^\[[^\]]+\]\s+\[[^\]]+/(?:TRACE|DEBUG|INFO|WARN|ERROR|FATAL)\]")
+HEADER_LIKE = re.compile(r"^\[[^\r\n]*/(?:TRACE|DEBUG|INFO|WARN|ERROR|FATAL)\b")
+EVENT_TIMESTAMP = re.compile(r"\[\d{1,2}[A-Za-z]{3}\d{4}\s+\d{2}:\d{2}:\d{2}")
 PASSED = re.compile(r"^All (?P<count>\d+) required tests passed :\)$")
 LAUNCH_LOGGER = "cpw.mods.modlauncher.Launcher/MODLAUNCHER"
 BATCH_LOGGER = "net.minecraft.gametest.framework.GameTestBatchRunner/"
@@ -155,7 +156,8 @@ def parse_log(text: str) -> ParsedLog:
             parsed.problems.append(f"line {number}: content after GameTest shutdown")
         header = HEADER.match(line)
         if header is None:
-            if HEADER_LIKE.match(line.lstrip("\ufeff \t")) or current is None and line.strip():
+            if (HEADER_LIKE.match(line.lstrip("\ufeff \t")) or EVENT_TIMESTAMP.search(line)
+                    or current is None and line.strip()):
                 parsed.problems.append(f"line {number}: malformed or unrecognized log header")
             continuation.append(line)
             continue

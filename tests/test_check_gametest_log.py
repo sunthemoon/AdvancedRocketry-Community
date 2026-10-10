@@ -216,6 +216,21 @@ class CheckGameTestLogTests(unittest.TestCase):
                     malformed = prefix + line(level, MOD_LOGGER, "Unrecognized event")
                     self.assert_problem(self.check(standard_log(malformed)), "malformed or unrecognized log header")
 
+    def test_damaged_delimiters_and_unsupported_event_prefixes_fail(self) -> None:
+        original = line("ERROR", MOD_LOGGER, "Unrecognized event")
+        malformed = (
+            original.replace("/ERROR]", "/ERROR"),
+            original.replace("/ERROR]", "/ERROR ]"),
+            original.replace(".206]", ".206"),
+            original.replace("[Server thread/ERROR]", "[Server thread ERROR]"),
+            original.replace("/ERROR]", "/UNKNOWN]"),
+            "\x1b[31m" + original,
+            "\x00" + original,
+        )
+        for value in malformed:
+            with self.subTest(value=value):
+                self.assert_problem(self.check(standard_log(value)), "malformed or unrecognized log header")
+
     def test_plain_exception_text_cannot_supply_a_stack_frame(self) -> None:
         text = standard_log().replace(REFUSAL_STACK[1], "java.lang.RuntimeException: SaveGameTests.refused")
         self.assert_problem(self.check(text), "unexpected ERROR")

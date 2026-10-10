@@ -88,3 +88,12 @@ original 180-second deadline without an original exit or final summary. Its owne
 postdeadline retirement completes in 0.0048681 seconds with both streams at EOF.
 The late exit 0 is not an original-command pass. No timeout is enlarged, no
 44-check conclusion is inferred, and the failed qualification remains open.
+
+Final-origin candidate `08c73eba91bd60d3f7177a54e6734807297c3021` passes Root's
+51 checker plus 17 CI-host tests (68 total) and the seven/four retained-log audit.
+A fresh reviewer releases this source at 2026-10-10T15:12:14.8789809Z and finds
+one remaining Medium: delimiter-damaged header-shaped events can be ignored.
+The follow-up recognizes native timestamp/event prefixes before accepting a
+continuation, including damaged delimiters and unsupported control prefixes.
+An added test covers seven forms. Final review and hosted status remain separate
+actual observations; no prior candidate report is relabeled as a final-source pass.
