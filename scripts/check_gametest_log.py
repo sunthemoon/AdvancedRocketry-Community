@@ -51,7 +51,7 @@ COMPLETE = re.compile(r"^=+ (?P<count>\d+) GAME TESTS COMPLETE =+$")
 TEST_FRAME = re.compile(r"(?:GameTests?|Fixtures?)(?:\$[\w$]+)?\.[\w$]+$")
 STACK_FRAME = re.compile(r"^\s+at\s+(?:[^\s/]*/)*(?P<frame>(?:[a-z_]\w*\.)+[A-Z][\w$]*\.[\w$]+)\(")
 HEADER_LIKE = re.compile(r"^\[[^\r\n]*/(?:TRACE|DEBUG|INFO|WARN|ERROR|FATAL)\b")
-EVENT_TIMESTAMP = re.compile(r"\[\d{1,2}[A-Za-z]{3}\d{4}\s+\d{2}:\d{2}:\d{2}")
+EVENT_TIMESTAMP = re.compile(r"\b\d{1,2}[A-Za-z]{3}\d{4}\s+\d{2}:\d{2}:\d{2}")
 PASSED = re.compile(r"^All (?P<count>\d+) required tests passed :\)$")
 LAUNCH_LOGGER = "cpw.mods.modlauncher.Launcher/MODLAUNCHER"
 BATCH_LOGGER = "net.minecraft.gametest.framework.GameTestBatchRunner/"

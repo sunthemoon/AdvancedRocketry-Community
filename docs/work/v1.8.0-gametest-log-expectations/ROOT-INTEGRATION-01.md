@@ -97,3 +97,9 @@ The follow-up recognizes native timestamp/event prefixes before accepting a
 continuation, including damaged delimiters and unsupported control prefixes.
 An added test covers seven forms. Final review and hosted status remain separate
 actual observations; no prior candidate report is relabeled as a final-source pass.
+
+At `bd4db1e9`, a fresh reviewer verifies 52 checker tests and the seven/four logs,
+then reproduces a remaining Medium when the opening timestamp bracket alone is
+missing. Reads end at 2026-10-10T15:19:21.4543076+00:00. The next small follow-up
+recognizes the timestamp without requiring that bracket and tests ERROR, WARN
+and FATAL variants. This original finding and its exact reviewed SHA are retained.

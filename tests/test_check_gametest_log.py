@@ -231,6 +231,12 @@ class CheckGameTestLogTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assert_problem(self.check(standard_log(value)), "malformed or unrecognized log header")
 
+    def test_missing_initial_timestamp_bracket_fails(self) -> None:
+        for level in ("ERROR", "WARN", "FATAL"):
+            with self.subTest(level=level):
+                malformed = line(level, MOD_LOGGER, "Unrecognized event")[1:]
+                self.assert_problem(self.check(standard_log(malformed)), "malformed or unrecognized log header")
+
     def test_plain_exception_text_cannot_supply_a_stack_frame(self) -> None:
         text = standard_log().replace(REFUSAL_STACK[1], "java.lang.RuntimeException: SaveGameTests.refused")
         self.assert_problem(self.check(text), "unexpected ERROR")
