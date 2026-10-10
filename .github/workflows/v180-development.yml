@@ -76,6 +76,7 @@ jobs:
           java -XshowSettings:properties -version 2>&1 | tee "$EVIDENCE_DIR/java-version.txt"
           python -B -c 'import tempfile; print(tempfile.gettempdir())' | tee "$EVIDENCE_DIR/python-temp.txt"
           python -B -m unittest discover -s tests -p test_check_v180_ci_host.py -v 2>&1 | tee "$EVIDENCE_DIR/host-tests.log"
+          python -B -m unittest discover -s tests -p test_check_gametest_log.py -v 2>&1 | tee "$EVIDENCE_DIR/gametest-log-tests.log"
           python -B scripts/validate_v1plus_planning.py | tee "$EVIDENCE_DIR/planning.log"
           python -B scripts/validate_v180_content_ledger.py --require-accepted | tee "$EVIDENCE_DIR/ledger.log"
 
@@ -105,6 +106,7 @@ jobs:
         run: |
           python -B scripts/check_v180_ci_host.py | tee "$EVIDENCE_DIR/host-gametest.json"
           ./gradlew runGameTestServer --no-daemon --stacktrace 2>&1 | tee "$EVIDENCE_DIR/gametest.log"
+          python -B scripts/check_gametest_log.py build/gametest/logs/latest.log 2>&1 | tee "$EVIDENCE_DIR/gametest-log-check.log"
 
       - name: Upload raw regression evidence, including failed runs
         if: always()

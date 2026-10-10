@@ -1,5 +1,9 @@
 # ADR proposal - Declared expected entries in GameTest server logs
 
+Historical proposal, superseded by [ADR-072](../../decisions/ADR-072-V180-GAMETEST-LOG-EXPECTATIONS.md).
+Its original acceptance/completeness claims were narrowed after independent review;
+R-021 and all release Gates remain open. This proposal itself was not accepted unchanged.
+
 ```yaml
 status: PROPOSED
 date: 2026-10-10

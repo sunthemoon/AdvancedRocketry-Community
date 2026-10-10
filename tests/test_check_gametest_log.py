@@ -34,6 +34,9 @@ COMPLETE = [
     line("INFO", SERVER_LOGGER, "========= 3 GAME TESTS COMPLETE ======================"),
     line("INFO", SERVER_LOGGER, "All 3 required tests passed :)"),
 ]
+LAUNCH = line("INFO", "cpw.mods.modlauncher.Launcher/MODLAUNCHER",
+              "ModLauncher running: args [--launchTarget, forgegametestserveruserdev]")
+SHUTDOWN = line("INFO", SERVER_LOGGER, "Game test server shutting down")
 
 REFUSAL = "Exception caught during firing event: Refusing chunk save; back up and repair first"
 REFUSAL_STACK = [
@@ -87,12 +90,13 @@ class ManifestFile:
 
 def standard_log(*extra: str, refusals: int = 2) -> str:
     lines = [
+        LAUNCH,
         line("WARN", CONFIG_LOGGER, "Incorrect key worldgen.geodes was corrected from null to its default, true."),
         batch("defaultBatch"),
     ]
     for _ in range(refusals):
         lines += [line("ERROR", EVENT_LOGGER, REFUSAL), *REFUSAL_STACK]
-    return "\n".join([*lines, *extra, *COMPLETE]) + "\n"
+    return "\n".join([*lines, *extra, *COMPLETE, SHUTDOWN]) + "\n"
 
 
 class CheckGameTestLogTests(unittest.TestCase):
@@ -196,6 +200,79 @@ class CheckGameTestLogTests(unittest.TestCase):
         )
         self.assertTrue(self.check(text).passed)
 
+    def test_malformed_headers_are_not_silently_ignored(self) -> None:
+        malformed = line("ERROR", MOD_LOGGER, "Unrecognized error").replace("]: ", "] : ")
+        self.assert_problem(self.check(standard_log(malformed)), "malformed or unrecognized log header")
+
+    def test_bom_prefixed_header_is_not_a_continuation(self) -> None:
+        malformed = "\ufeff" + line("ERROR", MOD_LOGGER, "Unrecognized error")
+        self.assert_problem(self.check(standard_log(malformed)), "malformed or unrecognized log header")
+
+    def test_plain_exception_text_cannot_supply_a_stack_frame(self) -> None:
+        text = standard_log().replace(REFUSAL_STACK[1], "java.lang.RuntimeException: SaveGameTests.refused")
+        self.assert_problem(self.check(text), "unexpected ERROR")
+
+    def test_different_class_name_cannot_supply_a_stack_frame(self) -> None:
+        text = standard_log().replace("SaveGameTests.refused", "OtherSaveGameTests.refused")
+        self.assert_problem(self.check(text), "unexpected ERROR")
+
+    def test_named_method_matches_exactly(self) -> None:
+        text = standard_log().replace("SaveGameTests.refused", "SaveGameTests.refusedUnexpected")
+        self.assert_problem(self.check(text, expectation(stack_contains="SaveGameTests.refused"),
+                                       config_expectation()), "unexpected ERROR")
+
+    def test_nested_failure_handler_frame_is_recognized(self) -> None:
+        text = standard_log().replace("SaveGameTests.refused", "SaveGameTests$Failure.accept")
+        self.assertTrue(self.check(text, expectation(stack_contains="SaveGameTests$Failure.accept"),
+                                   config_expectation()).passed)
+
+    def test_throwable_must_match_independently_of_frame(self) -> None:
+        expected = expectation(exception=r"java\.lang\.IllegalStateException: Refusing chunk save; back up and repair first")
+        self.assertTrue(self.check(standard_log(), expected, config_expectation()).passed)
+        text = standard_log().replace(REFUSAL_STACK[0], "java.io.IOException: Disk full")
+        self.assert_problem(self.check(text, expected, config_expectation()), "unexpected ERROR")
+
+    def test_truncation_after_banner_or_summary_fails(self) -> None:
+        text = standard_log()
+        for ending in COMPLETE:
+            truncated = text[:text.index(ending) + len(ending)] + "\n"
+            self.assert_problem(self.check(truncated), "no normal GameTest shutdown marker")
+
+    def test_missing_launch_fails(self) -> None:
+        self.assert_problem(self.check(standard_log().replace(LAUNCH + "\n", "")),
+                            "no GameTest userdev launch header")
+
+    def test_failed_summary_fails_even_without_a_new_error(self) -> None:
+        text = standard_log().replace("All 3 required tests passed :)", "1 required tests failed :(")
+        self.assert_problem(self.check(text), "unsuccessful or unrecognized required-test summary")
+
+    def test_missing_summary_fails(self) -> None:
+        self.assert_problem(self.check(standard_log().replace(COMPLETE[1] + "\n", "")),
+                            "no successful required-test summary")
+
+    def test_inconsistent_summary_count_fails(self) -> None:
+        text = standard_log().replace("All 3 required tests passed", "All 4 required tests passed")
+        self.assert_problem(self.check(text), "summary count is inconsistent")
+
+    def test_duplicate_markers_fail(self) -> None:
+        for marker in (LAUNCH, *COMPLETE):
+            text = standard_log().replace(marker, marker + "\n" + marker)
+            self.assert_problem(self.check(text), "duplicate or misplaced")
+
+    def test_summary_before_completion_fails(self) -> None:
+        text = standard_log().replace("\n".join(COMPLETE), "\n".join(reversed(COMPLETE)))
+        self.assert_problem(self.check(text), "misplaced required-test summary")
+
+    def test_batch_after_completion_fails(self) -> None:
+        text = standard_log().replace(SHUTDOWN, batch("late") + "\n" + SHUTDOWN)
+        self.assert_problem(self.check(text), "misplaced test batch")
+
+    def test_content_after_shutdown_fails(self) -> None:
+        self.assert_problem(self.check(standard_log() + "trailing partial entry"), "content after GameTest shutdown")
+
+    def test_incomplete_final_line_fails(self) -> None:
+        self.assert_problem(self.check(standard_log().rstrip("\n")), "incomplete line")
+
 
 class ManifestValidationTests(unittest.TestCase):
     def assert_rejected(self, fragment: str, *expectations: dict, schema: int = 1) -> None:
@@ -227,6 +304,11 @@ class ManifestValidationTests(unittest.TestCase):
     def test_invalid_pattern_and_schema_are_rejected(self) -> None:
         self.assert_rejected("not a valid pattern", expectation(message="("))
         self.assert_rejected("schema 1", expectation(), schema=2)
+        self.assert_rejected("schema 1", expectation(), schema=True)
+
+    def test_exception_pattern_is_validated(self) -> None:
+        self.assert_rejected("exception must be a non-empty string", expectation(exception=" "))
+        self.assert_rejected("not a valid pattern", expectation(exception="("))
 
     def test_repository_manifest_is_valid(self) -> None:
         expectations = load_manifest(DEFAULT_MANIFEST)
@@ -234,6 +316,32 @@ class ManifestValidationTests(unittest.TestCase):
         self.assertEqual(
             62, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
+
+    def test_recipe_and_recovery_cases_have_independent_counts(self) -> None:
+        expectations = load_manifest(DEFAULT_MANIFEST)
+        recipes = [item for item in expectations if item.id.endswith("recipe-disabled-unbound-tag")]
+        self.assertEqual(3, len(recipes))
+        self.assertTrue(all(item.counts == {"recipe_signatures": 1} for item in recipes))
+        recovery = [item for item in expectations if item.id.startswith("transfer-recovery-")]
+        self.assertEqual(4, len(recovery))
+        self.assertTrue(all(item.counts == {"flight_recovery": 1} for item in recovery))
+
+    def test_chunk_save_rules_require_exact_throwable_and_frame(self) -> None:
+        rules = [item for item in load_manifest(DEFAULT_MANIFEST) if item.logger == "net.minecraft.server.level.ChunkMap/"]
+        self.assertEqual(2, len(rules))
+        self.assertTrue(all(item.exception is not None and item.stack_contains is not None for item in rules))
+
+
+class WorkflowIntegrationTests(unittest.TestCase):
+    def test_hosted_checker_runs_after_native_command_under_pipefail(self) -> None:
+        root = DEFAULT_MANIFEST.parent.parent
+        workflow = (root / ".github/workflows/v180-development.yml").read_text(encoding="utf-8")
+        step = workflow.split("- name: Run all Forge GameTests\n", 1)[1].split("\n      - name:", 1)[0]
+        self.assertLess(step.index("./gradlew runGameTestServer"),
+                        step.index("python -B scripts/check_gametest_log.py build/gametest/logs/latest.log"))
+        self.assertIn("shell: bash", workflow)
+        self.assertNotIn("continue-on-error", step)
+        self.assertIn("-p test_check_gametest_log.py", workflow)
 
 
 class CommandLineTests(unittest.TestCase):

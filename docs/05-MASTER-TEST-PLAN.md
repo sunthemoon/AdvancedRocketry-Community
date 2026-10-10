@@ -154,6 +154,11 @@ station_allocator_avoids_overlap
 - 重复且无法解释的 `WARN` 为失败；
 - 已接受警告必须记录到版本 Known Issues。
 
+v1.8 开发 GameTest 的故意拒绝与注入故障日志另按
+[ADR-072](decisions/ADR-072-V180-GAMETEST-LOG-EXPECTATIONS.md)逐条核对来源、批次和次数，
+并要求完整正常结束及原生测试通过；这不改变专服、原生验证主机或客户端的上述规则，
+不接受 R-021 保存风险，也不豁免性能预算或任何 Required Gate。
+
 ## 7. 重启矩阵
 
 对持久化功能，在关键状态执行：

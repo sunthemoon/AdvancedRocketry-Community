@@ -65,29 +65,44 @@
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
       "message": "Exception caught during firing event: Intentional Energy-only migration binding save failure",
+      "stack_contains": "PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept",
       "counts": {"precision_energy_binding_retry": 1, "precision_energy_binding_gate": 2},
       "test": "PrecisionAssemblerMigrationBindingGameTests",
       "reason": "The tests inject failed chunk saves during the Energy-only binding migration to prove retry and gating."
     },
     {
-      "id": "precision-injected-chunk-save-failed",
+      "id": "precision-energy-binding-chunk-save-failed",
       "level": "ERROR",
       "logger": "net.minecraft.server.level.ChunkMap/",
       "message": "Failed to save chunk -?\\d+,-?\\d+",
+      "exception": "java\\.lang\\.IllegalStateException: Intentional Energy-only migration binding save failure",
+      "stack_contains": "PrecisionAssemblerMigrationBindingGameTests$BindingSaveFailure.accept",
       "counts": {
         "precision_energy_binding_retry": 1,
-        "precision_energy_binding_gate": 2,
+        "precision_energy_binding_gate": 2
+      },
+      "test": "PrecisionAssemblerMigrationBindingGameTests",
+      "reason": "Vanilla reports the binding fixture's injected save failure with its exact throwable and failure-handler frame."
+    },
+    {
+      "id": "precision-one-shot-chunk-save-failed",
+      "level": "ERROR",
+      "logger": "net.minecraft.server.level.ChunkMap/",
+      "message": "Failed to save chunk -?\\d+,-?\\d+",
+      "exception": "java\\.lang\\.IllegalStateException: Intentional one-shot Precision migration save failure",
+      "stack_contains": "PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept",
+      "counts": {
         "precision_migration_port_failure": 1,
         "precision_migration_controller_failure": 1
       },
-      "test": "PrecisionAssemblerMigrationBindingGameTests, PrecisionAssemblerMigrationSaveFailureGameTests",
-      "reason": "Vanilla reports each injected save failure of the two precision expectations above once more from the chunk map."
+      "test": "PrecisionAssemblerMigrationSaveFailureGameTests",
+      "reason": "Vanilla reports the one-shot fixture's injected save failure with its exact throwable and failure-handler frame."
     },
     {
       "id": "precision-port-roots-unconfirmed",
       "level": "ERROR",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
-      "message": "Precision Assembler migration port marker roots are not confirmed on disk at BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} in minecraft:overworld: .+",
+      "message": "Precision Assembler migration port marker roots are not confirmed on disk at BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} in minecraft:overworld: BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\}: (arce_precision_port_migration|arce_part_binding) differs \\(expected hash=-?\\d+, saved hash=-?\\d+\\)",
       "counts": {"precision_migration_port_failure": 1, "precision_energy_binding_gate": 1},
       "test": "PrecisionAssemblerMigrationSaveFailureGameTests, PrecisionAssemblerMigrationBindingGameTests",
       "reason": "After an injected save failure the migration must report that its port markers are not confirmed on disk."
@@ -96,7 +111,7 @@
       "id": "precision-controller-roots-unconfirmed",
       "level": "ERROR",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
-      "message": "Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} in minecraft:overworld: .+",
+      "message": "Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} in minecraft:overworld: BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\}: arce_precision_resources differs \\(expected hash=-?\\d+, saved hash=-?\\d+\\)",
       "counts": {"precision_migration_controller_failure": 1},
       "test": "PrecisionAssemblerMigrationSaveFailureGameTests",
       "reason": "After an injected save failure the migration must report that its controller snapshot is not confirmed on disk."
@@ -122,13 +137,31 @@
       "reason": "The test makes the launch acknowledgment flush fail to prove the paid receipt recovers without a second claim."
     },
     {
-      "id": "recipe-disabled-unbound-tag",
+      "id": "rolling-recipe-disabled-unbound-tag",
       "level": "ERROR",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
-      "message": "Disabling machine recipe advancedrocketrycommunity:(rolling_iron_bars|precision_control_circuit|electrolyzer_water) until tag reload: machine ingredient has no bound alternatives",
-      "counts": {"recipe_signatures": 3},
+      "message": "Disabling machine recipe advancedrocketrycommunity:rolling_iron_bars until tag reload: machine ingredient has no bound alternatives",
+      "counts": {"recipe_signatures": 1},
       "test": "RecipeSignatureMigrationGameTests.allThreeTagSerializersSyncUnboundJsonWithoutResolving",
-      "reason": "The test decodes one recipe of each machine type with an unbound tag; each must be disabled until tags reload."
+      "reason": "The rolling recipe must independently be disabled until tags reload; another recipe cannot replace its log entry."
+    },
+    {
+      "id": "precision-recipe-disabled-unbound-tag",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Disabling machine recipe advancedrocketrycommunity:precision_control_circuit until tag reload: machine ingredient has no bound alternatives",
+      "counts": {"recipe_signatures": 1},
+      "test": "RecipeSignatureMigrationGameTests.allThreeTagSerializersSyncUnboundJsonWithoutResolving",
+      "reason": "The precision recipe must independently be disabled until tags reload."
+    },
+    {
+      "id": "electrolyzer-recipe-disabled-unbound-tag",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Disabling machine recipe advancedrocketrycommunity:electrolyzer_water until tag reload: machine ingredient has no bound alternatives",
+      "counts": {"recipe_signatures": 1},
+      "test": "RecipeSignatureMigrationGameTests.allThreeTagSerializersSyncUnboundJsonWithoutResolving",
+      "reason": "The electrolyzer recipe must independently be disabled until tags reload."
     },
     {
       "id": "transfer-returned-to-source",
@@ -140,13 +173,40 @@
       "reason": "Each test blocks the destination pad and requires the rocket to return to its source."
     },
     {
-      "id": "transfer-recovery",
+      "id": "transfer-recovery-keep-source",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
-      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=[A-Z_]+ source_count=\\d+ destination_count=\\d+ action=[A-Z_]+ status=[A-Z_]+",
-      "counts": {"flight_recovery": 4},
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"flight_recovery": 1},
       "test": "RocketTransferRecoveryGameTests",
-      "reason": "Each test interrupts a transfer in a different phase and requires the recorded recovery action."
+      "reason": "The source-only prepared transfer must keep its source; counts cannot substitute another recovery case."
+    },
+    {
+      "id": "transfer-recovery-keep-destination",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED",
+      "counts": {"flight_recovery": 1},
+      "test": "RocketTransferRecoveryGameTests",
+      "reason": "The destination-only prepared transfer must keep its destination."
+    },
+    {
+      "id": "transfer-recovery-remove-duplicate-destination",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=1 action=REMOVE_DESTINATION_KEEP_SOURCE status=RECOVERED",
+      "counts": {"flight_recovery": 1},
+      "test": "RocketTransferRecoveryGameTests",
+      "reason": "The prepared duplicate transfer must remove its destination and keep its source."
+    },
+    {
+      "id": "transfer-recovery-rebuild-destination",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=DESTINATION_SPAWNED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED",
+      "counts": {"flight_recovery": 1},
+      "test": "RocketTransferRecoveryGameTests",
+      "reason": "The destination-spawned transfer with neither entity must rebuild its destination."
     },
     {
       "id": "transfer-login-reconciled",
@@ -309,7 +369,7 @@
       "message": "Can't keep up! Is the server overloaded\\? Running \\d+ms or \\d+ ticks behind",
       "max": 5,
       "test": "environment: host speed",
-      "reason": "A tick that runs more than two seconds late logs this; vanilla limits it to once every 15 seconds. Complete runs on 2026-10-07 to 2026-10-10 logged it once each. More than five means the host was overloaded for over a minute, which itself makes timing-sensitive tests unreliable."
+      "reason": "Recognizes at most five vanilla host-lag notices; complete retained runs logged one each. This count is a diagnostic ceiling, not a duration, tick-performance or reliability qualification. All existing performance budgets and native test outcomes remain independent."
     }
   ]
 }

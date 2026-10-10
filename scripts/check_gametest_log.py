@@ -12,7 +12,8 @@ complete Forge GameTest ``latest.log`` and the manifest
   test batch and nowhere else;
 * only a WARN expectation may use ``max`` instead, an upper bound for host- or
   environment-dependent warnings, optionally limited to ``batches``;
-* the log must contain the GameTest completion banner, so a truncated log never passes.
+* one launch, completion, successful required-test summary and normal shutdown must
+  appear in order; malformed headers and incomplete shutdown logs fail.
 
 Every expectation names its logger and full message, and an expectation for an entry
 that carries a stack trace can also name the GameTest whose deliberate failure the entry
@@ -38,7 +39,7 @@ CHECKED_LEVELS = ("ERROR", "WARN")
 STARTUP_BATCH = "<startup>"
 SHUTDOWN_BATCH = "<shutdown>"
 EXPECTATION_KEYS = frozenset(
-    {"id", "level", "logger", "message", "stack_contains", "counts", "max", "batches", "test", "reason"}
+    {"id", "level", "logger", "message", "stack_contains", "exception", "counts", "max", "batches", "test", "reason"}
 )
 
 HEADER = re.compile(
@@ -47,7 +48,11 @@ HEADER = re.compile(
 )
 BATCH_START = re.compile(r"^Running test batch '(?P<name>.+):\d+' \(\d+ tests\)\.\.\.$")
 COMPLETE = re.compile(r"^=+ (?P<count>\d+) GAME TESTS COMPLETE =+$")
-TEST_FRAME = re.compile(r"\b(?:[a-z_]\w*\.)+[A-Z]\w*(?:GameTests?|Fixtures?)\.[\w$]+")
+TEST_FRAME = re.compile(r"(?:GameTests?|Fixtures?)(?:\$[\w$]+)?\.[\w$]+$")
+STACK_FRAME = re.compile(r"^\s+at\s+(?:[^\s/]*/)*(?P<frame>(?:[a-z_]\w*\.)+[A-Z][\w$]*\.[\w$]+)\(")
+HEADER_LIKE = re.compile(r"^\[[^\]]+\]\s+\[[^\]]+/(?:TRACE|DEBUG|INFO|WARN|ERROR|FATAL)\]")
+PASSED = re.compile(r"^All (?P<count>\d+) required tests passed :\)$")
+LAUNCH_LOGGER = "cpw.mods.modlauncher.Launcher/MODLAUNCHER"
 BATCH_LOGGER = "net.minecraft.gametest.framework.GameTestBatchRunner/"
 SERVER_LOGGER = "net.minecraft.gametest.framework.GameTestServer/"
 
@@ -70,9 +75,9 @@ class Entry:
     def test_frames(self) -> tuple[str, ...]:
         frames: list[str] = []
         for text in self.continuation:
-            match = TEST_FRAME.search(text)
-            if match and match.group(0) not in frames:
-                frames.append(match.group(0))
+            match = STACK_FRAME.match(text)
+            if match and TEST_FRAME.search(match["frame"]) and match["frame"] not in frames:
+                frames.append(match["frame"])
         return tuple(frames)
 
 
@@ -83,6 +88,7 @@ class Expectation:
     logger: str
     message: re.Pattern[str]
     stack_contains: str | None
+    exception: re.Pattern[str] | None
     counts: dict[str, int] | None
     maximum: int | None
     batches: frozenset[str] | None
@@ -95,8 +101,15 @@ class Expectation:
             and self.message.fullmatch(entry.message) is not None
             and (
                 self.stack_contains is None
-                or any(self.stack_contains in text for text in entry.continuation)
+                or any(
+                    (f".{self.stack_contains}" in f".{match['frame']}"
+                     if self.stack_contains.endswith(".") else
+                     match["frame"] == self.stack_contains or match["frame"].endswith("." + self.stack_contains))
+                    for text in entry.continuation if (match := STACK_FRAME.match(text))
+                )
             )
+            and (self.exception is None or bool(entry.continuation)
+                 and self.exception.fullmatch(entry.continuation[0]) is not None)
         )
 
     def allows_batch(self, batch: str) -> bool:
@@ -110,6 +123,10 @@ class ParsedLog:
     entries: list[Entry] = field(default_factory=list)
     completed_tests: int | None = None
     summary: list[str] = field(default_factory=list)
+    problems: list[str] = field(default_factory=list)
+    launched: bool = False
+    passed_tests: int | None = None
+    shutdown: bool = False
 
 
 @dataclass
@@ -134,22 +151,46 @@ def parse_log(text: str) -> ParsedLog:
             parsed.entries.append(Entry(continuation=tuple(continuation), **current))
 
     for number, line in enumerate(text.splitlines(), start=1):
+        if parsed.shutdown and line.strip():
+            parsed.problems.append(f"line {number}: content after GameTest shutdown")
         header = HEADER.match(line)
         if header is None:
+            if HEADER_LIKE.match(line.lstrip("\ufeff")) or current is None and line.strip():
+                parsed.problems.append(f"line {number}: malformed or unrecognized log header")
             continuation.append(line)
             continue
         close()
         continuation = []
         level, logger, message = header["level"], header["logger"], header["message"]
-        if logger == BATCH_LOGGER and (start := BATCH_START.match(message)):
+        if level == "INFO" and logger == LAUNCH_LOGGER and "--launchTarget, forgegametestserveruserdev" in message:
+            if parsed.launched or current is not None:
+                parsed.problems.append(f"line {number}: duplicate or misplaced GameTest launch")
+            parsed.launched = True
+        if level == "INFO" and logger == BATCH_LOGGER and (start := BATCH_START.match(message)):
+            if not parsed.launched or parsed.completed_tests is not None:
+                parsed.problems.append(f"line {number}: misplaced test batch")
             batch = start["name"]
-        elif logger == SERVER_LOGGER and (complete := COMPLETE.match(message)):
+        elif level == "INFO" and logger == SERVER_LOGGER and (complete := COMPLETE.match(message)):
+            if parsed.completed_tests is not None or batch == STARTUP_BATCH:
+                parsed.problems.append(f"line {number}: duplicate or misplaced completion banner")
             parsed.completed_tests = int(complete["count"])
             batch = SHUTDOWN_BATCH
+        elif level == "INFO" and logger == SERVER_LOGGER and (passed := PASSED.match(message)):
+            if parsed.completed_tests is None or parsed.passed_tests is not None:
+                parsed.problems.append(f"line {number}: duplicate or misplaced required-test summary")
+            parsed.passed_tests = int(passed["count"])
+            parsed.summary.append(message)
         elif logger == SERVER_LOGGER and "required tests" in message:
             parsed.summary.append(message)
+            parsed.problems.append(f"line {number}: unsuccessful or unrecognized required-test summary: {message}")
+        elif level == "INFO" and logger == SERVER_LOGGER and message == "Game test server shutting down":
+            if parsed.passed_tests is None:
+                parsed.problems.append(f"line {number}: shutdown before successful required-test summary")
+            parsed.shutdown = True
         current = {"line": number, "level": level, "logger": logger, "message": message, "batch": batch}
     close()
+    if not text.endswith("\n"):
+        parsed.problems.append("the log ends with an incomplete line")
     return parsed
 
 
@@ -171,6 +212,9 @@ def _expectation(raw: object, where: str) -> Expectation:
     stack_contains = raw.get("stack_contains")
     if stack_contains is not None and (not isinstance(stack_contains, str) or not stack_contains.strip()):
         raise ManifestError(f"{where} stack_contains must be a non-empty string when present")
+    exception = raw.get("exception")
+    if exception is not None and (not isinstance(exception, str) or not exception.strip()):
+        raise ManifestError(f"{where} exception must be a non-empty string when present")
 
     counts, maximum, batches = raw.get("counts"), raw.get("max"), raw.get("batches")
     if (counts is None) == (maximum is None):
@@ -193,6 +237,7 @@ def _expectation(raw: object, where: str) -> Expectation:
             raise ManifestError(f"{where} batches must be a non-empty list of batch names")
     try:
         message = re.compile(raw["message"])
+        exception = re.compile(exception) if exception is not None else None
     except re.error as exc:
         raise ManifestError(f"{where} message is not a valid pattern: {exc}") from exc
     return Expectation(
@@ -201,6 +246,7 @@ def _expectation(raw: object, where: str) -> Expectation:
         logger=raw["logger"],
         message=message,
         stack_contains=stack_contains,
+        exception=exception,
         counts=dict(counts) if counts is not None else None,
         maximum=maximum,
         batches=frozenset(batches) if batches is not None else None,
@@ -212,7 +258,8 @@ def load_manifest(path: Path) -> list[Expectation]:
         document = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise ManifestError(f"cannot read {path}: {exc}") from exc
-    if not isinstance(document, dict) or document.get("schema") != MANIFEST_SCHEMA:
+    if (not isinstance(document, dict) or type(document.get("schema")) is not int
+            or document.get("schema") != MANIFEST_SCHEMA):
         raise ManifestError(f"{path}: expected an object with schema {MANIFEST_SCHEMA}")
     raw_entries = document.get("expectations")
     if not isinstance(raw_entries, list) or not raw_entries:
@@ -227,12 +274,20 @@ def load_manifest(path: Path) -> list[Expectation]:
 
 
 def check(parsed: ParsedLog, expectations: list[Expectation]) -> Report:
-    problems: list[str] = []
+    problems: list[str] = list(parsed.problems)
     notes: list[str] = []
     if parsed.completed_tests is None:
         problems.append("the log has no 'GAME TESTS COMPLETE' banner; it is truncated or not a GameTest log")
     else:
         notes.append("; ".join([f"{parsed.completed_tests} game tests complete", *parsed.summary]))
+    if not parsed.launched:
+        problems.append("the log has no GameTest userdev launch header")
+    if parsed.passed_tests is None:
+        problems.append("the log has no successful required-test summary")
+    elif parsed.completed_tests is not None and not 1 <= parsed.passed_tests <= parsed.completed_tests:
+        problems.append("required-test summary count is inconsistent with the completion banner")
+    if not parsed.shutdown:
+        problems.append("the log has no normal GameTest shutdown marker; shutdown may be truncated")
 
     observed: dict[str, Counter[str]] = {expectation.id: Counter() for expectation in expectations}
     levels: Counter[str] = Counter()
