@@ -34,6 +34,7 @@ import shutil
 import stat
 import subprocess
 import threading
+import time
 import types
 import unicodedata
 import urllib as _validator_urllib_dependency
@@ -128,6 +129,7 @@ RUNTIME_DEPENDENCY_MODULES = (
     subprocess,
     sys,
     threading,
+    time,
     types,
     unicodedata,
     _validator_urllib_dependency,
@@ -805,9 +807,17 @@ def _read_verified_git_blobs_batch(
     *,
     maximum_file_size: int,
     maximum_aggregate_size: int,
+    contents: dict[str, bytes] | None = None,
 ) -> dict[str, int]:
     if any(FULL_COMMIT.fullmatch(oid) is None for oid in oids):
         raise PacketError("selected commit tree contains an invalid blob OID")
+    if contents is not None:
+        if type(contents) is not dict or contents:
+            raise PacketError("payload content sink must be an empty dictionary")
+        if len(oids) > MAX_PACKET_FILES:
+            raise PacketError("payload requests exceed the packet file limit")
+        if not oids:
+            return {}
     try:
         process = subprocess.Popen(
             [
@@ -827,6 +837,7 @@ def _read_verified_git_blobs_batch(
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             env=_command_environment(),
+            bufsize=0 if contents is not None else -1,
         )
     except OSError as exc:
         raise PacketError(f"cannot start bounded Git blob verification: {exc}") from exc
@@ -839,21 +850,73 @@ def _read_verified_git_blobs_batch(
             timed_out.set()
             process.kill()
 
-    timer = threading.Timer(GIT_TIMEOUT_SECONDS, terminate_on_timeout)
-    timer.daemon = True
-    timer.start()
+    timer = None
+    aggregate_timer = None
     sizes: dict[str, int] = {}
+    provisional: dict[str, bytes] = {}
     aggregate_size = 0
     failure: str | None = None
+    request_deadline = time.monotonic() + GIT_TIMEOUT_SECONDS
+    aggregate_deadline = time.monotonic() + GIT_TIMEOUT_SECONDS * len(oids)
+
+    def read_payload(size: int) -> bytes:
+        # Nonblocking raw pipes also terminate a wait when the original has
+        # exited but another writer still holds its stdout open. No reader
+        # thread is created or abandoned. Windows pipe support requires 3.12+.
+        while True:
+            remaining = min(request_deadline, aggregate_deadline) - time.monotonic()
+            if timed_out.is_set() or remaining <= 0:
+                raise PacketError("bounded Git payload verification timed out")
+            data = process.stdout.read(size)
+            if time.monotonic() >= min(request_deadline, aggregate_deadline):
+                raise PacketError("bounded Git payload verification timed out")
+            if data is not None:
+                return data
+            time.sleep(min(0.001, remaining))
+
+    def read_header() -> bytes:
+        if contents is None:
+            return process.stdout.readline(MAX_GIT_BATCH_HEADER_BYTES + 1)
+        header = bytearray()
+        while len(header) <= MAX_GIT_BATCH_HEADER_BYTES:
+            byte = read_payload(1)
+            header.extend(byte)
+            if not byte or byte == b"\n":
+                break
+        return bytes(header)
+
     try:
-        for oid in oids:
+        timer = threading.Timer(GIT_TIMEOUT_SECONDS, terminate_on_timeout)
+        timer.daemon = True
+        timer.start()
+        if contents is not None:
+            # Preserve N separately bounded requests, not one tighter phase timer.
+            # The final request includes stdin close, EOF and process exit.
+            aggregate_timer = threading.Timer(
+                GIT_TIMEOUT_SECONDS * len(oids), terminate_on_timeout
+            )
+            aggregate_timer.daemon = True
+            aggregate_timer.start()
+            os.set_blocking(process.stdin.fileno(), False)
+            os.set_blocking(process.stdout.fileno(), False)
+        for index, oid in enumerate(oids):
+            if contents is not None and index:
+                timer.cancel()
+                request_deadline = time.monotonic() + GIT_TIMEOUT_SECONDS
+                timer = threading.Timer(GIT_TIMEOUT_SECONDS, terminate_on_timeout)
+                timer.daemon = True
+                timer.start()
             try:
-                process.stdin.write(oid.encode("ascii") + b"\n")
+                request = oid.encode("ascii") + b"\n"
+                written = process.stdin.write(request)
+                if contents is not None and written != len(request):
+                    failure = "bounded Git payload query had a short write"
+                    break
                 process.stdin.flush()
             except (BrokenPipeError, OSError) as exc:
                 failure = f"cannot query bounded Git blob verification: {exc}"
                 break
-            header = process.stdout.readline(MAX_GIT_BATCH_HEADER_BYTES + 1)
+            header = read_header()
             if (
                 not header
                 or len(header) > MAX_GIT_BATCH_HEADER_BYTES
@@ -888,17 +951,22 @@ def _read_verified_git_blobs_batch(
                 )
                 break
             digest = hashlib.sha1(f"blob {size}\0".encode("ascii"))
+            chunks: list[bytes] = []
             remaining = size
             while remaining:
-                chunk = process.stdout.read(min(remaining, GIT_STREAM_CHUNK_BYTES))
+                chunk_size = min(remaining, GIT_STREAM_CHUNK_BYTES)
+                chunk = read_payload(chunk_size) if contents is not None else process.stdout.read(chunk_size)
                 if not chunk:
                     failure = "bounded Git blob verification ended early"
                     break
                 digest.update(chunk)
+                if contents is not None:
+                    chunks.append(chunk)
                 remaining -= len(chunk)
             if failure is not None:
                 break
-            if process.stdout.read(1) != b"\n":
+            terminator = read_payload(1) if contents is not None else process.stdout.read(1)
+            if terminator != b"\n":
                 failure = "bounded Git blob verification has no object terminator"
                 break
             recomputed_oid = digest.hexdigest()
@@ -909,15 +977,26 @@ def _read_verified_git_blobs_batch(
                 )
                 break
             sizes[oid] = size
+            if contents is not None:
+                if time.monotonic() >= min(request_deadline, aggregate_deadline):
+                    failure = "bounded Git payload verification timed out"
+                    break
+                provisional[oid] = b"".join(chunks)
 
         try:
             process.stdin.close()
-        except OSError:
-            pass
+        except OSError as exc:
+            if contents is not None:
+                failure = failure or f"cannot close bounded Git payload input: {exc}"
+        if contents is not None and failure is None and read_payload(1):
+            failure = "bounded Git payload verification emitted trailing bytes"
         if failure is not None and process.poll() is None:
             process.kill()
         return_code = process.wait()
-        if timed_out.is_set():
+        if timed_out.is_set() or (
+            contents is not None
+            and time.monotonic() >= min(request_deadline, aggregate_deadline)
+        ):
             raise PacketError("bounded Git blob verification timed out")
         if failure is not None:
             raise PacketError(failure)
@@ -925,18 +1004,36 @@ def _read_verified_git_blobs_batch(
             raise PacketError(
                 f"bounded Git blob verification failed with exit {return_code}"
             )
-        return sizes
+    except (OSError, RuntimeError) as exc:
+        raise PacketError(f"cannot read bounded Git blob verification: {exc}") from exc
     finally:
-        timer.cancel()
+        # Retire an unfinished owned child before cancelling its timer or
+        # flushing/closing buffered input during exceptional cleanup.
+        if process.poll() is None:
+            process.kill()
+        if timer is not None:
+            timer.cancel()
+        if aggregate_timer is not None:
+            aggregate_timer.cancel()
+        cleanup_error = None
         try:
             if not process.stdin.closed:
                 process.stdin.close()
         except OSError:
             pass
-        process.stdout.close()
-        if process.poll() is None:
-            process.kill()
-        process.wait()
+        try:
+            process.stdout.close()
+        except OSError as exc:
+            cleanup_error = exc
+        try:
+            process.wait()
+        except OSError as exc:
+            cleanup_error = cleanup_error or exc
+        if cleanup_error is not None:
+            raise PacketError(f"cannot finalize bounded Git blob verification: {cleanup_error}") from cleanup_error
+    if contents is not None:
+        contents.update(provisional)
+    return sizes
 
 
 def _parse_verified_git_tree(
@@ -1153,6 +1250,38 @@ def _git_blob(
         repository_path,
     )
     return GitBlob(mode, object_type, oid, content)
+
+
+def _git_payload_bindings(
+    repository_root: Path,
+    commit: str,
+    paths: tuple[str, ...],
+    *,
+    remaining_bytes: int,
+    root_tree_oid: str | None = None,
+    tree_cache: dict[str, tuple[list[tuple[str, str, str, str]], int]] | None = None,
+) -> dict[str, GitBlob]:
+    if len(paths) > MAX_PACKET_FILES or len(set(paths)) != len(paths):
+        raise PacketError("payload paths exceed the file limit or contain duplicates")
+    entries: dict[str, tuple[str, str, str]] = {}
+    for path in paths:
+        mode, object_type, oid = _verified_tree_entry(
+            repository_root, commit, path,
+            root_tree_oid=root_tree_oid, tree_cache=tree_cache,
+        )
+        if mode not in ALLOWED_GIT_MODES or object_type != "blob":
+            raise PacketError(f"{path} must be a regular Git blob, got {mode} {object_type}")
+        entries[path] = mode, object_type, oid
+    contents: dict[str, bytes] = {}
+    _read_verified_git_blobs_batch(
+        repository_root, tuple(entry[2] for entry in entries.values()),
+        maximum_file_size=MAX_FILE_BYTES,
+        maximum_aggregate_size=remaining_bytes, contents=contents,
+    )
+    return {
+        path: GitBlob(mode, object_type, oid, contents[oid])
+        for path, (mode, object_type, oid) in entries.items()
+    }
 
 
 def _validate_selected_tree_bounds(
@@ -2091,20 +2220,25 @@ def _build_packet(
         raise PacketError(f"packet requires more than {MAX_PACKET_FILES} payload files")
     bindings: dict[str, GitBlob] = {PROVENANCE_MANIFEST: manifest_binding}
     total_size = len(manifest_binding.content)
+    payload_paths: list[str] = []
     for path in required_paths:
         if path in bindings:
             continue
-        binding = tool_bindings.get(path) or _git_blob(
-            repository_root,
-            commit,
-            path,
-            root_tree_oid=root_tree_oid,
-            tree_cache=tree_cache,
-        )
+        binding = tool_bindings.get(path)
+        if binding is None:
+            payload_paths.append(path)
+            continue
         total_size += len(binding.content)
         if total_size > MAX_PACKET_BYTES:
             raise PacketError(f"packet payload exceeds {MAX_PACKET_BYTES} total bytes")
         bindings[path] = binding
+    payload_bindings = _git_payload_bindings(
+        repository_root, commit, tuple(payload_paths),
+        remaining_bytes=MAX_PACKET_BYTES - total_size,
+        root_tree_oid=root_tree_oid, tree_cache=tree_cache,
+    )
+    total_size += sum(len(binding.content) for binding in payload_bindings.values())
+    bindings.update(payload_bindings)
 
     for path in MECHANICAL_JSON_PATHS:
         _load_json(bindings[path].content, path)
