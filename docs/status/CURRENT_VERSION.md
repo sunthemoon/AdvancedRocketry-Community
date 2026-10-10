@@ -114,13 +114,14 @@ c19_git_metadata_candidate_evidence: AUDIT127_COMPLETE_NO_NEW_CODE_RECORD_IDENTI
 c19_windows_observer_candidate_commit: 7f8c9203f2295be46cdbde06c8171b5623f737f3
 c19_windows_observer_candidate_qualification: COMMITTED_PUSHED_ROOT12_PEER12_EXACT_STANDARD136_BUILD_TEST2192_DATAGEN_EQUAL_NATIVE597_COMMAND_PASS_LOG62_UNWAIVED_NOT_INTEGRATED
 c19_windows_observer_candidate_review: SOURCE135_NO_ACTIONABLE_FINDING_COMPLETE_PACKET_FRESH15_VERIFIED_PRIVATE_PYTHON_API_AND_PLATFORM_LIMITS_RETAINED
-c19_windows_observer_candidate_evidence: STANDARD136_SEALED_OPERATOR137_THREE_MEDIUM_OPEN_RESULT138_FULL_REPORT_FRESH33_VERIFIED_NEW136_OUTPUTS_CLEANED_POSTCUTOFF_RECORD_UPDATE_UNREVIEWED
+c19_windows_observer_candidate_evidence: STANDARD136_SEALED_ORIGINAL_OPERATOR137_THREE_MEDIUM_RETAINED_SUCCESSOR_TASK150_RESULT138_REVIEWED_NEW136_OUTPUTS_CLEANED_POSTCUTOFF_RECORD_UPDATE_UNREVIEWED
 c19_windows_observer_checkpoint: docs/work/v1.8.0-c19-strict-validator/WINDOWS-OBSERVER-CHECKPOINT-132.md
 c19_validation_admission_candidate_commit: d7f4e69be2fc02f29c86533ee1b5cf173d96cf0c
-c19_validation_admission_candidate_qualification: COMMITTED_PUSHED_ROOT21_PEER21_LITERAL_COMMITTED21_NOT_INTEGRATED_STANDARD_ADMISSION_OPEN
+c19_validation_admission_candidate_qualification: COMMITTED_PUSHED_ROOT21_PEER21_LITERAL_COMMITTED21_STANDARD152_EIGHT_COMMANDS_QUALIFIED_NOT_INTEGRATED_WHOLE_OPEN
 c19_validation_admission_candidate_review: SOURCE146_COMPLETE_NO_ACTIONABLE_FINDING_FINITE7_ORIGINAL142_TWO_MEDIUM_ONE_LOW_RETAINED
-c19_validation_admission_caller: ADDITIVE_V3_CD1F8B8F_INDEPENDENT148_ONE_MEDIUM_EXTERNAL_IMAGES_UNBOUND_CMD_HARDLINK_ADMISSION_OPEN_UNEXECUTED
-c19_validation_admission_checkpoint: docs/work/v1.8.0-c19-strict-validator/VALIDATION-ADMISSION-CHECKPOINT-139.md
+c19_validation_admission_caller: ADDITIVE_V5_D1791FA8_NAMED_INPUTS_BOUND_PRIVATE_FIXED_CMD_GIT_REVIEWED_STANDARD152_COMMAND_PASS_FULL_INDEPENDENT157_CAPTURE_OPEN
+c19_validation_admission_evidence: STANDARD152_SEALED_RESULT159_FOUR_SCOPE_CHECKS_FAILED_RESULT160_SCOPED_CHECKS_COMPLETE_ORIGINAL_EXIT1_RETAINED_NATIVE62_ERRORS_UNWAIVED
+c19_validation_admission_checkpoint: docs/work/v1.8.0-c19-strict-validator/INVOCATION-ADMISSION-CHECKPOINT-150.md
 c19_next_scope_checkpoint: docs/work/v1.8.0-c19-strict-validator/CANDIDATE-NEXT-SCOPE-CHECKPOINT-114.md
 c19_next_scope_diagnostic: SOURCE7F_INSTRUMENTED_MODULE19_PASS_PHASE141_PARENT_GIT657_NOT_LITERAL_WHOLE_OR_CAUSE
 c19_candidate_integration_prerequisites: AUDIT115_G4_D605_SEPARATE_PACKET_SIZE_ADDRESSED_IN_F87_CANDIDATE_MAIN_UNCHANGED_WHOLE_QUALIFICATION_OPEN
@@ -131,21 +132,30 @@ last_updated: 2026-10-10
 
 ## Current development evidence
 
-The [validation admission checkpoint139](../work/v1.8.0-c19-strict-validator/VALIDATION-ADMISSION-CHECKPOINT-139.md)
-records the separately committed/pushed two-file d7f4e69b candidate. Root and
-independent146 each run the full new 21-test module; literal committed Root21
-also passes with complete bounded capture and unchanged source/index bindings.
-Initial142's two Medium/one Low findings, Root pre-target failures and old sealed
-operators remain. New raw reads, ADS/name/link rejection and maximum reservations
-are finite source qualification, not Main integration or whole verification.
-Caller148's complete report identifies one Medium external-invocation identity
-gap; Root freshly verifies60 files /491823 bytes. Its twelve passing fake cases
-do not qualify real standard143, which is unexecuted.
-Declared cmd.exe has two hard links and cannot pass the unchanged input rule;
-no trusted-executable exception or relaxed budget is inferred. Phase141 observes
-the whole unchanged 19-test module with inclusive parent-only timings; it is not
-literal discovery, a controlled speedup or a historical timeout cause. G0-G9 stay
-open; Main tested/native/Python qualification identities remain unchanged.
+The [invocation admission checkpoint150](../work/v1.8.0-c19-strict-validator/INVOCATION-ADMISSION-CHECKPOINT-150.md)
+records the separately committed/pushed d7f4e69b source and new external v5
+caller. Source139's two-file helper qualification remains unchanged: Root,
+independent146 and literal committed Root each pass 21. The new caller binds 3287
+tracked inputs, seven named images, immutable binding and environment digests.
+Only fixed CMD/Git images have a privately reviewed two-link read admission;
+generic hard-link rejection remains unchanged. Original148/143 findings and
+unexecuted images remain historical, not retroactively fixed.
+Standard152's eight originals exit 0 with complete bounded dual captures:
+build/test each 2192 zero F/E/S, two 1241-output DataGen inventories byte-identical
+with empty diffs, native 597 required tests passed. Each native log retains 62
+ERROR headers, unwaived. Standard152 is sealed and command-qualified, not Gate
+approved. Root's 12 finite methods and reader158's 38 cases/223 assertions pass;
+original157's failed/truncated capture is not a full independent-suite receipt.
+Result159 retains four narrower generated-scope failures. Fresh160 verifies
+the actual src/generated correspondence and 9420 scope-specific checks, but its
+unsupported added cross-run XML-byte assertion leaves original exit 1 retained;
+neither audit is labelled unconditional PASS. Root reads full reports and freshly
+verifies both envelopes. Only new standard152 ended outputs are cleaned after cutoff and
+complete containment/non-reparse checks; old failures and fixtures are retained.
+Whole Python/strict, full independent-suite receipt, native clean-log, portable
+evidence and Main integration remain open. Phase141 is an instrumented 19-test
+observation, not literal discovery or a historical timeout cause. G0-G9 and Main
+tested/native/Python qualification identities remain unchanged.
 
 The [exact-commit probe checkpoint124](../work/v1.8.0-c19-strict-validator/GIT-METADATA-CHECKPOINT-124.md)
 records the reviewed, committed and normally pushed two-file a8dcd5f7 candidate.
