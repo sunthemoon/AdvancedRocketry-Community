@@ -3,6 +3,12 @@
 Date: 2026-10-10. Version: v1.8.0 under ADR-060. Status: committed scoped
 candidate, not Main-integrated; literal whole Python still fails.
 
+Subsequent organization disposition is recorded in
+[checkpoint94](MANUAL-DECOMPOSITION-CHECKPOINT-94.md). Its separately reviewed
+successor addresses the manual class-size prerequisite without accepting ADR071.
+This checkpoint retains the original f258 source, results and historical limits;
+adjacent ADR070, Main integration and complete qualification remain separate.
+
 ## Source, preservation and scoped results
 
 Candidate `f2587b54b753d77bb985e652612003eee54cc769` is normally pushed on

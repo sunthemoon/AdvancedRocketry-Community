@@ -89,12 +89,34 @@ c19_source_blob_candidate_qualification: ROOT_CORRECTED9_26_95_PEER9_26_138_COMM
 c19_source_blob_candidate_review: SOURCE74_CAP_MEDIUM_RESOLVED_PACKET80_REVIEWED_R80_01_LOW_HISTORICAL_UNTRACKED_GAP_CORRECTION82_RECORDED
 c19_manual_fixture_candidate_commit: f2587b54b753d77bb985e652612003eee54cc769
 c19_manual_fixture_candidate_qualification: ROOT3_138_9_26_PEER3_138_COMMITTED3_PASS_LITERAL_WHOLE180_TIMEOUT_NOT_INTEGRATED
-c19_manual_fixture_candidate_review: SOURCE88_EVIDENCE89_REVIEWED_STATIC_HELPER_MUTATION_DISCLOSED_OVERSIZED_ORGANIZATION_ADR071_PROPOSED_OPEN
+c19_manual_fixture_candidate_review: SOURCE88_EVIDENCE89_LIMITS_RETAINED_ORGANIZATION_SUPERSEDED_BY_REVIEWED17BB_ADR071_PROPOSED
+c19_manual_decomposition_candidate_commit: 17bb40bcb3b3490469a6433f2d7de2f1baa9b620
+c19_manual_decomposition_candidate_qualification: ROOT3_3_138_PEER3_138_COMMITTED3_PASS_LITERAL_WHOLE180_TIMEOUT_NOT_INTEGRATED
+c19_manual_decomposition_candidate_review: SOURCE93_EVIDENCE95_REVIEWED_MEDIUM_CAP_LOW_EARLY_CUSTODY_MAIN_STATUS_LIMITS_RETAINED_SIZE_BELOW500_ADR071_PROPOSED
 c19_whole_lifecycle_observation: CLEAN806_INSTRUMENTED180_TIMEOUT_275_COMPLETED_ONE_UNFINISHED_1033_UNSTARTED_PACKET75_REVIEWED
 last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [manual decomposition checkpoint94](../work/v1.8.0-c19-strict-validator/MANUAL-DECOMPOSITION-CHECKPOINT-94.md)
+records separately committed/pushed17bb40bc,18 test-only files, not Main integration.
+All160 original function nodes and138 selections remain exact; the facade is60
+AST lines and maximum changed/new class439. Root3/3/138, independent3/138 and
+actual committed3 pass; no production or physical isolation change. This addresses
+the manual size prerequisite in that candidate without accepting ADR071; adjacent
+ADR070 and integration remain open. Review93 retains its oversized-index
+preparation deviation, early acquisition limits and unrelated Main status mutation;
+tested source/tasks/helpers remain unchanged, not blanket endpoint compliance.
+Independent95 reconciles exact packets, seven original commands, 160 function
+nodes and actual commit/tree/18 blob attribution; no additional material mismatch.
+Its Medium whole failure/cap deviation and Low early custody/Main status limits
+remain open, with own parser diagnostics preserved. Root reads its complete
+report and rehashes all four sealed packets in separate records96.
+Actual committed literal whole still times out at180.015 seconds, no final summary;
+339 complete raw ok rows do not qualify it. Original execution exitnull, separate
+owned wait1/full streams and retained tmpfre6a8mj are disclosed, not historical repairs.
+Complete qualification remains required and delivery/Gate counts stay unchanged.
 
 The [manual fixture checkpoint87](../work/v1.8.0-c19-strict-validator/MANUAL-FIXTURE-CHECKPOINT-87.md)
 records separate normally pushed candidate f2587b54, three test files only, not
@@ -107,8 +129,9 @@ still times out at180.006 seconds without final summary;338 complete ok rows do
 not qualify it. Original execution exitnull, separate owned wait1/full streams and
 retained own tmp10iodyn3 are disclosed, not historical repairs. Peer88's static
 helper mutation is retained; runner/source/raw streams remain unchanged, not an
-all-helper immutable claim. Oversized3,784-line organization and proposed ADR071/
-070 remain prerequisites before integration. Independent89 audits exact packets,
+all-helper immutable claim. The historical3,784-line organization is superseded
+by the reviewed successor above; proposed ADR071 is not accepted and adjacent
+ADR070 remains a separate prerequisite. Independent89 audits exact packets,
 eight recorded authored intervals and source/blob attribution, retaining limits;
 Root reads its full report and rehashes all five sealed packets separately.
 latest Main/runtime qualification, all Gates and delivery counts stay unchanged.

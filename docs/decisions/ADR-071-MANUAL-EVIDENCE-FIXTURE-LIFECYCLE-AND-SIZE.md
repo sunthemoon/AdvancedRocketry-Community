@@ -51,3 +51,30 @@ freezes source scope, preservation and original command budgets. Scoped tests
 and independent actual-diff review must be recorded separately before commit.
 The candidate remains unintegrated until its prerequisites are resolved. No
 ADR acceptance is inferred from tests or from this document's existence.
+
+## Separately reviewed decomposition candidate
+
+[Task92](../work/v1.8.0-c19-strict-validator/MANUAL-DECOMPOSITION-TASK-92.md)
+and [independent93](../work/v1.8.0-c19-strict-validator/MANUAL-DECOMPOSITION-REVIEW-TASK-93.md)
+produce normally pushed successor `17bb40bcb3b3490469a6433f2d7de2f1baa9b620`,
+parent f2587b54, outside Main. All 160 original function nodes are source/AST-exact,
+including every original137 scenario, CLI, setUp and fixture helper. The original
+138 selections/order and local runnable classes remain. Fourteen non-TestCase
+scenario mixins and two fixture-operation helpers replace the oversized class;
+the facade is60 AST lines and maximum changed/new class439, all below500.
+No production, repository-fixture or original fixture-test bytes change.
+
+Root organization3/fixture3/manual138 and independent organization3/manual138
+return original wait0; actual committed organization3 separately returns0.
+The size prerequisite is addressed in this reviewed candidate, not by a waiver.
+This supersedes the earlier candidate's unresolved manual organization statement;
+it does not supersede the historical3,784-line observation or adjacent ADR070.
+Method defining-module/traceback locations may change as explicitly frozen;
+runnable identities, assertions and physical per-case isolation remain.
+
+Independent review retains its preparation file-cap deviation and unrelated Main
+status change, with tested source/tasks/helpers unchanged; no blanket custody
+compliance is inferred. Complete qualification, Main integration and those review
+limits are recorded in [checkpoint94](../work/v1.8.0-c19-strict-validator/MANUAL-DECOMPOSITION-CHECKPOINT-94.md).
+ADR071 remains PROPOSED; this annotation is not owner acceptance or integration,
+Gate, delivery or release approval.
