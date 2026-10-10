@@ -1015,7 +1015,11 @@ Root 的 54 项日志检查测试和 17 项 CI 主机测试通过；最终独立
 `IOWorker` 区块保存 `ConcurrentModificationException`。最新原始计数为 63 ERROR、
 161 WARN、零 FATAL；原有 62 条错误均匹配，唯一新增异常不纳入清单。日志上下文为
 `endgame_gravity_station` 批次、区块 `[-13, 7]`，不能据此确定异步保存的调用来源或维度。
-源码只读调查已分配；没有产品修复、断言/预算变更或挑选绿灯的重跑。当前 Linux 日志
+三份[独立引用调查](../work/v1.8.0-gametest-log-expectations/STORAGE-ALIAS-INVESTIGATION-01.md)
+已完成：确认条件性嵌套保留引用和固定 Forge 事件/能力边界，但没有找到实际修改者；
+完整原生交接方法体、失败对象身份与因果证据仍缺失。两处 ChunkSaveWatcher 只有成功时
+注销的夹具生命周期问题另记为开放项，不归因于该异常。没有产品修复、JVM 执行、
+断言/预算变更或挑选绿灯的重跑。当前 Linux 日志
 资格失败，完整 CI 不通过。证据已在 Root 外部包 `ci-failure/` 保留，服务到期不影响复查。
 旧 Linux 失败日志只作为负例，不作为新源码平台确认。严格仓库校验在原定 180 秒内未
 退出，保留失败；完整 Python 未重新资格验证。Root 的审计驱动将读取计账按进程重置，

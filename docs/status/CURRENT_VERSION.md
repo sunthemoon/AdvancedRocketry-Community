@@ -83,6 +83,9 @@ gametest_log_strict: ORIGINAL180_SECOND_TIMEOUT_NO_FINAL_SUMMARY
 gametest_log_review_resource: ROOT_TASK_CUMULATIVE_READ_LIMIT_EXCEEDED_NO_RESOURCE_QUALIFICATION_PEER_BUDGETS_SEPARATE
 gametest_log_failed_ci_artifact: 11674276944
 gametest_log_hosted_raw_counts: ERROR63_WARN161_FATAL0_ONE_UNMATCHED_STORAGE_ERROR
+storage_alias_review_source: 3e93c2c3d5e8fd1242c83d99184ef4b3466abd36
+storage_alias_review: READONLY_THREE_REPORTS_NO_CAUSAL_MUTATOR_FOUND_NATIVE_HANDOFF_UNPROVEN_CME_OPEN
+storage_alias_fixture_issue: CHUNKSAVEWATCHER_TWO_SUCCESS_ONLY_DEREGISTRATIONS_OPEN_NOT_CME_ATTRIBUTION
 tested_python_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
 latest_python_qualification_result: CHECKSUM43_REPOSITORY148_PEER_PACKET_PASS_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_HISTORICAL_CUSTODY_GAPS_OPEN
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
@@ -170,6 +173,14 @@ accepts only pinned userdev GameTest classification, not other logs, native-save
 risk, budgets or release Gates. The final independent review retains a Low
 arbitrary-corruption/timestamp-recognition boundary. Strict timeout and Root's
 task-wide read-accounting deviation are recorded, not passed qualifications.
+
+The [three independent storage-alias investigations](../work/v1.8.0-gametest-log-expectations/STORAGE-ALIAS-INVESTIGATION-01.md)
+confirm conditional nested preservation references but identify no causal
+post-publication mutator. Exact Forge event/capability reference boundaries were
+verified; complete native writer/queue bodies and runtime identities remain
+unverified. Two success-only ChunkSaveWatcher deregistrations are a separate
+open fixture-lifecycle issue, not an attribution of the storage exception. No
+product fix, JVM execution, CI rerun or Gate change follows from this audit.
 
 The [pacing integration](../work/v1.8.0-gametest-pacing/REVIEW-INTEGRATION-01.md)
 and [loader integration](../work/v1.8.0-fuel-loader-readiness/SOURCE-INTEGRATION-01.md)
