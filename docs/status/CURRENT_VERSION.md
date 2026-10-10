@@ -116,8 +116,13 @@ c19_windows_observer_candidate_qualification: COMMITTED_PUSHED_ROOT12_PEER12_EXA
 c19_windows_observer_candidate_review: SOURCE135_NO_ACTIONABLE_FINDING_COMPLETE_PACKET_FRESH15_VERIFIED_PRIVATE_PYTHON_API_AND_PLATFORM_LIMITS_RETAINED
 c19_windows_observer_candidate_evidence: STANDARD136_SEALED_OPERATOR137_THREE_MEDIUM_OPEN_RESULT138_FULL_REPORT_FRESH33_VERIFIED_NEW136_OUTPUTS_CLEANED_POSTCUTOFF_RECORD_UPDATE_UNREVIEWED
 c19_windows_observer_checkpoint: docs/work/v1.8.0-c19-strict-validator/WINDOWS-OBSERVER-CHECKPOINT-132.md
+c19_validation_admission_candidate_commit: d7f4e69be2fc02f29c86533ee1b5cf173d96cf0c
+c19_validation_admission_candidate_qualification: COMMITTED_PUSHED_ROOT21_PEER21_LITERAL_COMMITTED21_NOT_INTEGRATED_STANDARD_ADMISSION_OPEN
+c19_validation_admission_candidate_review: SOURCE146_COMPLETE_NO_ACTIONABLE_FINDING_FINITE7_ORIGINAL142_TWO_MEDIUM_ONE_LOW_RETAINED
+c19_validation_admission_caller: ADDITIVE_V3_CD1F8B8F_INDEPENDENT148_ONE_MEDIUM_EXTERNAL_IMAGES_UNBOUND_CMD_HARDLINK_ADMISSION_OPEN_UNEXECUTED
+c19_validation_admission_checkpoint: docs/work/v1.8.0-c19-strict-validator/VALIDATION-ADMISSION-CHECKPOINT-139.md
 c19_next_scope_checkpoint: docs/work/v1.8.0-c19-strict-validator/CANDIDATE-NEXT-SCOPE-CHECKPOINT-114.md
-c19_next_scope_diagnostic: BE2_INSTRUMENTED_MODULE19_PASS_NOT_LITERAL_WHOLE_QUALIFICATION
+c19_next_scope_diagnostic: SOURCE7F_INSTRUMENTED_MODULE19_PASS_PHASE141_PARENT_GIT657_NOT_LITERAL_WHOLE_OR_CAUSE
 c19_candidate_integration_prerequisites: AUDIT115_G4_D605_SEPARATE_PACKET_SIZE_ADDRESSED_IN_F87_CANDIDATE_MAIN_UNCHANGED_WHOLE_QUALIFICATION_OPEN
 c19_diagnostic_review_custody: REVIEW116_330_FILE_PAIRS_EQUAL_FINAL_NAME_COMPARISON_FAILED_EQUALITY_UNESTABLISHED
 c19_whole_lifecycle_observation: CLEAN806_INSTRUMENTED180_TIMEOUT_275_COMPLETED_ONE_UNFINISHED_1033_UNSTARTED_PACKET75_REVIEWED
@@ -125,6 +130,22 @@ last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [validation admission checkpoint139](../work/v1.8.0-c19-strict-validator/VALIDATION-ADMISSION-CHECKPOINT-139.md)
+records the separately committed/pushed two-file d7f4e69b candidate. Root and
+independent146 each run the full new 21-test module; literal committed Root21
+also passes with complete bounded capture and unchanged source/index bindings.
+Initial142's two Medium/one Low findings, Root pre-target failures and old sealed
+operators remain. New raw reads, ADS/name/link rejection and maximum reservations
+are finite source qualification, not Main integration or whole verification.
+Caller148's complete report identifies one Medium external-invocation identity
+gap; Root freshly verifies60 files /491823 bytes. Its twelve passing fake cases
+do not qualify real standard143, which is unexecuted.
+Declared cmd.exe has two hard links and cannot pass the unchanged input rule;
+no trusted-executable exception or relaxed budget is inferred. Phase141 observes
+the whole unchanged 19-test module with inclusive parent-only timings; it is not
+literal discovery, a controlled speedup or a historical timeout cause. G0-G9 stay
+open; Main tested/native/Python qualification identities remain unchanged.
 
 The [exact-commit probe checkpoint124](../work/v1.8.0-c19-strict-validator/GIT-METADATA-CHECKPOINT-124.md)
 records the reviewed, committed and normally pushed two-file a8dcd5f7 candidate.
