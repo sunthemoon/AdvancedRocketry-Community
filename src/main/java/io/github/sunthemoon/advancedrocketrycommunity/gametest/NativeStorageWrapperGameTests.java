@@ -81,7 +81,7 @@ public final class NativeStorageWrapperGameTests {
                             read == roots[index], read.get("child") == children[index]);
                 }
             }
-            // A fresh wrapper crosses a closed-worker lifetime, not a crash or power-loss boundary.
+            // A fresh wrapper follows the previous close return, not a crash or power-loss boundary.
             try (ChunkStorage reopened = new ChunkStorage(directory, level.getServer().getFixerUpper(), true)) {
                 for (int index = 0; index < SAMPLES; index++) {
                     CompoundTag read = await(reopened.read(new ChunkPos(index, 0))).orElseThrow();
@@ -90,7 +90,7 @@ public final class NativeStorageWrapperGameTests {
                             index, read == roots[index], read.get("child") == children[index]);
                 }
             }
-            LOGGER.info("NATIVE_WRAPPER_RECORDS closed=true reopened_records={} directory={}", SAMPLES,
+            LOGGER.info("NATIVE_WRAPPER_RECORDS close_returned=true reopened_records={} directory={}", SAMPLES,
                     directory.getFileName());
             helper.succeed();
         } catch (InterruptedException failure) {
@@ -138,7 +138,7 @@ public final class NativeStorageWrapperGameTests {
                                 + "context_probe_mutated=true published=false serialized_values_unchanged=true",
                         currentVersion, level.dimension().location(), converted == exclusive);
             }
-            LOGGER.info("NATIVE_WRAPPER_CONVERSION closed=true directory={}", directory.getFileName());
+            LOGGER.info("NATIVE_WRAPPER_CONVERSION close_returned=true directory={}", directory.getFileName());
             helper.succeed();
         } catch (IOException failure) {
             throw new IllegalStateException("Exclusive native conversion fixture failed", failure);

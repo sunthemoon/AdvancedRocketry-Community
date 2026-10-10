@@ -18,7 +18,10 @@ schema, public contract, expected log rule or existing assertion/timeout changes
   conversion context. Identity is observed, not assumed.
 
 The tests use independent newly allocated storage directories and try-with-
-resources. Future reads have five-second deadlines. Flush and close have native
+resources. `close_returned=true` records only that the public close call returned;
+the native worker can log a storage-close failure without propagating it. Original
+native logs must therefore be checked separately; successful handle release is
+not established by that label. Future reads have five-second deadlines. Flush and close have native
 internal joins, so the outer validation process must also be bounded. Each test
 emits at most nine and two observation lines respectively. No NBT contents or
 player data are printed. The two new tests use 100-tick budgets and do not alter
