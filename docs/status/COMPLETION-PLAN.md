@@ -1062,7 +1062,9 @@ DataGen 后 diff 为空；602 项 Required 原生测试和原规则日志对账�
 executor 作反序列化，但 direct-executor 分支和实际对象/线程重叠仍需运行证据。
 没有修改产品、已发布 NBT、既有断言/预算或日志清单，不归因或关闭托管 CME。
 [新集成 CI 38079333190](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38079333190)
-于 2026-10-10T19:23:21.4233772Z 的官方元数据观察为 in_progress；没有完成或新原始计数结论。
+已成功完成。官方 API 于 2026-10-10T19:34:09.2773320Z 核对运行及 regression job：
+构建、制品审计、DataGen 和包含严格对账的 GameTest 步骤通过；尚未下载原始托管输出或
+核对其计数，一次成功不关闭区块保存异常的因果调查。较早 in_progress 观察保留在证据包。
 独立客户端交付审核也已结束：已知 pacing 与 loader 源码均已合入，无需重复合并；
 Low 的等待时长注释和原客户端 UI、配置、火把、天空及首次连接观察仍开放。
 先前原生 597 通过而日志对账失败的托管结论不变；新集成 CI `38074995485` 已成功完成，
