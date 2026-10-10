@@ -54,7 +54,7 @@ sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUI
 tested_code_commit: f9bdc8004384b0e4c5fa56a506403668afa739cd
 native_tested_code_commit: f9bdc8004384b0e4c5fa56a506403668afa739cd
 latest_regression_target_commit: f9bdc8004384b0e4c5fa56a506403668afa739cd
-latest_regression_result: ROOT_JAVA_DATAGEN_NATIVE_PASS_62_ERRORS_UNWAIVED_HOSTED_PENDING_NO_NEW_PYTHON_QUALIFICATION
+latest_regression_result: ROOT_JAVA_DATAGEN_NATIVE_PASS_62_ERRORS_UNWAIVED_HOSTED_SUCCESS_METADATA_NO_NEW_PYTHON_QUALIFICATION
 latest_regression_run: pacing-review-root-20261010/gametest
 latest_regression_attempt: 1
 latest_regression_evidence: ACTUAL_F9_RUNTIME_INPUTS_EQUAL_NORMAL_MERGE_0F91_SOURCE_REVIEW13_RECEIPT_AUDIT_COMPLETE_GATES_OPEN
@@ -64,8 +64,10 @@ actual_unit_rerun_observed_utc: 2026-10-10T13:14:34.1257487Z
 gametest_pacing_integration_commit: 0f91c6ee042488f17bdbbba64dcbd8b09573db8b
 gametest_pacing_review: NO_BLOCKING_SOURCE_FINDING_LOW_9_9_SECOND_COMMENT_RETAINED
 gametest_pacing_cleanup: BLOCKED_CUMULATIVE5000_SENTINEL5001_NO_DELETION_OUTPUTS_RETAINED
-gametest_pacing_hosted_ci: IN_PROGRESS_RUN38056013604_AT30E89B0A_NO_FINAL_RESULT
+gametest_pacing_hosted_ci: COMPLETED_SUCCESS_RUN38056013604_AT30E89B0A_METADATA_VERIFIED_RAW_COUNTS_NOT_RETRIEVED
 gametest_pacing_hosted_ci_url: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38056013604
+fuel_loader_readiness_candidate: 30ca28efd3b1ededb28226a5576a8d21fbc5d8e2
+fuel_loader_readiness_state: COMMITTED_TWO_TEST_SUPPORT_FILES_ROOT_REGRESSION_AND_INDEPENDENT_REVIEW_RUNNING_NOT_INTEGRATED
 tested_python_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
 latest_python_qualification_result: CHECKSUM43_REPOSITORY148_PEER_PACKET_PASS_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_HISTORICAL_CUSTODY_GAPS_OPEN
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
@@ -149,13 +151,22 @@ reviewed and normally merged at 0f91; actual runtime inputs are identical, witho
 claiming a merge-SHA Gradle/native or document-sensitive strict rerun. Root build
 and forced test each pass 2192 tests, repeated DataGen inventories/diffs agree,
 and all597 required GameTests pass. Native62 ERROR /161 WARN remain unwaived.
-The Low minimum-time comment, hosted confirmation and unchanged5000-bound cleanup
-rejection remain explicit. The client's older artifact/world is not relabeled or
+Hosted run38056013604 at30e89b0a now has verified completed/success metadata for
+all build/DataGen/GameTest steps; raw Linux test counts/logs are not newly read.
+This terminal observation supersedes only the earlier pending CI state. The Low
+minimum-time comment and unchanged5000-bound cleanup rejection remain explicit.
+The client's older artifact/world is not relabeled or
 reused. Whole Python/strict identities and failures are not replaced by these Java
 results. Task172/173 is deferred; its isolated untested prototype is uncommitted
 and not integrated. No content/ledger delivery, acceptance-cursor or Gate change.
 The unit timestamp records the final completed-receipt file's UTC write time,
 not an independently sampled child launch timestamp.
+
+The [fuel-loader readiness task](../work/v1.8.0-fuel-loader-readiness/TASK-01.md)
+has a separate two-file test-support candidate30ca28ef. Actual full regression
+and independent candidate review are running, so it is not integrated or marked
+verified. The first CMD launcher exits1 before JVM start; its unchanged receipts
+are retained separately from the corrected successor's targets.
 
 The following candidate-cost observations predate this test-support integration;
 their non-integration claims apply to those candidates, not the new pacing merge.

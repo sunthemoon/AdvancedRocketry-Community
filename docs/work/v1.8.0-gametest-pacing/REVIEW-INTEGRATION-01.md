@@ -114,8 +114,9 @@ watcher issues remain open; this merge repairs none of them.
 
 ## Remaining scope, Gate status and rollback
 
-Hosted Linux CI must confirm the merged tests; no green hosted result is asserted
-by these local runs. Normal push of source/record commit `30e89b0a` starts
+The earlier observation below is superseded by the new terminal metadata in the
+following section; local runs alone did not establish a hosted result. Normal
+push of source/record commit `30e89b0a` starts
 [hosted run 38056013604](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38056013604),
 observed `in_progress`, conclusion null, at that exact SHA. A web-tool URL failure
 is followed by a successful direct GitHub REST query; no final or per-test hosted
@@ -127,3 +128,27 @@ V1/V2, progression, asset/content and all G0–G9 obligations remain open. v1.8 
 Review/integration records are separate from deferred Task 172 preparation.
 Rollback is a normal revert of the merge's test-support change with the same
 regression checks, never a shared-history rewrite or deletion of retained evidence.
+
+## New terminal hosted observation — 2026-10-10
+
+Official run38056013604 /attempt1 /job114224596091 at exact SHA
+`30e89b0a1eb9725debc2ee43eaff761d0f4bc6ce` is now completed/success; updated UTC
+is13:38:52Z, job completion13:38:51Z. The build, artifact audit, two DataGen clean
+checks and full Forge GameTest step are all completed/success. Root confirms this
+through the [official run page](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38056013604)
+and fresh bounded official REST run/jobs/artifacts responses at13:52:02–04Z.
+No credentials are used or exposed.
+
+Fresh inert raw metadata and observation receipt are in
+`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-loader-root-20261010/`:
+ci-run.json SHA256 `44a81e9fa6f3464488e4341a55313bc3258a6c3b7c432b5a48e2994bd9eb99bf`,
+ci-jobs.json `2e045eb557cfe22cdebd087bb90672ad87c1fc733ee99220b16f264aa96dedfd`,
+ci-artifacts.json `7968f23bc8e98834e9c0057684e145e969419aec20d4679bd2d92021b7ae061b`.
+The first run_targets.py ci invocation exits0 and retains all three complete HTTP200
+responses under their1 MiB bounds. Neither downloaded binary/archive hashes nor
+Linux native counts/error dispositions are inferred from published artifact
+digests or job status. This is not a full Python/strict qualification or Gate PASS.
+
+The earlier sealed Root/peer packets stay unchanged, including their pending-CI
+observation. The remaining loader fixture work has a separate
+[task](../v1.8.0-fuel-loader-readiness/TASK-01.md), not an extension of this merge.
