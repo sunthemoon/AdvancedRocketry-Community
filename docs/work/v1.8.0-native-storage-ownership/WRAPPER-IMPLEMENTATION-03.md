@@ -1,7 +1,10 @@
 # Public native storage wrapper experiment
 
 Date: 2026-10-11, Asia/Taipei. Base: `ba89575fd05b595af3426227124c37683e7bf925`.
-Status: `IMPLEMENTED_RUNTIME_NOT_RUN`.
+Status: `HISTORICAL_IMPLEMENTATION_CHECKPOINT`.
+
+The original implementation checkpoint below is retained as history. Its
+runtime-not-run state is superseded by [validation record 04](WRAPPER-VALIDATION-04.md).
 
 This v1.8.0 test-only slice adds two required Forge GameTests. The running server
 provides its actual initialized DataFixer. No product storage policy, world

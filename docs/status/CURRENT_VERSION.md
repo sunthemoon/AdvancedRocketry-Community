@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 4af53f8b6a3ea88019e429b84633e4894ee3ee94
+latest_source_checkpoint: 5db6d1b7ff7d0536f634c688c2882e7a534cd1c7
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
@@ -51,17 +51,17 @@ pending_checksum_input_source_candidate: ""
 pending_checksum_input_qualification: SOURCE_INTEGRATED_ROOT43_REPOSITORY148_PEER_STANDARD_PASS_SUITE_STRICT_TIMEOUT_OPERATIONAL_GAPS_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: 37229ce794225069c26a22c83ad21630f5fe158f
-native_tested_code_commit: 37229ce794225069c26a22c83ad21630f5fe158f
-latest_regression_target_commit: 37229ce794225069c26a22c83ad21630f5fe158f
-latest_regression_result: ROOT_WINDOWS_BUILD_UNIT2202_DATAGEN_CLEAN_NATIVE600_LOG_CHECK_PASS_HOSTED_CME_AND_FULL_PYTHON_GATES_OPEN
-latest_regression_run: watcher-runtime-evidence-20261011-01
+tested_code_commit: 2881679a42a19b0208ef3308b483ac68bf25143b
+native_tested_code_commit: 2881679a42a19b0208ef3308b483ac68bf25143b
+latest_regression_target_commit: 2881679a42a19b0208ef3308b483ac68bf25143b
+latest_regression_result: ROOT_WINDOWS_BUILD_UNIT2202_DATAGEN_CLEAN_NATIVE602_LOG_CHECK_PASS_HOSTED_CME_AND_FULL_PYTHON_GATES_OPEN
+latest_regression_run: native-wrapper-runtime-20261011-03
 latest_regression_attempt: 1
-latest_regression_evidence: SEALED429_RETAINED_FILES_PEER_ORIGINAL_COPY_VERIFIED_BUILD_DATAGEN_NATIVE_CHECKER_PASS_CLEANUP_LAUNCH_REFUSED
-latest_regression_observed_utc: 2026-10-10T18:07:12.7327818Z
-actual_unit_rerun: watcher-runtime-evidence-20261011-01/build.receipt.json
+latest_regression_evidence: SEALED409_MANIFEST_LISTED_FILES_PLUS_MANIFEST_PEER_ORIGINAL_COPY_VERIFIED_BUILD_DATAGEN_NATIVE_CHECKER_PASS_NEW_OWNED_CLEANUP_COMPLETE
+latest_regression_observed_utc: 2026-10-10T19:15:18.1827584Z
+actual_unit_rerun: native-wrapper-runtime-20261011-03/build.receipt.json
 actual_unit_rerun_scope: FULL_BUILD_JUNIT2202_ZERO_FAILURE_ERROR_SKIP_NOT_A_SEPARATE_TEST_COMMAND
-actual_unit_rerun_observed_utc: 2026-10-10T18:07:12.7327818Z
+actual_unit_rerun_observed_utc: 2026-10-10T19:15:18.1827584Z
 gametest_pacing_integration_commit: 0f91c6ee042488f17bdbbba64dcbd8b09573db8b
 gametest_pacing_review: NO_BLOCKING_SOURCE_FINDING_LOW_9_9_SECOND_COMMENT_RETAINED
 gametest_pacing_cleanup: BLOCKED_CUMULATIVE5000_SENTINEL5001_NO_DELETION_OUTPUTS_RETAINED
@@ -91,11 +91,16 @@ storage_alias_native_probe: PUSHED_NOT_INTEGRATED_ROOT_ONE_JUNIT_PASS_FOUR_IOWOR
 storage_alias_native_probe_checkpoint: docs/work/v1.8.0-native-storage-ownership/PROBE-CHECKPOINT-01.md
 storage_alias_watcher_candidate: 37229ce794225069c26a22c83ad21630f5fe158f
 storage_alias_watcher_integration: 4af53f8b6a3ea88019e429b84633e4894ee3ee94
-storage_alias_watcher_review: SOURCE_AND_RESULTS_PEER_REVIEWED_ROOT_UNIT2202_NATIVE600_LOG62_161_0_PASS_MEDIUM_COVERAGE_OPEN_CLEANUP_REFUSED
+storage_alias_watcher_review: HISTORICAL_SOURCE_AND_RESULTS_PEER_REVIEWED_MEDIUM_COVERAGE_OPEN_OLD_CLEANUP_REFUSED_NOT_RETRIED
 storage_alias_watcher_checkpoint: docs/work/v1.8.0-chunk-save-watcher-cleanup/SOURCE-VALIDATION-03.md
 storage_alias_watcher_hosted_ci: COMPLETED_SUCCESS_RUN38074995485_AT4AF53F8B_METADATA_OBSERVED_20261010T182937Z_RAW_COUNTS_NOT_RETRIEVED_CAUSE_OPEN
-storage_alias_wrapper_review: READONLY_LOCAL_MAPPED_PUBLIC_DELEGATION_AND_CONTEXT_MUTATION_CONFIRMED_RUNTIME_CALLER_OVERLAP_AND_CME_CAUSE_OPEN
-storage_alias_wrapper_checkpoint: docs/work/v1.8.0-native-storage-ownership/WRAPPER-REVIEW-02.md
+storage_alias_wrapper_candidate: 2881679a42a19b0208ef3308b483ac68bf25143b
+storage_alias_wrapper_integration: 5db6d1b7ff7d0536f634c688c2882e7a534cd1c7
+storage_alias_wrapper_review: SOURCE_RESULTS_PEER_REVIEWED_PUBLIC_WRAPPER_ALIAS_AND_EXCLUSIVE_CURRENT_CONVERSION_OBSERVED_ORDINARY_RUNTIME_OVERLAP_AND_CME_CAUSE_OPEN
+storage_alias_wrapper_checkpoint: docs/work/v1.8.0-native-storage-ownership/WRAPPER-VALIDATION-04.md
+storage_alias_native_caller_review: READONLY_LOCAL_MAPPED_PENDING_ALIAS_CONTEXT_MUTATION_AND_EXECUTOR_SELECTION_CONFIRMED_RUNTIME_LINKAGE_UNPROVEN
+storage_alias_wrapper_hosted_ci: METADATA_IN_PROGRESS_RUN38079333190_AT5DB6D1B7_OBSERVED_20261010T192321Z_NO_RESULT_OR_RAW_COUNTS_CLAIM
+storage_alias_wrapper_hosted_ci_url: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38079333190
 client_delivery_audit: PACING_AND_LOADER_ALREADY_MERGED_RETAINED_LOW_DURATION_COMMENT_ORIGINAL_CLIENT_FINDINGS_OPEN_NO_NEW_V1_V2
 tested_python_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
 latest_python_qualification_result: CHECKSUM43_REPOSITORY148_PEER_PACKET_PASS_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_HISTORICAL_CUSTODY_GAPS_OPEN
@@ -188,10 +193,16 @@ task-wide read-accounting deviation are recorded, not passed qualifications.
 The [three independent storage-alias investigations](../work/v1.8.0-gametest-log-expectations/STORAGE-ALIAS-INVESTIGATION-01.md)
 confirm conditional nested preservation references but identify no causal
 post-publication mutator. Exact Forge event/capability reference boundaries were
-verified; complete native writer/queue bodies and runtime identities remain
-unverified. Two success-only ChunkSaveWatcher deregistrations are a separate
-open fixture-lifecycle issue, not an attribution of the storage exception. No
-product fix, JVM execution, CI rerun or Gate change follows from this audit.
+verified. At that audit's cutoff, complete native writer/queue bodies and runtime
+identities were unverified, and two success-only watcher deregistrations were
+separate fixture issues. The later watcher source integration addresses those
+source paths; native failure/timeout and physical-removal coverage remains open.
+The [wrapper validation and separate caller investigation](../work/v1.8.0-native-storage-ownership/WRAPPER-VALIDATION-04.md)
+now provide local native body and public API observations, but no ordinary runtime
+overlap, producer/mutator attribution or hosted exception cause. New source tests
+are integrated; neither historical audit nor latest tests authorize product save
+changes or a Gate pass. Historical watcher runtime and refused cleanup remain in
+their source-specific checkpoint, not this latest regression result.
 
 The [pacing integration](../work/v1.8.0-gametest-pacing/REVIEW-INTEGRATION-01.md)
 and [loader integration](../work/v1.8.0-fuel-loader-readiness/SOURCE-INTEGRATION-01.md)
