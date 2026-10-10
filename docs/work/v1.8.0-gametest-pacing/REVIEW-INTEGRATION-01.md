@@ -115,7 +115,11 @@ watcher issues remain open; this merge repairs none of them.
 ## Remaining scope, Gate status and rollback
 
 Hosted Linux CI must confirm the merged tests; no green hosted result is asserted
-by these local runs. Fuel-loader `count=0` needs its own v1.8 task. Existing whole
+by these local runs. Normal push of source/record commit `30e89b0a` starts
+[hosted run 38056013604](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38056013604),
+observed `in_progress`, conclusion null, at that exact SHA. A web-tool URL failure
+is followed by a successful direct GitHub REST query; no final or per-test hosted
+result is inferred. Fuel-loader `count=0` needs its own v1.8 task. Existing whole
 Python/strict failures, 62 native ERRORs, rejected output cleanup, full S1/S2,
 V1/V2, progression, asset/content and all G0–G9 obligations remain open. v1.8 stays
 `IN_PROGRESS` / `IMPLEMENTING`; the v1.0 acceptance cursor is unchanged.
