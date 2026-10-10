@@ -490,7 +490,7 @@ public final class LaserTargetGameTests {
         helper.assertTrue(target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE && root().endpoint(id).isEmpty(),
                 "Not awaiting a save: " + target.describe());
         helper.assertTrue(chunk.isUnsaved(), "An awaiting marker left its chunk clean");
-        ChunkSaveWatcher saves = ChunkSaveWatcher.start(level, pos);
+        ChunkSaveWatcher saves = ChunkSaveWatcher.start(helper, pos);
         helper.startSequence()
                 .thenExecuteAfter(25, () -> helper.assertTrue(saves.any(pos)
                                 || target.endpointStatus() == EndgameCode.AWAITING_WORLD_SAVE && root().endpoint(id).isEmpty(),
