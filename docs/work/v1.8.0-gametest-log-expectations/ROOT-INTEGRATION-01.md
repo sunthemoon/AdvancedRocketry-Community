@@ -42,7 +42,7 @@ The original source is not accepted unchanged. Root corrects:
 [ADR-072](../../decisions/ADR-072-V180-GAMETEST-LOG-EXPECTATIONS.md) accepts only the
 revised classification policy under the owner's delegated review scope. It keeps
 native outcomes, R-021, performance/resource budgets and all release Gates open.
-The original 31-rule manifest becomes 37 narrower rules; the expected event totals
+The original 31-rule manifest becomes 38 narrower rules; the expected event totals
 remain 62 ERROR and 52 exact-count test WARN, with six separate environment WARN ceilings.
 The 161 raw WARN total is observed historical output, not a mandatory aggregate.
 
@@ -64,3 +64,27 @@ timeouts and broken documentation links remain open.
 Successor commit, independent successor review and hosted outcome must be recorded
 after they occur. Until then, this is an isolated integration candidate, not a
 current-source Linux pass. All Required Gates remain unapproved.
+
+## Committed successor review and follow-up
+
+First successor `df29008dd59d8faa114d0a3e099b2154989856cf` has 37 rules and 48
+passing focused tests. Fresh code review releases reads at 2026-10-10T15:02:46.129Z;
+policy review releases reads at 2026-10-10T15:04:23.5932446Z. Their independent
+retained-log checks reproduce seven passes and four rejections. The code review
+finds whitespace-prefixed headers can still be ignored. Policy review finds the
+one-shot EventBus rule lacks its available exact failure-handler frame, plus a
+Low recipe rule's same-class attribution. Root independently demonstrates that
+the two port diagnostic roots can still substitute across their batches.
+
+The follow-up rejects whitespace/BOM-prefixed header-shaped records, pins both
+available named EventBus origins and splits the two port roots by batch. The
+manifest now has 38 rules without changing total expected errors or test warnings.
+Three new tests cover those boundaries; their actual final committed result and
+independent follow-up disposition are recorded after execution, not inferred.
+
+At `df29008d`, the actual strict command
+`python -B scripts/validate_repository.py --require-approved-identity` reaches its
+original 180-second deadline without an original exit or final summary. Its owned
+postdeadline retirement completes in 0.0048681 seconds with both streams at EOF.
+The late exit 0 is not an original-command pass. No timeout is enlarged, no
+44-check conclusion is inferred, and the failed qualification remains open.

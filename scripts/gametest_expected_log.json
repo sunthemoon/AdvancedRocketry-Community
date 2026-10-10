@@ -7,9 +7,9 @@
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
       "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
-      "stack_contains": "RecipeSignatureSaveEventGameTests.",
+      "stack_contains": "RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears",
       "counts": {"defaultBatch": 24},
-      "test": "RecipeSignatureSaveEventGameTests",
+      "test": "RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears",
       "reason": "The tests post chunk-save events whose machines hold oversized recipe input; the guard must refuse each save by throwing, and Forge's event bus logs every thrown listener exception at ERROR."
     },
     {
@@ -55,7 +55,7 @@
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
       "message": "Exception caught during firing event: Intentional one-shot Precision migration save failure",
-      "stack_contains": "PrecisionAssemblerMigrationSaveFailureGameTests.",
+      "stack_contains": "PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept",
       "counts": {"precision_migration_port_failure": 1, "precision_migration_controller_failure": 1},
       "test": "PrecisionAssemblerMigrationSaveFailureGameTests",
       "reason": "The tests inject one failed chunk save during Precision Assembler migration to prove the migration is not marked durable."
@@ -102,10 +102,19 @@
       "id": "precision-port-roots-unconfirmed",
       "level": "ERROR",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
-      "message": "Precision Assembler migration port marker roots are not confirmed on disk at BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} in minecraft:overworld: BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\}: (arce_precision_port_migration|arce_part_binding) differs \\(expected hash=-?\\d+, saved hash=-?\\d+\\)",
-      "counts": {"precision_migration_port_failure": 1, "precision_energy_binding_gate": 1},
-      "test": "PrecisionAssemblerMigrationSaveFailureGameTests, PrecisionAssemblerMigrationBindingGameTests",
+      "message": "Precision Assembler migration port marker roots are not confirmed on disk at BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} in minecraft:overworld: BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\}: arce_precision_port_migration differs \\(expected hash=-?\\d+, saved hash=-?\\d+\\)",
+      "counts": {"precision_migration_port_failure": 1},
+      "test": "PrecisionAssemblerMigrationSaveFailureGameTests",
       "reason": "After an injected save failure the migration must report that its port markers are not confirmed on disk."
+    },
+    {
+      "id": "precision-energy-binding-roots-unconfirmed",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Precision Assembler migration port marker roots are not confirmed on disk at BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} in minecraft:overworld: BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\}: arce_part_binding differs \\(expected hash=-?\\d+, saved hash=-?\\d+\\)",
+      "counts": {"precision_energy_binding_gate": 1},
+      "test": "PrecisionAssemblerMigrationBindingGameTests",
+      "reason": "The Energy-only gate reports the binding root mismatch, not the other fixture's migration marker root."
     },
     {
       "id": "precision-controller-roots-unconfirmed",

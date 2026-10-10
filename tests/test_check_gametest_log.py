@@ -7,6 +7,7 @@ from pathlib import Path
 
 from scripts.check_gametest_log import (
     DEFAULT_MANIFEST,
+    Entry,
     ManifestError,
     check,
     load_manifest,
@@ -208,6 +209,13 @@ class CheckGameTestLogTests(unittest.TestCase):
         malformed = "\ufeff" + line("ERROR", MOD_LOGGER, "Unrecognized error")
         self.assert_problem(self.check(standard_log(malformed)), "malformed or unrecognized log header")
 
+    def test_whitespace_prefixed_checked_headers_fail(self) -> None:
+        for prefix in (" ", "\t", " \ufeff\t"):
+            for level in ("ERROR", "WARN", "FATAL"):
+                with self.subTest(prefix=prefix, level=level):
+                    malformed = prefix + line(level, MOD_LOGGER, "Unrecognized event")
+                    self.assert_problem(self.check(standard_log(malformed)), "malformed or unrecognized log header")
+
     def test_plain_exception_text_cannot_supply_a_stack_frame(self) -> None:
         text = standard_log().replace(REFUSAL_STACK[1], "java.lang.RuntimeException: SaveGameTests.refused")
         self.assert_problem(self.check(text), "unexpected ERROR")
@@ -330,6 +338,32 @@ class ManifestValidationTests(unittest.TestCase):
         rules = [item for item in load_manifest(DEFAULT_MANIFEST) if item.logger == "net.minecraft.server.level.ChunkMap/"]
         self.assertEqual(2, len(rules))
         self.assertTrue(all(item.exception is not None and item.stack_contains is not None for item in rules))
+
+    def test_eventbus_rules_reject_unrelated_same_class_methods(self) -> None:
+        rules = {item.id: item for item in load_manifest(DEFAULT_MANIFEST)}
+        cases = (
+            ("recipe-chunk-save-refused", "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+             "RecipeSignatureSaveEventGameTests.registeredRecipeGuardRetainsDenialAfterEveryOutgoingRootDisappears", "defaultBatch"),
+            ("precision-migration-injected-save-failure", "Exception caught during firing event: Intentional one-shot Precision migration save failure",
+             "PrecisionAssemblerMigrationSaveFailureGameTests$OneShotSaveFailure.accept", "precision_migration_port_failure"),
+        )
+        for identifier, message, frame, name in cases:
+            def entry(method):
+                return Entry(1, "ERROR", EVENT_LOGGER, message, name,
+                             (f"\tat io.github.example.{method}(Fixture.java:1)",))
+            with self.subTest(identifier=identifier):
+                self.assertTrue(rules[identifier].describes(entry(frame)))
+                self.assertFalse(rules[identifier].describes(entry(frame.rsplit(".", 1)[0] + ".unrelated")))
+
+    def test_precision_diagnostic_roots_are_batch_specific(self) -> None:
+        rules = {item.id: item for item in load_manifest(DEFAULT_MANIFEST)}
+        prefix = ("Precision Assembler migration port marker roots are not confirmed on disk at "
+                  "BlockPos{x=1, y=2, z=3} in minecraft:overworld: BlockPos{x=1, y=2, z=3}: ")
+        wrong = Entry(1, "ERROR", MOD_LOGGER,
+                      prefix + "arce_part_binding differs (expected hash=3, saved hash=0)",
+                      "precision_migration_port_failure", ())
+        self.assertFalse(rules["precision-port-roots-unconfirmed"].describes(wrong))
+        self.assertFalse(rules["precision-energy-binding-roots-unconfirmed"].allows_batch(wrong.batch))
 
 
 class WorkflowIntegrationTests(unittest.TestCase):

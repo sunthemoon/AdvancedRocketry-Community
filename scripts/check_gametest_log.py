@@ -155,7 +155,7 @@ def parse_log(text: str) -> ParsedLog:
             parsed.problems.append(f"line {number}: content after GameTest shutdown")
         header = HEADER.match(line)
         if header is None:
-            if HEADER_LIKE.match(line.lstrip("\ufeff")) or current is None and line.strip():
+            if HEADER_LIKE.match(line.lstrip("\ufeff \t")) or current is None and line.strip():
                 parsed.problems.append(f"line {number}: malformed or unrecognized log header")
             continuation.append(line)
             continue
