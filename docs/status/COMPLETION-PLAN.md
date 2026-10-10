@@ -707,7 +707,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   原全仓命令仍180秒超时，child退出未观测、输出不完整和自有残留TEMP未清理；
   不把模块通过、相同src树或源码提交当作全量资格、Main交付、C19或版本Gate通过。
   既有测试类超过800行的[ADR-070说明](../decisions/ADR-070-BOOTSTRAP-FIXTURE-LIFECYCLE-AND-SIZE.md)
-  仅为 PROPOSED；Main 集成前的规模处置仍待解决，不接受长期或继续增长豁免。
+  仅为 PROPOSED；规模问题由下方独立组织候选处理，Main 集成和完整资格仍开放，
+  不接受长期或继续增长豁免。
 - [~] [C19-G4-ADR-64](../work/v1.8.0-c19-strict-validator/G4-MALFORMED-ADR-TASK-64.md)：
   status: committed-focused-qualified-main-open。R32-02 的负向复现确认数组/对象 TypeError
   及两记录的解析 RecursionError；三行修正与三方法回归已单独提交、正常推送至 d605be33。
@@ -765,6 +766,16 @@ C17b candidate03 的独立审核已解决旧版 Medium
   348条完成输出不作全量通过，两处自有非空TEMP保留；独立初始观察器与早期采集限制保留。
   Root的CRLF摘要分析失败另立新助手修正，原始输出、断言和预算不变，没有重跑测试。
   Root完整读取审核报告，另立104复核两份封存包；不改生产、Main资格、Gate或台账。
+- [~] [C19-BOOTSTRAP-ORGANIZATION-108](../work/v1.8.0-c19-strict-validator/BOOTSTRAP-ORGANIZATION-TASK-108.md)：
+  独立 16 个测试文件候选 `be2abdff` 已提交、正常推送，未合入 Main；
+  [检查点110](../work/v1.8.0-c19-strict-validator/BOOTSTRAP-ORGANIZATION-CHECKPOINT-110.md)
+  保留原 123 个函数节点、95 个选择，场景和助手均为非 TestCase mixin，最大类 403 行、原运行类 16 行。
+  Root 组织 3/原 95、独立组织 3/原 95 和实际提交组织 3 项通过；不改正文、断言或夹具隔离。
+  ADR-070 仅候选组织前置项已处理，仍为 PROPOSED；Main 集成、完整资格和历史限制未关闭。
+  实际提交完整命令仍 180 秒超时，无最终摘要，352 条完成输出不作全量通过。
+  原退出 null、单独拥有的 wait 1/完整双流与非空 TEMP 保留，不归因性能变化或补证历史。
+  Root 完整读取独立 109 报告并复核 33 份封存文件；早期读取/呈现和旧助手前像缺口保留。
+  Root 原始观察器不改，另加总 10 秒结束等待/排空版本；原 180 秒、目标参数和源码不变。
 - [ ] R32-03（Low）：G4 文件系统/delegation wrapper 直接覆盖仍待另项实施验证；
   R32-02 的 focused 通过不关闭该项，也不证明旧超时原因。
 - [ ] C19 可移植已提交证据引用：实际 Markdown 检查在 256 错误前缀后停止。

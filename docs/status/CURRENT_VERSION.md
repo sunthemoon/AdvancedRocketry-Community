@@ -99,11 +99,28 @@ c19_final_input_fixture_candidate_review: SOURCE98_CORRECTED_COMPLETE_INITIAL_FA
 c19_final_review_fixture_candidate_commit: d34ed03dac8a1f4c8a5c9a220c7dcd03affa73f2
 c19_final_review_fixture_candidate_qualification: ROOT5_28_PEER5_28_COMMITTED5_PASS_LITERAL_WHOLE180_TIMEOUT_NOT_INTEGRATED
 c19_final_review_fixture_candidate_review: SOURCE102_COMPLETE_INITIAL_OBSERVER_FAILURE_RETAINED_ROOT_CRLF_SUMMARY_FAILURE_CORRECTED
+c19_bootstrap_organization_candidate_commit: be2abdffd65de25b9a6e8871b20b464ca023a7d3
+c19_bootstrap_organization_candidate_qualification: ROOT3_95_PEER3_95_COMMITTED3_PASS_LITERAL_WHOLE180_TIMEOUT_NOT_INTEGRATED
+c19_bootstrap_organization_candidate_review: SOURCE109_COMPLETE_EARLY_HELPER_PREIMAGES_UNAVAILABLE_SIZE_BELOW500_ADR070_PROPOSED
 c19_whole_lifecycle_observation: CLEAN806_INSTRUMENTED180_TIMEOUT_275_COMPLETED_ONE_UNFINISHED_1033_UNSTARTED_PACKET75_REVIEWED
 last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [bootstrap organization checkpoint110](../work/v1.8.0-c19-strict-validator/BOOTSTRAP-ORGANIZATION-CHECKPOINT-110.md)
+records separately committed/pushed be2abdff, 16 test-only files, not Main
+integration. All 123 original function nodes and 95 selections remain exact;
+the facade is 16 lines and largest class 403, without a size waiver. Root 3/95,
+independent 3/95 and actual committed 3 pass with stable assigned bindings.
+This addresses the candidate class-organization prerequisite for ADR-070, which
+remains PROPOSED; Main integration and full qualification remain open. Peer 109
+retains early read/truncation and unavailable earlier helper-preimage limits.
+Root fully reads its report and rehashes exact sealed inventory before commit.
+Actual committed literal whole still times out at 180 seconds with original
+exit null, no final summary and 352 complete OK rows, not whole qualification.
+Separate owned wait 1/full streams and retained nonempty runtime do not repair
+earlier failures. Main tested/native code, 186 PLANNED/154 REVIEW and G0-G9 stay.
 
 The [final-review fixture checkpoint103](../work/v1.8.0-c19-strict-validator/FINAL-REVIEW-FIXTURE-CHECKPOINT-103.md)
 records separately committed/pushed d34ed03d, two test-only files, not Main
