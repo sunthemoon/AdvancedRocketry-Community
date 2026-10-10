@@ -106,6 +106,11 @@ c19_packet_organization_candidate_commit: f87ff4c322306aac7c16a4e1a613c8006f1999
 c19_packet_organization_candidate_qualification: ROOT3_PEER3_COMMITTED3_PASS_ORIGINAL_MODULE_AND_LITERAL_WHOLE180_TIMEOUT_NOT_INTEGRATED
 c19_packet_organization_candidate_review: SOURCE121_NO_ATTRIBUTABLE_DIFF_DEFECT_RAW52_NESTED3_BINDINGS_SIZE_BELOW500_REQUIRED_VERIFICATION_INCOMPLETE
 c19_packet_organization_candidate_standard: ROOT122_COMMITTED_BUILD_TEST2192_ZERO_DATAGEN_EQUAL_NATIVE597_PASS_62_ERRORS_EACH_UNWAIVED_AUDIT123_COMPLETE_QUALIFICATION_OPEN
+c19_git_metadata_candidate_commit: a8dcd5f7b32a588a2cab77c96a1459a4e577743b
+c19_git_metadata_candidate_qualification: ROOT9_95_PEER9_95_COMMITTED9_PASS_PACKET_AND_LITERAL_WHOLE180_TIMEOUT_NOT_INTEGRATED
+c19_git_metadata_candidate_review: SOURCE126_NO_NEW_ACTIONABLE_DEFECT_LEGACY_RUNNER_CAP_AND_FAILED_SESSION_LIMITS_RETAINED
+c19_git_metadata_candidate_standard: ORIGINAL128_LAUNCHER_EXIT1_RETAINED_REVISED130_BUILD_TEST2192_ZERO_DATAGEN1200_TIMEOUT_DUAL_EOF_FALSE_POST10_OVERRUN_NATIVE_UNEXECUTED
+c19_git_metadata_candidate_evidence: AUDIT127_COMPLETE_NO_NEW_CODE_RECORD_IDENTITY_DISCREPANCY_PYTHON_DATAGEN_CAPTURE_AND_AUDITOR_DISPLAY_NONCONFORMANCE_RETAINED
 c19_next_scope_checkpoint: docs/work/v1.8.0-c19-strict-validator/CANDIDATE-NEXT-SCOPE-CHECKPOINT-114.md
 c19_next_scope_diagnostic: BE2_INSTRUMENTED_MODULE19_PASS_NOT_LITERAL_WHOLE_QUALIFICATION
 c19_candidate_integration_prerequisites: AUDIT115_G4_D605_SEPARATE_PACKET_SIZE_ADDRESSED_IN_F87_CANDIDATE_MAIN_UNCHANGED_WHOLE_QUALIFICATION_OPEN
@@ -115,6 +120,29 @@ last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [exact-commit probe checkpoint124](../work/v1.8.0-c19-strict-validator/GIT-METADATA-CHECKPOINT-124.md)
+records the reviewed, committed and normally pushed two-file a8dcd5f7 candidate.
+Successful raw verification avoids the type-only process without caching results;
+legacy negative-runner byte-cap and fail-closed session effects are explicit.
+Root/peer new 9 and original 95 pass; committed new 9 passes. Both original packet
+commands and committed literal discovery still time out at 180 seconds; 362 whole
+completed rows are not qualification. Original zero row-count derivations are
+retained; additive line-based counts do not rerun tests. Root reads full sealed
+125/126 reports and freshly verifies exact inventories before the source commit.
+Original128 launcher fails with no observed Gradle output. Revised130 build/test
+each pass 2192 tests with zero failures/errors/skips. First DataGen times out at
+1200 seconds; dual EOF remains false, and separate stop/drain takes 10.012037
+seconds, exceeding its declared 10-second limit. The observer exits 1; later diffs,
+DataGen and GameTest are unexecuted. Failed runtime and generated outputs are
+retained without further inspection/cleanup. Fresh collected-XML verification
+and exact seals preserve these failures. No Main integration, activation, ledger
+delivery or Required Gate approval follows. Main source qualification is unchanged.
+Independent127 completes the finite unchanged-input audit at 05:30:04.006875 UTC,
+without new code/current-record/identity discrepancy; original qualification/capture
+failures and two auditor display-budget overruns remain. Root reads its full report
+and freshly verifies 17 files /1041465 bytes. This status addition is after cutoff
+and is not itself independently audited; no complete bounded-conformance claim follows.
 
 The [packet organization checkpoint119](../work/v1.8.0-c19-strict-validator/PACKET-ORGANIZATION-CHECKPOINT-119.md)
 records committed/pushed f87ff4c3, 12 test-only files, no Main integration.
