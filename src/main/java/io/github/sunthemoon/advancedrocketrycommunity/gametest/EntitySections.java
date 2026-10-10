@@ -15,12 +15,22 @@ final class EntitySections {
 
     /** Runs {@code body} once the entity sections at the test-relative positions have loaded, then succeeds. */
     static void whenLoaded(GameTestHelper helper, Runnable body, BlockPos... relativePositions) {
+        whenLoaded(helper, body, null, relativePositions);
+    }
+
+    /** Opt-in wall-clock pacing for short waits; the caller's original test timeout still applies. */
+    static void whenLoaded(GameTestHelper helper, Runnable body, GameTestTickPacer pacer,
+            BlockPos... relativePositions) {
         helper.startSequence()
                 .thenWaitUntil(() -> {
                     for (BlockPos relative : relativePositions) {
                         BlockPos at = helper.absolutePos(relative);
-                        helper.assertTrue(helper.getLevel().areEntitiesLoaded(ChunkPos.asLong(at.getX() >> 4,
-                                at.getZ() >> 4)), "The test chunk's entities have not loaded yet");
+                        boolean loaded = helper.getLevel().areEntitiesLoaded(ChunkPos.asLong(at.getX() >> 4,
+                                at.getZ() >> 4));
+                        if (!loaded && pacer != null) {
+                            pacer.pace();
+                        }
+                        helper.assertTrue(loaded, "The test chunk's entities have not loaded yet");
                     }
                 })
                 .thenExecute(body)
