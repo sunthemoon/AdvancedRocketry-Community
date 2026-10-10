@@ -11,7 +11,9 @@
 `bdf10895cdd26a7fbc92b3e5a6f999d0d2f53c1b`。
 它只增加 NativeStorageOwnershipProbeTest.java 和自身的准备记录。
 源码 SHA-256 为 `14b9bc725398bc0506537072297a981bd9231c2070c736df559ebdd852c96f5f`。
-主开发分支不包含实验源码；全回归被测身份仍是 `52a29c1e`，不能以该单项结果替换它。
+主开发分支不包含实验源码；本检查点建立时，全回归被测身份为 `52a29c1e`，不能以该单项结果替换它。
+后续 watcher 源码的独立构建、DataGen、原生测试和日志对账身份见
+[源码验证记录](../v1.8.0-chunk-save-watcher-cleanup/SOURCE-VALIDATION-03.md)；该结果不包含本实验源码。
 
 ## 实际执行与观察
 
@@ -70,12 +72,15 @@ Root 的 loader `30ca28ef` 已由 `ba680996` 合入，不需要再次合并。
 Critical/High/Medium 来源发现。旧客户端 UI、配置、火把、天空和首次连接观察没有被
 这些测试夹具修复；没有新 V1/V2、截图或原生回归资格。
 
-另一 worktree 的 ChunkSaveWatcher 清理候选仍未提交，不能标为已交付。
-十项纯状态测试和新增原生夹具均未执行；AfterBatch 与测试附加终态监听器的先后关系
-正在修订，原生失败/超时和实际 EventBus 注销仍未证明。该候选不保留 NBT，不归因于 CME。
+以下为本检查点 `474fe142` 建立时的历史状态，watcher 准备结论已由
+[源码验证记录](../v1.8.0-chunk-save-watcher-cleanup/SOURCE-VALIDATION-03.md)取代：当时另一
+worktree 的清理候选未提交，十项纯状态测试和新增原生夹具未执行，AfterBatch 与终态
+监听器先后关系正在修订。后续源码切片已经提交、执行并集成；原生失败/超时和实际
+EventBus 注销仍未证明，该候选不保留 NBT，不归因于 CME。
 
 此实验的完整构建、全部 JUnit、runData、runGameTestServer、专服、客户端和重启
-均为 NOT_RUN。主开发源码的既有托管结果仍是 597 个必需测试通过、日志对账退出 1，
+均为 NOT_RUN。本检查点建立时主开发源码的既有托管结果为 597 个必需测试通过、日志对账退出 1，
 63 ERROR / 161 WARN / 0 FATAL；新增区块存档 CME 不加入白名单。
 完整 Python 资格、严格校验、R-021 和全部 Required Gate 不变，版本保持 IN_PROGRESS。
-后续仅在 v1.8 内独立验证 watcher 修订，并采集实际原生保存对象及修改调用的因果证据。
+当时建议在 v1.8 内独立验证 watcher 修订；该有限源码验证已交付，继续采集实际原生
+保存对象及修改调用的因果证据，不能以 watcher 的后续成功关闭该调查。
