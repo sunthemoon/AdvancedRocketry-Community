@@ -1,6 +1,6 @@
 # V180-FUEL-DROP-02 — native drop/placement fixture readiness
 
-Date: 2026-10-10. Status: in-progress. Root is author/integrator; independent
+Date: 2026-10-10. Status: source-qualified-and-integrated; full-version Gates open. Root is author/integrator; independent
 review uses a separate Codex worker session, without Claude dispatch.
 
 ## Source and ownership
@@ -35,9 +35,10 @@ existing unpaced caller.
 
 Preserve all six timeoutTicks=20 annotations, native destroyBlock/BlockItem.place,
 the unfiltered nearby ItemEntity query and exactly-one predicate, carried-count,
-raw-root, owner, native item, buffered-unit and refusal assertions. Prepare no
-loader input before the asynchronous readiness wait, so automatic machine ticks
-cannot change the round-trip operand while waiting. Keep the oversized-refusal
+raw-root, owner, native item, buffered-unit and refusal assertions. Do not create
+a world loader or load its input before the asynchronous readiness wait, so
+automatic machine ticks cannot change the round-trip operand while waiting.
+Detached item/NBT fixture construction before the wait remains permitted. Keep the oversized-refusal
 case unchanged. No production, schema, network, registry, asset, error exemption
 or content disposition change. No new chunk tickets or forced-loading utility.
 
@@ -63,3 +64,13 @@ and [run page](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/
 Native per-test raw counts are not inferred from job metadata. This is a new
 terminal observation, not a change to the earlier sealed in-progress packet.
 v1.8 remains IN_PROGRESS and all full-version Required Gate obligations remain.
+
+## Result and supersession
+
+The candidate is 30ca28efd3b1ededb28226a5576a8d21fbc5d8e2. Its complete local
+build/fresh unit tests, repeated DataGen and native GameTests passed. Independent
+source review completed without a requested source revision. Normal merge
+ba68099617027560db132596883a0c1186add4e9 and the source branch were both pushed.
+This result replaces the preparation state, not the earlier failed evidence.
+See [source and regression integration](SOURCE-INTEGRATION-01.md) for actual
+commands, artifact identities, retained errors and remaining acceptance scope.
