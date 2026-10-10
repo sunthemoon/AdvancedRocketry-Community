@@ -92,7 +92,7 @@ public final class RailgunGameTests {
         TransitKey key = new TransitKey(source.deviceId().orElseThrow(), 1L);
         // Vanilla also saves dirty chunks on its own, so every save of the two chunks is recorded and the 40-tick
         // rule is checked against the saves that really happened.
-        ChunkSaveWatcher saves = ChunkSaveWatcher.start(level, sourcePos, targetPos);
+        ChunkSaveWatcher saves = ChunkSaveWatcher.start(helper, sourcePos, targetPos);
         long[] at = new long[2];
         helper.startSequence()
                 .thenWaitUntil(() -> registered(helper, level, source, target))
