@@ -122,6 +122,10 @@ c19_validation_admission_candidate_review: SOURCE146_COMPLETE_NO_ACTIONABLE_FIND
 c19_validation_admission_caller: ADDITIVE_V5_D1791FA8_NAMED_INPUTS_BOUND_PRIVATE_FIXED_CMD_GIT_REVIEWED_STANDARD152_COMMAND_PASS_FULL_INDEPENDENT157_CAPTURE_OPEN
 c19_validation_admission_evidence: STANDARD152_SEALED_RESULT159_FOUR_SCOPE_CHECKS_FAILED_RESULT160_SCOPED_CHECKS_COMPLETE_ORIGINAL_EXIT1_RETAINED_NATIVE62_ERRORS_UNWAIVED
 c19_validation_admission_checkpoint: docs/work/v1.8.0-c19-strict-validator/INVOCATION-ADMISSION-CHECKPOINT-150.md
+c19_packet_payload_candidate_commit: 82f82b1f422d5165fe42a143c2c473a39bd6707e
+c19_packet_payload_candidate_qualification: COMMITTED_PUSHED_ROOT18_FACADE38_DEVELOPMENT_ADJACENT48_LITERAL_WHOLE180_TIMEOUT_STRICT44_PASS1_MARKDOWN_FAIL_NOT_INTEGRATED
+c19_packet_payload_candidate_review: INTERMEDIATE163_MEDIUM_RETAINED_SUCCESSOR164_WHOLE_DIFF_NO_FINDINGS_DEVELOPMENT18_PASS_OBSERVER_LIMITS_RETAINED
+c19_packet_payload_checkpoint: docs/work/v1.8.0-c19-strict-validator/PYTHON-SUITE-CHECKPOINT-161.md
 c19_next_scope_checkpoint: docs/work/v1.8.0-c19-strict-validator/CANDIDATE-NEXT-SCOPE-CHECKPOINT-114.md
 c19_next_scope_diagnostic: SOURCE7F_INSTRUMENTED_MODULE19_PASS_PHASE141_PARENT_GIT657_NOT_LITERAL_WHOLE_OR_CAUSE
 c19_candidate_integration_prerequisites: AUDIT115_G4_D605_SEPARATE_PACKET_SIZE_ADDRESSED_IN_F87_CANDIDATE_MAIN_UNCHANGED_WHOLE_QUALIFICATION_OPEN
@@ -131,6 +135,23 @@ last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [Python payload checkpoint161](../work/v1.8.0-c19-strict-validator/PYTHON-SUITE-CHECKPOINT-161.md)
+records separately committed/pushed 82f82b1f, not Main integration. Only the
+packet generator and a new transport test module change. Ordinary payloads
+are freshly authenticated in one bounded batch; repeats retain wire reads,
+hashing and aggregate charges, with no cross-expectation cache. Final EOF and
+zero exit precede publication. Intermediate163's Medium is retained; the
+successor uses monotonic deadlines and nonblocking pipes, and independent164
+reviews the complete final two-file diff with no findings and 18 passing tests.
+Root's committed new18 and unchanged facade38 pass; adjacent48 is development
+evidence. Committed literal discovery still times out at 180 seconds; strict
+completes with 44 pass /1 Markdown failure and a 256-error diagnostic prefix,
+not a total error count. Caller qualification, whole/strict and standard obligations remain
+separate; the first committed module's outer-wrapper binding gap is explicit.
+Root fully reads the peer reports and freshly verifies their sealed envelopes
+without executing sealed helpers. Main tested/native/Python identities, ledger,
+G4 disposition, native62 ERROR disposition and all G0-G9 remain unchanged.
 
 The [invocation admission checkpoint150](../work/v1.8.0-c19-strict-validator/INVOCATION-ADMISSION-CHECKPOINT-150.md)
 records the separately committed/pushed d7f4e69b source and new external v5
