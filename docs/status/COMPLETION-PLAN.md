@@ -956,13 +956,14 @@ Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端
 
 ## 当前自动回归与风险
 
-最新 Java/原生回归见[装载器实体就绪审核与集成](../work/v1.8.0-fuel-loader-readiness/SOURCE-INTEGRATION-01.md)。
+前次本地 Java/原生回归见[装载器实体就绪审核与集成](../work/v1.8.0-fuel-loader-readiness/SOURCE-INTEGRATION-01.md)。
 用户于 2026-10-10 要求审核已有 Claude 修复分支后有条件合并；没有调用 Claude 新实施。
-最新实际被测候选为 `30ca28ef`，正常合并至 `ba680996`，完整 src/Gradle/Wrapper 输入相同；
+该次本地实际被测候选为 `30ca28ef`，正常合并至 `ba680996`，完整 src/Gradle/Wrapper 输入相同；
 不声称合并 SHA 本地复跑或文档敏感严格校验等同。独立审核无新增源码发现，10 场景/
 22 断言通过；此前 pacing 审核的“至少十秒”注释 Low 精度问题仍保留。
 Root 构建/强制单测各执行 2192 项 JUnit/381 XML，全部 597 项必需 GameTest、
-两次 DataGen/空 diff 通过。原生日志仍有 62 ERROR /161 WARN /零 FATAL，全部未豁免。
+两次 DataGen/空 diff 通过。该次原生日志有 62 ERROR /161 WARN /零 FATAL；
+这是当时尚未分类的原始输出，后续限定重放的对账决定见下文，不改写其他日志的要求。
 托管 Linux run38056013604 在精确提交 `30e89b0a` 已终态成功，官方元数据中的构建、
 两次生成和完整 GameTest 步骤均成功；未取回原始 Linux 个案数量或错误日志。
 这仅替代此前 pacing 的待确认状态，不批准 Gate。装载器合并 SHA 的 hosted run38058625712
@@ -991,6 +992,35 @@ checksum 的限定本地/Git 源码已有独立审核、正常推送和标准子
 两项完整 Medium、完整 U1 与 U3–U7、O1/O2/O3 仍开放；已记录的所有者选择
 不代替对应实施、资格证据与 Gate。
 v1.8 保持 IN_PROGRESS / IMPLEMENTING；没有批准任何 Required Gate。
+
+### GameTest 日志对账的限定集成
+
+Claude 的 `e2ed43eb` 和 `30419f76` 未原样接受。Root 修正日志完整性、畸形事件识别、
+真实栈帧/注入异常及不同配方、恢复状态和批次来源的核对后，候选 `3e93c2c3`
+经独立审核于 `52a29c1e` 正常合入并推送。详见
+[审核与集成记录](../work/v1.8.0-gametest-log-expectations/ROOT-INTEGRATION-01.md)。
+Root 的 54 项日志检查测试和 17 项 CI 主机测试通过；最终独立审核的 54 项测试、
+七份完整日志和四份负例核验通过。Low 的任意损坏格式识别边界保留，不声称穷尽解析
+或因果认证。[ADR-072](../decisions/ADR-072-V180-GAMETEST-LOG-EXPECTATIONS.md)
+只接受固定 Forge userdev GameTest 日志的 38 条分类规则；专服、客户端、原生 harness、
+共享保存 R-021、性能预算和全部 Required Gate 不豁免。维护者须在同次提交中更新新增
+故意日志测试的规则与原因。此次审核没有启动本地构建或 GameTest JVM。
+
+首次带对账检查的托管运行是
+[run38064322640](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38064322640)，
+被测 SHA 为 `52a29c1e`。官方 REST 已确认 15:48:50Z 终态 FAILURE，取代最初待确认状态。
+完整构建、重新执行的单测、制品审计和两次生成通过；包含原生 GameTest 与后续对账的
+步骤失败，原始证据已上传为 artifact11674276944。独立审核者通过公开下载取得原包并
+验证官方 SHA-256：597 项必需原生测试全部通过，随后对账退出 1，正确拒绝一条新的
+`IOWorker` 区块保存 `ConcurrentModificationException`。最新原始计数为 63 ERROR、
+161 WARN、零 FATAL；原有 62 条错误均匹配，唯一新增异常不纳入清单。日志上下文为
+`endgame_gravity_station` 批次、区块 `[-13, 7]`，不能据此确定异步保存的调用来源或维度。
+源码只读调查已分配；没有产品修复、断言/预算变更或挑选绿灯的重跑。当前 Linux 日志
+资格失败，完整 CI 不通过。证据已在 Root 外部包 `ci-failure/` 保留，服务到期不影响复查。
+旧 Linux 失败日志只作为负例，不作为新源码平台确认。严格仓库校验在原定 180 秒内未
+退出，保留失败；完整 Python 未重新资格验证。Root 的审计驱动将读取计账按进程重置，
+三次重放加具名归档已超过其事前任务累计 64 MiB 上限；该操作偏差记录在外部更正文件，
+不宣称 Root 累计资源资格，也不扩大限额或重跑原始日志。最终独立审核有单独冻结的预算。
 先前回归数字和详细风险历史已移入[实施日志](../work/v1.8.0-implementation-log.md)，
 不再作为本文件的现状指标。
 

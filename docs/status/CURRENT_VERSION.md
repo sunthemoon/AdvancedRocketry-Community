@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: ba68099617027560db132596883a0c1186add4e9
+latest_source_checkpoint: 52a29c1e76977033a1b7e85baf32ca5d19c7414c
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
@@ -51,15 +51,16 @@ pending_checksum_input_source_candidate: ""
 pending_checksum_input_qualification: SOURCE_INTEGRATED_ROOT43_REPOSITORY148_PEER_STANDARD_PASS_SUITE_STRICT_TIMEOUT_OPERATIONAL_GAPS_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: 30ca28efd3b1ededb28226a5576a8d21fbc5d8e2
-native_tested_code_commit: 30ca28efd3b1ededb28226a5576a8d21fbc5d8e2
-latest_regression_target_commit: 30ca28efd3b1ededb28226a5576a8d21fbc5d8e2
-latest_regression_result: ROOT_JAVA_DATAGEN_NATIVE_PASS_62_ERRORS_UNWAIVED_LOADER_HOSTED_SUCCESS_METADATA_NO_NEW_PYTHON_QUALIFICATION
-latest_regression_run: fuel-loader-root-20261010/attempt02/gametest
+tested_code_commit: 52a29c1e76977033a1b7e85baf32ca5d19c7414c
+native_tested_code_commit: 52a29c1e76977033a1b7e85baf32ca5d19c7414c
+latest_regression_target_commit: 52a29c1e76977033a1b7e85baf32ca5d19c7414c
+latest_regression_result: HOSTED_BUILD_DATAGEN_NATIVE597_PASS_LOG_CHECK_FAIL_IOWORKER_CME_NO_NEW_FULL_PYTHON_QUALIFICATION
+latest_regression_run: github-actions/38064322640/attempt1
 latest_regression_attempt: 1
-latest_regression_evidence: ACTUAL_30CA_RUNTIME_INPUTS_EQUAL_NORMAL_MERGE_BA6809_SOURCE_REVIEW10_CASES22_ASSERTIONS_RECEIPT_AUDIT_COMPLETE_GATES_OPEN
-latest_regression_observed_utc: 2026-10-10T14:04:46.617866Z
+latest_regression_evidence: OFFICIAL_ARTIFACT11674276944_DIGEST_VERIFIED_NATIVE597_PASS_CHECKER_EXIT1_UNDECLARED_STORAGE_ERROR_SOURCE_CAUSE_OPEN
+latest_regression_observed_utc: 2026-10-10T16:05:07Z
 actual_unit_rerun: fuel-loader-root-20261010/attempt02/test.receipt.json
+actual_unit_rerun_scope: HISTORICAL_LATEST_LOCAL_ROOT30CA_NOT_THE_NEW_HOSTED_RUN
 actual_unit_rerun_observed_utc: 2026-10-10T14:04:46.617866Z
 gametest_pacing_integration_commit: 0f91c6ee042488f17bdbbba64dcbd8b09573db8b
 gametest_pacing_review: NO_BLOCKING_SOURCE_FINDING_LOW_9_9_SECOND_COMMENT_RETAINED
@@ -72,6 +73,16 @@ fuel_loader_readiness_integration_commit: ba68099617027560db132596883a0c1186add4
 fuel_loader_readiness_cleanup: NEW_OWNED6383_ENTRIES_REMOVED_WITH_PREFROZEN50000_BOUND_OLD_OUTPUTS_UNTOUCHED
 fuel_loader_readiness_hosted_ci: COMPLETED_SUCCESS_RUN38058625712_ATBA680996_METADATA_VERIFIED_RAW_COUNTS_NOT_RETRIEVED
 fuel_loader_readiness_hosted_ci_url: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38058625712
+gametest_log_candidate: 3e93c2c3d5e8fd1242c83d99184ef4b3466abd36
+gametest_log_integration_commit: 52a29c1e76977033a1b7e85baf32ca5d19c7414c
+gametest_log_policy: ADR072_ACCEPTED_PINNED_USERDEV_CLASSIFICATION_ONLY_R021_AND_GATES_OPEN
+gametest_log_review: ROOT54_CHECKER17_HOST_PEER54_RETAINED7_PASS4_REJECT_LOW_CORRUPTION_BOUNDARY_RETAINED
+gametest_log_hosted_ci: COMPLETED_FAILURE_RUN38064322640_AT52A29C1E_NATIVE597_PASS_CHECKER_REJECTS_UNDECLARED_IOWORKER_CME
+gametest_log_hosted_ci_url: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38064322640
+gametest_log_strict: ORIGINAL180_SECOND_TIMEOUT_NO_FINAL_SUMMARY
+gametest_log_review_resource: ROOT_TASK_CUMULATIVE_READ_LIMIT_EXCEEDED_NO_RESOURCE_QUALIFICATION_PEER_BUDGETS_SEPARATE
+gametest_log_failed_ci_artifact: 11674276944
+gametest_log_hosted_raw_counts: ERROR63_WARN161_FATAL0_ONE_UNMATCHED_STORAGE_ERROR
 tested_python_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
 latest_python_qualification_result: CHECKSUM43_REPOSITORY148_PEER_PACKET_PASS_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_HISTORICAL_CUSTODY_GAPS_OPEN
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
@@ -144,36 +155,36 @@ c19_next_scope_diagnostic: SOURCE7F_INSTRUMENTED_MODULE19_PASS_PHASE141_PARENT_G
 c19_candidate_integration_prerequisites: AUDIT115_G4_D605_SEPARATE_PACKET_SIZE_ADDRESSED_IN_F87_CANDIDATE_MAIN_UNCHANGED_WHOLE_QUALIFICATION_OPEN
 c19_diagnostic_review_custody: REVIEW116_330_FILE_PAIRS_EQUAL_FINAL_NAME_COMPARISON_FAILED_EQUALITY_UNESTABLISHED
 c19_whole_lifecycle_observation: CLEAN806_INSTRUMENTED180_TIMEOUT_275_COMPLETED_ONE_UNFINISHED_1033_UNSTARTED_PACKET75_REVIEWED
-last_updated: 2026-10-10
+last_updated: 2026-10-11
 ```
 
 ## Current development evidence
 
-The [GameTest pacing review and integration](../work/v1.8.0-gametest-pacing/REVIEW-INTEGRATION-01.md)
-is the current Java/native development regression. Candidate f9 is independently
-reviewed and normally merged at 0f91; actual runtime inputs are identical, without
-claiming a merge-SHA Gradle/native or document-sensitive strict rerun. Root build
-and forced test each pass 2192 tests, repeated DataGen inventories/diffs agree,
-and all597 required GameTests pass. Native62 ERROR /161 WARN remain unwaived.
-Hosted run38056013604 at30e89b0a now has verified completed/success metadata for
-all build/DataGen/GameTest steps; raw Linux test counts/logs are not newly read.
-This terminal observation supersedes only the earlier pending CI state. The Low
-minimum-time comment and unchanged5000-bound cleanup rejection remain explicit.
-The client's older artifact/world is not relabeled or
-reused. Whole Python/strict identities and failures are not replaced by these Java
-results. Task172/173 is deferred; its isolated untested prototype is uncommitted
-and not integrated. No content/ledger delivery, acceptance-cursor or Gate change.
-The unit timestamp records the final completed-receipt file's UTC write time,
-not an independently sampled child launch timestamp.
+The latest hosted Java/native execution is the exact log-integration merge
+identified above. [Its reviewed integration and verified artifact inspection](../work/v1.8.0-gametest-log-expectations/ROOT-INTEGRATION-01.md)
+distinguish successful native assertions from failed log qualification. The
+checker rejects one undeclared asynchronous IOWorker chunk-store exception;
+producer, dimension and persistence impact remain unknown. No expected-event
+rule is added for this failure. [ADR-072](../decisions/ADR-072-V180-GAMETEST-LOG-EXPECTATIONS.md)
+accepts only pinned userdev GameTest classification, not other logs, native-save
+risk, budgets or release Gates. The final independent review retains a Low
+arbitrary-corruption/timestamp-recognition boundary. Strict timeout and Root's
+task-wide read-accounting deviation are recorded, not passed qualifications.
 
-The [fuel-loader readiness task](../work/v1.8.0-fuel-loader-readiness/TASK-01.md)
-has a separate two-file test-support candidate30ca28ef. Actual full regression
-and independent candidate review are running, so it is not integrated or marked
-verified. The first CMD launcher exits1 before JVM start; its unchanged receipts
-are retained separately from the corrected successor's targets.
+The [pacing integration](../work/v1.8.0-gametest-pacing/REVIEW-INTEGRATION-01.md)
+and [loader integration](../work/v1.8.0-fuel-loader-readiness/SOURCE-INTEGRATION-01.md)
+are completed earlier source-specific checkpoints, not running candidates or the
+latest hosted result. Their distinct source identities, first CMD launcher
+failure, local unit receipts, pacing comment Low and prior cleanup refusal stay
+historical. The unit timestamp describes a completed-receipt file write, not a
+sampled child launch. The old client artifact/world is not relabeled or reused.
+Whole Python/strict qualification remains open. Task172/173 remains deferred,
+uncommitted and unintegrated. No ledger delivery, acceptance cursor or Gate changes.
 
-The following candidate-cost observations predate this test-support integration;
-their non-integration claims apply to those candidates, not the new pacing merge.
+The candidate-cost observations below preserve their original source-specific
+qualifications and log dispositions. They are not current-log results and are
+not retrospectively reclassified by the new manifest without exact evidence.
+Their non-integration claims apply to those candidates, not the reviewed merges.
 
 The [committed payload standard checkpoint166](../work/v1.8.0-c19-strict-validator/PAYLOAD-STANDARD-CHECKPOINT-166.md)
 uses a fresh V4 caller at Source82, not a sealed prior helper or Main integration.

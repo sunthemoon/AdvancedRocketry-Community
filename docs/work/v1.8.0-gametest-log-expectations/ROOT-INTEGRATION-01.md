@@ -113,3 +113,93 @@ fields independently of the timestamp or line-start position. An isolated level
 mention without logger fields remains ordinary exception text; an embedded full
 native event shape is rejected rather than silently treated as continuation.
 This boundary is deliberately fail-closed and is not causal authentication.
+
+## Final reviewed integration and hosted observation
+
+The earlier candidate/pending paragraphs above are historical checkpoints,
+superseded by this section. Exact final candidate is
+`3e93c2c3d5e8fd1242c83d99184ef4b3466abd36`. Root's precommit tests execute 54
+checker and 17 CI-host tests, all passing. A fresh independent final review runs
+54 checker tests, seven retained positives and four negatives, plus 36 native
+field-boundary probes. There is no blocking finding for pinned native-format
+events. One Low remains: recognition is heuristic, not exhaustive arbitrary
+corruption or timestamp validation. Fully native-looking literals in throwable
+text are rejected conservatively; causal authentication is not claimed.
+
+Final report is retained in the external Root leaf as `reviews/fields-final.md`,
+SHA-256 `b3d2c40a91e17632c1adb55800f3dbbb81d85b5e8150ae535ed8779e03596556`.
+Its exact source-read cutoff is 2026-10-10T15:34:29.9402666Z; the candidate is clean.
+After all source reads are released, Root normally merges to
+`52a29c1e76977033a1b7e85baf32ca5d19c7414c` and pushes Main. The full tracked merge
+tree equals the reviewed candidate; src/Gradle/Wrapper inputs also equal the
+previous local native candidate, without claiming a new local JVM execution.
+Main's 149 pre-existing dirty/untracked rows, protected AGENTS.md and mixed
+implementation-log bytes are unchanged and excluded from staging.
+
+The first instrumented hosted run is
+[38064322640](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38064322640)
+at that exact merge SHA. Official REST observation at 2026-10-10T15:37:03.356777Z
+reports IN_PROGRESS, not a Linux pass. Native execution and the subsequent log
+checker remain required in the same failing Bash step; old Linux evidence does
+not qualify this current run.
+
+Two Root invocation mistakes are retained as failures: a nonexistent CI-host
+test module and a missing argument to the scoped link helper. Corrected calls
+pass; they do not erase the originals. The final pre-fields scoped link check
+finds 12 links and zero broken links, not a whole-repository Markdown pass.
+Strict validation's original 180-second timeout remains unqualified.
+
+Root also identifies an operational read-accounting deviation: its audit driver
+resets the read counter per invocation, not across the declared review task.
+Three raw audit passes plus the named archive total at least 67,270,984 bytes,
+exceeding the declared 67,108,864-byte aggregate before ordinary source reads.
+`READ-ACCOUNTING-CORRECTION.md` in the external leaf preserves this failure.
+No limit is retrospectively raised, no more raw Root replays occur, and no
+resource qualification is claimed. Independent workers have separately bounded
+cohorts. All version resource, persistence and release obligations remain open.
+
+### Actual first hosted result
+
+Fresh official REST observation at 2026-10-10T15:51:40.519338Z confirms the exact
+run completed FAILURE at 15:48:50Z; job 114248775390 likewise fails. The pending
+observation above is superseded. Tooling, clean build/fresh unit tests, artifact
+audit and both DataGen passes succeed. The composite `Run all Forge GameTests`
+step fails at 15:48:43Z. Metadata alone cannot distinguish native failure from
+subsequent checker failure; no Linux pass or raw counts are claimed.
+
+The always-uploaded raw evidence artifact is 11674276944, named
+`v180-regression-52a29c1e76977033a1b7e85baf32ca5d19c7414c-1`, 1,873,290 bytes,
+official digest `sha256:a8ed53f146acac4da4eb7da193c40f0b9d1222dffda063cdb4e4f3b644459db1`.
+Anonymous job-log download returns HTTP 403 at 15:53:37.503980Z. A successful
+HTTP-inspection process receipt is not successful log retrieval. Root requests
+the missing raw output and assigns a separate bounded anonymous public-artifact
+inspection without credentials or source writes. No assertion, timeout or
+manifest is changed in response to an unknown cause, and no blind rerun occurs.
+
+### Verified current Linux failure distinction
+
+The missing-output request is superseded by anonymous public artifact retrieval
+and exact official digest verification. A fresh independent inspector completes
+source reads at 2026-10-10T16:00:18.571Z (2026-10-11 00:00:18.571 +08:00).
+Its report is preserved as `reviews/linux-failure.md`, SHA-256
+`483cf11d613a66b362acf21acb36379628b84731b8bb0e92a6d5150fefd2e14f`.
+Root separately preserves the exact artifact, selected inert logs and identities
+in the external leaf's `ci-failure/`, 15 files / 5,506,222 bytes, all copy hashes
+equal; no archive helper or copied code is executed.
+
+The hosted native console reports 597/597 required tests passed, normal shutdown
+and `BUILD SUCCESSFUL in 5m 36s`. The checker then exits 1. Its exact output
+identifies latest.log line 2326: IOWorker ERROR `Failed to store chunk [-13, 7]`,
+temporal batch `endgame_gravity_station`, with no GameTest frame. The throwable is
+`java.util.ConcurrentModificationException` in `CompoundTag.write` via `NbtIo`
+and `RegionFileStorage.write`. The reviewed live checker independently reproduces
+the same single rejection. Raw totals are 63 ERROR /161 WARN /zero FATAL;
+all original expected errors/warnings and exact counts match. This is a newly
+observed undeclared storage error, not a count mismatch or parser defect.
+
+The artifact's tested SHA, checker/manifest/workflow blob identities and official
+metadata agree with `52a29c1e`. Hosted checker units also execute 54 passing tests.
+This qualifies current Linux execution evidence, not a successful Linux log Gate.
+Batch time does not identify the asynchronous producer, dimension or data-loss
+impact. A separate readonly source triage is assigned; no producer, product fix,
+new expected-log rule, save-risk acceptance or successful rerun is claimed.
