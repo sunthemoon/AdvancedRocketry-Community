@@ -93,11 +93,31 @@ c19_manual_fixture_candidate_review: SOURCE88_EVIDENCE89_LIMITS_RETAINED_ORGANIZ
 c19_manual_decomposition_candidate_commit: 17bb40bcb3b3490469a6433f2d7de2f1baa9b620
 c19_manual_decomposition_candidate_qualification: ROOT3_3_138_PEER3_138_COMMITTED3_PASS_LITERAL_WHOLE180_TIMEOUT_NOT_INTEGRATED
 c19_manual_decomposition_candidate_review: SOURCE93_EVIDENCE95_REVIEWED_MEDIUM_CAP_LOW_EARLY_CUSTODY_MAIN_STATUS_LIMITS_RETAINED_SIZE_BELOW500_ADR071_PROPOSED
+c19_final_input_fixture_candidate_commit: df91c714685f72937e87ab63eb8cc9f7beb88807
+c19_final_input_fixture_candidate_qualification: ROOT_R1_5_19_PEER5_19_COMMITTED5_PASS_LITERAL_WHOLE180_TIMEOUT_NOT_INTEGRATED
+c19_final_input_fixture_candidate_review: SOURCE98_CORRECTED_COMPLETE_INITIAL_FAILURE_RETAINED_EARLY_CUSTODY_FINAL_OBSERVER_LIMITS_OPEN
 c19_whole_lifecycle_observation: CLEAN806_INSTRUMENTED180_TIMEOUT_275_COMPLETED_ONE_UNFINISHED_1033_UNSTARTED_PACKET75_REVIEWED
 last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [final review-input fixture checkpoint99](../work/v1.8.0-c19-strict-validator/FINAL-INPUT-FIXTURE-CHECKPOINT-99.md)
+records separately committed/pushed df91c714, three test-only files, not Main
+integration. Original19 scenarios,11 helpers and construction/module statements
+remain exact. Normal repositories are seeded once and physically copied per case;
+special construction and fresh per-case modules remain. New five cover raw
+copy/mode/history, mutable isolation and failure cleanup. Initial Windows
+read-only-object test failure stays retained; R1 only makes its own copied object
+writable before the existing write, with all assertions unchanged. Corrected
+Root5/19, peer5/19 and actual committed5 pass. Peer early custody and final
+observer/pipeline failure stay disclosed; assigned command bindings match.
+Root reads the full review and rehashes exact packets; first stage parser
+rejection and fresh whitespace-preserving correction do not alter test results.
+Actual committed literal whole still times out at180 seconds, original exitnull,
+no final summary;346 complete raw OK rows do not qualify it. Separate owned
+wait1/full streams and two retained own temporary directories do not repair
+historical gaps. Main qualification, delivery counts and G0-G9 remain unchanged.
 
 The [manual decomposition checkpoint94](../work/v1.8.0-c19-strict-validator/MANUAL-DECOMPOSITION-CHECKPOINT-94.md)
 records separately committed/pushed17bb40bc,18 test-only files, not Main integration.
