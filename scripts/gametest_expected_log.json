@@ -1,0 +1,315 @@
+{
+  "schema": 1,
+  "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
+  "expectations": [
+    {
+      "id": "recipe-chunk-save-refused",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: Refusing chunk save with oversized recipe input; back up and repair first",
+      "stack_contains": "RecipeSignatureSaveEventGameTests.",
+      "counts": {"defaultBatch": 24},
+      "test": "RecipeSignatureSaveEventGameTests",
+      "reason": "The tests post chunk-save events whose machines hold oversized recipe input; the guard must refuse each save by throwing, and Forge's event bus logs every thrown listener exception at ERROR."
+    },
+    {
+      "id": "combustion-chunk-save-refused",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: Refusing chunk save with oversized combustion input; back up and repair first",
+      "stack_contains": "CombustionGeneratorGameTests.oversizedSaveFailsBeforeReplacingItsStoredRoot",
+      "counts": {"defaultBatch": 1},
+      "test": "CombustionGeneratorGameTests.oversizedSaveFailsBeforeReplacingItsStoredRoot",
+      "reason": "An oversized combustion input must refuse the chunk save before the stored root is replaced."
+    },
+    {
+      "id": "solar-chunk-save-refused",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: Refusing chunk save with non-admissible solar input; back up and repair first",
+      "stack_contains": "SolarGeneratorGameTests.nonAdmissibleReferenceRefusesTheWholeOutgoingChunk",
+      "counts": {"defaultBatch": 1},
+      "test": "SolarGeneratorGameTests.nonAdmissibleReferenceRefusesTheWholeOutgoingChunk",
+      "reason": "A non-admissible solar reference must refuse the whole outgoing chunk save."
+    },
+    {
+      "id": "machine-menu-server-version-rejected",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.network.NetworkRegistry/NETREGISTRY",
+      "message": "Channels \\[advancedrocketrycommunity:machine_menu\\] rejected their server side version number",
+      "counts": {"machine_menu_channel": 8},
+      "test": "RecipeMenuChannelGameTests",
+      "reason": "The test offers mismatched machine-menu channel versions; Forge logs each rejected server-side version at ERROR."
+    },
+    {
+      "id": "machine-menu-client-version-rejected",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.network.NetworkRegistry/NETREGISTRY",
+      "message": "Channels \\[advancedrocketrycommunity:machine_menu\\] rejected their client side version number",
+      "counts": {"machine_menu_channel": 8},
+      "test": "RecipeMenuChannelGameTests",
+      "reason": "The test offers mismatched machine-menu channel versions; Forge logs each rejected client-side version at ERROR."
+    },
+    {
+      "id": "precision-migration-injected-save-failure",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: Intentional one-shot Precision migration save failure",
+      "stack_contains": "PrecisionAssemblerMigrationSaveFailureGameTests.",
+      "counts": {"precision_migration_port_failure": 1, "precision_migration_controller_failure": 1},
+      "test": "PrecisionAssemblerMigrationSaveFailureGameTests",
+      "reason": "The tests inject one failed chunk save during Precision Assembler migration to prove the migration is not marked durable."
+    },
+    {
+      "id": "precision-energy-binding-injected-save-failure",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: Intentional Energy-only migration binding save failure",
+      "counts": {"precision_energy_binding_retry": 1, "precision_energy_binding_gate": 2},
+      "test": "PrecisionAssemblerMigrationBindingGameTests",
+      "reason": "The tests inject failed chunk saves during the Energy-only binding migration to prove retry and gating."
+    },
+    {
+      "id": "precision-injected-chunk-save-failed",
+      "level": "ERROR",
+      "logger": "net.minecraft.server.level.ChunkMap/",
+      "message": "Failed to save chunk -?\\d+,-?\\d+",
+      "counts": {
+        "precision_energy_binding_retry": 1,
+        "precision_energy_binding_gate": 2,
+        "precision_migration_port_failure": 1,
+        "precision_migration_controller_failure": 1
+      },
+      "test": "PrecisionAssemblerMigrationBindingGameTests, PrecisionAssemblerMigrationSaveFailureGameTests",
+      "reason": "Vanilla reports each injected save failure of the two precision expectations above once more from the chunk map."
+    },
+    {
+      "id": "precision-port-roots-unconfirmed",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Precision Assembler migration port marker roots are not confirmed on disk at BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} in minecraft:overworld: .+",
+      "counts": {"precision_migration_port_failure": 1, "precision_energy_binding_gate": 1},
+      "test": "PrecisionAssemblerMigrationSaveFailureGameTests, PrecisionAssemblerMigrationBindingGameTests",
+      "reason": "After an injected save failure the migration must report that its port markers are not confirmed on disk."
+    },
+    {
+      "id": "precision-controller-roots-unconfirmed",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Precision Assembler migration controller snapshot roots are not confirmed on disk at BlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} in minecraft:overworld: .+",
+      "counts": {"precision_migration_controller_failure": 1},
+      "test": "PrecisionAssemblerMigrationSaveFailureGameTests",
+      "reason": "After an injected save failure the migration must report that its controller snapshot is not confirmed on disk."
+    },
+    {
+      "id": "satellite-idle-launch-flush-failed",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Satellite idle launch operation failed",
+      "stack_contains": "SatelliteReviewGameTests.",
+      "counts": {"satellite_flush_failure": 2, "satellite_blocked": 1},
+      "test": "SatelliteReviewGameTests",
+      "reason": "The tests make the satellite registry flush fail or block it; the launch must fail closed and keep the package."
+    },
+    {
+      "id": "satellite-discovery-launch-flush-failed",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Satellite launch operation failed",
+      "stack_contains": "DiscoveryRecoveryGameTests.",
+      "counts": {"planetary_discovery_recovery": 1},
+      "test": "DiscoveryRecoveryGameTests",
+      "reason": "The test makes the launch acknowledgment flush fail to prove the paid receipt recovers without a second claim."
+    },
+    {
+      "id": "recipe-disabled-unbound-tag",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "Disabling machine recipe advancedrocketrycommunity:(rolling_iron_bars|precision_control_circuit|electrolyzer_water) until tag reload: machine ingredient has no bound alternatives",
+      "counts": {"recipe_signatures": 3},
+      "test": "RecipeSignatureMigrationGameTests.allThreeTagSerializersSyncUnboundJsonWithoutResolving",
+      "reason": "The test decodes one recipe of each machine type with an unbound tag; each must be disabled until tags reload."
+    },
+    {
+      "id": "transfer-returned-to-source",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} reason=destination_pad_blocked fuel=\\d+",
+      "counts": {"destination_readiness": 1, "flight": 1, "planetary_changed_pad": 1},
+      "test": "RocketDestinationReadinessGameTests, RocketFlightGameTests, PlanetaryLandingGameTests",
+      "reason": "Each test blocks the destination pad and requires the rocket to return to its source."
+    },
+    {
+      "id": "transfer-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=[A-Z_]+ source_count=\\d+ destination_count=\\d+ action=[A-Z_]+ status=[A-Z_]+",
+      "counts": {"flight_recovery": 4},
+      "test": "RocketTransferRecoveryGameTests",
+      "reason": "Each test interrupts a transfer in a different phase and requires the recorded recovery action."
+    },
+    {
+      "id": "transfer-login-reconciled",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_LOGIN_RECONCILED transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} authority=[0-9a-f-]{36} removed=\\d+",
+      "counts": {"legacy_passenger_recovery": 1},
+      "test": "RocketPassengerPersistenceGameTests",
+      "reason": "A legacy passenger logs in after an interrupted transfer and must be reconciled."
+    },
+    {
+      "id": "station-access-denied",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_STATION_ACCESS_DENIED player=[0-9a-f-]{36} position=-?\\d+, -?\\d+, -?\\d+ dimension=advancedrocketrycommunity:space authority_available=(true|false)",
+      "counts": {"jackhammer_native": 1, "station_permission_matrix": 5, "station_protection": 2},
+      "test": "JackhammerGameTests, StationPermissionMatrixGameTests, StationProtectionGameTests",
+      "reason": "The tests act on a station as players without permission, or while station authority is unavailable, and require denial."
+    },
+    {
+      "id": "station-delete-backup",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_STATION_DELETE_BACKUP station=[0-9a-f-]{36} owner=[0-9a-f-]{36} members=\\[.*\\] cell=-?\\d+,-?\\d+ region=-?\\d+,-?\\d+,-?\\d+,-?\\d+",
+      "counts": {"station": 1, "station_permission_matrix": 2},
+      "test": "StationGameTests, StationPermissionMatrixGameTests",
+      "reason": "Deleting a station records its backup before removal."
+    },
+    {
+      "id": "station-deleted",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_STATION_DELETED station=[0-9a-f-]{36} actor=[0-9a-f-]{36} inspected=\\d+ removed=\\d+ chunks=\\d+",
+      "counts": {"station": 1, "station_permission_matrix": 2},
+      "test": "StationGameTests, StationPermissionMatrixGameTests",
+      "reason": "Deleting a station records the actor and the removed blocks."
+    },
+    {
+      "id": "station-warp-credit-refused",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_STATION_WARP_CREDIT_REFUSED offered=\\d+ credited=\\d+ entry_room=(true|false)",
+      "counts": {"passenger_logout_cleanup": 1},
+      "test": "RocketPassengerContinuedUseGameTests",
+      "reason": "A passenger logs out during cleanup and the station must refuse the warp-fuel credit."
+    },
+    {
+      "id": "station-warp-energy-dropped",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_STATION_WARP_ENERGY_DROPPED station=[0-9a-f-]{36} energy=\\d+",
+      "counts": {
+        "station_warp_abort": 2,
+        "station_warp_charge": 1,
+        "station_warp_commit": 1,
+        "station_warp_deop": 1,
+        "station_warp_fold": 10,
+        "station_warp_interstellar": 1,
+        "station_warp_killswitch": 1,
+        "station_warp_logout": 1,
+        "station_warp_rejections": 1,
+        "station_warp_repriced": 1,
+        "station_warp_serial": 2,
+        "station_warp_target_removed": 1,
+        "tau_ceti_path": 1
+      },
+      "test": "StationWarpGameTests, StationWarpAbortGameTests, TauCetiPathGameTests",
+      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops."
+    },
+    {
+      "id": "satellite-receiver-release-skipped",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_SATELLITE_RECEIVER_RELEASE_SKIPPED receiver=[0-9a-f-]{36} reason=registry_blocked",
+      "counts": {"satellite_blocked": 1},
+      "test": "SatelliteReviewGameTests.aBlockedRegistryFailsClosedWithoutCrashing",
+      "reason": "With the satellite registry blocked, releasing a receiver must be skipped rather than crash."
+    },
+    {
+      "id": "satellite-restore-quarantine",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_SATELLITE_RESTORE quarantined_missions=\\d+ recovery_required=\\d+ quarantined_instances=\\d+ accounts_added=\\d+",
+      "counts": {"satellite_lifecycle": 1},
+      "test": "SatelliteLifecycleGameTests",
+      "reason": "Restoring a satellite registry with an invalid mission must quarantine it and report recovery."
+    },
+    {
+      "id": "suit-provider-contract-failure",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitOxygenAccess/",
+      "message": "Suit oxygen provider fixture:suit disabled for this server session: update contract failure",
+      "counts": {"defaultBatch": 2},
+      "test": "SuitEquipmentGameTests",
+      "reason": "A fixture suit provider breaks its update contract and must be disabled for the session."
+    },
+    {
+      "id": "rocket-adapter-restore-slow",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.ExternalRocketBlockEntityAdapter/",
+      "message": "Rocket adapter arce_adapter_test:cargo_inventory exceeded returned-time budget in restore",
+      "counts": {"defaultBatch": 1},
+      "test": "AdapterFaultGameTests (adapterTest source set, mode RESTORE_SLOW)",
+      "reason": "The fixture adapter sleeps past the 5 ms callback budget in restore and must be rejected once with a warning."
+    },
+    {
+      "id": "forge-config-key-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key [\\w.]+ was corrected from null to its default, .*",
+      "max": 99,
+      "batches": ["<startup>"],
+      "test": "environment: configuration files created by the run",
+      "reason": "Forge fills each key missing from a newly created configuration file; a run that reuses existing files logs fewer. A key corrected from a non-null value does not match."
+    },
+    {
+      "id": "forge-config-file-corrected",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Configuration file .+[\\\\/](forge-server|advancedrocketrycommunity-common)\\.toml is not correct\\. Correcting",
+      "max": 2,
+      "batches": ["<startup>"],
+      "test": "environment: configuration files created by the run",
+      "reason": "Forge reports once per newly created configuration file before filling its keys."
+    },
+    {
+      "id": "fml-config-file-corrected",
+      "level": "WARN",
+      "logger": "net.minecraftforge.fml.loading.FMLConfig/CORE",
+      "message": "Configuration file .+[\\\\/]fml\\.toml is not correct\\. Correcting",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: configuration files created by the run",
+      "reason": "FML reports once when it creates its own configuration file."
+    },
+    {
+      "id": "forge-language-jar-without-mods-toml",
+      "level": "WARN",
+      "logger": "net.minecraftforge.fml.loading.moddiscovery.ModFileParser/LOADING",
+      "message": "Mod file .+[\\\\/](fmlcore|javafmllanguage|lowcodelanguage|mclanguage)-1\\.20\\.1-47\\.4\\.\\d+\\.jar is missing mods\\.toml file",
+      "max": 4,
+      "batches": ["<startup>"],
+      "test": "environment: ForgeGradle userdev classpath",
+      "reason": "The Forge userdev launch scans its own four language and core jars, which have no mods.toml."
+    },
+    {
+      "id": "vanilla-assets-url-schema",
+      "level": "WARN",
+      "logger": "net.minecraft.server.packs.VanillaPackResourcesBuilder/",
+      "message": "Assets URL 'union:.+' uses unexpected schema",
+      "max": 2,
+      "batches": ["<startup>"],
+      "test": "environment: ForgeGradle userdev classpath",
+      "reason": "Under userdev the vanilla assets root is a union file system URL, which vanilla does not recognise."
+    },
+    {
+      "id": "server-overloaded",
+      "level": "WARN",
+      "logger": "net.minecraft.server.MinecraftServer/",
+      "message": "Can't keep up! Is the server overloaded\\? Running \\d+ms or \\d+ ticks behind",
+      "max": 5,
+      "test": "environment: host speed",
+      "reason": "A tick that runs more than two seconds late logs this; vanilla limits it to once every 15 seconds. Complete runs on 2026-10-07 to 2026-10-10 logged it once each. More than five means the host was overloaded for over a minute, which itself makes timing-sensitive tests unreliable."
+    }
+  ]
+}
