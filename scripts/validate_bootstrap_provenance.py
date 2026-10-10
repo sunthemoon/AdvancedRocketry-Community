@@ -1325,6 +1325,21 @@ def _git_commit_exists(
     label: str,
     errors: list[str],
 ) -> bool:
+    verification_errors: list[str] = []
+    content = _read_verified_git_object(
+        repository_root,
+        commit,
+        "commit",
+        MAX_GIT_COMMIT_OBJECT_BYTES,
+        f"{label} {commit}",
+        verification_errors,
+    )
+    if content is not None:
+        errors.extend(verification_errors)
+        return True
+
+    # Exact raw verification already proves type on success. Keep the legacy
+    # metadata query only for failure diagnostics; it cannot admit an object.
     try:
         result = _run_git(
             repository_root,
@@ -1347,17 +1362,8 @@ def _git_commit_exists(
             f"type is {_display_error_value(object_type)}"
         )
         return False
-    return (
-        _read_verified_git_object(
-            repository_root,
-            commit,
-            "commit",
-            MAX_GIT_COMMIT_OBJECT_BYTES,
-            f"{label} {commit}",
-            errors,
-        )
-        is not None
-    )
+    errors.extend(verification_errors)
+    return False
 
 
 def _parse_git_commit_parents(
