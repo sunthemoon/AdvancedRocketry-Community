@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.util.ReferenceCountUtil;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -88,6 +91,23 @@ final class JackhammerFixture implements AutoCloseable {
     }
 
     void start() { action(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK); }
+
+    int disabledStartFeedback() {
+        channel.runPendingTasks();
+        int notices = 0;
+        for (int count = 0; count < 512; count++) {
+            Object packet = channel.readOutbound();
+            if (packet == null) { return notices; }
+            try {
+                if (packet instanceof ClientboundSystemChatPacket chat && chat.overlay()
+                        && chat.content().getContents() instanceof TranslatableContents text
+                        && text.getKey().equals("message.advancedrocketrycommunity.jackhammer.disabled")) {
+                    notices++;
+                }
+            } finally { ReferenceCountUtil.release(packet); }
+        }
+        throw new IllegalStateException("Owned jackhammer packet drain reached its bound");
+    }
 
     void tickProgress(int ticks) {
         helper.assertTrue(ticks >= 0 && ticks <= 40, "Owned native progress check exceeds its bound");
