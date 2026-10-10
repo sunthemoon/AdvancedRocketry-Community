@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
@@ -61,6 +62,7 @@ public final class RocketDestinationReadinessGameTests {
             if (!fixture.earth.areEntitiesLoaded(new ChunkPos(sourceOrigin).toLong())
                     || !fixture.earth.isPositionEntityTicking(sourceOrigin)) {
                 fixture.helper.assertTrue(attempt < READINESS_ATTEMPTS, "Source entity chunk did not become ready");
+                fixture.pacer.pace();
                 awaitSource(fixture, attempt + 1);
                 return;
             }
@@ -80,6 +82,7 @@ public final class RocketDestinationReadinessGameTests {
                     "The FULL-only remote fixture unexpectedly became entity-ticking");
             if (!fixture.moon.areEntitiesLoaded(fixture.chunk.toLong())) {
                 fixture.helper.assertTrue(attempt < READINESS_ATTEMPTS, "Remote entity data did not load");
+                fixture.pacer.pace();
                 awaitLoadedButNotTicking(fixture, attempt + 1);
                 return;
             }
@@ -97,6 +100,7 @@ public final class RocketDestinationReadinessGameTests {
             if (!RocketTransferEntities.destinationEntityChunkReady(fixture.moon, fixture.record.destinationSnapshot())) {
                 fixture.helper.assertTrue(attempt < READINESS_ATTEMPTS, "Ticketed destination did not become ready");
                 fixture.assertWaitUnchanged();
+                fixture.pacer.pace();
                 awaitReady(fixture, attempt + 1);
                 return;
             }
@@ -115,6 +119,8 @@ public final class RocketDestinationReadinessGameTests {
         private final GameTestHelper helper;
         private final ServerLevel earth;
         private final ServerLevel moon;
+        /** Retries wait for asynchronous chunk and entity loading; each lasts a server tick (GameTestTickPacer). */
+        private final GameTestTickPacer pacer;
         private final ChunkPos chunk = new ChunkPos(MOON_ORIGIN);
         private final UUID ticket = UUID.randomUUID();
         private final UUID logical = UUID.randomUUID();
@@ -134,6 +140,7 @@ public final class RocketDestinationReadinessGameTests {
             this.helper = helper;
             earth = helper.getLevel();
             this.moon = moon;
+            pacer = new GameTestTickPacer(earth.getServer());
         }
 
         private void guard(Runnable action) {

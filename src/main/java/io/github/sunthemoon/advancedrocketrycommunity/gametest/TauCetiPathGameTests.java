@@ -17,6 +17,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.Satellit
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.service.SatelliteRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -28,6 +29,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,6 +43,12 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
  * to its orbit with a docked rocket, and the rocket lands on the first fixed pad and returns to the station. The batch
  * runs on an empty discovery ledger ({@link DiscoveryProgressFixture}) under the production rocket-motion rule. On
  * both worlds the landing ground under the eight fixed pads is dry and clear.
+ *
+ * <p>Like the pads {@code RocketFlightGameTestFixtures.primePadChunks} prepares for the other flights, Tau Ceti f's
+ * first pad is requested when the test starts and must be entity-ready before the descent launches: this test
+ * covers the path, while {@code RocketDestinationReadinessGameTests} covers a cold destination. The readiness wait
+ * is paced ({@link GameTestTickPacer}), because generating a cold world takes wall-clock time that unpaced GameTest
+ * ticks do not measure.
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -53,6 +61,14 @@ public final class TauCetiPathGameTests {
     private static final int FOOTPRINT = 32;
     private static final int OBSERVATION_BYTES = 2048;
     private static final String OBSERVATION_PREFIX = "ARCE_TAU_CETI_MISSING";
+    /** The chunk of the first pad, at the origin, where the descent lands. */
+    private static final ChunkPos FIRST_PAD = new ChunkPos(0, 0);
+    /** The production flight ticket's radius: entity-ticking at the pad's chunk. */
+    private static final int LANDING_TICKET_RADIUS = 2;
+    /** Paced attempts, at least ten seconds, within the test's unchanged 1,400-tick timeout. */
+    private static final int LANDING_READY_ATTEMPTS = 200;
+    private static final TicketType<ChunkPos> LANDING_TICKET = TicketType.create("arce_gametest_tau_ceti_landing",
+            Comparator.comparingLong(ChunkPos::toLong));
 
     private TauCetiPathGameTests() {
     }
@@ -74,12 +90,14 @@ public final class TauCetiPathGameTests {
             }
             fixture.close();
             clearTransferJournal(earth);
+            surface.getChunkSource().removeRegionTicket(LANDING_TICKET, FIRST_PAD, LANDING_TICKET_RADIUS, FIRST_PAD);
         };
         List<String> owner;
         final RocketTransferSavedData observerJournal;
         try {
             observerJournal = observerJournal(fixture.server);
             fixture.keepLoaded();
+            surface.getChunkSource().addRegionTicket(LANDING_TICKET, FIRST_PAD, LANDING_TICKET_RADIUS, FIRST_PAD);
             fixture.core(fixture.pad.east(2));
             owner = fixture.join(fixture.ownerId, "tauCetiOwner");
             fixture.look(fixture.ownerId, fixture.pad.east(2));
@@ -117,34 +135,53 @@ public final class TauCetiPathGameTests {
                         && fixture.data.warpEnergy(fixture.id()) == 1_000_000,
                         "The station did not warp to Tau Ceti f's orbit once");
                 RocketEntity docked = landed(helper, fixture.space, logical[0], "the warped station", observerJournal);
-                RocketFlightRequestResult down = RocketRuntime.requestAdminFlight(docked,
-                        new TravelTarget.BodySurface(ExoplanetContent.TAU_CETI_F), UUID.randomUUID());
-                helper.assertTrue(down.success(), "Station-to-Tau Ceti f launch failed: " + down.code());
-                helper.runAfterDelay(FLIGHT, () -> guarded(cleanup, () -> {
-                    RocketEntity onF = landed(helper, surface, logical[0], "Tau Ceti f", observerJournal);
-                    helper.assertTrue(onF.flightData().orElseThrow().currentBody().equals(ExoplanetContent.TAU_CETI_F),
-                            "The rocket did not land on Tau Ceti f");
-                    // The first pad, at the origin: the landing ground keeps it free.
-                    helper.assertTrue(Math.abs(onF.getX()) < 4 && Math.abs(onF.getZ()) < 4,
-                            "The rocket landed away from the first pad at " + onF.blockPosition());
-                    helper.assertTrue(findLogicalRocket(fixture.space, logical[0]) == null,
-                            "The station kept a copy of the rocket");
-                    RocketFlightRequestResult up = RocketRuntime.requestAdminStationFlight(onF, fixture.id(),
-                            UUID.randomUUID());
-                    helper.assertTrue(up.success(), "Tau Ceti f-to-station launch failed: " + up.code());
+                whenLandingReady(helper, surface, new GameTestTickPacer(fixture.server), 1, cleanup, () -> {
+                    RocketFlightRequestResult down = RocketRuntime.requestAdminFlight(docked,
+                            new TravelTarget.BodySurface(ExoplanetContent.TAU_CETI_F), UUID.randomUUID());
+                    helper.assertTrue(down.success(), "Station-to-Tau Ceti f launch failed: " + down.code());
                     helper.runAfterDelay(FLIGHT, () -> guarded(cleanup, () -> {
-                        RocketEntity back = landed(helper, fixture.space, logical[0], "the station on return",
-                                observerJournal);
-                        helper.assertTrue(fixture.station().region().contains(back.blockPosition().getX(),
-                                back.blockPosition().getZ()), "The returning rocket landed outside the station");
-                        helper.assertTrue(findLogicalRocket(surface, logical[0]) == null,
-                                "Tau Ceti f kept a copy of the rocket");
-                        cleanup.run();
-                        helper.succeed();
+                        RocketEntity onF = landed(helper, surface, logical[0], "Tau Ceti f", observerJournal);
+                        helper.assertTrue(onF.flightData().orElseThrow().currentBody()
+                                .equals(ExoplanetContent.TAU_CETI_F), "The rocket did not land on Tau Ceti f");
+                        // The first pad, at the origin: the landing ground keeps it free.
+                        helper.assertTrue(Math.abs(onF.getX()) < 4 && Math.abs(onF.getZ()) < 4,
+                                "The rocket landed away from the first pad at " + onF.blockPosition());
+                        helper.assertTrue(findLogicalRocket(fixture.space, logical[0]) == null,
+                                "The station kept a copy of the rocket");
+                        RocketFlightRequestResult up = RocketRuntime.requestAdminStationFlight(onF, fixture.id(),
+                                UUID.randomUUID());
+                        helper.assertTrue(up.success(), "Tau Ceti f-to-station launch failed: " + up.code());
+                        helper.runAfterDelay(FLIGHT, () -> guarded(cleanup, () -> {
+                            RocketEntity back = landed(helper, fixture.space, logical[0], "the station on return",
+                                    observerJournal);
+                            helper.assertTrue(fixture.station().region().contains(back.blockPosition().getX(),
+                                    back.blockPosition().getZ()), "The returning rocket landed outside the station");
+                            helper.assertTrue(findLogicalRocket(surface, logical[0]) == null,
+                                    "Tau Ceti f kept a copy of the rocket");
+                            cleanup.run();
+                            helper.succeed();
+                        }));
                     }));
-                }));
+                });
             }));
         }));
+    }
+
+    /**
+     * Runs {@code then} once Tau Ceti f's first pad has loaded entities and ticks them, checking once per paced tick;
+     * a failed attempt bound fails the test through the caller's guarded cleanup.
+     */
+    private static void whenLandingReady(GameTestHelper helper, ServerLevel surface, GameTestTickPacer pacer,
+            int attempt, Runnable cleanup, Runnable then) {
+        if (surface.areEntitiesLoaded(FIRST_PAD.toLong())
+                && surface.isPositionEntityTicking(FIRST_PAD.getMiddleBlockPosition(0))) {
+            then.run();
+            return;
+        }
+        helper.assertTrue(attempt < LANDING_READY_ATTEMPTS, "Tau Ceti f's first pad did not become entity-ready");
+        pacer.pace();
+        helper.runAfterDelay(1, () -> guarded(cleanup,
+                () -> whenLandingReady(helper, surface, pacer, attempt + 1, cleanup, then)));
     }
 
     @GameTest(template = "empty", batch = "tau_ceti_landing_f", timeoutTicks = 2_400)
