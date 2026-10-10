@@ -126,6 +126,8 @@ c19_packet_payload_candidate_commit: 82f82b1f422d5165fe42a143c2c473a39bd6707e
 c19_packet_payload_candidate_qualification: COMMITTED_PUSHED_ROOT18_FACADE38_DEVELOPMENT_ADJACENT48_LITERAL_WHOLE180_TIMEOUT_STRICT44_PASS1_MARKDOWN_FAIL_NOT_INTEGRATED
 c19_packet_payload_candidate_review: INTERMEDIATE163_MEDIUM_RETAINED_SUCCESSOR164_WHOLE_DIFF_NO_FINDINGS_DEVELOPMENT18_PASS_OBSERVER_LIMITS_RETAINED
 c19_packet_payload_checkpoint: docs/work/v1.8.0-c19-strict-validator/PYTHON-SUITE-CHECKPOINT-161.md
+c19_packet_payload_candidate_standard: FRESH_V4_REVIEW13_PASS_EIGHT_ORIGINALS_ZERO_BUILD_TEST2192_DATAGEN_EQUAL_NATIVE597_RESULT_BYTES_VERIFIED_62ERRORS_UNWAIVED_CLEANUP_BLOCKED5000_NOT_INTEGRATED
+c19_packet_payload_standard_checkpoint: docs/work/v1.8.0-c19-strict-validator/PAYLOAD-STANDARD-CHECKPOINT-166.md
 c19_next_scope_checkpoint: docs/work/v1.8.0-c19-strict-validator/CANDIDATE-NEXT-SCOPE-CHECKPOINT-114.md
 c19_next_scope_diagnostic: SOURCE7F_INSTRUMENTED_MODULE19_PASS_PHASE141_PARENT_GIT657_NOT_LITERAL_WHOLE_OR_CAUSE
 c19_candidate_integration_prerequisites: AUDIT115_G4_D605_SEPARATE_PACKET_SIZE_ADDRESSED_IN_F87_CANDIDATE_MAIN_UNCHANGED_WHOLE_QUALIFICATION_OPEN
@@ -135,6 +137,29 @@ last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [committed payload standard checkpoint166](../work/v1.8.0-c19-strict-validator/PAYLOAD-STANDARD-CHECKPOINT-166.md)
+uses a fresh V4 caller at Source82, not a sealed prior helper or Main integration.
+Its externally admitted immutable binding covers 3295 tracked source/build/test/
+generated inputs, including the two actual JUnit preparation fixtures. Draft
+omissions and one finite fixture assertion failure remain retained. Independent169
+reviews the actual successor and passes 13 fresh finite checks, permitting only
+one prospective bounded cohort. Root fully reads the report and captures before
+authorization. All eight originals exit 0 with complete captures: build/test
+each 2192 zero F/E/S, two 1241-output inventories identical with empty diffs,
+native 597 required passed. Each native log retains 62 ERROR /161 WARN /0 FATAL,
+including 10 exact project-logger ERROR headers, unwaived. Initial substring
+attribution of 26 is preserved separately. Independent170 verifies the actual
+receipts, XML, generated files, log and current JAR byte correspondence. Its
+initial data-reader exit 1 and distinct corrected reader exit 0 are retained;
+no standard target is retried. Final record-review disposition is external.
+The subsequent owned-output cleanup rejects at the unchanged aggregate 5000
+inventory bound, exit 1, with no deletion. All new outputs remain; Root does not
+retry or repartition. This open cleanup item and its post-cutoff status additions
+are separate from review170 and assigned to a fresh record-only review171.
+Whole Python,
+strict Markdown, native-log, dedicated/restart/real-client obligations and Main
+tested identities remain unchanged. No Gate PASS or source integration follows.
 
 The [Python payload checkpoint161](../work/v1.8.0-c19-strict-validator/PYTHON-SUITE-CHECKPOINT-161.md)
 records separately committed/pushed 82f82b1f, not Main integration. Only the
