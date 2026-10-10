@@ -103,3 +103,13 @@ then reproduces a remaining Medium when the opening timestamp bracket alone is
 missing. Reads end at 2026-10-10T15:19:21.4543076+00:00. The next small follow-up
 recognizes the timestamp without requiring that bracket and tests ERROR, WARN
 and FATAL variants. This original finding and its exact reviewed SHA are retained.
+
+At `74f7cfe7`, Root's exact committed checker/CI-host tests pass 53+17. A fresh
+reviewer independently confirms 53 checker tests and seven/four retained logs,
+but finds a Medium involving damaged date prefixes and timestamp-less events
+behind control prefixes. Its source-read cutoff is
+2026-10-10T15:28:33.4671336+00:00. The follow-up recognizes native level/logger
+fields independently of the timestamp or line-start position. An isolated level
+mention without logger fields remains ordinary exception text; an embedded full
+native event shape is rejected rather than silently treated as continuation.
+This boundary is deliberately fail-closed and is not causal authentication.

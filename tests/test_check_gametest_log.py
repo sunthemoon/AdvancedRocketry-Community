@@ -237,6 +237,22 @@ class CheckGameTestLogTests(unittest.TestCase):
                 malformed = line(level, MOD_LOGGER, "Unrecognized event")[1:]
                 self.assert_problem(self.check(standard_log(malformed)), "malformed or unrecognized log header")
 
+    def test_native_fields_with_damaged_or_absent_timestamp_fail(self) -> None:
+        for level in ("ERROR", "WARN", "FATAL"):
+            original = line(level, MOD_LOGGER, "Unrecognized event")
+            fields = original.split("] ", 1)[1]
+            malformed = (
+                "X" + original[1:],
+                original[3:],
+                "\x1b[31m" + fields,
+                "\x00" + fields,
+                "Caused by: " + fields,
+                "damaged timestamp " + fields.replace(f"/{level}]", f"/{level}"),
+            )
+            for value in malformed:
+                with self.subTest(level=level, value=value):
+                    self.assert_problem(self.check(standard_log(value)), "malformed or unrecognized log header")
+
     def test_plain_exception_text_cannot_supply_a_stack_frame(self) -> None:
         text = standard_log().replace(REFUSAL_STACK[1], "java.lang.RuntimeException: SaveGameTests.refused")
         self.assert_problem(self.check(text), "unexpected ERROR")
