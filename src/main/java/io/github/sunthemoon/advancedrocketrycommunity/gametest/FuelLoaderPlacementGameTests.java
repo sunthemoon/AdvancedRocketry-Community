@@ -36,11 +36,12 @@ public final class FuelLoaderPlacementGameTests {
         var item = new ItemStack(ModItems.ROCKET_FUEL_CELL.get()); item.getOrCreateTag().putString("fixture", "keep");
         UUID owner = UUID.randomUUID();
         var raw = FuelLoaderStorage.encode(new FuelLoaderData(FuelLoaderData.Role.INPUT, item.save(new CompoundTag()), 0, owner, null, null));
-        var placed = roundTrip(helper, raw);
-        helper.assertTrue(placed.ownerId().orElseThrow().equals(owner)
-                && placed.itemHandler().extractItem(0, 1, false).save(new CompoundTag()).equals(item.save(new CompoundTag())),
-                "Drop/place replaced owner or native item");
-        helper.succeed();
+        EntitySections.whenLoaded(helper, () -> {
+            var placed = roundTrip(helper, raw);
+            helper.assertTrue(placed.ownerId().orElseThrow().equals(owner)
+                    && placed.itemHandler().extractItem(0, 1, false).save(new CompoundTag()).equals(item.save(new CompoundTag())),
+                    "Drop/place replaced owner or native item");
+        }, new GameTestTickPacer(helper.getLevel().getServer()), FuelLoaderGameTests.LOADER);
     }
 
     @GameTest(template = "rocket_test", timeoutTicks = 20)
@@ -48,17 +49,19 @@ public final class FuelLoaderPlacementGameTests {
         var batch = new FuelLoaderData.Batch("removed:definition", 73, new ItemStack(ModItems.EMPTY_CANISTER.get()).save(new CompoundTag()));
         var raw = FuelLoaderStorage.encode(new FuelLoaderData(FuelLoaderData.Role.EMPTY, new CompoundTag(), 48,
                 UUID.randomUUID(), UUID.randomUUID(), batch));
-        var placed = roundTrip(helper, raw);
-        helper.assertTrue(placed.bufferedUnits() == 48 && placed.itemHandler().getStackInSlot(0).isEmpty(), "Buffered work became an item");
-        helper.succeed();
+        EntitySections.whenLoaded(helper, () -> {
+            var placed = roundTrip(helper, raw);
+            helper.assertTrue(placed.bufferedUnits() == 48 && placed.itemHandler().getStackInSlot(0).isEmpty(), "Buffered work became an item");
+        }, new GameTestTickPacer(helper.getLevel().getServer()), FuelLoaderGameTests.LOADER);
     }
 
     @GameTest(template = "rocket_test", timeoutTicks = 20)
     public static void futureCompoundSurvivesNativePlacementWithoutDefaultFieldMerge(GameTestHelper helper) {
         var raw = new CompoundTag(); raw.putInt("schema_version", 3); raw.putString("opaque", "keep");
-        var placed = roundTrip(helper, raw);
-        helper.assertTrue(placed.status() == FuelLoaderStatus.UNSUPPORTED_DATA, "Future root became operational");
-        helper.succeed();
+        EntitySections.whenLoaded(helper, () -> {
+            var placed = roundTrip(helper, raw);
+            helper.assertTrue(placed.status() == FuelLoaderStatus.UNSUPPORTED_DATA, "Future root became operational");
+        }, new GameTestTickPacer(helper.getLevel().getServer()), FuelLoaderGameTests.LOADER);
     }
 
     @GameTest(template = "rocket_test", timeoutTicks = 20)
@@ -66,17 +69,19 @@ public final class FuelLoaderPlacementGameTests {
         var raw = FuelLoaderStorage.encode(new FuelLoaderData(FuelLoaderData.Role.INPUT,
                 new ItemStack(ModItems.ROCKET_FUEL_CELL.get()).save(new CompoundTag()), 0, UUID.randomUUID(), null, null));
         raw.remove("buffered_units");
-        var placed = roundTrip(helper, raw);
-        helper.assertTrue(placed.status() == FuelLoaderStatus.INVALID_DATA && placed.itemHandler().getStackInSlot(0).isEmpty(),
-                "Native merge repaired an incomplete root");
-        helper.succeed();
+        EntitySections.whenLoaded(helper, () -> {
+            var placed = roundTrip(helper, raw);
+            helper.assertTrue(placed.status() == FuelLoaderStatus.INVALID_DATA && placed.itemHandler().getStackInSlot(0).isEmpty(),
+                    "Native merge repaired an incomplete root");
+        }, new GameTestTickPacer(helper.getLevel().getServer()), FuelLoaderGameTests.LOADER);
     }
 
     @GameTest(template = "rocket_test", timeoutTicks = 20)
     public static void nonCompoundRootSurvivesNativeDropAndPlacementVerbatim(GameTestHelper helper) {
-        var placed = roundTrip(helper, StringTag.valueOf("opaque malformed root"));
-        helper.assertTrue(placed.status() == FuelLoaderStatus.INVALID_DATA, "Scalar root became operational");
-        helper.succeed();
+        EntitySections.whenLoaded(helper, () -> {
+            var placed = roundTrip(helper, StringTag.valueOf("opaque malformed root"));
+            helper.assertTrue(placed.status() == FuelLoaderStatus.INVALID_DATA, "Scalar root became operational");
+        }, new GameTestTickPacer(helper.getLevel().getServer()), FuelLoaderGameTests.LOADER);
     }
 
     @GameTest(template = "rocket_test", timeoutTicks = 20)
