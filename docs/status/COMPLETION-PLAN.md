@@ -947,13 +947,20 @@ Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端
 
 ## 当前自动回归与风险
 
-最新开发回归见[校验器16检查点](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)。
-实际被测候选为 `0cefe86e`，精确源码后像已集成至 Main `a38f1dc9`；不声称 Main SHA 复跑或文档敏感的
-严格校验等同。Root 强制构建/独立测试各执行 2192 项实际 JUnit/381 XML，
-全部 597 项必需 GameTest、两次 DataGen/空 diff 通过。Root 校验器 43/仓库 148、
-独立实际差异及十三项深度/公共契约探针通过；原始夹具失败、四项 artifact 跳过保留。
-广泛 Python 与严格各 180 秒超时仍失败，部分终止失败不改写；Markdown 的
-256 条失败仅为有界前缀。每份原生日志 62 条 ERROR/零 FATAL，未豁免。
+最新 Java/原生回归见[GameTest 节奏审核与集成](../work/v1.8.0-gametest-pacing/REVIEW-INTEGRATION-01.md)。
+用户于 2026-10-10 要求审核已有 Claude 修复分支后有条件合并；没有调用 Claude 新实施。
+实际被测候选为 `f9bdc800`，正常合并至 `0f91c6ee`，完整 src/Gradle/Wrapper 输入相同；
+不声称合并 SHA 复跑或文档敏感严格校验等同。独立审核无阻断源码发现，13 项私有 pacer
+检查通过；“至少十秒”注释的 Low 精度问题保留，实际最短约为 9.9 秒。
+Root 构建/强制单测各执行 2192 项 JUnit/381 XML，全部 597 项必需 GameTest、
+两次 DataGen/空 diff 通过。原生日志仍有 62 ERROR /161 WARN /零 FATAL，全部未豁免。
+托管 Linux 结果待确认；装载器同类问题需独立 v1.8 任务，生产逻辑没有改动。
+新输出清理在累计 5000 项上限处拒绝，哨兵为 5001，未删除任何文件，不重试或拆分。
+旧客户端报告的制品和选定原始记录相符，但旧世界未使用，不替代新制品的 V1/V2/G8。
+完整 Python/strict 未在该候选重新资格验证；旧超时、Markdown 失败、256 条有界诊断前缀
+及部分终止失败仍保留。Task172/173 因本次用户请求暂缓，其孤立未测源码不合入。
+前序[校验器16检查点](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)
+及其源码/运行身份保留为历史，不再作为最新 Java/原生回归。
 前序[库存11检查点](../work/v1.8.0-c19-strict-validator/INVENTORY-CHECKPOINT-11.md)
 保留历史源码审核与完整运行；Root11/12 的父目录证明缺口不能补造旧观察。
 独立11清理未启动的 R11-OPS01 及四份缓存保留；源码、旧拒绝目录、独立05残留

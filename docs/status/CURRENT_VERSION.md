@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: a38f1dc96444f6e92479a350833bd38a7bdc893b
+latest_source_checkpoint: 0f91c6ee042488f17bdbbba64dcbd8b09573db8b
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
@@ -51,16 +51,20 @@ pending_checksum_input_source_candidate: ""
 pending_checksum_input_qualification: SOURCE_INTEGRATED_ROOT43_REPOSITORY148_PEER_STANDARD_PASS_SUITE_STRICT_TIMEOUT_OPERATIONAL_GAPS_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
-native_tested_code_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
-latest_regression_target_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
-latest_regression_result: ROOT_NATIVE_REPOSITORY_PASSED_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_GATES_OPEN
-latest_regression_run: checksum-depth-standard-root-20261010-27/native-01
+tested_code_commit: f9bdc8004384b0e4c5fa56a506403668afa739cd
+native_tested_code_commit: f9bdc8004384b0e4c5fa56a506403668afa739cd
+latest_regression_target_commit: f9bdc8004384b0e4c5fa56a506403668afa739cd
+latest_regression_result: ROOT_JAVA_DATAGEN_NATIVE_PASS_62_ERRORS_UNWAIVED_HOSTED_PENDING_NO_NEW_PYTHON_QUALIFICATION
+latest_regression_run: pacing-review-root-20261010/gametest
 latest_regression_attempt: 1
-latest_regression_evidence: ACTUAL_0CE_RUNTIME_EXACT_MAIN_A38_SOURCE_POSTIMAGE_ALIAS_FULL_PYTHON_STRICT_FAILURES_RETAINED
-latest_regression_observed_utc: 2026-10-09T18:01:50.644945Z
-actual_unit_rerun: checksum-depth-standard-root-20261010-27/test-01.command.json
-actual_unit_rerun_observed_utc: 2026-10-09T17:55:46.346381Z
+latest_regression_evidence: ACTUAL_F9_RUNTIME_INPUTS_EQUAL_NORMAL_MERGE_0F91_SOURCE_REVIEW13_RECEIPT_AUDIT_COMPLETE_GATES_OPEN
+latest_regression_observed_utc: 2026-10-10T13:20:46Z
+actual_unit_rerun: pacing-review-root-20261010/test.receipt.json
+actual_unit_rerun_observed_utc: 2026-10-10T13:14:34.1257487Z
+gametest_pacing_integration_commit: 0f91c6ee042488f17bdbbba64dcbd8b09573db8b
+gametest_pacing_review: NO_BLOCKING_SOURCE_FINDING_LOW_9_9_SECOND_COMMENT_RETAINED
+gametest_pacing_cleanup: BLOCKED_CUMULATIVE5000_SENTINEL5001_NO_DELETION_OUTPUTS_RETAINED
+gametest_pacing_hosted_ci: PENDING_AFTER_NORMAL_PUSH
 tested_python_commit: 0cefe86e79a872fd4dc24cb81d851c5f74ed7104
 latest_python_qualification_result: CHECKSUM43_REPOSITORY148_PEER_PACKET_PASS_SUITE_STRICT_TIMEOUT_MARKDOWN_FAILURE_HISTORICAL_CUSTODY_GAPS_OPEN
 sleep_json_functional_commit: f7f02cda7681adff923ae360cc9f0338b4b75918
@@ -137,6 +141,23 @@ last_updated: 2026-10-10
 ```
 
 ## Current development evidence
+
+The [GameTest pacing review and integration](../work/v1.8.0-gametest-pacing/REVIEW-INTEGRATION-01.md)
+is the current Java/native development regression. Candidate f9 is independently
+reviewed and normally merged at 0f91; actual runtime inputs are identical, without
+claiming a merge-SHA Gradle/native or document-sensitive strict rerun. Root build
+and forced test each pass 2192 tests, repeated DataGen inventories/diffs agree,
+and all597 required GameTests pass. Native62 ERROR /161 WARN remain unwaived.
+The Low minimum-time comment, hosted confirmation and unchanged5000-bound cleanup
+rejection remain explicit. The client's older artifact/world is not relabeled or
+reused. Whole Python/strict identities and failures are not replaced by these Java
+results. Task172/173 is deferred; its isolated untested prototype is uncommitted
+and not integrated. No content/ledger delivery, acceptance-cursor or Gate change.
+The unit timestamp records the final completed-receipt file's UTC write time,
+not an independently sampled child launch timestamp.
+
+The following candidate-cost observations predate this test-support integration;
+their non-integration claims apply to those candidates, not the new pacing merge.
 
 The [committed payload standard checkpoint166](../work/v1.8.0-c19-strict-validator/PAYLOAD-STANDARD-CHECKPOINT-166.md)
 uses a fresh V4 caller at Source82, not a sealed prior helper or Main integration.
