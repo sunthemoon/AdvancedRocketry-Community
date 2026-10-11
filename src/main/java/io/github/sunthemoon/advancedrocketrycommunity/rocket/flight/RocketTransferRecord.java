@@ -272,7 +272,8 @@ public final class RocketTransferRecord {
                 || sourceSnapshot.contentHash().equals(destinationSnapshot.contentHash())
                 || !sourceSnapshot.blocks().equals(destinationSnapshot.blocks())
                 || !sourceSnapshot.passengerAnchors().equals(destinationSnapshot.passengerAnchors())
-                || !sourceSnapshot.stats().equals(destinationSnapshot.stats())) {
+                || !sourceSnapshot.stats().equals(destinationSnapshot.stats())
+                || !sourceSnapshot.propulsion().equals(destinationSnapshot.propulsion())) {
             throw new IllegalArgumentException("Destination is not an exact relocated source structure");
         }
         if (!sourceFlightData.passengers().equals(destinationFlightData.passengers())
@@ -283,7 +284,7 @@ public final class RocketTransferRecord {
         if (!plan.requestId().equals(transferId) || plan.requiredFuel() != requiredFuel) {
             throw new IllegalArgumentException("Transfer identity or fuel differs from the server plan");
         }
-        RocketFuelMutation expectedDebit = sourceFlightData.fuel().debit(transferId, requiredFuel);
+        RocketFuelMutation expectedDebit = sourceFlightData.fuel().debit(plan);
         if (!expectedDebit.success() || !expectedDebit.state().equals(destinationFlightData.fuel())) {
             throw new IllegalArgumentException("Destination fuel is not the exact once-only transfer debit");
         }

@@ -71,8 +71,8 @@ public final class RocketTargetFlightPlanner {
         }
         Optional<Long> quoted = TravelFuelFormula.calculate(
                 stats.mass(),
-                resolvedSource.gravityMilli(),
-                resolvedDestination.gravityMilli(),
+                fuel.gravityAffectsFuels() ? resolvedSource.gravityMilli() : 0,
+                fuel.gravityAffectsFuels() ? resolvedDestination.gravityMilli() : 0,
                 route.totalDistanceUnits(),
                 RocketFlightLimits.MAX_TRAVEL_FUEL
         ).result();
@@ -80,10 +80,10 @@ public final class RocketTargetFlightPlanner {
             return RocketFlightPlanResult.failure(RocketFlightPlanCode.ARITHMETIC_OVERFLOW, 0L);
         }
         long requiredFuel = quoted.orElseThrow();
-        if (fuel.capacity() < requiredFuel) {
+        if (fuel.propulsion().isEmpty() && fuel.capacity() < requiredFuel) {
             return RocketFlightPlanResult.failure(RocketFlightPlanCode.INSUFFICIENT_CAPACITY, requiredFuel);
         }
-        if (fuel.amount() < requiredFuel) {
+        if (fuel.propulsion().isEmpty() && fuel.amount() < requiredFuel) {
             return RocketFlightPlanResult.failure(RocketFlightPlanCode.INSUFFICIENT_FUEL, requiredFuel);
         }
 
@@ -102,7 +102,8 @@ public final class RocketTargetFlightPlanner {
                 gameTime,
                 destination
         );
-        return new RocketFlightPlanResult(RocketFlightPlanCode.SUCCESS, requiredFuel, plan);
+        return RocketPropulsionQuoter.quote(fuel, plan,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelRuntime.capture());
     }
 
     private static Optional<ResolvedTarget> resolve(

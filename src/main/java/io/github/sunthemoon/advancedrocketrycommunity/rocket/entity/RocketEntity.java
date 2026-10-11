@@ -101,6 +101,11 @@ public final class RocketEntity extends Entity implements MenuProvider {
                 level().getGameTime(),
                 currentTarget
         );
+        if (snapshot.propulsion().isPresent()) {
+            initialFlightData = initialFlightData.withFuel(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(
+                            snapshot.propulsion().orElseThrow()), level().getGameTime());
+        }
         initializeTransferred(snapshot, assemblyTransactionId, ownerId, initialFlightData);
     }
 
@@ -202,7 +207,9 @@ public final class RocketEntity extends Entity implements MenuProvider {
     public Optional<CompoundTag> preservedBlockedData() {
         return preservedBlockedData == null
                 ? Optional.empty()
-                : Optional.of(preservedBlockedData.copy());
+                : Optional.of(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
+                        .preserve(preservedBlockedData, io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES
+                                + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + 1_024));
     }
 
     @Override
@@ -221,11 +228,23 @@ public final class RocketEntity extends Entity implements MenuProvider {
             return;
         }
         CompoundTag data = parent.getCompound(DATA_KEY);
+        if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.bounded(data,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES
+                        + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + 1_024)) {
+            preservedBlockedData = data;
+            return;
+        }
         if (!data.contains("schema_version", Tag.TAG_INT)) {
             preservedBlockedData = data.copy();
             return;
         }
         int schema = data.getInt("schema_version");
+        var keys = schema == 1 ? java.util.Set.of("schema_version", "assembly_transaction_id", "owner_id", "snapshot")
+                : java.util.Set.of("schema_version", "assembly_transaction_id", "owner_id", "snapshot", FLIGHT_DATA_KEY);
+        if (!data.getAllKeys().equals(keys)) {
+            preservedBlockedData = data.copy();
+            return;
+        }
         if ((schema != 1 && schema != ENTITY_SCHEMA_VERSION)
                 || !data.hasUUID("assembly_transaction_id")
                 || !data.hasUUID("owner_id")
@@ -298,7 +317,9 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     protected void addAdditionalSaveData(CompoundTag parent) {
         if (preservedBlockedData != null) {
-            parent.put(DATA_KEY, preservedBlockedData.copy());
+            parent.put(DATA_KEY, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
+                    .preserve(preservedBlockedData, io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES
+                            + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + 1_024));
             return;
         }
         if (!operational()) {
@@ -351,6 +372,9 @@ public final class RocketEntity extends Entity implements MenuProvider {
             return InteractionResult.SUCCESS;
         }
         if (player instanceof ServerPlayer serverPlayer) {
+            var exchanged = io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketPropulsionInteraction
+                    .exchange(serverPlayer, this, hand);
+            if (exchanged != InteractionResult.PASS) { return exchanged; }
             if (player.isShiftKeyDown()) {
                 if (hand == InteractionHand.MAIN_HAND) {
                     RocketRuntime.requestDisassembly(serverPlayer, this);
@@ -444,6 +468,17 @@ public final class RocketEntity extends Entity implements MenuProvider {
         if (snapshot.stats().fuelCapacity() != flightData.fuel().capacity()) {
             throw new IllegalArgumentException("Flight fuel capacity does not match snapshot statistics");
         }
+        if (!snapshot.propulsion().equals(flightData.fuel().propulsion().map(value -> value.descriptor()))) {
+            throw new IllegalArgumentException("Flight propulsion descriptor differs from snapshot");
+        }
+        flightData.fuel().propulsion().ifPresent(value -> {
+            for (var bank : List.of(value.primary(), value.oxidizer())) {
+                if (bank.fluidId() != null && (!net.minecraftforge.registries.ForgeRegistries.FLUIDS.containsKey(bank.fluidId())
+                        || !net.minecraftforge.registries.ForgeRegistries.FLUIDS.getValue(bank.fluidId()).defaultFluidState().isSource())) {
+                    throw new IllegalArgumentException("Unknown native propulsion Fluid");
+                }
+            }
+        });
         if (boundedSeats(snapshot) != flightData.passengers().seatCapacity()) {
             throw new IllegalArgumentException("Flight passenger capacity does not match snapshot statistics");
         }

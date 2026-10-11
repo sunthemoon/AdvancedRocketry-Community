@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "advancedrocketrycommunity:block/nuclear_rocket_motor",
+      "x": 0,
+      "y": 0
+    },
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/nuclear_rocket_motor",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/nuclear_rocket_motor",
+      "x": 90,
+      "y": 0
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/nuclear_rocket_motor",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "advancedrocketrycommunity:block/nuclear_rocket_motor",
+      "x": 180,
+      "y": 0
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/nuclear_rocket_motor",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

@@ -328,6 +328,7 @@ public final class CommonConfig {
             .comment("Allow classic equipment use; disabling retains items, recipes and safe repair.")
             .define("equipment.classicEnabled", true);
 
+    public static final RocketPropulsionConfig ROCKET = new RocketPropulsionConfig(BUILDER);
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */

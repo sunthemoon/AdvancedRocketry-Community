@@ -110,7 +110,7 @@ final class RocketTransferService {
         RocketTransferRecord record;
         try {
             RocketFlightData sourceTransit = scheduledTransit(countdown);
-            RocketFuelMutation debit = sourceTransit.fuel().debit(plan.requestId(), plan.requiredFuel());
+            RocketFuelMutation debit = sourceTransit.fuel().debit(plan);
             if (!debit.success()) {
                 return RocketFlightRequestResult.failure(
                         RocketFlightRequestCode.INSUFFICIENT_FUEL,

@@ -13,14 +13,22 @@ final class RocketDisassemblyConfirmations {
     static final long LIFETIME_TICKS = 200L;
 
     record Quote(UUID entityId, UUID ownerId, UUID snapshotId, String snapshotHash,
-                 RocketFlightData flight, double x, double y, double z) {
+                 RocketFlightData flight, double x, double y, double z, String catalogSignature) {
+        Quote(UUID entityId, UUID ownerId, UUID snapshotId, String snapshotHash,
+                RocketFlightData flight, double x, double y, double z) {
+            this(entityId, ownerId, snapshotId, snapshotHash, flight, x, y, z,
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelRuntime.capture().signature());
+        }
         Quote {
             Objects.requireNonNull(entityId, "entityId");
             Objects.requireNonNull(ownerId, "ownerId");
             Objects.requireNonNull(snapshotId, "snapshotId");
             Objects.requireNonNull(snapshotHash, "snapshotHash");
             Objects.requireNonNull(flight, "flight");
-            if (!snapshotHash.matches("[0-9a-f]{64}") || flight.fuel().amount() <= 0L
+            if (catalogSignature == null || !catalogSignature.matches("[0-9a-f]{64}")) {
+                throw new IllegalArgumentException("Invalid catalog signature");
+            }
+            if (!snapshotHash.matches("[0-9a-f]{64}") || flight.fuel().totalAmount() <= 0L
                     || !Double.isFinite(x) || !Double.isFinite(y) || !Double.isFinite(z)) {
                 throw new IllegalArgumentException("Invalid fueled-disassembly quote");
             }

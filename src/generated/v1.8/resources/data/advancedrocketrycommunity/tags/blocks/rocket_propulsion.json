@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "advancedrocketrycommunity:advanced_rocket_motor",
+    "advancedrocketrycommunity:bipropellant_rocket_motor",
+    "advancedrocketrycommunity:advanced_bipropellant_rocket_motor",
+    "advancedrocketrycommunity:bipropellant_fuel_tank",
+    "advancedrocketrycommunity:oxidizer_fuel_tank",
+    "advancedrocketrycommunity:nuclear_rocket_motor",
+    "advancedrocketrycommunity:nuclear_fuel_tank",
+    "advancedrocketrycommunity:nuclear_core"
+  ]
+}

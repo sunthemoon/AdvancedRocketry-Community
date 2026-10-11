@@ -23,6 +23,10 @@ public final class RocketForgeMetrics {
         if (roles > 1) {
             throw new IllegalArgumentException("Rocket block belongs to multiple exclusive role tags");
         }
+        var host = classification(state, RocketComponentCatalog.empty());
+        if (host != io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent.EXTERNAL) {
+            return host.metrics();
+        }
         if (engine) {
             return new RocketBlockMetrics(100L, 1_000L, 0L, true, false, false);
         }
@@ -36,5 +40,18 @@ public final class RocketForgeMetrics {
             return new RocketBlockMetrics(30L, 0L, 0L, false, false, true);
         }
         return RocketBlockMetrics.structural(10L);
+    }
+
+    public static io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent classification(
+            BlockState state, RocketComponentCatalog components) {
+        var external = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent.EXTERNAL;
+        if (components.find(state) != null) { return external; }
+        var host = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent.host(
+                net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(state.getBlock()));
+        if (host == io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent.BASIC_MONO
+                && !state.is(ModBlockTags.ROCKET_ENGINES)
+                || host == io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent.MONO_TANK
+                && !state.is(ModBlockTags.ROCKET_FUEL_TANKS)) { return external; }
+        return host;
     }
 }

@@ -9,6 +9,7 @@ public final class ModBlockTags {
     public static final TagKey<Block> ATMOSPHERE_SEALING = create("atmosphere_sealing");
     public static final TagKey<Block> ATMOSPHERE_PERMEABLE = create("atmosphere_permeable");
     public static final TagKey<Block> ROCKET_MOVABLE = create("rocket_movable");
+    public static final TagKey<Block> ROCKET_PROPULSION = create("rocket_propulsion");
     public static final TagKey<Block> ROCKET_FORBIDDEN = create("rocket_forbidden");
     public static final TagKey<Block> ROCKET_ENGINES = create("rocket_engines");
     public static final TagKey<Block> ROCKET_FUEL_TANKS = create("rocket_fuel_tanks");
