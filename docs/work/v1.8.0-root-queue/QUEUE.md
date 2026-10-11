@@ -24,6 +24,12 @@ block any task.
 | [W02](TASK-W02-PROPULSION.md) | C17a propulsion components and typed fuel modes | `arce-v180-w02-propulsion` / `codex/v1.8.0-propulsion` | `1568699e` | `01a12b82-8061-7e13-94b8-a29fc73ef9f0` | running since 2026-10-11 |
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | `arce-v180-w03-equipment` / `codex/v1.8.0-equipment` | `1568699e` | `01a12b82-8895-7573-8f65-3fb05884bbf1` | running since 2026-10-11 |
 
+## Queued
+
+| Task | Scope | Dispatch when |
+|---|---|---|
+| [W04](TASK-W04-FORCE-FIELD.md) | C17b force field projector, API 1.9 | First free implementer slot |
+
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
 
