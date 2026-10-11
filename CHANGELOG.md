@@ -6,6 +6,11 @@ Rocketry maintainers.
 
 ## v1.8.0 — in development
 
+- Add an Item IO Circuit Board with workbench and Precision Assembler recipes.
+  The workbench uses redstone, quartz, gold dust, a wooden slab and an iron
+  plate; precision assembly uses redstone, gold and steel plates for 200 ticks
+  at 10 FE/t. Existing circuit recipes are unchanged. Initial steel production
+  and the complete classic-machine progression remain unfinished.
 - Add craftable Carbon Brick and User Interface materials. Six charcoal make
   one carbon brick; the interface uses lime dye, redstone dust, glowstone dust
   and a glass pane. These materials do not replace existing circuit recipes.
