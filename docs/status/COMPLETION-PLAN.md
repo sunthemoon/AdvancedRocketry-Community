@@ -210,6 +210,11 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     不改已有电路、机器接口、断言、时间或日志规则。CRLF 警告摘要遗漏已独立核对更正，
     原 JSON 与审核者探针失败保留。NEW 人工审核、钢初始来源、真实玩家/完整图、
     物理 hatch、重启/V1/V2、当前 strict 与原始 Linux 资格仍开放，不标记台账或 Gate。
+  - [ ] [C16d-CIRCUIT-PLATES-06](../work/v1.8.0-c16d-components-graph/CIRCUIT-PLATES-CONTRACT-06.md)：
+    status: planned。基础/高级电路板的原版精密装配获取叶正在独立审核，
+    不修改占位电路或钢来源。C16c 蚀刻机的第二生产方式、完整图和所有 Gate 仍开放。
+    控制板记录后继 `d6cdb6d8` 的托管回归已于 2026-10-11T09:00:31.846571Z
+    观察为 completed/success；这是元数据，不替代原始 Linux 日志资格。
   - [x] C16d-FORWARD-15：status: verified，仅测试侧数学源码/单测。Root 在不同代理限定审核后
     [采纳测试侧纯可达性接口](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)。
     仅两个新增算法/测试文件；[源码任务16](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md)

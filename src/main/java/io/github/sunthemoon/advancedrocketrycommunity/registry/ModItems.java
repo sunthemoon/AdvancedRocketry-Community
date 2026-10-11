@@ -212,6 +212,8 @@ public final class ModItems {
     public static final RegistryObject<Item> ITEM_IO_BOARD = ITEMS.register("item_io_board", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> LIQUID_IO_BOARD = ITEMS.register("liquid_io_board", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> CONTROL_BOARD = ITEMS.register("control_board", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> BASIC_CIRCUIT_PLATE = ITEMS.register("basic_circuit_plate", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> ADVANCED_CIRCUIT_PLATE = ITEMS.register("advanced_circuit_plate", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> THERMITE = ITEMS.register("thermite", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> THERMITE_TORCH = ITEMS.register("thermite_torch", () ->
             new StandingAndWallBlockItem(ModBlocks.THERMITE_TORCH.get(), ModBlocks.THERMITE_WALL_TORCH.get(),

@@ -33,6 +33,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.ITEM_IO_BOARD.get());
                         output.accept(ModItems.LIQUID_IO_BOARD.get());
                         output.accept(ModItems.CONTROL_BOARD.get());
+                        output.accept(ModItems.BASIC_CIRCUIT_PLATE.get());
+                        output.accept(ModItems.ADVANCED_CIRCUIT_PLATE.get());
                         output.accept(ModItems.THERMITE_TORCH.get());
                         output.accept(ModItems.AIRLOCK_DOOR.get());
                         output.accept(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.ITEM.get());

@@ -240,7 +240,7 @@ order,pattern,handling,plan,units,reason
 239,textures/items/holoprojector.png,EXCLUDE,-,-,holographic selector redesigned (ADR-035)
 240,textures/items/basiclens.png,IMPORT,C18d,item_variant:lens/0,laser lens visual refresh
 241,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
-242,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
+242,textures/items/*circuitplate.png,REGENERATE,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
 243,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
 244,textures/items/controliocircuit.png,REGENERATE,C16d,item_variant:ic/3,components
 245,textures/items/itemiocircuit.png,REGENERATE,C16d,item_variant:ic/4,components

@@ -6,6 +6,10 @@ Rocketry maintainers.
 
 ## v1.8.0 — in development
 
+- Add Basic and Advanced Circuit Plates through the Precision Assembler. Each
+  uses a gold ingot, a silicon wafer and redstone dust or a redstone block,
+  for 900 ticks at 100 FE/t. Existing circuit recipes are unchanged; the
+  alternate laser-etcher producers and full classic progression remain unfinished.
 - Add a Control Circuit Board with workbench and Precision Assembler recipes.
   The workbench uses redstone, quartz, copper dust, a wooden slab and an iron
   plate; precision assembly uses redstone, copper and steel plates for 200 ticks
