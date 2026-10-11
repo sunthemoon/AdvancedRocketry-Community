@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 
 /** Physical-client presentation only. Fixed intents never carry item data. */
 public final class SuitWorkstationScreen extends AbstractContainerScreen<SuitWorkstationMenu> {
+    private final Button[] removeButtons = new Button[3];
     public SuitWorkstationScreen(SuitWorkstationMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title); imageHeight = 190; inventoryLabelY = 96;
     }
@@ -21,12 +22,16 @@ public final class SuitWorkstationScreen extends AbstractContainerScreen<SuitWor
                 .bounds(leftPos + 56, topPos + 28, 64, 20).build());
         for (int i = 0; i < 3; i++) {
             final int position = i;
-            addRenderableWidget(Button.builder(Component.literal("-"), button -> minecraft.gameMode.handleInventoryButtonClick(
+            removeButtons[i] = addRenderableWidget(Button.builder(Component.literal("-"), button -> minecraft.gameMode.handleInventoryButtonClick(
                     menu.containerId, hasShiftDown() ? position + 4 : position + 1))
                     .bounds(leftPos + 44 + i * 40, topPos + 75, 22, 16).build());
         }
     }
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        var part = ArmorEquipment.part(menu.getSlot(0).getItem());
+        for (int i = 0; i < removeButtons.length; i++) {
+            removeButtons[i].visible = part != null && i < part.positions();
+        }
         renderBackground(graphics); super.render(graphics, mouseX, mouseY, partialTick); renderTooltip(graphics, mouseX, mouseY);
     }
     @Override protected void renderLabels(GuiGraphics g, int mouseX, int mouseY) {
@@ -39,7 +44,10 @@ public final class SuitWorkstationScreen extends AbstractContainerScreen<SuitWor
         for (var slot : menu.slots) { g.fill(leftPos + slot.x - 1, topPos + slot.y - 1,
                 leftPos + slot.x + 17, topPos + slot.y + 17, 0xff667c7b); }
         var modules = ArmorEquipment.modules(menu.getSlot(0).getItem());
-        for (int i = 0; i < 3; i++) { g.fill(leftPos + 44 + i * 40, topPos + 55, leftPos + 62 + i * 40, topPos + 73, 0xff667c7b); }
+        var part = ArmorEquipment.part(menu.getSlot(0).getItem());
+        for (int i = 0; part != null && i < part.positions(); i++) {
+            g.fill(leftPos + 44 + i * 40, topPos + 55, leftPos + 62 + i * 40, topPos + 73, 0xff667c7b);
+        }
         if (modules != null) { for (var module : modules) {
             g.renderItem(ItemStack.of(module.stack()), leftPos + 45 + module.position() * 40, topPos + 56);
         } }
