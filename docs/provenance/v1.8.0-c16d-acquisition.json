@@ -1,0 +1,226 @@
+{
+  "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+  "batch_id": "v1.8.0-c16d-acquisition-01",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "entries": [
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0901ba3536187f2361d0193276262b75f7aaf27973188a085bdb8180189e5b5e",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/carbon_brick.json",
+      "target_sha256": "993f4db9b3b2100cb4149a9bb55edee1c91c71d09aad26556eaf64b5e46a3720",
+      "transformation": [
+        "Generate newly authored scoped data; reference resource IDs only, no copied model or bitmap."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0901ba3536187f2361d0193276262b75f7aaf27973188a085bdb8180189e5b5e",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/user_interface.json",
+      "target_sha256": "c2a7f45512006a12dabc5646c17322a3ba1416f5e96772a3e41d15561195ed33",
+      "transformation": [
+        "Generate newly authored scoped data; reference resource IDs only, no copied model or bitmap."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0901ba3536187f2361d0193276262b75f7aaf27973188a085bdb8180189e5b5e",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/carbon_brick.png",
+      "target_sha256": "2891ed4284903c9da5e5d328a0016c414f59cd03ab25c58af9c169198c3fce2f",
+      "transformation": [
+        "Draw original 16x16 compressed-block grid with V180MaterialArt.png, tint 0x747D88; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0901ba3536187f2361d0193276262b75f7aaf27973188a085bdb8180189e5b5e",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/user_interface.png",
+      "target_sha256": "b8815628abb69302975dd7557a85a03ff86951d31c84489497d8d698ec98626a",
+      "transformation": [
+        "Draw original 16x16 display/control/connector grid with V180MaterialArt.png, tint 0x8ECBC0; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "new_keys": [
+        "item.advancedrocketrycommunity.carbon_brick",
+        "item.advancedrocketrycommunity.user_interface"
+      ],
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "804bc9c484a72ae05c850efffe181379a52700bbf387efaeba64c63a726ef620",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "target_sha256": "2815c7d001b79c3111fdf9ad24072c4cde85397f880fdb88d6c9c31c47d279b9",
+      "transformation": [
+        "Add exactly two component labels through the sole language writer; all earlier values unchanged."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "new_keys": [
+        "item.advancedrocketrycommunity.carbon_brick",
+        "item.advancedrocketrycommunity.user_interface"
+      ],
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "804bc9c484a72ae05c850efffe181379a52700bbf387efaeba64c63a726ef620",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "target_sha256": "7c3d5f51d0fbdd1c412439b3fd6320acdfaeba86c615e75df798270a4496a676",
+      "transformation": [
+        "Add exactly two component labels through the sole language writer; all earlier values unchanged."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0901ba3536187f2361d0193276262b75f7aaf27973188a085bdb8180189e5b5e",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/carbon_brick.json",
+      "target_sha256": "396b6e2bf5f75d90900f5271b492bd4314fe19768d33330f81b1531b253e82c4",
+      "transformation": [
+        "Generate newly authored scoped data; reference resource IDs only, no copied model or bitmap."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0901ba3536187f2361d0193276262b75f7aaf27973188a085bdb8180189e5b5e",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/user_interface.json",
+      "target_sha256": "daf9249a4319a45ee57910d892266a87cffb7c641e6ada7498ccc3b09a04e065",
+      "transformation": [
+        "Generate newly authored scoped data; reference resource IDs only, no copied model or bitmap."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0901ba3536187f2361d0193276262b75f7aaf27973188a085bdb8180189e5b5e",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/carbon_brick.json",
+      "target_sha256": "bcb9e2f04a88c74c92d2e4d0a2ffde03fa469e6a53dfa9e2ccad6799c7729f83",
+      "transformation": [
+        "New vanilla crafting JSON implementing the reviewed functional ingredient/count facts; no legacy JSON copy."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0901ba3536187f2361d0193276262b75f7aaf27973188a085bdb8180189e5b5e",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/user_interface.json",
+      "target_sha256": "2ff860584ea744d1ff4e73ae187b669c30f458eb843a28ac0f9d4745188da163",
+      "transformation": [
+        "New vanilla crafting JSON implementing the reviewed functional ingredient/count facts; no legacy JSON copy."
+      ]
+    },
+    {
+      "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-component-acquisition",
+      "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "0901ba3536187f2361d0193276262b75f7aaf27973188a085bdb8180189e5b5e",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/forge/tags/items/ingots/carbon.json",
+      "target_sha256": "bf4126428966627e4f17476bd9354c4c605ef792745df0de95baa807f5662b3b",
+      "transformation": [
+        "Generate newly authored scoped data; reference resource IDs only, no copied model or bitmap."
+      ]
+    }
+  ],
+  "factual_recipe_references": [
+    {
+      "branch": "1.12",
+      "bytes": 586,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/charcoalbrick.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "28ec6e6ce7aaf732dc166765795844a56aefdaa85acb409670fbf1b693bb62d2",
+      "use": "Functional ingredient/count reference, not copied JSON or bitmap"
+    },
+    {
+      "branch": "1.12",
+      "bytes": 580,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/userinterface.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "dc07f355dc95072ba3a5d57fde2948a7dd6209ca69dd3277c30a3c6beb64e599",
+      "use": "Functional ingredient/count reference, not copied JSON or bitmap"
+    }
+  ],
+  "license": "MIT",
+  "review": {
+    "content_digest": "670128ecb3220758ac16703a7af44c6d7deb3f18b76dcca01c30ea52340bfcb7",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "source_branch": "codex/v1.8.0-component-acquisition",
+  "source_commit": "5267f77cab1f60f9655031efd5291238ab0f5f8c",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "target_version": "v1.8.0"
+}

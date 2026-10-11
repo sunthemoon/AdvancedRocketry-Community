@@ -42,3 +42,27 @@ records/resources, committed-source A0/build, deterministic runData, loaded
 native fixtures and unchanged strict log reconciliation remain required. This
 entry does not claim original-asset screening, V1/V2, dedicated restart, full
 recipe graph, ledger delivery or any G0-G9 approval.
+
+## 2026-10-11 committed source and actual generated resources
+
+Source commit 851ac7fd0745b558c90af81dedfc283ea2f5df77 freezes the reviewed
+Java bytes. The unchanged 11-case A0 suite was forced to execute again at that
+commit: exit 0, 11/11 passed, no errors/skips, 18.60493889998179 seconds.
+The schema-2 NEW record was generated from actual private Java bytes before
+product DataGen; human review remains PENDING_HUMAN_REVIEW. Two full runData
+commands exited 0 in 23.908194300020114 and 22.88754990004236 seconds. All eleven
+owned targets match the measured preview/prior record on both runs; existing
+language values are unchanged and no unrelated tracked generated file changed.
+
+Independent preview/provenance review found no actionable finite-scope defect,
+checked all target hashes/pixels and inspected the actual sprites. It does not
+prove originality, real inventory readability, V1/V2 or G0; the dark carbon icon
+still needs client verification. Both record and source/provenance inputs were
+held until explicit reviewer release. No official or excluded bitmap was copied.
+
+The unchanged ledger validator and client-import check exited 0. The repository
+validator exceeded the separately fixed 30-second command window after recording
+a Markdown-link phase failure, with no final summary; original exit is null and
+owned retirement exit 1. That failure remains, is not counted as success and was
+not rerun with a longer limit. Complete source build and native/log verification
+remain pending at this resource preparation commit. No ledger or Gate is closed.
