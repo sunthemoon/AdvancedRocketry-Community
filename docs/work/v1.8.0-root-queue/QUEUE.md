@@ -22,7 +22,7 @@ block any task.
 |---|---|---|---|---|---|
 | [W01](TASK-W01-HATCH-KERNEL.md) | Hatch family, generic controller, lathe | `arce-v180-w01-hatch-kernel` / `codex/v1.8.0-hatch-kernel` | `1568699e` | `01a12b82-77da-7592-85d8-e201b34241f9` | Delivered `3a0b29c5` (GameTest 652/652). Candidate `7fb1c1a3`: hosted CI and independent persistence review running |
 | [W02](TASK-W02-PROPULSION.md) | C17a propulsion components and typed fuel modes | `arce-v180-w02-propulsion` / `codex/v1.8.0-propulsion` | `1568699e` | `01a12b82-8061-7e13-94b8-a29fc73ef9f0` | running since 2026-10-11 |
-| [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | `arce-v180-w03-equipment` / `codex/v1.8.0-equipment` | `1568699e` | `01a12b82-8895-7573-8f65-3fb05884bbf1` | Delivered `c88fe77f` (GameTest 649/649). Candidate `6132f9ca`: hosted CI and independent persistence review running |
+| [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | `arce-v180-w03-equipment` / `codex/v1.8.0-equipment` | `1568699e` | `01a12b82-8895-7573-8f65-3fb05884bbf1` | Merged as `1e36af58` on 2026-10-12 after hosted run 38155101250 and the [independent review](records/W03-REVIEW.md) (MERGE-WITH-FOLLOWUP: M1 and L1 queued) |
 | [W04](TASK-W04-FORCE-FIELD.md) | C17b force field projector, API 1.9 | `arce-v180-w04-force-field` / `codex/v1.8.0-w04-force-field` | `42321f8b` | `01a12bc4-62f1-75b1-b0e9-4d989e1b4fd2` | running since 2026-10-12 |
 | [W05](TASK-W05-ARC-FURNACE-CUTTING.md) | C16b arc furnace and cutting machine on the W01 kernel | `arce-v180-w05-arc-cutting` / `codex/v1.8.0-w05-arc-cutting` | W01 candidate `7fb1c1a3` | `01a12bcf-600a-7731-a836-d0b8a2cec0fc` | running since 2026-10-12 |
 
@@ -44,7 +44,7 @@ Hosted CI runs on each implementer branch after Root pushes it (workflow change
   waits for W02.
 - C17c beacon and finder, satellite bay, solar array (ADR-065 sections 7 to 9).
 - C18a scrubber, charger and seals (ADR-066 sections 3 and 4).
-- C18b motion upgrades and jetpack (ADR-066 section 5.2), and the laser gun.
+- C18b motion upgrades and jetpack (ADR-066 section 5.2), and the laser gun. The same task fixes W03 review M1 (decode refused workstation roots from detached copies) and L1 (R-026 and the ADR-066 note name the noncanonical-NBT trigger).
 - C18c observatory and advancements (ADR-066 section 6).
 - C18d presentation and client configuration (ADR-066 section 7).
 - Parallel bugs:
