@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "c": {
+      "item": "minecraft:glowstone"
+    },
+    "i": {
+      "tag": "forge:ingots/iron"
+    },
+    "p": {
+      "tag": "forge:plates/titanium"
+    }
+  },
+  "pattern": [
+    " p ",
+    "ici",
+    " p "
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:earthbright_visor"
+  }
+}

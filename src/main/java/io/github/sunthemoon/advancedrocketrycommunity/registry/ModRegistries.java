@@ -8,6 +8,7 @@ public final class ModRegistries {
     }
 
     public static void register(IEventBus modBus) {
+        io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent.register(modBus);
         ModBlocks.register(modBus);
         ModItems.register(modBus);
         ModBlockEntities.register(modBus);

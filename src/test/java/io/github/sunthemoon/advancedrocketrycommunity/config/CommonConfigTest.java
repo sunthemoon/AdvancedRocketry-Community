@@ -42,12 +42,24 @@ class CommonConfigTest {
         // Classic settings: C15a/b/c (ADR-063), combustion, tank capacity and pump operation (ADR-064),
         // the classic life-support instrument switch (ADR-066), and the single solar generator's
         // enable switch and output multiplier (ADR-065), plus the accepted C18a living-tick gravity switch
-        // and the consumed C18b ordinary-equipment switch (ADR-066).
+        // and the consumed C18b ordinary-equipment switch and two finite oxygen settings (ADR-066),
+        // and the ten C17a ROCKET propulsion values (ADR-065 section 3).
         assertSame(CommonConfig.CLASSIC_GRAVITY_ENABLED,
                 CommonConfig.SPEC.getValues().get("environment.classicGravityEnabled"));
         assertSame(CommonConfig.CLASSIC_EQUIPMENT_ENABLED,
                 CommonConfig.SPEC.getValues().get("equipment.classicEnabled"));
-        assertEquals(74, countValues(CommonConfig.SPEC.getValues()));
+        assertSame(CommonConfig.SUIT_TANK_CAPACITY, CommonConfig.SPEC.getValues().get("OXYGEN.suitTankCapacity"));
+        assertSame(CommonConfig.SPACE_SUIT_O2_BUFFER, CommonConfig.SPEC.getValues().get("OXYGEN.spaceSuitO2Buffer"));
+        assertSame(CommonConfig.ROCKET.thrustMultiplier, CommonConfig.SPEC.getValues().get("ROCKET.thrustMultiplier"));
+        assertEquals(86, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void equipmentOxygenValuesHaveExactFiniteDefaultsAndBounds() {
+        assertRangeAndDefault("OXYGEN.suitTankCapacity", CommonConfig.SUIT_TANK_CAPACITY, 1, 4, 1);
+        assertRangeAndDefault("OXYGEN.spaceSuitO2Buffer", CommonConfig.SPACE_SUIT_O2_BUFFER, 1, 2_000, 2_000);
+        assertEquals(1, CommonConfig.suitTankMultiplier());
+        assertEquals(2_000, CommonConfig.suitOxygenTarget());
     }
 
     @Test

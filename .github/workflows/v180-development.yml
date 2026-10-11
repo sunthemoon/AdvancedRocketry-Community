@@ -1,9 +1,15 @@
 name: v1.8 development regression
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - codex/v1.8.0-classic-content
+      # Implementer branches of the Root task queue get their own regression before merge.
+      - codex/v1.8.0-hatch-kernel
+      - codex/v1.8.0-propulsion
+      - codex/v1.8.0-equipment
+      - codex/v1.8.0-w*
     paths:
       - .github/workflows/v180-development.yml
       - src/**
@@ -19,7 +25,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: v180-development-regression
+  # One queue per branch: implementer branches run in parallel with the shared branch.
+  group: v180-development-regression-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:

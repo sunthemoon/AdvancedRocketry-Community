@@ -20,24 +20,45 @@ block any task.
 
 | Task | Scope | Worktree / branch | Base | Session | State |
 |---|---|---|---|---|---|
-| [W01](TASK-W01-HATCH-KERNEL.md) | Hatch family, generic controller, lathe | `arce-v180-w01-hatch-kernel` / `codex/v1.8.0-hatch-kernel` | queue commit | (recorded at dispatch) | dispatched |
-| [W02](TASK-W02-PROPULSION.md) | C17a propulsion components and typed fuel modes | `arce-v180-w02-propulsion` / `codex/v1.8.0-propulsion` | queue commit | (recorded at dispatch) | dispatched |
-| [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | `arce-v180-w03-equipment` / `codex/v1.8.0-equipment` | queue commit | (recorded at dispatch) | dispatched |
+| [W01](TASK-W01-HATCH-KERNEL.md) | Hatch family, generic controller, lathe | `arce-v180-w01-hatch-kernel` / `codex/v1.8.0-hatch-kernel` | `1568699e` | `01a12b82-77da-7592-85d8-e201b34241f9` | Delivered `3a0b29c5`; hosted run 38155835990 passed; independent review BLOCK (two High, two Medium: `D:/GitHub/ARCE-Task-Evidence/root-queue/W01-review/REVIEW.md`, SHA-256 `59540643…d388a`). Fixes run as W01F on the same branch |
+| [W02](TASK-W02-PROPULSION.md) | C17a propulsion components and typed fuel modes | `arce-v180-w02-propulsion` / `codex/v1.8.0-propulsion` | `1568699e` | `01a12b82-8061-7e13-94b8-a29fc73ef9f0` | running since 2026-10-11 |
+| [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | `arce-v180-w03-equipment` / `codex/v1.8.0-equipment` | `1568699e` | `01a12b82-8895-7573-8f65-3fb05884bbf1` | Merged as `1e36af58` on 2026-10-12 after hosted run 38155101250 and the [independent review](records/W03-REVIEW.md) (MERGE-WITH-FOLLOWUP: M1 and L1 queued) |
+| [W04](TASK-W04-FORCE-FIELD.md) | C17b force field projector, API 1.9 | `arce-v180-w04-force-field` / `codex/v1.8.0-w04-force-field` | `42321f8b` | `01a12bc4-62f1-75b1-b0e9-4d989e1b4fd2` | running since 2026-10-12 |
+| [W05](TASK-W05-ARC-FURNACE-CUTTING.md) | C16b arc furnace and cutting machine on the W01 kernel | `arce-v180-w05-arc-cutting` / `codex/v1.8.0-w05-arc-cutting` | W01 candidate `7fb1c1a3` | `01a12bcf-600a-7731-a836-d0b8a2cec0fc` | running since 2026-10-12 | ||  goto :error
+
+## Queued
+
+| Task | Scope | Dispatch when |
+|---|---|---|
+| (none) | | |
+
+Hosted CI runs on each implementer branch after Root pushes it (workflow change
+`2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
 
 ## Next candidates
 
-- C16b arc furnace and cutting machine, then the four C16c machines, all on the W01
-  kernel.
+- The four C16c machines (crystallizer, chemical reactor, laser etcher, centrifuge) on
+  the W01 kernel, after W05.
 - C17a loader variants, monitoring station and linker (ADR-065 section 4).
-- C17b station controls, landing pad and force field (ADR-065 sections 5 and 6).
+- C17b station controls and landing pad (ADR-065 sections 5 and 6.1); the landing pad
+  waits for W02.
 - C17c beacon and finder, satellite bay, solar array (ADR-065 sections 7 to 9).
 - C18a scrubber, charger and seals (ADR-066 sections 3 and 4).
-- C18b motion upgrades and jetpack (ADR-066 section 5.2), and the laser gun.
+- C18b motion upgrades and jetpack (ADR-066 section 5.2), and the laser gun. The same task fixes W03 review M1 (decode refused workstation roots from detached copies) and L1 (R-026 and the ADR-066 note name the noncanonical-NBT trigger).
 - C18c observatory and advancements (ADR-066 section 6).
 - C18d presentation and client configuration (ADR-066 section 7).
 - Parallel bugs:
   - the hosted chunk-save CME (run 38064322640);
-  - the unpaced multi-leg planetary flight test (run 38084795112).
+  - the unpaced multi-leg planetary flight test (run 38084795112);
+  - the 5 ms wall-clock budget per atmosphere-boundary callback
+    (`AtmosphereBoundaryRegistry.MAX_CALLBACK_NANOS`). Under machine load, the adapter
+    test mod's provider exceeded it and mod loading failed (W01 record, crash at
+    2026-10-12 00:18). Changing the budget needs an ADR.
+  - a HotSpot C2 compiler crash on the hosted runner: SIGSEGV in
+    `BoolNode::Ideal`, Temurin 17.0.20.1. It happened in run 38156329125 attempt 1, the
+    shared branch after the W03 merge, during the batch `flight_concurrency`, and exit
+    code 134 ended the GameTest server. The job was re-run. If the crash recurs, pin the
+    JDK or exclude the method from compilation.
 
 ## Parked
 

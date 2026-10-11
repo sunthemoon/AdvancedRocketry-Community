@@ -367,7 +367,8 @@ codex exec --json -s read-only -C <分配的目录> -o <输出文件> \
 - **中央文件**：TASK 可以允许实现者在注册类、语言文件和数据生成入口追加本切片的条目，
   合并冲突由 Root 解决。状态文件、台账、构建脚本和工作流只由 Root 修改。
 - **本机资源**：
-  - 最多同时运行三个实现者。每个实现者自行运行编译和定向单元测试。
+  - 通常最多同时运行三个实现者；关键路径上的修复任务可以临时作为第四个。每个实现者
+    自行运行编译和定向单元测试。
   - 完整 GameTest、runData、完整构建和原生服务器同一时间只运行一个，用机器锁
     `D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm` 串行（做法见
     `docs/work/v1.8.0-root-queue/WORKER-RULES.md`）。
