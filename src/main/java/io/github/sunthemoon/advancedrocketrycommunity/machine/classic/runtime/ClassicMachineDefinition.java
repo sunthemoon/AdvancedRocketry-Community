@@ -11,4 +11,11 @@ public record ClassicMachineDefinition(ResourceLocation kind, ResourceLocation p
                                        Supplier<RecipeType<ClassicMachineRecipe>> recipes) {
     public static final ClassicMachineDefinition LATHE = new ClassicMachineDefinition(
             ModIdentity.id("lathe"), ModIdentity.id("lathe"), () -> ModRecipes.LATHE_TYPE.get());
+    public static final ClassicMachineDefinition ARC_FURNACE = new ClassicMachineDefinition(
+            ModIdentity.id("arc_furnace"), ModIdentity.id("arc_furnace"), () -> ModRecipes.ARC_FURNACE_TYPE.get());
+    public static final ClassicMachineDefinition CUTTING = new ClassicMachineDefinition(
+            ModIdentity.id("cutting_machine"), ModIdentity.id("cutting_machine"), () -> ModRecipes.CUTTING_TYPE.get());
+    public static boolean controllerId(String id) {
+        return java.util.List.of(LATHE, ARC_FURNACE, CUTTING).stream().anyMatch(value -> value.kind().toString().equals(id));
+    }
 }

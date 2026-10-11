@@ -118,7 +118,7 @@ public final class ClassicRuntime {
         for (int index = 0; index < entities.size(); index++) {
             CompoundTag entity = entities.getCompound(index);
             String id = entity.getString("id");
-            boolean controller = id.equals(ModIdentity.id("lathe").toString());
+            boolean controller = ClassicMachineDefinition.controllerId(id);
             boolean hatch = id.equals(ModIdentity.id("classic_hatch").toString());
             if (controller && !controllerRootsBounded(entity)
                     || hatch && !ClassicHatchBlockEntity.bounded(entity.get(ClassicHatchBlockEntity.ROOT))) {

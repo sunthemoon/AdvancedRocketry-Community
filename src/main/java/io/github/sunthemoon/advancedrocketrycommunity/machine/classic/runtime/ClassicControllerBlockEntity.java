@@ -48,7 +48,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     public ClassicControllerBlockEntity(BlockPos position, BlockState state) {
         this(ModBlockEntities.LATHE.get(), position, state, ClassicMachineDefinition.LATHE);
     }
-    protected ClassicControllerBlockEntity(BlockEntityType<?> type, BlockPos position, BlockState state,
+    public ClassicControllerBlockEntity(BlockEntityType<?> type, BlockPos position, BlockState state,
                                            ClassicMachineDefinition definition) {
         super(type, position, state); this.definition = definition;
         UUID id = UUID.randomUUID();
@@ -200,7 +200,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     boolean needsLookup() { return lookupNeeded && formed() && checkpoint.job().isEmpty() && !transaction; }
     void lookupStarted() { lookupNeeded = false; reason = ClassicWait.LOOKUP; }
     boolean candidateMatches(ClassicMachineRecipe recipe, ProcessDefinition process) {
-        if (transaction || !formed() || !allPartsLoaded()) { return false; }
+        if (transaction || !formed() || !allPartsLoaded() || !recipe.enabled()) { return false; }
         ClassicCheckpoint before = checkpoint; transaction = true;
         try {
             var result = ClassicBatch.prepare(before.resources(), activeBanks(), recipe, process);
@@ -238,6 +238,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         if (!allPartsLoaded()) { invalidate(); reason = ClassicWait.UNLOADED; return; }
         if (recipe == null) { reason = ClassicWait.RECIPE_MISSING; return; }
         if (!job.signature().equals(recipe.rows().jsonSignature())) { reason = ClassicWait.RECIPE_CHANGED; return; }
+        if (!recipe.enabled()) { reason = ClassicWait.CONFIG_DISABLED; return; }
         if (process == null) { reason = ClassicWait.RECIPE_TAGS_INVALID; return; }
         if (level.hasNeighborSignal(worldPosition)) { reason = ClassicWait.REDSTONE; return; }
         ClassicCheckpoint before = checkpoint; transaction = true;

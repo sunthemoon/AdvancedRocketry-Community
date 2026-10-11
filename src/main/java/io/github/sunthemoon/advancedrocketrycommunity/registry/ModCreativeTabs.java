@@ -28,6 +28,11 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.FLUID_OUTPUT_HATCH.get());
                         output.accept(ModItems.POWER_INPUT_PLUG.get());
                         output.accept(ModItems.LATHE.get());
+                        output.accept(ModItems.ARC_FURNACE.get());
+                        output.accept(ModItems.CUTTING_MACHINE.get());
+                        output.accept(ModItems.BLAST_BRICK.get());
+                        output.accept(ModItems.SAW_BLADE.get());
+                        output.accept(ModItems.IRON_SAW_BLADE.get());
                         output.accept(ModItems.COMBUSTION_GENERATOR.get());
                         output.accept(ModItems.SOLAR_GENERATOR.get());
                         output.accept(ModItems.SOLAR_PANEL.get());

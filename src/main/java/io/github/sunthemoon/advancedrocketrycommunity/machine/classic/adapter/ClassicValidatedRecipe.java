@@ -21,6 +21,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 /** Owned strict rows. Native binding is private, guarded, and epoch-specific. */
 public final class ClassicValidatedRecipe {
     private final ResourceLocation id;
+    private final String type;
+    private final Boolean sawmill;
     private final String canonicalJson;
     private final String signature;
     private final List<ClassicItemInput> itemInputs;
@@ -34,7 +36,18 @@ public final class ClassicValidatedRecipe {
     ClassicValidatedRecipe(ResourceLocation id, String canonicalJson, List<ClassicItemInput> itemInputs,
             List<ClassicItemOutput> itemOutputs, List<ClassicFluidRow> fluidInputs, List<ClassicFluidRow> fluidOutputs,
             int processingTicks, int energyPerTick) {
+        this(id, "advancedrocketrycommunity:lathe", null, canonicalJson, itemInputs, itemOutputs,
+                fluidInputs, fluidOutputs, processingTicks, energyPerTick);
+    }
+
+    ClassicValidatedRecipe(ResourceLocation id, String type, Boolean sawmill, String canonicalJson,
+            List<ClassicItemInput> itemInputs, List<ClassicItemOutput> itemOutputs,
+            List<ClassicFluidRow> fluidInputs, List<ClassicFluidRow> fluidOutputs, int processingTicks, int energyPerTick) {
         this.id = ClassicValueChecks.id(id);
+        ClassicValueChecks.require(java.util.Set.of("advancedrocketrycommunity:lathe", "advancedrocketrycommunity:arc_furnace",
+                "advancedrocketrycommunity:cutting").contains(type)
+                && (sawmill == null || type.equals("advancedrocketrycommunity:cutting")), "Recipe type/flags");
+        this.type = type; this.sawmill = sawmill;
         ClassicValueChecks.require(canonicalJson != null && canonicalJson.length() <= RecipeJsonSignature.MAX_BYTES
                 && canonicalJson.getBytes(StandardCharsets.UTF_8).length <= RecipeJsonSignature.MAX_BYTES,
                 "Recipe text bound");
@@ -52,6 +65,9 @@ public final class ClassicValidatedRecipe {
     }
 
     public ResourceLocation id() { return id; }
+    public String type() { return type; }
+    public boolean sawmill() { return Boolean.TRUE.equals(sawmill); }
+    public boolean enabled(boolean sawmillEnabled) { return !sawmill() || sawmillEnabled; }
     public String canonicalJson() { return canonicalJson; }
     public String jsonSignature() { return signature; }
     public List<ClassicItemInput> itemInputs() { return itemInputs; }
@@ -63,7 +79,8 @@ public final class ClassicValidatedRecipe {
 
     private String canonicalRows() {
         JsonObject root = new JsonObject();
-        root.addProperty("type", "advancedrocketrycommunity:lathe"); root.addProperty("schema_version", 1);
+        root.addProperty("type", type); root.addProperty("schema_version", 1);
+        if (sawmill != null) { root.addProperty("sawmill", sawmill); }
         JsonArray inputs = new JsonArray();
         for (ClassicItemInput input : itemInputs) {
             JsonObject row = new JsonObject(); row.add("ingredient", ClassicRecipeCodec.parse(input.canonicalIngredientJson()));

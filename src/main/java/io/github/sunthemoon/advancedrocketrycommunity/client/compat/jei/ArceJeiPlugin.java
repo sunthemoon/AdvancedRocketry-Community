@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.client.PrecisionAssemblerS
 import io.github.sunthemoon.advancedrocketrycommunity.client.RollingMachineScreen;
 import io.github.sunthemoon.advancedrocketrycommunity.diagnostics.BetaDiagnosticId;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipe;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicMachineRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.rolling.RollingMachineRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialContent;
@@ -42,7 +43,9 @@ public final class ArceJeiPlugin implements IModPlugin {
                 new RollingMachineJeiCategory(helper),
                 new PrecisionAssemblerJeiCategory(helper),
                 new SmallPlatePressJeiCategory(helper),
-                new ClassicLatheJeiCategory(helper)
+                new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.LATHE, "lathe", ModItems.LATHE.get()),
+                new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.ARC_FURNACE, "arc_furnace", ModItems.ARC_FURNACE.get()),
+                new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.CUTTING, "cutting_machine", ModItems.CUTTING_MACHINE.get())
         );
     }
 
@@ -64,11 +67,9 @@ public final class ArceJeiPlugin implements IModPlugin {
         List<SmallPlatePressRecipe> pressRecipes = level == null ? List.of()
                 : level.getRecipeManager().getAllRecipesFor(MaterialContent.SMALL_PLATE_PRESS_TYPE.get());
         registration.addRecipes(SmallPlatePressJeiCategory.TYPE, pressRecipes);
-        var latheRecipes = level == null ? java.util.List.<io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicMachineRecipe>of()
-                : level.getRecipeManager().getAllRecipesFor(ModRecipes.LATHE_TYPE.get());
-        registration.addRecipes(ClassicLatheJeiCategory.TYPE, latheRecipes.stream().filter(recipe -> {
-            try { recipe.definition(); return true; } catch (IllegalArgumentException invalid) { return false; }
-        }).toList());
+        registerClassic(registration, level, ModRecipes.LATHE_TYPE.get(), ClassicMachineJeiCategory.LATHE);
+        registerClassic(registration, level, ModRecipes.ARC_FURNACE_TYPE.get(), ClassicMachineJeiCategory.ARC_FURNACE);
+        registerClassic(registration, level, ModRecipes.CUTTING_TYPE.get(), ClassicMachineJeiCategory.CUTTING);
         AdvancedRocketryCommunity.LOGGER.info(
                 "{} optional_compat=jei status=registered recipes={}",
                 BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
@@ -87,7 +88,9 @@ public final class ArceJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(ModItems.ROLLING_MACHINE.get(), RollingMachineJeiCategory.TYPE);
         registration.addRecipeCatalyst(ModItems.PRECISION_ASSEMBLER.get(), PrecisionAssemblerJeiCategory.TYPE);
         registration.addRecipeCatalyst(MaterialContent.SMALL_PLATE_PRESS_ITEM.get(), SmallPlatePressJeiCategory.TYPE);
-        registration.addRecipeCatalyst(ModItems.LATHE.get(), ClassicLatheJeiCategory.TYPE);
+        registration.addRecipeCatalyst(ModItems.LATHE.get(), ClassicMachineJeiCategory.LATHE);
+        registration.addRecipeCatalyst(ModItems.ARC_FURNACE.get(), ClassicMachineJeiCategory.ARC_FURNACE);
+        registration.addRecipeCatalyst(ModItems.CUTTING_MACHINE.get(), ClassicMachineJeiCategory.CUTTING);
     }
 
     @Override
@@ -108,5 +111,15 @@ public final class ArceJeiPlugin implements IModPlugin {
                 PrecisionAssemblerScreen.class, 18, 71, 212, 11,
                 PrecisionAssemblerJeiCategory.TYPE
         );
+    }
+
+    private static void registerClassic(IRecipeRegistration registration, ClientLevel level,
+            net.minecraft.world.item.crafting.RecipeType<ClassicMachineRecipe> type,
+            mezz.jei.api.recipe.RecipeType<ClassicMachineRecipe> category) {
+        var recipes = level == null ? List.<ClassicMachineRecipe>of()
+                : level.getRecipeManager().getAllRecipesFor(type);
+        registration.addRecipes(category, recipes.stream().filter(recipe -> {
+            try { recipe.definition(); return true; } catch (IllegalArgumentException invalid) { return false; }
+        }).toList());
     }
 }

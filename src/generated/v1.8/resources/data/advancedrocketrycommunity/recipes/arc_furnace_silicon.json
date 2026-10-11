@@ -1,0 +1,22 @@
+{
+  "type": "advancedrocketrycommunity:arc_furnace",
+  "energy_per_tick": 1,
+  "fluid_inputs": [],
+  "fluid_outputs": [],
+  "item_inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "minecraft:sand"
+      }
+    }
+  ],
+  "item_outputs": [
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:silicon_ingot"
+    }
+  ],
+  "processing_time": 12000,
+  "schema_version": 1
+}

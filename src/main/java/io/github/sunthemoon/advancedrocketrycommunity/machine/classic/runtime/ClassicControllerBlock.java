@@ -27,13 +27,17 @@ import net.minecraftforge.network.NetworkHooks;
 
 public final class ClassicControllerBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    private final java.util.function.BiFunction<BlockPos, BlockState, BlockEntity> factory;
     public ClassicControllerBlock(Properties properties) {
-        super(properties); registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        this(properties, ClassicControllerBlockEntity::new);
+    }
+    public ClassicControllerBlock(Properties properties, java.util.function.BiFunction<BlockPos, BlockState, BlockEntity> factory) {
+        super(properties); this.factory = factory; registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
     @Override public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
-    @Override public BlockEntity newBlockEntity(BlockPos position, BlockState state) { return new ClassicControllerBlockEntity(position, state); }
+    @Override public BlockEntity newBlockEntity(BlockPos position, BlockState state) { return factory.apply(position, state); }
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(FACING); }
     @Override public BlockState rotate(BlockState state, Rotation rotation) { return state.setValue(FACING, rotation.rotate(state.getValue(FACING))); }

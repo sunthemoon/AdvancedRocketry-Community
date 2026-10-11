@@ -225,6 +225,11 @@ public final class ModItems {
     public static final RegistryObject<Item> FLUID_OUTPUT_HATCH = blockItem("fluid_output_hatch", ModBlocks.FLUID_OUTPUT_HATCH);
     public static final RegistryObject<Item> POWER_INPUT_PLUG = blockItem("power_input_plug", ModBlocks.POWER_INPUT_PLUG);
     public static final RegistryObject<Item> LATHE = blockItem("lathe", ModBlocks.LATHE);
+    public static final RegistryObject<Item> ARC_FURNACE = blockItem("arc_furnace", ModBlocks.ARC_FURNACE);
+    public static final RegistryObject<Item> CUTTING_MACHINE = blockItem("cutting_machine", ModBlocks.CUTTING_MACHINE);
+    public static final RegistryObject<Item> BLAST_BRICK = blockItem("blast_brick", ModBlocks.BLAST_BRICK);
+    public static final RegistryObject<Item> SAW_BLADE = blockItem("saw_blade", ModBlocks.SAW_BLADE);
+    public static final RegistryObject<Item> IRON_SAW_BLADE = component("iron_saw_blade");
 
     private ModItems() {
     }
