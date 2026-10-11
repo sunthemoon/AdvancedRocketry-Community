@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.api.endgame.EndgameEffectEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserShaft;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.laser.LaserTargetMenu;
@@ -70,32 +71,32 @@ public final class LaserPhysicalGameTests {
 
     @BeforeBatch(batch = BATCH)
     public static void enablePhysicalMining(ServerLevel level) {
-        CommonConfig.ENDGAME_LASER_PHYSICAL.set(true);
+        SwitchOverrides.set(CommonConfig.ENDGAME_LASER_PHYSICAL, true);
     }
 
     @AfterBatch(batch = BATCH)
     public static void disablePhysicalMining(ServerLevel level) {
-        CommonConfig.ENDGAME_LASER_PHYSICAL.set(false);
+        SwitchOverrides.clear(CommonConfig.ENDGAME_LASER_PHYSICAL);
     }
 
     @BeforeBatch(batch = ATTACHED_BATCH)
     public static void enablePhysicalMiningForAttachedBlocks(ServerLevel level) {
-        CommonConfig.ENDGAME_LASER_PHYSICAL.set(true);
+        SwitchOverrides.set(CommonConfig.ENDGAME_LASER_PHYSICAL, true);
     }
 
     @AfterBatch(batch = ATTACHED_BATCH)
     public static void disablePhysicalMiningForAttachedBlocks(ServerLevel level) {
-        CommonConfig.ENDGAME_LASER_PHYSICAL.set(false);
+        SwitchOverrides.clear(CommonConfig.ENDGAME_LASER_PHYSICAL);
     }
 
     @BeforeBatch(batch = COUNTER_BATCH)
     public static void enablePhysicalMiningForCounters(ServerLevel level) {
-        CommonConfig.ENDGAME_LASER_PHYSICAL.set(true);
+        SwitchOverrides.set(CommonConfig.ENDGAME_LASER_PHYSICAL, true);
     }
 
     @AfterBatch(batch = COUNTER_BATCH)
     public static void disablePhysicalMiningForCounters(ServerLevel level) {
-        CommonConfig.ENDGAME_LASER_PHYSICAL.set(false);
+        SwitchOverrides.clear(CommonConfig.ENDGAME_LASER_PHYSICAL);
     }
 
     private static void onEffect(EndgameEffectEvent event) {
@@ -206,10 +207,10 @@ public final class LaserPhysicalGameTests {
                 .thenExecuteAfter(25, () -> expectStop(helper, drill, target, layer2, EndgameCode.TARGET_PROTECTED))
                 .thenExecute(() -> {
                     breakVeto = null;
-                    CommonConfig.ENDGAME_LASER_PHYSICAL.set(false);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_LASER_PHYSICAL, false);
                 })
                 .thenWaitUntil(() -> expectStop(helper, drill, target, layer2, EndgameCode.PHYSICAL_DISABLED))
-                .thenExecute(() -> CommonConfig.ENDGAME_LASER_PHYSICAL.set(true))
+                .thenExecute(() -> SwitchOverrides.set(CommonConfig.ENDGAME_LASER_PHYSICAL, true))
                 .thenWaitUntil(() -> helper.assertTrue(target.opsDone() == 2, "No second layer: " + drill.describe()))
                 .thenExecute(() -> {
                     helper.assertTrue(layer2.stream().allMatch(cell -> overworld.getBlockState(cell).isAir()),

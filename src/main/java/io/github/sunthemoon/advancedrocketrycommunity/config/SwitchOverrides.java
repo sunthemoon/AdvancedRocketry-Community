@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 /**
- * In-memory values for the COMMON server switches (the worldgen switches and the small plate press), for GameTests
+ * In-memory values for the COMMON server switches, for GameTests
  * only (C15b review R1-M4). Setting a {@link ForgeConfigSpec.BooleanValue} writes the config file, which Forge
  * reloads on its own watcher thread, so a test's write and a later reload can race and put back an older value. An
  * override is never saved and wins over the file until it is cleared.

@@ -333,10 +333,17 @@ public final class CommonConfig {
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
     public static EndgameSettings endgameSettings() {
         if (!SPEC.isLoaded()) {
-            return EndgameSettings.DEFAULTS;
+            EndgameSettings defaults = EndgameSettings.DEFAULTS;
+            return new EndgameSettings(serverSwitchValue(ENDGAME_LASER_DRILL),
+                    serverSwitchValue(ENDGAME_LASER_PHYSICAL), serverSwitchValue(ENDGAME_RAILGUN),
+                    serverSwitchValue(ENDGAME_BLACK_HOLE_GENERATOR), serverSwitchValue(ENDGAME_GRAVITY_FIELD),
+                    serverSwitchValue(ENDGAME_SPACE_ELEVATOR), defaults.intentIntervalTicks(),
+                    defaults.selectionIntervalTicks(), defaults.endpointsGlobal(), defaults.endpointsPerOwner(),
+                    defaults.zones());
         }
-        return new EndgameSettings(ENDGAME_LASER_DRILL.get(), ENDGAME_LASER_PHYSICAL.get(), ENDGAME_RAILGUN.get(),
-                ENDGAME_BLACK_HOLE_GENERATOR.get(), ENDGAME_GRAVITY_FIELD.get(), ENDGAME_SPACE_ELEVATOR.get(),
+        return new EndgameSettings(serverSwitchValue(ENDGAME_LASER_DRILL), serverSwitchValue(ENDGAME_LASER_PHYSICAL),
+                serverSwitchValue(ENDGAME_RAILGUN), serverSwitchValue(ENDGAME_BLACK_HOLE_GENERATOR),
+                serverSwitchValue(ENDGAME_GRAVITY_FIELD), serverSwitchValue(ENDGAME_SPACE_ELEVATOR),
                 ENDGAME_INTENT_INTERVAL_TICKS.get(), ENDGAME_SELECTION_INTERVAL_TICKS.get(),
                 ENDGAME_ENDPOINTS_GLOBAL.get(), ENDGAME_ENDPOINTS_PER_OWNER.get(), ENDGAME_ZONES.get());
     }
@@ -456,6 +463,8 @@ public final class CommonConfig {
     private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED,
             COMBUSTION_GENERATOR_ENABLED, SOLAR_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
             CLASSIC_GRAVITY_ENABLED, CLASSIC_EQUIPMENT_ENABLED,
+            ENDGAME_LASER_DRILL, ENDGAME_LASER_PHYSICAL, ENDGAME_RAILGUN, ENDGAME_BLACK_HOLE_GENERATOR,
+            ENDGAME_GRAVITY_FIELD, ENDGAME_SPACE_ELEVATOR,
             OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,
             CHARRED_TREES_ENABLED, LIGHTWOOD_TREES_ENABLED, SWAMP_TREES_ENABLED, INVERTED_PILLARS_ENABLED,
             CRYSTAL_CLUSTERS_ENABLED, ELECTRIC_MUSHROOMS_ENABLED);

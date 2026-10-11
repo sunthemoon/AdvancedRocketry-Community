@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorAnchorBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorPairs;
@@ -81,7 +82,7 @@ public final class ElevatorGameTests {
 
     @AfterBatch(batch = VALIDITY)
     public static void restoreSwitch(ServerLevel level) {
-        CommonConfig.ENDGAME_SPACE_ELEVATOR.set(true);
+        SwitchOverrides.clear(CommonConfig.ENDGAME_SPACE_ELEVATOR);
     }
 
     /**
@@ -626,7 +627,7 @@ public final class ElevatorGameTests {
                 })
                 .thenExecute(() -> {
                     service().barrier(root -> null);
-                    CommonConfig.ENDGAME_SPACE_ELEVATOR.set(false);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_SPACE_ELEVATOR, false);
                     fixture.terminal().storage().input().setStackInSlot(0, new ItemStack(Items.DIRT, 1));
                     fixture.terminal().storage().energy().set(100_000);
                     helper.assertTrue(fixture.terminal().launch(fixture.space, service(), devices(), fixture.owner,
@@ -641,7 +642,7 @@ public final class ElevatorGameTests {
                     ElevatorPair pair = root().pairs().forStation(fixture.stationId).orElseThrow();
                     helper.assertTrue(ElevatorPairs.unbind(fixture.server, service(), devices(), pair, fixture.owner,
                             false, fixture.level.getGameTime()).ok(), "The disabled switch stopped an unbind");
-                    CommonConfig.ENDGAME_SPACE_ELEVATOR.set(true);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_SPACE_ELEVATOR, true);
                     fixture.terminal().storage().receive().setStackInSlot(0, ItemStack.EMPTY);
                     fixture.terminal().storage().input().setStackInSlot(0, ItemStack.EMPTY);
                 })

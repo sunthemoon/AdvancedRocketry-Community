@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.SingularityContent;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleGeneratorBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlockEntity;
@@ -48,7 +49,7 @@ public final class BlackHoleGeneratorGameTests {
 
     @AfterBatch(batch = BATCH)
     public static void restoreSwitch(ServerLevel level) {
-        CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR.set(true);
+        SwitchOverrides.clear(CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR);
     }
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 1200)
@@ -129,14 +130,14 @@ public final class BlackHoleGeneratorGameTests {
                     helper.assertTrue(TicketCounts.near(space, chunk, 3).equals(tickets),
                             "A paused generator changed the tickets");
                     generator.setEnergyForTest(0);
-                    CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR.set(false);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR, false);
                 })
                 .thenWaitUntil(() -> helper.assertTrue(generator.status() == EndgameCode.SYSTEM_DISABLED,
                         "The switch did not pause the generator"))
                 .thenExecuteAfter(5, () -> {
                     helper.assertTrue(generator.energy() == 0 && generator.remaining() == 0 && count(generator) == 3,
                             "A disabled generator burned");
-                    CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR.set(true);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_BLACK_HOLE_GENERATOR, true);
                     generator.fuel().setStackInSlot(0, ItemStack.EMPTY);
                     for (int dx = -1; dx <= 1; dx++) {
                         for (int dy = -1; dy <= 1; dy++) {

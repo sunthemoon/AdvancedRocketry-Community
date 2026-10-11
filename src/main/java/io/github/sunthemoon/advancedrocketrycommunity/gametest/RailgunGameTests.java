@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.content.SingularityContent;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun.RailgunBlockEntity;
@@ -77,7 +78,7 @@ public final class RailgunGameTests {
 
     @AfterBatch(batch = REFUSALS)
     public static void restoreSwitch(ServerLevel level) {
-        CommonConfig.ENDGAME_RAILGUN.set(true);
+        SwitchOverrides.clear(CommonConfig.ENDGAME_RAILGUN);
     }
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 900)
@@ -187,12 +188,12 @@ public final class RailgunGameTests {
                 .thenWaitUntil(() -> refused(helper, source, EndgameCode.INSUFFICIENT_ENERGY))
                 .thenExecute(() -> {
                     source.storage().energy().set(100_000);
-                    CommonConfig.ENDGAME_RAILGUN.set(false);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_RAILGUN, false);
                     source.launchForTest(owner);
                 })
                 .thenWaitUntil(() -> refused(helper, source, EndgameCode.SYSTEM_DISABLED))
                 .thenExecute(() -> {
-                    CommonConfig.ENDGAME_RAILGUN.set(true);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_RAILGUN, true);
                     helper.assertTrue(source.storage().input().getStackInSlot(0).getCount() == 5
                                     && source.storage().energy().energy() == 100_000 && source.source().outbox().isEmpty(),
                             "A refused launch changed something: " + source.describe());
@@ -211,7 +212,7 @@ public final class RailgunGameTests {
                     helper.assertTrue(level.getBlockState(sourcePos).is(ModBlocks.RAILGUN.get()),
                             "The busy railgun is gone");
                     // The disabled switch keeps arrivals going: the destination is removed while the cargo travels.
-                    CommonConfig.ENDGAME_RAILGUN.set(false);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_RAILGUN, false);
                     demolish(level, targetPos);
                     helper.assertTrue(root().endpoint(target.deviceId().orElseThrow()).isEmpty(),
                             "The removed destination is still indexed");
@@ -244,7 +245,7 @@ public final class RailgunGameTests {
                     helper.assertTrue(root().transits().record(key).isEmpty(), "Not pruned");
                 })
                 .thenExecute(() -> {
-                    CommonConfig.ENDGAME_RAILGUN.set(true);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_RAILGUN, true);
                     source.storage().receive().setStackInSlot(0, ItemStack.EMPTY);
                     demolish(level, sourcePos);
                     demolish(level, foreignPos);

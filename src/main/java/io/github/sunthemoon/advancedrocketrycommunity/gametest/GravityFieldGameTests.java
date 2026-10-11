@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.api.endgame.EndgameEffect;
 import io.github.sunthemoon.advancedrocketrycommunity.api.endgame.EndgameEffectEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityFieldMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity.GravityTrust;
@@ -82,7 +83,7 @@ public final class GravityFieldGameTests {
             }
         } finally {
             try {
-                CommonConfig.ENDGAME_GRAVITY_FIELD.set(true);
+                SwitchOverrides.clear(CommonConfig.ENDGAME_GRAVITY_FIELD);
                 veto = null;
                 if (diagnostics != null) {
                     diagnostics.observe("after_batch_after_restore");
@@ -183,14 +184,14 @@ public final class GravityFieldGameTests {
                 .thenWaitUntil(() -> helper.assertTrue(device.active(), "Not active again"))
                 .thenExecute(() -> {
                     expectGravity(helper, owner, BASE * 0.5D, "the owner again");
-                    CommonConfig.ENDGAME_GRAVITY_FIELD.set(false);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_GRAVITY_FIELD, false);
                     diagnostics.observe("disabled_set");
                 })
                 .thenExecuteAfter(2, () -> {
                     diagnostics.observe("before_disable_assertions");
                     expectGravity(helper, owner, BASE, "a disabled system restores gravity");
                     helper.assertTrue(!device.active(), "A disabled field stayed active");
-                    CommonConfig.ENDGAME_GRAVITY_FIELD.set(true);
+                    SwitchOverrides.set(CommonConfig.ENDGAME_GRAVITY_FIELD, true);
                     diagnostics.observe("enabled_set");
                 })
                 .thenWaitUntil(() -> helper.assertTrue(device.active(), "Not active after the switch"))
