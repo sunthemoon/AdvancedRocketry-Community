@@ -209,6 +209,9 @@ public final class SuitWorkstationGameTests {
             helper.assertTrue(service.countPieces(f.player) == 0, "Unenchanted native armor sealed suit");
             pieces.forEach(stack -> stack.enchant(SuitEquipmentContent.SPACE_BREATHING.get(), 1));
             helper.assertTrue(service.countPieces(f.player) == 4, "Correctly worn enchanted armor not recognized");
+            var helmetBefore = pieces.get(0).serializeNBT();
+            helper.assertTrue(!EnchantedSuitOxygen.set(pieces.get(0), 2) && helmetBefore.equals(pieces.get(0).serializeNBT()),
+                    "Non-chest enchanted armor acquired an oxygen store");
             helper.assertTrue(EnchantedSuitOxygen.set(pieces.get(1), 2), "Native oxygen setup refused");
             var paid = service.decideAndCommit(f.player, service.readOxygen(f.player), new PlayerLifeSupportInput(false, BreathabilityState.VACUUM, 4, 2, 19));
             helper.assertTrue(paid.oxygenUnits() == 1 && EnchantedSuitOxygen.read(pieces.get(1).getTag()) == 1, "Enchantment granted unbounded oxygen");

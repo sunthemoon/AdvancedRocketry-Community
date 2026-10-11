@@ -27,7 +27,7 @@ public final class EnchantedSuitOxygen {
         return amount >= 0 && amount <= 2_000 ? amount : -1;
     }
     public static boolean set(ItemStack stack, int units) {
-        if (!EquipmentNbt.safe(stack) || read(stack.getTag()) < 0 || units < 0 || units > 2_000) { return false; }
+        if (!eligible(stack, EquipmentSlot.CHEST) || read(stack.getTag()) < 0 || units < 0 || units > 2_000) { return false; }
         CompoundTag outer = stack.hasTag() ? stack.getTag().copy() : new CompoundTag();
         CompoundTag root = new CompoundTag(); root.putInt("schema_version", 1); root.putInt("oxygen_units", units);
         outer.put(KEY, root);
