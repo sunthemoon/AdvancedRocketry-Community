@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "c": {
+      "item": "minecraft:glass_bottle"
+    },
+    "p": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    " p ",
+    "pcp",
+    " p "
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:high_pressure_tank"
+  }
+}

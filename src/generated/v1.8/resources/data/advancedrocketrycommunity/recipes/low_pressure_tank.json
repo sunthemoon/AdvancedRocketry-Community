@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "c": {
+      "item": "minecraft:glass_bottle"
+    },
+    "p": {
+      "tag": "forge:plates/tin"
+    }
+  },
+  "pattern": [
+    " p ",
+    "pcp",
+    " p "
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:low_pressure_tank"
+  }
+}
