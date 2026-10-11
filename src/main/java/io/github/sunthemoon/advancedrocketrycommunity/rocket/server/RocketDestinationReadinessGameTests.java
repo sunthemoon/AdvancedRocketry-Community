@@ -194,7 +194,7 @@ public final class RocketDestinationReadinessGameTests {
             long now = earth.getGameTime();
             RocketStructureSnapshot relocated = sourceSnapshot.relocated(
                     UUID.randomUUID(), moon.dimension().location(), position(MOON_ORIGIN), now);
-            RocketFuelState fuel = RocketFuelState.empty(sourceSnapshot.stats().fuelCapacity())
+            RocketFuelState fuel = RocketFuelState.empty(sourceSnapshot.propulsion().orElseThrow())
                     .fill(sourceSnapshot.stats().fuelCapacity()).state();
             var planned = RocketFlightPlanner.plan(sourceSnapshot.stats(), fuel,
                     RocketFlightPlanner.EARTH, RocketFlightPlanner.MOON, transfer, now);
@@ -205,7 +205,7 @@ public final class RocketDestinationReadinessGameTests {
                     sourceSnapshot.sourceOrigin(), now)
                     .withFuel(fuel, now).withPlan(plan).startCountdown(now)
                     .completeCountdown(now).beginTransit(transfer, now);
-            RocketFlightData arrival = transit.arriveAtDestination(fuel.debit(transfer, plan.requiredFuel()).state(),
+            RocketFlightData arrival = transit.arriveAtDestination(fuel.debit(plan).state(),
                     CelestialIds.MOON_ID, moon.dimension().location(), relocated.sourceOrigin(), now);
             return RocketTransferRecord.create(transfer, logical, owner, source.getUUID(), sourceSnapshot,
                     relocated, transit, arrival, plan.requiredFuel(), now);

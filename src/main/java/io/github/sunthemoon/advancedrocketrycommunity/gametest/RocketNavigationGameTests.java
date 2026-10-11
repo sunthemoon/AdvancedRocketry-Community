@@ -74,7 +74,9 @@ public final class RocketNavigationGameTests {
                 helper.assertTrue(chunks.equals(chunks(helper)), "Navigation loaded chunks");
                 helper.assertTrue(before.equals(rocket.flightData().orElseThrow()) && stationBefore.equals(stations.save(new CompoundTag()))
                         && journal.equals(RocketTransferSavedData.get(helper.getLevel().getServer()).save(new CompoundTag())), "Read-only navigation mutated authority");
-                rocket.updateFlightData(before.withFuel(RocketFuelState.restore(before.fuel().capacity(), 1, List.of()), helper.getLevel().getGameTime()));
+                var reduced = before.fuel().debit(UUID.randomUUID(), before.fuel().amount() - 1);
+                helper.assertTrue(reduced.success() && reduced.state().amount() == 1, "Native fixture debit failed");
+                rocket.updateFlightData(before.withFuel(reduced.state(), helper.getLevel().getGameTime()));
                 helper.assertTrue(manager.navigation(owner, rocket).quotes().forTarget(MARS).status() == RocketNavigationStatus.INSUFFICIENT_FUEL,
                         "Insufficient fuel status not explained");
                 rocket.updateFlightData(before);
@@ -109,7 +111,9 @@ public final class RocketNavigationGameTests {
                 var original = rocket.flightData().orElseThrow();
                 var before = menu.navigation();
                 helper.assertTrue(before.stations().size() == 1, "Menu did not list its accessible station");
-                rocket.updateFlightData(original.withFuel(RocketFuelState.restore(original.fuel().capacity(), 1, List.of()), helper.getLevel().getGameTime()));
+                var reduced = original.fuel().debit(UUID.randomUUID(), original.fuel().amount() - 1);
+                helper.assertTrue(reduced.success() && reduced.state().amount() == 1, "Native fixture debit failed");
+                rocket.updateFlightData(original.withFuel(reduced.state(), helper.getLevel().getGameTime()));
                 helper.assertTrue(menu.quotes().forTarget(MARS).status() == RocketNavigationStatus.INSUFFICIENT_FUEL,
                         "Changed flight data waited for periodic refresh");
                 rocket.updateFlightData(original);

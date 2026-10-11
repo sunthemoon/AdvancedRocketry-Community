@@ -75,6 +75,7 @@ public final class RocketPropulsionGameTests {
     public static void explicitIntegratedDefinitionForNewHostIdentityStaysAbstract(GameTestHelper helper) {
         BlockPos origin = new BlockPos(3, 2, 3); placeLegalRocket(helper, origin);
         helper.setBlock(origin, ModBlocks.ADVANCED_BIPROPELLANT_ROCKET_MOTOR.get());
+        helper.setBlock(origin.west(), ModBlocks.ROCKET_FUEL_TANK.get());
         var registries = net.minecraftforge.registries.ForgeRegistries.BLOCKS;
         try (var registry = new io.github.sunthemoon.advancedrocketrycommunity.compat.rocket.component.RocketComponentRegistry(
                 id -> registries.containsKey(id) ? registries.getValue(id) : null)) {
@@ -136,6 +137,13 @@ public final class RocketPropulsionGameTests {
             helper.assertTrue(!manager.confirmDisassembly(player, stale), "Unload did not invalidate quote");
             helper.assertTrue(RocketPropulsionInteraction.exchange(player, rocket, hand)
                     == net.minecraft.world.InteractionResult.CONSUME, "Oxidizer refill refused");
+            manager.requestDisassembly(player, rocket);
+            var retained = rocket.flightData().orElseThrow();
+            helper.setBlock(origin, net.minecraft.world.level.block.Blocks.IRON_BLOCK);
+            helper.assertTrue(!manager.confirmDisassembly(player, player.token)
+                    && rocket.isAlive() && retained.equals(rocket.flightData().orElseThrow()),
+                    "Failed restoration changed the complete propulsion authority");
+            helper.setBlock(origin, net.minecraft.world.level.block.Blocks.AIR);
             manager.requestDisassembly(player, rocket);
             helper.assertTrue(manager.confirmDisassembly(player, player.token) && rocket.isRemoved(), "Fresh consent did not restore hardware");
             helper.assertBlockPresent(ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get(), origin);
