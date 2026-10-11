@@ -216,6 +216,15 @@ public final class SuitWorkstationGameTests {
             helper.assertTrue(enchant.getMaxLevel() == 1 && !enchant.isAllowedOnBooks() && !enchant.isDiscoverable()
                     && !enchant.isTradeable() && !enchant.canApplyAtEnchantingTable(pieces.get(1)), "Restricted enchantment acquisition changed");
             helper.assertTrue(ArmorEquipment.install(pieces.get(1), module("jetpack")) == null, "Native enchanted armor accepted modules");
+            CompoundTag preserved = pieces.get(1).serializeNBT();
+            SwitchOverrides.set(CommonConfig.CLASSIC_EQUIPMENT_ENABLED, false);
+            try {
+                helper.assertTrue(service.countPieces(f.player) == 0 && !service.isChest(pieces.get(1)), "Disabled enchantment still sealed worn armor");
+                var reading = service.readOxygen(f.player);
+                service.decideAndCommit(f.player, reading, new PlayerLifeSupportInput(false, BreathabilityState.VACUUM,
+                        service.countPieces(f.player), reading.oxygenUnits(), 19));
+                helper.assertTrue(preserved.equals(pieces.get(1).serializeNBT()), "Disabled enchantment spent or rewrote oxygen");
+            } finally { SwitchOverrides.clear(CommonConfig.CLASSIC_EQUIPMENT_ENABLED); }
             service.clear();
         }
         helper.succeed();

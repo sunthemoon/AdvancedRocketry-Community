@@ -201,7 +201,8 @@ public final class SuitEquipmentService {
     }
 
     private boolean enchanted(ItemStack stack, EquipmentSlot slot) {
-        return catalog.find(stack.getItem()) == null && EnchantedSuitOxygen.eligible(stack, slot);
+        return CommonConfig.classicEquipmentEnabled() && catalog.find(stack.getItem()) == null
+                && EnchantedSuitOxygen.eligible(stack, slot);
     }
     private boolean sameNative(ServerPlayer player, Reading reading) {
         ItemStack stack = reading.stack;
