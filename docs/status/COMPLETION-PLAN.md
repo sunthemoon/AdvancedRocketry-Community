@@ -194,6 +194,15 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     记录提交和 Main 远程推送另行关联，不把文档后继当作新增 JVM 运行。
     NEW 人工审核、钢初始来源、真实玩家获取/完整图、重启/客户端与全部 Gate 仍开放，
     不改已有电路替代配方，不标记台账交付。
+  - [~] [C16d-LIQUID-IO-BOARD-04](../work/v1.8.0-c16d-components-graph/LIQUID-IO-BOARD-QUALIFICATION-04.md)：
+    流体 IO 电路板的普通 Item、工作台/精密装配生产、解锁与原创展示已提交；
+    精确源码 `0dc14e4f` 已完成功能回归和独立源码、生成资源、原始结果审核，
+    源码分支正常推送，Main 本地源码快进已核对原状态与所有者哈希。
+    首次生成对账缺少语言文件仍失败，清理被执行前拒绝且未重试；
+    相同作者提交的新检出产生完整资源，最终两次生成是缓存幂等/字节一致检查。
+    原日志规则、断言、时间和机器接口不变，不作为独立 JVM 复跑或 Gate 批准。
+    NEW 人工审核、初始钢、真实玩家/完整图、物理 hatch、重启/V1/V2 仍开放；
+    记录提交、最终封存和 Main 远程推送另行观察，不标记整份 C16d 或台账交付。
   - [x] C16d-FORWARD-15：status: verified，仅测试侧数学源码/单测。Root 在不同代理限定审核后
     [采纳测试侧纯可达性接口](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)。
     仅两个新增算法/测试文件；[源码任务16](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md)
@@ -983,11 +992,15 @@ Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端
 
 ## 当前自动回归与风险
 
-最新精确被测源码为 `50d4a3ea`；[IO 与配置夹具资格](../work/v1.8.0-c16d-components-graph/IO-BOARD-QUALIFICATION-03.md)
+最新精确被测源码为 `0dc14e4f`；[流体 IO 获取资格](../work/v1.8.0-c16d-components-graph/LIQUID-IO-BOARD-QUALIFICATION-04.md)
 记录实际执行的 clean build、两次 runData/空 diff、完整 GameTest 和单独原日志对账均退出 0。
-实际 XML 为 2223 项零 F/E/S，原生完成/必需通过摘要为 619 项，日志为
-62 ERROR /160 WARN /0 FATAL，37 条规则原样保留。先前配置对账失败仍失败，
+实际 XML 为 2231 个 testcase 元素、385 份文件、零 F/E/S，原生完成/必需通过摘要为 625 项，日志为
+62 ERROR /160 WARN /0 FATAL，37 条规则原样保留。先前配置与资源对账失败仍失败，
 新样本不证明历史配置对象/线程或 IOWorker CME 唯一原因；不作为全版 Gate 验收。
+新增八项单测与六项原生夹具不证明真实玩家材料消费、初始钢或完整获取图。
+独立只读核验保留 ZIP 类型位、参数化显示名和报告大小的失败探针，不改变目标测试。
+前次物品 IO 的记录后继 `7beccfcf` 对应托管 regression job `114397107064`
+已于 2026-10-11T05:38:15.903789Z 元数据观察中 completed/success；不外推到新流体 IO 源码。
 当前 Python/strict 与新源码托管原始 Linux 资格未执行/复核，历史超时和链接失败保持开放。
 Main 本地源码快进已核对原 149 项状态、空暂存区和所有者文件哈希；远程推送与记录后继另记。
 
