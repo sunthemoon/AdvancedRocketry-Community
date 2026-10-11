@@ -1,0 +1,190 @@
+{
+  "authoring_commit": "4d02e311140cdfb04c6353f2e9782730d4770d35",
+  "batch_id": "v1.8.0-circuit-plates-06",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "entries": [
+    {
+      "authoring_commit": "4d02e311140cdfb04c6353f2e9782730d4770d35",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-circuit-plates-acquisition",
+      "source_commit": "d6cdb6d8100c53bd3b70c85c555ecde0532854f0",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CircuitPlateData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "112eaa3cc9a2f165e3e9518a895358d4cee8e6eb8ef626e1b8aea5611a329906",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/basic_circuit_plate.json",
+      "target_sha256": "90c65559c1c784c0f07df4cc4738022adc3a96fc8b628697b767ff337452f88a",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "4d02e311140cdfb04c6353f2e9782730d4770d35",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-circuit-plates-acquisition",
+      "source_commit": "d6cdb6d8100c53bd3b70c85c555ecde0532854f0",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CircuitPlateData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "112eaa3cc9a2f165e3e9518a895358d4cee8e6eb8ef626e1b8aea5611a329906",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/advanced_circuit_plate.json",
+      "target_sha256": "135be0e6e35fed6a6497f423a2fa72ef75b8ff0688c463bce135e5f7e1fee2a0",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "4d02e311140cdfb04c6353f2e9782730d4770d35",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-circuit-plates-acquisition",
+      "source_commit": "d6cdb6d8100c53bd3b70c85c555ecde0532854f0",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CircuitPlateData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "112eaa3cc9a2f165e3e9518a895358d4cee8e6eb8ef626e1b8aea5611a329906",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/basic_circuit_plate.png",
+      "target_sha256": "281714dddb182c0f2bf74848e68d294e1ff9a37d0a2d315c657e5ba98f558b3a",
+      "transformation": [
+        "Draw original 16x16 offset-component/edge-finger substrate with V180MaterialArt.png, tint 0xB8A865; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "4d02e311140cdfb04c6353f2e9782730d4770d35",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-circuit-plates-acquisition",
+      "source_commit": "d6cdb6d8100c53bd3b70c85c555ecde0532854f0",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CircuitPlateData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "112eaa3cc9a2f165e3e9518a895358d4cee8e6eb8ef626e1b8aea5611a329906",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/advanced_circuit_plate.png",
+      "target_sha256": "0d3eff66b06757453bc5d526b0f4d929c148bb2d444272565f47fa10a1c1be72",
+      "transformation": [
+        "Draw original 16x16 clipped-corner dual-chip substrate with V180MaterialArt.png, tint 0x5B9FAB; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "4d02e311140cdfb04c6353f2e9782730d4770d35",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-circuit-plates-acquisition",
+      "source_commit": "d6cdb6d8100c53bd3b70c85c555ecde0532854f0",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CircuitPlateData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "112eaa3cc9a2f165e3e9518a895358d4cee8e6eb8ef626e1b8aea5611a329906",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/precision_basic_circuit_plate.json",
+      "target_sha256": "20cb22a9ab3cc3b6aed198c6862a438ebed70b5bbe616de6f0c5766f22a05efd",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "4d02e311140cdfb04c6353f2e9782730d4770d35",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-circuit-plates-acquisition",
+      "source_commit": "d6cdb6d8100c53bd3b70c85c555ecde0532854f0",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CircuitPlateData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "112eaa3cc9a2f165e3e9518a895358d4cee8e6eb8ef626e1b8aea5611a329906",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/precision_advanced_circuit_plate.json",
+      "target_sha256": "b7f4d3713a81325ff28e25485704c711a440b01bba8e2dacb17182bba0ec6210",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "4d02e311140cdfb04c6353f2e9782730d4770d35",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-circuit-plates-acquisition",
+      "source_commit": "d6cdb6d8100c53bd3b70c85c555ecde0532854f0",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "190306754f2845b8f8da7489bc65cad25e49aaa85be41ea2b647aa04cf4a3dd3",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "target_sha256": "aa481016872d41ac142c90f88a4b735b0bc10f5fef36129b8b0169893a3a33cc",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "4d02e311140cdfb04c6353f2e9782730d4770d35",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-circuit-plates-acquisition",
+      "source_commit": "d6cdb6d8100c53bd3b70c85c555ecde0532854f0",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "190306754f2845b8f8da7489bc65cad25e49aaa85be41ea2b647aa04cf4a3dd3",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "target_sha256": "d77d8b6e27a334709e070f2806538e70b1da43255f1feba7348ef6a56e06610a",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    }
+  ],
+  "factual_recipe_references": [
+    {
+      "branch": "1.12",
+      "bytes": 451,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/basiccircuitplate.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "15fa951546181e68bb0221936939c35ee60d198ff1e73259b12e5dbc8f7db2e7",
+      "use": "Semantic recipe reference only; no copied JSON or bitmap"
+    },
+    {
+      "branch": "1.12",
+      "bytes": 426,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/advcircuitplate.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "190d3ea59b7f5d0795dd4c1421132286434c2740b2c45e4e498e7bb5bb92305e",
+      "use": "Semantic recipe reference only; no copied JSON or bitmap"
+    },
+    {
+      "branch": "1.12",
+      "bytes": 624,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/basiccircuitplateetcher.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "f61ed418606e19d1c16e2b5752d650f8c53c7cca05e90d9568fc86f430c1820f",
+      "use": "Semantic recipe reference only; no copied JSON or bitmap"
+    },
+    {
+      "branch": "1.12",
+      "bytes": 598,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/advcircuitplateetcher.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "665847a41e0af5b761a538e2efbc5e1696b6b80af47f02da435319c9be0361bb",
+      "use": "Semantic recipe reference only; no copied JSON or bitmap"
+    }
+  ],
+  "license": "MIT",
+  "review": {
+    "content_digest": "86b2dc8f57a9161a4a2c6e895d01b0e07be0ee53436e4274af37d7c0c3303920",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "source_branch": "codex/v1.8.0-circuit-plates-acquisition",
+  "source_commit": "d6cdb6d8100c53bd3b70c85c555ecde0532854f0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "target_version": "v1.8.0"
+}

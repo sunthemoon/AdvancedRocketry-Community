@@ -1,0 +1,32 @@
+{
+  "type": "advancedrocketrycommunity:precision_assembling",
+  "energy_per_tick": 100,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:ingots/gold"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:dusts/redstone"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "advancedrocketrycommunity:silicon_wafer"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:basic_circuit_plate"
+    }
+  ],
+  "processing_time": 900,
+  "schema_version": 1
+}
