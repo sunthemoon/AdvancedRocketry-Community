@@ -24,13 +24,15 @@ block any task.
 | [W02](TASK-W02-PROPULSION.md) | C17a propulsion components and typed fuel modes | `arce-v180-w02-propulsion` / `codex/v1.8.0-propulsion` | `1568699e` | `01a12b82-8061-7e13-94b8-a29fc73ef9f0` | Delivered `2cde1ee3`; candidate `2260e575` (Root merge fixes); independent review BLOCK (two Critical, two Medium: `D:/GitHub/ARCE-Task-Evidence/root-queue/W02-review/REVIEW.md`, SHA-256 `4b9127e6…401d7a`). Fixes queued as W02F |
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | `arce-v180-w03-equipment` / `codex/v1.8.0-equipment` | `1568699e` | `01a12b82-8895-7573-8f65-3fb05884bbf1` | Merged as `1e36af58` on 2026-10-12 after hosted run 38155101250 and the [independent review](records/W03-REVIEW.md) (MERGE-WITH-FOLLOWUP: M1 and L1 queued) |
 | [W04](TASK-W04-FORCE-FIELD.md) | C17b force field projector, API 1.9 | `arce-v180-w04-force-field` / `codex/v1.8.0-w04-force-field` | `42321f8b` | `01a12bc4-62f1-75b1-b0e9-4d989e1b4fd2` | running since 2026-10-12 |
-| [W05](TASK-W05-ARC-FURNACE-CUTTING.md) | C16b arc furnace and cutting machine on the W01 kernel | `arce-v180-w05-arc-cutting` / `codex/v1.8.0-w05-arc-cutting` | W01 candidate `7fb1c1a3` | `01a12bcf-600a-7731-a836-d0b8a2cec0fc` | running since 2026-10-12 | ||  goto :error
+| [W05](TASK-W05-ARC-FURNACE-CUTTING.md) | C16b arc furnace and cutting machine on the W01 kernel | `arce-v180-w05-arc-cutting` / `codex/v1.8.0-w05-arc-cutting` | W01 candidate `7fb1c1a3` | `01a12bcf-600a-7731-a836-d0b8a2cec0fc` | Delivered `41468d8e` (JUnit 346/346, GameTest 665/665). Waits for W01F; Root then builds one W01+W01F+W05 candidate for CI and one combined independent review |
+| [W01F](TASK-W01F-REVIEW-FIXES.md) | Fix W01 review findings R1–R4 | `arce-v180-w01-hatch-kernel` / `codex/v1.8.0-hatch-kernel` | `83fcf0ba` | `01a12bde-eca0-73f2-b227-844ce2ca38de` | running since 2026-10-12 (critical path, temporary fourth implementer) |
+| [W02F](TASK-W02F-REVIEW-FIXES.md) | Fix W02 review findings F1, F2 and F4 (F3 goes to the C17a loader task) | `arce-v180-w02-propulsion` / `codex/v1.8.0-propulsion` | `ddc80a48` | `01a12c02-7529-7852-90ac-dc00a5156fa6` | running since 2026-10-12 |
 
 ## Queued
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| [W02F](TASK-W02F-REVIEW-FIXES.md) | Fix W02 review findings F1, F2, F4 (F3 goes to the C17a loader task) | First free implementer slot |
+| (none) | | |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
