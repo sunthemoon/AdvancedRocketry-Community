@@ -60,6 +60,17 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
         return first.controllerLevel().equals(second.controllerLevel()) && first.controllerPosition().equals(second.controllerPosition())
                 && first.machineInstanceId().equals(second.machineInstanceId());
     }
+    static boolean olderOwnedBinding(MultiblockPartBinding existing, MultiblockPartBinding current) {
+        return sameOwner(existing, current) && existing.generation() < current.generation();
+    }
+    void reconcileGeneration(ClassicControllerBlockEntity owner) {
+        if (binding == null || loadedOwner() != owner || owner.ownerUnavailable() || owner.transaction()) { return; }
+        var state = owner.controllerState();
+        if (state.generation() == 0) { return; }
+        var current = new MultiblockPartBinding(MultiblockPartBinding.SCHEMA_VERSION,
+                level.dimension(), owner.getBlockPos(), state.machineInstanceId(), state.generation());
+        if (olderOwnedBinding(binding, current)) { setMultiblockBinding(Optional.of(current)); }
+    }
     void clearClaim() { claim = null; binding = null; refreshFacades(); setChanged(); }
     private void retireStaleClaim() {
         if (claim == null || !physical() || !(level instanceof ServerLevel server)

@@ -8,6 +8,16 @@ import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.Test;
 
 class ClassicHatchOwnershipTest {
+    @Test void onlyAnOlderExactOwnerBindingIsReconciled() {
+        var id = UUID.randomUUID(); var position = new BlockPos(14, 70, 8);
+        var current = new MultiblockPartBinding(1, Level.OVERWORLD, position, id, 5);
+        assertTrue(ClassicHatchBlockEntity.olderOwnedBinding(new MultiblockPartBinding(1, Level.OVERWORLD, position, id, 1), current));
+        assertFalse(ClassicHatchBlockEntity.olderOwnedBinding(current, current));
+        assertFalse(ClassicHatchBlockEntity.olderOwnedBinding(new MultiblockPartBinding(1, Level.OVERWORLD, position, id, 6), current));
+        assertFalse(ClassicHatchBlockEntity.olderOwnedBinding(new MultiblockPartBinding(1, Level.OVERWORLD, position, UUID.randomUUID(), 1), current));
+        assertFalse(ClassicHatchBlockEntity.olderOwnedBinding(new MultiblockPartBinding(1, Level.NETHER, position, id, 1), current));
+        assertFalse(ClassicHatchBlockEntity.olderOwnedBinding(new MultiblockPartBinding(1, Level.OVERWORLD, position.above(), id, 1), current));
+    }
     @Test void ownerIdentityRequiresLevelPositionAndUuidButNotGeneration() {
         var id = UUID.randomUUID(); var position = new BlockPos(14, 70, 8);
         var first = new MultiblockPartBinding(1, Level.OVERWORLD, position, id, 1);

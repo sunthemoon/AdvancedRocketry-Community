@@ -153,6 +153,11 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
             }
             try { resources = resources.replace(additions, false); }
             catch (IllegalArgumentException | IllegalStateException limit) { reason = ClassicWait.LIMIT; return; }
+            // Reconcile independently saved part generations only after identity and bank preflight.
+            // ready is false throughout this pass, so reconciliation cannot expose resource facades.
+            for (BlockPos position : claims) {
+                var hatch = loadedHatch(position); if (hatch != null) { hatch.reconcileGeneration(this); }
+            }
         }
         var access = new LoadedPartBindingAccess() {
             @Override public net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> levelKey() { return server.dimension(); }
