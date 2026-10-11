@@ -66,3 +66,19 @@ a Markdown-link phase failure, with no final summary; original exit is null and
 owned retirement exit 1. That failure remains, is not counted as success and was
 not rerun with a longer limit. Complete source build and native/log verification
 remain pending at this resource preparation commit. No ledger or Gate is closed.
+
+## 2026-10-11 reviewed candidate functional qualification
+
+The resource-preparation pending checks above are superseded, for this candidate
+only, by [qualification02](ACQUISITION-QUALIFICATION-02.md). It records actual
+committed merged-source commands, independent completed-result review, four
+sealed external packets and an additive historical ingredient-wording correction.
+Earlier failed cohorts and their original worlds/receipts remain retained.
+
+After the actual owner HEAD-use answer, Root fast-forwarded and normally pushed
+the tested source to Main, retaining its original owner files/status/index.
+The linked qualification records the exact answer and source/remote identities;
+latest hosted metadata is completed/success; raw Linux counts/log qualification
+remain open, and the earlier in-progress observation is retained. Full content/asset/
+progression/persistence/client and all Required Gates remain open; the plan leaf
+stays unchecked.

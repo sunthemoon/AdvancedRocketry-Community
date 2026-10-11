@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: d95aa9b549416a93afed5ab68ca5724205633210
+latest_source_checkpoint: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
@@ -51,17 +51,27 @@ pending_checksum_input_source_candidate: ""
 pending_checksum_input_qualification: SOURCE_INTEGRATED_ROOT43_REPOSITORY148_PEER_STANDARD_PASS_SUITE_STRICT_TIMEOUT_OPERATIONAL_GAPS_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: d95aa9b549416a93afed5ab68ca5724205633210
-native_tested_code_commit: d95aa9b549416a93afed5ab68ca5724205633210
-latest_regression_target_commit: d95aa9b549416a93afed5ab68ca5724205633210
-latest_regression_result: ROOT_WINDOWS_BUILD_EXPLICIT_UNIT2202_DATAGEN_CLEAN_NATIVE607_LOG_CHECK_PASS_STRICT_TIMEOUT_RECORDED_LINK_FAILURE_HOSTED_CME_FULL_GATES_OPEN
-latest_regression_run: jackhammer-start-feedback-20261011-01
+tested_code_commit: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
+native_tested_code_commit: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
+latest_regression_target_commit: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
+latest_regression_result: ROOT_WINDOWS_EXPLICIT_HEAPS_BUILD_UNIT2213_DATAGEN_CLEAN_NATIVE613_LOG62ERROR160WARN_PASS_CURRENT_STRICT_UNEXECUTED_HISTORICAL_TIMEOUT_LINK_FAILURE_HOSTED_CME_GATES_OPEN
+latest_regression_run: component-fixture-final-20261011-03
 latest_regression_attempt: 1
-latest_regression_evidence: SEALED460_MANIFEST_LISTED_FILES_PLUS_MANIFEST_PEER_XML_ORIGINAL_LOG_REPLAY_VERIFIED_SCOPED_SUCCESS_STRICT_BLOCKER_RETAINED_NEW_OWNED_CLEANUP_COMPLETE
-latest_regression_observed_utc: 2026-10-10T20:31:05.368139Z
-actual_unit_rerun: jackhammer-start-feedback-20261011-01/03-explicit-test.receipt.json
-actual_unit_rerun_scope: SEPARATE_EXPLICIT_TEST_JUNIT2202_ZERO_FAILURE_ERROR_SKIP_XML_CHILDREN_PEER_ORIGINAL_COPY_VERIFIED
-actual_unit_rerun_observed_utc: 2026-10-10T20:27:56.292870Z
+latest_regression_evidence: SEALED44_PLUS_MANIFEST_PEER383_XML_2213_CHILDREN_FIVE_ORIGINAL_RECEIPTS_114_BINDINGS_PRIOR_FAILURES_AND_POSTREVIEW_ROOT_CORRECTION_SEAL_RETAINED
+latest_regression_observed_utc: 2026-10-11T03:04:03Z
+actual_unit_rerun: component-fixture-final-20261011-03/build.receipt.json
+actual_unit_rerun_scope: CLEAN_BUILD_TEST_TASK_EXECUTED_JUNIT2213_XML383_ZERO_FAILURE_ERROR_SKIP_CACHED_TEST_COMPILATION_PEER_BYTE_BOUND
+actual_unit_rerun_observed_utc: 2026-10-11T03:04:03Z
+c16d_acquisition_source: 4951a326938c8aac4602787e89ab4403d03b5c9b
+c16d_acquisition_integration: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
+c16d_acquisition_qualification: LOCAL_FUNCTIONAL_SOURCE_RESULTS_PEER_VERIFIED_INTEGRATED_ASSETS_PENDING_HUMAN_FULL_CONTENT_AND_GATES_OPEN
+c16d_acquisition_checkpoint: docs/work/v1.8.0-c16d-components-graph/ACQUISITION-QUALIFICATION-02.md
+warp_fold_fixture_source: f654a15e56022a1d9b68002a9a6712996493174a
+warp_fold_fixture_integration: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
+warp_fold_fixture_qualification: DETERMINISTIC_NONEMPTY_TEARDOWN_NATIVE_PASS_UNSUPPORTED_EXPECTATION_REMOVED_NO_HISTORICAL_MAP_ID_OR_CME_CAUSE_PROOF
+component_hosted_ci: COMPLETED_SUCCESS_RUN38107189300_AT8FE5A0EC_METADATA_VERIFIED_LINUX_RAW_COUNTS_LOG_QUALIFICATION_AND_CME_CAUSE_OPEN
+component_hosted_ci_observed_utc: 2026-10-11T03:14:05.477697Z
+component_hosted_ci_url: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38107189300
 jackhammer_start_feedback_integration: d95aa9b549416a93afed5ab68ca5724205633210
 jackhammer_start_feedback_review: SOURCE_NO_CHANGE_REQUIRED_FINDING_RESULTS_PEER_SCOPED_NATIVE_BATCH_PASS_STRICT_VERIFICATION_BLOCKER_CLIENT_GATES_OPEN
 jackhammer_start_feedback_checkpoint: docs/work/v1.8.0-c18b-jackhammer/START-FEEDBACK-VALIDATION-01.md
@@ -197,8 +207,21 @@ last_updated: 2026-10-11
 
 ## Current development evidence
 
-The latest hosted Java/native execution is the exact log-integration merge
-identified above. [Its reviewed integration and verified artifact inspection](../work/v1.8.0-gametest-log-expectations/ROOT-INTEGRATION-01.md)
+The latest local [component/fixture qualification](../work/v1.8.0-c16d-components-graph/ACQUISITION-QUALIFICATION-02.md)
+is integrated at the exact tested 8fe5a0ec: 2213 actual JUnit cases, deterministic
+generated data, 613 required native tests and the narrowed strict checker pass.
+The actual source/receipt/log/XML/resource review is complete; Root's later
+correction and sealing are not extra peer-executed runtime qualification.
+Hosted run 38107189300 reports completed/success at that source in the
+2026-10-11T03:14:05.477697Z metadata observation; raw Linux counts/log
+qualification and original CME cause remain open.
+NEW asset review, full acquisition graph, restart/client and G0-G9 remain open.
+The prior current regression checkpoint is preserved in
+[jackhammer validation](../work/v1.8.0-c18b-jackhammer/START-FEEDBACK-VALIDATION-01.md),
+not retained as a second current test-count claim.
+
+The retained hosted log-integration failure identified above and
+[its reviewed integration and verified artifact inspection](../work/v1.8.0-gametest-log-expectations/ROOT-INTEGRATION-01.md)
 distinguish successful native assertions from failed log qualification. The
 checker rejects one undeclared asynchronous IOWorker chunk-store exception;
 producer, dimension and persistence impact remain unknown. No expected-event

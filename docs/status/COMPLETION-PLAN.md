@@ -177,8 +177,12 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 - [ ] C16c：结晶器、化学反应器、激光蚀刻机、离心机等。
 - [ ] C16d：钢的初始来源、组件/controller/hatch 获取、配方图和进阶平衡。
   - [ ] C16d-ACQUISITION-01：碳砖和用户界面普通获取叶；已审核获取契约，
-    在独立 `codex/v1.8.0-component-acquisition` 分支准备源码和生成资源；
-    11 项 A0 与双次 DataGen 实际通过，完整构建、原生/对账和资产资格仍未完成，尚未交付。
+    独立 `codex/v1.8.0-component-acquisition` 候选已完成
+    [本地功能资格与独立结果审核](../work/v1.8.0-c16d-components-graph/ACQUISITION-QUALIFICATION-02.md)，
+    被测源码 `8fe5a0ec` 已在所有者确认 HEAD 使用边界后快进合入并正常推送 Main；
+    托管回归 `38107189300` 的元数据已为 completed/success；原始 Linux 计数和日志资格
+    尚未复核，完整内容资格未完成，较早的运行中观察保留在证据包。
+    首次原生/对账失败和严格校验超时保留；后继夹具清理不扩大预期日志规则。
     只新增两个普通 Item、真实合成、碳标签、解锁和原创展示，不改现有电路，
     不关闭整份图、机器、物理 hatch、台账或任何 Gate。
   - [x] C16d-FORWARD-15：status: verified，仅测试侧数学源码/单测。Root 在不同代理限定审核后
