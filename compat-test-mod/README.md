@@ -9,6 +9,9 @@ suit equipment (1.3), atmosphere boundaries (1.2) and rocket registration (1.1).
 
 The endgame fixture listens for `EndgameEffectEvent` on the Forge bus like a claim
 mod and cancels the effects of owners it protects against; it can only cancel.
+The host's API 1.9 additionally exports `FIELD_PROJECTION`. The isolated host test
+compiles a listener against a three-effect API 1.8 classifier and runs those bytes
+on 1.9, testing explicit unknown-effect cancellation and exhaustive-switch refusal.
 
 The environment fixture listens for the actual server-ready API event, queries
 Earth/Moon/unresolved and unloaded locations, and verifies expiration at stopping.

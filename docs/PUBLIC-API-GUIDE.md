@@ -472,7 +472,7 @@ bounds, menu framing and downgrade limitations.
 
 ## Veto an endgame effect
 
-Require API **1.8**. Claim and protection mods listen on the **FORGE bus**
+Require API **1.8**, or **1.9** for `FIELD_PROJECTION`. Claim and protection mods listen on the **FORGE bus**
 (`MinecraftForge.EVENT_BUS`) for `EndgameEffectEvent`, which the server posts
 on its own thread before an endgame device affects the world:
 
@@ -488,7 +488,13 @@ MinecraftForge.EVENT_BUS.addListener((EndgameEffectEvent event) -> {
 One event describes one batch: at most one tick of work for one device, inside
 the inclusive box `min()..max()` of `level()`. `effect()` is `BLOCK_BREAK` (a
 laser drill layer), `ENTITY_GRAVITY` (a gravity field) or `TELEPORT` (an
-elevator ride). `systemId()` names the system, for example
+elevator ride), or `FIELD_PROJECTION` (one sealed cell, added in API 1.9).
+Force-field placement uses `advancedrocketrycommunity:force_field_projector`;
+retraction uses `BLOCK_BREAK`. The old constants keep their order and names.
+Serialize effect names, not Java ordinals. Listeners must explicitly handle or
+cancel unknown effects; linkage alone does not establish behavior compatibility.
+The force-field adapter refuses an effect if a listener throws, including an
+exhaustive older enum switch. `systemId()` names the system, for example
 `advancedrocketrycommunity:laser_drill`. `ownerId()` is the owner of the device
 that causes the effect (for a ride, the departing endpoint's owner). `actorId()`
 is the player whose intent caused it, or empty for autonomous work.

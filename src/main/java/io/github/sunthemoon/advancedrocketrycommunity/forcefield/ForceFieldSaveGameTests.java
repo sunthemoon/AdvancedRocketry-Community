@@ -1,0 +1,76 @@
+package io.github.sunthemoon.advancedrocketrycommunity.forcefield;
+
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraftforge.event.level.ChunkDataEvent;
+import net.minecraftforge.gametest.GameTestHolder;
+import net.minecraftforge.gametest.PrefixGameTestTemplate;
+
+@GameTestHolder(ModIdentity.MOD_ID)
+@PrefixGameTestTemplate(false)
+public final class ForceFieldSaveGameTests {
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void oversizedNativeReferenceRefusesWholeChunkEvenAfterOutgoingBeDisappears(GameTestHelper helper) {
+        var chunk = helper.getLevel().getChunkAt(helper.absolutePos(BlockPos.ZERO));
+        try {
+            for (boolean projector : new boolean[]{true, false}) {
+                var state = projector ? ModBlocks.FORCE_FIELD_PROJECTOR.get().defaultBlockState() : ModBlocks.FORCE_FIELD.get().defaultBlockState();
+                ForceFieldNativeBlockEntity entity = projector ? new ForceFieldProjectorBlockEntity(helper.absolutePos(BlockPos.ZERO), state)
+                        : new ForceFieldBlockEntity(helper.absolutePos(BlockPos.ZERO), state);
+                String key = projector ? ForceFieldCodecs.PROJECTOR_ROOT : ForceFieldCodecs.FIELD_ROOT;
+                CompoundTag raw = new CompoundTag(); raw.putByteArray("future", new byte[8192]);
+                CompoundTag outer = new CompoundTag(); outer.put(key, raw); entity.load(outer);
+                var encoded = entity.saveWithFullMetadata();
+                helper.assertTrue(entity.quarantined() && encoded.get(key) == raw, "Oversized root was copied or normalized");
+                CompoundTag outgoing = new CompoundTag(); ListTag entities = new ListTag(); entities.add(encoded); outgoing.put("block_entities", entities);
+                try {
+                    ForceFieldProtection.saving(new ChunkDataEvent.Save(chunk, helper.getLevel(), outgoing));
+                    helper.fail("Oversized field root admitted a native chunk save");
+                } catch (IllegalStateException denied) {
+                    helper.assertTrue(chunk.isUnsaved(), "Save refusal erased the dirty flag");
+                }
+                chunk.setUnsaved(false);
+                try {
+                    GuardedChunkSaves.beforeSave(new ChunkDataEvent.Save(chunk, helper.getLevel(), new CompoundTag()));
+                    helper.fail("Outgoing BE disappearance erased the native denial");
+                } catch (IllegalStateException denied) {
+                    helper.assertTrue(chunk.isUnsaved(), "Empty outgoing retry erased dirty state");
+                }
+                GuardedChunkSaves.restoreGameTestFixture(helper.getLevel(), chunk.getPos());
+            }
+        } finally { GuardedChunkSaves.restoreGameTestFixture(helper.getLevel(), chunk.getPos()); }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void refusedVanillaDestroyBlockDoesNotMintProjectorLoot(GameTestHelper helper) {
+        try (var f = new ForceFieldGameTests.Fixture(helper, Direction.EAST)) {
+            java.util.function.Consumer<net.minecraftforge.event.level.BlockEvent.BreakEvent> veto = event -> {
+                if (event.getLevel() == f.level && event.getPos().equals(f.identity.source())) { event.setCanceled(true); }
+            };
+            var box = new net.minecraft.world.phys.AABB(f.identity.source()).inflate(2);
+            int before = f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).size();
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.HIGHEST,
+                    false, net.minecraftforge.event.level.BlockEvent.BreakEvent.class, veto);
+            try { f.level.destroyBlock(f.identity.source(), true); }
+            finally { net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(veto); }
+            helper.assertTrue(f.level.getBlockEntity(f.identity.source()) == f.source
+                    && f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).size() == before,
+                    "Vanilla's pre-removal loot minted a duplicate projector after refusal");
+            var state = f.source.getBlockState();
+            ForceFieldProtection.physical(f.level, f.identity.source(), () -> f.level.removeBlock(f.identity.source(), false));
+            var loot = net.minecraft.world.level.block.Block.getDrops(state, f.level, f.identity.source(), f.source);
+            helper.assertTrue(loot.size() == 1 && loot.get(0).getItem() ==
+                    io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems.FORCE_FIELD_PROJECTOR.get(),
+                    "Successfully removed projector lost its ordinary loot");
+        }
+        helper.succeed();
+    }
+    private ForceFieldSaveGameTests() { }
+}

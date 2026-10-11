@@ -1,7 +1,7 @@
 # Integration compatibility and support
 
 Use this page when implementing an ARCE integration or changing a development
-modpack's installed providers. It describes the **development API 1.8**,
+modpack's installed providers. It describes the **development API 1.9**,
 not a stable release or a guarantee that arbitrary third-party mods work together.
 For implementation examples and exact limits, read the
 [public API guide](PUBLIC-API-GUIDE.md). For a buildable, isolated consumer, use the
@@ -43,6 +43,7 @@ entries**, including the nested environment enum.
 | `environment` | 1.6 | `AtmosphereProfile`, `EnvironmentSnapshot`, `EnvironmentSnapshot.Locus`, `EnvironmentQueries`, `ServerEnvironmentReadyEvent` |
 | `satellite` | 1.7 | `SatelliteMissionDefinition`, `SatellitePayloadRegistrar`, `RegisterSatellitePayloadsEvent` |
 | `endgame` | 1.8 | `EndgameEffect`, `EndgameEffectEvent` |
+| `endgame` (projection) | 1.9 | `EndgameEffect.FIELD_PROJECTION`; existing event signatures and class allowlist unchanged |
 
 Registration events use the integrating mod's **MOD bus**, synchronously during
 queued common setup on both physical sides. Definition/provider IDs belong to

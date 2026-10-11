@@ -30,6 +30,7 @@ public final class ModItems {
     );
 
     public static final RegistryObject<Item> JACKHAMMER = ITEMS.register("jackhammer", JackhammerItem::new);
+    public static final RegistryObject<Item> FORCE_FIELD_PROJECTOR = blockItem("force_field_projector", ModBlocks.FORCE_FIELD_PROJECTOR);
     public static final RegistryObject<Item> AIRLOCK_DOOR = blockItem("airlock_door", ModBlocks.AIRLOCK_DOOR);
     public static final RegistryObject<Item> COMBUSTION_GENERATOR = blockItem("combustion_generator",
             ModBlocks.COMBUSTION_GENERATOR);

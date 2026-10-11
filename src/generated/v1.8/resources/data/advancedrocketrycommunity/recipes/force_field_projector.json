@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:control_board"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:advanced_machine_casing"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "T": {
+      "tag": "forge:plates/titanium"
+    }
+  },
+  "pattern": [
+    "TGT",
+    "CMC",
+    "TRT"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:force_field_projector"
+  }
+}

@@ -13,4 +13,12 @@ public final class EndgameApiConsumer {
         event.actorId().ifPresent(actor -> event.systemId().getNamespace());
         event.max();
     }
+    public static String kind(EndgameEffectEvent event) {
+        return switch (event.effect()) {
+            case BLOCK_BREAK -> "BLOCK_BREAK";
+            case ENTITY_GRAVITY -> "ENTITY_GRAVITY";
+            case TELEPORT -> "TELEPORT";
+            case FIELD_PROJECTION -> "FIELD_PROJECTION";
+        };
+    }
 }
