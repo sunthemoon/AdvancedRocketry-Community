@@ -64,7 +64,14 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
   say so in your record instead of breaking it.
 - **runData:** run it once, under the lock, whenever you change data generation. Commit its
   output together with the generator change.
-- **GameTest:** this runs every test (about 640). Run it once at the end, under the lock.
+- **Unit tests:** before your final record, run the whole unit suite once (`test`, with no
+  `--tests` filter; no lock needed). Targeted runs miss shared checks such as the exact
+  configuration count in `CommonConfigTest`.
+- **New configuration keys:** a fresh configuration logs one "Incorrect key ... corrected
+  from null" warning per new key and section. Give them their own exact expectation in
+  `scripts/gametest_expected_log.json`, and exclude their section from the generic rule,
+  whose maximum of 99 does not change (see the OXYGEN and ROCKET entries).
+- **GameTest:** this runs every test (about 650). Run it once at the end, under the lock.
   Then run `python -B scripts/check_gametest_log.py build/gametest/logs/latest.log`.
   - If you add a test that deliberately logs ERROR or WARN, add an expectation to
     `scripts/gametest_expected_log.json`, with the test and the reason.
