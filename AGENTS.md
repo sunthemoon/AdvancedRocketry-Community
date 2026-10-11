@@ -342,9 +342,18 @@ codex exec --json -s read-only -C <分配的目录> -o <输出文件> \
   和标记版本或 Gate 通过，仍由所有者决定。
 - **实现者（Codex 工作会话）**：
   - 每个任务开一个新会话，使用一个 worktree 和一个分支，用
-    `codex exec -s workspace-write -C <worktree>` 启动；
-  - 只修改 TASK 列出的范围，提交到自己的分支并正常推送；
-  - 不合入共享分支，不再向其他代理派活。
+    `codex exec --json -s danger-full-access -C <worktree> -o <输出文件> "<提示词>"` 启动；
+  - 只修改 TASK 列出的范围，提交到自己的本地分支；
+  - 不推送，不合入共享分支，不再向其他代理派活。
+  - 本机的 `workspace-write` 沙箱在启动任何命令前就失败
+    （`CryptUnprotectData failed: 2148073483`，2026-10-11 实测）。所有者在同日的会话中
+    选择了"完全访问加防护"，即与其日常 Codex 配置相同。防护措施：
+    - 每个实现者只在自己的 worktree 中工作；
+    - Root 在每次运行结束后检查共享工作区和其他 worktree 的 `git status`，
+      并撤销超出范围的改动；
+    - 推送和合入只由 Root 进行。
+
+    第 12.2 节对沙箱的要求，在此范围内由本条取代。
 - **普通切片的流程**：
   1. Root 写 TASK，写明目标、写入范围、验收测试和不做的事；
   2. 实现者实现，跑定向测试，提交；
@@ -358,7 +367,10 @@ codex exec --json -s read-only -C <分配的目录> -o <输出文件> \
 - **中央文件**：TASK 可以允许实现者在注册类、语言文件和数据生成入口追加本切片的条目，
   合并冲突由 Root 解决。状态文件、台账、构建脚本和工作流只由 Root 修改。
 - **本机资源**：
-  - 同一时间最多两个 Gradle 编译或单元测试；
-  - 完整 GameTest、runData 和原生服务器同一时间只运行一个，由 Root 安排。
+  - 最多同时运行三个实现者。每个实现者自行运行编译和定向单元测试。
+  - 完整 GameTest、runData、完整构建和原生服务器同一时间只运行一个，用机器锁
+    `D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm` 串行（做法见
+    `docs/work/v1.8.0-root-queue/WORKER-RULES.md`）。
+  - 合入后的完整回归以托管 CI 为准。
 - **优先级**：先推进 v1.8 的内容进度；bug 修复只在不拖慢进度时并行。
 - 第 5 节的规定不变：不删测试、不放宽断言，豁免必须写 ADR。
