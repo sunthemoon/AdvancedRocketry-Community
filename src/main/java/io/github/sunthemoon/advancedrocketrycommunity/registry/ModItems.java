@@ -207,6 +207,8 @@ public final class ModItems {
             new io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTankItem(
                     ModBlocks.PRESSURIZED_TANK.get(), new Item.Properties()));
     public static final RegistryObject<Item> STATION_LIGHT = blockItem("station_light", ModBlocks.STATION_LIGHT);
+    public static final RegistryObject<Item> CARBON_BRICK = ITEMS.register("carbon_brick", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> USER_INTERFACE = ITEMS.register("user_interface", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> THERMITE = ITEMS.register("thermite", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> THERMITE_TORCH = ITEMS.register("thermite_torch", () ->
             new StandingAndWallBlockItem(ModBlocks.THERMITE_TORCH.get(), ModBlocks.THERMITE_WALL_TORCH.get(),

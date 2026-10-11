@@ -6,6 +6,9 @@ Rocketry maintainers.
 
 ## v1.8.0 — in development
 
+- Add craftable Carbon Brick and User Interface materials. Six charcoal make
+  one carbon brick; the interface uses lime dye, redstone dust, glowstone dust
+  and a glass pane. These materials do not replace existing circuit recipes.
 - Add four craftable motor tiers: Motor, Advanced Motor, Enhanced Motor and
   Elite Motor. The base uses a copper coil, two steel plates, two iron rods
   and a steel ingot; upgrades use the previous tier with one coil and two

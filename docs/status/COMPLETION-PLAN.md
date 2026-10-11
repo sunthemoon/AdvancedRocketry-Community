@@ -176,6 +176,10 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
 - [ ] C16b：电弧炉、车床、切割机等机器家族；共享依赖先完成。
 - [ ] C16c：结晶器、化学反应器、激光蚀刻机、离心机等。
 - [ ] C16d：钢的初始来源、组件/controller/hatch 获取、配方图和进阶平衡。
+  - [ ] C16d-ACQUISITION-01：碳砖和用户界面普通获取叶；已审核获取契约，
+    在独立 `codex/v1.8.0-component-acquisition` 分支实施，尚未验证或交付。
+    只新增两个普通 Item、真实合成、碳标签、解锁和原创展示，不改现有电路，
+    不关闭整份图、机器、物理 hatch、台账或任何 Gate。
   - [x] C16d-FORWARD-15：status: verified，仅测试侧数学源码/单测。Root 在不同代理限定审核后
     [采纳测试侧纯可达性接口](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)。
     仅两个新增算法/测试文件；[源码任务16](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md)

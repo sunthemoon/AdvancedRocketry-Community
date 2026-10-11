@@ -245,7 +245,7 @@ order,pattern,handling,plan,units,reason
 244,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
 245,textures/items/itemiocircuit.png,IMPORT,C16d,item_variant:ic/4,components
 246,textures/items/liquidiocircuit.png,IMPORT,C16d,item_variant:ic/5,components
-247,textures/items/userinterface.png,IMPORT,C16d,item_variant:misc/0,components
+247,textures/items/userinterface.png,REGENERATE,C16d,item_variant:misc/0,NEW component icon under ADR-064 section 12
 248,textures/items/anthracene.png,EXCLUDE,-,-,no legacy item uses it
 249,textures/items/satellite*.png,IMPORT,C18d,item:satellite item_variant:satellitePowerSource/0 item_variant:satellitePowerSource/1 item_variant:satellitePrimaryFunction/3 item_variant:satellitePrimaryFunction/4,satellite component visual refresh
 250,textures/items/compositionsensor.png,IMPORT,C18d,item_variant:satellitePrimaryFunction/1,satellite component visual refresh
