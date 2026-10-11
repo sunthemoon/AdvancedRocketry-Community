@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
+latest_source_checkpoint: 50d4a3eaa2c3792904e6e3e134f40c00eb3b59cd
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
@@ -51,17 +51,24 @@ pending_checksum_input_source_candidate: ""
 pending_checksum_input_qualification: SOURCE_INTEGRATED_ROOT43_REPOSITORY148_PEER_STANDARD_PASS_SUITE_STRICT_TIMEOUT_OPERATIONAL_GAPS_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
-native_tested_code_commit: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
-latest_regression_target_commit: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
-latest_regression_result: ROOT_WINDOWS_EXPLICIT_HEAPS_BUILD_UNIT2213_DATAGEN_CLEAN_NATIVE613_LOG62ERROR160WARN_PASS_CURRENT_STRICT_UNEXECUTED_HISTORICAL_TIMEOUT_LINK_FAILURE_HOSTED_CME_GATES_OPEN
-latest_regression_run: component-fixture-final-20261011-03
+tested_code_commit: 50d4a3eaa2c3792904e6e3e134f40c00eb3b59cd
+native_tested_code_commit: 50d4a3eaa2c3792904e6e3e134f40c00eb3b59cd
+latest_regression_target_commit: 50d4a3eaa2c3792904e6e3e134f40c00eb3b59cd
+latest_regression_result: ROOT_WINDOWS_EXPLICIT_HEAPS_BUILD_UNIT2223_TWO_DATAGEN_CLEAN_NATIVE619_LOG62ERROR160WARN_PASS_PRIOR_CONFIG_CHECKER_FAILURE_RETAINED_CURRENT_STRICT_UNEXECUTED_HOSTED_CME_GATES_OPEN
+latest_regression_run: endgame-config-fixtures-20261011-07
 latest_regression_attempt: 1
-latest_regression_evidence: SEALED44_PLUS_MANIFEST_PEER383_XML_2213_CHILDREN_FIVE_ORIGINAL_RECEIPTS_114_BINDINGS_PRIOR_FAILURES_AND_POSTREVIEW_ROOT_CORRECTION_SEAL_RETAINED
-latest_regression_observed_utc: 2026-10-11T03:04:03Z
-actual_unit_rerun: component-fixture-final-20261011-03/build.receipt.json
-actual_unit_rerun_scope: CLEAN_BUILD_TEST_TASK_EXECUTED_JUNIT2213_XML383_ZERO_FAILURE_ERROR_SKIP_CACHED_TEST_COMPILATION_PEER_BYTE_BOUND
-actual_unit_rerun_observed_utc: 2026-10-11T03:04:03Z
+latest_regression_evidence: TWO_SEALED_PACKETS_FIVE_ORIGINAL_RECEIPTS_PEER384_XML_2223_CHILDREN_SEVEN_TWO_RUN_RESOURCE_BINDINGS_PRIOR_FAILURE_AND_REVIEW_PROCEDURE_LOW_RETAINED
+latest_regression_observed_utc: 2026-10-11T05:13:31Z
+actual_unit_rerun: endgame-config-fixtures-20261011-07/build.receipt.json
+actual_unit_rerun_scope: CLEAN_BUILD_TEST_TASK_EXECUTED_JUNIT2223_XML384_ZERO_FAILURE_ERROR_SKIP_TEST_COMPILATION_EXECUTED_SOME_OTHER_COMPILE_CACHED_PEER_BYTE_BOUND
+actual_unit_rerun_observed_utc: 2026-10-11T05:13:31Z
+io_board_acquisition_source: fd88f71b5378296569d6bf0c24340e78429160bf
+io_board_acquisition_qualified_source: 50d4a3eaa2c3792904e6e3e134f40c00eb3b59cd
+io_board_acquisition_qualification: LOCAL_FUNCTIONAL_SOURCE_PEER_CHECKS_VERIFIED_MAIN_SOURCE_FAST_FORWARD_SOURCE_PUSHED_NEW_ART_HUMAN_FULL_GRAPH_GATES_OPEN
+io_board_acquisition_checkpoint: docs/work/v1.8.0-c16d-components-graph/IO-BOARD-QUALIFICATION-03.md
+endgame_config_fixture_source: 50d4a3eaa2c3792904e6e3e134f40c00eb3b59cd
+endgame_config_fixture_qualification: LOCAL_NATIVE_AND_UNCHANGED_LOG_PASS_BASE_CHECKER_FAILURE_RETAINED_NO_CONFIG_OR_STORAGE_OBJECT_THREAD_CAUSE_PROOF
+io_board_hosted_ci: NOT_OBSERVED_AT_THIS_SOURCE_RAW_LINUX_QUALIFICATION_OPEN
 c16d_acquisition_source: 4951a326938c8aac4602787e89ab4403d03b5c9b
 c16d_acquisition_integration: 8fe5a0ec09758f22c9c0734465d83261bb73e74b
 c16d_acquisition_qualification: LOCAL_FUNCTIONAL_SOURCE_RESULTS_PEER_VERIFIED_INTEGRATED_ASSETS_PENDING_HUMAN_FULL_CONTENT_AND_GATES_OPEN
@@ -207,14 +214,18 @@ last_updated: 2026-10-11
 
 ## Current development evidence
 
-The latest local [component/fixture qualification](../work/v1.8.0-c16d-components-graph/ACQUISITION-QUALIFICATION-02.md)
-is integrated at the exact tested 8fe5a0ec: 2213 actual JUnit cases, deterministic
-generated data, 613 required native tests and the narrowed strict checker pass.
-The actual source/receipt/log/XML/resource review is complete; Root's later
-correction and sealing are not extra peer-executed runtime qualification.
-Hosted run 38107189300 reports completed/success at that source in the
+The latest local [IO/fixture qualification](../work/v1.8.0-c16d-components-graph/IO-BOARD-QUALIFICATION-03.md)
+is locally fast-forwarded at the exact tested 50d4a3ea: 2223 actual JUnit cases,
+two deterministic datagen runs, 619 required native summaries and unchanged
+strict checker pass. The original fd88 checker failure stays failed. Independent
+inert checks retain a reviewer command-policy Low; they are not a fully compliant
+independent runtime replay or Gate approval. Record-only descendants and sealing
+are not additional JVM-tested sources. Main remote push is a separate observation.
+The prior [component/fixture checkpoint](../work/v1.8.0-c16d-components-graph/ACQUISITION-QUALIFICATION-02.md)
+is historical, not a second current count. Its hosted run 38107189300 reports
+completed/success at 8fe5a0ec in the
 2026-10-11T03:14:05.477697Z metadata observation; raw Linux counts/log
-qualification and original CME cause remain open.
+qualification, new-source hosted results and original CME cause remain open.
 NEW asset review, full acquisition graph, restart/client and G0-G9 remain open.
 The prior current regression checkpoint is preserved in
 [jackhammer validation](../work/v1.8.0-c18b-jackhammer/START-FEEDBACK-VALIDATION-01.md),

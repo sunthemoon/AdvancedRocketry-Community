@@ -31,3 +31,16 @@ Medium failed log qualification at fd88 remains open; no new runtime outcome
 is implied by static review. New helpers use the same fixed finite envelope
 and refuse to replace any existing native world/log. Preparation failures are
 preserved separately as DEVELOPMENT-FAILURES-01.md in that packet.
+
+## Exact-source final qualification
+
+Source 50d4a3eaa2c3792904e6e3e134f40c00eb3b59cd completes clean build, two
+datagen runs, full native and separate unchanged checker. The actual final
+observations, original exits/windows and independent result/procedure limits
+are in the [joint qualification record](../v1.8.0-c16d-components-graph/IO-BOARD-QUALIFICATION-03.md).
+All source/result holds released before local Main fast-forward to that exact
+tested source. The source branch is normally pushed and verified by ls-remote.
+Original fd88 checker failure remains failed; no causal identity, watcher soak,
+historical storage fix, current Python/repository-strict or release Gate is
+implied. Owner global log is untouched; record-only descendants are not extra
+JVM qualification. Both source worlds and all failure evidence remain retained.
