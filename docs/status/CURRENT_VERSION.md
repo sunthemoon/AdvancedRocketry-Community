@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
+latest_source_checkpoint: b3595a739259744dacdf6588b027593234b3a7a3
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
@@ -51,17 +51,21 @@ pending_checksum_input_source_candidate: ""
 pending_checksum_input_qualification: SOURCE_INTEGRATED_ROOT43_REPOSITORY148_PEER_STANDARD_PASS_SUITE_STRICT_TIMEOUT_OPERATIONAL_GAPS_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
-native_tested_code_commit: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
-latest_regression_target_commit: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
-latest_regression_result: ROOT_WINDOWS_EXPLICIT_HEAPS_BUILD_UNIT2239_TWO_CACHED_DATAGEN_CLEAN_NATIVE631_LOG62ERROR160WARN_PASS_SUMMARY_CORRECTION_RETAINED_CURRENT_STRICT_UNEXECUTED_HOSTED_CME_GATES_OPEN
-latest_regression_run: control-board-acquisition-20261011-20
+tested_code_commit: b3595a739259744dacdf6588b027593234b3a7a3
+native_tested_code_commit: b3595a739259744dacdf6588b027593234b3a7a3
+latest_regression_target_commit: b3595a739259744dacdf6588b027593234b3a7a3
+latest_regression_result: ROOT_WINDOWS_EXPLICIT_HEAPS_BUILD_UNIT2247_TWO_CACHED_DATAGEN_CLEAN_NATIVE637_LOG62ERROR160WARN_PASS_REVIEW_PROCEDURE_DEVIATIONS_RETAINED_SEPARATE_RETENTION_REHASH_CURRENT_STRICT_UNEXECUTED_HOSTED_CME_GATES_OPEN
+latest_regression_run: circuit-plates-acquisition-20261011-23
 latest_regression_attempt: 1
-latest_regression_evidence: FIVE_ORIGINAL_FINAL_RECEIPTS_AND_AUTHORING_SEED_PEER386_XML_2239_CHILDREN_SEVEN_TWO_RUN_RESOURCE_BINDINGS_COMPILER_SUMMARY_CORRECTION_AND_PROBE_ERRORS_RETAINED
-latest_regression_observed_utc: 2026-10-11T08:08:40.286363Z
-actual_unit_rerun: control-board-acquisition-20261011-20/build.receipt.json
-actual_unit_rerun_scope: CLEAN_BUILD_TEST_TASK_EXECUTED_JUNIT2239_XML386_ZERO_FAILURE_ERROR_SKIP_TEST_COMPILATION_EXECUTED_SOME_OTHER_COMPILE_CACHED_PEER_BYTE_BOUND
-actual_unit_rerun_observed_utc: 2026-10-11T08:08:40.286363Z
+latest_regression_evidence: FIVE_ORIGINAL_FINAL_RECEIPTS_AND_AUTHORING_SEED_PEER387_XML_2247_CHILDREN_EIGHT_TWO_RUN_RESOURCE_BINDINGS_RESULT89_OF92_REHASH_SEPARATE_SUPPLEMENT28_UNCHANGED_PROCEDURE_REFUSALS_RETAINED
+latest_regression_observed_utc: 2026-10-11T10:20:48Z
+actual_unit_rerun: circuit-plates-acquisition-20261011-23/build.receipt.json
+actual_unit_rerun_scope: CLEAN_BUILD_TEST_TASK_EXECUTED_JUNIT2247_XML387_ZERO_FAILURE_ERROR_SKIP_TEST_COMPILATION_EXECUTED_SOME_OTHER_COMPILE_CACHED_PEER_BYTE_BOUND
+actual_unit_rerun_observed_utc: 2026-10-11T10:20:48Z
+circuit_plates_acquisition_source: 4d02e311140cdfb04c6353f2e9782730d4770d35
+circuit_plates_acquisition_qualified_source: b3595a739259744dacdf6588b027593234b3a7a3
+circuit_plates_acquisition_qualification: LOCAL_FUNCTIONAL_SOURCE_RESULTS_RETENTION_PEER_VERIFIED_SOURCE_BRANCH_PUSHED_MAIN_LOCAL_SOURCE_FAST_FORWARD_SECOND_ETCHER_NEW_ART_SURVIVAL_GATES_OPEN
+circuit_plates_acquisition_checkpoint: docs/work/v1.8.0-c16d-components-graph/CIRCUIT-PLATES-QUALIFICATION-06.md
 control_board_acquisition_source: d92c0838c3ecc0b0ecaeba3345158c10d83473e3
 control_board_acquisition_qualified_source: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
 control_board_acquisition_qualification: LOCAL_FUNCTIONAL_SOURCE_AND_RESULTS_PEER_VERIFIED_MAIN_SOURCE_FAST_FORWARD_SOURCE_BRANCH_PUSHED_NEW_ART_HUMAN_FULL_GRAPH_GATES_OPEN
@@ -230,20 +234,27 @@ last_updated: 2026-10-11
 
 ## Current development evidence
 
-The latest local [Control board qualification](../work/v1.8.0-c16d-components-graph/CONTROL-BOARD-QUALIFICATION-05.md)
-is locally fast-forwarded at the exact tested c2934b83. The metrics above derive
+The latest local [Circuit-plate qualification](../work/v1.8.0-c16d-components-graph/CIRCUIT-PLATES-QUALIFICATION-06.md)
+is locally fast-forwarded at exact tested b3595a73, with its source branch pushed.
+The metrics above derive
 from actual JUnit children, two cached/idempotent DataGen checks after a fresh
 seed, complete native summaries and unchanged strict log policy. Independent
 source/generated/result checks are inert, not an independent JVM replay or Gate
-approval. Root's CRLF compiler-summary omission is corrected with its original
-retained; reviewer-only decoder/sort/display probes are preserved. NEW human
-approval is still pending. Record descendants, final sealing and Main remote push are
+approval. The original result review's display/read-ledger/final-rehash deviations
+remain unwaived; a separate fresh supplement rehashes its 28 selected files,
+including the three previously excluded large artifacts. NEW human approval is
+still pending. Record descendants, final sealing and Main remote push are
 separate observations, not additional JVM-tested sources.
+The previous [Control board qualification](../work/v1.8.0-c16d-components-graph/CONTROL-BOARD-QUALIFICATION-05.md)
+preserves its c2934b83 results, Root's CRLF compiler-summary correction and the
+original retained JSON, plus reviewer decoder/sort/display probes. Its record C
+d6cdb6d8 hosted run38125912593/job114430116139 is completed/success in dated
+metadata above; that is not raw Linux qualification or a new circuit-plate result.
 The previous [Liquid IO checkpoint](../work/v1.8.0-c16d-components-graph/LIQUID-IO-BOARD-QUALIFICATION-04.md)
 preserves its initial resource-binder failure and pre-process refused cleanup,
 not retried. Its record descendant b3ad9020 regression job114414258216 reports
 completed/success in dated metadata above; raw Linux counts/logs remain open,
-and that observation is not attributed to the new Control source.
+and that observation is not attributed to the current circuit-plate source.
 The previous [Item IO/fixture checkpoint](../work/v1.8.0-c16d-components-graph/IO-BOARD-QUALIFICATION-03.md)
 preserves its original checker failure and reviewer command-policy Low. The
 regression job for its record descendant 7beccfcf reports completed/success in
