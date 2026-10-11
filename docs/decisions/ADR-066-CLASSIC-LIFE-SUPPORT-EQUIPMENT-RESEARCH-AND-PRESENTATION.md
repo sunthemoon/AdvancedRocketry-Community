@@ -113,8 +113,6 @@ Disable prevents new work/debit/output but permits safe withdrawal, repair and
 completion/reconciliation of already durable transactions. Definitions and IDs
 remain registered. No scope is silently deferred by a switch.
 
-## 3. C18a - devices, tools and environment
-
 ### W03 implementation clarification of the shared save guard (2026-10-11)
 
 The suit workstation uses section 2's existing C16 `GuardedChunkSaves` only for
@@ -135,6 +133,8 @@ successful native saving and conservation checks. Root must obtain the section
 13 independent read-only persistence review before integration. Forced command
 replacement and third-party movers bypassing Forge policy are not ordinary
 removal guarantees.
+
+## 3. C18a - devices, tools and environment
 
 ### 3.1 Scrubber and instruments
 
