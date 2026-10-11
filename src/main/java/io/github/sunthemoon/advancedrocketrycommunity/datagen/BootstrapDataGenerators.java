@@ -63,6 +63,8 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180IoBoardData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180LiquidIoBoardData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180AirlockData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180SolarData(output, event.includeClient(), event.includeServer()));

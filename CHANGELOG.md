@@ -6,6 +6,11 @@ Rocketry maintainers.
 
 ## v1.8.0 — in development
 
+- Add a Liquid IO Circuit Board with workbench and Precision Assembler recipes.
+  The workbench uses redstone, quartz, lapis, a wooden slab and an iron plate;
+  precision assembly uses redstone, lapis and a steel plate for 200 ticks at
+  10 FE/t. Existing circuits are unchanged. Initial steel production and the
+  complete classic-machine progression remain unfinished.
 - Add an Item IO Circuit Board with workbench and Precision Assembler recipes.
   The workbench uses redstone, quartz, gold dust, a wooden slab and an iron
   plate; precision assembly uses redstone, gold and steel plates for 200 ticks

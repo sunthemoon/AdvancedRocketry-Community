@@ -210,6 +210,7 @@ public final class ModItems {
     public static final RegistryObject<Item> CARBON_BRICK = ITEMS.register("carbon_brick", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> USER_INTERFACE = ITEMS.register("user_interface", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> ITEM_IO_BOARD = ITEMS.register("item_io_board", () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> LIQUID_IO_BOARD = ITEMS.register("liquid_io_board", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> THERMITE = ITEMS.register("thermite", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> THERMITE_TORCH = ITEMS.register("thermite_torch", () ->
             new StandingAndWallBlockItem(ModBlocks.THERMITE_TORCH.get(), ModBlocks.THERMITE_WALL_TORCH.get(),

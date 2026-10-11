@@ -31,6 +31,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.CARBON_BRICK.get());
                         output.accept(ModItems.USER_INTERFACE.get());
                         output.accept(ModItems.ITEM_IO_BOARD.get());
+                        output.accept(ModItems.LIQUID_IO_BOARD.get());
                         output.accept(ModItems.THERMITE_TORCH.get());
                         output.accept(ModItems.AIRLOCK_DOOR.get());
                         output.accept(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.ITEM.get());
