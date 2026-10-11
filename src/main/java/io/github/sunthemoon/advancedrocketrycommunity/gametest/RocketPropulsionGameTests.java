@@ -53,6 +53,10 @@ public final class RocketPropulsionGameTests {
     public static void basicRocketKeepsItsMetricsAndAbstractFuelLaunch(GameTestHelper helper) {
         flight(helper, ModBlocks.ROCKET_MOTOR.get(), RocketPropulsion.Mode.MONO, 1, 1);
     }
+    @GameTest(template = "rocket_test", batch = "propulsion_waiver", timeoutTicks = 800)
+    public static void capturedFuelWaiverLaunchesEmptyBanksAndKeepsLandedMenuReady(GameTestHelper helper) {
+        flight(helper, ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get(), RocketPropulsion.Mode.BIPROPELLANT, 1, 1, false);
+    }
     @GameTest(template = "rocket_test")
     public static void mixedModesAndWrongTankRolesRefuseBeforeExtraction(GameTestHelper helper) {
         BlockPos origin = new BlockPos(3, 2, 3); placeLegalRocket(helper, origin);
@@ -153,6 +157,10 @@ public final class RocketPropulsionGameTests {
         }
     }
     private static void flight(GameTestHelper helper, Block motor, RocketPropulsion.Mode mode, long numerator, long denominator) {
+        flight(helper, motor, mode, numerator, denominator, true);
+    }
+    private static void flight(GameTestHelper helper, Block motor, RocketPropulsion.Mode mode, long numerator, long denominator,
+            boolean requireFuel) {
         ServerLevel earth = helper.getLevel(); ServerLevel moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable");
         clearTransferJournal(earth); primePadChunks(moon);
@@ -169,6 +177,14 @@ public final class RocketPropulsionGameTests {
             });
             if (mode == RocketPropulsion.Mode.BIPROPELLANT) { helper.setBlock(origin.east(), ModBlocks.OXIDIZER_FUEL_TANK.get()); }
             var snapshot = successfulSnapshot(helper, origin);
+            if (!requireFuel) {
+                var p = snapshot.propulsion().orElseThrow(); var s = p.settings();
+                var waived = new RocketPropulsion(p.mode(), p.primaryCapacity(), p.oxidizerCapacity(),
+                        p.coefficientNumerator(), p.coefficientDenominator(), new RocketPropulsion.Settings(s.thrustUnits(),
+                                s.capacityUnits(), s.coreUnits(), s.gravityAffectsFuels(), false, s.canBeFueledByHand(), s.allowedFluids()));
+                snapshot = RocketStructureSnapshot.create(snapshot.snapshotId(), snapshot.sourceDimension(), snapshot.sourceOrigin(),
+                        snapshot.blocks(), snapshot.passengerAnchors(), snapshot.stats(), snapshot.createdAtGameTime(), waived);
+            }
             helper.assertTrue(snapshot.propulsion().orElseThrow().mode() == mode, "Wrong captured mode");
             boolean basic = motor == ModBlocks.ROCKET_MOTOR.get();
             if (basic) {
@@ -182,16 +198,16 @@ public final class RocketPropulsionGameTests {
             helper.assertTrue(assembled.success(), "Assembly refused " + assembled.code());
             RocketEntity rocket = (RocketEntity) earth.getEntity(assembled.rocketEntityId().orElseThrow());
             var before = rocket.flightData().orElseThrow();
-            var fuel = basic ? before.fuel().fill(1_000).state() : before.fuel().withFluidBank(false,
+            var fuel = !requireFuel ? before.fuel() : basic ? before.fuel().fill(1_000).state() : before.fuel().withFluidBank(false,
                     ModIdentity.id(mode == RocketPropulsion.Mode.MONO ? "rocket_fuel" : "hydrogen"), null, 1_000);
-            if (mode == RocketPropulsion.Mode.BIPROPELLANT) { fuel = fuel.withFluidBank(true, ModIdentity.id("oxygen"), null, 1_000); }
+            if (requireFuel && mode == RocketPropulsion.Mode.BIPROPELLANT) { fuel = fuel.withFluidBank(true, ModIdentity.id("oxygen"), null, 1_000); }
             rocket.updateFlightData(before.withFuel(fuel, earth.getGameTime()));
             UUID request = UUID.randomUUID(); UUID logical = rocket.assemblyTransactionId().orElseThrow();
             var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
             helper.assertTrue(launch.success(), "Launch refused " + launch.code());
             var plan = rocket.flightData().orElseThrow().plan().orElseThrow();
             long q = plan.requiredFuel(); long efficiency = mode == RocketPropulsion.Mode.MONO && !basic ? 2 : 1;
-            long expected = basic ? q : (q * numerator + denominator * efficiency - 1) / (denominator * efficiency);
+            long expected = !requireFuel ? 0 : basic ? q : (q * numerator + denominator * efficiency - 1) / (denominator * efficiency);
             helper.assertTrue(plan.propulsionDebit().primary() == expected
                     && plan.propulsionDebit().oxidizer() == (mode == RocketPropulsion.Mode.BIPROPELLANT ? expected : 0), "Incorrect captured vector");
             awaitLanding(helper, earth, moon, logical, request, mode, expected,
@@ -209,9 +225,16 @@ public final class RocketPropulsionGameTests {
         RocketEntity arrived = findLogicalRocket(moon, logical);
         if (arrived != null && arrived.flightData().orElseThrow().state() == RocketFlightState.LANDED) {
             var flight = arrived.flightData().orElseThrow(); var fuel = flight.fuel();
-            helper.assertTrue(fuel.amount() == 1_000 - expected && fuel.committedDebits().equals(java.util.List.of(request)), "Primary debit not exactly once");
+            long startingAmount = fuel.requiresFuel() ? 1_000 : 0;
+            helper.assertTrue(fuel.amount() == startingAmount - expected && fuel.committedDebits().equals(java.util.List.of(request)), "Primary debit not exactly once");
             helper.assertTrue(fuel.propulsion().orElseThrow().oxidizer().amount()
-                    == (mode == RocketPropulsion.Mode.BIPROPELLANT ? 1_000 - expected : 0), "Oxidizer debit differs");
+                    == (mode == RocketPropulsion.Mode.BIPROPELLANT ? startingAmount - expected : 0), "Oxidizer debit differs");
+            if (!fuel.requiresFuel()) {
+                var owner = new ContainerPlayer(moon, arrived.ownerId().orElseThrow()); owner.setPos(arrived.position());
+                var menu = new io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu(0, owner.getInventory(), arrived);
+                helper.assertTrue(menu.canLaunch(), "Captured waiver did not keep landed menu launchable");
+                helper.assertTrue(menu.navigation().quotes().earth().canLaunch(), "Captured waiver did not keep Earth navigation ready");
+            }
             helper.assertTrue(RocketFlightNbtCodec.decode(RocketFlightNbtCodec.encode(flight)).data().orElseThrow().equals(flight), "Native flight codec lost resources");
             helper.assertTrue(findLogicalRocket(earth, logical) == null, "Source retained duplicate authority");
             helper.assertTrue(RocketTransferSavedData.get(earth.getServer()).find(request).orElseThrow().phase()

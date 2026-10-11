@@ -106,6 +106,17 @@ class RocketPropulsionFuelTest {
         assertEquals(debit.state().propulsion().orElseThrow(), RocketPropulsionFuelCodec.decode(
                 RocketPropulsionFuelCodec.encode(debit.state().propulsion().orElseThrow())));
     }
+    @Test void capturedWaiverKeepsEmptyFuelReadyAfterFailureRecoveryWithoutInventingFluid() {
+        var settings = RocketPropulsion.Settings.capture(1, 1, 1, true, false, true);
+        var fuel = RocketFuelState.empty(new RocketPropulsion(RocketPropulsion.Mode.BIPROPELLANT, 1_000, 1_000, 1, 1, settings));
+        assertTrue(fuel.availableForLaunch()); assertFalse(RocketFuelState.empty(1_000).availableForLaunch());
+        var flight = RocketFlightData.initial(UUID.randomUUID(), 1_000, 1, RocketFlightPlanner.EARTH.bodyId(),
+                RocketFlightPlanner.EARTH.dimensionId(), new RocketPosition(0, 10, 0), 10).withFuel(fuel, 10);
+        var failed = flight.markFailed(20);
+        var recovered = failed.recover(failed.fuel().availableForLaunch(), 30);
+        assertEquals(RocketFlightState.FUELED, recovered.state()); assertEquals(fuel, recovered.fuel());
+        assertEquals(0, recovered.fuel().totalAmount());
+    }
     @Test void oldScalarFlightDataMigratesWithoutInventingFluidAndKeepsTheDebitLedger() {
         UUID transaction = UUID.randomUUID();
         var scalar = RocketFuelState.restore(1_000, 456, List.of(transaction));

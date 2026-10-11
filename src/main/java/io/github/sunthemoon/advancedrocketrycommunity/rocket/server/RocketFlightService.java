@@ -220,7 +220,7 @@ final class RocketFlightService {
             UUID requestId
     ) {
         RocketFlightData flight = rocket.flightData().orElseThrow();
-        if (flight.state() == RocketFlightState.LANDED && (flight.fuel().amount() > 0L || !flight.fuel().requiresFuel())) {
+        if (flight.state() == RocketFlightState.LANDED && flight.fuel().availableForLaunch()) {
             flight = flight.withFuel(flight.fuel(), rocket.level().getGameTime());
         }
         if (flight.state() != RocketFlightState.FUELED) {

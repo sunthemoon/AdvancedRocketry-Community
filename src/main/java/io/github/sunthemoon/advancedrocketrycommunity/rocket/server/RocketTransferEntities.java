@@ -229,7 +229,7 @@ final class RocketTransferEntities {
 
     static RocketFlightData stationarySource(RocketTransferRecord record, long gameTime) {
         RocketFlightData failed = record.sourceFlightData().markFailed(gameTime);
-        return failed.recover(failed.fuel().amount() > 0L, gameTime);
+        return failed.recover(failed.fuel().availableForLaunch(), gameTime);
     }
 
     static void remountOnlinePassengers(

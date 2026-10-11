@@ -77,6 +77,8 @@ public final class RocketFuelState {
     public long totalAmount() { return propulsion == null ? amount : propulsion.totalAmount(); }
     public boolean gravityAffectsFuels() { return propulsion == null || propulsion.descriptor().settings().gravityAffectsFuels(); }
     public boolean requiresFuel() { return propulsion == null || propulsion.descriptor().settings().rocketsRequireFuel(); }
+    /** Readiness only; the planner still checks the complete debit and every flight authority. */
+    public boolean availableForLaunch() { return amount > 0 || !requiresFuel(); }
     public String summary() { return propulsion == null ? "ABSTRACT: " + amount : propulsion.summary(); }
     public String resourceSignature() {
         if (propulsion == null) { throw new IllegalStateException("Legacy fuel has no native vector"); }
