@@ -1094,8 +1094,16 @@ Low 的等待时长注释和原客户端 UI、配置、火把、天空及首次�
 8 个批次开始，完整 cohort 与对账均未完成。固定断点交付 49,729 次，其中拒绝 49,705 次；
 本地处理器累计 23.448 秒不等于完整 VM/目标开销，不能据此归因延迟或证明改进。
 独立结果和设计审核确认这些原始结果及覆盖边界；111 份文件加清单已封存，
-审核截止后的 Root 清理、封存和记录不算独立运行放行。下一项仅为精确原生成员 writer
-覆盖与新读取根接纳的静态审核；若另行冻结阶段性缩减观察，须明确覆盖损失。
+审核截止后的 Root 清理、封存和记录不算独立运行放行。
+[writer/read 静态复核与外部工具修正](../work/v1.8.0-native-storage-ownership/JDI-WRITER-READ-AUDIT-09.md)
+确认本地 CompoundTag 有 16 个调用 Map.put 的方法，其中 15 个 typed overload 绕过
+generic put hook；live key view、原始 map 引用和 writer 完成/异常结果仍未完整覆盖。
+六次读取返回只保留五次 arm payload，context 5 的 arm 被聚合，不能补造其事件编号或时间。
+外部工具已接纳合格读取返回的新根，并复用此前捕获的 worker 元数据；编译及原有 17 项、
+新增 33 项离线代理用例实际通过。未新增原生观察，不改变历史运行的根对象计数。
+独立源码/测试/结果审核保留了成功 read-entry、publication、独立 Map-copy 和 fresh
+conversion-return 的覆盖缺口；执行前没有单独处置说明，后续说明不冒充事前批准。
+若另行冻结阶段性缩减观察，须明确覆盖损失；完整 writer 和原 CME 归因继续开放。
 不扩大预算或预期日志规则，不重跑终止的工具。先前观察及封存证据保留为历史。
 R-021、完整 Python 资格和全部 Required Gate
 继续开放，v1.8 保持 IN_PROGRESS / IMPLEMENTING。
