@@ -55,6 +55,9 @@ class FieldCleanupRootTest {
         assertEquals(count, root.size());
         assertTrue(root.bytes() <= FieldCleanupRoot.MAX_BYTES);
         assertEquals(root.encode(), FieldCleanupRoot.decode(root.encode()).encode());
+        var saved = FieldCleanupSavedData.load(root.encode());
+        assertFalse(saved.canPlace(longLevel, BlockPos.ZERO, Direction.DOWN));
+        assertTrue(saved.view().size() < FieldCleanupRoot.MAX_ENTRIES);
     }
     @Test void conflictingIdentitiesDuplicateKeysFutureAndOversizedRootsAreNotNormalized() {
         var root = new FieldCleanupRoot(); assertTrue(root.put(entry(1)));
@@ -80,5 +83,16 @@ class FieldCleanupRootTest {
         assertTrue(budget.acquire(entry(0).identity().key(), 105, 2));
         assertFalse(budget.acquire(entry(0).identity().key(), 105, 2));
         assertEquals(2, budget.cells());
+    }
+    @Test void historicalObservationsCannotPermanentlyFillTheBoundedCooldownMap() {
+        var budget = new FieldWorkBudget();
+        for (int i = 0; i < FieldCleanupRoot.MAX_ENTRIES * 2; i++) {
+            assertTrue(budget.acquire(entry(i).identity().key(), i, 1));
+        }
+        assertTrue(budget.acquire(entry(8192).identity().key(), 8192, 1));
+        assertFalse(budget.acquire(entry(8191).identity().key(), 8192, 1));
+        var nextGeneration = new FieldIdentity.Key(entry(8191).identity().projector(), 2);
+        assertFalse(budget.acquire(nextGeneration, 8192, 1));
+        assertTrue(budget.acquire(nextGeneration, 8196, 1));
     }
 }

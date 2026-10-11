@@ -25,6 +25,9 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
     @Override protected boolean bounded(Tag raw) { return ForceFieldCodecs.projectorBounded(raw); }
     @Override protected void decode(Tag raw) { state = ForceFieldCodecs.projector(raw); }
     @Override protected CompoundTag encode() { return ForceFieldCodecs.projector(state); }
+    @Override protected boolean validLocation() {
+        return state.direction() == getBlockState().getValue(ForceFieldProjectorBlock.FACING);
+    }
     public ProjectorState state() { return state; }
     public FieldIdentity identity() {
         return new FieldIdentity(state.id(), state.owner().orElseThrow(), state.generation(),

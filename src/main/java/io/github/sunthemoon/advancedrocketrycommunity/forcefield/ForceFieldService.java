@@ -112,10 +112,10 @@ public final class ForceFieldService {
     private static boolean remove(ServerLevel level, ForceFieldBlockEntity field) {
         FieldIdentity identity = field.identity();
         BlockPos pos = field.getBlockPos();
-        if (identity == null || identity.offset(pos) == 0 || !identity.level().equals(level.dimension())
+        if (identity == null || identity.offset(pos) == 0 || !ForceFieldProtection.sourceReadable(level, identity)
                 || !ForceFieldProtection.removal(level, identity.owner(), pos, field.getBlockState(), Optional.empty())
                 || !loaded(level, pos) || loadedEntity(level, pos) != field || field.quarantined()
-                || !identity.equals(field.identity())) { return false; }
+                || !identity.equals(field.identity()) || !ForceFieldProtection.sourceReadable(level, identity)) { return false; }
         ForceFieldProtection.physical(level, pos, () -> level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL));
         return loaded(level, pos) && level.getBlockState(pos).is(Blocks.AIR);
     }

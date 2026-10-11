@@ -20,6 +20,8 @@ public abstract class ForceFieldNativeBlockEntity extends BlockEntity {
     protected abstract boolean bounded(Tag root);
     protected abstract void decode(Tag root);
     protected abstract CompoundTag encode();
+    protected boolean validLocation() { return true; }
+    @Override public final boolean onlyOpCanSetNbt() { return true; }
     public final boolean quarantined() { return refused != null; }
     public final boolean oversized() { return refused != null && !bounded(refused); }
     @Override public final void load(CompoundTag tag) {
@@ -29,6 +31,7 @@ public abstract class ForceFieldNativeBlockEntity extends BlockEntity {
         try {
             if (raw == null || !bounded(raw)) { throw ForceFieldCodecs.invalid(); }
             decode(raw);
+            if (!validLocation()) { throw ForceFieldCodecs.invalid(); }
         } catch (IllegalArgumentException failure) {
             // A missing owned root is preserved as an explicit invalid root, not a new identity.
             refused = raw == null ? new CompoundTag() : bounded(raw) ? raw.copy() : raw;
@@ -42,6 +45,7 @@ public abstract class ForceFieldNativeBlockEntity extends BlockEntity {
     }
     @Override public void onLoad() {
         super.onLoad();
+        if (!quarantined() && !validLocation()) { refused = encode(); }
         observeSaveGuard();
     }
     private void observeSaveGuard() {

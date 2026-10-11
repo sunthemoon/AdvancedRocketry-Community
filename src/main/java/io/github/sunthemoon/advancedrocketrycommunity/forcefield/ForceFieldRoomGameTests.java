@@ -11,6 +11,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
@@ -31,6 +33,13 @@ public final class ForceFieldRoomGameTests {
     public static void suppliedRoomIsRevokedAtCommitButNotAtCancelledBreakPreflight(GameTestHelper helper) {
         var f = new ForceFieldGameTests.Fixture(helper, Direction.EAST);
         BlockPos interior = f.identity.target(2);
+        var held = new java.util.HashSet<ChunkPos>();
+        held.add(new ChunkPos(f.identity.source()));
+        for (BlockPos pos : BlockPos.betweenClosed(interior.offset(-1, -1, -1), interior.offset(1, 1, 1))) {
+            held.add(new ChunkPos(pos));
+        }
+        // The remote fixture has no player. Keep it ticking for the native producer, not in production code.
+        held.forEach(chunk -> f.level.getChunkSource().addRegionTicket(TicketType.PORTAL, chunk, 1, chunk.getWorldPosition()));
         for (BlockPos mutable : BlockPos.betweenClosed(interior.offset(-1, -1, -1), interior.offset(1, 1, 1))) {
             BlockPos pos = mutable.immutable();
             f.level.setBlock(pos, Blocks.IRON_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
@@ -65,7 +74,10 @@ public final class ForceFieldRoomGameTests {
                 helper.assertTrue(AtmosphereRuntime.breathabilityAt(f.level, interior).orElseThrow() != BreathabilityState.BREATHABLE
                         && vent.oxygenUnits() == oxygen, "Removal exposed stale room authority before a subsequent oxygen debit");
                 helper.succeed();
-            } finally { f.close(); }
+            } finally {
+                f.close();
+                held.forEach(chunk -> f.level.getChunkSource().removeRegionTicket(TicketType.PORTAL, chunk, 1, chunk.getWorldPosition()));
+            }
         });
     }
     private ForceFieldRoomGameTests() { }

@@ -88,6 +88,10 @@ public final class ForceFieldGameTests {
     }
     @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
     public static void sixDirectionsOnlyEmptyAirAndExactThirtyTwoOffsets(GameTestHelper helper) {
+        var recipe = helper.getLevel().getRecipeManager().byKey(ModIdentity.id("force_field_projector"));
+        helper.assertTrue(recipe.isPresent() && recipe.orElseThrow().getResultItem(helper.getLevel().registryAccess())
+                .is(io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems.FORCE_FIELD_PROJECTOR.get()),
+                "Generated projector recipe did not load into the native recipe manager");
         for (Direction direction : Direction.values()) {
             try (Fixture f = new Fixture(helper, direction)) {
                 f.power(true);
@@ -294,6 +298,40 @@ public final class ForceFieldGameTests {
             helper.assertTrue(f.level.getBlockEntity(f.identity.target(1)) == field && field.quarantined()
                     && field.saveWithoutMetadata().get(ForceFieldCodecs.FIELD_ROOT).equals(raw), "Future root was removed or normalized");
             helper.assertTrue(Block.isShapeFullBlock(field.getBlockState().getCollisionShape(f.level, field.getBlockPos())), "Quarantine changed collision");
+        }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void foreignNativeLocationRemainsInertAndOwnerNbtRequiresOperator(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper, Direction.EAST)) {
+            var field = f.field(1, f.identity);
+            helper.assertTrue(field.onlyOpCanSetNbt() && f.source.onlyOpCanSetNbt(), "Owner roots accept non-operator item NBT");
+            var misplaced = new FieldIdentity(f.identity.projector(), f.identity.owner(), 1,
+                    f.identity.level(), f.identity.source().above(10), Direction.EAST);
+            CompoundTag raw = ForceFieldCodecs.field(misplaced);
+            CompoundTag tag = new CompoundTag(); tag.put(ForceFieldCodecs.FIELD_ROOT, raw); field.load(tag);
+            f.level.setBlock(field.getBlockPos(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(field.quarantined() && field.identity() == null && f.level.getBlockEntity(field.getBlockPos()) == field
+                    && field.saveWithoutMetadata().get(ForceFieldCodecs.FIELD_ROOT).equals(raw), "Misplaced root was removed or normalized");
+            var crossLevel = new FieldIdentity(f.identity.projector(), f.identity.owner(), 1,
+                    net.minecraft.world.level.Level.OVERWORLD, f.identity.source(), Direction.EAST);
+            raw = ForceFieldCodecs.field(crossLevel); tag.put(ForceFieldCodecs.FIELD_ROOT, raw); field.load(tag);
+            helper.assertTrue(field.quarantined() && field.saveWithoutMetadata().get(ForceFieldCodecs.FIELD_ROOT).equals(raw),
+                    "Cross-level native identity was accepted");
+        }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void quarantinedSourceAlsoRefusesDestructiveRemovalOfItsReadableFields(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper, Direction.EAST)) {
+            var field = f.field(1, f.identity); f.source.claims(1); f.data.reserve(f.identity, 1);
+            var raw = ForceFieldCodecs.projector(f.source.state()); raw.putInt("schema", 99);
+            CompoundTag tag = new CompoundTag(); tag.put(ForceFieldCodecs.PROJECTOR_ROOT, raw); f.source.load(tag);
+            f.work();
+            f.level.setBlock(field.getBlockPos(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(f.source.quarantined() && f.level.getBlockEntity(field.getBlockPos()) == field
+                    && f.data.view().get(f.identity.key()).claims() == 1, "Unreadable source allowed field removal");
+            helper.assertTrue(f.source.saveWithoutMetadata().get(ForceFieldCodecs.PROJECTOR_ROOT).equals(raw), "Source root changed");
         }
         helper.succeed();
     }

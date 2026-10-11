@@ -14,6 +14,10 @@ public final class ForceFieldBlockEntity extends ForceFieldNativeBlockEntity {
     @Override protected boolean bounded(Tag raw) { return ForceFieldCodecs.fieldBounded(raw); }
     @Override protected void decode(Tag raw) { identity = ForceFieldCodecs.field(raw); }
     @Override protected CompoundTag encode() { return identity == null ? new CompoundTag() : ForceFieldCodecs.field(identity); }
+    @Override protected boolean validLocation() {
+        return identity == null || identity.offset(worldPosition) != 0
+                && (level == null || identity.level().equals(level.dimension()));
+    }
     public FieldIdentity identity() { return quarantined() ? null : identity; }
     public void initialize(FieldIdentity value) {
         if (quarantined() || identity != null || value.offset(worldPosition) == 0 || !value.level().equals(level.dimension())) {

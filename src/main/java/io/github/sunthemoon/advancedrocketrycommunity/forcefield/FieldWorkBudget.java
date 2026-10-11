@@ -12,6 +12,10 @@ public final class FieldWorkBudget {
     public boolean acquire(FieldIdentity.Key key, long now, int cost) {
         if (cost < 1 || cost > MAX_CELLS) { throw new IllegalArgumentException("Invalid cell cost"); }
         if (tick != now) { tick = now; cells = 0; }
+        if (last.size() >= FieldCleanupRoot.MAX_ENTRIES * 2) {
+            // Only the five-tick cooldown is authoritative. Old observations must not fill it forever.
+            last.entrySet().removeIf(entry -> now - entry.getValue() >= 5);
+        }
         Long previous = last.get(key.projector());
         if (cells + cost > MAX_CELLS || (previous != null && now - previous < 5)
                 || (previous == null && last.size() >= FieldCleanupRoot.MAX_ENTRIES * 2)) { return false; }

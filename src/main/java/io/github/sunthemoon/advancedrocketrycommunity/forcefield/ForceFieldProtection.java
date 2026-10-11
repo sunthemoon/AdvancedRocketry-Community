@@ -66,7 +66,8 @@ public final class ForceFieldProtection {
     }
     public static boolean safeEvent(BooleanSupplier event) {
         try { return !event.getAsBoolean(); }
-        catch (RuntimeException | LinkageError failure) {
+        catch (VirtualMachineError | ThreadDeath fatal) { throw fatal; }
+        catch (Throwable failure) {
             AdvancedRocketryCommunity.LOGGER.warn("ARCE_FORCE_FIELD_LISTENER_REFUSED: {}", failure.getClass().getSimpleName());
             return false;
         }
@@ -88,6 +89,14 @@ public final class ForceFieldProtection {
                 && safeEvent(() -> MinecraftForge.EVENT_BUS.post(new BreakPreflight(level, pos, state,
                         new OwnerActor(level, owner)))) && region(level, owner, pos);
     }
+    static boolean sourceReadable(ServerLevel level, FieldIdentity identity) {
+        if (!identity.level().equals(level.dimension())) { return false; }
+        if (!ForceFieldService.loaded(level, identity.source())) { return true; }
+        var source = ForceFieldService.loadedEntity(level, identity.source());
+        if (source instanceof ForceFieldNativeBlockEntity nativeSource && nativeSource.quarantined()) { return false; }
+        return source != null || !level.getBlockState(identity.source()).is(
+                io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.FORCE_FIELD_PROJECTOR.get());
+    }
     static boolean admitRemoval(ServerLevel level, ForceFieldNativeBlockEntity entity, Optional<UUID> actor) {
         if (entity.quarantined()) { return false; }
         if (entity instanceof ForceFieldProjectorBlockEntity projector) {
@@ -101,7 +110,8 @@ public final class ForceFieldProtection {
             return removal(level, owner, entity.getBlockPos(), entity.getBlockState(), actor);
         }
         FieldIdentity identity = ((ForceFieldBlockEntity) entity).identity();
-        return identity != null && removal(level, identity.owner(), entity.getBlockPos(), entity.getBlockState(), actor);
+        return identity != null && sourceReadable(level, identity)
+                && removal(level, identity.owner(), entity.getBlockPos(), entity.getBlockState(), actor);
     }
     static boolean commitRetirement(ServerLevel level, ForceFieldNativeBlockEntity entity) {
         if (entity instanceof ForceFieldProjectorBlockEntity projector && projector.state().owner().isPresent()) {

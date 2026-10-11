@@ -12,6 +12,10 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.level.ChunkEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -31,17 +35,24 @@ public final class ForceFieldUnloadGameTests {
         // A FULL-only target ticket keeps just this fixture chunk available; production creates no tickets.
         f.level.getChunkSource().addRegionTicket(TicketType.PORTAL, targetChunk, 0, field.getBlockPos());
         f.level.getChunkAt(f.identity.source()).setUnsaved(true);
-        poll(helper, f, targetChunk, field.getBlockPos(), previous, 0);
+        AtomicBoolean unloaded = new AtomicBoolean();
+        Consumer<ChunkEvent.Unload> witness = event -> {
+            if (event.getLevel() == f.level && event.getChunk().getPos().equals(sourceChunk)) { unloaded.set(true); }
+        };
+        MinecraftForge.EVENT_BUS.addListener(witness);
+        poll(helper, f, targetChunk, field.getBlockPos(), previous, unloaded, witness, 0);
     }
     private static void poll(GameTestHelper helper, ForceFieldGameTests.Fixture f, ChunkPos targetChunk,
-            net.minecraft.core.BlockPos target, boolean previous, int attempts) {
+            net.minecraft.core.BlockPos target, boolean previous, AtomicBoolean unloaded,
+            Consumer<ChunkEvent.Unload> witness, int attempts) {
         helper.runAfterDelay(1, () -> {
-            if (ForceFieldService.loaded(f.level, f.identity.source()) && attempts < 350) {
-                poll(helper, f, targetChunk, target, previous, attempts + 1);
+            // Losing FULL status is not an unload: a pending holder can still return the same live BE.
+            if ((!unloaded.get() || ForceFieldService.loaded(f.level, f.identity.source())) && attempts < 350) {
+                poll(helper, f, targetChunk, target, previous, unloaded, witness, attempts + 1);
                 return;
             }
             try {
-                helper.assertTrue(!ForceFieldService.loaded(f.level, f.identity.source()), "Source never actually unloaded");
+                helper.assertTrue(unloaded.get() && !ForceFieldService.loaded(f.level, f.identity.source()), "Source never actually unloaded");
                 helper.assertTrue(ForceFieldService.loaded(f.level, target), "Target chunk did not remain available");
                 var before = f.level.getForcedChunks();
                 ForceFieldService.work(f.level.getServer(), f.data, f.data.view().get(f.identity.key()));
@@ -56,11 +67,13 @@ public final class ForceFieldUnloadGameTests {
                 f.load(f.identity.source());
                 var restored = (ForceFieldProjectorBlockEntity) f.level.getBlockEntity(f.identity.source());
                 helper.assertTrue(restored != f.source && restored.identity().equals(f.identity)
-                        && restored.state().claims() == FieldIdentity.bit(32), "Native chunk reload lost projector claims");
+                        && restored.state().claims() == FieldIdentity.bit(32), "Native chunk reload lost projector claims"
+                        + " sameInstance=" + (restored == f.source) + " state=" + restored.state());
                 helper.assertTrue(ForceFieldService.validate(f.level.getServer(), f.data,
                         new FieldCleanupSavedData.Observation(f.identity, target)), "Reload did not reconcile an exact field");
                 helper.succeed();
             } finally {
+                MinecraftForge.EVENT_BUS.unregister(witness);
                 f.level.getChunkSource().removeRegionTicket(TicketType.PORTAL, targetChunk, 0, target);
                 for (int i = 1; i <= 32; i++) { f.load(f.identity.target(i)); }
                 f.close();

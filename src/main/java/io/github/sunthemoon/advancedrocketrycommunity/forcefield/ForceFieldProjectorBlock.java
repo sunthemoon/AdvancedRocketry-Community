@@ -30,11 +30,12 @@ public final class ForceFieldProjectorBlock extends ForceFieldBlock {
     }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(FACING); }
     @Override public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction facing = context.getNearestLookingDirection().getOpposite();
         if (context.getLevel() instanceof ServerLevel server) {
             var root = FieldCleanupSavedData.get(server.getServer());
-            if (!root.operational() || root.view().full()) { return null; }
+            if (!root.canPlace(server.dimension(), context.getClickedPos(), facing)) { return null; }
         }
-        return defaultBlockState().setValue(FACING, context.getNearestLookingDirection().getOpposite());
+        return defaultBlockState().setValue(FACING, facing);
     }
     @Override public BlockState rotate(BlockState state, Rotation rotation) { return state.setValue(FACING, rotation.rotate(state.getValue(FACING))); }
     @Override public BlockState mirror(BlockState state, Mirror mirror) { return state.rotate(mirror.getRotation(state.getValue(FACING))); }
@@ -65,7 +66,7 @@ public final class ForceFieldProjectorBlock extends ForceFieldBlock {
     @Override public void onPlace(BlockState state, Level level, BlockPos pos, BlockState previous, boolean moved) {
         if (level instanceof ServerLevel server && !previous.is(this) && !ForceFieldProtection.permitted(server, pos)) {
             var root = FieldCleanupSavedData.get(server.getServer());
-            if (!root.operational() || root.view().full()) {
+            if (!root.canPlace(server.dimension(), pos, state.getValue(FACING))) {
                 ForceFieldProtection.physical(server, pos, () -> level.setBlock(pos, previous, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE));
                 return;
             }

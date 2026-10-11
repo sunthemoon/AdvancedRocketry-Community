@@ -60,7 +60,7 @@ public final class V180ForceFieldData implements DataProvider {
                 {"type":"minecraft:crafting_shaped","category":"redstone","pattern":["TGT","CMC","TRT"],
                  "key":{"T":{"tag":"forge:plates/titanium"},"G":{"item":"minecraft:glass"},
                   "C":{"item":"advancedrocketrycommunity:control_board"},
-                  "M":{"item":"advancedrocketrycommunity:advanced_machine_casing"},
+                  "M":{"item":"advancedrocketrycommunity:machine_casing"},
                   "R":{"item":"minecraft:redstone"}},
                  "result":{"item":"advancedrocketrycommunity:force_field_projector"}}
                 """), "data/advancedrocketrycommunity/advancements/recipes/redstone/force_field_projector.json", json("""

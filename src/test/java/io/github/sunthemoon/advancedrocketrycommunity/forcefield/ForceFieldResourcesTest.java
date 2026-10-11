@@ -21,6 +21,7 @@ class ForceFieldResourcesTest {
         var recipe = V180ForceFieldData.serverFiles().get("data/advancedrocketrycommunity/recipes/force_field_projector.json");
         assertEquals("advancedrocketrycommunity:force_field_projector", recipe.getAsJsonObject("result").get("item").getAsString());
         assertEquals("advancedrocketrycommunity:control_board", recipe.getAsJsonObject("key").getAsJsonObject("C").get("item").getAsString());
+        assertEquals("advancedrocketrycommunity:machine_casing", recipe.getAsJsonObject("key").getAsJsonObject("M").get("item").getAsString());
         String exemptions = Files.readString(Path.of("docs/recipe-graph-exemptions.json"));
         assertTrue(exemptions.contains("advancedrocketrycommunity:force_field"));
         assertFalse(exemptions.contains("force_field_projector"));

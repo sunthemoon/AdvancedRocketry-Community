@@ -35,6 +35,14 @@ public final class FieldCleanupSavedData extends SavedData {
     }
     public boolean operational() { return refused == null; }
     public FieldCleanupRoot view() { return root; }
+    public boolean canPlace(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> level,
+            BlockPos pos, net.minecraft.core.Direction direction) {
+        if (!operational()) { return false; }
+        try {
+            var candidate = new FieldIdentity(java.util.UUID.randomUUID(), new java.util.UUID(0, 0), 1, level, pos, direction);
+            return root.canAdmit(new FieldCleanupRoot.Entry(candidate, 0, false));
+        } catch (IllegalArgumentException invalidPosition) { return false; }
+    }
     public boolean reserve(FieldIdentity identity, int claims) {
         if (!operational()) { return false; }
         var old = root.get(identity.key());

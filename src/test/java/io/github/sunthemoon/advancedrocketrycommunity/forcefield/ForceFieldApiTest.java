@@ -21,6 +21,8 @@ class ForceFieldApiTest {
     @Test void throwingAndExhaustiveOldListenersRefuseInsteadOfAllowing() {
         assertFalse(ForceFieldProtection.safeEvent(() -> { throw new IllegalArgumentException("unsupported effect"); }));
         assertFalse(ForceFieldProtection.safeEvent(() -> { throw new IncompatibleClassChangeError(); }));
+        assertFalse(ForceFieldProtection.safeEvent(() -> { throw new AssertionError("unsupported effect"); }));
+        assertThrows(OutOfMemoryError.class, () -> ForceFieldProtection.safeEvent(() -> { throw new OutOfMemoryError(); }));
         assertFalse(ForceFieldProtection.safeEvent(() -> true));
         assertTrue(ForceFieldProtection.safeEvent(() -> false));
     }
