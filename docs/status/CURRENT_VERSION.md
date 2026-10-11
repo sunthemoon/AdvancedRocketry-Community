@@ -37,7 +37,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 session_handoff: docs/work/v1.8.0-session-handoff-20261008.md
 previous_development_handoff: docs/releases/v1.7.0/RELEASE-EVIDENCE.md
 runtime_build: 1.20.1-1.8.0-dev
-latest_source_checkpoint: 0dc14e4f175d365cf4216d9457b6e5e3bdfddbb8
+latest_source_checkpoint: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
 pending_graph_source_candidate: ""
 pending_sleep_observation_source_candidate: ""
 pending_seal_spatial_source_candidate: ""
@@ -51,22 +51,29 @@ pending_checksum_input_source_candidate: ""
 pending_checksum_input_qualification: SOURCE_INTEGRATED_ROOT43_REPOSITORY148_PEER_STANDARD_PASS_SUITE_STRICT_TIMEOUT_OPERATIONAL_GAPS_OPEN
 pending_sleep_observation_qualification: DEVELOPMENT_QUALIFIED_AND_INTEGRATED_TWENTY_ROWS_UNEXECUTED
 sleep_d1_outcome_contract: FROZEN_INDEPENDENTLY_REVIEWED_IMPLEMENTATION_PREREQUISITES_OPEN
-tested_code_commit: 0dc14e4f175d365cf4216d9457b6e5e3bdfddbb8
-native_tested_code_commit: 0dc14e4f175d365cf4216d9457b6e5e3bdfddbb8
-latest_regression_target_commit: 0dc14e4f175d365cf4216d9457b6e5e3bdfddbb8
-latest_regression_result: ROOT_WINDOWS_EXPLICIT_HEAPS_BUILD_UNIT2231_TWO_DATAGEN_CLEAN_NATIVE625_LOG62ERROR160WARN_PASS_PRIOR_RESOURCE_BINDER_FAILURE_RETAINED_CURRENT_STRICT_UNEXECUTED_HOSTED_CME_GATES_OPEN
-latest_regression_run: liquid-io-board-cohort-20261011-10
+tested_code_commit: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
+native_tested_code_commit: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
+latest_regression_target_commit: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
+latest_regression_result: ROOT_WINDOWS_EXPLICIT_HEAPS_BUILD_UNIT2239_TWO_CACHED_DATAGEN_CLEAN_NATIVE631_LOG62ERROR160WARN_PASS_SUMMARY_CORRECTION_RETAINED_CURRENT_STRICT_UNEXECUTED_HOSTED_CME_GATES_OPEN
+latest_regression_run: control-board-acquisition-20261011-20
 latest_regression_attempt: 1
-latest_regression_evidence: TWO_PACKETS_FIVE_ORIGINAL_FINAL_RECEIPTS_PEER385_XML_2231_CHILDREN_SEVEN_TWO_RUN_RESOURCE_BINDINGS_PRIOR_FAILURE_AND_REVIEWER_PROBE_ERRORS_RETAINED
-latest_regression_observed_utc: 2026-10-11T06:44:35.833685Z
-actual_unit_rerun: liquid-io-board-cohort-20261011-10/build.receipt.json
-actual_unit_rerun_scope: CLEAN_BUILD_TEST_TASK_EXECUTED_JUNIT2231_XML385_ZERO_FAILURE_ERROR_SKIP_TEST_COMPILATION_EXECUTED_SOME_OTHER_COMPILE_CACHED_PEER_BYTE_BOUND
-actual_unit_rerun_observed_utc: 2026-10-11T06:44:35.833685Z
+latest_regression_evidence: FIVE_ORIGINAL_FINAL_RECEIPTS_AND_AUTHORING_SEED_PEER386_XML_2239_CHILDREN_SEVEN_TWO_RUN_RESOURCE_BINDINGS_COMPILER_SUMMARY_CORRECTION_AND_PROBE_ERRORS_RETAINED
+latest_regression_observed_utc: 2026-10-11T08:08:40.286363Z
+actual_unit_rerun: control-board-acquisition-20261011-20/build.receipt.json
+actual_unit_rerun_scope: CLEAN_BUILD_TEST_TASK_EXECUTED_JUNIT2239_XML386_ZERO_FAILURE_ERROR_SKIP_TEST_COMPILATION_EXECUTED_SOME_OTHER_COMPILE_CACHED_PEER_BYTE_BOUND
+actual_unit_rerun_observed_utc: 2026-10-11T08:08:40.286363Z
+control_board_acquisition_source: d92c0838c3ecc0b0ecaeba3345158c10d83473e3
+control_board_acquisition_qualified_source: c2934b83b9e1d1a89cf10fa437dd66cdc29d760a
+control_board_acquisition_qualification: LOCAL_FUNCTIONAL_SOURCE_AND_RESULTS_PEER_VERIFIED_MAIN_SOURCE_FAST_FORWARD_SOURCE_BRANCH_PUSHED_NEW_ART_HUMAN_FULL_GRAPH_GATES_OPEN
+control_board_acquisition_checkpoint: docs/work/v1.8.0-c16d-components-graph/CONTROL-BOARD-QUALIFICATION-05.md
+control_board_hosted_ci: NOT_OBSERVED_AT_THIS_SOURCE_RAW_LINUX_QUALIFICATION_OPEN
 liquid_io_board_acquisition_source: b3166eda1707446c7bd8a9a0a5d576b254011465
 liquid_io_board_acquisition_qualified_source: 0dc14e4f175d365cf4216d9457b6e5e3bdfddbb8
 liquid_io_board_acquisition_qualification: LOCAL_FUNCTIONAL_SOURCE_AND_RESULTS_PEER_VERIFIED_MAIN_SOURCE_FAST_FORWARD_SOURCE_BRANCH_PUSHED_NEW_ART_HUMAN_FULL_GRAPH_GATES_OPEN
 liquid_io_board_acquisition_checkpoint: docs/work/v1.8.0-c16d-components-graph/LIQUID-IO-BOARD-QUALIFICATION-04.md
-liquid_io_board_hosted_ci: NOT_OBSERVED_AT_THIS_SOURCE_RAW_LINUX_QUALIFICATION_OPEN
+liquid_io_board_hosted_ci: REGRESSION_JOB_COMPLETED_SUCCESS_RUN38120569634_JOB114414258216_ATB3AD9020_METADATA_RAW_LINUX_COUNTS_OPEN
+liquid_io_board_hosted_ci_observed_utc: 2026-10-11T07:28:52.370446Z
+liquid_io_board_hosted_ci_url: https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/38120569634/job/114414258216
 io_board_acquisition_source: fd88f71b5378296569d6bf0c24340e78429160bf
 io_board_acquisition_qualified_source: 50d4a3eaa2c3792904e6e3e134f40c00eb3b59cd
 io_board_acquisition_qualification: LOCAL_FUNCTIONAL_SOURCE_PEER_CHECKS_VERIFIED_MAIN_SOURCE_FAST_FORWARD_SOURCE_PUSHED_NEW_ART_HUMAN_FULL_GRAPH_GATES_OPEN
@@ -221,20 +228,25 @@ last_updated: 2026-10-11
 
 ## Current development evidence
 
-The latest local [Liquid IO qualification](../work/v1.8.0-c16d-components-graph/LIQUID-IO-BOARD-QUALIFICATION-04.md)
-is locally fast-forwarded at the exact tested 0dc14e4f. The metrics above derive
+The latest local [Control board qualification](../work/v1.8.0-c16d-components-graph/CONTROL-BOARD-QUALIFICATION-05.md)
+is locally fast-forwarded at the exact tested c2934b83. The metrics above derive
 from actual JUnit children, two cached/idempotent DataGen checks after a fresh
 seed, complete native summaries and unchanged strict log policy. Independent
 source/generated/result checks are inert, not an independent JVM replay or Gate
-approval. The initial resource-binder failure and refused cleanup remain failed;
-reviewer-only ZIP/display-name probe errors are preserved. NEW human approval
-is still pending. Record descendants, final sealing and Main remote push are
+approval. Root's CRLF compiler-summary omission is corrected with its original
+retained; reviewer-only decoder/sort/display probes are preserved. NEW human
+approval is still pending. Record descendants, final sealing and Main remote push are
 separate observations, not additional JVM-tested sources.
+The previous [Liquid IO checkpoint](../work/v1.8.0-c16d-components-graph/LIQUID-IO-BOARD-QUALIFICATION-04.md)
+preserves its initial resource-binder failure and pre-process refused cleanup,
+not retried. Its record descendant b3ad9020 regression job114414258216 reports
+completed/success in dated metadata above; raw Linux counts/logs remain open,
+and that observation is not attributed to the new Control source.
 The previous [Item IO/fixture checkpoint](../work/v1.8.0-c16d-components-graph/IO-BOARD-QUALIFICATION-03.md)
 preserves its original checker failure and reviewer command-policy Low. The
 regression job for its record descendant 7beccfcf reports completed/success in
 the dated metadata above; raw Linux counts/log qualification remain open and
-that observation is not attributed to the new Liquid IO source.
+that observation is not attributed to either newer board source.
 The prior [component/fixture checkpoint](../work/v1.8.0-c16d-components-graph/ACQUISITION-QUALIFICATION-02.md)
 is historical, not a second current count. Its hosted run 38107189300 reports
 completed/success at 8fe5a0ec in the

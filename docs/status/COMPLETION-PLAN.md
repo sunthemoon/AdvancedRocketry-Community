@@ -203,6 +203,13 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     原日志规则、断言、时间和机器接口不变，不作为独立 JVM 复跑或 Gate 批准。
     NEW 人工审核、初始钢、真实玩家/完整图、物理 hatch、重启/V1/V2 仍开放；
     记录提交、最终封存和 Main 远程推送另行观察，不标记整份 C16d 或台账交付。
+  - [~] [C16d-CONTROL-BOARD-05](../work/v1.8.0-c16d-components-graph/CONTROL-BOARD-QUALIFICATION-05.md)：
+    控制电路板的普通 Item、工作台/精密装配两种原始生产方式、解锁和 NEW 展示已提交；
+    精确源码 `c2934b83` 已完成完整功能回归与独立源码、生成文件、原始结果审核。
+    源码分支正常推送，Main 本地源码快进；记录后继、最终远程状态和封存另行关联。
+    不改已有电路、机器接口、断言、时间或日志规则。CRLF 警告摘要遗漏已独立核对更正，
+    原 JSON 与审核者探针失败保留。NEW 人工审核、钢初始来源、真实玩家/完整图、
+    物理 hatch、重启/V1/V2、当前 strict 与原始 Linux 资格仍开放，不标记台账或 Gate。
   - [x] C16d-FORWARD-15：status: verified，仅测试侧数学源码/单测。Root 在不同代理限定审核后
     [采纳测试侧纯可达性接口](../work/v1.8.0-c16d-forward-reachability/ADOPTION-01.md)。
     仅两个新增算法/测试文件；[源码任务16](../work/v1.8.0-claude-cli-coordination/DISPATCH-16.md)
@@ -992,17 +999,22 @@ Root 选择新鲜着陆位置重力查询与受控供气空间输入，精确端
 
 ## 当前自动回归与风险
 
-最新精确被测源码为 `0dc14e4f`；[流体 IO 获取资格](../work/v1.8.0-c16d-components-graph/LIQUID-IO-BOARD-QUALIFICATION-04.md)
+最新精确被测源码为 `c2934b83`；[控制电路板获取资格](../work/v1.8.0-c16d-components-graph/CONTROL-BOARD-QUALIFICATION-05.md)
 记录实际执行的 clean build、两次 runData/空 diff、完整 GameTest 和单独原日志对账均退出 0。
-实际 XML 为 2231 个 testcase 元素、385 份文件、零 F/E/S，原生完成/必需通过摘要为 625 项，日志为
-62 ERROR /160 WARN /0 FATAL，37 条规则原样保留。先前配置与资源对账失败仍失败，
+实际 XML 为 2239 个 testcase 元素、386 份文件、零 F/E/S，原生完成/必需通过摘要为 631 项，日志为
+62 ERROR /160 WARN /0 FATAL，37 条规则原样保留。两次最终生成是缓存幂等检查，
+不声称两次冷缓存再生成。先前配置与资源对账失败仍失败，
 新样本不证明历史配置对象/线程或 IOWorker CME 唯一原因；不作为全版 Gate 验收。
 新增八项单测与六项原生夹具不证明真实玩家材料消费、初始钢或完整获取图。
-独立只读核验保留 ZIP 类型位、参数化显示名和报告大小的失败探针，不改变目标测试。
+独立只读核验保留解码、排序、显示和报告格式的失败探针，不改变目标测试。
+原 CRLF 编译警告摘要遗漏独立核对后只更正一个数组；原 JSON 保留，构建仍有 69 条警告。
 前次物品 IO 的记录后继 `7beccfcf` 对应托管 regression job `114397107064`
-已于 2026-10-11T05:38:15.903789Z 元数据观察中 completed/success；不外推到新流体 IO 源码。
+已于 2026-10-11T05:38:15.903789Z 元数据观察中 completed/success；不外推到较新源码。
+前次流体 IO 记录后继 `b3ad9020` 的 run38120569634/job114414258216 也已在
+2026-10-11T07:28:52.370446Z 元数据观察中 completed/success，不外推到新控制板源码。
 当前 Python/strict 与新源码托管原始 Linux 资格未执行/复核，历史超时和链接失败保持开放。
-Main 本地源码快进已核对原 149 项状态、空暂存区和所有者文件哈希；远程推送与记录后继另记。
+Main 源码快进前已核对原 149 项状态、空暂存区和所有者文件哈希；最终保存核对、
+远程推送与记录后继另记，不把文档后继当成新增 JVM 被测提交。
 
 前次本地 Java/原生回归见[装载器实体就绪审核与集成](../work/v1.8.0-fuel-loader-readiness/SOURCE-INTEGRATION-01.md)。
 用户于 2026-10-10 要求审核已有 Claude 修复分支后有条件合并；没有调用 Claude 新实施。
