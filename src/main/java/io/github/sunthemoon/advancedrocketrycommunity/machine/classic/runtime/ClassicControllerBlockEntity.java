@@ -304,7 +304,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
                 var bank = checkpoint.resources().bank(hatch.bankKey()).orElse(null);
                 if (bank != null) {
                     var drops = bank.items(); checkpoint = checkpoint.resources(checkpoint.resources().remove(hatch.bankKey()));
-                    setChanged(); drops.forEach(stack -> drop(hatch.getBlockPos(), stack));
+                    setChanged(); drops.forEach(stack -> drop(worldPosition, stack));
                 }
             }
             invalidate();

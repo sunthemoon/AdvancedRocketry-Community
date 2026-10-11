@@ -115,6 +115,13 @@ public final class ClassicLatheGameTests {
             fixture.seed(7, 0); var oldInput = fixture.input();
             helper.getLevel().destroyBlock(fixture.inputPosition, false); fixture.inputHatch.removedByBlock();
             helper.assertTrue(fixture.dropped(Items.IRON_INGOT) == 7, "Item hatch did not drop its bank once");
+            var drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(fixture.origin).inflate(6)).stream()
+                    .filter(entity -> entity.getItem().is(Items.IRON_INGOT)).toList();
+            var controllerDropArea = new AABB(fixture.origin).inflate(0.5);
+            helper.assertTrue(!drops.isEmpty() && drops.stream().allMatch(entity -> controllerDropArea.contains(entity.position())),
+                    "Item bank did not spawn at the controller position");
+            helper.assertTrue(drops.stream().noneMatch(entity -> new AABB(fixture.inputPosition).contains(entity.position())),
+                    "Item bank spawned at its removed hatch");
             helper.assertTrue(oldInput.getStackInSlot(0).isEmpty() && oldInput.insertItem(0, new ItemStack(Items.IRON_INGOT), false).getCount() == 1,
                     "Old hatch facade revived after removal");
             helper.getLevel().setBlock(fixture.inputPosition, ModBlocks.ITEM_INPUT_HATCH.get().defaultBlockState(), Block.UPDATE_ALL);
