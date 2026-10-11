@@ -147,7 +147,7 @@ public final class ForceFieldGameTests {
                 if (event.getPos().equals(f.identity.target(1)) && event.getLevel() == f.level) {
                     helper.assertTrue(event.getPlacedBlock().is(ModBlocks.FORCE_FIELD.get()), "Placement event did not identify the proposed field");
                     helper.assertTrue(event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player
-                            && !player.hasPermissions(2), "Offline owner became operator authority");
+                            && !player.hasPermissions(2) && !player.createCommandSourceStack().hasPermission(2), "Offline owner became operator authority");
                     event.setCanceled(true);
                 }
             };

@@ -32,6 +32,7 @@ public final class ForceFieldService {
         if (data.view().full()) { return; }
         if (!loaded(level, identity.source())) { return; }
         BlockEntity source = loadedEntity(level, identity.source());
+        if (source == null && level.getBlockState(identity.source()).is(ModBlocks.FORCE_FIELD_PROJECTOR.get())) { return; }
         if (source instanceof ForceFieldNativeBlockEntity nativeSource && nativeSource.quarantined()) { return; }
         if (!(source instanceof ForceFieldProjectorBlockEntity projector) || !matches(projector, identity)) {
             data.retire(identity, entry.claims());
@@ -127,6 +128,7 @@ public final class ForceFieldService {
         int offset = identity.offset(observation.target());
         if (offset == 0 || !loaded(level, identity.source())) { return false; }
         BlockEntity source = loadedEntity(level, identity.source());
+        if (source == null && level.getBlockState(identity.source()).is(ModBlocks.FORCE_FIELD_PROJECTOR.get())) { return false; }
         if (source instanceof ForceFieldNativeBlockEntity nativeSource && nativeSource.quarantined()) { return false; }
         if (source instanceof ForceFieldProjectorBlockEntity projector && matches(projector, identity)) {
             if (!data.reserve(identity, projector.state().claims() | FieldIdentity.bit(offset))) { return false; }

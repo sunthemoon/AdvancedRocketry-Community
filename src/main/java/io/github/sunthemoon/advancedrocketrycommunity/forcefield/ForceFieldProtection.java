@@ -148,6 +148,7 @@ public final class ForceFieldProtection {
     /** UUID is attribution, not elevated authority, even when that UUID is on the server op list. */
     private static final class OwnerActor extends FakePlayer {
         OwnerActor(ServerLevel level, UUID owner) { super(level, new GameProfile(owner, "[ARCE Field]")); }
+        @Override protected int getPermissionLevel() { return 0; }
         @Override public boolean hasPermissions(int level) { return level <= 0; }
     }
     private static final class PlacePreflight extends BlockEvent.EntityPlaceEvent implements DeferredRoomBoundary {
