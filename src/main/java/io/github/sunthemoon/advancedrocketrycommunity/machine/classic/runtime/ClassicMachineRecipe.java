@@ -74,8 +74,21 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
         }
     }
     @Override public ResourceLocation getId() { return rows.id(); }
-    @Override public RecipeSerializer<?> getSerializer() { return ModRecipes.LATHE_SERIALIZER.get(); }
-    @Override public RecipeType<?> getType() { return ModRecipes.LATHE_TYPE.get(); }
+    public boolean enabled() { return rows.enabled(io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig.sawmillVanillaWood()); }
+    @Override public RecipeSerializer<?> getSerializer() {
+        return switch (rows.type()) {
+            case "advancedrocketrycommunity:arc_furnace" -> ModRecipes.ARC_FURNACE_SERIALIZER.get();
+            case "advancedrocketrycommunity:cutting" -> ModRecipes.CUTTING_SERIALIZER.get();
+            default -> ModRecipes.LATHE_SERIALIZER.get();
+        };
+    }
+    @Override public RecipeType<?> getType() {
+        return switch (rows.type()) {
+            case "advancedrocketrycommunity:arc_furnace" -> ModRecipes.ARC_FURNACE_TYPE.get();
+            case "advancedrocketrycommunity:cutting" -> ModRecipes.CUTTING_TYPE.get();
+            default -> ModRecipes.LATHE_TYPE.get();
+        };
+    }
     @Override public boolean matches(Container container, Level level) { return false; }
     @Override public ItemStack assemble(Container container, RegistryAccess access) { return getResultItem(access); }
     @Override public boolean canCraftInDimensions(int width, int height) { return false; }
@@ -90,13 +103,22 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
         return result;
     }
     public static final class Serializer implements RecipeSerializer<ClassicMachineRecipe> {
+        private final String type;
+        public Serializer() { this("advancedrocketrycommunity:lathe"); }
+        public Serializer(String type) { this.type = type; }
+        private ClassicMachineRecipe decode(ResourceLocation id, String json) {
+            var rows = ClassicRecipeCodec.decode(id, json);
+            if (!rows.type().equals(type)) { throw new IllegalArgumentException("Classic serializer type mismatch"); }
+            return new ClassicMachineRecipe(rows);
+        }
         @Override public ClassicMachineRecipe fromJson(ResourceLocation id, JsonObject json) {
-            return new ClassicMachineRecipe(ClassicRecipeCodec.decode(id, json.toString()));
+            return decode(id, json.toString());
         }
         @Override public ClassicMachineRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) {
-            return new ClassicMachineRecipe(ClassicRecipeCodec.decode(id, buffer.readUtf(65_536)));
+            return decode(id, buffer.readUtf(65_536));
         }
         @Override public void toNetwork(FriendlyByteBuf buffer, ClassicMachineRecipe recipe) {
+            if (!recipe.rows.type().equals(type)) { throw new IllegalArgumentException("Classic serializer type mismatch"); }
             buffer.writeUtf(recipe.rows.canonicalJson(), 65_536);
         }
     }

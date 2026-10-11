@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ public final class ClassicMachineManager {
     private final Map<ClassicMachineRecipe, Optional<ProcessDefinition>> resolved = new HashMap<>();
     private long patternGeneration = -1;
     private boolean closed;
+    private boolean sawmillEnabled = CommonConfig.sawmillVanillaWood();
 
     ClassicMachineManager(ServerLevel level, MultiblockPatternCatalogManager patterns) { this.level = level; this.patterns = patterns; }
     public void observe(ClassicControllerBlockEntity controller) {
@@ -92,6 +94,8 @@ public final class ClassicMachineManager {
     }
     public void tick() {
         if (closed || !level.getServer().isSameThread()) { return; }
+        boolean enabled = CommonConfig.sawmillVanillaWood();
+        if (enabled != sawmillEnabled) { sawmillEnabled = enabled; reloadRecipes(); }
         long generation = patterns.status().generation();
         if (generation != patternGeneration) {
             patternGeneration = generation;

@@ -2,7 +2,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.compat.jei;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicMachineRecipe;
-import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -17,14 +16,17 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 
 /** Optional client-only view of synced authored rows, using the client's own bounded tags. */
-final class ClassicLatheJeiCategory extends AbstractRecipeCategory<ClassicMachineRecipe> {
-    static final RecipeType<ClassicMachineRecipe> TYPE = RecipeType.create(ModIdentity.MOD_ID, "lathe", ClassicMachineRecipe.class);
+final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMachineRecipe> {
+    static final RecipeType<ClassicMachineRecipe> LATHE = RecipeType.create(ModIdentity.MOD_ID, "lathe", ClassicMachineRecipe.class);
+    static final RecipeType<ClassicMachineRecipe> ARC_FURNACE = RecipeType.create(ModIdentity.MOD_ID, "arc_furnace", ClassicMachineRecipe.class);
+    static final RecipeType<ClassicMachineRecipe> CUTTING = RecipeType.create(ModIdentity.MOD_ID, "cutting", ClassicMachineRecipe.class);
     private final IDrawable arrow;
-    ClassicLatheJeiCategory(IGuiHelper helper) {
-        super(TYPE, Component.translatable("block.advancedrocketrycommunity.lathe"),
-                helper.createDrawableItemLike(ModItems.LATHE.get()), 156, 104); arrow = helper.getRecipeArrow();
+    ClassicMachineJeiCategory(IGuiHelper helper, RecipeType<ClassicMachineRecipe> type, String block, ItemLike catalyst) {
+        super(type, Component.translatable("block.advancedrocketrycommunity." + block),
+                helper.createDrawableItemLike(catalyst), 156, 104); arrow = helper.getRecipeArrow();
     }
     @Override public void setRecipe(IRecipeLayoutBuilder builder, ClassicMachineRecipe recipe, IFocusGroup focuses) {
         var alternatives = recipe.resolveInputs();

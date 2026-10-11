@@ -30,6 +30,7 @@ public final class V180LanguageProvider extends LanguageProvider {
     protected void addTranslations() {
         V180PumpLanguage.translations(chinese).forEach(this::add);
         V180ClassicMachineData.language(chinese).forEach(this::add);
+        V180ArcCuttingData.language(chinese).forEach(this::add);
         V180RecipeMenuLanguage.translations(chinese).forEach(this::add);
         V180ClassicAdvancementLanguage.translations(chinese).forEach(this::add);
         V180AtmosphereAnalyzerLanguage.translations(chinese).forEach(this::add);

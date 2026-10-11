@@ -24,9 +24,19 @@ public final class ClassicRecipeCodec {
     public static ClassicValidatedRecipe decode(ResourceLocation id, String text) {
         ClassicValueChecks.id(id);
         JsonObject root = object(parse(text));
-        fields(root, FIELDS);
-        ClassicValueChecks.require(string(root, "type").equals("advancedrocketrycommunity:lathe")
+        String type = string(root, "type");
+        var expected = new java.util.HashSet<>(FIELDS);
+        if (type.equals("advancedrocketrycommunity:cutting") && root.has("sawmill")) { expected.add("sawmill"); }
+        fields(root, expected);
+        ClassicValueChecks.require(Set.of("advancedrocketrycommunity:lathe", "advancedrocketrycommunity:arc_furnace",
+                "advancedrocketrycommunity:cutting").contains(type)
                 && integer(root, "schema_version", 1, 1) == 1, "Recipe type/schema");
+        Boolean sawmill = null;
+        if (root.has("sawmill")) {
+            var flag = root.get("sawmill");
+            ClassicValueChecks.require(flag.isJsonPrimitive() && flag.getAsJsonPrimitive().isBoolean(), "Sawmill boolean required");
+            sawmill = flag.getAsBoolean();
+        }
         var inputs = new ArrayList<ClassicItemInput>();
         for (JsonElement value : array(root, "item_inputs", 4)) {
             JsonObject row = object(value); fields(row, Set.of("ingredient", "count"));
@@ -39,7 +49,7 @@ public final class ClassicRecipeCodec {
             outputs.add(new ClassicItemOutput(ClassicValueChecks.id(string(row, "item")), integer(row, "count", 1, 64)));
         }
         String canonical = RecipeJsonSignature.canonical(root);
-        return new ClassicValidatedRecipe(id, canonical, List.copyOf(inputs), List.copyOf(outputs),
+        return new ClassicValidatedRecipe(id, type, sawmill, canonical, List.copyOf(inputs), List.copyOf(outputs),
                 fluids(root, "fluid_inputs"), fluids(root, "fluid_outputs"),
                 integer(root, "processing_time", 1, 72_000), integer(root, "energy_per_tick", 1, 10_000));
     }

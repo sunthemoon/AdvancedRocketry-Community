@@ -108,9 +108,9 @@ public final class V180ClassicMachineData implements DataProvider {
         result.put("screen." + NS + ".classic.energy", chinese ? "电量：%s FE" : "Energy: %s FE");
         String[] english = {"Structure incomplete", "Checking recipes", "Waiting for inputs", "Output full", "Waiting for power",
                 "Paused by redstone", "Waiting for loaded parts", "Hatch binding conflict", "Recipe missing", "Recipe changed",
-                "Recipe tags unavailable", "Data needs administrator repair", "Resource or catalog limit", "Running"};
+                "Recipe tags unavailable", "Data needs administrator repair", "Resource or catalog limit", "Running", "Disabled by configuration"};
         String[] han = {"结构不完整", "正在检查配方", "等待输入", "输出已满", "等待电力", "红石暂停", "等待部件区块加载", "舱口绑定冲突",
-                "配方缺失", "配方已改变", "配方标签不可用", "数据需要管理员修复", "资源或配方数量超限", "加工中"};
+                "配方缺失", "配方已改变", "配方标签不可用", "数据需要管理员修复", "资源或配方数量超限", "加工中", "配置已禁用"};
         for (var reason : ClassicWait.values()) { result.put(reason.key(), chinese ? han[reason.ordinal()] : english[reason.ordinal()]); }
         return result;
     }

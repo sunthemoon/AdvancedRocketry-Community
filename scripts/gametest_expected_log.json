@@ -316,11 +316,21 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key [\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!machines\\.sawmillVanillaWood\\b)[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
       "reason": "Forge fills each key missing from a newly created configuration file; a run that reuses existing files logs fewer. A key corrected from a non-null value does not match."
+    },
+    {
+      "id": "w05-sawmill-config-key-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key machines\\.sawmillVanillaWood was corrected from null to its default, true\\. ",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W05 COMMON sawmill setting on first GameTest startup",
+      "reason": "W05 adds this default-on COMMON key. Forge emits this exact warning once when the key is absent and none when the configuration is reused. The unrelated config-key budget remains 99; false defaults, non-null corrections, repeated entries and messages outside startup are not admitted."
     },
     {
       "id": "forge-config-file-corrected",

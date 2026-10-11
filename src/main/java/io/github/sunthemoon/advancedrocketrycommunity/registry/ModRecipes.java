@@ -60,6 +60,17 @@ public final class ModRecipes {
     });
     public static final RegistryObject<RecipeSerializer<ClassicMachineRecipe>> LATHE_SERIALIZER =
             SERIALIZERS.register("lathe", ClassicMachineRecipe.Serializer::new);
+    public static final RegistryObject<RecipeType<ClassicMachineRecipe>> ARC_FURNACE_TYPE = classicType("arc_furnace");
+    public static final RegistryObject<RecipeType<ClassicMachineRecipe>> CUTTING_TYPE = classicType("cutting");
+    public static final RegistryObject<RecipeSerializer<ClassicMachineRecipe>> ARC_FURNACE_SERIALIZER =
+            SERIALIZERS.register("arc_furnace", () -> new ClassicMachineRecipe.Serializer(AdvancedRocketryCommunity.MOD_ID + ":arc_furnace"));
+    public static final RegistryObject<RecipeSerializer<ClassicMachineRecipe>> CUTTING_SERIALIZER =
+            SERIALIZERS.register("cutting", () -> new ClassicMachineRecipe.Serializer(AdvancedRocketryCommunity.MOD_ID + ":cutting"));
+    private static RegistryObject<RecipeType<ClassicMachineRecipe>> classicType(String name) {
+        return TYPES.register(name, () -> new RecipeType<>() {
+            @Override public String toString() { return AdvancedRocketryCommunity.MOD_ID + ":" + name; }
+        });
+    }
 
     private ModRecipes() {
     }
