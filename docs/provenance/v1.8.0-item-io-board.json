@@ -1,0 +1,154 @@
+{
+  "authoring_commit": "b581baf13809d3ff926d3a24556dbd31a30c3498",
+  "batch_id": "v1.8.0-item-io-board-03",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "entries": [
+    {
+      "authoring_commit": "b581baf13809d3ff926d3a24556dbd31a30c3498",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-io-board-acquisition",
+      "source_commit": "6c53eca90437c3ce26eacd5612c9cfcd5fde5c69",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180IoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "705b68f7f98be63af918474c6d207ebdfbb4250f3df2aa654e12379b9137e9f4",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/item_io_board.json",
+      "target_sha256": "c8b7c298f5faccd23241d801f6e29758abb875b0447aa47d971197748e8c2b02",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b581baf13809d3ff926d3a24556dbd31a30c3498",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-io-board-acquisition",
+      "source_commit": "6c53eca90437c3ce26eacd5612c9cfcd5fde5c69",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180IoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "705b68f7f98be63af918474c6d207ebdfbb4250f3df2aa654e12379b9137e9f4",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/item_io_board.png",
+      "target_sha256": "d40b5bfb59f748f06e64a3bb3a999522aafdbfb65f38ad98fa7688a81d994421",
+      "transformation": [
+        "Draw original 16x16 connector board with V180MaterialArt.png, tint 0xC5C987; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "b581baf13809d3ff926d3a24556dbd31a30c3498",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-io-board-acquisition",
+      "source_commit": "6c53eca90437c3ce26eacd5612c9cfcd5fde5c69",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180IoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "705b68f7f98be63af918474c6d207ebdfbb4250f3df2aa654e12379b9137e9f4",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/item_io_board.json",
+      "target_sha256": "8289be575b4c803f354435788cac668b5d92aa909668f4fd0b1512acdbf71566",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b581baf13809d3ff926d3a24556dbd31a30c3498",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-io-board-acquisition",
+      "source_commit": "6c53eca90437c3ce26eacd5612c9cfcd5fde5c69",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180IoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "705b68f7f98be63af918474c6d207ebdfbb4250f3df2aa654e12379b9137e9f4",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/precision_item_io_board.json",
+      "target_sha256": "6ce6f11f68b52234179584a6a0d0e4f83b7bb40edd7eb505cb5ccc38dafc0032",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b581baf13809d3ff926d3a24556dbd31a30c3498",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-io-board-acquisition",
+      "source_commit": "6c53eca90437c3ce26eacd5612c9cfcd5fde5c69",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180IoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "705b68f7f98be63af918474c6d207ebdfbb4250f3df2aa654e12379b9137e9f4",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/item_io_board.json",
+      "target_sha256": "e5512d90eedcd1b0c3924a1b93068c993878e6fa32aae54a51684e1e1c392ac0",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b581baf13809d3ff926d3a24556dbd31a30c3498",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-io-board-acquisition",
+      "source_commit": "6c53eca90437c3ce26eacd5612c9cfcd5fde5c69",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "1cc1e466463b68fae77c3bd922d125f6aa3181bb35801e8587d50db15fe1d057",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "target_sha256": "557f9b1c8a46a505f5a9883e135abfb264f71b983b6d54470a52835502b5995e",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b581baf13809d3ff926d3a24556dbd31a30c3498",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-io-board-acquisition",
+      "source_commit": "6c53eca90437c3ce26eacd5612c9cfcd5fde5c69",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "1cc1e466463b68fae77c3bd922d125f6aa3181bb35801e8587d50db15fe1d057",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "target_sha256": "895f07784c7c93bceb113971cb9fd981dff12eab597e6db7709639bdfa248e85",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    }
+  ],
+  "factual_recipe_references": [
+    {
+      "branch": "1.12",
+      "bytes": 731,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/iocircuitboard.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "e48a9109867a831bfe5f577ae0b7f6083f55727698b17f4c7fba3f954a9d81dc",
+      "use": "Semantic recipe reference only; no copied JSON or bitmap"
+    },
+    {
+      "branch": "1.12",
+      "bytes": 445,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/iocircuitboard_prec.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "617175a667c19d0c4ad2bd3e11c13b36a78247774e1a5ba1b1b17f7bf86bff9f",
+      "use": "Semantic recipe reference only; no copied JSON or bitmap"
+    }
+  ],
+  "license": "MIT",
+  "review": {
+    "content_digest": "8f94238538aef90b05899ee04bf36de7080913c09c1633e651a41f95086af4e7",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "source_branch": "codex/v1.8.0-io-board-acquisition",
+  "source_commit": "6c53eca90437c3ce26eacd5612c9cfcd5fde5c69",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "target_version": "v1.8.0"
+}
