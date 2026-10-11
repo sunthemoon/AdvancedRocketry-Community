@@ -225,12 +225,18 @@ public final class ClassicLatheGameTests {
     public static void hatchClaimedByAnotherControllerRefusesFormation(GameTestHelper helper) {
         run(helper, Direction.NORTH, false, fixture -> {
             fixture.inputHatch.clearClaim();
-            var foreign = new MultiblockPartBinding(1, helper.getLevel().dimension(), fixture.origin.offset(10, 0, 0), UUID.randomUUID(), 1);
-            fixture.inputHatch.setMultiblockBinding(java.util.Optional.of(foreign));
-            fixture.manager.changed(fixture.inputPosition); fixture.manager.tick();
-            helper.assertTrue(!fixture.controller.formed() && fixture.controller.reason() == ClassicWait.CONFLICT
-                    && fixture.inputHatch.multiblockBinding().orElseThrow().equals(foreign), "Conflicting hatch was rebound");
-            fixture.inputHatch.clearClaim();
+            var foreignPosition = fixture.origin.above(2);
+            helper.getLevel().setBlock(foreignPosition, ModBlocks.LATHE.get().defaultBlockState(), Block.UPDATE_ALL);
+            try {
+                var other = (ClassicControllerBlockEntity) helper.getLevel().getBlockEntity(foreignPosition);
+                var foreign = new MultiblockPartBinding(1, helper.getLevel().dimension(), foreignPosition, other.controllerState().machineInstanceId(), 1);
+                fixture.inputHatch.setMultiblockBinding(java.util.Optional.of(foreign));
+                fixture.manager.changed(fixture.inputPosition); fixture.manager.tick();
+                helper.assertTrue(!fixture.controller.formed() && fixture.controller.reason() == ClassicWait.CONFLICT
+                        && fixture.inputHatch.multiblockBinding().orElseThrow().equals(foreign), "Conflicting hatch was rebound");
+            } finally {
+                fixture.inputHatch.clearClaim(); helper.getLevel().setBlock(foreignPosition, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            }
         }); helper.succeed();
     }
     @GameTest(template = "empty", batch = "w01_unsupported", timeoutTicks = 30)
@@ -275,11 +281,20 @@ public final class ClassicLatheGameTests {
             this(helper, facing, fluids, false);
         }
         Fixture(GameTestHelper helper, Direction facing, boolean fluids, boolean crossChunk) {
+            this(helper, facing, fluids, crossChunk, false);
+        }
+        Fixture(GameTestHelper helper, Direction facing, boolean fluids, boolean crossChunk, boolean remotePower) {
             this.helper = helper;
             BlockPos base = helper.absolutePos(new BlockPos(4, 4, 4));
             origin = crossChunk ? new BlockPos((base.getX() >> 4) * 16 + 14, base.getY(), (base.getZ() >> 4) * 16 + 8) : base;
             signal = origin.above();
             var json = V180ClassicMachineData.lathePattern();
+            if (remotePower) {
+                var cells = json.getAsJsonArray("cells");
+                var powerCell = cells.get(4).getAsJsonObject(); var casingCell = cells.get(6).getAsJsonObject();
+                var powerMatcher = powerCell.get("matcher"); powerCell.add("matcher", casingCell.get("matcher"));
+                casingCell.add("matcher", powerMatcher);
+            }
             if (fluids) {
                 json.getAsJsonArray("cells").get(5).getAsJsonObject().add("matcher", com.google.gson.JsonParser.parseString("{\"port\":\"fluid_input\"}"));
                 json.getAsJsonArray("cells").get(6).getAsJsonObject().add("matcher", com.google.gson.JsonParser.parseString("{\"port\":\"fluid_output\"}"));
@@ -317,8 +332,8 @@ public final class ClassicLatheGameTests {
             helper.getLevel().setBlock(signal, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
             controller = (ClassicControllerBlockEntity) helper.getLevel().getBlockEntity(origin);
             inputHatch = (ClassicHatchBlockEntity) helper.getLevel().getBlockEntity(inputPosition);
-            power = (ClassicHatchBlockEntity) helper.getLevel().getBlockEntity(world.apply(new PatternPosition(0, 0, 0)));
-            if (fluids) {
+            power = (ClassicHatchBlockEntity) helper.getLevel().getBlockEntity(world.apply(new PatternPosition(remotePower ? 2 : 0, 0, 0)));
+            if (fluids || remotePower) {
                 var patterns = new MultiblockPatternCatalogManager(); patterns.accept(MultiblockPatternCatalog.create(List.of(pattern)));
                 manager = new ClassicMachineManager(helper.getLevel(), patterns);
             } else { manager = ClassicRuntime.manager(helper.getLevel()); }

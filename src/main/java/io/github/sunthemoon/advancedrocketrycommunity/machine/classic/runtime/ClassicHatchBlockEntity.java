@@ -48,7 +48,7 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
     ClassicBankKey bankKey() {
         return new ClassicBankKey(kind.bankKind().orElseThrow(), worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
     }
-    Optional<MultiblockPartBinding> ownerClaim() { return Optional.ofNullable(claim); }
+    Optional<MultiblockPartBinding> ownerClaim() { retireStaleClaim(); return Optional.ofNullable(claim); }
     @Override public Optional<MultiblockPartBinding> multiblockBinding() { return Optional.ofNullable(binding); }
     @Override public void setMultiblockBinding(Optional<MultiblockPartBinding> replacement) {
         if (repairRequired()) { throw new IllegalStateException("Unsupported hatch data"); }
@@ -61,12 +61,27 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
                 && first.machineInstanceId().equals(second.machineInstanceId());
     }
     void clearClaim() { claim = null; binding = null; refreshFacades(); setChanged(); }
+    private void retireStaleClaim() {
+        if (claim == null || !physical() || !(level instanceof ServerLevel server)
+                || !claim.controllerLevel().equals(server.dimension())) { return; }
+        var position = claim.controllerPosition();
+        var chunk = server.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
+        if (chunk == null) { return; }
+        var entity = chunk.getBlockEntity(position);
+        // An unreadable or not-yet-physical owner cannot establish that its durable UUID is gone.
+        if (entity instanceof ClassicControllerBlockEntity owner) {
+            if (!owner.physical() || owner.repairRequired()
+                    || owner.controllerState().machineInstanceId().equals(claim.machineInstanceId())) { return; }
+        }
+        clearClaim();
+    }
     boolean physical() {
         if (isRemoved() || repairRequired() || !(level instanceof ServerLevel server) || !server.getServer().isSameThread()) { return false; }
         var chunk = server.getChunkSource().getChunkNow(worldPosition.getX() >> 4, worldPosition.getZ() >> 4);
         return chunk != null && chunk.getBlockEntity(worldPosition) == this;
     }
     ClassicControllerBlockEntity loadedOwner() {
+        retireStaleClaim();
         if (!physical() || claim == null || !(level instanceof ServerLevel server)
                 || !claim.controllerLevel().equals(server.dimension())) { return null; }
         var chunk = server.getChunkSource().getChunkNow(claim.controllerPosition().getX() >> 4, claim.controllerPosition().getZ() >> 4);
@@ -82,7 +97,8 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
         return expectedEpoch == epoch && loadedOwner() == owner && owner.acceptsBinding(this);
     }
     boolean blocksRemoval() {
-        return repairRequired() || claim != null && (loadedOwner() == null || loadedOwner().ownerUnavailable() || loadedOwner().transaction());
+        var owner = loadedOwner();
+        return repairRequired() || claim != null && (owner == null || owner.ownerUnavailable() || owner.transaction());
     }
     void removedByBlock() {
         var owner = loadedOwner();
