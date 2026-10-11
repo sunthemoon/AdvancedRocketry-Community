@@ -115,6 +115,27 @@ remain registered. No scope is silently deferred by a switch.
 
 ## 3. C18a - devices, tools and environment
 
+### W03 implementation clarification of the shared save guard (2026-10-11)
+
+The suit workstation uses section 2's existing C16 `GuardedChunkSaves` only for
+an outgoing `arce_suit_workstation` root above 64 KiB/depth 16/1,024 nodes.
+This is a development implementation note, not new owner acceptance or a Gate
+result. R-026 records the additional device scope. A refusal affects the whole
+terrain chunk; the inherited 256-coordinate denial capacity can saturate the
+ServerLevel and deny its subsequent terrain writes. Denials last until Level
+closure and have no production online reset. The raw unsupported tree remains
+unchanged, and ordinary break/explosion/entity destruction is refused. There is
+no BlockEntity save-control exception and no player-file veto.
+
+The existing event guard throws at chunk-save admission, retains the dirty flag,
+and may log an EventBus/ChunkMap ERROR pair and stack on each native retry. It
+provides no total retry/log cap or cross-store durability guarantee. Recovery is
+an offline backup and scoped repair of the owned root, followed by restart,
+successful native saving and conservation checks. Root must obtain the section
+13 independent read-only persistence review before integration. Forced command
+replacement and third-party movers bypassing Forge policy are not ordinary
+removal guarantees.
+
 ### 3.1 Scrubber and instruments
 
 - `co2_scrubber`, `carbon_scrubber_cartridge`: one unstackable cartridge slot,

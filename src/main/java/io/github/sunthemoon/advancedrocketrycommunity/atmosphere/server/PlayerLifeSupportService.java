@@ -82,7 +82,7 @@ public final class PlayerLifeSupportService {
                     oxygen
             );
         } else {
-            PlayerLifeSupportDecision decision = PlayerLifeSupportEngine.tick(
+            PlayerLifeSupportDecision decision = equipment.decideAndCommit(player, oxygenData,
                     new PlayerLifeSupportInput(
                             atmosphere.baseAtmosphereBreathable(player.serverLevel()),
                             breathability,
@@ -91,12 +91,6 @@ public final class PlayerLifeSupportService {
                             state.vacuumPhase
                     )
             );
-            if (decision.oxygenUnits() != oxygen && !equipment.setOxygen(player, oxygenData, decision.oxygenUnits())) {
-                suitPieces = equipment.countPieces(player);
-                decision = PlayerLifeSupportEngine.tick(new PlayerLifeSupportInput(
-                        atmosphere.baseAtmosphereBreathable(player.serverLevel()), breathability,
-                        suitPieces, 0, state.vacuumPhase));
-            }
             state.vacuumPhase = decision.vacuumPhase();
             if (decision.damage() > 0.0F) {
                 suffocationAttempt = true;

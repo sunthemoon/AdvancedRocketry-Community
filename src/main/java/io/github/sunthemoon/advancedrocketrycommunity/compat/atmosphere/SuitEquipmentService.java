@@ -5,6 +5,14 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSu
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygen;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.OxygenTransfer;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.OxygenTransferResult;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportDecision;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportEngine;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportInput;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SuitReserveTransition;
+import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.ArmorEquipment;
+import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.EnchantedSuitOxygen;
+import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.EquipmentNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.Objects;
 import net.minecraft.nbt.CompoundTag;
@@ -31,7 +39,7 @@ public final class SuitEquipmentService {
         int count = 0;
         for (EquipmentSlot slot : ARMOR_SLOTS) {
             ItemStack stack = entity.getItemBySlot(slot);
-            if (stack.getCount() == 1 && (builtIn(stack, slot) || external(stack, slot) != null)) {
+            if (stack.getCount() == 1 && (builtIn(stack, slot) || external(stack, slot) != null || enchanted(stack, slot))) {
                 count++;
             }
         }
@@ -42,7 +50,7 @@ public final class SuitEquipmentService {
     public boolean isChest(ItemStack stack) {
         var piece = catalog.find(stack.getItem());
         return stack.getCount() == 1 && (builtIn(stack, EquipmentSlot.CHEST)
-                || piece != null && piece.slot() == EquipmentSlot.CHEST);
+                || piece != null && piece.slot() == EquipmentSlot.CHEST || enchanted(stack, EquipmentSlot.CHEST));
     }
 
     public Reading readOxygen(ServerPlayer player) {
@@ -64,6 +72,34 @@ public final class SuitEquipmentService {
         }
     }
 
+    /** Scheduled D1 replenishment and payment publish the active key and reserve in one armor tag. */
+    public PlayerLifeSupportDecision decideAndCommit(ServerPlayer player, Reading reading, PlayerLifeSupportInput input) {
+        enter(player);
+        try {
+            boolean builtin = reading.valid && builtIn(reading.stack, EquipmentSlot.CHEST);
+            var reserve = builtin ? ArmorEquipment.reserve(reading.stack) : new ArmorEquipment.Reserve(0, 0);
+            var step = SuitReserveTransition.tick(input, reserve.stored(), reserve.maximum(),
+                    CommonConfig.suitOxygenTarget(), builtin && CommonConfig.classicEquipmentEnabled());
+            PlayerLifeSupportDecision decision = step.decision();
+            if (decision.oxygenUnits() == input.oxygenUnits() && step.transferredUnits() == 0) { return decision; }
+            if (step.transferredUnits() > 0) {
+                ItemStack detached = reading.stack.copy();
+                if (!SpaceSuitOxygen.set(detached, decision.oxygenUnits()) || !ArmorEquipment.setReserve(detached, step.reserveUnits())
+                        || !sameNative(player, reading) || !EquipmentNbt.safe(detached)) {
+                    return unpaid(input);
+                }
+                reading.stack.setTag(detached.getTag()); return decision;
+            }
+            return commit(player, reading, decision.oxygenUnits(), prepare(reading, decision.oxygenUnits()))
+                    ? decision : unpaid(input);
+        } finally { operating = false; }
+    }
+
+    private static PlayerLifeSupportDecision unpaid(PlayerLifeSupportInput input) {
+        return PlayerLifeSupportEngine.tick(new PlayerLifeSupportInput(input.baseAtmosphereBreathable(), input.volumeState(),
+                input.equippedSuitPieces(), 0, input.vacuumPhase()));
+    }
+
     public OxygenTransferResult fillOneCanister(ServerPlayer player, InteractionHand hand) {
         enter(player);
         try {
@@ -76,8 +112,9 @@ public final class SuitEquipmentService {
             if (!reading.valid) {
                 return rejected(0);
             }
-            OxygenTransferResult transfer = OxygenTransfer.fillOneCanister(
-                    reading.oxygenUnits(), AtmosphereLimits.SUIT_OXYGEN_CAPACITY);
+            int target = reading.external == null ? CommonConfig.suitOxygenTarget() : AtmosphereLimits.SUIT_OXYGEN_CAPACITY;
+            if (reading.oxygenUnits() > target) { return rejected(reading.oxygenUnits()); }
+            OxygenTransferResult transfer = OxygenTransfer.fillOneCanister(reading.oxygenUnits(), target);
             if (!transfer.accepted()) {
                 return transfer;
             }
@@ -113,9 +150,14 @@ public final class SuitEquipmentService {
         }
         if (builtIn(stack, EquipmentSlot.CHEST)) {
             var data = SpaceSuitOxygen.read(stack);
-            return new Reading(stack, data.oxygenUnits(), data.status() == SpaceSuitOxygen.DataStatus.VALID, null);
+            return new Reading(stack, data.oxygenUnits(), data.status() == SpaceSuitOxygen.DataStatus.VALID
+                    && ArmorEquipment.modules(stack) != null, null);
         }
         var piece = external(stack, EquipmentSlot.CHEST);
+        if (piece == null && enchanted(stack, EquipmentSlot.CHEST)) {
+            int amount = EnchantedSuitOxygen.read(stack.getTag());
+            return new Reading(stack, Math.max(0, amount), amount >= 0, null);
+        }
         var data = piece == null ? null : oxygen.read(piece.provider(), owned(stack));
         return new Reading(stack, data == null ? 0 : data.oxygen(), data != null, data);
     }
@@ -131,8 +173,12 @@ public final class SuitEquipmentService {
             return false;
         }
         if (reading.external == null) {
-            return SpaceSuitOxygen.read(stack).equals(new SpaceSuitOxygen.ReadResult(
-                    SpaceSuitOxygen.DataStatus.VALID, reading.oxygenUnits())) && SpaceSuitOxygen.set(stack, units);
+            if (!sameNative(player, reading)) { return false; }
+            ItemStack detached = stack.copy();
+            boolean preparedNative = builtIn(stack, EquipmentSlot.CHEST)
+                    ? SpaceSuitOxygen.set(detached, units) : EnchantedSuitOxygen.set(detached, units);
+            if (!preparedNative || !EquipmentNbt.safe(detached)) { return false; }
+            stack.setTag(detached.getTag()); return true;
         }
         Tag original = reading.external.original();
         Tag actual = owned(stack);
@@ -152,6 +198,16 @@ public final class SuitEquipmentService {
 
     private static boolean builtIn(ItemStack stack, EquipmentSlot slot) {
         return stack.getItem() instanceof SpaceSuitArmorItem armor && armor.getEquipmentSlot() == slot;
+    }
+
+    private boolean enchanted(ItemStack stack, EquipmentSlot slot) {
+        return catalog.find(stack.getItem()) == null && EnchantedSuitOxygen.eligible(stack, slot);
+    }
+    private boolean sameNative(ServerPlayer player, Reading reading) {
+        ItemStack stack = reading.stack;
+        return reading.valid && player.getItemBySlot(EquipmentSlot.CHEST) == stack && EquipmentNbt.safe(stack)
+                && (stack.getTag() == null ? reading.original == null : stack.getTag().equals(reading.original))
+                && (builtIn(stack, EquipmentSlot.CHEST) ? ArmorEquipment.modules(stack) != null : enchanted(stack, EquipmentSlot.CHEST));
     }
 
     private static Tag owned(ItemStack stack) {
@@ -175,12 +231,14 @@ public final class SuitEquipmentService {
         private final int units;
         private final boolean valid;
         private final SuitOxygenAccess.Read external;
+        private final CompoundTag original;
 
         private Reading(ItemStack stack, int units, boolean valid, SuitOxygenAccess.Read external) {
             this.stack = stack;
             this.units = units;
             this.valid = valid;
             this.external = external;
+            original = valid && external == null && stack.hasTag() && EquipmentNbt.safe(stack) ? stack.getTag().copy() : null;
         }
 
         public int oxygenUnits() {
