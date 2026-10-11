@@ -492,14 +492,36 @@ public final class StationWarpGameTests {
                                     && console.get(2).startsWith("station=" + first + " orbit=" + CelestialIds.EARTH_ID
                                     + " balance=" + fixtures.get(0).data.warpEnergy(first)),
                             "Operator diagnostics differ: " + console);
+                    // Exercise nonempty teardown independently of the periodic fold's phase.
+                    helper.assertTrue(cores.get(0).receiveEnergy(1, false) == 1,
+                            "The teardown credit was not accepted");
+                    long teardownPending = fixtures.stream().mapToLong(fixture -> warp.pendingCredit(fixture.id())).sum();
+                    helper.assertTrue(teardownPending > 0L, "Teardown did not exercise pending credits");
+                    var teardownFold = warp.fold(fixtures.get(0).server);
+                    helper.assertTrue(teardownFold.credited() == teardownPending
+                                    && teardownFold.refused() == 0L,
+                            "Teardown lost pending credits: " + teardownFold);
+                    helper.assertTrue(fixtures.stream().allMatch(fixture -> warp.pendingCredit(fixture.id()) == 0),
+                            "Pending credits survived the teardown fold");
+                    helper.assertTrue(fixtures.stream().mapToLong(fixture -> data.warpEnergy(fixture.id())).sum()
+                                    == accepted[0] + 1L,
+                            "Teardown changed the accepted credit total");
                 } finally {
-                    fixtures.forEach(Fixture::close);
+                    try {
+                        warp.fold(fixtures.get(0).server);
+                    } finally {
+                        fixtures.forEach(Fixture::close);
+                    }
                 }
                 helper.succeed();
             });
         } finally {
             if (!scheduled) {
-                fixtures.forEach(Fixture::close);
+                try {
+                    warp.fold(fixtures.get(0).server);
+                } finally {
+                    fixtures.forEach(Fixture::close);
+                }
             }
         }
     }

@@ -254,15 +254,6 @@
       "reason": "Deleting a station records the actor and the removed blocks."
     },
     {
-      "id": "station-warp-credit-refused",
-      "level": "WARN",
-      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
-      "message": "ARCE_STATION_WARP_CREDIT_REFUSED offered=\\d+ credited=\\d+ entry_room=(true|false)",
-      "counts": {"passenger_logout_cleanup": 1},
-      "test": "RocketPassengerContinuedUseGameTests",
-      "reason": "A passenger logs out during cleanup and the station must refuse the warp-fuel credit."
-    },
-    {
       "id": "station-warp-energy-dropped",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

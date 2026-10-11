@@ -371,6 +371,16 @@ class ManifestValidationTests(unittest.TestCase):
         self.assertEqual(4, len(recovery))
         self.assertTrue(all(item.counts == {"flight_recovery": 1} for item in recovery))
 
+    def test_pending_fixture_credit_refusal_is_not_an_expected_warning(self) -> None:
+        rules = load_manifest(DEFAULT_MANIFEST)
+        self.assertNotIn("station-warp-credit-refused", {item.id for item in rules})
+        for name in ("station_warp_fold", "precision_unload_prepared", "passenger_logout_cleanup"):
+            with self.subTest(batch=name):
+                entry = Entry(1, "WARN", MOD_LOGGER,
+                              "ARCE_STATION_WARP_CREDIT_REFUSED offered=1910000 credited=0 entry_room=true",
+                              name, ())
+                self.assertFalse(any(rule.describes(entry) for rule in rules))
+
     def test_chunk_save_rules_require_exact_throwable_and_frame(self) -> None:
         rules = [item for item in load_manifest(DEFAULT_MANIFEST) if item.logger == "net.minecraft.server.level.ChunkMap/"]
         self.assertEqual(2, len(rules))
