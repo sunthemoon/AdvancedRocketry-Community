@@ -242,7 +242,7 @@ order,pattern,handling,plan,units,reason
 241,textures/items/sawblade*.png,IMPORT,C16b,item_variant:sawBladeIron/0 block:sawBlade,saw blade
 242,textures/items/*circuitplate.png,IMPORT,C16d,item_variant:itemCircuitPlate/0 item_variant:itemCircuitPlate/1,circuit plates
 243,textures/items/trackingcircuit.png,IMPORT,C16d,item_variant:ic/1,components
-244,textures/items/controliocircuit.png,IMPORT,C16d,item_variant:ic/3,components
+244,textures/items/controliocircuit.png,REGENERATE,C16d,item_variant:ic/3,components
 245,textures/items/itemiocircuit.png,REGENERATE,C16d,item_variant:ic/4,components
 246,textures/items/liquidiocircuit.png,REGENERATE,C16d,item_variant:ic/5,components
 247,textures/items/userinterface.png,REGENERATE,C16d,item_variant:misc/0,NEW component icon under ADR-064 section 12
