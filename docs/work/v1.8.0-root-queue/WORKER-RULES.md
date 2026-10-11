@@ -33,6 +33,10 @@ When the two disagree, the TASK wins.
   the language providers, and the data-generator entry `datagen/BootstrapDataGenerators.java`.
   Do not edit `docs/status/*`, the content ledger, `build.gradle`, `gradle.properties`,
   `.github/`, `AGENTS.md`, or another task's files.
+- ADRs: never change a decision. The one exception is when AGENTS.md section 3.3
+  requires you to document a protection that refuses saves. Then add a clearly labelled
+  implementation note to the ADR and a risk-register entry. Put every other
+  clarification in your record.
 - Hard rules (AGENTS.md section 5): never delete or weaken a test, an assertion, a timeout
   or a budget to make something pass. A failing test you cannot fix stays failing and goes
   in your record.
