@@ -132,12 +132,20 @@ public final class SuitWorkstationGameTests {
     @GameTest(template = "empty", batch = "equipment_workstation", timeoutTicks = 100)
     public static void ordinaryPickupAndSwapUseDetachedAuthoritativeSlots(GameTestHelper helper) {
         try (var f = new EquipmentFixture(helper)) {
-            ItemStack suit = armor(SuitPart.HEAD); f.menu.setCarried(suit); f.menu.clicked(0, 0, ClickType.PICKUP, f.player);
-            helper.assertTrue(f.menu.getCarried().isEmpty() && f.station.stack(0).is(suit.getItem()), "Ordinary insertion lost a carried stack");
+            ItemStack suit = armor(SuitPart.HEAD); suit.getOrCreateTag().putString("marker", "ordinary-click");
+            CompoundTag expected = suit.serializeNBT();
+            f.menu.setCarried(suit); f.menu.clicked(0, 0, ClickType.PICKUP, f.player);
+            // Vanilla split consumes the original carried object; compare the pre-operation serialized value.
+            helper.assertTrue(f.menu.getCarried().isEmpty() && expected.equals(f.station.stack(0).serializeNBT()), "Ordinary insertion lost a carried stack");
             f.menu.clicked(0, 0, ClickType.PICKUP, f.player);
-            helper.assertTrue(f.station.stack(0).isEmpty() && f.menu.getCarried().is(suit.getItem()), "Ordinary extraction duplicated armor");
+            helper.assertTrue(f.station.stack(0).isEmpty() && expected.equals(f.menu.getCarried().serializeNBT()), "Ordinary extraction duplicated armor");
             f.menu.setCarried(module("hover_upgrade")); f.menu.clicked(0, 0, ClickType.PICKUP, f.player);
             helper.assertTrue(f.station.stack(0).isEmpty() && f.menu.getCarried().is(module("hover_upgrade").getItem()), "Incompatible click changed carried stack");
+            f.menu.setCarried(ItemStack.EMPTY); f.put(0, ItemStack.of(expected));
+            ItemStack replacement = armor(SuitPart.CHEST); replacement.setDamageValue(9); var replacementTag = replacement.serializeNBT();
+            f.player.getInventory().setItem(0, replacement); f.menu.clicked(0, 0, ClickType.SWAP, f.player);
+            helper.assertTrue(replacementTag.equals(f.station.stack(0).serializeNBT())
+                    && expected.equals(f.player.getInventory().getItem(0).serializeNBT()), "Hotbar swap changed or duplicated either armor stack");
         }
         helper.succeed();
     }
