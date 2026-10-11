@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "c": {
+      "item": "advancedrocketrycommunity:basic_circuit_plate"
+    },
+    "i": {
+      "tag": "forge:rods/titanium"
+    },
+    "p": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    "pip",
+    "pcp",
+    "i i"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:jetpack"
+  }
+}

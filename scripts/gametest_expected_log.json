@@ -316,11 +316,41 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key [\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!OXYGEN(?:\\s|\\.))[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
       "reason": "Forge fills each key missing from a newly created configuration file; a run that reuses existing files logs fewer. A key corrected from a non-null value does not match."
+    },
+    {
+      "id": "forge-equipment-oxygen-section-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key OXYGEN was corrected from null to its default, SimpleCommentedConfig:\\{\\}\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W03 equipment configuration created by the run",
+      "reason": "The new finite equipment OXYGEN section is defaulted once on a new config, independently of the unchanged legacy key warning budget."
+    },
+    {
+      "id": "forge-equipment-tank-multiplier-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key OXYGEN\\.suitTankCapacity was corrected from null to its default, 1\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W03 equipment configuration created by the run",
+      "reason": "The tank creation multiplier defaults to 1 once on a new config. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-equipment-active-target-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key OXYGEN\\.spaceSuitO2Buffer was corrected from null to its default, 2000\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W03 equipment configuration created by the run",
+      "reason": "The finite active oxygen target defaults to 2000 once on a new config. Non-null corrections and other values do not match."
     },
     {
       "id": "forge-config-file-corrected",

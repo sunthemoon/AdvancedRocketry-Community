@@ -32,6 +32,9 @@ public final class ClientBootstrap {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> MenuScreens.register(
+                io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent.MENU.get(),
+                io.github.sunthemoon.advancedrocketrycommunity.client.equipment.SuitWorkstationScreen::new));
         event.enqueueWork(() -> {
             var fluids = io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids.ROCKET_FUEL;
             net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(fluids.get(),
