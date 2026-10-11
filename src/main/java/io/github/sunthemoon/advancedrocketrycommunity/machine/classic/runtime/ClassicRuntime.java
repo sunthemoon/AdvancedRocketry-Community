@@ -55,15 +55,7 @@ public final class ClassicRuntime {
                 "Classic machine root requires backup and offline repair");
     }
     static boolean controllerRootsBounded(CompoundTag entity) {
-        if (!ClassicCheckpointCodec.bounded(entity.get(ClassicCheckpointCodec.ROOT))
-                || !ClassicResourcesCodec.bounded(entity.get(ClassicResourcesCodec.ROOT))
-                || !io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration.bounded(entity)) {
-            return false;
-        }
-        for (String key : java.util.List.of("arce_process_journal", "arce_process", "arce_machine")) {
-            if (entity.contains(key) && !ClassicCheckpointCodec.bounded(entity.get(key))) { return false; }
-        }
-        return true;
+        return ClassicCheckpointCodec.rootsWritable(entity);
     }
     @SubscribeEvent public static void reload(AddReloadListenerEvent event) { event.addListener(new MultiblockPatternReloadListener(PATTERNS)); }
     @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
@@ -121,7 +113,8 @@ public final class ClassicRuntime {
             boolean controller = id.equals(ModIdentity.id("lathe").toString());
             boolean hatch = id.equals(ModIdentity.id("classic_hatch").toString());
             if (controller && !controllerRootsBounded(entity)
-                    || hatch && !ClassicHatchBlockEntity.bounded(entity.get(ClassicHatchBlockEntity.ROOT))) {
+                    || hatch && entity.contains(ClassicHatchBlockEntity.ROOT)
+                    && !ClassicHatchBlockEntity.bounded(entity.get(ClassicHatchBlockEntity.ROOT))) {
                 GuardedChunkSaves.refuse(event, "Classic machine root requires backup and offline repair");
             }
         }

@@ -51,8 +51,11 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     protected ClassicControllerBlockEntity(BlockEntityType<?> type, BlockPos position, BlockState state,
                                            ClassicMachineDefinition definition) {
         super(type, position, state); this.definition = definition;
+        checkpoint = freshCheckpoint(state);
+    }
+    private static ClassicCheckpoint freshCheckpoint(BlockState state) {
         UUID id = UUID.randomUUID();
-        checkpoint = new ClassicCheckpoint(MultiblockControllerState.initial(id, transform(state)),
+        return new ClassicCheckpoint(MultiblockControllerState.initial(id, transform(state)),
                 Set.of(), ClassicResources.empty(id), Optional.empty(), 0, Optional.empty());
     }
     ClassicMachineDefinition definition() { return definition; }
@@ -354,6 +357,11 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
             if (outer.contains(key)) {
                 Tag raw = outer.get(key); retained.put(key, ClassicCheckpointCodec.bounded(raw) ? raw.copy() : raw);
             }
+        }
+        if ((!outer.contains(ClassicCheckpointCodec.ROOT) || !outer.contains(ClassicResourcesCodec.ROOT))
+                && ClassicRuntime.controllerRootsBounded(retained)) {
+            checkpoint = freshCheckpoint(getBlockState()); retained = null; unavailable.clear();
+            lookupNeeded = true; reason = ClassicWait.UNFORMED; setChanged(); return;
         }
         try {
             if (outer.contains("arce_process_journal") || outer.contains("arce_process") || outer.contains("arce_machine")) {

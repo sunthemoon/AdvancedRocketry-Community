@@ -91,4 +91,23 @@ class ClassicCheckpointCodecTest {
         var badTransaction = original.copy(); badTransaction.getCompound(ClassicCheckpointCodec.ROOT).putString("last_transaction", "1-1-1-1-1");
         assertThrows(IllegalArgumentException.class, () -> ClassicCheckpointCodec.decode(badTransaction, KIND, POSITION));
     }
+    @Test void saveAdmissionDistinguishesMissingFromPresentUnsafeRoots() {
+        var empty = new CompoundTag();
+        assertTrue(ClassicCheckpointCodec.rootsWritable(empty));
+        var original = outer(checkpoint(Set.of(), false));
+        for (String key : java.util.List.of(ClassicCheckpointCodec.ROOT, ClassicResourcesCodec.ROOT)) {
+            var missing = original.copy(); missing.remove(key);
+            assertTrue(ClassicCheckpointCodec.rootsWritable(missing));
+            assertThrows(IllegalArgumentException.class, () -> ClassicCheckpointCodec.decode(missing, KIND, POSITION));
+        }
+        var future = original.copy(); future.getCompound(ClassicCheckpointCodec.ROOT).putInt("schema_version", 99);
+        assertTrue(ClassicCheckpointCodec.rootsWritable(future));
+        var unsafe = original.copy(); unsafe.getCompound(ClassicResourcesCodec.ROOT).putString("large", "x".repeat(32_768));
+        assertFalse(ClassicCheckpointCodec.rootsWritable(unsafe));
+        unsafe.remove(ClassicCheckpointCodec.ROOT);
+        assertFalse(ClassicCheckpointCodec.rootsWritable(unsafe));
+        var signature = original.copy(); var marker = new CompoundTag(); marker.putString("large", "x".repeat(1_024));
+        signature.put("arce_recipe_signature", marker);
+        assertFalse(ClassicCheckpointCodec.rootsWritable(signature));
+    }
 }

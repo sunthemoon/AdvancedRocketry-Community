@@ -266,7 +266,7 @@ public final class ClassicLatheGameTests {
     private static void run(GameTestHelper helper, Direction facing, boolean fluids, Consumer<Fixture> test) {
         try (var fixture = new Fixture(helper, facing, fluids)) { test.accept(fixture); }
     }
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final GameTestHelper helper; final ClassicMachineManager manager; final ClassicControllerBlockEntity controller;
         final BlockPos origin, inputPosition, outputPosition, motor, signal, fluidInputPosition, fluidOutputPosition;
         final ClassicHatchBlockEntity inputHatch, power;

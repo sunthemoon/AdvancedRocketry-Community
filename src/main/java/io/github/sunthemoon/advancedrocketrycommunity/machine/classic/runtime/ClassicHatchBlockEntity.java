@@ -32,7 +32,6 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
     private MultiblockPartBinding binding;
     private MultiblockPartBinding claim;
     private Tag rejected;
-    private boolean missingRoot;
     private int energy;
     private long epoch;
     private LazyOptional<IItemHandler> items = LazyOptional.empty();
@@ -45,7 +44,7 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
         refreshFacades();
     }
     public ClassicHatchKind kind() { return kind; }
-    public boolean repairRequired() { return missingRoot || rejected != null; }
+    public boolean repairRequired() { return rejected != null; }
     ClassicBankKey bankKey() {
         return new ClassicBankKey(kind.bankKind().orElseThrow(), worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
     }
@@ -132,7 +131,6 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
     @Override protected void saveAdditional(CompoundTag outer) {
         super.saveAdditional(outer);
         if (rejected != null) { outer.put(ROOT, bounded(rejected) ? rejected.copy() : rejected); return; }
-        if (missingRoot) { return; }
         var root = new CompoundTag(); root.putInt("schema_version", 1); root.putString("kind", kind.blockId().toString());
         root.putInt("energy", energy);
         var encodedClaim = new CompoundTag(); if (claim != null) { encodedClaim = MultiblockPartBindingNbtCodec.encode(claim); }
@@ -144,11 +142,7 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
     }
     @Override public void load(CompoundTag outer) {
         super.load(outer); refreshFacades(); binding = null; claim = null; energy = 0; rejected = null;
-        missingRoot = !outer.contains(ROOT);
-        if (missingRoot) {
-            if (level instanceof ServerLevel server) { observeUnsafeRoot(server); }
-            return;
-        }
+        if (!outer.contains(ROOT)) { setChanged(); return; }
         Tag raw = outer.get(ROOT);
         try {
             if (!bounded(raw) || !(raw instanceof CompoundTag root)
@@ -171,7 +165,7 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
         if (level instanceof ServerLevel server) { observeUnsafeRoot(server); }
     }
     private void observeUnsafeRoot(ServerLevel server) {
-        if (missingRoot || rejected != null && !bounded(rejected)) { ClassicRuntime.observedUnsafeRoot(server, worldPosition); }
+        if (rejected != null && !bounded(rejected)) { ClassicRuntime.observedUnsafeRoot(server, worldPosition); }
     }
     private static MultiblockPartBinding decodeBinding(CompoundTag raw) {
         if (raw.isEmpty()) { return null; }

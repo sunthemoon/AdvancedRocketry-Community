@@ -422,6 +422,23 @@ repeated restarts, unknown/future refusal, supported new JSON-signature jobs
 and resource conservation separately. It must not claim legacy conversion
 from resolved-hash matching alone.
 
+**Implementation note (W01F, 2026-10-12; decisions unchanged).** Classic controllers
+and the five hatch/plug objects extend R-021 only for present roots that exceed
+their byte/depth/node bounds or cannot be written unchanged by native NBT.
+Missing hatch roots load empty and unbound. Missing required controller roots
+load fresh and unformed when all present retained roots are writable unchanged.
+Bounded unsupported/future roots remain quarantined and are saved verbatim.
+The existing exception-based guard refuses the whole terrain chunk; a 257th
+distinct denied coordinate saturates the entire Level. Denial lasts for the Level
+lifetime with no production reset and no total save-retry or ERROR/stack-log bound.
+Unrelated terrain changes can roll back against separately saved player data.
+Stop play, stop the server, back up all world/player stores, repair only an offline
+copy from trusted data, and verify actual writer success, normal shutdown and
+restart conservation before returning that copy to service. The
+[R-021 classic extension](../11-RISK-REGISTER.md#r-021classic-控制器与-hatch-的实施范围补充2026-10-12)
+defines the recovery checks. Native recovery evidence and risk acceptance remain
+outstanding; restarting alone is not a repair and dirty retention is not durability.
+
 ### 12. Generated data and assets
 
 DataGen writes every new model, blockstate, loot table, recipe, tag, pattern

@@ -23,6 +23,18 @@ final class ClassicCheckpointCodec {
     private static final Set<String> JOB_FIELDS = Set.of("recipe", "signature", "duration", "energy_per_tick", "ticks", "energy");
 
     static boolean bounded(Tag raw) { return BoundedNbt.fits(raw, MAX_BYTES, 16, 8_192); }
+    /** Save admission checks present roots; required-field validation belongs to decode. */
+    static boolean rootsWritable(CompoundTag entity) {
+        if (entity.contains(ROOT) && !bounded(entity.get(ROOT))
+                || entity.contains(ClassicResourcesCodec.ROOT) && !ClassicResourcesCodec.bounded(entity.get(ClassicResourcesCodec.ROOT))
+                || !io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureMigration.bounded(entity)) {
+            return false;
+        }
+        for (String key : java.util.List.of("arce_process_journal", "arce_process", "arce_machine")) {
+            if (entity.contains(key) && !bounded(entity.get(key))) { return false; }
+        }
+        return true;
+    }
     static CompoundTag encode(ClassicCheckpoint checkpoint, ResourceLocation kind, ResourceLocation level, BlockPos position) {
         var root = new CompoundTag(); root.putInt("schema_version", 1); root.putString("kind", kind.toString());
         root.putString("level", level.toString()); root.putLong("position", position.asLong());
@@ -80,7 +92,7 @@ final class ClassicCheckpointCodec {
             }
         }
         var resources = ClassicResourcesCodec.decode(outer.get(ClassicResourcesCodec.ROOT), structure.machineInstanceId())
-                .value().orElseThrow();
+                .value().orElseThrow(() -> new IllegalArgumentException("Missing or unsupported controller resources"));
         CompoundTag job = root.getCompound("job"); Optional<ClassicCheckpoint.Job> decodedJob = Optional.empty();
         if (!job.isEmpty()) {
             if (!job.getAllKeys().equals(JOB_FIELDS)) { throw new IllegalArgumentException("Active job fields"); }
