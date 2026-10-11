@@ -1,0 +1,154 @@
+{
+  "authoring_commit": "b3166eda1707446c7bd8a9a0a5d576b254011465",
+  "batch_id": "v1.8.0-liquid-io-board-04",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "entries": [
+    {
+      "authoring_commit": "b3166eda1707446c7bd8a9a0a5d576b254011465",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-liquid-io-board-acquisition",
+      "source_commit": "7beccfcfb64640c7aa1f074f216be6482da04c22",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LiquidIoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "007fef9482198b7cb66f76ad5e7f6ec92907752b3bc0f8d485cb3372f6e2dc21",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/liquid_io_board.json",
+      "target_sha256": "d80152e208e9166e3d480f4c146701394a1bf6bd8d94f2ce3cbca27e5099195d",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b3166eda1707446c7bd8a9a0a5d576b254011465",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-liquid-io-board-acquisition",
+      "source_commit": "7beccfcfb64640c7aa1f074f216be6482da04c22",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LiquidIoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "007fef9482198b7cb66f76ad5e7f6ec92907752b3bc0f8d485cb3372f6e2dc21",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/liquid_io_board.png",
+      "target_sha256": "9e4fd59b320b74f49e4c32f60ca6742c0dd0a4db8b788dff8d35376edf64a2b9",
+      "transformation": [
+        "Draw original 16x16 droplet-centered connector board with V180MaterialArt.png, tint 0x68B7CF; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "b3166eda1707446c7bd8a9a0a5d576b254011465",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-liquid-io-board-acquisition",
+      "source_commit": "7beccfcfb64640c7aa1f074f216be6482da04c22",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LiquidIoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "007fef9482198b7cb66f76ad5e7f6ec92907752b3bc0f8d485cb3372f6e2dc21",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/liquid_io_board.json",
+      "target_sha256": "8804bf05b146e80924c71947926bd1b5b4eb326b6557dc8d7e086912f371b6e8",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b3166eda1707446c7bd8a9a0a5d576b254011465",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-liquid-io-board-acquisition",
+      "source_commit": "7beccfcfb64640c7aa1f074f216be6482da04c22",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LiquidIoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "007fef9482198b7cb66f76ad5e7f6ec92907752b3bc0f8d485cb3372f6e2dc21",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/precision_liquid_io_board.json",
+      "target_sha256": "d32c1f8fa077f393b084f43b430b51990c7b43cfb011d54be29107ad5b7b4056",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b3166eda1707446c7bd8a9a0a5d576b254011465",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-liquid-io-board-acquisition",
+      "source_commit": "7beccfcfb64640c7aa1f074f216be6482da04c22",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LiquidIoBoardData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "007fef9482198b7cb66f76ad5e7f6ec92907752b3bc0f8d485cb3372f6e2dc21",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/liquid_io_board.json",
+      "target_sha256": "d5297754a477a4094e632c5eb33c398d11fb2f517f176bb9344531297dcd9bb2",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b3166eda1707446c7bd8a9a0a5d576b254011465",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-liquid-io-board-acquisition",
+      "source_commit": "7beccfcfb64640c7aa1f074f216be6482da04c22",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "ea002edf28d1f817c50f8e69c0bbcb5848cc0f78e9e6d38c4c16d395865238bd",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "target_sha256": "574ed6e379343f1d0070ad2130fb903c1db2c4559a2ccdd67dfa3daa9f05ee43",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    },
+    {
+      "authoring_commit": "b3166eda1707446c7bd8a9a0a5d576b254011465",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-liquid-io-board-acquisition",
+      "source_commit": "7beccfcfb64640c7aa1f074f216be6482da04c22",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LanguageProvider.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "ea002edf28d1f817c50f8e69c0bbcb5848cc0f78e9e6d38c4c16d395865238bd",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "target_sha256": "312c60ad6dc28295e69cd34c7d889dfb6f937646e7a86b883c5a8e2c42b15674",
+      "transformation": [
+        "Generate newly authored scoped data/names; no copied model, bitmap or legacy JSON."
+      ]
+    }
+  ],
+  "factual_recipe_references": [
+    {
+      "branch": "1.12",
+      "bytes": 731,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/liquidiocircuitboard.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "97bc684da69d199c53e38631f16a1086c6981fea853df4baef06db9a3d4fcdad",
+      "use": "Semantic recipe reference only; no copied JSON or bitmap"
+    },
+    {
+      "branch": "1.12",
+      "bytes": 444,
+      "commit": "c5cd5af62fc07cd4e0d24f06a16033f181c47c04",
+      "license": "MIT",
+      "path": "src/main/resources/assets/advancedrocketry/recipes/liquidiocircuitboard_prec.json",
+      "repository": "Advanced-Rocketry/AdvancedRocketry",
+      "sha256": "bc3c77632089f34e2bee7941a9e2ee6be9a27894e2fc9e89ec560653dd57dca3",
+      "use": "Semantic recipe reference only; no copied JSON or bitmap"
+    }
+  ],
+  "license": "MIT",
+  "review": {
+    "content_digest": "ad926c5991284f7ceab274a5f4b883b4ce5d1c8c3d68d43d72807c963ac64837",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "source_branch": "codex/v1.8.0-liquid-io-board-acquisition",
+  "source_commit": "7beccfcfb64640c7aa1f074f216be6482da04c22",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "target_version": "v1.8.0"
+}

@@ -1,0 +1,32 @@
+{
+  "type": "advancedrocketrycommunity:precision_assembling",
+  "energy_per_tick": 10,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:dusts/redstone"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:gems/lapis"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:plates/steel"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:liquid_io_board"
+    }
+  ],
+  "processing_time": 200,
+  "schema_version": 1
+}
