@@ -91,6 +91,8 @@ public final class PlayerLifeSupportService {
                             state.vacuumPhase
                     )
             );
+            // An external debit failure may disable its provider during the operation.
+            suitPieces = equipment.countPieces(player);
             state.vacuumPhase = decision.vacuumPhase();
             if (decision.damage() > 0.0F) {
                 suffocationAttempt = true;

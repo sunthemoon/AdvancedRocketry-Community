@@ -86,18 +86,18 @@ public final class SuitEquipmentService {
                 ItemStack detached = reading.stack.copy();
                 if (!SpaceSuitOxygen.set(detached, decision.oxygenUnits()) || !ArmorEquipment.setReserve(detached, step.reserveUnits())
                         || !sameNative(player, reading) || !EquipmentNbt.safe(detached)) {
-                    return unpaid(input);
+                    return unpaid(player, input);
                 }
                 reading.stack.setTag(detached.getTag()); return decision;
             }
             return commit(player, reading, decision.oxygenUnits(), prepare(reading, decision.oxygenUnits()))
-                    ? decision : unpaid(input);
+                    ? decision : unpaid(player, input);
         } finally { operating = false; }
     }
 
-    private static PlayerLifeSupportDecision unpaid(PlayerLifeSupportInput input) {
+    private PlayerLifeSupportDecision unpaid(ServerPlayer player, PlayerLifeSupportInput input) {
         return PlayerLifeSupportEngine.tick(new PlayerLifeSupportInput(input.baseAtmosphereBreathable(), input.volumeState(),
-                input.equippedSuitPieces(), 0, input.vacuumPhase()));
+                countPieces(player), 0, input.vacuumPhase()));
     }
 
     public OxygenTransferResult fillOneCanister(ServerPlayer player, InteractionHand hand) {
