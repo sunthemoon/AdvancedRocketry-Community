@@ -131,7 +131,7 @@ class V180IoBoardDataTest {
         }
         assertArrayEquals(V180IoBoardData.texture(), Files.readAllBytes(root.resolve(V180IoBoardData.TEXTURE)));
         for (String locale : List.of("en_us", "zh_cn")) {
-            var actual = JsonParser.parseString(Files.readString(root.resolve("assets/advancedrocketrycommunity/lang/" + locale + ".json"))).getAsJsonObject();
+            var actual = JsonParser.parseString(Files.readString(root.resolve("assets/advancedrocketrycommunity_v180/lang/" + locale + ".json"))).getAsJsonObject();
             V180IoBoardData.language(locale.equals("zh_cn")).forEach((key, value) -> assertEquals(value, actual.get(key).getAsString()));
         }
     }
