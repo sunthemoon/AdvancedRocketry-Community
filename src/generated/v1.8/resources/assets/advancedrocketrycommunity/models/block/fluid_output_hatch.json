@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "advancedrocketrycommunity:block/fluid_output_hatch"
+  }
+}

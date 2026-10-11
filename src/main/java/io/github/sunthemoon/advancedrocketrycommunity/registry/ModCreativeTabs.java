@@ -22,6 +22,12 @@ public final class ModCreativeTabs {
                     .icon(() -> new ItemStack(ModItems.SILICON_WAFER.get()))
                     .displayItems((parameters, output) -> {
                         output.accept(ModItems.MACHINE_CASING.get());
+                        output.accept(ModItems.ITEM_INPUT_HATCH.get());
+                        output.accept(ModItems.ITEM_OUTPUT_HATCH.get());
+                        output.accept(ModItems.FLUID_INPUT_HATCH.get());
+                        output.accept(ModItems.FLUID_OUTPUT_HATCH.get());
+                        output.accept(ModItems.POWER_INPUT_PLUG.get());
+                        output.accept(ModItems.LATHE.get());
                         output.accept(ModItems.COMBUSTION_GENERATOR.get());
                         output.accept(ModItems.SOLAR_GENERATOR.get());
                         output.accept(ModItems.SOLAR_PANEL.get());

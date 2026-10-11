@@ -1,5 +1,11 @@
 {
   "values": [
+    "advancedrocketrycommunity:item_input_hatch",
+    "advancedrocketrycommunity:item_output_hatch",
+    "advancedrocketrycommunity:fluid_input_hatch",
+    "advancedrocketrycommunity:fluid_output_hatch",
+    "advancedrocketrycommunity:power_input_plug",
+    "advancedrocketrycommunity:lathe",
     "advancedrocketrycommunity:machine_casing",
     "advancedrocketrycommunity:satellite_terminal",
     "advancedrocketrycommunity:rolling_machine",

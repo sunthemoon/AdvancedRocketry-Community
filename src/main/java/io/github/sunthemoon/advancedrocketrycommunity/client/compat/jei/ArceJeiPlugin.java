@@ -41,7 +41,8 @@ public final class ArceJeiPlugin implements IModPlugin {
                 new ElectrolyzerJeiCategory(helper),
                 new RollingMachineJeiCategory(helper),
                 new PrecisionAssemblerJeiCategory(helper),
-                new SmallPlatePressJeiCategory(helper)
+                new SmallPlatePressJeiCategory(helper),
+                new ClassicLatheJeiCategory(helper)
         );
     }
 
@@ -63,6 +64,11 @@ public final class ArceJeiPlugin implements IModPlugin {
         List<SmallPlatePressRecipe> pressRecipes = level == null ? List.of()
                 : level.getRecipeManager().getAllRecipesFor(MaterialContent.SMALL_PLATE_PRESS_TYPE.get());
         registration.addRecipes(SmallPlatePressJeiCategory.TYPE, pressRecipes);
+        var latheRecipes = level == null ? java.util.List.<io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicMachineRecipe>of()
+                : level.getRecipeManager().getAllRecipesFor(ModRecipes.LATHE_TYPE.get());
+        registration.addRecipes(ClassicLatheJeiCategory.TYPE, latheRecipes.stream().filter(recipe -> {
+            try { recipe.definition(); return true; } catch (IllegalArgumentException invalid) { return false; }
+        }).toList());
         AdvancedRocketryCommunity.LOGGER.info(
                 "{} optional_compat=jei status=registered recipes={}",
                 BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
@@ -81,6 +87,7 @@ public final class ArceJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(ModItems.ROLLING_MACHINE.get(), RollingMachineJeiCategory.TYPE);
         registration.addRecipeCatalyst(ModItems.PRECISION_ASSEMBLER.get(), PrecisionAssemblerJeiCategory.TYPE);
         registration.addRecipeCatalyst(MaterialContent.SMALL_PLATE_PRESS_ITEM.get(), SmallPlatePressJeiCategory.TYPE);
+        registration.addRecipeCatalyst(ModItems.LATHE.get(), ClassicLatheJeiCategory.TYPE);
     }
 
     @Override

@@ -46,6 +46,14 @@ public final class ClassicResources {
         return banks.stream().filter(bank -> bank.key().equals(key)).findFirst();
     }
 
+    /** Removal owns the detached old bank before spawning drops; repeat removal is a no-op. */
+    public ClassicResources remove(ClassicBankKey key) {
+        if (bank(key).isEmpty()) { return this; }
+        if (revision == Long.MAX_VALUE) { throw new IllegalStateException("Resource revision exhausted"); }
+        return new ClassicResources(machineId, revision + 1,
+                banks.stream().filter(bank -> !bank.key().equals(key)).toList());
+    }
+
     /** Add/replace a bounded set without discarding any retained bank; increment once, not per slot. */
     public ClassicResources replace(List<ClassicResourceBank> changes, boolean simulate) {
         Objects.requireNonNull(changes, "changes");

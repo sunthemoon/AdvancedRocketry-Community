@@ -219,6 +219,13 @@ public final class ModItems {
             new StandingAndWallBlockItem(ModBlocks.THERMITE_TORCH.get(), ModBlocks.THERMITE_WALL_TORCH.get(),
                     new Item.Properties(), Direction.DOWN));
 
+    public static final RegistryObject<Item> ITEM_INPUT_HATCH = blockItem("item_input_hatch", ModBlocks.ITEM_INPUT_HATCH);
+    public static final RegistryObject<Item> ITEM_OUTPUT_HATCH = blockItem("item_output_hatch", ModBlocks.ITEM_OUTPUT_HATCH);
+    public static final RegistryObject<Item> FLUID_INPUT_HATCH = blockItem("fluid_input_hatch", ModBlocks.FLUID_INPUT_HATCH);
+    public static final RegistryObject<Item> FLUID_OUTPUT_HATCH = blockItem("fluid_output_hatch", ModBlocks.FLUID_OUTPUT_HATCH);
+    public static final RegistryObject<Item> POWER_INPUT_PLUG = blockItem("power_input_plug", ModBlocks.POWER_INPUT_PLUG);
+    public static final RegistryObject<Item> LATHE = blockItem("lathe", ModBlocks.LATHE);
+
     private ModItems() {
     }
 

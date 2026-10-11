@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "advancedrocketrycommunity:power_input_plug"
+        }
+      ],
+      "rolls": 1
+    }
+  ]
+}

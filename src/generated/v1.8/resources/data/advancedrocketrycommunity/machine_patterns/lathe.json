@@ -1,0 +1,87 @@
+{
+  "allow_mirror_local_x": false,
+  "allowed_rotations": [
+    0,
+    90,
+    180,
+    270
+  ],
+  "cells": [
+    {
+      "matcher": {
+        "controller": true
+      },
+      "x": 0,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:motors"
+      },
+      "x": 1,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 2,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "port": "item_input"
+      },
+      "x": 3,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "port": "energy_input"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "port": "item_output"
+      },
+      "x": 3,
+      "y": 0,
+      "z": 0
+    }
+  ],
+  "controller_anchor": {
+    "x": 0,
+    "y": 1,
+    "z": 0
+  },
+  "id": "advancedrocketrycommunity:lathe",
+  "schema_version": 1,
+  "size": {
+    "x": 4,
+    "y": 2,
+    "z": 1
+  }
+}

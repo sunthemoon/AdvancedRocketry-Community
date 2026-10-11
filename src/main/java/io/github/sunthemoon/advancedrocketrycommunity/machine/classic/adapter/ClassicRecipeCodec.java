@@ -17,11 +17,11 @@ import java.util.Set;
 import net.minecraft.resources.ResourceLocation;
 
 /** Private strict recipe reader, with no serializer, registry or catalog publication. */
-final class ClassicRecipeCodec {
+public final class ClassicRecipeCodec {
     private static final Set<String> FIELDS = Set.of("type", "schema_version", "item_inputs", "item_outputs",
             "fluid_inputs", "fluid_outputs", "processing_time", "energy_per_tick");
 
-    static ClassicValidatedRecipe decode(ResourceLocation id, String text) {
+    public static ClassicValidatedRecipe decode(ResourceLocation id, String text) {
         ClassicValueChecks.id(id);
         JsonObject root = object(parse(text));
         fields(root, FIELDS);

@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicMachineRecipe;
+
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.electrolyzer.ElectrolyzerRecipe;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRecipe;
@@ -52,6 +54,12 @@ public final class ModRecipes {
             });
     public static final RegistryObject<RecipeSerializer<PrecisionAssemblerRecipe>> PRECISION_ASSEMBLING_SERIALIZER =
             SERIALIZERS.register("precision_assembling", PrecisionAssemblerRecipe.Serializer::new);
+
+    public static final RegistryObject<RecipeType<ClassicMachineRecipe>> LATHE_TYPE = TYPES.register("lathe", () -> new RecipeType<>() {
+        @Override public String toString() { return AdvancedRocketryCommunity.MOD_ID + ":lathe"; }
+    });
+    public static final RegistryObject<RecipeSerializer<ClassicMachineRecipe>> LATHE_SERIALIZER =
+            SERIALIZERS.register("lathe", ClassicMachineRecipe.Serializer::new);
 
     private ModRecipes() {
     }
