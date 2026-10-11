@@ -1,5 +1,10 @@
 package io.github.sunthemoon.arceadaptertest;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.ByteArrayTag;
@@ -8,6 +13,8 @@ import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -37,16 +44,28 @@ public final class NativeFixtureNbtGameTests {
     }
 
     @GameTest(templateNamespace = "advancedrocketrycommunity", template = "empty", batch = "native_proto_bounds")
-    public static void preflightDoesNotNormalizeAFormerlyTypedEmptyList(GameTestHelper helper) {
-        ListTag list = new ListTag();
-        list.add(IntTag.valueOf(28));
-        list.remove(0);
-        CompoundTag root = new CompoundTag();
-        root.put("typed_empty", list);
+    public static void preflightDoesNotNormalizeAFormerlyTypedEmptyList(GameTestHelper helper) throws IOException {
+        // remove(0) normalizes a ListTag to TAG_End; native input retains the declared empty subtype.
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (DataOutputStream output = new DataOutputStream(bytes)) {
+            output.writeByte(Tag.TAG_COMPOUND); output.writeUTF("");
+            output.writeByte(Tag.TAG_LIST); output.writeUTF("typed_empty");
+            output.writeByte(Tag.TAG_INT); output.writeInt(0); output.writeByte(Tag.TAG_END);
+        }
+        CompoundTag root;
+        try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(bytes.toByteArray()))) {
+            root = NbtIo.read(input, new NbtAccounter(4_096));
+            helper.assertTrue(input.read() == -1, "Fixture native input was not completely consumed");
+        }
+        ListTag list = (ListTag) root.get("typed_empty");
         int before = list.getElementType();
         helper.assertTrue(before == IntTag.TAG_INT, "Fixture did not retain its former native list type");
         helper.assertFalse(NativeFixtureNbt.fits(root), "Native serialization would normalize the typed empty list");
         helper.assertTrue(list.getElementType() == before, "Preflight mutated the native list type");
+        ListTag normalized = new ListTag();
+        normalized.add(IntTag.valueOf(28)); normalized.remove(0);
+        helper.assertTrue(normalized.getElementType() == Tag.TAG_END && NativeFixtureNbt.fits(normalized),
+                "Native remove normalization was not admitted as a canonical empty list");
         helper.succeed();
     }
 
