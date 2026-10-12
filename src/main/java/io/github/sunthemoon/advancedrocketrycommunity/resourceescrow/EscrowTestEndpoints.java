@@ -133,13 +133,15 @@ public final class EscrowTestEndpoints {
         String listKey = endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? "Entities" : "block_entities";
         if (endpoint.kind() == EscrowEndpoint.Kind.ENTITY) {
             int[] pos = root.getIntArray("Position"); EscrowTags.require(pos.length == 2 && pos[0] == endpoint.x() && pos[1] == endpoint.z(), "Wrong entity chunk");
-        } else { EscrowTags.require(root.getInt("xPos") == endpoint.x() >> 4 && root.getInt("zPos") == endpoint.z() >> 4, "Wrong terrain chunk"); }
+        } else { EscrowTags.require(EscrowTags.integer(root, "xPos") == endpoint.x() >> 4
+                && EscrowTags.integer(root, "zPos") == endpoint.z() >> 4, "Wrong terrain chunk"); }
         CompoundTag found = null;
         for (var tag : EscrowTags.list(root, listKey, 65_536)) {
             CompoundTag object = (CompoundTag) tag;
             boolean matches = endpoint.kind() == EscrowEndpoint.Kind.ENTITY
                     ? object.hasUUID("UUID") && endpoint.identity().equals(object.getUUID("UUID"))
-                    : object.getInt("x") == endpoint.x() && object.getInt("y") == endpoint.y() && object.getInt("z") == endpoint.z();
+                    : EscrowTags.integer(object, "x") == endpoint.x() && EscrowTags.integer(object, "y") == endpoint.y()
+                            && EscrowTags.integer(object, "z") == endpoint.z();
             if (matches) { EscrowTags.require(found == null && endpoint.type().equals(object.getString("id")), "Duplicate/wrong endpoint"); found = object; }
         }
         EscrowTags.require(found != null, "Missing disk endpoint"); CompoundTag persistent = EscrowTags.compound(found, "ForgeData");

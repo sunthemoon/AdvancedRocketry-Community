@@ -76,5 +76,28 @@ class EscrowCodecTest {
             assertThrows(IllegalArgumentException.class, () -> EscrowTags.id(invalid));
         }
     }
+    @Test void nativeFixtureCoordinatesCannotDefaultMissingOrWrongTypesToZero() {
+        var identity = EscrowTestFixtures.id(7); var ledger = EscrowTestFixtures.id(500);
+        CompoundTag persistent = new CompoundTag(), fixture = new CompoundTag(), section = new CompoundTag();
+        fixture.putUUID("identity", identity); fixture.putInt("amount", 5_000); fixture.putInt("capacity", 16_000);
+        persistent.put("arce_escrow_fixture", fixture);
+        section.putInt("schema_version", 1); section.putUUID("ledger_id", ledger); section.putLong("resource_epoch", 0);
+        section.put("markers", new ListTag()); persistent.put("resource_escrow", section);
+        var state = EscrowTestEndpoints.state(persistent, ledger, false);
+        var endpoint = new EscrowEndpoint(EscrowEndpoint.Kind.BLOCK_ENTITY, "minecraft:overworld", identity, null,
+                "minecraft:chest", 0, 0, 0, EscrowEndpoint.Unit.TANK, 0, state.signature(), EscrowTestFixtures.hash(9));
+        CompoundTag root = new CompoundTag(), block = new CompoundTag(); root.putInt("xPos", 0); root.putInt("zPos", 0);
+        block.putString("id", "minecraft:chest"); block.putInt("x", 0); block.putInt("y", 0); block.putInt("z", 0);
+        block.put("ForgeData", persistent); ListTag blocks = new ListTag(); blocks.add(block); root.put("block_entities", blocks);
+        var validator = EscrowTestEndpoints.validator(endpoint, state); assertTrue(validator.test(root));
+        for (String key : List.of("xPos", "zPos")) {
+            var absent = root.copy(); absent.remove(key); assertFalse(validator.test(absent));
+            var wrong = root.copy(); wrong.putString(key, "0"); assertFalse(validator.test(wrong));
+        }
+        for (String key : List.of("x", "y", "z")) {
+            var absent = root.copy(); absent.getList("block_entities", 10).getCompound(0).remove(key); assertFalse(validator.test(absent));
+            var wrong = root.copy(); wrong.getList("block_entities", 10).getCompound(0).putString(key, "0"); assertFalse(validator.test(wrong));
+        }
+    }
     private static CompoundTag record(CompoundTag root) { return root.getList("records", 10).getCompound(0); }
 }
