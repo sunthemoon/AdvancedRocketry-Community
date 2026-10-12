@@ -51,6 +51,7 @@ public final class ForceFieldProjectorBlock extends ForceFieldBlock {
     @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector) {
+            projector.beginPlacement();
             projector.bind(placer);
         }
     }
@@ -73,5 +74,6 @@ public final class ForceFieldProjectorBlock extends ForceFieldBlock {
             AtmosphereRuntime.invalidateDoorBoundary(server, pos, pos);
         }
         super.onPlace(state, level, pos, previous, moved);
+        if (level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector) { projector.commitPlacement(); }
     }
 }

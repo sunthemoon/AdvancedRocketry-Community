@@ -60,6 +60,11 @@ public class ForceFieldBlock extends BaseEntityBlock implements DeferredRoomBoun
     @Override public void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moved) {
         if (!state.is(replacement.getBlock()) && level instanceof ServerLevel server
                 && level.getBlockEntity(pos) instanceof ForceFieldNativeBlockEntity entity) {
+            // Only the new, uncommitted projector in Forge's captured transaction may bypass destruction checks.
+            if (entity instanceof ForceFieldProjectorBlockEntity projector && projector.rollbackPlacement()) {
+                super.onRemove(state, level, pos, replacement, moved);
+                return;
+            }
             if (!ForceFieldProtection.permitted(server, pos)
                     && (!ForceFieldProtection.admitRemoval(server, entity, Optional.empty())
                     || !ForceFieldProtection.commitRetirement(server, entity))) {

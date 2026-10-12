@@ -16,6 +16,7 @@ import net.minecraftforge.common.util.FakePlayer;
 public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockEntity {
     private ProjectorState state;
     private int next = 1;
+    private boolean uncommittedPlacement;
     public ForceFieldProjectorBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.FORCE_FIELD_PROJECTOR.get(), pos, blockState);
         state = new ProjectorState(UUID.randomUUID(), Optional.empty(), 1,
@@ -29,6 +30,29 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
         return state.direction() == getBlockState().getValue(ForceFieldProjectorBlock.FACING);
     }
     public ProjectorState state() { return state; }
+    void beginPlacement() {
+        if (!quarantined() && state.claims() == 0 && level instanceof ServerLevel server
+                && server.captureBlockSnapshots && server.capturedBlockSnapshots.stream().anyMatch(snapshot ->
+                snapshot.getPos().equals(worldPosition)
+                        && !snapshot.getReplacedBlock().is(getBlockState().getBlock()))) {
+            uncommittedPlacement = true;
+        }
+    }
+    void commitPlacement() { uncommittedPlacement = false; }
+    boolean rollbackPlacement() {
+        if (!uncommittedPlacement || quarantined() || state.claims() != 0
+                || !(level instanceof ServerLevel server) || !server.restoringBlockSnapshots) { return false; }
+        if (state.owner().isPresent()) {
+            var data = FieldCleanupSavedData.get(server.getServer());
+            var entry = data.view().get(identity().key());
+            if (entry != null) {
+                if (entry.orphan() || entry.claims() != 0 || !entry.identity().equals(identity())) { return false; }
+                data.forget(identity().key());
+            }
+        }
+        uncommittedPlacement = false;
+        return true;
+    }
     public FieldIdentity identity() {
         return new FieldIdentity(state.id(), state.owner().orElseThrow(), state.generation(),
                 level.dimension(), worldPosition, state.direction());
