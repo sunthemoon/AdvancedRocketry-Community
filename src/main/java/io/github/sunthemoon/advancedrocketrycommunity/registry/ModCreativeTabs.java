@@ -104,6 +104,10 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.BASIC_CIRCUIT.get());
                         output.accept(ModItems.ATMOSPHERE_ANALYZER.get());
                         output.accept(ModItems.SEAL_DETECTOR.get());
+                        output.accept(ModItems.CO2_SCRUBBER.get());
+                        output.accept(ModItems.CARBON_SCRUBBER_CARTRIDGE.get());
+                        output.accept(ModItems.PIPE_SEAL.get());
+                        output.accept(ModItems.ATMOSPHERE_DETECTOR.get());
                         output.accept(ModItems.JACKHAMMER.get());
                         output.accept(io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent.WORKSTATION.get());
                         io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent.modules().values()

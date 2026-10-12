@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "advancedrocketrycommunity:carbon_brick"
+    },
+    "p": {
+      "tag": "forge:plates/iron"
+    }
+  },
+  "pattern": [
+    " p ",
+    "pcp",
+    " p "
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:carbon_scrubber_cartridge"
+  }
+}

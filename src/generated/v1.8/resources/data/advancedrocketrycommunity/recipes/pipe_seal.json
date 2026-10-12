@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "minecraft:glass"
+    },
+    "p": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    " p ",
+    "pcp",
+    " p "
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:pipe_seal"
+  }
+}

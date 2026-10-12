@@ -402,6 +402,8 @@ public final class AtmosphereLevelService {
                 if (vent == null) {
                     continue;
                 }
+                if (state == elected) { vent.scrubbers().observe(vent, index.find(entry.getKey()).orElseThrow()); }
+                else { vent.scrubbers().clearSupply(); }
                 VentSupplyResult result = vent.applySupply(
                         VolumeScanOutcome.SEALED,
                         state == elected

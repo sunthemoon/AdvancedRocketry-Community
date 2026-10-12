@@ -618,6 +618,26 @@
       "reason": "The tank creation multiplier defaults to 1 once on a new config. Non-null corrections and other values do not match."
     },
     {
+      "id": "forge-w14-scrubber-cartridge-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key OXYGEN\\.scrubberRequiresCartrige was corrected from null to its default, true\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W14 life-support configuration created by the run",
+      "reason": "The cartridge requirement defaults to true exactly once; the OXYGEN section is already excluded from the generic 99-warning budget."
+    },
+    {
+      "id": "forge-w14-oxygen-detection-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key OXYGEN\\.oxygenDetection was corrected from null to its default, true\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W14 life-support configuration created by the run",
+      "reason": "The detector switch defaults to true exactly once; the OXYGEN section is already excluded from the generic 99-warning budget."
+    },
+    {
       "id": "forge-equipment-active-target-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",

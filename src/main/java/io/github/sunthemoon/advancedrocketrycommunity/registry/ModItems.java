@@ -30,6 +30,10 @@ public final class ModItems {
     );
 
     public static final RegistryObject<Item> JACKHAMMER = ITEMS.register("jackhammer", JackhammerItem::new);
+    public static final RegistryObject<Item> CO2_SCRUBBER = blockItem("co2_scrubber", ModBlocks.CO2_SCRUBBER);
+    public static final RegistryObject<Item> PIPE_SEAL = blockItem("pipe_seal", ModBlocks.PIPE_SEAL);
+    public static final RegistryObject<Item> ATMOSPHERE_DETECTOR = blockItem("atmosphere_detector", ModBlocks.ATMOSPHERE_DETECTOR);
+    public static final RegistryObject<Item> CARBON_SCRUBBER_CARTRIDGE = ITEMS.register("carbon_scrubber_cartridge", () -> new Item(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> FORCE_FIELD_PROJECTOR = blockItem("force_field_projector", ModBlocks.FORCE_FIELD_PROJECTOR);
     public static final RegistryObject<Item> AIRLOCK_DOOR = blockItem("airlock_door", ModBlocks.AIRLOCK_DOOR);
     public static final RegistryObject<Item> COMBUSTION_GENERATOR = blockItem("combustion_generator",
