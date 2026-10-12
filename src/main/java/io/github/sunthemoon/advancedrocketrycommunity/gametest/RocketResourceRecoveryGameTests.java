@@ -20,6 +20,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropuls
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import java.util.Map;
+import java.util.Comparator;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -28,6 +29,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
@@ -40,6 +42,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketResourceRecoveryGameTests {
+    private static final TicketType<ChunkPos> FIXTURE_TICKET = TicketType.create("arce_resource_recovery_test",
+            Comparator.comparingLong(ChunkPos::toLong), 200);
     private RocketResourceRecoveryGameTests() { }
 
     @GameTest(template = "rocket_test", batch = "resource_arrival_recovery", timeoutTicks = 400)
@@ -164,8 +168,11 @@ public final class RocketResourceRecoveryGameTests {
             }
             var snapshot = successfulSnapshot(helper, origin);
             clearSnapshotBlocks(earth, snapshot);
+            var sourceOrigin = snapshot.sourceOrigin();
+            var destinationOrigin = new RocketPosition(sourceOrigin.x(),
+                    Math.max(moon.getMinBuildHeight() + 16, sourceOrigin.y()), sourceOrigin.z());
             var destination = snapshot.relocated(UUID.randomUUID(), moon.dimension().location(),
-                    snapshot.sourceOrigin(), earth.getGameTime());
+                    destinationOrigin, earth.getGameTime());
             clearSnapshotBlocks(moon, destination);
             var fuel = RocketFuelState.empty(snapshot.propulsion().orElseThrow()).withFluidBank(false,
                     ModIdentity.id(bipropellant ? "hydrogen" : "rocket_fuel"), null, bipropellant ? 2_000 : 3_000);
@@ -197,12 +204,28 @@ public final class RocketResourceRecoveryGameTests {
         void whenReady(Runnable action) {
             var pacer = new GameTestTickPacer(earth.getServer());
             helper.startSequence().thenWaitUntil(() -> {
+                keepFixtureRegionLoaded(earth, record.sourceSnapshot());
+                keepFixtureRegionLoaded(moon, record.destinationSnapshot());
                 var origin = record.sourceSnapshot().sourceOrigin();
                 long chunk = ChunkPos.asLong(origin.x() >> 4, origin.z() >> 4);
                 boolean ready = earth.areEntitiesLoaded(chunk) && moon.areEntitiesLoaded(chunk);
                 if (!ready) { pacer.pace(); }
                 helper.assertTrue(ready, "Resource recovery fixture entity chunks not ready");
             }).thenExecute(action);
+        }
+
+        private static void keepFixtureRegionLoaded(ServerLevel level,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot) {
+            var chunks = new java.util.HashSet<ChunkPos>();
+            for (var block : snapshot.blocks()) {
+                var absolute = snapshot.sourceOrigin().add(block.position());
+                var at = new BlockPos(absolute.x(), absolute.y(), absolute.z());
+                var chunk = new ChunkPos(at);
+                if (chunks.add(chunk)) {
+                    level.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, chunk);
+                    level.getChunkAt(at);
+                }
+            }
         }
 
         void land() {
