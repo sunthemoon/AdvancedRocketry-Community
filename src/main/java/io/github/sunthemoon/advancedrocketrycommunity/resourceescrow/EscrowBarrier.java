@@ -30,7 +30,9 @@ public final class EscrowBarrier implements AutoCloseable {
         Thread thread = new Thread(r, "ARCE-escrow-readback"); thread.setDaemon(true); return thread;
     });
     private final ArrayBlockingQueue<Pending> completions = new ArrayBlockingQueue<>(32);
-    private final AtomicBoolean active = new AtomicBoolean(true);
+    private final AtomicBoolean active;
+    private final AtomicBoolean working = new AtomicBoolean(true);
+    private final Object lifecycle = new Object();
     private final Map<String, Batch> batches = new HashMap<>();
     private final Map<String, List<Attempt>> staged = new HashMap<>();
     private final Map<String, Long> nextForce = new HashMap<>();
@@ -41,13 +43,14 @@ public final class EscrowBarrier implements AutoCloseable {
     private int supersedingSaves;
     private final Consumer<String> checkpoint;
     public EscrowBarrier() { this(cut -> { }); }
-    public EscrowBarrier(Consumer<String> checkpoint) { this.checkpoint = checkpoint; }
+    public EscrowBarrier(Consumer<String> checkpoint) { this(checkpoint, new AtomicBoolean(true)); }
+    EscrowBarrier(Consumer<String> checkpoint, AtomicBoolean lifetime) { this.checkpoint = checkpoint; active = lifetime; }
     private record Batch(long started, int terrain, int entities) { }
 
     public boolean begin(EscrowChunkStore store, EscrowEndpoint endpoint, EscrowPrefix.State frontier,
                          Predicate<CompoundTag> validator, long tick, Consumer<Result> callback) {
         owner();
-        if (!active.get() || pending >= 32 || captureTick == tick
+        if (!working.get() || pending >= 32 || captureTick == tick
                 || bytes > EscrowLimits.CAPTURE_BYTES - AnvilRecordReader.DECODED_BYTES) { return false; }
         Batch batch = batches.get(endpoint.level());
         if (batch == null || tick - batch.started() >= 20) { batch = new Batch(tick, 0, 0); }
@@ -67,25 +70,32 @@ public final class EscrowBarrier implements AutoCloseable {
         // Keep every own future: synchronize's pending set is not a completed-error history.
         CompletableFuture.allOf(attempts.stream().map(attempt -> attempt.capture().stored())
                 .toArray(CompletableFuture[]::new)).whenComplete((stored, storeFailure) -> {
-            if (!active.get()) { return; }
-            if (storeFailure != null) {
-                attempts.forEach(attempt -> complete(attempt.capture(), attempt.frontier(), attempt.callback(), EscrowReason.BARRIER_IO)); return;
+            CompletableFuture<Void> forced;
+            synchronized (lifecycle) {
+                if (!working.get()) { return; }
+                if (storeFailure != null) {
+                    attempts.forEach(attempt -> complete(attempt.capture(), attempt.frontier(), attempt.callback(), EscrowReason.BARRIER_IO)); return;
+                }
+                checkpoint.accept("K6");
+                // Quiesce cannot overtake a force submission, even when the own future completes off-thread.
+                forced = CompletableFuture.allOf(attempts.stream().map(attempt -> attempt.capture().worker()).distinct()
+                        .map(worker -> worker.synchronize(true)).toArray(CompletableFuture[]::new));
             }
-            checkpoint.accept("K6");
             // A cache-wide force occurs at most once per original worker in this Level's 20-tick batch.
-            CompletableFuture.allOf(attempts.stream().map(attempt -> attempt.capture().worker()).distinct()
-                    .map(worker -> worker.synchronize(true)).toArray(CompletableFuture[]::new))
-                    .whenComplete((forced, forceFailure) -> {
-                        if (!active.get()) { return; }
+            forced.whenComplete((ignored, forceFailure) -> {
+                        if (!working.get()) { return; }
                         if (forceFailure != null) {
                             attempts.forEach(attempt -> complete(attempt.capture(), attempt.frontier(), attempt.callback(), EscrowReason.BARRIER_FORCE)); return;
                         }
-                        reader.execute(() -> attempts.forEach(this::readback));
+                        try { reader.execute(() -> attempts.forEach(this::readback)); }
+                        catch (java.util.concurrent.RejectedExecutionException stopped) {
+                            if (working.get()) { throw stopped; }
+                        }
                     });
         });
     }
     private void readback(Attempt attempt) {
-        if (!active.get()) { return; }
+        if (!working.get()) { return; }
         var capture = attempt.capture(); EscrowReason reason = EscrowReason.NONE;
         try {
             if (capture.generation().get() != capture.capturedGeneration()) { reason = EscrowReason.SUPERSEDING_SAVE; }
@@ -97,10 +107,11 @@ public final class EscrowBarrier implements AutoCloseable {
     }
     private void complete(EscrowChunkStore.Capture capture, EscrowPrefix.State frontier,
                           Consumer<Result> callback, EscrowReason reason) {
-        if (active.get()) { completions.add(new Pending(capture, frontier, callback, reason)); }
+        if (working.get()) { completions.add(new Pending(capture, frontier, callback, reason)); }
     }
     public void tick(long tick) {
         owner();
+        if (!working.get()) { return; }
         for (var entry : staged.entrySet()) {
             if (!entry.getValue().isEmpty() && tick >= nextForce.get(entry.getKey())) {
                 List<Attempt> ready = List.copyOf(entry.getValue()); entry.getValue().clear();
@@ -125,6 +136,12 @@ public final class EscrowBarrier implements AutoCloseable {
     }
     public int ioFailures() { return ioFailures; }
     public int supersedingSaves() { return supersedingSaves; }
-    @Override public void close() { owner(); active.set(false); completions.clear(); staged.clear(); reader.shutdown(); }
+    /** Discard unfinished barriers without invalidating proofs held by already-frozen ledger generations. */
+    public void quiesce() {
+        owner(); synchronized (lifecycle) {
+            working.set(false); completions.clear(); staged.clear(); reader.shutdown();
+        }
+    }
+    @Override public void close() { owner(); quiesce(); active.set(false); }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Barrier requires its owner thread"); }
 }

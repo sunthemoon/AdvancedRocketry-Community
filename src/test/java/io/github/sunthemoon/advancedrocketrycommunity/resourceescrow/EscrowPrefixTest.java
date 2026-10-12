@@ -53,4 +53,17 @@ class EscrowPrefixTest {
         monitor.release("minecraft:overworld", false, pos);
         monitor.observed("minecraft:overworld", false, pos); assertEquals(next + 1, second.get());
     }
+    @Test void stoppingDiscardedBarriersDoesNotInvalidateAFrozenLedgerProofBeforeDrain() {
+        var op = EscrowTestFixtures.operation(1); var ledger = EscrowTestFixtures.ledger(op);
+        var state = new EscrowPrefix.State(ledger.id(), op.source().afterEpoch(), op.source().afterSignature(), List.of());
+        var generation = new java.util.concurrent.atomic.AtomicLong(1);
+        var capture = new EscrowChunkStore.Capture(java.util.concurrent.CompletableFuture.completedFuture(null), null,
+                java.nio.file.Path.of("."), new net.minecraft.world.level.ChunkPos(4, 4), generation, 1, 0, () -> { }, () -> { });
+        var lifetime = new java.util.concurrent.atomic.AtomicBoolean(true);
+        var barrier = new EscrowBarrier(cut -> { }, lifetime);
+        // This token models an already-delivered proof, not an unfinished attempt.
+        var proof = new EscrowBarrier.Proof(state, capture, new java.util.concurrent.atomic.AtomicBoolean(true), lifetime);
+        barrier.quiesce(); assertTrue(proof.valid());
+        barrier.close(); assertFalse(proof.valid());
+    }
 }
