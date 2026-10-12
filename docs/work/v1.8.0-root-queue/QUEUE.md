@@ -38,7 +38,7 @@ SHA-256 values.
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| (none) | | |
+| W06 independent review (Codex, cross-model) | Jetpack channel design, packet validation, hydrogen debit, effect removal, W03 M1 and L1 | Next free Codex slot |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
