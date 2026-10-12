@@ -34,6 +34,7 @@ public final class ResourceEscrowSavedData extends SavedData {
                     EscrowRuntime.of(server)::checkpoint);
             writer.timings(EscrowRuntime.of(server).timings());
             coordinator = new EscrowCoordinator(this, writer);
+            coordinator.tick(server.getTickCount()); // The first explicit write uses the real server clock, not tick zero.
         }
         return coordinator;
     }
