@@ -113,6 +113,38 @@ class EscrowLedgerWriterTest {
             assertEquals(base, EscrowCodec.decode(policy.read(file()).orElseThrow()));
         }
     }
+    @Test void queuedRetirementCopiesCallerOwnedIdsAndProofMapBeforeSuccessorCapture() throws Exception {
+        var op = EscrowTestFixtures.operation(1); var base = EscrowTestFixtures.ledger(op).generation(1);
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base)); data.setDirty();
+        CountDownLatch staged = new CountDownLatch(1), release = new CountDownLatch(1);
+        AtomicInteger stages = new AtomicInteger(); var outcomes = new ArrayList<Boolean>();
+        var writer = new EscrowLedgerWriter(file(), 1, CheckedSavedDataFile::atomicMove, cut -> {
+            if (cut.equals("K1") && stages.incrementAndGet() == 1) { staged.countDown(); await(release); }
+        });
+        var coordinator = new EscrowCoordinator(data, writer);
+        try {
+            var proofs = new java.util.HashMap<EscrowEndpoint.Key, EscrowBarrier.Proof>();
+            for (var endpoint : List.of(op.source(), op.destination())) {
+                var chain = EscrowPrefix.chains(base.records()).get(endpoint.key());
+                var frontier = new EscrowPrefix.State(base.id(), endpoint.afterEpoch(), endpoint.afterSignature(),
+                        chain.stream().map(EscrowPrefix.Link::marker).toList());
+                var capture = new EscrowChunkStore.Capture(java.util.concurrent.CompletableFuture.completedFuture(null),
+                        null, directory, new net.minecraft.world.level.ChunkPos(0, 0),
+                        new java.util.concurrent.atomic.AtomicLong(1), 1, 0, () -> { }, () -> { });
+                proofs.put(endpoint.key(), new EscrowBarrier.Proof(frontier, capture,
+                        new AtomicBoolean(true), new AtomicBoolean(true)));
+                coordinator.freeze(endpoint.key(), frontier);
+            }
+            coordinator.autosave(); assertTrue(staged.await(5, TimeUnit.SECONDS)); coordinator.tick(10);
+            var ids = new java.util.HashSet<>(Set.of(op.id()));
+            assertTrue(coordinator.retire(ids, proofs, outcomes::add));
+            ids.clear(); proofs.clear(); release.countDown(); poll(writer, writer::idle);
+            assertEquals(List.of(true), outcomes); assertTrue(data.ledger().records().isEmpty());
+            assertEquals(3, data.ledger().writerGeneration());
+            assertEquals(data.ledger(), EscrowCodec.decode(CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW)
+                    .read(file()).orElseThrow()));
+        } finally { release.countDown(); coordinator.close(); }
+    }
     private static void await(CountDownLatch latch) {
         try { if (!latch.await(5, TimeUnit.SECONDS)) { throw new AssertionError("Writer test gate timed out"); } }
         catch (InterruptedException failure) { throw new AssertionError(failure); }

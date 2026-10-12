@@ -96,9 +96,11 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public boolean retire(Set<UUID> ids, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs,
                           Consumer<Boolean> callback) {
-        owner(); EscrowPrefix.requireRetirementPrefix(data.ledger().records(), ids);
+        owner(); EscrowTags.require(ids.size() <= EscrowLimits.OPERATIONS, "Retirement count exceeded");
+        Set<UUID> retired = Set.copyOf(ids); // Successor capture must not retain a caller-owned mutable set.
+        EscrowPrefix.requireRetirementPrefix(data.ledger().records(), retired);
         for (EscrowOperation op : data.ledger().records()) {
-            if (!ids.contains(op.id())) { continue; }
+            if (!retired.contains(op.id())) { continue; }
             for (EscrowEndpoint endpoint : List.of(op.source(), op.destination())) {
                 EscrowBarrier.Proof proof = proofs.get(endpoint.key());
                 EscrowTags.require(proof != null && proof.valid()
@@ -110,11 +112,11 @@ public final class EscrowCoordinator implements AutoCloseable {
         boolean accepted = writer.request(() -> {
             // Revalidate tokens at capture, not merely when the successor request is queued.
             // A superseded queued proof is a normal refusal, not an owner-thread exception.
-            return snapshot(false, frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) ? ids : null);
+            return snapshot(false, frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) ? retired : null);
         }, result -> {
             acknowledge(result);
             if (result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
-                    && result.snapshot().ledger().records().stream().noneMatch(op -> ids.contains(op.id()))) {
+                    && result.snapshot().ledger().records().stream().noneMatch(op -> retired.contains(op.id()))) {
                 var remaining = EscrowPrefix.chains(data.ledger().records()).keySet();
                 frontiers.keySet().removeIf(key -> !remaining.contains(key));
                 frozenProofs.forEach((key, proof) -> { if (!remaining.contains(key)) { proof.release(); } });
