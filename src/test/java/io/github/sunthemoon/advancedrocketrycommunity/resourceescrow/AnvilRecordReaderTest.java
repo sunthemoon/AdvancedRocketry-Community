@@ -58,6 +58,20 @@ class AnvilRecordReaderTest {
         assertFalse(new AnvilRecordReader.SizeProbe(false, 786_432, 3_145_729, true).admissionRoom());
         assertFalse(new AnvilRecordReader.SizeProbe(true, 1, 1, true).admissionRoom());
     }
+    @Test void externalProbeReportsBoundedNativePayloadSizesWithoutAuthorizingProof() throws Exception {
+        CompoundTag root = new CompoundTag(); root.putInt("value", 42); write(root);
+        var bytes = new java.io.ByteArrayOutputStream();
+        try (var output = new java.io.DataOutputStream(new java.util.zip.DeflaterOutputStream(bytes))) { NbtIo.write(root, output); }
+        Files.write(directory.resolve("c.-1.-1.mcc"), bytes.toByteArray());
+        try (FileChannel channel = FileChannel.open(file(), StandardOpenOption.WRITE, StandardOpenOption.READ)) {
+            ByteBuffer slot = ByteBuffer.allocate(4); channel.read(slot, 1_023 * 4L); slot.flip(); long start = (slot.getInt() >>> 8) * 4_096L;
+            channel.write(ByteBuffer.wrap(new byte[]{(byte) 130}), start + 4);
+        }
+        var probe = AnvilRecordReader.probe(directory, POSITION);
+        assertTrue(probe.external()); assertEquals(bytes.size(), probe.compressedBytes());
+        assertEquals(RocketNbtSize.uncompressedBytes(root), probe.decodedBytes()); assertFalse(probe.admissionRoom());
+        assertThrows(IOException.class, () -> AnvilRecordReader.read(directory, POSITION));
+    }
     private void write(CompoundTag tag) throws Exception {
         try (RegionFile region = new RegionFile(file(), directory, false)) {
             try (var output = region.getChunkDataOutputStream(POSITION)) { NbtIo.write(tag, output); }

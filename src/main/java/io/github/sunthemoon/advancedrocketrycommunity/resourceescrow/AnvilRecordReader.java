@@ -58,8 +58,10 @@ public final class AnvilRecordReader {
             if ((header.compression() & 128) != 0) {
                 if (!header.equals(header(file, pos)) || !same(before, attributes(path))) { throw new IOException("Unstable external Anvil header"); }
                 if (!probe) { throw new IOException("External Anvil records cannot prove an escrow endpoint"); }
-                // Never follow an external pathname; its actual payload size is deliberately unproved.
-                return new Record(new CompoundTag(), new SizeProbe(true, -1, -1, false));
+                // A size-only probe may inspect the fixed vanilla filename, but it can never issue proof.
+                SizeProbe size = externalProbe(directory, pos, header.compression() & 127);
+                if (!header.equals(header(file, pos)) || !same(before, attributes(path))) { throw new IOException("Unstable external Anvil header"); }
+                return new Record(new CompoundTag(), size);
             }
             int compressed = header.length() - 1;
             if (compressed > COMPRESSED_BYTES) {
@@ -118,6 +120,20 @@ public final class AnvilRecordReader {
                 output.write(buffer, 0, count);
             }
             return output.toByteArray();
+        }
+    }
+    private static SizeProbe externalProbe(Path directory, ChunkPos pos, int compression) throws IOException {
+        Path external = directory.resolve("c." + pos.x + "." + pos.z + ".mcc");
+        if (!Files.exists(external, LinkOption.NOFOLLOW_LINKS)) { return new SizeProbe(true, -1, -1, false); }
+        BasicFileAttributes before = attributes(external);
+        int compressed = (int) Math.min(Integer.MAX_VALUE, before.size());
+        if (before.size() > COMPRESSED_BYTES) { return new SizeProbe(true, compressed, -1, false); }
+        try (FileChannel file = FileChannel.open(external, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
+            byte[] encoded = bytes(file, 0, compressed); byte[] decoded = expand(encoded, compression, true);
+            if (!same(before, attributes(external)) || !Arrays.equals(encoded, bytes(file, 0, compressed))) {
+                throw new IOException("External record changed during size probe");
+            }
+            return new SizeProbe(true, compressed, decoded == null ? DECODED_BYTES + 1 : decoded.length, false);
         }
     }
     private static byte[] bytes(FileChannel file, long offset, int length) throws IOException {

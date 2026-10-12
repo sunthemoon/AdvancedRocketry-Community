@@ -39,6 +39,7 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
 
     @Override public CompoundTag payload() { return payload.copy(); }
     public EscrowOperation withReason(EscrowReason next) {
+        EscrowTags.require(!reason.manual() || next == reason, "Manual repair cannot clear through an automatic retry");
         return new EscrowOperation(id, sequence, owner, createdTick,
                 next.manual() ? Phase.REPAIR : next.barrierFailure() ? Phase.STALLED : Phase.PREPARED,
                 next, payload, payloadHash, source, destination, guard);

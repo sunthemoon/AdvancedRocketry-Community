@@ -38,6 +38,8 @@ class EscrowPrefixTest {
             if (reason.manual()) { assertEquals(EscrowOperation.Phase.REPAIR, op.phase()); }
         }
         assertFalse(EscrowReason.SUPERSEDING_SAVE.barrierFailure());
+        assertThrows(IllegalArgumentException.class, () -> EscrowTestFixtures.operation(1)
+                .withReason(EscrowReason.MISSING_ENDPOINT).withReason(EscrowReason.NONE));
         assertEquals(100, EscrowReason.backoff(1)); assertEquals(400, EscrowReason.backoff(2)); assertEquals(1_200, EscrowReason.backoff(3));
         assertEquals(1_200, EscrowReason.backoff(Integer.MAX_VALUE));
     }
