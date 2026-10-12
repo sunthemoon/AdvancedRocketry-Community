@@ -83,6 +83,11 @@ public final class SolarArrayGameTests {
     public static void sharedPlugConflictRecoversWhenTheFirstControllerIsRemoved(GameTestHelper helper) {
         try (var fixture = fixture(helper, 63)) {
             var second = fixture.install(fixture.position.offset(2, 0, 0), 63);
+            // Construction notifications can revoke either claimant. Establish a live first claim before testing refusal.
+            SolarArrayRuntime.manager(fixture.level).reload();
+            fixture.array.revalidate(fixture.level);
+            helper.assertTrue(fixture.array.structure() == SolarArrayRules.Structure.FORMED, "First claimant was not established");
+            second.revalidate(fixture.level);
             fixture.form();
             helper.assertTrue(fixture.array.structure() == SolarArrayRules.Structure.FORMED && second.structure() == SolarArrayRules.Structure.CONFLICT,
                     "Two controllers claimed one plug");
@@ -146,11 +151,18 @@ public final class SolarArrayGameTests {
             stations.commit(id); committed[0] = true; fixture[0].energy(0); fixture[0].tick();
             helper.assertTrue(fixture[0].array.environment().context() == 2 && fixture[0].array.environment().day() == 2
                     && fixture[0].array.actualCredit() == 126, "Operational station did not use orbit irradiance");
-            fixture[0].catalogs.applyCandidate(CelestialCatalog.create(CelestialDefaults.definitions().stream().filter(body -> !body.id().equals(CelestialIds.EARTH_ID)).toList()));
+            // Removing Earth leaves child references invalid. Relocate to the leaf Moon before removing that orbit body.
+            stations.foldWarpCredits(java.util.Map.of(id, 1));
+            helper.assertTrue(stations.checkedRelocation(server, stations.find(id).orElseThrow(), CelestialIds.MOON_ID, 1)
+                    == StationRegistrySavedData.CheckedUpdate.COMMITTED, "Station fixture relocation did not commit");
+            helper.assertTrue(fixture[0].catalogs.applyCandidate(CelestialCatalog.create(CelestialDefaults.definitions().stream()
+                    .filter(body -> !body.id().equals(CelestialIds.MOON_ID)).toList())), "Missing-orbit fixture catalog was rejected");
             fixture[0].energy(0); fixture[0].tick();
             helper.assertTrue(fixture[0].array.environment().context() == 3 && fixture[0].array.actualCredit() == 126, "Missing body was silently replaced by surface context");
             fixture[0].set(pos.above(), Blocks.STONE.defaultBlockState());
-            fixture[0].tick(); helper.assertTrue(fixture[0].array.actualCredit() == 0 && !fixture[0].array.environment().sky(), "Station occlusion was ignored");
+            fixture[0].form(); fixture[0].tick();
+            helper.assertTrue(fixture[0].array.actualCredit() == 0 && !fixture[0].array.environment().sky()
+                    && fixture[0].array.reason() == SolarGeneration.Reason.SKY_BLOCKED, "Station occlusion was ignored");
             restore.run(); helper.succeed();
         }, restore);
     }
