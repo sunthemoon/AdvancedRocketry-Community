@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyCo
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotSynchronizer;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlsNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
@@ -244,6 +245,8 @@ public final class AdvancedRocketryCommunity {
         );
         SatelliteRuntime.install(satelliteManager);
         SatelliteNetwork.install(new SatelliteNetwork());
+        // ADR-065 section 11.1: the C17 control intents and views, and the C17c beacon marker codec.
+        ClassicControlsNetwork.install(new ClassicControlsNetwork());
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onPlayerLoggedOut);
