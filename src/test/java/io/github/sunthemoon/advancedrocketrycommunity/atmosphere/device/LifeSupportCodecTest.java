@@ -51,4 +51,14 @@ class LifeSupportCodecTest {
         CompoundTag oversized = new CompoundTag(); oversized.putByteArray("large", new byte[65_537]);
         assertFalse(DeviceProtection.bounded(oversized)); assertNull(ScrubberBank.decode(oversized));
     }
+    @Test void directVentCodecPreflightsAnUncopyableFutureRootBeforeRecursiveCopy() {
+        CompoundTag future = new CompoundTag(); future.putInt("schema_version", 3);
+        CompoundTag cursor = future;
+        for (int i = 0; i < 1_000; i++) { CompoundTag child = new CompoundTag(); cursor.put("child", child); cursor = child; }
+        CompoundTag outer = new CompoundTag(); outer.put(OxygenVentPersistence.DATA_KEY, future);
+        var decoded = OxygenVentPersistence.decode(outer);
+        assertEquals(OxygenVentPersistence.DecodeStatus.INVALID, decoded.status());
+        assertSame(future, decoded.preservedFutureData(), "Uncopyable original must remain retained, not recursively copied");
+        assertEquals(3, future.getInt("schema_version"));
+    }
 }

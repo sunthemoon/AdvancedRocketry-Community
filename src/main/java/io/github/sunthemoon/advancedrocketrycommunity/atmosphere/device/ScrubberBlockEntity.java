@@ -33,7 +33,7 @@ public final class ScrubberBlockEntity extends BlockEntity {
             items.invalidate(); items = createItems(); setChanged(); }
     }
     public boolean bind(OxygenVentBlockEntity owner, UUID generation) {
-        if (!available() || !owner.deviceAvailable() || !owner.getBlockPos().closerThan(worldPosition, 1.1)) { return false; }
+        if (!available() || !owner.deviceAvailable() || owner.getBlockPos().distManhattan(worldPosition) != 1) { return false; }
         if (ownerGeneration != null) { return boundTo(owner, generation); }
         ownerPosition = owner.getBlockPos().immutable(); ownerGeneration = generation; setChanged(); return true;
     }
@@ -94,7 +94,7 @@ public final class ScrubberBlockEntity extends BlockEntity {
                 || ScrubberBank.uuid(root.get("identity")) == null
                 || root.contains("owner_position") && (!root.contains("owner_position", Tag.TAG_LONG)
                 || ScrubberBank.uuid(root.get("owner_generation")) == null
-                || !BlockPos.of(root.getLong("owner_position")).closerThan(worldPosition, 1.1))) {
+                || BlockPos.of(root.getLong("owner_position")).distManhattan(worldPosition) != 1)) {
             refused = DeviceProtection.bounded(raw) ? raw.copy() : raw; return;
         }
         identity = ScrubberBank.uuid(root.get("identity"));

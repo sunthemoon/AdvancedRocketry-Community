@@ -55,6 +55,9 @@ public final class OxygenVentPersistence {
             return DecodeResult.invalid(invalidSentinel());
         }
         CompoundTag data = parent.getCompound(DATA_KEY);
+        if (!io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceProtection.bounded(data)) {
+            return DecodeResult.invalid(data);
+        }
         if (!data.contains(SCHEMA_KEY, Tag.TAG_INT)) {
             return DecodeResult.invalid(data);
         }
@@ -130,7 +133,7 @@ public final class OxygenVentPersistence {
     ) {
         public DecodeResult {
             Objects.requireNonNull(status, "status");
-            preservedFutureData = preservedFutureData == null ? null : preservedFutureData.copy();
+            preservedFutureData = preserve(preservedFutureData);
         }
 
         public static DecodeResult valid(int input, int output, int oxygen, int energy, int phase) {
@@ -142,12 +145,18 @@ public final class OxygenVentPersistence {
         }
 
         public static DecodeResult invalid(CompoundTag data) {
-            return new DecodeResult(DecodeStatus.INVALID, 0, 0, 0, 0, 0, data.copy(), null);
+            return new DecodeResult(DecodeStatus.INVALID, 0, 0, 0, 0, 0, data, null);
         }
 
         @Override
         public CompoundTag preservedFutureData() {
-            return preservedFutureData == null ? null : preservedFutureData.copy();
+            return preserve(preservedFutureData);
+        }
+
+        /** Uncopyable retained roots are read-only aliases, as in the BlockEntity quarantine adapter. */
+        private static CompoundTag preserve(CompoundTag data) {
+            return data == null ? null : io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceProtection.bounded(data)
+                    ? data.copy() : data;
         }
     }
 

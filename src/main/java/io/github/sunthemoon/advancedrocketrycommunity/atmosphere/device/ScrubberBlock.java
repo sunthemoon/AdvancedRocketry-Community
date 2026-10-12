@@ -36,6 +36,20 @@ public final class ScrubberBlock extends BaseEntityBlock {
         if (!old.is(next.getBlock()) && !level.isClientSide && level.getBlockEntity(pos) instanceof ScrubberBlockEntity scrubber) { scrubber.detach(); }
         super.onRemove(old, level, pos, next, moved);
     }
+    private static boolean protectedData(net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof ScrubberBlockEntity entity && entity.protectedData();
+    }
+    @Override public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean harvest,
+                                                  net.minecraft.world.level.material.FluidState fluid) {
+        return !protectedData(level, pos) && super.onDestroyedByPlayer(state, level, pos, player, harvest, fluid);
+    }
+    @Override public boolean canEntityDestroy(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos,
+                                               net.minecraft.world.entity.Entity entity) {
+        return !protectedData(level, pos) && super.canEntityDestroy(state, level, pos, entity);
+    }
+    @Override public void onBlockExploded(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.Explosion explosion) {
+        if (!protectedData(level, pos)) { super.onBlockExploded(state, level, pos, explosion); }
+    }
     @Override public float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
         return level.getBlockEntity(pos) instanceof ScrubberBlockEntity entity && entity.protectedData() ? 0 : super.getDestroyProgress(state, player, level, pos);
     }
