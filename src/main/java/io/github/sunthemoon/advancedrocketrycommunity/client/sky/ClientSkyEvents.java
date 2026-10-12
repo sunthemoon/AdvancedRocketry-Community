@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.client.sky;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyMath;
+import io.github.sunthemoon.advancedrocketrycommunity.client.equipment.SuitVisorClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.FogRenderer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -48,7 +49,8 @@ public final class ClientSkyEvents {
             return;
         }
         var selection = PlanetarySkyClient.visualSelection(Minecraft.getInstance().level);
-        if (selection == null) { return; }
+        // ADR-066 section 5.2: an anti-fog visor or effects.atmosphericNausea=false removes only this override.
+        if (selection == null || !SuitVisorClient.atmosphericFogShown(Minecraft.getInstance().level)) { return; }
         var fog = SkyMath.fog(selection.profile(), event.getNearPlaneDistance(), event.getFarPlaneDistance());
         if (Float.compare(fog.near(), event.getNearPlaneDistance()) != 0
                 || Float.compare(fog.far(), event.getFarPlaneDistance()) != 0) {
