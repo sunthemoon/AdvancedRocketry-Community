@@ -38,8 +38,10 @@ A migrated root that no longer fits a bound is refused intact. A current root 5 
 - Every checked write samples the clock once. The candidate carries that sample as its
   clock, and validation requires it to be at least the last committed floor and at
   least every epoch. A known commit publishes the record and raises the floor together.
-- A healthy ordinary save writes the current tick and raises the floor. A quarantined
-  registry writes the floor and stops the clock.
+- A healthy ordinary save writes the current tick. It does not raise the floor, because
+  an ordinary save is not a disk barrier; only a known checked commit raises it. A
+  quarantined registry writes the floor and stops the clock. (Corrected by W07F: this
+  sentence first said that an ordinary save raises the floor, which the code never did.)
 - While any rate is nonzero, the registry is marked dirty at most once per 20 ticks.
 - Phase: `floorMod(phase + (delta % 72000) * rate * 5, 360000)`, with
   `delta = tick - epoch`. Changing a rate, STOP, or a fixed phase samples the old
@@ -68,7 +70,10 @@ with gravity) and the shared server-wide write budget.
 - The client extrapolates at most 40 ticks and clears its cache on NONE, a Level change
   or logout.
 - The controller menus use the vanilla menu button transport, as W03 does. The
-  `classic_controls` channel is not registered by this slice.
+  `classic_controls` channel is not registered by this slice. (Superseded by W07F: Root
+  did not accept this deviation, and W07F registers `classic_controls` at protocol 1 as
+  ADR-065 section 11.1 lists it and moves the controllers to its intents and views; see
+  `records/W07F.md`.)
 
 ## Elevator guard
 
