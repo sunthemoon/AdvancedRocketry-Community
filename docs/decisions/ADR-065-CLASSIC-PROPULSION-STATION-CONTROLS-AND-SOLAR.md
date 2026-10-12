@@ -987,6 +987,19 @@ restarting; restarting alone is not repair. The 2026-10-06 single-generator owne
 decision did not cover arrays; this note relies on section 2 above and grants no
 risk acceptance, native stop/restart evidence or Gate result.
 
+*Additions from the W17 review (W17F, 2026-10-13; the decision is unchanged).*
+- **Layout exception.** The code-defined 3-by-22 solar array is a scoped
+  exception to ADR-016's 16-cell axis bound. It reuses the unchanged kernel
+  matchers, transform, footprint index and dirty queue, with 66 inspected
+  cells and the existing controller, cell-reference and per-tick limits.
+- **One collector per panel.** A panel counts for only one formed array. A
+  panel that another formed array already counts makes the second array a
+  CONFLICT, as a shared plug does.
+- **Operator-only item NBT.** The array controller and the single solar
+  generator accept item NBT only from operators. This closes the creative path
+  by which a non-operator could reach the guard above. It does not remove the
+  administrative and corrupt-data risk.
+
 ## 10. D3: two-store crash durability decision (owner-confirmed D3-A)
 
 **Owner-confirmed D3-A:** implement an explicit same-authority escrow/receipt
