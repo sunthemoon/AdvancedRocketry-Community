@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArraySaveTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-12T13:10:57" hostname="DESKTOP-8J2KSNF" time="0.024">
+  <properties/>
+  <testcase name="invalidEnergySchemaWidthAndUnknownFieldsAreNotNormalized()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArraySaveTest" time="0.003"/>
+  <testcase name="independentRootRoundTripsEveryEnergyWithoutPersistingFormation()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArraySaveTest" time="0.02"/>
+  <testcase name="arrayUsesTheSameRootPreflightAndDoesNotBroadenSingleCapacity()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArraySaveTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
