@@ -48,6 +48,8 @@ public final class StationManager implements StationOperationService {
     private final StationAccessService access = new StationAccessService();
     private final StationExpansionService expansion;
     private final StationGravityService gravity;
+    private final StationOrbitalControlService orbitalControls;
+    private final StationControllerRateLimit controllerActions = new StationControllerRateLimit();
     private final StationOrbitEnvironmentResolver orbitEnvironments;
     private final ElevatorEndpointService elevatorEndpoints;
     private final Map<UUID, Long> lastDenialNotice = new LinkedHashMap<>();
@@ -60,7 +62,10 @@ public final class StationManager implements StationOperationService {
     public StationManager(CelestialCatalogManager celestialCatalogs, StationWriteBudget writeBudget) {
         this.celestialCatalogs = Objects.requireNonNull(celestialCatalogs, "celestialCatalogs");
         this.expansion = new StationExpansionService(access, writeBudget);
-        this.gravity = new StationGravityService(access, writeBudget);
+        // ADR-065: gravity, altitude and orientation share one 100-tick per-station settings cooldown.
+        StationWriteCooldown settingsCooldown = new StationWriteCooldown(StationGravityService.WRITE_COOLDOWN_TICKS);
+        this.gravity = new StationGravityService(access, writeBudget, settingsCooldown);
+        this.orbitalControls = new StationOrbitalControlService(access, writeBudget, settingsCooldown);
         this.creation = new StationCreationService(
                 platforms,
                 bodyId -> celestialCatalogs.current()
@@ -289,6 +294,23 @@ public final class StationManager implements StationOperationService {
         return gravity.set(player, issuedByPlayer, percent);
     }
 
+    /** The {@code station_gravity_controller} entry: the same gravity service, from a controller screen. */
+    public StationManagementResult setGravity(ServerPlayer player, StationActorContext context,
+                                              Optional<StationState> expected, int percent) {
+        return gravity.set(player, context, expected, percent);
+    }
+
+    /** ADR-065 D2-A distance, rates, STOP and fixed phases, for commands and controller screens. */
+    public StationOrbitalControlService orbitalControls() {
+        return orbitalControls;
+    }
+
+    /** ADR-065 section 11.2: one controller-screen mutation per player per 10 ticks; records an admitted one. */
+    public boolean admitControllerAction(ServerPlayer player) {
+        MinecraftServer server = player.getServer();
+        return server != null && controllerActions.admit(player.getUUID(), server.getTickCount());
+    }
+
     /** ADR-041 effective environment of the committed station region at a position, if any. */
     public Optional<StationOrbitEnvironment> environmentAt(ServerLevel level, BlockPos position) {
         return orbitEnvironments.at(level.getServer(), level.dimension(), position.getX(), position.getZ());
@@ -312,6 +334,7 @@ public final class StationManager implements StationOperationService {
 
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         expansion.forget(event.getEntity().getUUID());
+        controllerActions.forget(event.getEntity().getUUID());
     }
 
     /** ADR-045 read-only endpoint check; the caller has already required permission level 2. */
@@ -389,6 +412,7 @@ public final class StationManager implements StationOperationService {
         lastDenialNotice.clear();
         expansion.clear();
         gravity.clear();
+        controllerActions.clear();
     }
 
     private void protect(

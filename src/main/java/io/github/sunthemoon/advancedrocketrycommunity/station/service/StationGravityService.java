@@ -4,10 +4,15 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.Objects;
+import java.util.Optional;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-/** ADR-041 local owner/operator gravity setting (0..100 % of 1 g), written through a checked commit. */
+/**
+ * ADR-041 local owner/operator gravity setting (0..100 % of 1 g), written through a checked commit. The
+ * ADR-065 {@code station_gravity_controller} is a front end to the same method, with the same authority,
+ * unchanged-value no-op, per-station cooldown and server-wide write budget.
+ */
 public final class StationGravityService {
     public static final int MAX_PERCENT = 100;
     /** Each committed gravity write rewrites the whole registry; allow one per station per 5 s. */
@@ -15,25 +20,45 @@ public final class StationGravityService {
 
     private final StationAccessService access;
     private final StationWriteBudget budget;
-    private final StationWriteCooldown cooldown = new StationWriteCooldown(WRITE_COOLDOWN_TICKS);
+    private final StationWriteCooldown cooldown;
 
     public StationGravityService(StationAccessService access, StationWriteBudget budget) {
+        this(access, budget, new StationWriteCooldown(WRITE_COOLDOWN_TICKS));
+    }
+
+    /** {@code cooldown} is the per-station settings cooldown, shared with the orbital controls. */
+    public StationGravityService(StationAccessService access, StationWriteBudget budget, StationWriteCooldown cooldown) {
         this.access = Objects.requireNonNull(access, "access");
         this.budget = Objects.requireNonNull(budget, "budget");
+        this.cooldown = Objects.requireNonNull(cooldown, "cooldown");
     }
 
     public StationManagementResult set(ServerPlayer player, boolean issuedByPlayer, int percent) {
+        return set(player, StationActorContext.command(issuedByPlayer), Optional.empty(), percent);
+    }
+
+    /**
+     * {@code expected}, when present, is the station a controller screen last showed: the write is refused
+     * as {@code STATION_CHANGED} unless the live station still equals it.
+     */
+    public StationManagementResult set(ServerPlayer player, StationActorContext context, Optional<StationState> expected,
+                                       int percent) {
         Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(context, "context");
+        Objects.requireNonNull(expected, "expected");
         if (percent < 0 || percent > MAX_PERCENT) {
             throw new IllegalArgumentException("Station gravity percent is outside 0..100");
         }
-        StationLocalActor.Located located = StationLocalActor.locate(access, player, issuedByPlayer);
+        StationLocalActor.Located located = StationLocalActor.locate(access, player, context);
         if (located.code() != null) {
             return audit(player, StationManagementResult.of(located.code(), located.station()));
         }
         MinecraftServer server = player.getServer();
         StationState observed = located.station();
         StationRegistrySavedData data = located.authority();
+        if (expected.isPresent() && !expected.orElseThrow().equals(observed)) {
+            return audit(player, StationManagementResult.of(StationManagementCode.STATION_CHANGED, observed));
+        }
         if (observed.environment().gravityMilli() == percent * 10) {
             // No write, so no cooldown.
             return audit(player, StationManagementResult.of(StationManagementCode.GRAVITY_UNCHANGED, observed));

@@ -207,6 +207,13 @@ public final class ModItems {
             new io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTankItem(
                     ModBlocks.PRESSURIZED_TANK.get(), new Item.Properties()));
     public static final RegistryObject<Item> STATION_LIGHT = blockItem("station_light", ModBlocks.STATION_LIGHT);
+    public static final RegistryObject<Item> WARP_CONTROLLER = blockItem("warp_controller", ModBlocks.WARP_CONTROLLER);
+    public static final RegistryObject<Item> STATION_GRAVITY_CONTROLLER = blockItem("station_gravity_controller",
+            ModBlocks.STATION_GRAVITY_CONTROLLER);
+    public static final RegistryObject<Item> STATION_ALTITUDE_CONTROLLER = blockItem("station_altitude_controller",
+            ModBlocks.STATION_ALTITUDE_CONTROLLER);
+    public static final RegistryObject<Item> STATION_ORIENTATION_CONTROLLER = blockItem(
+            "station_orientation_controller", ModBlocks.STATION_ORIENTATION_CONTROLLER);
     public static final RegistryObject<Item> CARBON_BRICK = ITEMS.register("carbon_brick", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> USER_INTERFACE = ITEMS.register("user_interface", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> ITEM_IO_BOARD = ITEMS.register("item_io_board", () -> new Item(new Item.Properties()));

@@ -203,6 +203,8 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(stationManager::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(new StationCommands(stationManager)::register);
         MinecraftForge.EVENT_BUS.addListener(new StationWarpCommands(stationWarp)::register);
+        MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.station.command
+                .StationOrbitCommands(stationManager.orbitalControls())::register);
         new RocketFlightNetwork();
         RocketVisualNetwork rocketVisualNetwork = new RocketVisualNetwork();
         RocketVisualSynchronizer rocketVisualSynchronizer = new RocketVisualSynchronizer(rocketVisualNetwork);

@@ -284,6 +284,27 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .lightLevel(state -> 15)));
 
+    /** ADR-065 C17b: the four station controllers; no BlockEntity, owner or stored value. */
+    public static final RegistryObject<Block> WARP_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.WARP);
+    public static final RegistryObject<Block> STATION_GRAVITY_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.GRAVITY);
+    public static final RegistryObject<Block> STATION_ALTITUDE_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.ALTITUDE);
+    public static final RegistryObject<Block> STATION_ORIENTATION_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.ORIENTATION);
+
+    private static RegistryObject<Block> stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind kind) {
+        return BLOCKS.register(kind.id(), () ->
+                new io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerBlock(kind,
+                        BlockBehaviour.Properties.of()
+                                .mapColor(MapColor.COLOR_LIGHT_GRAY)
+                                .requiresCorrectToolForDrops()
+                                .strength(3.0F, 6.0F)
+                                .sound(SoundType.METAL)));
+    }
+
     /** Passive ordinary lights: native support/placement, distinct registered loot tables. */
     public static final RegistryObject<TorchBlock> THERMITE_TORCH = BLOCKS.register("thermite_torch", () ->
             new TorchBlock(thermiteTorchProperties(), ParticleTypes.FLAME));

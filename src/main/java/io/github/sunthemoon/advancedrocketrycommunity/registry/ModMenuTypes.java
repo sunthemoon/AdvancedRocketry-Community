@@ -95,6 +95,28 @@ public final class ModMenuTypes {
             () -> IForgeMenuType.create(ElevatorMenu::new)
     );
 
+    /** ADR-065 C17b: one menu type per station controller; changes are vanilla menu button IDs. */
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.station.controller
+            .StationControllerMenu>> WARP_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.WARP);
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.station.controller
+            .StationControllerMenu>> STATION_GRAVITY_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.GRAVITY);
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.station.controller
+            .StationControllerMenu>> STATION_ALTITUDE_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.ALTITUDE);
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.station.controller
+            .StationControllerMenu>> STATION_ORIENTATION_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.ORIENTATION);
+
+    private static RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.station.controller
+            .StationControllerMenu>> stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind kind) {
+        return MENUS.register(kind.id(), () -> IForgeMenuType.create((id, inventory, buffer) ->
+                io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerMenu
+                        .client(kind, id, inventory, buffer)));
+    }
+
     private ModMenuTypes() {
     }
 

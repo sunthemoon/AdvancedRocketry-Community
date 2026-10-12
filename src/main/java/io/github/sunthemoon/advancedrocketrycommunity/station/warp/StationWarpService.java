@@ -15,6 +15,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessAction;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationActorContext;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationLocalActor;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteBudget;
@@ -133,6 +134,29 @@ public final class StationWarpService {
     }
 
     /**
+     * The bodies a {@code warp_controller} screen offers: present, orbitable and known, not the current orbit,
+     * sorted by ID and at most {@code limit}. A screen sends only an index into this server list; every request
+     * is still quoted and checked in full.
+     */
+    public java.util.List<ResourceLocation> warpTargets(MinecraftServer server, StationState station, int limit) {
+        Objects.requireNonNull(server, "server");
+        Objects.requireNonNull(station, "station");
+        Optional<CelestialCatalog> catalog = catalogs.current();
+        if (catalog.isEmpty() || limit <= 0) {
+            return java.util.List.of();
+        }
+        CelestialSavedData discoveries = CelestialSavedData.get(server);
+        return catalog.orElseThrow().definitions().stream()
+                .filter(body -> body.capabilities().orbitable() && !body.id().equals(station.orbitBody()))
+                .map(CelestialBodyDefinition::id)
+                .filter(id -> StarSystemKnowledge.bodyKnown(catalog.orElseThrow(), id,
+                        known -> discoveries.isWritableSchema() && discoveries.get(known).isPresent()))
+                .sorted(java.util.Comparator.comparing(ResourceLocation::toString))
+                .limit(limit)
+                .toList();
+    }
+
+    /**
      * Operator diagnostics (WARP-05), bounded: one summary line, the rocket port's line, at most 64
      * countdown lines and, for a station, its warp state. Reads only; folds nothing.
      */
@@ -167,9 +191,19 @@ public final class StationWarpService {
 
     /** {@code /arce station warp <body>}: quote and issue a one-shot confirmation. */
     public StationWarpResult request(ServerPlayer player, boolean issuedByPlayer, ResourceLocation target) {
+        return request(player, StationActorContext.command(issuedByPlayer), target);
+    }
+
+    /**
+     * The quote-and-issue step through the shared context validator (ADR-065 section 5.1): a command needs the
+     * player's own server ray pick on a core of the station; a {@code warp_controller} screen needs a loaded core
+     * of the station within the 5-block core reach of the controller. Opening a screen alone does nothing.
+     */
+    public StationWarpResult request(ServerPlayer player, StationActorContext context, ResourceLocation target) {
         Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(context, "context");
         Objects.requireNonNull(target, "target");
-        StationLocalActor.Located located = StationLocalActor.locate(access, player, issuedByPlayer);
+        StationLocalActor.Located located = StationLocalActor.locate(access, player, context);
         if (located.code() != null) {
             return audit("request", player, StationWarpResult.of(located.code(), located.station()));
         }
@@ -178,8 +212,9 @@ public final class StationWarpService {
         if (!settings.get().enabled()) {
             return audit("request", player, StationWarpResult.of(StationManagementCode.WARP_DISABLED, station));
         }
-        if (!lookingAtCore(player, located.authority(), station)) {
-            return audit("request", player, StationWarpResult.of(StationManagementCode.NO_WARP_CORE, station));
+        if (!coreReachable(player, context, located.authority(), station)) {
+            return audit("request", player, StationWarpResult.of(context.viaController()
+                    ? StationManagementCode.NO_WARP_CORE_NEAR_CONTROLLER : StationManagementCode.NO_WARP_CORE, station));
         }
         Quoted quoted = quote(server, located.authority(), station, target, player.getGameProfile());
         if (quoted.code() != null) {
@@ -193,18 +228,24 @@ public final class StationWarpService {
 
     /** {@code /arce station warp confirm <station_id>}: start the countdown if nothing changed. */
     public StationWarpResult confirm(ServerPlayer player, boolean issuedByPlayer, UUID stationId) {
+        return confirm(player, StationActorContext.command(issuedByPlayer), stationId);
+    }
+
+    /** The confirmation step through the shared context validator; a screen confirms its own station. */
+    public StationWarpResult confirm(ServerPlayer player, StationActorContext context, UUID stationId) {
         Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(context, "context");
         Objects.requireNonNull(stationId, "stationId");
         MinecraftServer server = player.getServer();
         if (server == null) {
             return StationWarpResult.of(StationManagementCode.AUTHORITY_UNAVAILABLE, null);
         }
-        if (!StationLocalActor.localPlayer(server, player, issuedByPlayer)) {
+        if (!StationLocalActor.localPlayer(server, player, context.issuedByPlayer())) {
             // Rejected before take(): another source cannot consume the player's confirmation.
             return audit("confirm", player, StationWarpResult.of(StationManagementCode.NOT_LOCAL_PLAYER, null));
         }
         // ADR-046 UI-03: an actor who could not act here now is refused before take(), with the reason.
-        StationLocalActor.Located actor = StationLocalActor.locate(access, player, issuedByPlayer);
+        StationLocalActor.Located actor = StationLocalActor.locate(access, player, context);
         if (actor.code() != null) {
             return audit("confirm", player, StationWarpResult.of(actor.code(), actor.station()));
         }
@@ -220,7 +261,7 @@ public final class StationWarpService {
             return audit("confirm", player, StationWarpResult.of(rejected, null));
         }
         WarpQuote confirmed = outcome.quote();
-        StationLocalActor.Located located = StationLocalActor.locate(access, player, issuedByPlayer);
+        StationLocalActor.Located located = StationLocalActor.locate(access, player, context);
         if (located.code() != null) {
             return audit("confirm", player, StationWarpResult.of(located.code(), located.station()));
         }
@@ -257,8 +298,14 @@ public final class StationWarpService {
 
     /** {@code /arce station warp cancel}: the owner or an operator standing in the station. */
     public StationWarpResult cancel(ServerPlayer player, boolean issuedByPlayer) {
+        return cancel(player, StationActorContext.command(issuedByPlayer));
+    }
+
+    /** The cancel step through the shared context validator. */
+    public StationWarpResult cancel(ServerPlayer player, StationActorContext context) {
         Objects.requireNonNull(player, "player");
-        StationLocalActor.Located located = StationLocalActor.locate(access, player, issuedByPlayer);
+        Objects.requireNonNull(context, "context");
+        StationLocalActor.Located located = StationLocalActor.locate(access, player, context);
         if (located.code() != null) {
             return audit("cancel", player, StationWarpResult.of(located.code(), located.station()));
         }
@@ -278,7 +325,13 @@ public final class StationWarpService {
      * review R6): the balance is the folded one, and callers show {@link #pendingCredit} beside it.
      */
     public StationWarpResult status(ServerPlayer player) {
+        return status(player, StationActorContext.command(true));
+    }
+
+    /** The status of the station at the player or, for a screen, at its controller (which must be in reach). */
+    public StationWarpResult status(ServerPlayer player, StationActorContext context) {
         Objects.requireNonNull(player, "player");
+        Objects.requireNonNull(context, "context");
         MinecraftServer server = player.getServer();
         if (server == null) {
             return StationWarpResult.of(StationManagementCode.AUTHORITY_UNAVAILABLE, null);
@@ -291,9 +344,14 @@ public final class StationWarpService {
         if (!level.dimension().equals(CelestialIds.SPACE_LEVEL)) {
             return StationWarpResult.of(StationManagementCode.NOT_IN_SPACE, null);
         }
-        Optional<StationState> station = data.findAt(player.getBlockX(), player.getBlockZ());
+        BlockPos at = context.controller().map(StationActorContext.Controller::position).orElse(player.blockPosition());
+        Optional<StationState> station = data.findAt(at.getX(), at.getZ());
         if (station.isEmpty()) {
             return StationWarpResult.of(StationManagementCode.NOT_IN_STATION, null);
+        }
+        if (context.viaController()
+                && !StationLocalActor.reachesController(player, context.controller().orElseThrow(), station.get(), data)) {
+            return StationWarpResult.of(StationManagementCode.CONTROLLER_OUT_OF_REACH, null);
         }
         if (!access.allowed(station.orElseThrow(), player.getUUID(), player.hasPermissions(2),
                 StationAccessAction.VISIT)) {
@@ -468,6 +526,40 @@ public final class StationWarpService {
             return new Quoted(StationManagementCode.WARP_ROCKETS_IN_MOTION, quote, balance);
         }
         return new Quoted(null, quote, balance);
+    }
+
+    /**
+     * A command needs the server ray pick from the player's eyes; a controller screen needs a loaded core whose
+     * centre is within {@link StationLimits#WARP_CORE_REACH} of the controller's centre. Either core must stand
+     * inside this station's committed region. Only loaded chunks are inspected; at most 11^3 positions.
+     */
+    private static boolean coreReachable(ServerPlayer player, StationActorContext context, StationRegistrySavedData data,
+                                         StationState station) {
+        if (context.controller().isEmpty()) {
+            return lookingAtCore(player, data, station);
+        }
+        BlockPos controller = context.controller().orElseThrow().position();
+        ServerLevel level = player.serverLevel();
+        int reach = (int) StationLimits.WARP_CORE_REACH;
+        double reachSquared = StationLimits.WARP_CORE_REACH * StationLimits.WARP_CORE_REACH;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int dx = -reach; dx <= reach; dx++) {
+            for (int dy = -reach; dy <= reach; dy++) {
+                for (int dz = -reach; dz <= reach; dz++) {
+                    if (dx * dx + dy * dy + dz * dz > reachSquared) {
+                        continue;
+                    }
+                    cursor.set(controller.getX() + dx, controller.getY() + dy, controller.getZ() + dz);
+                    if (level.isInWorldBounds(cursor) && level.hasChunkAt(cursor)
+                            && level.getBlockState(cursor).is(ModBlocks.WARP_CORE.get())
+                            && data.findAt(cursor.getX(), cursor.getZ()).map(StationState::stationId)
+                            .filter(station.stationId()::equals).isPresent()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /** Server ray pick from the player's eyes: a warp core inside this station's committed region. */
