@@ -95,22 +95,23 @@ public final class MoonArrivalGameTests {
         helper.runAfterDelay(80, () -> {
             clearPadRockets(earth);
             clearPadRockets(moon);
-            RocketEntity rocket = assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID());
-            UUID logical = rocket.assemblyTransactionId().orElseThrow();
-            RocketFlightRequestResult result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON,
-                    UUID.randomUUID());
-            helper.assertTrue(result.success(), "Earth-to-Moon launch failed: " + result.code());
-            helper.runAfterDelay(270, () -> {
-                RocketEntity landed = findLogicalRocket(moon, logical);
-                helper.assertTrue(landed != null, "The rocket did not arrive on the Moon");
-                helper.assertTrue(landed.flightData().orElseThrow().state() == RocketFlightState.LANDED,
-                        "The Moon rocket did not land");
-                RocketStructureSnapshot snapshot = landed.snapshot().orElseThrow();
-                int lowest = snapshot.sourceOrigin().y() + snapshot.bounds().minimum().y();
-                helper.assertTrue(lowest == SafeCelestialTravel.FIXED_FEET_POSITION.getY(),
-                        "The rocket's lowest block arrived at y " + lowest + ", not y 80, over ground at y " + ground);
-                clearPadRockets(moon);
-                helper.succeed();
+            assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
+                UUID logical = rocket.assemblyTransactionId().orElseThrow();
+                RocketFlightRequestResult result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON,
+                        UUID.randomUUID());
+                helper.assertTrue(result.success(), "Earth-to-Moon launch failed: " + result.code());
+                RocketFlightGameTestFixtures.awaitFlightState(helper, moon, logical, RocketFlightState.LANDED, 270, () -> {
+                    RocketEntity landed = findLogicalRocket(moon, logical);
+                    helper.assertTrue(landed != null, "The rocket did not arrive on the Moon");
+                    helper.assertTrue(landed.flightData().orElseThrow().state() == RocketFlightState.LANDED,
+                            "The Moon rocket did not land");
+                    RocketStructureSnapshot snapshot = landed.snapshot().orElseThrow();
+                    int lowest = snapshot.sourceOrigin().y() + snapshot.bounds().minimum().y();
+                    helper.assertTrue(lowest == SafeCelestialTravel.FIXED_FEET_POSITION.getY(),
+                            "The rocket's lowest block arrived at y " + lowest + ", not y 80, over ground at y " + ground);
+                    clearPadRockets(moon);
+                    helper.succeed();
+                });
             });
         });
     }

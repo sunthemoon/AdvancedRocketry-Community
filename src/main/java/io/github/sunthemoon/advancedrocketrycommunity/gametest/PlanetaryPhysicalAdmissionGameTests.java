@@ -48,39 +48,40 @@ public final class PlanetaryPhysicalAdmissionGameTests {
             var catalogs = catalogs(false);
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "PhysicalAdmission"));
-            var rocket = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), player.getUUID());
-            try {
-                player.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
-                var server = helper.getLevel().getServer();
-                var before = loadedChunks(server);
-                for (int index = 0; index < 20; index++) {
-                    var quotes = manager.flightQuotes(player, rocket);
-                    helper.assertTrue(quotes.forTarget(MARS).canLaunch() && quotes.forTarget(VENUS).canLaunch(),
-                            "Started planets have no launchable quote");
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), player.getUUID(), rocket -> {
+                try {
+                    player.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
+                    var server = helper.getLevel().getServer();
+                    var before = loadedChunks(server);
+                    for (int index = 0; index < 20; index++) {
+                        var quotes = manager.flightQuotes(player, rocket);
+                        helper.assertTrue(quotes.forTarget(MARS).canLaunch() && quotes.forTarget(VENUS).canLaunch(),
+                                "Started planets have no launchable quote");
+                    }
+                    helper.assertTrue(loadedChunks(server).equals(before), "Quotes loaded or generated terrain");
+                    for (var target : List.of(new TravelTarget.BodySurface(PlanetaryContent.GAS_GIANT),
+                            new TravelTarget.BodySurface(ModIdentity.id("absent")), new TravelTarget.Orbit(PlanetaryContent.MARS),
+                            new TravelTarget.Mission(UUID.randomUUID()))) {
+                        denied(helper, manager, player, rocket, target);
+                    }
+                    var original = rocket.flightData().orElseThrow();
+                    for (var target : List.of(new TravelTarget.BodySurface(PlanetaryContent.MARS),
+                            new TravelTarget.Orbit(CelestialIds.EARTH_ID), new TravelTarget.Mission(UUID.randomUUID()))) {
+                        ResourceLocation body = target instanceof TravelTarget.BodySurface ? PlanetaryContent.MARS : CelestialIds.EARTH_ID;
+                        rocket.updateFlightData(RocketFlightData.restore(original.schemaVersion(), original.logicalRocketId(),
+                                original.state(), original.fuel(), null, original.passengers(), body, original.currentDimension(),
+                                original.currentOrigin(), original.stateStartedGameTime(), null, target));
+                        denied(helper, manager, player, rocket, VENUS);
+                    }
+                    rocket.updateFlightData(original);
+                    helper.assertTrue(manager.flightQuotes(player, rocket).forTarget(MARS).canLaunch(),
+                            "Invalid-source probe changed healthy admission");
+                    helper.succeed();
+                } finally {
+                    manager.clear();
+                    rocket.discard();
                 }
-                helper.assertTrue(loadedChunks(server).equals(before), "Quotes loaded or generated terrain");
-                for (var target : List.of(new TravelTarget.BodySurface(PlanetaryContent.GAS_GIANT),
-                        new TravelTarget.BodySurface(ModIdentity.id("absent")), new TravelTarget.Orbit(PlanetaryContent.MARS),
-                        new TravelTarget.Mission(UUID.randomUUID()))) {
-                    denied(helper, manager, player, rocket, target);
-                }
-                var original = rocket.flightData().orElseThrow();
-                for (var target : List.of(new TravelTarget.BodySurface(PlanetaryContent.MARS),
-                        new TravelTarget.Orbit(CelestialIds.EARTH_ID), new TravelTarget.Mission(UUID.randomUUID()))) {
-                    ResourceLocation body = target instanceof TravelTarget.BodySurface ? PlanetaryContent.MARS : CelestialIds.EARTH_ID;
-                    rocket.updateFlightData(RocketFlightData.restore(original.schemaVersion(), original.logicalRocketId(),
-                            original.state(), original.fuel(), null, original.passengers(), body, original.currentDimension(),
-                            original.currentOrigin(), original.stateStartedGameTime(), null, target));
-                    denied(helper, manager, player, rocket, VENUS);
-                }
-                rocket.updateFlightData(original);
-                helper.assertTrue(manager.flightQuotes(player, rocket).forTarget(MARS).canLaunch(),
-                        "Invalid-source probe changed healthy admission");
-                helper.succeed();
-            } finally {
-                manager.clear();
-                rocket.discard();
-            }
+            });
         });
     }
 
@@ -90,14 +91,15 @@ public final class PlanetaryPhysicalAdmissionGameTests {
             var catalogs = catalogs(true);
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "MissingPlanet"));
-            var rocket = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), player.getUUID());
-            try {
-                denied(helper, manager, player, rocket, VENUS);
-                helper.succeed();
-            } finally {
-                manager.clear();
-                rocket.discard();
-            }
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), player.getUUID(), rocket -> {
+                try {
+                    denied(helper, manager, player, rocket, VENUS);
+                    helper.succeed();
+                } finally {
+                    manager.clear();
+                    rocket.discard();
+                }
+            });
         });
     }
 
