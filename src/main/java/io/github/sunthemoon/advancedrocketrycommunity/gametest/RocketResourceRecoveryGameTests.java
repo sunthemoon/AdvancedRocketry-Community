@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -17,6 +18,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketPropulsi
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketManager;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import java.util.Map;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -76,6 +78,59 @@ public final class RocketResourceRecoveryGameTests {
         });
     }
 
+    @GameTest(template = "rocket_test", batch = "resource_source_recovery", timeoutTicks = 400)
+    public static void offlinePassengerRecoveryLocksBothBanksAcrossRepeatedReloads(GameTestHelper helper) {
+        var fixture = new Fixture(helper, true);
+        fixture.whenReady(() -> {
+            fixture.source();
+            fixture.player.getInventory().setItem(0, new ItemStack(ModItems.HYDROGEN_CANISTER.get()));
+            fixture.player.getInventory().setItem(1, new ItemStack(ModItems.OXYGEN_CANISTER.get()));
+            fixture.player.getInventory().setItem(2, new ItemStack(ModItems.EMPTY_CANISTER.get()));
+            for (int cycle = 0; cycle < 3; cycle++) {
+                fixture.recover(RocketTransferRecoveryReport.Status.WAITING_FOR_PASSENGERS);
+                fixture.assertBalances(2_000, 1_000, 2_000);
+                helper.assertTrue(!fixture.manager.resourceMutationAllowed(fixture.rocket), "Passenger wait unlocked resources");
+                for (int slot = 0; slot < 3; slot++) {
+                    fixture.player.getInventory().selected = slot;
+                    var fuel = fixture.rocket.flightData().orElseThrow().fuel();
+                    var inventory = fixture.player.getInventory().save(new net.minecraft.nbt.ListTag());
+                    fixture.player.refusal = null;
+                    helper.assertTrue(RocketPropulsionInteraction.exchange(fixture.player, fixture.rocket,
+                            InteractionHand.MAIN_HAND) == InteractionResult.FAIL, "Pending fill/unload accepted");
+                    helper.assertTrue(fuel.equals(fixture.rocket.flightData().orElseThrow().fuel())
+                            && inventory.equals(fixture.player.getInventory().save(new net.minecraft.nbt.ListTag())),
+                            "Pending exchange changed a bank or player container");
+                    helper.assertTrue(fixture.player.refusal != null && fixture.player.refusal.getContents()
+                            instanceof net.minecraft.network.chat.contents.TranslatableContents message
+                            && message.getKey().endsWith("propulsion.recovery_pending"), "Missing clear recovery refusal");
+                    fixture.assertBalances(2_000, 1_000, 2_000);
+                }
+                fixture.manager.requestDisassembly(fixture.player, fixture.rocket);
+                helper.assertTrue(!fixture.rocket.isRemoved(), "Pending source disassembly accepted");
+                fixture.reload();
+                fixture.assertBalances(2_000, 1_000, 2_000);
+            }
+            var replies = new java.util.ArrayList<String>();
+            var passenger = ConnectedTestPlayers.join(fixture.earth.getServer(), fixture.offline, "ARCEOffline",
+                    fixture.earth, fixture.rocket.blockPosition(), replies);
+            try {
+                fixture.manager.onInstalled();
+                fixture.manager.onPlayerLoggedIn(new net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(passenger));
+                helper.assertTrue(passenger.getVehicle() == fixture.rocket, "Offline passenger did not reconnect to source");
+                helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
+                        "Passenger reconnect did not retire source recovery authority");
+                helper.assertTrue(fixture.manager.resourceMutationAllowed(fixture.rocket), "Reconnected source stayed locked");
+                fixture.assertBalances(2_000, 1_000, 2_000);
+            } finally {
+                passenger.stopRiding();
+                fixture.earth.getServer().getPlayerList().remove(passenger);
+                fixture.rocket.discard();
+                clearTransferJournal(fixture.earth);
+            }
+            helper.succeed();
+        });
+    }
+
     static final class Fixture {
         final GameTestHelper helper;
         final ServerLevel earth;
@@ -98,21 +153,23 @@ public final class RocketResourceRecoveryGameTests {
             helper.setBlock(origin.west(), ModBlocks.ROCKET_FUEL_TANK.get());
             helper.setBlock(origin.east(), ModBlocks.ROCKET_FUEL_TANK.get());
             helper.setBlock(origin.north(), ModBlocks.ROCKET_FUEL_TANK.get());
-            var snapshot = successfulSnapshot(helper, origin);
             if (bipropellant) {
-                var descriptor = new RocketPropulsion(RocketPropulsion.Mode.BIPROPELLANT, 3_000, 3_000,
-                        1, 1, RocketPropulsion.Settings.DEFAULTS);
-                snapshot = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot.create(
-                        snapshot.snapshotId(), snapshot.sourceDimension(), snapshot.sourceOrigin(), snapshot.blocks(),
-                        snapshot.passengerAnchors(), snapshot.stats(), snapshot.createdAtGameTime(), descriptor);
+                helper.setBlock(origin, ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get());
+                for (var at : java.util.List.of(origin.west(), origin.east(), origin.north())) {
+                    helper.setBlock(at, ModBlocks.BIPROPELLANT_FUEL_TANK.get());
+                }
+                helper.setBlock(origin.south(), ModBlocks.OXIDIZER_FUEL_TANK.get());
+                helper.setBlock(origin.south(2), ModBlocks.OXIDIZER_FUEL_TANK.get());
+                helper.setBlock(origin.above(3), ModBlocks.ROCKET_SEAT.get());
             }
+            var snapshot = successfulSnapshot(helper, origin);
             clearSnapshotBlocks(earth, snapshot);
             var destination = snapshot.relocated(UUID.randomUUID(), moon.dimension().location(),
                     snapshot.sourceOrigin(), earth.getGameTime());
             clearSnapshotBlocks(moon, destination);
             var fuel = RocketFuelState.empty(snapshot.propulsion().orElseThrow()).withFluidBank(false,
-                    ModIdentity.id(bipropellant ? "hydrogen" : "rocket_fuel"), null, 3_000);
-            if (bipropellant) { fuel = fuel.withFluidBank(true, ModIdentity.id("oxygen"), null, 2_000); }
+                    ModIdentity.id(bipropellant ? "hydrogen" : "rocket_fuel"), null, bipropellant ? 2_000 : 3_000);
+            if (bipropellant) { fuel = fuel.withFluidBank(true, ModIdentity.id("oxygen"), null, 1_000); }
             UUID logical = UUID.randomUUID();
             UUID transfer = UUID.randomUUID();
             long now = earth.getGameTime();
@@ -122,9 +179,12 @@ public final class RocketResourceRecoveryGameTests {
                     new RocketFluidFuelCatalog.Key(RocketPropulsion.Role.MONO, ModIdentity.id("rocket_fuel")),
                     new RocketFluidFuelCatalog.Efficiency(417, 1_000)));
             var plan = RocketPropulsionQuoter.quote(fuel, base, catalog).plan();
-            var transit = RocketFlightData.initial(logical, 3_000, snapshot.stats().seatCount(), CelestialIds.EARTH_ID,
-                    earth.dimension().location(), snapshot.sourceOrigin(), now).withFuel(fuel, now)
-                    .withPlan(plan).startCountdown(now).completeCountdown(now).beginTransit(transfer, now);
+            var flight = RocketFlightData.initial(logical, 3_000, snapshot.stats().seatCount(), CelestialIds.EARTH_ID,
+                    earth.dimension().location(), snapshot.sourceOrigin(), now).withFuel(fuel, now);
+            if (bipropellant) {
+                flight = flight.withPassengers(flight.passengers().assign(offline).orElseThrow());
+            }
+            var transit = flight.withPlan(plan).startCountdown(now).completeCountdown(now).beginTransit(transfer, now);
             var arrival = transit.arriveAtDestination(fuel.debit(plan).state(), CelestialIds.MOON_ID,
                     moon.dimension().location(), destination.sourceOrigin(), now);
             record = RocketTransferRecord.create(transfer, logical, owner, UUID.randomUUID(), snapshot,
@@ -159,7 +219,18 @@ public final class RocketResourceRecoveryGameTests {
 
         RocketTransferSavedData journal() { return RocketTransferSavedData.get(earth.getServer()); }
 
+        void source() {
+            rocket = ModEntities.ROCKET.get().create(earth);
+            rocket.setUUID(record.sourceEntityId());
+            rocket.initializeTransferred(record.sourceSnapshot(), record.logicalRocketId(), owner, record.sourceFlightData());
+            helper.assertTrue(earth.addFreshEntity(rocket), "Source entity admission failed");
+            journal().put(record);
+            player.setPos(rocket.position());
+        }
+
         void recover(RocketTransferRecoveryReport.Status expected) {
+            var installed = RocketRuntime.recoverTransfer(earth.getServer(), record.transferId());
+            helper.assertTrue(installed.status() == expected, "Installed recovery status differs: " + installed);
             var report = manager.recoverTransfer(earth.getServer(), record.transferId());
             helper.assertTrue(report.status() == expected, "Recovery status differs: " + report);
         }

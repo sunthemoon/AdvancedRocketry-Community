@@ -127,6 +127,7 @@ public final class FuelLoaderBlockEntity extends BlockEntity {
 
     private boolean eligible(RocketEntity rocket) {
         return rocket.operational() && ownerId != null && rocket.ownerId().filter(ownerId::equals).isPresent()
+                && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)
                 && rocket.distanceToSqr(worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
                         worldPosition.getZ() + 0.5D) <= MAX_RANGE * MAX_RANGE
                 && rocket.flightData().filter(data -> data.state().acceptsFuel())

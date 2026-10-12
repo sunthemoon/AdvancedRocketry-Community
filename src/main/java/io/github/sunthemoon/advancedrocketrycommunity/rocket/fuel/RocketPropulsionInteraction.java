@@ -28,6 +28,10 @@ public final class RocketPropulsionInteraction {
                 || !rocket.ownerId().filter(player.getUUID()::equals).isPresent()
                 || !player.serverLevel().mayInteract(player, rocket.blockPosition())) { return InteractionResult.FAIL; }
         var flight = rocket.flightData().orElseThrow(); var fuel = flight.fuel();
+        if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)) {
+            player.displayClientMessage(Component.translatable("message.advancedrocketrycommunity.propulsion.recovery_pending"), true);
+            return InteractionResult.FAIL;
+        }
         var nativeFuel = fuel.propulsion().orElse(null);
         if (nativeFuel == null || !nativeFuel.descriptor().settings().canBeFueledByHand()
                 || nativeFuel.descriptor().mode() == RocketPropulsion.Mode.ABSTRACT

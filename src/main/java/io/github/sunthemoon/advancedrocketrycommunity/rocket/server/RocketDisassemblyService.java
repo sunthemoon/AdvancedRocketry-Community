@@ -112,6 +112,9 @@ final class RocketDisassemblyService {
         if (!rocket.operational()) {
             return RocketValidationCode.UNSUPPORTED_SCHEMA;
         }
+        if (!flights.resourceMutationAllowed(rocket)) {
+            return RocketValidationCode.REGION_BUSY;
+        }
         RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
         if (!snapshot.sourceDimension().equals(level.dimension().location())
                 || !RocketFlightStateMachine.isLegal(rocket.flightData().orElseThrow().state(),

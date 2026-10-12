@@ -12,6 +12,9 @@ public final class V180PropulsionLanguage {
         var entries = new LinkedHashMap<String, String>();
         for (int i = 0; i < en.length; i++) { entries.put("block.advancedrocketrycommunity." + V180PropulsionData.IDS.get(i), chinese ? zh[i] : en[i]); }
         entries.put("message.advancedrocketrycommunity.propulsion.contents", chinese ? "推进资源：%s" : "Propulsion resources: %s");
+        entries.put("message.advancedrocketrycommunity.propulsion.recovery_pending", chinese
+                ? "火箭转移恢复尚未完成，暂时不能更改资源。请等待乘客重新连接并完成恢复。"
+                : "Rocket transfer recovery is pending. Resources cannot change until recovery and passenger reconnect finish.");
         entries.put("message.advancedrocketrycommunity.propulsion.exchange_refused", chinese
                 ? "无法交换整容器流体：检查模式、容量、库存空间及手动加注设置。抽象燃料不能卸为流体。"
                 : "Cannot exchange a whole Fluid container: check mode, capacity, inventory space and hand-fueling settings. Abstract fuel cannot be unloaded as Fluid.");

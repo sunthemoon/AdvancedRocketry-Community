@@ -556,6 +556,10 @@ final class RocketFlightService {
         transfers.releaseLandedReservation(rocket);
     }
 
+    boolean resourceMutationAllowed(RocketEntity rocket) {
+        return transfers.resourceMutationAllowed(rocket);
+    }
+
     private record Access(RocketEntity rocket, RocketFlightRequestCode code) {
         private Access {
             Objects.requireNonNull(code, "code");

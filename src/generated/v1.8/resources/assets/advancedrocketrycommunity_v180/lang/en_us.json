@@ -204,6 +204,7 @@
   "message.advancedrocketrycommunity.propulsion.disposal_vector": "Confirmation disposes of the complete propulsion vector: %s. Actual Fluid can first be unloaded into empty containers.",
   "message.advancedrocketrycommunity.propulsion.exchange_refused": "Cannot exchange a whole Fluid container: check mode, capacity, inventory space and hand-fueling settings. Abstract fuel cannot be unloaded as Fluid.",
   "message.advancedrocketrycommunity.propulsion.mode": "Propulsion mode: %s. The fuel table shows route-base cost; actual Fluid debits are computed independently per bank. %s",
+  "message.advancedrocketrycommunity.propulsion.recovery_pending": "Rocket transfer recovery is pending. Resources cannot change until recovery and passenger reconnect finish.",
   "message.advancedrocketrycommunity.pump.status": "%s | %s FE | %s mB",
   "message.advancedrocketrycommunity.seal_detector.boundary.open": "OPEN",
   "message.advancedrocketrycommunity.seal_detector.boundary.sealed": "SEALED",
