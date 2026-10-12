@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-12 19:15) |
+| Slice | Scope | Pipeline state (2026-10-12 20:40) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -37,16 +37,16 @@ give their SHA-256 values.
 | [W09](TASK-W09-PACED-ROCKET-FIXTURES.md) | Paced entity readiness for the rocket fixtures (test code only) | **Merged** `487da4e6` (hosted run 38217303450; Root review: no assertion or timeout lost) |
 | [W04G](TASK-W04G-FOLLOWUPS.md) | Force field N1–N3 | **Merged** `f557e5c0` (hosted run 38220027274; re-review MERGE-WITH-FOLLOWUP). Optional N4–N6 stay open |
 | [W10](TASK-W10-C16C-MACHINES.md) | C16c crystallizer, chemical reactor, laser etcher, centrifuge | **Merged** `7324a7dd` (hosted run 38224855115; review MERGE-WITH-FOLLOWUP, open Low W10-R1). All seven classic machines are now on the kernel |
-| [W11a](TASK-W11A-D3-ESCROW-DESIGN.md) | D3-A escrow coordinator design (design only) | Design delivered `2c2abb47` (`records/W11A-DESIGN.md`). Independent design review (Claude, fresh session) running since 19:13. Root: D-1, D-3, D-4 (with an `ESCROW_FULL` refusal) and D-5 accepted; D-2 is moot because `build.gradle` already wires the Access Transformer |
+| [W11a](TASK-W11A-D3-ESCROW-DESIGN.md) | D3-A escrow coordinator design (design only) | Design delivered `2c2abb47` (`records/W11A-DESIGN.md`). Independent design review (Codex, cross-model) running since 20:21; the first Claude attempt stopped at a usage limit. Root: D-1, D-3, D-4 (with an `ESCROW_FULL` refusal) and D-5 accepted; D-2 is moot because `build.gradle` already wires the Access Transformer |
 | [W12](TASK-W12-ADVANCEMENTS.md) | C18c classic advancements and reachability guide | **Merged** `667fa40c` (hosted run 38229336877; Root review). Follow-ups: model the machine recipe types in `PackagedRecipeGraph` and restore its strict failure; crystallizer and dilithium advancements; the world-first milestones after rocket journal schema 3 (W11) |
 | Root fix | Cutting machine model pointed at a missing `machine_casing` texture (found by W08's `validate_repository.py` run) | **Fixed** `0596d124` |
-| [W13](TASK-W13-LANDING-PADS.md) | C17b landing pads as named flight targets | Delivered `65cedba9`; review BLOCK on R1 (occupancy ignores the parked rocket's structure). [W13F](TASK-W13F-PAD-OCCUPANCY.md) (Codex) running since 18:29 |
-| [W14](TASK-W14-LIFE-SUPPORT-DEVICES.md) | C18a CO2 scrubber, cartridges, seals (the gas charger waits for W11) | Delivered `60483096`; review BLOCK on F1 and F2. [W14F](TASK-W14F-REVIEW-FIXES.md) (Codex) running since 18:52 |
-| [W16](TASK-W16-PRESENTATION.md) | C18d HUD, client configuration, sounds | Delivered `a6001eb9`; Root review passed. Merges after hosted run 38240401114 |
+| [W13](TASK-W13-LANDING-PADS.md) | C17b landing pads as named flight targets | Delivered `65cedba9`; review BLOCK on R1. [W13F](TASK-W13F-PAD-OCCUPANCY.md) delivered `3a8d4ad9` and `0738b7e7`. Re-review (Claude) running; hosted run 38248887802 on the branch with the shared branch merged (`20bc128f`) |
+| [W14](TASK-W14-LIFE-SUPPORT-DEVICES.md) | C18a CO2 scrubber, cartridges, seals (the gas charger waits for W11) | Delivered `60483096`; review BLOCK on F1 and F2. [W14F](TASK-W14F-REVIEW-FIXES.md) delivered `343726fd`, `f12ffbc2`, `1c8cad1e` and `01252612`. Re-review (Claude) running; hosted run 38249148243 on the branch with the shared branch merged (`02d86c65`) |
+| [W16](TASK-W16-PRESENTATION.md) | C18d HUD, client configuration, sounds | **Merged** `6a20a674` (hosted run 38240401114; Root review). Follow-up: fold the `advancedrocketrycommunity_v180` sound namespace into the main namespace |
 | [W15](TASK-W15-RECIPE-GRAPH-MACHINES.md) | C16d: machine recipe types in `PackagedRecipeGraph`, strict failure restored, crystallizer and dilithium advancements | **Merged** `f5038f2f` (hosted run 38239083487; Root audit: every changed assertion is stricter). The graph reports 18 acquisition gaps, which go to W19 |
-| [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Implementer (Claude) running since 19:04 |
+| [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Design `5d522973`. The Claude implementer stopped at a usage limit; Codex continues from the worktree state since 20:21 |
 
-The shared branch `f5038f2f` holds every merge above; hosted run 38240887347 checks it. Hosted run 38206390869 passed at
+The shared branch `6a20a674` holds every merge above. Hosted run 38240887347 passed at `f5038f2f`; run 38248766859 checks `6a20a674`. Hosted run 38206390869 passed at
 `ebf4c07b`, before the force field merge. Run 38208930066 passed at `17fb7e15`; run 38219141393 checks `487da4e6`.
 
 ## Queued
