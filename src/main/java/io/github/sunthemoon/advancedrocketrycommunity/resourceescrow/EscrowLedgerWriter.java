@@ -129,6 +129,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
             running = false;
             if (completion.outcome() == Outcome.UNKNOWN) {
                 uncertain = true; failures++; retryAt = tick + 200; active.callback().accept(completion);
+                checkpoint.accept("WRITE_UNKNOWN");
             } else {
                 Request finished = active;
                 if (completion.outcome() == Outcome.COMMITTED) { failures = 0; } else { failures++; }

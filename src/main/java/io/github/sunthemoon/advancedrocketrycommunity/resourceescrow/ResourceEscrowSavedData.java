@@ -30,7 +30,7 @@ public final class ResourceEscrowSavedData extends SavedData {
             var file = server.getWorldPath(LevelResource.ROOT).resolve("data")
                     .resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
             coordinator = new EscrowCoordinator(this, new EscrowLedgerWriter(file, ledger.writerGeneration(),
-                    io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::atomicMove,
+                    EscrowRuntime.of(server).ledgerCommitter(server),
                     EscrowRuntime.of(server)::checkpoint));
         }
         return coordinator;

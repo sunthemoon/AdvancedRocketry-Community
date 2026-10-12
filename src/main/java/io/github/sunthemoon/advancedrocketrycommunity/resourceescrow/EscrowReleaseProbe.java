@@ -22,6 +22,7 @@ final class EscrowReleaseProbe {
     private final boolean recovery;
     private volatile boolean pausing;
     private boolean selected;
+    private boolean injected;
     private ResourceEscrowSavedData data;
     private EscrowCoordinator coordinator;
     private EscrowTestEndpoints.Fixture fixture;
@@ -36,12 +37,22 @@ final class EscrowReleaseProbe {
         cut = System.getProperty("advancedrocketrycommunity.escrowCheckpoint", "none");
         recovery = System.getProperty("advancedrocketrycommunity.escrowScenario").equals("recover");
         EscrowTags.require(cut.equals("none") || cut.equals("G3") || cut.equals("G3L2") || cut.equals("E2")
+                || cut.matches("E4L[12]_(?:FAIL|UNKNOWN)")
                 || cut.matches("K(?:[0-9]|10)"), "Unknown escrow checkpoint");
         ChunkPos chunk = new ChunkPos(POSITION);
         level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
         level.getChunk(chunk.x, chunk.z); // Explicit fixed test-fixture loading, not endpoint input.
     }
     void checkpoint(String name) {
+        if (!injected && (cut.equals("E4L1_FAIL") && name.equals("K1")
+                || cut.equals("E4L2_FAIL") && name.equals("K8"))) {
+            injected = true; throw new IllegalStateException("Release-test definite pre-replacement failure");
+        }
+        if (cut.endsWith("_UNKNOWN") && name.equals("WRITE_UNKNOWN")) {
+            EscrowTags.require(!coordinator.writerIdle() && data.ledger().records().size() == (cut.startsWith("E4L1") ? 0 : 1),
+                    "Unknown writer outcome released its candidate or altered acknowledged authority");
+            checkpoint(cut); return;
+        }
         if ((cut.equals("G3") && name.equals("K1") || cut.equals("G3L2") && name.equals("K8")) && !selected) {
             selected = true;
             AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_ESCROW_DRAIN_READY cut={}", cut);
@@ -78,6 +89,11 @@ final class EscrowReleaseProbe {
                 if (op == null) {
                     checkpoint("K0"); op = fixture.operation(coordinator.nextSequence());
                     fixture.prepare(coordinator, op, committed -> {
+                        if (!committed && cut.equals("E4L1_FAIL")) {
+                            EscrowTags.require(data.ledger().records().isEmpty() && EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 5_000
+                                    && EscrowTestEndpoints.amount(fixture.bank().getPersistentData()) == 0, "Failed L1 applied resources");
+                            checkpoint(cut); return;
+                        }
                         if (!committed) { throw new IllegalStateException("Native fixture L1 failed"); } step = 2; waiting = false;
                     });
                 }
@@ -91,6 +107,11 @@ final class EscrowReleaseProbe {
             case 4 -> begin(!cut.equals("K5"));
             case 5 -> {
                 boolean started = coordinator.retire(Set.of(op.id()), proofs, committed -> {
+                    if (!committed && cut.equals("E4L2_FAIL")) {
+                        EscrowTags.require(data.ledger().records().size() == 1 && coordinator.locked(op.destination().key()), "Failed L2 released resources");
+                        checkpoint(cut); return;
+                    }
+                    if (!committed && cut.equals("E4L2_UNKNOWN")) { return; }
                     if (!committed) { throw new IllegalStateException("Native fixture L2 failed"); }
                     checkpoint("K10"); EscrowTestEndpoints.clearRetired(fixture); waiting = false; step = 6;
                 });

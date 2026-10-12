@@ -35,6 +35,24 @@ public final class EscrowRuntime {
     private EscrowReleaseProbe probe;
     private EscrowChainReleaseProbe chainProbe;
     public void checkpoint(String cut) { if (probe != null) { probe.checkpoint(cut); } }
+    io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
+        String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && "start".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"))
+                && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN"))) {
+            EscrowTestEndpoints.requireEnabled(server);
+            return (staged, target) -> {
+                var type = io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW;
+                var payload = io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
+                boolean empty = payload.getList("records", 10).isEmpty();
+                if (payload.getLong("writer_generation") > 1 && (testCase.equals("E4L2_UNKNOWN") == empty)) {
+                    throw new java.io.IOException("Release-test ambiguous replacement outcome");
+                }
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.atomicMove(staged, target);
+            };
+        }
+        return io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::atomicMove;
+    }
     public static EscrowRuntime of(MinecraftServer server) {
         return server.overworld().getCapability(CAPABILITY).orElseThrow(() -> new IllegalStateException("Missing escrow lifetime service"));
     }
