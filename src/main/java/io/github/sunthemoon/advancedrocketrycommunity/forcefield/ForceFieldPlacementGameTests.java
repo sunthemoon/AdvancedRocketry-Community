@@ -38,9 +38,12 @@ public final class ForceFieldPlacementGameTests {
         final FakePlayer player;
         final ItemStack stack = new ItemStack(ModItems.FORCE_FIELD_PROJECTOR.get(), 2);
         Placement(GameTestHelper helper) {
+            this(helper, new BlockPos(2_000_008 + helper.absolutePos(BlockPos.ZERO).getX() * 64, 220,
+                    2_000_008 + helper.absolutePos(BlockPos.ZERO).getZ() * 64));
+        }
+        Placement(GameTestHelper helper, BlockPos position) {
             level = helper.getLevel().getServer().getLevel(CelestialIds.MOON_LEVEL);
-            BlockPos base = helper.absolutePos(BlockPos.ZERO);
-            pos = new BlockPos(2_000_008 + base.getX() * 64, 220, 2_000_008 + base.getZ() * 64);
+            pos = position;
             level.getChunk(pos.getX() >> 4, pos.getZ() >> 4);
             level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
             player = new FakePlayer(level, new GameProfile(UUID.randomUUID(), "FieldPlacement"));

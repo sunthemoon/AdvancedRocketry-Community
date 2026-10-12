@@ -21,6 +21,10 @@ public final class FieldCleanupSavedData extends SavedData {
     private final FieldWorkBudget budget = new FieldWorkBudget();
     private boolean observationTurn;
     private final java.util.Map<FieldIdentity.Key, Integer> cleanupCursors = new java.util.HashMap<>();
+    private final java.util.function.Consumer<BlockPos> readObserver;
+    public FieldCleanupSavedData() { this(null); }
+    FieldCleanupSavedData(java.util.function.Consumer<BlockPos> readObserver) { this.readObserver = readObserver; }
+    FieldCellView cells(net.minecraft.server.level.ServerLevel level) { return new FieldCellView(level, readObserver); }
 
     public static FieldCleanupSavedData get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(FieldCleanupSavedData::load,
@@ -109,8 +113,13 @@ public final class FieldCleanupSavedData extends SavedData {
                 if (!budget.hasCapacity(2, now)) {
                     observations.addFirst(observation); observed.add(observation); break;
                 }
-                if (!budget.acquire(observation.identity().key(), now, 2)
-                        || !ForceFieldService.validate(server, this, observation)) {
+                boolean complete = false;
+                if (budget.acquire(observation.identity().key(), now, 2)) {
+                    var result = ForceFieldService.checkedValidation(server, this, observation);
+                    budget.refund(2 - result.cells());
+                    complete = result.complete();
+                }
+                if (!complete) {
                     observe(observation.identity(), observation.target());
                 }
             } else {
@@ -118,9 +127,9 @@ public final class FieldCleanupSavedData extends SavedData {
                 queued.remove(key);
                 FieldCleanupRoot.Entry entry = root.get(key);
                 if (entry != null) {
-                    int cost = entry.orphan() ? 2 : 9;
+                    int cost = entry.orphan() ? 3 : FieldCellView.MAX_WORK;
                     if (!budget.hasCapacity(cost, now)) { queue.addFirst(key); queued.add(key); break; }
-                    if (budget.acquire(key, now, cost)) { ForceFieldService.work(server, this, entry); }
+                    if (budget.acquire(key, now, cost)) { budget.refund(cost - ForceFieldService.work(server, this, entry)); }
                     if (root.get(key) != null) { enqueue(key); }
                 }
             }

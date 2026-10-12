@@ -24,6 +24,10 @@ public final class FieldWorkBudget {
         return true;
     }
     public int cells() { return cells; }
+    void refund(int unused) {
+        if (unused < 0 || unused > cells) { throw new IllegalArgumentException("Invalid unused cell reservation"); }
+        cells -= unused;
+    }
     public boolean hasCapacity(int cost, long now) { return (tick == now ? cells : 0) + cost <= MAX_CELLS; }
     public java.util.OptionalLong lastVisit(FieldIdentity.Key key) {
         Long value = last.get(key.projector());
