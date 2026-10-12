@@ -316,7 +316,7 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key (?!OXYGEN(?:\\s|\\.))[\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!OXYGEN(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
@@ -351,6 +351,26 @@
       "batches": ["<startup>"],
       "test": "environment: W03 equipment configuration created by the run",
       "reason": "The finite active oxygen target defaults to 2000 once on a new config. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-equipment-jetpack-force-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key equipment\\.jetPackForce was corrected from null to its default, 1\\.3\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W06 equipment configuration created by the run",
+      "reason": "The jetpack force defaults to 1.3 once on a new config, independently of the unchanged legacy key warning budget. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-equipment-low-gravity-boots-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key equipment\\.lowGravityBoots was corrected from null to its default, false\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W06 equipment configuration created by the run",
+      "reason": "The landing-boots rule defaults to false once on a new config, independently of the unchanged legacy key warning budget. Non-null corrections and other values do not match."
     },
     {
       "id": "forge-config-file-corrected",

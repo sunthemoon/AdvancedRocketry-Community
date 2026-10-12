@@ -17,6 +17,11 @@ public final class ClientConfig {
                     "(ADR-063 section 6). An effect on this client only: nothing is struck or set on fire.")
             .define("effects.electricMushroomFlashes", true);
 
+    public static final ForgeConfigSpec.BooleanValue ATMOSPHERIC_NAUSEA = BUILDER
+            .comment("Show ARCE atmospheric fog and nausea visuals on this client (ADR-066 section 5.2). An anti-fog",
+                    "visor removes them while worn. Vanilla fog, potion effects and server hazards are unchanged.")
+            .define("effects.atmosphericNausea", true);
+
     public static final ForgeConfigSpec.BooleanValue SKY_PLANET_OVERRIDE = BUILDER
             .comment("Render the planetary sky and fog on this client. Disable to use the dimension fallback.")
             .define("sky.planetOverride", true);
@@ -51,6 +56,11 @@ public final class ClientConfig {
     /** Whether electric mushrooms flash the sky; the default until the CLIENT config is loaded. */
     public static boolean electricMushroomFlashes() {
         return SPEC.isLoaded() ? ELECTRIC_MUSHROOM_FLASHES.get() : ELECTRIC_MUSHROOM_FLASHES.getDefault();
+    }
+
+    /** Whether ARCE atmospheric fog and nausea visuals show; the default until the CLIENT config is loaded. */
+    public static boolean atmosphericNausea() {
+        return SPEC.isLoaded() ? ATMOSPHERIC_NAUSEA.get() : ATMOSPHERIC_NAUSEA.getDefault();
     }
 
     public static boolean planetSkyOverride() {
