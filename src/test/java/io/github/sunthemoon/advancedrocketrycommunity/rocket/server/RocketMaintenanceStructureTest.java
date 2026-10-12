@@ -44,7 +44,7 @@ class RocketMaintenanceStructureTest {
         assertEquals(2, RocketFlightLimits.FLIGHT_DATA_SCHEMA_VERSION);
         assertEquals(3, RocketFlightPlan.SCHEMA_VERSION);
         assertEquals(2, RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION);
-        assertEquals("8", RocketFlightNetwork.protocolVersion());
+        assertEquals("9", RocketFlightNetwork.protocolVersion());
     }
 
     @Test

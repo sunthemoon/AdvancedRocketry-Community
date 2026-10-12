@@ -29,24 +29,29 @@ import java.util.stream.Stream;
  * <p>Node names: an item is its ID, an item tag {@code #ns:path}, a fluid {@code fluid:ns:path}, a formed machine
  * {@code machine:ns:path}, plus {@code energy:fe}, {@code access:<level>} and {@code travel:rocket}. Survival
  * assumptions are explicit roots: the Overworld, vanilla items, water and lava, and vanilla tags that no packaged
- * file defines. Items of other mods are ignored. A recipe type the graph does not model yet is skipped and listed
- * in {@link #unmodelledTypes}: leaving out producers can only hide a route, never invent one. An unknown ingredient
- * form or pattern matcher inside a modelled type fails, so a changed data shape cannot be misread.
+ * file defines. Items of other mods are ignored. Unknown recipe types, ingredient forms and pattern matchers fail,
+ * so a changed data shape cannot be skipped or misread.
  */
 final class PackagedRecipeGraph {
     static final String NAMESPACE = "advancedrocketrycommunity";
     static final String OVERWORLD = "access:overworld";
     static final String ENERGY = "energy:fe";
     static final String ROCKET = "travel:rocket";
+    /** TASK-W19-ROOT-DECISION-01 (3c08ab5d): compatibility inputs, never vanilla/native roots. */
+    static final Set<String> OPTIONAL_CROSS_MOD_INPUTS = Set.of(
+            id("silicon_dust"), id("steel_dust"), id("titanium_dust"),
+            id("titanium_aluminide_dust"), id("titanium_iridium_dust"),
+            "#forge:dusts/silicon", "#forge:dusts/steel", "#forge:dusts/titanium",
+            "#forge:dusts/titanium_aluminide", "#forge:dusts/titanium_iridium");
     /** Vanilla items that survival play cannot obtain; no recipe may use them as an input. */
     static final Set<String> NON_SURVIVAL = Set.of("minecraft:bedrock", "minecraft:barrier", "minecraft:command_block",
             "minecraft:chain_command_block", "minecraft:repeating_command_block", "minecraft:structure_block",
             "minecraft:structure_void", "minecraft:jigsaw", "minecraft:light", "minecraft:debug_stick",
             "minecraft:knowledge_book", "minecraft:spawner", "minecraft:budding_amethyst",
             "minecraft:reinforced_deepslate", "minecraft:end_portal_frame", "minecraft:petrified_oak_slab");
-    /** The five classic multiblocks that form through the shared lifecycle coordinator. */
+    /** Classic multiblocks that form through the shared lifecycle coordinator. */
     static final List<String> CLASSIC_MACHINES = List.of("lathe", "arc_furnace", "cutting_machine", "rolling_machine",
-            "precision_assembler");
+            "precision_assembler", "crystallizer", "chemical_reactor", "precision_laser_etcher", "centrifuge");
     private static final Map<String, String> HATCHES = Map.of("item_input", "item_input_hatch",
             "item_output", "item_output_hatch", "energy_input", "power_input_plug",
             "fluid_input", "fluid_input_hatch", "fluid_output", "fluid_output_hatch");
@@ -55,8 +60,10 @@ final class PackagedRecipeGraph {
     final Set<String> nodes = new TreeSet<>();
     final Set<String> roots = new TreeSet<>();
     final Map<String, Producer> producers = new TreeMap<>();
+    /** Runtime source citations for non-recipe producers, included in the report. */
+    final Map<String, String> codeSources = new TreeMap<>();
     final Set<String> nonSurvivalInputs = new TreeSet<>();
-    /** Packaged recipe types without a producer model (for example machines merged after this graph). */
+    /** Empty for a successfully loaded graph; unknown types reject loading instead of skipping recipes. */
     final Set<String> unmodelledTypes = new TreeSet<>();
     private final Map<String, Set<String>> oreDrops = new TreeMap<>();
     private int sequence;
@@ -66,7 +73,11 @@ final class PackagedRecipeGraph {
     }
 
     static PackagedRecipeGraph load() throws IOException {
-        PackagedRecipeGraph graph = new PackagedRecipeGraph(resourcesRoot());
+        return load(resourcesRoot());
+    }
+
+    static PackagedRecipeGraph load(Path root) throws IOException {
+        PackagedRecipeGraph graph = new PackagedRecipeGraph(root);
         graph.add(OVERWORLD);
         graph.roots.add(OVERWORLD);
         graph.root("fluid:minecraft:water");
@@ -83,6 +94,7 @@ final class PackagedRecipeGraph {
                 List.of(id("rocket_seat")), List.of(id("guidance_computer")),
                 List.of(id("fuel_loader")), List.of(id("rocket_fuel_cell"))), List.of(ROCKET));
         graph.produce("flight", List.of(List.of(ROCKET)), List.of("access:moon", "access:space"));
+        CodeAcquisitionGraph.populate(graph);
         return graph;
     }
 
@@ -173,6 +185,8 @@ final class PackagedRecipeGraph {
                     outputs.add(result(json.get("result")));
                 }
                 case "advancedrocketrycommunity:electrolyzing" -> {
+                    codeSources.put("recipe:" + recipe, "machine/electrolyzer/ElectrolyzerBlockEntity.serverTick; "
+                            + "ElectrolyzerRecipeResolver; ElectrolyzerRecipe (canister outputs and water/FE inputs)");
                     slots.add(List.of(id("electrolyzer")));
                     machineInputs(json, slots);
                     slots.add(ingredient(json.get("ingredient"), recipe));
@@ -193,8 +207,17 @@ final class PackagedRecipeGraph {
                     json.getAsJsonArray("outputs").forEach(output -> outputs.add(result(output)));
                 }
                 case "advancedrocketrycommunity:lathe", "advancedrocketrycommunity:arc_furnace",
-                        "advancedrocketrycommunity:cutting" -> {
-                    String machine = type.endsWith("cutting") ? "cutting_machine" : type.substring(type.indexOf(':') + 1);
+                        "advancedrocketrycommunity:cutting", "advancedrocketrycommunity:crystallizing",
+                        "advancedrocketrycommunity:chemical_reacting", "advancedrocketrycommunity:laser_etching",
+                        "advancedrocketrycommunity:centrifuging" -> {
+                    String machine = switch (type) {
+                        case "advancedrocketrycommunity:cutting" -> "cutting_machine";
+                        case "advancedrocketrycommunity:crystallizing" -> "crystallizer";
+                        case "advancedrocketrycommunity:chemical_reacting" -> "chemical_reactor";
+                        case "advancedrocketrycommunity:laser_etching" -> "precision_laser_etcher";
+                        case "advancedrocketrycommunity:centrifuging" -> "centrifuge";
+                        default -> type.substring(type.indexOf(':') + 1);
+                    };
                     slots.add(List.of("machine:" + id(machine)));
                     machineInputs(json, slots);
                     json.getAsJsonArray("item_inputs").forEach(input ->
@@ -202,11 +225,17 @@ final class PackagedRecipeGraph {
                     json.getAsJsonArray("fluid_inputs").forEach(input -> slots.add(fluid(input, recipe)));
                     json.getAsJsonArray("item_outputs").forEach(output -> outputs.add(result(output)));
                     json.getAsJsonArray("fluid_outputs").forEach(output -> outputs.addAll(fluid(output, recipe)));
+                    if (json.has("chance_outputs")) {
+                        // Reachability is existential, not a yield guarantee or a simulation of the four-success cap.
+                        json.getAsJsonArray("chance_outputs").forEach(output -> outputs.add(result(output)));
+                    }
+                    // The etcher lens is an input requirement. This monotone graph never consumes any node;
+                    // retaining the lens needs no extra output or renewable lens source.
                 }
-                default -> unmodelledTypes.add(type);
-            }
-            if (unmodelledTypes.contains(type)) {
-                continue;
+                default -> {
+                    unmodelledTypes.add(type);
+                    throw new IllegalStateException("Unmodelled recipe type " + type + " in " + recipe);
+                }
             }
             if (slots.isEmpty()) {
                 throw new IllegalStateException("Recipe without inputs " + recipe);
@@ -350,7 +379,8 @@ final class PackagedRecipeGraph {
         for (String member : members) {
             if (member.startsWith("#")) {
                 items.addAll(blockTagItems(member.substring(1), visiting));
-            } else {
+            } else if (!NON_SURVIVAL.contains(member)) {
+                // Block tags are OR selectors: unobtainable members cannot witness survival formation.
                 items.add(member);
             }
         }
@@ -515,5 +545,19 @@ final class PackagedRecipeGraph {
     /** A copy for the evaluator. */
     List<Producer> producerList() {
         return List.copyOf(producers.values());
+    }
+
+    /** Remove forbidden inputs/outputs from producers; callers also remove these nodes from their roots. */
+    List<Producer> withoutInputs(Set<String> forbidden) {
+        List<Producer> result = new ArrayList<>();
+        for (Producer producer : producers.values()) {
+            List<List<String>> slots = producer.slots().stream()
+                    .map(slot -> slot.stream().filter(node -> !forbidden.contains(node)).toList()).toList();
+            List<String> outputs = producer.outputs().stream().filter(node -> !forbidden.contains(node)).toList();
+            if (!outputs.isEmpty() && slots.stream().noneMatch(List::isEmpty)) {
+                result.add(new Producer(producer.id(), slots, outputs));
+            }
+        }
+        return result;
     }
 }

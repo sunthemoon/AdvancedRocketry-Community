@@ -18,11 +18,12 @@ import net.minecraftforge.network.NetworkEvent;
 /** Bounded, S2C-only typed plan and quote update for one open flight console. */
 public record RocketFlightPlanPacket(int containerId, int rocketEntityId, RocketFlightPlanSnapshot plan,
                                     RocketNavigation navigation) {
-    public static final int MIN_ENCODED_BYTES = 19;
+    public static final int MIN_ENCODED_BYTES = 20;
     public static final int MAX_ENCODED_BYTES = 8 + 1 + TravelTargetWireCodec.MAX_ENCODED_BYTES
             + 3 + RocketFlightQuotes.MAX_QUOTES * (TravelTargetWireCodec.MAX_ENCODED_BYTES + 5)
             + 8 + 3 + StationLimits.MAX_ACCESSIBLE_DESTINATIONS
-            * (16 + 2 + 3 * StationLimits.MAX_NAME_LENGTH + 2 + TravelTarget.MAX_RESOURCE_LOCATION_CHARS);
+            * (16 + 2 + 3 * StationLimits.MAX_NAME_LENGTH + 2 + TravelTarget.MAX_RESOURCE_LOCATION_CHARS)
+            + io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference.MAX_WIRE_BYTES;
 
     public RocketFlightPlanPacket(int containerId, int rocketEntityId, RocketFlightPlanSnapshot plan, RocketFlightQuotes quotes) {
         this(containerId, rocketEntityId, plan, new RocketNavigation(0, quotes, java.util.List.of()));
@@ -58,6 +59,7 @@ public record RocketFlightPlanPacket(int containerId, int rocketEntityId, Rocket
             buffer.writeUtf(station.name(), StationLimits.MAX_NAME_LENGTH);
             buffer.writeUtf(station.orbitBody().toString(), TravelTarget.MAX_RESOURCE_LOCATION_CHARS);
         }
+        io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference.writeOptional(buffer, packet.plan().landingPad());
     }
 
     public static RocketFlightPlanPacket decode(FriendlyByteBuf buffer) {
@@ -110,6 +112,8 @@ public record RocketFlightPlanPacket(int containerId, int rocketEntityId, Rocket
             if (!station.name().equals(name)) { throw new IllegalArgumentException("Noncanonical station name"); }
             stations.add(station);
         }
+        plan = new RocketFlightPlanSnapshot(plan.target(),
+                io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference.readOptional(buffer));
         if (buffer.isReadable()) {
             throw new IllegalArgumentException("Flight plan frame contains trailing bytes");
         }

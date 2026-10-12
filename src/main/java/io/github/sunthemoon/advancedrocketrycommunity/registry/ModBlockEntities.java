@@ -39,6 +39,13 @@ public final class ModBlockEntities {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBlockEntity>> CO2_SCRUBBER =
+            BLOCK_ENTITIES.register("co2_scrubber", () -> BlockEntityType.Builder.of(io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBlockEntity::new, ModBlocks.CO2_SCRUBBER.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.PipeSealBlockEntity>> PIPE_SEAL =
+            BLOCK_ENTITIES.register("pipe_seal", () -> BlockEntityType.Builder.of(io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.PipeSealBlockEntity::new, ModBlocks.PIPE_SEAL.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.AtmosphereDetectorBlockEntity>> ATMOSPHERE_DETECTOR =
+            BLOCK_ENTITIES.register("atmosphere_detector", () -> BlockEntityType.Builder.of(io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.AtmosphereDetectorBlockEntity::new, ModBlocks.ATMOSPHERE_DETECTOR.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlockEntity>>
             FORCE_FIELD_PROJECTOR = BLOCK_ENTITIES.register("force_field_projector", () -> BlockEntityType.Builder.of(
             io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlockEntity::new,
@@ -274,6 +281,11 @@ public final class ModBlockEntities {
 
     private ModBlockEntities() {
     }
+
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlockEntity>>
+            LANDING_PAD = BLOCK_ENTITIES.register("landing_pad", () -> BlockEntityType.Builder.of(
+                    io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlockEntity::new,
+                    ModBlocks.LANDING_PAD.get()).build(null));
 
     static io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayBlockEntity solarArray(
             net.minecraft.core.BlockPos position, net.minecraft.world.level.block.state.BlockState state) {

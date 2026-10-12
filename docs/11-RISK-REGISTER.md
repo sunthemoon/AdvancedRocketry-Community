@@ -73,8 +73,22 @@ int，沿用单块太阳能发电机的 4,096 字节、深度 16、1,024 节点�
 
 ## 风险处理规则
 
+### R-023 — Named landing-pad malformed-root preservation
+
+Landing-pad index/BE roots that fail schema or bounds checks retain their original
+data and disable pad operations. An oversized index refuses only its own file
+write, keeps the previous file and dirty state, and logs once per loaded instance.
+An oversized BE root refuses its whole terrain chunk through `GuardedChunkSaves`
+for the Level lifetime; the existing 256-coordinate saturation and unbounded
+save-retry log accumulation remain applicable. Probability is unquantified and
+the terrain-save impact is High. This blocks v1.8.0 acceptance until native
+writer/restart evidence and operator review. Scope, duration and offline backup/
+repair procedure are recorded in ADR-065's W13 implementation note. No risk is
+accepted or closed by this record.
+
 | ID | 风险 | 概率 | 影响 | 触发信号 | 缓解 | 阻断版本 |
 |---|---|---:|---:|---|---|---|
+| R-027 | W14 氧气通风口（含 schema-2 洗涤器库存）、洗涤器 facade 与大气探测器的超限或原生非无损根拒绝整区块保存；拒存集合饱和后影响整个 Level | 未量化 | 严重 | 拥有的根超出 64 KiB、深度 16、1,024 节点或不能原生无损保存 | 原始 Tag 保留，停止使用与普通破坏，沿用 `GuardedChunkSaves` 至 Level 结束。既有 256 坐标饱和、脏标记与卸载边界、每次重试 ERROR 对及无日志总量上限均不改变。必须停服备份和离线修复，再验证重启、保存与资源守恒；无玩家文件拒存。详见 ADR-066 的 W14 实施说明，独立持久化审核和风险接受仍未完成 | `v1.8.0` |
 | R-022 | 力场或投影器的超限原生根拒绝整区块保存；清理根超限时拒绝该独立文件保存，跨存储可能分歧 | 未量化 | 严重 | W04 原生根超过字节、深度或节点预算 | 原始 Tag 保留并停止功能和普通删除。区块拒存沿用 `GuardedChunkSaves`，持续至 Level 结束，既有饱和与无日志总量上限仍适用。清理文件拒存不抛异常，保留旧文件和脏标记，每次载入最多一条诊断。必须备份、停服并离线修复；重启本身不是修复。范围、恢复方法见 ADR-065 的 W04 实施说明；原生停服、重启与风险接受未完成 | `v1.8.0` |
 
 - Critical/High 风险必须有测试或明确的结构性缓解；

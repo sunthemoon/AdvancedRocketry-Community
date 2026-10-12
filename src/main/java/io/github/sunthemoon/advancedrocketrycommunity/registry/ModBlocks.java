@@ -53,6 +53,13 @@ public final class ModBlocks {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBlock> CO2_SCRUBBER =
+            BLOCKS.register("co2_scrubber", () -> new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBlock(metalProperties().pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.PipeSealBlock> PIPE_SEAL =
+            BLOCKS.register("pipe_seal", () -> new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.PipeSealBlock(metalProperties().pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.AtmosphereDetectorBlock> ATMOSPHERE_DETECTOR =
+            BLOCKS.register("atmosphere_detector", () -> new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.AtmosphereDetectorBlock(metalProperties().pushReaction(PushReaction.BLOCK)));
+
     public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlock>
             FORCE_FIELD_PROJECTOR = BLOCKS.register("force_field_projector", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlock(
@@ -394,6 +401,10 @@ public final class ModBlocks {
         return BlockBehaviour.Properties.of().noCollission().instabreak().sound(SoundType.WOOD)
                 .lightLevel(state -> 14).pushReaction(PushReaction.DESTROY);
     }
+
+    public static final RegistryObject<Block> LANDING_PAD = BLOCKS.register("landing_pad", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlock(
+                    metalProperties().pushReaction(PushReaction.BLOCK)));
 
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()

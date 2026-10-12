@@ -29,7 +29,7 @@ class OxygenVentPersistenceTest {
     @Test
     void futureSchemaPayloadIsCopiedWithoutInterpretation() {
         CompoundTag future = new CompoundTag();
-        future.putInt("schema_version", 2);
+        future.putInt("schema_version", OxygenVentPersistence.SCHEMA_VERSION + 1);
         future.putString("future_payload", "keep-exactly");
         CompoundTag parent = new CompoundTag();
         parent.put(OxygenVentPersistence.DATA_KEY, future);

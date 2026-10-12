@@ -143,6 +143,24 @@ removal guarantees.
 
 ## 3. C18a - devices, tools and environment
 
+### W14 implementation note on retained device roots (2026-10-12)
+
+The oxygen vent (including its schema-2 scrubber banks), scrubber facade and
+atmosphere detector retain unsupported or corrupt owned Tags and refuse ordinary
+breaks and explosion removal. An outgoing owned root that fails `BoundedNbt.fits`
+at 64 KiB/depth 16/1,024 nodes uses `GuardedChunkSaves` at chunk admission, never a
+BlockEntity serialization exception. R-027 records this additional scope. Refusal
+affects the entire terrain chunk until Level closure; the inherited denial set
+can saturate after 256 distinct coordinates and then refuse subsequent terrain
+writes throughout the Level. The existing guard retains dirty state but does not
+prevent unload, cap native retry logs, or prove independent-store durability.
+Each retry can emit the existing EventBus/ChunkMap ERROR pair and stack. There is
+no online reset or player-file veto. Recovery requires an offline backup and
+scoped owned-root repair, then restart and successful native save/conservation
+checks. Command replacement and third-party movers bypassing Forge removal
+policy are not covered. This note is implementation scope, not risk acceptance
+or a Gate result; independent persistence review remains required before merge.
+
 ### 3.1 Scrubber and instruments
 
 - `co2_scrubber`, `carbon_scrubber_cartridge`: one unstackable cartridge slot,

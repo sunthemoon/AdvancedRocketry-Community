@@ -34,6 +34,11 @@ public final class SuitVisorClient {
                 || ClientConfig.atmosphericNausea() && !state.antiFog();
     }
 
+    /** The server's classic equipment authorization for this connection. */
+    public static boolean equipmentAuthorized() {
+        return state.enabled();
+    }
+
     public static boolean earthbright(ClientLevel level) {
         return state.earthbright() && level != null && level.dimension().equals(CelestialIds.SPACE_LEVEL);
     }

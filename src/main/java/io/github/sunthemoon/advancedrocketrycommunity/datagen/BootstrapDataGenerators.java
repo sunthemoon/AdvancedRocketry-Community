@@ -20,10 +20,14 @@ public final class BootstrapDataGenerators {
     public static void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180LandingPadData(output, event.includeClient(), event.includeServer()));
 
         // Earlier version outputs (v1.7 and before) remain immutable resource inputs.
         ExistingFileHelper existingFiles = event.getExistingFileHelper();
         generator.addProvider(event.includeClient(), new V180MaterialArt(output));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180LifeSupportData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180ForceFieldData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient(), new V180CombustionArt(output));
@@ -102,5 +106,8 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeClient(), new V180ExoplanetArt(output));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180ExoplanetData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient(), new V180SoundArt(output));
+        generator.addProvider(event.includeClient(), new V180SoundDefinitions(output, existingFiles));
+        generator.addProvider(event.includeClient(), new V180SuitComponentArt(output));
     }
 }

@@ -115,7 +115,8 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
             RocketFlightNetwork.sendIntent(
                     action,
                     menu.rocketEntityId(),
-                    target.target()
+                    target.target(),
+                    target.landingPad()
             );
         }
     }
@@ -365,7 +366,7 @@ public final class RocketFlightScreen extends AbstractContainerScreen<RocketFlig
     private void initializeSelection() {
         selection.updateStations(menu.accessibleStations());
         if (menu.hasPlanSnapshot()) {
-            selection.initialize(menu.activePlan().target(), menu.currentTarget());
+            selection.initialize(menu.activePlan(), menu.currentTarget());
         }
     }
 

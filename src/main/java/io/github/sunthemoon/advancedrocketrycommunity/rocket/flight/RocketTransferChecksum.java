@@ -103,6 +103,10 @@ final class RocketTransferChecksum {
             }
             output.writeLong(plan.requiredFuel());
             output.writeLong(plan.createdAtGameTime());
+            if (plan.landingPad() != null) {
+                writeString(output, "landing-pad-1");
+                writeUuid(output, plan.landingPad().padId()); output.writeLong(plan.landingPad().epoch());
+            }
             if (plan.propulsionDebit() != null) {
                 var debit = plan.propulsionDebit();
                 writeString(output, "propulsion-debit-1");

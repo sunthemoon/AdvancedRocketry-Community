@@ -53,6 +53,17 @@ public final class OxygenVentBlock extends BaseEntityBlock {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
+        if (held.isEmpty() && player.isShiftKeyDown()) {
+            if (!io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceAccess.player(vent, player)) {
+                return InteractionResult.FAIL;
+            }
+            ItemStack recovered = vent.scrubbers().recoverOrphan(vent);
+            if (!recovered.isEmpty()) { player.setItemInHand(hand, recovered); }
+            player.displayClientMessage(Component.translatable(recovered.isEmpty()
+                    ? "message.advancedrocketrycommunity.vent.scrubber_recovery_refused"
+                    : "message.advancedrocketrycommunity.vent.scrubber_cartridge_recovered"), true);
+            return recovered.isEmpty() ? InteractionResult.FAIL : InteractionResult.CONSUME;
+        }
         if (held.is(ModItems.OXYGEN_CANISTER.get())) {
             boolean accepted = vent.fillFromPlayer(player, hand);
             player.displayClientMessage(Component.translatable(
@@ -92,6 +103,7 @@ public final class OxygenVentBlock extends BaseEntityBlock {
             }
             BlockEntity blockEntity = level.getBlockEntity(position);
             if (blockEntity instanceof OxygenVentBlockEntity vent) {
+                if (!vent.protectedDeviceData()) { vent.scrubbers().dropAll(vent); }
                 SimpleContainer drops = new SimpleContainer(OxygenVentBlockEntity.SLOT_COUNT);
                 vent.copyInventoryTo(drops);
                 Containers.dropContents(level, position, drops);
@@ -130,5 +142,24 @@ public final class OxygenVentBlock extends BaseEntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(LIT);
+    }
+
+    private static boolean protectedData(net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof OxygenVentBlockEntity entity && entity.protectedDeviceData();
+    }
+    @Override public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean harvest,
+                                                  net.minecraft.world.level.material.FluidState fluid) {
+        return !protectedData(level, pos) && super.onDestroyedByPlayer(state, level, pos, player, harvest, fluid);
+    }
+    @Override public boolean canEntityDestroy(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos,
+                                               net.minecraft.world.entity.Entity entity) {
+        return !protectedData(level, pos) && super.canEntityDestroy(state, level, pos, entity);
+    }
+    @Override public void onBlockExploded(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.Explosion explosion) {
+        if (!protectedData(level, pos)) { super.onBlockExploded(state, level, pos, explosion); }
+    }
+    @Override public float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof OxygenVentBlockEntity vent && vent.protectedDeviceData()
+                ? 0 : super.getDestroyProgress(state, player, level, pos);
     }
 }
