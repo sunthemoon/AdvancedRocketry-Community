@@ -18,23 +18,34 @@ block any task.
 
 ## Active
 
-| Task | Scope | Worktree / branch | Base | Session | State |
-|---|---|---|---|---|---|
-| [W01](TASK-W01-HATCH-KERNEL.md) | Hatch family, generic controller, lathe | `arce-v180-w01-hatch-kernel` / `codex/v1.8.0-hatch-kernel` | `1568699e` | `01a12b82-77da-7592-85d8-e201b34241f9` | Delivered `3a0b29c5`; hosted run 38155835990 passed; independent review BLOCK (two High, two Medium: `D:/GitHub/ARCE-Task-Evidence/root-queue/W01-review/REVIEW.md`, SHA-256 `59540643…d388a`). Fixes run as W01F on the same branch |
-| [W02](TASK-W02-PROPULSION.md) | C17a propulsion components and typed fuel modes | `arce-v180-w02-propulsion` / `codex/v1.8.0-propulsion` | `1568699e` | `01a12b82-8061-7e13-94b8-a29fc73ef9f0` | Delivered `2cde1ee3`; candidate `2260e575` (Root merge fixes); independent review BLOCK (two Critical, two Medium: `D:/GitHub/ARCE-Task-Evidence/root-queue/W02-review/REVIEW.md`, SHA-256 `4b9127e6…401d7a`). Fixes queued as W02F |
-| [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | `arce-v180-w03-equipment` / `codex/v1.8.0-equipment` | `1568699e` | `01a12b82-8895-7573-8f65-3fb05884bbf1` | Merged as `1e36af58` on 2026-10-12 after hosted run 38155101250 and the [independent review](records/W03-REVIEW.md) (MERGE-WITH-FOLLOWUP: M1 and L1 queued) |
-| [W04](TASK-W04-FORCE-FIELD.md) | C17b force field projector, API 1.9 | `arce-v180-w04-force-field` / `codex/v1.8.0-w04-force-field` | `42321f8b` | `01a12bc4-62f1-75b1-b0e9-4d989e1b4fd2` | Interrupted at 01:35 when the Root session closed (four commits, final GameTest pending); resumed detached in the same Codex session at 10:33 |
-| [W05](TASK-W05-ARC-FURNACE-CUTTING.md) | C16b arc furnace and cutting machine on the W01 kernel | `arce-v180-w05-arc-cutting` / `codex/v1.8.0-w05-arc-cutting` | W01 candidate `7fb1c1a3` | `01a12bcf-600a-7731-a836-d0b8a2cec0fc` | Delivered `41468d8e` (JUnit 346/346, GameTest 665/665). Merged into the combined candidate `901f38b3` (W01 + W01F + W05, with Root's config-count fix), which passed hosted run 38196398172 |
-| [W01F](TASK-W01F-REVIEW-FIXES.md) | Fix W01 review findings R1–R4 | `arce-v180-w01-hatch-kernel` / `codex/v1.8.0-hatch-kernel` | `83fcf0ba` | `01a12bde-eca0-73f2-b227-844ce2ca38de` | Delivered `6d559bf2` (GameTest 658/658). The combined review (headless Claude, `D:/GitHub/ARCE-Task-Evidence/root-queue/W01C-review/REVIEW.md`, SHA-256 `bb1ee58e…20edbdb`) confirms R2–R4 fixed and R1 partly fixed: BLOCK on N1 (High), plus N2 (Medium) and N3 (Low) |
-| [W01G](TASK-W01G-REVIEW-FIXES.md) | Fix combined review N1–N3 (partial-root reset, arc furnace clearance tag, newer-generation rebind) | `arce-v180-w01-hatch-kernel` / `codex/v1.8.0-hatch-kernel` | `f6603dec` | Claude `365eff43-9809-49de-9899-d5f05bc90b8c` | Running since 10:53 (critical path) |
-| [W02F](TASK-W02F-REVIEW-FIXES.md) | Fix W02 review findings F1, F2 and F4 (F3 goes to the C17a loader task) | `arce-v180-w02-propulsion` / `codex/v1.8.0-propulsion` | `ddc80a48` | `01a12c02-7529-7852-90ac-dc00a5156fa6` | Interrupted at 01:35 after its F1 commit; resumed detached in the same Codex session at 10:33 |
-| [W06](TASK-W06-MOTION-UPGRADES.md) | C18b jetpack, motion and visor upgrades; W03 review M1 and L1 | `arce-v180-w06-motion` / `codex/v1.8.0-w06-motion` | `048e7706` | Claude `8c65abd5-fc57-49a3-9fcf-a3bba570865a` | Running since 10:37 |
+Every implementer and reviewer runs as an independent process through
+`D:/GitHub/ARCE-Task-Evidence/root-queue/launch_worker.ps1`. Their run directories are in
+`D:/GitHub/ARCE-Task-Evidence/root-queue/<task>/run-*/`. A slice merges after its hosted
+CI run and its independent review both pass. The reviews are kept in
+`D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
+give their SHA-256 values.
+
+| Slice | Scope | Pipeline state (2026-10-12 15:45) |
+|---|---|---|
+| [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
+| [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
+| [W02](TASK-W02-PROPULSION.md), [W02F](TASK-W02F-REVIEW-FIXES.md) | C17a propulsion components and typed fuel modes | **Merged** `ebf4c07b`. Follow-ups: native restart checks; a passenger who never returns locks the rocket; F3 goes to the loader task |
+| [W04](TASK-W04-FORCE-FIELD.md), [W04F](TASK-W04F-REVIEW-FIXES.md) | C17b force field projector, API 1.9 | **Merged** `17fb7e15` (hosted run 38207662335). Follow-ups N1–N6 go to W04G |
+| [W06](TASK-W06-MOTION-UPGRADES.md), [W06F](TASK-W06F-REVIEW-FIXES.md) | C18b jetpack, motion and visor upgrades | **Merged** `d8352a27` (hosted run 38217298302; W06F review MERGE). Limitation: with allow-flight=true vanilla trusts client flight |
+| [W07](TASK-W07-STATION-CONTROLS.md), [W07F](TASK-W07F-REVIEW-FIXES.md) | C17b station controls, orbital distance and orientation | The review (Codex) blocked on R1–R3 (Medium), R4–R5 (Low) and the missing `classic_controls` channel. W07F (Claude) running |
+| [W08](TASK-W08-IOWORKER-MIXIN.md) | ADR-073 Mixin copy of pending IOWorker reads | Implementer (Claude) running |
+| [W09](TASK-W09-PACED-ROCKET-FIXTURES.md) | Paced entity readiness for the rocket fixtures (test code only) | **Merged** `487da4e6` (hosted run 38217303450; Root review: no assertion or timeout lost) |
+| [W04G](TASK-W04G-FOLLOWUPS.md) | Force field N1–N3 (and optionally N4–N6) | Implementer (Codex) running since 15:21 |
+| [W10](TASK-W10-C16C-MACHINES.md) | C16c crystallizer, chemical reactor, laser etcher, centrifuge | Implementer (Codex) running since 15:37 |
+
+The shared branch `487da4e6` holds every merge above (W06 and W09 added after the force field). Hosted run 38206390869 passed at
+`ebf4c07b`, before the force field merge. Run 38208930066 passed at `17fb7e15`; run 38219141393 checks `487da4e6`.
 
 ## Queued
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| (none) | | |
+| [W11a](TASK-W11A-D3-ESCROW-DESIGN.md) | D3-A escrow/receipt coordinator design for C17a loaders and the C17c bay (design only; independent review before W11b implements it) | Next free slot (worktree ready at `53d30f5a`) |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
@@ -52,7 +63,7 @@ Hosted CI runs on each implementer branch after Root pushes it (workflow change
 - C18c observatory and advancements (ADR-066 section 6).
 - C18d presentation and client configuration (ADR-066 section 7).
 - Parallel bugs:
-  - the hosted chunk-save CME (runs 38064322640 and 38156329125 attempt 2, both at
+  - the hosted chunk-save CME (being fixed by W08 under ADR-073) (runs 38064322640 and 38156329125 attempt 2, both at
     batch `endgame_gravity_station`). Root cause, from the bytecode of the mapped
     Forge 47.4.10 jar:
     - vanilla 1.20.1 `IOWorker.loadAsync` returns the pending write's `CompoundTag`

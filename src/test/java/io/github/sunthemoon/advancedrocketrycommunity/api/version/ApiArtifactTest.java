@@ -213,6 +213,63 @@ class ApiArtifactTest {
     }
 
     @Test
+    void old18CompiledListenerRunsOn19AndUnknownOrThrowingEffectsFailClosed() throws Exception {
+        io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap.initialize();
+        Path legacyJar = temporary.resolve("api-1.8.jar");
+        Path oldEnumSource = temporary.resolve("EndgameEffect.java");
+        Files.writeString(oldEnumSource, "package io.github.sunthemoon.advancedrocketrycommunity.api.endgame; "
+                + "public enum EndgameEffect { BLOCK_BREAK, ENTITY_GRAVITY, TELEPORT }");
+        Path oldVersionSource = temporary.resolve("ApiVersions.java");
+        Files.writeString(oldVersionSource, Files.readString(Path.of("src/main/java/" + API_PACKAGE + "version/ApiVersions.java"))
+                .replace("new ApiVersion(1, 9)", "new ApiVersion(1, 8)"));
+        Path oldClasses = Files.createDirectory(temporary.resolve("old-api-classes"));
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        assertEquals(0, compiler.run(null, null, null, "--release", "17", "-proc:none", "-classpath", apiJar().toString(),
+                "-d", oldClasses.toString(), oldEnumSource.toString(), oldVersionSource.toString()));
+        try (ZipFile api = new ZipFile(apiJar().toFile());
+             var out = new java.util.jar.JarOutputStream(Files.newOutputStream(legacyJar))) {
+            for (String name : CLASSES) {
+                out.putNextEntry(new java.util.jar.JarEntry(name));
+                Path replacement = oldClasses.resolve(name);
+                out.write(Files.exists(replacement) ? Files.readAllBytes(replacement) : api.getInputStream(api.getEntry(name)).readAllBytes());
+                out.closeEntry();
+            }
+        }
+        List<Path> compileClasspath = Stream.concat(Stream.of(legacyJar), platformConsumerClasspath().stream().skip(1)).toList();
+        Compilation result = compile("Endgame18Consumer", compileClasspath);
+        assertTrue(result.success(), result.diagnostics().toString());
+        // The legacy classifier is deliberately absent at runtime. The parent supplies only the current host API.
+        try (URLClassLoader loader = new URLClassLoader(new URL[]{result.output().toUri().toURL()}, getClass().getClassLoader())) {
+            Class<?> listener = loader.loadClass("consumer.Endgame18Consumer");
+            assertEquals(8, listener.getMethod("compiledMinor").invoke(null));
+            assertEquals(9, listener.getMethod("hostMinor").invoke(null));
+            var effectType = io.github.sunthemoon.advancedrocketrycommunity.api.endgame.EndgameEffect.class;
+            var eventType = io.github.sunthemoon.advancedrocketrycommunity.api.endgame.EndgameEffectEvent.class;
+            assertEquals(List.of("BLOCK_BREAK", "ENTITY_GRAVITY", "TELEPORT", "FIELD_PROJECTION"),
+                    Stream.of(effectType.getEnumConstants()).map(Enum::name).toList());
+            for (var effect : effectType.getEnumConstants()) {
+                var event = new io.github.sunthemoon.advancedrocketrycommunity.api.endgame.EndgameEffectEvent(
+                        net.minecraft.resources.ResourceLocation.tryParse("advancedrocketrycommunity:force_field_projector"),
+                        effect, new java.util.UUID(4, 1), java.util.Optional.empty(), net.minecraft.world.level.Level.OVERWORLD,
+                        net.minecraft.core.BlockPos.ZERO, net.minecraft.core.BlockPos.ZERO);
+                listener.getMethod("protect", eventType).invoke(null, event);
+                assertEquals(effect.name().equals("BLOCK_BREAK") || effect.name().equals("FIELD_PROJECTION"), event.isCanceled());
+                if (effect.name().equals("FIELD_PROJECTION")) {
+                    assertFalse(io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProtection.safeEvent(() -> {
+                        try { listener.getMethod("exhaustive", eventType).invoke(null, event); return false; }
+                        catch (java.lang.reflect.InvocationTargetException failure) {
+                            if (failure.getCause() instanceof LinkageError incompatible) { throw incompatible; }
+                            throw new IllegalStateException(failure.getCause());
+                        } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+                    }));
+                } else {
+                    assertNotNull(listener.getMethod("exhaustive", eventType).invoke(null, event));
+                }
+            }
+        }
+    }
+
+    @Test
     void platformConsumerCannotImportTheEndgameProtectionChain() throws IOException {
         try (ZipFile runtime = new ZipFile(Path.of(System.getProperty("arce.runtimeJar")).toFile())) {
             assertNotNull(runtime.getEntry(HOST_PACKAGE + "endgame/protection/EndgameProtection.class"));

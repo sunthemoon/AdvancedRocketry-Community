@@ -128,6 +128,11 @@ public final class RocketPassengerContinuedUseGameTests {
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED,
                     "Fixture did not refuel");
             var manager = new RocketManager();
+            var retained = RocketTransferSavedData.get(helper.getLevel().getServer())
+                    .findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElseThrow();
+            helper.assertTrue(manager.recoverTransfer(helper.getLevel().getServer(), retained.transferId()).status()
+                    == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport.Status.RECOVERED,
+                    "Fresh disassembly manager did not reconcile arrival authority");
             manager.requestDisassembly(player, rocket);
             helper.assertTrue(rocket.isAlive() && rocket.flightData().orElseThrow().fuel().amount() == 1000,
                     "Implicit fueled teardown changed arrival authority");
@@ -192,7 +197,8 @@ public final class RocketPassengerContinuedUseGameTests {
         var transfer = UUID.randomUUID();
         var launched = RocketRuntime.requestAdminFlight(source, RocketDestination.MOON, transfer);
         helper.assertTrue(launched.success(), "Fixture launch failed: " + launched.code());
-        helper.runAfterDelay(270, () -> {
+        RocketFlightGameTestFixtures.awaitFlightState(helper, moon, source.assemblyTransactionId().orElseThrow(),
+                RocketFlightState.LANDED, 270, () -> {
             var journal = RocketTransferSavedData.get(earth.getServer());
             var record = journal.find(transfer).orElseThrow();
             var rocket = (RocketEntity) moon.getEntity(record.destinationEntityId().orElseThrow());

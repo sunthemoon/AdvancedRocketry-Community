@@ -34,6 +34,7 @@ public final class ServerLevelRocketScanWorld implements RocketScanWorld {
     private final ServerLevel level;
     private final RocketBlockEntityAdapters adapters;
     private final RocketComponentCatalog components;
+    private final io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings settings;
 
     public ServerLevelRocketScanWorld(ServerLevel level, RocketBlockEntityAdapters adapters) {
         this(level, adapters, RocketComponentCatalog.empty());
@@ -44,6 +45,12 @@ public final class ServerLevelRocketScanWorld implements RocketScanWorld {
         this.level = Objects.requireNonNull(level, "level");
         this.adapters = Objects.requireNonNull(adapters, "adapters");
         this.components = Objects.requireNonNull(components, "components");
+        settings = io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig.ROCKET.capture();
+    }
+
+    @Override
+    public io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings propulsionSettings() {
+        return settings;
     }
 
     @Override
@@ -60,7 +67,7 @@ public final class ServerLevelRocketScanWorld implements RocketScanWorld {
         if (ALWAYS_FORBIDDEN.contains(state.getBlock()) || state.is(ModBlockTags.ROCKET_FORBIDDEN)) {
             return RocketScanObservation.forbidden(id);
         }
-        if (!state.is(ModBlockTags.ROCKET_MOVABLE)) {
+        if (!state.is(ModBlockTags.ROCKET_MOVABLE) && !state.is(ModBlockTags.ROCKET_PROPULSION)) {
             return RocketScanObservation.boundary(id);
         }
 
@@ -78,7 +85,8 @@ public final class ServerLevelRocketScanWorld implements RocketScanWorld {
         return RocketScanObservation.movable(
                 RocketBlockStateAdapter.capture(state),
                 RocketForgeMetrics.resolve(state, components),
-                payload
+                payload,
+                RocketForgeMetrics.classification(state, components)
         );
     }
 

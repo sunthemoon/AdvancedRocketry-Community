@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "exemptions": [
+    {
+      "id": "advancedrocketrycommunity:force_field",
+      "kind": "technical_block",
+      "reason": "Only an owner-bound projector creates this sealed cell. It has no obtainable item, recipe or loot.",
+      "decision": "ADR-065 section 6.2"
+    }
+  ]
+}

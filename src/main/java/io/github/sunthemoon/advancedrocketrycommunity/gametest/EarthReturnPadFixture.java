@@ -65,31 +65,32 @@ public final class EarthReturnPadFixture {
     @GameTest(template = "rocket_test", batch = "flight", timeoutTicks = 40)
     public static void provisionedEarthPadStillRejectsSnowAndGrass(GameTestHelper helper) {
         var earth = helper.getLevel();
-        var rocket = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID());
-        var selector = new RocketLandingPadSelector();
-        try {
-            var selection = selector.select(earth, rocket.snapshot().orElseThrow(), UUID.randomUUID(),
-                    List.of(), earth.getGameTime());
-            helper.assertTrue(selection.success(), "Provisioned Earth pad was not admitted");
-            helper.assertTrue(selection.candidatesChecked() == 1, "Fixture did not provision the first server candidate");
-            var destination = selection.snapshot().orElseThrow();
-            var absolute = destination.sourceOrigin().add(destination.blocks().get(0).position());
-            var obstruction = new BlockPos(absolute.x(), absolute.y(), absolute.z());
-            var original = earth.getBlockState(obstruction);
+        RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
+            var selector = new RocketLandingPadSelector();
             try {
-                for (var block : List.of(Blocks.SNOW, Blocks.GRASS)) {
-                    earth.setBlock(obstruction, block.defaultBlockState(), Block.UPDATE_CLIENTS);
-                    helper.assertTrue(!selector.available(earth, destination, null, false),
-                            "Occupied Earth pad was admitted for " + block);
+                var selection = selector.select(earth, rocket.snapshot().orElseThrow(), UUID.randomUUID(),
+                        List.of(), earth.getGameTime());
+                helper.assertTrue(selection.success(), "Provisioned Earth pad was not admitted");
+                helper.assertTrue(selection.candidatesChecked() == 1, "Fixture did not provision the first server candidate");
+                var destination = selection.snapshot().orElseThrow();
+                var absolute = destination.sourceOrigin().add(destination.blocks().get(0).position());
+                var obstruction = new BlockPos(absolute.x(), absolute.y(), absolute.z());
+                var original = earth.getBlockState(obstruction);
+                try {
+                    for (var block : List.of(Blocks.SNOW, Blocks.GRASS)) {
+                        earth.setBlock(obstruction, block.defaultBlockState(), Block.UPDATE_CLIENTS);
+                        helper.assertTrue(!selector.available(earth, destination, null, false),
+                                "Occupied Earth pad was admitted for " + block);
+                    }
+                } finally {
+                    earth.setBlock(obstruction, original, Block.UPDATE_CLIENTS);
                 }
+                helper.assertTrue(selector.available(earth, destination, null, false), "Restored Earth pad was not admitted");
+                helper.succeed();
             } finally {
-                earth.setBlock(obstruction, original, Block.UPDATE_CLIENTS);
+                rocket.discard();
             }
-            helper.assertTrue(selector.available(earth, destination, null, false), "Restored Earth pad was not admitted");
-            helper.succeed();
-        } finally {
-            rocket.discard();
-        }
+        });
     }
 
     private static void install(ServerLevel level) {

@@ -102,11 +102,12 @@ public final class PlanetaryWorldGameTests {
     public static void earthMarsVenusEarthKeepsOneRocketAndExactFuelDebits(GameTestHelper helper) {
         helper.runAfterDelay(20, () -> {
             helper.setBlock(new BlockPos(4, 2, 3), io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.ROCKET_FUEL_TANK.get());
-            var rocket = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID());
-            var logical = rocket.assemblyTransactionId().orElseThrow();
-            var original = rocket.snapshot().orElseThrow();
-            var route = List.of(PlanetaryContent.MARS, PlanetaryContent.VENUS, CelestialIds.EARTH_ID);
-            fly(helper, rocket, logical, original.blocks(), route, 0);
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
+                var logical = rocket.assemblyTransactionId().orElseThrow();
+                var original = rocket.snapshot().orElseThrow();
+                var route = List.of(PlanetaryContent.MARS, PlanetaryContent.VENUS, CelestialIds.EARTH_ID);
+                fly(helper, rocket, logical, original.blocks(), route, 0);
+            });
         });
     }
 
@@ -123,7 +124,13 @@ public final class PlanetaryWorldGameTests {
             helper.assertTrue(result.requiredFuel() > 0, "Planetary flight omitted its fuel debit");
             // Successful native preparation has already initialized this server's journal.
             var journal = RocketTransferSavedData.get(server);
-            helper.runAfterDelay(270, () -> guarded(server, logical, () -> {
+            RocketFlightGameTestFixtures.awaitPaced(helper, helper.getTick() + 270, () -> {
+                var level = destination.equals(CelestialIds.EARTH_ID)
+                        ? server.overworld() : server.getLevel(PlanetaryContent.level(destination));
+                var landed = level == null ? null : RocketFlightGameTestFixtures.loadedLogicalRocket(level, logical);
+                return landed != null && landed.flightData().map(data -> data.state() == RocketFlightState.LANDED
+                        && data.currentBody().equals(destination)).orElse(false);
+            }, () -> guarded(server, logical, () -> {
                 var matches = new ArrayList<RocketEntity>();
                 for (var level : server.getAllLevels()) {
                     for (var entity : level.getAllEntities()) {

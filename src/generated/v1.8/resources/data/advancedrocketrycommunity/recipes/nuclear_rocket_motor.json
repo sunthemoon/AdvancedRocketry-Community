@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:rocket_motor"
+    },
+    {
+      "item": "advancedrocketrycommunity:iridium_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:iridium_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:enhanced_motor"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:nuclear_rocket_motor"
+  }
+}

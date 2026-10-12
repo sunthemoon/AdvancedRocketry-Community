@@ -46,36 +46,36 @@ public final class RocketTransferRecoveryGameTests {
         helper.runAfterDelay(40, () -> {
             RocketManager recoveryManager = new RocketManager();
 
-            RocketTransferRecord sourceOnly = prepareRecoveryScenario(
-                    helper,
-                    new BlockPos(3, 2, 3)
-            );
-            // Drain asynchronous entity-chunk reads so the recovery matrix observes a persisted,
-            // restart-equivalent boundary instead of racing the accelerated GameTest clock.
-            earth.getServer().saveEverything(false, true, true);
-            RocketTransferRecoveryReport sourceOnlyReport = recoveryManager.recoverTransfer(
-                    earth.getServer(),
-                    sourceOnly.transferId()
-            );
-            if (sourceOnlyReport.status() == RocketTransferRecoveryReport.Status.RETRY_LATER) {
-                retrySourceRecovery(
+            prepareRecoveryScenario(helper,
+                    new BlockPos(3, 2, 3), sourceOnly -> {
+                // Drain asynchronous entity-chunk reads so the recovery matrix observes a persisted,
+                // restart-equivalent boundary instead of racing the accelerated GameTest clock.
+                earth.getServer().saveEverything(false, true, true);
+                RocketTransferRecoveryReport sourceOnlyReport = recoveryManager.recoverTransfer(
+                        earth.getServer(),
+                        sourceOnly.transferId()
+                );
+                if (sourceOnlyReport.status() == RocketTransferRecoveryReport.Status.RETRY_LATER) {
+                    retrySourceRecovery(
+                            helper,
+                            earth,
+                            moon,
+                            recoveryManager,
+                            sourceOnly,
+                        1,
+                        new GameTestTickPacer(earth.getServer())
+                    );
+                    return;
+                }
+                continueRecoveryMatrix(
                         helper,
                         earth,
                         moon,
                         recoveryManager,
                         sourceOnly,
-                        1
+                        sourceOnlyReport
                 );
-                return;
-            }
-            continueRecoveryMatrix(
-                    helper,
-                    earth,
-                    moon,
-                    recoveryManager,
-                    sourceOnly,
-                    sourceOnlyReport
-            );
+            });
         });
     }
 
@@ -85,7 +85,8 @@ public final class RocketTransferRecoveryGameTests {
             ServerLevel moon,
             RocketManager recoveryManager,
             RocketTransferRecord sourceOnly,
-            int attempt
+            int attempt,
+            GameTestTickPacer pacer
     ) {
         helper.runAfterDelay(1, () -> {
             RocketTransferRecoveryReport report = recoveryManager.recoverTransfer(
@@ -94,13 +95,15 @@ public final class RocketTransferRecoveryGameTests {
             );
             if (report.status() == RocketTransferRecoveryReport.Status.RETRY_LATER
                     && attempt < 20) {
+                pacer.pace();
                 retrySourceRecovery(
                         helper,
                         earth,
                         moon,
                         recoveryManager,
                         sourceOnly,
-                        attempt + 1
+                        attempt + 1,
+                        pacer
                 );
                 return;
             }
@@ -134,92 +137,95 @@ public final class RocketTransferRecoveryGameTests {
             assertSingleAuthority(helper, earth, moon, sourceOnly.logicalRocketId(), earth, "source-only");
 
             clearRecoveryScenario(earth, moon);
-            RocketTransferRecord destinationOnly = prepareRecoveryScenario(
-                    helper,
-                    new BlockPos(6, 2, 3)
-            );
-            RocketEntity destinationOnlySource = findLogicalRocket(earth, destinationOnly.logicalRocketId());
-            helper.assertTrue(destinationOnlySource != null, "Destination-only setup source is missing");
-            destinationOnlySource.discard();
-            spawnRecoveryDestination(moon, destinationOnly);
-            RocketTransferRecoveryReport destinationOnlyReport = recoveryManager.recoverTransfer(
-                    earth.getServer(),
-                    destinationOnly.transferId()
-            );
-            assertRecovery(
-                    helper,
-                    destinationOnlyReport,
-                    RocketTransferRecoveryAction.KEEP_DESTINATION,
-                    0,
-                    1,
-                    "destination-only"
-            );
-            assertSingleAuthority(
-                    helper,
-                    earth,
-                    moon,
-                    destinationOnly.logicalRocketId(),
-                    moon,
-                    "destination-only"
-            );
+            prepareRecoveryScenario(helper,
+                    new BlockPos(6, 2, 3), destinationOnly -> {
+                RocketEntity destinationOnlySource = findLogicalRocket(earth, destinationOnly.logicalRocketId());
+                helper.assertTrue(destinationOnlySource != null, "Destination-only setup source is missing");
+                destinationOnlySource.discard();
+                spawnRecoveryDestination(moon, destinationOnly);
+                RocketTransferRecoveryReport destinationOnlyReport = recoveryManager.recoverTransfer(
+                        earth.getServer(),
+                        destinationOnly.transferId()
+                );
+                assertRecovery(
+                        helper,
+                        destinationOnlyReport,
+                        RocketTransferRecoveryAction.KEEP_DESTINATION,
+                        0,
+                        1,
+                        "destination-only"
+                );
+                assertSingleAuthority(
+                        helper,
+                        earth,
+                        moon,
+                        destinationOnly.logicalRocketId(),
+                        moon,
+                        "destination-only"
+                );
 
-            clearRecoveryScenario(earth, moon);
-            RocketTransferRecord both = prepareRecoveryScenario(helper, new BlockPos(9, 2, 3));
-            spawnRecoveryDestination(moon, both);
-            RocketTransferRecoveryReport bothReport = recoveryManager.recoverTransfer(
-                    earth.getServer(),
-                    both.transferId()
-            );
-            assertRecovery(
-                    helper,
-                    bothReport,
-                    RocketTransferRecoveryAction.REMOVE_DESTINATION_KEEP_SOURCE,
-                    1,
-                    1,
-                    "both"
-            );
-            assertSingleAuthority(helper, earth, moon, both.logicalRocketId(), earth, "both");
+                clearRecoveryScenario(earth, moon);
+                prepareRecoveryScenario(helper, new BlockPos(9, 2, 3), both -> {
+                    spawnRecoveryDestination(moon, both);
+                    RocketTransferRecoveryReport bothReport = recoveryManager.recoverTransfer(
+                            earth.getServer(),
+                            both.transferId()
+                    );
+                    assertRecovery(
+                            helper,
+                            bothReport,
+                            RocketTransferRecoveryAction.REMOVE_DESTINATION_KEEP_SOURCE,
+                            1,
+                            1,
+                            "both"
+                    );
+                    assertSingleAuthority(helper, earth, moon, both.logicalRocketId(), earth, "both");
 
-            clearRecoveryScenario(earth, moon);
-            RocketTransferRecord neither = prepareRecoveryScenario(helper, new BlockPos(12, 2, 3));
-            RocketEntity neitherSource = findLogicalRocket(earth, neither.logicalRocketId());
-            helper.assertTrue(neitherSource != null, "Neither setup source is missing");
-            neitherSource.discard();
-            RocketTransferSavedData journal = RocketTransferSavedData.get(earth.getServer());
-            journal.put(neither.destinationSpawned(UUID.randomUUID()));
-            journal.flush(earth.getServer());
-            RocketTransferRecoveryReport neitherReport = recoveryManager.recoverTransfer(
-                    earth.getServer(),
-                    neither.transferId()
-            );
-            assertRecovery(
-                    helper,
-                    neitherReport,
-                    RocketTransferRecoveryAction.REBUILD_DESTINATION,
-                    0,
-                    0,
-                    "neither"
-            );
-            assertSingleAuthority(helper, earth, moon, neither.logicalRocketId(), moon, "neither");
+                    clearRecoveryScenario(earth, moon);
+                    prepareRecoveryScenario(helper, new BlockPos(12, 2, 3), neither -> {
+                        RocketEntity neitherSource = findLogicalRocket(earth, neither.logicalRocketId());
+                        helper.assertTrue(neitherSource != null, "Neither setup source is missing");
+                        neitherSource.discard();
+                        RocketTransferSavedData journal = RocketTransferSavedData.get(earth.getServer());
+                        journal.put(neither.destinationSpawned(UUID.randomUUID()));
+                        journal.flush(earth.getServer());
+                        RocketTransferRecoveryReport neitherReport = recoveryManager.recoverTransfer(
+                                earth.getServer(),
+                                neither.transferId()
+                        );
+                        assertRecovery(
+                                helper,
+                                neitherReport,
+                                RocketTransferRecoveryAction.REBUILD_DESTINATION,
+                                0,
+                                0,
+                                "neither"
+                        );
+                        assertSingleAuthority(helper, earth, moon, neither.logicalRocketId(), moon, "neither");
 
-            clearRecoveryScenario(earth, moon);
-            helper.succeed();
+                        clearRecoveryScenario(earth, moon);
+                        helper.succeed();
+                    });
+                });
+            });
     }
 
-    private static RocketTransferRecord prepareRecoveryScenario(
+    private static void prepareRecoveryScenario(
             GameTestHelper helper,
-            BlockPos origin
+            BlockPos origin,
+            java.util.function.Consumer<RocketTransferRecord> ready
     ) {
         ServerLevel earth = helper.getLevel();
-        RocketEntity source = assembleFueledRocket(helper, origin, UUID.randomUUID());
-        UUID transferId = UUID.randomUUID();
-        RocketFlightRequestResult launch = RocketRuntime.requestAdminFlight(
-                source,
-                RocketDestination.MOON,
-                transferId
-        );
-        helper.assertTrue(launch.success(), "Recovery setup launch failed: " + launch.code());
-        return RocketTransferSavedData.get(earth.getServer()).find(transferId).orElseThrow();
+        assembleFueledRocket(helper, origin, UUID.randomUUID(), source -> {
+            UUID transferId = UUID.randomUUID();
+            RocketFlightRequestResult launch = RocketRuntime.requestAdminFlight(
+                    source,
+                    RocketDestination.MOON,
+                    transferId
+            );
+            helper.assertTrue(launch.success(), "Recovery setup launch failed: " + launch.code());
+            ready.accept(RocketTransferSavedData.get(earth.getServer()).find(transferId).orElseThrow());
+        });
     }
 
     private static RocketEntity spawnRecoveryDestination(

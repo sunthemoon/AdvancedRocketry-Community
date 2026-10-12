@@ -61,81 +61,89 @@ public final class PlanetaryDiscoveryGameTests {
                 stations.delete(station); stations.release(station); manager.clear();
                 ownedRockets.forEach(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity::discard);
             };
+            // Both assemblies share one readiness budget: 1 + 20 + 230 + 21 < 280 ticks.
+            long assemblyDeadline = helper.getTick() + RocketFlightGameTestFixtures.ASSEMBLY_WAIT_TICKS;
             try {
-                var rocket = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner.getUUID());
-                ownedRockets.add(rocket);
-                var secondRocket = RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(9, 2, 3), other.getUUID());
-                ownedRockets.add(secondRocket);
-                owner.setPos(rocket.position()); other.setPos(secondRocket.position());
-                stations.reserve(station, owner.getUUID(), "Research orbit", PlanetaryContent.MARS, server.overworld().getGameTime());
-                stations.commit(station);
-                var stationTarget = new TravelTarget.Station(station);
-                var before = rocket.flightData().orElseThrow();
-                var saved = progress.save(new CompoundTag());
-                var journal = RocketTransferSavedData.get(server).save(new CompoundTag());
-                var stationBefore = stations.save(new CompoundTag());
-                var chunks = chunks(helper);
-                var locked = manager.navigation(owner, rocket);
-                helper.assertTrue(locked.quotes().forTarget(MARS).status() == RocketNavigationStatus.DISCOVERY_REQUIRED
-                        && locked.quotes().forTarget(MARS).requiredFuel() == 0, "Undiscovered surface offered travel");
-                helper.assertTrue(locked.quotes().forTarget(stationTarget).status() == RocketNavigationStatus.DISCOVERY_REQUIRED,
-                        "Owned station bypassed orbit discovery");
-                manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, MARS, UUID.randomUUID());
-                helper.assertTrue(before.equals(rocket.flightData().orElseThrow()), "Player intent bypassed discovery");
-                helper.assertTrue(manager.requestAdminFlight(rocket, stationTarget, UUID.randomUUID()).code()
-                        == RocketFlightRequestCode.DISCOVERY_REQUIRED, "Operator flight bypassed discovery");
-                helper.assertTrue(saved.equals(progress.save(new CompoundTag())) && before.equals(rocket.flightData().orElseThrow())
-                        && journal.equals(RocketTransferSavedData.get(server).save(new CompoundTag()))
-                        && stationBefore.equals(stations.save(new CompoundTag())) && chunks.equals(chunks(helper)),
-                        "Denied planning mutated authority/resources or loaded chunks");
-                helper.assertTrue(catalogs.applyCandidate(pair(false, true)), "Reload candidate rejected");
-                var unrestricted = manager.navigation(owner, rocket);
-                helper.assertTrue(unrestricted.quotes().forTarget(MARS).canLaunch(), "Undiscovered source could not evacuate");
-                helper.assertTrue(unrestricted.quotes().forTarget(new TravelTarget.BodySurface(CelestialIds.EARTH_ID)).status()
-                        == RocketNavigationStatus.CURRENT, "Undiscovered source lost CURRENT status");
-                helper.assertTrue(catalogs.applyCandidate(pair(true, false)), "Discovery reload rejected");
-                helper.assertTrue(manager.requestAdminFlight(rocket, MARS, UUID.randomUUID()).code()
-                        == RocketFlightRequestCode.DISCOVERY_REQUIRED, "Stale ready quote authorized launch");
-                var menu = new RocketFlightMenu(61, owner.getInventory(), rocket);
-                owner.containerMenu = menu;
-                helper.assertTrue(menu.quotes().forTarget(MARS).status() == RocketNavigationStatus.DISCOVERY_REQUIRED,
-                        "Open console missed discovery lock");
-                var identity = new SatelliteIdentity(UUID.randomUUID(), owner.getUUID(), SatelliteIds.DATA_SATELLITE);
-                var capacityIdentity = new SatelliteIdentity(UUID.randomUUID(), owner.getUUID(), SatelliteIds.DATA_SATELLITE);
-                helper.assertTrue(SatelliteRuntime.launch(owner, identity, PlanetaryContent.MARS).success(), "Mars research did not start");
-                helper.assertTrue(SatelliteRuntime.launch(owner, capacityIdentity, PlanetaryContent.VENUS).success(), "Venus research did not start");
-                helper.assertTrue(SatelliteRuntime.claim(other, identity).code() == SatelliteOperationCode.UNAUTHORIZED,
-                        "Other player claimed private mission");
-                helper.runAfterDelay(230, () -> {
+                RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner.getUUID(), cleanup, assemblyDeadline, rocket -> {
                     try {
-                        helper.assertTrue(menu.quotes().forTarget(MARS).status() == RocketNavigationStatus.DISCOVERY_REQUIRED,
-                                "Pre-claim menu refresh lost discovery lock");
-                        helper.assertTrue(SatelliteRuntime.claim(owner, identity).success(), "Owner research claim failed");
-                        helper.assertTrue(missions.account(owner.getUUID()).balance() == 20 && missions.account(other.getUUID()).balance() == 0,
-                                "Shared discovery transferred private research");
-                        helper.assertTrue(!menu.quotes().forTarget(MARS).canLaunch(), "Menu did not retain its bounded refresh interval");
-                        helper.runAfterDelay(21, () -> {
+                        ownedRockets.add(rocket);
+                        RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(9, 2, 3), other.getUUID(), cleanup, assemblyDeadline, secondRocket -> {
                             try {
-                                helper.assertTrue(menu.quotes().forTarget(MARS).canLaunch()
-                                        && manager.navigation(other, secondRocket).quotes().forTarget(MARS).canLaunch(),
-                                        "Discovery did not unlock both players' navigation");
-                                helper.assertTrue(manager.navigation(other, secondRocket).stations().stream().noneMatch(s -> s.stationId().equals(station)),
-                                        "Discovery granted private station access");
-                                SatelliteRuntime.claim(owner, identity);
-                                helper.assertTrue(missions.account(owner.getUUID()).balance() == 20, "Repeated claim duplicated research");
-                                for (int i = 0; i < 127; i++) { progress.discover(ModIdentity.id("removed_fixture_" + i), server.overworld().getGameTime()); }
-                                var full = progress.save(new CompoundTag());
-                                for (int i = 0; i < 3; i++) {
-                                    helper.assertTrue(SatelliteRuntime.claim(owner, capacityIdentity).code() == SatelliteOperationCode.PENDING_DISCOVERY,
-                                            "Full retained ledger was not reported pending");
-                                }
-                                helper.assertTrue(missions.account(owner.getUUID()).balance() == 40 && full.equals(progress.save(new CompoundTag()))
-                                        && SatelliteRuntime.currentMission(server, capacityIdentity).orElseThrow().status() == MissionStatus.CLAIM_PENDING_DISCOVERY,
-                                        "Capacity retry repeated payment, evicted history or completed falsely");
-                                helper.assertTrue(manager.navigation(owner, rocket).quotes().forTarget(new TravelTarget.BodySurface(PlanetaryContent.VENUS))
-                                        .status() == RocketNavigationStatus.DISCOVERY_REQUIRED, "Pending discovery unlocked Venus");
-                                helper.succeed();
-                            } finally { cleanup.run(); }
+                                ownedRockets.add(secondRocket);
+                                owner.setPos(rocket.position()); other.setPos(secondRocket.position());
+                                stations.reserve(station, owner.getUUID(), "Research orbit", PlanetaryContent.MARS, server.overworld().getGameTime());
+                                stations.commit(station);
+                                var stationTarget = new TravelTarget.Station(station);
+                                var before = rocket.flightData().orElseThrow();
+                                var saved = progress.save(new CompoundTag());
+                                var journal = RocketTransferSavedData.get(server).save(new CompoundTag());
+                                var stationBefore = stations.save(new CompoundTag());
+                                var chunks = chunks(helper);
+                                var locked = manager.navigation(owner, rocket);
+                                helper.assertTrue(locked.quotes().forTarget(MARS).status() == RocketNavigationStatus.DISCOVERY_REQUIRED
+                                        && locked.quotes().forTarget(MARS).requiredFuel() == 0, "Undiscovered surface offered travel");
+                                helper.assertTrue(locked.quotes().forTarget(stationTarget).status() == RocketNavigationStatus.DISCOVERY_REQUIRED,
+                                        "Owned station bypassed orbit discovery");
+                                manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, MARS, UUID.randomUUID());
+                                helper.assertTrue(before.equals(rocket.flightData().orElseThrow()), "Player intent bypassed discovery");
+                                helper.assertTrue(manager.requestAdminFlight(rocket, stationTarget, UUID.randomUUID()).code()
+                                        == RocketFlightRequestCode.DISCOVERY_REQUIRED, "Operator flight bypassed discovery");
+                                helper.assertTrue(saved.equals(progress.save(new CompoundTag())) && before.equals(rocket.flightData().orElseThrow())
+                                        && journal.equals(RocketTransferSavedData.get(server).save(new CompoundTag()))
+                                        && stationBefore.equals(stations.save(new CompoundTag())) && chunks.equals(chunks(helper)),
+                                        "Denied planning mutated authority/resources or loaded chunks");
+                                helper.assertTrue(catalogs.applyCandidate(pair(false, true)), "Reload candidate rejected");
+                                var unrestricted = manager.navigation(owner, rocket);
+                                helper.assertTrue(unrestricted.quotes().forTarget(MARS).canLaunch(), "Undiscovered source could not evacuate");
+                                helper.assertTrue(unrestricted.quotes().forTarget(new TravelTarget.BodySurface(CelestialIds.EARTH_ID)).status()
+                                        == RocketNavigationStatus.CURRENT, "Undiscovered source lost CURRENT status");
+                                helper.assertTrue(catalogs.applyCandidate(pair(true, false)), "Discovery reload rejected");
+                                helper.assertTrue(manager.requestAdminFlight(rocket, MARS, UUID.randomUUID()).code()
+                                        == RocketFlightRequestCode.DISCOVERY_REQUIRED, "Stale ready quote authorized launch");
+                                var menu = new RocketFlightMenu(61, owner.getInventory(), rocket);
+                                owner.containerMenu = menu;
+                                helper.assertTrue(menu.quotes().forTarget(MARS).status() == RocketNavigationStatus.DISCOVERY_REQUIRED,
+                                        "Open console missed discovery lock");
+                                var identity = new SatelliteIdentity(UUID.randomUUID(), owner.getUUID(), SatelliteIds.DATA_SATELLITE);
+                                var capacityIdentity = new SatelliteIdentity(UUID.randomUUID(), owner.getUUID(), SatelliteIds.DATA_SATELLITE);
+                                helper.assertTrue(SatelliteRuntime.launch(owner, identity, PlanetaryContent.MARS).success(), "Mars research did not start");
+                                helper.assertTrue(SatelliteRuntime.launch(owner, capacityIdentity, PlanetaryContent.VENUS).success(), "Venus research did not start");
+                                helper.assertTrue(SatelliteRuntime.claim(other, identity).code() == SatelliteOperationCode.UNAUTHORIZED,
+                                        "Other player claimed private mission");
+                                helper.runAfterDelay(230, () -> {
+                                    try {
+                                        helper.assertTrue(menu.quotes().forTarget(MARS).status() == RocketNavigationStatus.DISCOVERY_REQUIRED,
+                                                "Pre-claim menu refresh lost discovery lock");
+                                        helper.assertTrue(SatelliteRuntime.claim(owner, identity).success(), "Owner research claim failed");
+                                        helper.assertTrue(missions.account(owner.getUUID()).balance() == 20 && missions.account(other.getUUID()).balance() == 0,
+                                                "Shared discovery transferred private research");
+                                        helper.assertTrue(!menu.quotes().forTarget(MARS).canLaunch(), "Menu did not retain its bounded refresh interval");
+                                        helper.runAfterDelay(21, () -> {
+                                            try {
+                                                helper.assertTrue(menu.quotes().forTarget(MARS).canLaunch()
+                                                        && manager.navigation(other, secondRocket).quotes().forTarget(MARS).canLaunch(),
+                                                        "Discovery did not unlock both players' navigation");
+                                                helper.assertTrue(manager.navigation(other, secondRocket).stations().stream().noneMatch(s -> s.stationId().equals(station)),
+                                                        "Discovery granted private station access");
+                                                SatelliteRuntime.claim(owner, identity);
+                                                helper.assertTrue(missions.account(owner.getUUID()).balance() == 20, "Repeated claim duplicated research");
+                                                for (int i = 0; i < 127; i++) { progress.discover(ModIdentity.id("removed_fixture_" + i), server.overworld().getGameTime()); }
+                                                var full = progress.save(new CompoundTag());
+                                                for (int i = 0; i < 3; i++) {
+                                                    helper.assertTrue(SatelliteRuntime.claim(owner, capacityIdentity).code() == SatelliteOperationCode.PENDING_DISCOVERY,
+                                                            "Full retained ledger was not reported pending");
+                                                }
+                                                helper.assertTrue(missions.account(owner.getUUID()).balance() == 40 && full.equals(progress.save(new CompoundTag()))
+                                                        && SatelliteRuntime.currentMission(server, capacityIdentity).orElseThrow().status() == MissionStatus.CLAIM_PENDING_DISCOVERY,
+                                                        "Capacity retry repeated payment, evicted history or completed falsely");
+                                                helper.assertTrue(manager.navigation(owner, rocket).quotes().forTarget(new TravelTarget.BodySurface(PlanetaryContent.VENUS))
+                                                        .status() == RocketNavigationStatus.DISCOVERY_REQUIRED, "Pending discovery unlocked Venus");
+                                                helper.succeed();
+                                            } finally { cleanup.run(); }
+                                        });
+                                    } catch (RuntimeException | Error exception) { cleanup.run(); throw exception; }
+                                });
+                            } catch (RuntimeException | Error exception) { cleanup.run(); throw exception; }
                         });
                     } catch (RuntimeException | Error exception) { cleanup.run(); throw exception; }
                 });

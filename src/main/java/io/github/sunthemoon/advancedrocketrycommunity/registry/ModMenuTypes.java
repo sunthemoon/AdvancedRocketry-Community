@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicControllerMenu;
+
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionGeneratorMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarGeneratorMenu;
@@ -95,7 +97,10 @@ public final class ModMenuTypes {
             () -> IForgeMenuType.create(ElevatorMenu::new)
     );
 
-    /** ADR-065 C17b: one menu type per station controller; changes are vanilla menu button IDs. */
+    public static final RegistryObject<MenuType<ClassicControllerMenu>> LATHE = MENUS.register(
+            "lathe", () -> IForgeMenuType.create(ClassicControllerMenu::new));
+
+    /** ADR-065 C17b: one menu type per station controller; actions travel as classic_controls intents. */
     public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.station.controller
             .StationControllerMenu>> WARP_CONTROLLER = stationController(
             io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.WARP);

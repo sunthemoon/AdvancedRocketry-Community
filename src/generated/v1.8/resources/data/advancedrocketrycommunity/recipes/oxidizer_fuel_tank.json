@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:rocket_fuel_tank"
+    },
+    {
+      "item": "advancedrocketrycommunity:aluminum_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:aluminum_plate"
+    },
+    {
+      "item": "minecraft:lapis_lazuli"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:oxidizer_fuel_tank"
+  }
+}

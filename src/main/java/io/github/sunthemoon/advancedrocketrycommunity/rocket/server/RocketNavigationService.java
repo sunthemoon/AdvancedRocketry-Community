@@ -73,7 +73,7 @@ final class RocketNavigationService {
                 || stations.find(station.instanceId()).filter(value -> access.allowed(value, player.getUUID(),
                 player.hasPermissions(2), StationAccessAction.VISIT)).isPresent());
         boolean launchableState = flight.state() == RocketFlightState.FUELED
-                || flight.state() == RocketFlightState.LANDED && flight.fuel().amount() > 0;
+                || flight.state() == RocketFlightState.LANDED && flight.fuel().availableForLaunch();
         var entries = new ArrayList<RocketFlightQuotes.TargetQuote>(targets.size());
         for (var target : targets) {
             var result = planner.plan(rocket, flight, source, target, stations, PREVIEW_ID, pair);

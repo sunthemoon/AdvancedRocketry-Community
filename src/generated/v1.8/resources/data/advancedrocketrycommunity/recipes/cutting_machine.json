@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:motor"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "advancedrocketrycommunity:iron_saw_blade"
+    }
+  },
+  "pattern": [
+    "PRP",
+    "MCM",
+    "PSP"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:cutting_machine"
+  }
+}

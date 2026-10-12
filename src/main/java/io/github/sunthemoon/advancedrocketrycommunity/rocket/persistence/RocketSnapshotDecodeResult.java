@@ -29,7 +29,9 @@ public final class RocketSnapshotDecodeResult {
     ) {
         this.status = Objects.requireNonNull(status, "status");
         this.snapshot = snapshot;
-        this.preservedPayload = preservedPayload == null ? null : preservedPayload.copy();
+        this.preservedPayload = preservedPayload == null ? null : io.github.sunthemoon.advancedrocketrycommunity.rocket.model
+                .RocketNativeResources.preserve(preservedPayload,
+                        io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES);
         this.code = Objects.requireNonNull(code, "code");
         this.message = Objects.requireNonNull(message, "message");
     }
@@ -73,7 +75,8 @@ public final class RocketSnapshotDecodeResult {
     public Optional<CompoundTag> preservedPayload() {
         return preservedPayload == null
                 ? Optional.empty()
-                : Optional.of(preservedPayload.copy());
+                : Optional.of(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
+                        .preserve(preservedPayload, io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES));
     }
 
     public RocketValidationCode code() {

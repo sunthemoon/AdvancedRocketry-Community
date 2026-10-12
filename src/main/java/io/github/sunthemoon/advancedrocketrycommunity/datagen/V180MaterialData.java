@@ -145,7 +145,14 @@ public final class V180MaterialData {
                     ModBlocks.ELEVATOR_TERMINAL.get()
             };
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(earlier);
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.ITEM_INPUT_HATCH.get(), ModBlocks.ITEM_OUTPUT_HATCH.get(),
+                    ModBlocks.FLUID_INPUT_HATCH.get(), ModBlocks.FLUID_OUTPUT_HATCH.get(), ModBlocks.POWER_INPUT_PLUG.get(), ModBlocks.LATHE.get());
+            tag(BlockTags.NEEDS_IRON_TOOL).add(ModBlocks.ITEM_INPUT_HATCH.get(), ModBlocks.ITEM_OUTPUT_HATCH.get(),
+                    ModBlocks.FLUID_INPUT_HATCH.get(), ModBlocks.FLUID_OUTPUT_HATCH.get(), ModBlocks.POWER_INPUT_PLUG.get(), ModBlocks.LATHE.get());
             tag(BlockTags.NEEDS_IRON_TOOL).add(earlier);
+            Block[] arcCutting = {ModBlocks.ARC_FURNACE.get(), ModBlocks.CUTTING_MACHINE.get(), ModBlocks.BLAST_BRICK.get(), ModBlocks.SAW_BLADE.get()};
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(arcCutting);
+            tag(BlockTags.NEEDS_IRON_TOOL).add(arcCutting);
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(MaterialContent.SMALL_PLATE_PRESS.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(MaterialContent.SMALL_PLATE_PRESS.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.COMBUSTION_GENERATOR.get());
@@ -156,6 +163,7 @@ public final class V180MaterialData {
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.WARP_CONTROLLER.get(),
                     ModBlocks.STATION_GRAVITY_CONTROLLER.get(), ModBlocks.STATION_ALTITUDE_CONTROLLER.get(),
                     ModBlocks.STATION_ORIENTATION_CONTROLLER.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.FORCE_FIELD_PROJECTOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.DOORS).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOLAR_GENERATOR.get(), ModBlocks.SOLAR_PANEL.get());

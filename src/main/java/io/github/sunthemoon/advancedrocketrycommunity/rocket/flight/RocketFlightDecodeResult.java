@@ -25,7 +25,8 @@ public final class RocketFlightDecodeResult {
     ) {
         this.status = Objects.requireNonNull(status, "status");
         this.data = data;
-        this.preservedPayload = preservedPayload == null ? null : preservedPayload.copy();
+        this.preservedPayload = preservedPayload == null ? null : io.github.sunthemoon.advancedrocketrycommunity.rocket.model
+                .RocketNativeResources.preserve(preservedPayload, RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES);
         this.message = Objects.requireNonNull(message, "message");
     }
 
@@ -62,7 +63,8 @@ public final class RocketFlightDecodeResult {
     public Optional<CompoundTag> preservedPayload() {
         return preservedPayload == null
                 ? Optional.empty()
-                : Optional.of(preservedPayload.copy());
+                : Optional.of(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
+                        .preserve(preservedPayload, RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES));
     }
 
     public String message() {

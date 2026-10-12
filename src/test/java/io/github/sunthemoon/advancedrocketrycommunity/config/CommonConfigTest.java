@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -42,14 +43,44 @@ class CommonConfigTest {
         // Classic settings: C15a/b/c (ADR-063), combustion, tank capacity and pump operation (ADR-064),
         // the classic life-support instrument switch (ADR-066), and the single solar generator's
         // enable switch and output multiplier (ADR-065), plus the accepted C18a living-tick gravity switch
-        // and the consumed C18b ordinary-equipment switch and two finite oxygen settings (ADR-066).
+        // and the consumed C18b ordinary-equipment switch and two finite oxygen settings (ADR-066),
+        // the C16b cutting machine's sawmill switch (ADR-064 section 8),
+        // the ten C17a ROCKET propulsion values (ADR-065 section 3),
+        // and the C18b W06 jetpack force and low-gravity landing-boots rule (ADR-066 section 5.2).
         assertSame(CommonConfig.CLASSIC_GRAVITY_ENABLED,
                 CommonConfig.SPEC.getValues().get("environment.classicGravityEnabled"));
         assertSame(CommonConfig.CLASSIC_EQUIPMENT_ENABLED,
                 CommonConfig.SPEC.getValues().get("equipment.classicEnabled"));
         assertSame(CommonConfig.SUIT_TANK_CAPACITY, CommonConfig.SPEC.getValues().get("OXYGEN.suitTankCapacity"));
         assertSame(CommonConfig.SPACE_SUIT_O2_BUFFER, CommonConfig.SPEC.getValues().get("OXYGEN.spaceSuitO2Buffer"));
-        assertEquals(76, countValues(CommonConfig.SPEC.getValues()));
+        assertNotNull(CommonConfig.SPEC.getValues().get("machines.sawmillVanillaWood"));
+        assertSame(CommonConfig.ROCKET.thrustMultiplier, CommonConfig.SPEC.getValues().get("ROCKET.thrustMultiplier"));
+        assertSame(CommonConfig.JET_PACK_FORCE, CommonConfig.SPEC.getValues().get("equipment.jetPackForce"));
+        assertSame(CommonConfig.LOW_GRAVITY_BOOTS, CommonConfig.SPEC.getValues().get("equipment.lowGravityBoots"));
+        assertEquals(89, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void motionUpgradeValuesHaveExactDefaultsAndBounds() {
+        ForgeConfigSpec.ValueSpec force = assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                CommonConfig.SPEC.getSpec().get("equipment.jetPackForce"));
+        ForgeConfigSpec.Range<Double> range = force.getRange();
+        assertEquals(0.05, range.getMin());
+        assertEquals(4.0, range.getMax());
+        assertEquals(1.3, CommonConfig.JET_PACK_FORCE.getDefault());
+        assertTrue(force.test(0.05));
+        assertTrue(force.test(4.0));
+        assertFalse(force.test(0.049));
+        assertFalse(force.test(4.001));
+        assertFalse(force.test(Double.NaN));
+        assertEquals(1.3, CommonConfig.jetPackForce());
+        ForgeConfigSpec.ValueSpec boots = assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                CommonConfig.SPEC.getSpec().get("equipment.lowGravityBoots"));
+        assertTrue(boots.test(true));
+        assertTrue(boots.test(false));
+        assertFalse(CommonConfig.LOW_GRAVITY_BOOTS.getDefault());
+        assertFalse(CommonConfig.lowGravityBoots());
+        assertTrue(CommonConfig.serverSwitch(CommonConfig.LOW_GRAVITY_BOOTS));
     }
 
     @Test

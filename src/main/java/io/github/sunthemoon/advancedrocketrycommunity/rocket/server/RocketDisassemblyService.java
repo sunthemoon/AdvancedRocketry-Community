@@ -33,7 +33,7 @@ final class RocketDisassemblyService {
         if (!allowRequest(player) || !validatePlayer(player, rocket)) {
             return;
         }
-        long fuel = rocket.flightData().orElseThrow().fuel().amount();
+        long fuel = rocket.flightData().orElseThrow().fuel().totalAmount();
         if (fuel > 0L) {
             long now = now(player);
             var offer = confirmations.offer(player.getUUID(), quote(rocket), now);
@@ -45,6 +45,8 @@ final class RocketDisassemblyService {
             long remainingTicks = RocketDisassemblyConfirmations.LIFETIME_TICKS - (now - offer.orElseThrow().issuedAt());
             player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_fuel_warning", fuel,
                     (remainingTicks + 19L) / 20L));
+            player.sendSystemMessage(Component.translatable("message.advancedrocketrycommunity.propulsion.disposal_vector",
+                    rocket.flightData().orElseThrow().fuel().summary()));
             player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_discard_action", fuel)
                     .withStyle(style -> style.withColor(ChatFormatting.RED).withUnderlined(true)
                             .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command))));
@@ -70,7 +72,7 @@ final class RocketDisassemblyService {
             player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_confirmation_invalid"));
             return false;
         }
-        if (rocket.flightData().orElseThrow().fuel().amount() <= 0L || !expected.equals(quote(rocket))) {
+        if (rocket.flightData().orElseThrow().fuel().totalAmount() <= 0L || !expected.equals(quote(rocket))) {
             player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_confirmation_invalid"));
             return false;
         }
@@ -110,6 +112,9 @@ final class RocketDisassemblyService {
         if (!rocket.operational()) {
             return RocketValidationCode.UNSUPPORTED_SCHEMA;
         }
+        if (!flights.resourceMutationAllowed(rocket)) {
+            return RocketValidationCode.REGION_BUSY;
+        }
         RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
         if (!snapshot.sourceDimension().equals(level.dimension().location())
                 || !RocketFlightStateMachine.isLegal(rocket.flightData().orElseThrow().state(),
@@ -127,7 +132,7 @@ final class RocketDisassemblyService {
     private boolean executePlayer(ServerPlayer player, RocketEntity rocket) {
         ServerLevel level = player.serverLevel();
         RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
-        long fuel = rocket.flightData().orElseThrow().fuel().amount();
+        long fuel = rocket.flightData().orElseThrow().fuel().totalAmount();
         RocketTransactionResult result = execute(level, rocket, snapshot, fuel);
         reportTransaction(level, snapshot, player, result);
         if (result.success() && fuel > 0L) {
@@ -142,7 +147,13 @@ final class RocketDisassemblyService {
         if (code != RocketValidationCode.SUCCESS) {
             return code;
         }
-        long fuel = rocket.flightData().orElseThrow().fuel().amount();
+        var fuelState = rocket.flightData().orElseThrow().fuel();
+        long fuel = fuelState.totalAmount();
+        if (fuelState.propulsion().filter(value -> value.primary().branch()
+                == io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketFuelBank.Branch.FLUID
+                || value.oxidizer().amount() > 0).isPresent()) {
+            return RocketValidationCode.FUEL_DISPOSAL_REQUIRED;
+        }
         if (fuel > 0L && expectedDiscardFuel < 0L) {
             return RocketValidationCode.FUEL_DISPOSAL_REQUIRED;
         }
@@ -166,8 +177,9 @@ final class RocketDisassemblyService {
             flights.releaseLandedReservation(rocket);
             if (discardedFuel > 0L) {
                 AdvancedRocketryCommunity.LOGGER.info(
-                        "ARCE_ROCKET_FUEL_DISCARDED entity={} logical={} amount={} reason=confirmed_disassembly",
-                        rocket.getUUID(), rocket.assemblyTransactionId().orElseThrow(), discardedFuel);
+                        "ARCE_ROCKET_FUEL_DISCARDED entity={} logical={} amount={} vector={} reason=confirmed_disassembly",
+                        rocket.getUUID(), rocket.assemblyTransactionId().orElseThrow(), discardedFuel,
+                        rocket.flightData().orElseThrow().fuel().summary());
             }
         }
         return result;

@@ -307,6 +307,7 @@ placed it; a pump without an owner (placed by a machine) drains nothing.
 1. **Electric arc furnace.** The legacy 5 × 5 × 5 layout of `blast_brick`
    (new block: hardness 3, blast resistance 6), coils and air; the legacy
    recipes and numbers (§ Context). Steel needs charcoal, as legacy.
+   *Implementation note (W01G, 2026-10-12; decision unchanged):* the 20 legacy null cells use the closed tag matcher `advancedrocketrycommunity:machine_clearance` (air plus non-solid decoration such as snow layers, torches, redstone wire, rails, carpets and vines; data packs can extend it), and the 15 legacy air cells stay `air`.
 2. **Lathe.** The legacy 2 × 1 × 4 layout; 2 rods from one ingot of each
    material with rods (C15a, iron included; 300 ticks × 20 FE).
 3. **Cutting machine.** The legacy 1 × 2 × 3 layout with a motor and
@@ -421,6 +422,30 @@ refusal and verbatim retention of unproved legacy progress/journals through
 repeated restarts, unknown/future refusal, supported new JSON-signature jobs
 and resource conservation separately. It must not claim legacy conversion
 from resolved-hash matching alone.
+
+**Implementation note (W01F, 2026-10-12; decisions unchanged).** Classic controllers
+and the five hatch/plug objects extend R-021 only for present roots that exceed
+their byte/depth/node bounds or cannot be written unchanged by native NBT.
+Missing hatch roots load empty and unbound. A controller loads fresh and unformed
+only when it carries none of the six classic controller roots, so that path discards
+nothing. A partial set (for example a present resources root without its machine
+root, or the reverse) is quarantined like bounded unsupported/future roots: present
+roots are saved verbatim, missing roots stay missing, nothing is reset or dropped and
+no save is refused. The quarantine affects only that controller (no ticking, no hatch
+capabilities, no ordinary removal of it or its hatches), lasts until an offline repair
+(restarts do not clear it), writes no log line (the controller reports REPAIR) and is
+recovered with the R-021 procedure. (Corrected by W01G on 2026-10-12: the W01F text
+reset a controller when either required root was missing.)
+The existing exception-based guard refuses the whole terrain chunk; a 257th
+distinct denied coordinate saturates the entire Level. Denial lasts for the Level
+lifetime with no production reset and no total save-retry or ERROR/stack-log bound.
+Unrelated terrain changes can roll back against separately saved player data.
+Stop play, stop the server, back up all world/player stores, repair only an offline
+copy from trusted data, and verify actual writer success, normal shutdown and
+restart conservation before returning that copy to service. The
+[R-021 classic extension](../11-RISK-REGISTER.md#r-021classic-控制器与-hatch-的实施范围补充2026-10-12)
+defines the recovery checks. Native recovery evidence and risk acceptance remain
+outstanding; restarting alone is not a repair and dirty retention is not durability.
 
 ### 12. Generated data and assets
 

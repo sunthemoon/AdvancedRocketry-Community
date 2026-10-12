@@ -1,0 +1,27 @@
+{
+  "type": "advancedrocketrycommunity:arc_furnace",
+  "energy_per_tick": 10,
+  "fluid_inputs": [],
+  "fluid_outputs": [],
+  "item_inputs": [
+    {
+      "count": 1,
+      "ingredient": [
+        {
+          "tag": "forge:ores/rutile"
+        },
+        {
+          "tag": "forge:raw_materials/rutile"
+        }
+      ]
+    }
+  ],
+  "item_outputs": [
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:titanium_ingot"
+    }
+  ],
+  "processing_time": 100,
+  "schema_version": 1
+}

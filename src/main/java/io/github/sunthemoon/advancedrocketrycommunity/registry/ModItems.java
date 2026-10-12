@@ -30,6 +30,7 @@ public final class ModItems {
     );
 
     public static final RegistryObject<Item> JACKHAMMER = ITEMS.register("jackhammer", JackhammerItem::new);
+    public static final RegistryObject<Item> FORCE_FIELD_PROJECTOR = blockItem("force_field_projector", ModBlocks.FORCE_FIELD_PROJECTOR);
     public static final RegistryObject<Item> AIRLOCK_DOOR = blockItem("airlock_door", ModBlocks.AIRLOCK_DOOR);
     public static final RegistryObject<Item> COMBUSTION_GENERATOR = blockItem("combustion_generator",
             ModBlocks.COMBUSTION_GENERATOR);
@@ -123,6 +124,14 @@ public final class ModItems {
             "rocket_seat",
             ModBlocks.ROCKET_SEAT
     );
+    public static final RegistryObject<Item> ADVANCED_ROCKET_MOTOR = blockItem("advanced_rocket_motor", ModBlocks.ADVANCED_ROCKET_MOTOR);
+    public static final RegistryObject<Item> BIPROPELLANT_ROCKET_MOTOR = blockItem("bipropellant_rocket_motor", ModBlocks.BIPROPELLANT_ROCKET_MOTOR);
+    public static final RegistryObject<Item> ADVANCED_BIPROPELLANT_ROCKET_MOTOR = blockItem("advanced_bipropellant_rocket_motor", ModBlocks.ADVANCED_BIPROPELLANT_ROCKET_MOTOR);
+    public static final RegistryObject<Item> BIPROPELLANT_FUEL_TANK = blockItem("bipropellant_fuel_tank", ModBlocks.BIPROPELLANT_FUEL_TANK);
+    public static final RegistryObject<Item> OXIDIZER_FUEL_TANK = blockItem("oxidizer_fuel_tank", ModBlocks.OXIDIZER_FUEL_TANK);
+    public static final RegistryObject<Item> NUCLEAR_ROCKET_MOTOR = blockItem("nuclear_rocket_motor", ModBlocks.NUCLEAR_ROCKET_MOTOR);
+    public static final RegistryObject<Item> NUCLEAR_FUEL_TANK = blockItem("nuclear_fuel_tank", ModBlocks.NUCLEAR_FUEL_TANK);
+    public static final RegistryObject<Item> NUCLEAR_CORE = blockItem("nuclear_core", ModBlocks.NUCLEAR_CORE);
     public static final RegistryObject<Item> GUIDANCE_COMPUTER = blockItem(
             "guidance_computer",
             ModBlocks.GUIDANCE_COMPUTER
@@ -225,6 +234,18 @@ public final class ModItems {
     public static final RegistryObject<Item> THERMITE_TORCH = ITEMS.register("thermite_torch", () ->
             new StandingAndWallBlockItem(ModBlocks.THERMITE_TORCH.get(), ModBlocks.THERMITE_WALL_TORCH.get(),
                     new Item.Properties(), Direction.DOWN));
+
+    public static final RegistryObject<Item> ITEM_INPUT_HATCH = blockItem("item_input_hatch", ModBlocks.ITEM_INPUT_HATCH);
+    public static final RegistryObject<Item> ITEM_OUTPUT_HATCH = blockItem("item_output_hatch", ModBlocks.ITEM_OUTPUT_HATCH);
+    public static final RegistryObject<Item> FLUID_INPUT_HATCH = blockItem("fluid_input_hatch", ModBlocks.FLUID_INPUT_HATCH);
+    public static final RegistryObject<Item> FLUID_OUTPUT_HATCH = blockItem("fluid_output_hatch", ModBlocks.FLUID_OUTPUT_HATCH);
+    public static final RegistryObject<Item> POWER_INPUT_PLUG = blockItem("power_input_plug", ModBlocks.POWER_INPUT_PLUG);
+    public static final RegistryObject<Item> LATHE = blockItem("lathe", ModBlocks.LATHE);
+    public static final RegistryObject<Item> ARC_FURNACE = blockItem("arc_furnace", ModBlocks.ARC_FURNACE);
+    public static final RegistryObject<Item> CUTTING_MACHINE = blockItem("cutting_machine", ModBlocks.CUTTING_MACHINE);
+    public static final RegistryObject<Item> BLAST_BRICK = blockItem("blast_brick", ModBlocks.BLAST_BRICK);
+    public static final RegistryObject<Item> SAW_BLADE = blockItem("saw_blade", ModBlocks.SAW_BLADE);
+    public static final RegistryObject<Item> IRON_SAW_BLADE = component("iron_saw_blade");
 
     private ModItems() {
     }

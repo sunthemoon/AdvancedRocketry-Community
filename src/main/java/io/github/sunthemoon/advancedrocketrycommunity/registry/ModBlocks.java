@@ -1,5 +1,11 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicHatchKind;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicHatchBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicControllerBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicControllerBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicMachineDefinition;
+
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.AirlockDoorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
@@ -46,6 +52,16 @@ public final class ModBlocks {
             ForgeRegistries.BLOCKS,
             AdvancedRocketryCommunity.MOD_ID
     );
+
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlock>
+            FORCE_FIELD_PROJECTOR = BLOCKS.register("force_field_projector", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlock(
+                    metalProperties().pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldBlock>
+            FORCE_FIELD = BLOCKS.register("force_field", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(3.0F, 6.0F)
+                            .sound(SoundType.GLASS).noLootTable().pushReaction(PushReaction.BLOCK)));
 
     public static final RegistryObject<AirlockDoorBlock> AIRLOCK_DOOR = BLOCKS.register(
             "airlock_door", () -> new AirlockDoorBlock(metalProperties().requiresCorrectToolForDrops()
@@ -127,8 +143,43 @@ public final class ModBlocks {
     );
     public static final RegistryObject<Block> ROCKET_MOTOR = metalBlock("rocket_motor");
     public static final RegistryObject<Block> ROCKET_FUEL_TANK = metalBlock("rocket_fuel_tank");
+    public static final RegistryObject<Block> ADVANCED_ROCKET_MOTOR = metalBlock("advanced_rocket_motor");
+    public static final RegistryObject<Block> BIPROPELLANT_ROCKET_MOTOR = metalBlock("bipropellant_rocket_motor");
+    public static final RegistryObject<Block> ADVANCED_BIPROPELLANT_ROCKET_MOTOR = metalBlock("advanced_bipropellant_rocket_motor");
+    public static final RegistryObject<Block> BIPROPELLANT_FUEL_TANK = metalBlock("bipropellant_fuel_tank");
+    public static final RegistryObject<Block> OXIDIZER_FUEL_TANK = metalBlock("oxidizer_fuel_tank");
+    public static final RegistryObject<Block> NUCLEAR_ROCKET_MOTOR = BLOCKS.register("nuclear_rocket_motor", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketNuclearNozzleBlock(metalProperties()));
+    public static final RegistryObject<Block> NUCLEAR_FUEL_TANK = metalBlock("nuclear_fuel_tank");
+    public static final RegistryObject<Block> NUCLEAR_CORE = metalBlock("nuclear_core");
     public static final RegistryObject<Block> ROCKET_SEAT = metalBlock("rocket_seat");
     public static final RegistryObject<Block> GUIDANCE_COMPUTER = metalBlock("guidance_computer");
+
+    public static final RegistryObject<ClassicHatchBlock> ITEM_INPUT_HATCH = classicHatch(ClassicHatchKind.ITEM_INPUT);
+    public static final RegistryObject<ClassicHatchBlock> ITEM_OUTPUT_HATCH = classicHatch(ClassicHatchKind.ITEM_OUTPUT);
+    public static final RegistryObject<ClassicHatchBlock> FLUID_INPUT_HATCH = classicHatch(ClassicHatchKind.FLUID_INPUT);
+    public static final RegistryObject<ClassicHatchBlock> FLUID_OUTPUT_HATCH = classicHatch(ClassicHatchKind.FLUID_OUTPUT);
+    public static final RegistryObject<ClassicHatchBlock> POWER_INPUT_PLUG = classicHatch(ClassicHatchKind.POWER_INPUT);
+    public static final RegistryObject<ClassicControllerBlock> LATHE = BLOCKS.register("lathe", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<ClassicControllerBlock> ARC_FURNACE = BLOCKS.register("arc_furnace", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(
+                            ModBlockEntities.ARC_FURNACE.get(), position, state,
+                            ClassicMachineDefinition.ARC_FURNACE)));
+    public static final RegistryObject<ClassicControllerBlock> CUTTING_MACHINE = BLOCKS.register("cutting_machine", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(
+                            ModBlockEntities.CUTTING_MACHINE.get(), position, state,
+                            ClassicMachineDefinition.CUTTING)));
+    public static final RegistryObject<Block> BLAST_BRICK = BLOCKS.register("blast_brick", () -> new Block(
+            BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> SAW_BLADE = metalBlock("saw_blade");
+
+    private static RegistryObject<ClassicHatchBlock> classicHatch(ClassicHatchKind kind) {
+        return BLOCKS.register(kind.blockId().getPath(), () -> new ClassicHatchBlock(
+                metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK), kind));
+    }
 
     private ModBlocks() {
     }

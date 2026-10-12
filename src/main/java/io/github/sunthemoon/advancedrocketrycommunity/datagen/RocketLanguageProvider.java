@@ -85,6 +85,9 @@ public final class RocketLanguageProvider extends LanguageProvider {
             case UNAUTHORIZED -> "Player is not authorized for this rocket";
             case FUEL_DISPOSAL_REQUIRED -> "Disassembly requires explicit consent to discard remaining fuel";
             case FUEL_CAPACITY_EXCEEDED -> "Rocket fuel capacity exceeds the supported limit";
+            case MIXED_PROPULSION_MODES, WRONG_PROPULSION_TANK_ROLE, EXTERNAL_COMPONENT_ABSTRACT_ONLY,
+                    MISSING_PROPULSION_TANK, NUCLEAR_CORE_SUPPORT_REQUIRED, PROPULSION_CAPACITY_EXCEEDED,
+                    PROPULSION_AGGREGATE_OVERFLOW -> V180PropulsionLanguage.entries(false).get(code.translationKey());
         };
     }
 
@@ -129,6 +132,9 @@ public final class RocketLanguageProvider extends LanguageProvider {
             case UNAUTHORIZED -> "玩家无权操作这枚火箭";
             case FUEL_DISPOSAL_REQUIRED -> "拆解需要明确确认丢弃剩余燃料";
             case FUEL_CAPACITY_EXCEEDED -> "火箭燃料容量超过支持上限";
+            case MIXED_PROPULSION_MODES, WRONG_PROPULSION_TANK_ROLE, EXTERNAL_COMPONENT_ABSTRACT_ONLY,
+                    MISSING_PROPULSION_TANK, NUCLEAR_CORE_SUPPORT_REQUIRED, PROPULSION_CAPACITY_EXCEEDED,
+                    PROPULSION_AGGREGATE_OVERFLOW -> V180PropulsionLanguage.entries(true).get(code.translationKey());
         };
     }
 }

@@ -1,0 +1,22 @@
+{
+  "type": "advancedrocketrycommunity:cutting",
+  "energy_per_tick": 100,
+  "fluid_inputs": [],
+  "fluid_outputs": [],
+  "item_inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "advancedrocketrycommunity:advanced_circuit_plate"
+      }
+    }
+  ],
+  "item_outputs": [
+    {
+      "count": 4,
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    }
+  ],
+  "processing_time": 300,
+  "schema_version": 1
+}

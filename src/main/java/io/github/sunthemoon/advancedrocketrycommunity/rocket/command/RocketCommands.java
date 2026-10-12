@@ -219,6 +219,10 @@ public final class RocketCommands {
     private int refuelFlight(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         RocketEntity rocket = releaseTestRocket(context);
         RocketFlightData before = rocket.flightData().orElseThrow();
+        if (!rockets.resourceMutationAllowed(rocket)) {
+            context.getSource().sendFailure(Component.translatable("message.advancedrocketrycommunity.propulsion.recovery_pending"));
+            return 0;
+        }
         if (!before.state().acceptsFuel() || before.fuel().capacity() <= 0L) {
             context.getSource().sendFailure(Component.literal(
                     "Release-test rocket cannot accept fuel in state " + before.state()

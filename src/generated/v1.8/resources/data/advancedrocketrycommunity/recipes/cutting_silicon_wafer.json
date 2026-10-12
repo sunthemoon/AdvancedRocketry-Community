@@ -1,0 +1,22 @@
+{
+  "type": "advancedrocketrycommunity:cutting",
+  "energy_per_tick": 100,
+  "fluid_inputs": [],
+  "fluid_outputs": [],
+  "item_inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "advancedrocketrycommunity:boules/silicon"
+      }
+    }
+  ],
+  "item_outputs": [
+    {
+      "count": 4,
+      "item": "advancedrocketrycommunity:silicon_wafer"
+    }
+  ],
+  "processing_time": 300,
+  "schema_version": 1
+}

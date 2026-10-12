@@ -3,6 +3,15 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "propulsion-offline-source-resource-lock",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=WAITING_FOR_PASSENGERS",
+      "counts": {"resource_source_recovery": 6},
+      "test": "RocketResourceRecoveryGameTests.offlinePassengerRecoveryLocksBothBanksAcrossRepeatedReloads",
+      "reason": "Three native entity/player/journal round trips each recover through both the installed lifecycle owner and a fresh manager with an offline passenger, deliberately retaining PREPARED source authority and refusing resource mutations."
+    },
+    {
       "id": "recipe-chunk-save-refused",
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
@@ -347,11 +356,51 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key (?!OXYGEN(?:\\s|\\.))[\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!machines\\.sawmillVanillaWood\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
       "reason": "Forge fills each key missing from a newly created configuration file; a run that reuses existing files logs fewer. A key corrected from a non-null value does not match."
+    },
+    {
+      "id": "w05-sawmill-config-key-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key machines\\.sawmillVanillaWood was corrected from null to its default, true\\. ",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W05 COMMON sawmill setting on first GameTest startup",
+      "reason": "W05 adds this default-on COMMON key. Forge emits this exact warning once when the key is absent and none when the configuration is reused. The unrelated config-key budget remains 99; false defaults, non-null corrections, repeated entries and messages outside startup are not admitted."
+    },
+    {
+      "id": "force-field-config-group-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key forceField was corrected from null to its default, SimpleCommentedConfig:\\{\\}. ",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: ForceFieldConfig per-profile server configuration",
+      "reason": "Forge creates the single forceField group when this slice's server configuration is absent."
+    },
+    {
+      "id": "force-field-config-switch-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key forceField\\.enabled was corrected from null to its default, true\\. ",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: ForceFieldConfig per-profile server configuration",
+      "reason": "Forge creates the one enabled switch at its declared true default; non-null corrections are not allowed."
+    },
+    {
+      "id": "force-field-config-file-created",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Configuration file .+[\\\\/]advancedrocketrycommunity-force-field\\.toml is not correct\\. Correcting",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: ForceFieldConfig per-profile server configuration",
+      "reason": "Forge reports creation of this slice's server configuration once; the existing configuration-file allowance remains unchanged."
     },
     {
       "id": "forge-equipment-oxygen-section-defaulted",
@@ -382,6 +431,36 @@
       "batches": ["<startup>"],
       "test": "environment: W03 equipment configuration created by the run",
       "reason": "The finite active oxygen target defaults to 2000 once on a new config. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-propulsion-rocket-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key ROCKET(?:\\.(?:thrustMultiplier|fuelCapacityMultiplier|nuclearCoreThrustRatio|gravityAffectsFuels|rocketsRequireFuel|canBeFueledByHand|rocketFuels|rocketBipropellants|rocketOxidizers|rocketNuclearWorkingFluids))? was corrected from null to its default, .*",
+      "max": 11,
+      "batches": ["<startup>"],
+      "test": "environment: W02 propulsion configuration created by the run",
+      "reason": "The ADR-065 C17a ROCKET section and its ten values are each defaulted once on a new config, independently of the unchanged legacy key warning budget. Other ROCKET keys and non-null corrections do not match."
+    },
+    {
+      "id": "forge-equipment-jetpack-force-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key equipment\\.jetPackForce was corrected from null to its default, 1\\.3\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W06 equipment configuration created by the run",
+      "reason": "The jetpack force defaults to 1.3 once on a new config, independently of the unchanged legacy key warning budget. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-equipment-low-gravity-boots-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key equipment\\.lowGravityBoots was corrected from null to its default, false\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W06 equipment configuration created by the run",
+      "reason": "The landing-boots rule defaults to false once on a new config, independently of the unchanged legacy key warning budget. Non-null corrections and other values do not match."
     },
     {
       "id": "forge-config-file-corrected",

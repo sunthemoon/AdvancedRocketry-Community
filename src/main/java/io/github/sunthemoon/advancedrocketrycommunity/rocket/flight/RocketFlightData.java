@@ -246,7 +246,7 @@ public final class RocketFlightData {
         }
         RocketFlightState updatedState = state;
         long updatedStartedAt = stateStartedGameTime;
-        if (updatedFuel.amount() > 0L && state.acceptsFuel()) {
+        if ((updatedFuel.amount() > 0L || !updatedFuel.requiresFuel()) && state.acceptsFuel()) {
             RocketFlightTransition transition = RocketFlightStateMachine.apply(
                     state,
                     RocketFlightEvent.FUEL_AVAILABLE
@@ -259,7 +259,11 @@ public final class RocketFlightData {
                 updatedStartedAt = requireGameTime(gameTime);
             }
         }
-        return copy(updatedState, updatedFuel, plan, passengers, currentBody, currentDimension,
+        if (updatedFuel.amount() == 0 && updatedFuel.requiresFuel() && state == RocketFlightState.FUELED) {
+            updatedState = RocketFlightState.ASSEMBLED; updatedStartedAt = requireGameTime(gameTime);
+        }
+        RocketFlightPlan retainedPlan = updatedFuel.propulsion().isPresent() && !updatedFuel.equals(fuel) ? null : plan;
+        return copy(updatedState, updatedFuel, retainedPlan, passengers, currentBody, currentDimension,
                 currentOrigin, updatedStartedAt, activeTransferId);
     }
 
@@ -451,7 +455,7 @@ public final class RocketFlightData {
                 && (plan != null || activeTransferId != null)) {
             throw new IllegalArgumentException("Stationary unplanned state cannot retain a plan or transfer");
         }
-        if (state == RocketFlightState.FUELED && fuel.amount() <= 0L) {
+        if (state == RocketFlightState.FUELED && fuel.amount() <= 0L && fuel.requiresFuel()) {
             throw new IllegalArgumentException("FUELED state requires positive fuel");
         }
         boolean transferRequired = state == RocketFlightState.TRANSIT

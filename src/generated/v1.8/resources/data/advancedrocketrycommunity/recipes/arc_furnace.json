@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "advancedrocketrycommunity:blast_brick"
+    },
+    "C": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "I": {
+      "tag": "forge:ingots/copper"
+    },
+    "P": {
+      "tag": "forge:plates/iron"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "BRB",
+    "PCP",
+    "BIB"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:arc_furnace"
+  }
+}

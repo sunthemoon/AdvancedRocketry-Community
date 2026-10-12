@@ -20,8 +20,9 @@ import org.junit.jupiter.api.Test;
 /**
  * ADR-046 UI-01: the station, team and warp controls add no packet. Every channel in the main sources,
  * its protocol version and its registered message list must equal the committed table.
- * ADR-064 section 14 adds exactly one required message-empty menu admission channel, and ADR-065
- * section 11.1 the three-message {@code classic_controls} channel.
+ * ADR-064 section 14 adds exactly one required message-empty menu admission channel. ADR-066 section 5.2 adds the
+ * suit motion channel with its fixed jetpack intent and paid impulse, and ADR-065 section 11.1 the three-message
+ * {@code classic_controls} channel.
  */
 final class NetworkProtocolPinTest {
     private static final Path MAIN = Path.of("src", "main", "java");
@@ -72,7 +73,8 @@ final class NetworkProtocolPinTest {
                         "A message registration the pin table cannot read (for example a non-literal index): " + file);
             }
         }
-        assertEquals(7, channelSources.size(), "Channel sources changed: " + channelSources);
+        // Six earlier channel sources, plus W06's suit_motion and W07's classic_controls.
+        assertEquals(8, channelSources.size(), "Channel sources changed: " + channelSources);
         assertEquals(List.of("machine_menu|1"), emptyChannels);
         assertEquals(expected(), actual.stream().sorted().toList());
     }

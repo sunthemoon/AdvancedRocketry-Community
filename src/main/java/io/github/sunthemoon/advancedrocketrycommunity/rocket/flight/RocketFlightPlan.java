@@ -18,12 +18,13 @@ public record RocketFlightPlan(
         UUID destinationStationId,
         long requiredFuel,
         long createdAtGameTime,
-        TravelTarget destinationTarget
+        TravelTarget destinationTarget,
+        RocketPropulsionDebit propulsionDebit
 ) {
     public static final int SCHEMA_VERSION = 3;
 
     public RocketFlightPlan {
-        if (schemaVersion < 1 || schemaVersion > SCHEMA_VERSION) {
+        if (schemaVersion < 1 || schemaVersion > 4 || (schemaVersion == 4) != (propulsionDebit != null)) {
             throw new IllegalArgumentException("Unsupported rocket flight plan schema");
         }
         Objects.requireNonNull(requestId, "requestId");
@@ -59,6 +60,18 @@ public record RocketFlightPlan(
         if (createdAtGameTime < 0L) {
             throw new IllegalArgumentException("Rocket flight plan game time cannot be negative");
         }
+    }
+
+    public RocketFlightPlan(int schemaVersion, UUID requestId, ResourceLocation sourceBody,
+            ResourceLocation destinationBody, ResourceLocation sourceDimension, ResourceLocation destinationDimension,
+            UUID destinationStationId, long requiredFuel, long createdAtGameTime, TravelTarget destinationTarget) {
+        this(schemaVersion, requestId, sourceBody, destinationBody, sourceDimension, destinationDimension,
+                destinationStationId, requiredFuel, createdAtGameTime, destinationTarget, null);
+    }
+
+    public RocketFlightPlan withPropulsionDebit(RocketPropulsionDebit debit) {
+        return new RocketFlightPlan(4, requestId, sourceBody, destinationBody, sourceDimension, destinationDimension,
+                destinationStationId, requiredFuel, createdAtGameTime, destinationTarget, debit);
     }
 
     public RocketFlightPlan(

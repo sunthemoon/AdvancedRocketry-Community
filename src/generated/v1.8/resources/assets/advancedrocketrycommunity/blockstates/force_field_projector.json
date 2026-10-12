@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "advancedrocketrycommunity:block/force_field_projector",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/force_field_projector",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/force_field_projector"
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/force_field_projector",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "advancedrocketrycommunity:block/force_field_projector",
+      "x": 270
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/force_field_projector",
+      "y": 270
+    }
+  }
+}

@@ -20,6 +20,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEn
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.scan.RocketScanResult;
@@ -319,10 +320,15 @@ public final class RocketGameTests {
         CompoundTag legacyData = legacySave.getCompound("RocketEntityData");
         legacyData.putInt("schema_version", 1);
         legacyData.remove("flight_data");
+        var legacySnapshot = RocketStructureSnapshot.create(snapshot.snapshotId(), snapshot.sourceDimension(), snapshot.sourceOrigin(),
+                snapshot.blocks(), snapshot.passengerAnchors(), snapshot.stats(), snapshot.createdAtGameTime());
+        legacyData.put("snapshot", RocketSnapshotNbtCodec.encode(legacySnapshot));
         RocketEntity migrated = ModEntities.ROCKET.get().create(helper.getLevel());
         helper.assertTrue(migrated != null, "Rocket entity type did not create migration target");
         migrated.load(legacySave);
         helper.assertTrue(migrated.operational(), "Schema-1 entity did not migrate operationally");
+        helper.assertTrue(migrated.snapshot().orElseThrow().schemaVersion() == 1
+                && migrated.flightData().orElseThrow().fuel().propulsion().isEmpty(), "Old save acquired typed propulsion");
         helper.assertTrue(
                 migrated.flightData().orElseThrow().logicalRocketId().equals(transactionId),
                 "Schema-1 migration changed logical rocket identity"

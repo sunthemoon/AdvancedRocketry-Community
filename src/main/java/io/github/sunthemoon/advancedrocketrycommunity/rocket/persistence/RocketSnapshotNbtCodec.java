@@ -118,9 +118,11 @@ public final class RocketSnapshotNbtCodec {
                     "Rocket snapshot payload is missing"
             );
         }
-        CompoundTag preserved = source.copy();
+        CompoundTag preserved = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
+                .preserve(source, RocketLimits.MAX_TOTAL_NBT_BYTES);
         try {
-            if (RocketNbtSize.uncompressedBytes(source) > RocketLimits.MAX_TOTAL_NBT_BYTES) {
+            if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
+                    .bounded(source, RocketLimits.MAX_TOTAL_NBT_BYTES)) {
                 return RocketSnapshotDecodeResult.invalid(
                         preserved,
                         RocketValidationCode.SNAPSHOT_DATA_TOO_LARGE,
@@ -129,12 +131,16 @@ public final class RocketSnapshotNbtCodec {
             }
             requireType(source, SCHEMA, Tag.TAG_INT);
             int schema = source.getInt(SCHEMA);
-            if (schema > RocketLimits.SNAPSHOT_SCHEMA_VERSION) {
+            if (schema > 2) {
                 return RocketSnapshotDecodeResult.future(preserved, schema);
             }
-            if (schema != RocketLimits.SNAPSHOT_SCHEMA_VERSION) {
+            if (schema < 1) {
                 throw malformed("Unsupported rocket snapshot schema " + schema);
             }
+            Set<String> keys = new HashSet<>(Set.of(SCHEMA, SNAPSHOT_ID, SOURCE_DIMENSION, SOURCE_ORIGIN, BOUNDING_BOX,
+                    PALETTE, BLOCKS, PASSENGER_ANCHORS, MASS_INPUTS, CREATED_AT, CONTENT_HASH));
+            if (schema == 2) { keys.add("propulsion"); }
+            if (!source.getAllKeys().equals(keys)) { throw malformed("Unknown snapshot fields"); }
 
             UUID snapshotId = parseUuid(requireString(source, SNAPSHOT_ID));
             ResourceLocation sourceDimension = parseIdentifier(requireString(source, SOURCE_DIMENSION));
@@ -158,7 +164,8 @@ public final class RocketSnapshotNbtCodec {
                     blocks,
                     anchors,
                     stats,
-                    createdAt
+                    createdAt,
+                    schema == 2 ? RocketPropulsionCodec.decode(requirePropulsion(source)) : null
             );
             if (!encodedBounds.equals(snapshot.bounds())) {
                 throw malformed("Rocket snapshot bounding box does not match its blocks");
@@ -182,9 +189,15 @@ public final class RocketSnapshotNbtCodec {
         }
     }
 
+    private static CompoundTag requirePropulsion(CompoundTag source) {
+        requireType(source, "propulsion", Tag.TAG_COMPOUND);
+        return source.getCompound("propulsion");
+    }
+
     private static CompoundTag encodeUnchecked(RocketStructureSnapshot snapshot) {
         CompoundTag root = new CompoundTag();
         root.putInt(SCHEMA, snapshot.schemaVersion());
+        snapshot.propulsion().ifPresent(value -> root.put("propulsion", RocketPropulsionCodec.encode(value)));
         root.putString(SNAPSHOT_ID, snapshot.snapshotId().toString());
         root.putString(SOURCE_DIMENSION, snapshot.sourceDimension().toString());
         root.putIntArray(SOURCE_ORIGIN, positionArray(snapshot.sourceOrigin()));

@@ -79,6 +79,10 @@ final class RocketTransferChecksum {
         for (UUID debit : data.fuel().committedDebits()) {
             writeUuid(output, debit);
         }
+        if (data.fuel().propulsion().isPresent()) {
+            writeString(output, "propulsion-resources-1");
+            writeString(output, data.fuel().resourceSignature());
+        }
         output.writeBoolean(data.plan().isPresent());
         if (data.plan().isPresent()) {
             RocketFlightPlan plan = data.plan().orElseThrow();
@@ -99,6 +103,12 @@ final class RocketTransferChecksum {
             }
             output.writeLong(plan.requiredFuel());
             output.writeLong(plan.createdAtGameTime());
+            if (plan.propulsionDebit() != null) {
+                var debit = plan.propulsionDebit();
+                writeString(output, "propulsion-debit-1");
+                output.writeLong(debit.primary()); output.writeLong(debit.oxidizer()); output.writeLong(debit.revision());
+                writeString(output, debit.resourceSignature()); writeString(output, debit.catalogSignature());
+            }
         }
         output.writeInt(data.passengers().seatCapacity());
         output.writeInt(data.passengers().assignments().size());

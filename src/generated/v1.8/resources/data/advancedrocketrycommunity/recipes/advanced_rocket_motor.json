@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:rocket_motor"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_aluminide_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_aluminide_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_aluminide_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_aluminide_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:enhanced_motor"
+    },
+    {
+      "item": "advancedrocketrycommunity:iridium_plate"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:advanced_rocket_motor"
+  }
+}

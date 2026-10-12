@@ -1,0 +1,1023 @@
+{
+  "allow_mirror_local_x": false,
+  "allowed_rotations": [
+    0,
+    90,
+    180,
+    270
+  ],
+  "cells": [
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 0,
+      "y": 4,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 1,
+      "y": 4,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 2,
+      "y": 4,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 3,
+      "y": 4,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 4,
+      "y": 4,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 0,
+      "y": 4,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "port": "energy_input"
+      },
+      "x": 1,
+      "y": 4,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 4,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "port": "energy_input"
+      },
+      "x": 3,
+      "y": 4,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 4,
+      "y": 4,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 0,
+      "y": 4,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 4,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 4,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 4,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 4,
+      "y": 4,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 0,
+      "y": 4,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 4,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "port": "energy_input"
+      },
+      "x": 2,
+      "y": 4,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 4,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 4,
+      "y": 4,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 0,
+      "y": 4,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 1,
+      "y": 4,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 2,
+      "y": 4,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 3,
+      "y": 4,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 4,
+      "y": 4,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 0,
+      "y": 3,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 3,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 3,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 3,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 4,
+      "y": 3,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 3,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:coils"
+      },
+      "x": 1,
+      "y": 3,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 2,
+      "y": 3,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:coils"
+      },
+      "x": 3,
+      "y": 3,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 3,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 3,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 1,
+      "y": 3,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 2,
+      "y": 3,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 3,
+      "y": 3,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 3,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 3,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 1,
+      "y": 3,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:coils"
+      },
+      "x": 2,
+      "y": 3,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 3,
+      "y": 3,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 3,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 0,
+      "y": 3,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 3,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 3,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 3,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:machine_clearance"
+      },
+      "x": 4,
+      "y": 3,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 2,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 2,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 2,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 2,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 2,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 2,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 1,
+      "y": 2,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 2,
+      "y": 2,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 3,
+      "y": 2,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 2,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 1,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 2,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 3,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 2,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 1,
+      "y": 2,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 2,
+      "y": 2,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 3,
+      "y": 2,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 2,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 2,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 2,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 2,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 2,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 2,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 1,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "controller": true
+      },
+      "x": 2,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 3,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 0,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 4,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 0,
+      "y": 1,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 1,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 1,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 1,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 4,
+      "y": 1,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 0,
+      "y": 1,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 1,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 1,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 1,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 4,
+      "y": 1,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 1,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 1,
+      "y": 1,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 2,
+      "y": 1,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:arc_furnace_shell_parts"
+      },
+      "x": 3,
+      "y": 1,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 1,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 0,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 0,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 0,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 0,
+      "z": 3
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 3,
+      "y": 0,
+      "z": 4
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:blast_brick"
+      },
+      "x": 4,
+      "y": 0,
+      "z": 4
+    }
+  ],
+  "controller_anchor": {
+    "x": 2,
+    "y": 1,
+    "z": 0
+  },
+  "id": "advancedrocketrycommunity:arc_furnace",
+  "schema_version": 1,
+  "size": {
+    "x": 5,
+    "y": 5,
+    "z": 5
+  }
+}
