@@ -53,11 +53,13 @@ public final class SuitMotionEvents {
         if (event.getEntity() instanceof ServerPlayer player) { service().ifPresent(current -> current.respawned(player.getUUID())); }
     }
 
-    /** Removes the bionic modifier at once when the leggings change, not only on the next tick. */
+    /** Replacements end the motion intent; in-place hydrogen debits keep the same worn-stack identity. */
     @SubscribeEvent public static void equipment(LivingEquipmentChangeEvent event) {
-        if (event.getSlot() == EquipmentSlot.LEGS && event.getEntity() instanceof ServerPlayer player
-                && player.server.isSameThread()) {
-            BionicLegs.update(player);
+        if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()) {
+            if (event.getSlot() == EquipmentSlot.LEGS) { BionicLegs.update(player); }
+            if (event.getSlot() == EquipmentSlot.HEAD || event.getSlot() == EquipmentSlot.CHEST) {
+                service().ifPresent(current -> current.equipmentChanged(player));
+            }
         }
     }
 

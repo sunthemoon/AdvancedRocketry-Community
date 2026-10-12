@@ -17,6 +17,8 @@ public final class JetpackSession {
     private double reference = Double.NaN;
     private EquipmentSummary summary = EquipmentSummary.EMPTY;
     private String level = "";
+    private Object head;
+    private Object chest;
 
     public boolean enabled() { return enabled; }
     public JetpackMode mode() { return mode; }
@@ -74,6 +76,17 @@ public final class JetpackSession {
         if (changed) { reference = Double.NaN; }
         summary = worn;
         level = levelId;
+        return changed;
+    }
+
+    /** Opaque worn-stack identities: replacement ends the intent, but an in-place gas debit does not. */
+    public boolean observeEquipment(Object wornHead, Object wornChest) {
+        Objects.requireNonNull(wornHead, "wornHead");
+        Objects.requireNonNull(wornChest, "wornChest");
+        boolean changed = head != wornHead || chest != wornChest;
+        if (changed) { end(); }
+        head = wornHead;
+        chest = wornChest;
         return changed;
     }
 

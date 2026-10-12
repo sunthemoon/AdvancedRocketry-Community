@@ -61,6 +61,7 @@ public final class SuitMotionService {
         switch (intent.action()) {
             case THRUST -> {
                 if (session == null || !session.enabled()) { return Reply.IGNORED; }
+                observeEquipment(session, player);
                 session.thrust(intent.held(), now);
                 return Reply.THRUST;
             }
@@ -75,6 +76,7 @@ public final class SuitMotionService {
                 JetpackSession enabled = sessions.computeIfAbsent(player.getUUID(), ignored -> new JetpackSession());
                 if (enabled.mode() == JetpackMode.HOVER && !worn.installed().contains(ModuleKind.HOVER)) { enabled.cycle(false); }
                 enabled.enable(worn, levelId(player));
+                observeEquipment(enabled, player);
                 return status(player, enabled.mode() == JetpackMode.HOVER ? Reply.ENABLED_HOVER : Reply.ENABLED_NORMAL);
             }
             case CYCLE_MODE -> {
@@ -100,7 +102,9 @@ public final class SuitMotionService {
         JetpackSession session = sessions.get(player.getUUID());
         if (session == null || !session.enabled()) { return Result.NO_SESSION; }
         EquipmentSummary worn = ArmorEquipment.summarize(player);
-        if (session.observe(worn, levelId(player))) {
+        boolean changed = session.observe(worn, levelId(player));
+        changed |= observeEquipment(session, player);
+        if (changed) {
             if (!worn.installed().contains(ModuleKind.JETPACK)) {
                 session.disable();
                 status(player, Reply.NO_JETPACK);
@@ -159,6 +163,11 @@ public final class SuitMotionService {
 
     public void respawned(UUID player) { sessions.remove(player); }
 
+    public void equipmentChanged(ServerPlayer player) {
+        JetpackSession session = sessions.get(player.getUUID());
+        if (session != null) { observeEquipment(session, player); }
+    }
+
     public void forget(UUID player) {
         sessions.remove(player);
         limiter.forget(player);
@@ -185,6 +194,10 @@ public final class SuitMotionService {
     }
 
     private static String levelId(ServerPlayer player) { return player.level().dimension().location().toString(); }
+
+    private static boolean observeEquipment(JetpackSession session, ServerPlayer player) {
+        return session.observeEquipment(player.getItemBySlot(EquipmentSlot.HEAD), player.getItemBySlot(EquipmentSlot.CHEST));
+    }
 
     private static Reply status(ServerPlayer player, Reply reply) {
         player.displayClientMessage(Component.translatable(reply.translationKey()), true);

@@ -158,6 +158,48 @@ public final class SuitMotionGameTests {
     }
 
     @GameTest(template = "empty", batch = "equipment_motion", timeoutTicks = 100)
+    public static void sameKindWornReplacementsResetHoverWithoutLosingHydrogen(GameTestHelper helper) {
+        try (var f = new MotionFixture(helper)) {
+            f.wear(EquipmentSlot.CHEST, MotionFixture.chest(true, 20));
+            f.wear(EquipmentSlot.HEAD, MotionFixture.piece(EquipmentSlot.HEAD, "hover_upgrade"));
+            f.send(JetpackIntentPacket.toggle(), T);
+            f.send(JetpackIntentPacket.cycleMode(), T);
+            f.send(JetpackIntentPacket.thrust(true), T);
+            var session = f.service.session(f.player.getUUID()).orElseThrow();
+            session.reference(f.player.getY() + 2);
+            paid(f, T, "Initial hover correction");
+            ItemStack chest = f.player.getItemBySlot(EquipmentSlot.CHEST);
+            helper.assertTrue(session.hasReference() && f.hydrogen() == 19, "Debit reset HOVER or lost hydrogen");
+            f.wear(EquipmentSlot.HEAD, f.player.getItemBySlot(EquipmentSlot.HEAD).copy());
+            helper.assertTrue(f.service.step(f.player, T + 1) == Result.NO_INTENT && !session.hasReference()
+                    && f.hydrogen() == 19, "Same-kind HEAD replacement kept the old session or spent gas");
+            f.send(JetpackIntentPacket.thrust(true), T + 1);
+            f.rest();
+            helper.assertTrue(f.service.step(f.player, T + 1) == Result.NOT_NEEDED && f.hydrogen() == 19,
+                    "Replacement helmet pulled toward the old reference");
+            double reference = session.reference(f.player.getY());
+            f.player.teleportTo(f.player.getX(), reference - 1, f.player.getZ());
+            paid(f, T + 2, "Hover with replacement helmet");
+            paid(f, T + 3, "Hover after an ordinary gas debit");
+            helper.assertTrue(session.reference(f.player.getY()) == reference && f.hydrogen() == 17,
+                    "Same-stack debit reset the reference or gas accounting was not exact");
+            var oldChest = chest.serializeNBT();
+            f.wear(EquipmentSlot.CHEST, chest.copy());
+            helper.assertTrue(f.service.step(f.player, T + 4) == Result.NO_INTENT && !session.hasReference()
+                    && f.hydrogen() == 17, "Same-kind CHEST replacement kept the session or spent gas");
+            f.send(JetpackIntentPacket.thrust(true), T + 4);
+            f.rest();
+            helper.assertTrue(f.service.step(f.player, T + 4) == Result.NOT_NEEDED && f.hydrogen() == 17,
+                    "Replacement chest pulled toward the old reference");
+            f.player.teleportTo(f.player.getX(), f.player.getY() - 1, f.player.getZ());
+            paid(f, T + 5, "Hover with replacement chest");
+            helper.assertTrue(f.hydrogen() == 16 && oldChest.equals(chest.serializeNBT()),
+                    "Replacement debit changed the removed chest or failed to spend exactly one unit");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "equipment_motion", timeoutTicks = 100)
     public static void elytraFlightAndRocketSeatsRefuseThrust(GameTestHelper helper) {
         try (var f = new MotionFixture(helper)) {
             f.wear(EquipmentSlot.CHEST, MotionFixture.chest(true, 20));
