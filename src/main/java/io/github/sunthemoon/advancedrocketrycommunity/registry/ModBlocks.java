@@ -386,6 +386,10 @@ public final class ModBlocks {
                 .lightLevel(state -> 14).pushReaction(PushReaction.DESTROY);
     }
 
+    public static final RegistryObject<Block> LANDING_PAD = BLOCKS.register("landing_pad", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlock(
+                    metalProperties().pushReaction(PushReaction.BLOCK)));
+
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()
                 .mapColor(MapColor.METAL)

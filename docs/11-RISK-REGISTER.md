@@ -57,6 +57,19 @@ hatch。只有上述六种控制器根全部缺失时，控制器才恢复为新
 
 ## 风险处理规则
 
+### R-023 — Named landing-pad malformed-root preservation
+
+Landing-pad index/BE roots that fail schema or bounds checks retain their original
+data and disable pad operations. An oversized index refuses only its own file
+write, keeps the previous file and dirty state, and logs once per loaded instance.
+An oversized BE root refuses its whole terrain chunk through `GuardedChunkSaves`
+for the Level lifetime; the existing 256-coordinate saturation and unbounded
+save-retry log accumulation remain applicable. Probability is unquantified and
+the terrain-save impact is High. This blocks v1.8.0 acceptance until native
+writer/restart evidence and operator review. Scope, duration and offline backup/
+repair procedure are recorded in ADR-065's W13 implementation note. No risk is
+accepted or closed by this record.
+
 | ID | 风险 | 概率 | 影响 | 触发信号 | 缓解 | 阻断版本 |
 |---|---|---:|---:|---|---|---|
 | R-022 | 力场或投影器的超限原生根拒绝整区块保存；清理根超限时拒绝该独立文件保存，跨存储可能分歧 | 未量化 | 严重 | W04 原生根超过字节、深度或节点预算 | 原始 Tag 保留并停止功能和普通删除。区块拒存沿用 `GuardedChunkSaves`，持续至 Level 结束，既有饱和与无日志总量上限仍适用。清理文件拒存不抛异常，保留旧文件和脏标记，每次载入最多一条诊断。必须备份、停服并离线修复；重启本身不是修复。范围、恢复方法见 ADR-065 的 W04 实施说明；原生停服、重启与风险接受未完成 | `v1.8.0` |

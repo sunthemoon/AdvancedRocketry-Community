@@ -90,7 +90,7 @@ class RocketNavigationTest {
         var buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {
             RocketFlightPlanPacket.encode(packet, buffer);
-            assertEquals(31_419, RocketFlightPlanPacket.MAX_ENCODED_BYTES);
+            assertEquals(31_444, RocketFlightPlanPacket.MAX_ENCODED_BYTES); // ADR-065: bounded optional pad adds 25 bytes.
             assertTrue(buffer.readableBytes() <= RocketFlightPlanPacket.MAX_ENCODED_BYTES);
             assertTrue(buffer.readableBytes() < 32 * 1024);
             assertEquals(packet, RocketFlightPlanPacket.decode(buffer));

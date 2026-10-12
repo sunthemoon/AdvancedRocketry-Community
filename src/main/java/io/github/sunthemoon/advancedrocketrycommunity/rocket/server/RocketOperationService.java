@@ -65,6 +65,14 @@ public interface RocketOperationService {
             UUID requestId
     );
 
+    default void requestFlightIntent(ServerPlayer player, int rocketEntityId, RocketFlightAction action,
+            TravelTarget target, UUID requestId,
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
+        if (pad == null) { requestFlightIntent(player, rocketEntityId, action, target, requestId); }
+        else { player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(
+                "message.advancedrocketrycommunity.pad.unavailable")); }
+    }
+
     default void requestFlightIntent(
             ServerPlayer player,
             int rocketEntityId,

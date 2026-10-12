@@ -26,7 +26,7 @@ class BetaOperationalReportTest {
         assertTrue(line.contains("operational=true roots=11111"));
         assertTrue(line.contains("stations=10 missions=100"));
         assertTrue(line.contains("protocols=life:1,celestial:1,flight:6,visual:1"));
-        assertTrue(line.contains("flight_frame_max=154"));
+        assertTrue(line.contains("flight_frame_max=155")); // Protocol 9's strict optional-pad flag.
         assertTrue(line.contains("ticket_policy=transient_transfer_only"));
         assertTrue(line.length() < 1_024);
         assertFalse(line.contains("\\"));

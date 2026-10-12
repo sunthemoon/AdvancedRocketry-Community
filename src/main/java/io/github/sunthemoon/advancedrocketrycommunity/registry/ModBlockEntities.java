@@ -268,6 +268,11 @@ public final class ModBlockEntities {
     private ModBlockEntities() {
     }
 
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlockEntity>>
+            LANDING_PAD = BLOCK_ENTITIES.register("landing_pad", () -> BlockEntityType.Builder.of(
+                    io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlockEntity::new,
+                    ModBlocks.LANDING_PAD.get()).build(null));
+
     static SolarGeneratorBlockEntity solarGenerator(net.minecraft.core.BlockPos position,
                                                     net.minecraft.world.level.block.state.BlockState state) {
         return new SolarGeneratorBlockEntity(SOLAR_GENERATOR.get(), position, state,
