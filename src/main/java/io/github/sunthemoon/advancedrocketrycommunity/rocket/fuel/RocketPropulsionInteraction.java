@@ -54,8 +54,9 @@ public final class RocketPropulsionInteraction {
             if (prepared.isEmpty()) { continue; }
             FluidStack after = prepared.get().fluid();
             var role = oxidizer ? RocketPropulsion.Role.OXIDIZER : nativeFuel.descriptor().primaryRole();
-            if (!after.isEmpty() && (!nativeFuel.descriptor().settings().allows(role, ForgeRegistries.FLUIDS.getKey(after.getFluid()))
-                    || RocketFluidFuelRuntime.capture().find(role, ForgeRegistries.FLUIDS.getKey(after.getFluid())) == null)) { continue; }
+            if (!catalogAllowsExchange(nativeFuel.descriptor(), role,
+                    after.isEmpty() ? bank.fluidId() : ForgeRegistries.FLUIDS.getKey(after.getFluid()),
+                    existing.getAmount(), after.getAmount(), RocketFluidFuelRuntime.capture())) { continue; }
             // Creative uses the same exact container debit/exchange convention as survival; no duplicate remainder.
             var next = fuel.withFluidBank(oxidizer, after.isEmpty()
                     ? (bank.fluidId() == null ? io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("rocket_fuel") : bank.fluidId())
@@ -69,6 +70,14 @@ public final class RocketPropulsionInteraction {
             return InteractionResult.CONSUME;
         }
         return refused(player);
+    }
+
+    static boolean catalogAllowsExchange(RocketPropulsion descriptor, RocketPropulsion.Role role,
+            net.minecraft.resources.ResourceLocation fluid, long before, long after, RocketFluidFuelCatalog catalog) {
+        // The detached planner has already checked registered identity and lossless container support.
+        // A catalog authorizes incoming propulsion, not retrieval of an existing physical Fluid.
+        return after < before || after > before && descriptor.settings().allows(role, fluid)
+                && catalog.find(role, fluid) != null;
     }
     private static FluidStack asFluid(RocketFuelBank bank) {
         if (bank.branch() != RocketFuelBank.Branch.FLUID || !ForgeRegistries.FLUIDS.containsKey(bank.fluidId())) { return FluidStack.EMPTY; }

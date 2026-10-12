@@ -23,6 +23,7 @@ public final class RocketFluidFuelRuntime {
     private static volatile RocketFluidFuelCatalog catalog = RocketFluidFuelCatalog.defaults();
     private RocketFluidFuelRuntime() { }
     public static RocketFluidFuelCatalog capture() { return catalog; }
+    static void publish(RocketFluidFuelCatalog next) { catalog = Objects.requireNonNull(next); }
     @SubscribeEvent public static void stopped(ServerStoppedEvent event) { catalog = RocketFluidFuelCatalog.defaults(); }
     @SubscribeEvent public static void reload(AddReloadListenerEvent event) { event.addListener(new Loader()); }
     private static final class Loader extends SimplePreparableReloadListener<List<String>> {
@@ -50,7 +51,7 @@ public final class RocketFluidFuelRuntime {
                 var allowed = new EnumMap<RocketPropulsion.Role, Collection<String>>(RocketPropulsion.Role.class);
                 for (var role : RocketPropulsion.Role.values()) { allowed.put(role, List.copyOf(CommonConfig.ROCKET.allowed(role))); }
                 var next = RocketFluidFuelCatalog.parse(documents, Loader::knownSource, allowed);
-                catalog = next;
+                publish(next);
             } catch (RuntimeException invalid) {
                 AdvancedRocketryCommunity.LOGGER.warn("ARCE_ROCKET_FLUID_CATALOG_REJECTED reason={}", invalid.getMessage());
             }
