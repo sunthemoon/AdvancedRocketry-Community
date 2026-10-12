@@ -125,6 +125,11 @@ public final class RocketResourceRecoveryGameTests {
                         "Passenger reconnect did not retire source recovery authority");
                 helper.assertTrue(fixture.manager.resourceMutationAllowed(fixture.rocket), "Reconnected source stayed locked");
                 fixture.assertBalances(2_000, 1_000, 2_000);
+                fixture.player.getInventory().selected = 2;
+                helper.assertTrue(RocketPropulsionInteraction.exchange(fixture.player, fixture.rocket,
+                        InteractionHand.MAIN_HAND) == InteractionResult.CONSUME,
+                        "Reconciled source did not resume lossless container exchange");
+                fixture.assertBalances(1_000, 1_000, 3_000);
             } finally {
                 passenger.stopRiding();
                 fixture.earth.getServer().getPlayerList().remove(passenger);
