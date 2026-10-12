@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.forcefield;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -17,9 +18,30 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
     private ProjectorState state;
     private int next = 1;
     private boolean uncommittedPlacement;
-    private boolean deferredWorldDrop;
-    void deferWorldDrop() { deferredWorldDrop = true; }
-    boolean takeWorldDrop() { boolean pending = deferredWorldDrop; deferredWorldDrop = false; return pending; }
+    private boolean powerFailureReported;
+    boolean reportPowerFailure(RuntimeException failure) {
+        if (failure == null || powerFailureReported) { return false; }
+        powerFailureReported = true;
+        String kind = failure.getClass().getSimpleName();
+        AdvancedRocketryCommunity.LOGGER.warn("ARCE_FORCE_FIELD_POWER_REFUSED projector={} pos={} failure={}",
+                state.id(), worldPosition.toShortString(), kind.substring(0, Math.min(128, kind.length())));
+        return true;
+    }
+    private BlockPos deferredWorldDropPosition;
+    private long deferredWorldDropTick;
+    void deferWorldDrop(BlockPos pos) {
+        deferredWorldDropPosition = null;
+        if (level instanceof ServerLevel server && worldPosition.equals(pos)) {
+            deferredWorldDropPosition = pos.immutable();
+            deferredWorldDropTick = server.getGameTime();
+        }
+    }
+    boolean takeWorldDrop(BlockPos pos) {
+        boolean pending = level instanceof ServerLevel server && server.getGameTime() == deferredWorldDropTick
+                && worldPosition.equals(pos) && pos.equals(deferredWorldDropPosition);
+        deferredWorldDropPosition = null;
+        return pending;
+    }
     public ForceFieldProjectorBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.FORCE_FIELD_PROJECTOR.get(), pos, blockState);
         state = new ProjectorState(UUID.randomUUID(), Optional.empty(), 1,

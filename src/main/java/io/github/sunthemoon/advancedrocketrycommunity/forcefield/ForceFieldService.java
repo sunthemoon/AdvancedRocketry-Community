@@ -46,7 +46,7 @@ public final class ForceFieldService {
         if (observedSource.owner().isEmpty()) { return; }
         if (!ForceFieldConfig.enabled()) { return; }
         var power = cells.powered(identity.source());
-        if (power.isEmpty()) { return; }
+        if (power.isEmpty()) { projector.reportPowerFailure(cells.powerFailure()); return; }
         boolean powered = power.orElseThrow();
         int claims = entry.claims() | projector.state().claims();
         if (!powered && claims == 0) { return; }
