@@ -29,10 +29,12 @@ class ClientConfigTest {
     @Test
     void exactClientCategoriesRetainTheElectricMushroomSetting() {
         assertEquals(Set.of("effects", "sky", "hud"), ClientConfig.SPEC.getValues().valueMap().keySet());
-        assertEquals(Set.of("electricMushroomFlashes", "atmosphericNausea"), assertInstanceOf(UnmodifiableConfig.class,
-                ClientConfig.SPEC.getValues().get("effects")).valueMap().keySet());
-        assertEquals(Set.of("planetOverride", "stationOverride"), assertInstanceOf(UnmodifiableConfig.class,
-                ClientConfig.SPEC.getValues().get("sky")).valueMap().keySet());
+        assertEquals(Set.of("electricMushroomFlashes", "atmosphericNausea", "advancedVisuals"),
+                assertInstanceOf(UnmodifiableConfig.class, ClientConfig.SPEC.getValues().get("effects"))
+                        .valueMap().keySet());
+        assertEquals(Set.of("overworldOverride", "planetOverride", "stationOverride"),
+                assertInstanceOf(UnmodifiableConfig.class, ClientConfig.SPEC.getValues().get("sky"))
+                        .valueMap().keySet());
         assertSame(ClientConfig.ELECTRIC_MUSHROOM_FLASHES,
                 ClientConfig.SPEC.getValues().get("effects.electricMushroomFlashes"));
         assertEquals(Boolean.TRUE, ClientConfig.ELECTRIC_MUSHROOM_FLASHES.getDefault());
@@ -95,17 +97,19 @@ class ClientConfigTest {
     }
 
     @Test
-    void exactEightHudPathsDefaultsTypesAndUnloadedAccessors() {
+    void exactSixteenHudPathsDefaultsTypesAndUnloadedAccessors() {
         assertFalse(ClientConfig.SPEC.isLoaded());
-        assertEquals(Set.of("environment", "oxygen"), assertInstanceOf(UnmodifiableConfig.class,
+        assertEquals(Set.of("environment", "oxygen", "hydrogen", "suit"), assertInstanceOf(UnmodifiableConfig.class,
                 ClientConfig.SPEC.getValues().get("hud")).valueMap().keySet());
-        for (String panel : List.of("environment", "oxygen")) {
+        for (String panel : List.of("environment", "oxygen", "hydrogen", "suit")) {
             assertEquals(Set.of("x", "y", "anchorX", "anchorY"), assertInstanceOf(UnmodifiableConfig.class,
                     ClientConfig.SPEC.getValues().get("hud." + panel)).valueMap().keySet());
         }
         List<ForgeConfigSpec.ConfigValue<Number>> offsets = offsets();
-        List<String> paths = List.of("hud.environment.x", "hud.environment.y", "hud.oxygen.x", "hud.oxygen.y");
-        List<Integer> defaults = List.of(-6, 6, -6, 30);
+        List<String> paths = List.of("hud.environment.x", "hud.environment.y", "hud.oxygen.x", "hud.oxygen.y",
+                "hud.hydrogen.x", "hud.hydrogen.y", "hud.suit.x", "hud.suit.y");
+        List<Integer> defaults = List.of(-6, 6, -6, 30, -6, 62, -6, 94);
+        assertEquals(paths.size(), offsets.size());
         for (int i = 0; i < offsets.size(); i++) {
             var value = offsets.get(i);
             assertSame(value, ClientConfig.SPEC.getValues().get(paths.get(i)));
@@ -115,7 +119,9 @@ class ClientConfigTest {
         }
         List<ForgeConfigSpec.EnumValue<Anchor>> anchors = anchors();
         List<String> anchorPaths = List.of("hud.environment.anchorX", "hud.environment.anchorY",
-                "hud.oxygen.anchorX", "hud.oxygen.anchorY");
+                "hud.oxygen.anchorX", "hud.oxygen.anchorY", "hud.hydrogen.anchorX", "hud.hydrogen.anchorY",
+                "hud.suit.anchorX", "hud.suit.anchorY");
+        assertEquals(anchorPaths.size(), anchors.size());
         for (int i = 0; i < anchors.size(); i++) {
             assertSame(anchors.get(i), ClientConfig.SPEC.getValues().get(anchorPaths.get(i)));
             assertEquals(List.of(anchorPaths.get(i).split("\\.")), anchors.get(i).getPath());
@@ -123,6 +129,44 @@ class ClientConfigTest {
         }
         assertEquals(new PanelSettings(-6, 6, Anchor.END, Anchor.START), ClientConfig.environmentHudSettings());
         assertEquals(new PanelSettings(-6, 30, Anchor.END, Anchor.START), ClientConfig.oxygenHudSettings());
+        assertEquals(new PanelSettings(-6, 62, Anchor.END, Anchor.START), ClientConfig.hydrogenHudSettings());
+        assertEquals(new PanelSettings(-6, 94, Anchor.END, Anchor.START), ClientConfig.suitHudSettings());
+    }
+
+    @Test
+    void advancedVisualsAndOverworldSkyAreIndependentClientSwitchesThatDefaultToEnabled() {
+        assertFalse(ClientConfig.SPEC.isLoaded());
+        assertSame(ClientConfig.ADVANCED_VISUALS, ClientConfig.SPEC.getValues().get("effects.advancedVisuals"));
+        assertSame(ClientConfig.SKY_OVERWORLD_OVERRIDE, ClientConfig.SPEC.getValues().get("sky.overworldOverride"));
+        assertEquals(List.of("effects", "advancedVisuals"), ClientConfig.ADVANCED_VISUALS.getPath());
+        assertEquals(List.of("sky", "overworldOverride"), ClientConfig.SKY_OVERWORLD_OVERRIDE.getPath());
+        assertEquals(Boolean.TRUE, ClientConfig.ADVANCED_VISUALS.getDefault());
+        assertEquals(Boolean.TRUE, ClientConfig.SKY_OVERWORLD_OVERRIDE.getDefault());
+        assertTrue(ClientConfig.advancedVisuals(), "the default applies before the config is loaded");
+        assertTrue(ClientConfig.overworldSkyOverride(), "the default applies before the config is loaded");
+
+        CommentedConfig config = CommentedConfig.inMemory();
+        ClientConfig.SPEC.setConfig(config);
+        assertTrue(ClientConfig.advancedVisuals());
+        assertTrue(ClientConfig.overworldSkyOverride());
+        ClientConfig.ADVANCED_VISUALS.set(false);
+        assertFalse(ClientConfig.advancedVisuals());
+        assertTrue(ClientConfig.overworldSkyOverride());
+        assertTrue(ClientConfig.atmosphericNausea());
+        assertTrue(ClientConfig.electricMushroomFlashes());
+        ClientConfig.SKY_OVERWORLD_OVERRIDE.set(false);
+        assertFalse(ClientConfig.overworldSkyOverride());
+        assertTrue(ClientConfig.planetSkyOverride());
+        assertTrue(ClientConfig.stationSkyOverride());
+
+        // Native correction restores each wrongly typed switch to its own default.
+        config.set("effects.advancedVisuals", 1);
+        config.set("sky.overworldOverride", 0.0d);
+        assertFalse(ClientConfig.SPEC.isCorrect(config));
+        assertEquals(2, ClientConfig.SPEC.correct(config));
+        ClientConfig.SPEC.afterReload();
+        assertTrue(ClientConfig.advancedVisuals());
+        assertTrue(ClientConfig.overworldSkyOverride());
     }
 
     @Test
@@ -204,6 +248,31 @@ class ClientConfigTest {
     }
 
     @Test
+    void loadedHydrogenAndSuitPanelsKeepEveryAxisAndAnchorIndependent() {
+        CommentedConfig config = CommentedConfig.inMemory();
+        config.set("hud.hydrogen.x", 4096);
+        config.set("hud.hydrogen.y", (byte) -1);
+        config.set("hud.suit.x", -4096L);
+        config.set("hud.suit.y", (short) 17);
+        ClientConfig.SPEC.setConfig(config);
+        assertEquals(new PanelSettings(4096, -1, Anchor.END, Anchor.START), ClientConfig.hydrogenHudSettings());
+        assertEquals(new PanelSettings(-4096, 17, Anchor.END, Anchor.START), ClientConfig.suitHudSettings());
+        for (Anchor x : Anchor.values()) {
+            for (Anchor y : Anchor.values()) {
+                config.set("hud.hydrogen.anchorX", x);
+                config.set("hud.hydrogen.anchorY", y.name().toLowerCase(java.util.Locale.ROOT));
+                config.set("hud.suit.anchorX", y);
+                config.set("hud.suit.anchorY", x);
+                ClientConfig.SPEC.setConfig(config);
+                assertEquals(new PanelSettings(4096, -1, x, y), ClientConfig.hydrogenHudSettings());
+                assertEquals(new PanelSettings(-4096, 17, y, x), ClientConfig.suitHudSettings());
+                assertEquals(new PanelSettings(-6, 6, Anchor.END, Anchor.START), ClientConfig.environmentHudSettings());
+                assertEquals(new PanelSettings(-6, 30, Anchor.END, Anchor.START), ClientConfig.oxygenHudSettings());
+            }
+        }
+    }
+
+    @Test
     void sameInstanceNativeCorrectionAndAfterReloadInvalidateCachedAccessors() {
         CommentedConfig config = CommentedConfig.inMemory();
         ClientConfig.SPEC.setConfig(config);
@@ -231,12 +300,16 @@ class ClientConfigTest {
 
     private static List<ForgeConfigSpec.ConfigValue<Number>> offsets() {
         return List.of(ClientConfig.HUD_ENVIRONMENT_X, ClientConfig.HUD_ENVIRONMENT_Y,
-                ClientConfig.HUD_OXYGEN_X, ClientConfig.HUD_OXYGEN_Y);
+                ClientConfig.HUD_OXYGEN_X, ClientConfig.HUD_OXYGEN_Y,
+                ClientConfig.HUD_HYDROGEN_X, ClientConfig.HUD_HYDROGEN_Y,
+                ClientConfig.HUD_SUIT_X, ClientConfig.HUD_SUIT_Y);
     }
 
     private static List<ForgeConfigSpec.EnumValue<Anchor>> anchors() {
         return List.of(ClientConfig.HUD_ENVIRONMENT_ANCHOR_X, ClientConfig.HUD_ENVIRONMENT_ANCHOR_Y,
-                ClientConfig.HUD_OXYGEN_ANCHOR_X, ClientConfig.HUD_OXYGEN_ANCHOR_Y);
+                ClientConfig.HUD_OXYGEN_ANCHOR_X, ClientConfig.HUD_OXYGEN_ANCHOR_Y,
+                ClientConfig.HUD_HYDROGEN_ANCHOR_X, ClientConfig.HUD_HYDROGEN_ANCHOR_Y,
+                ClientConfig.HUD_SUIT_ANCHOR_X, ClientConfig.HUD_SUIT_ANCHOR_Y);
     }
 
     private static void assertDefaults(CommentedConfig config) {
@@ -248,5 +321,7 @@ class ClientConfigTest {
         }
         assertEquals(new PanelSettings(-6, 6, Anchor.END, Anchor.START), ClientConfig.environmentHudSettings());
         assertEquals(new PanelSettings(-6, 30, Anchor.END, Anchor.START), ClientConfig.oxygenHudSettings());
+        assertEquals(new PanelSettings(-6, 62, Anchor.END, Anchor.START), ClientConfig.hydrogenHudSettings());
+        assertEquals(new PanelSettings(-6, 94, Anchor.END, Anchor.START), ClientConfig.suitHudSettings());
     }
 }

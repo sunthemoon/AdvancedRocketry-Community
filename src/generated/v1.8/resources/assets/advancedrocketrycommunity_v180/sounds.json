@@ -1,0 +1,86 @@
+{
+  "air_hiss_loop": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "advancedrocketrycommunity:air_hiss_loop"
+      }
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.air_hiss_loop"
+  },
+  "basic_laser_gun": {
+    "sounds": [
+      "advancedrocketrycommunity:basic_laser_gun"
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.basic_laser_gun"
+  },
+  "combustion_rocket": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "advancedrocketrycommunity:combustion_rocket"
+      }
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.combustion_rocket"
+  },
+  "electric_shock_small": {
+    "sounds": [
+      "advancedrocketrycommunity:electric_shock_small"
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.electric_shock_small"
+  },
+  "gravity_controller": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "advancedrocketrycommunity:gravity_controller"
+      }
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.gravity_controller"
+  },
+  "laser_drill": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "advancedrocketrycommunity:laser_drill"
+      }
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.laser_drill"
+  },
+  "lathe": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "advancedrocketrycommunity:lathe"
+      }
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.lathe"
+  },
+  "machine_large": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "advancedrocketrycommunity:machine_large"
+      }
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.machine_large"
+  },
+  "railgun_bang": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "advancedrocketrycommunity:railgun_bang"
+      }
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.railgun_bang"
+  },
+  "rolling_machine": {
+    "sounds": [
+      {
+        "attenuation_distance": 32,
+        "name": "advancedrocketrycommunity:rolling_machine"
+      }
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.rolling_machine"
+  }
+}

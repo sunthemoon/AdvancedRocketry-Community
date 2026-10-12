@@ -51,6 +51,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180SolarLanguage.entries(chinese).forEach(this::add);
         V180AirlockData.language(chinese).forEach(this::add);
         V180PropulsionLanguage.entries(chinese).forEach(this::add);
+        V180PresentationLanguage.translations(chinese).forEach(this::add);
 
         add("block." + NS + ".force_field_projector", chinese ? "力场投影器" : "Force Field Projector");
         add("block." + NS + ".force_field", chinese ? "力场" : "Force Field");
