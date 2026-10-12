@@ -11,7 +11,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 /**
  * ADR-065 section 11.1: the exact-version {@code advancedrocketrycommunity:classic_controls} channel, protocol 1.
  * Index 0 is the C2S control intent, index 1 the S2C view of the open control menu and index 2 the S2C beacon
- * marker snapshot of C17c (registered, not yet sent). Forge disconnects a message that arrives in the wrong
+ * marker snapshot of C17c, sent by the beacon finder service. Forge disconnects a message that arrives in the wrong
  * direction and drops an unknown index; a client without this exact version cannot join.
  */
 public final class ClassicControlsNetwork {
@@ -63,6 +63,14 @@ public final class ClassicControlsNetwork {
         ClassicControlsNetwork current = installed;
         if (current != null) {
             current.channel.send(PacketDistributor.PLAYER.with(() -> player), view);
+        }
+    }
+
+    /** Server: one private beacon marker snapshot to the one eligible player it belongs to (C17c). */
+    public static void sendBeaconSnapshot(ServerPlayer player, BeaconMarkerSnapshotPacket snapshot) {
+        ClassicControlsNetwork current = installed;
+        if (current != null) {
+            current.channel.send(PacketDistributor.PLAYER.with(() -> player), snapshot);
         }
     }
 

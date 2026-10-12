@@ -52,6 +52,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.STATION_GRAVITY_CONTROLLER.get());
                         output.accept(ModItems.STATION_ALTITUDE_CONTROLLER.get());
                         output.accept(ModItems.STATION_ORIENTATION_CONTROLLER.get());
+                        output.accept(ModItems.PLANETARY_BEACON.get());
+                        output.accept(ModItems.BEACON_FINDER.get());
                         output.accept(ModItems.THERMITE.get());
                         output.accept(ModItems.CARBON_BRICK.get());
                         output.accept(ModItems.USER_INTERFACE.get());

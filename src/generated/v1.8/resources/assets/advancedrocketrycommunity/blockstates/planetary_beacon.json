@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/planetary_beacon",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/planetary_beacon"
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/planetary_beacon",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/planetary_beacon",
+      "y": 270
+    }
+  }
+}
