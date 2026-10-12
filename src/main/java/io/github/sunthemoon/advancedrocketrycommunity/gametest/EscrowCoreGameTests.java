@@ -38,7 +38,7 @@ public final class EscrowCoreGameTests {
         level.getChunk(chunk.x, chunk.z); // Explicit fixed test setup, never endpoint-request loading.
         var fixture = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
         var op = fixture.operation(1); fixture.apply(op); var monitor = EscrowRuntime.of(level.getServer()).monitor();
-        var store = new EscrowChunkStore(level, monitor); var barrier = new EscrowBarrier();
+        var store = EscrowRuntime.of(level.getServer()).store(level); var barrier = new EscrowBarrier();
         AtomicInteger phase = new AtomicInteger(); AtomicBoolean pending = new AtomicBoolean();
         helper.onEachTick(() -> {
             barrier.tick(level.getServer().getTickCount()); if (pending.get() || !level.areEntitiesLoaded(fixture.bank().chunkPosition().toLong())) { return; }
@@ -76,12 +76,60 @@ public final class EscrowCoreGameTests {
         MinecraftForge.EVENT_BUS.addListener(listener);
         try {
             boolean refused = false;
-            try { new EscrowChunkStore(level, monitor).captureAndStore(op.source(), EscrowTestEndpoints.validator(op.source(), fixture.sourceState())); }
+            var store = EscrowRuntime.of(level.getServer()).store(level);
+            try { store.captureAndStore(op.source(), EscrowTestEndpoints.validator(op.source(), fixture.sourceState())); }
             catch (IllegalArgumentException expected) { refused = true; }
             helper.assertTrue(refused && superseded.get(), "Barrier stored an older capture after a newer vanilla Save");
             helper.assertTrue(chunk.isUnsaved(), "Capture rejection did not restore dirty state");
+            superseded.set(false);
+            try (var barrier = new EscrowBarrier()) {
+                var result = new java.util.concurrent.atomic.AtomicReference<EscrowBarrier.Result>();
+                helper.assertTrue(barrier.begin(store, op.source(), fixture.sourceState(), EscrowTestEndpoints.validator(op.source(), fixture.sourceState()),
+                        level.getServer().getTickCount(), result::set), "Superseding capture was not processed");
+                helper.assertTrue(result.get() != null && !result.get().confirmed() && result.get().reason() == EscrowReason.SUPERSEDING_SAVE
+                        && barrier.supersedingSaves() == 1 && barrier.ioFailures() == 0, "Capture supersession was counted as an IO failure");
+            }
         } finally { MinecraftForge.EVENT_BUS.unregister(listener); fixture.bank().discard(); }
         helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 100)
+    public static void aNestedVanillaEntityStoreInvalidatesTheOwnCapture(GameTestHelper helper) {
+        var level = helper.getLevel(); var armed = new AtomicBoolean(); var injected = new AtomicBoolean();
+        Consumer<net.minecraftforge.event.AttachCapabilitiesEvent<net.minecraft.world.entity.Entity>> listener = event -> {
+            if (!(event.getObject() instanceof net.minecraft.world.entity.decoration.ArmorStand bank)) { return; }
+            event.addCapability(ModIdentity.id("escrow_nested_save_fixture"), new net.minecraftforge.common.capabilities.ICapabilitySerializable<CompoundTag>() {
+                @Override public CompoundTag serializeNBT() {
+                    if (armed.compareAndSet(true, false)) {
+                        helper.assertTrue(level.entityManager.storeChunkSections(bank.chunkPosition().toLong(), entity -> { }), "Nested entity store refused loaded sections");
+                        injected.set(true);
+                    }
+                    return new CompoundTag();
+                }
+                @Override public void deserializeNBT(CompoundTag tag) { }
+                @Override public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(
+                        net.minecraftforge.common.capabilities.Capability<T> capability, net.minecraft.core.Direction side) {
+                    return net.minecraftforge.common.util.LazyOptional.empty();
+                }
+            });
+        };
+        MinecraftForge.EVENT_BUS.addGenericListener(net.minecraft.world.entity.Entity.class, listener);
+        EscrowTestEndpoints.Fixture fixture;
+        try { fixture = EscrowTestEndpoints.create(level, helper.absolutePos(new BlockPos(1, 1, 1)), UUID.randomUUID()); }
+        finally { MinecraftForge.EVENT_BUS.unregister(listener); }
+        var op = fixture.operation(1); fixture.apply(op); var barrier = new EscrowBarrier();
+        AtomicBoolean ran = new AtomicBoolean();
+        helper.onEachTick(() -> {
+            if (!level.areEntitiesLoaded(fixture.bank().chunkPosition().toLong()) || !ran.compareAndSet(false, true)) { return; }
+            armed.set(true); var result = new java.util.concurrent.atomic.AtomicReference<EscrowBarrier.Result>();
+            try {
+                helper.assertTrue(barrier.begin(EscrowRuntime.of(level.getServer()).store(level), op.destination(), fixture.bankState(),
+                        EscrowTestEndpoints.validator(op.destination(), fixture.bankState()), level.getServer().getTickCount(), result::set), "Entity capture was not processed");
+                helper.assertTrue(injected.get() && result.get() != null && result.get().reason() == EscrowReason.SUPERSEDING_SAVE
+                        && !result.get().confirmed() && barrier.supersedingSaves() == 1 && barrier.ioFailures() == 0,
+                        "A nested vanilla entity store was mistaken for the own capture");
+            } finally { barrier.close(); fixture.bank().discard(); }
+            helper.succeed();
+        });
     }
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 200)
     public static void failedPredecessorKeepsTheAdmissionInItsCapturedSuccessor(GameTestHelper helper) throws Exception {

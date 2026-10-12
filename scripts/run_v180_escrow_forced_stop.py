@@ -23,7 +23,7 @@ from inspect_celestial_saved_data import NbtReader
 from run_v060_flight_server_smoke import _server_command
 
 
-CASES = tuple(f"K{i}" for i in range(11)) + ("C1", "C2", "E2", "E4L1_FAIL", "E4L1_UNKNOWN", "E4L2_FAIL", "E4L2_UNKNOWN", "G3", "G3L2")
+CASES = tuple(f"K{i}" for i in range(11)) + ("C1", "C2", "E2", "E2_CAPTURE", "E4L1_FAIL", "E4L1_UNKNOWN", "E4L2_FAIL", "E4L2_UNKNOWN", "G3", "G3L2")
 RESULT = re.compile(r"ARCE_RELEASE_ESCROW_RESULT source=(\d+) bank=(\d+) records=(\d+) source_epoch=(\d+) bank_epoch=(\d+) ledger=([0-9a-f-]{36})")
 CHAIN_RESULT = re.compile(r"ARCE_RELEASE_ESCROW_CHAIN_RESULT source_a=(\d+) source_b=(\d+) bank=(\d+) records=(\d+) epochs=1,1,2")
 LEDGER = "advancedrocketrycommunity_resource_escrow.dat"

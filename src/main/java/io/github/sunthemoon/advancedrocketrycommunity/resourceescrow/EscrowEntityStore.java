@@ -18,6 +18,7 @@ final class EscrowEntityStore implements EntityPersistentStorage<Entity> {
     private final EntityStorage original;
     private final EscrowSaveMonitor monitor;
     private Function<ChunkEntities<Entity>, CompoundTag> capture;
+    private boolean capturing;
     private CompletableFuture<Void> ownStore;
 
     EscrowEntityStore(ServerLevel level, EscrowSaveMonitor monitor) {
@@ -27,13 +28,13 @@ final class EscrowEntityStore implements EntityPersistentStorage<Entity> {
     }
     EntityStorage original() { return original; }
     CompletableFuture<Void> captureAndStore(ChunkPos pos, Function<ChunkEntities<Entity>, CompoundTag> serializer) {
-        EscrowTags.require(capture == null && level.areEntitiesLoaded(pos.toLong()), "Entity sections are not fully loaded");
-        capture = serializer; ownStore = null;
+        EscrowTags.require(!capturing && level.areEntitiesLoaded(pos.toLong()), "Entity sections are not fully loaded or capture is reentrant");
+        capturing = true; capture = serializer; ownStore = null;
         try {
             boolean stored = level.entityManager.storeChunkSections(pos.toLong(), entity -> { });
             EscrowTags.require(stored && ownStore != null, "Entity manager refused or did not capture a store");
             return ownStore;
-        } finally { capture = null; ownStore = null; }
+        } finally { capturing = false; capture = null; ownStore = null; }
     }
     @Override public CompletableFuture<ChunkEntities<Entity>> loadEntities(ChunkPos pos) { return delegate.loadEntities(pos); }
     @Override public void storeEntities(ChunkEntities<Entity> entities) {
@@ -42,7 +43,8 @@ final class EscrowEntityStore implements EntityPersistentStorage<Entity> {
             monitor.observed(level.dimension().location().toString(), true, entities.getPos());
             delegate.storeEntities(entities); return;
         }
-        CompoundTag tag = capture.apply(entities);
+        var serializer = capture; capture = null; // Nested vanilla stores during serialization must be observed, not mistaken for ours.
+        CompoundTag tag = serializer.apply(entities);
         ownStore = original.worker.store(entities.getPos(), tag);
         if (tag == null) { original.emptyChunks.add(entities.getPos().toLong()); }
         else { original.emptyChunks.remove(entities.getPos().toLong()); }

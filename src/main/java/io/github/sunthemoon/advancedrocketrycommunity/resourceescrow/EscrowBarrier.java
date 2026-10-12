@@ -60,6 +60,9 @@ public final class EscrowBarrier implements AutoCloseable {
         captureTick = tick;
         EscrowChunkStore.Capture capture;
         try { capture = store.captureAndStore(endpoint, validator); }
+        catch (EscrowChunkStore.SupersededCapture newer) {
+            supersedingSaves++; callback.accept(new Result(null, EscrowReason.SUPERSEDING_SAVE)); return true;
+        }
         catch (RuntimeException failure) { ioFailures++; callback.accept(new Result(null, EscrowReason.BARRIER_VETO)); return true; }
         pending++; bytes += capture.bytes();
         staged.computeIfAbsent(endpoint.level(), key -> new ArrayList<>()).add(new Attempt(capture, frontier, validator, callback));

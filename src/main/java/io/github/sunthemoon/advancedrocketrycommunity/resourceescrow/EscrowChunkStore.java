@@ -20,6 +20,9 @@ import net.minecraftforge.event.level.ChunkDataEvent;
 
 /** Capture, event, validation and submission are one uninterrupted owner-thread call (C1). */
 public final class EscrowChunkStore {
+    static final class SupersededCapture extends IllegalArgumentException {
+        SupersededCapture() { super("Capture superseded before store"); }
+    }
     public record Capture(CompletableFuture<Void> stored, IOWorker worker, Path directory, ChunkPos chunk,
                            AtomicLong generation, long capturedGeneration, int bytes, Runnable restoreDirty,
                            Runnable releaseWatch) { }
@@ -52,8 +55,8 @@ public final class EscrowChunkStore {
             EscrowTags.bound(tag, AnvilRecordReader.DECODED_BYTES, 64, 262_144);
             tag = tag.copy(); // Event listeners may retain their tag; only this detached root goes to the worker.
             int bytes = validate(tag, validator);
-            EscrowTags.require(generation.get() == capturedGeneration
-                    && level.getChunkSource().getChunkNow(pos.x, pos.z) == chunk, "Capture superseded before store");
+            unchanged(generation, capturedGeneration);
+            EscrowTags.require(level.getChunkSource().getChunkNow(pos.x, pos.z) == chunk, "Captured terrain chunk changed before store");
             CompletableFuture<Void> stored = level.getChunkSource().chunkMap.worker.store(pos, tag);
             var map = level.getChunkSource().chunkMap;
             if (map.legacyStructureHandler != null) { map.legacyStructureHandler.removeIndex(pos.toLong()); }
@@ -72,7 +75,7 @@ public final class EscrowChunkStore {
             root.putIntArray("Position", new int[] {pos.x, pos.z}); ListTag list = new ListTag();
             captured.getEntities().forEach(entity -> serialize(entity, list)); root.put("Entities", list);
             bytes[0] = validate(root, validator);
-            EscrowTags.require(generation.get() == capturedGeneration, "Entity capture superseded before store");
+            unchanged(generation, capturedGeneration);
             return root;
         });
         return new Capture(stored, entities.original().worker, directory(true), pos, generation, capturedGeneration, bytes[0], () -> { },
@@ -83,6 +86,9 @@ public final class EscrowChunkStore {
         // The manager has already selected all shouldBeSaved entities; a false save must not silently omit one.
         EscrowTags.require(entity.save(tag), "A saveable entity refused serialization"); list.add(tag);
         EscrowTags.require(BoundedNbt.fits(list, AnvilRecordReader.DECODED_BYTES, 64, 262_144), "Entity capture limit exceeded");
+    }
+    private static void unchanged(AtomicLong generation, long captured) {
+        if (generation.get() != captured) { throw new SupersededCapture(); }
     }
     private static int validate(CompoundTag tag, Predicate<CompoundTag> validator) {
         EscrowTags.bound(tag, AnvilRecordReader.DECODED_BYTES, 64, 262_144);
