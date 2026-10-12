@@ -154,6 +154,60 @@ public final class StationControlsGameTests {
         helper.succeed();
     }
 
+    /**
+     * W07 review R2: after a successful screen quote, a confirmation from a controller whose core was removed or
+     * moved out of its 5-block reach is refused before it is consumed, with no countdown and no energy spent. (A
+     * core in an unloaded chunk cannot be staged within 13 blocks of a connected player; {@code WarpCoreReachTest}
+     * covers it on the same scan.) The command confirmation keeps its rule without a ray pick.
+     */
+    @GameTest(template = "empty", batch = "station_controls_confirm_core", timeoutTicks = 100)
+    public static void aScreenConfirmationRechecksTheControllersCoreReach(GameTestHelper helper) {
+        StationWarpGameTests.Fixture fixture = new StationWarpGameTests.Fixture(helper, "Confirm core",
+                CelestialIds.EARTH_ID, 2_500_000);
+        StationRocketAuthority previous = fixture.warp.installRocketAuthority(StationWarpGameTests.NOTHING_IN_MOTION);
+        List<BlockPos> placed = new ArrayList<>();
+        try {
+            ServerPlayer owner = owner(fixture, "confirmCore");
+            BlockPos controller = place(fixture, placed, StationControllerKind.WARP, fixture.pad.offset(3, 0, 2));
+            StationActorContext warp = context(fixture, StationControllerKind.WARP, controller);
+            BlockPos near = controller.offset(0, 0, 3);
+            fixture.core(near);
+            expect(helper, fixture.warp.request(owner, warp, StationWarpGameTests.MOON).code(),
+                    StationManagementCode.WARP_ISSUED, "the quote with a core 3 blocks away");
+            fixture.space.setBlockAndUpdate(near, Blocks.AIR.defaultBlockState());
+            expect(helper, fixture.warp.confirm(owner, warp, fixture.id()).code(),
+                    StationManagementCode.NO_WARP_CORE_NEAR_CONTROLLER, "a confirmation after the core was removed");
+            unspent(helper, fixture, "a removed core");
+            fixture.core(controller.offset(0, 0, 6));
+            expect(helper, fixture.warp.confirm(owner, warp, fixture.id()).code(),
+                    StationManagementCode.NO_WARP_CORE_NEAR_CONTROLLER, "a confirmation with the core 6 blocks away");
+            unspent(helper, fixture, "a distant core");
+            // The refusals consumed nothing: with a core back in reach the same quote starts, and is cancelled.
+            fixture.core(controller.offset(0, 0, 4));
+            expect(helper, fixture.warp.confirm(owner, warp, fixture.id()).code(),
+                    StationManagementCode.WARP_STARTED, "the same quote with a core 4 blocks away");
+            expect(helper, fixture.warp.cancel(owner, warp).code(), StationManagementCode.WARP_CANCELLED,
+                    "cancel through the screen context");
+            // The command path: its quote needs the ray pick, its confirmation does not.
+            owner.teleportTo(fixture.space, controller.getX() + 0.5D, controller.getY(), controller.getZ() + 1.5D,
+                    0.0F, 0.0F);
+            fixture.look(fixture.ownerId, controller.offset(0, 0, 4));
+            expect(helper, fixture.warp.request(owner, true, StationWarpGameTests.MOON).code(),
+                    StationManagementCode.WARP_ISSUED, "the command quote looking at the core");
+            fixture.look(fixture.ownerId, fixture.pad.above(5));
+            expect(helper, fixture.warp.confirm(owner, true, fixture.id()).code(), StationManagementCode.WARP_STARTED,
+                    "the command confirmation looking away");
+            expect(helper, fixture.warp.cancel(owner, true).code(), StationManagementCode.WARP_CANCELLED,
+                    "the command cancel");
+            unspent(helper, fixture, "after both cancels");
+        } finally {
+            fixture.warp.installRocketAuthority(previous);
+            clear(fixture, placed);
+            fixture.close();
+        }
+        helper.succeed();
+    }
+
     @GameTest(template = "empty", batch = "station_controls_warp_parity", timeoutTicks = 400)
     public static void theWarpControllerReachesTheSameOutcomeAsTheCommand(GameTestHelper helper) {
         StationWarpGameTests.Fixture command = new StationWarpGameTests.Fixture(helper, "Command warp",
@@ -515,6 +569,13 @@ public final class StationControlsGameTests {
         helper.assertTrue(menu.clickMenuButton(player, button), "Button " + button + " was not handled");
         helper.assertTrue(menu.status().equals(Optional.of(expected)),
                 "Button " + button + " expected " + expected + " but was " + menu.status());
+    }
+
+    /** No countdown runs, and the orbit and the full warp balance are unchanged. */
+    private static void unspent(GameTestHelper helper, StationWarpGameTests.Fixture fixture, String label) {
+        helper.assertTrue(fixture.warp.countdown(fixture.id()).isEmpty(), label + ": a countdown started");
+        helper.assertTrue(fixture.station().orbitBody().equals(fixture.created.orbitBody())
+                && fixture.data.warpEnergy(fixture.id()) == 2_500_000, label + ": energy was spent or the orbit moved");
     }
 
     private static void expect(GameTestHelper helper, StationManagementCode actual, StationManagementCode expected,

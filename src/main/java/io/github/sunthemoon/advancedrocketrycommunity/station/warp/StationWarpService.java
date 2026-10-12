@@ -249,6 +249,13 @@ public final class StationWarpService {
         if (actor.code() != null) {
             return audit("confirm", player, StationWarpResult.of(actor.code(), actor.station()));
         }
+        // ADR-065 section 5.1 (W07 review R2): a screen also needs its live 5-block core reach before take(), so a
+        // core removed, moved or unloaded since the quote refuses without consuming it. The command path keeps its
+        // own rule, which has no ray pick at confirmation.
+        if (context.viaController() && !coreReachable(player, context, actor.authority(), actor.station())) {
+            return audit("confirm", player, StationWarpResult.of(StationManagementCode.NO_WARP_CORE_NEAR_CONTROLLER,
+                    actor.station()));
+        }
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
         var outcome = confirmations.take(player.getUUID(), stationId, data, server.getTickCount());
         StationManagementCode rejected = switch (outcome.status()) {
@@ -530,8 +537,8 @@ public final class StationWarpService {
 
     /**
      * A command needs the server ray pick from the player's eyes; a controller screen needs a loaded core whose
-     * centre is within {@link StationLimits#WARP_CORE_REACH} of the controller's centre. Either core must stand
-     * inside this station's committed region. Only loaded chunks are inspected; at most 11^3 positions.
+     * centre is within {@link StationLimits#WARP_CORE_REACH} of the controller's centre ({@link WarpCoreReach}).
+     * Either core must stand inside this station's committed region. Only loaded chunks are inspected.
      */
     private static boolean coreReachable(ServerPlayer player, StationActorContext context, StationRegistrySavedData data,
                                          StationState station) {
@@ -540,26 +547,24 @@ public final class StationWarpService {
         }
         BlockPos controller = context.controller().orElseThrow().position();
         ServerLevel level = player.serverLevel();
-        int reach = (int) StationLimits.WARP_CORE_REACH;
-        double reachSquared = StationLimits.WARP_CORE_REACH * StationLimits.WARP_CORE_REACH;
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-        for (int dx = -reach; dx <= reach; dx++) {
-            for (int dy = -reach; dy <= reach; dy++) {
-                for (int dz = -reach; dz <= reach; dz++) {
-                    if (dx * dx + dy * dy + dz * dz > reachSquared) {
-                        continue;
-                    }
-                    cursor.set(controller.getX() + dx, controller.getY() + dy, controller.getZ() + dz);
-                    if (level.isInWorldBounds(cursor) && level.hasChunkAt(cursor)
-                            && level.getBlockState(cursor).is(ModBlocks.WARP_CORE.get())
-                            && data.findAt(cursor.getX(), cursor.getZ()).map(StationState::stationId)
-                            .filter(station.stationId()::equals).isPresent()) {
-                        return true;
-                    }
-                }
+        return WarpCoreReach.reachable(controller.getX(), controller.getY(), controller.getZ(), new WarpCoreReach.Probe() {
+            @Override
+            public boolean loaded(int x, int y, int z) {
+                cursor.set(x, y, z);
+                return level.isInWorldBounds(cursor) && level.hasChunkAt(cursor);
             }
-        }
-        return false;
+
+            @Override
+            public boolean core(int x, int y, int z) {
+                return level.getBlockState(cursor.set(x, y, z)).is(ModBlocks.WARP_CORE.get());
+            }
+
+            @Override
+            public boolean inStation(int x, int z) {
+                return data.findAt(x, z).map(StationState::stationId).filter(station.stationId()::equals).isPresent();
+            }
+        });
     }
 
     /** Server ray pick from the player's eyes: a warp core inside this station's committed region. */
