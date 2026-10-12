@@ -142,7 +142,9 @@ public final class ScrubberRecoveryGameTests {
         helper.assertTrue(position != null, "No loaded frontier available for the unloaded guard fixture");
         BlockPos ventPos = position, facadePos = position.east(); BlockState before = level.getBlockState(ventPos);
         helper.assertTrue(level.getBlockEntity(ventPos) == null, "Frontier fixture must be BE-free");
-        level.setBlock(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState(), Block.UPDATE_CLIENTS);
+        // Native neighbour-shape propagation would load the very chunk this fixture must leave absent.
+        int quiet = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+        level.setBlock(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState(), quiet);
         var vent = (OxygenVentBlockEntity) level.getBlockEntity(ventPos);
         try {
             CompoundTag bank = new ScrubberBank().encode(); ListTag banks = new ListTag(); CompoundTag entry = new CompoundTag();
@@ -151,13 +153,14 @@ public final class ScrubberRecoveryGameTests {
             banks.add(entry); bank.put("banks", banks);
             CompoundTag saved = new CompoundTag(); saved.put(OxygenVentPersistence.DATA_KEY, OxygenVentPersistence.encode(0, 0, 0, 0, 0, bank));
             vent.load(saved);
-            helper.assertTrue(!vent.protectedDeviceData() && chunks.getChunkNow(facadePos.getX() >> 4, facadePos.getZ() >> 4) == null,
+            helper.assertTrue(!vent.protectedDeviceData(), "Frontier fixture must load a supported bank root");
+            helper.assertTrue(chunks.getChunkNow(facadePos.getX() >> 4, facadePos.getZ() >> 4) == null,
                     "Fixture setup loaded the unavailable facade chunk");
             helper.assertTrue(vent.scrubbers().recoverOrphan(vent).isEmpty() && bank.equals(vent.scrubbers().encode())
                     && chunks.getChunkNow(facadePos.getX() >> 4, facadePos.getZ() >> 4) == null,
                     "Recovery loaded an unavailable chunk or withdrew its unresolved cartridge");
             helper.succeed();
-        } finally { vent.load(new CompoundTag()); level.setBlock(ventPos, before, Block.UPDATE_CLIENTS); }
+        } finally { vent.load(new CompoundTag()); level.setBlock(ventPos, before, quiet); }
     }
 
     private static final class Fixture implements AutoCloseable {
