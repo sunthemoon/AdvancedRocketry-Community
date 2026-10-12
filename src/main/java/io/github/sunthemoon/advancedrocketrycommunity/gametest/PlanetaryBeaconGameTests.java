@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.BeaconStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.finder.BeaconFinderService;
+import io.github.sunthemoon.advancedrocketrycommunity.beacon.model.BeaconLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.model.BeaconRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.persistence.BeaconStateCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.BeaconMarkerSnapshotPacket;
@@ -42,7 +43,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
  * loaded pattern and registers an active record; only its owner or an operator switches or renames it; unforming and
  * removal update the index. A held or correctly worn finder receives only its own player's active beacons on the
  * same body and Level, an unequipped finder receives nothing, another owner's beacon is never sent, and each player
- * receives at most one snapshot per 20 ticks, through the registered {@code classic_controls} codec.
+ * receives at most one snapshot per 20 ticks, through the registered {@code classic_controls} codec. A finder
+ * snapshot removes its viewer's records whose loaded position holds no such beacon, and keeps every other record.
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -233,10 +235,12 @@ public final class PlanetaryBeaconGameTests {
             fixture.buildStructure(at);
             PlanetaryBeaconBlockEntity alphaBeacon = fixture.place(alpha, at, Optional.of("Alpha"));
             UUID alphaId = alphaBeacon.beaconId().orElseThrow();
-            // Beta's beacon stands nearer to Alpha than Alpha's own; privacy is not a matter of distance.
-            BeaconRecord betaRecord = fixture.record(beta, standing.below(2), body, true, "Beta");
-            BeaconRecord alphaInactive = fixture.record(alpha, standing.east(4), body, false, "Off");
-            BeaconRecord alphaMoon = fixture.record(alpha, standing.west(4), MOON, true, "Moon");
+            // Beta's phantom record (no beacon at its loaded position) is nearer to Alpha than Alpha's own beacon;
+            // privacy is not a matter of distance. Beta's real beacon is last known in a chunk that is not loaded.
+            BeaconRecord betaNear = fixture.record(beta, standing.below(2), body, true, "Near");
+            BeaconRecord betaRecord = fixture.record(beta, fixture.unloaded(0), body, true, "Beta");
+            BeaconRecord alphaInactive = fixture.record(alpha, fixture.unloaded(1), body, false, "Off");
+            BeaconRecord alphaMoon = fixture.record(alpha, fixture.unloaded(2), MOON, true, "Moon");
             BeaconRecord gammaRecord = fixture.record(gamma, standing.south(1), body, true, "Gamma");
             fixture.await(40, "Alpha's beacon to form", () -> alphaBeacon.live(), () -> {
                 List<Sent> sent = new ArrayList<>();
@@ -250,18 +254,25 @@ public final class PlanetaryBeaconGameTests {
                 helper.assertTrue(alphaFirst.isPresent() && ids(alphaFirst.get()).equals(Set.of(alphaId))
                         && alphaFirst.get().markers().get(0).live()
                         && alphaFirst.get().markers().get(0).name().equals("Alpha"), "Alpha's held snapshot: " + alphaFirst);
+                helper.assertTrue(fixture.index().get(betaNear.beaconId()).isPresent()
+                        && fixture.index().get(alphaInactive.beaconId()).isPresent()
+                        && fixture.index().get(alphaMoon.beaconId()).isPresent(),
+                        "Alpha's finder removed another owner's record or a record whose chunk is not loaded");
                 // The off hand is a separate holding position; the stream is unchanged, so nothing is resent.
                 alpha.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                 alpha.setItemInHand(InteractionHand.OFF_HAND, finder());
                 helper.assertTrue(BeaconFinderService.eligible(alpha) && service.evaluate(alpha, now + 20).isEmpty(),
                         "The off-hand finder changed the stream");
 
-                // Worn: Beta's helmet module gives Beta only Beta's beacon, last known because no block is loaded.
+                // Worn: Beta's helmet module gives Beta only Beta's beacon, last known because its chunk is not loaded,
+                // and removes Beta's phantom record.
                 beta.setItemSlot(EquipmentSlot.HEAD, finderHelmet(helper));
                 helper.assertTrue(ArmorEquipment.summarize(beta).beaconFinderEnabled(), "The worn summary is off");
                 Optional<BeaconMarkerSnapshotPacket> betaFirst = service.evaluate(beta, now);
                 helper.assertTrue(betaFirst.isPresent() && ids(betaFirst.get()).equals(Set.of(betaRecord.beaconId()))
                         && !betaFirst.get().markers().get(0).live(), "Beta's worn snapshot: " + betaFirst);
+                helper.assertTrue(fixture.index().get(betaNear.beaconId()).isEmpty()
+                        && fixture.index().get(betaRecord.beaconId()).isPresent(), "Beta's phantom record was kept");
                 // Worn and held at once is still one stream.
                 beta.setItemInHand(InteractionHand.MAIN_HAND, finder());
                 helper.assertTrue(service.evaluate(beta, now + 20).isEmpty(), "Worn and held sent a second stream");
@@ -295,7 +306,8 @@ public final class PlanetaryBeaconGameTests {
                 }
                 helper.assertTrue(sent.stream().noneMatch(entry -> ids(entry.snapshot()).contains(alphaInactive.beaconId())
                         || ids(entry.snapshot()).contains(alphaMoon.beaconId())
-                        || ids(entry.snapshot()).contains(gammaRecord.beaconId())), "A filtered record was sent");
+                        || ids(entry.snapshot()).contains(gammaRecord.beaconId())
+                        || ids(entry.snapshot()).contains(betaNear.beaconId())), "A filtered record was sent");
                 fixture.succeed();
             });
         } catch (RuntimeException | Error failure) {
@@ -310,8 +322,8 @@ public final class PlanetaryBeaconGameTests {
             BlockPos standing = fixture.standingBefore(fixture.controllerAt(210));
             ServerPlayer viewer = fixture.join("finderRate", standing);
             String body = fixture.body(standing);
-            fixture.record(viewer, standing.east(5), body, true, "One");
-            fixture.record(viewer, standing.west(9), body, true, "Two");
+            fixture.record(viewer, fixture.unloaded(0), body, true, "One");
+            fixture.record(viewer, fixture.unloaded(1), body, true, "Two");
             List<Long> ticks = new ArrayList<>();
             List<BeaconMarkerSnapshotPacket> snapshots = new ArrayList<>();
             long[] clock = {0L};
@@ -358,7 +370,7 @@ public final class PlanetaryBeaconGameTests {
             ServerPlayer holder = fixture.join("channelHolder", standing);
             ServerPlayer bystander = fixture.join("channelBystander", standing);
             String body = fixture.body(standing);
-            BeaconRecord record = fixture.record(holder, standing.east(6), body, true, "Relay");
+            BeaconRecord record = fixture.record(holder, fixture.unloaded(0), body, true, "Relay");
             fixture.record(bystander, standing.west(6), body, true, "Other");
             drain(holder);
             drain(bystander);
@@ -376,6 +388,64 @@ public final class PlanetaryBeaconGameTests {
                     fixture.close();
                 }
                 helper.succeed();
+            });
+        } catch (RuntimeException | Error failure) {
+            fixture.close();
+            throw failure;
+        }
+    }
+
+    @GameTest(template = "empty", batch = "beacon_phantom_record", timeoutTicks = 200)
+    public static void aRecordSavedBeforeACrashIsRemovedWhenItsLoadedPositionHoldsNoBeacon(GameTestHelper helper) {
+        BeaconGameTestFixture fixture = new BeaconGameTestFixture(helper);
+        try {
+            BlockPos at = fixture.controllerAt(210);
+            BlockPos standing = fixture.standingBefore(at);
+            ServerPlayer owner = fixture.join("phantomOwner", standing);
+            String body = fixture.body(standing);
+            fixture.buildStructure(at);
+            PlanetaryBeaconBlockEntity beacon = fixture.place(owner, at, Optional.of("Lost"));
+            UUID id = beacon.beaconId().orElseThrow();
+            fixture.await(40, "the beacon to register", () -> beacon.status() == BeaconStatus.ACTIVE, () -> {
+                // The index was saved with the active record. The beacon is then broken, its chunk is saved without
+                // it, and the server stops before the next autosave: after the restart the index holds the record
+                // again, and no block entity has its UUID.
+                BeaconRecord saved = fixture.index().get(id).orElseThrow();
+                fixture.removeController(at);
+                helper.assertTrue(fixture.index().get(id).isEmpty(), "Removal left the record");
+                fixture.restore(saved);
+                // The owner's other beacons are last known in chunks that are not loaded; the phantom takes the
+                // last of the owner's 32 slots, so a new beacon is refused.
+                List<BeaconRecord> far = new ArrayList<>();
+                for (int i = 0; i < BeaconLimits.MAX_PER_OWNER - 1; i++) {
+                    far.add(fixture.record(owner, fixture.unloaded(i), body, true, "Far " + i));
+                }
+                PlanetaryBeaconBlockEntity replacement = fixture.place(owner, at.east(4), Optional.of("New"));
+                fixture.await(40, "the new beacon to be refused", () -> replacement.status() == BeaconStatus.LIMIT,
+                        () -> {
+                    helper.assertTrue(fixture.index().ownedBy(owner.getUUID()).size() == BeaconLimits.MAX_PER_OWNER
+                            && fixture.index().get(id).isPresent(), "The phantom does not hold the last slot");
+
+                    // The owner's finder finds the record's loaded position empty and removes only that record.
+                    BeaconFinderService service = new BeaconFinderService((player, snapshot) -> { },
+                            fixture.services());
+                    BeaconMarkerSnapshotPacket snapshot = service.snapshot(owner);
+                    helper.assertTrue(fixture.index().get(id).isEmpty() && !ids(snapshot).contains(id),
+                            "The phantom record was kept or shown: " + snapshot);
+                    helper.assertTrue(snapshot.markers().size() == BeaconLimits.MAX_MARKERS
+                            && snapshot.markers().stream().noneMatch(BeaconMarkerSnapshotPacket.Marker::live)
+                            && far.stream().allMatch(record -> fixture.index().get(record.beaconId()).isPresent()),
+                            "A record whose chunk is not loaded was removed: " + snapshot);
+
+                    // The freed slot admits the new beacon at its next reconciliation, here its owner's switch.
+                    fixture.use(owner, at.east(4), ItemStack.EMPTY);
+                    UUID replacementId = replacement.beaconId().orElseThrow();
+                    helper.assertTrue(replacement.status() == BeaconStatus.DISABLED
+                            && fixture.index().get(replacementId).filter(record -> !record.active()).isPresent()
+                            && fixture.index().ownedBy(owner.getUUID()).size() == BeaconLimits.MAX_PER_OWNER,
+                            "The freed slot did not admit the new beacon: " + replacement.status());
+                    fixture.succeed();
+                });
             });
         } catch (RuntimeException | Error failure) {
             fixture.close();

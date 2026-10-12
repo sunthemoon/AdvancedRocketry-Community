@@ -191,14 +191,30 @@ final class BeaconGameTestFixture implements AutoCloseable {
         controllers.remove(at);
     }
 
-    /** A record written straight into the index, for a beacon with no block. */
+    /**
+     * A record written straight into the index, for a beacon with no block. At a loaded position it is a phantom that
+     * the owner's next finder snapshot removes; a last-known beacon stands at an {@link #unloaded} position.
+     */
     BeaconRecord record(ServerPlayer owner, BlockPos at, String body, boolean active, String name) {
         BeaconRecord record = new BeaconRecord(UUID.randomUUID(), owner.getUUID(), body,
                 level.dimension().location().toString(), at.getX(), at.getY(), at.getZ(), 0, active, name);
+        restore(record);
+        return record;
+    }
+
+    /** Writes a given record straight into the index, as a restarted server reads it from the saved index. */
+    void restore(BeaconRecord record) {
         helper.assertTrue(index().put(record).equals(Optional.of(BeaconIndex.Admission.ADMITTED)),
                 "The index refused a fixture record");
         records.add(record.beaconId());
-        return record;
+    }
+
+    /** The {@code index}th position of a row far from every test, in a chunk that is not loaded. */
+    BlockPos unloaded(int index) {
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        BlockPos position = new BlockPos(origin.getX() + 1_000_000 + 16 * index, 64, origin.getZ() + 1_000_000);
+        helper.assertTrue(!level.hasChunkAt(position), "A far fixture position is loaded: " + position);
+        return position;
     }
 
     String body(BlockPos at) {
