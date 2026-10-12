@@ -829,6 +829,28 @@ updates at most once/20 ticks and only to a equipped/holding authenticated playe
 Body changes/logout/resource reload clear client caches. No C2S position query,
 cross-body survey or automatic route discovery is added.
 
+### W18 implementation note: beacon data preservation
+
+This note documents protection mechanics, not a changed decision or accepted
+risk (risk R-028). Neither mechanism refuses a save or throws from serialization.
+
+- **Index root.** A `advancedrocketrycommunity_planetary_beacons` SavedData root
+  that does not decode (unknown, future, malformed or over a section 7 bound) is
+  kept by reference and written back unchanged. The affected unit is the whole
+  server's beacon index, across every Level: no beacon registers, updates or
+  removes its record, and every finder receives an empty snapshot. Nothing is
+  deleted. It lasts until the server stops; one WARN is logged per load. Recovery
+  is an offline repair of the `.dat` file from a backup and a restart. Loaded
+  beacons then re-register on their next validation. A beacon removed while the
+  index was unavailable leaves its old record, which its owner sees as a
+  last-known marker until the record is removed.
+- **Block-entity root.** An `arce_planetary_beacon` root that does not decode is
+  kept and written back unchanged. The affected unit is that one beacon: it stays
+  inactive and unregistered and logs nothing. The beacon holds no item, fluid or
+  energy. Ordinary removal is therefore allowed and drops the plain block; it
+  discards only the unreadable identity and name. Recovery is an offline repair of
+  the chunk data or replacing the beacon.
+
 ## 8. Satellite bay (C17c)
 
 `rocket_satellite_bay` holds one ordinary package (schema 1 root, native item
