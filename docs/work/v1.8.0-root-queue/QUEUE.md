@@ -44,7 +44,8 @@ The shared branch `17fb7e15` holds every merge above. Hosted run 38206390869 pas
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| (none) | | |
+| [W10](TASK-W10-C16C-MACHINES.md) | C16c crystallizer, chemical reactor, laser etcher, centrifuge on the merged kernel | Next free slot (worktree ready at `b16423f3`) |
+| [W11a](TASK-W11A-D3-ESCROW-DESIGN.md) | D3-A escrow/receipt coordinator design for C17a loaders and the C17c bay (design only; independent review before W11b implements it) | Next free slot (worktree ready at `53d30f5a`) |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
