@@ -243,6 +243,8 @@ public final class ModItems {
     private ModItems() {
     }
 
+    public static final RegistryObject<Item> LANDING_PAD = blockItem("landing_pad", ModBlocks.LANDING_PAD);
+
     private static RegistryObject<Item> component(String name) {
         return ITEMS.register(name, () -> new DevelopmentComponentItem(new Item.Properties()));
     }

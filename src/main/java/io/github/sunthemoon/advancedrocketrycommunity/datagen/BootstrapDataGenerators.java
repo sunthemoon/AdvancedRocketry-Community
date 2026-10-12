@@ -20,6 +20,8 @@ public final class BootstrapDataGenerators {
     public static void gatherData(GatherDataEvent event) {
         DataGenerator generator = event.getGenerator();
         PackOutput output = generator.getPackOutput();
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180LandingPadData(output, event.includeClient(), event.includeServer()));
 
         // Earlier version outputs (v1.7 and before) remain immutable resource inputs.
         ExistingFileHelper existingFiles = event.getExistingFileHelper();

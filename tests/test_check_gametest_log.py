@@ -369,7 +369,8 @@ class ManifestValidationTests(unittest.TestCase):
         self.assertTrue(all(item.counts == {"recipe_signatures": 1} for item in recipes))
         recovery = [item for item in expectations if item.id.startswith("transfer-recovery-")]
         self.assertEqual(4, len(recovery))
-        self.assertTrue(all(item.counts == {"flight_recovery": 1} for item in recovery))
+        # W13 drives each existing recovery case once more in its separate pad-reload batch.
+        self.assertTrue(all(item.counts == {"flight_recovery": 1, "landing_pads": 1} for item in recovery))
 
     def test_pending_fixture_credit_refusal_is_not_an_expected_warning(self) -> None:
         rules = load_manifest(DEFAULT_MANIFEST)

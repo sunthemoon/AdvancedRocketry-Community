@@ -172,6 +172,18 @@ public final class RocketManager implements RocketOperationService {
         flights.request(player, rocketEntityId, action, target, requestId);
     }
 
+    @Override public void requestFlightIntent(ServerPlayer player, int rocketEntityId, RocketFlightAction action,
+            TravelTarget target, UUID requestId,
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
+        flights.request(player, rocketEntityId, action, target, requestId, pad);
+    }
+
+    /** Server-only test/operator entry, with the same station/pad staging as ordinary flights. */
+    public RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requestId) {
+        return flights.requestAdminPadFlight(rocket, stationId, pad, requestId);
+    }
+
     @Override
     public RocketFlightRequestResult requestAdminFlight(
             RocketEntity rocket,

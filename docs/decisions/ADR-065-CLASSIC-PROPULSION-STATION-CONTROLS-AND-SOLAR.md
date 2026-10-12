@@ -781,6 +781,27 @@ affects only that cleanup file, not other SavedData files. Recovery requires the
 same backup/offline repair procedure. Native stop/restart and human risk acceptance
 remain separate evidence and are not granted by this implementation note.
 
+### W13 implementation note: landing-pad save protection
+
+This implementation note does not change a decision or accept risk R-023.
+Unsupported bounded pad-index and block-entity roots remain verbatim and disable
+pad operations. An oversized index retains its original Tag reference, refuses
+only its independent `advancedrocketrycommunity_landing_pads.dat` write without
+throwing, keeps the dirty flag, and emits at most one warning per loaded instance.
+It never replaces the existing file with an empty index.
+
+An oversized `landing_pad` block-entity root retains its original reference and
+uses the existing `GuardedChunkSaves` terrain-chunk denial. This survives unload
+for the Level lifetime; the existing 256-coordinate saturation can affect all
+terrain saves in that Level. No new exception-based BE save control is added.
+The existing EventBus/ChunkMap save-retry diagnostics have no cumulative log
+limit. Unknown bounded roots do not deny unrelated terrain saves. Recovery is
+to stop gameplay, back up the whole world, inspect and repair the pad index and
+corresponding BE identities offline on a copy, then verify a clean save and two
+restarts. Restart alone cannot repair either root; resource/flight journals must
+not be reset to clear a pad. Native forced-stop and operator acceptance remain
+separate verification, not supplied by an in-memory round trip.
+
 ## 7. Beacon and finder (C17c)
 
 Use the v1.2 multiblock pattern lifecycle for a 5-by-3-by-3 beacon, four rotations,

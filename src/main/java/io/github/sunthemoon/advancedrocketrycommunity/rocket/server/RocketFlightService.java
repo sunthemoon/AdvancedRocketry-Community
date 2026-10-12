@@ -141,6 +141,19 @@ final class RocketFlightService {
             TravelTarget target,
             UUID requestId
     ) {
+        return request(player, rocketEntityId, action, target, requestId, null);
+    }
+
+    RocketFlightRequestResult request(ServerPlayer player, int rocketEntityId, RocketFlightAction action,
+            TravelTarget target, UUID requestId,
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
+        if (pad != null && (!player.serverLevel().getServer().isSameThread() || player.connection == null
+                || !player.connection.connection.isConnected() || !player.isAlive() || player.isSpectator()
+                || player instanceof net.minecraftforge.common.util.FakePlayer
+                || !(player.containerMenu instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMenu menu)
+                || menu.rocketEntityId() != rocketEntityId || !menu.stillValid(player))) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.UNAUTHORIZED);
+        }
         Objects.requireNonNull(player, "player");
         Objects.requireNonNull(action, "action");
         Objects.requireNonNull(target, "target");
@@ -191,7 +204,8 @@ final class RocketFlightService {
                         target,
                         player.getUUID(),
                         player.hasPermissions(2),
-                        requestId
+                        requestId,
+                        pad
                 );
                 case CANCEL -> cancel(access.rocket(), target);
                 case BOARD -> board(player, access.rocket());
@@ -208,6 +222,10 @@ final class RocketFlightService {
             result = RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
         }
         requests.finish(requestId, result.success());
+        if (action == RocketFlightAction.LAUNCH && result.success()) {
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex
+                    .get(player.getServer()).forgetChoice(player.getUUID());
+        }
         report(player, access.rocket(), action, target, requestId, result);
         return result;
     }
@@ -219,6 +237,12 @@ final class RocketFlightService {
             boolean operator,
             UUID requestId
     ) {
+        return launch(rocket, destination, actorId, operator, requestId, null);
+    }
+
+    private RocketFlightRequestResult launch(RocketEntity rocket, TravelTarget destination, UUID actorId,
+            boolean operator, UUID requestId,
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
         RocketFlightData flight = rocket.flightData().orElseThrow();
         if (flight.state() == RocketFlightState.LANDED && flight.fuel().availableForLaunch()) {
             flight = flight.withFuel(flight.fuel(), rocket.level().getGameTime());
@@ -279,9 +303,20 @@ final class RocketFlightService {
         // ADR-044 §5: the new record carries the station's current orbit (the planner's source body).
         RocketFlightData docked = source instanceof TravelTarget.Station
                 ? flight.atStationOrbit(planned.plan().sourceBody()) : flight;
-        RocketFlightData countdown = docked.withPlan(planned.plan())
+        if (pad != null && !(destination instanceof TravelTarget.Station)) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
+        }
+        RocketFlightData countdown = docked.withPlan(pad == null ? planned.plan() : planned.plan().withLandingPad(pad))
                 .startCountdown(rocket.level().getGameTime());
         return transfers.prepareLaunch(rocket, countdown);
+    }
+
+    RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requestId) {
+        if (!(rocket.level() instanceof ServerLevel) || !rocket.operational()) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
+        }
+        return launch(rocket, new TravelTarget.Station(stationId), rocket.ownerId().orElseThrow(), true, requestId, pad);
     }
 
     RocketFlightRequestResult requestAdminFlight(
@@ -471,6 +506,10 @@ final class RocketFlightService {
             RocketFlightRequestResult result
     ) {
         notify(player, result.code(), result.requiredFuel());
+        if (result.detailKey() != null && player.connection != null) {
+            player.sendSystemMessage(Component.translatable("message.advancedrocketrycommunity.pad.landing_refused",
+                    Component.translatable(result.detailKey())));
+        }
         AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_FLIGHT_INTENT request={} player={} rocket={} action={} destination={} station={} "
                         + "code={} required_fuel={}",
