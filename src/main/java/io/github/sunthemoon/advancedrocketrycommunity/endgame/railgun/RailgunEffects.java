@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun;
 
 import java.lang.ref.WeakReference;
 import javax.annotation.Nullable;
+import io.github.sunthemoon.advancedrocketrycommunity.config.ClientConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.Level;
@@ -43,7 +44,10 @@ final class RailgunEffects {
         double y = barrel.getY() + RailgunBlockEntity.MUZZLE_HEIGHT + 1.0D;
         double z = barrel.getZ() + 0.5D;
         if (kind == RailgunBlockEntity.EVENT_LAUNCH) {
-            level.addParticle(ParticleTypes.END_ROD, x, y, z, 0.0D, 2.0D, 0.0D);
+            // ADR-066 section 7.2: the streak is an accent; the launch flash and the arrival sparkle always show.
+            if (ClientConfig.advancedVisuals()) {
+                level.addParticle(ParticleTypes.END_ROD, x, y, z, 0.0D, 2.0D, 0.0D);
+            }
         } else {
             level.addParticle(ParticleTypes.END_ROD, x + level.random.nextGaussian() * 0.4D, y,
                     z + level.random.nextGaussian() * 0.4D, 0.0D, -0.4D, 0.0D);
