@@ -74,12 +74,12 @@ final class StationWorldMigrationTest {
                 assertFalse(row.has("targetSchema"));
             } else {
                 assertEquals("authority", row.get("role").getAsString());
-                // v1.6: the satellite registry's current root is 3 (ADR-050 §10); stations migrate 2 -> 4.
+                // v1.6: the satellite registry's current root is 3 (ADR-050 §10); stations migrate 2 -> 5 (ADR-065).
                 boolean satellites = name.equals(ManagedSavedDataType.SATELLITE_MISSIONS.fileName());
                 // v1.7: the endgame root has only its schema 1 (ADR-054 §10).
                 boolean endgame = name.equals(ManagedSavedDataType.ENDGAME.fileName());
                 assertEquals(endgame ? 1 : satellites ? 3 : 2, row.get("sourceSchema").getAsInt());
-                assertEquals(name.equals(STATIONS.fileName()) ? 4 : satellites ? 3 : endgame ? 1 : 2,
+                assertEquals(name.equals(STATIONS.fileName()) ? 5 : satellites ? 3 : endgame ? 1 : 2,
                         row.get("targetSchema").getAsInt());
             }
         }
@@ -97,7 +97,9 @@ final class StationWorldMigrationTest {
         for (Consumer<CompoundTag> mutation : java.util.List.<Consumer<CompoundTag>>of(
                 root -> root.putInt("schema_version", 4),
                 root -> root.putInt("schema_version", 5),
+                root -> root.putInt("schema_version", 6),
                 root -> root.put("warp_energy", new net.minecraft.nbt.ListTag()),
+                root -> root.put("orbital_clock", new CompoundTag()),
                 root -> root.putString("format_epoch", "unexpected"),
                 root -> station(root).putInt("schema_version", 2),
                 root -> station(root).putIntArray("region", new int[]{-2432, 2688, -1665, 3455}),

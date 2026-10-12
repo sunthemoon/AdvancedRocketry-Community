@@ -118,8 +118,12 @@ final class SavedDataSchemaMigratorTest {
                 RocketTransactionSavedData.SCHEMA_VERSION);
         assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,
                 RocketTransferSavedData.ROOT_SCHEMA_VERSION);
-        assertEquals(4, StationLimits.REGISTRY_SCHEMA_VERSION);
+        // ADR-065 section 5.2.1: root 5 adds the orbital clock beside root 4's warp balances.
+        assertEquals(5, StationLimits.REGISTRY_SCHEMA_VERSION);
+        assertEquals(4, StationLimits.WARP_REGISTRY_SCHEMA_VERSION);
         assertEquals(3, StationLimits.ORBITAL_REGISTRY_SCHEMA_VERSION);
+        assertEquals(3, StationLimits.STATE_SCHEMA_VERSION);
+        assertEquals("v1.8.0-station-orbital-controls", ManagedSavedDataType.STATIONS.formatEpoch());
         assertEquals(StationLimits.REGISTRY_SCHEMA_VERSION, ManagedSavedDataType.STATIONS.currentSchemaVersion());
         assertEquals(2, SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION);
         // ADR-050 §10: the satellite registry evolves independently, like stations.

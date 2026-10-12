@@ -5,6 +5,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Chec
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationOrbitalClock;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationOrbitalControls;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegistryModel;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReservation;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
@@ -39,13 +41,22 @@ public final class StationRegistrySavedData extends SavedData {
     /** Test seam only: changes the encoded candidate before it is verified (review F5). */
     UnaryOperator<CompoundTag> candidateTransform = UnaryOperator.identity();
     private final StationStorageBudget budget = new StationStorageBudget();
+    /** ADR-065 section 5.2.1: the runtime orbital clock, starting at the saved logical tick. */
+    private final StationOrbitalClock clock;
+    /**
+     * The last checked-commit clock floor: the loaded root's clock, raised by each known checked commit.
+     * Every live epoch is at or before it, and a quarantined ordinary save reasserts it.
+     */
+    private long clockFloor;
 
     public StationRegistrySavedData() {
-        this(new StationRegistryModel());
+        this(new StationRegistryModel(), 0L);
     }
 
-    private StationRegistrySavedData(StationRegistryModel registry) {
+    private StationRegistrySavedData(StationRegistryModel registry, long logicalTick) {
         this.registry = registry;
+        this.clock = new StationOrbitalClock(logicalTick);
+        this.clockFloor = logicalTick;
     }
 
     public static StationRegistrySavedData get(MinecraftServer server) {
@@ -71,7 +82,8 @@ public final class StationRegistrySavedData extends SavedData {
             if (migration.status() != SavedDataSchemaMigrator.MigrationStatus.CURRENT) {
                 throw new IllegalArgumentException("Station registry requires supported pre-start migration");
             }
-            return new StationRegistrySavedData(StationRegistryPayload.decodeCurrent(migration.payload()));
+            StationRegistryPayload.Decoded decoded = StationRegistryPayload.decodeCurrentRoot(migration.payload());
+            return new StationRegistrySavedData(decoded.registry(), decoded.logicalTick());
         } catch (RuntimeException exception) {
             StationRegistrySavedData data = new StationRegistrySavedData();
             data.preservedBlockedData = preserved;
@@ -299,7 +311,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     private long encodedBytes() {
         try {
-            return StationNbtSize.uncompressedBytes(encode(new CompoundTag(), null, null));
+            return StationNbtSize.uncompressedBytes(encode(new CompoundTag(), null, null, clock.current()));
         } catch (IllegalStateException oversized) {
             return StationLimits.MAX_REGISTRY_NBT_BYTES + 1L;
         }
@@ -327,6 +339,37 @@ public final class StationRegistrySavedData extends SavedData {
         return updatesQuarantined;
     }
 
+    /** The current logical tick of the orbital clock (ADR-065 section 5.2.1); sampled once per update. */
+    public long orbitalTick() {
+        return clock.current();
+    }
+
+    /** The clock reached {@link Long#MAX_VALUE}: new nonzero rates are refused, STOP still works. */
+    public boolean orbitalClockExhausted() {
+        return clock.exhausted();
+    }
+
+    /** The last checked-commit clock floor: the one an ordinary save of a quarantined registry reasserts. */
+    long orbitalClockFloor() {
+        return clockFloor;
+    }
+
+    /**
+     * One logical-server END tick. The clock advances only while the registry is operational and not
+     * quarantined (an unknown write suspends it until restart). While any station rotates, the registry is
+     * marked dirty at most once per 20 ticks, so ordinary autosaves checkpoint the sample; nothing is
+     * forced to disk.
+     */
+    public void advanceOrbitalClock() {
+        if (!updatesAvailable()) {
+            return;
+        }
+        clock.advance();
+        if (clock.current() % StationLimits.ORBITAL_CHECKPOINT_TICKS == 0L && registry.anyRotating()) {
+            setDirty();
+        }
+    }
+
     /** Grows the observed station to its centered 768 region through a checked commit. */
     public CheckedUpdate checkedExpand(MinecraftServer server, StationState observed) {
         return checkedExpand(stationFile(server), observed, CheckedSavedDataFile::atomicMove);
@@ -334,7 +377,8 @@ public final class StationRegistrySavedData extends SavedData {
 
     CheckedUpdate checkedExpand(Path file, StationState observed, CheckedSavedDataFile.Committer committer) {
         Objects.requireNonNull(observed, "observed");
-        return checkedReplace(file, observed, observed.withExpandedRegion(), committer);
+        return checked(file, observed, observed.withExpandedRegion(), 0, StationState.Transition.GROWTH,
+                clock.current(), committer);
     }
 
     /** Sets the observed station's configured gravity through a checked commit. */
@@ -345,7 +389,41 @@ public final class StationRegistrySavedData extends SavedData {
     CheckedUpdate checkedSetGravity(Path file, StationState observed, int gravityMilli,
                                     CheckedSavedDataFile.Committer committer) {
         Objects.requireNonNull(observed, "observed");
-        return checkedReplace(file, observed, observed.withGravityMilli(gravityMilli), committer);
+        return checked(file, observed, observed.withGravityMilli(gravityMilli), 0,
+                StationState.Transition.GRAVITY_ONLY, clock.current(), committer);
+    }
+
+    /** ADR-065 ALTITUDE_ONLY: sets the observed station's logical orbital distance through a checked commit. */
+    public CheckedUpdate checkedSetAltitude(MinecraftServer server, StationState observed, int distance) {
+        return checkedSetAltitude(stationFile(server), observed, distance, CheckedSavedDataFile::atomicMove);
+    }
+
+    CheckedUpdate checkedSetAltitude(Path file, StationState observed, int distance,
+                                     CheckedSavedDataFile.Committer committer) {
+        Objects.requireNonNull(observed, "observed");
+        return checked(file, observed, observed.withOrbitalControls(observed.orbitalControls().withDistance(distance)),
+                0, StationState.Transition.ALTITUDE_ONLY, clock.current(), committer);
+    }
+
+    /**
+     * ADR-065 ORIENTATION_ONLY: publishes orientation controls the caller computed at {@code sample}, the one
+     * clock sample it took. Their epoch must equal the sample, which the candidate also carries as its root
+     * clock; the sample must not be behind the acknowledged clock or ahead of the runtime clock.
+     */
+    public CheckedUpdate checkedSetOrientation(MinecraftServer server, StationState observed,
+                                               StationOrbitalControls controls, long sample) {
+        return checkedSetOrientation(stationFile(server), observed, controls, sample, CheckedSavedDataFile::atomicMove);
+    }
+
+    CheckedUpdate checkedSetOrientation(Path file, StationState observed, StationOrbitalControls controls, long sample,
+                                        CheckedSavedDataFile.Committer committer) {
+        Objects.requireNonNull(observed, "observed");
+        Objects.requireNonNull(controls, "controls");
+        if (controls.epoch() != sample) {
+            throw new IllegalArgumentException("Orientation controls must be sampled at the candidate clock");
+        }
+        return checked(file, observed, observed.withOrbitalControls(controls), 0,
+                StationState.Transition.ORIENTATION_ONLY, sample, committer);
     }
 
     /**
@@ -369,7 +447,7 @@ public final class StationRegistrySavedData extends SavedData {
         if (cost <= 0 || cost > StationLimits.MAX_WARP_ENERGY) {
             throw new IllegalArgumentException("Warp cost is outside its bound");
         }
-        return checked(file, observed, observed.withOrbitBody(target), cost, committer);
+        return checked(file, observed, observed.withOrbitBody(target), cost, null, clock.current(), committer);
     }
 
     private static Path stationFile(MinecraftServer server) {
@@ -378,19 +456,26 @@ public final class StationRegistrySavedData extends SavedData {
                 .resolve(ManagedSavedDataType.STATIONS.fileName());
     }
 
-    /** Package-private for tests; production callers go through the named transitions above. */
+    /**
+     * Package-private for tests; production callers go through the named transitions above. Any checked
+     * transition is accepted here, with the current clock as the candidate's.
+     */
     CheckedUpdate checkedReplace(Path file, StationState observed, StationState replacement,
                                          CheckedSavedDataFile.Committer committer) {
-        return checked(file, observed, replacement, 0, committer);
+        return checked(file, observed, replacement, 0,
+                replacement.checkedTransitionFrom(observed).orElse(null), clock.current(), committer);
     }
 
     /**
      * Replaces the station file with the complete candidate registry, then publishes the update.
      * The live registry is not changed unless the candidate is known to be the replaced authority.
      * A positive {@code cost} makes this an orbit relocation charged to the station's balance;
-     * otherwise it is growth or a gravity-only change, and every balance must stay as it is.
+     * otherwise it is exactly the named checked {@code transition}, and every balance must stay as it is.
+     * The candidate carries {@code sample} as its orbital clock (ADR-065 section 5.2.1); a known commit
+     * publishes the record and raises the acknowledged clock to that sample together.
      */
     private CheckedUpdate checked(Path file, StationState observed, StationState replacement, int cost,
+                                  StationState.Transition transition, long sample,
                                   CheckedSavedDataFile.Committer committer) {
         Objects.requireNonNull(file, "file");
         Objects.requireNonNull(committer, "committer");
@@ -408,8 +493,12 @@ public final class StationRegistrySavedData extends SavedData {
         if (relocation && !replacement.isOrbitRelocationOf(observed)) {
             throw new IllegalArgumentException("A charged update must be exactly one orbit relocation");
         }
-        if (!relocation && !replacement.isCheckedUpdateOf(observed)) {
-            throw new IllegalArgumentException("Only station growth or a gravity-only change is a checked update");
+        if (!relocation && (transition == null
+                || !replacement.checkedTransitionFrom(observed).filter(transition::equals).isPresent())) {
+            throw new IllegalArgumentException("The replacement is not the named checked station transition");
+        }
+        if (sample < clockFloor || sample > clock.current()) {
+            throw new IllegalArgumentException("The candidate clock is behind the acknowledged clock or ahead of time");
         }
         int balance = registry.warpEnergy(observed.stationId());
         if (relocation && balance < cost) {
@@ -421,8 +510,8 @@ public final class StationRegistrySavedData extends SavedData {
             requireStorageRoom(growth);
         }
         Integer debited = relocation ? balance - cost : null;
-        CompoundTag candidate = candidateTransform.apply(encode(new CompoundTag(), replacement, debited));
-        requireValidCandidate(candidate, replacement, debited);
+        CompoundTag candidate = candidateTransform.apply(encode(new CompoundTag(), replacement, debited, sample));
+        requireValidCandidate(candidate, replacement, debited, sample);
         boolean[] replacementAttempted = {false};
         try {
             CheckedSavedDataFile.replace(file, ManagedSavedDataType.STATIONS, candidate::copy, (staged, target) -> {
@@ -457,6 +546,8 @@ public final class StationRegistrySavedData extends SavedData {
                     observed.stationId(), publishFailure);
             return CheckedUpdate.OUTCOME_UNKNOWN;
         }
+        // The record and its durable clock are published together.
+        clockFloor = sample;
         return CheckedUpdate.COMMITTED;
     }
 
@@ -491,9 +582,10 @@ public final class StationRegistrySavedData extends SavedData {
     /**
      * The candidate must decode to the live registry with exactly the replacement state and, for a
      * relocation, exactly the debited balance substituted: every other state, reservation and balance
-     * is unchanged.
+     * is unchanged, and its orbital clock is exactly the sample.
      */
-    private void requireValidCandidate(CompoundTag candidate, StationState replacement, Integer debited) {
+    private void requireValidCandidate(CompoundTag candidate, StationState replacement, Integer debited,
+                                       long sample) {
         UUID stationId = replacement.stationId();
         List<StationState> expectedStations = registry.stations().stream()
                 .map(state -> state.stationId().equals(stationId) ? replacement : state)
@@ -509,10 +601,11 @@ public final class StationRegistrySavedData extends SavedData {
         if (migration.status() != SavedDataSchemaMigrator.MigrationStatus.CURRENT) {
             throw new IllegalStateException("Candidate station registry failed validation");
         }
-        StationRegistryModel decoded = StationRegistryPayload.decodeCurrent(migration.payload());
-        if (!decoded.stations().equals(expectedStations)
-                || !decoded.reservations().equals(registry.reservations())
-                || !decoded.warpEnergyBalances().equals(expectedBalances)) {
+        StationRegistryPayload.Decoded decoded = StationRegistryPayload.decodeCurrentRoot(migration.payload());
+        if (!decoded.registry().stations().equals(expectedStations)
+                || !decoded.registry().reservations().equals(registry.reservations())
+                || !decoded.registry().warpEnergyBalances().equals(expectedBalances)
+                || decoded.logicalTick() != sample) {
             throw new IllegalStateException("Candidate station registry failed validation");
         }
     }
@@ -524,23 +617,37 @@ public final class StationRegistrySavedData extends SavedData {
         }
     }
 
+    /**
+     * An ordinary save. A healthy registry captures the current clock once with the live record set; a
+     * quarantined one reasserts the acknowledged records with the last checked-commit clock floor, never a
+     * live uncertain sample (ADR-065 section 5.2.1). An ordinary save is not a disk barrier, so it does not
+     * raise the floor.
+     */
     @Override
     public CompoundTag save(CompoundTag target) {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        return encode(target, null, null);
+        return encode(target, null, null, updatesQuarantined ? clockFloor : clock.current());
     }
 
     /**
-     * Encodes the registry, optionally substituting one station by UUID and, for a relocation, that
-     * station's balance, without mutating the live registry.
+     * Encodes the registry with {@code logicalTick} as its orbital clock, optionally substituting one
+     * station by UUID and, for a relocation, that station's balance, without mutating the live registry.
+     * Every encoded epoch must be at or before that clock.
      */
-    private CompoundTag encode(CompoundTag target, StationState substitute, Integer substituteBalance) {
+    private CompoundTag encode(CompoundTag target, StationState substitute, Integer substituteBalance,
+                               long logicalTick) {
         SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.STATIONS, target);
         ListTag stations = new ListTag();
-        registry.stations().forEach(state -> stations.add(StationNbtCodec.encodeState(
-                substitute != null && substitute.stationId().equals(state.stationId()) ? substitute : state)));
+        registry.stations().forEach(state -> {
+            StationState encoded = substitute != null && substitute.stationId().equals(state.stationId())
+                    ? substitute : state;
+            if (encoded.orbitalControls().epoch() > logicalTick) {
+                throw new IllegalStateException("A station orbital epoch is ahead of the encoded clock");
+            }
+            stations.add(StationNbtCodec.encodeState(encoded));
+        });
         target.put("stations", stations);
         ListTag reservations = new ListTag();
         registry.reservations().forEach(
@@ -557,6 +664,7 @@ public final class StationRegistrySavedData extends SavedData {
         ListTag warpEnergy = new ListTag();
         balances.forEach((stationId, energy) -> warpEnergy.add(StationNbtCodec.encodeWarpEnergy(stationId, energy)));
         target.put(StationRegistryPayload.WARP_ENERGY, warpEnergy);
+        target.put(StationRegistryPayload.ORBITAL_CLOCK, StationRegistryPayload.encodeClock(logicalTick));
         if (StationNbtSize.uncompressedBytes(target) > StationLimits.MAX_REGISTRY_NBT_BYTES) {
             throw new IllegalStateException("Encoded station registry exceeds the fixed NBT bound");
         }

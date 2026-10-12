@@ -333,6 +333,13 @@ public final class StationManager implements StationOperationService {
         StationRuntime.install(this);
     }
 
+    /** ADR-065 section 5.2.1: one orbital clock tick per logical-server END tick, for the whole server. */
+    public void onServerTick(net.minecraftforge.event.TickEvent.ServerTickEvent event) {
+        if (event.phase == net.minecraftforge.event.TickEvent.Phase.END) {
+            StationRegistrySavedData.get(event.getServer()).advanceOrbitalClock();
+        }
+    }
+
     public void onServerStarted(ServerStartedEvent event) {
         int recovered = recoverReservations(event.getServer());
         if (recovered > 0) {
