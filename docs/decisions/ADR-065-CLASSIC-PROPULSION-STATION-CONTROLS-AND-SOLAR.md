@@ -856,21 +856,42 @@ This note documents protection mechanics, not a changed decision or accepted
 risk (risk R-028). Neither mechanism refuses a save or throws from serialization.
 
 - **Index root.** A `advancedrocketrycommunity_planetary_beacons` SavedData root
-  that does not decode (unknown, future, malformed or over a section 7 bound) is
-  kept by reference and written back unchanged. The affected unit is the whole
-  server's beacon index, across every Level: no beacon registers, updates or
-  removes its record, and every finder receives an empty snapshot. Nothing is
-  deleted. It lasts until the server stops; one WARN is logged per load. Recovery
-  is an offline repair of the `.dat` file from a backup and a restart. Loaded
-  beacons then re-register on their next validation. A beacon removed while the
-  index was unavailable leaves its old record, which its owner sees as a
-  last-known marker until the record is removed.
+  that reads as NBT but does not decode (unknown, future, malformed or over a
+  section 7 bound) is kept by reference and written back unchanged. The affected
+  unit is the whole server's beacon index, across every Level: no beacon
+  registers, updates or removes its record, and every finder receives an empty
+  snapshot. None of its records is deleted. It lasts until the file is repaired,
+  because a restart with the same file refuses it again; one WARN is logged per
+  load. Recovery is an offline repair of the `.dat` file from a backup and a
+  restart. Loaded beacons then re-register on their next validation. A beacon
+  removed while the index was unavailable leaves its old record, which its owner
+  sees as a last-known marker. Once the index works again, the owner's finder
+  removes that record the next time its position is loaded and holds no such
+  beacon (the W18F rule below).
+- **Unreadable index file.** The preservation above covers only a root that
+  reads as NBT. When the `.dat` file itself cannot be read, for example a
+  truncated gzip, vanilla `DimensionDataStorage` logs an ERROR and starts an
+  empty index, and the first registration overwrites the file. This is a
+  project-wide vanilla residual: no ARCE SavedData guards against it. The loss is
+  soft, because each beacon re-registers once its chunk is loaded.
 - **Block-entity root.** An `arce_planetary_beacon` root that does not decode is
   kept and written back unchanged. The affected unit is that one beacon: it stays
-  inactive and unregistered and logs nothing. The beacon holds no item, fluid or
-  energy. Ordinary removal is therefore allowed and drops the plain block; it
-  discards only the unreadable identity and name. Recovery is an offline repair of
-  the chunk data or replacing the beacon.
+  inactive and unregistered and logs nothing, so an operator finds such a beacon
+  only by using it, which replies with the invalid-data status. The beacon holds
+  no item, fluid or energy. Ordinary removal is therefore allowed and drops the
+  plain block; it discards only the unreadable identity and name. A record that
+  the beacon wrote before its root became unreadable stays in the index with its
+  last active flag, so its owner can see a last-known marker. While the beacon
+  stands, nothing proves that record stale. Once the beacon is removed, the
+  W18F rule below removes the record. Recovery is an offline repair of the chunk
+  data or replacing the beacon. Since W18F, item NBT reaches this root only
+  from a creative operator (`onlyOpCanSetNbt`).
+- **Stale records (W18F).** A record is removed only by its own beacon's
+  removal, or when its owner's finder snapshot finds its own position loaded
+  and holding no beacon or another readable beacon. The snapshot checks at most
+  the viewer's 32 records, reads only loaded chunks, never loads or tickets a
+  chunk, and logs one INFO line per removal. A record whose position stays
+  unloaded, or whose owner never uses a finder, is kept.
 
 ## 8. Satellite bay (C17c)
 
