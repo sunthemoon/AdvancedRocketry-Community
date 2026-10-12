@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-12 22:25) |
+| Slice | Scope | Pipeline state (2026-10-12 22:30) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -47,8 +47,9 @@ give their SHA-256 values.
 | [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Delivered `d9cb2467`. Independent review (Claude) **BLOCK** (SHA-256 `4bd848ae…`): F1 High, two arrays sharing panels both count them; F2 Medium, creative non-operator NBT reaches the chunk guard; F3 to F5 Low. [W17F](TASK-W17F-REVIEW-FIXES.md) (Codex) running since 22:11 |
 | [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | Delivered `884bc531` (2,582 unit tests, 789 GameTests). Independent review (Claude) MERGE-WITH-FOLLOWUP (SHA-256 `7a65b5f1…`). [W18F](TASK-W18F-REVIEW-FIXES.md) (Claude) running since 22:21: F1 operator-only NBT, F2 phantom records, F3, F5 documentation. Branch CI 38260874558 on `8b8a3a32`. Follow-ups: F4, F6, F7 (finder strip overlaps the boss bar), F8 |
 | [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps | Delivered `866f1f90` and `e2d6025d` under [Root decision 01](TASK-W19-ROOT-DECISION-01.md). Root review: test code only; the assertion audit lost nothing; the strict graph stays, and a new all-item check requires every registered item except the five optional dusts. Branch CI 38261140501 on `fe37b526` |
+| [W20](TASK-W20-LASER-GUN.md) | C18b basic laser gun (ADR-066 section 5.3) | Implementer (Claude) running since 22:25 |
 | [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | Implementer (Codex) running since 21:46 |
-| [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | Designer (Claude) running since 22:03; its review goes to Codex |
+| [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | Delivered `5c8aeaf2` and `b321eb01` (Claude). Its read-only review (task ready in `root-queue/W11b2-design-review/`) goes to the next free Codex slot |
 | Root fix | Mixin refmap lost on a Gradle build-cache hit (W19's `MixinPackagingTest` failure); a release jar could ship without the ADR-073 refmap | **Merged** `798a2465`: the refmaps and mappings are declared `compileJava` outputs; verified miss then hit; hosted run 38258700306 passed |
 | Root incident | C: filled to 0 GB: a W16 worker's background bare `python` REPL wrote 24.9 GB | Cleaned 21:40; WORKER-RULES now forbids interactive or unbounded background commands |
 
