@@ -125,7 +125,8 @@ public final class PlanetaryWorldGameTests {
             // Successful native preparation has already initialized this server's journal.
             var journal = RocketTransferSavedData.get(server);
             RocketFlightGameTestFixtures.awaitPaced(helper, helper.getTick() + 270, () -> {
-                var level = server.getLevel(PlanetaryContent.level(destination));
+                var level = destination.equals(CelestialIds.EARTH_ID)
+                        ? server.overworld() : server.getLevel(PlanetaryContent.level(destination));
                 var landed = level == null ? null : RocketFlightGameTestFixtures.loadedLogicalRocket(level, logical);
                 return landed != null && landed.flightData().map(data -> data.state() == RocketFlightState.LANDED
                         && data.currentBody().equals(destination)).orElse(false);

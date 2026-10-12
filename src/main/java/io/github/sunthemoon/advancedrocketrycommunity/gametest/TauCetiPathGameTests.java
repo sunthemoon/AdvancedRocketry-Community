@@ -114,7 +114,14 @@ public final class TauCetiPathGameTests {
                     RocketFlightRequestResult docking = RocketRuntime.requestAdminStationFlight(rocket, fixture.id(),
                             UUID.randomUUID());
                     helper.assertTrue(docking.success(), "Earth-to-station launch failed: " + docking.code());
-                    RocketFlightGameTestFixtures.awaitFlightState(helper, fixture.space, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
+                    // LANDED precedes the production warp guard's margin. Read its installed authority
+                    // without issuing speculative commands, still within the original flight window.
+                    RocketFlightGameTestFixtures.awaitPaced(helper, helper.getTick() + FLIGHT, () ->
+                            RocketFlightGameTestFixtures.hasFlightState(fixture.space, logical[0], RocketFlightState.LANDED)
+                                    && fixture.warp.diagnostics(fixture.server, java.util.Optional.of(fixture.id())).stream()
+                                            .anyMatch(line -> line.startsWith("station=" + fixture.id() + " ")
+                                                    && line.contains(" rockets_in_motion=false ")),
+                            () -> guarded(cleanup, () -> {
                         landed(helper, fixture.space, logical[0], "the station", observerJournal);
                         helper.assertTrue(SatelliteRuntime.claim(fixture.server.getPlayerList().getPlayer(fixture.ownerId),
                                 satellite).success(), "The Tau Ceti f research claim failed");
