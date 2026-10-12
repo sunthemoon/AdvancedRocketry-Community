@@ -3,6 +3,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.StationSkyContextPacket;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlIntentPacket;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlKind;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlViewPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.station.controller.AltitudeControllerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.station.controller.GravityControllerMenu;
@@ -243,11 +246,11 @@ public final class StationControlsGameTests {
             int moon = targets.indexOf(StationWarpGameTests.MOON);
             helper.assertTrue(moon >= 0, "The warp screen does not offer the Moon: " + menu.names());
             for (int step = 0; step < moon; step++) {
-                helper.assertTrue(menu.clickMenuButton(owner, WarpControllerMenu.BUTTON_NEXT), "Next refused");
+                send(menu, owner, WarpControllerMenu.BUTTON_NEXT, 0, 0L);
             }
-            helper.assertTrue(menu.clickMenuButton(owner, WarpControllerMenu.BUTTON_REQUEST), "Request refused");
-            helper.assertTrue(menu.status().equals(Optional.of(StationManagementCode.WARP_ISSUED)),
-                    "The screen request differs: " + menu.status());
+            int shown = menu.lastView().orElseThrow().value(WarpControllerMenu.SELECTED);
+            helper.assertTrue(shown == moon, "The view does not show the Moon selected: " + shown);
+            click(helper, menu, owner, WarpControllerMenu.BUTTON_REQUEST, shown, 0L, StationManagementCode.WARP_ISSUED);
             helper.assertTrue(screen.station().orbitBody().equals(CelestialIds.EARTH_ID), "A request moved the orbit");
             StationState commandBefore = command.station();
             StationState screenBefore = screen.station();
@@ -255,9 +258,10 @@ public final class StationControlsGameTests {
             helper.runAfterDelay(RATE_TICKS, () -> {
                 try {
                     menu.broadcastChanges();
-                    helper.assertTrue(menu.clickMenuButton(owner, WarpControllerMenu.BUTTON_CONFIRM), "Confirm refused");
-                    helper.assertTrue(menu.status().equals(Optional.of(StationManagementCode.WARP_STARTED)),
-                            "The screen confirmation differs: " + menu.status());
+                    long token = menu.lastView().orElseThrow().token();
+                    helper.assertTrue(token > 0L, "The view shows no quote token");
+                    click(helper, menu, owner, WarpControllerMenu.BUTTON_CONFIRM, 0, token,
+                            StationManagementCode.WARP_STARTED);
                 } catch (RuntimeException | Error failure) {
                     cleanup.run();
                     throw failure;
@@ -316,7 +320,7 @@ public final class StationControlsGameTests {
             click(helper, gravity, gravityOwner, 3, StationManagementCode.GRAVITY_SET);
             click(helper, altitude, altitudeOwner, AltitudeControllerMenu.BUTTON_GEO, StationManagementCode.ALTITUDE_SET);
             click(helper, orientation, orientationOwner, 3, StationManagementCode.ORIENTATION_SET);
-            helper.assertTrue(gravity.lines().size() == 1 && altitude.lines().size() == 3 && orientation.lines().size() == 3,
+            helper.assertTrue(lines(gravity) == 1 && lines(altitude) == 3 && lines(orientation) == 3,
                     "The screens have no display lines");
             StationRegistrySavedData reloaded = StationRegistrySavedData.load(gravityStation.stationFile());
             helper.assertTrue(reloaded.operational(), "The station file does not reload");
@@ -365,7 +369,14 @@ public final class StationControlsGameTests {
                     == StationRegistrySavedData.CheckedUpdate.COMMITTED, "The altitude fixture failed");
             click(helper, menu, owner, 2, StationManagementCode.STATION_CHANGED);
             click(helper, menu, owner, 2, StationManagementCode.CONTROL_RATE_LIMITED);
-            helper.assertTrue(!menu.clickMenuButton(owner, 99), "An unknown button was accepted");
+            // Another container or another kind is not this menu's intent; neither is a vanilla menu button.
+            Optional<StationManagementCode> before = menu.status();
+            menu.acceptClassicControl(owner, new ClassicControlIntentPacket(menu.containerId % 255 + 1,
+                    menu.classicControlKind(), 2, 0, 0L));
+            menu.acceptClassicControl(owner, new ClassicControlIntentPacket(menu.containerId,
+                    ClassicControlKind.STATION_GRAVITY_CONTROLLER, 2, 0, 0L));
+            helper.assertTrue(!menu.clickMenuButton(owner, 2), "A vanilla menu button was accepted");
+            helper.assertTrue(menu.status().equals(before), "A foreign intent was handled: " + menu.status());
             helper.assertTrue(fixture.station().orbitalControls().eastRate() == 0, "A refused click changed the rate");
             scheduled = true;
             helper.runAfterDelay(RATE_TICKS, () -> {
@@ -525,13 +536,13 @@ public final class StationControlsGameTests {
         });
     }
 
-    private static ServerPlayer owner(StationWarpGameTests.Fixture fixture, String name) {
+    static ServerPlayer owner(StationWarpGameTests.Fixture fixture, String name) {
         fixture.keepLoaded();
         fixture.join(fixture.ownerId, name);
         return fixture.server.getPlayerList().getPlayer(fixture.ownerId);
     }
 
-    private static Block block(StationControllerKind kind) {
+    static Block block(StationControllerKind kind) {
         Supplier<Block> block = switch (kind) {
             case WARP -> ModBlocks.WARP_CONTROLLER;
             case GRAVITY -> ModBlocks.STATION_GRAVITY_CONTROLLER;
@@ -541,22 +552,22 @@ public final class StationControlsGameTests {
         return block.get();
     }
 
-    private static BlockPos place(StationWarpGameTests.Fixture fixture, List<BlockPos> placed, StationControllerKind kind,
-                                  BlockPos position) {
+    static BlockPos place(StationWarpGameTests.Fixture fixture, List<BlockPos> placed, StationControllerKind kind,
+                          BlockPos position) {
         fixture.space.getChunkAt(position); // Test setup only.
         fixture.space.setBlockAndUpdate(position, block(kind).defaultBlockState());
         placed.add(position);
         return position;
     }
 
-    private static StationActorContext context(StationWarpGameTests.Fixture fixture, StationControllerKind kind,
-                                               BlockPos position) {
+    static StationActorContext context(StationWarpGameTests.Fixture fixture, StationControllerKind kind,
+                                       BlockPos position) {
         return StationActorContext.controller(fixture.space.dimension(), position, block(kind));
     }
 
     /** The server menu, as the controller block opens it; its first broadcast records the observed station. */
-    private static StationControllerMenu menu(StationWarpGameTests.Fixture fixture, ServerPlayer player,
-                                              StationControllerKind kind, BlockPos position) {
+    static StationControllerMenu menu(StationWarpGameTests.Fixture fixture, ServerPlayer player,
+                                      StationControllerKind kind, BlockPos position) {
         StationControllerMenu.OpenData open = StationControllerMenu.openData(kind, player, position, fixture.station());
         StationControllerMenu menu = StationControllerMenu.server(kind, 9, player.getInventory(), fixture.space,
                 position, block(kind), open);
@@ -564,26 +575,44 @@ public final class StationControlsGameTests {
         return menu;
     }
 
+    /** One intent from {@code player}, as the {@code classic_controls} handler hands it to the open menu. */
+    static void send(StationControllerMenu menu, ServerPlayer player, int action, int value, long token) {
+        menu.acceptClassicControl(player, new ClassicControlIntentPacket(menu.containerId, menu.classicControlKind(),
+                action, value, token));
+    }
+
     private static void click(GameTestHelper helper, StationControllerMenu menu, ServerPlayer player, int button,
                               StationManagementCode expected) {
-        helper.assertTrue(menu.clickMenuButton(player, button), "Button " + button + " was not handled");
+        click(helper, menu, player, button, 0, 0L, expected);
+    }
+
+    /** The action's code is the menu's status and the status of the view its holder was sent. */
+    static void click(GameTestHelper helper, StationControllerMenu menu, ServerPlayer player, int button, int value,
+                      long token, StationManagementCode expected) {
+        send(menu, player, button, value, token);
         helper.assertTrue(menu.status().equals(Optional.of(expected)),
                 "Button " + button + " expected " + expected + " but was " + menu.status());
+        helper.assertTrue(menu.lastView().flatMap(ClassicControlViewPacket::status).equals(Optional.of(expected)),
+                "Button " + button + ": the holder's view shows " + menu.lastView());
+    }
+
+    private static int lines(StationControllerMenu menu) {
+        return menu.lines(menu.lastView().orElseThrow()).size();
     }
 
     /** No countdown runs, and the orbit and the full warp balance are unchanged. */
-    private static void unspent(GameTestHelper helper, StationWarpGameTests.Fixture fixture, String label) {
+    static void unspent(GameTestHelper helper, StationWarpGameTests.Fixture fixture, String label) {
         helper.assertTrue(fixture.warp.countdown(fixture.id()).isEmpty(), label + ": a countdown started");
         helper.assertTrue(fixture.station().orbitBody().equals(fixture.created.orbitBody())
                 && fixture.data.warpEnergy(fixture.id()) == 2_500_000, label + ": energy was spent or the orbit moved");
     }
 
-    private static void expect(GameTestHelper helper, StationManagementCode actual, StationManagementCode expected,
-                               String label) {
+    static void expect(GameTestHelper helper, StationManagementCode actual, StationManagementCode expected,
+                       String label) {
         helper.assertTrue(actual == expected, label + ": expected " + expected + " but was " + actual);
     }
 
-    private static void clear(StationWarpGameTests.Fixture fixture, List<BlockPos> placed) {
+    static void clear(StationWarpGameTests.Fixture fixture, List<BlockPos> placed) {
         placed.forEach(position -> {
             if (fixture.space.getBlockState(position).getBlock() instanceof
                     io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerBlock) {

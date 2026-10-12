@@ -1,5 +1,10 @@
 package io.github.sunthemoon.advancedrocketrycommunity.station.controller;
 
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlIntentPacket;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlKind;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlTarget;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlViewPacket;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlsNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationActorContext;
@@ -11,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -20,86 +26,76 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ContainerData;
-import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.util.FakePlayer;
 
 /**
- * ADR-065 section 5.1 and 11.2: the menu of one station controller. Changes arrive only as vanilla menu button
- * IDs, so the server already knows the sender, the open menu and its container; this class adds the exact
- * controller block, the 8-block reach, one mutation per player per 10 ticks and the observed station. Displayed
- * values travel as short data slots; nothing the client sends is a value, coordinate, cost or ray result.
+ * ADR-065 sections 5.1, 11.1 and 11.2: the menu of one station controller. Actions arrive only as
+ * {@code classic_controls} intents for this container and kind; this class adds the holder, the exact loaded
+ * controller block, the 8-block reach, one mutation per player per 10 ticks and the observed station, and the
+ * services add the station rules. The protected status travels as {@link ClassicControlViewPacket}s to the
+ * menu's holder only; nothing the client sends is a coordinate, cost, ray result or final value.
  */
-public abstract class StationControllerMenu extends AbstractContainerMenu {
+public abstract class StationControllerMenu extends AbstractContainerMenu implements ClassicControlTarget {
     public static final int FORMAT_MARKER = -65;
     public static final int FORMAT_VERSION = 1;
     /** At most the current orbit and 32 warp targets travel in the open data. */
     public static final int MAX_NAMES = 33;
     public static final String KEY = "screen.advancedrocketrycommunity.station_controller.";
-    private static final int STATUS = 0;
+    /** A changed view goes out at most once per this many ticks, unless an action or the opening forces it. */
+    public static final int VIEW_INTERVAL_TICKS = 5;
 
     private final StationControllerKind kind;
     private final Level level;
     private final BlockPos position;
     private final Block block;
-    private final ContainerData data;
     private final List<ResourceLocation> names;
-    /** Server only: the station the screen showed at the last broadcast; changes compare against it. */
+    /** Server only: the player who opened the menu, the one holder its views go to. */
+    @Nullable
+    private final ServerPlayer viewer;
+    /** Server only: the station that the holder's current view shows; changes compare against it. */
     private StationState observed;
-    private int status;
+    private Optional<StationManagementCode> status = Optional.empty();
+    @Nullable
+    private ClassicControlViewPacket lastSent;
+    private long lastSentTick = Long.MIN_VALUE / 2;
 
     protected StationControllerMenu(MenuType<?> type, StationControllerKind kind, int id, Level level,
-                                    BlockPos position, Block block, OpenData open, int dataCount) {
+                                    BlockPos position, Block block, OpenData open, @Nullable ServerPlayer viewer) {
         super(type, id);
         this.kind = Objects.requireNonNull(kind, "kind");
         this.level = level;
         this.position = position.immutable();
         this.block = block;
         this.names = open.names();
-        this.data = level == null ? new SimpleContainerData(dataCount + 1) : new ContainerData() {
-            @Override
-            public int get(int index) {
-                return index == STATUS ? status : serverData(index - 1, observed);
-            }
-
-            @Override
-            public void set(int index, int value) {
-            }
-
-            @Override
-            public int getCount() {
-                return dataCount + 1;
-            }
-        };
-        checkContainerDataCount(data, dataCount + 1);
-        addDataSlots(data);
+        this.viewer = viewer;
     }
 
-    /** The server menu over the exact controller block, with the open data it was opened with. */
+    /** The server menu over the exact controller block for the player of {@code inventory}. */
     public static StationControllerMenu server(StationControllerKind kind, int id, Inventory inventory, Level level,
                                                BlockPos position, Block block, OpenData open) {
+        ServerPlayer viewer = inventory.player instanceof ServerPlayer player ? player : null;
         return switch (kind) {
-            case WARP -> new WarpControllerMenu(id, level, position, block, open);
-            case GRAVITY -> new GravityControllerMenu(id, level, position, block, open);
-            case ALTITUDE -> new AltitudeControllerMenu(id, level, position, block, open);
-            case ORIENTATION -> new OrientationControllerMenu(id, level, position, block, open);
+            case WARP -> new WarpControllerMenu(id, level, position, block, open, viewer);
+            case GRAVITY -> new GravityControllerMenu(id, level, position, block, open, viewer);
+            case ALTITUDE -> new AltitudeControllerMenu(id, level, position, block, open, viewer);
+            case ORIENTATION -> new OrientationControllerMenu(id, level, position, block, open, viewer);
         };
     }
 
-    /** The client menu, from the open data; it has no Level and only mirrors data slots. */
+    /** The client menu, from the open data; it has no Level and shows the views the server sends. */
     public static StationControllerMenu client(StationControllerKind kind, int id, Inventory inventory,
                                                FriendlyByteBuf buffer) {
         OpenData open = OpenData.read(buffer, kind);
         return switch (kind) {
-            case WARP -> new WarpControllerMenu(id, null, open.position(), null, open);
-            case GRAVITY -> new GravityControllerMenu(id, null, open.position(), null, open);
-            case ALTITUDE -> new AltitudeControllerMenu(id, null, open.position(), null, open);
-            case ORIENTATION -> new OrientationControllerMenu(id, null, open.position(), null, open);
+            case WARP -> new WarpControllerMenu(id, null, open.position(), null, open, null);
+            case GRAVITY -> new GravityControllerMenu(id, null, open.position(), null, open, null);
+            case ALTITUDE -> new AltitudeControllerMenu(id, null, open.position(), null, open, null);
+            case ORIENTATION -> new OrientationControllerMenu(id, null, open.position(), null, open, null);
         };
     }
 
@@ -119,6 +115,11 @@ public abstract class StationControllerMenu extends AbstractContainerMenu {
         return kind;
     }
 
+    @Override
+    public ClassicControlKind classicControlKind() {
+        return kind.wire();
+    }
+
     public BlockPos position() {
         return position;
     }
@@ -128,83 +129,125 @@ public abstract class StationControllerMenu extends AbstractContainerMenu {
         return names;
     }
 
-    /** Client and server: the last action's code, if any. */
+    /** Server: the last action's code, if any. The client reads it from the view. */
     public Optional<StationManagementCode> status() {
-        int value = data.get(STATUS);
-        StationManagementCode[] codes = StationManagementCode.values();
-        return value <= 0 || value > codes.length ? Optional.empty() : Optional.of(codes[value - 1]);
+        return status;
     }
 
-    /** Client display slot {@code index} (after the status slot). */
-    protected int value(int index) {
-        return data.get(index + 1);
+    /** Server: the last view sent to the holder, if any. */
+    public Optional<ClassicControlViewPacket> lastView() {
+        return Optional.ofNullable(lastSent);
     }
 
-    /** Two unsigned short slots as one int. */
-    protected int wide(int index) {
-        return (value(index) & 0xFFFF) | ((value(index + 1) & 0xFFFF) << 16);
-    }
-
-    protected static int low(int value) {
-        return value & 0xFFFF;
-    }
-
-    protected static int high(int value) {
-        return (value >>> 16) & 0xFFFF;
-    }
-
-    /** The fixed buttons of this screen. */
+    /** The fixed buttons of this screen; a button's ID is its {@code classic_controls} action. */
     public abstract List<Button> buttons();
 
-    /** Client display lines from the data slots and open data. */
-    public abstract List<Component> lines();
+    /** Client display lines of a view of this menu. */
+    public abstract List<Component> lines(ClassicControlViewPacket view);
 
-    /** Server: data slot {@code index} for the observed station (null outside a visible station). */
-    protected abstract int serverData(int index, StationState station);
+    /**
+     * Client: the intent that button {@code action} sends with the current view, or empty while it cannot be sent
+     * (the screen then shows the button inactive).
+     */
+    public Optional<ClassicControlIntentPacket> intent(int action, Optional<ClassicControlViewPacket> view) {
+        return Optional.of(new ClassicControlIntentPacket(containerId, kind.wire(), action, 0, 0L));
+    }
 
-    /** Server: one admitted mutating button. */
-    protected abstract StationManagementCode apply(int button, ServerPlayer player, StationManager stations,
-                                                   StationActorContext context, Optional<StationState> expected);
+    /** Server: the kind's exact view values for the observed station, inside the kind's ranges. */
+    protected abstract List<Integer> viewValues(StationState station);
 
-    /** Server: a button that only changes this menu's own selection, never a station (no rate limit). */
-    protected boolean navigate(int button) {
+    /** Server: the token of the quote this menu displays, or 0. */
+    protected long viewToken() {
+        return 0L;
+    }
+
+    /** Server: one admitted mutating action. */
+    protected abstract StationManagementCode apply(ClassicControlIntentPacket intent, ServerPlayer player,
+                                                   StationManager stations, StationActorContext context,
+                                                   Optional<StationState> expected);
+
+    /** Server: an action that only changes this menu's own selection, never a station (no rate limit). */
+    protected boolean navigate(ClassicControlIntentPacket intent) {
+        return false;
+    }
+
+    /**
+     * ADR-065 section 11.2 for one intent: the sender is this menu's connected, living, non-spectator holder, the
+     * menu is still valid (the exact controller block loaded within 8 blocks in the same Level), and the action
+     * is one of this screen's buttons. Navigation changes only this menu; every other action is rate limited and
+     * then rechecked in full by the station services (owner or operator, region, state and range).
+     */
+    @Override
+    public final void acceptClassicControl(ServerPlayer sender, ClassicControlIntentPacket intent) {
+        if (level == null || sender != viewer || sender instanceof FakePlayer || intent.kind() != kind.wire()
+                || intent.containerId() != containerId || !stillValid(sender)
+                || buttons().stream().noneMatch(spec -> spec.id() == intent.action())) {
+            return;
+        }
+        if (!navigate(intent)) {
+            status = Optional.of(act(sender, intent));
+        }
+        sendView(true);
+    }
+
+    private StationManagementCode act(ServerPlayer sender, ClassicControlIntentPacket intent) {
+        Optional<StationManager> stations = StationRuntime.manager();
+        if (stations.isEmpty()) {
+            return StationManagementCode.AUTHORITY_UNAVAILABLE;
+        }
+        if (!stations.orElseThrow().admitControllerAction(sender)) {
+            return StationManagementCode.CONTROL_RATE_LIMITED;
+        }
+        StationActorContext context = StationActorContext.controller(level.dimension(), position, block);
+        return apply(intent, sender, stations.orElseThrow(), context, Optional.ofNullable(observed));
+    }
+
+    /** Station controllers take no vanilla menu buttons; their actions are {@code classic_controls} intents. */
+    @Override
+    public final boolean clickMenuButton(Player player, int button) {
         return false;
     }
 
     @Override
-    public final boolean clickMenuButton(Player player, int button) {
-        if (level == null || !(player instanceof ServerPlayer serverPlayer) || player instanceof FakePlayer
-                || buttons().stream().noneMatch(spec -> spec.id() == button)) {
-            return false;
-        }
-        if (navigate(button)) {
-            return true;
-        }
-        Optional<StationManager> stations = StationRuntime.manager();
-        if (stations.isEmpty()) {
-            status = StationManagementCode.AUTHORITY_UNAVAILABLE.ordinal() + 1;
-            return true;
-        }
-        if (!stations.orElseThrow().admitControllerAction(serverPlayer)) {
-            status = StationManagementCode.CONTROL_RATE_LIMITED.ordinal() + 1;
-            return true;
-        }
-        StationActorContext context = StationActorContext.controller(level.dimension(), position, block);
-        status = apply(button, serverPlayer, stations.orElseThrow(), context, Optional.ofNullable(observed))
-                .ordinal() + 1;
-        return true;
-    }
-
-    @Override
     public void broadcastChanges() {
-        refreshObserved();
         super.broadcastChanges();
+        sendView(false);
     }
 
     @Override
     public void sendAllDataToRemote() {
-        refreshObserved();
         super.sendAllDataToRemote();
+        sendView(true);
+    }
+
+    /**
+     * Server: sends the holder a changed view, at most once per {@link #VIEW_INTERVAL_TICKS} unless forced, and
+     * nothing once the menu is no longer valid. The observed station moves on only when the holder's view matches
+     * it, so a change the holder has not seen yet refuses the next action as {@code STATION_CHANGED}.
+     */
+    private void sendView(boolean force) {
+        if (level == null || viewer == null || !stillValid(viewer)) {
+            return;
+        }
+        StationState live = liveStation();
+        MinecraftServer server = level.getServer();
+        if (live == null || server == null) {
+            return;
+        }
+        ClassicControlViewPacket view = new ClassicControlViewPacket(containerId, kind.wire(), status, viewToken(),
+                viewValues(live));
+        if (view.equals(lastSent)) {
+            observed = live;
+            return;
+        }
+        long now = server.getTickCount();
+        if (!force && now - lastSentTick < VIEW_INTERVAL_TICKS) {
+            return;
+        }
+        lastSent = view;
+        lastSentTick = now;
+        observed = live;
+        ClassicControlsNetwork.sendView(viewer, view);
     }
 
     /** Server: the live station whose region holds the controller, or null. */
@@ -221,15 +264,59 @@ public abstract class StationControllerMenu extends AbstractContainerMenu {
         return level;
     }
 
-    private void refreshObserved() {
-        if (level != null) {
-            observed = liveStation();
-        }
-    }
-
+    /**
+     * Server: {@link StationControllerHolder} over the live state. The holder is the connected, living,
+     * non-spectator player who opened the menu, in the controller's Level and within reach of the exact controller
+     * block, whose chunk is loaded. Only loaded chunks are read.
+     */
     @Override
     public boolean stillValid(Player player) {
-        return level == null || stillValid(ContainerLevelAccess.create(level, position), player, block);
+        if (level == null) {
+            return true;
+        }
+        return StationControllerHolder.check(new StationControllerHolder.Probe() {
+            @Override
+            public boolean holder() {
+                return player == viewer && player instanceof ServerPlayer && !(player instanceof FakePlayer);
+            }
+
+            @Override
+            public boolean connected() {
+                MinecraftServer server = level.getServer();
+                return !viewer.hasDisconnected() && server != null
+                        && server.getPlayerList().getPlayer(viewer.getUUID()) == viewer;
+            }
+
+            @Override
+            public boolean alive() {
+                return viewer.isAlive();
+            }
+
+            @Override
+            public boolean spectator() {
+                return viewer.isSpectator();
+            }
+
+            @Override
+            public boolean sameLevel() {
+                return viewer.level() == level;
+            }
+
+            @Override
+            public boolean controllerChunkLoaded() {
+                return level.hasChunkAt(position);
+            }
+
+            @Override
+            public boolean controllerPresent() {
+                return level.getBlockState(position).is(block);
+            }
+
+            @Override
+            public double distanceSquared() {
+                return viewer.distanceToSqr(Vec3.atCenterOf(position));
+            }
+        }).isEmpty();
     }
 
     @Override
@@ -237,7 +324,7 @@ public abstract class StationControllerMenu extends AbstractContainerMenu {
         return ItemStack.EMPTY;
     }
 
-    /** One fixed button: its ID, translation key and layout. */
+    /** One fixed button: its ID (the intent's action), translation key and layout. */
     public record Button(int id, String key, int x, int y, int width) {
     }
 

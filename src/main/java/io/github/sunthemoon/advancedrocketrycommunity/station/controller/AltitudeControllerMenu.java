@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.station.controller;
 
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlIntentPacket;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlViewPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationOrbitalControls;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
@@ -8,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationMan
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -22,14 +25,15 @@ public final class AltitudeControllerMenu extends StationControllerMenu {
     public static final int[] STEPS = {-10, -1, 1, 10};
     public static final int BUTTON_GEO = 4;
     public static final int GEO_DISTANCE = 179;
-    private static final List<Button> BUTTONS = List.of(
+    static final List<Button> BUTTONS = List.of(
             new Button(0, KEY + "minus_ten", 8, 20, 38), new Button(1, KEY + "minus_one", 48, 20, 38),
             new Button(2, KEY + "plus_one", 88, 20, 38), new Button(3, KEY + "plus_ten", 128, 20, 38),
             new Button(BUTTON_GEO, KEY + "geo", 8, 38, 158));
 
-    AltitudeControllerMenu(int id, Level level, BlockPos position, Block block, OpenData open) {
+    AltitudeControllerMenu(int id, Level level, BlockPos position, Block block, OpenData open,
+                           @Nullable ServerPlayer viewer) {
         super(ModMenuTypes.STATION_ALTITUDE_CONTROLLER.get(), StationControllerKind.ALTITUDE, id, level, position,
-                block, open, 1);
+                block, open, viewer);
     }
 
     @Override
@@ -38,11 +42,8 @@ public final class AltitudeControllerMenu extends StationControllerMenu {
     }
 
     @Override
-    public List<Component> lines() {
-        int distance = value(0);
-        if (!StationOrbitalControls.validDistance(distance)) {
-            return List.of(Component.translatable(KEY + "no_station"));
-        }
+    public List<Component> lines(ClassicControlViewPacket view) {
+        int distance = view.value(0);
         long kilometres = (long) distance * StationOrbitalControls.KILOMETRES_PER_DISTANCE
                 + StationOrbitalControls.KILOMETRES_OFFSET;
         boolean geo = distance >= StationOrbitalControls.GEO_MIN_DISTANCE
@@ -53,19 +54,20 @@ public final class AltitudeControllerMenu extends StationControllerMenu {
     }
 
     @Override
-    protected int serverData(int index, StationState station) {
-        return station == null ? -1 : station.orbitalControls().distance();
+    protected List<Integer> viewValues(StationState station) {
+        return List.of(station.orbitalControls().distance());
     }
 
     @Override
-    protected StationManagementCode apply(int button, ServerPlayer player, StationManager stations,
-                                          StationActorContext context, Optional<StationState> expected) {
+    protected StationManagementCode apply(ClassicControlIntentPacket intent, ServerPlayer player,
+                                          StationManager stations, StationActorContext context,
+                                          Optional<StationState> expected) {
         if (expected.isEmpty()) {
             return StationManagementCode.NOT_IN_STATION;
         }
         int current = expected.orElseThrow().orbitalControls().distance();
-        int target = button == BUTTON_GEO ? GEO_DISTANCE : Math.max(StationOrbitalControls.MIN_DISTANCE,
-                Math.min(StationOrbitalControls.MAX_DISTANCE, current + STEPS[button]));
+        int target = intent.action() == BUTTON_GEO ? GEO_DISTANCE : Math.max(StationOrbitalControls.MIN_DISTANCE,
+                Math.min(StationOrbitalControls.MAX_DISTANCE, current + STEPS[intent.action()]));
         return stations.orbitalControls().setAltitude(player, context, expected, target).code();
     }
 }

@@ -1,5 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.station.controller;
 
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlIntentPacket;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlViewPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationOrbitalControls;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationOrbitalControls.Axis;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -29,14 +32,16 @@ public final class OrientationControllerMenu extends StationControllerMenu {
     /** Buttons 13..18: per axis, the phase down then up by {@link #PHASE_STEP} milli-degrees. */
     public static final int FIRST_PHASE_BUTTON = 13;
     public static final int PHASE_STEP = 15_000;
-    private static final int RATES = 0;
-    private static final int PHASES = 3;
-    private static final int FLAGS = 6;
-    private static final List<Button> BUTTONS = buttonLayout();
+    /** View values, in the {@code STATION_ORIENTATION_CONTROLLER} layout. */
+    public static final int EXHAUSTED = 0;
+    public static final int RATES = 1;
+    public static final int PHASES = 4;
+    static final List<Button> BUTTONS = buttonLayout();
 
-    OrientationControllerMenu(int id, Level level, BlockPos position, Block block, OpenData open) {
+    OrientationControllerMenu(int id, Level level, BlockPos position, Block block, OpenData open,
+                              @Nullable ServerPlayer viewer) {
         super(ModMenuTypes.STATION_ORIENTATION_CONTROLLER.get(), StationControllerKind.ORIENTATION, id, level,
-                position, block, open, 7);
+                position, block, open, viewer);
     }
 
     private static List<Button> buttonLayout() {
@@ -60,44 +65,42 @@ public final class OrientationControllerMenu extends StationControllerMenu {
     }
 
     @Override
-    public List<Component> lines() {
-        if ((value(FLAGS) & 1) == 0) {
-            return List.of(Component.translatable(KEY + "no_station"));
-        }
+    public List<Component> lines(ClassicControlViewPacket view) {
         List<Component> lines = new ArrayList<>();
         for (Axis axis : Axis.values()) {
             lines.add(Component.translatable(KEY + "axis", Component.translatable(KEY + "axis." + axis.name()
-                    .toLowerCase(Locale.ROOT)), value(RATES + axis.ordinal()), value(PHASES + axis.ordinal())));
+                    .toLowerCase(Locale.ROOT)), view.value(RATES + axis.ordinal()), view.value(PHASES + axis.ordinal())));
         }
-        if ((value(FLAGS) & 2) != 0) {
+        if (view.value(EXHAUSTED) != 0) {
             lines.add(Component.translatable(StationManagementCode.ORBITAL_CLOCK_EXHAUSTED.translationKey()));
         }
         return lines;
     }
 
     @Override
-    protected int serverData(int index, StationState station) {
-        if (station == null) {
-            return 0;
-        }
+    protected List<Integer> viewValues(StationState station) {
         StationOrbitalControls controls = station.orbitalControls();
         StationRegistrySavedData registry = StationRegistrySavedData.get(level().getServer());
-        if (index < PHASES) {
-            return controls.rate(Axis.values()[index - RATES]);
+        long tick = Math.max(controls.epoch(), registry.orbitalTick());
+        List<Integer> values = new ArrayList<>();
+        values.add(registry.orbitalClockExhausted() ? 1 : 0);
+        for (Axis axis : Axis.values()) {
+            values.add(controls.rate(axis));
         }
-        if (index < FLAGS) {
-            long tick = Math.max(controls.epoch(), registry.orbitalTick());
-            return controls.phaseAt(Axis.values()[index - PHASES], tick) / 1_000;
+        for (Axis axis : Axis.values()) {
+            values.add(controls.phaseAt(axis, tick) / 1_000);
         }
-        return 1 | (registry.orbitalClockExhausted() ? 2 : 0);
+        return values;
     }
 
     @Override
-    protected StationManagementCode apply(int button, ServerPlayer player, StationManager stations,
-                                          StationActorContext context, Optional<StationState> expected) {
+    protected StationManagementCode apply(ClassicControlIntentPacket intent, ServerPlayer player,
+                                          StationManager stations, StationActorContext context,
+                                          Optional<StationState> expected) {
         if (expected.isEmpty()) {
             return StationManagementCode.NOT_IN_STATION;
         }
+        int button = intent.action();
         StationOrbitalControls controls = expected.orElseThrow().orbitalControls();
         var service = stations.orbitalControls();
         if (button == BUTTON_STOP) {
