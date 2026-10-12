@@ -22,7 +22,7 @@ from inspect_celestial_saved_data import NbtReader
 from run_v060_flight_server_smoke import _server_command
 
 
-CASES = tuple(f"K{i}" for i in range(11))
+CASES = tuple(f"K{i}" for i in range(11)) + ("G3",)
 RESULT = re.compile(r"ARCE_RELEASE_ESCROW_RESULT source=(\d+) bank=(\d+) records=(\d+) source_epoch=(\d+) bank_epoch=(\d+) ledger=([0-9a-f-]{36})")
 LEDGER = "advancedrocketrycommunity_resource_escrow.dat"
 
@@ -120,11 +120,19 @@ def run(args) -> dict:
                 log = evidence / f"{cut}-restart-{restart}.log"
                 process = smoke.CapturedProcess(command, session, log)
                 if restart == 0:
-                    process.wait_for(re.compile(r"ARCE_RELEASE_ESCROW_PAUSED cut=" + cut + r"(?: |$)"), args.startup_timeout)
-                    process.process.kill()  # Only this harness-owned process; no JVM shutdown hooks.
-                    process.abort()
+                    if cut == "G3":
+                        process.wait_for(re.compile(r"ARCE_RELEASE_ESCROW_DRAIN_READY cut=G3"), args.startup_timeout)
+                        process.command("stop")
+                        if process.finish() != 0:
+                            raise smoke.SmokeError("Native queued-writer shutdown failed")
+                    else:
+                        process.wait_for(re.compile(r"ARCE_RELEASE_ESCROW_PAUSED cut=" + cut + r"(?: |$)"), args.startup_timeout)
+                        process.process.kill()  # Only this harness-owned process; no JVM shutdown hooks.
+                        process.abort()
                     process = None
                     row["cut_disk"] = inspect(session / ("world-" + cut))
+                    if cut == "G3" and len(row["cut_disk"]["ledger"]["records"]) != 1:
+                        raise smoke.SmokeError("Shutdown did not retain its acknowledged, unapplied L1")
                 else:
                     index = process.wait_for(RESULT, args.startup_timeout)
                     match = RESULT.search(process.lines[index])

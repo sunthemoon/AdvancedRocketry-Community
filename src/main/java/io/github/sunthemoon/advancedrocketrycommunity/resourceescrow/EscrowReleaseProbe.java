@@ -35,12 +35,19 @@ final class EscrowReleaseProbe {
         EscrowTestEndpoints.requireEnabled(server); this.server = server; level = server.overworld();
         cut = System.getProperty("advancedrocketrycommunity.escrowCheckpoint", "none");
         recovery = System.getProperty("advancedrocketrycommunity.escrowScenario").equals("recover");
-        EscrowTags.require(cut.equals("none") || cut.matches("K(?:[0-9]|10)"), "Unknown escrow checkpoint");
+        EscrowTags.require(cut.equals("none") || cut.equals("G3") || cut.matches("K(?:[0-9]|10)"), "Unknown escrow checkpoint");
         ChunkPos chunk = new ChunkPos(POSITION);
         level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
         level.getChunk(chunk.x, chunk.z); // Explicit fixed test-fixture loading, not endpoint input.
     }
     void checkpoint(String name) {
+        if (cut.equals("G3") && name.equals("K1") && !selected) {
+            selected = true;
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_ESCROW_DRAIN_READY cut=G3");
+            try { TimeUnit.MILLISECONDS.sleep(1_500); }
+            catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IllegalStateException(interrupted); }
+            return;
+        }
         if (!name.equals(cut) || selected) { return; }
         selected = true; pausing = true;
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_ESCROW_PAUSED cut={} thread={}", name, Thread.currentThread().getName());
