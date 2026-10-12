@@ -138,6 +138,9 @@ public final class SuitMotionService {
             return Result.COMMIT_REFUSED;
         }
         chest.setTag(detached.getTag());
+        // Preserve vanilla's unpaid-flight check; only this completed debit earns another paid tick.
+        // No vehicle counter applies: every passenger is refused above, before planning or payment.
+        player.connection.aboveGroundTickCount = 0;
         Vec3 motion = player.getDeltaMovement();
         var next = JetpackPhysics.apply(new JetpackPhysics.Motion(motion.x, motion.y, motion.z), impulse);
         player.setDeltaMovement(next.x(), next.y(), next.z());

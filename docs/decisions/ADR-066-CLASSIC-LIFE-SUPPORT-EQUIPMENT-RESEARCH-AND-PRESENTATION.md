@@ -512,6 +512,8 @@ is unusable/preserved.
   removal or interferes with real night vision. Both visor effects clear on
   resource reload/world change/equipment snapshot invalidation.
 
+**W06F implementation note (2026-10-12):** With `allow-flight=true`, vanilla trusts client flight regardless of this mod's paid-correction floating-counter resets.
+
 ### 5.3 Mining tools
 
 `jackhammer` is a vanilla-authoritative single-block pickaxe-like tool,

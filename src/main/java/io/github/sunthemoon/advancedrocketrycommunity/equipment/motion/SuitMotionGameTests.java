@@ -31,6 +31,44 @@ public final class SuitMotionGameTests {
     }
 
     @GameTest(template = "empty", batch = "equipment_motion", timeoutTicks = 100)
+    public static void onlyPaidHoverResetsVanillasFloatingCounter(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        boolean flightAllowed = server.isFlightAllowed();
+        server.setFlightAllowed(false);
+        try (var f = new MotionFixture(helper)) {
+            f.wear(EquipmentSlot.CHEST, MotionFixture.chest(true, 5));
+            f.wear(EquipmentSlot.HEAD, MotionFixture.piece(EquipmentSlot.HEAD, "hover_upgrade"));
+            f.player.teleportTo(f.player.getX(), f.player.getY() + 16, f.player.getZ());
+            f.acknowledgeTeleport();
+            f.send(JetpackIntentPacket.toggle(), T);
+            f.send(JetpackIntentPacket.cycleMode(), T);
+            f.send(JetpackIntentPacket.thrust(true), T);
+            f.service.session(f.player.getUUID()).orElseThrow().reference(f.player.getY() + 2);
+            for (int i = 0; i < 5; i++) {
+                f.floatTick();
+                helper.assertTrue(f.player.connection.aboveGroundTickCount == 1, "Vanilla did not count the floating tick");
+                helper.assertTrue(f.service.step(f.player, T + i) == Result.PAID, "Paid hover correction refused");
+                helper.assertTrue(f.player.connection.aboveGroundTickCount == 0 && f.hydrogen() == 4 - i,
+                        "Paid hover did not reset the timer after exactly one hydrogen debit");
+            }
+            f.send(JetpackIntentPacket.thrust(true), T + 5);
+            for (int i = 1; i <= 3; i++) {
+                f.floatTick();
+                helper.assertTrue(f.service.step(f.player, T + 4 + i) == Result.NO_HYDROGEN, "Empty tank granted hover");
+                helper.assertTrue(f.player.connection.aboveGroundTickCount == i && f.sent.size() == 5,
+                        "Unpaid floating suppressed vanilla's timer");
+            }
+            helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.ArmorEquipment.setHydrogen(
+                    f.player.getItemBySlot(EquipmentSlot.CHEST), 5), "Could not refill the disposable fixture");
+            f.floatTick();
+            helper.assertTrue(f.service.step(f.player, T + 10) == Result.NO_INTENT && f.hydrogen() == 5
+                    && f.player.connection.aboveGroundTickCount == 4, "Expired intent reset the unpaid floating timer");
+            helper.assertTrue(!f.player.getAbilities().mayfly && !f.player.getAbilities().flying, "Creative flight flags changed");
+        } finally { server.setFlightAllowed(flightAllowed); }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "equipment_motion", timeoutTicks = 100)
     public static void noThrustWithoutHydrogenAndOneUnitPerCorrection(GameTestHelper helper) {
         try (var f = new MotionFixture(helper)) {
             f.wear(EquipmentSlot.CHEST, MotionFixture.chest(true, -1));

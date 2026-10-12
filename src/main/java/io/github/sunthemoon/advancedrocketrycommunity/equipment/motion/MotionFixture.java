@@ -13,6 +13,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -84,6 +87,25 @@ final class MotionFixture implements AutoCloseable {
     }
 
     SuitMotionService.Reply send(JetpackIntentPacket intent, long now) { return service.receive(player, intent, now); }
+
+    /** Acknowledge native teleport packets before exercising vanilla movement admission. */
+    void acknowledgeTeleport() {
+        Object packet;
+        while ((packet = channel.readOutbound()) != null) {
+            try {
+                if (packet instanceof ClientboundPlayerPositionPacket position) {
+                    player.connection.handleAcceptTeleportPacket(new ServerboundAcceptTeleportationPacket(position.getId()));
+                }
+            } finally { io.netty.util.ReferenceCountUtil.release(packet); }
+        }
+    }
+
+    /** A stationary airborne client packet, followed by an actual native floating-check tick. */
+    void floatTick() {
+        player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(player.getX(), player.getY(), player.getZ(), false));
+        player.connection.tick();
+        rest();
+    }
 
     @Override public void close() {
         try {
