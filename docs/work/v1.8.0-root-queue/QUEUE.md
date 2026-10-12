@@ -48,7 +48,7 @@ The shared branch `f557e5c0` holds every merge above. Hosted run 38206390869 pas
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| (none) | | |
+| [W14](TASK-W14-LIFE-SUPPORT-DEVICES.md) | C18a CO2 scrubber, gas charger, seals | Next free slot (worktree ready at `5c1bbd55`) |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
