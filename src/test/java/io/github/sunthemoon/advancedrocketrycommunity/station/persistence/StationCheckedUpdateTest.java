@@ -172,9 +172,13 @@ final class StationCheckedUpdateTest {
         assertFalse(data.updatesAvailable(), "A quarantined registry reported checked updates as available");
     }
 
-    /** ADR-047 / final review B3: a quarantined registry still resolves the station sky context. */
+    /**
+     * ADR-065 section 5.2.1 supersedes the ADR-047 / final review B3 rule: after an unknown write the registry
+     * stops emitting station sky context (NONE) and suspends its orbital clock until restart, while ordinary
+     * reads such as {@code find} and {@code findAt} keep resolving the acknowledged authority.
+     */
     @Test
-    void aQuarantinedRegistryStillResolvesTheSkyContext() throws Exception {
+    void aQuarantinedRegistryStopsTheSkyContextAndTheClockButStillResolvesReads() throws Exception {
         int x = station.cell().centerX();
         int z = station.cell().centerZ();
         assertEquals(java.util.Optional.of(station.orbitBody()),
@@ -185,9 +189,12 @@ final class StationCheckedUpdateTest {
             throw new java.io.IOException("injected torn replacement");
         }));
         assertTrue(data.updatesQuarantined());
-        assertEquals(java.util.Optional.of(station.orbitBody()),
-                io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService.contextFor(
-                        data, true, x, z), "A quarantined registry must still resolve reads");
+        assertTrue(io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService.contextFor(
+                data, true, x, z).isEmpty(), "A quarantined registry must send NONE");
+        assertEquals(station, data.findAt(x, z).orElseThrow(), "A quarantined registry must still resolve reads");
+        long tick = data.orbitalTick();
+        data.advanceOrbitalClock();
+        assertEquals(tick, data.orbitalTick(), "A quarantined registry suspends its orbital clock");
         assertTrue(io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService.contextFor(
                 data, false, x, z).isEmpty(), "Outside Space there is no context");
     }

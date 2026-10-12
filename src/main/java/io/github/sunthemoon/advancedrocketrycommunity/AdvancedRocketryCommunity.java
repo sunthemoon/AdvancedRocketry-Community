@@ -180,6 +180,8 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(stationWarp::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
+        // ADR-065 §5.2.1: the station orbital clock advances once per logical-server END tick.
+        MinecraftForge.EVENT_BUS.addListener(stationManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(this::onSolarServerStarted);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onSolarServerStopping);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onSolarServerStopped);
@@ -223,7 +225,10 @@ public final class AdvancedRocketryCommunity {
                 celestialNetwork
         );
         MinecraftForge.EVENT_BUS.addListener(snapshotSynchronizer::onDatapackSync);
-        StationSkyContextService skyContexts = new StationSkyContextService(celestialNetwork::sendSkyContext);
+        // ADR-065 §11.1: the server alone chooses the sky kind, SINGULARITY only from an ADR-057 profile.
+        StationSkyContextService skyContexts = new StationSkyContextService(celestialNetwork::sendSkyContext,
+                StationSkyContextService.kinds(celestialCatalogs::current, (body, catalog) -> blackHoleData.current()
+                        .flatMap(data -> data.at(body, catalog)).isPresent()));
         StationSkyContextRuntime.install(skyContexts);
         MinecraftForge.EVENT_BUS.addListener(skyContexts::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(skyContexts::onPlayerChangedDimension);

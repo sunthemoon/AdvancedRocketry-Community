@@ -6,7 +6,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialClientCache;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.StationSkyContextCache;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.StationSkyContextPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.AmbientController;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyMath;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkySelection;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkySelection.Selection;
 import net.minecraft.client.Camera;
@@ -49,9 +51,17 @@ public final class PlanetarySkyClient {
                 RESOURCES.profiles(), orbit);
     }
 
-    static boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle, float flash) {
+    static boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle, float flash,
+                          float partialTick) {
         double visibleFlash = Minecraft.getInstance().options.hideLightningFlash().get() ? 0 : flash;
-        return RENDERER.render(selection, poses, projection, angle, visibleFlash);
+        // ADR-065: the station attitude and distance apply only with a station context in the Space Level.
+        var level = Minecraft.getInstance().level;
+        var context = level != null && level.dimension().equals(CelestialIds.SPACE_LEVEL)
+                ? StationSkyContextCache.context() : java.util.Optional.<StationSkyContextPacket.Context>empty();
+        double[] attitude = context.flatMap(ignored -> StationSkyContextCache.phaseDegrees(partialTick))
+                .map(phases -> SkyMath.stationAttitude(phases[0], phases[1], phases[2])).orElse(null);
+        int distance = context.map(value -> value.controls().distance()).orElse(4);
+        return RENDERER.render(selection, poses, projection, angle, visibleFlash, attitude, distance);
     }
 
     public static boolean clearView(Camera camera) {
@@ -65,6 +75,8 @@ public final class PlanetarySkyClient {
         if (minecraft.isPaused()) {
             return;
         }
+        // The local time base of the ADR-065 sky extrapolation; it never feeds the server.
+        StationSkyContextCache.clientTick();
         var level = minecraft.level;
         var selected = selection(level);
         var camera = minecraft.gameRenderer.getMainCamera();

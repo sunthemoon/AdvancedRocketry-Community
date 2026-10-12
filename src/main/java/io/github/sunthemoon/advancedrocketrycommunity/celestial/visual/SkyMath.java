@@ -11,8 +11,64 @@ public final class SkyMath {
     public static final double ORBITED_BODY_ELEVATION_DEGREES = -25;
     /** The sun halo reaches 2.5 sun radii (SkyGeometry.sun(true)); the sun radius is at most 12 degrees. */
     public static final double MAX_SUN_HALO_DEGREES = 2.5 * 12;
+    /**
+     * ADR-065: the EAST phase at which a station sky equals the ADR-047 sky. It is the BASIC_SPACE sun angle,
+     * so a migrated or new station (EAST phase = stored sun angle) keeps its old sky until its owner turns it.
+     */
+    public static final double STATION_REFERENCE_EAST_DEGREES = 270;
+    /** ADR-065: a nominal body radius chosen so the initial distance 4 (900 km) keeps the 30 degree disc. */
+    public static final double ORBITED_BODY_RADIUS_KM = 900;
 
     private SkyMath() { }
+
+    /**
+     * ADR-065 D2-A: the orbited body's apparent angular radius at a logical distance (altitude
+     * {@code distance * 200 + 100} km): {@code asin(R / (R + altitude))}, exactly the ADR-047 30 degrees at the
+     * initial distance and smaller beyond it.
+     */
+    public static double orbitedBodyRadiusDegrees(int distance) {
+        if (distance <= 4) {
+            return ORBITED_BODY_RADIUS_DEGREES;
+        }
+        double altitude = distance * 200.0D + 100.0D;
+        return Math.toDegrees(Math.asin(ORBITED_BODY_RADIUS_KM / (ORBITED_BODY_RADIUS_KM + altitude)));
+    }
+
+    /**
+     * ADR-065: the station attitude in radians from its EAST, UP and NORTH phases in degrees: yaw about the
+     * vertical (UP), roll along the sun's east-west path relative to the reference (EAST) and pitch about the
+     * east-west axis (NORTH). One rigid rotation turns the stars, the sun and the orbited body together.
+     */
+    public static double[] stationAttitude(double eastDegrees, double upDegrees, double northDegrees) {
+        return new double[] {Math.toRadians(upDegrees), Math.toRadians(eastDegrees - STATION_REFERENCE_EAST_DEGREES),
+                Math.toRadians(northDegrees)};
+    }
+
+    /**
+     * A sky direction turned by {@link #stationAttitude}, as the renderer does with
+     * {@code rotateY(yaw).rotateZ(roll).rotateX(pitch)} (standard right-handed rotations, applied to the
+     * direction innermost first).
+     */
+    public static double[] orient(double[] attitude, double[] direction) {
+        double[] pitched = rotateX(direction, attitude[2]);
+        double[] rolled = rotateZ(pitched, attitude[1]);
+        return rotateY(rolled, attitude[0]);
+    }
+
+    private static double[] rotateX(double[] v, double angle) {
+        double cos = Math.cos(angle), sin = Math.sin(angle);
+        return new double[] {v[0], v[1] * cos - v[2] * sin, v[1] * sin + v[2] * cos};
+    }
+
+    private static double[] rotateY(double[] v, double angle) {
+        double cos = Math.cos(angle), sin = Math.sin(angle);
+        return new double[] {v[0] * cos + v[2] * sin, v[1], -v[0] * sin + v[2] * cos};
+    }
+
+    private static double[] rotateZ(double[] v, double angle) {
+        double cos = Math.cos(angle), sin = Math.sin(angle);
+        return new double[] {v[0] * cos - v[1] * sin, v[0] * sin + v[1] * cos, v[2]};
+    }
 
     /** Unit direction of the orbited body's disc centre: the renderer turns +Y about Z by elevation - 90. */
     public static double[] orbitedBodyDirection() {
