@@ -53,6 +53,19 @@ class EscrowCodecTest {
         ListTag oversized = new ListTag(); for (int i = 0; i < 65; i++) { oversized.add(new CompoundTag()); }
         CompoundTag bad = EscrowCodec.encode(EscrowTestFixtures.ledger()); bad.put("tombstones", oversized);
         assertThrows(IllegalArgumentException.class, () -> EscrowCodec.decode(bad));
+        var tombstones = new ArrayList<CompoundTag>();
+        for (int i = 1; i <= 64; i++) {
+            var tombstone = new CompoundTag(); tombstone.putInt("schema_version", 1);
+            tombstone.putUUID("op_id", EscrowTestFixtures.id(i)); tombstone.putInt("amount", 1_000);
+            tombstone.putString("payload_hash", EscrowTestFixtures.hash(i)); tombstone.putLong("audited_loss", 0);
+            for (String field : List.of("retired", "missing", "guards", "survivors")) { tombstone.put(field, new ListTag()); }
+            tombstones.add(tombstone);
+        }
+        var full = new EscrowLedger(root.id(), 64, 0, root.records(), root.floors(), tombstones);
+        assertEquals(full, EscrowCodec.decode(EscrowCodec.encode(full)));
+        tombstones.add(tombstones.get(0).copy());
+        assertThrows(IllegalArgumentException.class, () -> new EscrowLedger(root.id(), 64, 0,
+                root.records(), root.floors(), tombstones));
     }
     @Test void everyByteEnvelopeAcceptsItsExactLimitAndRefusesTheNextByte() {
         for (int limit : new int[] {256, 512, 1_024, 2_048, 4_096, 8_192, 12_288, 32_768, 1_048_576}) {

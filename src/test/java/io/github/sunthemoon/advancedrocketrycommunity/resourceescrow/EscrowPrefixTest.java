@@ -52,6 +52,11 @@ class EscrowPrefixTest {
         monitor.observed("minecraft:overworld", false, pos); assertEquals(next + 1, second.get());
         monitor.release("minecraft:overworld", false, pos);
         monitor.observed("minecraft:overworld", false, pos); assertEquals(next + 1, second.get());
+        for (int i = 0; i < 128; i++) { monitor.watch("minecraft:overworld", false, new net.minecraft.world.level.ChunkPos(i, 0)); }
+        var overflow = new net.minecraft.world.level.ChunkPos(128, 0);
+        assertThrows(IllegalArgumentException.class, () -> monitor.watch("minecraft:overworld", false, overflow));
+        monitor.release("minecraft:overworld", false, new net.minecraft.world.level.ChunkPos(0, 0));
+        assertDoesNotThrow(() -> monitor.watch("minecraft:overworld", false, overflow)); monitor.clear();
     }
     @Test void stoppingDiscardedBarriersDoesNotInvalidateAFrozenLedgerProofBeforeDrain() {
         var op = EscrowTestFixtures.operation(1); var ledger = EscrowTestFixtures.ledger(op);
