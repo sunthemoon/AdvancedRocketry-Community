@@ -69,6 +69,33 @@
       "reason": "The test offers mismatched machine-menu channel versions; Forge logs each rejected client-side version at ERROR."
     },
     {
+      "id": "classic-controls-server-version-rejected",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.network.NetworkRegistry/NETREGISTRY",
+      "message": "Channels \\[advancedrocketrycommunity:classic_controls\\] rejected their server side version number",
+      "counts": {"classic_controls_version": 8},
+      "test": "ClassicControlsChannelGameTests.theInstalledChannelRejectsEveryOtherProtocol",
+      "reason": "The test offers a missing and seven mismatched classic_controls versions; Forge logs each rejected server-side version at ERROR."
+    },
+    {
+      "id": "classic-controls-client-version-rejected",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.network.NetworkRegistry/NETREGISTRY",
+      "message": "Channels \\[advancedrocketrycommunity:classic_controls\\] rejected their client side version number",
+      "counts": {"classic_controls_version": 8},
+      "test": "ClassicControlsChannelGameTests.theInstalledChannelRejectsEveryOtherProtocol",
+      "reason": "The test offers a missing and seven mismatched classic_controls versions; Forge logs each rejected client-side version at ERROR."
+    },
+    {
+      "id": "classic-controls-unknown-index-dropped",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.network.simple.IndexedMessageCodec/SIMPLENET",
+      "message": "Received invalid discriminator byte 3 on channel advancedrocketrycommunity:classic_controls",
+      "counts": {"classic_controls_channel": 1},
+      "test": "ClassicControlsChannelGameTests.onlyTheValidatedHoldersIntentReachesItsMenu",
+      "reason": "The test sends one classic_controls frame on the unregistered index 3; Forge drops it and logs the invalid discriminator at ERROR."
+    },
+    {
       "id": "precision-migration-injected-save-failure",
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
@@ -277,6 +304,10 @@
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_STATION_WARP_ENERGY_DROPPED station=[0-9a-f-]{36} energy=\\d+",
       "counts": {
+        "station_controls_confirm_binding": 4,
+        "station_controls_confirm_core": 1,
+        "station_controls_core_reach": 1,
+        "station_controls_warp_parity": 2,
         "station_warp_abort": 2,
         "station_warp_charge": 1,
         "station_warp_commit": 1,
@@ -291,8 +322,8 @@
         "station_warp_target_removed": 1,
         "tau_ceti_path": 1
       },
-      "test": "StationWarpGameTests, StationWarpAbortGameTests, TauCetiPathGameTests",
-      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops."
+      "test": "StationWarpGameTests, StationWarpAbortGameTests, TauCetiPathGameTests, StationControlsGameTests, StationControllerMenuGameTests",
+      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops. StationControlsGameTests deletes one charged station after a quote (core reach), one after its cancelled confirmations (confirm core) and two after their warps (parity). StationControllerMenuGameTests deletes four charged stations after their refused or cancelled confirmations (confirm binding)."
     },
     {
       "id": "satellite-receiver-release-skipped",

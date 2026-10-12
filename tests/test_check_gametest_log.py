@@ -358,8 +358,10 @@ class ManifestValidationTests(unittest.TestCase):
     def test_repository_manifest_is_valid(self) -> None:
         expectations = load_manifest(DEFAULT_MANIFEST)
         self.assertTrue(all(item.level == "WARN" for item in expectations if item.maximum is not None))
+        # 62 deliberate ERROR entries plus W07's 17: classic_controls server and client version
+        # rejections (8 each) and one dropped unknown message index.
         self.assertEqual(
-            62, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            79, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_recipe_and_recovery_cases_have_independent_counts(self) -> None:

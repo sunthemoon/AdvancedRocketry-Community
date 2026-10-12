@@ -42,7 +42,8 @@ class CelestialSnapshotV2Test {
         var gas = CelestialSchemaV2Test.gasGiant();
         values.add(gas);
         var packet = packet(values, 12);
-        assertEquals("3", CelestialNetwork.protocolVersion());
+        // ADR-065: protocol 4 replaces only the station sky context (payload schema 2); snapshot bytes are unchanged.
+        assertEquals("4", CelestialNetwork.protocolVersion());
         assertEquals(2, packet.schemaVersion());
         assertEquals(CelestialClientCache.AcceptResult.ACCEPTED, CelestialClientCache.accept(packet));
         var entry = CelestialClientCache.snapshot().orElseThrow().entries().stream()

@@ -2,11 +2,16 @@ package io.github.sunthemoon.advancedrocketrycommunity.station.model;
 
 /** Fixed station budgets; ADR-040 adds one bounded expansion size, ADR-044 the warp energy bounds. */
 public final class StationLimits {
-    public static final int STATE_SCHEMA_VERSION = 2;
+    /** Record schema 3 (ADR-065): record 2 plus the required {@code orbital_controls} compound. */
+    public static final int STATE_SCHEMA_VERSION = 3;
+    /** Record schema 2 (ADR-040), carried by roots 3 and 4; upgraded to 3 before start. */
+    public static final int ORBITAL_STATE_SCHEMA_VERSION = 2;
     public static final int RESERVATION_SCHEMA_VERSION = 1;
     /** Root schema 4 (ADR-044): record 2 plus the required warp energy list. */
     public static final int WARP_REGISTRY_SCHEMA_VERSION = 4;
-    public static final int REGISTRY_SCHEMA_VERSION = WARP_REGISTRY_SCHEMA_VERSION;
+    /** Root schema 5 (ADR-065 section 5.2.1): record 3 plus the required {@code orbital_clock}. */
+    public static final int CONTROLS_REGISTRY_SCHEMA_VERSION = 5;
+    public static final int REGISTRY_SCHEMA_VERSION = CONTROLS_REGISTRY_SCHEMA_VERSION;
     /** Root schema 3 (ADR-040): record 2 without warp energy; upgraded to 4 before start. */
     public static final int ORBITAL_REGISTRY_SCHEMA_VERSION = 3;
     public static final int MAX_STATIONS = 4_096;
@@ -48,6 +53,12 @@ public final class StationLimits {
     public static final int MAX_WARP_COUNTDOWNS = 64;
     public static final long WARP_COOLDOWN_TICKS = 100L;
     public static final double WARP_CORE_REACH = 5.0D;
+    /** ADR-065 section 5.1: a controller screen's actor stands within this distance of the controller. */
+    public static final double CONTROLLER_REACH = 8.0D;
+    /** ADR-065 section 11.2: one controller mutation per player per this many ticks. */
+    public static final long CONTROLLER_ACTION_TICKS = 10L;
+    /** ADR-065 section 5.2: while any rate is nonzero, the registry is marked dirty at most this often. */
+    public static final long ORBITAL_CHECKPOINT_TICKS = 20L;
     /** COMMON config bounds for both warp costs; a cost of 0 is impossible. */
     public static final int MIN_WARP_COST = 100_000;
     public static final int MAX_WARP_COST = MAX_WARP_ENERGY;
