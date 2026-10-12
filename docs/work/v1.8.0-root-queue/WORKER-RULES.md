@@ -1,8 +1,10 @@
 # v1.8 implementer rules
 
-These rules apply to every Codex implementer session that Root (Claude) dispatches
-under [AGENTS.md section 13](../../../AGENTS.md). Your TASK file adds the specifics.
-When the two disagree, the TASK wins.
+These rules apply to every implementer session that Root (Claude) dispatches under
+[AGENTS.md section 13](../../../AGENTS.md), whether it is a Codex session (`codex exec`)
+or a headless Claude session (`claude -p`). Your TASK file adds the specifics. When the
+two disagree, the TASK wins. A Claude implementer does not use subagents, workflows or
+any other agent.
 
 ## Before you start
 

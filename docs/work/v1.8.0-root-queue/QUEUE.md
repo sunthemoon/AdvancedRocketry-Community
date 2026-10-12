@@ -32,7 +32,7 @@ block any task.
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| (none) | | |
+| [W06](TASK-W06-MOTION-UPGRADES.md) | C18b jetpack, motion and visor upgrades; W03 review M1 and L1 | Now, as a headless Claude implementer |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
