@@ -55,6 +55,21 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
     public static final String KEY = "screen.advancedrocketrycommunity.station_controller.";
     /** A changed view goes out at most once per this many ticks, unless an action or the opening forces it. */
     public static final int VIEW_INTERVAL_TICKS = 5;
+    /**
+     * The panel (W07 review R4): the buttons end above {@link #LINES_TOP}; the display lines, wrapped to
+     * {@link #TEXT_WIDTH}, take at most {@link #LINE_ROWS} rows (the five warp lines and two continuations); the
+     * status, wrapped, takes at most {@link #STATUS_ROWS} rows below them, inside {@link #PANEL_HEIGHT}.
+     */
+    public static final int PANEL_WIDTH = 256;
+    public static final int PANEL_HEIGHT = 222;
+    public static final int TEXT_LEFT = 8;
+    public static final int TEXT_WIDTH = PANEL_WIDTH - 2 * TEXT_LEFT;
+    public static final int LINES_TOP = 96;
+    public static final int LINE_HEIGHT = 10;
+    public static final int LINE_ROWS = 7;
+    public static final int STATUS_TOP = LINES_TOP + LINE_ROWS * LINE_HEIGHT + 4;
+    public static final int STATUS_LINE_HEIGHT = 9;
+    public static final int STATUS_ROWS = 5;
     private static final StationAccessService ACCESS = new StationAccessService();
 
     private final StationControllerKind kind;

@@ -11,12 +11,15 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
  * Community-authored panel for the four ADR-065 station controllers. Its fixed buttons send
  * {@code classic_controls} intents; the lines and the last action's stable code come from the server's view of
  * this container, never colour alone. A button whose intent cannot be formed from the current view is inactive.
+ * The lines and the status wrap inside the fixed rows of {@link StationControllerMenu#PANEL_HEIGHT}, so the five
+ * warp lines and the status all show (W07 review R4).
  */
 public final class StationControllerScreen extends AbstractContainerScreen<StationControllerMenu> {
     private static final int PANEL_TOP = 0xFF1B2430;
@@ -31,8 +34,8 @@ public final class StationControllerScreen extends AbstractContainerScreen<Stati
 
     public StationControllerScreen(StationControllerMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
-        imageWidth = 210;
-        imageHeight = 170;
+        imageWidth = StationControllerMenu.PANEL_WIDTH;
+        imageHeight = StationControllerMenu.PANEL_HEIGHT;
     }
 
     @Override
@@ -89,18 +92,24 @@ public final class StationControllerScreen extends AbstractContainerScreen<Stati
         if (view.isEmpty()) {
             return;
         }
-        int row = 96;
-        for (Component line : menu.lines(view.orElseThrow())) {
-            if (row > imageHeight - 34) {
-                break;
-            }
-            graphics.drawString(font, line, 8, row, MUTED, false);
-            row += 11;
+        List<FormattedCharSequence> rows = new ArrayList<>();
+        menu.lines(view.orElseThrow()).forEach(line -> rows.addAll(font.split(line, StationControllerMenu.TEXT_WIDTH)));
+        draw(graphics, rows, StationControllerMenu.LINES_TOP, StationControllerMenu.LINE_HEIGHT,
+                StationControllerMenu.LINE_ROWS, MUTED);
+        view.orElseThrow().status().ifPresent(code -> draw(graphics, font.split(Component.translatable(
+                        "screen.advancedrocketrycommunity.station_controller.status",
+                        Component.translatable(code.translationKey()), code.name()), StationControllerMenu.TEXT_WIDTH),
+                StationControllerMenu.STATUS_TOP, StationControllerMenu.STATUS_LINE_HEIGHT,
+                StationControllerMenu.STATUS_ROWS, code.success() ? GOOD : WARNING));
+    }
+
+    /** At most {@code limit} rows, so nothing is drawn outside the panel. */
+    private void draw(GuiGraphics graphics, List<FormattedCharSequence> rows, int top, int height, int limit,
+                      int colour) {
+        for (int index = 0; index < Math.min(limit, rows.size()); index++) {
+            graphics.drawString(font, rows.get(index), StationControllerMenu.TEXT_LEFT, top + index * height, colour,
+                    false);
         }
-        view.orElseThrow().status().ifPresent(code -> graphics.drawWordWrap(font, Component.translatable(
-                "screen.advancedrocketrycommunity.station_controller.status",
-                Component.translatable(code.translationKey()), code.name()), 8, imageHeight - 26, imageWidth - 16,
-                code.success() ? GOOD : WARNING));
     }
 
     private record Control(StationControllerMenu.Button spec, Button widget) {

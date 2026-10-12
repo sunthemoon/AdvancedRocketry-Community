@@ -92,6 +92,10 @@ public final class StationControllerMenuGameTests {
                                 StationControlsGameTests.click(helper, retry.menu, retry.owner,
                                         WarpControllerMenu.BUTTON_CONFIRM, 0, fresh, StationManagementCode.WARP_STARTED);
                                 noQuoteShown(helper, retry.menu, "after the confirmation");
+                                // R4: orbit, target, balance, cost and countdown, all within the panel's rows.
+                                int lines = retry.menu.lines(shown(retry.menu)).size();
+                                helper.assertTrue(lines == 5 && lines <= StationControllerMenu.LINE_ROWS,
+                                        "The quoted countdown shows " + lines + " lines");
                                 StationControlsGameTests.expect(helper, retry.fixture.warp.cancel(retry.owner,
                                                 StationControlsGameTests.context(retry.fixture,
                                                         StationControllerKind.WARP, retry.controller)).code(),
