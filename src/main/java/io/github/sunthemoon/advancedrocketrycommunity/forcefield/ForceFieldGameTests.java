@@ -48,7 +48,7 @@ public final class ForceFieldGameTests {
             BlockPos base = helper.absolutePos(BlockPos.ZERO);
             BlockPos position = new BlockPos(1_000_000 + base.getX() * 64, 220, 1_000_000 + base.getZ() * 64);
             for (int i = -1; i <= 32; i++) { load(position.relative(direction, i)); }
-            for (Direction side : Direction.values()) { load(position.relative(side)); }
+            for (BlockPos cell : FieldCellView.powerPositions(position)) { load(cell); }
             level.setBlock(position, ModBlocks.FORCE_FIELD_PROJECTOR.get().defaultBlockState()
                     .setValue(ForceFieldProjectorBlock.FACING, direction), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
             source = (ForceFieldProjectorBlockEntity) level.getBlockEntity(position);
