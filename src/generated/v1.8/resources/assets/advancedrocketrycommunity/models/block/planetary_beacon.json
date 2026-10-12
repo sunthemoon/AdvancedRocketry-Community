@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "advancedrocketrycommunity:block/planetary_beacon_front",
+    "side": "advancedrocketrycommunity:block/planetary_beacon_side",
+    "top": "advancedrocketrycommunity:block/planetary_beacon_top"
+  }
+}
