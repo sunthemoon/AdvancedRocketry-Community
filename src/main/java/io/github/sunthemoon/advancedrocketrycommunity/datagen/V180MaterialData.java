@@ -152,6 +152,10 @@ public final class V180MaterialData {
             tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.COMBUSTION_GENERATOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.PRESSURIZED_TANK.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.STATION_LIGHT.get());
+            // ADR-065 C17b station controllers.
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.WARP_CONTROLLER.get(),
+                    ModBlocks.STATION_GRAVITY_CONTROLLER.get(), ModBlocks.STATION_ALTITUDE_CONTROLLER.get(),
+                    ModBlocks.STATION_ORIENTATION_CONTROLLER.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.DOORS).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOLAR_GENERATOR.get(), ModBlocks.SOLAR_PANEL.get());

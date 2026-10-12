@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "b": {
+      "item": "advancedrocketrycommunity:control_board"
+    },
+    "c": {
+      "item": "advancedrocketrycommunity:basic_circuit"
+    },
+    "p": {
+      "tag": "forge:plates/steel"
+    },
+    "u": {
+      "item": "advancedrocketrycommunity:user_interface"
+    }
+  },
+  "pattern": [
+    "pup",
+    "cbc",
+    "ppp"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:station_gravity_controller"
+  }
+}
