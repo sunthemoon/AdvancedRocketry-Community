@@ -1,0 +1,4 @@
+[INFO] 791 game tests complete; All 791 required tests passed :)
+[INFO] FATAL 0, ERROR 80, WARN 87
+[FAIL] line 51: unexpected WARN, batch '<startup>', logger 'net.minecraftforge.common.ForgeConfigSpec/CORE': Incorrect key forceField was corrected from null to its default, SimpleCommentedConfig:{}. [no GameTest frame]
+[FAIL] line 52: unexpected WARN, batch '<startup>', logger 'net.minecraftforge.common.ForgeConfigSpec/CORE': Incorrect key forceField.enabled was corrected from null to its default, true. [no GameTest frame]

@@ -15,8 +15,8 @@ import net.minecraftforge.network.NetworkEvent;
 
 /**
  * ADR-065 sections 7 and 11.1, {@code classic_controls} index 2, server to client: the private beacon marker
- * snapshot of C17c. This slice freezes and registers its codec only; the server does not send it yet, and the
- * client only caches it. Schema byte 1, a count of at most {@link #MAX_MARKERS}, then per marker the beacon UUID,
+ * snapshot of C17c. W07F froze this codec; the beacon finder service sends it and the client caches and shows it.
+ * Schema byte 1, a count of at most {@link #MAX_MARKERS}, then per marker the beacon UUID,
  * its integer block position, a strict 0/1 live flag (0: last known or inactive) and its name of at most
  * {@link #MAX_NAME_CHARS} characters; at most {@link #MAX_BYTES} in all, and only in its canonical encoding. No
  * owner, member or other body is sent.
@@ -96,7 +96,7 @@ public record BeaconMarkerSnapshotPacket(List<Marker> markers) {
         }
     }
 
-    /** Client only: C17c will show the markers; this slice only keeps the last snapshot. */
+    /** Client only: keeps the last snapshot, which the finder overlay shows. */
     public static void handle(BeaconMarkerSnapshotPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
         if (context.getDirection().getReceptionSide().isClient()) {

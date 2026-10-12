@@ -42,6 +42,9 @@ public final class ModItems {
             ModBlocks.COMBUSTION_GENERATOR);
     public static final RegistryObject<Item> SOLAR_GENERATOR = blockItem("solar_generator", ModBlocks.SOLAR_GENERATOR);
     public static final RegistryObject<Item> SOLAR_PANEL = blockItem("solar_panel", ModBlocks.SOLAR_PANEL);
+    public static final RegistryObject<Item> SOLAR_ARRAY = blockItem("solar_array", ModBlocks.SOLAR_ARRAY);
+    public static final RegistryObject<Item> SOLAR_ARRAY_PANEL = blockItem("solar_array_panel", ModBlocks.SOLAR_ARRAY_PANEL);
+    public static final RegistryObject<Item> POWER_OUTPUT_PLUG = blockItem("power_output_plug", ModBlocks.POWER_OUTPUT_PLUG);
     public static final RegistryObject<Item> MACHINE_CASING = ITEMS.register(
             "machine_casing",
             () -> new BlockItem(ModBlocks.MACHINE_CASING.get(), new Item.Properties())
@@ -229,6 +232,10 @@ public final class ModItems {
             ModBlocks.STATION_ALTITUDE_CONTROLLER);
     public static final RegistryObject<Item> STATION_ORIENTATION_CONTROLLER = blockItem(
             "station_orientation_controller", ModBlocks.STATION_ORIENTATION_CONTROLLER);
+    /** ADR-065 C17c: the beacon and its finder; the finder is the one registration of the shared HEAD module ID. */
+    public static final RegistryObject<Item> PLANETARY_BEACON = blockItem("planetary_beacon", ModBlocks.PLANETARY_BEACON);
+    public static final RegistryObject<Item> BEACON_FINDER = ITEMS.register("beacon_finder", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.beacon.finder.BeaconFinderItem(new Item.Properties()));
     public static final RegistryObject<Item> CARBON_BRICK = ITEMS.register("carbon_brick", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> USER_INTERFACE = ITEMS.register("user_interface", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> ITEM_IO_BOARD = ITEMS.register("item_io_board", () -> new Item(new Item.Properties()));

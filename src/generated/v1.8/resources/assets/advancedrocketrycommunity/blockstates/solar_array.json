@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/solar_array",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/solar_array"
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/solar_array",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/solar_array",
+      "y": 270
+    }
+  }
+}

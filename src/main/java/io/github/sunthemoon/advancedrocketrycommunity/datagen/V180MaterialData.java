@@ -168,11 +168,15 @@ public final class V180MaterialData {
                     ModBlocks.STATION_GRAVITY_CONTROLLER.get(), ModBlocks.STATION_ALTITUDE_CONTROLLER.get(),
                     ModBlocks.STATION_ORIENTATION_CONTROLLER.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.FORCE_FIELD_PROJECTOR.get());
+            // ADR-065 C17c planetary beacon.
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.PLANETARY_BEACON.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.CO2_SCRUBBER.get(), ModBlocks.PIPE_SEAL.get(), ModBlocks.ATMOSPHERE_DETECTOR.get());
             tag(BlockTags.DOORS).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOLAR_GENERATOR.get(), ModBlocks.SOLAR_PANEL.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOLAR_ARRAY.get(), ModBlocks.SOLAR_ARRAY_PANEL.get(), ModBlocks.POWER_OUTPUT_PLUG.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.SOLAR_GENERATOR.get(), ModBlocks.SOLAR_PANEL.get());
+            tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.SOLAR_ARRAY.get(), ModBlocks.SOLAR_ARRAY_PANEL.get(), ModBlocks.POWER_OUTPUT_PLUG.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.BLOCK.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.BLOCK.get());
             for (var tier : io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorDefinition.values()) {

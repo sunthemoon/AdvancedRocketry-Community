@@ -85,6 +85,15 @@ public final class ModBlocks {
                     () -> ModBlockEntities.SOLAR_GENERATOR.get()));
     public static final RegistryObject<Block> SOLAR_PANEL = BLOCKS.register("solar_panel", () ->
             new Block(metalProperties().requiresCorrectToolForDrops()));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayBlock> SOLAR_ARRAY =
+            BLOCKS.register("solar_array", () -> new io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayBlock(
+                    metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    ModBlockEntities::solarArray, () -> ModBlockEntities.SOLAR_ARRAY.get()));
+    public static final RegistryObject<Block> SOLAR_ARRAY_PANEL = BLOCKS.register("solar_array_panel", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayPartBlock(metalProperties().requiresCorrectToolForDrops()));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayOutputBlock> POWER_OUTPUT_PLUG =
+            BLOCKS.register("power_output_plug", () -> new io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayOutputBlock(
+                    metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK)));
     public static final RegistryObject<Block> MACHINE_CASING = BLOCKS.register(
             "machine_casing",
             () -> new MachineCasingBlock(BlockBehaviour.Properties.of()
@@ -381,6 +390,16 @@ public final class ModBlocks {
                                 .strength(3.0F, 6.0F)
                                 .sound(SoundType.METAL)));
     }
+
+    /** ADR-065 C17c: the planetary beacon controller of a 5-by-3-by-3 pattern; pistons cannot move it. */
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock>
+            PLANETARY_BEACON = BLOCKS.register("planetary_beacon", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_LIGHT_GRAY)
+                    .requiresCorrectToolForDrops()
+                    .strength(3.0F, 6.0F)
+                    .sound(SoundType.METAL)
+                    .pushReaction(PushReaction.BLOCK)));
 
     /** Passive ordinary lights: native support/placement, distinct registered loot tables. */
     public static final RegistryObject<TorchBlock> THERMITE_TORCH = BLOCKS.register("thermite_torch", () ->

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayRulesTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-10-12T13:10:57" hostname="DESKTOP-8J2KSNF" time="0.005">
+  <properties/>
+  <testcase name="stationExposureAndMissingOrbitDoNotUseSurfaceDay()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayRulesTest" time="0.002"/>
+  <testcase name="unformedRepairAndDisableRetainStorage()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayRulesTest" time="0.0"/>
+  <testcase name="clearRainThunderNightAndOcclusionUseTheSharedRule()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayRulesTest" time="0.001"/>
+  <testcase name="collectorAndEnergyBoundsAreStrictAndSingleProfileIsUnchanged()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayRulesTest" time="0.001"/>
+  <testcase name="fullAndNearlyFullBuffersNeverLoseOrWrapEnergy()" classname="io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayRulesTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -14,12 +14,16 @@ import net.minecraftforge.fml.common.Mod;
 public final class SolarProtection {
     @SubscribeEvent public static void breaking(BlockEvent.BreakEvent event) {
         if (event.getState().getBlock() instanceof SolarGeneratorBlock
-                && SolarGeneratorBlock.protectedData(event.getLevel(), event.getPos())) { event.setCanceled(true); }
+                && SolarGeneratorBlock.protectedData(event.getLevel(), event.getPos())
+                || event.getState().getBlock() instanceof SolarArrayBlock
+                && SolarArrayBlock.protectedData(event.getLevel(), event.getPos())) { event.setCanceled(true); }
     }
     @SubscribeEvent public static void explosion(ExplosionEvent.Detonate event) {
         event.getAffectedBlocks().removeIf(position -> event.getLevel().hasChunkAt(position)
-                && event.getLevel().getBlockState(position).getBlock() instanceof SolarGeneratorBlock
-                && SolarGeneratorBlock.protectedData(event.getLevel(), position));
+                && (event.getLevel().getBlockState(position).getBlock() instanceof SolarGeneratorBlock
+                && SolarGeneratorBlock.protectedData(event.getLevel(), position)
+                || event.getLevel().getBlockState(position).getBlock() instanceof SolarArrayBlock
+                && SolarArrayBlock.protectedData(event.getLevel(), position)));
     }
     @SubscribeEvent public static void chunkSave(ChunkDataEvent.Save event) {
         GuardedChunkSaves.beforeSave(event);
@@ -30,8 +34,12 @@ public final class SolarProtection {
         }
         for (int index = 0; index < entities.size(); index++) {
             var entity = entities.getCompound(index);
-            if (entity.getString("id").equals("advancedrocketrycommunity:solar_generator")
-                    && entity.contains(SolarSave.ROOT) && !SolarSave.bounded(entity.get(SolarSave.ROOT))) {
+            String root = switch (entity.getString("id")) {
+                case "advancedrocketrycommunity:solar_generator" -> SolarSave.ROOT;
+                case "advancedrocketrycommunity:solar_array" -> SolarSave.ARRAY_ROOT;
+                default -> null;
+            };
+            if (root != null && entity.contains(root) && !SolarSave.bounded(entity.get(root))) {
                 GuardedChunkSaves.refuse(event, "Refusing chunk save with non-admissible solar input; back up and repair first");
             }
         }
