@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_plate": {
+      "conditions": {
+        "items": [
+          {
+            "tag": "forge:plates/steel"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_recipe": {
+      "conditions": {
+        "recipe": "advancedrocketrycommunity:pipe_seal"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_plate",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "advancedrocketrycommunity:pipe_seal"
+    ]
+  }
+}

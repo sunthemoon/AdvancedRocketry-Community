@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "i": {
+      "tag": "forge:ingots/iron"
+    },
+    "p": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    "ppp",
+    "ici",
+    "ppp"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:co2_scrubber"
+  }
+}

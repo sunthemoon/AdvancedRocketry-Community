@@ -323,6 +323,13 @@ public final class CommonConfig {
             .comment("Allow classic life-support instruments; disabling retains their items and recipes.")
             .define("lifeSupport.classicDevicesEnabled", true);
 
+    public static final ForgeConfigSpec.BooleanValue SCRUBBER_REQUIRES_CARTRIDGE = BUILDER
+            .comment("Require one finite carbon cartridge use for each scrubber oxygen-debit skip.")
+            .define("OXYGEN.scrubberRequiresCartrige", true);
+    public static final ForgeConfigSpec.BooleanValue OXYGEN_DETECTION = BUILDER
+            .comment("Enable server-authoritative atmosphere-detector redstone measurements.")
+            .define("OXYGEN.oxygenDetection", true);
+
     public static final ForgeConfigSpec.BooleanValue CLASSIC_GRAVITY_ENABLED = BUILDER
             .comment("Apply Level gravity to non-player living entities; disabling removes only the owned modifier.",
                     "Existing player field, station and Level gravity remain enabled.")
@@ -487,7 +494,7 @@ public final class CommonConfig {
     /** Server switches whose tests can hold an ephemeral in-memory value. */
     private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED, SAWMILL_VANILLA_WOOD,
             COMBUSTION_GENERATOR_ENABLED, SOLAR_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
-            CLASSIC_GRAVITY_ENABLED, CLASSIC_EQUIPMENT_ENABLED, LOW_GRAVITY_BOOTS,
+            CLASSIC_GRAVITY_ENABLED, CLASSIC_EQUIPMENT_ENABLED, LOW_GRAVITY_BOOTS, SCRUBBER_REQUIRES_CARTRIDGE, OXYGEN_DETECTION,
             ENDGAME_LASER_DRILL, ENDGAME_LASER_PHYSICAL, ENDGAME_RAILGUN, ENDGAME_BLACK_HOLE_GENERATOR,
             ENDGAME_GRAVITY_FIELD, ENDGAME_SPACE_ELEVATOR,
             OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,
@@ -536,6 +543,9 @@ public final class CommonConfig {
     public static boolean classicDevicesEnabled() {
         return serverSwitchValue(CLASSIC_DEVICES_ENABLED);
     }
+
+    public static boolean scrubberRequiresCartridge() { return serverSwitchValue(SCRUBBER_REQUIRES_CARTRIDGE); }
+    public static boolean oxygenDetection() { return serverSwitchValue(OXYGEN_DETECTION); }
 
     public static boolean classicGravityEnabled() {
         return serverSwitchValue(CLASSIC_GRAVITY_ENABLED);

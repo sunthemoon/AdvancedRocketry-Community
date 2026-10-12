@@ -92,6 +92,7 @@ public final class OxygenVentBlock extends BaseEntityBlock {
             }
             BlockEntity blockEntity = level.getBlockEntity(position);
             if (blockEntity instanceof OxygenVentBlockEntity vent) {
+                if (!vent.protectedDeviceData()) { vent.scrubbers().dropAll(vent); }
                 SimpleContainer drops = new SimpleContainer(OxygenVentBlockEntity.SLOT_COUNT);
                 vent.copyInventoryTo(drops);
                 Containers.dropContents(level, position, drops);
@@ -130,5 +131,10 @@ public final class OxygenVentBlock extends BaseEntityBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(LIT);
+    }
+
+    @Override public float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        return level.getBlockEntity(pos) instanceof OxygenVentBlockEntity vent && vent.protectedDeviceData()
+                ? 0 : super.getDestroyProgress(state, player, level, pos);
     }
 }

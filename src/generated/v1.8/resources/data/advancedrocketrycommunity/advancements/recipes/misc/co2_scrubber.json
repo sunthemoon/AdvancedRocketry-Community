@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_plate": {
+      "conditions": {
+        "items": [
+          {
+            "tag": "forge:plates/steel"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_recipe": {
+      "conditions": {
+        "recipe": "advancedrocketrycommunity:co2_scrubber"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_plate",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "advancedrocketrycommunity:co2_scrubber"
+    ]
+  }
+}

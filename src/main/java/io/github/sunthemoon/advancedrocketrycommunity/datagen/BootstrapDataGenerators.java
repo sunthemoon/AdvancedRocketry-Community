@@ -25,6 +25,8 @@ public final class BootstrapDataGenerators {
         ExistingFileHelper existingFiles = event.getExistingFileHelper();
         generator.addProvider(event.includeClient(), new V180MaterialArt(output));
         generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180LifeSupportData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180ForceFieldData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient(), new V180CombustionArt(output));
         generator.addProvider(event.includeClient(), new V180FluidArt(output));

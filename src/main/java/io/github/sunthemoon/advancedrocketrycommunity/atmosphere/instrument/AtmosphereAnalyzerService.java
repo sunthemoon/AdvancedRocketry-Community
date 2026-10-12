@@ -46,6 +46,18 @@ public final class AtmosphereAnalyzerService implements AutoCloseable {
                 || level.getChunkSource().getChunkNow(eye.getX() >> 4, eye.getZ() >> 4) == null) {
             return AnalyzerReading.unavailable();
         }
+        return readAt(level, eye);
+    }
+
+    /** Authoritative instrument measurement at a server-derived, already-loaded cell. */
+    public AnalyzerReading readAt(ServerLevel level, BlockPos eye) {
+        Binding active = binding;
+        if (active == null || !active.server().isSameThread() || level == null || eye == null
+                || active.server().getLevel(level.dimension()) != level || !Level.isInSpawnableBounds(eye)
+                || level.isOutsideBuildHeight(eye) || !level.getWorldBorder().isWithinBounds(eye)
+                || level.getChunkSource().getChunkNow(eye.getX() >> 4, eye.getZ() >> 4) == null) {
+            return AnalyzerReading.unavailable();
+        }
         CelestialCatalog catalog = active.catalogs().current().orElse(null);
         if (catalog == null) { return AnalyzerReading.unavailable(); }
         BodyContext context = active.contexts().resolve(new WorldLocation(level.dimension(), eye), catalog).orElse(null);

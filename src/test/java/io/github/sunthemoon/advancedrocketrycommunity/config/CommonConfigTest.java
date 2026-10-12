@@ -57,7 +57,10 @@ class CommonConfigTest {
         assertSame(CommonConfig.ROCKET.thrustMultiplier, CommonConfig.SPEC.getValues().get("ROCKET.thrustMultiplier"));
         assertSame(CommonConfig.JET_PACK_FORCE, CommonConfig.SPEC.getValues().get("equipment.jetPackForce"));
         assertSame(CommonConfig.LOW_GRAVITY_BOOTS, CommonConfig.SPEC.getValues().get("equipment.lowGravityBoots"));
-        assertEquals(89, countValues(CommonConfig.SPEC.getValues()));
+        // W14 adds the two consumed C18a scrubber and detector switches.
+        assertSame(CommonConfig.SCRUBBER_REQUIRES_CARTRIDGE, CommonConfig.SPEC.getValues().get("OXYGEN.scrubberRequiresCartrige"));
+        assertSame(CommonConfig.OXYGEN_DETECTION, CommonConfig.SPEC.getValues().get("OXYGEN.oxygenDetection"));
+        assertEquals(91, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
