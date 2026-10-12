@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationLoc
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -60,8 +61,9 @@ public final class StationControllerBlock extends Block {
         }
         StationControllerMenu.OpenData open = StationControllerMenu.openData(kind, serverPlayer, position,
                 station.orElseThrow());
+        UUID stationId = station.orElseThrow().stationId();
         NetworkHooks.openScreen(serverPlayer, new SimpleMenuProvider((id, inventory, ignored) ->
-                        StationControllerMenu.server(kind, id, inventory, level, position, this, open),
+                        StationControllerMenu.server(kind, id, inventory, level, position, this, open, stationId),
                 Component.translatable(getDescriptionId())), open::write);
         return InteractionResult.CONSUME;
     }

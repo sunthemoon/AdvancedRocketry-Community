@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationMan
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -31,9 +32,9 @@ public final class AltitudeControllerMenu extends StationControllerMenu {
             new Button(BUTTON_GEO, KEY + "geo", 8, 38, 158));
 
     AltitudeControllerMenu(int id, Level level, BlockPos position, Block block, OpenData open,
-                           @Nullable ServerPlayer viewer) {
+                           @Nullable ServerPlayer viewer, @Nullable UUID station) {
         super(ModMenuTypes.STATION_ALTITUDE_CONTROLLER.get(), StationControllerKind.ALTITUDE, id, level, position,
-                block, open, viewer);
+                block, open, viewer, station);
     }
 
     @Override

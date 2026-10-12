@@ -7,6 +7,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.Cla
 import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlsNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessAction;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationActorContext;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -39,6 +42,10 @@ import net.minecraftforge.common.util.FakePlayer;
  * controller block, the 8-block reach, one mutation per player per 10 ticks and the observed station, and the
  * services add the station rules. The protected status travels as {@link ClassicControlViewPacket}s to the
  * menu's holder only; nothing the client sends is a coordinate, cost, ray result or final value.
+ *
+ * <p>W07 review R3: the server menu remembers its holder and the station it was opened for. It closes, and sends
+ * nothing more, once the holder loses VISIT access, the station at the controller is gone or another one, or the
+ * controller is no longer valid for the holder.
  */
 public abstract class StationControllerMenu extends AbstractContainerMenu implements ClassicControlTarget {
     public static final int FORMAT_MARKER = -65;
@@ -48,6 +55,7 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
     public static final String KEY = "screen.advancedrocketrycommunity.station_controller.";
     /** A changed view goes out at most once per this many ticks, unless an action or the opening forces it. */
     public static final int VIEW_INTERVAL_TICKS = 5;
+    private static final StationAccessService ACCESS = new StationAccessService();
 
     private final StationControllerKind kind;
     private final Level level;
@@ -57,6 +65,9 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
     /** Server only: the player who opened the menu, the one holder its views go to. */
     @Nullable
     private final ServerPlayer viewer;
+    /** Server only: the station the menu was opened for. */
+    @Nullable
+    private final UUID station;
     /** Server only: the station that the holder's current view shows; changes compare against it. */
     private StationState observed;
     private Optional<StationManagementCode> status = Optional.empty();
@@ -65,7 +76,8 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
     private long lastSentTick = Long.MIN_VALUE / 2;
 
     protected StationControllerMenu(MenuType<?> type, StationControllerKind kind, int id, Level level,
-                                    BlockPos position, Block block, OpenData open, @Nullable ServerPlayer viewer) {
+                                    BlockPos position, Block block, OpenData open, @Nullable ServerPlayer viewer,
+                                    @Nullable UUID station) {
         super(type, id);
         this.kind = Objects.requireNonNull(kind, "kind");
         this.level = level;
@@ -73,17 +85,22 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
         this.block = block;
         this.names = open.names();
         this.viewer = viewer;
+        this.station = station;
     }
 
-    /** The server menu over the exact controller block for the player of {@code inventory}. */
+    /**
+     * The server menu over the exact controller block for the player of {@code inventory}, opened for the station
+     * {@code station} that player may see.
+     */
     public static StationControllerMenu server(StationControllerKind kind, int id, Inventory inventory, Level level,
-                                               BlockPos position, Block block, OpenData open) {
+                                               BlockPos position, Block block, OpenData open, UUID station) {
         ServerPlayer viewer = inventory.player instanceof ServerPlayer player ? player : null;
+        Objects.requireNonNull(station, "station");
         return switch (kind) {
-            case WARP -> new WarpControllerMenu(id, level, position, block, open, viewer);
-            case GRAVITY -> new GravityControllerMenu(id, level, position, block, open, viewer);
-            case ALTITUDE -> new AltitudeControllerMenu(id, level, position, block, open, viewer);
-            case ORIENTATION -> new OrientationControllerMenu(id, level, position, block, open, viewer);
+            case WARP -> new WarpControllerMenu(id, level, position, block, open, viewer, station);
+            case GRAVITY -> new GravityControllerMenu(id, level, position, block, open, viewer, station);
+            case ALTITUDE -> new AltitudeControllerMenu(id, level, position, block, open, viewer, station);
+            case ORIENTATION -> new OrientationControllerMenu(id, level, position, block, open, viewer, station);
         };
     }
 
@@ -92,10 +109,10 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
                                                FriendlyByteBuf buffer) {
         OpenData open = OpenData.read(buffer, kind);
         return switch (kind) {
-            case WARP -> new WarpControllerMenu(id, null, open.position(), null, open, null);
-            case GRAVITY -> new GravityControllerMenu(id, null, open.position(), null, open, null);
-            case ALTITUDE -> new AltitudeControllerMenu(id, null, open.position(), null, open, null);
-            case ORIENTATION -> new OrientationControllerMenu(id, null, open.position(), null, open, null);
+            case WARP -> new WarpControllerMenu(id, null, open.position(), null, open, null, null);
+            case GRAVITY -> new GravityControllerMenu(id, null, open.position(), null, open, null, null);
+            case ALTITUDE -> new AltitudeControllerMenu(id, null, open.position(), null, open, null, null);
+            case ORIENTATION -> new OrientationControllerMenu(id, null, open.position(), null, open, null, null);
         };
     }
 
@@ -260,14 +277,15 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
         ClassicControlsNetwork.sendView(viewer, view);
     }
 
-    /** Server: the live station whose region holds the controller, or null. */
+    /** Server: the live station whose region holds the controller, while it is the one opened for, or null. */
     protected StationState liveStation() {
         MinecraftServer server = level == null ? null : level.getServer();
-        if (server == null) {
+        if (server == null || station == null) {
             return null;
         }
         StationRegistrySavedData registry = StationRegistrySavedData.get(server);
-        return registry.operational() ? registry.findAt(position.getX(), position.getZ()).orElse(null) : null;
+        return registry.operational() ? registry.findAt(position.getX(), position.getZ())
+                .filter(live -> live.stationId().equals(station)).orElse(null) : null;
     }
 
     protected Level level() {
@@ -277,7 +295,8 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
     /**
      * Server: {@link StationControllerHolder} over the live state. The holder is the connected, living,
      * non-spectator player who opened the menu, in the controller's Level and within reach of the exact controller
-     * block, whose chunk is loaded. Only loaded chunks are read.
+     * block, whose chunk is loaded; the station at the controller is still the one opened for, and the holder may
+     * still VISIT it. Only loaded chunks are read. A menu that is no longer valid is closed by the player's tick.
      */
     @Override
     public boolean stillValid(Player player) {
@@ -325,6 +344,18 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
             @Override
             public double distanceSquared() {
                 return viewer.distanceToSqr(Vec3.atCenterOf(position));
+            }
+
+            @Override
+            public boolean sameStation() {
+                return liveStation() != null;
+            }
+
+            @Override
+            public boolean mayVisit() {
+                StationState live = liveStation();
+                return live != null && ACCESS.allowed(live, viewer.getUUID(), viewer.hasPermissions(2),
+                        StationAccessAction.VISIT);
             }
         }).isEmpty();
     }

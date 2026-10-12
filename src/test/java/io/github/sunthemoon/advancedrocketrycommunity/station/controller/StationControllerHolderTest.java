@@ -11,8 +11,9 @@ import org.junit.jupiter.api.Test;
 
 /**
  * ADR-065 section 11.2: a controller menu's holder must stay the connected, living, non-spectator opener in the
- * controller's Level, with the exact controller block loaded within 8 blocks. An unloaded controller chunk is
- * refused without reading the block, which a live GameTest cannot stage within reach of a connected player.
+ * controller's Level, with the exact controller block loaded within 8 blocks, the station it was opened for and
+ * VISIT access to it. An unloaded controller chunk is refused without reading the block, which a live GameTest
+ * cannot stage within reach of a connected player.
  */
 final class StationControllerHolderTest {
     @Test
@@ -37,6 +38,22 @@ final class StationControllerHolderTest {
         assertTrue(unloaded.chunkRead);
         assertFalse(unloaded.blockRead, "The block of an unloaded chunk was read");
         assertFalse(unloaded.distanceRead);
+        assertFalse(unloaded.stationRead);
+    }
+
+    /** W07 review R3: the holder keeps the menu only for the station it was opened for, while it may VISIT it. */
+    @Test
+    void aReplacedStationOrALostVisitAccessRefusesTheHolder() {
+        assertEquals(Optional.of(Refusal.STATION_CHANGED), StationControllerHolder.check(new Fake().sameStation(false)));
+        Fake revoked = new Fake().mayVisit(false);
+        assertEquals(Optional.of(Refusal.NO_VISIT_ACCESS), StationControllerHolder.check(revoked));
+        // Access is asked only about the station the menu was opened for, and only within reach.
+        Fake replaced = new Fake().sameStation(false).mayVisit(false);
+        assertEquals(Optional.of(Refusal.STATION_CHANGED), StationControllerHolder.check(replaced));
+        assertFalse(replaced.accessRead);
+        Fake distant = new Fake().distanceSquared(12.0D * 12.0D).sameStation(false);
+        assertEquals(Optional.of(Refusal.OUT_OF_REACH), StationControllerHolder.check(distant));
+        assertFalse(distant.stationRead);
     }
 
     @Test
@@ -58,9 +75,35 @@ final class StationControllerHolderTest {
         private boolean loaded = true;
         private boolean present = true;
         private double distanceSquared = 4.0D;
+        private boolean sameStation = true;
+        private boolean mayVisit = true;
         private boolean chunkRead;
         private boolean blockRead;
         private boolean distanceRead;
+        private boolean stationRead;
+        private boolean accessRead;
+
+        Fake sameStation(boolean value) {
+            sameStation = value;
+            return this;
+        }
+
+        Fake mayVisit(boolean value) {
+            mayVisit = value;
+            return this;
+        }
+
+        @Override
+        public boolean sameStation() {
+            stationRead = true;
+            return sameStation;
+        }
+
+        @Override
+        public boolean mayVisit() {
+            accessRead = true;
+            return mayVisit;
+        }
 
         Fake holder(boolean value) {
             holder = value;

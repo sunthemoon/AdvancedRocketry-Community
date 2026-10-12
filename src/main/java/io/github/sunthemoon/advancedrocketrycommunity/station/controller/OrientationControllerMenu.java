@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -39,9 +40,9 @@ public final class OrientationControllerMenu extends StationControllerMenu {
     static final List<Button> BUTTONS = buttonLayout();
 
     OrientationControllerMenu(int id, Level level, BlockPos position, Block block, OpenData open,
-                              @Nullable ServerPlayer viewer) {
+                              @Nullable ServerPlayer viewer, @Nullable UUID station) {
         super(ModMenuTypes.STATION_ORIENTATION_CONTROLLER.get(), StationControllerKind.ORIENTATION, id, level,
-                position, block, open, viewer);
+                position, block, open, viewer, station);
     }
 
     private static List<Button> buttonLayout() {

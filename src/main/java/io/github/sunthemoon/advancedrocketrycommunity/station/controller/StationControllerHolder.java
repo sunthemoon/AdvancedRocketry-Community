@@ -7,7 +7,8 @@ import java.util.Optional;
 /**
  * ADR-065 section 11.2: whether the holder of a station controller menu may still see and use it. The checks run
  * in a fixed order and stop at the first refusal, so the controller block is read only once its chunk is known
- * to be loaded. Pure; the menu supplies the {@link Probe} over the live server state.
+ * to be loaded. W07 review R3 adds the station: it must still be the one the menu was opened for, and the holder
+ * must still have VISIT access to it. Pure; the menu supplies the {@link Probe} over the live server state.
  */
 public final class StationControllerHolder {
     private StationControllerHolder() {
@@ -37,6 +38,12 @@ public final class StationControllerHolder {
         if (probe.distanceSquared() > StationLimits.CONTROLLER_REACH * StationLimits.CONTROLLER_REACH) {
             return Optional.of(Refusal.OUT_OF_REACH);
         }
+        if (!probe.sameStation()) {
+            return Optional.of(Refusal.STATION_CHANGED);
+        }
+        if (!probe.mayVisit()) {
+            return Optional.of(Refusal.NO_VISIT_ACCESS);
+        }
         return Optional.empty();
     }
 
@@ -54,7 +61,11 @@ public final class StationControllerHolder {
         /** The exact controller block no longer stands at its position. */
         CONTROLLER_GONE,
         /** The holder is more than {@link StationLimits#CONTROLLER_REACH} blocks from the controller's centre. */
-        OUT_OF_REACH
+        OUT_OF_REACH,
+        /** The station whose region holds the controller is gone or is not the one the menu was opened for. */
+        STATION_CHANGED,
+        /** The holder is no longer the station's owner, a member or an operator (W07 review R3). */
+        NO_VISIT_ACCESS
     }
 
     /** The live server state, read lazily in the order of {@link #check}. */
@@ -76,5 +87,11 @@ public final class StationControllerHolder {
         boolean controllerPresent();
 
         double distanceSquared();
+
+        /** The operational registry's live station at the controller is the one the menu was opened for. */
+        boolean sameStation();
+
+        /** Called only for that station: the holder may still VISIT it. */
+        boolean mayVisit();
     }
 }

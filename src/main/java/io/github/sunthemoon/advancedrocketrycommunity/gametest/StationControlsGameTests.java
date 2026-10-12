@@ -570,7 +570,7 @@ public final class StationControlsGameTests {
                                       StationControllerKind kind, BlockPos position) {
         StationControllerMenu.OpenData open = StationControllerMenu.openData(kind, player, position, fixture.station());
         StationControllerMenu menu = StationControllerMenu.server(kind, 9, player.getInventory(), fixture.space,
-                position, block(kind), open);
+                position, block(kind), open, fixture.id());
         menu.broadcastChanges();
         return menu;
     }

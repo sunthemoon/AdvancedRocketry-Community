@@ -17,6 +17,7 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -64,8 +65,8 @@ public final class WarpControllerMenu extends StationControllerMenu {
     private long token;
 
     WarpControllerMenu(int id, Level level, BlockPos position, Block block, OpenData open,
-                       @Nullable ServerPlayer viewer) {
-        super(ModMenuTypes.WARP_CONTROLLER.get(), StationControllerKind.WARP, id, level, position, block, open, viewer);
+                       @Nullable ServerPlayer viewer, @Nullable UUID station) {
+        super(ModMenuTypes.WARP_CONTROLLER.get(), StationControllerKind.WARP, id, level, position, block, open, viewer, station);
     }
 
     @Override

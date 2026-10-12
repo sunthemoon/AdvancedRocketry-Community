@@ -1,26 +1,32 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlViewPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind;
 import io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerMenu;
 import io.github.sunthemoon.advancedrocketrycommunity.station.controller.WarpControllerMenu;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationRocketAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpRuntime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
  * W07 review fixes on the real server, with menus opened through the controller block: a warp confirmation runs
- * only the quote its menu shows (R1).
+ * only the quote its menu shows (R1), and a menu closes when its holder loses the station (R3).
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -100,6 +106,154 @@ public final class StationControllerMenuGameTests {
                     }));
                 }));
             }));
+        } finally {
+            if (!scheduled) {
+                cleanup.run();
+            }
+        }
+    }
+
+    /**
+     * R3: while their menus are open, a member is removed, an operator is de-opped and the owner hands the station
+     * to a member. The two who lost VISIT access are sent nothing more, their intents do nothing, and their menus
+     * close on the next player tick. The former owner, now a member, keeps the view but can no longer manage, and
+     * loses the menu too once removed from the members.
+     */
+    @GameTest(template = "empty", batch = "station_controls_viewer_access", timeoutTicks = 100)
+    public static void aMenuClosesWhenItsHolderLosesVisitAccess(GameTestHelper helper) {
+        StationWarpGameTests.Fixture fixture = new StationWarpGameTests.Fixture(helper, "Viewer access",
+                CelestialIds.EARTH_ID, 0);
+        List<BlockPos> placed = new ArrayList<>();
+        UUID memberId = UUID.randomUUID();
+        UUID operatorId = UUID.randomUUID();
+        UUID heirId = UUID.randomUUID();
+        GameProfile operatorProfile = new GameProfile(operatorId, "viewerOperator");
+        Runnable cleanup = () -> {
+            fixture.server.getPlayerList().getOps().remove(operatorProfile);
+            StationControlsGameTests.clear(fixture, placed);
+            fixture.close();
+        };
+        boolean scheduled = false;
+        try {
+            // PlayerList.op uses the GameTest server's operator level (0); an explicit level-4 entry is an operator.
+            fixture.server.getPlayerList().getOps().add(new ServerOpListEntry(operatorProfile, 4, false));
+            ServerPlayer owner = StationControlsGameTests.owner(fixture, "viewerOwner");
+            for (UUID id : List.of(memberId, heirId)) {
+                fixture.data.invite(fixture.id(), id);
+                fixture.data.acceptInvitation(fixture.id(), id);
+            }
+            fixture.join(memberId, "viewerMember");
+            fixture.join(operatorId, "viewerOperator", true);
+            ServerPlayer member = fixture.server.getPlayerList().getPlayer(memberId);
+            ServerPlayer operator = fixture.server.getPlayerList().getPlayer(operatorId);
+            BlockPos at = StationControlsGameTests.place(fixture, placed, StationControllerKind.GRAVITY,
+                    fixture.pad.offset(2, 0, 2));
+            StationControllerMenu ownerMenu = ClassicControlsChannelGameTests.open(helper, owner, at);
+            StationControllerMenu memberMenu = ClassicControlsChannelGameTests.open(helper, member, at);
+            StationControllerMenu operatorMenu = ClassicControlsChannelGameTests.open(helper, operator, at);
+            helper.assertTrue(memberMenu.lastView().isPresent() && operatorMenu.lastView().isPresent(),
+                    "A viewer was sent no view at opening");
+            Optional<ClassicControlViewPacket> memberView = memberMenu.lastView();
+            Optional<ClassicControlViewPacket> operatorView = operatorMenu.lastView();
+
+            fixture.data.removeMember(fixture.id(), memberId);
+            fixture.server.getPlayerList().getOps().remove(operatorProfile);
+            fixture.data.transferOwnership(fixture.id(), heirId);
+            helper.assertTrue(!memberMenu.stillValid(member), "A removed member's menu is still valid");
+            helper.assertTrue(!operatorMenu.stillValid(operator), "A de-opped operator's menu is still valid");
+            helper.assertTrue(ownerMenu.stillValid(owner), "The former owner, now a member, lost the view");
+            // A change every remaining viewer sees; the revoked viewers' intents do nothing.
+            helper.assertTrue(fixture.data.checkedSetGravity(fixture.server, fixture.station(), 500)
+                    == StationRegistrySavedData.CheckedUpdate.COMMITTED, "The gravity fixture failed");
+            StationControlsGameTests.send(memberMenu, member, 3, 0, 0L);
+            StationControlsGameTests.send(operatorMenu, operator, 3, 0, 0L);
+            memberMenu.broadcastChanges();
+            operatorMenu.broadcastChanges();
+            // The former owner may look but no longer manage.
+            StationControlsGameTests.click(helper, ownerMenu, owner, 3, 0, 0L, StationManagementCode.UNAUTHORIZED);
+            helper.assertTrue(ownerMenu.lastView().filter(view -> view.value(0) == 50).isPresent(),
+                    "The former owner is not shown the change: " + ownerMenu.lastView());
+            scheduled = true;
+            helper.runAfterDelay(2, () -> step(cleanup, () -> {
+                helper.assertTrue(member.containerMenu == member.inventoryMenu
+                        && operator.containerMenu == operator.inventoryMenu, "A revoked viewer's menu stayed open");
+                helper.assertTrue(memberMenu.lastView().equals(memberView)
+                        && operatorMenu.lastView().equals(operatorView), "A revoked viewer was sent a view");
+                helper.assertTrue(memberMenu.status().isEmpty() && operatorMenu.status().isEmpty(),
+                        "A revoked viewer's intent was handled");
+                helper.assertTrue(owner.containerMenu == ownerMenu, "The former owner's menu was closed");
+                fixture.data.removeMember(fixture.id(), fixture.ownerId);
+                helper.runAfterDelay(2, () -> {
+                    try {
+                        helper.assertTrue(owner.containerMenu == owner.inventoryMenu,
+                                "The removed former owner's menu stayed open");
+                    } finally {
+                        cleanup.run();
+                    }
+                    helper.succeed();
+                });
+            }));
+        } finally {
+            if (!scheduled) {
+                cleanup.run();
+            }
+        }
+    }
+
+    /**
+     * R3: the station is deleted and another one, of the same owner, takes its cell while the menu is open. The
+     * menu was opened for the old station, so it shows nothing of the new one, ignores intents and closes.
+     */
+    @GameTest(template = "empty", batch = "station_controls_station_replaced", timeoutTicks = 100)
+    public static void aMenuClosesWhenItsStationIsReplaced(GameTestHelper helper) {
+        StationWarpGameTests.Fixture fixture = new StationWarpGameTests.Fixture(helper, "Replaced station",
+                CelestialIds.EARTH_ID, 0);
+        List<BlockPos> placed = new ArrayList<>();
+        UUID replacementId = UUID.randomUUID();
+        boolean[] committed = {false};
+        Runnable cleanup = () -> {
+            if (committed[0]) {
+                fixture.data.delete(replacementId);
+            }
+            StationControlsGameTests.clear(fixture, placed);
+            fixture.close();
+        };
+        boolean scheduled = false;
+        try {
+            ServerPlayer owner = StationControlsGameTests.owner(fixture, "replacedOwner");
+            BlockPos at = StationControlsGameTests.place(fixture, placed, StationControllerKind.ALTITUDE,
+                    fixture.pad.offset(2, 0, 2));
+            StationControllerMenu menu = ClassicControlsChannelGameTests.open(helper, owner, at);
+            Optional<ClassicControlViewPacket> view = menu.lastView();
+            helper.assertTrue(view.isPresent(), "Opening sent no view");
+
+            fixture.data.delete(fixture.id());
+            fixture.data.reserve(replacementId, fixture.ownerId, "Replacement station", CelestialIds.EARTH_ID,
+                    helper.getLevel().getGameTime());
+            StationState replacement = fixture.data.commit(replacementId);
+            committed[0] = true;
+            helper.assertTrue(replacement.cell().equals(fixture.created.cell())
+                            && fixture.data.findAt(at.getX(), at.getZ()).map(StationState::stationId)
+                            .filter(replacementId::equals).isPresent(),
+                    "The replacement station does not hold the controller");
+            helper.assertTrue(fixture.data.checkedSetAltitude(fixture.server, replacement, 30)
+                    == StationRegistrySavedData.CheckedUpdate.COMMITTED, "The altitude fixture failed");
+            helper.assertTrue(!menu.stillValid(owner), "The menu still serves a replaced station");
+            StationControlsGameTests.send(menu, owner, 0, 0, 0L);
+            menu.broadcastChanges();
+            scheduled = true;
+            helper.runAfterDelay(2, () -> {
+                try {
+                    helper.assertTrue(owner.containerMenu == owner.inventoryMenu, "The menu stayed open");
+                    helper.assertTrue(menu.lastView().equals(view) && menu.status().isEmpty(),
+                            "The menu showed or changed the replacement station: " + menu.lastView());
+                    helper.assertTrue(fixture.data.find(replacementId).map(state -> state.orbitalControls().distance())
+                            .filter(distance -> distance == 30).isPresent(), "An ignored intent changed the station");
+                } finally {
+                    cleanup.run();
+                }
+                helper.succeed();
+            });
         } finally {
             if (!scheduled) {
                 cleanup.run();

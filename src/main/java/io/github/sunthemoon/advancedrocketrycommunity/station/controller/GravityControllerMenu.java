@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationMan
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -25,9 +26,9 @@ public final class GravityControllerMenu extends StationControllerMenu {
             new Button(2, KEY + "plus_one", 88, 20, 38), new Button(3, KEY + "plus_ten", 128, 20, 38));
 
     GravityControllerMenu(int id, Level level, BlockPos position, Block block, OpenData open,
-                          @Nullable ServerPlayer viewer) {
+                          @Nullable ServerPlayer viewer, @Nullable UUID station) {
         super(ModMenuTypes.STATION_GRAVITY_CONTROLLER.get(), StationControllerKind.GRAVITY, id, level, position, block,
-                open, viewer);
+                open, viewer, station);
     }
 
     @Override
