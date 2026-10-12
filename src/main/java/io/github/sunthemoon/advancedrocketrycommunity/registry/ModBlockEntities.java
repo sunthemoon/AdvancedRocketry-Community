@@ -1,5 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicControllerBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicMachineDefinition;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicHatchBlockEntity;
+
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.combustion.CombustionGeneratorBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarGeneratorBlockEntity;
@@ -219,6 +223,21 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("pressurized_tank", () -> BlockEntityType.Builder.of(
                     (position, state) -> ModBlocks.PRESSURIZED_TANK.get().newBlockEntity(position, state),
                     ModBlocks.PRESSURIZED_TANK.get()).build(null));
+
+    public static final RegistryObject<BlockEntityType<ClassicHatchBlockEntity>> CLASSIC_HATCH = BLOCK_ENTITIES.register(
+            "classic_hatch", () -> BlockEntityType.Builder.of(ClassicHatchBlockEntity::new,
+                    ModBlocks.ITEM_INPUT_HATCH.get(), ModBlocks.ITEM_OUTPUT_HATCH.get(), ModBlocks.FLUID_INPUT_HATCH.get(),
+                    ModBlocks.FLUID_OUTPUT_HATCH.get(), ModBlocks.POWER_INPUT_PLUG.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ClassicControllerBlockEntity>> LATHE = BLOCK_ENTITIES.register(
+            "lathe", () -> BlockEntityType.Builder.of(ClassicControllerBlockEntity::new, ModBlocks.LATHE.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ClassicControllerBlockEntity>> ARC_FURNACE = BLOCK_ENTITIES.register(
+            "arc_furnace", () -> BlockEntityType.Builder.of((position, state) -> new ClassicControllerBlockEntity(
+                    ModBlockEntities.ARC_FURNACE.get(), position, state,
+                    ClassicMachineDefinition.ARC_FURNACE), ModBlocks.ARC_FURNACE.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ClassicControllerBlockEntity>> CUTTING_MACHINE = BLOCK_ENTITIES.register(
+            "cutting_machine", () -> BlockEntityType.Builder.of((position, state) -> new ClassicControllerBlockEntity(
+                    ModBlockEntities.CUTTING_MACHINE.get(), position, state,
+                    ClassicMachineDefinition.CUTTING), ModBlocks.CUTTING_MACHINE.get()).build(null));
 
     private ModBlockEntities() {
     }

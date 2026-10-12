@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:hopper"
+    },
+    "C": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "P": {
+      "tag": "forge:plates/iron"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "BCB",
+    "PPP"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:item_input_hatch"
+  }
+}

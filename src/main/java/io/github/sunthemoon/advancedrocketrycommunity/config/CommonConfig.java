@@ -20,6 +20,10 @@ import net.minecraftforge.common.ForgeConfigSpec;
 public final class CommonConfig {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
+    public static final ForgeConfigSpec.BooleanValue SAWMILL_VANILLA_WOOD = BUILDER
+            .comment("Allow cutting recipes marked sawmill; disabling pauses existing jobs without consuming resources.")
+            .define("machines.sawmillVanillaWood", true);
+
     public static final ForgeConfigSpec.IntValue MAX_ATMOSPHERE_VOLUME = BUILDER
             .comment(
                     "Maximum traversable cells in one sealed atmosphere volume.",
@@ -470,7 +474,7 @@ public final class CommonConfig {
 
     /** ADR-063 section 3: whether the small plate press acts; the default until the COMMON config is loaded. */
     /** Server switches whose tests can hold an ephemeral in-memory value. */
-    private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED,
+    private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED, SAWMILL_VANILLA_WOOD,
             COMBUSTION_GENERATOR_ENABLED, SOLAR_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
             CLASSIC_GRAVITY_ENABLED, CLASSIC_EQUIPMENT_ENABLED,
             ENDGAME_LASER_DRILL, ENDGAME_LASER_PHYSICAL, ENDGAME_RAILGUN, ENDGAME_BLACK_HOLE_GENERATOR,
@@ -495,6 +499,8 @@ public final class CommonConfig {
     public static boolean smallPlatePressEnabled() {
         return serverSwitchValue(SMALL_PLATE_PRESS_ENABLED);
     }
+
+    public static boolean sawmillVanillaWood() { return serverSwitchValue(SAWMILL_VANILLA_WOOD); }
 
     public static boolean combustionGeneratorEnabled() {
         return serverSwitchValue(COMBUSTION_GENERATOR_ENABLED);

@@ -1,5 +1,11 @@
 package io.github.sunthemoon.advancedrocketrycommunity.registry;
 
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicHatchKind;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicHatchBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicControllerBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicControllerBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ClassicMachineDefinition;
+
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.AirlockDoorBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
@@ -129,6 +135,32 @@ public final class ModBlocks {
     public static final RegistryObject<Block> ROCKET_FUEL_TANK = metalBlock("rocket_fuel_tank");
     public static final RegistryObject<Block> ROCKET_SEAT = metalBlock("rocket_seat");
     public static final RegistryObject<Block> GUIDANCE_COMPUTER = metalBlock("guidance_computer");
+
+    public static final RegistryObject<ClassicHatchBlock> ITEM_INPUT_HATCH = classicHatch(ClassicHatchKind.ITEM_INPUT);
+    public static final RegistryObject<ClassicHatchBlock> ITEM_OUTPUT_HATCH = classicHatch(ClassicHatchKind.ITEM_OUTPUT);
+    public static final RegistryObject<ClassicHatchBlock> FLUID_INPUT_HATCH = classicHatch(ClassicHatchKind.FLUID_INPUT);
+    public static final RegistryObject<ClassicHatchBlock> FLUID_OUTPUT_HATCH = classicHatch(ClassicHatchKind.FLUID_OUTPUT);
+    public static final RegistryObject<ClassicHatchBlock> POWER_INPUT_PLUG = classicHatch(ClassicHatchKind.POWER_INPUT);
+    public static final RegistryObject<ClassicControllerBlock> LATHE = BLOCKS.register("lathe", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<ClassicControllerBlock> ARC_FURNACE = BLOCKS.register("arc_furnace", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(
+                            ModBlockEntities.ARC_FURNACE.get(), position, state,
+                            ClassicMachineDefinition.ARC_FURNACE)));
+    public static final RegistryObject<ClassicControllerBlock> CUTTING_MACHINE = BLOCKS.register("cutting_machine", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(
+                            ModBlockEntities.CUTTING_MACHINE.get(), position, state,
+                            ClassicMachineDefinition.CUTTING)));
+    public static final RegistryObject<Block> BLAST_BRICK = BLOCKS.register("blast_brick", () -> new Block(
+            BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()));
+    public static final RegistryObject<Block> SAW_BLADE = metalBlock("saw_blade");
+
+    private static RegistryObject<ClassicHatchBlock> classicHatch(ClassicHatchKind kind) {
+        return BLOCKS.register(kind.blockId().getPath(), () -> new ClassicHatchBlock(
+                metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK), kind));
+    }
 
     private ModBlocks() {
     }

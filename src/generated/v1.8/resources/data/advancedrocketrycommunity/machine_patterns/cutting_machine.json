@@ -1,0 +1,71 @@
+{
+  "allow_mirror_local_x": false,
+  "allowed_rotations": [
+    0,
+    90,
+    180,
+    270
+  ],
+  "cells": [
+    {
+      "matcher": {
+        "port": "item_input"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "controller": true
+      },
+      "x": 1,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "port": "item_output"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:motors"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:saw_blade"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "port": "energy_input"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 1
+    }
+  ],
+  "controller_anchor": {
+    "x": 1,
+    "y": 0,
+    "z": 0
+  },
+  "id": "advancedrocketrycommunity:cutting_machine",
+  "schema_version": 1,
+  "size": {
+    "x": 3,
+    "y": 1,
+    "z": 2
+  }
+}

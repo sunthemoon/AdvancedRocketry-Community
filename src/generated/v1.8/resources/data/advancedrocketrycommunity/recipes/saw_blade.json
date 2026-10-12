@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "advancedrocketrycommunity:iron_saw_blade"
+    },
+    "P": {
+      "tag": "forge:plates/iron"
+    },
+    "R": {
+      "tag": "forge:rods/iron"
+    }
+  },
+  "pattern": [
+    "R R",
+    "PBP",
+    "P P"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:saw_blade"
+  }
+}

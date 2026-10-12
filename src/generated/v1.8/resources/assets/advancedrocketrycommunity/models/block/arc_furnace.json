@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "advancedrocketrycommunity:block/arc_furnace",
+    "side": "advancedrocketrycommunity:block/blast_brick",
+    "top": "advancedrocketrycommunity:block/blast_brick"
+  }
+}
