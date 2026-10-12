@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-12 21:55) |
+| Slice | Scope | Pipeline state (2026-10-12 22:05) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -44,10 +44,11 @@ give their SHA-256 values.
 | [W14](TASK-W14-LIFE-SUPPORT-DEVICES.md) | C18a CO2 scrubber, cartridges, seals (the gas charger waits for W11) | **Merged** `a859d2f4` (hosted run 38249148243; W14F re-review MERGE-WITH-FOLLOWUP). Follow-ups: L1 an empty orphaned association leaves an unbreakable facade; L2 (pre-existing) a facade bound to a vanished generation; L3 a record sentence. The gas charger waits for W11b3 |
 | [W16](TASK-W16-PRESENTATION.md) | C18d HUD, client configuration, sounds | **Merged** `6a20a674` (hosted run 38240401114; Root review). Follow-up: fold the `advancedrocketrycommunity_v180` sound namespace into the main namespace |
 | [W15](TASK-W15-RECIPE-GRAPH-MACHINES.md) | C16d: machine recipe types in `PackagedRecipeGraph`, strict failure restored, crystallizer and dilithium advancements | **Merged** `f5038f2f` (hosted run 38239083487; Root audit: every changed assertion is stricter). The graph reports 18 acquisition gaps, which go to W19 |
-| [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Delivered `d9cb2467` (Codex finished the Claude start: 2,503 unit tests, 791 GameTests, log check clean). Independent persistence review (Claude) running since 21:47 |
+| [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Delivered `d9cb2467`. Independent review (Claude) **BLOCK** (SHA-256 `4bd848ae…`): F1 High, two arrays sharing panels both count them; F2 Medium, creative non-operator NBT reaches the chunk guard; F3 to F5 Low. [W17F](TASK-W17F-REVIEW-FIXES.md) is queued for the next Codex slot |
 | [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | Implementer (Claude) running since 20:44 |
 | [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps | Stopped on the dust question (`053fae93`). [Root decision 01](TASK-W19-ROOT-DECISION-01.md): the five ore-less dusts are optional cross-mod inputs (ADR-063 §1 and §2; the 1.12.2 baseline); the graph gaps go ahead. Resumed (Codex) since 21:33 |
 | [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | Implementer (Codex) running since 21:46 |
+| [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | Designer (Claude) running since 22:03; its review goes to Codex |
 | Root fix | Mixin refmap lost on a Gradle build-cache hit (W19's `MixinPackagingTest` failure); a release jar could ship without the ADR-073 refmap | `798a2465`: the refmaps and mappings are declared `compileJava` outputs |
 | Root incident | C: filled to 0 GB: a W16 worker's background bare `python` REPL wrote 24.9 GB | Cleaned 21:40; WORKER-RULES now forbids interactive or unbounded background commands |
 
@@ -58,7 +59,7 @@ The shared branch `a859d2f4` holds every merge above. Hosted run 38251946851 pas
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| W11b2 design note | Close P1 to P5 of the round-2 review (checked journal state, fenced-record exit, assembly recovery fence, guard layers, Lows), then one read-only review | Next free slot |
+| [W17F](TASK-W17F-REVIEW-FIXES.md) | W17 review F1 to F4 (panel exclusivity, operator-only NBT, claim order, tests) | Next free Codex slot (priority) |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
