@@ -91,6 +91,22 @@ public final class BeaconIndex {
         return Admission.ADMITTED;
     }
 
+    /**
+     * As {@link #put}, except that when a bound refuses a replacement at the same Level and position (a longer name or
+     * a full body), the stored record still takes the new activity and generation. That keeps its size, owner and
+     * body, so it always fits, and a disabled or unformed beacon is never left recorded as active. Returns the
+     * admission of the full record.
+     */
+    public Admission update(BeaconRecord record) {
+        Admission admission = put(record);
+        BeaconRecord previous = records.get(record.beaconId());
+        if (!admission.stored() && admission != Admission.OWNER_MISMATCH && previous != null
+                && previous.at(record.level(), record.x(), record.y(), record.z())) {
+            put(previous.withActivity(record.active(), record.generation()));
+        }
+        return admission;
+    }
+
     public Optional<BeaconRecord> remove(UUID beaconId) {
         BeaconRecord removed = records.get(beaconId);
         if (removed == null) {

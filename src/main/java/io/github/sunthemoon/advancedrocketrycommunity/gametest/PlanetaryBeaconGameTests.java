@@ -45,6 +45,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
  * same body and Level, an unequipped finder receives nothing, another owner's beacon is never sent, and each player
  * receives at most one snapshot per 20 ticks, through the registered {@code classic_controls} codec. A finder
  * snapshot removes its viewer's records whose loaded position holds no such beacon, and keeps every other record.
+ * When the index refuses a beacon's longer name, switching and unforming still reach its record's active flag.
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -445,6 +446,54 @@ public final class PlanetaryBeaconGameTests {
                             && fixture.index().ownedBy(owner.getUUID()).size() == BeaconLimits.MAX_PER_OWNER,
                             "The freed slot did not admit the new beacon: " + replacement.status());
                     fixture.succeed();
+                });
+            });
+        } catch (RuntimeException | Error failure) {
+            fixture.close();
+            throw failure;
+        }
+    }
+
+    @GameTest(template = "empty", batch = "beacon_index_full", timeoutTicks = 200)
+    public static void aRefusedRenameStillLetsSwitchingAndUnformingMarkTheRecordInactive(GameTestHelper helper) {
+        BeaconGameTestFixture fixture = new BeaconGameTestFixture(helper);
+        try {
+            BlockPos at = fixture.controllerAt(210);
+            ServerPlayer owner = fixture.join("fullIndexOwner", fixture.standingBefore(at));
+            fixture.buildStructure(at);
+            PlanetaryBeaconBlockEntity beacon = fixture.place(owner, at, Optional.of("Home"));
+            UUID id = beacon.beaconId().orElseThrow();
+            fixture.await(40, "the beacon to register", () -> beacon.status() == BeaconStatus.ACTIVE, () -> {
+                long formed = beacon.generation();
+                fixture.fillIndexBytes();
+                // A longer name no longer fits the 1 MiB root: the rename is refused, and the record keeps "Home".
+                String longer = "A much longer beacon name";
+                fixture.use(owner, at, new ItemStack(Items.NAME_TAG).setHoverName(Component.literal(longer)));
+                helper.assertTrue(beacon.name().equals(longer) && beacon.status() == BeaconStatus.LIMIT
+                        && fixture.index().get(id).filter(record -> record.active() && record.name().equals("Home"))
+                        .isPresent(), "The refused rename changed the record: " + fixture.index().get(id));
+
+                // Switching it off still marks the record inactive, and switching it on marks it active again.
+                fixture.use(owner, at, ItemStack.EMPTY);
+                helper.assertTrue(!beacon.enabled() && beacon.status() == BeaconStatus.LIMIT
+                        && fixture.index().get(id).filter(record -> !record.active() && record.name().equals("Home")
+                        && record.generation() == formed).isPresent(),
+                        "A disabled beacon is recorded as active: " + fixture.index().get(id));
+                fixture.use(owner, at, ItemStack.EMPTY);
+                helper.assertTrue(beacon.enabled() && fixture.index().get(id).filter(record -> record.active()
+                        && record.name().equals("Home")).isPresent(), "Switching on did not reach the record");
+
+                // Unforming marks it inactive; re-forming marks it active with the new generation.
+                fixture.set(BeaconGameTestFixture.capOf(at), Blocks.AIR.defaultBlockState());
+                fixture.await(40, "the unformed record to become inactive", () -> !beacon.formed()
+                        && fixture.index().get(id).filter(record -> !record.active()).isPresent(), () -> {
+                    fixture.set(BeaconGameTestFixture.capOf(at), Blocks.REDSTONE_BLOCK.defaultBlockState());
+                    fixture.await(40, "the re-formed record to become active", () -> fixture.index().get(id)
+                            .filter(record -> record.active() && record.generation() == formed + 1).isPresent(), () -> {
+                        helper.assertTrue(fixture.index().get(id).orElseThrow().name().equals("Home")
+                                && beacon.status() == BeaconStatus.LIMIT, "The re-formed record took the refused name");
+                        fixture.succeed();
+                    });
                 });
             });
         } catch (RuntimeException | Error failure) {

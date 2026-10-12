@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.beacon.BeaconRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.BeaconServices;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.model.BeaconIndex;
+import io.github.sunthemoon.advancedrocketrycommunity.beacon.model.BeaconLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.model.BeaconRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.persistence.BeaconIndexSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -207,6 +209,72 @@ final class BeaconGameTestFixture implements AutoCloseable {
         helper.assertTrue(index().put(record).equals(Optional.of(BeaconIndex.Admission.ADMITTED)),
                 "The index refused a fixture record");
         records.add(record.beaconId());
+    }
+
+    /**
+     * Fills the index root to exactly its 1 MiB bound with other owners' direct records, so that any record that
+     * grows is refused with {@code BYTES_FULL}. It inserts one small record to grow later, then records of the
+     * largest size while they fit, then small ones while they fit (leaving less than one small record free), and
+     * finally grows the first small record by the exact number of bytes left, found by bisection. Returns the number
+     * of records added; all are removed on close.
+     */
+    int fillIndexBytes() {
+        int[] added = {0};
+        UUID[] owner = {UUID.randomUUID()};
+        Predicate<BeaconRecord> insert = record -> {
+            Optional<BeaconIndex.Admission> admission = index().put(record);
+            if (admission.equals(Optional.of(BeaconIndex.Admission.ADMITTED))) {
+                records.add(record.beaconId());
+                if (++added[0] % BeaconLimits.MAX_PER_OWNER == 0) {
+                    owner[0] = UUID.randomUUID();
+                }
+                return true;
+            }
+            helper.assertTrue(admission.equals(Optional.of(BeaconIndex.Admission.BYTES_FULL)),
+                    "The index refused a filler for another bound: " + admission);
+            return false;
+        };
+        BeaconRecord grower = filler(owner[0], "s:b", 0, "");
+        helper.assertTrue(insert.test(grower), "The index has no room for a filler");
+        String largestName = "一".repeat(BeaconLimits.MAX_NAME_CHARS);
+        while (insert.test(filler(owner[0], padded("f" + added[0] / BeaconLimits.MAX_PER_BODY + ":"),
+                BeaconLimits.MAX_ID_CHARS - 3, largestName))) {
+            helper.assertTrue(added[0] < BeaconLimits.MAX_TOTAL, "The largest fillers never filled the root");
+        }
+        while (insert.test(filler(owner[0], "s:b", 0, ""))) {
+            helper.assertTrue(added[0] < BeaconLimits.MAX_TOTAL, "The small fillers never filled the root");
+        }
+        // Less than one small record (141 bytes) is left; the grower can take up to 125 + 32 more bytes.
+        int low = 0;
+        int high = BeaconLimits.MAX_ID_CHARS - 3 + BeaconLimits.MAX_NAME_CHARS + 1;
+        while (high - low > 1) {
+            int middle = (low + high) / 2;
+            if (index().put(grown(grower, middle)).filter(BeaconIndex.Admission::stored).isPresent()) {
+                low = middle;
+            } else {
+                high = middle;
+            }
+        }
+        helper.assertTrue(index().put(grown(grower, low + 1)).equals(Optional.of(BeaconIndex.Admission.BYTES_FULL)),
+                "The index root is not full after the fill");
+        return added[0];
+    }
+
+    /** A filler record in a Level whose ID is {@code levelExtra} characters longer than {@code a:b}. */
+    private static BeaconRecord filler(UUID owner, String body, int levelExtra, String name) {
+        return new BeaconRecord(UUID.randomUUID(), owner, body, "a:" + "b".repeat(1 + levelExtra), 0, 64, 0, 0, false,
+                name);
+    }
+
+    /** The grower, {@code bytes} longer: first a longer Level ID, then an ASCII name. */
+    private static BeaconRecord grown(BeaconRecord grower, int bytes) {
+        int levelExtra = Math.min(bytes, BeaconLimits.MAX_ID_CHARS - 3);
+        return new BeaconRecord(grower.beaconId(), grower.owner(), grower.body(), "a:" + "b".repeat(1 + levelExtra),
+                0, 64, 0, 0, false, "x".repeat(bytes - levelExtra));
+    }
+
+    private static String padded(String prefix) {
+        return prefix + "b".repeat(BeaconLimits.MAX_ID_CHARS - prefix.length());
     }
 
     /** The {@code index}th position of a row far from every test, in a chunk that is not loaded. */

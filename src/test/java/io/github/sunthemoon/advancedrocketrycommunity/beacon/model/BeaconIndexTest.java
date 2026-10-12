@@ -11,7 +11,10 @@ import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-/** ADR-065 section 7 bounds: 32 per owner, 256 per body, 4,096 in all and a 1 MiB root; refusals change nothing. */
+/**
+ * ADR-065 section 7 bounds: 32 per owner, 256 per body, 4,096 in all and a 1 MiB root; refused puts change nothing,
+ * and a refused update of a beacon's own record changes only its activity and generation.
+ */
 class BeaconIndexTest {
     private static final String EARTH = "advancedrocketrycommunity:earth";
     private static final String MOON = "advancedrocketrycommunity:moon";
@@ -107,6 +110,79 @@ class BeaconIndexTest {
         assertEquals(1, index.size());
         assertTrue(Admission.UNCHANGED.stored() && Admission.ADMITTED.stored());
         assertFalse(Admission.OWNER_MISMATCH.stored() || Admission.BYTES_FULL.stored());
+    }
+
+    @Test
+    void aRefusedLongerNameStillTakesTheActivityAndGenerationAtTheSamePosition() {
+        BeaconIndex index = new BeaconIndex(record -> record.name().length() > 8 ? 700_000 : 500_000, 1_000);
+        UUID owner = UUID.randomUUID();
+        BeaconRecord first = new BeaconRecord(UUID.randomUUID(), owner, EARTH, OVERWORLD, 0, 64, 0, 3, true, "a");
+        BeaconRecord second = new BeaconRecord(UUID.randomUUID(), owner, EARTH, OVERWORLD, 1, 64, 0, 0, true, "b");
+        assertEquals(Admission.ADMITTED, index.put(first));
+        assertEquals(Admission.ADMITTED, index.put(second));
+        // Switching off after a rename that does not fit: the record is inactive under its admitted name.
+        BeaconRecord off = new BeaconRecord(first.beaconId(), owner, EARTH, OVERWORLD, 0, 64, 0, 3, false, "long name");
+        assertEquals(Admission.BYTES_FULL, index.update(off));
+        assertEquals(first.withActivity(false, 3), index.get(first.beaconId()).orElseThrow());
+        assertEquals(1_001_000, index.encodedBytes());
+        // Re-forming: active again with the new generation, still under the admitted name.
+        BeaconRecord reformed = new BeaconRecord(first.beaconId(), owner, EARTH, OVERWORLD, 0, 64, 0, 4, true,
+                "long name");
+        assertEquals(Admission.BYTES_FULL, index.update(reformed));
+        assertEquals(first.withActivity(true, 4), index.get(first.beaconId()).orElseThrow());
+        // put alone still changes nothing on a refusal.
+        BeaconRecord unformed = new BeaconRecord(first.beaconId(), owner, EARTH, OVERWORLD, 0, 64, 0, 4, false,
+                "long name");
+        assertEquals(Admission.BYTES_FULL, index.put(unformed));
+        assertEquals(first.withActivity(true, 4), index.get(first.beaconId()).orElseThrow());
+        assertEquals(1_001_000, index.encodedBytes());
+        assertEquals(2, index.size());
+    }
+
+    @Test
+    void aRefusedMoveOntoAFullBodyStillTakesTheActivityButKeepsTheBody() {
+        BeaconIndex index = index();
+        for (int i = 0; i < BeaconLimits.MAX_PER_BODY; i++) {
+            assertEquals(Admission.ADMITTED, index.put(record(UUID.randomUUID(), EARTH, i)));
+        }
+        BeaconRecord moon = new BeaconRecord(UUID.randomUUID(), UUID.randomUUID(), MOON, OVERWORLD, 400, 64, 0, 2, true,
+                "station");
+        assertEquals(Admission.ADMITTED, index.put(moon));
+        BeaconRecord disabled = new BeaconRecord(moon.beaconId(), moon.owner(), EARTH, OVERWORLD, 400, 64, 0, 2, false,
+                "station");
+        assertEquals(Admission.BODY_FULL, index.update(disabled));
+        assertEquals(moon.withActivity(false, 2), index.get(moon.beaconId()).orElseThrow());
+        assertEquals(1, index.countForBody(MOON));
+        assertEquals(BeaconLimits.MAX_PER_BODY, index.countForBody(EARTH));
+    }
+
+    @Test
+    void updateTakesNothingFromAnotherOwnerAnotherPositionOrARefusedInsert() {
+        BeaconIndex index = new BeaconIndex(record -> record.name().length() > 8 ? 700_000 : 500_000, 1_000);
+        UUID owner = UUID.randomUUID();
+        BeaconRecord first = new BeaconRecord(UUID.randomUUID(), owner, EARTH, OVERWORLD, 0, 64, 0, 1, true, "a");
+        BeaconRecord second = new BeaconRecord(UUID.randomUUID(), owner, EARTH, OVERWORLD, 1, 64, 0, 1, true, "b");
+        index.put(first);
+        index.put(second);
+        BeaconRecord stolen = new BeaconRecord(first.beaconId(), UUID.randomUUID(), EARTH, OVERWORLD, 0, 64, 0, 1, false,
+                "a");
+        assertEquals(Admission.OWNER_MISMATCH, index.update(stolen));
+        assertEquals(first, index.get(first.beaconId()).orElseThrow());
+        // A refused takeover at another position leaves the old record alone.
+        BeaconRecord moved = new BeaconRecord(first.beaconId(), owner, EARTH, OVERWORLD, 9, 64, 0, 2, false,
+                "long name");
+        assertEquals(Admission.BYTES_FULL, index.update(moved));
+        assertEquals(first, index.get(first.beaconId()).orElseThrow());
+        // A refused insert stores nothing.
+        BeaconRecord third = new BeaconRecord(UUID.randomUUID(), owner, EARTH, OVERWORLD, 2, 64, 0, 0, false, "c");
+        assertEquals(Admission.BYTES_FULL, index.update(third));
+        assertTrue(index.get(third.beaconId()).isEmpty());
+        assertEquals(1_001_000, index.encodedBytes());
+        // An admitted update is a plain put.
+        BeaconRecord renamed = new BeaconRecord(second.beaconId(), owner, EARTH, OVERWORLD, 1, 64, 0, 1, false, "c");
+        assertEquals(Admission.ADMITTED, index.update(renamed));
+        assertEquals(Admission.UNCHANGED, index.update(renamed));
+        assertEquals(renamed, index.get(second.beaconId()).orElseThrow());
     }
 
     @Test

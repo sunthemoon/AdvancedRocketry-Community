@@ -72,6 +72,22 @@ public final class BeaconIndexSavedData extends SavedData {
         return Optional.of(admission);
     }
 
+    /**
+     * Inserts or replaces a record; a refused replacement at the same position still takes the new activity and
+     * generation ({@link BeaconIndex#update}). Empty while the index is unavailable.
+     */
+    public Optional<BeaconIndex.Admission> update(BeaconRecord record) {
+        if (!operational()) {
+            return Optional.empty();
+        }
+        Optional<BeaconRecord> before = index.get(record.beaconId());
+        BeaconIndex.Admission admission = index.update(record);
+        if (!index.get(record.beaconId()).equals(before)) {
+            setDirty();
+        }
+        return Optional.of(admission);
+    }
+
     public boolean remove(UUID beaconId) {
         if (!operational() || index.remove(beaconId).isEmpty()) {
             return false;

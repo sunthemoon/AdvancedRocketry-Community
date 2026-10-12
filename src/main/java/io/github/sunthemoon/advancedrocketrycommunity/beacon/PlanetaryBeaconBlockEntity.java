@@ -72,7 +72,10 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity {
         }
     }
 
-    /** Mirrors this beacon into the index; refusals leave the index unchanged and are reported to the owner. */
+    /**
+     * Mirrors this beacon into the index. Refusals are reported to the owner and leave the index unchanged, except
+     * that a refused replacement of this beacon's own record still takes its activity and generation.
+     */
     private void reconcile(ServerLevel level, BeaconServices services) {
         if (state.owner().isEmpty()) {
             registration = Registration.NO_OWNER;
@@ -103,7 +106,8 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity {
         BeaconRecord desired = new BeaconRecord(state.beaconId(), state.owner().get(), body.get(), levelId,
                 worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), state.generation(),
                 state.enabled() && formed(), state.name());
-        Optional<BeaconIndex.Admission> admission = index.put(desired);
+        // A refused rename or body change still records whether this beacon is active now.
+        Optional<BeaconIndex.Admission> admission = index.update(desired);
         if (admission.isEmpty()) {
             registration = Registration.INDEX_UNAVAILABLE;
         } else if (admission.get() == BeaconIndex.Admission.OWNER_MISMATCH) {
