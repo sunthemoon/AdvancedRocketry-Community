@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;
 
@@ -34,7 +35,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         }
     }
     public record Completion(long generation, String digest, Outcome outcome, Snapshot snapshot) { }
-    private record Request(Supplier<Snapshot> capture, Consumer<Completion> callback) { }
+    private record Request(Supplier<Snapshot> capture, Consumer<Completion> callback, BooleanSupplier beforeReplace) { }
     private final Thread owner = Thread.currentThread();
     private final Path file;
     private final CheckedSavedDataFile.Committer committer;
@@ -49,6 +50,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     private boolean running;
     private boolean closed;
     private boolean draining;
+    private boolean uncertain;
     private int failures;
     private long retryAt;
     private long lastGeneration;
@@ -65,9 +67,13 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         this.checkpoint = checkpoint;
     }
     public boolean request(Supplier<Snapshot> capture, Consumer<Completion> callback) {
+        return request(capture, callback, () -> true);
+    }
+    /** Guard may read only immutable data and atomic proof tokens, never Minecraft objects. */
+    public boolean request(Supplier<Snapshot> capture, Consumer<Completion> callback, BooleanSupplier beforeReplace) {
         owner();
         if (closed || draining) { return false; }
-        Request request = new Request(capture, callback);
+        Request request = new Request(capture, callback, beforeReplace);
         if (active == null) { active = request; captureAndStart(); return true; }
         if (successor != null) { return false; }
         successor = request; return true;
@@ -80,16 +86,18 @@ public final class EscrowLedgerWriter implements AutoCloseable {
             throw refused;
         }
         EscrowTags.require(next.ledger().writerGeneration() > lastGeneration, "Nonincreasing writer generation");
-        lastGeneration = next.ledger().writerGeneration(); captured = next; startIo();
+        lastGeneration = next.ledger().writerGeneration(); captured = next; uncertain = false; startIo();
     }
     private void startIo() {
-        running = true; Snapshot snapshot = captured;
+        running = true; Snapshot snapshot = captured; BooleanSupplier beforeReplace = active.beforeReplace();
+        boolean previouslyUncertain = uncertain;
         io.execute(() -> {
             boolean[] attempted = {false}; Outcome outcome;
             var policy = new CheckedSavedDataPolicy(ManagedSavedDataType.RESOURCE_ESCROW, (staged, target) -> {
                 if (snapshot.ledger().writerGeneration() > 1) {
                     checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K8" : "K1");
                 }
+                EscrowTags.require(beforeReplace.getAsBoolean(), "Proof invalidated before ledger replacement");
                 attempted[0] = true; committer.commit(staged, target);
                 if (snapshot.ledger().writerGeneration() > 1) {
                     checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K9" : "K2");
@@ -99,8 +107,8 @@ public final class EscrowLedgerWriter implements AutoCloseable {
                 policy.replace(file, snapshot::payload); CheckedSavedDataPolicy.forceDirectory(file.getParent());
                 outcome = Outcome.COMMITTED;
             } catch (RuntimeException | IOException failure) {
-                outcome = attempted[0] ? Outcome.UNKNOWN : Outcome.FAILED_BEFORE_REPLACE;
-                if (attempted[0]) {
+                outcome = attempted[0] || previouslyUncertain ? Outcome.UNKNOWN : Outcome.FAILED_BEFORE_REPLACE;
+                if (attempted[0] || previouslyUncertain) {
                     try {
                         if (policy.read(file).filter(snapshot.payload()::equals).isPresent()) {
                             CheckedSavedDataPolicy.forceDirectory(file.getParent()); outcome = Outcome.COMMITTED;
@@ -118,7 +126,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
                     && completion.digest().equals(captured.digest()), "Stale or foreign writer callback");
             running = false;
             if (completion.outcome() == Outcome.UNKNOWN) {
-                failures++; retryAt = tick + 200; active.callback().accept(completion);
+                uncertain = true; failures++; retryAt = tick + 200; active.callback().accept(completion);
             } else {
                 Request finished = active;
                 if (completion.outcome() == Outcome.COMMITTED) { failures = 0; } else { failures++; }

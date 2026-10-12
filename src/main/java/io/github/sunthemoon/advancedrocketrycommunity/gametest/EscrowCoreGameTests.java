@@ -30,16 +30,24 @@ public final class EscrowCoreGameTests {
     private EscrowCoreGameTests() { }
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 200)
     public static void ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier(GameTestHelper helper) {
-        var level = helper.getLevel(); var fixture = EscrowTestEndpoints.create(level, helper.absolutePos(new BlockPos(1, 1, 1)), UUID.randomUUID());
+        var level = helper.getLevel();
+        // The framework's template cleanup and the other adversarial fixture must not save this slot.
+        BlockPos position = new BlockPos(520_001, 100, 520_001);
+        var chunk = new net.minecraft.world.level.ChunkPos(position);
+        level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
+        level.getChunk(chunk.x, chunk.z); // Explicit fixed test setup, never endpoint-request loading.
+        var fixture = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
         var op = fixture.operation(1); fixture.apply(op); var monitor = EscrowRuntime.of(level.getServer()).monitor();
         var store = new EscrowChunkStore(level, monitor); var barrier = new EscrowBarrier();
         AtomicInteger phase = new AtomicInteger(); AtomicBoolean pending = new AtomicBoolean();
         helper.onEachTick(() -> {
-            barrier.tick(); if (pending.get() || !level.areEntitiesLoaded(fixture.bank().chunkPosition().toLong())) { return; }
+            barrier.tick(level.getServer().getTickCount()); if (pending.get() || !level.areEntitiesLoaded(fixture.bank().chunkPosition().toLong())) { return; }
             int index = phase.get(); if (index >= 2) {
                 helper.assertTrue(EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
                         && EscrowTestEndpoints.amount(fixture.bank().getPersistentData()) == 1_000, "Native conservation failed");
-                barrier.close(); fixture.bank().discard(); helper.succeed(); return;
+                barrier.close(); fixture.bank().discard();
+                level.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
+                helper.succeed(); return;
             }
             var endpoint = index == 0 ? op.source() : op.destination(); var frontier = index == 0 ? fixture.sourceState() : fixture.bankState();
             boolean started = barrier.begin(store, endpoint, frontier, EscrowTestEndpoints.validator(endpoint, frontier),
@@ -47,6 +55,7 @@ public final class EscrowCoreGameTests {
                         helper.assertTrue(result.confirmed(), "Own-store/force/stable readback did not confirm: " + result.reason());
                         helper.assertTrue(result.proof().capture().stored().isDone()
                                 && !result.proof().capture().stored().isCompletedExceptionally(), "Own store was not acknowledged");
+                        result.proof().release();
                         phase.incrementAndGet(); pending.set(false);
                     });
             pending.set(started);

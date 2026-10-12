@@ -65,7 +65,7 @@ public final class EscrowRuntime {
         var runtime = of(event.getServer()); if (runtime.stopping) { return; }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) { data.tick(event.getServer().getTickCount()); }
-        if (runtime.barrier != null) { runtime.barrier.tick(); }
+        if (runtime.barrier != null) { runtime.barrier.tick(event.getServer().getTickCount()); }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             if (runtime.probe == null) { runtime.probe = new EscrowReleaseProbe(event.getServer()); }

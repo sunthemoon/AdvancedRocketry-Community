@@ -106,19 +106,21 @@ public final class EscrowCoordinator implements AutoCloseable {
             }
         }
         if (closed || tick - lastStart < 10) { return false; }
+        var frozenProofs = Map.copyOf(proofs);
         boolean accepted = writer.request(() -> {
             // Revalidate tokens at capture, not merely when the successor request is queued.
-            EscrowTags.require(proofs.values().stream().allMatch(EscrowBarrier.Proof::valid), "Proof invalidated before L2 capture");
-            return snapshot(false, ids);
+            // A superseded queued proof is a normal refusal, not an owner-thread exception.
+            return snapshot(false, frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) ? ids : null);
         }, result -> {
             acknowledge(result);
-            if (result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED) {
+            if (result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
+                    && result.snapshot().ledger().records().stream().noneMatch(op -> ids.contains(op.id()))) {
                 var remaining = EscrowPrefix.chains(data.ledger().records()).keySet();
                 frontiers.keySet().removeIf(key -> !remaining.contains(key));
-                proofs.forEach((key, proof) -> { if (!remaining.contains(key)) { proof.release(); } });
+                frozenProofs.forEach((key, proof) -> { if (!remaining.contains(key)) { proof.release(); } });
                 if (!closed) { callback.accept(true); }
             } else if (!closed) { callback.accept(false); }
-        });
+        }, () -> frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid));
         if (accepted) { lastStart = tick; }
         return accepted;
     }
