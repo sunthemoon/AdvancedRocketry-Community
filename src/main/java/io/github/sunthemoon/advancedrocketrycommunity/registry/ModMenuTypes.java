@@ -33,6 +33,9 @@ public final class ModMenuTypes {
 
     public static final RegistryObject<MenuType<CombustionGeneratorMenu>> COMBUSTION_GENERATOR = MENUS.register(
             "combustion_generator", () -> IForgeMenuType.create(CombustionGeneratorMenu::new));
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayMenu>> SOLAR_ARRAY = MENUS.register(
+            "solar_array", () -> IForgeMenuType.create((id, inventory, data) ->
+                    new io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayMenu(ModMenuTypes.SOLAR_ARRAY.get(), id, inventory, data)));
     public static final RegistryObject<MenuType<SolarGeneratorMenu>> SOLAR_GENERATOR = MENUS.register(
             "solar_generator", () -> IForgeMenuType.create((id, inventory, data) ->
                     new SolarGeneratorMenu(ModMenuTypes.SOLAR_GENERATOR.get(), id, inventory, data)));

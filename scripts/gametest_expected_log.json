@@ -217,6 +217,16 @@
       "reason": "An oversized combustion input must refuse the chunk save before the stored root is replaced."
     },
     {
+      "id": "solar-array-chunk-save-refused",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: Refusing chunk save with non-admissible solar input; back up and repair first",
+      "stack_contains": "SolarArrayGameTests.nonAdmissibleArrayRootRefusesOutgoingChunk",
+      "counts": {"defaultBatch": 1},
+      "test": "SolarArrayGameTests.nonAdmissibleArrayRootRefusesOutgoingChunk",
+      "reason": "A non-admissible solar array root must retain the shared whole-chunk save refusal."
+    },
+    {
       "id": "solar-chunk-save-refused",
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",

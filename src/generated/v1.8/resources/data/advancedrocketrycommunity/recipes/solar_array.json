@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "tag": "forge:ingots/copper"
+    },
+    "G": {
+      "tag": "forge:glass"
+    },
+    "I": {
+      "tag": "forge:plates/iron"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "P": {
+      "item": "advancedrocketrycommunity:solar_array_panel"
+    }
+  },
+  "pattern": [
+    "PGP",
+    "CMC",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:solar_array"
+  }
+}

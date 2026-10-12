@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "advancedrocketrycommunity:block/solar_array_side",
+    "side": "advancedrocketrycommunity:block/solar_array_side",
+    "top": "advancedrocketrycommunity:block/solar_array_panel"
+  }
+}

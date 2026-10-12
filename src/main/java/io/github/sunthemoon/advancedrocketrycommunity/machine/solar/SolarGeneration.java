@@ -1,10 +1,12 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.solar;
 
-/** Pure single-collector accounting. Weather display rounding never feeds the FE calculation. */
+/** Pure collector accounting for both solar profiles. Weather display rounding never feeds the FE calculation. */
 public final class SolarGeneration {
     public static final int CAPACITY = 10_000;
     public static final int OUTPUT_PER_TICK = 1_000;
     public static final int MAX_CREDIT = 128;
+    /** ADR-065 section 9: the array counts at most 63 collectors. */
+    public static final int MAX_COLLECTORS = 63;
 
     public enum Reason {
         GENERATING(0), DISABLED(1), BUFFER_FULL(2), SKY_BLOCKED(3), NOT_DAYLIGHT(4),
@@ -32,8 +34,19 @@ public final class SolarGeneration {
 
     public record Step(int energy, int credit, Reason reason, Environment environment) { }
 
+    /** The single generator: one collector and a 10,000 FE buffer. */
     public static Step tick(int energy, int multiplier, boolean enabled, boolean repair, Environment environment) {
-        requireEnergy(energy);
+        return tick(energy, CAPACITY, 1, multiplier, enabled, repair, environment);
+    }
+
+    /**
+     * Shared rule: {@code floor(2 * collectors * multiplier * intensity)}, credited only up to the room left, so a full
+     * buffer stops credit without wrapping. With one collector the product is bit-identical to the single profile.
+     */
+    public static Step tick(int energy, int capacity, int collectors, int multiplier, boolean enabled, boolean repair,
+                            Environment environment) {
+        if (collectors < 1 || collectors > MAX_COLLECTORS) { throw new IllegalArgumentException("Invalid solar collector count"); }
+        requireEnergy(energy, capacity);
         if (repair) { return stopped(energy, Reason.REPAIR_REQUIRED); }
         if (!enabled) { return stopped(energy, Reason.DISABLED); }
         if (environment == null || !environment.valid() || multiplier < 1 || multiplier > 4) {
@@ -44,10 +57,10 @@ public final class SolarGeneration {
         if (!environment.sky()) { reason = Reason.SKY_BLOCKED; }
         else if (environment.day() == 0) { reason = Reason.NOT_DAYLIGHT; }
         else {
-            int request = (int) Math.floor(2.0D * multiplier * environment.effectiveIntensity());
+            int request = (int) Math.floor(2.0D * collectors * multiplier * environment.effectiveIntensity());
             if (request == 0) { reason = Reason.NO_IRRADIANCE; }
-            else if (energy == CAPACITY) { reason = Reason.BUFFER_FULL; }
-            else { reason = Reason.GENERATING; credit = Math.min(request, CAPACITY - energy); }
+            else if (energy == capacity) { reason = Reason.BUFFER_FULL; }
+            else { reason = Reason.GENERATING; credit = Math.min(request, capacity - energy); }
         }
         return new Step(energy + credit, credit, reason, environment);
     }
@@ -80,8 +93,9 @@ public final class SolarGeneration {
         }
         return (long) y + 1 >= (long) cutoff;
     }
-    public static void requireEnergy(int energy) {
-        if (energy < 0 || energy > CAPACITY) { throw new IllegalArgumentException("Invalid solar energy"); }
+    public static void requireEnergy(int energy) { requireEnergy(energy, CAPACITY); }
+    public static void requireEnergy(int energy, int capacity) {
+        if (capacity < 1 || energy < 0 || energy > capacity) { throw new IllegalArgumentException("Invalid solar energy"); }
     }
     private static double clamp(double value) { return Math.max(0.0D, Math.min(1.0D, value)); }
     private SolarGeneration() { }

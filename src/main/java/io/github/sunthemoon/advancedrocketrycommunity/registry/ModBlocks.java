@@ -85,6 +85,15 @@ public final class ModBlocks {
                     () -> ModBlockEntities.SOLAR_GENERATOR.get()));
     public static final RegistryObject<Block> SOLAR_PANEL = BLOCKS.register("solar_panel", () ->
             new Block(metalProperties().requiresCorrectToolForDrops()));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayBlock> SOLAR_ARRAY =
+            BLOCKS.register("solar_array", () -> new io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayBlock(
+                    metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    ModBlockEntities::solarArray, () -> ModBlockEntities.SOLAR_ARRAY.get()));
+    public static final RegistryObject<Block> SOLAR_ARRAY_PANEL = BLOCKS.register("solar_array_panel", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayPartBlock(metalProperties().requiresCorrectToolForDrops()));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayOutputBlock> POWER_OUTPUT_PLUG =
+            BLOCKS.register("power_output_plug", () -> new io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayOutputBlock(
+                    metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK)));
     public static final RegistryObject<Block> MACHINE_CASING = BLOCKS.register(
             "machine_casing",
             () -> new MachineCasingBlock(BlockBehaviour.Properties.of()

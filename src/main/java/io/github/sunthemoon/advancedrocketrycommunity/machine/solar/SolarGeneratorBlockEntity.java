@@ -77,6 +77,7 @@ public final class SolarGeneratorBlockEntity extends BlockEntity implements Menu
     public SolarGeneration.Reason reason() { return repairRequired() ? SolarGeneration.Reason.REPAIR_REQUIRED : feedback.reason(); }
     public SolarGeneration.Environment environment() { return feedback.environment(); }
     public boolean repairRequired() { return refusedRoot != null; }
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     boolean enabled() { return enabled.getAsBoolean(); }
 
     /** Public only inside the mod's adapters/tests, not an exported API. Does not create a missing BE. */
