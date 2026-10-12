@@ -29,7 +29,7 @@ class ClientConfigTest {
     @Test
     void exactClientCategoriesRetainTheElectricMushroomSetting() {
         assertEquals(Set.of("effects", "sky", "hud"), ClientConfig.SPEC.getValues().valueMap().keySet());
-        assertEquals(Set.of("electricMushroomFlashes"), assertInstanceOf(UnmodifiableConfig.class,
+        assertEquals(Set.of("electricMushroomFlashes", "atmosphericNausea"), assertInstanceOf(UnmodifiableConfig.class,
                 ClientConfig.SPEC.getValues().get("effects")).valueMap().keySet());
         assertEquals(Set.of("planetOverride", "stationOverride"), assertInstanceOf(UnmodifiableConfig.class,
                 ClientConfig.SPEC.getValues().get("sky")).valueMap().keySet());
@@ -38,6 +38,24 @@ class ClientConfigTest {
         assertEquals(Boolean.TRUE, ClientConfig.ELECTRIC_MUSHROOM_FLASHES.getDefault());
         assertEquals(List.of("effects", "electricMushroomFlashes"), ClientConfig.ELECTRIC_MUSHROOM_FLASHES.getPath());
         assertTrue(ClientConfig.electricMushroomFlashes(), "the default applies before the config is loaded");
+    }
+
+    @Test
+    void atmosphericNauseaIsAnIndependentClientSettingThatDefaultsToEnabled() {
+        assertFalse(ClientConfig.SPEC.isLoaded());
+        assertSame(ClientConfig.ATMOSPHERIC_NAUSEA, ClientConfig.SPEC.getValues().get("effects.atmosphericNausea"));
+        assertEquals(List.of("effects", "atmosphericNausea"), ClientConfig.ATMOSPHERIC_NAUSEA.getPath());
+        assertEquals(Boolean.TRUE, ClientConfig.ATMOSPHERIC_NAUSEA.getDefault());
+        assertTrue(ClientConfig.atmosphericNausea(), "the default applies before the config is loaded");
+        ClientConfig.SPEC.setConfig(CommentedConfig.inMemory());
+        assertTrue(ClientConfig.atmosphericNausea());
+        ClientConfig.ATMOSPHERIC_NAUSEA.set(false);
+        assertFalse(ClientConfig.atmosphericNausea());
+        assertTrue(ClientConfig.electricMushroomFlashes());
+        assertTrue(ClientConfig.planetSkyOverride());
+        assertTrue(ClientConfig.stationSkyOverride());
+        ClientConfig.ATMOSPHERIC_NAUSEA.set(true);
+        assertTrue(ClientConfig.atmosphericNausea());
     }
 
     @Test

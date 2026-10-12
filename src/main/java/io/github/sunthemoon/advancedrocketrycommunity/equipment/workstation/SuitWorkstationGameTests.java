@@ -11,10 +11,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.ArmorEquipment;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.ArmorRootCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.EnchantedSuitOxygen;
+import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.EquipmentNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.TankData;
 import io.github.sunthemoon.advancedrocketrycommunity.model.api.equipment.ModuleKind;
 import io.github.sunthemoon.advancedrocketrycommunity.model.api.equipment.SuitPart;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.List;
 import net.minecraft.gametest.framework.GameTest;
@@ -274,6 +276,67 @@ public final class SuitWorkstationGameTests {
             helper.assertTrue(future.equals(f.station.saveWithoutMetadata().get(SuitWorkstationSave.KEY)), "Unsupported station save erased raw data");
             helper.assertTrue(!SuitEquipmentContent.BLOCK.get().onDestroyedByPlayer(f.level.getBlockState(f.position), f.level,
                     f.position, f.player, true, f.level.getFluidState(f.position)), "Ordinary break destroyed quarantined root");
+            // Restore only this disposable fixture, not a production repair mechanism.
+            f.station.load(new CompoundTag());
+        }
+        helper.succeed();
+    }
+    /** W06 review L1: preflight accepts 256 nodes, then native Damage insertion causes a late refusal. */
+    @GameTest(template = "empty", batch = "equipment_workstation", timeoutTicks = 100)
+    public static void lateNativeDeserializationRefusalPreservesTheEntireRawRoot(GameTestHelper helper) {
+        try (var f = new EquipmentFixture(helper)) {
+            CompoundTag armorTag = new CompoundTag();
+            for (int i = 0; i < 252; i++) { armorTag.putByte("n" + i, (byte) i); }
+            CompoundTag helmet = new CompoundTag();
+            helmet.putString("id", ModIdentity.MOD_ID + ":space_suit_helmet");
+            helmet.putByte("Count", (byte) 1);
+            helmet.put("tag", armorTag);
+            helper.assertTrue(!armorTag.contains("Damage") && EquipmentNbt.bounded(helmet)
+                    && !BoundedNbt.fits(helmet, 16_384, 16, 255), "Fixture must pass preflight at exactly 256 nodes");
+            ItemStack nativeStack = ItemStack.of(helmet.copy());
+            helper.assertTrue(!nativeStack.isEmpty() && nativeStack.getTag().contains("Damage")
+                    && !EquipmentNbt.safe(nativeStack) && BoundedNbt.fits(nativeStack.serializeNBT(), 16_384, 16, 257),
+                    "Native deserialization must add the 257th node and fail the later safety check");
+            CompoundTag root = new CompoundTag();
+            root.putInt("schema_version", 1);
+            root.put("armor", helmet);
+            root.put("transfer", new CompoundTag());
+            helper.assertTrue(SuitWorkstationSave.bounded(root), "Raw workstation root must pass its preflight");
+            CompoundTag input = new CompoundTag(); input.put(SuitWorkstationSave.KEY, root);
+            CompoundTag snapshot = input.copy();
+            f.station.load(input);
+            helper.assertTrue(f.station.repairRequired() && !f.station.edit(f.player, -1, false), "Late refusal granted authority");
+            helper.assertTrue(snapshot.equals(input), "Native decoding mutated the original raw input");
+            helper.assertTrue(snapshot.get(SuitWorkstationSave.KEY).equals(f.station.saveWithoutMetadata().get(SuitWorkstationSave.KEY)),
+                    "Late refusal failed to preserve the entire raw workstation root");
+            // Restore only this disposable fixture, not a production repair mechanism.
+            f.station.load(new CompoundTag());
+        }
+        helper.succeed();
+    }
+
+    /** W03 review M1: a refused schema-1 root, including its malformed armor tag, round-trips verbatim. */
+    @GameTest(template = "empty", batch = "equipment_workstation", timeoutTicks = 100)
+    public static void refusedSchemaOneRootKeepsItsArmorTagVerbatim(GameTestHelper helper) {
+        try (var f = new EquipmentFixture(helper)) {
+            CompoundTag noncanonical = new CompoundTag(); noncanonical.putString("Damage", "keep-verbatim");
+            CompoundTag future = new CompoundTag(); future.putInt("schema_version", 2); future.putString("future_data", "retain");
+            noncanonical.put(ArmorRootCodec.KEY, future);
+            CompoundTag unknown = new CompoundTag(); unknown.putString("id", ModIdentity.MOD_ID + ":future_module"); unknown.putByte("Count", (byte) 1);
+            CompoundTag missing = new CompoundTag(); missing.putString("marker", "no-damage-key");
+            CompoundTag doubled = new CompoundTag(); doubled.putString("id", ModIdentity.MOD_ID + ":hover_upgrade"); doubled.putByte("Count", (byte) 2);
+            for (CompoundTag[] slots : List.of(new CompoundTag[] {noncanonical, unknown}, new CompoundTag[] {missing, doubled})) {
+                CompoundTag helmet = new CompoundTag(); helmet.putString("id", ModIdentity.MOD_ID + ":space_suit_helmet");
+                helmet.putByte("Count", (byte) 1); helmet.put("tag", slots[0].copy());
+                CompoundTag root = new CompoundTag(); root.putInt("schema_version", 1);
+                root.put("armor", helmet); root.put("transfer", slots[1].copy());
+                CompoundTag snapshot = root.copy(); CompoundTag input = new CompoundTag(); input.put(SuitWorkstationSave.KEY, root);
+                f.station.load(input);
+                helper.assertTrue(f.station.repairRequired() && !f.station.edit(f.player, -1, false), "Refused station granted authority");
+                helper.assertTrue(snapshot.equals(root), "Decoding changed the loaded raw root");
+                helper.assertTrue(snapshot.equals(f.station.saveWithoutMetadata().get(SuitWorkstationSave.KEY)),
+                        "Refused station save changed its raw armor tag");
+            }
             // Restore only this disposable fixture, not a production repair mechanism.
             f.station.load(new CompoundTag());
         }

@@ -83,24 +83,30 @@ public final class ArmorEquipment {
         ItemStack result = original.copy(); result.getOrCreateTag().put(ArmorRootCodec.KEY, root);
         return EquipmentNbt.safe(result) ? result : null;
     }
-    public static Reserve reserve(ItemStack armor) {
+    public static Reserve reserve(ItemStack armor) { return stored(armor, TankData.Gas.OXYGEN); }
+    /** ADR-066 section 5.2: the single installed HYDROGEN tank that pays for jetpack corrections. */
+    public static Reserve hydrogen(ItemStack armor) { return stored(armor, TankData.Gas.HYDROGEN); }
+    private static Reserve stored(ItemStack armor, TankData.Gas gas) {
         var modules = modules(armor);
         if (modules == null || part(armor) != SuitPart.CHEST) { return new Reserve(0, 0); }
         for (var module : modules) {
             if (module.kind() != ModuleKind.PRESSURE_TANK) { continue; }
             TankData tank = tank(module);
-            if (tank.gas() == TankData.Gas.OXYGEN) { return new Reserve(tank.stored(), tank.maximum()); }
+            if (tank.gas() == gas) { return new Reserve(tank.stored(), tank.maximum()); }
         }
         return new Reserve(0, 0);
     }
     /** Called on a detached chest within the same publication as the active-buffer edit. */
-    public static boolean setReserve(ItemStack detached, int amount) {
+    public static boolean setReserve(ItemStack detached, int amount) { return setStored(detached, TankData.Gas.OXYGEN, amount); }
+    /** Called on a detached chest before a paid jetpack correction is published. */
+    public static boolean setHydrogen(ItemStack detached, int amount) { return setStored(detached, TankData.Gas.HYDROGEN, amount); }
+    private static boolean setStored(ItemStack detached, TankData.Gas gas, int amount) {
         var saved = modules(detached);
         if (saved == null || part(detached) != SuitPart.CHEST) { return false; }
         for (var module : saved) {
             if (module.kind() != ModuleKind.PRESSURE_TANK) { continue; }
             TankData tank = tank(module);
-            if (tank.gas() != TankData.Gas.OXYGEN) { continue; }
+            if (tank.gas() != gas) { continue; }
             if (amount < 0 || amount > tank.maximum()) { return false; }
             module.stack().getCompound("tag").put(TankData.KEY,
                     new TankData(tank.gas(), amount, tank.maximum()).encode());

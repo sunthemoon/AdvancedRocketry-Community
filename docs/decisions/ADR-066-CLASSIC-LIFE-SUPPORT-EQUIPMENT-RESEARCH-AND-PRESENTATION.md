@@ -116,9 +116,16 @@ remain registered. No scope is silently deferred by a switch.
 ### W03 implementation clarification of the shared save guard (2026-10-11)
 
 The suit workstation uses section 2's existing C16 `GuardedChunkSaves` only for
-an outgoing `arce_suit_workstation` root above 64 KiB/depth 16/1,024 nodes.
-This is a development implementation note, not new owner acceptance or a Gate
-result. R-026 records the additional device scope. A refusal affects the whole
+an outgoing `arce_suit_workstation` root that fails the bounded native-write
+preflight (`BoundedNbt.fits`). That is a root above 64 KiB/depth 16/1,024 nodes,
+or a retained root of any size that native writing would not reproduce
+canonically. Examples are a typed empty list (an empty list whose element type is
+not TAG_End), a string above 65,535 modified-UTF bytes, a non-canonical NaN float
+or double, a list element of a different type and a tag class without a proven
+writer. Such a root is only reachable through retained unsupported or corrupt
+loaded data, not through an ordinary install or removal (W06 correction of W03
+review L1, 2026-10-12). This is a development implementation note, not new owner
+acceptance or a Gate result. R-026 records the additional device scope. A refusal affects the whole
 terrain chunk; the inherited 256-coordinate denial capacity can saturate the
 ServerLevel and deny its subsequent terrain writes. Denials last until Level
 closure and have no production online reset. The raw unsupported tree remains
@@ -504,6 +511,8 @@ is unusable/preserved.
   in the actual Space Level only; no potion effect renewal that survives
   removal or interferes with real night vision. Both visor effects clear on
   resource reload/world change/equipment snapshot invalidation.
+
+**W06F implementation note (2026-10-12):** With `allow-flight=true`, vanilla trusts client flight regardless of this mod's paid-correction floating-counter resets.
 
 ### 5.3 Mining tools
 
