@@ -27,6 +27,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.storage.ChunkSerializer;
@@ -36,6 +37,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkDataEvent;
+import net.minecraftforge.event.level.ChunkEvent;
+import net.minecraftforge.event.level.ExplosionEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -287,6 +290,60 @@ public final class SolarArrayGameTests {
                     helper.makeMockPlayer(), true, fixture.array.getBlockState().getFluidState()), "Ordinary removal destroyed a preserved root");
             fixture.energy(0);
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "solar_array_test", timeoutTicks = 40)
+    public static void repairRequiredArrayRefusesBreakAndExplosionEvents(GameTestHelper helper) {
+        try (var fixture = fixture(helper, 63)) {
+            var future = SolarSave.encode(17_777, SolarArrayRules.CAPACITY);
+            future.putInt("schema", 2); future.putString("future", "retain");
+            CompoundTag outer = new CompoundTag(); outer.put(SolarSave.ARRAY_ROOT, future); fixture.array.load(outer);
+            try {
+                var player = helper.makeMockPlayer();
+                var broken = new BlockEvent.BreakEvent(fixture.level, fixture.position, fixture.array.getBlockState(), player);
+                MinecraftForge.EVENT_BUS.post(broken);
+                helper.assertTrue(broken.isCanceled(), "Repair-required array allowed BreakEvent removal");
+                BlockPos panel = fixture.position.offset(0, 0, 2);
+                var ordinary = new BlockEvent.BreakEvent(fixture.level, panel, fixture.level.getBlockState(panel), player);
+                MinecraftForge.EVENT_BUS.post(ordinary);
+                helper.assertTrue(!ordinary.isCanceled(), "Solar protection refused an ordinary panel break");
+                var explosion = new Explosion(fixture.level, null, fixture.position.getX(), fixture.position.getY(), fixture.position.getZ(),
+                        4, false, Explosion.BlockInteraction.DESTROY);
+                explosion.getToBlow().add(fixture.position); explosion.getToBlow().add(panel);
+                MinecraftForge.EVENT_BUS.post(new ExplosionEvent.Detonate(fixture.level, explosion, new ArrayList<>()));
+                helper.assertTrue(!explosion.getToBlow().contains(fixture.position) && explosion.getToBlow().contains(panel),
+                        "Explosion event did not selectively protect the repair-required array");
+                fixture.form(); fixture.tick();
+                helper.assertTrue(fixture.level.getBlockEntity(fixture.position) == fixture.array && fixture.array.repairRequired()
+                        && fixture.array.actualCredit() == 0 && fixture.array.saveWithoutMetadata().get(SolarSave.ARRAY_ROOT).equals(future),
+                        "Removal events changed the preserved root or permitted generation");
+            } finally { fixture.energy(0); }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "solar_array_test", timeoutTicks = 40)
+    public static void chunkEventsRevokeAndRestoreArrayWithoutLoadingChunks(GameTestHelper helper) {
+        var forced = new HashSet<>(helper.getLevel().getForcedChunks());
+        try (var fixture = fixture(helper, 63)) {
+            fixture.energy(777); var old = fixture.port(-1);
+            ChunkPos rear = new ChunkPos(fixture.position.offset(0, 0, 21));
+            var chunk = fixture.level.getChunkSource().getChunkNow(rear.x, rear.z);
+            helper.assertTrue(chunk != null && !rear.equals(new ChunkPos(fixture.position)), "Fixture must cross into a loaded rear chunk");
+            try {
+                MinecraftForge.EVENT_BUS.post(new ChunkEvent.Unload(chunk));
+                fixture.form(); fixture.tick();
+                helper.assertTrue(fixture.array.structure() == SolarArrayRules.Structure.UNLOADED && fixture.array.actualCredit() == 0
+                        && fixture.array.energyStored() == 777 && !old.canExtract() && old.extractEnergy(1, false) == 0,
+                        "Chunk unload event retained generation or output authority");
+            } finally { MinecraftForge.EVENT_BUS.post(new ChunkEvent.Load(chunk, false)); }
+            fixture.form();
+            helper.assertTrue(fixture.array.structure() == SolarArrayRules.Structure.FORMED && fixture.array.collectors() == 63
+                    && fixture.array.energyStored() == 777 && fixture.port(-1).canExtract() && !old.canExtract(),
+                    "Chunk load event did not restore formation with a fresh facade");
+        }
+        helper.assertTrue(forced.equals(new HashSet<>(helper.getLevel().getForcedChunks())), "Chunk-event runtime added a forced ticket");
         helper.succeed();
     }
 
