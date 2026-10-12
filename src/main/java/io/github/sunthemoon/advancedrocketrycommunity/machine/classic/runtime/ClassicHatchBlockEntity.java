@@ -60,8 +60,13 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
         return first.controllerLevel().equals(second.controllerLevel()) && first.controllerPosition().equals(second.controllerPosition())
                 && first.machineInstanceId().equals(second.machineInstanceId());
     }
-    static boolean olderOwnedBinding(MultiblockPartBinding existing, MultiblockPartBinding current) {
-        return sameOwner(existing, current) && existing.generation() < current.generation();
+    /**
+     * Same owner, at a generation its formation transaction cannot adopt: older, or beyond the direct successor
+     * (which formation already adopts). Parts own no Item/Fluid, so rebinding transfers nothing.
+     */
+    static boolean reconcilableOwnedBinding(MultiblockPartBinding existing, MultiblockPartBinding current) {
+        return sameOwner(existing, current)
+                && (existing.generation() < current.generation() || existing.generation() - 1 > current.generation());
     }
     void reconcileGeneration(ClassicControllerBlockEntity owner) {
         if (binding == null || loadedOwner() != owner || owner.ownerUnavailable() || owner.transaction()) { return; }
@@ -69,7 +74,7 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
         if (state.generation() == 0) { return; }
         var current = new MultiblockPartBinding(MultiblockPartBinding.SCHEMA_VERSION,
                 level.dimension(), owner.getBlockPos(), state.machineInstanceId(), state.generation());
-        if (olderOwnedBinding(binding, current)) { setMultiblockBinding(Optional.of(current)); }
+        if (reconcilableOwnedBinding(binding, current)) { setMultiblockBinding(Optional.of(current)); }
     }
     void clearClaim() { claim = null; binding = null; refreshFacades(); setChanged(); }
     private void retireStaleClaim() {
