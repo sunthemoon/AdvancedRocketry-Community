@@ -84,13 +84,14 @@ public final class SolarArrayManager {
     }
 
     private void enqueue(SolarArrayBlockEntity controller) {
+        // Retain the holder's queue priority before releasing claims and waking conflicting arrays.
+        if (dirty.enqueue(key(controller.getBlockPos()), SolarArrayLayout.CELL_COUNT) == DirtyEnqueueResult.QUEUE_FULL) {
+            retry.add(controller.getBlockPos());
+        }
         controller.invalidateStructure(SolarArrayRules.Structure.PENDING);
         // A state/facing change replaces the old footprint before validation.
         if (!footprints.replace(key(controller.getBlockPos()), controller.footprint())) {
             controller.invalidateStructure(SolarArrayRules.Structure.UNAVAILABLE); return;
-        }
-        if (dirty.enqueue(key(controller.getBlockPos()), SolarArrayLayout.CELL_COUNT) == DirtyEnqueueResult.QUEUE_FULL) {
-            retry.add(controller.getBlockPos());
         }
     }
 

@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -33,6 +34,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkDataEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -113,6 +115,27 @@ public final class SolarArrayGameTests {
             fixture.install(fixture.position, 63);
             var second = fixture.install(fixture.position.offset(5, 0, 10), 63, Direction.EAST);
             assertExclusivePanelsAndRecovery(helper, fixture, second, 9);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "solar_array_test", timeoutTicks = 40)
+    public static void holderDirtyEventRetainsItsLiveClaimWithoutDirectRevalidation(GameTestHelper helper) {
+        try (var fixture = fixture(helper, 63)) {
+            var second = fixture.install(fixture.position.offset(2, 0, 0), 63);
+            fixture.form();
+            var holder = fixture.array.structure() == SolarArrayRules.Structure.FORMED ? fixture.array : second;
+            var waiting = holder == fixture.array ? second : fixture.array;
+            helper.assertTrue(holder.structure() == SolarArrayRules.Structure.FORMED && waiting.structure() == SolarArrayRules.Structure.CONFLICT,
+                    "Fixture did not establish one live claim");
+            var old = fixture.port(1);
+            MinecraftForge.EVENT_BUS.post(new BlockEvent.NeighborNotifyEvent(fixture.level, holder.getBlockPos(),
+                    holder.getBlockState(), EnumSet.noneOf(Direction.class), false));
+            helper.assertTrue(holder.structure() == SolarArrayRules.Structure.PENDING && !old.canExtract(), "Dirty event retained a live facade");
+            fixture.form();
+            helper.assertTrue(holder.structure() == SolarArrayRules.Structure.FORMED && waiting.structure() == SolarArrayRules.Structure.CONFLICT
+                    && holder.collectors() == 63 && waiting.collectors() == 0 && fixture.port(1).canExtract() && !old.canExtract(),
+                    "Holder's own dirty event moved its established claim");
         }
         helper.succeed();
     }
