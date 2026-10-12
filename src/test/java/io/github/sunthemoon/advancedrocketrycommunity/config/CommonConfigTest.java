@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -42,12 +43,24 @@ class CommonConfigTest {
         // Classic settings: C15a/b/c (ADR-063), combustion, tank capacity and pump operation (ADR-064),
         // the classic life-support instrument switch (ADR-066), and the single solar generator's
         // enable switch and output multiplier (ADR-065), plus the accepted C18a living-tick gravity switch
-        // and the consumed C18b ordinary-equipment switch (ADR-066).
+        // and the consumed C18b ordinary-equipment switch and two finite oxygen settings (ADR-066),
+        // and the C16b cutting machine's sawmill switch (ADR-064 section 8).
         assertSame(CommonConfig.CLASSIC_GRAVITY_ENABLED,
                 CommonConfig.SPEC.getValues().get("environment.classicGravityEnabled"));
         assertSame(CommonConfig.CLASSIC_EQUIPMENT_ENABLED,
                 CommonConfig.SPEC.getValues().get("equipment.classicEnabled"));
-        assertEquals(74, countValues(CommonConfig.SPEC.getValues()));
+        assertSame(CommonConfig.SUIT_TANK_CAPACITY, CommonConfig.SPEC.getValues().get("OXYGEN.suitTankCapacity"));
+        assertSame(CommonConfig.SPACE_SUIT_O2_BUFFER, CommonConfig.SPEC.getValues().get("OXYGEN.spaceSuitO2Buffer"));
+        assertNotNull(CommonConfig.SPEC.getValues().get("machines.sawmillVanillaWood"));
+        assertEquals(77, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void equipmentOxygenValuesHaveExactFiniteDefaultsAndBounds() {
+        assertRangeAndDefault("OXYGEN.suitTankCapacity", CommonConfig.SUIT_TANK_CAPACITY, 1, 4, 1);
+        assertRangeAndDefault("OXYGEN.spaceSuitO2Buffer", CommonConfig.SPACE_SUIT_O2_BUFFER, 1, 2_000, 2_000);
+        assertEquals(1, CommonConfig.suitTankMultiplier());
+        assertEquals(2_000, CommonConfig.suitOxygenTarget());
     }
 
     @Test

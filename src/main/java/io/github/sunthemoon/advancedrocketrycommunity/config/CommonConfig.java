@@ -332,7 +332,17 @@ public final class CommonConfig {
             .comment("Allow classic equipment use; disabling retains items, recipes and safe repair.")
             .define("equipment.classicEnabled", true);
 
+    public static final ForgeConfigSpec.IntValue SUIT_TANK_CAPACITY = BUILDER
+            .comment("Creation multiplier for pressure tank tiers; existing saved capacities are retained.")
+            .defineInRange("OXYGEN.suitTankCapacity", 1, 1, 4);
+    public static final ForgeConfigSpec.IntValue SPACE_SUIT_O2_BUFFER = BUILDER
+            .comment("Built-in active oxygen refill target; lowering it never discards existing oxygen.")
+            .defineInRange("OXYGEN.spaceSuitO2Buffer", 2_000, 1, 2_000);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
+
+    public static int suitTankMultiplier() { return SPEC.isLoaded() ? SUIT_TANK_CAPACITY.get() : 1; }
+    public static int suitOxygenTarget() { return SPEC.isLoaded() ? SPACE_SUIT_O2_BUFFER.get() : 2_000; }
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
     public static EndgameSettings endgameSettings() {

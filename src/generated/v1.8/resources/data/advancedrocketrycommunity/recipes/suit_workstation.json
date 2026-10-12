@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "c": {
+      "item": "advancedrocketrycommunity:user_interface"
+    },
+    "i": {
+      "tag": "forge:ingots/iron"
+    },
+    "p": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    "ppp",
+    "ici",
+    "i i"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:suit_workstation"
+  }
+}
