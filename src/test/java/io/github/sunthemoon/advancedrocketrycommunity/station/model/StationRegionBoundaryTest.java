@@ -65,11 +65,11 @@ final class StationRegionBoundaryTest {
         assertThrows(IllegalArgumentException.class, () -> new StationGridCell(1_000_001, 0));
         assertThrows(IllegalArgumentException.class, () -> new StationGridCell(Integer.MIN_VALUE, 0));
         assertThrows(IllegalArgumentException.class, () -> new StationRegion(Integer.MIN_VALUE, 0, Integer.MAX_VALUE, 767));
-        assertThrows(IllegalArgumentException.class, () -> new StationState(2, new UUID(150, 1), new UUID(151, 1),
-                "Offset", cell, new StationRegion(-383, -384, 384, 383), cell.landingPad(),
+        assertThrows(IllegalArgumentException.class, () -> new StationState(StationLimits.STATE_SCHEMA_VERSION,
+                new UUID(150, 1), new UUID(151, 1), "Offset", cell, new StationRegion(-383, -384, 384, 383), cell.landingPad(),
                 ModIdentity.id("earth"), 0, StationEnvironmentProfile.BASIC_SPACE, List.of(), List.of()));
-        assertThrows(IllegalArgumentException.class, () -> new StationState(2, new UUID(150, 1), new UUID(151, 1),
-                "Pad", cell, cell.region(768), new StationPosition(0, 129, 0),
+        assertThrows(IllegalArgumentException.class, () -> new StationState(StationLimits.STATE_SCHEMA_VERSION,
+                new UUID(150, 1), new UUID(151, 1), "Pad", cell, cell.region(768), new StationPosition(0, 129, 0),
                 ModIdentity.id("earth"), 0, StationEnvironmentProfile.BASIC_SPACE, List.of(), List.of()));
     }
 

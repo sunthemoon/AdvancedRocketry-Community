@@ -153,12 +153,20 @@ public final class V180MaterialData {
             Block[] arcCutting = {ModBlocks.ARC_FURNACE.get(), ModBlocks.CUTTING_MACHINE.get(), ModBlocks.BLAST_BRICK.get(), ModBlocks.SAW_BLADE.get()};
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(arcCutting);
             tag(BlockTags.NEEDS_IRON_TOOL).add(arcCutting);
+            Block[] c16c = {ModBlocks.CRYSTALLIZER.get(), ModBlocks.CHEMICAL_REACTOR.get(),
+                    ModBlocks.PRECISION_LASER_ETCHER.get(), ModBlocks.CENTRIFUGE.get(), ModBlocks.QUARTZ_CRUCIBLE.get()};
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(c16c);
+            tag(BlockTags.NEEDS_IRON_TOOL).add(c16c);
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(MaterialContent.SMALL_PLATE_PRESS.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(MaterialContent.SMALL_PLATE_PRESS.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.COMBUSTION_GENERATOR.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.COMBUSTION_GENERATOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.PRESSURIZED_TANK.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.STATION_LIGHT.get());
+            // ADR-065 C17b station controllers.
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.WARP_CONTROLLER.get(),
+                    ModBlocks.STATION_GRAVITY_CONTROLLER.get(), ModBlocks.STATION_ALTITUDE_CONTROLLER.get(),
+                    ModBlocks.STATION_ORIENTATION_CONTROLLER.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.FORCE_FIELD_PROJECTOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.DOORS).add(ModBlocks.AIRLOCK_DOOR.get());

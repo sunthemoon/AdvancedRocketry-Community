@@ -187,7 +187,8 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     /**
-     * The current payload as a legacy root can express it: a station root before 4 has no balances; a satellite
+     * The current payload as a legacy root can express it: a station root before 4 has no balances, and its
+     * migrated clock and controls are the initial ones the fixture already has (tick 0, epoch 0); a satellite
      * root before 3 has no v1.6 fields, so its missions carry the legacy label and the save epoch restarts at 1.
      */
     private static CompoundTag legacyRepresentable(ManagedSavedDataType type, CompoundTag current) {
@@ -195,6 +196,7 @@ final class PopulatedWorldDataPreservationTest {
         if (type == ManagedSavedDataType.STATIONS) {
             assertEquals(1, current.getList("warp_energy", CompoundTag.TAG_COMPOUND).size());
             representable.put("warp_energy", new ListTag());
+            assertEquals(0L, current.getCompound("orbital_clock").getLong("logical_tick"));
         }
         if (type == ManagedSavedDataType.SATELLITE_MISSIONS) {
             representable.putLong("save_epoch", 1L);
@@ -216,8 +218,13 @@ final class PopulatedWorldDataPreservationTest {
             payload.remove("format_epoch");
         });
         payloads.get(ManagedSavedDataType.STATIONS).remove("warp_energy");
+        // ADR-065: a legacy root has no orbital clock and its records no orbital controls.
+        payloads.get(ManagedSavedDataType.STATIONS).remove("orbital_clock");
         payloads.get(ManagedSavedDataType.STATIONS).getList("stations", CompoundTag.TAG_COMPOUND)
-                .forEach(record -> ((CompoundTag) record).putInt("schema_version", 1));
+                .forEach(record -> {
+                    ((CompoundTag) record).putInt("schema_version", 1);
+                    ((CompoundTag) record).remove("orbital_controls");
+                });
         CompoundTag satellites = payloads.get(ManagedSavedDataType.SATELLITE_MISSIONS);
         satellites.remove("instances");
         satellites.remove("save_epoch");

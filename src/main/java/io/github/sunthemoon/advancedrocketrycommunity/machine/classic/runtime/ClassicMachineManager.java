@@ -34,6 +34,14 @@ public final class ClassicMachineManager {
     private final Map<ClassicMachineRecipe, Optional<ProcessDefinition>> resolved = new HashMap<>();
     private long patternGeneration = -1;
     private boolean closed;
+    private io.github.sunthemoon.advancedrocketrycommunity.api.environment.EnvironmentQueries environments;
+    void environments(io.github.sunthemoon.advancedrocketrycommunity.api.environment.EnvironmentQueries value) { environments = value; }
+    boolean gravityAllows(BlockPos position) {
+        double maximum = CommonConfig.crystallizerMaximumGravity();
+        if (maximum == 0) { return true; }
+        return environments != null && environments.at(level.dimension(), position)
+                .map(environment -> environment.gravityMultiplier() <= maximum).orElse(false);
+    }
     private boolean sawmillEnabled = CommonConfig.sawmillVanillaWood();
 
     ClassicMachineManager(ServerLevel level, MultiblockPatternCatalogManager patterns) { this.level = level; this.patterns = patterns; }
@@ -169,6 +177,7 @@ public final class ClassicMachineManager {
         }).orElse(null);
     }
     public void close() {
+        environments = null;
         closed = true; controllers.values().forEach(ClassicControllerBlockEntity::invalidate);
         controllers.clear(); footprints.clear(); dirty.clear(); retry.clear(); processes.clear(); search.clear(); catalogs.clear(); resolved.clear();
     }

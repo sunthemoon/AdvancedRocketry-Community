@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet;
 
+import io.github.sunthemoon.advancedrocketrycommunity.config.ClientConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -49,7 +50,8 @@ public final class ElectricMushroomBlock extends BushBlock {
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos position, RandomSource random) {
-        if (random.nextInt(3) == 0) {
+        // ADR-066 section 7.2: the ambient sparks are an accent that effects.advancedVisuals=false removes.
+        if (ClientConfig.advancedVisuals() && random.nextInt(3) == 0) {
             level.addParticle(ParticleTypes.ELECTRIC_SPARK, position.getX() + 0.3D + random.nextDouble() * 0.4D,
                     position.getY() + 0.4D, position.getZ() + 0.3D + random.nextDouble() * 0.4D,
                     random.nextGaussian() * 0.05D, 0.1D, random.nextGaussian() * 0.05D);

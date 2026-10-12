@@ -248,6 +248,23 @@ public final class ModBlockEntities {
                     ModBlockEntities.CUTTING_MACHINE.get(), position, state,
                     ClassicMachineDefinition.CUTTING), ModBlocks.CUTTING_MACHINE.get()).build(null));
 
+    public static final RegistryObject<BlockEntityType<ClassicControllerBlockEntity>> CRYSTALLIZER = BLOCK_ENTITIES.register(
+            "crystallizer", () -> BlockEntityType.Builder.of((position, state) -> new ClassicControllerBlockEntity(
+                    ModBlockEntities.CRYSTALLIZER.get(), position, state,
+                    ClassicMachineDefinition.CRYSTALLIZER), ModBlocks.CRYSTALLIZER.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ClassicControllerBlockEntity>> CHEMICAL_REACTOR = BLOCK_ENTITIES.register(
+            "chemical_reactor", () -> BlockEntityType.Builder.of((position, state) -> new ClassicControllerBlockEntity(
+                    ModBlockEntities.CHEMICAL_REACTOR.get(), position, state,
+                    ClassicMachineDefinition.CHEMICAL_REACTOR), ModBlocks.CHEMICAL_REACTOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ClassicControllerBlockEntity>> PRECISION_LASER_ETCHER = BLOCK_ENTITIES.register(
+            "precision_laser_etcher", () -> BlockEntityType.Builder.of((position, state) -> new ClassicControllerBlockEntity(
+                    ModBlockEntities.PRECISION_LASER_ETCHER.get(), position, state,
+                    ClassicMachineDefinition.PRECISION_LASER_ETCHER), ModBlocks.PRECISION_LASER_ETCHER.get()).build(null));
+    public static final RegistryObject<BlockEntityType<ClassicControllerBlockEntity>> CENTRIFUGE = BLOCK_ENTITIES.register(
+            "centrifuge", () -> BlockEntityType.Builder.of((position, state) -> new ClassicControllerBlockEntity(
+                    ModBlockEntities.CENTRIFUGE.get(), position, state,
+                    ClassicMachineDefinition.CENTRIFUGE), ModBlocks.CENTRIFUGE.get()).build(null));
+
     private ModBlockEntities() {
     }
 

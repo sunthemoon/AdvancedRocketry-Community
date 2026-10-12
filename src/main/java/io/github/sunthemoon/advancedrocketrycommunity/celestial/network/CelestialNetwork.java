@@ -9,8 +9,8 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 /** Instance-owned, exact-version SimpleChannel for the display snapshot and the station sky context. */
 public final class CelestialNetwork {
-    /** 3: ADR-047 added message 1, the station sky context. */
-    private static final String PROTOCOL_VERSION = "3";
+    /** 3: ADR-047 added message 1, the station sky context; 4: ADR-065 replaced it with payload schema 2. */
+    private static final String PROTOCOL_VERSION = "4";
 
     private final SimpleChannel channel;
 

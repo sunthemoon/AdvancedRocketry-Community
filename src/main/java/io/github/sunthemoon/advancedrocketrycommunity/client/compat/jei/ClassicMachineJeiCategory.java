@@ -24,9 +24,13 @@ final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMach
     static final RecipeType<ClassicMachineRecipe> ARC_FURNACE = RecipeType.create(ModIdentity.MOD_ID, "arc_furnace", ClassicMachineRecipe.class);
     static final RecipeType<ClassicMachineRecipe> CUTTING = RecipeType.create(ModIdentity.MOD_ID, "cutting", ClassicMachineRecipe.class);
     private final IDrawable arrow;
+    static final RecipeType<ClassicMachineRecipe> CRYSTALLIZER = RecipeType.create(ModIdentity.MOD_ID, "crystallizing", ClassicMachineRecipe.class);
+    static final RecipeType<ClassicMachineRecipe> CHEMICAL_REACTOR = RecipeType.create(ModIdentity.MOD_ID, "chemical_reacting", ClassicMachineRecipe.class);
+    static final RecipeType<ClassicMachineRecipe> PRECISION_LASER_ETCHER = RecipeType.create(ModIdentity.MOD_ID, "laser_etching", ClassicMachineRecipe.class);
+    static final RecipeType<ClassicMachineRecipe> CENTRIFUGE = RecipeType.create(ModIdentity.MOD_ID, "centrifuging", ClassicMachineRecipe.class);
     ClassicMachineJeiCategory(IGuiHelper helper, RecipeType<ClassicMachineRecipe> type, String block, ItemLike catalyst) {
         super(type, Component.translatable("block.advancedrocketrycommunity." + block),
-                helper.createDrawableItemLike(catalyst), 156, 104); arrow = helper.getRecipeArrow();
+                helper.createDrawableItemLike(catalyst), 156, type == CENTRIFUGE ? 192 : 104); arrow = helper.getRecipeArrow();
     }
     @Override public void setRecipe(IRecipeLayoutBuilder builder, ClassicMachineRecipe recipe, IFocusGroup focuses) {
         var alternatives = recipe.resolveInputs();
@@ -35,7 +39,11 @@ final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMach
             for (String id : alternatives.get(index)) {
                 stacks.add(new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(id)), recipe.rows().itemInputs().get(index).count()));
             }
-            builder.addInputSlot(4, 4 + index * 18).setStandardSlotBackground().addItemStacks(stacks);
+            var slot = builder.addInputSlot(4, 4 + index * 18).setStandardSlotBackground().addItemStacks(stacks);
+            if (stacks.stream().anyMatch(stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()).equals(ModIdentity.id("laser_lens")))
+                    && recipe.rows().type().equals("advancedrocketrycommunity:laser_etching")) {
+                slot.addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable("jei.advancedrocketrycommunity.retained")));
+            }
         }
         for (int index = 0; index < recipe.rows().itemOutputs().size(); index++) {
             builder.addOutputSlot(132, 4 + index * 18).setStandardSlotBackground().addItemStack(recipe.output(index));
@@ -49,6 +57,17 @@ final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMach
             var row = recipe.rows().fluidOutputs().get(index);
             builder.addOutputSlot(106, 4 + index * 18).setStandardSlotBackground().setFluidRenderer(16_000, true, 16, 16)
                     .addFluidStack(BuiltInRegistries.FLUID.get(row.fluidId()), row.amount());
+        }
+        for (int index = 0; index < recipe.rows().chanceOutputs().size(); index++) {
+            var row = recipe.rows().chanceOutputs().get(index);
+            builder.addOutputSlot(4 + index % 4 * 36, 106 + index / 4 * 18).setStandardSlotBackground()
+                    .addItemStack(new ItemStack(BuiltInRegistries.ITEM.get(row.itemId()), row.count()))
+                    .addRichTooltipCallback((slot, tooltip) -> {
+                        tooltip.add(Component.translatable("jei.advancedrocketrycommunity.chance", row.weight()));
+                        if (recipe.getId().equals(ModIdentity.id("centrifuging_enriched_lava"))) {
+                            tooltip.add(Component.translatable("jei.advancedrocketrycommunity.iridium_cap"));
+                        }
+                    });
         }
     }
     @Override public void draw(ClassicMachineRecipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {

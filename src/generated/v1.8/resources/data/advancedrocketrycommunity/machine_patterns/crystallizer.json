@@ -1,0 +1,119 @@
+{
+  "allow_mirror_local_x": false,
+  "allowed_rotations": [
+    0,
+    90,
+    180,
+    270
+  ],
+  "cells": [
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:quartz_crucible"
+      },
+      "x": 0,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:quartz_crucible"
+      },
+      "x": 1,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:quartz_crucible"
+      },
+      "x": 2,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:quartz_crucible"
+      },
+      "x": 0,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:quartz_crucible"
+      },
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:quartz_crucible"
+      },
+      "x": 2,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "port": "item_output"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "controller": true
+      },
+      "x": 1,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "port": "item_input"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "port": "fluid_output"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "port": "energy_input"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "port": "fluid_input"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 1
+    }
+  ],
+  "controller_anchor": {
+    "x": 1,
+    "y": 0,
+    "z": 0
+  },
+  "id": "advancedrocketrycommunity:crystallizer",
+  "schema_version": 1,
+  "size": {
+    "x": 3,
+    "y": 2,
+    "z": 2
+  }
+}

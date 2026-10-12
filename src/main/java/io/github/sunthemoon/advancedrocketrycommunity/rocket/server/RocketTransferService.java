@@ -648,6 +648,8 @@ final class RocketTransferService {
                 RocketTransferEntities.positionAtOrigin(destination, record.destinationSnapshot().sourceOrigin());
                 RocketFlightFeedback.landed(destination);
                 auditPhase(record, "landing_complete", destination.getUUID());
+                io.github.sunthemoon.advancedrocketrycommunity.progression.classic.ClassicAdvancementEvents
+                        .rocketLanded((ServerLevel) destination.level(), RocketTransferEntities.aboard(destination));
             }
         }
         cleanupLandedIfComplete(server, journal, record, destination);

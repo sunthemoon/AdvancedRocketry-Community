@@ -6,7 +6,7 @@ public enum StationManagementCode {
     EXPANDED(true, "station expanded"),
     GRAVITY_SET(true, "station gravity set"),
     GRAVITY_UNCHANGED(true, "the station already uses that gravity"),
-    GRAVITY_COOLDOWN(false, "the station's gravity was changed moments ago; wait 5 seconds"),
+    GRAVITY_COOLDOWN(false, "the station's gravity or orbit was changed moments ago; wait 5 seconds"),
     ALREADY_EXPANDED(false, "the station already uses its largest region"),
     AUTHORITY_UNAVAILABLE(false, "station authority is unavailable"),
     NOT_LOCAL_PLAYER(false, "run this command yourself as a connected player;"
@@ -46,8 +46,19 @@ public enum StationManagementCode {
     WARP_CONFIRMATION_EXPIRED(false, "the confirmation expired; run /arce station warp <body> again"),
     WARP_QUOTE_CHANGED(false, "the warp cost or its class changed; request the warp again"),
     WARP_ACTOR_CHANGED(false, "the confirming player is no longer the owner or an operator"),
-    ELEVATOR_BOUND(false, "a space elevator is bound to this station; unbind it first"),
-    ENDGAME_UNAVAILABLE(false, "endgame data is unavailable, so station warps are refused until it loads");
+    ELEVATOR_BOUND(false, "a space elevator is bound to this station or a ride is pending; unbind it first"),
+    ENDGAME_UNAVAILABLE(false, "endgame data is unavailable, so station warps and orbit changes are refused"
+            + " until it loads"),
+    ALTITUDE_SET(true, "station orbital distance set"),
+    ALTITUDE_UNCHANGED(true, "the station already uses that orbital distance"),
+    ORIENTATION_SET(true, "station orientation set"),
+    ORIENTATION_UNCHANGED(true, "the station already uses that orientation"),
+    ORBITAL_COOLDOWN(false, "the station's gravity or orbit was changed moments ago; wait 5 seconds"),
+    ORBITAL_CLOCK_EXHAUSTED(false, "the station orbital clock is exhausted; only stopping the rotation is possible"),
+    ORIENTATION_ROTATING(false, "stop the rotation before choosing a fixed orientation"),
+    CONTROLLER_OUT_OF_REACH(false, "stand within 8 blocks of the loaded controller, inside its station"),
+    NO_WARP_CORE_NEAR_CONTROLLER(false, "place a loaded warp core of this station within 5 blocks of the controller"),
+    CONTROL_RATE_LIMITED(false, "one control change every half second; try again");
 
     private final boolean success;
     private final String description;
@@ -61,7 +72,13 @@ public enum StationManagementCode {
         return success;
     }
 
+    /** The server-log and command English; screens use {@link #translationKey()} (ADR-065 section 5.3). */
     public String description() {
         return description;
+    }
+
+    /** The stable translatable code key, {@code station.advancedrocketrycommunity.code.<code>}. */
+    public String translationKey() {
+        return "station.advancedrocketrycommunity.code." + name().toLowerCase(java.util.Locale.ROOT);
     }
 }

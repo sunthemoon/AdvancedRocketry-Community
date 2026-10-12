@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthority;
+import io.github.sunthemoon.advancedrocketrycommunity.config.ClientConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameStations;
@@ -180,7 +181,8 @@ public final class BlackHoleGeneratorBlockEntity extends EndgameDeviceBlockEntit
 
     public static void clientTick(Level level, BlockPos position, BlockState state,
                                   BlackHoleGeneratorBlockEntity generator) {
-        if (generator.generating && level.random.nextInt(4) == 0) {
+        // ADR-066 section 7.2: the portal swirl is an accent that effects.advancedVisuals=false removes.
+        if (generator.generating && ClientConfig.advancedVisuals() && level.random.nextInt(4) == 0) {
             BlockPos center = position.relative(state.getValue(BlackHoleGeneratorBlock.FACING).getOpposite());
             level.addParticle(net.minecraft.core.particles.ParticleTypes.PORTAL, center.getX() + 0.5D,
                     center.getY() + 0.5D, center.getZ() + 0.5D, level.random.nextGaussian() * 0.5D,

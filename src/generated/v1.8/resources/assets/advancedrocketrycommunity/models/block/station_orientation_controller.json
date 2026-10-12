@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "advancedrocketrycommunity:block/station_controller_bottom",
+    "side": "advancedrocketrycommunity:block/station_orientation_controller_side",
+    "top": "advancedrocketrycommunity:block/station_controller_top"
+  }
+}

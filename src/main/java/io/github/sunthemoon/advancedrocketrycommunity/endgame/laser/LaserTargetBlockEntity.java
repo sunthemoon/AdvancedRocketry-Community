@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.laser;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.config.ClientConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceTags;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.model.EndgameCode;
@@ -165,7 +166,8 @@ public final class LaserTargetBlockEntity extends EndgameDeviceBlockEntity imple
     }
 
     public static void clientTick(Level level, BlockPos position, BlockState state, LaserTargetBlockEntity target) {
-        if (!target.active) {
+        // ADR-066 section 7.2: the impact sparks are an accent; the beam itself stays (effects.advancedVisuals).
+        if (!target.active || !ClientConfig.advancedVisuals()) {
             return;
         }
         // At most 8 particles per tick at the current layer; the client's particle setting drops them at minimal.

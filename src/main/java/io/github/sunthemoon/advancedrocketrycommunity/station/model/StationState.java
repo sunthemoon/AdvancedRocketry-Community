@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import net.minecraft.resources.ResourceLocation;
@@ -23,7 +24,9 @@ public final class StationState {
     private final StationEnvironmentProfile environment;
     private final Set<UUID> members;
     private final Set<UUID> invitations;
+    private final StationOrbitalControls orbitalControls;
 
+    /** A record with the initial orbital controls (ADR-065: distance 4, no rotation, epoch 0). */
     public StationState(
             int schemaVersion,
             UUID stationId,
@@ -37,6 +40,26 @@ public final class StationState {
             StationEnvironmentProfile environment,
             Collection<UUID> members,
             Collection<UUID> invitations
+    ) {
+        this(schemaVersion, stationId, ownerId, name, cell, region, landingPad, orbitBody, createdAtGameTime,
+                environment, members, invitations, StationOrbitalControls.initial(
+                        Objects.requireNonNull(environment, "environment").solarAngleMilliDegrees()));
+    }
+
+    public StationState(
+            int schemaVersion,
+            UUID stationId,
+            UUID ownerId,
+            String name,
+            StationGridCell cell,
+            StationRegion region,
+            StationPosition landingPad,
+            ResourceLocation orbitBody,
+            long createdAtGameTime,
+            StationEnvironmentProfile environment,
+            Collection<UUID> members,
+            Collection<UUID> invitations,
+            StationOrbitalControls orbitalControls
     ) {
         if (schemaVersion != StationLimits.STATE_SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported station state schema");
@@ -90,6 +113,7 @@ public final class StationState {
             throw new IllegalArgumentException("Station invitation list exceeds the fixed bound");
         }
         this.invitations = Set.copyOf(checkedInvitations);
+        this.orbitalControls = Objects.requireNonNull(orbitalControls, "orbitalControls");
     }
 
     public static StationState fromReservation(StationReservation reservation) {
@@ -198,7 +222,7 @@ public final class StationState {
             return this;
         }
         return new StationState(schemaVersion, stationId, ownerId, name, cell, expanded, landingPad,
-                orbitBody, createdAtGameTime, environment, members, invitations);
+                orbitBody, createdAtGameTime, environment, members, invitations, orbitalControls);
     }
 
     public boolean expanded() {
@@ -213,27 +237,59 @@ public final class StationState {
         StationEnvironmentProfile updated = new StationEnvironmentProfile(
                 gravityMilli, environment.vacuum(), environment.solarAngleMilliDegrees());
         return new StationState(schemaVersion, stationId, ownerId, name, cell, region, landingPad,
-                orbitBody, createdAtGameTime, updated, members, invitations);
+                orbitBody, createdAtGameTime, updated, members, invitations, orbitalControls);
+    }
+
+    /** The same station with other orbital controls (ADR-065 D2-A); everything else is kept. */
+    public StationState withOrbitalControls(StationOrbitalControls controls) {
+        Objects.requireNonNull(controls, "controls");
+        if (controls.equals(orbitalControls)) {
+            return this;
+        }
+        return new StationState(schemaVersion, stationId, ownerId, name, cell, region, landingPad,
+                orbitBody, createdAtGameTime, environment, members, invitations, controls);
+    }
+
+    /** True for exactly one of the checked management transitions of {@link #checkedTransitionFrom}. */
+    public boolean isCheckedUpdateOf(StationState previous) {
+        return checkedTransitionFrom(previous).isPresent();
     }
 
     /**
-     * True for exactly the two checked management transitions: the single 512→768 growth with an
-     * unchanged environment, or a gravity-only change within the unchanged region. Shrinking, other
-     * environment fields and any identity, ownership or team change are not checked updates.
+     * The named checked transition from {@code previous}, if this state is exactly one of them. Each keeps
+     * identity, ownership, team and orbit, and every field outside its own: growth (the single 512→768
+     * growth) keeps the environment and controls; gravity-only keeps the region, vacuum, solar angle and
+     * controls; altitude-only (ADR-065) changes only the distance; orientation-only (ADR-065) changes only
+     * phases, rates and a non-decreasing epoch. Shrinking and every other change are not checked updates.
      */
-    public boolean isCheckedUpdateOf(StationState previous) {
+    public Optional<Transition> checkedTransitionFrom(StationState previous) {
         Objects.requireNonNull(previous, "previous");
         if (!sameAuthorityAs(previous) || equals(previous)) {
-            return false;
+            return Optional.empty();
         }
-        boolean growth = !previous.expanded()
-                && region.equals(previous.withExpandedRegion().region())
-                && environment.equals(previous.environment);
-        boolean gravityOnly = region.equals(previous.region)
+        boolean sameRegion = region.equals(previous.region);
+        boolean sameEnvironment = environment.equals(previous.environment);
+        boolean sameControls = orbitalControls.equals(previous.orbitalControls);
+        if (!previous.expanded() && region.equals(previous.withExpandedRegion().region())
+                && sameEnvironment && sameControls) {
+            return Optional.of(Transition.GROWTH);
+        }
+        if (sameRegion && sameControls
                 && environment.vacuum() == previous.environment.vacuum()
                 && environment.solarAngleMilliDegrees() == previous.environment.solarAngleMilliDegrees()
-                && environment.gravityMilli() != previous.environment.gravityMilli();
-        return growth || gravityOnly;
+                && environment.gravityMilli() != previous.environment.gravityMilli()) {
+            return Optional.of(Transition.GRAVITY_ONLY);
+        }
+        StationOrbitalControls before = previous.orbitalControls;
+        if (sameRegion && sameEnvironment && orbitalControls.sameOrientation(before)
+                && orbitalControls.distance() != before.distance()) {
+            return Optional.of(Transition.ALTITUDE_ONLY);
+        }
+        if (sameRegion && sameEnvironment && orbitalControls.distance() == before.distance()
+                && !orbitalControls.sameOrientation(before) && orbitalControls.epoch() >= before.epoch()) {
+            return Optional.of(Transition.ORIENTATION_ONLY);
+        }
+        return Optional.empty();
     }
 
     /** The same station orbiting another body (ADR-044 logical relocation); everything else is kept. */
@@ -243,12 +299,12 @@ public final class StationState {
             return this;
         }
         return new StationState(schemaVersion, stationId, ownerId, name, cell, region, landingPad,
-                body, createdAtGameTime, environment, members, invitations);
+                body, createdAtGameTime, environment, members, invitations, orbitalControls);
     }
 
     /**
      * True for exactly one orbit relocation: the orbit body differs and every other field (region,
-     * environment, identity, ownership, team) is equal. Deliberately independent of
+     * environment, orbital controls, identity, ownership, team) is equal. Deliberately independent of
      * {@link #sameAuthorityAs(StationState)}, which includes the orbit.
      */
     public boolean isOrbitRelocationOf(StationState previous) {
@@ -257,7 +313,7 @@ public final class StationState {
                 && equals(previous.withOrbitBody(orbitBody));
     }
 
-    /** True when identity, ownership and team fields are equal (region and environment may differ). */
+    /** True when identity, ownership and team fields are equal (region, environment and controls may differ). */
     public boolean sameAuthorityAs(StationState other) {
         Objects.requireNonNull(other, "other");
         return schemaVersion == other.schemaVersion
@@ -289,7 +345,8 @@ public final class StationState {
                 createdAtGameTime,
                 environment,
                 updatedMembers,
-                updatedInvitations
+                updatedInvitations,
+                orbitalControls
         );
     }
 
@@ -341,6 +398,10 @@ public final class StationState {
         return invitations;
     }
 
+    public StationOrbitalControls orbitalControls() {
+        return orbitalControls;
+    }
+
     public List<UUID> sortedMembers() {
         return members.stream().sorted().toList();
     }
@@ -368,12 +429,21 @@ public final class StationState {
                 && orbitBody.equals(state.orbitBody)
                 && environment.equals(state.environment)
                 && members.equals(state.members)
-                && invitations.equals(state.invitations);
+                && invitations.equals(state.invitations)
+                && orbitalControls.equals(state.orbitalControls);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(schemaVersion, stationId, ownerId, name, cell, region,
-                landingPad, orbitBody, createdAtGameTime, environment, members, invitations);
+                landingPad, orbitBody, createdAtGameTime, environment, members, invitations, orbitalControls);
+    }
+
+    /** The checked management transitions (ADR-041, ADR-065 section 5.2); a relocation is separate. */
+    public enum Transition {
+        GROWTH,
+        GRAVITY_ONLY,
+        ALTITUDE_ONLY,
+        ORIENTATION_ONLY
     }
 }

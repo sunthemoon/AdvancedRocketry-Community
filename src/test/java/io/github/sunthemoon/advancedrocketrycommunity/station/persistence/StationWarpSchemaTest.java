@@ -21,24 +21,32 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import org.junit.jupiter.api.Test;
 
-/** ADR-044 §6: station root 4 carries the required warp energy list; root 3 upgrades by adding an empty one. */
+/**
+ * ADR-044 §6: station root 4 carries the required warp energy list; root 3 upgrades by adding an empty one.
+ * ADR-065 then takes every root to 5: the orbital clock at tick 0 and record 3 with the initial controls.
+ */
 final class StationWarpSchemaTest {
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.STATIONS;
     private static final UUID STATION = new UUID(21L << 32, 1L);
     private static final UUID RESERVATION = new UUID(21L << 32, 5L);
 
     @Test
-    void rootThreeUpgradeAddsOnlyAnEmptyBalanceListAndIsIdempotent() throws Exception {
+    void rootThreeUpgradeAddsOnlyAnEmptyBalanceListTheClockAndInitialControlsAndIsIdempotent() throws Exception {
         CompoundTag source = rootThree();
         CompoundTag original = source.copy();
         var result = SavedDataSchemaMigrator.migrate(TYPE, source);
         CompoundTag expected = source.copy();
-        expected.putInt("schema_version", 4);
-        expected.putString("format_epoch", "v1.5.0-station-warp");
+        expected.putInt("schema_version", 5);
+        expected.putString("format_epoch", "v1.8.0-station-orbital-controls");
         expected.put("warp_energy", new ListTag());
+        expected.put("orbital_clock", clock(0L));
+        CompoundTag record = expected.getList("stations", Tag.TAG_COMPOUND).getCompound(0);
+        record.putInt("schema_version", 3);
+        record.put("orbital_controls", initialControls(90_000));
         assertEquals(SavedDataSchemaMigrator.MigrationStatus.MIGRATED, result.status());
         assertEquals(3, result.sourceSchema());
-        assertEquals(expected, result.payload(), "Only the root version, epoch and an empty list change");
+        assertEquals(expected, result.payload(),
+                "Only the versions, epoch, an empty list, the clock and the initial controls change");
         assertEquals(original, source);
         assertEquals(1, result.payload().getInt("migrated_from_schema"), "Existing lineage is retained");
         var again = SavedDataSchemaMigrator.migrate(TYPE, result.payload());
@@ -54,6 +62,29 @@ final class StationWarpSchemaTest {
         assertEquals(0, data.warpEnergy(STATION));
         assertTrue(data.warpEnergyBalances().isEmpty());
         assertEquals(RESERVATION, data.reservations().get(0).stationId());
+        assertEquals(90_000, state.environment().solarAngleMilliDegrees());
+        assertEquals(new io.github.sunthemoon.advancedrocketrycommunity.station.model.StationOrbitalControls(
+                4, 90_000, 0, 0, 0, 0, 0, 0L), state.orbitalControls());
+        assertEquals(0L, data.orbitalTick());
+    }
+
+    /** ADR-065 section 5.2.1: exactly the schema and the logical tick. */
+    static CompoundTag clock(long logicalTick) {
+        CompoundTag clock = new CompoundTag();
+        clock.putInt("schema_version", 1);
+        clock.putLong("logical_tick", logicalTick);
+        return clock;
+    }
+
+    /** ADR-065 record 3: distance 4, the EAST phase equal to the stored sun angle, no rotation, epoch 0. */
+    static CompoundTag initialControls(int solarAngle) {
+        CompoundTag controls = new CompoundTag();
+        controls.putInt("format_version", 1);
+        controls.putInt("distance", 4);
+        controls.putIntArray("phases", new int[]{solarAngle, 0, 0});
+        controls.putByteArray("rates", new byte[]{0, 0, 0});
+        controls.putLong("epoch", 0L);
+        return controls;
     }
 
     @Test
@@ -99,15 +130,15 @@ final class StationWarpSchemaTest {
             assertEquals(original, source);
             assertBlockedUnchanged(source);
         }
-        CompoundTag future = rootFour();
-        future.putInt("schema_version", 5);
+        CompoundTag future = currentRoot();
+        future.putInt("schema_version", 6);
         assertEquals(SavedDataSchemaMigrator.MigrationStatus.FUTURE, SavedDataSchemaMigrator.migrate(TYPE, future).status());
         assertBlockedUnchanged(future);
     }
 
     @Test
     void rootFourBalancesRoundTripInStationOrder() throws Exception {
-        CompoundTag source = rootFour();
+        CompoundTag source = currentRoot();
         source.getList("warp_energy", Tag.TAG_COMPOUND).add(entry(STATION, StationLimits.MAX_WARP_ENERGY));
         StationRegistrySavedData data = StationRegistrySavedData.load(source);
         assertTrue(data.operational());
@@ -158,11 +189,11 @@ final class StationWarpSchemaTest {
                 }
         );
         for (Consumer<ListTag> mutation : mutations) {
-            CompoundTag source = rootFour();
+            CompoundTag source = currentRoot();
             mutation.accept(source.getList("warp_energy", Tag.TAG_COMPOUND));
             assertBlockedUnchanged(source);
         }
-        CompoundTag integers = rootFour();
+        CompoundTag integers = currentRoot();
         ListTag wrongType = new ListTag();
         wrongType.add(IntTag.valueOf(10));
         integers.put("warp_energy", wrongType);
@@ -195,7 +226,7 @@ final class StationWarpSchemaTest {
         return StationNbtCodec.encodeWarpEnergy(stationId, energy);
     }
 
-    private static CompoundTag rootFour() throws Exception {
+    private static CompoundTag currentRoot() throws Exception {
         return SavedDataSchemaMigrator.migrate(TYPE, rootThree()).payload();
     }
 
