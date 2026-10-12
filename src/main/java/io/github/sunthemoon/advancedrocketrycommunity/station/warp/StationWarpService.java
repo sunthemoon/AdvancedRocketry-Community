@@ -356,6 +356,10 @@ public final class StationWarpService {
             cooldown.record(confirmed.stationId(), server.getTickCount());
             writeBudget.record(server.getTickCount());
         }
+        if (code == StationManagementCode.WARP_COMMITTED) {
+            result.station().ifPresent(station -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic
+                    .ClassicAdvancementEvents.stationWarped(presentVisitors(server, station)));
+        }
         Component message = code == StationManagementCode.WARP_COMMITTED
                 ? Component.literal(String.format(java.util.Locale.ROOT,
                 "Station warped: %s -> %s (%s, %d FE); warp energy left %d FE.", confirmed.observed().orbitBody(),
@@ -468,6 +472,19 @@ public final class StationWarpService {
             return new Quoted(StationManagementCode.WARP_ROCKETS_IN_MOTION, quote, balance);
         }
         return new Quoted(null, quote, balance);
+    }
+
+    /** ADR-066 §6.2: players in Space inside the committed station region who hold live VISIT access. */
+    private java.util.List<ServerPlayer> presentVisitors(MinecraftServer server, StationState station) {
+        ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
+        if (space == null) {
+            return java.util.List.of();
+        }
+        return space.players().stream()
+                .filter(player -> station.region().contains(player.getBlockX(), player.getBlockZ()))
+                .filter(player -> access.allowed(station, player.getUUID(), player.hasPermissions(2),
+                        StationAccessAction.VISIT))
+                .toList();
     }
 
     /** Server ray pick from the player's eyes: a warp core inside this station's committed region. */
