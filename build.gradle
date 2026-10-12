@@ -1,10 +1,12 @@
 // Derived from the Minecraft Forge 1.20.1-47.4.10 MDK (LGPL-2.1-only).
-// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, 2026-09-01, 2026-09-03, 2026-09-11, 2026-09-26, 2026-09-27, 2026-09-30, 2026-10-01, 2026-10-02, 2026-10-03, and 2026-10-04; see THIRD-PARTY-NOTICES.md.
+// Modified by AdvancedRocketry-Community on 2026-08-26, 2026-08-27, 2026-08-28, 2026-08-30, 2026-08-31, 2026-09-01, 2026-09-03, 2026-09-11, 2026-09-26, 2026-09-27, 2026-09-30, 2026-10-01, 2026-10-02, 2026-10-03, 2026-10-04, and 2026-10-12; see THIRD-PARTY-NOTICES.md.
 plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    // ADR-073: Mixin support for the single IOWorker injection. The Forge Maven in settings.gradle serves the plugin.
+    id 'org.spongepowered.mixin' version '0.7.38'
 }
 
 group = mod_group_id
@@ -113,6 +115,12 @@ minecraft {
                     '--existing', file('src/generated/v1.7/resources/')
         }
     }
+}
+
+// ADR-073: generates the refmap for the main source set and passes the configuration to every run.
+mixin {
+    add sourceSets.main, "${mod_id}.refmap.json"
+    config "${mod_id}.mixins.json"
 }
 
 sourceSets.main.resources {
@@ -287,6 +295,8 @@ if (includeJeiRuntime != 'true' && includeJeiRuntime != 'false') {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // ADR-073: the processor matches the Mixin 0.8.5 that Forge 47.4 ships at runtime.
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
@@ -405,7 +415,8 @@ tasks.named('jar', Jar).configure {
                 'Specification-Version' : '1',
                 'Implementation-Title'  : mod_name,
                 'Implementation-Version': project.version,
-                'Implementation-Vendor' : mod_authors
+                'Implementation-Vendor' : mod_authors,
+                'MixinConfigs'          : "${mod_id}.mixins.json"
         ])
     }
 
