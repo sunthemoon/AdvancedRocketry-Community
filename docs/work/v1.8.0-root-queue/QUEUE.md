@@ -51,7 +51,7 @@ The shared branch `667fa40c` holds every merge above. Hosted run 38206390869 pas
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| [W13F](TASK-W13F-PAD-OCCUPANCY.md) | Fix W13 review R1: named-pad occupancy against parked rocket structure extents | First free slot (priority) |
+| [W14F](TASK-W14F-REVIEW-FIXES.md) | Fix W14 review F1 (stale cartridge-bank identity) and F2 (pipe-seal check-to-use gap) | First free slot (priority) |
 | [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Next free slot |
 | [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | Next free slot |
 
