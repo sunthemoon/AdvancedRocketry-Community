@@ -39,50 +39,72 @@ public final class ForceFieldUnloadGameTests {
         f.load(field.getBlockPos());
         f.level.getChunkAt(f.identity.source()).setUnsaved(true);
         AtomicBoolean unloaded = new AtomicBoolean();
+        AtomicBoolean targetUnloaded = new AtomicBoolean();
         Consumer<ChunkEvent.Unload> witness = event -> {
             if (event.getLevel() == f.level && event.getChunk().getPos().equals(sourceChunk)) { unloaded.set(true); }
+            if (event.getLevel() == f.level && event.getChunk().getPos().equals(targetChunk)) { targetUnloaded.set(true); }
         };
         MinecraftForge.EVENT_BUS.addListener(witness);
-        poll(helper, f, targetChunk, field.getBlockPos(), previous, unloaded, witness, 0);
+        poll(helper, f, targetChunk, field, previous, unloaded, targetUnloaded, witness, 0, false);
     }
     private static void poll(GameTestHelper helper, ForceFieldGameTests.Fixture f, ChunkPos targetChunk,
-            net.minecraft.core.BlockPos target, boolean previous, AtomicBoolean unloaded,
-            Consumer<ChunkEvent.Unload> witness, int attempts) {
+            ForceFieldBlockEntity originalField, boolean previous, AtomicBoolean unloaded, AtomicBoolean targetUnloaded,
+            Consumer<ChunkEvent.Unload> witness, int attempts, boolean releasedTarget) {
         helper.runAfterDelay(1, () -> {
-            // Losing FULL status is not an unload: a pending holder can still return the same live BE.
-            if ((!unloaded.get() || ForceFieldService.loaded(f.level, f.identity.source())) && attempts < 350) {
-                poll(helper, f, targetChunk, target, previous, unloaded, witness, attempts + 1);
+            var target = originalField.getBlockPos();
+            boolean sourceUnavailable = !ForceFieldService.loaded(f.level, f.identity.source());
+            boolean diskReady = unloaded.get() && targetUnloaded.get() && sourceUnavailable && !ForceFieldService.loaded(f.level, target);
+            if ((!releasedTarget && !sourceUnavailable || releasedTarget && !diskReady) && attempts < 350) {
+                poll(helper, f, targetChunk, originalField, previous, unloaded, targetUnloaded, witness, attempts + 1, releasedTarget);
                 return;
             }
+            boolean handedOff = false;
             try {
-                helper.assertTrue(unloaded.get() && !ForceFieldService.loaded(f.level, f.identity.source()), "Source never actually unloaded");
-                helper.assertTrue(ForceFieldService.loaded(f.level, target), "Target chunk did not remain available");
-                var before = f.level.getForcedChunks();
-                ForceFieldService.work(f.level.getServer(), f.data, f.data.view().get(f.identity.key()));
-                ForceFieldService.validate(f.level.getServer(), f.data, new FieldCleanupSavedData.Observation(f.identity, target));
-                helper.assertTrue(!ForceFieldService.loaded(f.level, f.identity.source()) && before.equals(f.level.getForcedChunks())
-                        && !f.data.view().get(f.identity.key()).orphan(), "Unavailable source was loaded or treated as removed");
-                var state = f.level.getBlockState(target);
-                helper.assertTrue(Block.isShapeFullBlock(state.getCollisionShape(f.level, target)), "Unload changed collision");
-                var view = new ServerLevelVolumeWorldView(f.level, false);
-                helper.assertTrue(view.observe(new VolumePosition(target.getX(), target.getY(), target.getZ())) == CellObservation.SEALED,
-                        "Unload made the physical field permeable");
+                if (!releasedTarget) {
+                    helper.assertTrue(sourceUnavailable, "Source never lost FULL availability");
+                    helper.assertTrue(ForceFieldService.loaded(f.level, target), "Target chunk did not remain available");
+                    var before = f.level.getForcedChunks();
+                    ForceFieldService.work(f.level.getServer(), f.data, f.data.view().get(f.identity.key()));
+                    ForceFieldService.validate(f.level.getServer(), f.data, new FieldCleanupSavedData.Observation(f.identity, target));
+                    helper.assertTrue(!ForceFieldService.loaded(f.level, f.identity.source()) && before.equals(f.level.getForcedChunks())
+                            && !f.data.view().get(f.identity.key()).orphan(), "Unavailable source was loaded or treated as removed");
+                    assertSealed(helper, f, target);
+                    // A nearby FULL chunk retains generation dependencies. Release our ticket to witness true disk unloads.
+                    f.level.getChunkSource().removeRegionTicket(FIXTURE_TICKET, targetChunk, 0, targetChunk);
+                    poll(helper, f, targetChunk, originalField, previous, unloaded, targetUnloaded, witness, attempts + 1, true);
+                    handedOff = true;
+                    return;
+                }
+                helper.assertTrue(diskReady, "Source and field never actually unloaded");
                 f.load(f.identity.source());
+                f.load(target);
                 var restored = (ForceFieldProjectorBlockEntity) f.level.getBlockEntity(f.identity.source());
                 helper.assertTrue(restored != f.source && restored.identity().equals(f.identity)
                         && restored.state().claims() == FieldIdentity.bit(32), "Native chunk reload lost projector claims"
                         + " sameInstance=" + (restored == f.source) + " state=" + restored.state());
+                var restoredField = (ForceFieldBlockEntity) f.level.getBlockEntity(target);
+                helper.assertTrue(restoredField != originalField && f.identity.equals(restoredField.identity()), "Native field did not reload its exact identity");
+                assertSealed(helper, f, target);
                 helper.assertTrue(ForceFieldService.validate(f.level.getServer(), f.data,
                         new FieldCleanupSavedData.Observation(f.identity, target)), "Reload did not reconcile an exact field");
                 helper.succeed();
             } finally {
-                MinecraftForge.EVENT_BUS.unregister(witness);
-                f.level.getChunkSource().removeRegionTicket(FIXTURE_TICKET, targetChunk, 0, targetChunk);
-                for (int i = 1; i <= 32; i++) { f.load(f.identity.target(i)); }
-                f.close();
-                ForceFieldConfig.ENABLED.set(previous);
+                if (!handedOff) {
+                    MinecraftForge.EVENT_BUS.unregister(witness);
+                    f.level.getChunkSource().removeRegionTicket(FIXTURE_TICKET, targetChunk, 0, targetChunk);
+                    for (int i = 1; i <= 32; i++) { f.load(f.identity.target(i)); }
+                    f.close();
+                    ForceFieldConfig.ENABLED.set(previous);
+                }
             }
         });
+    }
+    private static void assertSealed(GameTestHelper helper, ForceFieldGameTests.Fixture f, net.minecraft.core.BlockPos target) {
+        var state = f.level.getBlockState(target);
+        helper.assertTrue(Block.isShapeFullBlock(state.getCollisionShape(f.level, target)), "Unload changed collision");
+        var view = new ServerLevelVolumeWorldView(f.level, false);
+        helper.assertTrue(view.observe(new VolumePosition(target.getX(), target.getY(), target.getZ())) == CellObservation.SEALED,
+                "Unload made the physical field permeable");
     }
     private ForceFieldUnloadGameTests() { }
 }
