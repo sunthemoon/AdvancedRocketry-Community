@@ -105,6 +105,9 @@ public final class ForceFieldPlacementGameTests {
             AtomicInteger placements = new AtomicInteger();
             Consumer<BlockEvent.EntityPlaceEvent> vetoPlace = event -> {
                 if (event.getLevel() == f.level && event.getPos().equals(f.pos)) {
+                    helper.assertTrue(f.level.getBlockEntity(f.pos) instanceof ForceFieldProjectorBlockEntity projector
+                            && projector.hasReservation() && data.view().size() == before.getList("entries", 10).size() + 1,
+                            "Cancelled native placement did not hold its own admission reservation");
                     placements.incrementAndGet(); event.setCanceled(true);
                 }
             };
@@ -122,6 +125,47 @@ public final class ForceFieldPlacementGameTests {
                         "Cancelled ItemStack.useOn left a refunded projector or changed cleanup data");
             } finally {
                 MinecraftForge.EVENT_BUS.unregister(vetoPlace); MinecraftForge.EVENT_BUS.unregister(vetoBreak);
+            }
+        }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void snapshotRestorationFlagDoesNotBypassCommittedOrQuarantinedProjectors(GameTestHelper helper) {
+        try (var f = new Placement(helper)) {
+            helper.assertTrue(f.place().consumesAction(), "Committed native fixture placement failed");
+            var source = (ForceFieldProjectorBlockEntity) f.level.getBlockEntity(f.pos);
+            var data = FieldCleanupSavedData.get(f.level.getServer());
+            var previous = source.reservationIdentity();
+            var state = source.state().bind(new UUID(410, 1));
+            var bound = new FieldIdentity(state.id(), state.owner().orElseThrow(), state.generation(),
+                    f.level.dimension(), f.pos, state.direction());
+            helper.assertTrue(data.bindReservation(previous, bound), "Committed native fixture binding failed");
+            var outer = new net.minecraft.nbt.CompoundTag();
+            outer.put(ForceFieldCodecs.PROJECTOR_ROOT, ForceFieldCodecs.projector(state)); source.load(outer);
+            var cleanupBefore = data.save(new net.minecraft.nbt.CompoundTag());
+            Consumer<BlockEvent.BreakEvent> veto = event -> {
+                if (event.getLevel() == f.level && event.getPos().equals(f.pos)) { event.setCanceled(true); }
+            };
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, false, BlockEvent.BreakEvent.class, veto);
+            boolean restoring = f.level.restoringBlockSnapshots;
+            try {
+                f.level.restoringBlockSnapshots = true;
+                for (boolean quarantine : new boolean[]{false, true}) {
+                    if (quarantine) {
+                        var future = ForceFieldCodecs.projector(state); future.putInt("schema", 2);
+                        outer.put(ForceFieldCodecs.PROJECTOR_ROOT, future); source.load(outer);
+                        helper.assertTrue(source.quarantined(), "Future-root fixture did not quarantine");
+                    }
+                    var rawBefore = source.saveWithFullMetadata();
+                    f.level.destroyBlock(f.pos, true);
+                    helper.assertTrue(f.level.getBlockEntity(f.pos) == source
+                            && f.level.getBlockState(f.pos).is(ModBlocks.FORCE_FIELD_PROJECTOR.get())
+                            && source.saveWithFullMetadata().equals(rawBefore)
+                            && data.save(new net.minecraft.nbt.CompoundTag()).equals(cleanupBefore),
+                            "The snapshot-restoration flag bypassed committed/quarantined source protection");
+                }
+            } finally {
+                f.level.restoringBlockSnapshots = restoring; MinecraftForge.EVENT_BUS.unregister(veto);
             }
         }
         helper.succeed();
