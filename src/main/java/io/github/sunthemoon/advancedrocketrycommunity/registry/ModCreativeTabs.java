@@ -109,6 +109,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.PIPE_SEAL.get());
                         output.accept(ModItems.ATMOSPHERE_DETECTOR.get());
                         output.accept(ModItems.JACKHAMMER.get());
+                        output.accept(ModItems.BASIC_LASER_GUN.get());
                         output.accept(io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent.WORKSTATION.get());
                         io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent.modules().values()
                                 .forEach(item -> output.accept(item.get().getDefaultInstance()));

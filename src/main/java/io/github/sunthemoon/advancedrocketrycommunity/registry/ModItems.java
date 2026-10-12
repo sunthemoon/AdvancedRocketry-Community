@@ -30,6 +30,8 @@ public final class ModItems {
     );
 
     public static final RegistryObject<Item> JACKHAMMER = ITEMS.register("jackhammer", JackhammerItem::new);
+    public static final RegistryObject<Item> BASIC_LASER_GUN = ITEMS.register("basic_laser_gun",
+            io.github.sunthemoon.advancedrocketrycommunity.equipment.laser.BasicLaserGunItem::new);
     public static final RegistryObject<Item> CO2_SCRUBBER = blockItem("co2_scrubber", ModBlocks.CO2_SCRUBBER);
     public static final RegistryObject<Item> PIPE_SEAL = blockItem("pipe_seal", ModBlocks.PIPE_SEAL);
     public static final RegistryObject<Item> ATMOSPHERE_DETECTOR = blockItem("atmosphere_detector", ModBlocks.ATMOSPHERE_DETECTOR);
