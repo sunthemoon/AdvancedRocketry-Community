@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-12 21:00) |
+| Slice | Scope | Pipeline state (2026-10-12 21:20) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -37,7 +37,7 @@ give their SHA-256 values.
 | [W09](TASK-W09-PACED-ROCKET-FIXTURES.md) | Paced entity readiness for the rocket fixtures (test code only) | **Merged** `487da4e6` (hosted run 38217303450; Root review: no assertion or timeout lost) |
 | [W04G](TASK-W04G-FOLLOWUPS.md) | Force field N1–N3 | **Merged** `f557e5c0` (hosted run 38220027274; re-review MERGE-WITH-FOLLOWUP). Optional N4–N6 stay open |
 | [W10](TASK-W10-C16C-MACHINES.md) | C16c crystallizer, chemical reactor, laser etcher, centrifuge | **Merged** `7324a7dd` (hosted run 38224855115; review MERGE-WITH-FOLLOWUP, open Low W10-R1). All seven classic machines are now on the kernel |
-| [W11a](TASK-W11A-D3-ESCROW-DESIGN.md) | D3-A escrow coordinator design (design only) | Round 1 `2c2abb47`. Independent review (Codex) **REDESIGN** (REVIEW.md SHA-256 `1cfcbb8f…`): F1 and F2 Critical (the endpoint proof after a failed vanilla write; `accept-current` releases an unproved credit), F3 and F4 High (recovery ignores floors; floors are not reserved), F5 to F7 Medium, F8 Low. Root accepted all eight and split W11b into W11b1 to W11b3. Round 2 ([TASK-W11A2](TASK-W11A2-D3-REDESIGN.md), on the W11a branch) by Codex since 20:51; its review goes to Claude |
+| [W11a](TASK-W11A-D3-ESCROW-DESIGN.md) | D3-A escrow coordinator design (design only) | Round 1 `2c2abb47`. Independent review (Codex) **REDESIGN** (REVIEW.md SHA-256 `1cfcbb8f…`): F1 and F2 Critical (the endpoint proof after a failed vanilla write; `accept-current` releases an unproved credit), F3 and F4 High (recovery ignores floors; floors are not reserved), F5 to F7 Medium, F8 Low. Root accepted all eight and split W11b into W11b1 to W11b3. Round 2 ([TASK-W11A2](TASK-W11A2-D3-REDESIGN.md)) delivered by Codex: `a411454c` and `9caa0560`. Independent round-2 review (Claude) running since 21:18 |
 | [W12](TASK-W12-ADVANCEMENTS.md) | C18c classic advancements and reachability guide | **Merged** `667fa40c` (hosted run 38229336877; Root review). Follow-ups: model the machine recipe types in `PackagedRecipeGraph` and restore its strict failure; crystallizer and dilithium advancements; the world-first milestones after rocket journal schema 3 (W11) |
 | Root fix | Cutting machine model pointed at a missing `machine_casing` texture (found by W08's `validate_repository.py` run) | **Fixed** `0596d124` |
 | [W13](TASK-W13-LANDING-PADS.md) | C17b landing pads as named flight targets | **Merged** `19da6240` (hosted run 38248887802; W13F re-review MERGE-WITH-FOLLOWUP). Follow-ups: N1 loaded-only discovery residual; N2 three weak GameTest assertions; N3 station-wide refusal diagnostics; the legacy selector's R1 pattern |
@@ -46,15 +46,15 @@ give their SHA-256 values.
 | [W15](TASK-W15-RECIPE-GRAPH-MACHINES.md) | C16d: machine recipe types in `PackagedRecipeGraph`, strict failure restored, crystallizer and dilithium advancements | **Merged** `f5038f2f` (hosted run 38239083487; Root audit: every changed assertion is stricter). The graph reports 18 acquisition gaps, which go to W19 |
 | [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Design `5d522973`. The Claude implementer stopped at a usage limit; Codex continues from the worktree state since 20:21 |
 | [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | Implementer (Claude) running since 20:44 |
+| [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps | Implementer (Codex) running since 21:17 |
 
-The shared branch `a859d2f4` holds every merge above. Hosted run 38248766859 passed at `6a20a674`. Hosted run 38206390869 passed at
+The shared branch `a859d2f4` holds every merge above. Hosted run 38251946851 passed at `a859d2f4`. Hosted run 38206390869 passed at
 `ebf4c07b`, before the force field merge. Run 38208930066 passed at `17fb7e15`; run 38219141393 checks `487da4e6`.
 
 ## Queued
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps (code-backed fluids, Mars, dust sources) | Next free slot |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
