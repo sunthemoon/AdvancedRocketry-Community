@@ -98,6 +98,26 @@ class EscrowLedgerWriterTest {
         assertThrows(IllegalArgumentException.class, () -> EscrowLedgerWriter.Snapshot.of(
                 EscrowTestFixtures.ledger(), Set.of(EscrowTestFixtures.id(999))));
     }
+    @Test void delayedSuccessorCannotBurstTwoActualLedgerStartsInsideTenTicks() throws Exception {
+        var base = EscrowTestFixtures.ledger(); CountDownLatch staged = new CountDownLatch(1), release = new CountDownLatch(1);
+        AtomicInteger stages = new AtomicInteger();
+        try (var writer = new EscrowLedgerWriter(file(), 0, (pending, target) -> {
+            if (stages.incrementAndGet() == 1) { staged.countDown(); await(release); }
+            CheckedSavedDataFile.atomicMove(pending, target);
+        })) {
+            assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(1), Set.of()), result -> { }));
+            assertTrue(staged.await(5, TimeUnit.SECONDS)); writer.tick(10);
+            assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(2), Set.of()), result -> { }));
+            writer.tick(100); release.countDown();
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (writer.lastGeneration() < 2 && System.nanoTime() < deadline) { writer.tick(100); Thread.sleep(1); }
+            assertEquals(100, writer.lastIoStart());
+            assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(3), Set.of()), result -> { }));
+            while (writer.lastGeneration() < 3 && System.nanoTime() < deadline) { writer.tick(101); Thread.sleep(1); }
+            assertEquals(3, writer.lastGeneration()); assertEquals(100, writer.lastIoStart());
+            writer.tick(109); assertEquals(100, writer.lastIoStart()); writer.tick(110); assertEquals(110, writer.lastIoStart());
+        } finally { release.countDown(); }
+    }
     @Test void anInvalidatedProofAtTheStagingBoundaryKeepsThePreviousLedger() throws Exception {
         var base = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)).generation(1);
         var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW);
@@ -149,7 +169,7 @@ class EscrowLedgerWriterTest {
         try { if (!latch.await(5, TimeUnit.SECONDS)) { throw new AssertionError("Writer test gate timed out"); } }
         catch (InterruptedException failure) { throw new AssertionError(failure); }
     }
-    private static void poll(EscrowLedgerWriter writer, java.util.function.BooleanSupplier done) throws Exception {
+    static void poll(EscrowLedgerWriter writer, java.util.function.BooleanSupplier done) throws Exception {
         long end = System.nanoTime() + TimeUnit.SECONDS.toNanos(10); long tick = 0;
         while (!done.getAsBoolean() && System.nanoTime() < end) { writer.tick(tick++); Thread.sleep(1); }
         assertTrue(done.getAsBoolean(), "Bounded writer did not complete");

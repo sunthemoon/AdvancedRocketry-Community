@@ -31,7 +31,7 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
                 && source.level().equals(destination.level())
                 && guard.rocket().equals(destination.logicalRocket()), "Invalid propulsion endpoints");
         EscrowTags.require(phase != Phase.REPAIR || reason.manual(), "Repair needs a manual reason");
-        EscrowTags.require(phase != Phase.STALLED || reason.barrierFailure(), "Stalled needs a barrier reason");
+        EscrowTags.require(phase != Phase.STALLED || reason.retryableProofFailure(), "Stalled needs a proof failure reason");
         EscrowTags.require(!reason.manual() || phase == Phase.REPAIR
                 || phase == Phase.SETTLING_ACCEPT || phase == Phase.SETTLING_ABANDON, "Manual conflict phase");
         payload = payload.copy();
@@ -39,9 +39,12 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
 
     @Override public CompoundTag payload() { return payload.copy(); }
     public EscrowOperation withReason(EscrowReason next) {
+        if (phase == Phase.SETTLING_ACCEPT || phase == Phase.SETTLING_ABANDON) {
+            EscrowTags.require(next == reason, "Settlement cannot become an ordinary retry"); return this;
+        }
         EscrowTags.require(!reason.manual() || next == reason, "Manual repair cannot clear through an automatic retry");
         return new EscrowOperation(id, sequence, owner, createdTick,
-                next.manual() ? Phase.REPAIR : next.barrierFailure() ? Phase.STALLED : Phase.PREPARED,
+                next.manual() ? Phase.REPAIR : next.retryableProofFailure() ? Phase.STALLED : Phase.PREPARED,
                 next, payload, payloadHash, source, destination, guard);
     }
 }

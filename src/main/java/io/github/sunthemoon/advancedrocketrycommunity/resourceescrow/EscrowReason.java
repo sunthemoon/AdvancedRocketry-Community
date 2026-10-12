@@ -24,6 +24,8 @@ public enum EscrowReason {
         };
     }
 
+    public boolean retryableProofFailure() { return barrierFailure() || this == SUPERSEDING_SAVE; }
+
     public static int backoff(int failures) {
         if (failures <= 0) { throw new IllegalArgumentException("Nonpositive failure count"); }
         return failures == 1 ? 100 : failures == 2 ? 400 : 1_200;

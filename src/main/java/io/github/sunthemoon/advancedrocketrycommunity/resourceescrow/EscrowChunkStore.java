@@ -31,6 +31,11 @@ public final class EscrowChunkStore {
     private EscrowEntityStore entities;
 
     public EscrowChunkStore(ServerLevel level, EscrowSaveMonitor monitor) { this.level = level; this.monitor = monitor; }
+    IOWorker entityWorkerForTests() {
+        EscrowTestEndpoints.requireEnabled(level.getServer());
+        if (entities == null) { entities = new EscrowEntityStore(level, monitor); }
+        return entities.original().worker;
+    }
     public Capture captureAndStore(EscrowEndpoint endpoint, Predicate<CompoundTag> validator) {
         EscrowTags.require(level.getServer().isSameThread() && level.dimension().location().toString().equals(endpoint.level()), "Wrong endpoint thread/Level");
         boolean entity = endpoint.kind() == EscrowEndpoint.Kind.ENTITY;

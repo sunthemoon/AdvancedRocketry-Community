@@ -29,9 +29,11 @@ public final class ResourceEscrowSavedData extends SavedData {
         if (coordinator == null) {
             var file = server.getWorldPath(LevelResource.ROOT).resolve("data")
                     .resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
-            coordinator = new EscrowCoordinator(this, new EscrowLedgerWriter(file, ledger.writerGeneration(),
+            var writer = new EscrowLedgerWriter(file, ledger.writerGeneration(),
                     EscrowRuntime.of(server).ledgerCommitter(server),
-                    EscrowRuntime.of(server)::checkpoint));
+                    EscrowRuntime.of(server)::checkpoint);
+            writer.timings(EscrowRuntime.of(server).timings());
+            coordinator = new EscrowCoordinator(this, writer);
         }
         return coordinator;
     }

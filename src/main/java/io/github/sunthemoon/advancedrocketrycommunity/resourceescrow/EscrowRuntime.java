@@ -34,6 +34,19 @@ public final class EscrowRuntime {
     private boolean stopping;
     private EscrowReleaseProbe probe;
     private EscrowChainReleaseProbe chainProbe;
+    private EscrowRecoveryReleaseProbe recoveryProbe;
+    private EscrowBenchmarkProbe benchmark;
+    EscrowTimingSink timings() { return benchmark == null ? EscrowTimingSink.NONE : benchmark; }
+    private EscrowReconciliationScheduler scheduler;
+    private EscrowTestReconciliation reconciliation;
+    boolean stopping() { return stopping; }
+    EscrowTestReconciliation reconcileTests(EscrowCoordinator coordinator, java.util.List<EscrowTestEndpoints.Fixture> fixtures,
+                                          java.util.function.Predicate<EscrowEndpoint> veto) {
+        if (reconciliation != null) { reconciliation.close(); }
+        reconciliation = new EscrowTestReconciliation(coordinator, this, fixtures, veto);
+        scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition, reconciliation);
+        return reconciliation;
+    }
     public void checkpoint(String cut) { if (probe != null) { probe.checkpoint(cut); } }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
@@ -59,7 +72,7 @@ public final class EscrowRuntime {
     public EscrowSaveMonitor monitor() { return monitor; }
     public EscrowBarrier barrier() {
         EscrowTags.require(!stopping, "Escrow runtime is stopping");
-        if (barrier == null) { barrier = new EscrowBarrier(this::checkpoint); } return barrier;
+        if (barrier == null) { barrier = new EscrowBarrier(this::checkpoint, new java.util.concurrent.atomic.AtomicBoolean(true), timings()); } return barrier;
     }
     public EscrowChunkStore store(ServerLevel level) {
         EscrowTags.require(!stopping && (stores.containsKey(level.dimension()) || stores.size() < 64), "Escrow Level service limit exceeded");
@@ -83,12 +96,28 @@ public final class EscrowRuntime {
         if (event.phase != TickEvent.Phase.END) { return; }
         var runtime = of(event.getServer()); if (runtime.stopping) { return; }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
-        if (data != null) { data.tick(event.getServer().getTickCount()); }
+        if (data != null) {
+            var coordinator = data.bind(event.getServer());
+            if (runtime.scheduler == null) {
+                runtime.scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition,
+                        (op, records, completion) -> completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.WAITING_UNLOADED, false)));
+            }
+            data.tick(event.getServer().getTickCount());
+        }
         if (runtime.barrier != null) { runtime.barrier.tick(event.getServer().getTickCount()); }
+        if (runtime.scheduler != null && data != null) {
+            runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).autosave();
+        }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.equals("C1") || testCase.equals("C2")) {
+            if (testCase.equals("BENCH")) {
+                if (runtime.benchmark == null) { runtime.benchmark = new EscrowBenchmarkProbe(event.getServer(), runtime); }
+                runtime.benchmark.tick();
+            } else if (testCase.equals("E5")) {
+                if (runtime.recoveryProbe == null) { runtime.recoveryProbe = new EscrowRecoveryReleaseProbe(event.getServer()); }
+                runtime.recoveryProbe.tick();
+            } else if (testCase.equals("C1") || testCase.equals("C2") || testCase.equals("C3")) {
                 if (runtime.chainProbe == null) { runtime.chainProbe = new EscrowChainReleaseProbe(event.getServer()); }
                 runtime.chainProbe.tick();
             } else {
@@ -97,12 +126,23 @@ public final class EscrowRuntime {
             }
         }
     }
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void benchmarkStart(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            var benchmark = of(event.getServer()).benchmark; if (benchmark != null) { benchmark.startTick(); }
+        }
+    }
+    @SubscribeEvent(priority = EventPriority.LOWEST) public static void benchmarkEnd(TickEvent.ServerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            var benchmark = of(event.getServer()).benchmark; if (benchmark != null) { benchmark.endTick(); }
+        }
+    }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
         if (runtime.barrier != null) { runtime.barrier.quiesce(); }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) { data.stop(); }
         if (runtime.barrier != null) { runtime.barrier.close(); }
+        if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {
         private final EscrowRuntime runtime = new EscrowRuntime();

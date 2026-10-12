@@ -29,6 +29,35 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class EscrowCoreGameTests {
     private EscrowCoreGameTests() { }
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 200)
+    public static void jointTerrainSlotProofRetainsTheOtherEndpointLease(GameTestHelper helper) {
+        var level = helper.getLevel(); BlockPos position = new BlockPos(530_001, 100, 530_001);
+        var chunk = new net.minecraft.world.level.ChunkPos(position);
+        level.getChunkSource().addRegionTicket(net.minecraft.server.level.TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
+        level.getChunk(chunk.x, chunk.z);
+        var first = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
+        var op1 = first.operation(1); first.apply(op1);
+        var second = EscrowTestEndpoints.chainSource(first, position.offset(4, 0, 0));
+        var op2 = second.operation(2); second.apply(op2);
+        var runtime = EscrowRuntime.of(level.getServer()); var barrier = new EscrowBarrier(); var started = new AtomicBoolean();
+        helper.onEachTick(() -> {
+            barrier.tick(level.getServer().getTickCount()); if (started.get()) { return; }
+            started.set(barrier.beginJoint(runtime.store(level), List.of(
+                    new EscrowBarrier.Target(op1.source(), first.sourceState(), EscrowTestEndpoints.validator(op1.source(), first.sourceState())),
+                    new EscrowBarrier.Target(op2.source(), second.sourceState(), EscrowTestEndpoints.validator(op2.source(), second.sourceState()))),
+                    level.getServer().getTickCount(), result -> {
+                        helper.assertTrue(result.confirmed() && result.proofs().size() == 2, "Joint terrain proof did not confirm both endpoints");
+                        var a = result.proofs().get(op1.source().key()); var b = result.proofs().get(op2.source().key());
+                        helper.assertTrue(a.capture() == b.capture(), "Joint endpoints did not share their own store/readback");
+                        a.release(); helper.assertTrue(b.valid(), "Releasing one joint endpoint invalidated the other");
+                        runtime.monitor().observed(op2.source().level(), false, chunk);
+                        helper.assertTrue(!b.valid(), "A newer save did not invalidate all surviving slot tokens");
+                        b.release(); barrier.close(); first.bank().discard();
+                        level.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
+                        helper.succeed();
+                    }));
+        });
+    }
+    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 200)
     public static void ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier(GameTestHelper helper) {
         var level = helper.getLevel();
         // The framework's template cleanup and the other adversarial fixture must not save this slot.

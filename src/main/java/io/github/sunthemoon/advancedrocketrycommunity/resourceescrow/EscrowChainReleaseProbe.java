@@ -24,6 +24,7 @@ final class EscrowChainReleaseProbe {
     private final ServerLevel level;
     private final String cut;
     private final boolean recovery;
+    private final BlockPos secondPosition;
     private ResourceEscrowSavedData data;
     private EscrowCoordinator coordinator;
     private EscrowTestEndpoints.Fixture first, second;
@@ -35,9 +36,10 @@ final class EscrowChainReleaseProbe {
     EscrowChainReleaseProbe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server); this.server = server; level = server.overworld();
         cut = System.getProperty("advancedrocketrycommunity.escrowCase");
-        EscrowTags.require(cut.equals("C1") || cut.equals("C2"), "Unknown chain case");
+        EscrowTags.require(cut.equals("C1") || cut.equals("C2") || cut.equals("C3"), "Unknown chain case");
+        secondPosition = cut.equals("C3") ? A.offset(4, 0, 0) : B;
         recovery = System.getProperty("advancedrocketrycommunity.escrowScenario").equals("recover");
-        for (BlockPos position : List.of(A, B)) {
+        for (BlockPos position : List.of(A, secondPosition)) {
             ChunkPos chunk = new ChunkPos(position);
             level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             level.getChunk(chunk.x, chunk.z); // Fixed test setup, not admission input.
@@ -49,7 +51,7 @@ final class EscrowChainReleaseProbe {
             data = ResourceEscrowSavedData.forTests(server); coordinator = data.bind(server);
             if (recovery) { restore(); } else {
                 first = EscrowTestEndpoints.create(level, A, data.ledger().id());
-                second = EscrowTestEndpoints.chainSource(first, B);
+                second = EscrowTestEndpoints.chainSource(first, secondPosition);
             }
         }
         switch (step) {
@@ -69,7 +71,10 @@ final class EscrowChainReleaseProbe {
                 coordinator.freeze(operations.get(0).source().key(), first.sourceState());
                 coordinator.freeze(operations.get(1).source().key(), second.sourceState()); step = 6;
             }
-            case 6 -> prove(operations.get(0).source(), first.sourceState(), true, 7);
+            case 6 -> {
+                if (cut.equals("C3")) { proveSources(8); }
+                else { prove(operations.get(0).source(), first.sourceState(), true, 7); }
+            }
             case 7 -> prove(operations.get(1).source(), second.sourceState(), true, 8);
             case 8 -> {
                 if (!recovery && cut.equals("C1")) { pause(); }
@@ -89,8 +94,30 @@ final class EscrowChainReleaseProbe {
                 } catch (IllegalArgumentException expected) { reverseRefused = true; }
                 EscrowTags.require(holeRefused && reverseRefused, "Chain hole or opposite-direction request was accepted");
                 if (!recovery && cut.equals("C2")) { pause(); }
-                waiting = coordinator.retire(Set.of(operations.get(0).id(), op.id()), proofs, result -> {
-                    EscrowTags.require(result, "Chain retirement failed"); waiting = false; step = 11;
+                Set<UUID> retired = cut.equals("C3") ? Set.of(operations.get(0).id()) : Set.of(operations.get(0).id(), op.id());
+                waiting = coordinator.retire(retired, proofs, result -> {
+                    EscrowTags.require(result, "Chain retirement failed");
+                    if (cut.equals("C3")) {
+                        EscrowTestEndpoints.clearRetired(first, retired); EscrowTestEndpoints.clearRetired(second, retired);
+                        EscrowTags.require(first.sourceState().markers().isEmpty() && second.sourceState().markers().size() == 1
+                                && first.bankState().markers().size() == 1 && first.bankState().epoch() == 2
+                                && coordinator.locked(op.destination().key()) && !coordinator.locked(operations.get(0).source().key()), "Partial retirement lost a later marker or lock");
+                    }
+                    waiting = false; step = cut.equals("C3") ? 12 : 11;
+                });
+            }
+            case 12 -> {
+                var last = operations.get(operations.size() - 1);
+                coordinator.freeze(last.source().key(), second.sourceState());
+                coordinator.freeze(last.destination().key(), first.bankState()); proveSources(13);
+            }
+            case 13 -> prove(operations.get(operations.size() - 1).destination(), first.bankState(), true, 14);
+            case 14 -> { if (!recovery) { pause(); } step = 15; }
+            case 15 -> {
+                var op = operations.get(operations.size() - 1);
+                waiting = coordinator.retire(Set.of(op.id()), proofs, result -> {
+                    EscrowTags.require(result, "Partial chain successor retirement failed");
+                    EscrowTestEndpoints.clearRetired(second, Set.of(op.id())); waiting = false; step = 11;
                 });
             }
             case 11 -> {
@@ -103,6 +130,7 @@ final class EscrowChainReleaseProbe {
                         "Chain conservation, epochs or retirement failed");
                 AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_ESCROW_CHAIN_RESULT source_a={} source_b={} bank={} records={} epochs=1,1,2", a, b, bank, data.ledger().records().size());
                 done = true;
+                proofs.values().forEach(EscrowBarrier.Proof::release);
             }
             default -> throw new IllegalStateException("Unknown chain stage");
         }
@@ -123,14 +151,31 @@ final class EscrowChainReleaseProbe {
                     waiting = false; step = next;
                 });
     }
+    private void proveSources(int next) {
+        var a = first.operation(1).source(); var b = second.operation(2).source(); var runtime = EscrowRuntime.of(server);
+        waiting = runtime.barrier().beginJoint(runtime.store(level), List.of(
+                new EscrowBarrier.Target(a, first.sourceState(), EscrowTestEndpoints.validator(a, first.sourceState())),
+                new EscrowBarrier.Target(b, second.sourceState(), EscrowTestEndpoints.validator(b, second.sourceState()))), server.getTickCount(), result -> {
+                    EscrowTags.require(result.confirmed(), "Joint source barrier failed: " + result.reason());
+                    result.proofs().forEach((key, proof) -> { var old = proofs.put(key, proof); if (old != null) { old.release(); } });
+                    waiting = false; step = next;
+                });
+    }
     private void restore() {
         var banks = level.getEntitiesOfClass(ArmorStand.class, new AABB(A).inflate(8), entity -> true);
-        EscrowTags.require(level.getBlockEntity(A) != null && level.getBlockEntity(B) != null && banks.size() == 1, "Missing chain fixtures");
+        EscrowTags.require(level.getBlockEntity(A) != null && level.getBlockEntity(secondPosition) != null && banks.size() == 1, "Missing chain fixtures");
         var bank = banks.get(0); UUID logical = bank.getPersistentData().getCompound("arce_escrow_fixture").getUUID("identity");
         first = new EscrowTestEndpoints.Fixture(level, level.getBlockEntity(A), bank, data.ledger().id(), logical);
-        second = new EscrowTestEndpoints.Fixture(level, level.getBlockEntity(B), bank, data.ledger().id(), logical);
+        second = new EscrowTestEndpoints.Fixture(level, level.getBlockEntity(secondPosition), bank, data.ledger().id(), logical);
         operations.addAll(data.ledger().records());
         if (operations.isEmpty()) { step = 11; return; }
+        if (cut.equals("C3") && operations.size() == 1) {
+            Set<UUID> retained = operations.stream().map(EscrowOperation::id).collect(java.util.stream.Collectors.toSet());
+            Set<UUID> retired = java.util.stream.Stream.concat(first.sourceState().markers().stream(), first.bankState().markers().stream())
+                    .map(EscrowPrefix.Marker::operation).filter(id -> !retained.contains(id)).collect(java.util.stream.Collectors.toSet());
+            EscrowTestEndpoints.clearRetired(first, retired); EscrowTestEndpoints.clearRetired(second, retired);
+            second.apply(operations.get(0)); step = 12; return;
+        }
         EscrowTags.require(operations.size() == 2, "Unexpected chain ledger");
         first.apply(operations.get(0)); second.apply(operations.get(1));
         coordinator.freeze(operations.get(0).source().key(), first.sourceState());

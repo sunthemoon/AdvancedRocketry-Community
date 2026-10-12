@@ -150,10 +150,19 @@ public final class EscrowTestEndpoints {
         return state(persistent, ledger, endpoint.kind() == EscrowEndpoint.Kind.ENTITY);
     }
     public static void clearRetired(Fixture fixture) {
+        var ids = java.util.stream.Stream.concat(fixture.sourceState().markers().stream(), fixture.bankState().markers().stream())
+                .map(EscrowPrefix.Marker::operation).collect(java.util.stream.Collectors.toSet());
+        clearRetired(fixture, ids);
+    }
+    public static void clearRetired(Fixture fixture, java.util.Set<UUID> retired) {
         requireEnabled(fixture.level().getServer());
         var source = fixture.sourceState(); var bank = fixture.bankState();
-        putState(fixture.source().getPersistentData(), new EscrowPrefix.State(source.ledger(), source.epoch(), source.signature(), List.of()), false);
-        putState(fixture.bank().getPersistentData(), new EscrowPrefix.State(bank.ledger(), bank.epoch(), bank.signature(), List.of()), true);
+        putState(fixture.source().getPersistentData(), prune(source, retired), false);
+        putState(fixture.bank().getPersistentData(), prune(bank, retired), true);
         fixture.source().setChanged();
+    }
+    static EscrowPrefix.State prune(EscrowPrefix.State state, java.util.Set<UUID> retired) {
+        return new EscrowPrefix.State(state.ledger(), state.epoch(), state.signature(),
+                state.markers().stream().filter(marker -> !retired.contains(marker.operation())).toList());
     }
 }
