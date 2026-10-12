@@ -1,0 +1,32 @@
+{
+  "parent": "advancedrocketrycommunity:classic/suited_up",
+  "criteria": {
+    "arrived": {
+      "conditions": {
+        "to": "advancedrocketrycommunity:moon"
+      },
+      "trigger": "minecraft:changed_dimension"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.moon_surface_visit.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:moon_turf"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.moon_surface_visit.title"
+    }
+  },
+  "requirements": [
+    [
+      "arrived"
+    ]
+  ],
+  "rewards": {}
+}

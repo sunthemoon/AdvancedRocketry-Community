@@ -171,9 +171,15 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         var result = MultiblockLifecycleCoordinator.revalidate(checkpoint.structure(), pattern, server.dimension(),
                 worldPosition, world, new LoadedPartBindingGateway(access));
         if (result.controllerState().formationState() == MultiblockFormationState.FORMED) {
+            long generation = checkpoint.structure().generation();
             checkpoint = new ClassicCheckpoint(result.controllerState(), claims, resources, checkpoint.job(),
                     checkpoint.batchOrdinal(), checkpoint.lastTransaction());
             ready = true; lookupNeeded = true; reason = ClassicWait.INPUT;
+            // ADR-066 §6.2: a new binding generation is an actual formation; resuming the same one is not.
+            if (result.controllerState().generation() > generation) {
+                io.github.sunthemoon.advancedrocketrycommunity.progression.classic.ClassicAdvancementEvents
+                        .multiblockFormed(server, worldPosition);
+            }
         } else {
             // A rolled-back live binding can still have established a durable owner claim.
             claims.removeIf(position -> !checkpoint.claimedParts().contains(position)

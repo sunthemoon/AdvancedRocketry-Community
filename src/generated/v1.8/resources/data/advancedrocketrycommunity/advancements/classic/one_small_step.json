@@ -1,0 +1,29 @@
+{
+  "parent": "advancedrocketrycommunity:classic/moon_landing",
+  "criteria": {
+    "pending": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.one_small_step.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:space_suit_boots"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.one_small_step.title"
+    }
+  },
+  "requirements": [
+    [
+      "pending"
+    ]
+  ],
+  "rewards": {}
+}

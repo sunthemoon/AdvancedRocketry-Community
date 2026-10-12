@@ -253,6 +253,16 @@ final class RocketTransferEntities {
         }
     }
 
+    /** Players riding the rocket who hold a seat in its current manifest (at most the manifest size). */
+    static List<ServerPlayer> aboard(RocketEntity rocket) {
+        var manifest = rocket.flightData().orElseThrow().passengers();
+        return rocket.getPassengers().stream()
+                .filter(ServerPlayer.class::isInstance)
+                .map(ServerPlayer.class::cast)
+                .filter(player -> manifest.assignment(player.getUUID()).isPresent())
+                .toList();
+    }
+
     static void movePassenger(
             ServerPlayer passenger,
             RocketEntity destination,

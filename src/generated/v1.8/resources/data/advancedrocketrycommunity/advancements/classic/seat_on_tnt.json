@@ -1,0 +1,32 @@
+{
+  "parent": "advancedrocketrycommunity:classic/root",
+  "criteria": {
+    "event": {
+      "conditions": {
+        "event": "seat_on_tnt"
+      },
+      "trigger": "advancedrocketrycommunity:classic_event"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.seat_on_tnt.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:rocket_seat"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.seat_on_tnt.title"
+    }
+  },
+  "requirements": [
+    [
+      "event"
+    ]
+  ],
+  "rewards": {}
+}

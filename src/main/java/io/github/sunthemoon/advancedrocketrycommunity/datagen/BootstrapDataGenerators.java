@@ -62,6 +62,7 @@ public final class BootstrapDataGenerators {
                 blockTags.contentsGetter(), existingFiles));
         generator.addProvider(event.includeServer(), new V180MaterialRecipes(output));
         generator.addProvider(event.includeServer(), new V180ClassicAdvancementData(output));
+        generator.addProvider(event.includeServer(), new V180ClassicMilestoneAdvancementData(output));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180AtmosphereAnalyzerData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
