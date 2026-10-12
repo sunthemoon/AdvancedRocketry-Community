@@ -33,6 +33,7 @@ public final class EscrowRuntime {
     private EscrowBarrier barrier;
     private boolean stopping;
     private EscrowReleaseProbe probe;
+    private EscrowChainReleaseProbe chainProbe;
     public void checkpoint(String cut) { if (probe != null) { probe.checkpoint(cut); } }
     public static EscrowRuntime of(MinecraftServer server) {
         return server.overworld().getCapability(CAPABILITY).orElseThrow(() -> new IllegalStateException("Missing escrow lifetime service"));
@@ -68,8 +69,14 @@ public final class EscrowRuntime {
         if (runtime.barrier != null) { runtime.barrier.tick(event.getServer().getTickCount()); }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
-            if (runtime.probe == null) { runtime.probe = new EscrowReleaseProbe(event.getServer()); }
-            runtime.probe.tick();
+            String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
+            if (testCase.equals("C1") || testCase.equals("C2")) {
+                if (runtime.chainProbe == null) { runtime.chainProbe = new EscrowChainReleaseProbe(event.getServer()); }
+                runtime.chainProbe.tick();
+            } else {
+                if (runtime.probe == null) { runtime.probe = new EscrowReleaseProbe(event.getServer()); }
+                runtime.probe.tick();
+            }
         }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {

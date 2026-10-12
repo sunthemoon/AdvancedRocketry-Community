@@ -69,6 +69,14 @@ public final class EscrowTestEndpoints {
         level.addFreshEntity(bank); source.setChanged();
         return new Fixture(level, source, bank, ledger, logical);
     }
+    public static Fixture chainSource(Fixture first, BlockPos position) {
+        requireEnabled(first.level().getServer());
+        EscrowTags.require(first.level().hasChunkAt(position), "Chain source requires an already loaded chunk");
+        first.level().setBlockAndUpdate(position, Blocks.CHEST.defaultBlockState());
+        BlockEntity source = first.level().getBlockEntity(position);
+        initialize(source.getPersistentData(), UUID.randomUUID(), 5_000, 16_000, first.ledger()); source.setChanged();
+        return new Fixture(first.level(), source, first.bank(), first.ledger(), first.logical());
+    }
     private static void initialize(CompoundTag persistent, UUID identity, int amount, int capacity, UUID ledger) {
         CompoundTag fixture = new CompoundTag(); fixture.putUUID("identity", identity); fixture.putInt("amount", amount);
         fixture.putInt("capacity", capacity); persistent.put(FIXTURE, fixture);

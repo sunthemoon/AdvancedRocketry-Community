@@ -22,8 +22,9 @@ from inspect_celestial_saved_data import NbtReader
 from run_v060_flight_server_smoke import _server_command
 
 
-CASES = tuple(f"K{i}" for i in range(11)) + ("G3",)
+CASES = tuple(f"K{i}" for i in range(11)) + ("C1", "C2", "E2", "G3", "G3L2")
 RESULT = re.compile(r"ARCE_RELEASE_ESCROW_RESULT source=(\d+) bank=(\d+) records=(\d+) source_epoch=(\d+) bank_epoch=(\d+) ledger=([0-9a-f-]{36})")
+CHAIN_RESULT = re.compile(r"ARCE_RELEASE_ESCROW_CHAIN_RESULT source_a=(\d+) source_b=(\d+) bank=(\d+) records=(\d+) epochs=1,1,2")
 LEDGER = "advancedrocketrycommunity_resource_escrow.dat"
 
 
@@ -49,10 +50,10 @@ def ledger(path: Path) -> dict:
     return data
 
 
-def record(path: Path) -> dict:
-    # Fixture chunk [4,4], slot 132. Inline records only; no unbounded decompression.
+def record(path: Path, slot: int = 132) -> dict:
+    # Fixture chunks [4,4] and (chains only) [5,4]. Inline records only.
     with path.open("rb") as stream:
-        stream.seek(132 * 4)
+        stream.seek(slot * 4)
         location = struct.unpack(">I", stream.read(4))[0]
         if location >> 8 < 2 or location & 255 == 0:
             raise smoke.SmokeError("Missing native fixture record")
@@ -68,7 +69,7 @@ def record(path: Path) -> dict:
     return NbtReader(raw).read_root()
 
 
-def inspect(world: Path) -> dict:
+def inspect(world: Path, chain: bool = False) -> dict:
     root = ledger(world / "data" / LEDGER)
     terrain = record(world / "region" / "r.0.0.mca")
     entities = record(world / "entities" / "r.0.0.mca")
@@ -76,7 +77,14 @@ def inspect(world: Path) -> dict:
     banks = [entry for entry in entities["Entities"] if "arce_escrow_fixture" in entry.get("ForgeData", {})]
     if len(source) != 1 or len(banks) != 1:
         raise smoke.SmokeError("Native fixture identity is missing or duplicated")
+    second = []
+    if chain:
+        second_root = record(world / "region" / "r.0.0.mca", 133)
+        second = [entry for entry in second_root["block_entities"] if [entry.get(k) for k in ("x", "y", "z")] == [80, 100, 64]]
+        if len(second) != 1:
+            raise smoke.SmokeError("Native second source is missing or duplicated")
     return dict(ledger=root, source=source[0]["ForgeData"], bank=banks[0]["ForgeData"],
+                second=second[0]["ForgeData"] if len(second) == 1 else None,
                 files={name: digest(world / name) for name in (
                     "data/" + LEDGER, "region/r.0.0.mca", "entities/r.0.0.mca")})
 
@@ -86,6 +94,8 @@ def run(args) -> dict:
     evidence = args.evidence_dir.resolve()
     if session.exists() or session.is_symlink():
         raise smoke.SmokeError("Refusing to overwrite a native session")
+    if evidence == session or session in evidence.parents:
+        raise smoke.SmokeError("Evidence must be outside the disposable session")
     if shutil.disk_usage(session.parent).free < 10 * 1024**3:
         raise smoke.SmokeError("Native run requires at least 10 GiB free")
     libraries = args.source_server.resolve() / "libraries"
@@ -115,13 +125,14 @@ def run(args) -> dict:
                 command = _server_command(args.java)
                 command[2] = "-Xmx4G"
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"))
+                command.insert(1, "-Dadvancedrocketrycommunity.escrowCase=" + cut)
                 if restart == 0:
                     command.insert(1, "-Dadvancedrocketrycommunity.escrowCheckpoint=" + cut)
                 log = evidence / f"{cut}-restart-{restart}.log"
                 process = smoke.CapturedProcess(command, session, log)
                 if restart == 0:
-                    if cut == "G3":
-                        process.wait_for(re.compile(r"ARCE_RELEASE_ESCROW_DRAIN_READY cut=G3"), args.startup_timeout)
+                    if cut in ("G3", "G3L2"):
+                        process.wait_for(re.compile(r"ARCE_RELEASE_ESCROW_DRAIN_READY cut=" + cut + r"(?: |$)"), args.startup_timeout)
                         process.command("stop")
                         if process.finish() != 0:
                             raise smoke.SmokeError("Native queued-writer shutdown failed")
@@ -130,14 +141,25 @@ def run(args) -> dict:
                         process.process.kill()  # Only this harness-owned process; no JVM shutdown hooks.
                         process.abort()
                     process = None
-                    row["cut_disk"] = inspect(session / ("world-" + cut))
+                    row["cut_disk"] = inspect(session / ("world-" + cut), cut in ("C1", "C2"))
+                    if cut in ("C1", "C2"):
+                        disk = row["cut_disk"]
+                        amounts = (disk["source"]["arce_escrow_fixture"]["amount"],
+                                   disk["second"]["arce_escrow_fixture"]["amount"],
+                                   disk["bank"]["arce_escrow_fixture"]["amount"])
+                        if amounts != (4000, 4000, 1000 if cut == "C1" else 2000) or len(disk["ledger"]["records"]) != 2:
+                            raise smoke.SmokeError("Raw chain cut does not match its endpoint prefix boundary")
                     if cut == "G3" and len(row["cut_disk"]["ledger"]["records"]) != 1:
                         raise smoke.SmokeError("Shutdown did not retain its acknowledged, unapplied L1")
+                    if cut == "G3L2" and row["cut_disk"]["ledger"]["records"]:
+                        raise smoke.SmokeError("Shutdown did not drain the proven L2 generation")
                 else:
-                    index = process.wait_for(RESULT, args.startup_timeout)
-                    match = RESULT.search(process.lines[index])
-                    values = tuple(map(int, match.groups()[:5]))
-                    expected = (5000, 0, 0, 0, 0) if cut in ("K0", "K1") else (4000, 1000, 0, 1, 1)
+                    pattern = CHAIN_RESULT if cut in ("C1", "C2") else RESULT
+                    index = process.wait_for(pattern, args.startup_timeout)
+                    match = pattern.search(process.lines[index])
+                    values = tuple(map(int, match.groups()[:4 if pattern is CHAIN_RESULT else 5]))
+                    expected = (4000, 4000, 2000, 0) if pattern is CHAIN_RESULT else (
+                        (5000, 0, 0, 0, 0) if cut in ("K0", "K1") else (4000, 1000, 0, 1, 1))
                     if values != expected:
                         raise smoke.SmokeError(f"{cut} restart {restart}: {values} != {expected}")
                     process.command("stop")
@@ -145,9 +167,11 @@ def run(args) -> dict:
                     if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                         raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")
                     process = None
-                    disk = inspect(session / ("world-" + cut))
+                    disk = inspect(session / ("world-" + cut), cut in ("C1", "C2"))
                     amounts = (disk["source"]["arce_escrow_fixture"]["amount"], disk["bank"]["arce_escrow_fixture"]["amount"])
-                    if amounts != expected[:2] or disk["ledger"]["records"]:
+                    if pattern is CHAIN_RESULT:
+                        amounts = (amounts[0], disk["second"]["arce_escrow_fixture"]["amount"], amounts[1])
+                    if amounts != expected[:len(amounts)] or disk["ledger"]["records"]:
                         raise smoke.SmokeError("Raw native stores disagree with the reported conserved resources")
                     row["restarts"].append(dict(restart=restart, values=values, disk=disk))
                 (evidence / "results.json").write_text(json.dumps(report | {"in_progress": row}, indent=2), encoding="utf-8")
@@ -157,6 +181,10 @@ def run(args) -> dict:
         report["status"] = "PASS"
         report.pop("in_progress", None)
         return report
+    except Exception as failure:
+        report["status"] = "FAILED"
+        report["error"] = str(failure)
+        raise
     finally:
         if process is not None:
             process.abort()

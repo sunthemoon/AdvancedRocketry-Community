@@ -35,15 +35,16 @@ final class EscrowReleaseProbe {
         EscrowTestEndpoints.requireEnabled(server); this.server = server; level = server.overworld();
         cut = System.getProperty("advancedrocketrycommunity.escrowCheckpoint", "none");
         recovery = System.getProperty("advancedrocketrycommunity.escrowScenario").equals("recover");
-        EscrowTags.require(cut.equals("none") || cut.equals("G3") || cut.matches("K(?:[0-9]|10)"), "Unknown escrow checkpoint");
+        EscrowTags.require(cut.equals("none") || cut.equals("G3") || cut.equals("G3L2") || cut.equals("E2")
+                || cut.matches("K(?:[0-9]|10)"), "Unknown escrow checkpoint");
         ChunkPos chunk = new ChunkPos(POSITION);
         level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
         level.getChunk(chunk.x, chunk.z); // Explicit fixed test-fixture loading, not endpoint input.
     }
     void checkpoint(String name) {
-        if (cut.equals("G3") && name.equals("K1") && !selected) {
+        if ((cut.equals("G3") && name.equals("K1") || cut.equals("G3L2") && name.equals("K8")) && !selected) {
             selected = true;
-            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_ESCROW_DRAIN_READY cut=G3");
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_ESCROW_DRAIN_READY cut={}", cut);
             try { TimeUnit.MILLISECONDS.sleep(1_500); }
             catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IllegalStateException(interrupted); }
             return;
@@ -104,12 +105,27 @@ final class EscrowReleaseProbe {
         EscrowPrefix.State frontier = destination ? fixture.bankState() : fixture.sourceState();
         boolean accepted = runtime.barrier().begin(runtime.store(level), endpoint, frontier,
                 EscrowTestEndpoints.validator(endpoint, frontier), server.getTickCount(), result -> {
+                    if (cut.equals("E2") && !recovery && step == 3) {
+                        EscrowTags.require(!result.confirmed() && result.reason() == EscrowReason.SUPERSEDING_SAVE
+                                && data.ledger().records().size() == 1 && coordinator.locked(endpoint.key()),
+                                "Newer save released an unconfirmed operation");
+                        checkpoint("E2"); return;
+                    }
                     if (!result.confirmed()) { throw new IllegalStateException("Native fixture barrier failed: " + result.reason()); }
                     proofs.put(endpoint.key(), result.proof()); waiting = false;
                     if (step == 3) { checkpoint(destination ? "K5" : "K4"); step = 4; }
                     else { checkpoint("K7"); step = 5; }
                 });
-        if (accepted) { waiting = true; }
+        if (accepted) {
+            waiting = true;
+            if (cut.equals("E2") && !recovery && step == 3) {
+                // Normal post-capture Save and submission on the same vanilla worker, before batch force/readback.
+                var chunk = level.getChunkAt(POSITION);
+                var newer = net.minecraft.world.level.chunk.storage.ChunkSerializer.write(level, chunk);
+                net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new net.minecraftforge.event.level.ChunkDataEvent.Save(chunk, level, newer));
+                level.getChunkSource().chunkMap.write(chunk.getPos(), newer);
+            }
+        }
     }
     private void restoreFixture() {
         var source = level.getBlockEntity(POSITION);

@@ -16,6 +16,7 @@ class EscrowHarnessTest(unittest.TestCase):
     def test_checkpoint_matrix_is_fixed_and_complete_for_k_cuts(self):
         self.assertEqual(tuple(f"K{i}" for i in range(11)), escrow.CASES[:11])
         self.assertIn("G3", escrow.CASES)
+        self.assertTrue({"C1", "C2", "E2", "G3L2"}.issubset(escrow.CASES))
 
     def test_missing_and_oversized_ledger_refuse(self):
         with tempfile.TemporaryDirectory() as temporary:

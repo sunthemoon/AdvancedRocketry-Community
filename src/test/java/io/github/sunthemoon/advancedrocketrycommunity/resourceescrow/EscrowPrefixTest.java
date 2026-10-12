@@ -43,4 +43,14 @@ class EscrowPrefixTest {
         assertEquals(100, EscrowReason.backoff(1)); assertEquals(400, EscrowReason.backoff(2)); assertEquals(1_200, EscrowReason.backoff(3));
         assertEquals(1_200, EscrowReason.backoff(Integer.MAX_VALUE));
     }
+    @Test void aLaterOwnCaptureInvalidatesTheEarlierProofOfTheSameSlot() {
+        var monitor = new EscrowSaveMonitor(); var pos = new net.minecraft.world.level.ChunkPos(4, 4);
+        var first = monitor.watch("minecraft:overworld", false, pos); long captured = first.get();
+        var second = monitor.watch("minecraft:overworld", false, pos);
+        assertSame(first, second); assertTrue(second.get() > captured);
+        monitor.release("minecraft:overworld", false, pos); long next = second.get();
+        monitor.observed("minecraft:overworld", false, pos); assertEquals(next + 1, second.get());
+        monitor.release("minecraft:overworld", false, pos);
+        monitor.observed("minecraft:overworld", false, pos); assertEquals(next + 1, second.get());
+    }
 }
