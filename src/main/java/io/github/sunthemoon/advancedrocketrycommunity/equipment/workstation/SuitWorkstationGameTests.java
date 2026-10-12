@@ -11,10 +11,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.ArmorEquipment;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.ArmorRootCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.EnchantedSuitOxygen;
+import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.EquipmentNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.TankData;
 import io.github.sunthemoon.advancedrocketrycommunity.model.api.equipment.ModuleKind;
 import io.github.sunthemoon.advancedrocketrycommunity.model.api.equipment.SuitPart;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.List;
 import net.minecraft.gametest.framework.GameTest;
@@ -279,6 +281,40 @@ public final class SuitWorkstationGameTests {
         }
         helper.succeed();
     }
+    /** W06 review L1: preflight accepts 256 nodes, then native Damage insertion causes a late refusal. */
+    @GameTest(template = "empty", batch = "equipment_workstation", timeoutTicks = 100)
+    public static void lateNativeDeserializationRefusalPreservesTheEntireRawRoot(GameTestHelper helper) {
+        try (var f = new EquipmentFixture(helper)) {
+            CompoundTag armorTag = new CompoundTag();
+            for (int i = 0; i < 252; i++) { armorTag.putByte("n" + i, (byte) i); }
+            CompoundTag helmet = new CompoundTag();
+            helmet.putString("id", ModIdentity.MOD_ID + ":space_suit_helmet");
+            helmet.putByte("Count", (byte) 1);
+            helmet.put("tag", armorTag);
+            helper.assertTrue(!armorTag.contains("Damage") && EquipmentNbt.bounded(helmet)
+                    && !BoundedNbt.fits(helmet, 16_384, 16, 255), "Fixture must pass preflight at exactly 256 nodes");
+            ItemStack nativeStack = ItemStack.of(helmet.copy());
+            helper.assertTrue(!nativeStack.isEmpty() && nativeStack.getTag().contains("Damage")
+                    && !EquipmentNbt.safe(nativeStack) && BoundedNbt.fits(nativeStack.serializeNBT(), 16_384, 16, 257),
+                    "Native deserialization must add the 257th node and fail the later safety check");
+            CompoundTag root = new CompoundTag();
+            root.putInt("schema_version", 1);
+            root.put("armor", helmet);
+            root.put("transfer", new CompoundTag());
+            helper.assertTrue(SuitWorkstationSave.bounded(root), "Raw workstation root must pass its preflight");
+            CompoundTag input = new CompoundTag(); input.put(SuitWorkstationSave.KEY, root);
+            CompoundTag snapshot = input.copy();
+            f.station.load(input);
+            helper.assertTrue(f.station.repairRequired() && !f.station.edit(f.player, -1, false), "Late refusal granted authority");
+            helper.assertTrue(snapshot.equals(input), "Native decoding mutated the original raw input");
+            helper.assertTrue(snapshot.get(SuitWorkstationSave.KEY).equals(f.station.saveWithoutMetadata().get(SuitWorkstationSave.KEY)),
+                    "Late refusal failed to preserve the entire raw workstation root");
+            // Restore only this disposable fixture, not a production repair mechanism.
+            f.station.load(new CompoundTag());
+        }
+        helper.succeed();
+    }
+
     /** W03 review M1: a refused schema-1 root, including its malformed armor tag, round-trips verbatim. */
     @GameTest(template = "empty", batch = "equipment_workstation", timeoutTicks = 100)
     public static void refusedSchemaOneRootKeepsItsArmorTagVerbatim(GameTestHelper helper) {
