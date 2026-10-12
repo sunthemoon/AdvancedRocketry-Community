@@ -1,0 +1,239 @@
+{
+  "allow_mirror_local_x": false,
+  "allowed_rotations": [
+    0,
+    90,
+    180,
+    270
+  ],
+  "cells": [
+    {
+      "matcher": {
+        "tag": "minecraft:slabs"
+      },
+      "x": 0,
+      "y": 2,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "minecraft:slabs"
+      },
+      "x": 1,
+      "y": 2,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "tag": "minecraft:slabs"
+      },
+      "x": 2,
+      "y": 2,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 0,
+      "y": 2,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "tag": "minecraft:slabs"
+      },
+      "x": 1,
+      "y": 2,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 2,
+      "y": 2,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "tag": "minecraft:slabs"
+      },
+      "x": 0,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "tag": "minecraft:slabs"
+      },
+      "x": 1,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "tag": "minecraft:slabs"
+      },
+      "x": 2,
+      "y": 2,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 0,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 1,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 2,
+      "y": 1,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 0,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:endgame_casing"
+      },
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 2,
+      "y": 1,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 0,
+      "y": 1,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "air": true
+      },
+      "x": 1,
+      "y": 1,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 2,
+      "y": 1,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "controller": true
+      },
+      "x": 1,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "port": "item_input"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "matcher": {
+        "port": "energy_input"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "tag": "advancedrocketrycommunity:motors"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "port": "item_output"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 1
+    },
+    {
+      "matcher": {
+        "port": "energy_input"
+      },
+      "x": 0,
+      "y": 0,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 1,
+      "y": 0,
+      "z": 2
+    },
+    {
+      "matcher": {
+        "block": "advancedrocketrycommunity:machine_casing"
+      },
+      "x": 2,
+      "y": 0,
+      "z": 2
+    }
+  ],
+  "controller_anchor": {
+    "x": 1,
+    "y": 0,
+    "z": 0
+  },
+  "id": "advancedrocketrycommunity:precision_laser_etcher",
+  "schema_version": 1,
+  "size": {
+    "x": 3,
+    "y": 3,
+    "z": 3
+  }
+}

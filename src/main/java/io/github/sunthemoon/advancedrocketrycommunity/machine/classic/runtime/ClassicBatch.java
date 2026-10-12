@@ -22,6 +22,11 @@ final class ClassicBatch {
 
     static Result prepare(ClassicResources resources, Set<ClassicBankKey> active,
                           ClassicMachineRecipe recipe, ProcessDefinition definition) {
+        return prepare(resources, active, recipe, definition, List.of());
+    }
+    static Result prepare(ClassicResources resources, Set<ClassicBankKey> active,
+                          ClassicMachineRecipe recipe, ProcessDefinition definition,
+                          List<io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicItemOutput> chosen) {
         var banks = new LinkedHashMap<ClassicBankKey, ClassicResourceBank>();
         resources.banks().stream().filter(bank -> active.contains(bank.key()))
                 .sorted(java.util.Comparator.comparing(bank -> bank.key().channel())).forEach(bank -> banks.put(bank.key(), bank));
@@ -39,7 +44,13 @@ final class ClassicBatch {
         if (consumed.isEmpty()) { return refused(ClassicWait.INPUT); }
         for (int i = 0; i < slots.size(); i++) {
             Slot slot = slots.get(i); var bank = banks.get(slot.key()); ItemStack stack = bank.item(slot.index());
-            stack.shrink(consumed.orElseThrow()[i]); banks.put(slot.key(), bank.withItem(slot.index(), stack));
+            ItemStack original = stack.copy(); int debit = consumed.orElseThrow()[i];
+            stack.shrink(debit); banks.put(slot.key(), bank.withItem(slot.index(), stack));
+            // Debit and restore the exact payload in the same channel/slot, never in the output hatch.
+            if (recipe.retainsLens() && BuiltInRegistries.ITEM.getKey(original.getItem()).toString()
+                    .equals("advancedrocketrycommunity:laser_lens") && debit > 0) {
+                banks.put(slot.key(), banks.get(slot.key()).withItem(slot.index(), original));
+            }
         }
         for (var row : recipe.rows().fluidInputs()) {
             int remaining = row.amount();
@@ -53,8 +64,14 @@ final class ClassicBatch {
             }
             if (remaining > 0) { return refused(ClassicWait.INPUT); }
         }
-        for (int row = 0; row < recipe.rows().itemOutputs().size(); row++) {
-            ItemStack output = recipe.output(row); int remaining = output.getCount();
+        var itemOutputs = new ArrayList<ItemStack>();
+        for (int row = 0; row < recipe.rows().itemOutputs().size(); row++) { itemOutputs.add(recipe.output(row)); }
+        for (var row : chosen) {
+            ClassicMachineRecipe.stackLimit(row.itemId(), row.count());
+            itemOutputs.add(new ItemStack(BuiltInRegistries.ITEM.get(row.itemId()), row.count()));
+        }
+        for (ItemStack output : itemOutputs) {
+            int remaining = output.getCount();
             for (var key : List.copyOf(banks.keySet())) {
                 if (key.kind() != ClassicBankKind.ITEM_OUTPUT) { continue; }
                 for (int slot = 0; slot < 4 && remaining > 0; slot++) {
@@ -87,8 +104,16 @@ final class ClassicBatch {
         for (ProcessInput input : definition.inputs()) {
             balances.put(input.key(input.alternatives().get(0)), new ProcessResourceBalance(input.amount(), input.amount()));
         }
-        for (ProcessOutput output : definition.outputs()) { balances.put(output.key(), new ProcessResourceBalance(0, output.amount())); }
-        var simulated = ProcessMachineLogic.simulate(definition, new ProcessResourceSnapshot(resources.revision(), balances));
+        var outputs = new ArrayList<>(definition.outputs());
+        for (int i = 0; i < chosen.size(); i++) {
+            var row = chosen.get(i);
+            outputs.add(new ProcessOutput(new ProcessResourceKey(ProcessResourceKind.ITEM, "chance_output." + i,
+                    row.itemId().toString()), row.count()));
+        }
+        for (ProcessOutput output : outputs) { balances.putIfAbsent(output.key(), new ProcessResourceBalance(0, output.amount())); }
+        var selectedDefinition = new ProcessDefinition(definition.id(), definition.schemaVersion(), definition.encodedSizeBytes(),
+                definition.durationTicks(), definition.energyPerTick(), definition.inputs(), outputs);
+        var simulated = ProcessMachineLogic.simulate(selectedDefinition, new ProcessResourceSnapshot(resources.revision(), balances));
         ProcessPlan plan = simulated.plan().orElseThrow();
         ProcessJournalPersistence.encode(ProcessTransactionJournal.prepared(UUID.randomUUID(), resources.machineId(), plan));
         return new Result(Optional.of(new Plan(resources, after, plan)), ClassicWait.RUNNING);

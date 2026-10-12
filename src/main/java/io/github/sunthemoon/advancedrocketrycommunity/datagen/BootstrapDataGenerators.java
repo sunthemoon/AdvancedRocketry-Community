@@ -31,6 +31,9 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeClient(), new V180MotorArt(output));
         generator.addProvider(event.includeClient(), new V180ClassicMachineArt(output));
         generator.addProvider(event.includeClient(), new V180ArcCuttingArt(output));
+        generator.addProvider(event.includeClient(), new V180C16cMachineArt(output));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180C16cMachineData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180ArcCuttingData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),

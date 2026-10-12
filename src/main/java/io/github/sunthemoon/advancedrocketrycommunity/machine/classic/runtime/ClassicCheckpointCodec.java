@@ -52,6 +52,16 @@ final class ClassicCheckpointCodec {
             job.putString("recipe", value.recipe().toString()); job.putString("signature", value.signature());
             job.putInt("duration", value.duration()); job.putInt("energy_per_tick", value.energyPerTick());
             job.putInt("ticks", value.progress().progressTicks()); job.putLong("energy", value.progress().consumedEnergy());
+            if (value.ordinal() > 0) { job.putLong("ordinal", value.ordinal()); }
+            value.outcome().ifPresent(outcome -> {
+                var chosen = new CompoundTag(); chosen.putString("transaction", outcome.transaction().toString());
+                var outputs = new ListTag();
+                for (var row : outcome.outputs()) {
+                    var entry = new CompoundTag(); entry.putString("item", row.itemId().toString());
+                    entry.putInt("count", row.count()); outputs.add(entry);
+                }
+                chosen.put("outputs", outputs); job.put("outcome", chosen);
+            });
         });
         root.put("job", job);
         if (!bounded(root)) { throw new IllegalArgumentException("Machine checkpoint exceeds bounds"); }
@@ -95,14 +105,24 @@ final class ClassicCheckpointCodec {
                 .value().orElseThrow(() -> new IllegalArgumentException("Missing or unsupported controller resources"));
         CompoundTag job = root.getCompound("job"); Optional<ClassicCheckpoint.Job> decodedJob = Optional.empty();
         if (!job.isEmpty()) {
-            if (!job.getAllKeys().equals(JOB_FIELDS)) { throw new IllegalArgumentException("Active job fields"); }
+            var expected = new java.util.HashSet<>(JOB_FIELDS);
+            if (job.contains("outcome")) { expected.add("outcome"); }
+            if (job.contains("ordinal")) {
+                expected.add("ordinal"); require(job, "ordinal", Tag.TAG_LONG);
+                if (job.getLong("ordinal") < 1 || root.getLong("batch_ordinal") == Long.MAX_VALUE
+                        || job.getLong("ordinal") != root.getLong("batch_ordinal") + 1) {
+                    throw new IllegalArgumentException("Job ordinal sequence");
+                }
+            }
+            if (!job.getAllKeys().equals(expected)) { throw new IllegalArgumentException("Active job fields"); }
             require(job, "recipe", Tag.TAG_STRING); require(job, "signature", Tag.TAG_STRING);
             require(job, "duration", Tag.TAG_INT); require(job, "energy_per_tick", Tag.TAG_INT);
             require(job, "ticks", Tag.TAG_INT); require(job, "energy", Tag.TAG_LONG);
             ResourceLocation recipe = ResourceLocation.tryParse(job.getString("recipe"));
             if (recipe == null || !recipe.toString().equals(job.getString("recipe"))) { throw new IllegalArgumentException("Job recipe ID"); }
             decodedJob = Optional.of(new ClassicCheckpoint.Job(recipe, job.getString("signature"), job.getInt("duration"),
-                    job.getInt("energy_per_tick"), new ProcessProgress(recipe.toString(), job.getInt("ticks"), job.getLong("energy"))));
+                    job.getInt("energy_per_tick"), new ProcessProgress(recipe.toString(), job.getInt("ticks"), job.getLong("energy")),
+                    decodeOutcome(job), job.getLong("ordinal")));
         }
         String transaction = root.getString("last_transaction");
         if (transaction.length() > 36) { throw new IllegalArgumentException("Transaction ID length"); }
@@ -114,6 +134,26 @@ final class ClassicCheckpointCodec {
             throw new IllegalArgumentException("Exhausted controller counters require repair");
         }
         return new ClassicCheckpoint(structure, positions, resources, decodedJob, root.getLong("batch_ordinal"), transactionId);
+    }
+    private static Optional<ClassicCheckpoint.Outcome> decodeOutcome(CompoundTag job) {
+        if (!job.contains("outcome")) { return Optional.empty(); }
+        require(job, "outcome", Tag.TAG_COMPOUND); var root = job.getCompound("outcome");
+        if (!root.getAllKeys().equals(Set.of("transaction", "outputs"))) { throw new IllegalArgumentException("Outcome fields"); }
+        require(root, "transaction", Tag.TAG_STRING); require(root, "outputs", Tag.TAG_LIST);
+        String id = root.getString("transaction");
+        if (id.length() != 36 || !UUID.fromString(id).toString().equals(id)) { throw new IllegalArgumentException("Outcome transaction"); }
+        var list = (ListTag) root.get("outputs");
+        if (list.size() > 4 || !list.isEmpty() && list.getElementType() != Tag.TAG_COMPOUND) { throw new IllegalArgumentException("Outcome bound/type"); }
+        var outputs = new java.util.ArrayList<io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicItemOutput>();
+        for (Tag raw : list) {
+            var row = (CompoundTag) raw;
+            if (!row.getAllKeys().equals(Set.of("item", "count"))) { throw new IllegalArgumentException("Outcome entry fields"); }
+            require(row, "item", Tag.TAG_STRING); require(row, "count", Tag.TAG_INT);
+            var item = ResourceLocation.tryParse(row.getString("item"));
+            if (item == null || !item.toString().equals(row.getString("item"))) { throw new IllegalArgumentException("Outcome Item ID"); }
+            outputs.add(new io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicItemOutput(item, row.getInt("count")));
+        }
+        return Optional.of(new ClassicCheckpoint.Outcome(UUID.fromString(id), outputs));
     }
     private static void require(CompoundTag root, String key, int type) {
         if (!root.contains(key, type)) { throw new IllegalArgumentException("Machine field type: " + key); }

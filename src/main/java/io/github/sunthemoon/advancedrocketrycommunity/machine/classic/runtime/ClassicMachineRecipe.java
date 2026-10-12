@@ -56,7 +56,25 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
                     "fluid_output." + i, row.fluidId().toString()), row.amount()));
         }
         return new ProcessDefinition(getId().toString(), 1, rows.canonicalJson().getBytes(StandardCharsets.UTF_8).length,
-                rows.processingTicks(), rows.energyPerTick(), inputs, outputs);
+                rows.processingTicks(), rows.energyPerTick(), inputs, retainedOutputs(inputs, outputs));
+    }
+    private List<ProcessOutput> retainedOutputs(List<ProcessInput> inputs, List<ProcessOutput> outputs) {
+        rows.chanceOutputs().forEach(row -> stackLimit(row.itemId(), row.count()));
+        if (retainsLens()) {
+            for (ProcessInput input : inputs) {
+                if (input.alternatives().equals(List.of("advancedrocketrycommunity:laser_lens"))) {
+                    outputs.add(new ProcessOutput(input.key(input.alternatives().get(0)), input.amount()));
+                }
+            }
+        }
+        return outputs;
+    }
+    boolean retainsLens() { return rows.type().equals("advancedrocketrycommunity:laser_etching"); }
+    static int stackLimit(ResourceLocation id, int count) {
+        var item = BuiltInRegistries.ITEM.getOptional(id).orElseThrow(() -> new IllegalArgumentException("Unknown chance Item"));
+        var stack = new ItemStack(item, count);
+        if (stack.isEmpty() || count > stack.getMaxStackSize()) { throw new IllegalArgumentException("Chance stack limit"); }
+        return stack.getMaxStackSize();
     }
     public ItemStack output(int index) {
         var row = rows.itemOutputs().get(index);
@@ -79,6 +97,10 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
         return switch (rows.type()) {
             case "advancedrocketrycommunity:arc_furnace" -> ModRecipes.ARC_FURNACE_SERIALIZER.get();
             case "advancedrocketrycommunity:cutting" -> ModRecipes.CUTTING_SERIALIZER.get();
+            case "advancedrocketrycommunity:crystallizing" -> ModRecipes.CRYSTALLIZER_SERIALIZER.get();
+            case "advancedrocketrycommunity:chemical_reacting" -> ModRecipes.CHEMICAL_REACTOR_SERIALIZER.get();
+            case "advancedrocketrycommunity:laser_etching" -> ModRecipes.PRECISION_LASER_ETCHER_SERIALIZER.get();
+            case "advancedrocketrycommunity:centrifuging" -> ModRecipes.CENTRIFUGE_SERIALIZER.get();
             default -> ModRecipes.LATHE_SERIALIZER.get();
         };
     }
@@ -86,6 +108,10 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
         return switch (rows.type()) {
             case "advancedrocketrycommunity:arc_furnace" -> ModRecipes.ARC_FURNACE_TYPE.get();
             case "advancedrocketrycommunity:cutting" -> ModRecipes.CUTTING_TYPE.get();
+            case "advancedrocketrycommunity:crystallizing" -> ModRecipes.CRYSTALLIZER_TYPE.get();
+            case "advancedrocketrycommunity:chemical_reacting" -> ModRecipes.CHEMICAL_REACTOR_TYPE.get();
+            case "advancedrocketrycommunity:laser_etching" -> ModRecipes.PRECISION_LASER_ETCHER_TYPE.get();
+            case "advancedrocketrycommunity:centrifuging" -> ModRecipes.CENTRIFUGE_TYPE.get();
             default -> ModRecipes.LATHE_TYPE.get();
         };
     }

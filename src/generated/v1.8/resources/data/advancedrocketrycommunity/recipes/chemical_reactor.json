@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "advancedrocketrycommunity:motor"
+    },
+    "C": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:motor"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    "PRP",
+    "BCB",
+    "PMP"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:chemical_reactor"
+  }
+}

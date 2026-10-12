@@ -1,0 +1,27 @@
+{
+  "type": "advancedrocketrycommunity:chemical_reacting",
+  "energy_per_tick": 1,
+  "fluid_inputs": [
+    {
+      "amount": 10,
+      "fluid": "advancedrocketrycommunity:nitrogen"
+    }
+  ],
+  "fluid_outputs": [],
+  "item_inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "minecraft:bone"
+      }
+    }
+  ],
+  "item_outputs": [
+    {
+      "count": 8,
+      "item": "minecraft:bone_meal"
+    }
+  ],
+  "processing_time": 100,
+  "schema_version": 1
+}

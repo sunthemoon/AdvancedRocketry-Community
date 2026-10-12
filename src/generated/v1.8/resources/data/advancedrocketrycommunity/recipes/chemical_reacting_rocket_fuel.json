@@ -1,0 +1,24 @@
+{
+  "type": "advancedrocketrycommunity:chemical_reacting",
+  "energy_per_tick": 10,
+  "fluid_inputs": [
+    {
+      "amount": 10,
+      "fluid": "advancedrocketrycommunity:oxygen"
+    },
+    {
+      "amount": 10,
+      "fluid": "advancedrocketrycommunity:hydrogen"
+    }
+  ],
+  "fluid_outputs": [
+    {
+      "amount": 20,
+      "fluid": "advancedrocketrycommunity:rocket_fuel"
+    }
+  ],
+  "item_inputs": [],
+  "item_outputs": [],
+  "processing_time": 100,
+  "schema_version": 1
+}

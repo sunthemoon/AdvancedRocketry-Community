@@ -24,8 +24,20 @@ record ClassicCheckpoint(MultiblockControllerState structure, Set<BlockPos> clai
                 .thenComparingInt(BlockPos::getZ).thenComparingInt(BlockPos::getX)).forEach(positions::add);
         claimedParts = Collections.unmodifiableSet(positions);
     }
-    record Job(ResourceLocation recipe, String signature, int duration, int energyPerTick, ProcessProgress progress) {
+    record Outcome(UUID transaction, java.util.List<io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicItemOutput> outputs) {
+        Outcome {
+            java.util.Objects.requireNonNull(transaction); outputs = java.util.List.copyOf(outputs);
+            if (outputs.size() > 4) { throw new IllegalArgumentException("Chosen chance output bound"); }
+        }
+    }
+    record Job(ResourceLocation recipe, String signature, int duration, int energyPerTick, ProcessProgress progress,
+               Optional<Outcome> outcome, long ordinal) {
+        Job(ResourceLocation recipe, String signature, int duration, int energyPerTick, ProcessProgress progress) {
+            this(recipe, signature, duration, energyPerTick, progress, Optional.empty(), 0);
+        }
         Job {
+            java.util.Objects.requireNonNull(outcome);
+            if (ordinal < 0) { throw new IllegalArgumentException("Job ordinal"); }
             if (recipe.toString().length() > 128 || !signature.matches("[0-9a-f]{64}")
                     || duration < 1 || duration > 72_000 || energyPerTick < 1 || energyPerTick > 10_000
                     || !recipe.toString().equals(progress.definitionId()) || progress.progressTicks() > duration
@@ -33,7 +45,9 @@ record ClassicCheckpoint(MultiblockControllerState structure, Set<BlockPos> clai
                 throw new IllegalArgumentException("Active job bounds");
             }
         }
-        Job advance(ProcessProgress next) { return new Job(recipe, signature, duration, energyPerTick, next); }
+        Job advance(ProcessProgress next) { return new Job(recipe, signature, duration, energyPerTick, next, outcome, ordinal); }
+        Job choose(Outcome selected) { return new Job(recipe, signature, duration, energyPerTick, progress, Optional.of(selected), ordinal); }
+        Job start(long value) { return new Job(recipe, signature, duration, energyPerTick, progress, outcome, value); }
     }
     ClassicCheckpoint structure(MultiblockControllerState value) {
         return new ClassicCheckpoint(value, claimedParts, resources, job, batchOrdinal, lastTransaction);

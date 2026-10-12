@@ -334,11 +334,21 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key (?!machines\\.sawmillVanillaWood\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!machines\\.(?:sawmillVanillaWood|crystallizerMaximumGravity)\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
       "reason": "Forge fills each key missing from a newly created configuration file; a run that reuses existing files logs fewer. A key corrected from a non-null value does not match."
+    },
+    {
+      "id": "w10-crystallizer-config-key-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key machines\\.crystallizerMaximumGravity was corrected from null to its default, 0\\.0\\. ",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W10 COMMON crystallizer gravity limit on first startup",
+      "reason": "The exact zero-default warning is admitted once on fresh configuration creation; the generic budget remains 99. Reused configuration need not log it."
     },
     {
       "id": "w05-sawmill-config-key-defaulted",
