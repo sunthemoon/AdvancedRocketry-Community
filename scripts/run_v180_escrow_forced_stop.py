@@ -185,7 +185,8 @@ def run(args) -> dict:
                 (evidence / "results.json").write_text(json.dumps(report | {"in_progress": row}, indent=2), encoding="utf-8")
             row["status"] = "PASS"
             report["cases"].append(row)
-            print(f"{cut}: PASS (hard stop, two restarts, raw stores)", flush=True)
+            stop_mode = "writer-drain stop" if cut in ("G3", "G3L2") else "hard stop"
+            print(f"{cut}: PASS ({stop_mode}, two restarts, raw stores)", flush=True)
         report["status"] = "PASS"
         report.pop("in_progress", None)
         return report
