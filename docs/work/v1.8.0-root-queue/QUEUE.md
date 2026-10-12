@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 01:25) |
+| Slice | Scope | Pipeline state (2026-10-13 02:00) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -48,7 +48,8 @@ give their SHA-256 values.
 | [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | **Merged** `804be2ab` (hosted run 38283811217; review MERGE-WITH-FOLLOWUP; W18F fixes F1 to F3 and F5; Root wrote [records/W18F.md](records/W18F.md)). Follow-ups: F4, F6, F7 (finder strip overlaps the boss bar), F8 |
 | [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps | **Merged** `3d499253` (hosted run 38261140501; Root review). ADR-064 §10.2 implementation note added for the five optional cross-mod dusts |
 | [W20](TASK-W20-LASER-GUN.md) | C18b basic laser gun (ADR-066 section 5.3) | The Claude session stopped at a usage limit with nothing done; relaunched on Codex at 01:21 |
-| [W21a](TASK-W21A-OBSERVATORY-DESIGN.md) | C18c observatory and processor: design note (ADR-051 amendment, registry schema 4, instance schema 2, frozen patterns) | Designer (Claude) running since 01:23; its review goes to Codex |
+| [W21a](TASK-W21A-OBSERVATORY-DESIGN.md) | C18c observatory and processor: design note (ADR-051 amendment, registry schema 4, instance schema 2, frozen patterns) | Delivered `a080b91b` and `5fdefb2a` (Claude): design note and the two pattern fixtures. Its review (task ready in `root-queue/W21a-review/`) goes to the next free Codex slot |
+| [W22](TASK-W22-STATION-NOTICES.md) | C17b section 5.3 station notices: translatable warp notices, visitor notices, the offline member-notice SavedData | Implementer (Claude) running since 01:56; design note first, then one read-only review |
 | [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | Round 1 ended IN PROGRESS at `6a1efe15` (2,606 unit tests, 818 GameTests, 21 native cases). Continuation 01 (new Codex session, since 01:35): benchmark, E5 scheduler, at-limit tests, same-slot prefix retirement. E1, E3 and the writer-failure residual go into a Root risk entry. Then an independent actual-diff review |
 | [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | **Merged** `811a5796`. Independent review (Codex) **APPROVE-WITH-CHANGES** (SHA-256 `8ec318a3…`): W11b2's implementation applies R1 to R6 (R1 and R2 High: a failed checked journal write stops dependent transfer effects; fenced retries stay classified, ticket-free and leave unrelated warps available). W11b2 starts after W11b1 merges |
 | Root fix | Mixin refmap lost on a Gradle build-cache hit (W19's `MixinPackagingTest` failure); a release jar could ship without the ADR-073 refmap | **Merged** `798a2465`: the refmaps and mappings are declared `compileJava` outputs; verified miss then hit; hosted run 38258700306 passed |
