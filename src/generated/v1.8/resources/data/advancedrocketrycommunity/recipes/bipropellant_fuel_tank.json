@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:rocket_fuel_tank"
+    },
+    {
+      "item": "advancedrocketrycommunity:steel_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:steel_plate"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:bipropellant_fuel_tank"
+  }
+}

@@ -35,6 +35,20 @@ public final class RocketRuntime {
         service = null;
     }
 
+    /** Server endpoint admission; an unavailable or unsupported lifecycle owner fails closed. */
+    public static boolean resourceMutationAllowed(RocketEntity rocket) {
+        return service instanceof RocketManager manager && manager.resourceMutationAllowed(rocket);
+    }
+
+    /** Server-only operator/test recovery through the installed lifecycle owner. */
+    public static io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport recoverTransfer(
+            MinecraftServer server, UUID transferId) {
+        if (service instanceof RocketManager manager) { return manager.recoverTransfer(server, transferId); }
+        return new io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport(
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport.Status.NOT_FOUND,
+                transferId, Optional.empty(), Optional.empty(), 0, 0);
+    }
+
     // BEGIN transfer service diagnostics
     /** Internal failure observation; unsupported installed services are never invoked. */
     public static String transferFailureDiagnostics(UUID transferId) {

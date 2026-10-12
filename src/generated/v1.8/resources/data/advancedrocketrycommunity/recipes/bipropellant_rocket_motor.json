@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:rocket_motor"
+    },
+    {
+      "item": "advancedrocketrycommunity:steel_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:steel_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:advanced_motor"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:bipropellant_rocket_motor"
+  }
+}

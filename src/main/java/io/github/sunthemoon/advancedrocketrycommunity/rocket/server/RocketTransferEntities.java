@@ -194,7 +194,11 @@ final class RocketTransferEntities {
             return false;
         }
         RocketFlightState state = authorityState(rocket);
-        return state == RocketFlightState.LANDED || state == RocketFlightState.FUELED;
+        return isStationaryArrival(state);
+    }
+
+    static boolean isStationaryArrival(RocketFlightState state) {
+        return state.acceptsFuel();
     }
 
     private static boolean isCommittedAuthority(RocketEntity rocket, RocketTransferRecord record) {
@@ -229,7 +233,7 @@ final class RocketTransferEntities {
 
     static RocketFlightData stationarySource(RocketTransferRecord record, long gameTime) {
         RocketFlightData failed = record.sourceFlightData().markFailed(gameTime);
-        return failed.recover(failed.fuel().amount() > 0L, gameTime);
+        return failed.recover(failed.fuel().availableForLaunch(), gameTime);
     }
 
     static void remountOnlinePassengers(
@@ -367,14 +371,8 @@ final class RocketTransferEntities {
                         .filter(value -> value.contentHash().equals(snapshot.contentHash())).isEmpty()) {
             return false;
         }
-        if (!destination) {
-            return true;
-        }
-        return rocket.flightData().flatMap(RocketFlightData::activeTransferId)
-                .filter(record.transferId()::equals)
-                .isPresent()
-                || isReplaceableLandedAuthority(rocket, record)
-                || rocket.flightData().map(RocketFlightData::state).orElse(RocketFlightState.FAILED_RECOVERABLE)
-                == RocketFlightState.LANDED;
+        // The current entity owns its resources even after draining clears fuel/state/plan.
+        // Snapshot and logical identity distinguish the two ends; state is not identity.
+        return true;
     }
 }

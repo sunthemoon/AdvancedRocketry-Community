@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:rocket_fuel_tank"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:iridium_plate"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:nuclear_fuel_tank"
+  }
+}

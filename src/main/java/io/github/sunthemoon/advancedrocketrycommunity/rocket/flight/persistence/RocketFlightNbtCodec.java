@@ -67,9 +67,11 @@ public final class RocketFlightNbtCodec {
 
     public static RocketFlightDecodeResult decode(CompoundTag source) {
         Objects.requireNonNull(source, "source");
-        CompoundTag preserved = source.copy();
+        CompoundTag preserved = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
+                .preserve(source, RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES);
         try {
-            if (RocketNbtSize.uncompressedBytes(source) > RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES) {
+            if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
+                    .bounded(source, RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES)) {
                 return RocketFlightDecodeResult.invalid(preserved, "Rocket flight payload exceeds the fixed size limit");
             }
             int schema = requireInt(source, SCHEMA);
@@ -82,6 +84,11 @@ public final class RocketFlightNbtCodec {
             UUID logicalRocketId = requireUuid(source, LOGICAL_ROCKET_ID);
             RocketFlightState state = RocketFlightState.valueOf(requireString(source, STATE, 64));
             RocketFuelState fuel = decodeFuel(requireCompound(source, FUEL));
+            if (fuel.propulsion().isPresent()) {
+                rejectUnknownFields(source, java.util.Set.of(SCHEMA, LOGICAL_ROCKET_ID, STATE, FUEL,
+                        PLAN, PASSENGERS, CURRENT_BODY, CURRENT_DIMENSION, CURRENT_ORIGIN,
+                        STATE_STARTED, ACTIVE_TRANSFER_ID, "current_target"));
+            }
             RocketFlightPlan plan = source.contains(PLAN)
                     ? decodePlan(requireCompound(source, PLAN))
                     : null;
@@ -120,6 +127,8 @@ public final class RocketFlightNbtCodec {
         CompoundTag target = new CompoundTag();
         target.putLong("capacity", fuel.capacity());
         target.putLong("amount", fuel.amount());
+        fuel.propulsion().ifPresent(value -> target.put("propulsion",
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketPropulsionFuelCodec.encode(value)));
         ListTag debits = new ListTag();
         for (UUID transactionId : fuel.committedDebits()) {
             CompoundTag debit = new CompoundTag();
@@ -141,6 +150,18 @@ public final class RocketFlightNbtCodec {
         for (Tag raw : debitTags) {
             debits.add(requireUuid((CompoundTag) raw, "transaction_id"));
         }
+        if (source.contains("propulsion")) {
+            rejectUnknownFields(source, java.util.Set.of("capacity", "amount", "committed_debits", "propulsion"));
+            for (Tag raw : debitTags) {
+                rejectUnknownFields((CompoundTag) raw, java.util.Set.of("transaction_id"));
+            }
+            var nativeFuel = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketPropulsionFuelCodec
+                    .decode(requireCompound(source, "propulsion"));
+            if (capacity != nativeFuel.descriptor().primaryCapacity() || amount != nativeFuel.primary().amount()) {
+                throw new IllegalArgumentException("Fuel projection does not match native banks");
+            }
+            return RocketFuelState.restorePropulsion(nativeFuel, debits);
+        }
         return RocketFuelState.restore(capacity, amount, debits);
     }
 
@@ -155,6 +176,10 @@ public final class RocketFlightNbtCodec {
         plan.destinationStation().ifPresent(id -> target.putUUID("destination_station_id", id));
         target.putLong("required_fuel", plan.requiredFuel());
         target.putLong("created_at_game_time", plan.createdAtGameTime());
+        if (plan.propulsionDebit() != null) {
+            target.put("propulsion_debit", io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence
+                    .RocketPropulsionFuelCodec.encodeDebit(plan.propulsionDebit()));
+        }
         if (plan.schemaVersion() >= 3) {
             target.put("destination_target", TravelTargetNbtCodec.encode(plan.destinationTarget())
                     .getOrThrow(false, message -> {
@@ -166,6 +191,11 @@ public final class RocketFlightNbtCodec {
 
     private static RocketFlightPlan decodePlan(CompoundTag source) {
         int schema = requireInt(source, SCHEMA);
+        if (schema == 4) {
+            rejectUnknownFields(source, java.util.Set.of(SCHEMA, "request_id", "source_body", "destination_body",
+                    "source_dimension", "destination_dimension", "destination_station_id", "required_fuel",
+                    "created_at_game_time", "destination_target", "propulsion_debit"));
+        }
         ResourceLocation destinationBody = requireLocation(source, "destination_body");
         ResourceLocation destinationDimension = requireLocation(source, "destination_dimension");
         UUID stationId = optionalUuid(source, "destination_station_id");
@@ -186,7 +216,9 @@ public final class RocketFlightNbtCodec {
                     stationId,
                     requireNonNegativeLong(source, "required_fuel"),
                     requireNonNegativeLong(source, "created_at_game_time"),
-                    target
+                    target,
+                    schema == 4 ? io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketPropulsionFuelCodec
+                            .decodeDebit(requireCompound(source, "propulsion_debit")) : null
             );
         }
         return new RocketFlightPlan(
@@ -242,6 +274,10 @@ public final class RocketFlightNbtCodec {
             throw new IllegalArgumentException("Negative integer " + key);
         }
         return value;
+    }
+
+    private static void rejectUnknownFields(CompoundTag source, java.util.Set<String> allowed) {
+        if (!allowed.containsAll(source.getAllKeys())) { throw new IllegalArgumentException("Unknown native flight fields"); }
     }
 
     private static long requireNonNegativeLong(CompoundTag source, String key) {

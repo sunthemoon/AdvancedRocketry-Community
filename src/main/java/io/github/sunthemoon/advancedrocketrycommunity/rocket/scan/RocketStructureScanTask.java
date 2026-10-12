@@ -48,6 +48,9 @@ public final class RocketStructureScanTask {
     private final List<RocketPosition> passengerAnchors = new ArrayList<>();
     private final Set<RocketBlockState> palette = new HashSet<>();
     private final Map<RocketBlockState, RocketBlockMetrics> metricsByState = new HashMap<>();
+    private final Map<RocketBlockState, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent>
+            propulsionByState = new HashMap<>();
+    private final io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings propulsionSettings;
     private int totalInspections;
     private int blockEntities;
     private RocketPosition minimum;
@@ -62,6 +65,7 @@ public final class RocketStructureScanTask {
             long createdAtGameTime
     ) {
         this.world = Objects.requireNonNull(world, "world");
+        propulsionSettings = world.propulsionSettings();
         this.sourceDimension = Objects.requireNonNull(sourceDimension, "sourceDimension");
         this.sourceOrigin = Objects.requireNonNull(sourceOrigin, "sourceOrigin");
         this.snapshotId = Objects.requireNonNull(snapshotId, "snapshotId");
@@ -267,6 +271,10 @@ public final class RocketStructureScanTask {
         }
 
         minimum = prospectiveMinimum;
+        var previousPropulsion = propulsionByState.putIfAbsent(observation.state(), observation.propulsion());
+        if (previousPropulsion != null && previousPropulsion != observation.propulsion()) {
+            return fail(issue(RocketValidationCode.WORLD_CHANGED, absolute, Map.of()), null, inspectedThisStep);
+        }
         maximum = prospectiveMaximum;
         palette.add(observation.state());
         RocketBlock block = new RocketBlock(
@@ -298,8 +306,17 @@ public final class RocketStructureScanTask {
 
     private RocketScanResult finish(int inspectedThisStep) {
         RocketStats stats;
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion propulsion = null;
         try {
-            stats = RocketStatsCalculator.calculate(blocks, metricsByState::get);
+            if (propulsionSettings == null) {
+                stats = RocketStatsCalculator.calculate(blocks, metricsByState::get);
+            } else {
+                var calculated = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionCalculator
+                        .calculate(blocks, metricsByState::get, propulsionByState::get, propulsionSettings);
+                stats = calculated.stats(); propulsion = calculated.propulsion();
+            }
+        } catch (RocketSnapshotException refused) {
+            return fail(issue(refused.code(), sourceOrigin, Map.of()), null, inspectedThisStep);
         } catch (RuntimeException exception) {
             return fail(
                     issue(
@@ -332,7 +349,8 @@ public final class RocketStructureScanTask {
                     blocks,
                     passengerAnchors,
                     stats,
-                    createdAtGameTime
+                    createdAtGameTime,
+                    propulsion
             );
             RocketSnapshotNbtCodec.encode(snapshot);
             terminalResult = RocketScanResult.success(snapshot, inspectedThisStep, totalInspections);

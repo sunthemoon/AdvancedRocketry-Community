@@ -58,6 +58,9 @@ final class RocketFlightService {
             return;
         }
         RocketEntity rocket = access.rocket();
+        rocket.flightData().orElseThrow().fuel().propulsion().ifPresent(value -> player.sendSystemMessage(
+                Component.translatable("message.advancedrocketrycommunity.propulsion.mode", value.descriptor().mode().name(),
+                        value.summary())));
         StationRegistrySavedData stationData = StationRegistrySavedData.get(player.getServer());
         List<StationDestinationSummary> accessible = stationData.operational()
                 ? stationAccess.accessibleDestinations(
@@ -217,7 +220,7 @@ final class RocketFlightService {
             UUID requestId
     ) {
         RocketFlightData flight = rocket.flightData().orElseThrow();
-        if (flight.state() == RocketFlightState.LANDED && flight.fuel().amount() > 0L) {
+        if (flight.state() == RocketFlightState.LANDED && flight.fuel().availableForLaunch()) {
             flight = flight.withFuel(flight.fuel(), rocket.level().getGameTime());
         }
         if (flight.state() != RocketFlightState.FUELED) {
@@ -551,6 +554,10 @@ final class RocketFlightService {
 
     void releaseLandedReservation(RocketEntity rocket) {
         transfers.releaseLandedReservation(rocket);
+    }
+
+    boolean resourceMutationAllowed(RocketEntity rocket) {
+        return transfers.resourceMutationAllowed(rocket);
     }
 
     private record Access(RocketEntity rocket, RocketFlightRequestCode code) {

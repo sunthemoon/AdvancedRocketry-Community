@@ -123,6 +123,14 @@ public final class ModItems {
             "rocket_seat",
             ModBlocks.ROCKET_SEAT
     );
+    public static final RegistryObject<Item> ADVANCED_ROCKET_MOTOR = blockItem("advanced_rocket_motor", ModBlocks.ADVANCED_ROCKET_MOTOR);
+    public static final RegistryObject<Item> BIPROPELLANT_ROCKET_MOTOR = blockItem("bipropellant_rocket_motor", ModBlocks.BIPROPELLANT_ROCKET_MOTOR);
+    public static final RegistryObject<Item> ADVANCED_BIPROPELLANT_ROCKET_MOTOR = blockItem("advanced_bipropellant_rocket_motor", ModBlocks.ADVANCED_BIPROPELLANT_ROCKET_MOTOR);
+    public static final RegistryObject<Item> BIPROPELLANT_FUEL_TANK = blockItem("bipropellant_fuel_tank", ModBlocks.BIPROPELLANT_FUEL_TANK);
+    public static final RegistryObject<Item> OXIDIZER_FUEL_TANK = blockItem("oxidizer_fuel_tank", ModBlocks.OXIDIZER_FUEL_TANK);
+    public static final RegistryObject<Item> NUCLEAR_ROCKET_MOTOR = blockItem("nuclear_rocket_motor", ModBlocks.NUCLEAR_ROCKET_MOTOR);
+    public static final RegistryObject<Item> NUCLEAR_FUEL_TANK = blockItem("nuclear_fuel_tank", ModBlocks.NUCLEAR_FUEL_TANK);
+    public static final RegistryObject<Item> NUCLEAR_CORE = blockItem("nuclear_core", ModBlocks.NUCLEAR_CORE);
     public static final RegistryObject<Item> GUIDANCE_COMPUTER = blockItem(
             "guidance_computer",
             ModBlocks.GUIDANCE_COMPUTER

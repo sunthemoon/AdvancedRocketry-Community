@@ -1,0 +1,34 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "advancedrocketrycommunity:bipropellant_rocket_motor"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_aluminide_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_aluminide_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_aluminide_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:titanium_aluminide_plate"
+    },
+    {
+      "item": "advancedrocketrycommunity:elite_motor"
+    },
+    {
+      "item": "minecraft:blaze_powder"
+    },
+    {
+      "item": "minecraft:redstone"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:advanced_bipropellant_rocket_motor"
+  }
+}

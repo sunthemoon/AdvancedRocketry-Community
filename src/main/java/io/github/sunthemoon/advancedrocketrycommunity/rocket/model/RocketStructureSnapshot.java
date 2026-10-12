@@ -23,6 +23,7 @@ public final class RocketStructureSnapshot {
     private final RocketStats stats;
     private final long createdAtGameTime;
     private final String contentHash;
+    private final RocketPropulsion propulsion;
 
     private RocketStructureSnapshot(
             UUID snapshotId,
@@ -31,9 +32,11 @@ public final class RocketStructureSnapshot {
             List<RocketBlock> blocks,
             List<RocketPosition> passengerAnchors,
             RocketStats stats,
-            long createdAtGameTime
+            long createdAtGameTime,
+            RocketPropulsion propulsion
     ) {
-        schemaVersion = RocketLimits.SNAPSHOT_SCHEMA_VERSION;
+        schemaVersion = propulsion == null ? 1 : 2;
+        this.propulsion = propulsion;
         this.snapshotId = Objects.requireNonNull(snapshotId, "snapshotId");
         this.sourceDimension = Objects.requireNonNull(sourceDimension, "sourceDimension");
         this.sourceOrigin = Objects.requireNonNull(sourceOrigin, "sourceOrigin");
@@ -123,7 +126,7 @@ public final class RocketStructureSnapshot {
                     "Snapshot statistics do not match captured structure counts"
             );
         }
-        contentHash = RocketSnapshotHasher.hash(
+        String structureHash = RocketSnapshotHasher.hash(
                 schemaVersion,
                 sourceDimension,
                 sourceOrigin,
@@ -132,6 +135,10 @@ public final class RocketStructureSnapshot {
                 this.passengerAnchors,
                 stats
         );
+        if (propulsion != null && propulsion.primaryCapacity() != stats.fuelCapacity()) {
+            throw new RocketSnapshotException(RocketValidationCode.STATS_MISMATCH, "Propulsion capacity differs from stats");
+        }
+        contentHash = propulsion == null ? structureHash : RocketNativeResources.hash(structureHash + ":" + propulsion.signature());
     }
 
     public static RocketStructureSnapshot create(
@@ -150,9 +157,19 @@ public final class RocketStructureSnapshot {
                 blocks,
                 passengerAnchors,
                 stats,
-                createdAtGameTime
+                createdAtGameTime,
+                null
         );
     }
+
+    public static RocketStructureSnapshot create(UUID snapshotId, ResourceLocation sourceDimension,
+            RocketPosition sourceOrigin, List<RocketBlock> blocks, List<RocketPosition> anchors,
+            RocketStats stats, long createdAtGameTime, RocketPropulsion propulsion) {
+        return new RocketStructureSnapshot(snapshotId, sourceDimension, sourceOrigin, blocks, anchors, stats,
+                createdAtGameTime, propulsion);
+    }
+
+    public java.util.Optional<RocketPropulsion> propulsion() { return java.util.Optional.ofNullable(propulsion); }
 
     public int schemaVersion() {
         return schemaVersion;
@@ -208,7 +225,8 @@ public final class RocketStructureSnapshot {
                 blocks,
                 passengerAnchors,
                 stats,
-                relocatedAtGameTime
+                relocatedAtGameTime,
+                propulsion
         );
     }
 }

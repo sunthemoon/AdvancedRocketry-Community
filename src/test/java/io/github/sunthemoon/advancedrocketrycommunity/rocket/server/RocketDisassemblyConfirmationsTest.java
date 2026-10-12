@@ -9,6 +9,28 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class RocketDisassemblyConfirmationsTest {
+    @Test
+    void oxidizerOnlyAndTaggedWorkingFluidRequireExactRevisionBoundConsent() {
+        var descriptor = new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion(
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Mode.BIPROPELLANT,
+                1_000, 1_000, 1, 1,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings.DEFAULTS);
+        var fuel = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(descriptor)
+                .withFluidBank(true, io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("oxygen"), null, 500);
+        var template = quote();
+        var flight = template.flight().withFuel(fuel, 1);
+        var quote = new RocketDisassemblyConfirmations.Quote(template.entityId(), template.ownerId(), template.snapshotId(),
+                template.snapshotHash(), flight, template.x(), template.y(), template.z());
+        var book = new RocketDisassemblyConfirmations(); var actor = UUID.randomUUID();
+        var offered = book.offer(actor, quote, 1).orElseThrow();
+        assertEquals(0, flight.fuel().amount()); assertEquals(500, flight.fuel().totalAmount());
+        var refilled = fuel.withFluidBank(true, io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("oxygen"), null, 600)
+                .withFluidBank(true, io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("oxygen"), null, 500);
+        var changed = new RocketDisassemblyConfirmations.Quote(quote.entityId(), quote.ownerId(), quote.snapshotId(), quote.snapshotHash(),
+                flight.withFuel(refilled, 2), quote.x(), quote.y(), quote.z());
+        assertNotEquals(quote, changed); assertEquals(quote, book.take(actor, offered.token(), 2).orElseThrow());
+        assertTrue(book.take(actor, offered.token(), 2).isEmpty());
+    }
     private final UUID player = UUID.randomUUID();
     private final RocketDisassemblyConfirmations book = new RocketDisassemblyConfirmations();
 

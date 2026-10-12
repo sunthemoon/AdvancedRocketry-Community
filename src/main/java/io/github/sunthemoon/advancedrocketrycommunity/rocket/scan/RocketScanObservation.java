@@ -22,6 +22,7 @@ public final class RocketScanObservation {
     private final RocketBlockMetrics metrics;
     private final RocketBlockEntityPayload payload;
     private final String detail;
+    private final io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent propulsion;
 
     private RocketScanObservation(
             Kind kind,
@@ -30,6 +31,14 @@ public final class RocketScanObservation {
             RocketBlockEntityPayload payload,
             String detail
     ) {
+        this(kind, state, metrics, payload, detail,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent.EXTERNAL);
+    }
+
+    private RocketScanObservation(Kind kind, RocketBlockState state, RocketBlockMetrics metrics,
+            RocketBlockEntityPayload payload, String detail,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent propulsion) {
+        this.propulsion = Objects.requireNonNull(propulsion, "propulsion");
         this.kind = Objects.requireNonNull(kind, "kind");
         this.state = state;
         this.metrics = metrics;
@@ -53,6 +62,16 @@ public final class RocketScanObservation {
 
     public static RocketScanObservation movable(RocketBlockState state, RocketBlockMetrics metrics) {
         return movable(state, metrics, null);
+    }
+
+    public static RocketScanObservation movable(RocketBlockState state, RocketBlockMetrics metrics,
+            RocketBlockEntityPayload payload,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent propulsion) {
+        return new RocketScanObservation(Kind.MOVABLE, state, metrics, payload, "", propulsion);
+    }
+
+    public io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsionComponent propulsion() {
+        return propulsion;
     }
 
     public static RocketScanObservation empty() {

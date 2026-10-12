@@ -83,8 +83,8 @@ public final class RocketFlightPlanner {
         long distanceCost = Math.abs((long) source.routeDistanceUnits() - destination.routeDistanceUnits());
         var fuelQuote = TravelFuelFormula.calculate(
                 stats.mass(),
-                source.gravityMilli(),
-                destination.gravityMilli(),
+                fuel.gravityAffectsFuels() ? source.gravityMilli() : 0,
+                fuel.gravityAffectsFuels() ? destination.gravityMilli() : 0,
                 distanceCost,
                 RocketFlightLimits.MAX_TRAVEL_FUEL
         );
@@ -92,13 +92,13 @@ public final class RocketFlightPlanner {
             return RocketFlightPlanResult.failure(RocketFlightPlanCode.ARITHMETIC_OVERFLOW, 0L);
         }
         long requiredFuel = fuelQuote.result().orElseThrow();
-        if (fuel.capacity() < requiredFuel) {
+        if (fuel.propulsion().isEmpty() && fuel.capacity() < requiredFuel) {
             return RocketFlightPlanResult.failure(
                     RocketFlightPlanCode.INSUFFICIENT_CAPACITY,
                     requiredFuel
             );
         }
-        if (fuel.amount() < requiredFuel) {
+        if (fuel.propulsion().isEmpty() && fuel.amount() < requiredFuel) {
             return RocketFlightPlanResult.failure(
                     RocketFlightPlanCode.INSUFFICIENT_FUEL,
                     requiredFuel
@@ -118,7 +118,8 @@ public final class RocketFlightPlanner {
                         ? new TravelTarget.BodySurface(destination.bodyId())
                         : new TravelTarget.Station(destinationStationId)
         );
-        return new RocketFlightPlanResult(RocketFlightPlanCode.SUCCESS, requiredFuel, plan);
+        return RocketPropulsionQuoter.quote(fuel, plan,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelRuntime.capture());
     }
 
     public static RocketTravelProfile forDimension(net.minecraft.resources.ResourceLocation dimensionId) {

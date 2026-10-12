@@ -6,4 +6,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 public interface RocketScanWorld {
     /** Observe one position only when its chunk is already loaded. */
     RocketScanObservation observe(RocketPosition absolutePosition);
+
+    default io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings propulsionSettings() {
+        return null;
+    }
 }

@@ -79,6 +79,14 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.STATION_DEPLOYMENT_KIT.get());
                         output.accept(ModItems.ROCKET_MOTOR.get());
                         output.accept(ModItems.ROCKET_FUEL_TANK.get());
+                        output.accept(ModItems.ADVANCED_ROCKET_MOTOR.get());
+                        output.accept(ModItems.BIPROPELLANT_ROCKET_MOTOR.get());
+                        output.accept(ModItems.ADVANCED_BIPROPELLANT_ROCKET_MOTOR.get());
+                        output.accept(ModItems.BIPROPELLANT_FUEL_TANK.get());
+                        output.accept(ModItems.OXIDIZER_FUEL_TANK.get());
+                        output.accept(ModItems.NUCLEAR_ROCKET_MOTOR.get());
+                        output.accept(ModItems.NUCLEAR_FUEL_TANK.get());
+                        output.accept(ModItems.NUCLEAR_CORE.get());
                         output.accept(ModItems.ROCKET_SEAT.get());
                         output.accept(ModItems.GUIDANCE_COMPUTER.get());
                         output.accept(ModItems.SILICON_WAFER.get());

@@ -339,6 +339,8 @@ public final class CommonConfig {
             .comment("Built-in active oxygen refill target; lowering it never discards existing oxygen.")
             .defineInRange("OXYGEN.spaceSuitO2Buffer", 2_000, 1, 2_000);
 
+    public static final RocketPropulsionConfig ROCKET = new RocketPropulsionConfig(BUILDER);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     public static int suitTankMultiplier() { return SPEC.isLoaded() ? SUIT_TANK_CAPACITY.get() : 1; }

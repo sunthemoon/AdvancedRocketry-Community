@@ -252,6 +252,44 @@ class RocketTransferRecordTest {
         return new Fixture(source, destination, record);
     }
 
+    @Test void nativeTransferChecksumBindsTagsAndTheEntireCapturedPlanVector() {
+        var legacy = sourceSnapshot();
+        var descriptor = new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion(
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Mode.BIPROPELLANT,
+                1_000, 1_000, 1, 1,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings.DEFAULTS);
+        var source = RocketStructureSnapshot.create(legacy.snapshotId(), legacy.sourceDimension(), legacy.sourceOrigin(),
+                legacy.blocks(), legacy.passengerAnchors(), legacy.stats(), legacy.createdAtGameTime(), descriptor);
+        var destination = source.relocated(UUID.fromString("00000000-0000-0000-0000-000000000676"),
+                RocketFlightPlanner.MOON.dimensionId(), MOON_ORIGIN, 160);
+        var records = new java.util.ArrayList<RocketTransferRecord>();
+        for (String batch : List.of("A", "B")) {
+            var tag = new CompoundTag(); tag.putString("batch", batch);
+            var fuel = RocketFuelState.empty(descriptor)
+                    .withFluidBank(false, ResourceLocation.tryParse("advancedrocketrycommunity:hydrogen"), tag, 1_000)
+                    .withFluidBank(true, ResourceLocation.tryParse("advancedrocketrycommunity:oxygen"), null, 1_000);
+            var plan = RocketFlightPlanner.plan(source.stats(), fuel, RocketFlightPlanner.EARTH,
+                    RocketFlightPlanner.MOON, LOGICAL, 0).plan();
+            var transit = RocketFlightData.initial(LOGICAL, 1_000, 1, RocketFlightPlanner.EARTH.bodyId(),
+                    RocketFlightPlanner.EARTH.dimensionId(), EARTH_ORIGIN, 0).withFuel(fuel, 0).withPlan(plan)
+                    .startCountdown(0).completeCountdown(60).beginTransit(LOGICAL, 140);
+            var arrival = transit.arriveAtDestination(fuel.debit(plan).state(), RocketFlightPlanner.MOON.bodyId(),
+                    RocketFlightPlanner.MOON.dimensionId(), MOON_ORIGIN, 160);
+            records.add(RocketTransferRecord.create(LOGICAL, LOGICAL, OWNER, SOURCE_ENTITY,
+                    source, destination, transit, arrival, plan.requiredFuel(), 0));
+        }
+        assertNotEquals(records.get(0).checksum(), records.get(1).checksum());
+        var journal = new RocketTransferSavedData(); journal.put(records.get(0));
+        var root = journal.save(new CompoundTag());
+        assertTrue(RocketTransferSavedData.load(root).operational());
+        var record = root.getList("transfers", net.minecraft.nbt.Tag.TAG_COMPOUND).getCompound(0);
+        for (String side : List.of("source_flight", "destination_flight")) {
+            record.getCompound(side).getCompound("plan").getCompound("propulsion_debit").putString("catalog", "0".repeat(64));
+        }
+        var rejected = RocketTransferSavedData.load(root);
+        assertTrue(!rejected.operational()); assertEquals(root, rejected.save(new CompoundTag()));
+    }
+
     private static RocketTransferRecord legacyCommittedRecord() {
         RocketTransferRecord current = fixture().record();
         RocketFlightPlan currentPlan = current.sourceFlightData().plan().orElseThrow();

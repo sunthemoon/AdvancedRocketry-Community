@@ -57,6 +57,9 @@ final class RocketTransferService {
         if (!journal.operational()) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
+        if (!resourceMutationAllowed(rocket)) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
+        }
         RocketTransferRecord previous = journal.findByLogicalRocket(countdown.logicalRocketId()).orElse(null);
         if (journal.find(plan.requestId()).isPresent()
                 || (previous != null
@@ -110,7 +113,7 @@ final class RocketTransferService {
         RocketTransferRecord record;
         try {
             RocketFlightData sourceTransit = scheduledTransit(countdown);
-            RocketFuelMutation debit = sourceTransit.fuel().debit(plan.requestId(), plan.requiredFuel());
+            RocketFuelMutation debit = sourceTransit.fuel().debit(plan);
             if (!debit.success()) {
                 return RocketFlightRequestResult.failure(
                         RocketFlightRequestCode.INSUFFICIENT_FUEL,
@@ -385,6 +388,24 @@ final class RocketTransferService {
                 result.sourceCount(),
                 result.destinationCount()
         );
+    }
+
+    /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
+    boolean resourceMutationAllowed(RocketEntity rocket) {
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
+                || !rocket.operational() || rocket.flightData().orElseThrow().activeTransferId().isPresent()) {
+            return false;
+        }
+        var journal = RocketTransferSavedData.get(level.getServer());
+        var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
+        return resourceMutationAllowed(journal.operational(), record == null ? null : record.phase(),
+                record != null && settledTransfers.contains(record.transferId()) && !liveTransfers.contains(record.transferId()),
+                record != null && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record));
+    }
+
+    static boolean resourceMutationAllowed(boolean operational, RocketTransferPhase phase,
+            boolean settled, boolean stationaryArrival) {
+        return operational && (phase == null || phase == RocketTransferPhase.COMMITTED && settled && stationaryArrival);
     }
 
     void releaseLandedReservation(RocketEntity rocket) {
