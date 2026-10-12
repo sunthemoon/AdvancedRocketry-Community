@@ -135,15 +135,28 @@ public final class LifeSupportDeviceGameTests {
         seal.invalidateCaps(); seal.reviveCaps(); helper.assertTrue(forwarded.extractItem(0, 1, false).isEmpty(), "Expired seal wrapper stayed writable");
         helper.setBlock(pos.west(), io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.PIPE_SEAL.get());
         var fresh = seal.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.EAST).orElseThrow(IllegalStateException::new);
-        helper.assertTrue(fresh.getSlots() == 0 && !fresh.insertItem(0, input, false).isEmpty(), "Seal-to-seal forwarding was not refused"); helper.succeed();
+        helper.assertTrue(fresh.getSlots() == 0, "Seal-to-seal forwarding exposed target slots");
+        // InvWrapper stored the accepted input by reference; chest destruction consumed that owned
+        // stack into drops. The rejection probe must be a fresh, still-owned item.
+        ItemStack refused = new ItemStack(Items.IRON_INGOT);
+        helper.assertTrue(fresh.insertItem(0, refused, false) == refused && refused.getCount() == 1,
+                "Seal-to-seal forwarding did not return the unchanged offered item"); helper.succeed();
     }
     @GameTest(template = TEMPLATE, timeoutTicks = 40)
     public static void unsupportedDeviceRootsRemainExactAndUnusable(GameTestHelper helper) {
         OxygenVentBlockEntity vent = room(helper); CompoundTag raw = new CompoundTag(); raw.putByteArray("large", new byte[65_537]);
         CompoundTag saved = new CompoundTag(); saved.put(OxygenVentPersistence.DATA_KEY, raw); vent.load(saved);
         helper.assertTrue(vent.protectedDeviceData() && vent.saveWithoutMetadata().get(OxygenVentPersistence.DATA_KEY).equals(raw), "Vent erased an oversized retained root");
+        var position = helper.absolutePos(VENT); var state = vent.getBlockState();
+        helper.assertTrue(!state.getBlock().canEntityDestroy(state, helper.getLevel(), position, null), "Entity destruction admitted quarantined vent");
+        helper.assertTrue(!state.getBlock().onDestroyedByPlayer(state, helper.getLevel(), position, helper.makeMockSurvivalPlayer(), true,
+                helper.getLevel().getFluidState(position)), "Player destruction admitted quarantined vent");
+        state.getBlock().onBlockExploded(state, helper.getLevel(), position, null);
+        helper.assertTrue(helper.getBlockEntity(VENT) == vent, "Explosion removed quarantined vent");
         var facade = scrubber(helper, VENT.east()); saved = new CompoundTag(); saved.put(ScrubberBlockEntity.KEY, StringTag.valueOf("not-a-compound")); facade.load(saved);
         helper.assertTrue(facade.protectedData() && facade.saveWithoutMetadata().get(ScrubberBlockEntity.KEY).equals(saved.get(ScrubberBlockEntity.KEY)), "Facade erased wrong-type raw root");
+        position = helper.absolutePos(VENT.east()); state = facade.getBlockState();
+        helper.assertTrue(!state.getBlock().canEntityDestroy(state, helper.getLevel(), position, null), "Entity destruction admitted quarantined scrubber");
         helper.assertTrue(handler(facade).insertItem(0, cartridge(3), false).getCount() == 1, "Quarantined facade remained writable");
         // Restore the test-owned fixtures before native server autosave; this case tests raw retention,
         // not the deliberate chunk-save ERROR fixtures covered by the existing guarded-save suite.
