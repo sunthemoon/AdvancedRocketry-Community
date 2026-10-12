@@ -66,6 +66,7 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
     public SolarGeneration.Reason reason() { return repairRequired() ? SolarGeneration.Reason.REPAIR_REQUIRED : feedback.reason(); }
     public SolarGeneration.Environment environment() { return feedback.environment(); }
     public boolean repairRequired() { return refusedRoot != null; }
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     boolean enabled() { return enabled.getAsBoolean(); }
 
     public boolean physical() {

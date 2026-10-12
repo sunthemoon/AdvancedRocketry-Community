@@ -252,6 +252,7 @@ public final class SolarArrayGameTests {
     @GameTest(template = "solar_array_test", timeoutTicks = 40)
     public static void nativeSaveLoadAndUnsupportedRootRetainExactBufferMeaning(GameTestHelper helper) {
         try (var fixture = fixture(helper, 63)) {
+            helper.assertTrue(fixture.array.onlyOpCanSetNbt(), "Array root accepts non-operator item NBT");
             fixture.energy(17_777); var saved = fixture.array.saveWithFullMetadata();
             var restored = (SolarArrayBlockEntity) net.minecraft.world.level.block.entity.BlockEntity.loadStatic(fixture.position, fixture.array.getBlockState(), saved);
             helper.assertTrue(restored != null && restored.energyStored() == 17_777 && restored.structure() == SolarArrayRules.Structure.PENDING, "Native save/load lost FE or trusted cached formation");
