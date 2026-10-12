@@ -24,10 +24,11 @@ public final class SuitWorkstationSave {
                 || !root.getAllKeys().equals(Set.of("schema_version", "armor", "transfer"))
                 || !root.contains("schema_version", Tag.TAG_INT) || root.getInt("schema_version") != 1
                 || !root.contains("armor", Tag.TAG_COMPOUND) || !root.contains("transfer", Tag.TAG_COMPOUND)) { return null; }
-        ItemStack[] result = new ItemStack[2];
+        // Preflight both envelopes first: native ItemStack loading may write into the tag it is given.
+        CompoundTag[] slots = new CompoundTag[2];
         for (int i = 0; i < 2; i++) {
             CompoundTag saved = root.getCompound(i == 0 ? "armor" : "transfer");
-            if (saved.isEmpty()) { result[i] = ItemStack.EMPTY; continue; }
+            if (saved.isEmpty()) { continue; }
             if (!EquipmentNbt.bounded(saved) || !Set.of("id", "Count", "tag", "ForgeCaps").containsAll(saved.getAllKeys())
                     || !saved.contains("id", Tag.TAG_STRING) || !saved.contains("Count", Tag.TAG_BYTE)
                     || saved.getByte("Count") != 1 || saved.contains("tag") && !saved.contains("tag", Tag.TAG_COMPOUND)
@@ -38,7 +39,13 @@ public final class SuitWorkstationSave {
                     "advancedrocketrycommunity:space_suit_boots").contains(id)
                     : io.github.sunthemoon.advancedrocketrycommunity.model.api.equipment.ModuleKind.forItem(id) != null;
             if (!recognized) { return null; }
-            result[i] = ItemStack.of(saved);
+            slots[i] = saved;
+        }
+        ItemStack[] result = new ItemStack[2];
+        for (int i = 0; i < 2; i++) {
+            if (slots[i] == null) { result[i] = ItemStack.EMPTY; continue; }
+            // A bounded detached copy, so a later refusal keeps the original raw root exactly.
+            result[i] = ItemStack.of(slots[i].copy());
             if (result[i].isEmpty() || !EquipmentNbt.safe(result[i])
                     || i == 0 && ArmorEquipment.part(result[i]) == null
                     || i == 1 && ArmorEquipment.kind(result[i]) == null) { return null; }
