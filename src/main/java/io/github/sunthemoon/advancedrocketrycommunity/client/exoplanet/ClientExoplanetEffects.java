@@ -5,7 +5,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.Electr
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetBlocks.Crystal;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.worldgen.ExoplanetWorldgen;
+import io.github.sunthemoon.advancedrocketrycommunity.client.sound.ClassicSoundClient;
 import io.github.sunthemoon.advancedrocketrycommunity.config.ClientConfig;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.ClassicSound;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
@@ -68,6 +70,9 @@ public final class ClientExoplanetEffects {
             client.playLocalSound(position.getX() + random.nextInt(25) - 12, position.getY(),
                     position.getZ() + random.nextInt(25) - 12, SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.WEATHER,
                     2.0F, 0.8F + random.nextFloat() * 0.2F, false);
+            // ADR-066 section 7.1: the accepted flash also crackles at the mushroom itself.
+            ClassicSoundClient.oneShot(ClassicSound.ELECTRIC_SHOCK_SMALL, position.getX() + 0.5D,
+                    position.getY() + 0.5D, position.getZ() + 0.5D);
         }
     }
 }

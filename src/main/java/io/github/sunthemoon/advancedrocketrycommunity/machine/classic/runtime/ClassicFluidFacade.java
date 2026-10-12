@@ -40,6 +40,8 @@ final class ClassicFluidFacade implements IFluidHandler {
     }
     @Override public FluidStack drain(int amount, FluidAction action) {
         if (amount <= 0) { return FluidStack.EMPTY; }
-        FluidStack request = getFluidInTank(0); request.setAmount(Math.min(16_000, amount)); return drain(request, action);
+        FluidStack request = getFluidInTank(0);
+        if (request.isEmpty()) { return FluidStack.EMPTY; }
+        request.setAmount(Math.min(16_000, amount)); return drain(request, action);
     }
 }

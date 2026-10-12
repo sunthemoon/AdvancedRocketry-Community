@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.station.persistence;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationEnvironmentProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationGridCell;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationOrbitalControls;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationReservation;
@@ -17,6 +18,8 @@ import net.minecraft.resources.ResourceLocation;
 
 /** Strict size-bounded codec for independently versioned station records. */
 final class StationNbtCodec {
+    static final String ORBITAL_CONTROLS = "orbital_controls";
+
     private StationNbtCodec() {
     }
 
@@ -57,16 +60,57 @@ final class StationNbtCodec {
             invitations.add(invitation);
         }
         target.put("invitations", invitations);
+        target.put(ORBITAL_CONTROLS, encodeControls(state.orbitalControls()));
         requireRecordBound(target);
         return target;
     }
 
+    /**
+     * ADR-065 record 3 {@code orbital_controls}: exactly {@code format_version} 1, {@code distance},
+     * {@code phases} (three ints, EAST/UP/NORTH), {@code rates} (three bytes) and {@code epoch}.
+     */
+    static CompoundTag encodeControls(StationOrbitalControls controls) {
+        Objects.requireNonNull(controls, "controls");
+        CompoundTag target = new CompoundTag();
+        target.putInt("format_version", StationOrbitalControls.FORMAT_VERSION);
+        target.putInt("distance", controls.distance());
+        target.putIntArray("phases", new int[]{controls.eastPhase(), controls.upPhase(), controls.northPhase()});
+        target.putByteArray("rates", new byte[]{(byte) controls.eastRate(), (byte) controls.upRate(),
+                (byte) controls.northRate()});
+        target.putLong("epoch", controls.epoch());
+        return target;
+    }
+
+    static StationOrbitalControls decodeControls(CompoundTag source) {
+        if (source.getAllKeys().size() != 5) {
+            throw new IllegalArgumentException("Station orbital controls have an invalid shape");
+        }
+        if (requireInt(source, "format_version") != StationOrbitalControls.FORMAT_VERSION) {
+            throw new IllegalArgumentException("Unsupported station orbital controls format");
+        }
+        int[] phases = requireIntArray(source, "phases", 3);
+        if (!source.contains("rates", Tag.TAG_BYTE_ARRAY) || source.getByteArray("rates").length != 3) {
+            throw new IllegalArgumentException("Station orbital rates have an invalid shape");
+        }
+        byte[] rates = source.getByteArray("rates");
+        return new StationOrbitalControls(requireInt(source, "distance"), phases[0], phases[1], phases[2],
+                rates[0], rates[1], rates[2], requireNonNegativeLong(source, "epoch"));
+    }
+
+    /** The current record (schema 3). */
     static StationState decodeState(CompoundTag source) {
         return decodeState(source, StationLimits.STATE_SCHEMA_VERSION);
     }
 
-    static StationState decodeLegacyState(CompoundTag source) {
-        return decodeState(source, 1);
+    /** A record of an older root: schema 1 (roots 1 and 2) or 2 (roots 3 and 4), without controls. */
+    static StationState decodeOlderState(CompoundTag source, int recordSchema) {
+        if (recordSchema != 1 && recordSchema != StationLimits.ORBITAL_STATE_SCHEMA_VERSION) {
+            throw new IllegalArgumentException("Station record schema " + recordSchema + " is not upgradable");
+        }
+        if (source.contains(ORBITAL_CONTROLS)) {
+            throw new IllegalArgumentException("A record older than schema 3 cannot carry orbital controls");
+        }
+        return decodeState(source, recordSchema);
     }
 
     private static StationState decodeState(CompoundTag source, int expectedSchema) {
@@ -107,6 +151,9 @@ final class StationNbtCodec {
         for (Tag raw : invitationTags) {
             invitations.add(requireUuid((CompoundTag) raw, "id"));
         }
+        StationOrbitalControls controls = expectedSchema == StationLimits.STATE_SCHEMA_VERSION
+                ? decodeControls(requireCompound(source, ORBITAL_CONTROLS))
+                : StationOrbitalControls.initial(profile.solarAngleMilliDegrees());
         return new StationState(
                 StationLimits.STATE_SCHEMA_VERSION,
                 requireUuid(source, "station_id"),
@@ -119,7 +166,8 @@ final class StationNbtCodec {
                 requireNonNegativeLong(source, "created_at_game_time"),
                 profile,
                 members,
-                invitations
+                invitations,
+                controls
         );
     }
 

@@ -37,6 +37,15 @@ public interface ElevatorStationGuard {
     /** Deletion: also refused while a transit record's source or destination stands in the station's region. */
     Decision delete(MinecraftServer server, StationState station);
 
+    /**
+     * ADR-065 section 5.2: a changed altitude or orientation is refused while an elevator pair names the station
+     * or any ride is pending, which is exactly the deletion rule; fail closed while the endgame root is down. An
+     * unchanged value never asks. Binding and the warp and deletion rules are unchanged.
+     */
+    default Decision orbitalControls(MinecraftServer server, StationState station) {
+        return delete(server, station);
+    }
+
     /** The installed guard; a single port reference, kept across integrated-server sessions. */
     final class Installed {
         private static volatile ElevatorStationGuard guard = FAIL_CLOSED;

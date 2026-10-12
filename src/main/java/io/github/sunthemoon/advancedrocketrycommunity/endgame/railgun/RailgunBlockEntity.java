@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.railgun;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.client.sound.ClassicSoundClient;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.ClassicSound;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.cargo.CargoEndpointBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameStructure;
@@ -30,6 +32,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 
 /**
  * ADR-056 section 2: the railgun controller, a {@code railgun} cargo endpoint ({@link CargoEndpointBlockEntity}) with
@@ -221,6 +225,14 @@ public final class RailgunBlockEntity extends CargoEndpointBlockEntity implement
             effectUntil = level.getGameTime() + EFFECT_TICKS;
             level.addParticle(ParticleTypes.FLASH, worldPosition.getX() + 0.5D, worldPosition.getY() + 1.5D,
                     worldPosition.getZ() + 0.5D, 0.0D, 0.0D, 0.0D);
+            if (id == EVENT_LAUNCH) {
+                // ADR-066 section 7.1: the bang plays only for a launch effect this client actually shows.
+                double x = worldPosition.getX() + 0.5D;
+                double y = worldPosition.getY() + MUZZLE_HEIGHT;
+                double z = worldPosition.getZ() + 0.5D;
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
+                        () -> () -> ClassicSoundClient.oneShot(ClassicSound.RAILGUN_BANG, x, y, z));
+            }
             return true;
         }
         return super.triggerEvent(id, parameter);

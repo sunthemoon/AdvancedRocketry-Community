@@ -23,6 +23,11 @@ public final class StationRuntime {
                 : current.createForPlayer(player);
     }
 
+    /** The installed station manager, for the ADR-065 controller blocks; empty between server sessions. */
+    public static java.util.Optional<StationManager> manager() {
+        return service instanceof StationManager manager ? java.util.Optional.of(manager) : java.util.Optional.empty();
+    }
+
     public static void clear() {
         service = null;
     }

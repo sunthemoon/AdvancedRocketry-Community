@@ -118,6 +118,7 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity implements 
                 bindings
         );
         lastValidation = result.validation();
+        long generation = controllerState.generation();
         updateState(level, blocksResourceRemoval()
                 ? controllerState.withState(result.validation().formed()
                         ? result.controllerState().formationState()
@@ -125,6 +126,12 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity implements 
                                 ? MultiblockFormationState.WAITING_UNLOADED
                                 : MultiblockFormationState.BINDING_CONFLICT, controllerState.partPositions())
                 : result.controllerState());
+        // ADR-066 §6.2: a new binding generation is an actual formation; resuming the same one is not.
+        if (controllerState.formationState() == MultiblockFormationState.FORMED
+                && controllerState.generation() > generation) {
+            io.github.sunthemoon.advancedrocketrycommunity.progression.classic.ClassicAdvancementEvents
+                    .multiblockFormed(level, worldPosition);
+        }
     }
 
     void invalidateMissingDefinition(ServerLevel level) {

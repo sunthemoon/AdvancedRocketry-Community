@@ -44,7 +44,8 @@ class CommonConfigTest {
         // the classic life-support instrument switch (ADR-066), and the single solar generator's
         // enable switch and output multiplier (ADR-065), plus the accepted C18a living-tick gravity switch
         // and the consumed C18b ordinary-equipment switch and two finite oxygen settings (ADR-066),
-        // the C16b cutting machine's sawmill switch (ADR-064 section 8),
+        // the C16b cutting machine's sawmill switch (ADR-064 section 8), the C16c crystallizer gravity
+        // limit (ADR-064 section 9.1),
         // the ten C17a ROCKET propulsion values (ADR-065 section 3),
         // and the C18b W06 jetpack force and low-gravity landing-boots rule (ADR-066 section 5.2).
         assertSame(CommonConfig.CLASSIC_GRAVITY_ENABLED,
@@ -60,7 +61,7 @@ class CommonConfigTest {
         // W14 adds the two consumed C18a scrubber and detector switches.
         assertSame(CommonConfig.SCRUBBER_REQUIRES_CARTRIDGE, CommonConfig.SPEC.getValues().get("OXYGEN.scrubberRequiresCartrige"));
         assertSame(CommonConfig.OXYGEN_DETECTION, CommonConfig.SPEC.getValues().get("OXYGEN.oxygenDetection"));
-        assertEquals(91, countValues(CommonConfig.SPEC.getValues()));
+        assertEquals(92, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test

@@ -1,0 +1,47 @@
+{
+  "type": "advancedrocketrycommunity:centrifuging",
+  "chance_outputs": [
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:copper_nugget",
+      "weight": 100
+    },
+    {
+      "count": 1,
+      "item": "minecraft:iron_nugget",
+      "weight": 100
+    },
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:tin_nugget",
+      "weight": 100
+    },
+    {
+      "count": 1,
+      "item": "minecraft:gold_nugget",
+      "weight": 75
+    },
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:iridium_nugget",
+      "weight": 1
+    }
+  ],
+  "energy_per_tick": 10,
+  "fluid_inputs": [
+    {
+      "amount": 1000,
+      "fluid": "advancedrocketrycommunity:enriched_lava"
+    }
+  ],
+  "fluid_outputs": [
+    {
+      "amount": 1000,
+      "fluid": "minecraft:lava"
+    }
+  ],
+  "item_inputs": [],
+  "item_outputs": [],
+  "processing_time": 200,
+  "schema_version": 1
+}

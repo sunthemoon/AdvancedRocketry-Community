@@ -66,6 +66,18 @@ public final class ModRecipes {
             SERIALIZERS.register("arc_furnace", () -> new ClassicMachineRecipe.Serializer(AdvancedRocketryCommunity.MOD_ID + ":arc_furnace"));
     public static final RegistryObject<RecipeSerializer<ClassicMachineRecipe>> CUTTING_SERIALIZER =
             SERIALIZERS.register("cutting", () -> new ClassicMachineRecipe.Serializer(AdvancedRocketryCommunity.MOD_ID + ":cutting"));
+    public static final RegistryObject<RecipeType<ClassicMachineRecipe>> CRYSTALLIZER_TYPE = classicType("crystallizing");
+    public static final RegistryObject<RecipeSerializer<ClassicMachineRecipe>> CRYSTALLIZER_SERIALIZER =
+            SERIALIZERS.register("crystallizing", () -> new ClassicMachineRecipe.Serializer(AdvancedRocketryCommunity.MOD_ID + ":crystallizing"));
+    public static final RegistryObject<RecipeType<ClassicMachineRecipe>> CHEMICAL_REACTOR_TYPE = classicType("chemical_reacting");
+    public static final RegistryObject<RecipeSerializer<ClassicMachineRecipe>> CHEMICAL_REACTOR_SERIALIZER =
+            SERIALIZERS.register("chemical_reacting", () -> new ClassicMachineRecipe.Serializer(AdvancedRocketryCommunity.MOD_ID + ":chemical_reacting"));
+    public static final RegistryObject<RecipeType<ClassicMachineRecipe>> PRECISION_LASER_ETCHER_TYPE = classicType("laser_etching");
+    public static final RegistryObject<RecipeSerializer<ClassicMachineRecipe>> PRECISION_LASER_ETCHER_SERIALIZER =
+            SERIALIZERS.register("laser_etching", () -> new ClassicMachineRecipe.Serializer(AdvancedRocketryCommunity.MOD_ID + ":laser_etching"));
+    public static final RegistryObject<RecipeType<ClassicMachineRecipe>> CENTRIFUGE_TYPE = classicType("centrifuging");
+    public static final RegistryObject<RecipeSerializer<ClassicMachineRecipe>> CENTRIFUGE_SERIALIZER =
+            SERIALIZERS.register("centrifuging", () -> new ClassicMachineRecipe.Serializer(AdvancedRocketryCommunity.MOD_ID + ":centrifuging"));
     private static RegistryObject<RecipeType<ClassicMachineRecipe>> classicType(String name) {
         return TYPES.register(name, () -> new RecipeType<>() {
             @Override public String toString() { return AdvancedRocketryCommunity.MOD_ID + ":" + name; }

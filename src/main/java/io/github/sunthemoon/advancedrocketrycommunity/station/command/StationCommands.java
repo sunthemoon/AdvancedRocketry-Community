@@ -239,6 +239,9 @@ public final class StationCommands {
         String identity = stations.canIdentify(player, environment.stationId())
                 ? environment.stationName() + " id=" + environment.stationId()
                 : "A station you are not a member of;";
+        // ADR-065: the logical distance and orientation follow on the same line.
+        String controls = stations.station(context.getSource().getServer(), environment.stationId())
+                .map(station -> " " + StationOrbitCommands.describe(station.orbitalControls())).orElse("");
         context.getSource().sendSuccess(() -> Component.literal(
                 identity
                         + " orbit=" + environment.orbitBody()
@@ -247,6 +250,7 @@ public final class StationCommands {
                         + " vacuum=" + environment.vacuum()
                         + " solar=" + String.format(java.util.Locale.ROOT, "%.2f", environment.solarIntensity())
                         + " sun_angle=" + String.format(java.util.Locale.ROOT, "%.1f", environment.sunAngleDegrees())
+                        + controls
         ), false);
         return 1;
     }
@@ -311,6 +315,7 @@ public final class StationCommands {
                         + " vacuum=" + station.environment().vacuum()
                         + " warp_energy=" + StationRegistrySavedData.get(context.getSource().getServer())
                         .warpEnergy(station.stationId())
+                        + " " + StationOrbitCommands.describe(station.orbitalControls())
         ), false);
         return 1;
     }

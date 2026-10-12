@@ -113,8 +113,8 @@ public final class StationRegistryModel {
     }
 
     /**
-     * Publishes a checked growth or gravity-only update only while the station still equals the
-     * observed state; see {@link StationState#isCheckedUpdateOf(StationState)}.
+     * Publishes a checked growth, gravity-only, altitude-only or orientation-only update only while the
+     * station still equals the observed state; see {@link StationState#isCheckedUpdateOf(StationState)}.
      */
     public synchronized StationState replaceChecked(StationState expected, StationState replacement) {
         Objects.requireNonNull(expected, "expected");
@@ -230,6 +230,16 @@ public final class StationRegistryModel {
         return state != null && state.region().contains(x, z)
                 ? Optional.of(state)
                 : Optional.empty();
+    }
+
+    /** True while any committed station has a nonzero orientation rate (ADR-065 checkpoint pacing). */
+    public synchronized boolean anyRotating() {
+        for (StationState state : stations.values()) {
+            if (state.orbitalControls().rotating()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public synchronized List<StationState> stations() {

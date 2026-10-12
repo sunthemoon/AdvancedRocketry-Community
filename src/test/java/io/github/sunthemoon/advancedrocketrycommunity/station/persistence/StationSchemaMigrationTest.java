@@ -25,10 +25,13 @@ final class StationSchemaMigrationTest {
         CompoundTag original = source.copy();
         var result = SavedDataSchemaMigrator.migrate(TYPE, source);
         CompoundTag expected = source.copy();
-        expected.putInt("schema_version", 4);
-        expected.putString("format_epoch", "v1.5.0-station-warp");
+        expected.putInt("schema_version", 5);
+        expected.putString("format_epoch", "v1.8.0-station-orbital-controls");
         expected.put("warp_energy", new ListTag());
-        station(expected).putInt("schema_version", 2);
+        expected.put("orbital_clock", StationWarpSchemaTest.clock(0L));
+        station(expected).putInt("schema_version", 3);
+        // ADR-065: the EAST phase reproduces the stored 359,999 milli-degree sun angle exactly.
+        station(expected).put("orbital_controls", StationWarpSchemaTest.initialControls(359_999));
         assertEquals(SavedDataSchemaMigrator.MigrationStatus.MIGRATED, result.status());
         assertEquals(2, result.sourceSchema());
         assertEquals(expected, result.payload());
@@ -90,8 +93,8 @@ final class StationSchemaMigrationTest {
         assertEquals(state, data.findAt(-2432, 3455).orElseThrow());
         assertTrue(data.findAt(-2433, 3455).isEmpty());
         CompoundTag encoded = data.save(new CompoundTag());
-        assertEquals(4, encoded.getInt("schema_version"));
-        assertEquals(2, station(encoded).getInt("schema_version"));
+        assertEquals(5, encoded.getInt("schema_version"));
+        assertEquals(3, station(encoded).getInt("schema_version"));
         assertEquals(1, encoded.getList("reservations", Tag.TAG_COMPOUND).getCompound(0).getInt("schema_version"));
         assertEquals(state, StationRegistrySavedData.load(encoded).stations().get(0));
     }
@@ -137,12 +140,16 @@ final class StationSchemaMigrationTest {
     @Test
     void currentFutureMixedAndInvalidEpochRootsStayOpaqueOnRuntimeLoad() throws Exception {
         for (Consumer<CompoundTag> mutation : java.util.List.<Consumer<CompoundTag>>of(
-                tag -> tag.putInt("schema_version", 5),
+                tag -> tag.putInt("schema_version", 6),
                 tag -> tag.putString("format_epoch", "v0.9.0-beta"),
                 tag -> tag.putString("format_epoch", "v1.5.0-orbital-station"),
+                tag -> tag.putString("format_epoch", "v1.5.0-station-warp"),
                 tag -> tag.remove("warp_energy"),
+                tag -> tag.remove("orbital_clock"),
                 tag -> station(tag).putInt("schema_version", 1),
-                tag -> station(tag).putInt("schema_version", 3),
+                tag -> station(tag).putInt("schema_version", 2),
+                tag -> station(tag).putInt("schema_version", 4),
+                tag -> station(tag).remove("orbital_controls"),
                 tag -> tag.getList("reservations", Tag.TAG_COMPOUND).getCompound(0).putInt("schema_version", 2),
                 tag -> tag.getList("stations", Tag.TAG_COMPOUND).add(station(tag).copy()),
                 tag -> tag.putByteArray("too_large", new byte[StationLimits.MAX_REGISTRY_NBT_BYTES])

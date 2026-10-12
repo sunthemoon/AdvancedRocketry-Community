@@ -12,6 +12,20 @@ import net.minecraftforge.common.ForgeConfigSpec;
  */
 public final class SwitchOverrides {
     private static final Map<ForgeConfigSpec.BooleanValue, Boolean> VALUES = new ConcurrentHashMap<>();
+    private static volatile Double crystallizerGravity;
+
+    /** Numeric COMMON override for isolated crystallizer GameTests; never writes the watched file. */
+    public static void set(ForgeConfigSpec.DoubleValue value, double maximum) {
+        if (value != CommonConfig.CRYSTALLIZER_MAXIMUM_GRAVITY || !Double.isFinite(maximum) || maximum < 0 || maximum > 10) {
+            throw new IllegalArgumentException("Not a bounded crystallizer gravity override");
+        }
+        crystallizerGravity = maximum;
+    }
+    public static void clear(ForgeConfigSpec.DoubleValue value) {
+        if (value != CommonConfig.CRYSTALLIZER_MAXIMUM_GRAVITY) { throw new IllegalArgumentException("Not a crystallizer gravity override"); }
+        crystallizerGravity = null;
+    }
+    static Double crystallizerGravity() { return crystallizerGravity; }
 
     private SwitchOverrides() {
     }
