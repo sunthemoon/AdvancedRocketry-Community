@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.SignalGetter;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
@@ -41,6 +42,8 @@ final class FieldCellView implements SignalGetter {
         return List.copyOf(positions);
     }
     private Cell cell(BlockPos pos) {
+        // Match Level's height boundary without consulting a chunk or charging a world read.
+        if (level.isOutsideBuildHeight(pos)) { return new Cell(Blocks.VOID_AIR.defaultBlockState(), null); }
         var old = cells.get(pos);
         if (old != null) { return old; }
         if (powerQuery || cells.size() >= 26 || !level.isInWorldBounds(pos)) { throw new Unavailable(); }
