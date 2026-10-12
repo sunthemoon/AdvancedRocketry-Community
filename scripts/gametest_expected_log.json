@@ -472,6 +472,16 @@
       "reason": "Under userdev the vanilla assets root is a union file system URL, which vanilla does not recognise."
     },
     {
+      "id": "mixin-userdev-refmap-unread",
+      "level": "WARN",
+      "logger": "mixin/",
+      "message": "Reference map 'advancedrocketrycommunity\\.refmap\\.json' for advancedrocketrycommunity\\.mixins\\.json could not be read\\. If this is a development environment you can ignore this message",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: ForgeGradle userdev classpath (ADR-073)",
+      "reason": "Under userdev the game runs with official names, so the ADR-073 Mixin needs no refmap and Mixin notes that the generated refmap is not on the run classpath. The packaged jar carries the refmap; MixinPackagingTest checks it. Any other Mixin warning does not match."
+    },
+    {
       "id": "server-overloaded",
       "level": "WARN",
       "logger": "net.minecraft.server.MinecraftServer/",
