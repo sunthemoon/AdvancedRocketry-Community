@@ -131,7 +131,10 @@ public final class SuitMotionGameTests {
             f.player.stopFallFlying();
             helper.assertTrue(gliding == Result.ELYTRA && f.hydrogen() == 20 && f.sent.isEmpty(), "Thrust during elytra flight: " + gliding);
             var rocket = ModEntities.ROCKET.get().create(f.level);
-            helper.assertTrue(rocket != null && f.player.startRiding(rocket, true), "Fixture could not take a rocket seat");
+            helper.assertTrue(rocket != null, "Rocket type unavailable");
+            // Dismounting goes beside the rocket, so keep it at the fixture rather than at the world origin.
+            rocket.moveTo(f.player.getX(), f.player.getY(), f.player.getZ());
+            helper.assertTrue(f.player.startRiding(rocket, true), "Fixture could not take a rocket seat");
             try {
                 f.rest();
                 Result seated = f.service.step(f.player, T + 1);
