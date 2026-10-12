@@ -176,6 +176,11 @@ public final class RocketFlightNbtCodec {
         plan.destinationStation().ifPresent(id -> target.putUUID("destination_station_id", id));
         target.putLong("required_fuel", plan.requiredFuel());
         target.putLong("created_at_game_time", plan.createdAtGameTime());
+        if (plan.landingPad() != null) {
+            CompoundTag pad = new CompoundTag();
+            pad.putUUID("id", plan.landingPad().padId()); pad.putLong("epoch", plan.landingPad().epoch());
+            target.put("landing_pad", pad);
+        }
         if (plan.propulsionDebit() != null) {
             target.put("propulsion_debit", io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence
                     .RocketPropulsionFuelCodec.encodeDebit(plan.propulsionDebit()));
@@ -191,10 +196,21 @@ public final class RocketFlightNbtCodec {
 
     private static RocketFlightPlan decodePlan(CompoundTag source) {
         int schema = requireInt(source, SCHEMA);
-        if (schema == 4) {
+        if (schema >= 4) {
             rejectUnknownFields(source, java.util.Set.of(SCHEMA, "request_id", "source_body", "destination_body",
                     "source_dimension", "destination_dimension", "destination_station_id", "required_fuel",
-                    "created_at_game_time", "destination_target", "propulsion_debit"));
+                    "created_at_game_time", "destination_target", "propulsion_debit", "landing_pad"));
+        }
+        io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad = null;
+        if (source.contains("propulsion_debit") != (schema == 4 || schema == 6)) {
+            throw new IllegalArgumentException("Flight plan debit branch does not match its schema");
+        }
+        if (source.contains("landing_pad")) {
+            if (schema < 5) { throw new IllegalArgumentException("Legacy flight plan cannot contain a pad reference"); }
+            CompoundTag tag = requireCompound(source, "landing_pad");
+            rejectUnknownFields(tag, java.util.Set.of("id", "epoch"));
+            pad = new io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference(
+                    requireUuid(tag, "id"), requireNonNegativeLong(tag, "epoch"));
         }
         ResourceLocation destinationBody = requireLocation(source, "destination_body");
         ResourceLocation destinationDimension = requireLocation(source, "destination_dimension");
@@ -217,8 +233,9 @@ public final class RocketFlightNbtCodec {
                     requireNonNegativeLong(source, "required_fuel"),
                     requireNonNegativeLong(source, "created_at_game_time"),
                     target,
-                    schema == 4 ? io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketPropulsionFuelCodec
-                            .decodeDebit(requireCompound(source, "propulsion_debit")) : null
+                    schema == 4 || schema == 6 ? io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketPropulsionFuelCodec
+                            .decodeDebit(requireCompound(source, "propulsion_debit")) : null,
+                    pad
             );
         }
         return new RocketFlightPlan(

@@ -124,7 +124,7 @@ class RocketFlightPlanPacketTest {
 
     @Test
     void protocolRevisionCarriesTypedTargetsAndVariableQuoteCounts() {
-        assertEquals("8", RocketFlightNetwork.protocolVersion());
+        assertEquals("9", RocketFlightNetwork.protocolVersion());
         withBuffer(buffer -> {
             var empty = new RocketFlightPlanPacket(
                     Integer.MAX_VALUE,
@@ -189,6 +189,7 @@ class RocketFlightPlanPacketTest {
             buffer.writeVarInt(2);
             station(buffer, "First", "test:body");
             station(buffer, "Second", "test:body");
+            buffer.writeByte(0); // Protocol 9 optional-pad tail; duplicates remain invalid.
             assertThrows(IllegalArgumentException.class, () -> RocketFlightPlanPacket.decode(buffer));
         });
     }

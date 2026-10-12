@@ -35,6 +35,8 @@ import net.minecraft.server.level.ServerPlayer;
 /** Durable fixed-pad transfer executor and restart recovery owner. */
 final class RocketTransferService {
     private final RocketLandingPadSelector pads = new RocketLandingPadSelector();
+    private final io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.NamedLandingPadStaging namedPads =
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.NamedLandingPadStaging();
     private final Set<UUID> liveTransfers = new HashSet<>();
     private final Set<UUID> settledTransfers = new HashSet<>();
     // BEGIN transfer service diagnostics
@@ -85,7 +87,9 @@ final class RocketTransferService {
             if (station == null) {
                 return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
             }
-            selected = pads.selectStation(
+            selected = plan.landingPad() != null ? namedPads.select(destinationLevel,
+                    rocket.snapshot().orElseThrow(), plan.requestId(), station, plan.landingPad(), reservations,
+                    scheduledArrival(countdown)) : pads.selectStation(
                     destinationLevel,
                     rocket.snapshot().orElseThrow(),
                     plan.requestId(),
@@ -104,9 +108,9 @@ final class RocketTransferService {
         }
         if (!selected.success()) {
             auditPrepare(rocket, plan, selected, RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE);
-            return RocketFlightRequestResult.failure(
+            return new RocketFlightRequestResult(
                     RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE,
-                    plan.requiredFuel()
+                    plan.requiredFuel(), plan.landingPad() == null ? null : selected.detail()
             );
         }
 
@@ -115,6 +119,7 @@ final class RocketTransferService {
             RocketFlightData sourceTransit = scheduledTransit(countdown);
             RocketFuelMutation debit = sourceTransit.fuel().debit(plan);
             if (!debit.success()) {
+                io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
                 return RocketFlightRequestResult.failure(
                         RocketFlightRequestCode.INSUFFICIENT_FUEL,
                         plan.requiredFuel()
@@ -157,6 +162,7 @@ final class RocketTransferService {
             diagnostics.prepared(record.transferId());
             // END transfer service diagnostics
         } catch (RuntimeException exception) {
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
             try {
                 journal.remove(plan.requestId());
                 journal.flush(server);
@@ -538,8 +544,12 @@ final class RocketTransferService {
             // END transfer service diagnostics
             return;
         }
-        if (destinationLevel == null
-                || !pads.available(destinationLevel, record.destinationSnapshot(), null, false)) {
+        var arrivalPlan = record.sourceFlightData().plan().orElseThrow();
+        boolean landingAvailable = destinationLevel != null && (arrivalPlan.landingPad() == null
+                ? pads.available(destinationLevel, record.destinationSnapshot(), null, false)
+                : namedPads.recheck(destinationLevel, record.destinationSnapshot(), arrivalPlan.destinationStationId(),
+                        arrivalPlan.landingPad(), record.transferId()));
+        if (!landingAvailable) {
             // BEGIN transfer service diagnostics
             diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.DESTINATION_UNAVAILABLE);
             // END transfer service diagnostics
@@ -708,6 +718,7 @@ final class RocketTransferService {
         journal.remove(record.transferId());
         journal.flush(server);
         liveTransfers.remove(record.transferId());
+        io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, record);
         reason.log(
                 AdvancedRocketryCommunity.LOGGER,
                 record.transferId(),
@@ -724,6 +735,9 @@ final class RocketTransferService {
         journal.put(updated);
         journal.flush(server);
         liveTransfers.add(updated.transferId());
+        if (updated.phase() == RocketTransferPhase.COMMITTED) {
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, updated);
+        }
         auditPhase(updated, updated.phase().name().toLowerCase(java.util.Locale.ROOT),
                 updated.destinationEntityId().orElse(updated.sourceEntityId()));
     }

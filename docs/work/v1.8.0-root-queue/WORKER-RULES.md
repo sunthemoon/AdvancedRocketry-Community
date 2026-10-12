@@ -90,6 +90,16 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
     `scripts/gametest_expected_log.json`, with the test and the reason.
   - If the checker fails on an entry that has nothing to do with your work, record it and
     do not chase it.
+- **Background commands must end by themselves:**
+  - Never start an interactive program: a bare `python` or `node` REPL, `tail -F`, or a
+    watch loop.
+  - Always pass `python` a script or `-c`, and give polling loops a time limit.
+  - Why: on 2026-10-12 a worker's background `python` with no console became a REPL that
+    printed the same traceback forever. It wrote 24.9 GB into the Claude temp folder and
+    filled C:, and Gradle runs on C: then failed.
+  - Before `runGameTestServer`, `runData` or a full `build`, check that C: and D: each have
+    at least 10 GB free (AGENTS.md section 9). The Gradle home and the temp folders are on
+    C:.
 
 ## When you finish
 

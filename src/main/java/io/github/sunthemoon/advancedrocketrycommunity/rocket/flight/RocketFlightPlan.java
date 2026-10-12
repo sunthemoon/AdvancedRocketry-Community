@@ -19,12 +19,15 @@ public record RocketFlightPlan(
         long requiredFuel,
         long createdAtGameTime,
         TravelTarget destinationTarget,
-        RocketPropulsionDebit propulsionDebit
+        RocketPropulsionDebit propulsionDebit,
+        io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference landingPad
 ) {
     public static final int SCHEMA_VERSION = 3;
 
     public RocketFlightPlan {
-        if (schemaVersion < 1 || schemaVersion > 4 || (schemaVersion == 4) != (propulsionDebit != null)) {
+        if (schemaVersion < 1 || schemaVersion > 6
+                || (schemaVersion == 4 || schemaVersion == 6) != (propulsionDebit != null)
+                || (schemaVersion >= 5) != (landingPad != null)) {
             throw new IllegalArgumentException("Unsupported rocket flight plan schema");
         }
         Objects.requireNonNull(requestId, "requestId");
@@ -54,6 +57,9 @@ public record RocketFlightPlan(
             throw new IllegalArgumentException("Space destination must bind exactly one station UUID");
         }
         validateTarget(destinationTarget, destinationBody, destinationDimension, destinationStationId, schemaVersion);
+        if (landingPad != null && !(destinationTarget instanceof TravelTarget.Station)) {
+            throw new IllegalArgumentException("A named pad requires a station destination");
+        }
         if (requiredFuel <= 0L || requiredFuel > RocketFlightLimits.MAX_TRAVEL_FUEL) {
             throw new IllegalArgumentException("Rocket flight plan fuel is outside the fixed limit");
         }
@@ -64,14 +70,28 @@ public record RocketFlightPlan(
 
     public RocketFlightPlan(int schemaVersion, UUID requestId, ResourceLocation sourceBody,
             ResourceLocation destinationBody, ResourceLocation sourceDimension, ResourceLocation destinationDimension,
+            UUID destinationStationId, long requiredFuel, long createdAtGameTime, TravelTarget destinationTarget,
+            RocketPropulsionDebit propulsionDebit) {
+        this(schemaVersion, requestId, sourceBody, destinationBody, sourceDimension, destinationDimension,
+                destinationStationId, requiredFuel, createdAtGameTime, destinationTarget, propulsionDebit, null);
+    }
+
+    public RocketFlightPlan(int schemaVersion, UUID requestId, ResourceLocation sourceBody,
+            ResourceLocation destinationBody, ResourceLocation sourceDimension, ResourceLocation destinationDimension,
             UUID destinationStationId, long requiredFuel, long createdAtGameTime, TravelTarget destinationTarget) {
         this(schemaVersion, requestId, sourceBody, destinationBody, sourceDimension, destinationDimension,
                 destinationStationId, requiredFuel, createdAtGameTime, destinationTarget, null);
     }
 
     public RocketFlightPlan withPropulsionDebit(RocketPropulsionDebit debit) {
-        return new RocketFlightPlan(4, requestId, sourceBody, destinationBody, sourceDimension, destinationDimension,
-                destinationStationId, requiredFuel, createdAtGameTime, destinationTarget, debit);
+        return new RocketFlightPlan(landingPad == null ? 4 : 6, requestId, sourceBody, destinationBody, sourceDimension, destinationDimension,
+                destinationStationId, requiredFuel, createdAtGameTime, destinationTarget, debit, landingPad);
+    }
+
+    public RocketFlightPlan withLandingPad(io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
+        return new RocketFlightPlan(propulsionDebit == null ? 5 : 6, requestId, sourceBody, destinationBody,
+                sourceDimension, destinationDimension, destinationStationId, requiredFuel, createdAtGameTime,
+                destinationTarget, propulsionDebit, java.util.Objects.requireNonNull(pad));
     }
 
     public RocketFlightPlan(

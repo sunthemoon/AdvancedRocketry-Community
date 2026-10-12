@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "c": {
+      "item": "advancedrocketrycommunity:basic_circuit_plate"
+    },
+    "i": {
+      "tag": "forge:ingots/iron"
+    },
+    "p": {
+      "tag": "forge:plates/aluminum"
+    }
+  },
+  "pattern": [
+    "ppp",
+    "ici",
+    "ppp"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:atmosphere_detector"
+  }
+}

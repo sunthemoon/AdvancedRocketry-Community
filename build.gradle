@@ -123,6 +123,16 @@ mixin {
     config "${mod_id}.mixins.json"
 }
 
+// The Mixin annotation processor and MixinGradle's post-compile action write the refmaps and the
+// mappings into compileJava's temporary directory, which Gradle does not track. Declare them as
+// outputs so that a build-cache hit restores them; otherwise the jar silently ships without the
+// refmap and the ADR-073 Mixin cannot resolve.
+tasks.named('compileJava', JavaCompile) {
+    outputs.file(new File(temporaryDir, 'compileJava-refmap.json')).withPropertyName('mixinRefmap')
+    outputs.file(new File(temporaryDir, 'compileJava-mappings.tsrg')).withPropertyName('mixinMappings')
+    outputs.file(new File(temporaryDir, "${mod_id}.refmap.json")).withPropertyName('mixinPackagedRefmap')
+}
+
 sourceSets.main.resources {
     srcDir 'src/generated/resources'
     srcDir 'src/generated/v0.2/resources'

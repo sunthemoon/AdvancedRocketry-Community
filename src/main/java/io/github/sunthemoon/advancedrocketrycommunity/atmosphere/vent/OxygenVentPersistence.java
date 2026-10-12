@@ -8,7 +8,7 @@ import net.minecraft.nbt.Tag;
 /** Fixed-field schema that never persists arbitrary item NBT or volume caches. */
 public final class OxygenVentPersistence {
     public static final String DATA_KEY = "arce_oxygen_vent";
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
     public static final int MAX_STACK_COUNT = 16;
 
     private static final String SCHEMA_KEY = "schema_version";
@@ -28,6 +28,12 @@ public final class OxygenVentPersistence {
             int energy,
             int oxygenPhase
     ) {
+        return encode(inputCount, outputCount, oxygenUnits, energy, oxygenPhase,
+                new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBank().encode());
+    }
+
+    public static CompoundTag encode(int inputCount, int outputCount, int oxygenUnits, int energy, int oxygenPhase,
+                                     CompoundTag scrubbers) {
         validate(inputCount, outputCount, oxygenUnits, energy, oxygenPhase);
         CompoundTag data = new CompoundTag();
         data.putInt(SCHEMA_KEY, SCHEMA_VERSION);
@@ -36,6 +42,7 @@ public final class OxygenVentPersistence {
         data.putInt(OXYGEN_KEY, oxygenUnits);
         data.putInt(ENERGY_KEY, energy);
         data.putInt(PHASE_KEY, oxygenPhase);
+        data.put("scrubbers", scrubbers);
         return data;
     }
 
@@ -48,6 +55,9 @@ public final class OxygenVentPersistence {
             return DecodeResult.invalid(invalidSentinel());
         }
         CompoundTag data = parent.getCompound(DATA_KEY);
+        if (!io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceProtection.bounded(data)) {
+            return DecodeResult.invalid(data);
+        }
         if (!data.contains(SCHEMA_KEY, Tag.TAG_INT)) {
             return DecodeResult.invalid(data);
         }
@@ -55,12 +65,15 @@ public final class OxygenVentPersistence {
         if (schema > SCHEMA_VERSION) {
             return DecodeResult.future(data.copy());
         }
-        if (schema != SCHEMA_VERSION
+        if ((schema != 1 && schema != SCHEMA_VERSION)
                 || !hasInt(data, INPUT_KEY)
                 || !hasInt(data, OUTPUT_KEY)
                 || !hasInt(data, OXYGEN_KEY)
                 || !hasInt(data, ENERGY_KEY)
-                || !hasInt(data, PHASE_KEY)) {
+                || !hasInt(data, PHASE_KEY)
+                || !data.getAllKeys().equals(schema == 1
+                ? java.util.Set.of(SCHEMA_KEY, INPUT_KEY, OUTPUT_KEY, OXYGEN_KEY, ENERGY_KEY, PHASE_KEY)
+                : java.util.Set.of(SCHEMA_KEY, INPUT_KEY, OUTPUT_KEY, OXYGEN_KEY, ENERGY_KEY, PHASE_KEY, "scrubbers"))) {
             return DecodeResult.invalid(data);
         }
         int input = data.getInt(INPUT_KEY);
@@ -73,7 +86,11 @@ public final class OxygenVentPersistence {
         } catch (IllegalArgumentException exception) {
             return DecodeResult.invalid(data);
         }
-        return DecodeResult.valid(input, output, oxygen, energy, phase);
+        if (schema == 2 && io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBank.decode(data.get("scrubbers")) == null) {
+            return DecodeResult.invalid(data);
+        }
+        return new DecodeResult(DecodeStatus.VALID, input, output, oxygen, energy, phase, null,
+                schema == 2 ? data.getCompound("scrubbers").copy() : null);
     }
 
     private static boolean hasInt(CompoundTag data, String key) {
@@ -111,28 +128,35 @@ public final class OxygenVentPersistence {
             int oxygenUnits,
             int energy,
             int oxygenPhase,
-            CompoundTag preservedFutureData
+            CompoundTag preservedFutureData,
+            CompoundTag scrubbers
     ) {
         public DecodeResult {
             Objects.requireNonNull(status, "status");
-            preservedFutureData = preservedFutureData == null ? null : preservedFutureData.copy();
+            preservedFutureData = preserve(preservedFutureData);
         }
 
         public static DecodeResult valid(int input, int output, int oxygen, int energy, int phase) {
-            return new DecodeResult(DecodeStatus.VALID, input, output, oxygen, energy, phase, null);
+            return new DecodeResult(DecodeStatus.VALID, input, output, oxygen, energy, phase, null, null);
         }
 
         public static DecodeResult future(CompoundTag data) {
-            return new DecodeResult(DecodeStatus.FUTURE, 0, 0, 0, 0, 0, data);
+            return new DecodeResult(DecodeStatus.FUTURE, 0, 0, 0, 0, 0, data, null);
         }
 
         public static DecodeResult invalid(CompoundTag data) {
-            return new DecodeResult(DecodeStatus.INVALID, 0, 0, 0, 0, 0, data.copy());
+            return new DecodeResult(DecodeStatus.INVALID, 0, 0, 0, 0, 0, data, null);
         }
 
         @Override
         public CompoundTag preservedFutureData() {
-            return preservedFutureData == null ? null : preservedFutureData.copy();
+            return preserve(preservedFutureData);
+        }
+
+        /** Uncopyable retained roots are read-only aliases, as in the BlockEntity quarantine adapter. */
+        private static CompoundTag preserve(CompoundTag data) {
+            return data == null ? null : io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceProtection.bounded(data)
+                    ? data.copy() : data;
         }
     }
 

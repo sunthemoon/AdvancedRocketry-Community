@@ -3,6 +3,182 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "landing-pad-recovery-prepared-0",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=0 destination_count=0 action=REBUILD_SOURCE status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-destination-spawned-1",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=DESTINATION_SPAWNED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-destination-spawned-2",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=DESTINATION_SPAWNED source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-destination-spawned-3",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=DESTINATION_SPAWNED source_count=1 destination_count=1 action=REMOVE_SOURCE_KEEP_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-passengers-transferred-0",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PASSENGERS_TRANSFERRED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-passengers-transferred-1",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PASSENGERS_TRANSFERRED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-passengers-transferred-2",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PASSENGERS_TRANSFERRED source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-passengers-transferred-3",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PASSENGERS_TRANSFERRED source_count=1 destination_count=1 action=REMOVE_SOURCE_KEEP_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-source-removed-0",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=SOURCE_REMOVED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-source-removed-1",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=SOURCE_REMOVED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-source-removed-2",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=SOURCE_REMOVED source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-source-removed-3",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=SOURCE_REMOVED source_count=1 destination_count=1 action=REMOVE_SOURCE_KEEP_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-committed-0",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-committed-1",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=COMMITTED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-committed-2",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=COMMITTED source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
+      "id": "landing-pad-recovery-committed-3",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=COMMITTED source_count=1 destination_count=1 action=REMOVE_SOURCE_KEEP_DESTINATION status=RECOVERED",
+      "counts": {
+        "landing_pads": 1
+      },
+      "test": "LandingPadGameTests.allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload",
+      "reason": "This native file/BE reload cut verifies the existing recovery authority decision and release of exactly the named pad's transfer claim."
+    },
+    {
       "id": "force-field-power-callback-refused",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
@@ -222,16 +398,16 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} reason=destination_pad_blocked fuel=\\d+",
-      "counts": {"destination_readiness": 1, "flight": 1, "planetary_changed_pad": 1},
-      "test": "RocketDestinationReadinessGameTests, RocketFlightGameTests, PlanetaryLandingGameTests",
-      "reason": "Each test blocks the destination pad and requires the rocket to return to its source."
+      "counts": {"destination_readiness": 1, "flight": 1, "planetary_changed_pad": 1, "named_pad_occupancy": 1},
+      "test": "RocketDestinationReadinessGameTests, RocketFlightGameTests, PlanetaryLandingGameTests, NamedLandingPadOccupancyGameTests.wideParkedStructureAppearingAfterPreparationRefusesPreSpawn",
+      "reason": "Each test blocks the destination pad and requires the rocket to return to its source; W13F uses a wide parked structure outside the arrival entity AABB."
     },
     {
       "id": "transfer-recovery-keep-source",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
-      "counts": {"flight_recovery": 1},
+      "counts": {"flight_recovery": 1, "landing_pads": 1},
       "test": "RocketTransferRecoveryGameTests",
       "reason": "The source-only prepared transfer must keep its source; counts cannot substitute another recovery case."
     },
@@ -240,7 +416,7 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED",
-      "counts": {"flight_recovery": 1},
+      "counts": {"flight_recovery": 1, "landing_pads": 1},
       "test": "RocketTransferRecoveryGameTests",
       "reason": "The destination-only prepared transfer must keep its destination."
     },
@@ -249,7 +425,7 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=1 action=REMOVE_DESTINATION_KEEP_SOURCE status=RECOVERED",
-      "counts": {"flight_recovery": 1},
+      "counts": {"flight_recovery": 1, "landing_pads": 1},
       "test": "RocketTransferRecoveryGameTests",
       "reason": "The prepared duplicate transfer must remove its destination and keep its source."
     },
@@ -258,7 +434,7 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=DESTINATION_SPAWNED source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED",
-      "counts": {"flight_recovery": 1},
+      "counts": {"flight_recovery": 1, "landing_pads": 1},
       "test": "RocketTransferRecoveryGameTests",
       "reason": "The destination-spawned transfer with neither entity must rebuild its destination."
     },
@@ -440,6 +616,26 @@
       "batches": ["<startup>"],
       "test": "environment: W03 equipment configuration created by the run",
       "reason": "The tank creation multiplier defaults to 1 once on a new config. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-w14-scrubber-cartridge-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key OXYGEN\\.scrubberRequiresCartrige was corrected from null to its default, true\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W14 life-support configuration created by the run",
+      "reason": "The cartridge requirement defaults to true exactly once; the OXYGEN section is already excluded from the generic 99-warning budget."
+    },
+    {
+      "id": "forge-w14-oxygen-detection-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key OXYGEN\\.oxygenDetection was corrected from null to its default, true\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W14 life-support configuration created by the run",
+      "reason": "The detector switch defaults to true exactly once; the OXYGEN section is already excluded from the generic 99-warning budget."
     },
     {
       "id": "forge-equipment-active-target-defaulted",

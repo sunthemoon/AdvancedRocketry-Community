@@ -54,6 +54,9 @@ public final class OxygenVentBlockEntity extends BlockEntity {
     private boolean futureSchemaBlocked;
     private boolean invalidDataBlocked;
     private CompoundTag preservedBlockedData;
+    private net.minecraft.nbt.Tag refusedRaw;
+    private io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBank scrubbers =
+            new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBank();
 
     public OxygenVentBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.OXYGEN_VENT.get(), position, state);
@@ -88,6 +91,10 @@ public final class OxygenVentBlockEntity extends BlockEntity {
                 energy.getEnergyStored(),
                 oxygenPhase
         ));
+        if (result.oxygenConsumed() > 0 && scrubbers.skipDebit(this)) {
+            result = new VentSupplyResult(result.status(), result.breathable(), oxygenUnits, 0,
+                    result.energyStored(), result.energyConsumed(), result.oxygenPhase());
+        }
         oxygenUnits = result.oxygenUnits();
         oxygenPhase = result.oxygenPhase();
         energy.setStored(result.energyStored());
@@ -167,6 +174,11 @@ public final class OxygenVentBlockEntity extends BlockEntity {
     @Override
     protected void saveAdditional(CompoundTag parent) {
         super.saveAdditional(parent);
+        if (refusedRaw != null) {
+            parent.put(OxygenVentPersistence.DATA_KEY,
+                    io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceProtection.bounded(refusedRaw) ? refusedRaw.copy() : refusedRaw);
+            return;
+        }
         if ((futureSchemaBlocked || invalidDataBlocked) && preservedBlockedData != null) {
             parent.put(OxygenVentPersistence.DATA_KEY, preservedBlockedData.copy());
             return;
@@ -176,7 +188,8 @@ public final class OxygenVentBlockEntity extends BlockEntity {
                 inventory.getStackInSlot(SLOT_EMPTY).getCount(),
                 oxygenUnits,
                 energy.getEnergyStored(),
-                oxygenPhase
+                oxygenPhase,
+                scrubbers.encode()
         ));
     }
 
@@ -184,6 +197,12 @@ public final class OxygenVentBlockEntity extends BlockEntity {
     public void load(CompoundTag parent) {
         super.load(parent);
         resetLoadedState();
+        net.minecraft.nbt.Tag raw = parent.get(OxygenVentPersistence.DATA_KEY);
+        if (raw != null && (!(raw instanceof CompoundTag)
+                || !io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceProtection.bounded(raw))) {
+            refusedRaw = io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceProtection.bounded(raw) ? raw.copy() : raw;
+            invalidDataBlocked = true; status = VentOperatingStatus.INVALID_DATA; return;
+        }
         OxygenVentPersistence.DecodeResult decoded = OxygenVentPersistence.decode(parent);
         if (decoded.status() == OxygenVentPersistence.DecodeStatus.FUTURE) {
             futureSchemaBlocked = true;
@@ -201,6 +220,9 @@ public final class OxygenVentBlockEntity extends BlockEntity {
         oxygenUnits = decoded.oxygenUnits();
         energy.setStored(decoded.energy());
         oxygenPhase = decoded.oxygenPhase();
+        if (decoded.scrubbers() != null) {
+            scrubbers = io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBank.decode(decoded.scrubbers());
+        }
     }
 
     private void resetLoadedState() {
@@ -212,6 +234,8 @@ public final class OxygenVentBlockEntity extends BlockEntity {
         futureSchemaBlocked = false;
         invalidDataBlocked = false;
         preservedBlockedData = null;
+        refusedRaw = null;
+        scrubbers = new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBank();
     }
 
     private VentSupplyResult inactiveResult(VentOperatingStatus inactiveStatus) {
@@ -287,6 +311,12 @@ public final class OxygenVentBlockEntity extends BlockEntity {
         return oxygenUnits;
     }
 
+    public io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.ScrubberBank scrubbers() { return scrubbers; }
+    public boolean protectedDeviceData() { return futureSchemaBlocked || invalidDataBlocked || refusedRaw != null; }
+    public boolean deviceAvailable() {
+        return !protectedDeviceData() && io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.DeviceAccess.loaded(this);
+    }
+
     public int energyStored() {
         return energy.getEnergyStored();
     }
@@ -326,10 +356,15 @@ public final class OxygenVentBlockEntity extends BlockEntity {
         @Nonnull
         @Override
         public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+            if (protectedDeviceData()) { return stack; }
             if (!internal && slot == SLOT_EMPTY) {
                 return stack;
             }
             return super.insertItem(slot, stack, simulate);
+        }
+
+        @Nonnull @Override public ItemStack extractItem(int slot, int amount, boolean simulate) {
+            return protectedDeviceData() ? ItemStack.EMPTY : super.extractItem(slot, amount, simulate);
         }
 
         @Override
@@ -386,6 +421,7 @@ public final class OxygenVentBlockEntity extends BlockEntity {
 
         @Override
         public int receiveEnergy(int maxReceive, boolean simulate) {
+            if (protectedDeviceData()) { return 0; }
             int received = super.receiveEnergy(maxReceive, simulate);
             if (received > 0 && !simulate) {
                 OxygenVentBlockEntity.this.setChanged();

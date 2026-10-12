@@ -24,5 +24,10 @@ public final class AtmosphereAnalyzerRuntime {
         return service == null ? AnalyzerReading.unavailable() : service.read(player);
     }
 
+    public static AnalyzerReading readAt(net.minecraft.server.level.ServerLevel level, net.minecraft.core.BlockPos position) {
+        AtmosphereAnalyzerService service = active;
+        return service == null ? AnalyzerReading.unavailable() : service.readAt(level, position);
+    }
+
     private AtmosphereAnalyzerRuntime() { }
 }
