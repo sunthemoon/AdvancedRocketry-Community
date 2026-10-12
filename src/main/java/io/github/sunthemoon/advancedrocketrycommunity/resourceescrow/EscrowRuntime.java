@@ -106,7 +106,7 @@ public final class EscrowRuntime {
         }
         if (runtime.barrier != null) { runtime.barrier.tick(event.getServer().getTickCount()); }
         if (runtime.scheduler != null && data != null) {
-            runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).autosave();
+            runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).persistTransitions();
         }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {

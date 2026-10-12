@@ -98,6 +98,18 @@ class EscrowLedgerWriterTest {
         assertThrows(IllegalArgumentException.class, () -> EscrowLedgerWriter.Snapshot.of(
                 EscrowTestFixtures.ledger(), Set.of(EscrowTestFixtures.id(999))));
     }
+    @Test void periodicReasonPersistenceCannotStarveAnExplicitPreparation() throws Exception {
+        var data = ResourceEscrowSavedData.create(); var op = EscrowTestFixtures.operation(1); var replies = new ArrayList<Boolean>();
+        var writer = new EscrowLedgerWriter(file(), 0);
+        try (var coordinator = new EscrowCoordinator(data, writer)) {
+            coordinator.prepareTest(op, replies::add);
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10), tick = 0;
+            while (replies.isEmpty() && System.nanoTime() < deadline) {
+                coordinator.tick(tick++); coordinator.persistTransitions(); coordinator.commitPreparations(); Thread.sleep(1);
+            }
+            assertEquals(List.of(true), replies); assertEquals(List.of(op), coordinator.ledger().records());
+        }
+    }
     @Test void delayedSuccessorCannotBurstTwoActualLedgerStartsInsideTenTicks() throws Exception {
         var base = EscrowTestFixtures.ledger(); CountDownLatch staged = new CountDownLatch(1), release = new CountDownLatch(1);
         AtomicInteger stages = new AtomicInteger();

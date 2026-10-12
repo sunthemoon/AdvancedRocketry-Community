@@ -50,6 +50,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         // Only acknowledged records are included. Queued preparations are never implicit autosave admissions.
         if (writer.request(() -> snapshot(false, null), this::acknowledge)) { lastStart = tick; }
     }
+    void persistTransitions() { owner(); if (!transitions.isEmpty()) { autosave(); } }
     private EscrowLedgerWriter.Snapshot snapshot(boolean admissions, Set<UUID> retire) {
         EscrowLedger candidate = data.ledger();
         candidate = new EscrowLedger(candidate.id(), candidate.issuedThrough(), candidate.writerGeneration(),
