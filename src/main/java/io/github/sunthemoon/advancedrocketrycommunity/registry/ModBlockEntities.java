@@ -39,6 +39,15 @@ public final class ModBlockEntities {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlockEntity>>
+            FORCE_FIELD_PROJECTOR = BLOCK_ENTITIES.register("force_field_projector", () -> BlockEntityType.Builder.of(
+            io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlockEntity::new,
+            ModBlocks.FORCE_FIELD_PROJECTOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldBlockEntity>>
+            FORCE_FIELD = BLOCK_ENTITIES.register("force_field", () -> BlockEntityType.Builder.of(
+            io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldBlockEntity::new,
+            ModBlocks.FORCE_FIELD.get()).build(null));
+
     public static final RegistryObject<BlockEntityType<CombustionGeneratorBlockEntity>> COMBUSTION_GENERATOR =
             BLOCK_ENTITIES.register("combustion_generator", () -> BlockEntityType.Builder.of(
                     CombustionGeneratorBlockEntity::new, ModBlocks.COMBUSTION_GENERATOR.get()).build(null));

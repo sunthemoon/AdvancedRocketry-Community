@@ -67,4 +67,11 @@ public final class AtmosphereRuntime {
         AtmosphereManager current = manager;
         return current == null ? Optional.empty() : current.metrics(level.dimension());
     }
+    /** Server-thread diagnostics used to verify physical boundary commit ordering. */
+    public static Optional<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState>
+            breathabilityAt(ServerLevel level, BlockPos position) {
+        AtmosphereManager current = manager;
+        return current == null || !level.getServer().isSameThread() || !level.hasChunkAt(position)
+                ? Optional.empty() : Optional.of(current.breathabilityAt(level, position));
+    }
 }

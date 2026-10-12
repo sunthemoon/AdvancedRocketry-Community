@@ -325,7 +325,7 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key (?!machines\\.sawmillVanillaWood\\b|(?:OXYGEN|ROCKET)(?:\\s|\\.))[\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!machines\\.sawmillVanillaWood\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET)(?:\\s|\\.))[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
@@ -340,6 +340,36 @@
       "batches": ["<startup>"],
       "test": "environment: W05 COMMON sawmill setting on first GameTest startup",
       "reason": "W05 adds this default-on COMMON key. Forge emits this exact warning once when the key is absent and none when the configuration is reused. The unrelated config-key budget remains 99; false defaults, non-null corrections, repeated entries and messages outside startup are not admitted."
+    },
+    {
+      "id": "force-field-config-group-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key forceField was corrected from null to its default, SimpleCommentedConfig:\\{\\}. ",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: ForceFieldConfig per-profile server configuration",
+      "reason": "Forge creates the single forceField group when this slice's server configuration is absent."
+    },
+    {
+      "id": "force-field-config-switch-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key forceField\\.enabled was corrected from null to its default, true\\. ",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: ForceFieldConfig per-profile server configuration",
+      "reason": "Forge creates the one enabled switch at its declared true default; non-null corrections are not allowed."
+    },
+    {
+      "id": "force-field-config-file-created",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Configuration file .+[\\\\/]advancedrocketrycommunity-force-field\\.toml is not correct\\. Correcting",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: ForceFieldConfig per-profile server configuration",
+      "reason": "Forge reports creation of this slice's server configuration once; the existing configuration-file allowance remains unchanged."
     },
     {
       "id": "forge-equipment-oxygen-section-defaulted",

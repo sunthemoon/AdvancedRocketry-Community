@@ -38,10 +38,12 @@ public final class AtmosphereServerEvents {
     }
 
     public void onBlockBroken(BlockEvent.BreakEvent event) {
+        if (event instanceof DeferredRoomBoundary || event.getState().getBlock() instanceof DeferredRoomBoundary) { return; }
         mark(event.getLevel(), event.getPos());
     }
 
     public void onBlockPlaced(BlockEvent.EntityPlaceEvent event) {
+        if (event instanceof DeferredRoomBoundary || event.getPlacedBlock().getBlock() instanceof DeferredRoomBoundary) { return; }
         if (event instanceof BlockEvent.EntityMultiPlaceEvent multiPlace) {
             for (BlockSnapshot snapshot : multiPlace.getReplacedBlockSnapshots()) {
                 mark(snapshot.getLevel(), snapshot.getPos());

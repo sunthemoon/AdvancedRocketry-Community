@@ -24,6 +24,8 @@ public final class BootstrapDataGenerators {
         // Earlier version outputs (v1.7 and before) remain immutable resource inputs.
         ExistingFileHelper existingFiles = event.getExistingFileHelper();
         generator.addProvider(event.includeClient(), new V180MaterialArt(output));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180ForceFieldData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient(), new V180CombustionArt(output));
         generator.addProvider(event.includeClient(), new V180FluidArt(output));
         generator.addProvider(event.includeClient(), new V180MotorArt(output));

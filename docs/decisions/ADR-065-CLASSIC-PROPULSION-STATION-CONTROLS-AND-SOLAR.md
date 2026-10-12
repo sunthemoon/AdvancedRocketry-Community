@@ -759,6 +759,28 @@ explosion cancellation, unavailable claims and restart. Exact codec/recovery and
 native event interception must pass independent review before implementation;
 this explicit state table is not permission to weaken raw-root preservation.
 
+### W04 implementation note: oversized native save protection
+
+This note documents protection mechanics, not a changed decision or accepted
+risk. W04 applies the existing `GuardedChunkSaves` mechanism to oversized field
+and projector roots (risk R-022). The affected unit is the whole terrain chunk;
+the Level capability retains denial across unload, and its existing 256-coordinate
+saturation can refuse further terrain saves in that Level. The live raw Tag is
+retained and ordinary removal is refused. The existing guard throws at the chunk
+save event so ChunkMap reports refusal and restores the dirty flag; exceptions
+from BE serialization alone are not used to control saves. This does not prevent
+unload or promise durability between the cleanup file and terrain writer. Guard
+logs have no retry-volume bound. Denial lasts through the Level lifecycle, with no
+production online reset. Back up, stop and repair the native root offline before
+restarting; restarting alone is not repair.
+
+An oversized cleanup SavedData root is retained by reference and remains inert.
+Its file save is refused without throwing, leaving the existing `.dat` file and
+dirty flag intact; one diagnostic per loaded root reports that refusal. This
+affects only that cleanup file, not other SavedData files. Recovery requires the
+same backup/offline repair procedure. Native stop/restart and human risk acceptance
+remain separate evidence and are not granted by this implementation note.
+
 ## 7. Beacon and finder (C17c)
 
 Use the v1.2 multiblock pattern lifecycle for a 5-by-3-by-3 beacon, four rotations,

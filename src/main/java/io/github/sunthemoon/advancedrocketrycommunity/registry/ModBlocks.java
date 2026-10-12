@@ -53,6 +53,16 @@ public final class ModBlocks {
             AdvancedRocketryCommunity.MOD_ID
     );
 
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlock>
+            FORCE_FIELD_PROJECTOR = BLOCKS.register("force_field_projector", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlock(
+                    metalProperties().pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldBlock>
+            FORCE_FIELD = BLOCKS.register("force_field", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldBlock(
+                    BlockBehaviour.Properties.of().mapColor(MapColor.COLOR_LIGHT_BLUE).strength(3.0F, 6.0F)
+                            .sound(SoundType.GLASS).noLootTable().pushReaction(PushReaction.BLOCK)));
+
     public static final RegistryObject<AirlockDoorBlock> AIRLOCK_DOOR = BLOCKS.register(
             "airlock_door", () -> new AirlockDoorBlock(metalProperties().requiresCorrectToolForDrops()
                     .noOcclusion(), CommonConfig::classicDevicesEnabled));
