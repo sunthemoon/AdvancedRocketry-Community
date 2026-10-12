@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Client cache for the C17c beacon marker snapshot: the last snapshot received, cleared on logout and on a Level
- * change. Nothing reads it yet; the finder display belongs to C17c.
+ * change or respawn. Only the client finder overlay reads it; it holds no world state.
  */
 public final class BeaconMarkerCache {
     private static final AtomicReference<BeaconMarkerSnapshotPacket> SNAPSHOT =

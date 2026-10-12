@@ -375,6 +375,16 @@ public final class ModBlocks {
                                 .sound(SoundType.METAL)));
     }
 
+    /** ADR-065 C17c: the planetary beacon controller of a 5-by-3-by-3 pattern; pistons cannot move it. */
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock>
+            PLANETARY_BEACON = BLOCKS.register("planetary_beacon", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock(BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_LIGHT_GRAY)
+                    .requiresCorrectToolForDrops()
+                    .strength(3.0F, 6.0F)
+                    .sound(SoundType.METAL)
+                    .pushReaction(PushReaction.BLOCK)));
+
     /** Passive ordinary lights: native support/placement, distinct registered loot tables. */
     public static final RegistryObject<TorchBlock> THERMITE_TORCH = BLOCKS.register("thermite_torch", () ->
             new TorchBlock(thermiteTorchProperties(), ParticleTypes.FLAME));

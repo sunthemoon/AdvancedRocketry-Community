@@ -247,6 +247,8 @@ public final class AdvancedRocketryCommunity {
         SatelliteNetwork.install(new SatelliteNetwork());
         // ADR-065 section 11.1: the C17 control intents and views, and the C17c beacon marker codec.
         ClassicControlsNetwork.install(new ClassicControlsNetwork());
+        // ADR-065 section 7 (C17c): the planetary beacon index lifecycle and the finder's marker stream.
+        io.github.sunthemoon.advancedrocketrycommunity.beacon.BeaconRuntime.install(multiblockPatterns, celestialCatalogs);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onPlayerLoggedOut);

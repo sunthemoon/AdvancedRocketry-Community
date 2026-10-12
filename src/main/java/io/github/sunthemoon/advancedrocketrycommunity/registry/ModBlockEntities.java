@@ -264,6 +264,11 @@ public final class ModBlockEntities {
             "centrifuge", () -> BlockEntityType.Builder.of((position, state) -> new ClassicControllerBlockEntity(
                     ModBlockEntities.CENTRIFUGE.get(), position, state,
                     ClassicMachineDefinition.CENTRIFUGE), ModBlocks.CENTRIFUGE.get()).build(null));
+    /** ADR-065 C17c: the planetary beacon controller; the BE ID equals the block ID. */
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlockEntity>>
+            PLANETARY_BEACON = BLOCK_ENTITIES.register("planetary_beacon", () -> BlockEntityType.Builder.of(
+            io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlockEntity::new,
+            ModBlocks.PLANETARY_BEACON.get()).build(null));
 
     private ModBlockEntities() {
     }
