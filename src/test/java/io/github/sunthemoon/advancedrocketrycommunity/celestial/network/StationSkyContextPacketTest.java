@@ -110,17 +110,33 @@ final class StationSkyContextPacketTest {
                             Long.MAX_VALUE), buffer);
                     buffer.writeByte(0);
                 },
-                buffer -> buffer.writeBytes(new byte[StationSkyContextPacket.MAX_BYTES + 1]),
-                buffer -> buffer.writeByte(2).writeByte(1));
-        for (Consumer<FriendlyByteBuf> writer : invalid) {
+                buffer -> buffer.writeBytes(new byte[StationSkyContextPacket.MAX_BYTES + 1]));
+        // Every deliberately rejected frame is a DecoderException, as before payload schema 2 (W07 review R5).
+        for (int index = 0; index < invalid.size(); index++) {
             FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
-            writer.accept(buffer);
-            assertThrows(RuntimeException.class, () -> StationSkyContextPacket.decode(buffer));
+            invalid.get(index).accept(buffer);
+            assertThrows(DecoderException.class, () -> StationSkyContextPacket.decode(buffer), "frame " + index);
         }
         FriendlyByteBuf trailing = encoded(StationSkyContextPacket.NONE);
         trailing.writeByte(0);
         assertThrows(DecoderException.class, () -> StationSkyContextPacket.decode(trailing));
-        // The record itself refuses what the server must never build.
+        // A truncated frame is the one separate case: Netty's own bounds check ends it before any field check,
+        // with its IndexOutOfBoundsException. Every proper prefix of the longest context is cut short this way.
+        for (int length = 0; length < StationSkyContextPacket.ENCODED_MAXIMUM; length++) {
+            FriendlyByteBuf full = encoded(packet(SkyKind.SPACE_FALLBACK, Optional.of(new ResourceLocation(
+                    ModIdentity.MOD_ID + ":" + "a".repeat(BoundedCelestialCodecs.MAX_RESOURCE_LOCATION_CHARS
+                            - ModIdentity.MOD_ID.length() - 1))), EXTREME, Long.MAX_VALUE));
+            FriendlyByteBuf truncated = new FriendlyByteBuf(full.readBytes(length));
+            assertThrows(IndexOutOfBoundsException.class, () -> StationSkyContextPacket.decode(truncated),
+                    "truncated at " + length);
+        }
+        // The record itself refuses what the server must never build, including an overlong body (as before
+        // schema 2, now on the Context that carries the body).
+        String tooLong = ModIdentity.MOD_ID + ":" + "a".repeat(BoundedCelestialCodecs.MAX_RESOURCE_LOCATION_CHARS);
+        for (SkyKind kind : SkyKind.values()) {
+            assertThrows(IllegalArgumentException.class, () -> new Context(kind, Optional.of(new ResourceLocation(
+                    tooLong)), StationOrbitalControls.initial(0), 0), kind.name());
+        }
         assertThrows(IllegalArgumentException.class, () -> new Context(SkyKind.PLANETARY, Optional.empty(),
                 StationOrbitalControls.initial(0), 0));
         assertThrows(IllegalArgumentException.class, () -> new Context(SkyKind.SPACE_FALLBACK, Optional.empty(),
