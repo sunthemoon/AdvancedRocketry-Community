@@ -17,6 +17,9 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
     private ProjectorState state;
     private int next = 1;
     private boolean uncommittedPlacement;
+    private boolean deferredWorldDrop;
+    void deferWorldDrop() { deferredWorldDrop = true; }
+    boolean takeWorldDrop() { boolean pending = deferredWorldDrop; deferredWorldDrop = false; return pending; }
     public ForceFieldProjectorBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.FORCE_FIELD_PROJECTOR.get(), pos, blockState);
         state = new ProjectorState(UUID.randomUUID(), Optional.empty(), 1,

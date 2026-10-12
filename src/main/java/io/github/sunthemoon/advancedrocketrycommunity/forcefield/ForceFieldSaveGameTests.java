@@ -73,4 +73,39 @@ public final class ForceFieldSaveGameTests {
         helper.succeed();
     }
     private ForceFieldSaveGameTests() { }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void nativeWorldDestructionDropsExactlyOneOnlyAfterSuccessfulRemoval(GameTestHelper helper) {
+        for (boolean refused : new boolean[]{true, false}) {
+            try (var f = new ForceFieldGameTests.Fixture(helper, Direction.EAST)) {
+                var box = new net.minecraft.world.phys.AABB(f.identity.source()).inflate(2);
+                var old = f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).stream()
+                        .map(net.minecraft.world.entity.item.ItemEntity::getUUID).collect(java.util.stream.Collectors.toSet());
+                java.util.function.Consumer<net.minecraftforge.event.level.BlockEvent.BreakEvent> veto = event -> {
+                    if (refused && event.getLevel() == f.level && event.getPos().equals(f.identity.source())) { event.setCanceled(true); }
+                };
+                net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.HIGHEST,
+                        false, net.minecraftforge.event.level.BlockEvent.BreakEvent.class, veto);
+                try {
+                    f.level.destroyBlock(f.identity.source(), true);
+                    var drops = f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).stream()
+                            .filter(entity -> !old.contains(entity.getUUID())).toList();
+                    helper.assertTrue(f.level.getBlockState(f.identity.source()).is(ModBlocks.FORCE_FIELD_PROJECTOR.get()) == refused,
+                            "Native destruction did not conserve the refused/successful source block");
+                    helper.assertTrue(refused ? drops.isEmpty() : drops.size() == 1 && drops.get(0).getItem().getCount() == 1
+                            && drops.get(0).getItem().is(io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems.FORCE_FIELD_PROJECTOR.get()),
+                            "Native destruction did not emit exactly one item on success and zero on refusal");
+                    if (!refused) {
+                        helper.assertTrue(!f.level.destroyBlock(f.identity.source(), true)
+                                && f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).size() == old.size() + 1,
+                                "Repeated native destruction duplicated stock");
+                    }
+                } finally {
+                    net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(veto);
+                    f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).stream()
+                            .filter(entity -> !old.contains(entity.getUUID())).forEach(net.minecraft.world.entity.Entity::discard);
+                }
+            }
+        }
+        helper.succeed();
+    }
 }

@@ -48,6 +48,12 @@ public final class ForceFieldProjectorBlock extends ForceFieldBlock {
         }
         return super.getDrops(state, context);
     }
+    /** dropResources reaches this hook before destroyBlock attempts removal; a loot query alone does not arm a drop. */
+    @Override public void spawnAfterBreak(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean experience) {
+        super.spawnAfterBreak(state, level, pos, tool, experience);
+        if (!level.restoringBlockSnapshots && level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector
+                && !projector.quarantined() && !projector.isRemoved()) { projector.deferWorldDrop(); }
+    }
     @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector) {
