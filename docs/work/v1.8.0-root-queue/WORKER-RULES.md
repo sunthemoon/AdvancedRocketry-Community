@@ -69,6 +69,10 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
 - **Unit tests:** before your final record, run the whole unit suite once (`test`, with no
   `--tests` filter; no lock needed). Targeted runs miss shared checks such as the exact
   configuration count in `CommonConfigTest`.
+- **Test isolation:** a new unit test class that touches Minecraft classes (`Level`,
+  registries, items) calls `MinecraftBootstrap.initialize()` in a `@BeforeAll`, as the
+  existing tests do. Run each new class alone once (`test --tests <Class>`). A class that
+  passes only inside the full suite relies on test order.
 - **New configuration keys:** a fresh configuration logs one "Incorrect key ... corrected
   from null" warning per new key and section. Give them their own exact expectation in
   `scripts/gametest_expected_log.json`, and exclude their section from the generic rule,
