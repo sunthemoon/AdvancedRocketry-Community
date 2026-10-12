@@ -1,0 +1,38 @@
+{
+  "parent": "advancedrocketrycommunity:classic/crystallizer",
+  "criteria": {
+    "has_inventory": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "advancedrocketrycommunity:dilithium_crystal"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.dilithium.description"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:dilithium_crystal"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.dilithium.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_inventory"
+    ]
+  ],
+  "rewards": {}
+}

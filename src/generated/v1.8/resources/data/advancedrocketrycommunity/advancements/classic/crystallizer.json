@@ -1,0 +1,29 @@
+{
+  "parent": "advancedrocketrycommunity:classic/arc_furnace",
+  "criteria": {
+    "pending": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.crystallizer.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:silicon_boule"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.crystallizer.title"
+    }
+  },
+  "requirements": [
+    [
+      "pending"
+    ]
+  ],
+  "rewards": {}
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "advancedrocketrycommunity:classic/moon_surface_visit",
+  "criteria": {
+    "event": {
+      "conditions": {
+        "event": "moon_landing"
+      },
+      "trigger": "advancedrocketrycommunity:classic_event"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.moon_landing.description"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:rocket_motor"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.moon_landing.title"
+    }
+  },
+  "requirements": [
+    [
+      "event"
+    ]
+  ],
+  "rewards": {}
+}

@@ -1,0 +1,29 @@
+{
+  "parent": "advancedrocketrycommunity:classic/station_warp",
+  "criteria": {
+    "pending": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.first_station_warp.description"
+    },
+    "frame": "challenge",
+    "hidden": false,
+    "icon": {
+      "item": "minecraft:fire_charge"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.first_station_warp.title"
+    }
+  },
+  "requirements": [
+    [
+      "pending"
+    ]
+  ],
+  "rewards": {}
+}

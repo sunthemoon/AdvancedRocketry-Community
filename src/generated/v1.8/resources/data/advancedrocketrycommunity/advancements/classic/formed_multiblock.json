@@ -1,0 +1,32 @@
+{
+  "parent": "advancedrocketrycommunity:classic/rolling",
+  "criteria": {
+    "event": {
+      "conditions": {
+        "event": "formed_multiblock"
+      },
+      "trigger": "advancedrocketrycommunity:classic_event"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.formed_multiblock.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.formed_multiblock.title"
+    }
+  },
+  "requirements": [
+    [
+      "event"
+    ]
+  ],
+  "rewards": {}
+}
