@@ -114,9 +114,12 @@ public final class RocketResourceRecoveryGameTests {
                 fixture.reload();
                 fixture.assertBalances(2_000, 1_000, 2_000);
             }
-            var replies = new java.util.ArrayList<String>();
-            var passenger = ConnectedTestPlayers.join(fixture.earth.getServer(), fixture.offline, "ARCEOffline",
-                    fixture.earth, fixture.rocket.blockPosition(), replies);
+            // Login itself must perform the reconnect. A post-login fixture teleport would
+            // unmount the passenger after recovery has already retired the source record.
+            var passenger = new ResourcePlayer(fixture.earth, fixture.offline);
+            var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+            new io.netty.channel.embedded.EmbeddedChannel(connection);
+            fixture.earth.getServer().getPlayerList().placeNewPlayer(connection, passenger);
             try {
                 fixture.manager.onInstalled();
                 fixture.manager.onPlayerLoggedIn(new net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(passenger));
