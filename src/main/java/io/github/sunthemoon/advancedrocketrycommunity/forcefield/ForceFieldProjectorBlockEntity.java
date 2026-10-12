@@ -27,9 +27,21 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
                 state.id(), worldPosition.toShortString(), kind.substring(0, Math.min(128, kind.length())));
         return true;
     }
-    private boolean deferredWorldDrop;
-    void deferWorldDrop() { deferredWorldDrop = true; }
-    boolean takeWorldDrop() { boolean pending = deferredWorldDrop; deferredWorldDrop = false; return pending; }
+    private BlockPos deferredWorldDropPosition;
+    private long deferredWorldDropTick;
+    void deferWorldDrop(BlockPos pos) {
+        deferredWorldDropPosition = null;
+        if (level instanceof ServerLevel server && worldPosition.equals(pos)) {
+            deferredWorldDropPosition = pos.immutable();
+            deferredWorldDropTick = server.getGameTime();
+        }
+    }
+    boolean takeWorldDrop(BlockPos pos) {
+        boolean pending = level instanceof ServerLevel server && server.getGameTime() == deferredWorldDropTick
+                && worldPosition.equals(pos) && pos.equals(deferredWorldDropPosition);
+        deferredWorldDropPosition = null;
+        return pending;
+    }
     public ForceFieldProjectorBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.FORCE_FIELD_PROJECTOR.get(), pos, blockState);
         state = new ProjectorState(UUID.randomUUID(), Optional.empty(), 1,

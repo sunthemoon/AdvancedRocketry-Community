@@ -52,7 +52,7 @@ public final class ForceFieldProjectorBlock extends ForceFieldBlock {
     @Override public void spawnAfterBreak(BlockState state, ServerLevel level, BlockPos pos, ItemStack tool, boolean experience) {
         super.spawnAfterBreak(state, level, pos, tool, experience);
         if (!level.restoringBlockSnapshots && level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector
-                && !projector.quarantined() && !projector.isRemoved()) { projector.deferWorldDrop(); }
+                && !projector.quarantined() && !projector.isRemoved()) { projector.deferWorldDrop(pos); }
     }
     @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
