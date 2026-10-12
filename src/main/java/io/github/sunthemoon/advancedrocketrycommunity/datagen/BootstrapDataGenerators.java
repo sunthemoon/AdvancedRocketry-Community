@@ -98,5 +98,6 @@ public final class BootstrapDataGenerators {
                 new V180ExoplanetData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient(), new V180SoundArt(output));
         generator.addProvider(event.includeClient(), new V180SoundDefinitions(output, existingFiles));
+        generator.addProvider(event.includeClient(), new V180SuitComponentArt(output));
     }
 }
