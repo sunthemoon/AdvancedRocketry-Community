@@ -30,7 +30,7 @@ public final class BetaWorldMigrationEvents {
             );
         } catch (SavedDataMigrationException exception) {
             AdvancedRocketryCommunity.LOGGER.error(
-                    "[{}] Beta world data check blocked startup: {}. Keep the world stopped and restore the newest complete migration backup if recovery is required.",
+                    "[{}] Beta world data check blocked startup: {}. Keep the world stopped. Escrow recovery requires a consistent whole-world backup including all terrain, entities, POI, journals and player data; never restore or delete only the escrow file.",
                     exception.diagnosticId().code(),
                     exception.getMessage(),
                     exception

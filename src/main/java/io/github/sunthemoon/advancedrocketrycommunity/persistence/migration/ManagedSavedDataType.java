@@ -62,6 +62,13 @@ public enum ManagedSavedDataType {
                     new RequiredTag("zones", Tag.TAG_LIST),
                     new RequiredTag("save_epoch", Tag.TAG_LONG)
             )
+    ),
+    /** D3-A: schema 1 from introduction; missing roots remain absent until gated admission. */
+    RESOURCE_ESCROW(
+            "v1.8.0", "advancedrocketrycommunity_resource_escrow", 1_048_576L,
+            List.of(new RequiredTag("records", Tag.TAG_LIST), new RequiredTag("floors", Tag.TAG_LIST),
+                    new RequiredTag("tombstones", Tag.TAG_LIST), new RequiredTag("ledger_id", Tag.TAG_INT_ARRAY),
+                    new RequiredTag("issued_through", Tag.TAG_LONG), new RequiredTag("writer_generation", Tag.TAG_LONG))
     );
 
     private static final long FILE_OVERHEAD_BYTES = 64L * 1024L;
@@ -104,6 +111,7 @@ public enum ManagedSavedDataType {
             case STATIONS -> StationLimits.REGISTRY_SCHEMA_VERSION;
             case SATELLITE_MISSIONS -> SatelliteLimits.REGISTRY_SCHEMA_VERSION;
             case ENDGAME -> EndgameLimits.ROOT_SCHEMA_VERSION;
+            case RESOURCE_ESCROW -> 1;
             default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
         };
     }
@@ -129,6 +137,9 @@ public enum ManagedSavedDataType {
         if (this == ENDGAME) {
             return EndgameLimits.ROOT_FORMAT_EPOCH;
         }
+        if (this == RESOURCE_ESCROW) {
+            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLimits.EPOCH;
+        }
         return SavedDataSchemaMigrator.FORMAT_EPOCH;
     }
 
@@ -137,12 +148,12 @@ public enum ManagedSavedDataType {
      * endgame root has it from its schema 1 (ADR-054 section 10, review R2-L7).
      */
     public int firstEpochSchema() {
-        return this == ENDGAME ? EndgameLimits.ROOT_SCHEMA_VERSION : SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
+        return !hasLegacySchema() ? currentSchemaVersion() : SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
     }
 
     /** Whether older roots of this type exist; the endgame root was introduced at its current schema. */
     public boolean hasLegacySchema() {
-        return this != ENDGAME;
+        return this != ENDGAME && this != RESOURCE_ESCROW;
     }
 
     /**
@@ -150,7 +161,7 @@ public enum ManagedSavedDataType {
      * reads only its current schema.
      */
     public boolean supportsSchema(int schema) {
-        int oldest = this == ENDGAME ? EndgameLimits.ROOT_SCHEMA_VERSION : SavedDataSchemaMigrator.LEGACY_SCHEMA_VERSION;
+        int oldest = !hasLegacySchema() ? currentSchemaVersion() : SavedDataSchemaMigrator.LEGACY_SCHEMA_VERSION;
         return schema >= oldest && schema <= currentSchemaVersion();
     }
 
