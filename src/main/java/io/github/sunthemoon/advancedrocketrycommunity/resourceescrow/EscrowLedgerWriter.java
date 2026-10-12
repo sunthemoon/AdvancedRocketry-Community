@@ -27,6 +27,8 @@ public final class EscrowLedgerWriter implements AutoCloseable {
                     && digest.equals(RocketNativeResources.signature(payload)), "Snapshot identity/digest mismatch");
             payload = payload.copy(); admissions = Set.copyOf(admissions);
             EscrowTags.require(admissions.size() <= EscrowLimits.OPERATIONS, "Too many writer requests");
+            EscrowTags.require(ledger.records().stream().map(EscrowOperation::id).collect(java.util.stream.Collectors.toSet())
+                    .containsAll(admissions), "Admission acknowledgement is absent from this generation");
         }
         @Override public CompoundTag payload() { return payload.copy(); }
         public static Snapshot of(EscrowLedger ledger, Set<UUID> admissions) {

@@ -95,6 +95,8 @@ class EscrowLedgerWriterTest {
         var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS);
         assertEquals(ManagedSavedDataType.ROCKET_TRANSFERS.maxUncompressedBytes(), policy.maxUncompressedBytes());
         assertTrue(policy.maxUncompressedBytes() >= 140L * 1_024 * 1_024);
+        assertThrows(IllegalArgumentException.class, () -> EscrowLedgerWriter.Snapshot.of(
+                EscrowTestFixtures.ledger(), Set.of(EscrowTestFixtures.id(999))));
     }
     @Test void anInvalidatedProofAtTheStagingBoundaryKeepsThePreviousLedger() throws Exception {
         var base = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)).generation(1);
