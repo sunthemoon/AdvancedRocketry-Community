@@ -27,6 +27,7 @@ public final class SolarArrayOutputBlockEntity extends BlockEntity {
         return chunk != null && chunk.getBlockEntities().get(worldPosition) == this;
     }
     boolean claimedByOther(SolarArrayBlockEntity candidate) { return owner != null && owner != candidate && owner.bindingValid(this, token); }
+    boolean boundTo(SolarArrayBlockEntity controller, Object generation) { return owner == controller && token == generation; }
     void bind(SolarArrayBlockEntity controller, Object generation) {
         if (owner == controller && token == generation) { return; }
         clearBinding(); owner = controller; token = generation;

@@ -169,6 +169,12 @@ public final class SolarArrayGameTests {
                     && !left.canExtract() && right.extractEnergy(1, false) == 0, "Disabled array exported or discarded FE");
             fixture.enabled = true; fixture.array.invalidateCaps(); fixture.array.reviveCaps(); fixture.form();
             helper.assertTrue(!left.canExtract() && left.extractEnergy(1, false) == 0, "Captured facade survived a capability epoch");
+            var plug = fixture.level.getBlockEntity(fixture.position.offset(-1, 0, 0));
+            var captured = fixture.port(-1); plug.invalidateCaps(); fixture.tick();
+            helper.assertTrue(fixture.array.actualCredit() == 0 && fixture.array.structure() == SolarArrayRules.Structure.PENDING
+                    && captured.extractEnergy(1, false) == 0, "Revoked plug continued collection or retained authority");
+            plug.reviveCaps(); fixture.form();
+            helper.assertTrue(fixture.array.structure() == SolarArrayRules.Structure.FORMED, "Revoked plug did not re-form");
         }
         helper.succeed();
     }

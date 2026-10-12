@@ -149,7 +149,7 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
 
     boolean bindingValid(SolarArrayOutputBlockEntity plug, Object observed) {
         return observed == token && structure == SolarArrayRules.Structure.FORMED && outputs.contains(plug)
-                && physical() && plug.physical();
+                && physical() && plug.physical() && plug.boundTo(this, observed);
     }
     boolean owns(SolarArrayOutputBlockEntity plug, Object observed) {
         return bindingValid(plug, observed) && available();
@@ -171,6 +171,11 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
 
     public static void serverTick(ServerLevel server, BlockPos position, BlockState state, SolarArrayBlockEntity array) {
         if (array.operationLock || !array.physical() || !position.equals(array.worldPosition)) { return; }
+        // Two facade identity checks, not a footprint scan. A revoked plug stops collection before its next validation.
+        if (array.structure == SolarArrayRules.Structure.FORMED
+                && array.outputs.stream().anyMatch(plug -> !array.bindingValid(plug, array.token))) {
+            SolarArrayRuntime.manager(server).observe(array);
+        }
         boolean enabled = array.enabled();
         SolarGeneration.Environment environment = SolarGeneration.Environment.unavailable();
         if (enabled && !array.repairRequired() && array.structure == SolarArrayRules.Structure.FORMED) {
