@@ -43,9 +43,8 @@ public final class ClassicMilestoneAdvancements {
                 "advancedrocketrycommunity:arc_furnace", Kind.INVENTORY, "advancedrocketrycommunity:arc_furnace"),
         LATHE("spindoctor", "lathe", "block_press", Frame.TASK,
                 "advancedrocketrycommunity:lathe", Kind.INVENTORY, "advancedrocketrycommunity:lathe"),
-        /** TODO(W10): inventory_changed on the crystallizer item once the C16c crystallizer is merged. */
         CRYSTALLIZER("crystalline", "crystallizer", "arc_furnace", Frame.TASK,
-                "advancedrocketrycommunity:silicon_boule", Kind.PENDING, null),
+                "advancedrocketrycommunity:crystallizer", Kind.INVENTORY, "advancedrocketrycommunity:crystallizer"),
         DILITHIUM("dilithium", "dilithium", "crystallizer", Frame.GOAL,
                 "advancedrocketrycommunity:dilithium_crystal", Kind.INVENTORY,
                 "advancedrocketrycommunity:dilithium_crystal"),
