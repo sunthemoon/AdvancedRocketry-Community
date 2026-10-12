@@ -307,6 +307,7 @@ placed it; a pump without an owner (placed by a machine) drains nothing.
 1. **Electric arc furnace.** The legacy 5 × 5 × 5 layout of `blast_brick`
    (new block: hardness 3, blast resistance 6), coils and air; the legacy
    recipes and numbers (§ Context). Steel needs charcoal, as legacy.
+   *Implementation note (W01G, 2026-10-12; decision unchanged):* the 20 legacy null cells use the closed tag matcher `advancedrocketrycommunity:machine_clearance` (air plus non-solid decoration such as snow layers, torches, redstone wire, rails, carpets and vines; data packs can extend it), and the 15 legacy air cells stay `air`.
 2. **Lathe.** The legacy 2 × 1 × 4 layout; 2 rods from one ingot of each
    material with rods (C15a, iron included; 300 ticks × 20 FE).
 3. **Cutting machine.** The legacy 1 × 2 × 3 layout with a motor and

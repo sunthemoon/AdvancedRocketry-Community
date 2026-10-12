@@ -16,6 +16,13 @@ public final class V180ArcCuttingData implements DataProvider {
     public static final String NS = "advancedrocketrycommunity";
     public static final List<String> BLOCKS = List.of("arc_furnace", "cutting_machine", "blast_brick", "saw_blade");
     public static final Map<String, String> WOODS = woods();
+    public static final String CLEARANCE_TAG = NS + ":machine_clearance";
+    /** Air plus the non-solid decoration without a block entity that legacy null cells ignored; data packs extend it. */
+    public static final List<String> CLEARANCE = List.of("minecraft:air", "minecraft:cave_air", "minecraft:void_air",
+            "minecraft:snow", "minecraft:torch", "minecraft:wall_torch", "minecraft:soul_torch", "minecraft:soul_wall_torch",
+            "minecraft:redstone_torch", "minecraft:redstone_wall_torch", "minecraft:redstone_wire", "#minecraft:rails",
+            "#minecraft:wool_carpets", "minecraft:moss_carpet", "minecraft:vine", "minecraft:glow_lichen", "minecraft:ladder",
+            "minecraft:lever", "#minecraft:buttons", "#minecraft:pressure_plates", "minecraft:tripwire", "minecraft:tripwire_hook");
     private final PackOutput output;
     private final boolean client, server;
     public V180ArcCuttingData(PackOutput output, boolean client, boolean server) {
@@ -62,6 +69,9 @@ public final class V180ArcCuttingData implements DataProvider {
         shell.add("values", strings(NS + ":blast_brick", NS + ":machine_casing", NS + ":item_input_hatch", NS + ":item_output_hatch",
                 NS + ":fluid_input_hatch", NS + ":fluid_output_hatch", NS + ":power_input_plug"));
         files.put(data("tags/blocks/arc_furnace_shell_parts"), shell);
+        var clearance = new JsonObject(); clearance.addProperty("replace", false);
+        clearance.add("values", strings(CLEARANCE.toArray(String[]::new)));
+        files.put(data("tags/blocks/machine_clearance"), clearance);
         files.put(data("recipes/arc_furnace_steel"), process("arc_furnace", 6_000, 1, NS + ":steel_ingot", 1,
                 input("tag", "forge:ingots/iron", 1), input("item", "minecraft:charcoal", 1)));
         files.put(data("recipes/arc_furnace_silicon"), process("arc_furnace", 12_000, 1, NS + ":silicon_ingot", 1,
@@ -146,8 +156,9 @@ public final class V180ArcCuttingData implements DataProvider {
                         case 'S' -> object("block", NS + ":saw_blade");
                         case 'I' -> object("port", "item_input"); case 'O' -> object("port", "item_output");
                         case 'P' -> object("port", "energy_input");
-                        // ADR-016's closed matcher set has no ignored cell. Keep unused clearance empty.
-                        case 'C' -> flag("controller"); case 'A', '.' -> flag("air");
+                        // ADR-016's closed matcher set has no ignored cell: legacy null cells ('.') take the
+                        // clearance tag, so snow, torches or cables on the rim do not unform it; legacy air stays air.
+                        case 'C' -> flag("controller"); case 'A' -> flag("air"); case '.' -> object("tag", CLEARANCE_TAG);
                         default -> throw new IllegalArgumentException("Unknown layout cell");
                     };
                     cell.add("matcher", matcher); cells.add(cell);

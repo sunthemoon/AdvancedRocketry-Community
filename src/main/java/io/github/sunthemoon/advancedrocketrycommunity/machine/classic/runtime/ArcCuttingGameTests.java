@@ -162,6 +162,30 @@ public final class ArcCuttingGameTests {
         }
         helper.succeed();
     }
+    @GameTest(template = "empty", batch = "w01g_arc_clearance", timeoutTicks = 30)
+    public static void rimSnowAndTorchKeepARunningArcFurnaceFormed(GameTestHelper helper) {
+        try (var fixture = new Fixture(helper, true, Direction.NORTH)) {
+            fixture.seed(6_000, new ItemStack(Items.IRON_INGOT), new ItemStack(Items.CHARCOAL)); fixture.tick(20);
+            long generation = fixture.controller.controllerState().generation(); int progress = fixture.controller.progressTicks();
+            helper.assertTrue(progress > 0 && fixture.controller.reason() == ClassicWait.RUNNING, "Steel job did not start");
+            // Both cells are legacy null cells resting on blast brick with no pattern cell above them.
+            BlockPos snow = fixture.world(new PatternPosition(1, 4, 0)), torch = fixture.world(new PatternPosition(3, 4, 4));
+            helper.getLevel().setBlock(snow, Blocks.SNOW.defaultBlockState(), Block.UPDATE_ALL);
+            helper.getLevel().setBlock(torch, Blocks.TORCH.defaultBlockState(), Block.UPDATE_ALL);
+            fixture.manager.changed(snow); fixture.manager.changed(torch); fixture.tick(20);
+            helper.assertTrue(helper.getLevel().getBlockState(snow).is(Blocks.SNOW) && helper.getLevel().getBlockState(torch).is(Blocks.TORCH),
+                    "Rim decoration did not stay in place");
+            helper.assertTrue(fixture.controller.formed() && fixture.controller.controllerState().generation() == generation
+                    && fixture.controller.reason() == ClassicWait.RUNNING && fixture.controller.progressTicks() > progress,
+                    "Rim snow or torch unformed or paused the furnace");
+            fixture.tick(6_001); fixture.completed(MaterialContent.item("steel_ingot"), 1, 6_000);
+            helper.getLevel().setBlock(snow, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
+            fixture.manager.changed(snow); fixture.manager.tick();
+            helper.assertTrue(!fixture.controller.formed() && fixture.controller.reason() == ClassicWait.UNFORMED,
+                    "A solid block in a clearance cell kept the furnace formed");
+        }
+        helper.succeed();
+    }
     @GameTest(template = "empty", batch = "w05_save_load", timeoutTicks = 30)
     public static void bothMachineKindsKeepResourcesAndProgressThroughCurrentFormatLoad(GameTestHelper helper) {
         for (boolean arc : List.of(true, false)) {
@@ -209,7 +233,8 @@ public final class ArcCuttingGameTests {
                 if (matcher instanceof PatternMatcher.Controller) { state = (arc ? ModBlocks.ARC_FURNACE : ModBlocks.CUTTING_MACHINE).get().defaultBlockState().setValue(ClassicControllerBlock.FACING, facing); }
                 else if (matcher instanceof PatternMatcher.ExactBlock exact) { state = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.tryParse(exact.blockId())).defaultBlockState(); }
                 else if (matcher instanceof PatternMatcher.BlockTag tag) {
-                    state = tag.tagId().endsWith(":coils") ? MaterialContent.block("copper_coil").defaultBlockState()
+                    state = tag.tagId().equals(V180ArcCuttingData.CLEARANCE_TAG) ? Blocks.AIR.defaultBlockState()
+                            : tag.tagId().endsWith(":coils") ? MaterialContent.block("copper_coil").defaultBlockState()
                             : tag.tagId().endsWith(":motors") ? MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState() : ModBlocks.BLAST_BRICK.get().defaultBlockState();
                 } else if (matcher instanceof PatternMatcher.Port port) {
                     state = switch (port.channel()) {

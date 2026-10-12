@@ -91,7 +91,15 @@ class ArcCuttingDataTest {
         assertEquals(new PatternSize(5, 5, 5), arc.size()); assertEquals(new PatternPosition(2, 1, 0), arc.controllerAnchor());
         assertEquals(125, arc.cells().size());
         assertEquals(72, arc.cells().values().stream().filter(PatternMatcher.ExactBlock.class::isInstance).count());
-        assertEquals(35, arc.cells().values().stream().filter(PatternMatcher.Air.class::isInstance).count());
+        assertEquals(15, arc.cells().values().stream().filter(PatternMatcher.Air.class::isInstance).count());
+        var nullCells = new java.util.HashSet<PatternPosition>();
+        for (int i = 0; i < 5; i++) {
+            nullCells.addAll(List.of(new PatternPosition(i, 4, 0), new PatternPosition(i, 4, 4), new PatternPosition(0, 4, i), new PatternPosition(4, 4, i)));
+        }
+        nullCells.addAll(List.of(new PatternPosition(0, 3, 0), new PatternPosition(4, 3, 0), new PatternPosition(0, 3, 4), new PatternPosition(4, 3, 4)));
+        var clearance = new PatternMatcher.BlockTag(V180ArcCuttingData.CLEARANCE_TAG);
+        assertEquals(20, nullCells.size());
+        assertEquals(nullCells, Set.copyOf(arc.cells().entrySet().stream().filter(cell -> cell.getValue().equals(clearance)).map(Map.Entry::getKey).toList()));
         assertEquals(3, arc.cells().values().stream().filter(matcher -> matcher.equals(new PatternMatcher.BlockTag("advancedrocketrycommunity:coils"))).count());
         assertEquals(new PatternMatcher.Port("energy_input"), arc.cells().get(new PatternPosition(1, 4, 1)));
         assertEquals(new PatternSize(3, 1, 2), cutting.size()); assertEquals(new PatternPosition(1, 0, 0), cutting.controllerAnchor());
@@ -127,6 +135,26 @@ class ArcCuttingDataTest {
         assertEquals(PatternValidationStatus.WAITING_UNLOADED, result.status()); assertEquals(125, result.inspectedCells());
         var json = V180ArcCuttingData.arcPattern(); json.getAsJsonArray("cells").get(0).getAsJsonObject().getAsJsonObject("matcher").addProperty("any", true);
         assertThrows(IllegalArgumentException.class, () -> pattern(json));
+    }
+    @Test void legacyNullCellsAdmitClearanceDecorationButLegacyAirAndSolidBlocksStillRefuse() {
+        var pattern = pattern(V180ArcCuttingData.arcPattern());
+        var snow = new PatternBlock("minecraft:snow", Set.of(V180ArcCuttingData.CLEARANCE_TAG), false, false, Optional.empty());
+        var stone = new PatternBlock("minecraft:stone", Set.of(), false, false, Optional.empty());
+        var rim = new PatternPosition(1, 4, 0); var chamber = new PatternPosition(1, 2, 1);
+        assertEquals(PatternValidationStatus.FORMED, validateWith(pattern, rim, snow).status());
+        assertEquals(PatternValidationStatus.MISMATCH, validateWith(pattern, rim, stone).status());
+        assertEquals(PatternValidationStatus.MISMATCH, validateWith(pattern, chamber, snow).status());
+        var tag = V180ArcCuttingData.serverFiles().get("data/advancedrocketrycommunity/tags/blocks/machine_clearance.json");
+        assertFalse(tag.get("replace").getAsBoolean());
+        var values = new java.util.ArrayList<String>(); tag.getAsJsonArray("values").forEach(value -> values.add(value.getAsString()));
+        assertTrue(values.containsAll(List.of("minecraft:air", "minecraft:cave_air", "minecraft:void_air", "minecraft:snow",
+                "minecraft:torch", "minecraft:wall_torch", "minecraft:soul_torch", "minecraft:soul_wall_torch", "minecraft:redstone_torch",
+                "minecraft:redstone_wall_torch", "minecraft:redstone_wire", "#minecraft:rails", "#minecraft:wool_carpets", "minecraft:vine")));
+        assertEquals(values.size(), Set.copyOf(values).size());
+    }
+    private static PatternValidationResult validateWith(MultiblockPatternDefinition pattern, PatternPosition replaced, PatternBlock block) {
+        return MultiblockPatternValidator.validate(pattern, new PatternTransform(PatternRotation.ZERO, false), pattern.controllerAnchor(),
+                position -> PatternObservation.loaded(position.equals(replaced) ? block : block(pattern.cells().get(position))));
     }
     @Test void originalAssetsLanguagesAndBootstrapCraftsAreCompleteAndDeterministic() {
         assertEquals(V180ArcCuttingData.language(false).keySet(), V180ArcCuttingData.language(true).keySet());
