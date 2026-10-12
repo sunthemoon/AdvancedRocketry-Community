@@ -233,6 +233,16 @@ public final class StationWarpService {
 
     /** The confirmation step through the shared context validator; a screen confirms its own station. */
     public StationWarpResult confirm(ServerPlayer player, StationActorContext context, UUID stationId) {
+        return confirm(player, context, stationId, null);
+    }
+
+    /**
+     * As {@link #confirm(ServerPlayer, StationActorContext, UUID)}; with {@code expected} (a {@code warp_controller}
+     * screen, W07 review R1) only that exact issued quote, the one the screen shows, can start. The actor's other
+     * confirmation is a mismatch and is consumed, as any other mismatch is.
+     */
+    public StationWarpResult confirm(ServerPlayer player, StationActorContext context, UUID stationId,
+                                     WarpQuote expected) {
         Objects.requireNonNull(player, "player");
         Objects.requireNonNull(context, "context");
         Objects.requireNonNull(stationId, "stationId");
@@ -257,7 +267,7 @@ public final class StationWarpService {
                     actor.station()));
         }
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
-        var outcome = confirmations.take(player.getUUID(), stationId, data, server.getTickCount());
+        var outcome = confirmations.take(player.getUUID(), stationId, data, server.getTickCount(), expected);
         StationManagementCode rejected = switch (outcome.status()) {
             case READY -> null;
             case MISSING -> StationManagementCode.WARP_NO_CONFIRMATION;
@@ -301,6 +311,21 @@ public final class StationWarpService {
             announce(server, confirmed, StationWarpCountdowns.START_SECONDS);
         }
         return audit("confirm", player, StationWarpResult.quoted(started, confirmed, current.balance()));
+    }
+
+    /** Whether {@code quote} is still the player's live, unexpired confirmation; a screen offers Confirm only then. */
+    public boolean confirmable(ServerPlayer player, WarpQuote quote) {
+        Objects.requireNonNull(player, "player");
+        MinecraftServer server = player.getServer();
+        return server != null && confirmations.holds(player.getUUID(), quote, server.getTickCount());
+    }
+
+    /**
+     * W07 review R1: a screen that stops showing {@code quote} (another target, a new or failed request, a closed
+     * or replaced menu) withdraws it, so nothing can confirm it later. Another confirmation of the actor stays.
+     */
+    public void withdraw(UUID actorId, WarpQuote quote) {
+        confirmations.withdraw(actorId, quote);
     }
 
     /** {@code /arce station warp cancel}: the owner or an operator standing in the station. */

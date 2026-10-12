@@ -171,6 +171,15 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
         return false;
     }
 
+    /** Server: runs for each admitted non-navigation intent before the rate limit and the services. */
+    protected void beforeAction(ClassicControlIntentPacket intent) {
+    }
+
+    /** Server: the player the menu was opened for; empty on the client. */
+    protected Optional<ServerPlayer> holder() {
+        return Optional.ofNullable(viewer);
+    }
+
     /**
      * ADR-065 section 11.2 for one intent: the sender is this menu's connected, living, non-spectator holder, the
      * menu is still valid (the exact controller block loaded within 8 blocks in the same Level), and the action
@@ -185,6 +194,7 @@ public abstract class StationControllerMenu extends AbstractContainerMenu implem
             return;
         }
         if (!navigate(intent)) {
+            beforeAction(intent);
             status = Optional.of(act(sender, intent));
         }
         sendView(true);

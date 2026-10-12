@@ -22,6 +22,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
@@ -30,6 +31,10 @@ import net.minecraft.world.level.block.Block;
  * actions through the shared context validator. The target is an index into the server's own list sent at
  * opening; the request names the index the screen shows, the confirmation the token of the quote it shows. Costs,
  * balances and checks stay on the server, and this menu stores no energy.
+ *
+ * <p>W07 review R1: Confirm starts only the exact quote this menu shows. Its token is offered only while that quote
+ * is the holder's live confirmation, and another target, a new or failed request, or closing or replacing the menu
+ * withdraws it.
  */
 public final class WarpControllerMenu extends StationControllerMenu {
     public static final int BUTTON_PREVIOUS = 0;
@@ -55,7 +60,7 @@ public final class WarpControllerMenu extends StationControllerMenu {
     private int selected;
     @Nullable
     private WarpQuote displayed;
-    /** Server: the token of {@link #displayed} while it is an issued confirmation, else 0. */
+    /** Server: the token of {@link #displayed} while this menu issued it as a confirmation, else 0. */
     private long token;
 
     WarpControllerMenu(int id, Level level, BlockPos position, Block block, OpenData open,
@@ -93,10 +98,43 @@ public final class WarpControllerMenu extends StationControllerMenu {
         int count = targets().size();
         if (count > 0) {
             selected = Math.floorMod(selected + (intent.action() == BUTTON_NEXT ? 1 : -1), count);
-            displayed = null;
-            token = 0L;
+            invalidate();
         }
         return true;
+    }
+
+    /** A request replaces the quote shown, even when it is refused or rate limited. */
+    @Override
+    protected void beforeAction(ClassicControlIntentPacket intent) {
+        if (intent.action() == BUTTON_REQUEST) {
+            invalidate();
+        }
+    }
+
+    /** Closing or replacing the menu withdraws the confirmation it showed. */
+    @Override
+    public void removed(Player player) {
+        super.removed(player);
+        if (level() != null) {
+            invalidate();
+        }
+    }
+
+    /** The quote shown is gone: its confirmation, if it is still the holder's, is withdrawn. */
+    private void invalidate() {
+        WarpQuote shown = displayed;
+        displayed = null;
+        token = 0L;
+        if (shown != null) {
+            holder().ifPresent(player -> StationWarpRuntime.service().ifPresent(warp -> warp.withdraw(
+                    player.getUUID(), shown)));
+        }
+    }
+
+    /** Whether the quote shown is still the holder's live confirmation, issued by this menu. */
+    private boolean confirmable() {
+        return token != 0L && displayed != null && holder().flatMap(player -> StationWarpRuntime.service()
+                .map(warp -> warp.confirmable(player, displayed))).orElse(false);
     }
 
     @Override
@@ -141,7 +179,7 @@ public final class WarpControllerMenu extends StationControllerMenu {
 
     @Override
     protected long viewToken() {
-        return token;
+        return confirmable() ? token : 0L;
     }
 
     @Override
@@ -170,7 +208,14 @@ public final class WarpControllerMenu extends StationControllerMenu {
                 if (expected.isEmpty()) {
                     return StationManagementCode.NOT_IN_STATION;
                 }
-                result = warp.orElseThrow().confirm(player, context, expected.orElseThrow().stationId());
+                if (displayed == null || token == 0L) {
+                    return StationManagementCode.WARP_NO_CONFIRMATION;
+                }
+                if (intent.token() != token) {
+                    return StationManagementCode.CONFIRMATION_MISMATCH;
+                }
+                // Only the quote shown can start; the service also checks expiry, authority and the live state.
+                result = warp.orElseThrow().confirm(player, context, expected.orElseThrow().stationId(), displayed);
             }
             case BUTTON_CANCEL -> result = warp.orElseThrow().cancel(player, context);
             default -> {
