@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.equipment.motion;
 
 import com.mojang.authlib.GameProfile;
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.ArmorEquipment;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.TankData;
@@ -14,6 +15,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -105,6 +107,26 @@ final class MotionFixture implements AutoCloseable {
         player.connection.handleMovePlayer(new ServerboundMovePlayerPacket.Pos(player.getX(), player.getY(), player.getZ(), false));
         player.connection.tick();
         rest();
+    }
+
+    /** Read the actual registered S2C authorization packets, including those sent by the login event. */
+    List<Boolean> equipmentFlags() {
+        channel.runPendingTasks();
+        List<Boolean> flags = new ArrayList<>();
+        for (int count = 0; count < 512; count++) {
+            Object packet = channel.readOutbound();
+            if (packet == null) { return flags; }
+            try {
+                if (packet instanceof ClientboundCustomPayloadPacket payload
+                        && payload.getIdentifier().equals(ModIdentity.id("suit_motion"))) {
+                    var data = payload.getData();
+                    try {
+                        if (data.readUnsignedByte() == 2) { flags.add(EquipmentEnabledPacket.decode(data).enabled()); }
+                    } finally { data.release(); }
+                }
+            } finally { io.netty.util.ReferenceCountUtil.release(packet); }
+        }
+        throw new IllegalStateException("Owned motion packet drain reached its bound");
     }
 
     @Override public void close() {

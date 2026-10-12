@@ -20,43 +20,44 @@ import net.minecraftforge.fml.common.Mod;
 
 /**
  * ADR-066 section 5.2 visors, physical client only. The state is recomputed every client tick from the local
- * player's correctly worn helmet with the bounded equipment codec, and cleared at logout, Level change and resource
+ * player's correctly worn helmet with the bounded equipment codec and server authorization, and cleared at logout, Level change and resource
  * reload. Anti-fog removes only ARCE's atmospheric fog distance; Earthbright brightens the lightmap only in the
  * Space Level. Neither touches potion effects, vanilla fog or server hazards.
  */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public final class SuitVisorClient {
-    private static boolean antiFog;
-    private static boolean earthbright;
+    private static final SuitVisorState state = new SuitVisorState();
 
     /** Whether ARCE's atmospheric fog-distance override applies; the Space Level has no atmosphere to clear. */
     public static boolean atmosphericFogShown(ClientLevel level) {
         return level == null || level.dimension().equals(CelestialIds.SPACE_LEVEL)
-                || ClientConfig.atmosphericNausea() && !antiFog;
+                || ClientConfig.atmosphericNausea() && !state.antiFog();
     }
 
     public static boolean earthbright(ClientLevel level) {
-        return earthbright && level != null && level.dimension().equals(CelestialIds.SPACE_LEVEL);
+        return state.earthbright() && level != null && level.dimension().equals(CelestialIds.SPACE_LEVEL);
     }
 
     @SubscribeEvent public static void tick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) { return; }
         var player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().level == null) { clear(); return; }
+        if (!state.enabled()) { clear(); return; }
         ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
         var modules = ArmorEquipment.part(helmet) == SuitPart.HEAD ? ArmorEquipment.modules(helmet) : null;
-        antiFog = modules != null && modules.stream().anyMatch(module -> module.kind() == ModuleKind.ANTI_FOG);
-        earthbright = modules != null && modules.stream().anyMatch(module -> module.kind() == ModuleKind.EARTHBRIGHT);
+        state.observe(modules != null && modules.stream().anyMatch(module -> module.kind() == ModuleKind.ANTI_FOG),
+                modules != null && modules.stream().anyMatch(module -> module.kind() == ModuleKind.EARTHBRIGHT));
     }
 
-    @SubscribeEvent public static void loggingOut(ClientPlayerNetworkEvent.LoggingOut event) { clear(); }
+    @SubscribeEvent public static void loggingIn(ClientPlayerNetworkEvent.LoggingIn event) { authorize(false); }
+
+    @SubscribeEvent public static void loggingOut(ClientPlayerNetworkEvent.LoggingOut event) { authorize(false); }
 
     @SubscribeEvent public static void levelChanged(ClientPlayerNetworkEvent.Clone event) { clear(); }
 
-    public static void clear() {
-        antiFog = false;
-        earthbright = false;
-    }
+    public static void clear() { state.clear(); }
+
+    public static void authorize(boolean enabled) { state.authorize(enabled); }
 
     @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
     public static final class Setup {

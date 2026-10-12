@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.equipment.motion.SuitMotio
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.motion.SuitMotionService.Result;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
 import java.util.UUID;
+import java.util.List;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -28,6 +29,31 @@ public final class SuitMotionGameTests {
         f.rest();
         Result result = f.service.step(f.player, now);
         f.helper.assertTrue(result == Result.PAID, why + ": " + result);
+    }
+
+    @GameTest(template = "empty", batch = "equipment_motion", timeoutTicks = 100)
+    public static void serverEquipmentAuthorizationIsSentAtLoginAndOnChange(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        SwitchOverrides.set(CommonConfig.CLASSIC_EQUIPMENT_ENABLED, false);
+        try {
+            SuitMotionEvents.syncEquipment(server);
+            try (var f = new MotionFixture(helper)) {
+                f.wear(EquipmentSlot.HEAD, MotionFixture.piece(EquipmentSlot.HEAD, "anti_fog_visor", "earthbright_visor"));
+                helper.assertTrue(f.equipmentFlags().equals(List.of(false)), "Disabled login did not receive server authorization");
+                SuitMotionEvents.syncEquipment(server);
+                helper.assertTrue(f.equipmentFlags().isEmpty(), "Unchanged switch sent a redundant update");
+                SwitchOverrides.set(CommonConfig.CLASSIC_EQUIPMENT_ENABLED, true);
+                SuitMotionEvents.syncEquipment(server);
+                helper.assertTrue(f.equipmentFlags().equals(List.of(true)), "Enabling did not synchronize the equipped player");
+                SwitchOverrides.set(CommonConfig.CLASSIC_EQUIPMENT_ENABLED, false);
+                SuitMotionEvents.syncEquipment(server);
+                helper.assertTrue(f.equipmentFlags().equals(List.of(false)), "Disabling did not synchronize the equipped player");
+            }
+        } finally {
+            SwitchOverrides.clear(CommonConfig.CLASSIC_EQUIPMENT_ENABLED);
+            SuitMotionEvents.syncEquipment(server);
+        }
+        helper.succeed();
     }
 
     @GameTest(template = "empty", batch = "equipment_motion", timeoutTicks = 100)

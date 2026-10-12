@@ -8,11 +8,11 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 /**
- * ADR-066 section 5.2: the exact-version {@code advancedrocketrycommunity:suit_motion} channel, protocol 1. The
- * client sends only the fixed jetpack intent; the server sends only the increment it has paid for.
+ * ADR-066 section 5.2: the exact-version {@code advancedrocketrycommunity:suit_motion} channel, protocol 2. The
+ * client sends only the fixed jetpack intent; the server sends paid increments and equipment authorization.
  */
 public final class MotionNetwork {
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "2";
     private static SimpleChannel channel;
 
     /** Called once on both physical sides during common setup, before the network registry locks. */
@@ -34,6 +34,11 @@ public final class MotionNetwork {
                 .decoder(JetpackImpulsePacket::decode)
                 .consumerMainThread(JetpackImpulsePacket::handle)
                 .add();
+        created.messageBuilder(EquipmentEnabledPacket.class, 2, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(EquipmentEnabledPacket::encode)
+                .decoder(EquipmentEnabledPacket::decode)
+                .consumerMainThread(EquipmentEnabledPacket::handle)
+                .add();
         channel = created;
     }
 
@@ -47,6 +52,11 @@ public final class MotionNetwork {
     public static void sendIntent(JetpackIntentPacket intent) {
         SimpleChannel current = channel;
         if (current != null) { current.sendToServer(intent); }
+    }
+
+    public static void sendEquipmentEnabled(ServerPlayer player, boolean enabled) {
+        SimpleChannel current = channel;
+        if (current != null) { current.send(PacketDistributor.PLAYER.with(() -> player), new EquipmentEnabledPacket(enabled)); }
     }
 
     private MotionNetwork() { }

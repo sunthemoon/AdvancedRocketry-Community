@@ -1,8 +1,10 @@
 package io.github.sunthemoon.advancedrocketrycommunity.equipment.motion;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import java.util.Optional;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.event.TickEvent;
@@ -19,24 +21,43 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class SuitMotionEvents {
     private static volatile SuitMotionService installed;
+    private static boolean equipmentEnabled;
 
     public static Optional<SuitMotionService> service() { return Optional.ofNullable(installed); }
 
     @SubscribeEvent public static void starting(ServerStartingEvent event) {
         installed = new SuitMotionService(MotionNetwork::sendImpulse);
+        equipmentEnabled = CommonConfig.classicEquipmentEnabled();
     }
 
     @SubscribeEvent public static void stopped(ServerStoppedEvent event) {
         SuitMotionService current = installed;
         installed = null;
+        equipmentEnabled = false;
         if (current != null) { current.clear(); }
     }
 
     @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.START) { return; }
+        syncEquipment(event.getServer());
         SuitMotionService current = installed;
         if (current != null) { current.tick(event.getServer(), event.getServer().getTickCount()); }
         for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) { BionicLegs.update(player); }
+    }
+
+    /** All online clients receive a change; login always receives the actual server value, even if disabled. */
+    static void syncEquipment(MinecraftServer server) {
+        if (installed == null) { return; }
+        boolean enabled = CommonConfig.classicEquipmentEnabled();
+        if (equipmentEnabled == enabled) { return; }
+        equipmentEnabled = enabled;
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) { MotionNetwork.sendEquipmentEnabled(player, enabled); }
+    }
+
+    @SubscribeEvent public static void loggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            MotionNetwork.sendEquipmentEnabled(player, CommonConfig.classicEquipmentEnabled());
+        }
     }
 
     @SubscribeEvent public static void loggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
