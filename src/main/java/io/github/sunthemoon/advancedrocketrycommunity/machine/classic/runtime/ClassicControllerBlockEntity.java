@@ -364,8 +364,9 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
                 Tag raw = outer.get(key); retained.put(key, ClassicCheckpointCodec.bounded(raw) ? raw.copy() : raw);
             }
         }
-        if ((!outer.contains(ClassicCheckpointCodec.ROOT) || !outer.contains(ClassicResourcesCodec.ROOT))
-                && ClassicRuntime.controllerRootsBounded(retained)) {
+        // Only an entity without any controller root has nothing to preserve. A partial set is decoded,
+        // refused and retained verbatim below; absent roots are writable, so it does not refuse a save.
+        if (retained.isEmpty()) {
             checkpoint = freshCheckpoint(getBlockState()); retained = null; unavailable.clear();
             lookupNeeded = true; reason = ClassicWait.UNFORMED; setChanged(); return;
         }

@@ -425,9 +425,16 @@ from resolved-hash matching alone.
 **Implementation note (W01F, 2026-10-12; decisions unchanged).** Classic controllers
 and the five hatch/plug objects extend R-021 only for present roots that exceed
 their byte/depth/node bounds or cannot be written unchanged by native NBT.
-Missing hatch roots load empty and unbound. Missing required controller roots
-load fresh and unformed when all present retained roots are writable unchanged.
-Bounded unsupported/future roots remain quarantined and are saved verbatim.
+Missing hatch roots load empty and unbound. A controller loads fresh and unformed
+only when it carries none of the six classic controller roots, so that path discards
+nothing. A partial set (for example a present resources root without its machine
+root, or the reverse) is quarantined like bounded unsupported/future roots: present
+roots are saved verbatim, missing roots stay missing, nothing is reset or dropped and
+no save is refused. The quarantine affects only that controller (no ticking, no hatch
+capabilities, no ordinary removal of it or its hatches), lasts until an offline repair
+(restarts do not clear it), writes no log line (the controller reports REPAIR) and is
+recovered with the R-021 procedure. (Corrected by W01G on 2026-10-12: the W01F text
+reset a controller when either required root was missing.)
 The existing exception-based guard refuses the whole terrain chunk; a 257th
 distinct denied coordinate saturates the entire Level. Denial lasts for the Level
 lifetime with no production reset and no total save-retry or ERROR/stack-log bound.
