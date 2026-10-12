@@ -259,6 +259,8 @@
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_STATION_WARP_ENERGY_DROPPED station=[0-9a-f-]{36} energy=\\d+",
       "counts": {
+        "station_controls_core_reach": 1,
+        "station_controls_warp_parity": 2,
         "station_warp_abort": 2,
         "station_warp_charge": 1,
         "station_warp_commit": 1,
@@ -273,8 +275,8 @@
         "station_warp_target_removed": 1,
         "tau_ceti_path": 1
       },
-      "test": "StationWarpGameTests, StationWarpAbortGameTests, TauCetiPathGameTests",
-      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops."
+      "test": "StationWarpGameTests, StationWarpAbortGameTests, TauCetiPathGameTests, StationControlsGameTests",
+      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops. StationControlsGameTests deletes one charged station after a quote (core reach) and two after their warps (parity)."
     },
     {
       "id": "satellite-receiver-release-skipped",
