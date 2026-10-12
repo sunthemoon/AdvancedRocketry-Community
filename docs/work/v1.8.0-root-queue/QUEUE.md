@@ -51,7 +51,9 @@ The shared branch `667fa40c` holds every merge above. Hosted run 38206390869 pas
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| (none) | | |
+| [W15](TASK-W15-RECIPE-GRAPH-MACHINES.md) | Machine recipes in the recipe graph, strict mode restored, crystallizer and dilithium advancements | Next free slot (worktree ready) |
+| [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Next free slot |
+| [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | Next free slot |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
