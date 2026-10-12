@@ -24,6 +24,22 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class ForceFieldPowerGameTests {
     @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void powerCallbackDiagnosticIsReportedOnlyOncePerProjector(GameTestHelper helper) {
+        try (var f = new ForceFieldPlacementGameTests.Placement(helper)) {
+            var source = claim(helper, f, new FieldCleanupSavedData(), 0);
+            var before = source.saveWithFullMetadata();
+            helper.assertTrue(!source.reportPowerFailure(null), "An ordinary unloaded read logged a callback diagnostic");
+            helper.assertTrue(source.reportPowerFailure(new IllegalStateException("x".repeat(8192))),
+                    "First power callback failure did not report a diagnostic");
+            for (int i = 0; i < 10; i++) {
+                helper.assertTrue(!source.reportPowerFailure(new ClassCastException("not a Level")),
+                        "Power callback failure was logged again for the same projector");
+            }
+            helper.assertTrue(source.saveWithFullMetadata().equals(before), "Power diagnostics mutated the persisted projector");
+        }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
     public static void moonHeightEdgesProjectAndRetractWithoutOutsideChunkReads(GameTestHelper helper) {
         ServerLevel level = helper.getLevel().getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(level.getHeight() == 256, "Moon height fixture is not 256 blocks high");

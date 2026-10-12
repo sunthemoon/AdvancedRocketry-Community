@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.forcefield;
 
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
@@ -17,6 +18,15 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
     private ProjectorState state;
     private int next = 1;
     private boolean uncommittedPlacement;
+    private boolean powerFailureReported;
+    boolean reportPowerFailure(RuntimeException failure) {
+        if (failure == null || powerFailureReported) { return false; }
+        powerFailureReported = true;
+        String kind = failure.getClass().getSimpleName();
+        AdvancedRocketryCommunity.LOGGER.warn("ARCE_FORCE_FIELD_POWER_REFUSED projector={} pos={} failure={}",
+                state.id(), worldPosition.toShortString(), kind.substring(0, Math.min(128, kind.length())));
+        return true;
+    }
     private boolean deferredWorldDrop;
     void deferWorldDrop() { deferredWorldDrop = true; }
     boolean takeWorldDrop() { boolean pending = deferredWorldDrop; deferredWorldDrop = false; return pending; }
