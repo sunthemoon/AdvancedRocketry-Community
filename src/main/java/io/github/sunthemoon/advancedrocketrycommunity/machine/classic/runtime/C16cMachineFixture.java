@@ -88,7 +88,7 @@ final class C16cMachineFixture implements AutoCloseable {
     List<ClassicHatchBlockEntity> hatches(String channel) {
         return pattern.cells().entrySet().stream().filter(entry -> entry.getValue() instanceof PatternMatcher.Port port && port.channel().equals(channel))
                 .map(entry -> (ClassicHatchBlockEntity) helper.getLevel().getBlockEntity(world(entry.getKey())))
-                .sorted(Comparator.comparing(hatch -> hatch.bankKey().channel())).toList();
+                .sorted(Comparator.comparingLong(hatch -> hatch.getBlockPos().asLong())).toList();
     }
     IItemHandler input() { return items(hatches("item_input").get(0)); }
     IItemHandler output() { return items(hatches("item_output").get(0)); }
