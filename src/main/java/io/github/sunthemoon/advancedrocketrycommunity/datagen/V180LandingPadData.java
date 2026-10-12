@@ -88,6 +88,7 @@ public final class V180LandingPadData implements DataProvider {
                 Map.entry(prefix + "reason.too_small", chinese ? "平台太小：每一列底部都需要坚固支撑。" : "Pad too small: every footprint column needs solid support."),
                 Map.entry(prefix + "reason.obstructed", chinese ? "着陆空间被方块阻挡。" : "Landing clearance is obstructed."),
                 Map.entry(prefix + "reason.occupied", chinese ? "平台已被另一枚火箭占用。" : "Pad occupied by another rocket."),
+                Map.entry(prefix + "reason.entity_budget", chinese ? "附近火箭的占用检查超过 64 枚预算。" : "Nearby rocket occupancy inspection exceeds the 64-rocket budget."),
                 Map.entry(prefix + "landing_refused", chinese ? "着陆平台拒绝着陆：%s" : "Landing pad refused: %s"));
     }
     @Override public CompletableFuture<?> run(CachedOutput cache) {

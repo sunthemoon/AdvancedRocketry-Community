@@ -1,6 +1,5 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer;
 
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
@@ -15,10 +14,12 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.phys.AABB;
 
 /** No chunk loading. One explicitly chosen candidate, complete rectangular clearance and support. */
 public final class NamedLandingPadStaging {
+    /** Snapshot inspections; discovery may visit one additional overflow sentinel. */
+    public static final int MAX_OCCUPANCY_ENTITY_INSPECTIONS = 64;
+
     public RocketLandingPadSelection select(ServerLevel level, RocketStructureSnapshot source, UUID transfer,
             StationState station, LandingPadReference reference, List<RocketRegion> reservations, long gameTime) {
         LandingPadEntry entry = LandingPadService.resolve(level.getServer(), station.stationId(), reference);
@@ -92,9 +93,7 @@ public final class NamedLandingPadStaging {
                 }
             }
         }
-        var box = new AABB(region.minimum().x(), region.minimum().y(), region.minimum().z(),
-                (double) region.maximum().x() + 1, (double) region.maximum().y() + 1, (double) region.maximum().z() + 1);
-        return level.getEntitiesOfClass(RocketEntity.class, box).isEmpty() ? null : "message.advancedrocketrycommunity.pad.reason.occupied";
+        return NamedLandingPadOccupancy.unavailable(level, region, station.region());
     }
 
     private static RocketLandingPadSelection refusal(String reason) { return RocketLandingPadSelection.failure(1, 0, reason); }
