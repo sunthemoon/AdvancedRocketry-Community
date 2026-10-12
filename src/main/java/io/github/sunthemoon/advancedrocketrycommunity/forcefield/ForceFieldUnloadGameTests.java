@@ -20,6 +20,8 @@ import java.util.function.Consumer;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class ForceFieldUnloadGameTests {
+    private static final TicketType<ChunkPos> FIXTURE_TICKET = TicketType.create(
+            "arce_force_field_unload_fixture", java.util.Comparator.comparingLong(ChunkPos::toLong));
     @GameTest(template = "empty", batch = "force_field_unload", timeoutTicks = 400)
     public static void differentChunksActuallyUnloadReloadWithoutLosingSealedClaims(GameTestHelper helper) {
         var f = new ForceFieldGameTests.Fixture(helper, Direction.EAST);
@@ -33,7 +35,8 @@ public final class ForceFieldUnloadGameTests {
         ChunkPos targetChunk = new ChunkPos(field.getBlockPos());
         helper.assertTrue(!sourceChunk.equals(targetChunk), "Fixture does not cross a chunk boundary");
         // A FULL-only target ticket keeps just this fixture chunk available; production creates no tickets.
-        f.level.getChunkSource().addRegionTicket(TicketType.PORTAL, targetChunk, 0, field.getBlockPos());
+        f.level.getChunkSource().addRegionTicket(FIXTURE_TICKET, targetChunk, 0, targetChunk);
+        f.load(field.getBlockPos());
         f.level.getChunkAt(f.identity.source()).setUnsaved(true);
         AtomicBoolean unloaded = new AtomicBoolean();
         Consumer<ChunkEvent.Unload> witness = event -> {
@@ -74,7 +77,7 @@ public final class ForceFieldUnloadGameTests {
                 helper.succeed();
             } finally {
                 MinecraftForge.EVENT_BUS.unregister(witness);
-                f.level.getChunkSource().removeRegionTicket(TicketType.PORTAL, targetChunk, 0, target);
+                f.level.getChunkSource().removeRegionTicket(FIXTURE_TICKET, targetChunk, 0, targetChunk);
                 for (int i = 1; i <= 32; i++) { f.load(f.identity.target(i)); }
                 f.close();
                 ForceFieldConfig.ENABLED.set(previous);
