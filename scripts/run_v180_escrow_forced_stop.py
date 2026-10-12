@@ -8,6 +8,7 @@ import gzip
 import hashlib
 import json
 import os
+import platform
 from pathlib import Path
 import re
 import shutil
@@ -101,6 +102,13 @@ def run(args) -> dict:
     libraries = args.source_server.resolve() / "libraries"
     if not libraries.is_dir() or any(p.is_symlink() for p in libraries.rglob("*")):
         raise smoke.SmokeError("Unsafe or missing packaged Forge libraries")
+    arguments = libraries / "net/minecraftforge/forge/1.20.1-47.4.10" / ("win_args.txt" if platform.system() == "Windows" else "unix_args.txt")
+    if not arguments.is_file():
+        raise smoke.SmokeError("Missing pinned Forge server arguments")
+    required = set(re.findall(r"libraries/[^\s;:]+\.jar", arguments.read_text(encoding="utf-8")))
+    missing = sorted(path for path in required if not (args.source_server.resolve() / path).is_file())
+    if not required or missing:
+        raise smoke.SmokeError("Incomplete packaged Forge libraries: " + ", ".join(missing[:3]))
     session.mkdir()
     owned_root = session.resolve()
     ownership = uuid.uuid4().hex
