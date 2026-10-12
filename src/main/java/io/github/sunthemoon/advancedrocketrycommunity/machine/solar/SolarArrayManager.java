@@ -51,9 +51,17 @@ public final class SolarArrayManager {
         }
     }
 
-    void released(BlockPos plug) {
+    boolean panelClaimedByOther(SolarArrayBlockEntity claimant, BlockPos panel) {
+        for (var key : footprints.controllersAt(level.dimension(), panel)) {
+            var controller = controllers.get(key.position());
+            if (controller != null && controller != claimant && controller.counts(panel)) { return true; }
+        }
+        return false;
+    }
+
+    void released(BlockPos cell) {
         if (closed) { return; }
-        for (var key : footprints.controllersAt(level.dimension(), plug)) {
+        for (var key : footprints.controllersAt(level.dimension(), cell)) {
             var controller = controllers.get(key.position());
             if (controller != null && controller.structure() == SolarArrayRules.Structure.CONFLICT) { enqueue(controller); }
         }

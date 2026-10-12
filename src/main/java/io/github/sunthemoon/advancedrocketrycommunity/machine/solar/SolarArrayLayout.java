@@ -34,16 +34,18 @@ public final class SolarArrayLayout {
 
     public enum Status { FORMED, UNLOADED, MISMATCH, NO_COLLECTORS }
 
-    /** Outputs are the two plug positions in layout order; collectors counts panels only. */
-    public record Evaluation(Status status, int inspected, int collectors, List<PatternPosition> outputs) {
+    /** Outputs are the two plug positions in layout order; panels are the cells counted as collectors. */
+    public record Evaluation(Status status, int inspected, List<PatternPosition> panels, List<PatternPosition> outputs) {
         public Evaluation {
             Objects.requireNonNull(status, "status");
+            panels = List.copyOf(panels);
             outputs = List.copyOf(outputs);
-            if (inspected < 0 || inspected > CELL_COUNT || collectors < 0 || collectors > SolarGeneration.MAX_COLLECTORS
-                    || outputs.size() > 2 || status == Status.FORMED && (collectors < 1 || outputs.size() != 2)) {
+            if (inspected < 0 || inspected > CELL_COUNT || panels.size() > SolarGeneration.MAX_COLLECTORS
+                    || outputs.size() > 2 || status == Status.FORMED && (panels.isEmpty() || outputs.size() != 2)) {
                 throw new IllegalArgumentException("Invalid solar array evaluation");
             }
         }
+        public int collectors() { return panels.size(); }
         public boolean formed() { return status == Status.FORMED; }
     }
 
@@ -63,24 +65,25 @@ public final class SolarArrayLayout {
         Objects.requireNonNull(controller, "controller");
         Objects.requireNonNull(world, "world");
         boolean unloaded = false, mismatch = false;
-        int inspected = 0, collectors = 0;
+        int inspected = 0;
+        List<PatternPosition> panels = new ArrayList<>(SolarGeneration.MAX_COLLECTORS);
         List<PatternPosition> outputs = new ArrayList<>(2);
         for (Cell cell : CELLS) {
             PatternPosition position;
             try { position = transform.localToWorld(cell.local(), ANCHOR, controller); }
-            catch (ArithmeticException overflow) { return new Evaluation(Status.MISMATCH, inspected, 0, List.of()); }
+            catch (ArithmeticException overflow) { return new Evaluation(Status.MISMATCH, inspected, List.of(), List.of()); }
             PatternObservation observation = world.observe(position);
             inspected++;
             if (!observation.loaded()) { unloaded = true; continue; }
             PatternBlock block = observation.block().orElseThrow();
             if (!cell.matcher().matches(block)) { mismatch = true; continue; }
             if (cell.matcher() instanceof PatternMatcher.Port) { outputs.add(position); }
-            else if (cell.collector() && block.blockId().equals(PANEL)) { collectors++; }
+            else if (cell.collector() && block.blockId().equals(PANEL)) { panels.add(position); }
         }
-        if (unloaded) { return new Evaluation(Status.UNLOADED, inspected, 0, List.of()); }
-        if (mismatch) { return new Evaluation(Status.MISMATCH, inspected, 0, List.of()); }
-        if (collectors == 0) { return new Evaluation(Status.NO_COLLECTORS, inspected, 0, List.of()); }
-        return new Evaluation(Status.FORMED, inspected, collectors, outputs);
+        if (unloaded) { return new Evaluation(Status.UNLOADED, inspected, List.of(), List.of()); }
+        if (mismatch) { return new Evaluation(Status.MISMATCH, inspected, List.of(), List.of()); }
+        if (panels.isEmpty()) { return new Evaluation(Status.NO_COLLECTORS, inspected, List.of(), List.of()); }
+        return new Evaluation(Status.FORMED, inspected, panels, outputs);
     }
 
     private static void requireUnmirrored(PatternTransform transform) {

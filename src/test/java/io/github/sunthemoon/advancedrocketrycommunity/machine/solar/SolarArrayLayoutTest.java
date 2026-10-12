@@ -28,6 +28,8 @@ class SolarArrayLayoutTest {
             var transform = new PatternTransform(rotation, false); var world = world(transform);
             var result = SolarArrayLayout.evaluate(transform, ORIGIN, pos -> PatternObservation.loaded(world.get(pos)));
             assertTrue(result.formed()); assertEquals(66, result.inspected()); assertEquals(63, result.collectors());
+            assertEquals(Set.copyOf(SolarArrayLayout.cells().stream().filter(SolarArrayLayout.Cell::collector)
+                    .map(cell -> transform.localToWorld(cell.local(), SolarArrayLayout.ANCHOR, ORIGIN)).toList()), Set.copyOf(result.panels()));
             assertEquals(2, result.outputs().size()); assertEquals(66, Set.copyOf(SolarArrayLayout.footprint(transform, ORIGIN)).size());
         }
         assertThrows(IllegalArgumentException.class, () -> SolarArrayLayout.footprint(new PatternTransform(PatternRotation.ZERO, true), ORIGIN));
@@ -39,7 +41,8 @@ class SolarArrayLayoutTest {
         }
         assertEquals(SolarArrayLayout.Status.NO_COLLECTORS, SolarArrayLayout.evaluate(transform, ORIGIN, pos -> PatternObservation.loaded(world.get(pos))).status());
         world.put(ORIGIN.add(new PatternPosition(0, 0, 1)), PANEL);
-        assertEquals(1, SolarArrayLayout.evaluate(transform, ORIGIN, pos -> PatternObservation.loaded(world.get(pos))).collectors());
+        var result = SolarArrayLayout.evaluate(transform, ORIGIN, pos -> PatternObservation.loaded(world.get(pos)));
+        assertEquals(1, result.collectors()); assertEquals(java.util.List.of(ORIGIN.add(new PatternPosition(0, 0, 1))), result.panels());
     }
     @Test void mismatchesAndUnloadedCellsFailClosedWithUnloadedPrecedence() {
         var transform = new PatternTransform(PatternRotation.ZERO, false); var world = world(transform);
@@ -48,6 +51,7 @@ class SolarArrayLayoutTest {
         assertEquals(SolarArrayLayout.Status.MISMATCH, SolarArrayLayout.evaluate(transform, ORIGIN, pos -> PatternObservation.loaded(world.get(pos))).status());
         var unloaded = ORIGIN.add(new PatternPosition(0, 0, 21));
         var result = SolarArrayLayout.evaluate(transform, ORIGIN, pos -> pos.equals(unloaded) ? PatternObservation.unloaded() : PatternObservation.loaded(world.get(pos)));
-        assertEquals(SolarArrayLayout.Status.UNLOADED, result.status()); assertEquals(0, result.collectors()); assertTrue(result.outputs().isEmpty());
+        assertEquals(SolarArrayLayout.Status.UNLOADED, result.status()); assertEquals(0, result.collectors());
+        assertTrue(result.panels().isEmpty()); assertTrue(result.outputs().isEmpty());
     }
 }

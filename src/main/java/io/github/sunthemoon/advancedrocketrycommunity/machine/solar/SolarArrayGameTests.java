@@ -97,6 +97,44 @@ public final class SolarArrayGameTests {
         helper.succeed();
     }
 
+    @GameTest(template = "solar_array_test", timeoutTicks = 40)
+    public static void oppositeEndsCannotCountTheSame63PanelsAndRecoverOnRemoval(GameTestHelper helper) {
+        try (var fixture = fixture(helper, 63)) {
+            var second = fixture.install(fixture.position.offset(0, 0, 22), 63, Direction.SOUTH);
+            assertExclusivePanelsAndRecovery(helper, fixture, second, 63);
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "solar_array_test", timeoutTicks = 40)
+    public static void perpendicularArraysCannotCountTheSame9PanelsAndRecoverOnRemoval(GameTestHelper helper) {
+        // Keep the westward EAST footprint inside this test's 32-wide allocation.
+        try (var fixture = new SolarArrayFixture(helper.getLevel(), position(helper).offset(15, 0, 0))) {
+            fixture.install(fixture.position, 63);
+            var second = fixture.install(fixture.position.offset(5, 0, 10), 63, Direction.EAST);
+            assertExclusivePanelsAndRecovery(helper, fixture, second, 9);
+        }
+        helper.succeed();
+    }
+
+    private static void assertExclusivePanelsAndRecovery(GameTestHelper helper, SolarArrayFixture fixture,
+            SolarArrayBlockEntity second, int shared) {
+        fixture.form();
+        var first = fixture.array;
+        SolarArrayBlockEntity holder = first.structure() == SolarArrayRules.Structure.FORMED ? first : second;
+        SolarArrayBlockEntity waiting = holder == first ? second : first;
+        helper.assertTrue(holder.structure() == SolarArrayRules.Structure.FORMED && holder.collectors() == 63
+                && waiting.structure() == SolarArrayRules.Structure.CONFLICT && waiting.collectors() == 0,
+                "Shared panels allowed two formed collectors");
+        var intersection = new HashSet<>(first.footprint()); intersection.retainAll(second.footprint());
+        helper.assertTrue(intersection.size() == shared && intersection.stream().allMatch(pos ->
+                fixture.level.getBlockState(pos).is(ModBlocks.SOLAR_ARRAY_PANEL.get()) && holder.counts(pos) && !waiting.counts(pos)),
+                "Shared panel cells were not counted exclusively");
+        fixture.level.setBlock(holder.getBlockPos(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); fixture.form();
+        helper.assertTrue(waiting.structure() == SolarArrayRules.Structure.FORMED && waiting.collectors() == 63
+                && intersection.stream().allMatch(waiting::counts), "Released panel claim did not wake the conflicting array");
+    }
+
     @GameTest(template = "solar_array_test", batch = "solar_array_surface", timeoutTicks = 80)
     public static void surfaceDayNightWeatherRoofAndOverflowUseNativeSamples(GameTestHelper helper) {
         var level = helper.getLevel(); long day = level.getDayTime(); float rain = level.getRainLevel(1), thunder = level.getThunderLevel(1);

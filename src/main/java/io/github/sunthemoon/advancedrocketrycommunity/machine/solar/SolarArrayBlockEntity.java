@@ -39,6 +39,7 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
     private final IntSupplier multiplier;
     private final Supplier<SolarExposure> exposure;
     private final Set<ChunkPos> unloading = new HashSet<>();
+    private Set<BlockPos> countedPanels = Set.of();
     private List<SolarArrayOutputBlockEntity> outputs = List.of();
     private Object token = new Object();
     private SolarArrayRules.Structure structure = SolarArrayRules.Structure.PENDING;
@@ -103,13 +104,17 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
 
     void invalidateStructure(SolarArrayRules.Structure status) {
         var previous = outputs;
-        outputs = List.of(); token = new Object(); collectors = 0; structure = status;
+        var previousPanels = countedPanels;
+        outputs = List.of(); countedPanels = Set.of(); token = new Object(); collectors = 0; structure = status;
         feedback = SolarArrayRules.step(energy, status, 0, multiplier.getAsInt(), enabled(), repairRequired(), null);
         for (var output : previous) {
             output.release(this);
             if (level instanceof ServerLevel server) { SolarArrayRuntime.manager(server).released(output.getBlockPos()); }
         }
+        if (level instanceof ServerLevel server) { previousPanels.forEach(SolarArrayRuntime.manager(server)::released); }
     }
+
+    boolean counts(BlockPos panel) { return structure == SolarArrayRules.Structure.FORMED && countedPanels.contains(panel); }
 
     void revalidate(ServerLevel server) {
         if (repairRequired()) { invalidateStructure(SolarArrayRules.Structure.UNAVAILABLE); return; }
@@ -131,6 +136,13 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
                     ? PatternObservation.unloaded() : view.observe(position);
         });
         if (!result.formed()) { invalidateStructure(SolarArrayRules.Structure.of(result.status())); return; }
+        Set<BlockPos> panels = new HashSet<>();
+        var manager = SolarArrayRuntime.manager(server);
+        for (var panel : result.panels()) {
+            BlockPos pos = blockPos(panel);
+            if (manager.panelClaimedByOther(this, pos)) { invalidateStructure(SolarArrayRules.Structure.CONFLICT); return; }
+            panels.add(pos);
+        }
         List<SolarArrayOutputBlockEntity> plugs = new ArrayList<>(2);
         for (var output : result.outputs()) {
             BlockPos pos = blockPos(output);
@@ -142,7 +154,7 @@ public final class SolarArrayBlockEntity extends BlockEntity implements MenuProv
             if (plug.claimedByOther(this)) { invalidateStructure(SolarArrayRules.Structure.CONFLICT); return; }
             plugs.add(plug);
         }
-        collectors = result.collectors(); structure = SolarArrayRules.Structure.FORMED;
+        countedPanels = Set.copyOf(panels); collectors = result.collectors(); structure = SolarArrayRules.Structure.FORMED;
         outputs = List.copyOf(plugs);
         outputs.forEach(plug -> plug.bind(this, token));
     }

@@ -3,12 +3,16 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.solar;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternRotation;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternTransform;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModMenuTypes;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
@@ -44,14 +48,26 @@ final class SolarArrayFixture implements AutoCloseable {
     }
     void set(BlockPos pos, BlockState state) { remember(pos); level.setBlock(pos, state, Block.UPDATE_ALL); }
     SolarArrayBlockEntity install(BlockPos controller, int panels) {
-        for (int z = 0; z < 22; z++) {
-            for (int x = -1; x <= 1; x++) {
-                BlockPos pos = controller.offset(x, 0, z);
-                if (z == 0) { set(pos, x == 0 ? ModBlocks.SOLAR_ARRAY.get().defaultBlockState() : ModBlocks.POWER_OUTPUT_PLUG.get().defaultBlockState()); }
-                else { set(pos, (z - 1) * 3 + x + 1 < panels ? ModBlocks.SOLAR_ARRAY_PANEL.get().defaultBlockState() : Blocks.AIR.defaultBlockState()); }
-            }
+        return install(controller, panels, Direction.NORTH);
+    }
+    SolarArrayBlockEntity install(BlockPos controller, int panels, Direction facing) {
+        var state = ModBlocks.SOLAR_ARRAY.get().defaultBlockState().setValue(SolarArrayBlock.FACING, facing);
+        var transform = new PatternTransform(switch (facing) {
+            case NORTH -> PatternRotation.ZERO;
+            case EAST -> PatternRotation.CLOCKWISE_90;
+            case SOUTH -> PatternRotation.CLOCKWISE_180;
+            case WEST -> PatternRotation.CLOCKWISE_270;
+            default -> throw new IllegalArgumentException("Fixture facing is not horizontal");
+        }, false);
+        var anchor = new PatternPosition(controller.getX(), controller.getY(), controller.getZ());
+        int collector = 0;
+        for (var cell : SolarArrayLayout.cells()) {
+            var world = transform.localToWorld(cell.local(), SolarArrayLayout.ANCHOR, anchor);
+            var pos = new BlockPos(world.x(), world.y(), world.z());
+            if (cell.collector()) { set(pos, collector++ < panels ? ModBlocks.SOLAR_ARRAY_PANEL.get().defaultBlockState() : Blocks.AIR.defaultBlockState()); }
+            else { set(pos, cell.local().equals(SolarArrayLayout.ANCHOR) ? state : ModBlocks.POWER_OUTPUT_PLUG.get().defaultBlockState()); }
         }
-        var injected = new SolarArrayBlockEntity(ModBlockEntities.SOLAR_ARRAY.get(), controller, ModBlocks.SOLAR_ARRAY.get().defaultBlockState(),
+        var injected = new SolarArrayBlockEntity(ModBlockEntities.SOLAR_ARRAY.get(), controller, state,
                 ModMenuTypes.SOLAR_ARRAY::get, () -> enabled, () -> multiplier, () -> exposure);
         level.setBlockEntity(injected);
         SolarArrayRuntime.manager(level).observe(injected);
