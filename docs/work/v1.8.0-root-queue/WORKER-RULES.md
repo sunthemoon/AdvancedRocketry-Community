@@ -77,7 +77,14 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
   from null" warning per new key and section. Give them their own exact expectation in
   `scripts/gametest_expected_log.json`, and exclude their section from the generic rule,
   whose maximum of 99 does not change (see the OXYGEN and ROCKET entries).
-- **GameTest:** this runs every test (about 650). Run it once at the end, under the lock.
+- **Pinned totals:**
+  - If you add deliberate ERROR expectations to `scripts/gametest_expected_log.json`,
+    update the total in `tests/test_check_gametest_log.py`
+    (`test_repository_manifest_is_valid`), with a comment naming your additions. Then run
+    `python -B -m unittest discover -s tests -p "test_*gametest_log*.py"`.
+  - If you add a network channel, update `NetworkProtocolPinTest`'s channel-source count and
+    `src/test/resources/network-protocols.txt`.
+- **GameTest:** this runs every test (about 700). Run it once at the end, under the lock.
   Then run `python -B scripts/check_gametest_log.py build/gametest/logs/latest.log`.
   - If you add a test that deliberately logs ERROR or WARN, add an expectation to
     `scripts/gametest_expected_log.json`, with the test and the reason.

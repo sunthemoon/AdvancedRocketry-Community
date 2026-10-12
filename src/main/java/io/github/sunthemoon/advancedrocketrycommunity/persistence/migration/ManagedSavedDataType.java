@@ -66,6 +66,7 @@ public enum ManagedSavedDataType {
 
     private static final long FILE_OVERHEAD_BYTES = 64L * 1024L;
     private static final String WARP_ENERGY_KEY = "warp_energy";
+    private static final String ORBITAL_CLOCK_KEY = "orbital_clock";
     private static final String SATELLITE_INSTANCES_KEY = "instances";
     private static final String SATELLITE_SAVE_EPOCH_KEY = "save_epoch";
 
@@ -111,13 +112,16 @@ public enum ManagedSavedDataType {
         return formatEpoch(currentSchemaVersion());
     }
 
-    /** The format epoch a root of this schema must carry; stations evolve independently (ADR-040, ADR-044). */
+    /** The format epoch a root of this schema must carry; stations evolve independently (ADR-040, ADR-044, ADR-065). */
     public String formatEpoch(int schema) {
         if (this == STATIONS && schema == StationLimits.ORBITAL_REGISTRY_SCHEMA_VERSION) {
             return "v1.5.0-orbital-station";
         }
         if (this == STATIONS && schema == StationLimits.WARP_REGISTRY_SCHEMA_VERSION) {
             return "v1.5.0-station-warp";
+        }
+        if (this == STATIONS && schema == StationLimits.CONTROLS_REGISTRY_SCHEMA_VERSION) {
+            return "v1.8.0-station-orbital-controls";
         }
         if (this == SATELLITE_MISSIONS && schema == SatelliteLimits.REGISTRY_SCHEMA_VERSION) {
             return SatelliteLimits.REGISTRY_FORMAT_EPOCH;
@@ -185,6 +189,16 @@ public enum ManagedSavedDataType {
                         MigrationDiagnosticId.INVALID_SCHEMA,
                         dataName + " schema " + schema + (warpRoot ? " is missing required " : " cannot carry ")
                                 + WARP_ENERGY_KEY
+                );
+            }
+            // Root 5 requires the orbital clock; a current root without it is malformed (ADR-065 §5.2.1).
+            boolean clockRoot = schema >= StationLimits.CONTROLS_REGISTRY_SCHEMA_VERSION;
+            if (clockRoot ? !payload.contains(ORBITAL_CLOCK_KEY, Tag.TAG_COMPOUND)
+                    : payload.contains(ORBITAL_CLOCK_KEY)) {
+                throw new SavedDataMigrationException(
+                        MigrationDiagnosticId.INVALID_SCHEMA,
+                        dataName + " schema " + schema + (clockRoot ? " is missing required " : " cannot carry ")
+                                + ORBITAL_CLOCK_KEY
                 );
             }
         }

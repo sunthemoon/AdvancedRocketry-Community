@@ -108,63 +108,76 @@ public final class TauCetiPathGameTests {
                     "a warp to the undiscovered Tau Ceti f");
             helper.assertTrue(SatelliteRuntime.launch(fixture.server.getPlayerList().getPlayer(fixture.ownerId),
                     satellite, ExoplanetContent.TAU_CETI_F).success(), "The data satellite did not start on Tau Ceti f");
-            RocketEntity rocket = assembleFueledRocket(helper, new BlockPos(3, 2, 3), fixture.ownerId);
-            logical[0] = rocket.assemblyTransactionId().orElseThrow();
-            RocketFlightRequestResult docking = RocketRuntime.requestAdminStationFlight(rocket, fixture.id(),
-                    UUID.randomUUID());
-            helper.assertTrue(docking.success(), "Earth-to-station launch failed: " + docking.code());
+            assembleFueledRocket(helper, new BlockPos(3, 2, 3), fixture.ownerId, cleanup, rocket -> {
+                try {
+                    logical[0] = rocket.assemblyTransactionId().orElseThrow();
+                    RocketFlightRequestResult docking = RocketRuntime.requestAdminStationFlight(rocket, fixture.id(),
+                            UUID.randomUUID());
+                    helper.assertTrue(docking.success(), "Earth-to-station launch failed: " + docking.code());
+                    // LANDED precedes the production warp guard's margin. Read its installed authority
+                    // without issuing speculative commands, still within the original flight window.
+                    RocketFlightGameTestFixtures.awaitPaced(helper, helper.getTick() + FLIGHT, () ->
+                            RocketFlightGameTestFixtures.hasFlightState(fixture.space, logical[0], RocketFlightState.LANDED)
+                                    && fixture.warp.diagnostics(fixture.server, java.util.Optional.of(fixture.id())).stream()
+                                            .anyMatch(line -> line.startsWith("station=" + fixture.id() + " ")
+                                                    && line.contains(" rockets_in_motion=false ")),
+                            () -> guarded(cleanup, () -> {
+                        landed(helper, fixture.space, logical[0], "the station", observerJournal);
+                        helper.assertTrue(SatelliteRuntime.claim(fixture.server.getPlayerList().getPlayer(fixture.ownerId),
+                                satellite).success(), "The Tau Ceti f research claim failed");
+                        helper.assertTrue(SatelliteRuntime.discovered(fixture.server, ExoplanetContent.TAU_CETI_F),
+                                "The data satellite did not discover Tau Ceti f");
+                        fixture.look(fixture.ownerId, fixture.pad.east(2));
+                        fixture.run(fixture.ownerId, "arce station warp " + ExoplanetContent.TAU_CETI_F);
+                        String quote = StationWarpGameTests.last(owner);
+                        helper.assertTrue(quote.contains("interstellar warp, cost 8000000 FE, warp energy 9000000 FE")
+                                && quote.contains("Docked rockets move with the station") && !quote.contains("no rocket routes"),
+                                "Tau Ceti f quote differs: " + quote);
+                        fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
+                        helper.runAfterDelay(StationWarpGameTests.COMMIT_DELAY, () -> guarded(cleanup, () -> {
+                            helper.assertTrue(fixture.station().orbitBody().equals(ExoplanetContent.TAU_CETI_F)
+                                    && fixture.data.warpEnergy(fixture.id()) == 1_000_000,
+                                    "The station did not warp to Tau Ceti f's orbit once");
+                            RocketEntity docked = landed(helper, fixture.space, logical[0], "the warped station", observerJournal);
+                            whenLandingReady(helper, surface, new GameTestTickPacer(fixture.server), 1, cleanup, () -> {
+                                RocketFlightRequestResult down = RocketRuntime.requestAdminFlight(docked,
+                                        new TravelTarget.BodySurface(ExoplanetContent.TAU_CETI_F), UUID.randomUUID());
+                                helper.assertTrue(down.success(), "Station-to-Tau Ceti f launch failed: " + down.code());
+                                RocketFlightGameTestFixtures.awaitFlightState(helper, surface, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
+                                    RocketEntity onF = landed(helper, surface, logical[0], "Tau Ceti f", observerJournal);
+                                    helper.assertTrue(onF.flightData().orElseThrow().currentBody()
+                                            .equals(ExoplanetContent.TAU_CETI_F), "The rocket did not land on Tau Ceti f");
+                                    // The first pad, at the origin: the landing ground keeps it free.
+                                    helper.assertTrue(Math.abs(onF.getX()) < 4 && Math.abs(onF.getZ()) < 4,
+                                            "The rocket landed away from the first pad at " + onF.blockPosition());
+                                    helper.assertTrue(findLogicalRocket(fixture.space, logical[0]) == null,
+                                            "The station kept a copy of the rocket");
+                                    RocketFlightRequestResult up = RocketRuntime.requestAdminStationFlight(onF, fixture.id(),
+                                            UUID.randomUUID());
+                                    helper.assertTrue(up.success(), "Tau Ceti f-to-station launch failed: " + up.code());
+                                    RocketFlightGameTestFixtures.awaitFlightState(helper, fixture.space, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
+                                        RocketEntity back = landed(helper, fixture.space, logical[0], "the station on return",
+                                                observerJournal);
+                                        helper.assertTrue(fixture.station().region().contains(back.blockPosition().getX(),
+                                                back.blockPosition().getZ()), "The returning rocket landed outside the station");
+                                        helper.assertTrue(findLogicalRocket(surface, logical[0]) == null,
+                                                "Tau Ceti f kept a copy of the rocket");
+                                        cleanup.run();
+                                        helper.succeed();
+                                    }));
+                                }));
+                            });
+                        }));
+                    }));
+                } catch (RuntimeException | Error exception) {
+                    cleanup.run();
+                    throw exception;
+                }
+            });
         } catch (RuntimeException | Error exception) {
             cleanup.run();
             throw exception;
         }
-        helper.runAfterDelay(FLIGHT, () -> guarded(cleanup, () -> {
-            landed(helper, fixture.space, logical[0], "the station", observerJournal);
-            helper.assertTrue(SatelliteRuntime.claim(fixture.server.getPlayerList().getPlayer(fixture.ownerId),
-                    satellite).success(), "The Tau Ceti f research claim failed");
-            helper.assertTrue(SatelliteRuntime.discovered(fixture.server, ExoplanetContent.TAU_CETI_F),
-                    "The data satellite did not discover Tau Ceti f");
-            fixture.look(fixture.ownerId, fixture.pad.east(2));
-            fixture.run(fixture.ownerId, "arce station warp " + ExoplanetContent.TAU_CETI_F);
-            String quote = StationWarpGameTests.last(owner);
-            helper.assertTrue(quote.contains("interstellar warp, cost 8000000 FE, warp energy 9000000 FE")
-                    && quote.contains("Docked rockets move with the station") && !quote.contains("no rocket routes"),
-                    "Tau Ceti f quote differs: " + quote);
-            fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
-            helper.runAfterDelay(StationWarpGameTests.COMMIT_DELAY, () -> guarded(cleanup, () -> {
-                helper.assertTrue(fixture.station().orbitBody().equals(ExoplanetContent.TAU_CETI_F)
-                        && fixture.data.warpEnergy(fixture.id()) == 1_000_000,
-                        "The station did not warp to Tau Ceti f's orbit once");
-                RocketEntity docked = landed(helper, fixture.space, logical[0], "the warped station", observerJournal);
-                whenLandingReady(helper, surface, new GameTestTickPacer(fixture.server), 1, cleanup, () -> {
-                    RocketFlightRequestResult down = RocketRuntime.requestAdminFlight(docked,
-                            new TravelTarget.BodySurface(ExoplanetContent.TAU_CETI_F), UUID.randomUUID());
-                    helper.assertTrue(down.success(), "Station-to-Tau Ceti f launch failed: " + down.code());
-                    helper.runAfterDelay(FLIGHT, () -> guarded(cleanup, () -> {
-                        RocketEntity onF = landed(helper, surface, logical[0], "Tau Ceti f", observerJournal);
-                        helper.assertTrue(onF.flightData().orElseThrow().currentBody()
-                                .equals(ExoplanetContent.TAU_CETI_F), "The rocket did not land on Tau Ceti f");
-                        // The first pad, at the origin: the landing ground keeps it free.
-                        helper.assertTrue(Math.abs(onF.getX()) < 4 && Math.abs(onF.getZ()) < 4,
-                                "The rocket landed away from the first pad at " + onF.blockPosition());
-                        helper.assertTrue(findLogicalRocket(fixture.space, logical[0]) == null,
-                                "The station kept a copy of the rocket");
-                        RocketFlightRequestResult up = RocketRuntime.requestAdminStationFlight(onF, fixture.id(),
-                                UUID.randomUUID());
-                        helper.assertTrue(up.success(), "Tau Ceti f-to-station launch failed: " + up.code());
-                        helper.runAfterDelay(FLIGHT, () -> guarded(cleanup, () -> {
-                            RocketEntity back = landed(helper, fixture.space, logical[0], "the station on return",
-                                    observerJournal);
-                            helper.assertTrue(fixture.station().region().contains(back.blockPosition().getX(),
-                                    back.blockPosition().getZ()), "The returning rocket landed outside the station");
-                            helper.assertTrue(findLogicalRocket(surface, logical[0]) == null,
-                                    "Tau Ceti f kept a copy of the rocket");
-                            cleanup.run();
-                            helper.succeed();
-                        }));
-                    }));
-                });
-            }));
-        }));
     }
 
     /**

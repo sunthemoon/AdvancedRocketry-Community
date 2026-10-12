@@ -175,6 +175,25 @@ public final class ModBlocks {
     public static final RegistryObject<Block> BLAST_BRICK = BLOCKS.register("blast_brick", () -> new Block(
             BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> SAW_BLADE = metalBlock("saw_blade");
+    public static final RegistryObject<ClassicControllerBlock> CRYSTALLIZER = BLOCKS.register("crystallizer", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(ModBlockEntities.CRYSTALLIZER.get(),
+                            position, state, ClassicMachineDefinition.CRYSTALLIZER)));
+    public static final RegistryObject<ClassicControllerBlock> CHEMICAL_REACTOR = BLOCKS.register("chemical_reactor", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(ModBlockEntities.CHEMICAL_REACTOR.get(),
+                            position, state, ClassicMachineDefinition.CHEMICAL_REACTOR)));
+    public static final RegistryObject<ClassicControllerBlock> PRECISION_LASER_ETCHER = BLOCKS.register("precision_laser_etcher", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(ModBlockEntities.PRECISION_LASER_ETCHER.get(),
+                            position, state, ClassicMachineDefinition.PRECISION_LASER_ETCHER)));
+    public static final RegistryObject<ClassicControllerBlock> CENTRIFUGE = BLOCKS.register("centrifuge", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(ModBlockEntities.CENTRIFUGE.get(),
+                            position, state, ClassicMachineDefinition.CENTRIFUGE)));
+
+    public static final RegistryObject<Block> QUARTZ_CRUCIBLE = BLOCKS.register("quartz_crucible", () -> new Block(
+            BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()));
 
     private static RegistryObject<ClassicHatchBlock> classicHatch(ClassicHatchKind kind) {
         return BLOCKS.register(kind.blockId().getPath(), () -> new ClassicHatchBlock(
@@ -335,6 +354,27 @@ public final class ModBlocks {
                     .requiresCorrectToolForDrops()
                     .lightLevel(state -> 15)));
 
+    /** ADR-065 C17b: the four station controllers; no BlockEntity, owner or stored value. */
+    public static final RegistryObject<Block> WARP_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.WARP);
+    public static final RegistryObject<Block> STATION_GRAVITY_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.GRAVITY);
+    public static final RegistryObject<Block> STATION_ALTITUDE_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.ALTITUDE);
+    public static final RegistryObject<Block> STATION_ORIENTATION_CONTROLLER = stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind.ORIENTATION);
+
+    private static RegistryObject<Block> stationController(
+            io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerKind kind) {
+        return BLOCKS.register(kind.id(), () ->
+                new io.github.sunthemoon.advancedrocketrycommunity.station.controller.StationControllerBlock(kind,
+                        BlockBehaviour.Properties.of()
+                                .mapColor(MapColor.COLOR_LIGHT_GRAY)
+                                .requiresCorrectToolForDrops()
+                                .strength(3.0F, 6.0F)
+                                .sound(SoundType.METAL)));
+    }
+
     /** Passive ordinary lights: native support/placement, distinct registered loot tables. */
     public static final RegistryObject<TorchBlock> THERMITE_TORCH = BLOCKS.register("thermite_torch", () ->
             new TorchBlock(thermiteTorchProperties(), ParticleTypes.FLAME));
@@ -345,6 +385,10 @@ public final class ModBlocks {
         return BlockBehaviour.Properties.of().noCollission().instabreak().sound(SoundType.WOOD)
                 .lightLevel(state -> 14).pushReaction(PushReaction.DESTROY);
     }
+
+    public static final RegistryObject<Block> LANDING_PAD = BLOCKS.register("landing_pad", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlock(
+                    metalProperties().pushReaction(PushReaction.BLOCK)));
 
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()

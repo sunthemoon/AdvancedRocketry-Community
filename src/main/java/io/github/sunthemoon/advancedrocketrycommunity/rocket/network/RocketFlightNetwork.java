@@ -14,7 +14,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class RocketFlightNetwork {
-    private static final String PROTOCOL_VERSION = "8";
+    private static final String PROTOCOL_VERSION = "9";
     private static SimpleChannel channel;
 
     public RocketFlightNetwork() {
@@ -84,6 +84,11 @@ public final class RocketFlightNetwork {
             int rocketEntityId,
             TravelTarget target
     ) {
+        sendIntent(action, rocketEntityId, target, null);
+    }
+
+    public static void sendIntent(RocketFlightAction action, int rocketEntityId, TravelTarget target,
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
         SimpleChannel current = channel;
         if (current == null) {
             throw new IllegalStateException("Rocket flight channel is not initialized");
@@ -92,7 +97,7 @@ public final class RocketFlightNetwork {
                 action,
                 rocketEntityId,
                 target,
-                UUID.randomUUID()
+                UUID.randomUUID(), pad
         ));
     }
 }

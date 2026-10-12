@@ -20,6 +20,10 @@ import net.minecraft.resources.ResourceLocation;
 public final class ClassicRecipeCodec {
     private static final Set<String> FIELDS = Set.of("type", "schema_version", "item_inputs", "item_outputs",
             "fluid_inputs", "fluid_outputs", "processing_time", "energy_per_tick");
+    static final Set<String> TYPES = Set.of("advancedrocketrycommunity:lathe", "advancedrocketrycommunity:arc_furnace",
+            "advancedrocketrycommunity:cutting", "advancedrocketrycommunity:crystallizing",
+            "advancedrocketrycommunity:chemical_reacting", "advancedrocketrycommunity:laser_etching",
+            "advancedrocketrycommunity:centrifuging");
 
     public static ClassicValidatedRecipe decode(ResourceLocation id, String text) {
         ClassicValueChecks.id(id);
@@ -27,9 +31,9 @@ public final class ClassicRecipeCodec {
         String type = string(root, "type");
         var expected = new java.util.HashSet<>(FIELDS);
         if (type.equals("advancedrocketrycommunity:cutting") && root.has("sawmill")) { expected.add("sawmill"); }
+        if (type.equals("advancedrocketrycommunity:centrifuging") && root.has("chance_outputs")) { expected.add("chance_outputs"); }
         fields(root, expected);
-        ClassicValueChecks.require(Set.of("advancedrocketrycommunity:lathe", "advancedrocketrycommunity:arc_furnace",
-                "advancedrocketrycommunity:cutting").contains(type)
+        ClassicValueChecks.require(TYPES.contains(type)
                 && integer(root, "schema_version", 1, 1) == 1, "Recipe type/schema");
         Boolean sawmill = null;
         if (root.has("sawmill")) {
@@ -49,9 +53,19 @@ public final class ClassicRecipeCodec {
             outputs.add(new ClassicItemOutput(ClassicValueChecks.id(string(row, "item")), integer(row, "count", 1, 64)));
         }
         String canonical = RecipeJsonSignature.canonical(root);
+        List<ClassicChanceOutput> chances = null;
+        if (root.has("chance_outputs")) {
+            var candidates = new ArrayList<ClassicChanceOutput>();
+            for (JsonElement value : array(root, "chance_outputs", 16)) {
+                JsonObject row = object(value); fields(row, Set.of("item", "count", "weight"));
+                candidates.add(new ClassicChanceOutput(ClassicValueChecks.id(string(row, "item")),
+                        integer(row, "count", 1, 64), integer(row, "weight", 1, 100)));
+            }
+            chances = List.copyOf(candidates);
+        }
         return new ClassicValidatedRecipe(id, type, sawmill, canonical, List.copyOf(inputs), List.copyOf(outputs),
                 fluids(root, "fluid_inputs"), fluids(root, "fluid_outputs"),
-                integer(root, "processing_time", 1, 72_000), integer(root, "energy_per_tick", 1, 10_000));
+                integer(root, "processing_time", 1, 72_000), integer(root, "energy_per_tick", 1, 10_000), chances);
     }
 
     private static List<ClassicFluidRow> fluids(JsonObject root, String key) {

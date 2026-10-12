@@ -358,8 +358,10 @@ class ManifestValidationTests(unittest.TestCase):
     def test_repository_manifest_is_valid(self) -> None:
         expectations = load_manifest(DEFAULT_MANIFEST)
         self.assertTrue(all(item.level == "WARN" for item in expectations if item.maximum is not None))
+        # 62 deliberate ERROR entries plus W07's 17: classic_controls server and client version
+        # rejections (8 each) and one dropped unknown message index.
         self.assertEqual(
-            62, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            79, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_recipe_and_recovery_cases_have_independent_counts(self) -> None:
@@ -369,7 +371,16 @@ class ManifestValidationTests(unittest.TestCase):
         self.assertTrue(all(item.counts == {"recipe_signatures": 1} for item in recipes))
         recovery = [item for item in expectations if item.id.startswith("transfer-recovery-")]
         self.assertEqual(4, len(recovery))
-        self.assertTrue(all(item.counts == {"flight_recovery": 1} for item in recovery))
+        # W13 drives each existing recovery case once more in its separate pad-reload batch.
+        self.assertTrue(all(item.counts == {"flight_recovery": 1, "landing_pads": 1} for item in recovery))
+
+    def test_named_pad_occupancy_return_has_its_own_exact_count(self) -> None:
+        rules = load_manifest(DEFAULT_MANIFEST)
+        returned = next(item for item in rules if item.id == "transfer-returned-to-source")
+        self.assertEqual(
+            {"destination_readiness": 1, "flight": 1, "planetary_changed_pad": 1, "named_pad_occupancy": 1},
+            returned.counts,
+        )
 
     def test_pending_fixture_credit_refusal_is_not_an_expected_warning(self) -> None:
         rules = load_manifest(DEFAULT_MANIFEST)

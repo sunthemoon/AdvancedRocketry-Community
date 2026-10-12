@@ -319,6 +319,16 @@ public final class CommonConfig {
             .comment("Allow pump source draining and fluid export; disabling retains resources and owner.")
             .define("machines.pumpEnabled", true);
 
+    public static final ForgeConfigSpec.DoubleValue CRYSTALLIZER_MAXIMUM_GRAVITY = BUILDER
+            .comment("Maximum controller body or station gravity for crystallizing; zero disables the limit.")
+            .defineInRange("machines.crystallizerMaximumGravity", 0.0, 0.0, 10.0);
+
+    public static double crystallizerMaximumGravity() {
+        Double override = SwitchOverrides.crystallizerGravity();
+        if (override != null) { return override; }
+        return SPEC.isLoaded() ? CRYSTALLIZER_MAXIMUM_GRAVITY.get() : CRYSTALLIZER_MAXIMUM_GRAVITY.getDefault();
+    }
+
     public static final ForgeConfigSpec.BooleanValue CLASSIC_DEVICES_ENABLED = BUILDER
             .comment("Allow classic life-support instruments; disabling retains their items and recipes.")
             .define("lifeSupport.classicDevicesEnabled", true);
@@ -331,6 +341,13 @@ public final class CommonConfig {
     public static final ForgeConfigSpec.BooleanValue CLASSIC_EQUIPMENT_ENABLED = BUILDER
             .comment("Allow classic equipment use; disabling retains items, recipes and safe repair.")
             .define("equipment.classicEnabled", true);
+    /** ADR-066 section 5.2: each paid jetpack correction adds at most 0.08 times this force, in blocks/tick. */
+    public static final ForgeConfigSpec.DoubleValue JET_PACK_FORCE = BUILDER
+            .comment("Jetpack thrust force; each paid correction adds 0.08 x force blocks/tick, within fixed caps.")
+            .defineInRange("equipment.jetPackForce", 1.3, 0.05, 4.0);
+    public static final ForgeConfigSpec.BooleanValue LOW_GRAVITY_BOOTS = BUILDER
+            .comment("Padded landing boots cancel fall damage only where the ARCE gravity multiplier is below 1.")
+            .define("equipment.lowGravityBoots", false);
 
     public static final ForgeConfigSpec.IntValue SUIT_TANK_CAPACITY = BUILDER
             .comment("Creation multiplier for pressure tank tiers; existing saved capacities are retained.")
@@ -345,6 +362,8 @@ public final class CommonConfig {
 
     public static int suitTankMultiplier() { return SPEC.isLoaded() ? SUIT_TANK_CAPACITY.get() : 1; }
     public static int suitOxygenTarget() { return SPEC.isLoaded() ? SPACE_SUIT_O2_BUFFER.get() : 2_000; }
+    public static double jetPackForce() { return SPEC.isLoaded() ? JET_PACK_FORCE.get() : JET_PACK_FORCE.getDefault(); }
+    public static boolean lowGravityBoots() { return serverSwitchValue(LOW_GRAVITY_BOOTS); }
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
     public static EndgameSettings endgameSettings() {
@@ -478,7 +497,7 @@ public final class CommonConfig {
     /** Server switches whose tests can hold an ephemeral in-memory value. */
     private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED, SAWMILL_VANILLA_WOOD,
             COMBUSTION_GENERATOR_ENABLED, SOLAR_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
-            CLASSIC_GRAVITY_ENABLED, CLASSIC_EQUIPMENT_ENABLED,
+            CLASSIC_GRAVITY_ENABLED, CLASSIC_EQUIPMENT_ENABLED, LOW_GRAVITY_BOOTS,
             ENDGAME_LASER_DRILL, ENDGAME_LASER_PHYSICAL, ENDGAME_RAILGUN, ENDGAME_BLACK_HOLE_GENERATOR,
             ENDGAME_GRAVITY_FIELD, ENDGAME_SPACE_ELEVATOR,
             OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,

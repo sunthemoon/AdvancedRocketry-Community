@@ -1,6 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client.sky;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.sunthemoon.advancedrocketrycommunity.client.equipment.EarthbrightLight;
+import io.github.sunthemoon.advancedrocketrycommunity.client.equipment.SuitVisorClient;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import net.minecraft.client.Camera;
@@ -9,6 +11,7 @@ import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 /** Only registered under our two opt-in IDs; never replaces a global vanilla effect. */
 public final class PlanetaryDimensionEffects extends DimensionSpecialEffects {
@@ -53,7 +56,7 @@ public final class PlanetaryDimensionEffects extends DimensionSpecialEffects {
         }
         setupFog.run();
         return PlanetarySkyClient.render(selection, poses, projection, level.getSunAngle(partialTick),
-                level.getSkyFlashTime() - partialTick);
+                level.getSkyFlashTime() - partialTick, partialTick);
     }
 
     @Override public boolean renderClouds(ClientLevel level, int ticks, float partialTick, PoseStack poses,
@@ -68,5 +71,12 @@ public final class PlanetaryDimensionEffects extends DimensionSpecialEffects {
 
     @Override public boolean tickRain(ClientLevel level, int ticks, Camera camera) {
         return overridesSky() || fallback.tickRain(level, ticks, camera);
+    }
+
+    /** ADR-066 section 5.2: the Earthbright visor lifts the lightmap in the Space Level only, whatever the sky switch. */
+    @Override public void adjustLightmapColors(ClientLevel level, float partialTicks, float skyDarken,
+            float blockLightRedFlicker, float skyLight, int pixelX, int pixelY, Vector3f colors) {
+        fallback.adjustLightmapColors(level, partialTicks, skyDarken, blockLightRedFlicker, skyLight, pixelX, pixelY, colors);
+        if (SuitVisorClient.earthbright(level)) { EarthbrightLight.brighten(colors); }
     }
 }

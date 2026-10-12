@@ -110,6 +110,47 @@ final class StationWarpStateTest {
         assertEquals(0, confirmations.size());
     }
 
+    /** W07 review R1: a screen confirms only the exact quote it shows, and withdraws only that quote. */
+    @Test
+    void aScreenConfirmationTakesOnlyTheExactQuoteItShows() {
+        StationWarpConfirmations confirmations = new StationWarpConfirmations();
+        Object authority = new Object();
+        StationState station = station();
+        UUID actor = UUID.randomUUID();
+        WarpQuote shown = quote(station, actor);
+        WarpQuote other = quote(station, actor);
+        assertEquals(shown, other, "Two quotes of the same target are equal values");
+        assertTrue(confirmations.issue(shown, authority, 100));
+        assertTrue(confirmations.holds(actor, shown, 100));
+        assertFalse(confirmations.holds(actor, other, 100), "An equal quote is not the issued one");
+        assertFalse(confirmations.holds(actor, shown, 101 + StationLimits.WARP_CONFIRMATION_TICKS), "Expired");
+        assertFalse(confirmations.holds(actor, null, 100));
+        // The actor's newer confirmation (a command request) is not the screen's quote: a mismatch, consumed.
+        assertTrue(confirmations.issue(other, authority, 100));
+        assertFalse(confirmations.holds(actor, shown, 100));
+        assertEquals(StationWarpConfirmations.Status.MISMATCH,
+                confirmations.take(actor, station.stationId(), authority, 101, shown).status());
+        assertEquals(StationWarpConfirmations.Status.MISSING,
+                confirmations.take(actor, station.stationId(), authority, 101).status());
+        // The exact quote is ready once; the command path (no expected quote) still takes any.
+        assertTrue(confirmations.issue(shown, authority, 100));
+        var ready = confirmations.take(actor, station.stationId(), authority, 101, shown);
+        assertEquals(StationWarpConfirmations.Status.READY, ready.status());
+        assertTrue(ready.quote() == shown);
+        assertTrue(confirmations.issue(other, authority, 100));
+        assertEquals(StationWarpConfirmations.Status.READY,
+                confirmations.take(actor, station.stationId(), authority, 101).status());
+        // Withdrawing removes only the exact quote; another confirmation of the actor stays.
+        assertTrue(confirmations.issue(other, authority, 100));
+        assertFalse(confirmations.withdraw(actor, shown));
+        assertFalse(confirmations.withdraw(actor, null));
+        assertTrue(confirmations.holds(actor, other, 100));
+        assertTrue(confirmations.withdraw(actor, other));
+        assertFalse(confirmations.withdraw(actor, other), "Already withdrawn");
+        assertEquals(StationWarpConfirmations.Status.MISSING,
+                confirmations.take(actor, station.stationId(), authority, 101, other).status());
+    }
+
     @Test
     void countdownsAreOnePerStationBoundedAnnouncedAndCommittedInOrder() {
         StationWarpCountdowns countdowns = new StationWarpCountdowns();

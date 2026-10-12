@@ -35,6 +35,12 @@ public final class RocketRuntime {
         service = null;
     }
 
+    public static RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requestId) {
+        return service instanceof RocketManager manager ? manager.requestAdminPadFlight(rocket, stationId, pad, requestId)
+                : RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
+    }
+
     /** Server endpoint admission; an unavailable or unsupported lifecycle owner fails closed. */
     public static boolean resourceMutationAllowed(RocketEntity rocket) {
         return service instanceof RocketManager manager && manager.resourceMutationAllowed(rocket);
@@ -148,12 +154,18 @@ public final class RocketRuntime {
             TravelTarget target,
             UUID requestId
     ) {
+        requestFlightIntent(player, rocketEntityId, action, target, requestId, null);
+    }
+
+    public static void requestFlightIntent(ServerPlayer player, int rocketEntityId, RocketFlightAction action,
+            TravelTarget target, UUID requestId,
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
         RocketOperationService current = service;
         if (current == null) {
             unavailable(player);
             return;
         }
-        current.requestFlightIntent(player, rocketEntityId, action, target, requestId);
+        current.requestFlightIntent(player, rocketEntityId, action, target, requestId, pad);
     }
 
     public static void requestFlightIntent(

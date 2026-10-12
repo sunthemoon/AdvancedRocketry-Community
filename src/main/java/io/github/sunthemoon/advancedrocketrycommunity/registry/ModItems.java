@@ -216,6 +216,13 @@ public final class ModItems {
             new io.github.sunthemoon.advancedrocketrycommunity.machine.tank.PressurizedTankItem(
                     ModBlocks.PRESSURIZED_TANK.get(), new Item.Properties()));
     public static final RegistryObject<Item> STATION_LIGHT = blockItem("station_light", ModBlocks.STATION_LIGHT);
+    public static final RegistryObject<Item> WARP_CONTROLLER = blockItem("warp_controller", ModBlocks.WARP_CONTROLLER);
+    public static final RegistryObject<Item> STATION_GRAVITY_CONTROLLER = blockItem("station_gravity_controller",
+            ModBlocks.STATION_GRAVITY_CONTROLLER);
+    public static final RegistryObject<Item> STATION_ALTITUDE_CONTROLLER = blockItem("station_altitude_controller",
+            ModBlocks.STATION_ALTITUDE_CONTROLLER);
+    public static final RegistryObject<Item> STATION_ORIENTATION_CONTROLLER = blockItem(
+            "station_orientation_controller", ModBlocks.STATION_ORIENTATION_CONTROLLER);
     public static final RegistryObject<Item> CARBON_BRICK = ITEMS.register("carbon_brick", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> USER_INTERFACE = ITEMS.register("user_interface", () -> new Item(new Item.Properties()));
     public static final RegistryObject<Item> ITEM_IO_BOARD = ITEMS.register("item_io_board", () -> new Item(new Item.Properties()));
@@ -234,14 +241,22 @@ public final class ModItems {
     public static final RegistryObject<Item> FLUID_OUTPUT_HATCH = blockItem("fluid_output_hatch", ModBlocks.FLUID_OUTPUT_HATCH);
     public static final RegistryObject<Item> POWER_INPUT_PLUG = blockItem("power_input_plug", ModBlocks.POWER_INPUT_PLUG);
     public static final RegistryObject<Item> LATHE = blockItem("lathe", ModBlocks.LATHE);
+    public static final RegistryObject<Item> CRYSTALLIZER = blockItem("crystallizer", ModBlocks.CRYSTALLIZER);
+    public static final RegistryObject<Item> CHEMICAL_REACTOR = blockItem("chemical_reactor", ModBlocks.CHEMICAL_REACTOR);
+    public static final RegistryObject<Item> PRECISION_LASER_ETCHER = blockItem("precision_laser_etcher", ModBlocks.PRECISION_LASER_ETCHER);
+    public static final RegistryObject<Item> CENTRIFUGE = blockItem("centrifuge", ModBlocks.CENTRIFUGE);
     public static final RegistryObject<Item> ARC_FURNACE = blockItem("arc_furnace", ModBlocks.ARC_FURNACE);
     public static final RegistryObject<Item> CUTTING_MACHINE = blockItem("cutting_machine", ModBlocks.CUTTING_MACHINE);
     public static final RegistryObject<Item> BLAST_BRICK = blockItem("blast_brick", ModBlocks.BLAST_BRICK);
     public static final RegistryObject<Item> SAW_BLADE = blockItem("saw_blade", ModBlocks.SAW_BLADE);
     public static final RegistryObject<Item> IRON_SAW_BLADE = component("iron_saw_blade");
+    public static final RegistryObject<Item> QUARTZ_CRUCIBLE = blockItem("quartz_crucible", ModBlocks.QUARTZ_CRUCIBLE);
+    public static final RegistryObject<Item> QUARTZ_CRUCIBLE_SHELL = component("quartz_crucible_shell");
 
     private ModItems() {
     }
+
+    public static final RegistryObject<Item> LANDING_PAD = blockItem("landing_pad", ModBlocks.LANDING_PAD);
 
     private static RegistryObject<Item> component(String name) {
         return ITEMS.register(name, () -> new DevelopmentComponentItem(new Item.Properties()));

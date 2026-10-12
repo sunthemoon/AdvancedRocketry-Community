@@ -27,7 +27,12 @@ final class PlanetarySkyRenderer implements AutoCloseable {
     private VertexBuffer halo;
     private boolean failed;
 
-    boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle, double flash) {
+    /**
+     * {@code attitude} is the ADR-065 station attitude from {@link SkyMath#stationAttitude} or {@code null}
+     * outside a station context; {@code distance} sets the orbited body's apparent size.
+     */
+    boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle, double flash,
+                   double[] attitude, int distance) {
         RenderSystem.assertOnRenderThread();
         if (failed) {
             return false;
@@ -58,13 +63,19 @@ final class PlanetarySkyRenderer implements AutoCloseable {
             draw(sphere, view, projection);
             tint(SkyMath.flashColor(SkyMath.scaleColor(profile.fogColor(), 0.12 + 0.88 * daylight), flash), 1, 1);
             draw(horizon, view, projection);
-            var rotating = new Matrix4f(view).rotateY((float) (-Math.PI / 2)).rotateX(angle);
+            // ADR-065: one rigid station attitude turns the stars, the sun and the orbited body together, so
+            // their separations (and the ADR-047 clearance of the sun) never change.
+            var celestial = new Matrix4f(view);
+            if (attitude != null) {
+                celestial.rotateY((float) attitude[0]).rotateZ((float) attitude[1]).rotateX((float) attitude[2]);
+            }
+            var rotating = new Matrix4f(celestial).rotateY((float) (-Math.PI / 2)).rotateX(angle);
             tint(0xFFFFFF, 1, SkyMath.stars(profile, selection.pressure(), daylight));
             draw(stars, rotating, projection);
             if (selection.orbit().isPresent()) {
                 // ADR-047: below the horizon toward +X, clear of the sun; drawn before the sun and its halo.
-                float radius = (float) (100 * Math.tan(Math.toRadians(SkyMath.ORBITED_BODY_RADIUS_DEGREES)));
-                var body = new Matrix4f(view)
+                float radius = (float) (100 * Math.tan(Math.toRadians(SkyMath.orbitedBodyRadiusDegrees(distance))));
+                var body = new Matrix4f(celestial)
                         .rotateZ((float) Math.toRadians(SkyMath.ORBITED_BODY_ELEVATION_DEGREES - 90))
                         .scale(radius, 1, radius);
                 tint(selection.orbit().orElseThrow().color(), 1, 1);

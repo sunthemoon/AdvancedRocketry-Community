@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "advancedrocketrycommunity:block/chemical_reactor",
+    "side": "advancedrocketrycommunity:block/machine_casing",
+    "top": "advancedrocketrycommunity:block/machine_casing"
+  }
+}

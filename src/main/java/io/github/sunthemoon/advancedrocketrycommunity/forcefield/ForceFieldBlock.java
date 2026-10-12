@@ -23,6 +23,7 @@ public class ForceFieldBlock extends BaseEntityBlock implements DeferredRoomBoun
     @Override public BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new ForceFieldBlockEntity(pos, state); }
     @Override public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player,
             boolean harvest, FluidState fluid) {
+        if (level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector) { projector.takeWorldDrop(pos); }
         if (level instanceof ServerLevel server && !ForceFieldProtection.permitted(server, pos)) {
             if (!(level.getBlockEntity(pos) instanceof ForceFieldNativeBlockEntity entity)) { return false; }
             Optional<java.util.UUID> actor = player instanceof net.minecraft.server.level.ServerPlayer connected
@@ -40,7 +41,7 @@ public class ForceFieldBlock extends BaseEntityBlock implements DeferredRoomBoun
         return level instanceof Level world && allowed(world, pos) && super.canEntityDestroy(state, level, pos, entity);
     }
     @Override public void onBlockExploded(BlockState state, Level level, BlockPos pos, Explosion explosion) {
-        if (level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector) { projector.takeWorldDrop(); }
+        if (level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector) { projector.takeWorldDrop(pos); }
         if (level instanceof ServerLevel server && !ForceFieldProtection.permitted(server, pos)) {
             if (!(level.getBlockEntity(pos) instanceof ForceFieldNativeBlockEntity entity)
                     || !ForceFieldProtection.admitRemoval(server, entity, Optional.empty())
@@ -61,7 +62,7 @@ public class ForceFieldBlock extends BaseEntityBlock implements DeferredRoomBoun
     @Override public void onRemove(BlockState state, Level level, BlockPos pos, BlockState replacement, boolean moved) {
         if (!state.is(replacement.getBlock()) && level instanceof ServerLevel server
                 && level.getBlockEntity(pos) instanceof ForceFieldNativeBlockEntity entity) {
-            boolean drop = entity instanceof ForceFieldProjectorBlockEntity projector && projector.takeWorldDrop();
+            boolean drop = entity instanceof ForceFieldProjectorBlockEntity projector && projector.takeWorldDrop(pos);
             // Only the new, uncommitted projector in Forge's captured transaction may bypass destruction checks.
             if (entity instanceof ForceFieldProjectorBlockEntity projector && projector.rollbackPlacement()) {
                 super.onRemove(state, level, pos, replacement, moved);

@@ -13,6 +13,7 @@ import java.util.UUID;
 public final class RocketFlightSelection {
     private List<StationDestinationSummary> stations;
     private TravelTarget selectedTarget;
+    private io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference selectedPad;
     private int stationIndex;
     private boolean initialized;
 
@@ -51,7 +52,14 @@ public final class RocketFlightSelection {
         }
     }
 
+    public void initialize(RocketFlightPlanSnapshot planned, TravelTarget current) {
+        boolean first = !initialized;
+        initialize(planned.target(), current);
+        if (first) { selectedPad = planned.landingPad(); }
+    }
+
     public void select(RocketDestination destination) {
+        selectedPad = null;
         if (destination == RocketDestination.SPACE_STATION) {
             selectNextStation();
             return;
@@ -60,6 +68,7 @@ public final class RocketFlightSelection {
     }
 
     public void select(TravelTarget target) {
+        selectedPad = null;
         selectedTarget = target;
         updateStations(stations);
     }
@@ -78,6 +87,7 @@ public final class RocketFlightSelection {
     }
 
     public void selectNextStation() {
+        selectedPad = null;
         if (stations.isEmpty()) {
             return;
         }
@@ -125,7 +135,12 @@ public final class RocketFlightSelection {
             return activePlan;
         }
         TravelTarget target = selectedTarget != null ? selectedTarget : activePlan.target();
-        return target == null ? RocketFlightPlanSnapshot.empty() : new RocketFlightPlanSnapshot(target);
+        return target == null ? RocketFlightPlanSnapshot.empty() : new RocketFlightPlanSnapshot(target, selectedPad);
+    }
+
+    public void selectPad(UUID stationId, io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad) {
+        select(new TravelTarget.Station(stationId));
+        if (selectedTarget != null) { selectedPad = java.util.Objects.requireNonNull(pad); }
     }
 
     private static TravelTarget legacyCurrent(RocketDestination current) {

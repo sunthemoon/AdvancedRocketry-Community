@@ -45,7 +45,11 @@ public final class ArceJeiPlugin implements IModPlugin {
                 new SmallPlatePressJeiCategory(helper),
                 new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.LATHE, "lathe", ModItems.LATHE.get()),
                 new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.ARC_FURNACE, "arc_furnace", ModItems.ARC_FURNACE.get()),
-                new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.CUTTING, "cutting_machine", ModItems.CUTTING_MACHINE.get())
+                new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.CUTTING, "cutting_machine", ModItems.CUTTING_MACHINE.get()),
+                new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.CRYSTALLIZER, "crystallizer", ModItems.CRYSTALLIZER.get()),
+                new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.CHEMICAL_REACTOR, "chemical_reactor", ModItems.CHEMICAL_REACTOR.get()),
+                new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.PRECISION_LASER_ETCHER, "precision_laser_etcher", ModItems.PRECISION_LASER_ETCHER.get()),
+                new ClassicMachineJeiCategory(helper, ClassicMachineJeiCategory.CENTRIFUGE, "centrifuge", ModItems.CENTRIFUGE.get())
         );
     }
 
@@ -70,6 +74,10 @@ public final class ArceJeiPlugin implements IModPlugin {
         registerClassic(registration, level, ModRecipes.LATHE_TYPE.get(), ClassicMachineJeiCategory.LATHE);
         registerClassic(registration, level, ModRecipes.ARC_FURNACE_TYPE.get(), ClassicMachineJeiCategory.ARC_FURNACE);
         registerClassic(registration, level, ModRecipes.CUTTING_TYPE.get(), ClassicMachineJeiCategory.CUTTING);
+        registerClassic(registration, level, ModRecipes.CRYSTALLIZER_TYPE.get(), ClassicMachineJeiCategory.CRYSTALLIZER);
+        registerClassic(registration, level, ModRecipes.CHEMICAL_REACTOR_TYPE.get(), ClassicMachineJeiCategory.CHEMICAL_REACTOR);
+        registerClassic(registration, level, ModRecipes.PRECISION_LASER_ETCHER_TYPE.get(), ClassicMachineJeiCategory.PRECISION_LASER_ETCHER);
+        registerClassic(registration, level, ModRecipes.CENTRIFUGE_TYPE.get(), ClassicMachineJeiCategory.CENTRIFUGE);
         AdvancedRocketryCommunity.LOGGER.info(
                 "{} optional_compat=jei status=registered recipes={}",
                 BetaDiagnosticId.OPTIONAL_COMPATIBILITY.code(),
@@ -91,6 +99,10 @@ public final class ArceJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(ModItems.LATHE.get(), ClassicMachineJeiCategory.LATHE);
         registration.addRecipeCatalyst(ModItems.ARC_FURNACE.get(), ClassicMachineJeiCategory.ARC_FURNACE);
         registration.addRecipeCatalyst(ModItems.CUTTING_MACHINE.get(), ClassicMachineJeiCategory.CUTTING);
+        registration.addRecipeCatalyst(ModItems.CRYSTALLIZER.get(), ClassicMachineJeiCategory.CRYSTALLIZER);
+        registration.addRecipeCatalyst(ModItems.CHEMICAL_REACTOR.get(), ClassicMachineJeiCategory.CHEMICAL_REACTOR);
+        registration.addRecipeCatalyst(ModItems.PRECISION_LASER_ETCHER.get(), ClassicMachineJeiCategory.PRECISION_LASER_ETCHER);
+        registration.addRecipeCatalyst(ModItems.CENTRIFUGE.get(), ClassicMachineJeiCategory.CENTRIFUGE);
     }
 
     @Override

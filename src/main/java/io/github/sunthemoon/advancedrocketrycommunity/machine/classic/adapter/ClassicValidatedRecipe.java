@@ -31,6 +31,8 @@ public final class ClassicValidatedRecipe {
     private final List<ClassicFluidRow> fluidOutputs;
     private final int processingTicks;
     private final int energyPerTick;
+    private final List<ClassicChanceOutput> chanceOutputs;
+    private final boolean hasChanceList;
     private volatile Resolved resolved;
 
     ClassicValidatedRecipe(ResourceLocation id, String canonicalJson, List<ClassicItemInput> itemInputs,
@@ -43,11 +45,22 @@ public final class ClassicValidatedRecipe {
     ClassicValidatedRecipe(ResourceLocation id, String type, Boolean sawmill, String canonicalJson,
             List<ClassicItemInput> itemInputs, List<ClassicItemOutput> itemOutputs,
             List<ClassicFluidRow> fluidInputs, List<ClassicFluidRow> fluidOutputs, int processingTicks, int energyPerTick) {
+        this(id, type, sawmill, canonicalJson, itemInputs, itemOutputs, fluidInputs, fluidOutputs,
+                processingTicks, energyPerTick, null);
+    }
+
+    ClassicValidatedRecipe(ResourceLocation id, String type, Boolean sawmill, String canonicalJson,
+            List<ClassicItemInput> itemInputs, List<ClassicItemOutput> itemOutputs,
+            List<ClassicFluidRow> fluidInputs, List<ClassicFluidRow> fluidOutputs, int processingTicks, int energyPerTick,
+            List<ClassicChanceOutput> chanceOutputs) {
         this.id = ClassicValueChecks.id(id);
-        ClassicValueChecks.require(java.util.Set.of("advancedrocketrycommunity:lathe", "advancedrocketrycommunity:arc_furnace",
-                "advancedrocketrycommunity:cutting").contains(type)
+        ClassicValueChecks.require(ClassicRecipeCodec.TYPES.contains(type)
                 && (sawmill == null || type.equals("advancedrocketrycommunity:cutting")), "Recipe type/flags");
         this.type = type; this.sawmill = sawmill;
+        ClassicValueChecks.require(chanceOutputs == null || type.equals("advancedrocketrycommunity:centrifuging")
+                && chanceOutputs.size() <= 16, "Chance list type/bound");
+        this.hasChanceList = chanceOutputs != null;
+        this.chanceOutputs = chanceOutputs == null ? List.of() : List.copyOf(chanceOutputs);
         ClassicValueChecks.require(canonicalJson != null && canonicalJson.length() <= RecipeJsonSignature.MAX_BYTES
                 && canonicalJson.getBytes(StandardCharsets.UTF_8).length <= RecipeJsonSignature.MAX_BYTES,
                 "Recipe text bound");
@@ -76,6 +89,7 @@ public final class ClassicValidatedRecipe {
     public List<ClassicFluidRow> fluidOutputs() { return fluidOutputs; }
     public int processingTicks() { return processingTicks; }
     public int energyPerTick() { return energyPerTick; }
+    public List<ClassicChanceOutput> chanceOutputs() { return chanceOutputs; }
 
     private String canonicalRows() {
         JsonObject root = new JsonObject();
@@ -94,6 +108,14 @@ public final class ClassicValidatedRecipe {
         root.add("item_inputs", inputs); root.add("item_outputs", outputs);
         root.add("fluid_inputs", fluidRows(fluidInputs)); root.add("fluid_outputs", fluidRows(fluidOutputs));
         root.addProperty("processing_time", processingTicks); root.addProperty("energy_per_tick", energyPerTick);
+        if (hasChanceList) {
+            JsonArray chances = new JsonArray();
+            for (ClassicChanceOutput candidate : chanceOutputs) {
+                JsonObject row = new JsonObject(); row.addProperty("item", candidate.itemId().toString());
+                row.addProperty("count", candidate.count()); row.addProperty("weight", candidate.weight()); chances.add(row);
+            }
+            root.add("chance_outputs", chances);
+        }
         return RecipeJsonSignature.canonical(root);
     }
 

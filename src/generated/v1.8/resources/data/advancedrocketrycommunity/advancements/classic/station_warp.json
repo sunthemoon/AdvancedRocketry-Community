@@ -1,0 +1,32 @@
+{
+  "parent": "advancedrocketrycommunity:classic/warp_core",
+  "criteria": {
+    "event": {
+      "conditions": {
+        "event": "station_warp"
+      },
+      "trigger": "advancedrocketrycommunity:classic_event"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.station_warp.description"
+    },
+    "frame": "goal",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:station_deployment_kit"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.station_warp.title"
+    }
+  },
+  "requirements": [
+    [
+      "event"
+    ]
+  ],
+  "rewards": {}
+}

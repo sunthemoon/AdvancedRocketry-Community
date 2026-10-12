@@ -16,17 +16,26 @@ public record RocketFlightIntentPacket(
         RocketFlightAction action,
         int rocketEntityId,
         TravelTarget target,
-        UUID requestId
+        UUID requestId,
+        io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference landingPad
 ) {
     static final int MAX_ENCODED_BYTES = Byte.BYTES
             + 5
             + TravelTargetWireCodec.MAX_ENCODED_BYTES
-            + (Long.BYTES * 2);
+            + (Long.BYTES * 2)
+            + 1; // Longest body ID + absent pad exceeds a station UUID + present 25-byte pad.
+
+    public RocketFlightIntentPacket(RocketFlightAction action, int rocketEntityId, TravelTarget target, UUID requestId) {
+        this(action, rocketEntityId, target, requestId, null);
+    }
 
     public RocketFlightIntentPacket {
         Objects.requireNonNull(action, "action");
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(requestId, "requestId");
+        if (landingPad != null && !(target instanceof TravelTarget.Station)) {
+            throw new IllegalArgumentException("A named pad requires a station target");
+        }
         if (rocketEntityId < 0) {
             throw new IllegalArgumentException("Rocket entity id cannot be negative");
         }
@@ -37,6 +46,7 @@ public record RocketFlightIntentPacket(
         buffer.writeVarInt(rocketEntityId);
         TravelTargetWireCodec.encode(buffer, target);
         buffer.writeUUID(requestId);
+        io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference.writeOptional(buffer, landingPad);
     }
 
     public static int maximumEncodedBytes() {
@@ -57,11 +67,13 @@ public record RocketFlightIntentPacket(
         if (entityBytes != FriendlyByteBuf.getVarIntSize(entityId)) {
             throw new IllegalArgumentException("Rocket entity id uses a non-canonical VarInt encoding");
         }
+        if (entityId < 0) { throw new IllegalArgumentException("Rocket entity id cannot be negative"); }
         RocketFlightIntentPacket packet = new RocketFlightIntentPacket(
                 action,
                 entityId,
                 TravelTargetWireCodec.decode(buffer),
-                buffer.readUUID()
+                buffer.readUUID(),
+                io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference.readOptional(buffer)
         );
         if (buffer.isReadable()) {
             throw new IllegalArgumentException(
@@ -80,7 +92,8 @@ public record RocketFlightIntentPacket(
                     rocketEntityId,
                     action,
                     target,
-                    requestId
+                    requestId,
+                    landingPad
             ));
         }
         context.setPacketHandled(true);

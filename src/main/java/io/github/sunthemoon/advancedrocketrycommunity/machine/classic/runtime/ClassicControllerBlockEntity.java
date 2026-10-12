@@ -171,9 +171,15 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         var result = MultiblockLifecycleCoordinator.revalidate(checkpoint.structure(), pattern, server.dimension(),
                 worldPosition, world, new LoadedPartBindingGateway(access));
         if (result.controllerState().formationState() == MultiblockFormationState.FORMED) {
+            long generation = checkpoint.structure().generation();
             checkpoint = new ClassicCheckpoint(result.controllerState(), claims, resources, checkpoint.job(),
                     checkpoint.batchOrdinal(), checkpoint.lastTransaction());
             ready = true; lookupNeeded = true; reason = ClassicWait.INPUT;
+            // ADR-066 §6.2: a new binding generation is an actual formation; resuming the same one is not.
+            if (result.controllerState().generation() > generation) {
+                io.github.sunthemoon.advancedrocketrycommunity.progression.classic.ClassicAdvancementEvents
+                        .multiblockFormed(server, worldPosition);
+            }
         } else {
             // A rolled-back live binding can still have established a durable owner claim.
             claims.removeIf(position -> !checkpoint.claimedParts().contains(position)
@@ -220,9 +226,11 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     void lookupCompleted(Optional<ClassicMachineRecipe> selected) {
         if (!formed() || checkpoint.job().isPresent()) { return; }
         if (selected.isEmpty()) { if (reason != ClassicWait.LIMIT) { reason = ClassicWait.INPUT; } return; }
+        if (checkpoint.batchOrdinal() == Long.MAX_VALUE) { reason = ClassicWait.LIMIT; return; }
         var recipe = selected.orElseThrow();
         checkpoint = checkpoint.job(Optional.of(new ClassicCheckpoint.Job(recipe.getId(), recipe.rows().jsonSignature(),
-                recipe.rows().processingTicks(), recipe.rows().energyPerTick(), new ProcessProgress(recipe.getId().toString(), 0, 0))));
+                recipe.rows().processingTicks(), recipe.rows().energyPerTick(), new ProcessProgress(recipe.getId().toString(), 0, 0))
+                .start(checkpoint.batchOrdinal() + 1)));
         setChanged();
     }
     Set<ClassicBankKey> activeBanks() {
@@ -249,18 +257,40 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         if (!recipe.enabled()) { reason = ClassicWait.CONFIG_DISABLED; return; }
         if (process == null) { reason = ClassicWait.RECIPE_TAGS_INVALID; return; }
         if (level.hasNeighborSignal(worldPosition)) { reason = ClassicWait.REDSTONE; return; }
+        if (definition == ClassicMachineDefinition.CRYSTALLIZER
+                && !ClassicRuntime.manager((ServerLevel) level).gravityAllows(worldPosition)) { reason = ClassicWait.GRAVITY; return; }
+        if (!recipe.rows().chanceOutputs().isEmpty() && job.progress().progressTicks() >= job.duration() - 1 && job.outcome().isEmpty()) {
+            ClassicCheckpoint selecting = checkpoint; transaction = true;
+            try {
+                long ordinal = job.ordinal() > 0 ? job.ordinal() : Math.addExact(checkpoint.batchOrdinal(), 1);
+                var outputs = ClassicChanceSelection.choose(recipe.rows().chanceOutputs(),
+                        ClassicChanceSelection.seed(checkpoint.resources().machineId(), job.signature(), ordinal),
+                        id -> ClassicMachineRecipe.stackLimit(id, 1));
+                var selected = job.choose(new ClassicCheckpoint.Outcome(UUID.randomUUID(), outputs));
+                if (checkpoint != selecting || !formed() || !allPartsLoaded()) { return; }
+                ClassicCheckpoint chosen = selecting.job(Optional.of(selected));
+                ClassicCheckpointCodec.encode(chosen, definition.kind(), level.dimension().location(), worldPosition);
+                checkpoint = chosen; job = selected; setChanged();
+            } catch (IllegalArgumentException | ArithmeticException limit) { reason = ClassicWait.LIMIT; return; }
+            finally { transaction = false; }
+        }
         ClassicCheckpoint before = checkpoint; transaction = true;
         try {
-            var result = ClassicBatch.prepare(before.resources(), activeBanks(), recipe, process);
+            var result = ClassicBatch.prepare(before.resources(), activeBanks(), recipe, process,
+                    job.outcome().map(ClassicCheckpoint.Outcome::outputs).orElse(List.of()));
             if (result.plan().isEmpty()) { reason = result.reason(); return; }
             if (checkpoint != before || !formed() || !allPartsLoaded()) { return; }
             var plan = result.plan().orElseThrow();
             var progress = job.progress(); boolean completes = progress.progressTicks() == job.duration();
             boolean willComplete = progress.progressTicks() >= job.duration() - 1;
-            UUID transactionId = willComplete ? UUID.randomUUID() : null;
+            UUID transactionId = willComplete ? job.outcome().map(ClassicCheckpoint.Outcome::transaction).orElseGet(UUID::randomUUID) : null;
             if (willComplete && (before.batchOrdinal() == Long.MAX_VALUE
                     || !ClassicBatch.verifyCommit(plan, before.resources().machineId(), transactionId))) {
                 reason = ClassicWait.LIMIT; return;
+            }
+            if (willComplete) {
+                ClassicResourcesCodec.encode(plan.after());
+                ClassicCheckpointCodec.encode(before, definition.kind(), level.dimension().location(), worldPosition);
             }
             if (!completes) {
                 var tick = ProcessMachineLogic.tick(process, progress,

@@ -178,8 +178,9 @@ public final class RocketFlightMenu extends AbstractContainerMenu {
     public RocketFlightPlanSnapshot activePlan() {
         if (!viewer.level().isClientSide()) {
             return rocket.flightData().flatMap(flight -> flight.plan())
-                    .map(active -> new RocketFlightPlanSnapshot(active.destinationTarget()))
-                    .orElse(RocketFlightPlanSnapshot.empty());
+                    .map(active -> new RocketFlightPlanSnapshot(active.destinationTarget(), active.landingPad()))
+                    .orElseGet(() -> io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex
+                            .get(((net.minecraft.server.level.ServerLevel) viewer.level()).getServer()).choice(viewer.getUUID()));
         }
         return receivedPlan;
     }

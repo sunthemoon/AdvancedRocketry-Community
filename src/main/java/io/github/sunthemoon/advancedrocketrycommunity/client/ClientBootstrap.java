@@ -45,6 +45,11 @@ public final class ClientBootstrap {
         });
         event.enqueueWork(() -> MenuScreens.register(ModMenuTypes.COMBUSTION_GENERATOR.get(),
                 CombustionGeneratorScreen::new));
+        // ADR-065 C17b: one screen for the four station controllers.
+        event.enqueueWork(() -> java.util.List.of(ModMenuTypes.WARP_CONTROLLER, ModMenuTypes.STATION_GRAVITY_CONTROLLER,
+                ModMenuTypes.STATION_ALTITUDE_CONTROLLER, ModMenuTypes.STATION_ORIENTATION_CONTROLLER).forEach(type ->
+                MenuScreens.register(type.get(),
+                        io.github.sunthemoon.advancedrocketrycommunity.client.station.StationControllerScreen::new)));
         event.enqueueWork(() -> MenuScreens.register(ModMenuTypes.SOLAR_GENERATOR.get(), SolarGeneratorScreen::new));
         event.enqueueWork(() -> MenuScreens.register(
                 ModMenuTypes.ELECTROLYZER.get(),

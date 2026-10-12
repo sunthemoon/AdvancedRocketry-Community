@@ -1,0 +1,38 @@
+{
+  "parent": "advancedrocketrycommunity:classic/block_press",
+  "criteria": {
+    "has_inventory": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "advancedrocketrycommunity:arc_furnace"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "translate": "advancement.advancedrocketrycommunity.classic.arc_furnace.description"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "advancedrocketrycommunity:arc_furnace"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.advancedrocketrycommunity.classic.arc_furnace.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_inventory"
+    ]
+  ],
+  "rewards": {}
+}

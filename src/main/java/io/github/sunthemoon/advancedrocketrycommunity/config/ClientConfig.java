@@ -17,6 +17,21 @@ public final class ClientConfig {
                     "(ADR-063 section 6). An effect on this client only: nothing is struck or set on fire.")
             .define("effects.electricMushroomFlashes", true);
 
+    public static final ForgeConfigSpec.BooleanValue ATMOSPHERIC_NAUSEA = BUILDER
+            .comment("Show ARCE atmospheric fog and nausea visuals on this client (ADR-066 section 5.2). An anti-fog",
+                    "visor removes them while worn. Vanilla fog, potion effects and server hazards are unchanged.")
+            .define("effects.atmosphericNausea", true);
+
+    public static final ForgeConfigSpec.BooleanValue ADVANCED_VISUALS = BUILDER
+            .comment("Show expensive ARCE visual accents on this client, such as extra machine particles (ADR-066",
+                    "section 7.2). Disabling keeps essential status and arrival feedback; nothing on the server changes.")
+            .define("effects.advancedVisuals", true);
+
+    public static final ForgeConfigSpec.BooleanValue SKY_OVERWORLD_OVERRIDE = BUILDER
+            .comment("Allow ARCE sky rendering in the Overworld on this client. The Overworld currently has no ARCE",
+                    "sky additions, so both values show the vanilla sky.")
+            .define("sky.overworldOverride", true);
+
     public static final ForgeConfigSpec.BooleanValue SKY_PLANET_OVERRIDE = BUILDER
             .comment("Render the planetary sky and fog on this client. Disable to use the dimension fallback.")
             .define("sky.planetOverride", true);
@@ -43,6 +58,24 @@ public final class ClientConfig {
             .comment("Vertical anchor for the oxygen panel: START, CENTER or END.")
             .defineEnum("hud.oxygen.anchorY", Anchor.START);
 
+    public static final ForgeConfigSpec.ConfigValue<Number> HUD_HYDROGEN_X = hudOffset("hydrogen.x", -6);
+    public static final ForgeConfigSpec.ConfigValue<Number> HUD_HYDROGEN_Y = hudOffset("hydrogen.y", 62);
+    public static final ForgeConfigSpec.EnumValue<Anchor> HUD_HYDROGEN_ANCHOR_X = BUILDER
+            .comment("Horizontal anchor for the hydrogen panel: START, CENTER or END.")
+            .defineEnum("hud.hydrogen.anchorX", Anchor.END);
+    public static final ForgeConfigSpec.EnumValue<Anchor> HUD_HYDROGEN_ANCHOR_Y = BUILDER
+            .comment("Vertical anchor for the hydrogen panel: START, CENTER or END.")
+            .defineEnum("hud.hydrogen.anchorY", Anchor.START);
+
+    public static final ForgeConfigSpec.ConfigValue<Number> HUD_SUIT_X = hudOffset("suit.x", -6);
+    public static final ForgeConfigSpec.ConfigValue<Number> HUD_SUIT_Y = hudOffset("suit.y", 94);
+    public static final ForgeConfigSpec.EnumValue<Anchor> HUD_SUIT_ANCHOR_X = BUILDER
+            .comment("Horizontal anchor for the suit panel: START, CENTER or END.")
+            .defineEnum("hud.suit.anchorX", Anchor.END);
+    public static final ForgeConfigSpec.EnumValue<Anchor> HUD_SUIT_ANCHOR_Y = BUILDER
+            .comment("Vertical anchor for the suit panel: START, CENTER or END.")
+            .defineEnum("hud.suit.anchorY", Anchor.START);
+
     public static final ForgeConfigSpec SPEC = BUILDER.build();
 
     private ClientConfig() {
@@ -51,6 +84,20 @@ public final class ClientConfig {
     /** Whether electric mushrooms flash the sky; the default until the CLIENT config is loaded. */
     public static boolean electricMushroomFlashes() {
         return SPEC.isLoaded() ? ELECTRIC_MUSHROOM_FLASHES.get() : ELECTRIC_MUSHROOM_FLASHES.getDefault();
+    }
+
+    /** Whether ARCE atmospheric fog and nausea visuals show; the default until the CLIENT config is loaded. */
+    public static boolean atmosphericNausea() {
+        return SPEC.isLoaded() ? ATMOSPHERIC_NAUSEA.get() : ATMOSPHERIC_NAUSEA.getDefault();
+    }
+
+    /** Whether expensive visual accents show; the default until the CLIENT config is loaded. */
+    public static boolean advancedVisuals() {
+        return SPEC.isLoaded() ? ADVANCED_VISUALS.get() : ADVANCED_VISUALS.getDefault();
+    }
+
+    public static boolean overworldSkyOverride() {
+        return SPEC.isLoaded() ? SKY_OVERWORLD_OVERRIDE.get() : SKY_OVERWORLD_OVERRIDE.getDefault();
     }
 
     public static boolean planetSkyOverride() {
@@ -68,6 +115,14 @@ public final class ClientConfig {
 
     public static PanelSettings oxygenHudSettings() {
         return settings(HUD_OXYGEN_X, HUD_OXYGEN_Y, HUD_OXYGEN_ANCHOR_X, HUD_OXYGEN_ANCHOR_Y);
+    }
+
+    public static PanelSettings hydrogenHudSettings() {
+        return settings(HUD_HYDROGEN_X, HUD_HYDROGEN_Y, HUD_HYDROGEN_ANCHOR_X, HUD_HYDROGEN_ANCHOR_Y);
+    }
+
+    public static PanelSettings suitHudSettings() {
+        return settings(HUD_SUIT_X, HUD_SUIT_Y, HUD_SUIT_ANCHOR_X, HUD_SUIT_ANCHOR_Y);
     }
 
     private static ForgeConfigSpec.ConfigValue<Number> hudOffset(String path, int defaultValue) {

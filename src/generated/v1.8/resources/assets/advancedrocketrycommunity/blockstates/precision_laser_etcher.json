@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "advancedrocketrycommunity:block/precision_laser_etcher",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "advancedrocketrycommunity:block/precision_laser_etcher",
+      "y": 0
+    },
+    "facing=south": {
+      "model": "advancedrocketrycommunity:block/precision_laser_etcher",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "advancedrocketrycommunity:block/precision_laser_etcher",
+      "y": 270
+    }
+  }
+}

@@ -290,6 +290,7 @@ final class RocketTransferRecoveryService {
             }
             default -> throw new IllegalStateException("Unhandled transfer recovery action " + action);
         }
+        io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, record);
         Result result = result(status, record, action, sources, destinations);
         result.log(AdvancedRocketryCommunity.LOGGER,
                 destinations.size() == 1

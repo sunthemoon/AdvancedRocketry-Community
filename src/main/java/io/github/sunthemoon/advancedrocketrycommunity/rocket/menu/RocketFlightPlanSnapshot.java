@@ -6,7 +6,14 @@ import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
 import java.util.UUID;
 
 /** Atomic display target; never grants permission to cancel or launch a flight. */
-public record RocketFlightPlanSnapshot(TravelTarget target) {
+public record RocketFlightPlanSnapshot(TravelTarget target,
+        io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference landingPad) {
+    public RocketFlightPlanSnapshot(TravelTarget target) { this(target, null); }
+    public RocketFlightPlanSnapshot {
+        if (landingPad != null && !(target instanceof TravelTarget.Station)) {
+            throw new IllegalArgumentException("Pad selection requires a station");
+        }
+    }
     public RocketFlightPlanSnapshot(RocketDestination destination, UUID stationId) {
         this(legacyTarget(destination, stationId));
     }

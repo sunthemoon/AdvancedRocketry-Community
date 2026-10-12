@@ -2,9 +2,12 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight;
 
 import java.util.Objects;
 
-public record RocketFlightRequestResult(RocketFlightRequestCode code, long requiredFuel) {
+public record RocketFlightRequestResult(RocketFlightRequestCode code, long requiredFuel, String detailKey) {
+    public RocketFlightRequestResult(RocketFlightRequestCode code, long requiredFuel) { this(code, requiredFuel, null); }
     public RocketFlightRequestResult {
         Objects.requireNonNull(code, "code");
+        if (detailKey != null && (!detailKey.startsWith("message.advancedrocketrycommunity.pad.reason.")
+                || detailKey.length() > 128)) { throw new IllegalArgumentException("Unbounded pad refusal key"); }
         if (requiredFuel < 0L || requiredFuel > RocketFlightLimits.MAX_TRAVEL_FUEL) {
             throw new IllegalArgumentException("Flight request fuel quote is outside the fixed bound");
         }

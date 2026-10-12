@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.gravity;
 
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
 import io.github.sunthemoon.advancedrocketrycommunity.api.endgame.EndgameEffect;
+import io.github.sunthemoon.advancedrocketrycommunity.config.ClientConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.authority.EndgameAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDeviceBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.device.EndgameDevices;
@@ -131,7 +132,8 @@ public final class GravityFieldBlockEntity extends EndgameDeviceBlockEntity impl
     }
 
     public static void clientTick(Level level, BlockPos position, BlockState state, GravityFieldBlockEntity device) {
-        if (!device.active) {
+        // ADR-066 section 7.2: these sparkles are an accent that effects.advancedVisuals=false removes.
+        if (!device.active || !ClientConfig.advancedVisuals()) {
             return;
         }
         Player nearest = level.getNearestPlayer(position.getX() + 0.5D, position.getY() + 0.5D,

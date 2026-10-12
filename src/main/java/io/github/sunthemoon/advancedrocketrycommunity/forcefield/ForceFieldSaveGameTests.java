@@ -17,6 +17,69 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class ForceFieldSaveGameTests {
     @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void abandonedWorldDropThenNativePlayerBreakDropsExactlyOneProjector(GameTestHelper helper) {
+        try (var f = new ForceFieldGameTests.Fixture(helper, Direction.EAST)) {
+            var pos = f.identity.source();
+            var box = new net.minecraft.world.phys.AABB(pos).inflate(2);
+            var old = f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).stream()
+                    .map(net.minecraft.world.entity.item.ItemEntity::getUUID).collect(java.util.stream.Collectors.toSet());
+            try {
+                net.minecraft.world.level.block.Block.dropResources(f.source.getBlockState(), f.level, pos, f.source);
+                helper.assertTrue(f.level.getBlockEntity(pos) == f.source
+                        && f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).size() == old.size(),
+                        "Drop computation without removal changed the source or emitted stock");
+                var player = new net.minecraftforge.common.util.FakePlayer(f.level,
+                        new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "FieldBreaker"));
+                player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+                player.setPos(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND,
+                        new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND_PICKAXE));
+                helper.assertTrue(player.gameMode.destroyBlock(pos), "Native player break refused the owned projector");
+                var drops = f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).stream()
+                        .filter(entity -> !old.contains(entity.getUUID())).toList();
+                helper.assertTrue(f.level.getBlockState(pos).is(net.minecraft.world.level.block.Blocks.AIR)
+                        && drops.size() == 1 && drops.get(0).getItem().getCount() == 1
+                        && drops.get(0).getItem().is(io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems.FORCE_FIELD_PROJECTOR.get()),
+                        "Abandoned deferred drop plus native player loot duplicated or lost a projector");
+            } finally {
+                f.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).stream()
+                        .filter(entity -> !old.contains(entity.getUUID())).forEach(net.minecraft.world.entity.Entity::discard);
+            }
+        }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void deferredWorldDropIsOneShotAndBoundToTheSourcePosition(GameTestHelper helper) {
+        try (var f = new ForceFieldGameTests.Fixture(helper, Direction.EAST)) {
+            BlockPos pos = f.identity.source();
+            f.source.deferWorldDrop(pos);
+            helper.assertTrue(!f.source.takeWorldDrop(pos.east()) && !f.source.takeWorldDrop(pos),
+                    "A mismatched removal position consumed or retained a deferred drop");
+            f.source.deferWorldDrop(pos.east());
+            helper.assertTrue(!f.source.takeWorldDrop(pos), "A mismatched arming position granted a deferred drop");
+            var mutable = pos.mutable();
+            f.source.deferWorldDrop(mutable);
+            mutable.move(Direction.EAST);
+            helper.assertTrue(f.source.takeWorldDrop(pos) && !f.source.takeWorldDrop(pos),
+                    "A same-tick source drop was not exactly one-shot");
+        }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void deferredWorldDropExpiresAfterItsArmingTick(GameTestHelper helper) {
+        var f = new ForceFieldGameTests.Fixture(helper, Direction.EAST);
+        BlockPos pos = f.identity.source();
+        f.source.deferWorldDrop(pos);
+        long armedAt = f.level.getGameTime();
+        helper.runAfterDelay(1, () -> {
+            try {
+                helper.assertTrue(f.level.getGameTime() > armedAt && !f.source.takeWorldDrop(pos),
+                        "A previous-tick deferred drop remained usable");
+                helper.succeed();
+            } finally { f.close(); }
+        });
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
     public static void oversizedNativeReferenceRefusesWholeChunkEvenAfterOutgoingBeDisappears(GameTestHelper helper) {
         var chunk = helper.getLevel().getChunkAt(helper.absolutePos(BlockPos.ZERO));
         try {

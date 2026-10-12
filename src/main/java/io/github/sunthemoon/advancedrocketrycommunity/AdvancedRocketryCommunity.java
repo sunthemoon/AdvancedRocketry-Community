@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyCo
 import io.github.sunthemoon.advancedrocketrycommunity.station.orbit.StationSkyContextService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.network.CelestialSnapshotSynchronizer;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.ClassicControlsNetwork;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.data.PlanetaryDefinitionReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
@@ -180,6 +181,8 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(stationWarp::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
+        // ADR-065 §5.2.1: the station orbital clock advances once per logical-server END tick.
+        MinecraftForge.EVENT_BUS.addListener(stationManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(this::onSolarServerStarted);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onSolarServerStopping);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onSolarServerStopped);
@@ -201,6 +204,8 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(stationManager::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(new StationCommands(stationManager)::register);
         MinecraftForge.EVENT_BUS.addListener(new StationWarpCommands(stationWarp)::register);
+        MinecraftForge.EVENT_BUS.addListener(new io.github.sunthemoon.advancedrocketrycommunity.station.command
+                .StationOrbitCommands(stationManager.orbitalControls())::register);
         new RocketFlightNetwork();
         RocketVisualNetwork rocketVisualNetwork = new RocketVisualNetwork();
         RocketVisualSynchronizer rocketVisualSynchronizer = new RocketVisualSynchronizer(rocketVisualNetwork);
@@ -223,7 +228,10 @@ public final class AdvancedRocketryCommunity {
                 celestialNetwork
         );
         MinecraftForge.EVENT_BUS.addListener(snapshotSynchronizer::onDatapackSync);
-        StationSkyContextService skyContexts = new StationSkyContextService(celestialNetwork::sendSkyContext);
+        // ADR-065 §11.1: the server alone chooses the sky kind, SINGULARITY only from an ADR-057 profile.
+        StationSkyContextService skyContexts = new StationSkyContextService(celestialNetwork::sendSkyContext,
+                StationSkyContextService.kinds(celestialCatalogs::current, (body, catalog) -> blackHoleData.current()
+                        .flatMap(data -> data.at(body, catalog)).isPresent()));
         StationSkyContextRuntime.install(skyContexts);
         MinecraftForge.EVENT_BUS.addListener(skyContexts::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(skyContexts::onPlayerChangedDimension);
@@ -237,6 +245,8 @@ public final class AdvancedRocketryCommunity {
         );
         SatelliteRuntime.install(satelliteManager);
         SatelliteNetwork.install(new SatelliteNetwork());
+        // ADR-065 section 11.1: the C17 control intents and views, and the C17c beacon marker codec.
+        ClassicControlsNetwork.install(new ClassicControlsNetwork());
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerStarted);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(satelliteManager::onPlayerLoggedOut);

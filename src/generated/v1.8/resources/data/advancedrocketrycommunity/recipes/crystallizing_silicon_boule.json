@@ -1,0 +1,28 @@
+{
+  "type": "advancedrocketrycommunity:crystallizing",
+  "energy_per_tick": 20,
+  "fluid_inputs": [],
+  "fluid_outputs": [],
+  "item_inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:ingots/silicon"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:nuggets/silicon"
+      }
+    }
+  ],
+  "item_outputs": [
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:silicon_boule"
+    }
+  ],
+  "processing_time": 300,
+  "schema_version": 1
+}

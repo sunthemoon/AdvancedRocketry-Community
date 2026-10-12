@@ -28,16 +28,21 @@ public final class V180LanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        V180LandingPadData.language(chinese).forEach(this::add);
         V180PumpLanguage.translations(chinese).forEach(this::add);
         V180ClassicMachineData.language(chinese).forEach(this::add);
         V180ArcCuttingData.language(chinese).forEach(this::add);
+        V180C16cMachineData.language(chinese).forEach(this::add);
         V180RecipeMenuLanguage.translations(chinese).forEach(this::add);
         V180ClassicAdvancementLanguage.translations(chinese).forEach(this::add);
+        V180ClassicMilestoneLanguage.translations(chinese).forEach(this::add);
         V180AtmosphereAnalyzerLanguage.translations(chinese).forEach(this::add);
         V180SealDetectorLanguage.translations(chinese).forEach(this::add);
         V180JackhammerLanguage.translations(chinese).forEach(this::add);
         V180EquipmentData.language(chinese).forEach(this::add);
+        V180MotionLanguage.translations(chinese).forEach(this::add);
         V180StationLightLanguage.translations(chinese).forEach(this::add);
+        V180StationControlData.language(chinese).forEach(this::add);
         V180ThermiteLanguage.translations(chinese).forEach(this::add);
         V180CraftingComponentData.language(chinese).forEach(this::add);
         V180IoBoardData.language(chinese).forEach(this::add);
@@ -47,6 +52,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180SolarLanguage.entries(chinese).forEach(this::add);
         V180AirlockData.language(chinese).forEach(this::add);
         V180PropulsionLanguage.entries(chinese).forEach(this::add);
+        V180PresentationLanguage.translations(chinese).forEach(this::add);
 
         add("block." + NS + ".force_field_projector", chinese ? "力场投影器" : "Force Field Projector");
         add("block." + NS + ".force_field", chinese ? "力场" : "Force Field");
