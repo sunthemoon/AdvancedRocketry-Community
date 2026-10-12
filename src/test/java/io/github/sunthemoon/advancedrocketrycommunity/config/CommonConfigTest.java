@@ -54,7 +54,7 @@ class CommonConfigTest {
         assertSame(CommonConfig.SPACE_SUIT_O2_BUFFER, CommonConfig.SPEC.getValues().get("OXYGEN.spaceSuitO2Buffer"));
         assertNotNull(CommonConfig.SPEC.getValues().get("machines.sawmillVanillaWood"));
         assertSame(CommonConfig.ROCKET.thrustMultiplier, CommonConfig.SPEC.getValues().get("ROCKET.thrustMultiplier"));
-        assertEquals(87, countValues(CommonConfig.SPEC.getValues()));
+        assertEquals(88, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test

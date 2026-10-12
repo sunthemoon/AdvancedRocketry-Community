@@ -1,0 +1,40 @@
+{
+  "type": "advancedrocketrycommunity:laser_etching",
+  "energy_per_tick": 600,
+  "fluid_inputs": [],
+  "fluid_outputs": [],
+  "item_inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:plates/gold"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "minecraft:redstone_block"
+      }
+    },
+    {
+      "count": 4,
+      "ingredient": {
+        "item": "advancedrocketrycommunity:silicon_wafer"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "advancedrocketrycommunity:laser_lens"
+      }
+    }
+  ],
+  "item_outputs": [
+    {
+      "count": 2,
+      "item": "advancedrocketrycommunity:advanced_circuit_plate"
+    }
+  ],
+  "processing_time": 1200,
+  "schema_version": 1
+}

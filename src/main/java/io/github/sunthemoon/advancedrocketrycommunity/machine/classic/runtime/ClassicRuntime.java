@@ -50,6 +50,10 @@ public final class ClassicRuntime {
     public static ClassicMachineManager manager(ServerLevel level) {
         return level.getCapability(MANAGER).orElseThrow(() -> new IllegalStateException("Classic Level runtime unavailable"));
     }
+    @SubscribeEvent public static void environments(io.github.sunthemoon.advancedrocketrycommunity.api.environment.ServerEnvironmentReadyEvent event) {
+        var server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server != null) { server.getAllLevels().forEach(level -> manager(level).environments(event.queries())); }
+    }
     static void observedUnsafeRoot(ServerLevel level, BlockPos position) {
         GuardedChunkSaves.recordObservedDenial(level, new net.minecraft.world.level.ChunkPos(position),
                 "Classic machine root requires backup and offline repair");

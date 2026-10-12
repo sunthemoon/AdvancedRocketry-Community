@@ -319,6 +319,16 @@ public final class CommonConfig {
             .comment("Allow pump source draining and fluid export; disabling retains resources and owner.")
             .define("machines.pumpEnabled", true);
 
+    public static final ForgeConfigSpec.DoubleValue CRYSTALLIZER_MAXIMUM_GRAVITY = BUILDER
+            .comment("Maximum controller body or station gravity for crystallizing; zero disables the limit.")
+            .defineInRange("machines.crystallizerMaximumGravity", 0.0, 0.0, 10.0);
+
+    public static double crystallizerMaximumGravity() {
+        Double override = SwitchOverrides.crystallizerGravity();
+        if (override != null) { return override; }
+        return SPEC.isLoaded() ? CRYSTALLIZER_MAXIMUM_GRAVITY.get() : CRYSTALLIZER_MAXIMUM_GRAVITY.getDefault();
+    }
+
     public static final ForgeConfigSpec.BooleanValue CLASSIC_DEVICES_ENABLED = BUILDER
             .comment("Allow classic life-support instruments; disabling retains their items and recipes.")
             .define("lifeSupport.classicDevicesEnabled", true);

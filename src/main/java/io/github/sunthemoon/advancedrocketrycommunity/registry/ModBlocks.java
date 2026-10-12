@@ -175,6 +175,25 @@ public final class ModBlocks {
     public static final RegistryObject<Block> BLAST_BRICK = BLOCKS.register("blast_brick", () -> new Block(
             BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()));
     public static final RegistryObject<Block> SAW_BLADE = metalBlock("saw_blade");
+    public static final RegistryObject<ClassicControllerBlock> CRYSTALLIZER = BLOCKS.register("crystallizer", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(ModBlockEntities.CRYSTALLIZER.get(),
+                            position, state, ClassicMachineDefinition.CRYSTALLIZER)));
+    public static final RegistryObject<ClassicControllerBlock> CHEMICAL_REACTOR = BLOCKS.register("chemical_reactor", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(ModBlockEntities.CHEMICAL_REACTOR.get(),
+                            position, state, ClassicMachineDefinition.CHEMICAL_REACTOR)));
+    public static final RegistryObject<ClassicControllerBlock> PRECISION_LASER_ETCHER = BLOCKS.register("precision_laser_etcher", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(ModBlockEntities.PRECISION_LASER_ETCHER.get(),
+                            position, state, ClassicMachineDefinition.PRECISION_LASER_ETCHER)));
+    public static final RegistryObject<ClassicControllerBlock> CENTRIFUGE = BLOCKS.register("centrifuge", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new ClassicControllerBlockEntity(ModBlockEntities.CENTRIFUGE.get(),
+                            position, state, ClassicMachineDefinition.CENTRIFUGE)));
+
+    public static final RegistryObject<Block> QUARTZ_CRUCIBLE = BLOCKS.register("quartz_crucible", () -> new Block(
+            BlockBehaviour.Properties.of().strength(3.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops()));
 
     private static RegistryObject<ClassicHatchBlock> classicHatch(ClassicHatchKind kind) {
         return BLOCKS.register(kind.blockId().getPath(), () -> new ClassicHatchBlock(
