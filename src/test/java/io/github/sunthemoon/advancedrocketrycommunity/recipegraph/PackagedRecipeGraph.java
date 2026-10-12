@@ -162,7 +162,10 @@ final class PackagedRecipeGraph {
                     outputs.add(result(json.get("result")));
                 }
                 case "advancedrocketrycommunity:small_plate_press" -> {
+                    // ADR-063 section 3: the press works a block that rests on obsidian, on a redstone pulse.
                     slots.add(List.of(id("small_plate_press")));
+                    slots.add(List.of("minecraft:obsidian"));
+                    slots.add(List.of("minecraft:lever", "minecraft:redstone_block", "minecraft:redstone_torch"));
                     slots.add(ingredient(json.get("ingredient"), recipe));
                     outputs.add(result(json.get("result")));
                 }
