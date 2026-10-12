@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-12 21:20) |
+| Slice | Scope | Pipeline state (2026-10-12 21:55) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -37,16 +37,19 @@ give their SHA-256 values.
 | [W09](TASK-W09-PACED-ROCKET-FIXTURES.md) | Paced entity readiness for the rocket fixtures (test code only) | **Merged** `487da4e6` (hosted run 38217303450; Root review: no assertion or timeout lost) |
 | [W04G](TASK-W04G-FOLLOWUPS.md) | Force field N1–N3 | **Merged** `f557e5c0` (hosted run 38220027274; re-review MERGE-WITH-FOLLOWUP). Optional N4–N6 stay open |
 | [W10](TASK-W10-C16C-MACHINES.md) | C16c crystallizer, chemical reactor, laser etcher, centrifuge | **Merged** `7324a7dd` (hosted run 38224855115; review MERGE-WITH-FOLLOWUP, open Low W10-R1). All seven classic machines are now on the kernel |
-| [W11a](TASK-W11A-D3-ESCROW-DESIGN.md) | D3-A escrow coordinator design (design only) | Round 1 `2c2abb47`. Independent review (Codex) **REDESIGN** (REVIEW.md SHA-256 `1cfcbb8f…`): F1 and F2 Critical (the endpoint proof after a failed vanilla write; `accept-current` releases an unproved credit), F3 and F4 High (recovery ignores floors; floors are not reserved), F5 to F7 Medium, F8 Low. Root accepted all eight and split W11b into W11b1 to W11b3. Round 2 ([TASK-W11A2](TASK-W11A2-D3-REDESIGN.md)) delivered by Codex: `a411454c` and `9caa0560`. Independent round-2 review (Claude) running since 21:18 |
+| [W11a](TASK-W11A-D3-ESCROW-DESIGN.md) | D3-A escrow coordinator design (design only) | **Design merged** `c9514352`. Round 1 drew REDESIGN (Codex review, SHA-256 `1cfcbb8f…`, F1 to F8 accepted). Round 2 ([TASK-W11A2](TASK-W11A2-D3-REDESIGN.md), Codex) drew **APPROVE-WITH-CHANGES** (Claude review, SHA-256 `e54fd579…`): W11b1 applies C1 to C6; W11b2 needs a design note closing P1 to P5 and its own review first |
 | [W12](TASK-W12-ADVANCEMENTS.md) | C18c classic advancements and reachability guide | **Merged** `667fa40c` (hosted run 38229336877; Root review). Follow-ups: model the machine recipe types in `PackagedRecipeGraph` and restore its strict failure; crystallizer and dilithium advancements; the world-first milestones after rocket journal schema 3 (W11) |
 | Root fix | Cutting machine model pointed at a missing `machine_casing` texture (found by W08's `validate_repository.py` run) | **Fixed** `0596d124` |
 | [W13](TASK-W13-LANDING-PADS.md) | C17b landing pads as named flight targets | **Merged** `19da6240` (hosted run 38248887802; W13F re-review MERGE-WITH-FOLLOWUP). Follow-ups: N1 loaded-only discovery residual; N2 three weak GameTest assertions; N3 station-wide refusal diagnostics; the legacy selector's R1 pattern |
 | [W14](TASK-W14-LIFE-SUPPORT-DEVICES.md) | C18a CO2 scrubber, cartridges, seals (the gas charger waits for W11) | **Merged** `a859d2f4` (hosted run 38249148243; W14F re-review MERGE-WITH-FOLLOWUP). Follow-ups: L1 an empty orphaned association leaves an unbreakable facade; L2 (pre-existing) a facade bound to a vanished generation; L3 a record sentence. The gas charger waits for W11b3 |
 | [W16](TASK-W16-PRESENTATION.md) | C18d HUD, client configuration, sounds | **Merged** `6a20a674` (hosted run 38240401114; Root review). Follow-up: fold the `advancedrocketrycommunity_v180` sound namespace into the main namespace |
 | [W15](TASK-W15-RECIPE-GRAPH-MACHINES.md) | C16d: machine recipe types in `PackagedRecipeGraph`, strict failure restored, crystallizer and dilithium advancements | **Merged** `f5038f2f` (hosted run 38239083487; Root audit: every changed assertion is stricter). The graph reports 18 acquisition gaps, which go to W19 |
-| [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Design `5d522973`. The Claude implementer stopped at a usage limit; Codex continues from the worktree state since 20:21 |
+| [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Delivered `d9cb2467` (Codex finished the Claude start: 2,503 unit tests, 791 GameTests, log check clean). Independent persistence review (Claude) running since 21:47 |
 | [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | Implementer (Claude) running since 20:44 |
-| [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps | Implementer (Codex) running since 21:17 |
+| [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps | Stopped on the dust question (`053fae93`). [Root decision 01](TASK-W19-ROOT-DECISION-01.md): the five ore-less dusts are optional cross-mod inputs (ADR-063 §1 and §2; the 1.12.2 baseline); the graph gaps go ahead. Resumed (Codex) since 21:33 |
+| [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | Implementer (Codex) running since 21:46 |
+| Root fix | Mixin refmap lost on a Gradle build-cache hit (W19's `MixinPackagingTest` failure); a release jar could ship without the ADR-073 refmap | `798a2465`: the refmaps and mappings are declared `compileJava` outputs |
+| Root incident | C: filled to 0 GB: a W16 worker's background bare `python` REPL wrote 24.9 GB | Cleaned 21:40; WORKER-RULES now forbids interactive or unbounded background commands |
 
 The shared branch `a859d2f4` holds every merge above. Hosted run 38251946851 passed at `a859d2f4`. Hosted run 38206390869 passed at
 `ebf4c07b`, before the force field merge. Run 38208930066 passed at `17fb7e15`; run 38219141393 checks `487da4e6`.
@@ -55,6 +58,7 @@ The shared branch `a859d2f4` holds every merge above. Hosted run 38251946851 pas
 
 | Task | Scope | Dispatch when |
 |---|---|---|
+| W11b2 design note | Close P1 to P5 of the round-2 review (checked journal state, fenced-record exit, assembly recovery fence, guard layers, Lows), then one read-only review | Next free slot |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
