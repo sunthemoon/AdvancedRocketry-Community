@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestAssertException;
@@ -26,7 +27,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -149,15 +152,29 @@ final class BeaconGameTestFixture implements AutoCloseable {
     PlanetaryBeaconBlockEntity place(ServerPlayer owner, BlockPos at, Optional<String> name) {
         ItemStack stack = new ItemStack(ModItems.PLANETARY_BEACON.get());
         name.ifPresent(value -> stack.setHoverName(Component.literal(value)));
-        owner.setYRot(0.0F);
-        InteractionResult result = use(owner, at, stack);
-        owner.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        return placeStack(owner, at, stack);
+    }
+
+    /**
+     * Places a beacon item stack: used by {@code placer} through the native game-mode path, or, without a placer, as a
+     * block-placing dispenser does. A placer faces south, so the beacon faces north.
+     */
+    PlanetaryBeaconBlockEntity placeStack(@Nullable ServerPlayer placer, BlockPos at, ItemStack stack) {
+        InteractionResult result;
+        if (placer == null) {
+            result = ((BlockItem) stack.getItem()).place(new BlockPlaceContext(level, null, InteractionHand.MAIN_HAND,
+                    stack, new BlockHitResult(Vec3.atCenterOf(at), Direction.UP, at, false)));
+        } else {
+            placer.setYRot(0.0F);
+            result = use(placer, at, stack);
+            placer.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        }
         controllers.add(at.immutable());
         helper.assertTrue(result.consumesAction(), "Placing the beacon was refused: " + result);
         BlockState state = level.getBlockState(at);
-        helper.assertTrue(state.is(ModBlocks.PLANETARY_BEACON.get())
-                && state.getValue(io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock.FACING)
-                == Direction.NORTH, "The beacon was not placed facing north: " + state);
+        helper.assertTrue(state.is(ModBlocks.PLANETARY_BEACON.get()) && (placer == null
+                || state.getValue(io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock.FACING)
+                == Direction.NORTH), "The beacon was not placed facing north: " + state);
         return (PlanetaryBeaconBlockEntity) level.getBlockEntity(at);
     }
 

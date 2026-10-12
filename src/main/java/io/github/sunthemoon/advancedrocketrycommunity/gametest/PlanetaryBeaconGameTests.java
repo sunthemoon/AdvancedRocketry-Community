@@ -1,11 +1,13 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.BeaconStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.finder.BeaconFinderService;
 import io.github.sunthemoon.advancedrocketrycommunity.beacon.model.BeaconRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.beacon.persistence.BeaconStateCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.classiccontrol.network.BeaconMarkerSnapshotPacket;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.ArmorEquipment;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
@@ -19,15 +21,19 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -137,6 +143,76 @@ public final class PlanetaryBeaconGameTests {
                         fixture.succeed();
                     });
                 });
+            });
+        } catch (RuntimeException | Error failure) {
+            fixture.close();
+            throw failure;
+        }
+    }
+
+    /** A beacon item carrying a {@code BlockEntityTag} that names another identity, owner, name, switch and generation. */
+    private static ItemStack forgedBeacon(CompoundTag forged) {
+        ItemStack stack = new ItemStack(ModItems.PLANETARY_BEACON.get());
+        CompoundTag blockEntity = new CompoundTag();
+        blockEntity.put(BeaconStateCodec.KEY, forged.copy());
+        stack.getOrCreateTag().put(BlockItem.BLOCK_ENTITY_TAG, blockEntity);
+        return stack;
+    }
+
+    /** A new identity, no name, switched on and never formed: nothing of the forged root was loaded. */
+    private static boolean fresh(PlanetaryBeaconBlockEntity beacon, UUID forgedId) {
+        return beacon.beaconId().filter(id -> !id.equals(forgedId)).isPresent() && beacon.name().isEmpty()
+                && beacon.enabled() && beacon.generation() == 0;
+    }
+
+    @GameTest(template = "empty", batch = "beacon_item_nbt", timeoutTicks = 100)
+    public static void itemNbtWithoutOperatorRightsCannotForgeTheIdentityOrOwner(GameTestHelper helper) {
+        BeaconGameTestFixture fixture = new BeaconGameTestFixture(helper);
+        try {
+            BlockPos at = fixture.controllerAt(210);
+            BlockPos standing = fixture.standingBefore(at);
+            ServerPlayer builder = fixture.join("nbtBuilder", standing);
+            ServerPlayer operator = fixture.joinOperator("nbtOperator", standing);
+            UUID victim = UUID.randomUUID();
+            UUID forgedId = UUID.randomUUID();
+            CompoundTag forged = BeaconStateCodec.encode(new BeaconStateCodec.State(forgedId, Optional.of(victim),
+                    "Free diamonds", false, 7));
+            helper.assertTrue(BeaconStateCodec.decode(forged).owner().equals(Optional.of(victim)),
+                    "The forged root is not a valid beacon root");
+
+            // A creative player without operator rights: the placer owns a fresh beacon.
+            builder.gameMode.changeGameModeForPlayer(GameType.CREATIVE);
+            helper.assertTrue(builder.getAbilities().instabuild && !builder.hasPermissions(2),
+                    "The builder is not a creative non-operator");
+            PlanetaryBeaconBlockEntity built = fixture.placeStack(builder, at, forgedBeacon(forged));
+            helper.assertTrue(built.onlyOpCanSetNbt(), "The beacon accepts non-operator item NBT");
+            helper.assertTrue(fresh(built, forgedId) && built.owner().equals(Optional.of(builder.getUUID())),
+                    "A non-operator's item NBT reached the beacon: " + built.saveWithoutMetadata());
+
+            // A creative fake player and a placement without any player: a fresh beacon with no owner.
+            FakePlayer fake = new FakePlayer(fixture.level, new GameProfile(UUID.randomUUID(), "nbtFakePlacer"));
+            fake.getAbilities().instabuild = true;
+            PlanetaryBeaconBlockEntity faked = fixture.placeStack(fake, at.east(3), forgedBeacon(forged));
+            PlanetaryBeaconBlockEntity dispensed = fixture.placeStack(null, at.east(6), forgedBeacon(forged));
+            for (PlanetaryBeaconBlockEntity beacon : List.of(faked, dispensed)) {
+                helper.assertTrue(fresh(beacon, forgedId) && beacon.owner().isEmpty(),
+                        "An unowned placement loaded the forged root: " + beacon.saveWithoutMetadata());
+            }
+
+            // The same item placed by a creative operator does load it (the owner is still the placer).
+            operator.gameMode.changeGameModeForPlayer(GameType.CREATIVE);
+            PlanetaryBeaconBlockEntity loaded = fixture.placeStack(operator, at.east(9), forgedBeacon(forged));
+            helper.assertTrue(loaded.beaconId().equals(Optional.of(forgedId)) && !loaded.enabled()
+                    && loaded.generation() == 7 && loaded.owner().equals(Optional.of(operator.getUUID())),
+                    "A creative operator's item NBT was not loaded: " + loaded.saveWithoutMetadata());
+
+            fixture.await(40, "the unowned beacons to report no owner", () -> faked.status() == BeaconStatus.NO_OWNER
+                    && dispensed.status() == BeaconStatus.NO_OWNER, () -> {
+                helper.assertTrue(fixture.index().ownedBy(victim).isEmpty(), "The forged owner holds a record");
+                helper.assertTrue(fixture.index().get(faked.beaconId().orElseThrow()).isEmpty()
+                        && fixture.index().get(dispensed.beaconId().orElseThrow()).isEmpty(),
+                        "An unowned beacon registered");
+                fixture.succeed();
             });
         } catch (RuntimeException | Error failure) {
             fixture.close();

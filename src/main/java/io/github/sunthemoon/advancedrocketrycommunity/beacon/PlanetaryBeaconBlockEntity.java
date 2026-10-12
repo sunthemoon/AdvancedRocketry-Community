@@ -223,6 +223,12 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity {
         return state.generation();
     }
 
+    /** Item NBT cannot forge the identity or owner: only a creative operator's {@code BlockEntityTag} is loaded. */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
