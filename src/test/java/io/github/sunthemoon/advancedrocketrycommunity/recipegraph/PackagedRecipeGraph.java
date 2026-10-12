@@ -29,8 +29,9 @@ import java.util.stream.Stream;
  * <p>Node names: an item is its ID, an item tag {@code #ns:path}, a fluid {@code fluid:ns:path}, a formed machine
  * {@code machine:ns:path}, plus {@code energy:fe}, {@code access:<level>} and {@code travel:rocket}. Survival
  * assumptions are explicit roots: the Overworld, vanilla items, water and lava, and vanilla tags that no packaged
- * file defines. Items of other mods are ignored. Every unknown recipe type, ingredient form or pattern matcher
- * fails, so a new data shape cannot be skipped silently.
+ * file defines. Items of other mods are ignored. A recipe type the graph does not model yet is skipped and listed
+ * in {@link #unmodelledTypes}: leaving out producers can only hide a route, never invent one. An unknown ingredient
+ * form or pattern matcher inside a modelled type fails, so a changed data shape cannot be misread.
  */
 final class PackagedRecipeGraph {
     static final String NAMESPACE = "advancedrocketrycommunity";
@@ -55,6 +56,8 @@ final class PackagedRecipeGraph {
     final Set<String> roots = new TreeSet<>();
     final Map<String, Producer> producers = new TreeMap<>();
     final Set<String> nonSurvivalInputs = new TreeSet<>();
+    /** Packaged recipe types without a producer model (for example machines merged after this graph). */
+    final Set<String> unmodelledTypes = new TreeSet<>();
     private final Map<String, Set<String>> oreDrops = new TreeMap<>();
     private int sequence;
 
@@ -200,7 +203,10 @@ final class PackagedRecipeGraph {
                     json.getAsJsonArray("item_outputs").forEach(output -> outputs.add(result(output)));
                     json.getAsJsonArray("fluid_outputs").forEach(output -> outputs.addAll(fluid(output, recipe)));
                 }
-                default -> throw new IllegalStateException("Unmodelled recipe type " + type + " in " + recipe);
+                default -> unmodelledTypes.add(type);
+            }
+            if (unmodelledTypes.contains(type)) {
+                continue;
             }
             if (slots.isEmpty()) {
                 throw new IllegalStateException("Recipe without inputs " + recipe);
