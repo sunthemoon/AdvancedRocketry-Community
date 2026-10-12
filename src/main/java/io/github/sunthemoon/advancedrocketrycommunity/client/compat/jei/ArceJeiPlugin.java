@@ -55,6 +55,11 @@ public final class ArceJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
+        registration.addIngredientInfo(List.of(new net.minecraft.world.item.ItemStack(ModItems.SOLAR_ARRAY.get()),
+                        new net.minecraft.world.item.ItemStack(ModItems.SOLAR_ARRAY_PANEL.get()),
+                        new net.minecraft.world.item.ItemStack(ModItems.POWER_OUTPUT_PLUG.get())),
+                mezz.jei.api.constants.VanillaTypes.ITEM_STACK,
+                net.minecraft.network.chat.Component.translatable("jei.advancedrocketrycommunity.solar_array"));
         ClientLevel level = Minecraft.getInstance().level;
         List<ElectrolyzerRecipe> electrolyzerRecipes = level == null
                 ? List.of()

@@ -91,6 +91,9 @@ public final class BootstrapDataGenerators {
                 new V180AirlockData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180SolarData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180SolarArrayData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeServer(), new SolarArrayGameTestStructureProvider(output));
         var worldgen = generator.addProvider(event.includeServer(), V180Worldgen.provider(output, event.getLookupProvider()));
         generator.addProvider(event.includeServer(), new V180BiomeTags(output, worldgen.getRegistryProvider(),
                 existingFiles));

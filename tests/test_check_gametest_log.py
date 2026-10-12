@@ -360,8 +360,9 @@ class ManifestValidationTests(unittest.TestCase):
         self.assertTrue(all(item.level == "WARN" for item in expectations if item.maximum is not None))
         # 62 deliberate ERROR entries plus W07's 17: classic_controls server and client version
         # rejections (8 each) and one dropped unknown message index.
+        # W17 adds one deliberate solar array chunk-save refusal.
         self.assertEqual(
-            79, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            80, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_recipe_and_recovery_cases_have_independent_counts(self) -> None:

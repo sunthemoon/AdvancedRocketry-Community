@@ -171,7 +171,9 @@ public final class V180MaterialData {
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.DOORS).add(ModBlocks.AIRLOCK_DOOR.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOLAR_GENERATOR.get(), ModBlocks.SOLAR_PANEL.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.SOLAR_ARRAY.get(), ModBlocks.SOLAR_ARRAY_PANEL.get(), ModBlocks.POWER_OUTPUT_PLUG.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.SOLAR_GENERATOR.get(), ModBlocks.SOLAR_PANEL.get());
+            tag(BlockTags.NEEDS_STONE_TOOL).add(ModBlocks.SOLAR_ARRAY.get(), ModBlocks.SOLAR_ARRAY_PANEL.get(), ModBlocks.POWER_OUTPUT_PLUG.get());
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.BLOCK.get());
             tag(BlockTags.NEEDS_STONE_TOOL).add(io.github.sunthemoon.advancedrocketrycommunity.machine.pump.PumpContent.BLOCK.get());
             for (var tier : io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorDefinition.values()) {

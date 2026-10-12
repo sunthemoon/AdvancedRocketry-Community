@@ -36,6 +36,9 @@ public final class ModItems {
             ModBlocks.COMBUSTION_GENERATOR);
     public static final RegistryObject<Item> SOLAR_GENERATOR = blockItem("solar_generator", ModBlocks.SOLAR_GENERATOR);
     public static final RegistryObject<Item> SOLAR_PANEL = blockItem("solar_panel", ModBlocks.SOLAR_PANEL);
+    public static final RegistryObject<Item> SOLAR_ARRAY = blockItem("solar_array", ModBlocks.SOLAR_ARRAY);
+    public static final RegistryObject<Item> SOLAR_ARRAY_PANEL = blockItem("solar_array_panel", ModBlocks.SOLAR_ARRAY_PANEL);
+    public static final RegistryObject<Item> POWER_OUTPUT_PLUG = blockItem("power_output_plug", ModBlocks.POWER_OUTPUT_PLUG);
     public static final RegistryObject<Item> MACHINE_CASING = ITEMS.register(
             "machine_casing",
             () -> new BlockItem(ModBlocks.MACHINE_CASING.get(), new Item.Properties())

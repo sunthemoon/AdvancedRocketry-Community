@@ -42,6 +42,9 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.COMBUSTION_GENERATOR.get());
                         output.accept(ModItems.SOLAR_GENERATOR.get());
                         output.accept(ModItems.SOLAR_PANEL.get());
+                        output.accept(ModItems.SOLAR_ARRAY.get());
+                        output.accept(ModItems.SOLAR_ARRAY_PANEL.get());
+                        output.accept(ModItems.POWER_OUTPUT_PLUG.get());
                         output.accept(ModItems.FORCE_FIELD_PROJECTOR.get());
                         output.accept(ModItems.PRESSURIZED_TANK.get());
                         output.accept(ModItems.STATION_LIGHT.get());
