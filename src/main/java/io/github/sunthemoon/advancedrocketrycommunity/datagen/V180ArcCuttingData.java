@@ -46,7 +46,10 @@ public final class V180ArcCuttingData implements DataProvider {
             if (controller) {
                 String shell = block.equals("arc_furnace") ? "blast_brick" : "machine_casing";
                 textures.addProperty("front", NS + ":block/" + block);
-                for (String face : List.of("side", "top")) { textures.addProperty(face, NS + ":block/" + shell); }
+                // The machine casing ships separate side and top textures; blast brick has one texture.
+                for (String face : List.of("side", "top")) {
+                    textures.addProperty(face, NS + ":block/" + shell + (shell.equals("machine_casing") ? "_" + face : ""));
+                }
             } else { textures.addProperty("all", NS + ":block/" + block); }
             model.add("textures", textures); files.put(asset("models/block/" + block), model);
             files.put(asset("models/item/" + block), object("parent", NS + ":block/" + block));
