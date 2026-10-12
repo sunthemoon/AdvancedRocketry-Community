@@ -51,9 +51,8 @@ The shared branch `667fa40c` holds every merge above. Hosted run 38206390869 pas
 
 | Task | Scope | Dispatch when |
 |---|---|---|
-| [W14F](TASK-W14F-REVIEW-FIXES.md) | Fix W14 review F1 (stale cartridge-bank identity) and F2 (pipe-seal check-to-use gap) | First free slot (priority) |
-| [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | Next free slot |
 | [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | Next free slot |
+| [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps (code-backed fluids, Mars, dust sources) | Next free slot |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
