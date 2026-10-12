@@ -946,6 +946,26 @@ all profiles have recipes/loot/tags/translations and client-only JEI presentatio
 where that adds obtainable machine content. Neither solar profile produces a
 satellite nor replaces ADR-049's orbital solar transmitter.
 
+### W17 implementation note: solar array save protection
+
+This note documents protection mechanics, not a changed decision or accepted
+risk. W17 applies the existing `GuardedChunkSaves` mechanism, through
+`SolarProtection`, to the array controller's `arce_solar_array` root (risk
+R-021, solar array supplement). Only a root that is present and fails the
+4,096-byte, depth-16 or 1,024-node preflight triggers it; a bounded unknown or
+future root is saved verbatim, stops generation, output and ordinary removal,
+and refuses nothing. The affected unit is the whole terrain chunk; the Level
+capability retains denial across unload, and its existing 256-coordinate
+saturation can refuse further terrain saves in that Level. The live raw Tag is
+retained by reference and ordinary removal is refused. The existing guard throws
+at the chunk save event so ChunkMap reports refusal and restores the dirty flag;
+exceptions from BE serialization are not used to control saves. Guard logs have
+no retry-volume bound. Denial lasts through the Level lifecycle, with no
+production online reset. Back up, stop and repair the root offline before
+restarting; restarting alone is not repair. The 2026-10-06 single-generator owner
+decision did not cover arrays; this note relies on section 2 above and grants no
+risk acceptance, native stop/restart evidence or Gate result.
+
 ## 10. D3: two-store crash durability decision (owner-confirmed D3-A)
 
 **Owner-confirmed D3-A:** implement an explicit same-authority escrow/receipt
