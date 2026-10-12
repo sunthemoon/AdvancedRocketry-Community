@@ -354,6 +354,17 @@ codex exec --json -s read-only -C <分配的目录> -o <输出文件> \
     - 推送和合入只由 Root 进行。
 
     第 12.2 节对沙箱的要求，在此范围内由本条取代。
+  - **Codex 与 Claude 混合（2026-10-12 起）**：
+    - 起因：所有者配置的中转服务 `sub2.maybe404.win` 在多个 Codex 会话并发时，
+      反复返回 `502 Bad Gateway` 和 `Upstream request failed`。
+    - 所有者在 Claude Code 会话中选择了"Codex + Claude 混合"：
+      - 同时最多两个 Codex 会话，重连次数提高到 10；
+      - 另由一到两个无界面 Claude 会话（`claude -p`，走所有者的 Claude 账户）承担
+        实现或审核。
+    - 独立审核优先由与实现者不同的一方完成。
+    - 所有会话都用 `D:/GitHub/ARCE-Task-Evidence/root-queue/launch_worker.ps1` 以独立
+      进程启动（WMI `Win32_Process.Create`），关闭 Root 会话不会中断它们。
+    - 被中断的会话用 `codex exec resume` 在原会话中继续，属于本节允许的例外。
 - **普通切片的流程**：
   1. Root 写 TASK，写明目标、写入范围、验收测试和不做的事；
   2. 实现者实现，跑定向测试，提交；
@@ -367,7 +378,8 @@ codex exec --json -s read-only -C <分配的目录> -o <输出文件> \
 - **中央文件**：TASK 可以允许实现者在注册类、语言文件和数据生成入口追加本切片的条目，
   合并冲突由 Root 解决。状态文件、台账、构建脚本和工作流只由 Root 修改。
 - **本机资源**：
-  - 最多同时运行三个实现者。每个实现者自行运行编译和定向单元测试。
+  - 通常最多同时运行三个实现者；关键路径上的修复任务可以临时作为第四个。每个实现者
+    自行运行编译和定向单元测试。
   - 完整 GameTest、runData、完整构建和原生服务器同一时间只运行一个，用机器锁
     `D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm` 串行（做法见
     `docs/work/v1.8.0-root-queue/WORKER-RULES.md`）。

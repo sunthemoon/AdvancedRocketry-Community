@@ -7,10 +7,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTag;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import net.minecraft.world.level.Level;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class ForceFieldCodecsTest {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     private static final UUID ID = new UUID(4, 1);
     private static final UUID OWNER = new UUID(4, 2);
     private static FieldIdentity identity(long generation) {
