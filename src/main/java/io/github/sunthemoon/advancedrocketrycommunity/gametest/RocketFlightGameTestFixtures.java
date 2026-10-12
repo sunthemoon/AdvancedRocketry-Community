@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCele
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.ServerLevelRocketScanWorld;
@@ -23,8 +24,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketW
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
@@ -35,6 +37,7 @@ import net.minecraft.world.level.block.Blocks;
 
 /** Shared world setup and assertion helpers for rocket-flight GameTests. */
 final class RocketFlightGameTestFixtures {
+    static final int ASSEMBLY_WAIT_TICKS = 20;
     private static final int PAD_SPACING = 64;
     private static final int[][] PAD_OFFSETS = {
             {0, 0},
@@ -55,11 +58,52 @@ final class RocketFlightGameTestFixtures {
     private RocketFlightGameTestFixtures() {
     }
 
-    static RocketEntity assembleFueledRocket(
+    static void assembleFueledRocket(
             GameTestHelper helper,
             BlockPos origin,
-            UUID owner
+            UUID owner,
+            Consumer<RocketEntity> ready
     ) {
+        assembleFueledRocket(helper, origin, owner, () -> {}, ready);
+    }
+
+    static void assembleFueledRocket(GameTestHelper helper, BlockPos origin, UUID owner,
+            Runnable cleanupOnFailure, Consumer<RocketEntity> ready) {
+        assembleFueledRocket(helper, origin, owner, cleanupOnFailure, helper.getTick() + ASSEMBLY_WAIT_TICKS, ready);
+    }
+
+    static void assembleFueledRocket(GameTestHelper helper, BlockPos origin, UUID owner,
+            Runnable cleanupOnFailure, long deadline, Consumer<RocketEntity> ready) {
+        ServerLevel level = helper.getLevel();
+        ChunkPos chunk = new ChunkPos(helper.absolutePos(origin));
+        // One shared budget for origin readiness and visibility, inside even the 40-tick callers.
+        helper.runAfterDelay(1, () -> awaitPaced(helper, deadline, () -> level.areEntitiesLoaded(chunk.toLong()), () -> {
+            UUID entityId;
+            try {
+                helper.assertTrue(level.areEntitiesLoaded(chunk.toLong()), "Flight test origin entities did not load");
+                entityId = assembleRocket(helper, origin, owner);
+            } catch (RuntimeException | Error failure) {
+                cleanupOnFailure.run();
+                throw failure;
+            }
+            awaitPaced(helper, deadline, () -> level.getEntity(entityId) != null, () -> {
+                RocketEntity rocket;
+                try {
+                    rocket = (RocketEntity) level.getEntity(entityId);
+                    helper.assertTrue(rocket != null, "Flight test assembly did not spawn a rocket");
+                    var full = rocket.flightData().orElseThrow().fuel()
+                            .fill(rocket.flightData().orElseThrow().fuel().capacity()).state();
+                    rocket.updateFlightData(rocket.flightData().orElseThrow().withFuel(full, level.getGameTime()));
+                } catch (RuntimeException | Error failure) {
+                    cleanupOnFailure.run();
+                    throw failure;
+                }
+                ready.accept(rocket);
+            });
+        }));
+    }
+
+    private static UUID assembleRocket(GameTestHelper helper, BlockPos origin, UUID owner) {
         placeLegalRocket(helper, origin);
         helper.setBlock(origin.west(), ModBlocks.ROCKET_FUEL_TANK.get());
         RocketStructureSnapshot snapshot = successfulSnapshot(helper, origin);
@@ -75,16 +119,41 @@ final class RocketFlightGameTestFixtures {
                 RocketTransactionJournal.NO_OP
         ).execute(UUID.randomUUID(), snapshot);
         helper.assertTrue(assembled.success(), "Flight test rocket assembly failed: " + assembled.code());
-        RocketEntity rocket = (RocketEntity) level.getEntity(assembled.rocketEntityId().orElseThrow());
-        helper.assertTrue(rocket != null, "Flight test assembly did not spawn a rocket");
-        var full = rocket.flightData().orElseThrow().fuel()
-                .fill(rocket.flightData().orElseThrow().fuel().capacity()).state();
-        rocket.updateFlightData(rocket.flightData().orElseThrow().withFuel(full, level.getGameTime()));
-        return rocket;
+        return assembled.rocketEntityId().orElseThrow();
+    }
+
+    /** Runs the original assertions on readiness or expiry; a timeout never silently succeeds. */
+    static void awaitPaced(GameTestHelper helper, long deadline, BooleanSupplier ready, Runnable assertions) {
+        awaitPaced(helper, deadline, ready, assertions, new GameTestTickPacer(helper.getLevel().getServer()));
+    }
+
+    private static void awaitPaced(GameTestHelper helper, long deadline, BooleanSupplier ready,
+            Runnable assertions, GameTestTickPacer pacer) {
+        if (ready.getAsBoolean() || helper.getTick() >= deadline) {
+            assertions.run();
+            return;
+        }
+        pacer.pace();
+        helper.runAfterDelay(1, () -> awaitPaced(helper, deadline, ready, assertions, pacer));
+    }
+
+    static void awaitFlightState(GameTestHelper helper, ServerLevel destination, UUID logical,
+            RocketFlightState state,
+            int ticks, Runnable assertions) {
+        awaitPaced(helper, helper.getTick() + ticks, () -> hasFlightState(destination, logical, state), assertions);
+    }
+
+    static boolean hasFlightState(ServerLevel level, UUID logical, RocketFlightState state) {
+        RocketEntity rocket = loadedLogicalRocket(level, logical);
+        return rocket != null && rocket.flightData().map(data -> data.state() == state).orElse(false);
     }
 
     static RocketEntity findLogicalRocket(ServerLevel level, UUID logical) {
         primePadChunks(level);
+        return loadedLogicalRocket(level, logical);
+    }
+
+    static RocketEntity loadedLogicalRocket(ServerLevel level, UUID logical) {
         for (Entity entity : level.getAllEntities()) {
             if (entity instanceof RocketEntity rocket
                     && rocket.operational()
