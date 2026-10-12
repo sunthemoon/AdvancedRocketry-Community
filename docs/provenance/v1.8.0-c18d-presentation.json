@@ -1,0 +1,305 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-c18d-presentation-01",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-w16-presentation",
+  "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "authoring_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/air_hiss_loop.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "b5948baa0075a9b903ed3b0b99052ddf0e4c906c494e6f45f2240126d2fb3e8a",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the air_hiss_loop waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/basic_laser_gun.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "6c238c2e6e33900724edb93f70aae756b61f41ce785c0b25b454fab0552c7d78",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the basic_laser_gun waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/combustion_rocket.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "ec50cc7b216464d1ec9fb7aedb3d5efd275d360429943539239219fb770fd782",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the combustion_rocket waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/electric_shock_small.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "ea7fdd04de3d33c4d84a1d96cbdaf8b41ecf6d87a1bfa76e6aefe5204bff5c1e",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the electric_shock_small waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/gravity_controller.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "cc7f4b2c03d480d62ea157965b7b8454fae9517aa98d2ce3b2f10709f2823454",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the gravity_controller waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/laser_drill.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "8dd563c84d9c2872ea4626d7228aeb7ae1a47d722714993ace1e37a7b82da48c",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the laser_drill waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/lathe.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "cc05a2c00c9cd4c5dfe56adc811c5e7075977baa39393107cc25f8941fb1d565",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the lathe waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/machine_large.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "b38b6e2b5e812c81b4d3ef6858e8414036c0fe31f867a0cef881380e69ee0144",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the machine_large waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/railgun_bang.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "128f40d02950105062863985d202bef92e6a2f4bfe24ebde49689767524bca40",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the railgun_bang waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds/rolling_machine.ogg",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundArt.java",
+      "source_sha256": "35e4c79ceeef85edb69368874ce466f87578b884e186c7642fef22fbc2fcd8cf",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "8f9f084c64b2c6de62509a9eaadaba11a4bf1a7011c0f9c981710dd3e40fa6cd",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Synthesize the rolling_machine waveform from the numbers in the source with StrictMath and a fixed-seed generator; no recording, sample or input file.",
+        "Encode mono 22,050 Hz Ogg Vorbis with the project-written VorbisEncoder.java (SHA-256 c1ed0506101b88eec6435ba4d7a2d6af1c1d0a68db128da9d9006a54c1b45979 at the source commit); no codec library or external tool."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/sounds.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundDefinitions.java",
+      "source_sha256": "92b94a5e8492bee9caa51ff32aa000f9771c73f47fa78bbdda77e8faaafa741c",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "b305363d2c6cc38fb85a3e96aae9204af51ac64a331de1f7b344ff862f792e53",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Define the ten classic events in the v1.8 namespace, each naming its NEW file, subtitle and range; the historical v0.1 sounds.json is unchanged."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/entity/suit_components.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SuitComponentArt.java",
+      "source_sha256": "88d4d8097e533e34e0d735b817026884fbdc96b3630f3520d5fbace5d3959994",
+      "authoring_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "target_sha256": "12a09179a8143d441674cb5fb9baeaa4533785792280fec128d74c8a4627f2b7",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Draw the NEW 32 x 32 suit component sheet pixel by pixel; no input bitmap. The generated-art screen against the pinned 1.12.2 and 1.20.1 clients reports CLEAR."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PresentationLanguage.java",
+      "source_sha256": "f55dd5a06e854b007899a6ddde05f3a399f6e4df5104acd0cc2cd6cd86b63a0a",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "84322e3cf62604473b18b8f1d6e457feac99ffdc01851e07368d0a6e7bf11b2d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Add 22 bilingual HUD and subtitle keys; all existing values are unchanged."
+      ],
+      "new_keys": [
+        "hud.advancedrocketrycommunity.hydrogen",
+        "hud.advancedrocketrycommunity.rocket",
+        "hud.advancedrocketrycommunity.suit",
+        "hud.advancedrocketrycommunity.suit.module.anti_fog_visor",
+        "hud.advancedrocketrycommunity.suit.module.beacon_finder",
+        "hud.advancedrocketrycommunity.suit.module.bionic_leg_upgrade",
+        "hud.advancedrocketrycommunity.suit.module.earthbright_visor",
+        "hud.advancedrocketrycommunity.suit.module.flight_speed_upgrade",
+        "hud.advancedrocketrycommunity.suit.module.hover_upgrade",
+        "hud.advancedrocketrycommunity.suit.module.jetpack",
+        "hud.advancedrocketrycommunity.suit.module.low_pressure_tank",
+        "hud.advancedrocketrycommunity.suit.module.padded_landing_boots",
+        "subtitle.advancedrocketrycommunity.air_hiss_loop",
+        "subtitle.advancedrocketrycommunity.basic_laser_gun",
+        "subtitle.advancedrocketrycommunity.combustion_rocket",
+        "subtitle.advancedrocketrycommunity.electric_shock_small",
+        "subtitle.advancedrocketrycommunity.gravity_controller",
+        "subtitle.advancedrocketrycommunity.laser_drill",
+        "subtitle.advancedrocketrycommunity.lathe",
+        "subtitle.advancedrocketrycommunity.machine_large",
+        "subtitle.advancedrocketrycommunity.railgun_bang",
+        "subtitle.advancedrocketrycommunity.rolling_machine"
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w16-presentation",
+      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180PresentationLanguage.java",
+      "source_sha256": "f55dd5a06e854b007899a6ddde05f3a399f6e4df5104acd0cc2cd6cd86b63a0a",
+      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
+      "target_sha256": "76821b0663d51a415b51e34d6655b4ea3961c8fc23b53b2e700f6fd13650172b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Add 22 bilingual HUD and subtitle keys; all existing values are unchanged."
+      ],
+      "new_keys": [
+        "hud.advancedrocketrycommunity.hydrogen",
+        "hud.advancedrocketrycommunity.rocket",
+        "hud.advancedrocketrycommunity.suit",
+        "hud.advancedrocketrycommunity.suit.module.anti_fog_visor",
+        "hud.advancedrocketrycommunity.suit.module.beacon_finder",
+        "hud.advancedrocketrycommunity.suit.module.bionic_leg_upgrade",
+        "hud.advancedrocketrycommunity.suit.module.earthbright_visor",
+        "hud.advancedrocketrycommunity.suit.module.flight_speed_upgrade",
+        "hud.advancedrocketrycommunity.suit.module.hover_upgrade",
+        "hud.advancedrocketrycommunity.suit.module.jetpack",
+        "hud.advancedrocketrycommunity.suit.module.low_pressure_tank",
+        "hud.advancedrocketrycommunity.suit.module.padded_landing_boots",
+        "subtitle.advancedrocketrycommunity.air_hiss_loop",
+        "subtitle.advancedrocketrycommunity.basic_laser_gun",
+        "subtitle.advancedrocketrycommunity.combustion_rocket",
+        "subtitle.advancedrocketrycommunity.electric_shock_small",
+        "subtitle.advancedrocketrycommunity.gravity_controller",
+        "subtitle.advancedrocketrycommunity.laser_drill",
+        "subtitle.advancedrocketrycommunity.lathe",
+        "subtitle.advancedrocketrycommunity.machine_large",
+        "subtitle.advancedrocketrycommunity.railgun_bang",
+        "subtitle.advancedrocketrycommunity.rolling_machine"
+      ]
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "content_digest": "284caa09ceb061bfda7a91c911a40ad57e17db95b5c46907e7427d21c8077195",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "NEW code-synthesized audio and code-drawn texture; a manual listen, real-GPU V1 and two-client V2 remain open.",
+      "No OGG screening tool exists; the audio origin evidence is the pre-authoring record and the generator source."
+    ]
+  }
+}
