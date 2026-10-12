@@ -6,6 +6,15 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 class LifeSupportDataTest {
+    @Test void recoveryFeedbackIsLocalizedAndDistinctFromOrdinaryVentStatus() {
+        for (boolean chinese : new boolean[]{false, true}) {
+            var language = V180LifeSupportData.language(chinese);
+            String recovered = language.get("message.advancedrocketrycommunity.vent.scrubber_cartridge_recovered");
+            String refused = language.get("message.advancedrocketrycommunity.vent.scrubber_recovery_refused");
+            assertNotNull(recovered); assertNotNull(refused);
+            assertFalse(recovered.isBlank()); assertFalse(refused.isBlank()); assertNotEquals(recovered, refused);
+        }
+    }
     @Test void everyDeviceHasModelsLootRecipesOriginalDeterministicArtAndTwoLanguages() {
         var client = V180LifeSupportData.clientFiles(); var server = V180LifeSupportData.serverFiles(); var textures = V180LifeSupportData.textures();
         assertEquals(10, client.size()); assertEquals(11, server.size()); assertEquals(4, textures.size());

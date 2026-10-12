@@ -82,6 +82,36 @@ public final class ScrubberBank {
         }
         return -1;
     }
+    public boolean admits(OxygenVentBlockEntity vent, ScrubberBlockEntity facade) {
+        return slot(vent, facade) >= 0;
+    }
+    /** Explicit withdrawal only: an unloaded or unreadable neighbour is not proof of an orphan. */
+    public ItemStack recoverOrphan(OxygenVentBlockEntity vent) {
+        if (operating || !vent.deviceAvailable() || vent.scrubbers() != this) { return ItemStack.EMPTY; }
+        var level = (ServerLevel) vent.getLevel();
+        for (Direction direction : Direction.values()) {
+            int i = direction.ordinal();
+            if (identities[i] == null || cartridges[i].isEmpty()) { continue; }
+            var position = vent.getBlockPos().relative(direction);
+            var chunk = level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
+            if (chunk == null) { continue; }
+            var target = chunk.getBlockEntities().get(position);
+            // A physical facade with a missing/pending entity has no readable identity yet.
+            if (chunk.getBlockState(position).getBlock() instanceof ScrubberBlock
+                    && !(target instanceof ScrubberBlockEntity)) { continue; }
+            if (target instanceof ScrubberBlockEntity facade
+                    && (!facade.available() || identities[i].equals(facade.identity()))) { continue; }
+            operating = true;
+            try {
+                ItemStack result = cartridges[i];
+                cartridges[i] = ItemStack.EMPTY; identities[i] = null; supplied[i] = false;
+                vent.setChanged();
+                if (target instanceof ScrubberBlockEntity facade) { facade.unbind(vent, generation); }
+                return result;
+            } finally { operating = false; }
+        }
+        return ItemStack.EMPTY;
+    }
     public ItemStack stack(OxygenVentBlockEntity vent, ScrubberBlockEntity facade) {
         int i = slot(vent, facade); if (i < 0) { return ItemStack.EMPTY; }
         operating = true; try { return cartridges[i].copy(); } finally { operating = false; }

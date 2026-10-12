@@ -248,6 +248,8 @@
   "message.advancedrocketrycommunity.tank.empty": "空",
   "message.advancedrocketrycommunity.tank.refused": "无法交换完整的 1,000 mB：请检查容量、流体、元数据和库存空间。",
   "message.advancedrocketrycommunity.tank.repair": "储罐数据无法识别；请备份后由管理员修复。",
+  "message.advancedrocketrycommunity.vent.scrubber_cartridge_recovered": "已取回失去关联的洗涤滤芯。",
+  "message.advancedrocketrycommunity.vent.scrubber_recovery_refused": "没有可安全取回的滤芯；相邻洗涤器必须已加载且数据可读。",
   "mode.advancedrocketrycommunity.detector.breathable": "可呼吸",
   "mode.advancedrocketrycommunity.detector.cold": "低温",
   "mode.advancedrocketrycommunity.detector.high_pressure": "高压",

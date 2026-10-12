@@ -46,7 +46,12 @@ public final class ScrubberBlockEntity extends BlockEntity {
                 || !owner.deviceAvailable() || !boundTo(owner, owner.scrubbers().generation())) { return null; }
         return owner;
     }
-    public boolean protectedData() { return refused != null || ownerGeneration != null && owner() == null; }
+    public boolean protectedData() {
+        if (refused != null) { return true; }
+        if (ownerGeneration == null) { return false; }
+        var owner = owner();
+        return owner == null || !owner.scrubbers().admits(owner, this);
+    }
     public void detach() {
         var owner = owner(); if (owner != null) { owner.scrubbers().detach(owner, this); }
     }
