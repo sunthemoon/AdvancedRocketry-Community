@@ -90,6 +90,12 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
     `scripts/gametest_expected_log.json`, with the test and the reason.
   - If the checker fails on an entry that has nothing to do with your work, record it and
     do not chase it.
+- **Operator-only NBT:**
+  - A block entity that stores an owner, an identity or a retained or guarded root must
+    override `onlyOpCanSetNbt()` to return `true`.
+  - Test it with an assertion like `ForceFieldGameTests` line 308.
+  - Why: otherwise a creative player without operator rights can load any root through an
+    item's `BlockEntityTag`. The W17 and W18 reviews both found this gap.
 - **Background commands must end by themselves:**
   - Never start an interactive program: a bare `python` or `node` REPL, `tail -F`, or a
     watch loop.
