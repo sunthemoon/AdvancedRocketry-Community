@@ -53,6 +53,7 @@ public final class ForceFieldProjectorBlock extends ForceFieldBlock {
         if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector) {
             projector.beginPlacement();
             projector.bind(placer);
+            projector.reservePlacement();
         }
     }
     @Override public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
@@ -67,7 +68,9 @@ public final class ForceFieldProjectorBlock extends ForceFieldBlock {
     @Override public void onPlace(BlockState state, Level level, BlockPos pos, BlockState previous, boolean moved) {
         if (level instanceof ServerLevel server && !previous.is(this) && !ForceFieldProtection.permitted(server, pos)) {
             var root = FieldCleanupSavedData.get(server.getServer());
-            if (!root.canPlace(server.dimension(), pos, state.getValue(FACING))) {
+            boolean reserved = level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector
+                    && projector.hasReservation();
+            if (!reserved && !root.canPlace(server.dimension(), pos, state.getValue(FACING))) {
                 ForceFieldProtection.physical(server, pos, () -> level.setBlock(pos, previous, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE));
                 return;
             }

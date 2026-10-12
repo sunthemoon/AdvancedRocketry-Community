@@ -13,6 +13,9 @@ import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.Test;
 
 class FieldCleanupRootTest {
+    @org.junit.jupiter.api.BeforeAll static void bootstrap() {
+        io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap.initialize();
+    }
     private static FieldCleanupRoot.Entry entry(int index) {
         return new FieldCleanupRoot.Entry(new FieldIdentity(new UUID(4, index), new UUID(4, 99999), 1,
                 Level.OVERWORLD, new BlockPos(index, 80, 0), Direction.EAST), -1, false);
@@ -42,6 +45,23 @@ class FieldCleanupRootTest {
         assertEquals(4096, FieldCleanupRoot.decode(before).size());
         assertEquals(FieldCleanupRoot.encodedSize(before), root.bytes());
         assertTrue(root.bytes() <= FieldCleanupRoot.MAX_BYTES);
+    }
+    @Test void unownedReservationBindsInPlaceAtCapacityAndCannotReplaceCommittedClaims() {
+        var data = new FieldCleanupSavedData();
+        var unowned = new FieldIdentity(new UUID(44, 1), new UUID(0, 0), 1,
+                Level.OVERWORLD, BlockPos.ZERO, Direction.UP);
+        assertTrue(data.reserve(unowned, 0));
+        for (int i = 1; i < 4096; i++) { assertTrue(data.reserve(entry(i).identity(), 0)); }
+        var bound = new FieldIdentity(unowned.projector(), new UUID(44, 2), 1,
+                unowned.level(), unowned.source(), unowned.direction());
+        assertTrue(data.bindReservation(unowned, bound));
+        assertEquals(4096, data.view().size());
+        assertEquals(bound, data.view().get(bound.key()).identity());
+        assertFalse(data.bindReservation(unowned, entry(1).identity()));
+        assertFalse(data.reserve(unowned, 0));
+        var claimed = new FieldCleanupSavedData(); assertTrue(claimed.reserve(unowned, 1));
+        assertFalse(claimed.bindReservation(unowned, bound));
+        assertEquals(1, claimed.view().get(unowned.key()).claims());
     }
     @Test void aggregateByteBudgetAlsoRefusesBeforeTheCountLimit() {
         var root = new FieldCleanupRoot();

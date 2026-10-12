@@ -57,6 +57,20 @@ public final class FieldCleanupRoot {
         bytes += payloadBytes(entry) - (old == null ? 0 : payloadBytes(old));
         return true;
     }
+    /** Binding an inert unowned device replaces its empty reservation, never allocates a second slot. */
+    boolean bindEmptyReservation(FieldIdentity previous, FieldIdentity bound) {
+        Entry old = get(previous.key());
+        if (old == null || old.orphan() || old.claims() != 0 || !old.identity().equals(previous)
+                || !previous.owner().equals(FieldIdentity.UNBOUND_OWNER)
+                || !previous.key().equals(bound.key()) || !previous.level().equals(bound.level())
+                || !previous.source().equals(bound.source()) || previous.direction() != bound.direction()) { return false; }
+        Entry replacement = new Entry(bound, 0, false);
+        int delta = payloadBytes(replacement) - payloadBytes(old);
+        if (bytes + delta > MAX_BYTES) { return false; }
+        entries.put(bound.key(), replacement);
+        bytes += delta;
+        return true;
+    }
     public void remove(FieldIdentity.Key key) {
         Entry old = entries.remove(key);
         if (old != null) { bytes -= payloadBytes(old); }

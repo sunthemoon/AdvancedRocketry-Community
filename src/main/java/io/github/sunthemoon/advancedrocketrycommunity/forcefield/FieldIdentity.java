@@ -10,6 +10,7 @@ import net.minecraft.world.level.Level;
 /** Exact physical claim identity; source availability is not part of airtightness. */
 public record FieldIdentity(UUID projector, UUID owner, long generation, ResourceKey<Level> level,
                             BlockPos source, Direction direction) {
+    static final UUID UNBOUND_OWNER = new UUID(0, 0);
     public FieldIdentity {
         Objects.requireNonNull(projector);
         Objects.requireNonNull(owner);

@@ -53,14 +53,45 @@ public final class ForceFieldPlacementGameTests {
                     new BlockHitResult(Vec3.atCenterOf(pos.below()), Direction.UP, pos.below(), false)));
         }
         @Override public void close() {
-            if (level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector
-                    && projector.state().owner().isPresent()) {
-                FieldCleanupSavedData.get(level.getServer()).forget(projector.identity().key());
+            if (level.getBlockEntity(pos) instanceof ForceFieldProjectorBlockEntity projector) {
+                FieldCleanupSavedData.get(level.getServer()).forget(projector.reservationIdentity().key());
             }
             ForceFieldProtection.physical(level, pos, () -> level.setBlock(pos, Blocks.AIR.defaultBlockState(),
                     Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE));
             level.setBlock(pos.below(), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
         }
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void lastSlotNativeSurvivalPlacementConservesStockAndRefusesTheNext(GameTestHelper helper) {
+        try (var f = new Placement(helper)) {
+            var data = FieldCleanupSavedData.get(f.level.getServer());
+            java.util.List<FieldIdentity.Key> fillers = new java.util.ArrayList<>();
+            try {
+                for (int i = data.view().size(); i < FieldCleanupRoot.MAX_ENTRIES - 1; i++) {
+                    var id = new FieldIdentity(UUID.randomUUID(), new UUID(41, 42), 1, f.level.dimension(),
+                            new BlockPos(25_000_000 + i, 100, 25_000_000), Direction.EAST);
+                    helper.assertTrue(data.reserve(id, 0), "Last-slot fixture admission failed");
+                    fillers.add(id.key());
+                }
+                helper.assertTrue(data.view().size() == 4095 && f.place().consumesAction(),
+                        "Survival placement was refused at the last free slot");
+                helper.assertTrue(f.stack.getCount() == 1 && f.level.getBlockState(f.pos).is(ModBlocks.FORCE_FIELD_PROJECTOR.get())
+                        && f.level.getBlockEntity(f.pos) instanceof ForceFieldProjectorBlockEntity projector
+                        && projector.hasReservation() && data.view().size() == 4096,
+                        "Last-slot placement lost inventory, world stock or its exact reservation");
+                BlockPos next = f.pos.east();
+                f.level.setBlock(next.below(), Blocks.STONE.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                try {
+                    var before = data.save(new net.minecraft.nbt.CompoundTag());
+                    var result = f.stack.useOn(new UseOnContext(f.player, InteractionHand.MAIN_HAND,
+                            new BlockHitResult(Vec3.atCenterOf(next.below()), Direction.UP, next.below(), false)));
+                    helper.assertTrue(!result.consumesAction() && f.stack.getCount() == 1 && f.level.getBlockState(next).is(Blocks.AIR)
+                            && data.save(new net.minecraft.nbt.CompoundTag()).equals(before),
+                            "Full-root item refusal consumed stock, placed a block or changed reservations");
+                } finally { f.level.setBlock(next.below(), Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE); }
+            } finally { fillers.forEach(data::forget); }
+        }
+        helper.succeed();
     }
     @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
     public static void cancelledNativePlacementRollsBackDespiteFakePlayerBreakRefusal(GameTestHelper helper) {

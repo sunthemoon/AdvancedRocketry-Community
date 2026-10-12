@@ -49,6 +49,14 @@ public final class FieldCleanupSavedData extends SavedData {
         if (old != null && (old.orphan() || !old.identity().equals(identity))) { return false; }
         return put(new FieldCleanupRoot.Entry(identity, claims | (old == null ? 0 : old.claims()), false));
     }
+    boolean bindReservation(FieldIdentity previous, FieldIdentity bound) {
+        if (!operational()) { return false; }
+        if (root.get(previous.key()) == null) { return reserve(bound, 0); }
+        if (!root.bindEmptyReservation(previous, bound)) { return false; }
+        enqueue(bound.key());
+        setDirty();
+        return true;
+    }
     public boolean canRemove(FieldIdentity identity, int claims) {
         return operational() && root.canOrphan(new FieldCleanupRoot.Entry(identity, claims, true));
     }

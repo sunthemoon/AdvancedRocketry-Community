@@ -114,10 +114,16 @@ public final class ForceFieldProtection {
                 && removal(level, identity.owner(), entity.getBlockPos(), entity.getBlockState(), actor);
     }
     static boolean commitRetirement(ServerLevel level, ForceFieldNativeBlockEntity entity) {
-        if (entity instanceof ForceFieldProjectorBlockEntity projector && projector.state().owner().isPresent()) {
-            return FieldCleanupSavedData.get(level.getServer()).retire(projector.identity(), projector.state().claims());
+        if (entity instanceof ForceFieldProjectorBlockEntity projector) {
+            return FieldCleanupSavedData.get(level.getServer()).retire(projector.reservationIdentity(), projector.state().claims());
         }
         return true;
+    }
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void placing(BlockEvent.EntityPlaceEvent event) {
+        if (!(event.getLevel() instanceof ServerLevel level)
+                || !event.getPlacedBlock().is(io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.FORCE_FIELD_PROJECTOR.get())) { return; }
+        if (!(ForceFieldService.loadedEntity(level, event.getPos()) instanceof ForceFieldProjectorBlockEntity projector)
+                || !projector.hasReservation()) { event.setCanceled(true); }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void breaking(BlockEvent.BreakEvent event) {
         if (event instanceof BreakPreflight || !(event.getLevel() instanceof ServerLevel level)) { return; }

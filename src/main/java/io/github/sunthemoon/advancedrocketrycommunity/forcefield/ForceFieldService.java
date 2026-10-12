@@ -21,7 +21,7 @@ public final class ForceFieldService {
         return level.isInWorldBounds(pos) && level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
     }
     private static boolean matches(ForceFieldProjectorBlockEntity source, FieldIdentity identity) {
-        return !source.quarantined() && source.state().owner().isPresent() && source.identity().equals(identity)
+        return !source.quarantined() && source.reservationIdentity().equals(identity)
                 && source.getBlockState().getValue(ForceFieldProjectorBlock.FACING) == identity.direction();
     }
     static void work(MinecraftServer server, FieldCleanupSavedData data, FieldCleanupRoot.Entry entry) {
@@ -39,6 +39,7 @@ public final class ForceFieldService {
             return;
         }
         ProjectorState observedSource = projector.state();
+        if (observedSource.owner().isEmpty()) { return; }
         if (!ForceFieldConfig.enabled()) { return; }
         // hasNeighborSignal must never read a neighbor in an unavailable chunk.
         for (Direction direction : Direction.values()) {
@@ -130,7 +131,8 @@ public final class ForceFieldService {
         BlockEntity source = loadedEntity(level, identity.source());
         if (source == null && level.getBlockState(identity.source()).is(ModBlocks.FORCE_FIELD_PROJECTOR.get())) { return false; }
         if (source instanceof ForceFieldNativeBlockEntity nativeSource && nativeSource.quarantined()) { return false; }
-        if (source instanceof ForceFieldProjectorBlockEntity projector && matches(projector, identity)) {
+        if (source instanceof ForceFieldProjectorBlockEntity projector && projector.state().owner().isPresent()
+                && matches(projector, identity)) {
             if (!data.reserve(identity, projector.state().claims() | FieldIdentity.bit(offset))) { return false; }
             projector.claims(projector.state().claims() | FieldIdentity.bit(offset));
             return true;

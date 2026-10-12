@@ -39,15 +39,25 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
         }
     }
     void commitPlacement() { uncommittedPlacement = false; }
+    boolean hasReservation() {
+        if (quarantined() || !(level instanceof ServerLevel server)) { return false; }
+        var data = FieldCleanupSavedData.get(server.getServer());
+        var entry = data.view().get(reservationIdentity().key());
+        return data.operational() && entry != null && !entry.orphan() && entry.identity().equals(reservationIdentity());
+    }
+    boolean reservePlacement() {
+        return !quarantined() && level instanceof ServerLevel server
+                && FieldCleanupSavedData.get(server.getServer()).reserve(reservationIdentity(), state.claims());
+    }
     boolean rollbackPlacement() {
         if (!uncommittedPlacement || quarantined() || state.claims() != 0
                 || !(level instanceof ServerLevel server) || !server.restoringBlockSnapshots) { return false; }
-        if (state.owner().isPresent()) {
+        {
             var data = FieldCleanupSavedData.get(server.getServer());
-            var entry = data.view().get(identity().key());
+            var entry = data.view().get(reservationIdentity().key());
             if (entry != null) {
-                if (entry.orphan() || entry.claims() != 0 || !entry.identity().equals(identity())) { return false; }
-                data.forget(identity().key());
+                if (entry.orphan() || entry.claims() != 0 || !entry.identity().equals(reservationIdentity())) { return false; }
+                data.forget(reservationIdentity().key());
             }
         }
         uncommittedPlacement = false;
@@ -57,6 +67,10 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
         return new FieldIdentity(state.id(), state.owner().orElseThrow(), state.generation(),
                 level.dimension(), worldPosition, state.direction());
     }
+    FieldIdentity reservationIdentity() {
+        return new FieldIdentity(state.id(), state.owner().orElse(FieldIdentity.UNBOUND_OWNER), state.generation(),
+                level.dimension(), worldPosition, state.direction());
+    }
     public boolean bind(LivingEntity player) {
         if (quarantined() || state.owner().isPresent() || !(player instanceof ServerPlayer connected)
                 || player instanceof FakePlayer || connected.server.getPlayerList().getPlayer(connected.getUUID()) != connected
@@ -64,7 +78,7 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
         ProjectorState candidate = state.bind(player.getUUID());
         FieldIdentity identity = new FieldIdentity(candidate.id(), player.getUUID(), candidate.generation(),
                 level.dimension(), worldPosition, candidate.direction());
-        if (!FieldCleanupSavedData.get(connected.server).reserve(identity, 0)) { return false; }
+        if (!FieldCleanupSavedData.get(connected.server).bindReservation(reservationIdentity(), identity)) { return false; }
         state = candidate;
         setChanged();
         return true;
@@ -74,8 +88,8 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
     void advance() { next = next == 32 ? 1 : next + 1; }
     @Override public void onLoad() {
         super.onLoad();
-        if (!quarantined() && level instanceof ServerLevel server && state.owner().isPresent()) {
-            FieldCleanupSavedData.get(server.getServer()).reserve(identity(), state.claims());
+        if (!quarantined() && level instanceof ServerLevel server) {
+            FieldCleanupSavedData.get(server.getServer()).reserve(reservationIdentity(), state.claims());
         }
     }
 }
