@@ -71,6 +71,13 @@ public final class C16cMachineGameTests {
     public static void centrifugeRunsExactFluidBatchAndDeterministicNuggets(GameTestHelper helper) { run(helper, "centrifuge", "centrifuging_enriched_lava"); helper.succeed(); }
     private static void run(GameTestHelper helper, String kind, String id) {
         try (var fixture = new C16cMachineFixture(helper, kind, Direction.NORTH)) {
+            var emptyResources = fixture.resources();
+            for (var hatch : fixture.hatches("fluid_output")) {
+                for (var action : net.minecraftforge.fluids.capability.IFluidHandler.FluidAction.values()) {
+                    helper.assertTrue(fixture.fluids(hatch).drain(1_000, action).isEmpty(), "Empty hatch drain did not return empty");
+                }
+            }
+            helper.assertTrue(emptyResources.equals(fixture.resources()), "Empty drain changed bank revisions");
             var recipe = fixture.recipe(id); fixture.seed(recipe);
             var expected = choices(fixture, recipe); fixture.tick(recipe.rows().processingTicks() + 1);
             fixture.assertCompleted(recipe); assertChoices(helper, fixture, expected);
