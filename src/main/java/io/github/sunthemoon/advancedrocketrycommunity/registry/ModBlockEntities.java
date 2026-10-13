@@ -45,6 +45,9 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("pipe_seal", () -> BlockEntityType.Builder.of(io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.PipeSealBlockEntity::new, ModBlocks.PIPE_SEAL.get()).build(null));
     public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.AtmosphereDetectorBlockEntity>> ATMOSPHERE_DETECTOR =
             BLOCK_ENTITIES.register("atmosphere_detector", () -> BlockEntityType.Builder.of(io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device.AtmosphereDetectorBlockEntity::new, ModBlocks.ATMOSPHERE_DETECTOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchBlockEntity>> UNLIT_TORCH =
+            BLOCK_ENTITIES.register("unlit_torch", () -> BlockEntityType.Builder.of(io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchBlockEntity::new,
+                    ModBlocks.UNLIT_TORCH.get(), ModBlocks.UNLIT_WALL_TORCH.get()).build(null));
 
     public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.forcefield.ForceFieldProjectorBlockEntity>>
             FORCE_FIELD_PROJECTOR = BLOCK_ENTITIES.register("force_field_projector", () -> BlockEntityType.Builder.of(

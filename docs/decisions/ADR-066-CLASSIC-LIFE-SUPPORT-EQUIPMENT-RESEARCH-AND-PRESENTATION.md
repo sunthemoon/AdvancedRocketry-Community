@@ -297,6 +297,30 @@ or a Gate result; independent persistence review remains required before merge.
   cell when noncombustible/PENDING; do not consume the held item/durability.
   Existing arbitrary fires/lava/lightning are not globally simulated/extinguished.
 
+### W33 implementation note on unlit torch roots (2026-10-13)
+
+The `unlit_torch` and `unlit_wall_torch` blocks share one block entity whose schema-1 root
+`arce_unlit_torch` holds exactly the pair, block and item IDs. A root that does not decode
+(unknown, future or malformed) is kept as raw data and written back unchanged. A decoded
+root whose pair, blocks or item no longer resolve in the live `torch_pairs` catalog and
+registries, or whose saved block does not match the block's shape, is kept as well. Both
+cases are quarantined: player breaking, explosions, relighting and support loss are refused,
+the blocks' pushing reaction is always `BLOCK`, and nothing drops. The quarantine affects
+only that block, lasts until the matching pack, mod or backup is restored or the root is
+repaired offline, and adds no log line. A restored data pack lifts it after a reload; a
+missing mod needs a restart with the mod installed. A torch with no root at all, for example one placed by `/setblock`,
+breaks with no drop and is not relit. Fluids flowing into the cell, forced command
+replacement and third-party movers that bypass Forge removal policy are not covered.
+
+An outgoing root that fails `BoundedNbt.fits` at 2 KiB, depth 8 or 64 nodes uses section
+2's existing `GuardedChunkSaves` refusal, with W14's whole-chunk scope, 256-coordinate
+Level saturation, retained dirty state and unbounded EventBus/ChunkMap ERROR pair per
+retry. There is no online reset and no player-file veto. Such a root is reachable only
+through retained unsupported loaded data or operator NBT, never through an ordinary
+conversion. Recovery is an offline backup and scoped repair of the root, then a restart
+and a successful native save. R-027 records the save scope and R-034 the quarantine. This
+is a development implementation note, not owner acceptance or a Gate result.
+
 ### 3.3 Actors, gravity, sleep and safety
 
 - A non-player `LivingEntity` reuses the atmosphere/exposure pure decisions,
