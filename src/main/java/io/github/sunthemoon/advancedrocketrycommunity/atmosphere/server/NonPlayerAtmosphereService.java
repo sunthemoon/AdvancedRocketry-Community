@@ -76,8 +76,10 @@ public final class NonPlayerAtmosphereService {
         }
         Mob mob = event.getEntity();
         ServerLevel level = event.getLevel().getLevel();
-        // Chunk generation passes a WorldGenRegion, possibly on a worker thread: use the catalog only.
-        boolean live = event.getLevel() == level && level.getServer().isSameThread();
+        // Chunk generation passes a WorldGenRegion for a chunk the live atmosphere has not seen, possibly on a
+        // world-generation thread: it uses the catalog only, so no room protects it.
+        boolean live = type != MobSpawnType.CHUNK_GENERATION && event.getLevel() == level
+                && level.getServer().isSameThread();
         if (!admit(mob, level, live)) {
             event.setResult(Event.Result.DENY);
         }
