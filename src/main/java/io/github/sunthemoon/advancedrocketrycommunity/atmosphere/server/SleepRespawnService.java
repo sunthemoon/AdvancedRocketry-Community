@@ -45,6 +45,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 
@@ -100,6 +101,7 @@ public final class SleepRespawnService {
         bus.addListener(this::onPlayerTick);
         bus.addListener(this::onLogin);
         bus.addListener(this::onServerTick);
+        bus.addListener(this::onSpawnSetter);
     }
 
     /** A non-Overworld mapped surface or Space: the Space Level, any Level of this mod, or a Level the catalog maps. */
@@ -183,6 +185,15 @@ public final class SleepRespawnService {
     public void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread() && !player.isDeadOrDying()) {
             restore(player, true);
+        }
+    }
+
+    /** Complete an already restored record before a later gameplay setter intentionally replaces it. No veto. */
+    public void onSpawnSetter(PlayerSetSpawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()
+                && player.connection != null && player.connection.player == player) {
+            backup(player).filter(saved -> matches(player, saved.point()))
+                    .ifPresent(saved -> RespawnPointBackup.complete(persisted(player, false)));
         }
     }
 
