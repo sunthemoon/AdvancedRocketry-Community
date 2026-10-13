@@ -62,8 +62,10 @@ public final class EscrowRuntime {
                 var payload = io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
                 boolean empty = payload.getList("records", 10).isEmpty();
                 // E4L2_RESAVE: only the first L2 move is ambiguous; a later move would succeed if a guard ever allowed it.
-                boolean ambiguous = testCase.equals("E4L2_RESAVE") ? empty && first.getAndSet(false) : testCase.equals("E4L2_UNKNOWN") == empty;
-                if (payload.getLong("writer_generation") > 1 && ambiguous) {
+                // The generation-1 baseline is also empty, so it must not consume that single injection.
+                boolean ambiguous = payload.getLong("writer_generation") > 1 && (testCase.equals("E4L2_RESAVE")
+                        ? empty && first.getAndSet(false) : testCase.equals("E4L2_UNKNOWN") == empty);
+                if (ambiguous) {
                     throw new java.io.IOException("Release-test ambiguous replacement outcome");
                 }
                 io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.atomicMove(staged, target);
