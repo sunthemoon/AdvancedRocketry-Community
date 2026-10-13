@@ -19,43 +19,51 @@ import net.minecraft.nbt.Tag;
 public final class BoundedNbt {
     private BoundedNbt() { }
 
+    /** Native written size of a named root, including its 3-byte header, and its node count. */
+    public record Size(long bytes, int nodes) { }
+
     public static boolean fits(Tag root, int maxBytes, int maxDepth, int maxNodes) {
-        if (root == null || maxBytes < 3 || maxDepth < 1 || maxNodes < 1) { return false; }
+        return measure(root, maxBytes, maxDepth, maxNodes) != null;
+    }
+
+    /** Same walk as {@link #fits}; returns null as soon as any bound is exceeded. */
+    public static Size measure(Tag root, int maxBytes, int maxDepth, int maxNodes) {
+        if (root == null || maxBytes < 3 || maxDepth < 1 || maxNodes < 1) { return null; }
         var pending = new ArrayDeque<Node>();
         pending.push(new Node(root, 1));
         long bytes = 3; // Named root type and empty modified-UTF name.
         int nodes = 0;
         while (!pending.isEmpty()) {
             Node node = pending.pop();
-            if (++nodes > maxNodes || node.depth() > maxDepth) { return false; }
+            if (++nodes > maxNodes || node.depth() > maxDepth) { return null; }
             Tag tag = node.tag();
             Class<?> type = tag.getClass();
             if (type == CompoundTag.class) {
                 CompoundTag compound = (CompoundTag) tag;
                 bytes++; // TAG_End terminator.
-                if (compound.size() > maxNodes - nodes - pending.size()) { return false; }
+                if (compound.size() > maxNodes - nodes - pending.size()) { return null; }
                 for (String key : compound.getAllKeys()) {
                     int length = utfBytes(key, maxBytes - bytes - 3);
-                    if (length < 0) { return false; }
+                    if (length < 0) { return null; }
                     bytes += 3L + length; // Child type and modified-UTF name.
                     Tag child = compound.get(key);
-                    if (child == null) { return false; }
+                    if (child == null) { return null; }
                     pending.push(new Node(child, node.depth() + 1));
                 }
             } else if (type == ListTag.class) {
                 ListTag list = (ListTag) tag;
                 // Native write changes a typed empty list to TAG_End, even when only counting bytes.
-                if (list.isEmpty() && list.getElementType() != Tag.TAG_END) { return false; }
+                if (list.isEmpty() && list.getElementType() != Tag.TAG_END) { return null; }
                 bytes += 5; // Element type and signed length.
-                if (list.size() > maxNodes - nodes - pending.size()) { return false; }
+                if (list.size() > maxNodes - nodes - pending.size()) { return null; }
                 for (Tag child : list) {
-                    if (child == null || child.getId() != list.getElementType()) { return false; }
+                    if (child == null || child.getId() != list.getElementType()) { return null; }
                     pending.push(new Node(child, node.depth() + 1));
                 }
             } else if (type == StringTag.class) {
                 // StringTag.write swallows an overlong writeUTF failure and writes an empty fallback.
                 int length = utfBytes(tag.getAsString(), maxBytes - bytes - 2);
-                if (length < 0) { return false; }
+                if (length < 0) { return null; }
                 bytes += 2L + length;
             } else if (type == ByteArrayTag.class) { bytes += 4L + ((ByteArrayTag) tag).getAsByteArray().length; }
             else if (type == IntArrayTag.class) { bytes += 4L + 4L * ((IntArrayTag) tag).getAsIntArray().length; }
@@ -66,19 +74,19 @@ public final class BoundedNbt {
             else if (type == LongTag.class) { bytes += 8; }
             else if (type == FloatTag.class) {
                 float value = ((FloatTag) tag).getAsFloat();
-                if (Float.floatToRawIntBits(value) != Float.floatToIntBits(value)) { return false; }
+                if (Float.floatToRawIntBits(value) != Float.floatToIntBits(value)) { return null; }
                 bytes += 4;
             } else if (type == DoubleTag.class) {
                 double value = ((DoubleTag) tag).getAsDouble();
-                if (Double.doubleToRawLongBits(value) != Double.doubleToLongBits(value)) { return false; }
+                if (Double.doubleToRawLongBits(value) != Double.doubleToLongBits(value)) { return null; }
                 bytes += 8;
             } else {
                 // TAG_End cannot be a named root/child or a list value; foreign writers are unproven.
-                return false;
+                return null;
             }
-            if (bytes > maxBytes) { return false; }
+            if (bytes > maxBytes) { return null; }
         }
-        return bytes <= maxBytes;
+        return bytes <= maxBytes ? new Size(bytes, nodes) : null;
     }
 
     private static int utfBytes(String value, long remaining) {
