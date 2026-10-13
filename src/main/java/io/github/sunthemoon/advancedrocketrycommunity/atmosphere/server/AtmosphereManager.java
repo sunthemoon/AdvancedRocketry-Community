@@ -83,6 +83,11 @@ public final class AtmosphereManager {
         return service(level).baseAtmosphereBreathable();
     }
 
+    /** Catalog-only base breathability; it reads no Level service state, so a world-generation thread may ask. */
+    public boolean profileBreathable(ResourceKey<Level> levelKey) {
+        return resolveEnvironment(levelKey).breathable();
+    }
+
     public EnvironmentalConditions surfaceExposure(ServerLevel level) {
         return environments.surfaceExposure(level.dimension());
     }
@@ -116,7 +121,7 @@ public final class AtmosphereManager {
     }
 
     private AtmosphereLevelService service(ServerLevel level) {
-        EnvironmentState state = resolveEnvironment(level);
+        EnvironmentState state = resolveEnvironment(level.dimension());
         AtmosphereLevelService service = levels.computeIfAbsent(
                 level.dimension(),
                 ignored -> new AtmosphereLevelService(
@@ -132,12 +137,12 @@ public final class AtmosphereManager {
         return service;
     }
 
-    private EnvironmentState resolveEnvironment(ServerLevel level) {
-        return environments.forLevel(level.dimension())
+    private EnvironmentState resolveEnvironment(ResourceKey<Level> levelKey) {
+        return environments.forLevel(levelKey)
                 .map(profile -> new EnvironmentState(profile.breathable(), profile.vacuum()))
                 .orElseGet(() -> new EnvironmentState(
-                        level.dimension() == Level.OVERWORLD,
-                        level.dimension() != Level.OVERWORLD
+                        levelKey == Level.OVERWORLD,
+                        levelKey != Level.OVERWORLD
                 ));
     }
 

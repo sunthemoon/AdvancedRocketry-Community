@@ -32,6 +32,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.network.LifeSup
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereManager;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereServerEvents;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.NonPlayerAtmosphereService;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLifeSupportService;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternReloadListener;
@@ -410,6 +411,10 @@ public final class AdvancedRocketryCommunity {
             MinecraftForge.EVENT_BUS.addListener(events::onDatapackSync);
             MinecraftForge.EVENT_BUS.addListener(playerLifeSupport::onLivingTick);
             MinecraftForge.EVENT_BUS.addListener(playerLifeSupport::onPlayerLoggedOut);
+            // ADR-066 section 3.3: non-player atmosphere effects and natural/spawner spawn admission.
+            NonPlayerAtmosphereService nonPlayers = new NonPlayerAtmosphereService(atmosphereManager);
+            MinecraftForge.EVENT_BUS.addListener(nonPlayers::onLivingTick);
+            MinecraftForge.EVENT_BUS.addListener(nonPlayers::onPositionCheck);
             MinecraftForge.EVENT_BUS.addListener(new AtmosphereCommands(atmosphereManager)::register);
         }
     }

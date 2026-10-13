@@ -77,6 +77,31 @@ class PlayerLifeSupportEngineTest {
     }
 
     @Test
+    void configuredVacuumDamageReplacesOnlyTheScheduledDamage() {
+        PlayerLifeSupportDecision exposed = PlayerLifeSupportEngine.tick(input(
+                false, BreathabilityState.VACUUM, 0, 0, 19
+        ));
+        PlayerLifeSupportDecision early = PlayerLifeSupportEngine.tick(input(
+                false, BreathabilityState.VACUUM, 0, 0, 3
+        ));
+        PlayerLifeSupportDecision suit = PlayerLifeSupportEngine.tick(input(
+                false, BreathabilityState.VACUUM, 4, 10, 19
+        ));
+
+        assertEquals(PlayerLifeSupportEngine.VACUUM_DAMAGE, PlayerLifeSupportEngine.vacuumDamage(exposed, 2.0));
+        assertEquals(0.0F, PlayerLifeSupportEngine.vacuumDamage(exposed, 0.0));
+        assertEquals(20.0F, PlayerLifeSupportEngine.vacuumDamage(exposed, 20.0));
+        assertEquals(0.0F, PlayerLifeSupportEngine.vacuumDamage(early, 20.0));
+        // Zero damage leaves the status, phase and oxygen debit of the same decision unchanged.
+        assertEquals(0.0F, PlayerLifeSupportEngine.vacuumDamage(suit, 5.0));
+        assertEquals(1, suit.oxygenConsumed());
+        assertEquals(PlayerProtectionStatus.EXPOSED, exposed.status());
+        for (double invalid : new double[]{-1.0, 20.5, Double.NaN, Double.NEGATIVE_INFINITY}) {
+            assertThrows(IllegalArgumentException.class, () -> PlayerLifeSupportEngine.vacuumDamage(exposed, invalid));
+        }
+    }
+
+    @Test
     void invalidFiniteStateIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> input(
                 false, BreathabilityState.VACUUM, 5, 0, 0
