@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "advancedrocketrycommunity:machine_casing",
+    "minecraft:iron_block",
+    "advancedrocketrycommunity:power_input_plug"
+  ]
+}

@@ -253,6 +253,14 @@ public final class ModBlockEntities {
                     ModBlocks.FLUID_OUTPUT_HATCH.get(), ModBlocks.POWER_INPUT_PLUG.get()).build(null));
     public static final RegistryObject<BlockEntityType<ClassicControllerBlockEntity>> LATHE = BLOCK_ENTITIES.register(
             "lathe", () -> BlockEntityType.Builder.of(ClassicControllerBlockEntity::new, ModBlocks.LATHE.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerBlockEntity>> OBSERVATORY = BLOCK_ENTITIES.register(
+            "observatory", () -> BlockEntityType.Builder.of((position, state) ->
+                    new io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerBlockEntity(
+                            ModBlockEntities.OBSERVATORY.get(), position, state, false), ModBlocks.OBSERVATORY.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerBlockEntity>> ASTROBODY_DATA_PROCESSOR = BLOCK_ENTITIES.register(
+            "astrobody_data_processor", () -> BlockEntityType.Builder.of((position, state) ->
+                    new io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerBlockEntity(
+                            ModBlockEntities.ASTROBODY_DATA_PROCESSOR.get(), position, state, true), ModBlocks.ASTROBODY_DATA_PROCESSOR.get()).build(null));
     public static final RegistryObject<BlockEntityType<ClassicControllerBlockEntity>> ARC_FURNACE = BLOCK_ENTITIES.register(
             "arc_furnace", () -> BlockEntityType.Builder.of((position, state) -> new ClassicControllerBlockEntity(
                     ModBlockEntities.ARC_FURNACE.get(), position, state,

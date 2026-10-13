@@ -361,8 +361,9 @@ class ManifestValidationTests(unittest.TestCase):
         # 62 deliberate ERROR entries plus W07's 17: classic_controls server and client version
         # rejections (8 each) and one dropped unknown message index.
         # W17 adds one deliberate solar array chunk-save refusal.
+        # W21cF adds one forced research debit shortfall (w21cf-research-debit-shortfall).
         self.assertEqual(
-            80, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            81, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_recipe_and_recovery_cases_have_independent_counts(self) -> None:

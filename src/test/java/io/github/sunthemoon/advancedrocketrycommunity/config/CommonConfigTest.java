@@ -61,7 +61,11 @@ class CommonConfigTest {
         // W14 adds the two consumed C18a scrubber and detector switches.
         assertSame(CommonConfig.SCRUBBER_REQUIRES_CARTRIDGE, CommonConfig.SPEC.getValues().get("OXYGEN.scrubberRequiresCartrige"));
         assertSame(CommonConfig.OXYGEN_DETECTION, CommonConfig.SPEC.getValues().get("OXYGEN.oxygenDetection"));
-        assertEquals(92, countValues(CommonConfig.SPEC.getValues()));
+        // W21C adds the consumed ground research switch; no previous key is removed.
+        assertSame(CommonConfig.GROUND_SURVEYS_ENABLED, CommonConfig.SPEC.getValues().get("research.groundSurveysEnabled"));
+        assertTrue(CommonConfig.GROUND_SURVEYS_ENABLED.getDefault());
+        assertTrue(CommonConfig.groundSurveysEnabled());
+        assertEquals(93, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test
