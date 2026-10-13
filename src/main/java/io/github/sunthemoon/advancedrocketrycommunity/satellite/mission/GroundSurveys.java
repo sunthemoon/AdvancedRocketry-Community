@@ -75,8 +75,8 @@ public final class GroundSurveys {
     }
 
     private boolean hasInstanceReference(GroundSurveyJob job) {
-        return registry.instanceRecord(job.instanceId()) != null || registry.instanceMap().values().stream()
-                .anyMatch(instance -> instance.origin().equals(InstanceOrigin.ground(job.jobId())));
+        return registry.instanceRecord(job.instanceId()) != null
+                || !registry.ledger().groundOrigins(job.jobId()).isEmpty();
     }
 
     public Result start(Start start, long observedTime) {
@@ -163,9 +163,6 @@ public final class GroundSurveys {
                     ? Code.QUARANTINED : Code.NOT_READY, false, job); }
             long now = registry.clock.preview(observedTime);
             AsteroidInstance instance = registry.instanceRecord(job.instanceId());
-            if (GroundSurveyInvariants.jobProblem(job, instance) != null || !validExisting()) {
-                return result(Code.INVARIANT_FAILED, false, job);
-            }
             GroundSurveyJob next = job.cancelled(now);
             Result check = preflight(next, instance, true, null, now, observedTime);
             if (check != null) { return check; }
@@ -342,18 +339,12 @@ public final class GroundSurveys {
                 || registry.sizer.instanceBytes(instance) > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES)) {
             return result(Code.STORAGE_BUDGET, false, jobs.get(next.jobId()));
         }
-        Map<UUID, GroundSurveyJob> nextJobs = new LinkedHashMap<>(jobs);
-        nextJobs.put(next.jobId(), next);
-        Map<UUID, AsteroidInstance> nextInstances = new LinkedHashMap<>(registry.instanceMap());
-        if (instance != null) {
-            if (remove) { nextInstances.remove(instance.instanceId()); }
-            else { nextInstances.put(instance.instanceId(), instance); }
-        }
         // Check both the original and candidate; a mutation cannot hide an existing broken pair.
-        GroundSurveyInvariants.Plan plan = GroundSurveyInvariants.plan(nextJobs, nextInstances);
-        if (!validExisting() || !plan.jobs().isEmpty() || !plan.instances().isEmpty()) {
-            return result(Code.INVARIANT_FAILED, false, jobs.get(next.jobId()));
-        }
+        GroundSurveyJob current = jobs.get(next.jobId());
+        AsteroidInstance after = instance == null ? registry.instanceRecord(next.instanceId()) : remove ? null : instance;
+        String problem = current == null ? null : touchedProblem(current, registry.instanceRecord(current.instanceId()));
+        if (problem == null) { problem = touchedProblem(next, after); }
+        if (problem != null) { return new Result(Code.INVARIANT_FAILED, false, Optional.ofNullable(current), problem); }
         try {
             Math.addExact(registry.saveEpoch(), 1L);
             if (!registry.sizer.groundMutationFits(registry, next, instance, remove, account, now, observedTime)) {
@@ -363,11 +354,36 @@ public final class GroundSurveys {
         return null;
     }
 
-    private boolean validExisting() {
-        RegistryInvariants.Plan plan = RegistryInvariants.plan(registry.satellites, registry.missions,
-                registry.instanceMap(), jobs);
-        return plan.groundQuarantines().isEmpty() && plan.instanceQuarantines().isEmpty()
-                && plan.missionQuarantines().isEmpty() && plan.recoveries().isEmpty();
+    /**
+     * The load plan's ground rules for one job state and its instance, with device, processor and instance
+     * peers taken from the derived indexes. A broken record elsewhere never refuses this job; the cause is
+     * returned so the refusal names it.
+     */
+    private String touchedProblem(GroundSurveyJob job, AsteroidInstance instance) {
+        if (job.phase() != Phase.QUARANTINED) {
+            String problem = GroundSurveyInvariants.jobProblem(job, instance);
+            if (problem != null) { return problem; }
+        }
+        if (instance != null && instance.origin().kind() == InstanceOrigin.Kind.GROUND_SURVEY
+                && instance.state() != InstanceState.QUARANTINED) {
+            GroundSurveyJob origin = instance.origin().id().equals(job.jobId()) ? job : jobs.get(instance.origin().id());
+            String problem = GroundSurveyInvariants.instanceProblem(instance, origin);
+            if (problem != null) { return problem; }
+        }
+        for (UUID id : registry.ledger().groundOrigins(job.jobId())) {
+            if (!id.equals(job.instanceId()) && registry.instanceRecord(id).state() != InstanceState.QUARANTINED) {
+                return "GROUND_SNAPSHOT_MISMATCH";
+            }
+        }
+        if (ledger.instanceShared(job.instanceId(), job.jobId())) { return "DUPLICATE_INSTANCE"; }
+        if (job.effectivePhase() == Phase.ACTIVE && ledger.deviceBusy(job.source().id(), job.jobId())) {
+            return "DUPLICATE_SOURCE";
+        }
+        if (job.analysis().state() == AnalysisState.RUNNING
+                && ledger.processorBusy(job.analysis().claim().orElseThrow().processor().id(), job.jobId())) {
+            return "DUPLICATE_PROCESSOR";
+        }
+        return null;
     }
 
     private void publish(GroundSurveyJob job, AsteroidInstance instance, boolean remove,
