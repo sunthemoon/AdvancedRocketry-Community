@@ -57,6 +57,7 @@ give their SHA-256 values.
 | [W25](TASK-W25-SCRUBBER-STALE-BINDINGS.md) | Parallel bug: release provably stale scrubber facade bindings (W14F review L1 and L2) | **Merged** `06f1a898` (hosted run 38354701151; Root review) |
 | [W26](TASK-W26-BEACON-FOLLOWUPS.md) | Parallel bug: beacon F4 (load-time inactive flicker), F6 (tests), F7 (finder strip versus the boss bar) | Delivered through `a101ac27` (Codex; 2,794 unit tests, 867 GameTests). Root review: F4 deferred reconcile, F6 nine GameTests, F7 strip below the boss bars; the one changed fixture assertion is stricter. Branch CI 38369606917 on `a9a2b691` |
 | [W27a](TASK-W27A-SATELLITE-BAY-DESIGN.md) | C17c-02 satellite bay: design note (receipt store and sequence on the D3-A core) | Designer (Claude) running since 15:58; its review goes to Codex |
+| [W28](TASK-W28-GAMETEST-SCHEDULING-AUDIT.md) | Parallel bug: audit and fix GameTests that schedule from inside scheduled callbacks, plus a guard | Implementer (Codex) running since 16:30 |
 | [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | **Merged** `f1eb5d83` (admission disabled; review MERGE-WITH-FOLLOWUP; W11b1F fixed all 11 findings; native 24/24; Root fix `548f0c3f` paces the escrow GameTests; hosted run 38360139403). ADR-065 W11b1 note, R-031 and R-032 added. Open: native E2 `BARRIER_UNSTABLE` (the reader's stability check compares the whole region file) |
 | [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | **Merged** `811a5796`. Independent review (Codex) **APPROVE-WITH-CHANGES** (SHA-256 `8ec318a3…`): W11b2's implementation applies R1 to R6 (R1 and R2 High: a failed checked journal write stops dependent transfer effects; fenced retries stay classified, ticket-free and leave unrelated warps available). W11b2 starts after W11b1 merges |
 | W11b2 | D3-A rocket integration with R1 to R6 (admission stays disabled) | Continuation 02 at `e22544cc` (W11b1F imported; 2,875 unit tests, 872 GameTests). Its benchmark found each checked journal write synchronous on the server thread, at 86 to 122 ms. Root decision: move the writes to an off-thread writer. Continuation 03 (Codex, since 15:36): off-thread journal writer, credited-rocket reconciliation, durable settlement, the full native matrix |
@@ -87,7 +88,6 @@ Hosted CI runs on each implementer branch after Root pushes it (workflow change
 - C18c observatory and advancements (ADR-066 section 6).
 - C18d presentation and client configuration (ADR-066 section 7).
 - Parallel bugs:
-  - audit existing GameTests for scheduling from inside a scheduled callback (the W21c CI crash pattern; WORKER-RULES now forbids it);
   - the hosted chunk-save CME (being fixed by W08 under ADR-073) (runs 38064322640 and 38156329125 attempt 2, both at
     batch `endgame_gravity_station`). Root cause, from the bytecode of the mapped
     Forge 47.4.10 jar:
