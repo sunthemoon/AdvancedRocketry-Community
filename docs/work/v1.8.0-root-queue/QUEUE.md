@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 23:10) |
+| Slice | Scope | Pipeline state (2026-10-13 23:30) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -66,6 +66,7 @@ give their SHA-256 values.
 | [W34](TASK-W34-NONPLAYER-ATMOSPHERE.md) | C18a non-player atmosphere effects, `atmosphere_bypass`, spawn admission, `vacuumDamage` | **Merged** `179452d7` (hosted run 38398138235; Root review) |
 | [W35](TASK-W35-C16D-REMAINING.md) | Finish C16d: tracking circuit, graph without Tau Ceti, rebalance and CHANGELOG | **Merged** (hosted run 38419018623; Root review). C16d is complete apart from the ledger update for the tracking circuit |
 | [W36](TASK-W36-JOINT-PROOF-FLAKE.md) | Parallel bug: diagnose and fix the joint-proof `SUPERSEDING_SAVE` flake (the first fix `4b116fae` did not hold) | Claude, running since 23:03 |
+| [W37](TASK-W37-SLEEP-RESPAWN.md) | C18a sleep admission and the `allowPlanetRespawn` and `forcePlanetRespawn` options (ADR-066 section 3.3; the pre-handover owner decisions are inputs) | Implementer (Claude) running since 23:28 |
 | [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | **Merged** `f1eb5d83` (admission disabled; review MERGE-WITH-FOLLOWUP; W11b1F fixed all 11 findings; native 24/24; Root fix `548f0c3f` paces the escrow GameTests; hosted run 38360139403). ADR-065 W11b1 note, R-031 and R-032 added. E2 `BARRIER_UNSTABLE` closed by W29 |
 | [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | **Merged** `811a5796`. Independent review (Codex) **APPROVE-WITH-CHANGES** (SHA-256 `8ec318a3…`): W11b2's implementation applies R1 to R6 (R1 and R2 High: a failed checked journal write stops dependent transfer effects; fenced retries stay classified, ticket-free and leave unrelated warps available). W11b2 starts after W11b1 merges |
 | W11b2 | D3-A rocket integration with R1 to R6 (admission stays disabled) | Continuation 04 at `211a21f9`: shared branch merged, 2,951 unit tests, 902 GameTests (one joint-proof flake), 5 native cases. Continuation 05 (Codex, since 23:02): the section 8.1 `RocketTransferBayRecoveryGate` hook and the shared admission contract, then credited reconciliation, settlement and the native matrix |
