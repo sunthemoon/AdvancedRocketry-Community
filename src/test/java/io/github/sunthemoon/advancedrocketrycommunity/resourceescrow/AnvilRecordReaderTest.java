@@ -1,0 +1,106 @@
+package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
+
+import static org.junit.jupiter.api.Assertions.*;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.storage.RegionFile;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+class AnvilRecordReaderTest {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    private static final ChunkPos POSITION = new ChunkPos(-1, -1);
+    @TempDir Path directory;
+    private Path file() { return directory.resolve("r.-1.-1.mca"); }
+    @Test void readsRealInlineAnvilFilesWithDetachedExactSizesAndAdmissionHeadroom() throws Exception {
+        CompoundTag root = new CompoundTag(); root.putString("value", "native"); write(root);
+        var record = AnvilRecordReader.read(directory, POSITION); assertEquals(root, record.root());
+        assertEquals(RocketNbtSize.uncompressedBytes(root), record.size().decodedBytes()); assertFalse(record.size().external());
+        assertTrue(record.size().admissionRoom()); record.root().putInt("changed", 1);
+        assertEquals(root, record.root()); assertEquals(record.size(), AnvilRecordReader.probe(directory, POSITION));
+    }
+    @Test void acceptsTheDecodedLimitAndRefusesTheNextByteWithoutTruncation() throws Exception {
+        CompoundTag root = new CompoundTag(); root.putByteArray("x", new byte[AnvilRecordReader.DECODED_BYTES - 12]); write(root);
+        assertEquals(AnvilRecordReader.DECODED_BYTES, AnvilRecordReader.read(directory, POSITION).size().decodedBytes());
+        assertFalse(AnvilRecordReader.probe(directory, POSITION).admissionRoom());
+        root.putByteArray("x", new byte[AnvilRecordReader.DECODED_BYTES - 11]); write(root);
+        assertThrows(IOException.class, () -> AnvilRecordReader.read(directory, POSITION));
+        assertEquals(AnvilRecordReader.DECODED_BYTES + 1, AnvilRecordReader.probe(directory, POSITION).decodedBytes());
+        assertFalse(AnvilRecordReader.probe(directory, POSITION).supported());
+    }
+    @Test void changingHeaderOrInPlaceRecordCannotConfirmAStableReadback() throws Exception {
+        CompoundTag root = new CompoundTag(); root.putInt("value", 42); write(root);
+        assertThrows(IOException.class, () -> AnvilRecordReader.read(directory, POSITION, () -> changeTimestamp()));
+    }
+    @Test void externalMissingAndMalformedRecordsNeverProveAnEndpoint() throws Exception {
+        assertThrows(IOException.class, () -> AnvilRecordReader.read(directory, POSITION));
+        CompoundTag root = new CompoundTag(); root.putInt("value", 42); write(root);
+        try (FileChannel channel = FileChannel.open(file(), StandardOpenOption.WRITE, StandardOpenOption.READ)) {
+            ByteBuffer slot = ByteBuffer.allocate(4); channel.read(slot, 1_023 * 4L); slot.flip(); long start = (slot.getInt() >>> 8) * 4_096L;
+            channel.write(ByteBuffer.wrap(new byte[]{(byte) 130}), start + 4);
+        }
+        assertThrows(IOException.class, () -> AnvilRecordReader.read(directory, POSITION));
+        var external = AnvilRecordReader.probe(directory, POSITION); assertTrue(external.external()); assertFalse(external.admissionRoom());
+    }
+    @Test void admissionThresholdsAreInclusiveAndNeverAcceptExternalRecords() {
+        assertTrue(new AnvilRecordReader.SizeProbe(false, 786_432, 3_145_728, true).admissionRoom());
+        assertFalse(new AnvilRecordReader.SizeProbe(false, 786_433, 3_145_728, true).admissionRoom());
+        assertFalse(new AnvilRecordReader.SizeProbe(false, 786_432, 3_145_729, true).admissionRoom());
+        assertFalse(new AnvilRecordReader.SizeProbe(true, 1, 1, true).admissionRoom());
+    }
+    @Test void externalProbeReportsBoundedNativePayloadSizesWithoutAuthorizingProof() throws Exception {
+        CompoundTag root = new CompoundTag(); root.putInt("value", 42); write(root);
+        var bytes = new java.io.ByteArrayOutputStream();
+        try (var output = new java.io.DataOutputStream(new java.util.zip.DeflaterOutputStream(bytes))) { NbtIo.write(root, output); }
+        Files.write(directory.resolve("c.-1.-1.mcc"), bytes.toByteArray());
+        try (FileChannel channel = FileChannel.open(file(), StandardOpenOption.WRITE, StandardOpenOption.READ)) {
+            ByteBuffer slot = ByteBuffer.allocate(4); channel.read(slot, 1_023 * 4L); slot.flip(); long start = (slot.getInt() >>> 8) * 4_096L;
+            channel.write(ByteBuffer.wrap(new byte[]{(byte) 130}), start + 4);
+        }
+        var probe = AnvilRecordReader.probe(directory, POSITION);
+        assertTrue(probe.external()); assertEquals(bytes.size(), probe.compressedBytes());
+        assertEquals(RocketNbtSize.uncompressedBytes(root), probe.decodedBytes()); assertFalse(probe.admissionRoom());
+        assertThrows(IOException.class, () -> AnvilRecordReader.read(directory, POSITION));
+    }
+    /** Review W11b1 finding 7: external and oversized records are refusals with their own reason, not unstable reads. */
+    @Test void externalAndOversizedRecordsAreRefusalsWithTheirBarrierReason() throws Exception {
+        CompoundTag oversized = new CompoundTag(); oversized.putByteArray("x", new byte[AnvilRecordReader.DECODED_BYTES - 11]); write(oversized);
+        var decoded = assertThrows(AnvilRecordReader.Refusal.class, () -> AnvilRecordReader.read(directory, POSITION));
+        assertEquals(EscrowReason.BARRIER_BOUNDS, decoded.reason()); assertEquals(EscrowReason.BARRIER_BOUNDS, EscrowBarrier.readbackReason(decoded));
+        CompoundTag nodes = new CompoundTag(); var list = new net.minecraft.nbt.ListTag();
+        for (int i = 0; i < 262_143; i++) { list.add(net.minecraft.nbt.IntTag.valueOf(i)); }
+        nodes.put("n", list); write(nodes); // 262,145 nodes in about 1 MiB.
+        assertEquals(EscrowReason.BARRIER_BOUNDS, assertThrows(AnvilRecordReader.Refusal.class, () -> AnvilRecordReader.read(directory, POSITION)).reason());
+        CompoundTag root = new CompoundTag(); root.putInt("value", 42); write(root);
+        var unstable = assertThrows(IOException.class, () -> AnvilRecordReader.read(directory, POSITION, () -> changeTimestamp()));
+        assertFalse(unstable instanceof AnvilRecordReader.Refusal); assertEquals(EscrowReason.BARRIER_UNSTABLE, EscrowBarrier.readbackReason(unstable));
+        write(root);
+        try (FileChannel channel = FileChannel.open(file(), StandardOpenOption.WRITE, StandardOpenOption.READ)) {
+            ByteBuffer slot = ByteBuffer.allocate(4); channel.read(slot, 1_023 * 4L); slot.flip(); long start = (slot.getInt() >>> 8) * 4_096L;
+            channel.write(ByteBuffer.wrap(new byte[]{(byte) 130}), start + 4);
+        }
+        var external = assertThrows(AnvilRecordReader.Refusal.class, () -> AnvilRecordReader.read(directory, POSITION));
+        assertEquals(EscrowReason.BARRIER_EXTERNAL, external.reason()); assertEquals(EscrowReason.BARRIER_EXTERNAL, EscrowBarrier.readbackReason(external));
+    }
+    private void write(CompoundTag tag) throws Exception {
+        try (RegionFile region = new RegionFile(file(), directory, false)) {
+            try (var output = region.getChunkDataOutputStream(POSITION)) { NbtIo.write(tag, output); }
+            region.flush();
+        }
+    }
+    private void changeTimestamp() {
+        try (FileChannel channel = FileChannel.open(file(), StandardOpenOption.WRITE)) {
+            channel.write(ByteBuffer.wrap(new byte[]{0, 0, 0, 1}), 4_096 + 1_023 * 4L);
+        } catch (IOException failure) { throw new IllegalStateException(failure); }
+    }
+}

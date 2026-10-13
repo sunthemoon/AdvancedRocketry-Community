@@ -65,6 +65,7 @@ final class ManagedSavedDataLoaderMigrationTest {
             case STATIONS -> StationRegistrySavedData.load(payload);
             case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload);
             case ENDGAME -> EndgameSavedData.load(payload);
+            case RESOURCE_ESCROW -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.load(payload);
         };
     }
 
@@ -76,6 +77,7 @@ final class ManagedSavedDataLoaderMigrationTest {
             case STATIONS -> ((StationRegistrySavedData) data).operational();
             case SATELLITE_MISSIONS -> ((SatelliteMissionSavedData) data).operational();
             case ENDGAME -> ((EndgameSavedData) data).operational();
+            case RESOURCE_ESCROW -> ((io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData) data).operational();
         };
         assertTrue(operational, type + " must remain operational after migration");
     }
@@ -105,6 +107,7 @@ final class ManagedSavedDataLoaderMigrationTest {
                 assertEquals(0, canonical.getLongArray("dispatched_through").length);
                 assertEquals(0, canonical.getList("zones", CompoundTag.TAG_COMPOUND).size());
             }
+            case RESOURCE_ESCROW -> assertEquals(0, canonical.getList("records", CompoundTag.TAG_COMPOUND).size());
         }
     }
 
