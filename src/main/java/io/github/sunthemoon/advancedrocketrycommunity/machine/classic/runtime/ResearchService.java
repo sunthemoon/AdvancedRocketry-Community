@@ -75,7 +75,7 @@ public final class ResearchService {
         if (verificationPaused) { return; }
         if (closed || controller.identity().isEmpty() || !server.isSameThread()) { return; }
         if (controller.identity().orElseThrow().collision()) { controller.status(ResearchStatus.DEVICE_COLLISION); return; }
-        if (controller.repairRequired()) { controller.status(ResearchStatus.OFFLINE_REPAIR_REQUIRED); return; }
+        if (controller.repairRequired() || controller.debitShortfall()) { controller.status(ResearchStatus.OFFLINE_REPAIR_REQUIRED); return; }
         if (!data().operational()) { controller.status(ResearchStatus.REGISTRY_BLOCKED); return; }
         if (!CommonConfig.groundSurveysEnabled()) { controller.status(ResearchStatus.DISABLED); return; }
         if (!controller.formed()) { controller.status(controller.reason() == ClassicWait.UNLOADED ? ResearchStatus.UNLOADED : ResearchStatus.UNFORMED); return; }
@@ -137,7 +137,7 @@ public final class ResearchService {
         if (!data().operational()) { return ResearchStatus.REGISTRY_BLOCKED; }
         if (controller.identity().isEmpty()) { return ResearchStatus.OFFLINE_REPAIR_REQUIRED; }
         if (!admit(controller)) { return controller.researchStatus(); }
-        if (controller.repairRequired()) { return ResearchStatus.OFFLINE_REPAIR_REQUIRED; }
+        if (controller.repairRequired() || controller.debitShortfall()) { return ResearchStatus.OFFLINE_REPAIR_REQUIRED; }
         if (enabled && !CommonConfig.groundSurveysEnabled()) { return ResearchStatus.DISABLED; }
         if (!controller.formed()) { return controller.reason() == ClassicWait.UNLOADED ? ResearchStatus.UNLOADED : ResearchStatus.UNFORMED; }
         var level = (ServerLevel) controller.getLevel();

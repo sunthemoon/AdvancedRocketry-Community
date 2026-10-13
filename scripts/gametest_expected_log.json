@@ -599,6 +599,15 @@
       "reason": "The default-on research switch is defaulted once; non-null repairs and other values are not admitted."
     },
     {
+      "id": "w21cf-research-debit-shortfall",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_RESEARCH_DEBIT_SHORTFALL level=minecraft:overworld pos=-?\\d+, -?\\d+, -?\\d+ required=20 missing=10; paid research stops until the controller reloads",
+      "counts": {"research_debit": 1},
+      "test": "ResearchClaimGameTests.postPublicationShortfallStopsPaidResearchWithoutThrowing",
+      "reason": "W21c review I2: the test forces the unreachable post-publication FE shortfall once; it must log once instead of throwing through the server tick."
+    },
+    {
       "id": "w10-crystallizer-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",

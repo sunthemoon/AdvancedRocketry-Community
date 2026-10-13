@@ -72,6 +72,27 @@ public final class ResearchClaimGameTests {
         }
         helper.succeed();
     }
+    /** W21c review I2: a debit that falls short after publication must not throw through the server tick. */
+    @GameTest(template = "empty", batch = "research_debit", timeoutTicks = 200)
+    public static void postPublicationShortfallStopsPaidResearchWithoutThrowing(GameTestHelper helper) {
+        try (var fixture = ResearchGameTests.fixture(helper, true, Direction.NORTH, UUID.randomUUID(), 0)) {
+            helper.assertTrue(fixture.controller.formed(), "Debit fixture did not form"); fixture.feed(40);
+            var plug = fixture.power.get(0);
+            // Forces the unreachable case: the "publication" drains the plug after the FE preflight passed.
+            boolean published = fixture.controller.paidResearchAdvance(20, () -> { plug.debit(30); return true; });
+            helper.assertTrue(published && plug.energyStored() == 0 && fixture.controller.debitShortfall(), "Shortfall threw, hid the publication or was not held");
+            fixture.feed(40); boolean[] ran = {false};
+            helper.assertTrue(!fixture.controller.paidResearchAdvance(20, () -> ran[0] = true) && !ran[0] && plug.energyStored() == 40,
+                    "A controller with a debit shortfall kept paying");
+            ResearchRuntime.service(fixture.level).enqueue(fixture.controller);
+            helper.assertTrue(fixture.controller.researchStatus() == ResearchStatus.OFFLINE_REPAIR_REQUIRED, "Shortfall read " + fixture.controller.researchStatus());
+            var saved = fixture.controller.saveWithFullMetadata();
+            fixture.controller.onChunkUnloaded(); fixture.controller.load(saved); fixture.controller.onLoad(); fixture.revalidate();
+            helper.assertTrue(!fixture.controller.debitShortfall() && fixture.controller.paidResearchAdvance(20, () -> true) && plug.energyStored() == 20,
+                    "Reload did not restore paid research");
+        }
+        helper.succeed();
+    }
     private static List<?> registryState(SatelliteMissionRegistry registry) {
         return List.of(registry.groundSurveys().all(), registry.instances(), registry.accounts(),
                 registry.satellites(), registry.missions(), registry.logicalGameTime(), registry.lastObservedGameTime(),
