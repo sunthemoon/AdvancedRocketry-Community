@@ -15,6 +15,16 @@ import org.junit.jupiter.api.Test;
 final class RocketTransferFencesTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void loadedOnlyRegionReadIsBoundedAtSixteenColumnsAndRejectsOversizeBeforeReading() {
+        var calls = new AtomicInteger();
+        assertTrue(RocketTransferEntities.columnsAlreadyLoaded(0, 3, 0, 3, (x, z) -> { calls.incrementAndGet(); return true; }));
+        assertEquals(16, calls.get());
+        assertFalse(RocketTransferEntities.columnsAlreadyLoaded(0, 16, 0, 0, (x, z) -> { fail("Oversize region was inspected"); return true; }));
+        assertFalse(RocketTransferEntities.columnsAlreadyLoaded(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 0,
+                (x, z) -> { fail("Overflow region was inspected"); return true; }));
+        assertFalse(RocketTransferEntities.columnsAlreadyLoaded(0, 3, 0, 3, (x, z) -> x != 2 || z != 2));
+    }
+
     @Test void fencedSelectionNeverCallsTheTicketAddingPredicateAndPreservesFairness() {
         var fenced = RocketStationMotionRuleTest.record(new RocketPosition(72, 80, 8));
         var healthy = RocketStationMotionRuleTest.record(new RocketPosition(92, 80, 8));

@@ -194,12 +194,19 @@ final class RocketTransferEntities {
         var region = RocketRegion.fromSnapshot(snapshot);
         int minX = (region.minimum().x() - 1) >> 4, maxX = (region.maximum().x() + 2) >> 4;
         int minZ = (region.minimum().z() - 1) >> 4, maxZ = (region.maximum().z() + 2) >> 4;
-        // Skinny snapshots can have a large footprint despite the block bound. Never scan it here.
-        if ((long) (maxX - minX + 1) * (maxZ - minZ + 1) > RocketFlightLimits.MAX_LANDING_CHUNKS) { return false; }
+        return columnsAlreadyLoaded(minX, maxX, minZ, maxZ, (x, z) -> level.areEntitiesLoaded(ChunkPos.asLong(x, z))
+                && level.isPositionEntityTicking(new BlockPos(x << 4, snapshot.sourceOrigin().y(), z << 4)));
+    }
+
+    /** Skinny snapshots can have a large footprint despite the block bound. Never scan it here. */
+    static boolean columnsAlreadyLoaded(int minX, int maxX, int minZ, int maxZ,
+                                        java.util.function.BiPredicate<Integer, Integer> loaded) {
+        long width = (long) maxX - minX + 1, depth = (long) maxZ - minZ + 1;
+        if (width <= 0 || depth <= 0 || width > RocketFlightLimits.MAX_LANDING_CHUNKS
+                || depth > RocketFlightLimits.MAX_LANDING_CHUNKS || width * depth > RocketFlightLimits.MAX_LANDING_CHUNKS) { return false; }
         for (int x = minX; x <= maxX; x++) {
             for (int z = minZ; z <= maxZ; z++) {
-                if (!level.areEntitiesLoaded(ChunkPos.asLong(x, z))
-                        || !level.isPositionEntityTicking(new BlockPos(x << 4, snapshot.sourceOrigin().y(), z << 4))) { return false; }
+                if (!loaded.test(x, z)) { return false; }
             }
         }
         return true;
