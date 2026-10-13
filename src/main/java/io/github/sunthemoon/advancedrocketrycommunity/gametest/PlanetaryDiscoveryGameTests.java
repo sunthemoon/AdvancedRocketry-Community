@@ -45,7 +45,8 @@ public final class PlanetaryDiscoveryGameTests {
 
     @GameTest(template = "rocket_test", batch = "planetary_discovery", timeoutTicks = 280)
     public static void researchUnlocksSharedTravelButNotAnotherPlayersBalanceOrStation(GameTestHelper helper) {
-        helper.runAfterDelay(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.after(1, () -> {
             var server = helper.getLevel().getServer();
             var catalogs = new PlanetaryCatalogManager();
             helper.assertTrue(catalogs.applyCandidate(pair(true, false)), "Discovery catalog rejected");
@@ -64,10 +65,10 @@ public final class PlanetaryDiscoveryGameTests {
             // Both assemblies share one readiness budget: 1 + 20 + 230 + 21 < 280 ticks.
             long assemblyDeadline = helper.getTick() + RocketFlightGameTestFixtures.ASSEMBLY_WAIT_TICKS;
             try {
-                RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner.getUUID(), cleanup, assemblyDeadline, rocket -> {
+                RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), owner.getUUID(), cleanup, assemblyDeadline, rocket -> {
                     try {
                         ownedRockets.add(rocket);
-                        RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(9, 2, 3), other.getUUID(), cleanup, assemblyDeadline, secondRocket -> {
+                        RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(9, 2, 3), other.getUUID(), cleanup, assemblyDeadline, secondRocket -> {
                             try {
                                 ownedRockets.add(secondRocket);
                                 owner.setPos(rocket.position()); other.setPos(secondRocket.position());
@@ -110,7 +111,7 @@ public final class PlanetaryDiscoveryGameTests {
                                 helper.assertTrue(SatelliteRuntime.launch(owner, capacityIdentity, PlanetaryContent.VENUS).success(), "Venus research did not start");
                                 helper.assertTrue(SatelliteRuntime.claim(other, identity).code() == SatelliteOperationCode.UNAUTHORIZED,
                                         "Other player claimed private mission");
-                                helper.runAfterDelay(230, () -> {
+                                driver.after(230, () -> {
                                     try {
                                         helper.assertTrue(menu.quotes().forTarget(MARS).status() == RocketNavigationStatus.DISCOVERY_REQUIRED,
                                                 "Pre-claim menu refresh lost discovery lock");
@@ -118,7 +119,7 @@ public final class PlanetaryDiscoveryGameTests {
                                         helper.assertTrue(missions.account(owner.getUUID()).balance() == 20 && missions.account(other.getUUID()).balance() == 0,
                                                 "Shared discovery transferred private research");
                                         helper.assertTrue(!menu.quotes().forTarget(MARS).canLaunch(), "Menu did not retain its bounded refresh interval");
-                                        helper.runAfterDelay(21, () -> {
+                                        driver.after(21, () -> {
                                             try {
                                                 helper.assertTrue(menu.quotes().forTarget(MARS).canLaunch()
                                                         && manager.navigation(other, secondRocket).quotes().forTarget(MARS).canLaunch(),

@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -157,6 +158,7 @@ public final class LegacyLandingPadOccupancyGameTests {
 
     @GameTest(template = "rocket_test", batch = "legacy_pad_occupancy", timeoutTicks = 180)
     public static void fixedPadSelectionSkipsAWideOccupantAndStopsAtTheDiscoveryBudget(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
         BlockPos base = earth.getSharedSpawnPos();
         UUID ticket = UUID.randomUUID();
@@ -170,7 +172,7 @@ public final class LegacyLandingPadOccupancyGameTests {
         };
         BlockPos sourceOrigin = helper.absolutePos(new BlockPos(3, 2, 3));
         var snapshot = sourceSnapshot(helper, sourceOrigin);
-        awaitSurface(helper, earth, base, sourceOrigin, new GameTestTickPacer(earth.getServer()), () -> {
+        awaitSurface(helper, driver, earth, base, sourceOrigin, new GameTestTickPacer(earth.getServer()), () -> {
             try {
                 var selector = new RocketLandingPadSelector();
                 var owner = UUID.randomUUID();
@@ -217,7 +219,7 @@ public final class LegacyLandingPadOccupancyGameTests {
         }, close);
     }
 
-    private static void awaitSurface(GameTestHelper helper, ServerLevel level, BlockPos base, BlockPos sourceOrigin,
+    private static void awaitSurface(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, BlockPos base, BlockPos sourceOrigin,
             GameTestTickPacer pacer, Runnable action, Runnable close) {
         boolean ready = level.areEntitiesLoaded(new ChunkPos(sourceOrigin).toLong());
         for (int x = (base.getX() - 72) >> 4; x <= (base.getX() + 72) >> 4; x++) {
@@ -230,12 +232,13 @@ public final class LegacyLandingPadOccupancyGameTests {
             helper.assertTrue(ready, "Fixed-pad entity chunks did not become ready");
             action.run();
         } else {
-            pacer.pace(); helper.runAfterDelay(1, () -> awaitSurface(helper, level, base, sourceOrigin, pacer, action, close));
+            pacer.pace(); driver.after(1, () -> awaitSurface(helper, driver, level, base, sourceOrigin, pacer, action, close));
         }
     }
 
     private static final class StationFixture {
         private final GameTestHelper helper;
+        private final GameTestTickDriver driver;
         private final ServerLevel space;
         private final StationState station;
         private final BlockPos pad;
@@ -248,6 +251,7 @@ public final class LegacyLandingPadOccupancyGameTests {
 
         private StationFixture(GameTestHelper helper) {
             this.helper = helper;
+            this.driver = new GameTestTickDriver(helper);
             space = helper.getLevel().getServer().getLevel(CelestialIds.SPACE_LEVEL);
             helper.assertTrue(space != null, "Space Level unavailable");
             station = new StationCreationService(new StationPlatformGenerator(), id -> true)
@@ -273,7 +277,7 @@ public final class LegacyLandingPadOccupancyGameTests {
                 helper.assertTrue(ready, "Legacy occupancy fixture entity chunks did not become ready");
                 try { action.run(); } finally { close(); }
             } else {
-                pacer.pace(); helper.runAfterDelay(1, () -> awaitReady(action));
+                pacer.pace(); driver.after(1, () -> awaitReady(action));
             }
         }
 

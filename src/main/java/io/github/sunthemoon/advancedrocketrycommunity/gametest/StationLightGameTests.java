@@ -155,6 +155,7 @@ public final class StationLightGameTests {
 
     @GameTest(template = "empty", timeoutTicks = 40)
     public static void loadedLampPublishesBlockLightWithinTheFixedDeadline(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel level = helper.getLevel();
         BlockPos centre = helper.absolutePos(new BlockPos(1, 2, 1));
         BlockPos neighbour = centre.east();
@@ -172,7 +173,7 @@ public final class StationLightGameTests {
             helper.assertTrue(level.getBlockState(centre).getLightEmission() == 15
                     && level.getBlockState(centre).isCollisionShapeFullBlock(level, centre)
                     && level.getBlockEntity(centre) == null, "Loaded placement lost lamp state/collision");
-            awaitLight(helper, centre, neighbour, restore);
+            awaitLight(helper, driver, centre, neighbour, restore);
         } catch (RuntimeException | Error failure) { restore.run(); throw failure; }
     }
 
@@ -286,8 +287,8 @@ public final class StationLightGameTests {
         return count;
     }
 
-    private static void awaitLight(GameTestHelper helper, BlockPos centre, BlockPos neighbour, Runnable restore) {
-        helper.runAfterDelay(1, () -> {
+    private static void awaitLight(GameTestHelper helper, GameTestTickDriver driver, BlockPos centre, BlockPos neighbour, Runnable restore) {
+        driver.after(1, () -> {
             boolean pending = false;
             try {
                 ServerLevel level = helper.getLevel();
@@ -295,7 +296,7 @@ public final class StationLightGameTests {
                 boolean published = level.getBrightness(LightLayer.BLOCK, centre) == 15
                         && level.getBrightness(LightLayer.BLOCK, neighbour) >= 14;
                 if (!published && helper.getTick() < 39) {
-                    awaitLight(helper, centre, neighbour, restore);
+                    awaitLight(helper, driver, centre, neighbour, restore);
                     pending = true;
                     return;
                 }

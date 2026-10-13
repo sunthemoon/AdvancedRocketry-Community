@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -148,6 +149,7 @@ public final class NamedLandingPadOccupancyGameTests {
 
     private static final class Fixture {
         private final GameTestHelper helper;
+        private final GameTestTickDriver driver;
         private final ServerLevel space;
         private final StationState station;
         private final BlockPos origin;
@@ -163,6 +165,7 @@ public final class NamedLandingPadOccupancyGameTests {
 
         private Fixture(GameTestHelper helper) {
             this.helper = helper;
+            this.driver = new GameTestTickDriver(helper);
             space = helper.getLevel().getServer().getLevel(CelestialIds.SPACE_LEVEL);
             helper.assertTrue(space != null, "Space Level unavailable");
             station = new StationCreationService(new StationPlatformGenerator(), id -> true)
@@ -196,7 +199,7 @@ public final class NamedLandingPadOccupancyGameTests {
                 helper.assertTrue(ready, "Occupancy fixture entity chunks did not become ready");
                 try { action.run(); } finally { close(); }
             } else {
-                pacer.pace(); helper.runAfterDelay(1, () -> awaitReady(action));
+                pacer.pace(); driver.after(1, () -> awaitReady(action));
             }
         }
 

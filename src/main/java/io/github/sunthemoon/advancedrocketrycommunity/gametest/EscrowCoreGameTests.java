@@ -38,6 +38,9 @@ public final class EscrowCoreGameTests {
         var op1 = first.operation(1); first.apply(op1);
         var second = EscrowTestEndpoints.chainSource(first, position.offset(4, 0, 0));
         var op2 = second.operation(2); second.apply(op2);
+        // Precondition: the freshly generated and modified fixture chunk is saved once before the proof,
+        // so vanilla's eager save of a dirty chunk cannot supersede this single-attempt barrier.
+        level.getChunkSource().save(false);
         var runtime = EscrowRuntime.of(level.getServer()); var barrier = new EscrowBarrier(); var started = new AtomicBoolean();
         // Pace the asynchronous chunk, entity and IO waits to real server ticks (WORKER-RULES).
         var pacer = new GameTestTickPacer(helper.getLevel().getServer());
