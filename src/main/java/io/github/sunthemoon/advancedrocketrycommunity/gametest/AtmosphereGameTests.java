@@ -362,7 +362,7 @@ public final class AtmosphereGameTests {
         return placePreparedVent(level, ventPosition);
     }
 
-    private static void buildShell(GameTestHelper helper, BlockPos minimum, BlockPos maximum) {
+    static void buildShell(GameTestHelper helper, BlockPos minimum, BlockPos maximum) {
         for (int x = minimum.getX(); x <= maximum.getX(); x++) {
             for (int y = minimum.getY(); y <= maximum.getY(); y++) {
                 for (int z = minimum.getZ(); z <= maximum.getZ(); z++) {
@@ -392,7 +392,7 @@ public final class AtmosphereGameTests {
         }
     }
 
-    private static OxygenVentBlockEntity placePreparedVent(GameTestHelper helper, BlockPos position) {
+    static OxygenVentBlockEntity placePreparedVent(GameTestHelper helper, BlockPos position) {
         helper.setBlock(position, ModBlocks.OXYGEN_VENT.get().defaultBlockState());
         OxygenVentBlockEntity vent = (OxygenVentBlockEntity) helper.getBlockEntity(position);
         IItemHandler input = vent.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.UP)
