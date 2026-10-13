@@ -251,7 +251,7 @@ public final class SpaceSafetyReturnService {
             return;
         }
         if (result instanceof SafetyReturnQuery.Refused) {
-            refuse(player, Refusal.AUTHORITY_UNAVAILABLE, "");
+            refuse(player, Refusal.AUTHORITY_UNAVAILABLE, "destination=none");
         } else if (result instanceof SafetyReturnQuery.Station station) {
             ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
             SafetyReturnQuery.Target target = station.target();
@@ -259,11 +259,11 @@ public final class SpaceSafetyReturnService {
                     .map(state -> state.name()).orElse(target.stationId().toString());
             move(player, space, new SafeCelestialTravel.Destination(target.x() + 0.5D, target.y(), target.z() + 0.5D),
                     Component.translatable(ARRIVED_STATION, name),
-                    "outcome=station station=" + target.stationId() + " passes=" + station.passes());
+                    "destination=station station=" + target.stationId() + " passes=" + station.passes());
         } else if (result instanceof SafetyReturnQuery.Overworld overworld) {
             ServerLevel level = server.overworld();
             move(player, level, travel.prepare(level, CelestialIds.EARTH_ID), Component.translatable(ARRIVED_OVERWORLD),
-                    "outcome=overworld passes=" + overworld.passes());
+                    "destination=overworld passes=" + overworld.passes());
         }
     }
 
@@ -283,8 +283,8 @@ public final class SpaceSafetyReturnService {
         }
         end(player.getUUID());
         player.sendSystemMessage(announcement);
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_SAFETY_RETURN player={} {} level={} at={}", player.getUUID(), audit,
-                level.dimension().location(), feet.toShortString());
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_SAFETY_RETURN player={} outcome=returned {} level={} at={}",
+                player.getUUID(), audit, level.dimension().location(), feet.toShortString());
     }
 
     /**
