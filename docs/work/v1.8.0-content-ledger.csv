@@ -296,7 +296,7 @@ config:MISSION.miningMissionTmeMultiplier,REDESIGNED,v1.6.0,mission tables,ADR-0
 config:MISSION.spawnableGasses,REDESIGNED,v1.6.0,gas tables,ADR-052,,
 config:OXYGEN.dropExtinguishedTorches,PLANNED,C18a,torch rules,ADR-062,,
 config:OXYGEN.EnableAtmosphericEffects,REDESIGNED,v1.4.0,per-body environment_effects and atmosphere data,ADR-034,no global switch,
-config:OXYGEN.entityAtmBypass,PLANNED,C18a,atmosphere bypass entity tag,ADR-062,with atmosphere effects on non-player entities,
+config:OXYGEN.entityAtmBypass,REDESIGNED,v1.8.0,atmosphere_bypass entity type tag,ADR-062 ADR-066,exempts atmospheric effects only; generated empty for modpacks,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:OXYGEN.OverrideGCAir,REJECTED,-,-,ADR-062,Galacticraft compatibility is a product non-goal,
 config:OXYGEN.oxygenVentConsumptionMultiplier,REDESIGNED,v0.4.0,vent consumption limits,ADR-024,,
 config:OXYGEN.OxygenVentPowerMultiplier,REDESIGNED,v0.4.0,vent consumption limits,ADR-024,,
@@ -306,7 +306,7 @@ config:OXYGEN.sealableBlockWhiteList,REDESIGNED,v0.4.0,atmosphere sealing tags,A
 config:OXYGEN.spaceSuitO2Buffer,REDESIGNED,v1.8.0,COMMON OXYGEN.spaceSuitO2Buffer,ADR-025 ADR-062 ADR-066,finite built-in reserve under D1,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 config:OXYGEN.suitTankCapacity,REDESIGNED,v1.8.0,COMMON OXYGEN.suitTankCapacity,ADR-025 ADR-062 ADR-066,tank creation multiplier under D1,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 config:OXYGEN.torchBlocks,PLANNED,C18a,torch rules,ADR-062,,
-config:OXYGEN.vacuumDamage,PLANNED,C18a,vacuum damage setting,ADR-062,modern vacuum damage is fixed,
+config:OXYGEN.vacuumDamage,IMPLEMENTED,v1.8.0,COMMON OXYGEN.vacuumDamage,ADR-062 ADR-066,"0 to 20 per scheduled second, default 2.0; zero stops damage only",docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:PERFORMANCE.atmosphereCalculationMethod,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,,
 config:PERFORMANCE.oxygenVentSize,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,,
 config:PLANET.allowPlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,,
@@ -413,7 +413,7 @@ event:KeyBindings.onKeyInput(KeyInputEvent),MERGED,-,keybinding:toggleJetpack,AD
 event:MapGenLander.populateChunkPostEvent(Post),MERGED,-,worldgen:MapGenLander,ADR-062,lander placement,
 event:PlanetEventHandler.blockPlacedEvent(PlaceEvent),PLANNED,C18a,torch rules without combustion air,ADR-062,torches turn unlit; listed torch blocks refuse placement,
 event:PlanetEventHandler.blockRightClicked(RightClickBlock),PLANNED,C18a,no fire starters without combustion air,ADR-062,"flint and steel, fire charges, blaze powder and blaze rods; the beer advancement is C18c",
-event:PlanetEventHandler.CheckSpawn(CheckSpawn),PLANNED,C18a,mob spawning follows the atmosphere,ADR-062,,
+event:PlanetEventHandler.CheckSpawn(CheckSpawn),REDESIGNED,v1.8.0,MobSpawnEvent.PositionCheck spawn admission,ADR-062 ADR-066,"denies spawns in unavailable, PENDING or unbreathable air; command and spawn-egg exceptions",docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 event:PlanetEventHandler.chunkLoadEvent(Post),DEFERRED,post-2.0,-,ADR-062,terraforming family,
 event:PlanetEventHandler.disconnected(ClientDisconnectionFromServerEvent),REDESIGNED,v1.4.0,client celestial cache reset,ADR-035,,
 event:PlanetEventHandler.fallEvent(LivingFallEvent),PLANNED,C18a,fall damage scales with gravity,ADR-062,,

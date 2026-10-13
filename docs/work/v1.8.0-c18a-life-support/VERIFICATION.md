@@ -125,3 +125,23 @@ Fifteen C18a rows stay PLANNED (W30 section 2.3):
 
 No Gate is approved. This file supports the ledger delivery marks only. S1, S2, V1, V2 and the
 art and provenance reviews remain open, as listed above.
+
+## Addendum (Root, 2026-10-14): W34 non-player atmosphere
+
+W34 merged after W31 wrote this file, so its three ledger rows were still PLANNED. This addendum delivers them.
+
+| Item | Value |
+|---|---|
+| Merge on `codex/v1.8.0-classic-content` | `179452d7` |
+| Slice | W34 (ADR-066 section 3.3): non-player atmosphere effects, `atmosphere_bypass`, spawn admission and `vacuumDamage` |
+| Tested HEAD | `85a0f6f4` |
+| Hosted run | 38398138235 (success) |
+| Review | Root review only. W34 changes no persistence |
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `config:OXYGEN.entityAtmBypass` | REDESIGNED | The entity-type tag `advancedrocketrycommunity:atmosphere_bypass`, generated empty. It exempts only atmospheric effects (`NonPlayerAtmosphereService`, `V180AtmosphereEntityTags`) |
+| `event:PlanetEventHandler.CheckSpawn(CheckSpawn)` | REDESIGNED | `MobSpawnEvent.PositionCheck` denies natural and spawner spawns at an unavailable, PENDING or unbreathable eye cell, or for an opted-in hostile profile outside a sealed room. The command and spawn-egg exceptions are tested |
+| `config:OXYGEN.vacuumDamage` | IMPLEMENTED | COMMON `OXYGEN.vacuumDamage`: 0 to 20 health points per scheduled second, default 2.0, which is the present engine's damage. Zero stops the damage only |
+
+This addendum is development evidence only. It approves no Required Gate, candidate, version or release.
