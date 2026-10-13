@@ -108,11 +108,14 @@ public final class ResearchReleaseCommands {
         }
     }
     private static ResearchControllerBlockEntity controller(MinecraftServer server, int index) {
-        BlockPos position = position(index); var chunk = server.overworld().getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
-        if (chunk == null || !(chunk.getBlockEntity(position) instanceof ResearchControllerBlockEntity controller)) {
-            throw new IllegalStateException("Native research controller not loaded: " + position);
-        }
+        var controller = loaded(server, index);
+        if (controller == null) { throw new IllegalStateException("Native research controller not loaded: " + position(index)); }
         return controller;
+    }
+    /** Null while a fixture chunk is still loading after a restart; forced chunks load after the server is ready. */
+    private static ResearchControllerBlockEntity loaded(MinecraftServer server, int index) {
+        BlockPos position = position(index); var chunk = server.overworld().getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
+        return chunk != null && chunk.getBlockEntity(position) instanceof ResearchControllerBlockEntity controller ? controller : null;
     }
     private static GroundSurveyJob job(MinecraftServer server) {
         return SatelliteMissionSavedData.get(server).groundSurveyQuery(jobs -> jobs.owned(OWNER)).stream().findFirst().orElseThrow();
@@ -121,11 +124,15 @@ public final class ResearchReleaseCommands {
         var json = new JsonObject(); json.addProperty("action", action);
         boolean ready = true;
         for (int i = 0; i < 3; i++) {
-            var controller = controller(server, i); json.addProperty("device" + i, controller.device().id().toString());
+            // An unloaded fixture reads as not ready; its missing fields fail any comparison that needs them.
+            var controller = loaded(server, i);
+            if (controller == null) { ready = false; continue; }
+            json.addProperty("device" + i, controller.device().id().toString());
             json.addProperty("fe" + i, controller.storedEnergy());
             ready &= controller.formed() && server.overworld().isPositionEntityTicking(position(i));
         }
-        ready &= server.overworld().canSeeSky(controller(server, 0).getBlockPos().offset(0, 3, 1)); json.addProperty("ready", ready);
+        var observatory = loaded(server, 0);
+        ready &= observatory != null && server.overworld().canSeeSky(observatory.getBlockPos().offset(0, 3, 1)); json.addProperty("ready", ready);
         var data = SatelliteMissionSavedData.get(server); var owned = data.groundSurveyQuery(jobs -> jobs.owned(OWNER));
         if (!owned.isEmpty()) {
             var job = owned.get(0); json.addProperty("job", job.jobId().toString()); json.addProperty("instance", job.instanceId().toString());
