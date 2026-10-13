@@ -62,11 +62,14 @@ final class EscrowTestReconciliation implements EscrowReconciliationScheduler.Dr
         proofs.entrySet().removeIf(entry -> { if (entry.getValue().valid()) { return false; } entry.getValue().release(); return true; });
         for (EscrowEndpoint endpoint : List.of(op.source(), op.destination())) {
             if (proofs.containsKey(endpoint.key())) { continue; }
-            if (busy.contains(endpoint.key())) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
+            if (busy.contains(endpoint.key()) || coordinator.admitting(endpoint.key())) {
+                completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+            }
             var chains = EscrowPrefix.chains(records); var targets = new ArrayList<EscrowBarrier.Target>();
             for (var chain : chains.values()) {
                 EscrowEndpoint candidate = chain.get(0).endpoint(); var fixture = fixtures.get(candidate.key());
-                if (!EscrowBarrier.sameSlot(endpoint, candidate) || fixture == null || !loaded(fixture, candidate)) { continue; }
+                if (!EscrowBarrier.sameSlot(endpoint, candidate) || fixture == null || !loaded(fixture, candidate)
+                        || coordinator.admitting(candidate.key())) { continue; }
                 EscrowPrefix.State frontier;
                 try { frontier = state(fixture, candidate); }
                 catch (RuntimeException invalidOtherEndpoint) { continue; }
@@ -74,7 +77,9 @@ final class EscrowTestReconciliation implements EscrowReconciliationScheduler.Dr
                 coordinator.freeze(candidate.key(), frontier);
                 targets.add(new EscrowBarrier.Target(candidate, frontier, root -> !veto.test(candidate) && EscrowTestEndpoints.validator(candidate, frontier).test(root)));
             }
-            var targetKeys = targets.stream().map(target -> target.endpoint().key()).toList(); busy.addAll(targetKeys);
+            var targetKeys = targets.stream().map(target -> target.endpoint().key()).toList();
+            if (!targetKeys.contains(endpoint.key())) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
+            busy.addAll(targetKeys);
             boolean accepted = runtime.barrier().beginJoint(runtime.store(fixtures.get(endpoint.key()).level()), targets,
                     fixtures.get(endpoint.key()).level().getServer().getTickCount(), result -> {
                         busy.removeAll(targetKeys);
