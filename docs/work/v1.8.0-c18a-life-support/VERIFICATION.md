@@ -145,3 +145,24 @@ W34 merged after W31 wrote this file, so its three ledger rows were still PLANNE
 | `config:OXYGEN.vacuumDamage` | IMPLEMENTED | COMMON `OXYGEN.vacuumDamage`: 0 to 20 health points per scheduled second, default 2.0, which is the present engine's damage. Zero stops the damage only |
 
 This addendum is development evidence only. It approves no Required Gate, candidate, version or release.
+
+## Addendum (Root, 2026-10-14): W33 torches and W38 gravity-scaled falls
+
+| Merge on `codex/v1.8.0-classic-content` | Slice | Tested HEAD | Hosted run | Review |
+|---|---|---|---|---|
+| `f2f8aa2c` | W33, W33F, W33G (ADR-066 section 3.2): combustion torches, unlit torches, fire starters | `dfaab973` | 38452267827 (success) | W33 review BLOCK, SHA-256 `79e13c96f3f4fcfd5ff3eaac07c65453dc46711b4e00a996d8fc5451fd35e60b`; W33F re-review BLOCK, `09c8d97b03e242442c324f0099ea3eb1f91caec7fe5c923b888acfa96ff7665f`; W33G's fixes verified by Root |
+| `68dbd882` | W38 (ADR-066 section 3.3, living gravity leaf B): gravity-scaled fall damage | `f4406064` | 38450840128 (success) | Root review |
+
+The review reports are kept in `D:/GitHub/ARCE-Task-Evidence/root-queue/W33-review/` and `W33F-review/`. The records are `records/W33.md`, `W33F.md`, `W33G.md`, `W38.md` and `W38-DESIGN.md`.
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `block:unlitTorch` | IMPLEMENTED | `advancedrocketrycommunity:unlit_torch` and `unlit_wall_torch`: no light or flame; the source pair is kept in a bounded schema-1 root; quarantined roots are protected (R-034) |
+| `command:root/addtorch` | REDESIGNED | The `torch_pairs` data catalog and the `combustion_torches` block tag replace the command |
+| `config:OXYGEN.torchBlocks` | REDESIGNED | The same catalog and tag replace the list |
+| `config:OXYGEN.dropExtinguishedTorches` | IMPLEMENTED | COMMON `OXYGEN.dropExtinguishedTorches`, default false: removes the torch and drops one pair item instead of converting it |
+| `event:PlanetEventHandler.blockPlacedEvent(PlaceEvent)` | REDESIGNED | Tagged torches placed in noncombustible or pending air turn unlit through a bounded per-Level queue; unsupported tagged torches refuse placement |
+| `event:PlanetEventHandler.blockRightClicked(RightClickBlock)` | REDESIGNED | Tagged fire starters (`combustion_fire_starters`) are suppressed without combustion air; an unlit torch is relit only in combustion air |
+| `event:PlanetEventHandler.fallEvent(LivingFallEvent)` | REDESIGNED | One `LivingFallEvent` listener scales a landing once by the applied gravity multiplier. The horse family stays native (ADR-066 W38 note) |
+
+This addendum is development evidence only. It approves no Required Gate, candidate, version or release.
