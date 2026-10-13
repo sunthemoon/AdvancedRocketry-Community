@@ -1,0 +1,7 @@
+[FAIL] line 7638: unsuccessful or unrecognized required-test summary: 1 required tests failed :(
+[FAIL] line 7664: shutdown before successful required-test summary
+[FAIL] the log has no successful required-test summary
+[FAIL] line 5197: unexpected ERROR, batch 'escrow_core', logger 'net.minecraft.gametest.framework.LogTestReporter/': jointterrainslotproofretainstheotherendpointlease failed! Joint terrain proof did not confirm both endpoints: SUPERSEDING_SAVE, proofs 0 [no GameTest frame]
+[INFO] 919 game tests complete; 1 required tests failed :(
+[INFO] FATAL 0, ERROR 82, WARN 115
+checker exit 1
