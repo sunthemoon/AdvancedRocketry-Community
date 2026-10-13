@@ -103,6 +103,10 @@ public final class EscrowRuntime {
                         (op, records, completion) -> completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.WAITING_UNLOADED, false)));
             }
             data.tick(event.getServer().getTickCount());
+            if (data.ledger().floors().stream().anyMatch(floor -> floor.hasUUID("transfer_id"))) {
+                var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.get(event.getServer());
+                if (journal.retryChecked(event.getServer())) { coordinator.collectFloors(journal); }
+            }
         }
         if (runtime.barrier != null) { runtime.barrier.tick(event.getServer().getTickCount()); }
         if (runtime.scheduler != null && data != null) {

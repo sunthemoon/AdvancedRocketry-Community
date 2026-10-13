@@ -22,6 +22,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     private long tick;
     private long lastStart = -10;
     private boolean closed;
+    private io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData floorJournal;
 
     public EscrowCoordinator(ResourceEscrowSavedData data, EscrowLedgerWriter writer) {
         this.data = data; this.writer = writer; issued = data.ledger().issuedThrough();
@@ -37,7 +38,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                 && !requests.containsKey(op.id()), "Duplicate or stale admission");
         EscrowTags.require(!frontiers.containsKey(op.source().key()) && !frontiers.containsKey(op.destination().key()), "Frozen endpoint frontier");
         var candidate = new ArrayList<>(queued.values()); candidate.add(op);
-        EscrowCodec.encode(data.ledger().append(candidate)); // Preflight every count, chain and byte bound before mutation.
+        EscrowFloors.preflight(data.ledger().append(candidate)); // Reserve the L2 floor before any queued L1 state changes.
         queued.put(op.id(), op); requests.put(op.id(), completion); issued = op.sequence(); data.setDirty();
     }
     public boolean commitPreparations() {
@@ -52,11 +53,20 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     void persistTransitions() { owner(); if (!transitions.isEmpty()) { autosave(); } }
     private EscrowLedgerWriter.Snapshot snapshot(boolean admissions, Set<UUID> retire) {
+        return snapshot(admissions, retire, Map.of());
+    }
+    private EscrowLedgerWriter.Snapshot snapshot(boolean admissions, Set<UUID> retire, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs) {
         EscrowLedger candidate = data.ledger();
         candidate = new EscrowLedger(candidate.id(), candidate.issuedThrough(), candidate.writerGeneration(),
                 candidate.records().stream().map(op -> transitions.containsKey(op.id())
                         ? op.withReason(transitions.get(op.id())) : op).toList(), candidate.floors(), candidate.tombstones());
-        if (retire != null) { candidate = candidate.retire(retire); }
+        if (retire != null) { candidate = EscrowFloors.retire(candidate, retire, proofs.entrySet().stream()
+                .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().frontier()))); }
+        if (floorJournal != null && floorJournal.acknowledgedCurrent()) {
+            // This capture runs on the owner thread. It never collects from a RAM-only journal removal.
+            candidate = EscrowFloors.collect(candidate, java.util.stream.Stream.concat(data.ledger().records().stream(), queued.values().stream()).toList(),
+                    id -> floorJournal.find(id).isEmpty());
+        }
         if (admissions) {
             List<EscrowOperation> additions = queued.values().stream()
                     .filter(op -> candidateContains(data.ledger(), op.id()) == false).toList();
@@ -123,7 +133,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         boolean accepted = writer.request(() -> {
             // Revalidate tokens at capture, not merely when the successor request is queued.
             // A superseded queued proof is a normal refusal, not an owner-thread exception.
-            return snapshot(false, frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) ? retired : null);
+            return snapshot(false, frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) ? retired : null, frozenProofs);
         }, result -> {
             acknowledge(result);
             if (result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
@@ -151,6 +161,13 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public boolean frozen(EscrowEndpoint.Key endpoint) { owner(); return frontiers.containsKey(endpoint); }
     public boolean writerIdle() { return writer.idle(); }
+    public EscrowFloors.Usage floorUsage() { owner(); return EscrowFloors.usage(data.ledger(), queued.values()); }
+    void collectFloors(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData journal) {
+        owner(); floorJournal = journal;
+        if (closed || !journal.acknowledgedCurrent()) { return; }
+        var candidate = EscrowFloors.collect(data.ledger(), queued.values(), id -> journal.find(id).isEmpty());
+        if (candidate.floors().size() != data.ledger().floors().size()) { data.setDirty(); autosave(); }
+    }
     public boolean logicalLocked(UUID logical) {
         owner();
         return frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
