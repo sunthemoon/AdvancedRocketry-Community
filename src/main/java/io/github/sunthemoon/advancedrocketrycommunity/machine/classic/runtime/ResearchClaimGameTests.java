@@ -76,7 +76,7 @@ public final class ResearchClaimGameTests {
         return List.of(registry.groundSurveys().all(), registry.instances(), registry.accounts(),
                 registry.satellites(), registry.missions(), registry.logicalGameTime(), registry.lastObservedGameTime(),
                 registry.saveEpoch(), registry.epochToWrite(), registry.scheduledCount(),
-                registry.reservedBytes("ground_surveys"), registry.reservedBytes("instances"), registry.reservedBytes("research_accounts"));
+                registry.reservedBytes("GROUND_SURVEYS"), registry.reservedBytes("INSTANCES"), registry.reservedBytes("ACCOUNTS"));
     }
     private static AsteroidInstance instance(UUID owner, UUID job, long now) {
         return new AsteroidInstance(2, UUID.randomUUID(), owner, CelestialIds.EARTH_ID, ModIdentity.id("small_asteroid"),
