@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 17:20) |
+| Slice | Scope | Pipeline state (2026-10-13 18:00) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -79,41 +79,66 @@ Hosted CI runs on each implementer branch after Root pushes it (workflow change
 
 ## Next candidates
 
-- The four C16c machines (crystallizer, chemical reactor, laser etcher, centrifuge) on
-  the W01 kernel, after W05.
-- C17a loader variants, monitoring station and linker (ADR-065 section 4).
-- C17b station controls and landing pad (ADR-065 sections 5 and 6.1); the landing pad
-  waits for W02.
-- C17c beacon and finder, satellite bay, solar array (ADR-065 sections 7 to 9).
-- C18a scrubber, charger and seals (ADR-066 sections 3 and 4).
-- C18b motion upgrades and jetpack (ADR-066 section 5.2), and the laser gun. The same task fixes W03 review M1 (decode refused workstation roots from detached copies) and L1 (R-026 and the ADR-066 note name the noncanonical-NBT trigger).
-- C18c observatory and advancements (ADR-066 section 6).
-- C18d presentation and client configuration (ADR-066 section 7).
-- Parallel bugs:
-  - the hosted chunk-save CME (being fixed by W08 under ADR-073) (runs 38064322640 and 38156329125 attempt 2, both at
-    batch `endgame_gravity_station`). Root cause, from the bytecode of the mapped
-    Forge 47.4.10 jar:
-    - vanilla 1.20.1 `IOWorker.loadAsync` returns the pending write's `CompoundTag`
-      without a copy;
-    - `ChunkStorage.upgradeChunkTag` then puts and removes `__context` on that
-      top-level tag;
-    - so when a chunk is unloaded and quickly reloaded, the main thread modifies the
-      tag while the IO thread is writing it.
+Source: W30's verified reconciliation, `records/W30-STATUS-PROPOSAL.md` on branch
+`codex/v1.8.0-w30-status` (`2bc87cee`), section 5. Dispatch order: progress first, then the
+parallel bugs.
 
-    The single `CompoundTag.write` frame under `NbtIo` shows the top-level tag. Later
-    Minecraft versions copy the pending data. The fix is the owner's choice: a Mixin
-    backport (needs an ADR), or a bounded ERROR expectation (needs a change to the log
-    ADR's exact-count rule);
-  - the unpaced multi-leg planetary flight test (run 38084795112);
-  - the 5 ms wall-clock budget per atmosphere-boundary callback (recurred on 2026-10-13 in W11b1's first native selection: `force_field_boundary` was rejected at startup under load)
-    (`AtmosphereBoundaryRegistry.MAX_CALLBACK_NANOS`). Under machine load, the adapter
-    test mod's provider exceeded it and mod loading failed (W01 record, crash at
-    2026-10-12 00:18). Changing the budget needs an ADR.
-  - a HotSpot C2 compiler crash on the hosted runner: SIGSEGV in
-    `BoolNode::Ideal`, Temurin 17.0.20.1. It happened in run 38156329125 attempt 1, the
-    shared branch after the W03 merge, during the batch `flight_concurrency`, and exit
-    code 134 ended the GameTest server. The job was re-run. If the crash recurs, pin the
-    JDK or exclude the method from compilation.
+- **Escrow chain:**
+  - W11b3: `fluid_fuel_loader` and the linker's rocket-binding half, with packaged S2 evidence
+    (also W02 F3's refill);
+  - W11c: cargo Fluid loaders and unloaders;
+  - W11d: item cargo loaders and unloaders;
+  - W11e: the full linker and the monitoring station;
+  - the satellite bay, after W27a's review (ADR-065 sections 4.2, 4.3 and 8).
+- **C16d** (ADR-064 section 10):
+  - the tracking circuit;
+  - the graph run with the Tau Ceti Levels removed;
+  - the rebalance and its CHANGELOG entries.
+- **C16a-07b:** one formation GameTest per motor tier (ADR-064 section 4.1).
+- **Chemical reactor special recipes:**
+  - the `space_breathing` enchantment application (ADR-066 section 5.1);
+  - the lossless carbon-cartridge refresh (section 3.1).
+- **C18a environment rules** (ADR-066 sections 3.2 and 3.3), in three or four tasks:
+  - torches and fire starters;
+  - non-player atmosphere effects, `atmosphere_bypass` and spawn admission;
+  - `vacuumDamage`;
+  - sleep and the two respawn options;
+  - underwater breathing;
+  - the space safety return;
+  - gravity-scaled fall damage, after its M1.
+- **The gas charge pad** (ADR-066 sections 4 and 9, D4). Needs the **owner's decision** first:
+  prove the player-file save ordering, or approve an alternative interaction.
+- **World-first advancements** `one_small_step` and `first_station_warp` (ADR-066 section 6.2,
+  D3), after W11b2.
+- **C18d** (ADR-066 section 7.1):
+  - client rendering of the black-hole sky;
+  - the elevator capsule effect, which needs an S2C carrier;
+  - producers for the `lathe`, `rolling_machine` and `machine_large` sounds;
+  - the sound-namespace fold;
+  - the manual listen;
+  - OBJ loading, once the assets are imported.
+- **Per-asset closure** of the 154 REVIEW assets (ADR-066 section 7.3).
+- **C19:**
+  - merge the validator chain (`82f82b1f`, `d605be33`);
+  - the full Python suite and the strict validator;
+  - the evidence references;
+  - `PORTING_MATRIX`;
+  - the ADR-068, ADR-070 and ADR-071 decisions;
+  - R32-03;
+  - the ledger closure.
+- **S1, V1 and V2** for every merged slice, plus W08 R02. These are for the final campaign.
+- **Parallel bugs** (open follow-ups):
+  - W01 L1 to L3;
+  - W02F (native restart; the locked rocket);
+  - W04 N4 to N6;
+  - W10-R1;
+  - W13 N1 to N3;
+  - W18 F8;
+  - W21b F9;
+  - W21c M1;
+  - W22 F8 to F10;
+  - the 5 ms atmosphere-boundary budget, which needs an ADR (it recurred on 2026-10-13);
+  - the HotSpot C2 crash, if it recurs.
 
 ## Parked
 
