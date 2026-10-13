@@ -161,11 +161,11 @@ public final class RocketFlightGameTests {
         primePadChunks(moon);
         clearPadRockets(earth);
         clearPadRockets(moon);
-        driver.after(20, () -> {
+        helper.runAfterDelay(20, () -> {
             clearPadRockets(earth);
             clearPadRockets(moon);
         });
-        driver.after(50, () -> {
+        helper.runAfterDelay(50, () -> {
             clearPadRockets(earth);
             clearPadRockets(moon);
         });
