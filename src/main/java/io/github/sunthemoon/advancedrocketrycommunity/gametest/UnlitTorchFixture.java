@@ -67,6 +67,13 @@ final class UnlitTorchFixture implements AutoCloseable, GameTestListener {
                     level.setChunkForced(chunk.x, chunk.z, true);
                 }
                 level.getChunk(chunk.x, chunk.z); // One explicitly forced fixture chunk, loaded before any placement.
+                // Torch changes wait until the 3x3 chunks around them are FULL (W33G). The force already gives these
+                // eight a FULL level; load them now rather than leave every conversion to asynchronous loading.
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dz = -1; dz <= 1; dz++) {
+                        level.getChunk(chunk.x + dx, chunk.z + dz);
+                    }
+                }
             }
             oldDrops = currentDrops();
             Field field = GameTestHelper.class.getDeclaredField("testInfo");

@@ -4,8 +4,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.Deferred
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -22,7 +23,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * The environmental-change adapter frozen in the W33 design: every torch change needs a FULL chunk inside the world
- * and build height, then passes one cancellable preflight {@link BlockEvent.EntityPlaceEvent} naming the new state. A
+ * and build height, with its eight neighbouring chunks FULL too (W33G), then passes one cancellable preflight
+ * {@link BlockEvent.EntityPlaceEvent} naming the new state. A
  * relight names its player; an environmental change names no entity, so no FakePlayer and no operator bypass exist.
  * A cancelled change leaves the block, its data and every item untouched.
  */
@@ -61,7 +63,7 @@ final class TorchWorldChanges {
     /** Restores the pair's exact lit block in the saved orientation; the caller has checked the air and the root. */
     static Result relight(ServerPlayer player, ServerLevel level, BlockPos pos, BlockState unlit, BlockState lit) {
         // WallTorchBlock.canSurvive reads the support through Level.getBlockState (FULL, create=true).
-        if (!requiredCellsLoaded(level, pos)) {
+        if (!neighbourhoodLoaded(level, pos)) {
             return Result.DEFERRED;
         }
         if (!lit.canSurvive(level, pos)) {
@@ -76,7 +78,7 @@ final class TorchWorldChanges {
 
     private static Result admit(ServerLevel level, BlockPos pos, BlockState before, BlockState after,
                                 @Nullable Entity actor) {
-        if (!requiredCellsLoaded(level, pos)) {
+        if (!neighbourhoodLoaded(level, pos)) {
             return Result.DEFERRED;
         }
         if (!level.getBlockState(pos).equals(before)
@@ -91,7 +93,7 @@ final class TorchWorldChanges {
             return Result.CANCELLED;
         }
         // A preflight subscriber may change availability/state. Do not mutate from a stale admission snapshot.
-        if (!requiredCellsLoaded(level, pos)) {
+        if (!neighbourhoodLoaded(level, pos)) {
             return Result.DEFERRED;
         }
         return level.getBlockState(pos).equals(before) && !UnlitTorchBlockEntity.protectedAt(level, pos)
@@ -99,25 +101,27 @@ final class TorchWorldChanges {
     }
 
     /**
-     * Native UPDATE_ALL shape notifications read the six adjacent cells. Assigning the new block entity also calls
-     * BlockEntity.setChanged -> Level.updateNeighbourForOutputSignal, which can read a second cell beyond a conductor.
-     * Check both rings without acquiring chunks; deferred conversions retain their bounded queue entry.
+     * The torch's chunk and its eight neighbours must all be FULL now, checked without acquiring any: the neighbourhood
+     * vanilla guarantees its own block ticks. UPDATE_ALL shape updates, a neighbour's own reads (a stair reads the cell
+     * it faces, possibly diagonal to the torch) and BlockEntity.setChanged's comparator output stay inside it. Longer
+     * chains, such as redstone or observer propagation, are vanilla's behaviour for any block change. Deferred
+     * conversions retain their bounded queue entry.
      */
-    private static boolean requiredCellsLoaded(ServerLevel level, BlockPos pos) {
+    private static boolean neighbourhoodLoaded(ServerLevel level, BlockPos pos) {
         if (!CombustionAir.loaded(level, pos)) {
             return false;
         }
-        for (Direction side : Direction.values()) {
-            if (!nativeReadAvailable(level, pos.relative(side)) || !nativeReadAvailable(level, pos.relative(side, 2))) {
-                return false;
+        ServerChunkCache chunks = level.getChunkSource();
+        int x = SectionPos.blockToSectionCoord(pos.getX()), z = SectionPos.blockToSectionCoord(pos.getZ());
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                // hasChunk alone admits a FULL-level holder whose chunk is still loading; getChunkNow needs it loaded.
+                if (!chunks.hasChunk(x + dx, z + dz) || chunks.getChunkNow(x + dx, z + dz) == null) {
+                    return false;
+                }
             }
         }
         return true;
-    }
-
-    private static boolean nativeReadAvailable(ServerLevel level, BlockPos pos) {
-        // Level.getBlockState returns air outside build height without consulting its chunk source.
-        return level.isOutsideBuildHeight(pos) || CombustionAir.loaded(level, pos);
     }
 
     /** Preflight for a torch change; it changes no room boundary, so atmosphere invalidation skips it. */
