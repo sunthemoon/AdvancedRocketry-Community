@@ -365,6 +365,7 @@
   "screen.advancedrocketrycommunity.classic.energy": "Waiting for power",
   "screen.advancedrocketrycommunity.classic.formed": "Formed: %s",
   "screen.advancedrocketrycommunity.classic.gravity": "Gravity above machine limit",
+  "screen.advancedrocketrycommunity.classic.ineligible": "Input item not eligible for this recipe",
   "screen.advancedrocketrycommunity.classic.input": "Waiting for inputs",
   "screen.advancedrocketrycommunity.classic.limit": "Resource or catalog limit",
   "screen.advancedrocketrycommunity.classic.lookup": "Checking recipes",

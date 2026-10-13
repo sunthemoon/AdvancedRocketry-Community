@@ -36,10 +36,14 @@ public final class CarbonCartridge {
         return uses(stack, cartridge) == 0 ? withUses(stack, MAX_USES) : null;
     }
     private static ItemStack withUses(ItemStack stack, int uses) {
-        ItemStack result = stack.copy();
-        CompoundTag root = new CompoundTag(); root.putInt("schema_version", 1); root.putInt("uses", uses);
-        result.getOrCreateTag().put(KEY, root);
+        ItemStack result = stack.copy(); withUsesForDisplay(result, uses);
         return EquipmentNbt.safe(result) ? result : null;
+    }
+    /** Writes a supported root into a detached stack; recipe displays use it without any eligibility decision. */
+    public static void withUsesForDisplay(ItemStack stack, int uses) {
+        if (uses < 0 || uses > MAX_USES) { throw new IllegalArgumentException("Cartridge uses"); }
+        CompoundTag root = new CompoundTag(); root.putInt("schema_version", 1); root.putInt("uses", uses);
+        stack.getOrCreateTag().put(KEY, root);
     }
     public static ItemStack decode(CompoundTag saved) {
         if (saved.isEmpty()) { return ItemStack.EMPTY; }
