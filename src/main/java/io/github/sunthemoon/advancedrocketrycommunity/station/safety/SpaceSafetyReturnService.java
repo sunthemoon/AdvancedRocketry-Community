@@ -14,6 +14,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAcc
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -154,10 +155,26 @@ public final class SpaceSafetyReturnService {
         if (query.size() == 0) {
             return;
         }
-        for (SafetyReturnQuery.Result result : query.tick(new LiveWorld(server))) {
+        List<SafetyReturnQuery.Result> results;
+        try {
+            results = query.tick(new LiveWorld(server));
+        } catch (RuntimeException failure) {
+            // Never let the safety return stop the server tick; the players' next attempts start a fresh query.
+            AdvancedRocketryCommunity.LOGGER.error("ARCE_SAFETY_RETURN_FAILED stage=query jobs={}", query.size(), failure);
+            query.clear();
+            return;
+        }
+        for (SafetyReturnQuery.Result result : results) {
             ServerPlayer player = server.getPlayerList().getPlayer(result.player());
-            if (player != null) {
+            if (player == null) {
+                continue;
+            }
+            try {
                 commit(server, player, result);
+            } catch (RuntimeException failure) {
+                end(result.player());
+                AdvancedRocketryCommunity.LOGGER.error("ARCE_SAFETY_RETURN_FAILED stage=commit player={}",
+                        result.player(), failure);
             }
         }
     }
