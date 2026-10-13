@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 23:30) |
+| Slice | Scope | Pipeline state (2026-10-13 23:40) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -62,7 +62,7 @@ give their SHA-256 values.
 | [W30](TASK-W30-STATUS-RECONCILIATION.md) | Status reconciliation proposal for Root: COMPLETION-PLAN C16 to C19, the ledger, pre-handover items, CURRENT_VERSION | **Merged** `0622b982`. Applied by Root: COMPLETION-PLAN `eed1c6e3`, CURRENT_VERSION `6ef115b0` (history moved to the log) |
 | [W31](TASK-W31-LEDGER-EVIDENCE.md) | Per-batch delivery evidence files and a ready-to-apply ledger patch | **Merged** `777b8b5d`. Root applied the test-fixture patch `ce593e67` and the ledger patch `065c0c36` (146 units delivered, 40 PLANNED; validator PASS; ledger tests 58 OK). Root fix `9dbaa637`: the C16c and research controller models used a missing `machine_casing` texture |
 | [W32](TASK-W32-CHEMICAL-SPECIAL-RECIPES.md) | Chemical reactor special recipes: `space_breathing` application, lossless cartridge refresh | **Merged** `58ca2269` (hosted run 38390433422; the W28 guard passes with the shared branch merged in) |
-| [W33](TASK-W33-TORCHES.md) | C18a combustion torches, unlit torches and fire starters (ADR-066 section 3.2) | Implementation through `ef318338` (Claude; stopped at a usage limit before its record). Codex is finishing the record and the full runs since 23:01; then one read-only review, because it adds the persistent `arce_unlit_torch` root |
+| [W33](TASK-W33-TORCHES.md) | C18a combustion torches, unlit torches and fire starters (ADR-066 section 3.2) | Delivered through `3c006f12` (implementation by Claude, finished by Codex; 2,895 unit tests; 903 of 906 GameTests, with all 11 W33 tests passing). The three failures are the joint-proof flake (W36) and two W25 frontier tests ("No loaded frontier available"), possibly a W33 fixture interaction. Shared branch merged in (config count 95). Branch CI 38423864085 on `084cdb74`. Independent review (Codex) running since 23:39 |
 | [W34](TASK-W34-NONPLAYER-ATMOSPHERE.md) | C18a non-player atmosphere effects, `atmosphere_bypass`, spawn admission, `vacuumDamage` | **Merged** `179452d7` (hosted run 38398138235; Root review) |
 | [W35](TASK-W35-C16D-REMAINING.md) | Finish C16d: tracking circuit, graph without Tau Ceti, rebalance and CHANGELOG | **Merged** (hosted run 38419018623; Root review). C16d is complete apart from the ledger update for the tracking circuit |
 | [W36](TASK-W36-JOINT-PROOF-FLAKE.md) | Parallel bug: diagnose and fix the joint-proof `SUPERSEDING_SAVE` flake (the first fix `4b116fae` did not hold) | Claude, running since 23:03 |
