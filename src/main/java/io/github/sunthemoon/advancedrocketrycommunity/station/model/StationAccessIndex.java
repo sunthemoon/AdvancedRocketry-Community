@@ -57,7 +57,7 @@ public final class StationAccessIndex {
         generation++;
     }
 
-    /** Moves an indexed station's links to its updated team; an unchanged team or an unknown station changes nothing. */
+    /** Moves an indexed station's links to its updated team; an unchanged team or unknown station changes nothing. */
     void update(StationState station) {
         Objects.requireNonNull(station, "station");
         Set<UUID> before = teams.get(station.stationId());
