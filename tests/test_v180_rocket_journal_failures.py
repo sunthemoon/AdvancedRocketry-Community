@@ -4,7 +4,7 @@ from pathlib import Path
 import struct
 from tempfile import TemporaryDirectory
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_rocket_journal_failures as runner
@@ -20,6 +20,17 @@ def rocket():
 
 
 class RocketJournalFailuresTest(unittest.TestCase):
+    def test_restart_wait_addresses_only_the_loaded_source_identity(self):
+        process = Mock()
+        process.wait_for.return_value = 17
+        entity = "11111111-2222-3333-4444-555555555555"
+        self.assertEqual(17, runner.wait_loaded_source(process, entity))
+        pattern, timeout = process.wait_for.call_args.args
+        self.assertEqual(45, timeout)
+        self.assertIsNotNone(pattern.search("ARCE_ROCKET_ENTITY_ACTIVE entity=" + entity + " operational=true"))
+        self.assertIsNone(pattern.search("ARCE_ROCKET_ENTITY_ACTIVE entity=00000000-2222-3333-4444-555555555555 "))
+        self.assertIsNone(pattern.search("ARCE_ROCKET_ENTITY_ACTIVE entity=" + entity + "0 "))
+
     def test_source_placement_and_passengers_are_not_rewritten(self):
         cases = []
         changed = rocket(); changed["Pos"] = [384.5, 102.0, 384.5]; cases.append(changed)

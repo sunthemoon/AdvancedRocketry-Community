@@ -109,6 +109,12 @@ def check_log(lines: list[str]) -> None:
         raise smoke.SmokeError(f"Expected one journal failure streak, observed {errors}")
 
 
+def wait_loaded_source(process, entity: str) -> int:
+    # READY precedes asynchronous entity loading on restart. Observe the exact
+    # persisted source joining before addressing it through the console adapter.
+    return process.wait_for(re.compile(r"ARCE_ROCKET_ENTITY_ACTIVE entity=" + re.escape(entity) + r"(?: |$)"), 45)
+
+
 def run(args) -> dict:
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     intended = Path("D:/GitHub/ARCE-Task-Evidence/Temp").resolve()
@@ -157,6 +163,8 @@ def run(args) -> dict:
                 if restart == 0:
                     entity = harness.assemble(process)["entity"]
                     harness.refuel(process, EARTH, entity)
+                else:
+                    wait_loaded_source(process, entity)
                 if restart == 0 or mode == "ADMISSION":
                     start = len(process.lines)
                     process.command(f"arce rocket release-test launch {entity} moon")
