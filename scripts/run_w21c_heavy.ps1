@@ -9,12 +9,16 @@ if ((Get-Location).Path -ne $workspace) { throw 'Run only from the W21C worktree
 $lock = 'D:\GitHub\ARCE-Task-Evidence\locks\heavy-jvm'
 $token = "W21C-$Target-$([guid]::NewGuid())"
 $deadline = (Get-Date).AddHours(3)
+$lastNotice = [datetime]::MinValue
 while (-not (New-Item -ItemType Directory -Path $lock -ErrorAction SilentlyContinue)) {
     if ((Get-Date) -ge $deadline -or ((Get-Date) - (Get-Item -LiteralPath $lock).CreationTime).TotalHours -gt 3) {
         throw 'Heavy JVM lock timed out or is older than three hours. It has not been removed.'
     }
-    Write-Output "Waiting for heavy JVM lock: $(Get-Content -LiteralPath "$lock\owner.txt" -ErrorAction SilentlyContinue)"
-    Start-Sleep -Seconds 60
+    if (((Get-Date) - $lastNotice).TotalSeconds -ge 30) {
+        Write-Output "Waiting for heavy JVM lock: $(Get-Content -LiteralPath "$lock\owner.txt" -ErrorAction SilentlyContinue)"
+        $lastNotice = Get-Date
+    }
+    Start-Sleep -Seconds 5
 }
 try {
     Set-Content -LiteralPath "$lock\owner.txt" -Value $token
