@@ -170,5 +170,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                 .anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
     }
     @Override public void close() { owner(); if (!closed) { closed = true; writer.close(); frontiers.clear(); } }
+    /** Crash path, where ServerStoppingEvent never ran: no drain or callbacks, but the writer is joined. */
+    public void abort() { owner(); if (!closed) { closed = true; writer.abort(); frontiers.clear(); } }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Escrow coordinator requires its owner thread"); }
 }

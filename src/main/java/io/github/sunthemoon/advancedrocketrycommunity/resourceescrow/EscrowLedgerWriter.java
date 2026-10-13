@@ -206,7 +206,15 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         }
     }
     @Override public void close() {
-        owner(); if (closed) { return; } drain(); closed = true; io.shutdown();
+        owner(); if (closed) { return; } drain(); closed = true; join();
+    }
+    /** Crash path: refuse requests, pump no callbacks and join the IO thread. The target file stays authoritative. */
+    public void abort() {
+        owner(); if (closed) { return; }
+        closed = true; draining = true; active = null; successor = null; captured = null; join(); completions.clear();
+    }
+    private void join() {
+        io.shutdown();
         try { while (!io.awaitTermination(1, TimeUnit.SECONDS)) { /* Never release world ownership while IO is active. */ } }
         catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new IllegalStateException(interrupted); }
     }

@@ -296,6 +296,31 @@ class EscrowLedgerWriterTest {
         assertTrue(outcomes.stream().allMatch(c -> c.outcome() == EscrowLedgerWriter.Outcome.COMMITTED));
         assertEquals(2, CheckedSavedDataFile.readPayload(file(), ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow().getLong("writer_generation"));
     }
+    /** Review W11b1 finding 5: no autosave after the server stops, and the crash path joins IO without callbacks. */
+    @Test @Timeout(60) void crashPathStartsNoGenerationAndJoinsTheWriterWithoutCallbacks() throws Exception {
+        var idleData = ResourceEscrowSavedData.create(); var idleWriter = new EscrowLedgerWriter(directory.resolve("idle").resolve(file().getFileName()), 0);
+        try (var idle = new EscrowCoordinator(idleData, idleWriter)) {
+            idleData.attach(idle, () -> false); idleData.setDirty(); idleData.save(file().toFile());
+            assertTrue(idleWriter.idle(), "A stopped server started a ledger generation from saveAllChunks");
+        }
+        CountDownLatch staged = new CountDownLatch(1), release = new CountDownLatch(1); AtomicBoolean moved = new AtomicBoolean();
+        var writer = new EscrowLedgerWriter(file(), 0, (pending, target) -> {
+            staged.countDown(); await(release); CheckedSavedDataFile.atomicMove(pending, target); moved.set(true);
+        });
+        var data = ResourceEscrowSavedData.create(); var coordinator = new EscrowCoordinator(data, writer);
+        data.attach(coordinator, () -> true); data.setDirty(); data.save(file().toFile());
+        assertFalse(writer.idle()); assertTrue(staged.await(5, TimeUnit.SECONDS));
+        var releaser = new Thread(() -> {
+            try { Thread.sleep(200); } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
+            release.countDown();
+        });
+        releaser.start(); coordinator.abort(); releaser.join();
+        assertTrue(moved.get(), "World ownership could be released while the ledger IO thread was active");
+        assertEquals(0, data.ledger().writerGeneration(), "The crash path pumped a writer callback");
+        assertEquals(1, CheckedSavedDataFile.readPayload(file(), ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow().getLong("writer_generation"));
+        assertFalse(writer.request(() -> EscrowLedgerWriter.Snapshot.of(EscrowTestFixtures.ledger().generation(2), Set.of()), result -> { }));
+        coordinator.autosave(); coordinator.close(); assertTrue(writer.idle());
+    }
     private static void await(CountDownLatch latch) {
         try { if (!latch.await(5, TimeUnit.SECONDS)) { throw new AssertionError("Writer test gate timed out"); } }
         catch (InterruptedException failure) { throw new AssertionError(failure); }

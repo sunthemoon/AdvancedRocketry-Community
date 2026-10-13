@@ -17,6 +17,8 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkDataEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -142,6 +144,27 @@ public final class EscrowRuntime {
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) { data.stop(); }
         if (runtime.barrier != null) { runtime.barrier.close(); }
+        if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
+    }
+    /**
+     * Crash path: runServer calls stopServer without ServerStoppingEvent. stopServer still unloads the overworld after
+     * saveAllChunks and before LevelStorageAccess.close(), so the writer is joined while world storage is owned.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void unload(LevelEvent.Unload event) {
+        if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.OVERWORLD) { crashStop(level.getServer(), level); }
+    }
+    /** Backstop when stopServer failed before the overworld unloaded; ownership may already be released. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopped(ServerStoppedEvent event) {
+        crashStop(event.getServer(), event.getServer().overworld());
+    }
+    private static void crashStop(MinecraftServer server, ServerLevel overworld) {
+        if (overworld == null) { return; }
+        EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
+        if (runtime == null || runtime.stopping) { return; }
+        runtime.stopping = true;
+        if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
+        ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server);
+        if (data != null) { data.abort(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {
