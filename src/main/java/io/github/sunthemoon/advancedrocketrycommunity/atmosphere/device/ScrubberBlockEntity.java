@@ -27,6 +27,7 @@ public final class ScrubberBlockEntity extends BlockEntity {
     private LazyOptional<IItemHandler> items = createItems();
     public ScrubberBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.CO2_SCRUBBER.get(), pos, state); }
     public UUID identity() { return identity; }
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     public boolean available() { return refused == null && DeviceAccess.loaded(this); }
     public void unbind(OxygenVentBlockEntity owner, UUID generation) {
         if (available() && boundTo(owner, generation)) { ownerPosition = null; ownerGeneration = null; capabilityGeneration++;

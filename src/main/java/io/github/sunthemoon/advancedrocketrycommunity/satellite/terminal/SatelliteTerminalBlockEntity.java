@@ -564,6 +564,15 @@ public final class SatelliteTerminalBlockEntity extends BlockEntity implements M
         return new SatelliteTerminalMenu(id, playerInventory, this, SatelliteTerminalTargets.current());
     }
 
+    /**
+     * Vanilla's {@code BlockEntityTag} merge cannot set the owner, terminal ID or receipts for a non-operator. The
+     * block's own carried-root load in {@code setPlacedBy} (ADR-051 section 5) is separate.
+     */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     @Override
     protected void saveAdditional(CompoundTag parent) {
         super.saveAdditional(parent);

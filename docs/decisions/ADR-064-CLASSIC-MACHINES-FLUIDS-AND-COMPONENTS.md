@@ -385,6 +385,23 @@ placed it; a pump without an owner (placed by a machine) drains nothing.
    in survival from a new world, counting energy (the combustion generator),
    Level access and discovery. Its report lists each item's first route. C16d
    also runs it with the Tau Ceti Levels removed (ADR-063 revision 6).
+
+   *Implementation note (W19, 2026-10-12; Root decision under AGENTS.md
+   section 13; the decision itself is unchanged).* The all-item check treats
+   exactly five registered items as optional cross-mod inputs:
+   `silicon_dust`, `steel_dust`, `titanium_dust`, `titanium_aluminide_dust`
+   and `titanium_iridium_dust`, with their `forge:dusts/<material>` tags.
+   - **Why these five.** ADR-063 §1 registers them for tag compatibility, but
+     ADR-063 §2 limits native processing to ore-to-dust pressing, and none of
+     these materials has an eligible ore. Steel and the two titanium alloys
+     are alloys, silicon has no ore, and rutile pressing was removed in C15a
+     to keep titanium on the arc furnace.
+   - **Baseline.** This matches the 1.12.2 baseline, where these dusts came
+     from other mods' ore processing.
+   - **What the check enforces.** The set is exact. No required item depends
+     only on these dusts. Every other registered item needs a survival route.
+   - **Sources.** `docs/work/v1.8.0-root-queue/TASK-W19-ROOT-DECISION-01.md`
+     and `records/W19.md`.
 3. **Rebalance.** Existing v1.x recipes that the classic chain supersedes
    (for example the v1.2 precision recipes that stand in for circuits) move to
    the classic components where the graph shows a route; each change is listed

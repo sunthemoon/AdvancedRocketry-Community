@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": {
+      "tag": "forge:ingots/copper"
+    },
+    "I": {
+      "tag": "forge:plates/iron"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "CMC",
+    "ICI"
+  ],
+  "result": {
+    "count": 2,
+    "item": "advancedrocketrycommunity:power_output_plug"
+  }
+}

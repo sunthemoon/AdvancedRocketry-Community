@@ -37,6 +37,12 @@ final class PackagedRecipeGraph {
     static final String OVERWORLD = "access:overworld";
     static final String ENERGY = "energy:fe";
     static final String ROCKET = "travel:rocket";
+    /** TASK-W19-ROOT-DECISION-01 (3c08ab5d): compatibility inputs, never vanilla/native roots. */
+    static final Set<String> OPTIONAL_CROSS_MOD_INPUTS = Set.of(
+            id("silicon_dust"), id("steel_dust"), id("titanium_dust"),
+            id("titanium_aluminide_dust"), id("titanium_iridium_dust"),
+            "#forge:dusts/silicon", "#forge:dusts/steel", "#forge:dusts/titanium",
+            "#forge:dusts/titanium_aluminide", "#forge:dusts/titanium_iridium");
     /** Vanilla items that survival play cannot obtain; no recipe may use them as an input. */
     static final Set<String> NON_SURVIVAL = Set.of("minecraft:bedrock", "minecraft:barrier", "minecraft:command_block",
             "minecraft:chain_command_block", "minecraft:repeating_command_block", "minecraft:structure_block",
@@ -54,6 +60,8 @@ final class PackagedRecipeGraph {
     final Set<String> nodes = new TreeSet<>();
     final Set<String> roots = new TreeSet<>();
     final Map<String, Producer> producers = new TreeMap<>();
+    /** Runtime source citations for non-recipe producers, included in the report. */
+    final Map<String, String> codeSources = new TreeMap<>();
     final Set<String> nonSurvivalInputs = new TreeSet<>();
     /** Empty for a successfully loaded graph; unknown types reject loading instead of skipping recipes. */
     final Set<String> unmodelledTypes = new TreeSet<>();
@@ -86,6 +94,7 @@ final class PackagedRecipeGraph {
                 List.of(id("rocket_seat")), List.of(id("guidance_computer")),
                 List.of(id("fuel_loader")), List.of(id("rocket_fuel_cell"))), List.of(ROCKET));
         graph.produce("flight", List.of(List.of(ROCKET)), List.of("access:moon", "access:space"));
+        CodeAcquisitionGraph.populate(graph);
         return graph;
     }
 
@@ -176,6 +185,8 @@ final class PackagedRecipeGraph {
                     outputs.add(result(json.get("result")));
                 }
                 case "advancedrocketrycommunity:electrolyzing" -> {
+                    codeSources.put("recipe:" + recipe, "machine/electrolyzer/ElectrolyzerBlockEntity.serverTick; "
+                            + "ElectrolyzerRecipeResolver; ElectrolyzerRecipe (canister outputs and water/FE inputs)");
                     slots.add(List.of(id("electrolyzer")));
                     machineInputs(json, slots);
                     slots.add(ingredient(json.get("ingredient"), recipe));
@@ -534,5 +545,19 @@ final class PackagedRecipeGraph {
     /** A copy for the evaluator. */
     List<Producer> producerList() {
         return List.copyOf(producers.values());
+    }
+
+    /** Remove forbidden inputs/outputs from producers; callers also remove these nodes from their roots. */
+    List<Producer> withoutInputs(Set<String> forbidden) {
+        List<Producer> result = new ArrayList<>();
+        for (Producer producer : producers.values()) {
+            List<List<String>> slots = producer.slots().stream()
+                    .map(slot -> slot.stream().filter(node -> !forbidden.contains(node)).toList()).toList();
+            List<String> outputs = producer.outputs().stream().filter(node -> !forbidden.contains(node)).toList();
+            if (!outputs.isEmpty() && slots.stream().noneMatch(List::isEmpty)) {
+                result.add(new Producer(producer.id(), slots, outputs));
+            }
+        }
+        return result;
     }
 }

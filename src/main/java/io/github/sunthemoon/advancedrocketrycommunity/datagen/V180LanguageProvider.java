@@ -39,11 +39,13 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180AtmosphereAnalyzerLanguage.translations(chinese).forEach(this::add);
         V180SealDetectorLanguage.translations(chinese).forEach(this::add);
         V180JackhammerLanguage.translations(chinese).forEach(this::add);
+        V180LaserGunData.translations(chinese).forEach(this::add);
         V180EquipmentData.language(chinese).forEach(this::add);
         V180LifeSupportData.language(chinese).forEach(this::add);
         V180MotionLanguage.translations(chinese).forEach(this::add);
         V180StationLightLanguage.translations(chinese).forEach(this::add);
         V180StationControlData.language(chinese).forEach(this::add);
+        V180BeaconData.language(chinese).forEach(this::add);
         V180ThermiteLanguage.translations(chinese).forEach(this::add);
         V180CraftingComponentData.language(chinese).forEach(this::add);
         V180IoBoardData.language(chinese).forEach(this::add);
@@ -51,6 +53,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180ControlBoardData.language(chinese).forEach(this::add);
         V180CircuitPlateData.language(chinese).forEach(this::add);
         V180SolarLanguage.entries(chinese).forEach(this::add);
+        V180SolarArrayLanguage.entries(chinese).forEach(this::add);
         V180AirlockData.language(chinese).forEach(this::add);
         V180PropulsionLanguage.entries(chinese).forEach(this::add);
         V180PresentationLanguage.translations(chinese).forEach(this::add);

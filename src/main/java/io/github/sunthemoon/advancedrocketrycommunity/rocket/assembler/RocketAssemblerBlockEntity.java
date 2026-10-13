@@ -35,6 +35,12 @@ public final class RocketAssemblerBlockEntity extends BlockEntity {
         return preservedFutureData != null;
     }
 
+    /** Item NBT cannot plant a retained future root that blocks scans; only an operator's is loaded. */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     @Override
     protected void saveAdditional(CompoundTag parent) {
         super.saveAdditional(parent);

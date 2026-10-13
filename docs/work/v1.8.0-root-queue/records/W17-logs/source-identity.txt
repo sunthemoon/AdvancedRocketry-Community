@@ -1,0 +1,2 @@
+Source commit: 8270ff8a3f931ac0b94065ff6d1306625a1d82ec
+GameTest launches Forge userdev compiled classes, not a packaged dedicated server.

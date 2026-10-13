@@ -74,11 +74,15 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180JackhammerData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180LaserGunData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180EquipmentData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180StationLightData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180StationControlData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180BeaconData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180ThermiteData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
@@ -95,6 +99,9 @@ public final class BootstrapDataGenerators {
                 new V180AirlockData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180SolarData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180SolarArrayData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeServer(), new SolarArrayGameTestStructureProvider(output));
         var worldgen = generator.addProvider(event.includeServer(), V180Worldgen.provider(output, event.getLookupProvider()));
         generator.addProvider(event.includeServer(), new V180BiomeTags(output, worldgen.getRegistryProvider(),
                 existingFiles));

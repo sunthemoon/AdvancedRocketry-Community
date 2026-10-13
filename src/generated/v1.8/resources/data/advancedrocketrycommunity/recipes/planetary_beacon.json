@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "a": {
+      "item": "advancedrocketrycommunity:advanced_circuit"
+    },
+    "b": {
+      "item": "advancedrocketrycommunity:control_board"
+    },
+    "p": {
+      "tag": "forge:plates/steel"
+    },
+    "u": {
+      "item": "advancedrocketrycommunity:user_interface"
+    }
+  },
+  "pattern": [
+    "pap",
+    "ubu",
+    "ppp"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:planetary_beacon"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "c": {
+      "item": "advancedrocketrycommunity:basic_circuit"
+    },
+    "p": {
+      "tag": "forge:plates/aluminum"
+    },
+    "u": {
+      "item": "advancedrocketrycommunity:user_interface"
+    }
+  },
+  "pattern": [
+    " p ",
+    "ucu",
+    " p "
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:beacon_finder"
+  }
+}

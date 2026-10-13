@@ -53,6 +53,12 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
         menuData = new RollingMachineMenuData(this);
     }
 
+    /** Item NBT cannot plant a machine instance ID, a process or a preserved root; only an operator's is loaded. */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     @Override
     public void onLoad() {
         super.onLoad();

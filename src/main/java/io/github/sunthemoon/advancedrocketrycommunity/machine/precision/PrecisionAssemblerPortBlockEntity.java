@@ -80,6 +80,12 @@ public final class PrecisionAssemblerPortBlockEntity extends BlockEntity
         createCapabilityViews();
     }
 
+    /** Item NBT cannot plant a part binding, a migration marker or a preserved root; only an operator's is loaded. */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     @Override
     public void onLoad() {
         super.onLoad();
