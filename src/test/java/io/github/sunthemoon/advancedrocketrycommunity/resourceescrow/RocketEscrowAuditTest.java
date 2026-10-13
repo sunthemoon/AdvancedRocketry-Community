@@ -112,4 +112,19 @@ final class RocketEscrowAuditTest {
             assertTrue(disk.records().stream().allMatch(op -> op.reason() == EscrowReason.RELOCATED_ENDPOINT));
         }
     }
+
+    @Test void settlementPhasesCannotFallThroughToOrdinaryRetirement() {
+        for (var phase : List.of(EscrowOperation.Phase.SETTLING_ACCEPT, EscrowOperation.Phase.SETTLING_ABANDON)) {
+            var before = EscrowTestFixtures.operation(1);
+            var settling = new EscrowOperation(before.id(), before.sequence(), before.owner(), before.createdTick(), phase,
+                    before.reason(), before.payload(), before.payloadHash(), before.source(), before.destination(), before.guard());
+            var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger(settling)));
+            try (var writer = new EscrowLedgerWriter(temp.resolve(phase.name()), 0); var coordinator = new EscrowCoordinator(data, writer)) {
+                assertFalse(coordinator.retire(java.util.Set.of(before.id()), java.util.Map.of(),
+                        result -> fail("Settlement requires its own durable acknowledgements")));
+                assertTrue(coordinator.writerIdle()); assertEquals(phase, coordinator.ledger().records().get(0).phase());
+                assertTrue(coordinator.logicalLocked(before.guard().rocket()));
+            }
+        }
+    }
 }
