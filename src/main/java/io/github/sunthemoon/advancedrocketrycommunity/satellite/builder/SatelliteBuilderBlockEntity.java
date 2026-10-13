@@ -95,6 +95,15 @@ public final class SatelliteBuilderBlockEntity extends BlockEntity implements Me
         createCapabilities();
     }
 
+    /**
+     * Vanilla's {@code BlockEntityTag} merge cannot plant a preserved root for a non-operator. The block's own
+     * carried-root load in {@code setPlacedBy} is separate.
+     */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     public static void serverTick(Level level, BlockPos position, BlockState state, SatelliteBuilderBlockEntity builder) {
         builder.chargeFromRedstone();
     }

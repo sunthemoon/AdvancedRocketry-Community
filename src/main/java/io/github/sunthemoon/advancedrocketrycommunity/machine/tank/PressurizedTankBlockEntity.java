@@ -53,6 +53,8 @@ public final class PressurizedTankBlockEntity extends BlockEntity {
     }
 
     public boolean repairRequired() { return missingRoot || refusedRoot != null; }
+    /** The tank item already refuses a BlockEntityTag; this also closes the vanilla merge for any other item. */
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     public int capacity() { return capacity; }
     public FluidStack fluidState() { return repairRequired() ? FluidStack.EMPTY : fluid.copy(); }
     public boolean overCapacity() { return !repairRequired() && fluid.getAmount() > capacity; }
