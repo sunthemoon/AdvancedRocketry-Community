@@ -158,8 +158,16 @@ public final class SleepRespawnService {
         Optional<Backup> pending = backup(player);
         BlockPos position = player.getRespawnPosition();
         ResourceKey<Level> dimension = player.getRespawnDimension();
-        Point saved = pending.map(Backup::point).orElseGet(() -> position == null ? null
-                : new Point(dimension, position, player.getRespawnAngle(), player.isRespawnForced()));
+        Point saved = pending.map(Backup::point).orElse(null);
+        if (saved == null && position != null) {
+            try {
+                saved = new Point(dimension, position, player.getRespawnAngle(), player.isRespawnForced());
+            } catch (IllegalArgumentException unencodableNativePoint) {
+                // A foreign/native tuple outside our codec's bounds cannot safely be set aside. Keep it and any
+                // unreadable backup untouched rather than failing the connection tick or silently truncating data.
+                return;
+            }
+        }
         if (saved == null || !offWorldHost(saved.dimension())) {
             return;
         }

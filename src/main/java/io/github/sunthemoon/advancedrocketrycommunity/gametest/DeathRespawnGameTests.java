@@ -12,6 +12,7 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -77,6 +78,32 @@ public final class DeathRespawnGameTests {
                 if (done[0]) { remove(server, player.getUUID()); }
             }
         });
+    }
+
+    @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
+    public static void anUnencodableNativeTupleDoesNotFailADeadTickOrEraseAnUnreadableBackup(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerPlayer player = join(helper, "W37FNativeBounds");
+        CompoundTag future = new CompoundTag();
+        future.putInt("schema", 99);
+        CompoundTag persisted = new CompoundTag();
+        persisted.put(RespawnPointBackup.KEY, future);
+        player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+        try {
+            player.kill();
+            for (boolean invalidAngle : new boolean[]{true, false}) {
+                BlockPos point = invalidAngle ? FAR : new BlockPos(30_000_001, 80, 0);
+                float angle = invalidAngle ? Float.NaN : -12.25F;
+                player.setRespawnPosition(CelestialIds.MOON_LEVEL, point, angle, true, false);
+                player.connection.tick();
+                helper.assertTrue(CelestialIds.MOON_LEVEL.equals(player.getRespawnDimension())
+                                && point.equals(player.getRespawnPosition()) && player.isRespawnForced()
+                                && Float.floatToRawIntBits(angle) == Float.floatToRawIntBits(player.getRespawnAngle())
+                                && persisted.get(RespawnPointBackup.KEY) == future && future.getInt("schema") == 99,
+                        "An unencodable native tuple or unreadable backup was changed");
+            }
+        } finally { remove(server, player.getUUID()); }
+        helper.succeed();
     }
 
     @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
