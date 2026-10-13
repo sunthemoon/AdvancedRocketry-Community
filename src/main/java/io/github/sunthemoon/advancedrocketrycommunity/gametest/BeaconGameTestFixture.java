@@ -33,7 +33,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.DirectionalPlaceContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
@@ -171,8 +171,8 @@ final class BeaconGameTestFixture implements AutoCloseable {
     PlanetaryBeaconBlockEntity placeStack(@Nullable ServerPlayer placer, BlockPos at, ItemStack stack) {
         InteractionResult result;
         if (placer == null) {
-            result = ((BlockItem) stack.getItem()).place(new BlockPlaceContext(level, null, InteractionHand.MAIN_HAND,
-                    stack, new BlockHitResult(Vec3.atCenterOf(at), Direction.UP, at, false)));
+            result = ((BlockItem) stack.getItem()).place(new DirectionalPlaceContext(level, at, Direction.SOUTH,
+                    stack, Direction.UP));
         } else {
             placer.setYRot(0.0F);
             result = use(placer, at, stack);
@@ -181,9 +181,9 @@ final class BeaconGameTestFixture implements AutoCloseable {
         controllers.add(at.immutable());
         helper.assertTrue(result.consumesAction(), "Placing the beacon was refused: " + result);
         BlockState state = level.getBlockState(at);
-        helper.assertTrue(state.is(ModBlocks.PLANETARY_BEACON.get()) && (placer == null
-                || state.getValue(io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock.FACING)
-                == Direction.NORTH), "The beacon was not placed facing north: " + state);
+        helper.assertTrue(state.is(ModBlocks.PLANETARY_BEACON.get())
+                && state.getValue(io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock.FACING)
+                == Direction.NORTH, "The beacon was not placed facing north: " + state);
         return (PlanetaryBeaconBlockEntity) level.getBlockEntity(at);
     }
 
