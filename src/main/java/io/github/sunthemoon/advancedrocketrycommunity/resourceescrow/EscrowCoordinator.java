@@ -116,6 +116,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         owner(); EscrowTags.require(ids.size() <= EscrowLimits.OPERATIONS, "Retirement count exceeded");
         Set<UUID> retired = Set.copyOf(ids); // Successor capture must not retain a caller-owned mutable set.
         EscrowPrefix.requireRetirementPrefix(data.ledger().records(), retired);
+        if (!ordinaryRetirementAllowed(retired)) { return false; }
         for (EscrowOperation op : data.ledger().records()) {
             if (!retired.contains(op.id())) { continue; }
             for (EscrowEndpoint endpoint : List.of(op.source(), op.destination())) {
@@ -133,7 +134,8 @@ public final class EscrowCoordinator implements AutoCloseable {
         boolean accepted = writer.request(() -> {
             // Revalidate tokens at capture, not merely when the successor request is queued.
             // A superseded queued proof is a normal refusal, not an owner-thread exception.
-            return snapshot(false, frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) ? retired : null, frozenProofs);
+            return snapshot(false, ordinaryRetirementAllowed(retired)
+                    && frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) ? retired : null, frozenProofs);
         }, result -> {
             acknowledge(result);
             if (result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
@@ -162,6 +164,11 @@ public final class EscrowCoordinator implements AutoCloseable {
     public boolean frozen(EscrowEndpoint.Key endpoint) { owner(); return frontiers.containsKey(endpoint); }
     public boolean writerIdle() { return writer.idle(); }
     EscrowReason currentReason(EscrowOperation op) { owner(); return transitions.getOrDefault(op.id(), op.reason()); }
+    private boolean ordinaryRetirementAllowed(Set<UUID> ids) {
+        owner();
+        return data.ledger().records().stream().filter(op -> ids.contains(op.id())).noneMatch(op -> currentReason(op).manual()
+                || op.phase() == EscrowOperation.Phase.SETTLING_ACCEPT || op.phase() == EscrowOperation.Phase.SETTLING_ABANDON);
+    }
     public EscrowFloors.Usage floorUsage() { owner(); return EscrowFloors.usage(data.ledger(), queued.values()); }
     void collectFloors(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData journal) {
         owner(); floorJournal = journal;
