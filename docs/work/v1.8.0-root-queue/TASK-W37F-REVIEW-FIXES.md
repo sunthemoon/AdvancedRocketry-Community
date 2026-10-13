@@ -15,6 +15,15 @@ which is player data.
 - Root will have the result reviewed independently.
 - Give each finding its own commit, with its tests.
 
+## First: merge the shared branch
+
+Merge `codex/v1.8.0-classic-content` (`f58f4c9f` or later) into this branch before any change.
+- It brings W33, W34, W36 and W38.
+- Expected conflicts: `CommonConfigTest`'s count (shared is 95; with W37's two keys it becomes 97),
+  `scripts/gametest_expected_log.json`, the v1.8 language files (regenerate them with `runData` under
+  the lock) and `AdvancedRocketryCommunity.java`.
+- Keep every assertion. Commit the merge on its own.
+
 ## Root's decisions
 
 1. **A new respawn boundary, with no Mixin (R1).**
