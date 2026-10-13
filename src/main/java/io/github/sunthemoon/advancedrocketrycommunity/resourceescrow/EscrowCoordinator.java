@@ -18,6 +18,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     private final Map<UUID, Consumer<Boolean>> requests = new HashMap<>();
     private final Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers = new HashMap<>();
     private final Map<UUID, EscrowReason> transitions = new HashMap<>();
+    private final EscrowAdmissionAuthority admission = new EscrowAdmissionAuthority();
     private long issued;
     private long tick;
     private long lastStart = -10;
@@ -26,10 +27,14 @@ public final class EscrowCoordinator implements AutoCloseable {
 
     public EscrowCoordinator(ResourceEscrowSavedData data, EscrowLedgerWriter writer) {
         this.data = data; this.writer = writer; issued = data.ledger().issuedThrough();
+        admission.registerIndex(EscrowAdmissionAuthority.Consumer.PROPULSION, () -> new EscrowAdmissionAuthority.Index(true,
+                java.util.stream.Stream.of(data.ledger().records().stream(), queued.values().stream(), writer.capturedOperations().stream())
+                        .flatMap(java.util.function.Function.identity()).map(EscrowAdmissionAuthority.Pending::of).toList()));
     }
     public boolean productionAdmissionEnabled() { return false; }
     public EscrowLedger ledger() { return data.ledger(); }
     public long nextSequence() { owner(); return Math.addExact(issued, 1); }
+    public EscrowAdmissionAuthority admissionAuthority() { owner(); return admission; }
     /** Caller must already be in an explicitly gated test fixture. No block/item/command invokes this. */
     void prepareTest(EscrowOperation op, Consumer<Boolean> completion) {
         owner(); EscrowTags.require(!closed && !writer.unavailable(), "Ledger unavailable");
@@ -39,7 +44,10 @@ public final class EscrowCoordinator implements AutoCloseable {
         EscrowTags.require(!frontiers.containsKey(op.source().key()) && !frontiers.containsKey(op.destination().key()), "Frozen endpoint frontier");
         var candidate = new ArrayList<>(queued.values()); candidate.add(op);
         EscrowFloors.preflight(data.ledger().append(candidate)); // Reserve the L2 floor before any queued L1 state changes.
+        var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
+        EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared admission refused: " + reservation);
         queued.put(op.id(), op); requests.put(op.id(), completion); issued = op.sequence(); data.setDirty();
+        admission.refresh();
     }
     public boolean commitPreparations() {
         owner(); if (closed || queued.isEmpty() || tick - lastStart < 10) { return false; }
