@@ -14,6 +14,8 @@ import net.minecraft.world.level.material.Fluids;
  * Native fluid admission without changing the torch's collision or mounting shape. FlowingFluid.canHoldFluid consults
  * LiquidBlockContainer first, and spreadTo delegates to placeLiquid instead of deleting the block. These are not
  * waterlogged torches: an admitted native fluid replaces a resolvable/rootless torch with its ordinary drop/fizz rule.
+ * Forge FluidUtil.tryPlaceFluid uses this gate only because the registration is forceSolidOn; a non-solid block would
+ * take its destroy-and-replace fallback instead.
  */
 interface UnlitTorchFluidBarrier extends LiquidBlockContainer {
     @Override

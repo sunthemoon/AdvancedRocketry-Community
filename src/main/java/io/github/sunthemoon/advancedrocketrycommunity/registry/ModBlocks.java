@@ -428,9 +428,13 @@ public final class ModBlocks {
             UNLIT_WALL_TORCH = BLOCKS.register("unlit_wall_torch", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitWallTorchBlock(unlitTorchProperties()));
 
+    /**
+     * forceSolidOn: Forge FluidUtil.tryPlaceFluid admits and then destroys any non-solid block without asking its
+     * container gate. It sets only BlockState.isSolid(); collision, shape and light stay a torch's (W33G record).
+     */
     private static BlockBehaviour.Properties unlitTorchProperties() {
         return BlockBehaviour.Properties.of().noCollission().instabreak().sound(SoundType.WOOD)
-                .lightLevel(state -> 0).pushReaction(PushReaction.BLOCK);
+                .lightLevel(state -> 0).pushReaction(PushReaction.BLOCK).forceSolidOn();
     }
 
     public static final RegistryObject<Block> LANDING_PAD = BLOCKS.register("landing_pad", () ->
