@@ -67,6 +67,26 @@ class EscrowCodecTest {
         assertThrows(IllegalArgumentException.class, () -> new EscrowLedger(root.id(), 64, 0,
                 root.records(), root.floors(), tombstones));
     }
+    /** Review W11b1 finding 8: one record per source device is accepted; a second, distinct operation is refused. */
+    @Test void oneOperationPerDeviceIsTheLimitForDistinctOperations() {
+        var first = EscrowTestFixtures.operation(1); var other = EscrowTestFixtures.operation(2);
+        var source = first.source(); // Same device identity at another position, so the endpoint chains stay separate.
+        var moved = new EscrowEndpoint(source.kind(), source.level(), source.identity(), null, source.type(), source.x() + 32,
+                source.y(), source.z(), source.unit(), 0, other.source().beforeSignature(), other.source().afterSignature());
+        var second = new EscrowOperation(other.id(), other.sequence(), other.owner(), other.createdTick(), other.phase(), other.reason(),
+                other.payload(), other.payloadHash(), moved, other.destination(), other.guard());
+        assertNotEquals(first.id(), second.id()); assertNotEquals(first.source().key(), second.source().key());
+        assertEquals(List.of(first, other), EscrowTestFixtures.ledger(first, other).records());
+        assertEquals(List.of(second), EscrowTestFixtures.ledger(second).records());
+        var refused = assertThrows(IllegalArgumentException.class, () -> EscrowTestFixtures.ledger(first, second));
+        assertEquals("Multiple operations for a device", refused.getMessage());
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger(first)));
+        var writer = new EscrowLedgerWriter(java.nio.file.Path.of("unused-" + java.util.UUID.randomUUID()), 0);
+        try (var coordinator = new EscrowCoordinator(data, writer)) {
+            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(second, result -> fail("Refused admission called back")));
+            assertFalse(coordinator.admitting(second.source().key())); assertEquals(2, coordinator.nextSequence());
+        }
+    }
     @Test void everyByteEnvelopeAcceptsItsExactLimitAndRefusesTheNextByte() {
         for (int limit : new int[] {256, 512, 1_024, 2_048, 4_096, 8_192, 12_288, 32_768, 1_048_576}) {
             CompoundTag tag = new CompoundTag(); tag.putByteArray("x", new byte[limit - 12]);
