@@ -93,6 +93,7 @@ public final class OperatorItemNbtGameTests {
             RollingMachinePortBlockEntity.class, PrecisionAssemblerBlockEntity.class,
             PrecisionAssemblerPortBlockEntity.class, PressurizedTankBlockEntity.class, ClassicHatchBlockEntity.class,
             ClassicControllerBlockEntity.class, SuitWorkstationBlockEntity.class, RocketAssemblerBlockEntity.class,
+            io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerBlockEntity.class,
             FuelLoaderBlockEntity.class, SatelliteTerminalBlockEntity.class, SatelliteBuilderBlockEntity.class,
             MicrowaveReceiverBlockEntity.class);
     /** Block entities that save no root of their own, so item NBT reaches no server-decided state. */

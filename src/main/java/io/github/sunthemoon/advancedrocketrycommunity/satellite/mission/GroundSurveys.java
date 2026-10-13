@@ -31,6 +31,16 @@ public final class GroundSurveys {
     private final GroundSurveyLedger ledger = new GroundSurveyLedger();
 
     GroundSurveys(SatelliteMissionRegistry registry) { this.registry = registry; }
+    /** Read-only start timestamp preview for the loaded-world ground research adapter. */
+    public long previewTime(long observedTime) {
+        synchronized (registry) { return registry.clock.preview(observedTime); }
+    }
+    /** Operator/menu inspection must not attempt a release just to learn its recovery boundary. */
+    public String recoveryHint(UUID id) {
+        synchronized (registry) {
+            var job = jobs.get(id); return job == null ? "Job not found" : offlineRepair(job);
+        }
+    }
 
     public List<GroundSurveyJob> all() {
         synchronized (registry) {

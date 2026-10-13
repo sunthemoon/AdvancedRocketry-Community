@@ -28,6 +28,7 @@ public final class V180LanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        V180ResearchLanguage.entries(chinese).forEach(this::add);
         V180LandingPadData.language(chinese).forEach(this::add);
         V180PumpLanguage.translations(chinese).forEach(this::add);
         V180ClassicMachineData.language(chinese).forEach(this::add);

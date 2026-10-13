@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "advancedrocketrycommunity:block/astrobody_data_processor",
+    "side": "advancedrocketrycommunity:block/machine_casing",
+    "top": "advancedrocketrycommunity:block/machine_casing"
+  }
+}

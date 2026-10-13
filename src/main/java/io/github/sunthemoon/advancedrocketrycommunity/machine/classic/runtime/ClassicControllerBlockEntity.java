@@ -44,6 +44,8 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     private boolean lookupNeeded = true;
     private final Set<ChunkPos> unavailable = new HashSet<>();
     private ClassicWait reason = ClassicWait.UNFORMED;
+    private PatternDiagnostic firstDiagnostic;
+    Optional<PatternDiagnostic> firstDiagnostic() { return Optional.ofNullable(firstDiagnostic); }
 
     public ClassicControllerBlockEntity(BlockPos position, BlockState state) {
         this(ModBlockEntities.LATHE.get(), position, state, ClassicMachineDefinition.LATHE);
@@ -136,6 +138,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         var world = new ServerLevelPatternWorldView(server, roles);
         var validation = MultiblockPatternValidator.validate(pattern, checkpoint.structure().selectedTransform(),
                 new PatternPosition(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()), world);
+        firstDiagnostic = validation.diagnostics().stream().findFirst().orElse(null);
         ClassicResources resources = checkpoint.resources();
         Set<BlockPos> claims = new HashSet<>(checkpoint.claimedParts());
         if (validation.formed()) {
@@ -247,6 +250,29 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
             var hatch = loadedHatch(position); if (hatch != null && hatch.kind() == ClassicHatchKind.POWER_INPUT) { result += hatch.energyStored(); }
         }
         return result;
+    }
+    /** Research-only kernel transaction; no unchecked public power extraction is exposed. */
+    boolean paidResearchAdvance(int required, java.util.function.BooleanSupplier mutation) {
+        if (!definition.research() || required < 1 || required > 10_000 || transaction || repair
+                || !physical() || !formed() || checkpoint.job().isPresent() || !allPartsLoaded()) { return false; }
+        var plugs = new ArrayList<ClassicHatchBlockEntity>();
+        int available = 0;
+        for (BlockPos position : checkpoint.structure().partPositions()) {
+            var hatch = loadedHatch(position);
+            if (hatch == null || !acceptsBinding(hatch)) { return false; }
+            if (hatch.kind() == ClassicHatchKind.POWER_INPUT) { plugs.add(hatch); available += hatch.energyStored(); }
+        }
+        if (available < required) { return false; }
+        transaction = true;
+        try {
+            // Registry operations invoke no world/native callbacks. Bindings and FE cannot change between
+            // their checked publication and this debit on the same server thread.
+            if (!mutation.getAsBoolean()) { return false; }
+            int remaining = required;
+            for (var hatch : plugs) { remaining -= hatch.debit(remaining); }
+            if (remaining != 0) { throw new IllegalStateException("Research power preflight changed during publication"); }
+            setChanged(); return true;
+        } finally { transaction = false; }
     }
     void catalogUnavailable() { reason = ClassicWait.LIMIT; }
     void tickProcess(ClassicMachineRecipe recipe, ProcessDefinition process) {

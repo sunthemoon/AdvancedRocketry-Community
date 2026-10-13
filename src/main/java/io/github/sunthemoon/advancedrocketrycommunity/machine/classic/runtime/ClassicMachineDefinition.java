@@ -9,6 +9,11 @@ import net.minecraft.world.item.crafting.RecipeType;
 /** Current machine-specific identities; the controller does not switch on a machine kind. */
 public record ClassicMachineDefinition(ResourceLocation kind, ResourceLocation pattern,
                                        Supplier<RecipeType<ClassicMachineRecipe>> recipes) {
+    public static final ClassicMachineDefinition OBSERVATORY = new ClassicMachineDefinition(
+            ModIdentity.id("observatory"), ModIdentity.id("observatory"), null);
+    public static final ClassicMachineDefinition ASTROBODY_DATA_PROCESSOR = new ClassicMachineDefinition(
+            ModIdentity.id("astrobody_data_processor"), ModIdentity.id("astrobody_data_processor"), null);
+    public boolean research() { return this.equals(OBSERVATORY) || this.equals(ASTROBODY_DATA_PROCESSOR); }
     public static final ClassicMachineDefinition LATHE = new ClassicMachineDefinition(
             ModIdentity.id("lathe"), ModIdentity.id("lathe"), () -> ModRecipes.LATHE_TYPE.get());
     public static final ClassicMachineDefinition ARC_FURNACE = new ClassicMachineDefinition(
@@ -25,6 +30,7 @@ public record ClassicMachineDefinition(ResourceLocation kind, ResourceLocation p
             ModIdentity.id("centrifuge"), ModIdentity.id("centrifuge"), () -> ModRecipes.CENTRIFUGE_TYPE.get());
     public static boolean controllerId(String id) {
         return java.util.List.of(LATHE, ARC_FURNACE, CUTTING, CRYSTALLIZER, CHEMICAL_REACTOR,
-                PRECISION_LASER_ETCHER, CENTRIFUGE).stream().anyMatch(value -> value.kind().toString().equals(id));
+                PRECISION_LASER_ETCHER, CENTRIFUGE, OBSERVATORY, ASTROBODY_DATA_PROCESSOR)
+                .stream().anyMatch(value -> value.kind().toString().equals(id));
     }
 }

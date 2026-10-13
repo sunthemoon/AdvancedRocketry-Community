@@ -19,6 +19,9 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 public final class CommonConfig {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+    public static final ForgeConfigSpec.BooleanValue GROUND_SURVEYS_ENABLED = BUILDER
+            .comment("Enable observatory START, processor CLAIM and paid ground research advances. Cancellation and inspection remain available.")
+            .define("research.groundSurveysEnabled", true);
 
     public static final ForgeConfigSpec.BooleanValue SAWMILL_VANILLA_WOOD = BUILDER
             .comment("Allow cutting recipes marked sawmill; disabling pauses existing jobs without consuming resources.")
@@ -529,6 +532,7 @@ public final class CommonConfig {
     }
 
     public static boolean sawmillVanillaWood() { return serverSwitchValue(SAWMILL_VANILLA_WOOD); }
+    public static boolean groundSurveysEnabled() { return serverSwitchValue(GROUND_SURVEYS_ENABLED); }
 
     public static boolean combustionGeneratorEnabled() {
         return serverSwitchValue(COMBUSTION_GENERATOR_ENABLED);

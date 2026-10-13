@@ -38,6 +38,18 @@ public final class ClassicControllerBlock extends BaseEntityBlock {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
     }
     @Override public BlockEntity newBlockEntity(BlockPos position, BlockState state) { return factory.apply(position, state); }
+    @Override public void setPlacedBy(Level level, BlockPos position, BlockState state,
+            net.minecraft.world.entity.LivingEntity placer, net.minecraft.world.item.ItemStack stack) {
+        super.setPlacedBy(level, position, state, placer, stack);
+        if (!level.isClientSide && placer instanceof Player player
+                && level.getBlockEntity(position) instanceof ResearchControllerBlockEntity research) { research.placed(player.getUUID()); }
+    }
+    @Override public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(
+            Level level, BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
+        return level.isClientSide ? null : (world, position, blockState, entity) -> {
+            if (entity instanceof ResearchControllerBlockEntity research) { research.loadedTick(); }
+        };
+    }
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.MODEL; }
     @Override protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) { builder.add(FACING); }
     @Override public BlockState rotate(BlockState state, Rotation rotation) { return state.setValue(FACING, rotation.rotate(state.getValue(FACING))); }
@@ -47,7 +59,10 @@ public final class ClassicControllerBlock extends BaseEntityBlock {
         if (player instanceof ServerPlayer serverPlayer && level.hasChunkAt(position)
                 && level.getBlockEntity(position) instanceof ClassicControllerBlockEntity controller
                 && ClassicControllerMenu.canOpen(serverPlayer, controller)) {
-            NetworkHooks.openScreen(serverPlayer, controller, buffer -> ClassicControllerMenu.writeOpening(buffer, position));
+            NetworkHooks.openScreen(serverPlayer, controller, buffer -> {
+                if (controller instanceof ResearchControllerBlockEntity research) { ResearchControllerMenu.writeOpening(buffer, position, research.processor()); }
+                else { ClassicControllerMenu.writeOpening(buffer, position); }
+            });
         }
         return InteractionResult.sidedSuccess(level.isClientSide);
     }
