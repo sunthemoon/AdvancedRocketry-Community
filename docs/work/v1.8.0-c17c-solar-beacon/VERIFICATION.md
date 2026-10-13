@@ -5,8 +5,9 @@ Date: 2026-10-13. Written by W31 under
 W30's proposal (`records/W30-STATUS-PROPOSAL.md` on branch `codex/v1.8.0-w30-status`,
 `2bc87cee`, sections 1.1 and 2 and Appendix A) marks delivered. The facts come from
 [QUEUE.md](../v1.8.0-root-queue/QUEUE.md), the merge commit messages and the records in
-`docs/work/v1.8.0-root-queue/records/`. Every SHA below resolves with `git cat-file -e` and is
-an ancestor of `codex/v1.8.0-classic-content` at `e4bd8a12`.
+`docs/work/v1.8.0-root-queue/records/`. Every SHA below resolves with `git cat-file -e`. All of
+them are ancestors of `codex/v1.8.0-classic-content` at `e4bd8a12`, except the two W27a design
+commits, which are marked as not merged.
 
 This file is development evidence only. **It approves no Required Gate, candidate, version or
 release.** Only the owner marks a Gate as passed (AGENTS.md sections 5 and 13).
