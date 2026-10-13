@@ -3,7 +3,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
-import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.*;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
@@ -33,8 +32,9 @@ public final class ResearchEnvironmentGameTests {
     @GameTest(template = "empty", batch = "research_environment", timeoutTicks = 400)
     public static void dayRainCoveredSkyAndUnloadedCellsPauseWithoutPayment(GameTestHelper helper) {
         var fixture = ResearchGameTests.fixture(helper, false, Direction.NORTH, UUID.randomUUID(), 0);
-        ResearchGameTests.ready(helper, List.of(fixture), true, () -> {
-            var service = ResearchRuntime.service(fixture.level); var owner = fixture.controller.researchOwner().orElseThrow();
+        var service = ResearchRuntime.service(fixture.level); BlockPos roof = fixture.lens().above(3);
+        ResearchGameTests.steps(helper, ResearchGameTests.ticking(List.of(fixture), true), ResearchGameTests.then(() -> {
+            var owner = fixture.controller.researchOwner().orElseThrow();
             ResearchGameTests.night(fixture); helper.assertTrue(service.intent(fixture.controller, owner, 0), "Environment START refused"); fixture.flush(); fixture.feed(1_000);
             fixture.level.setDayTime(6_000); fixture.level.updateSkyBrightness();
             helper.assertTrue(!service.advance(fixture.controller) && fixture.controller.researchStatus() == ResearchStatus.DAYTIME, "Daytime paid");
@@ -49,22 +49,17 @@ public final class ResearchEnvironmentGameTests {
             fixture.controller.chunkAvailable(chunk); fixture.revalidate();
             // Keep work paused while the asynchronous light engine incorporates the new roof.
             fixture.level.setDayTime(6_000); fixture.level.updateSkyBrightness();
-            BlockPos roof = fixture.lens().above(3); fixture.level.setBlock(roof, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-            var pacer = new GameTestTickPacer(fixture.level.getServer()); boolean[] checked = {false};
-            helper.onEachTick(() -> {
-                if (checked[0]) { return; }
-                if (fixture.level.canSeeSky(fixture.lens())) { pacer.pace(); return; }
-                checked[0] = true;
-                try (fixture) {
-                    ResearchGameTests.night(fixture);
-                    helper.assertTrue(!service.advance(fixture.controller) && fixture.controller.researchStatus() == ResearchStatus.NO_SKY,
-                            "Covered lens paid: " + fixture.controller.researchStatus());
-                    helper.assertTrue(fixture.power.get(0).energyStored() == 1_000 && service.work(fixture.controller).orElseThrow().surveyProgress() == 0,
-                            "Paused environment changed FE/progress");
-                } finally { fixture.level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); }
-                helper.succeed();
-            });
-        });
+            fixture.level.setBlock(roof, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
+        }), () -> !fixture.level.canSeeSky(fixture.lens()), ResearchGameTests.then(() -> {
+            try (fixture) {
+                ResearchGameTests.night(fixture);
+                helper.assertTrue(!service.advance(fixture.controller) && fixture.controller.researchStatus() == ResearchStatus.NO_SKY,
+                        "Covered lens paid: " + fixture.controller.researchStatus());
+                helper.assertTrue(fixture.power.get(0).energyStored() == 1_000 && service.work(fixture.controller).orElseThrow().surveyProgress() == 0,
+                        "Paused environment changed FE/progress");
+            } finally { fixture.level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); }
+            helper.succeed();
+        }));
     }
     @GameTest(template = "empty", batch = "research_no_power", timeoutTicks = 400)
     public static void formedObservatoryWithoutPlugCannotPay(GameTestHelper helper) {

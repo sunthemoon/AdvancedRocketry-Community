@@ -167,13 +167,36 @@ public final class ResearchGameTests {
         fixture.level.setDayTime(18_000); fixture.level.updateSkyBrightness();
     }
     static void ready(GameTestHelper helper, List<ResearchFixture> fixtures, boolean sky, Runnable action) {
-        var pacer = new GameTestTickPacer(helper.getLevel().getServer()); boolean[] done = {false};
+        steps(helper, ticking(fixtures, sky), then(action));
+    }
+    /** One step of a research GameTest: true moves on to the next step in the same tick, false waits one paced tick. */
+    @FunctionalInterface interface Step { boolean run(); }
+    /**
+     * Registers the test's only {@code onEachTick}, at test start. Vanilla iterates its schedule map while it runs
+     * that callback, and scheduling from inside it inserts entries mid-iteration (the W21c CI crash). A step therefore
+     * never schedules; it returns false to be called again on the next tick.
+     */
+    static void steps(GameTestHelper helper, Step... steps) {
+        var pacer = new GameTestTickPacer(helper.getLevel().getServer()); int[] next = {0};
         helper.onEachTick(() -> {
-            if (done[0]) { return; }
-            if (fixtures.stream().allMatch(fixture -> fixture.ticking() && (fixture.controller.processor() || !sky || fixture.level.canSeeSky(fixture.lens())))) {
-                done[0] = true; action.run();
-            } else { pacer.pace(); }
+            while (next[0] < steps.length) {
+                if (!steps[next[0]].run()) { pacer.pace(); return; }
+                next[0]++;
+            }
         });
+    }
+    static Step ticking(List<ResearchFixture> fixtures, boolean sky) {
+        return () -> fixtures.stream().allMatch(fixture -> fixture.ticking()
+                && (fixture.controller.processor() || !sky || fixture.level.canSeeSky(fixture.lens())));
+    }
+    static Step then(Runnable action) { return () -> { action.run(); return true; }; }
+    /** Waits the given number of natural server ticks, counted from the tick on which this step is first reached. */
+    static Step waitTicks(net.minecraft.server.MinecraftServer server, int ticks) {
+        int[] start = {-1};
+        return () -> {
+            if (start[0] < 0) { start[0] = server.getTickCount(); }
+            return server.getTickCount() - start[0] >= ticks;
+        };
     }
     private ResearchGameTests() { }
 }
