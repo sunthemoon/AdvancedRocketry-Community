@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.beacon.persistence.BeaconI
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -33,6 +35,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -45,6 +48,8 @@ import net.minecraft.world.phys.Vec3;
  * block, every direct record and every player; it is safe to call twice.
  */
 final class BeaconGameTestFixture implements AutoCloseable {
+    private static final TicketType<UUID> TICKET = TicketType.create("arce_beacon_test",
+            Comparator.comparing(UUID::toString));
     final GameTestHelper helper;
     final ServerLevel level;
     final MinecraftServer server;
@@ -54,6 +59,8 @@ final class BeaconGameTestFixture implements AutoCloseable {
     private final List<UUID> records = new ArrayList<>();
     private final List<ServerPlayer> players = new ArrayList<>();
     private final List<ServerPlayer> operators = new ArrayList<>();
+    private final List<ChunkPos> fixtureChunks = new ArrayList<>();
+    private final UUID ticketId = UUID.randomUUID();
     private boolean closed;
 
     BeaconGameTestFixture(GameTestHelper helper) {
@@ -285,6 +292,25 @@ final class BeaconGameTestFixture implements AutoCloseable {
         return position;
     }
 
+    /** Test-owned tickets for an isolated chunk; releasing them permits a native unload. */
+    void forceChunk(BlockPos at, boolean force) {
+        ChunkPos chunk = new ChunkPos(at);
+        if (!fixtureChunks.contains(chunk)) {
+            helper.assertTrue(force && !level.getForcedChunks().contains(chunk.toLong()),
+                    "The fixture does not own this chunk's forced ticket");
+            fixtureChunks.add(chunk);
+        }
+        if (force) {
+            level.getChunkSource().addRegionTicket(TICKET, chunk, 2, ticketId);
+        } else {
+            level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, ticketId);
+        }
+        level.setChunkForced(chunk.x, chunk.z, force);
+        if (force) {
+            level.getChunkAt(at);
+        }
+    }
+
     String body(BlockPos at) {
         Optional<String> body = services().body(server, level.dimension(), at);
         helper.assertTrue(body.isPresent(), "The GameTest Overworld has no server-resolved body");
@@ -334,6 +360,10 @@ final class BeaconGameTestFixture implements AutoCloseable {
             }
             records.forEach(id -> index().remove(id));
         } finally {
+            for (ChunkPos chunk : fixtureChunks) {
+                level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, ticketId);
+                level.setChunkForced(chunk.x, chunk.z, false);
+            }
             for (ServerPlayer operator : operators) {
                 server.getPlayerList().getOps().remove(operator.getGameProfile());
             }
