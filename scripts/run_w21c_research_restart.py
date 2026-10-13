@@ -13,6 +13,10 @@ import socket
 import time
 
 from run_dedicated_server_smoke import CapturedProcess, READY_MARKER, SAVE_MARKER, SmokeError, digest_file
+# W21bF's evidence identity: HEAD of a clean tree, and a jar this run built from it.
+from run_w21b_registry_upgrade import build_candidate, default_build_command, source_identity
+
+ROOT = Path(__file__).resolve().parents[1]
 
 SNAPSHOT = re.compile(r"ARCE_RESEARCH_SNAPSHOT (\{.*\})")
 FORGE = "1.20.1-47.4.10"
@@ -103,6 +107,8 @@ def run(args: argparse.Namespace, summary: dict) -> None:
     work, evidence = args.work_dir.resolve(), args.evidence_dir.resolve()
     if work.exists() or evidence.exists() or work == evidence or work in evidence.parents or evidence in work.parents:
         raise SmokeError("Disposable work and evidence must be new and disjoint")
+    repository = args.repository.resolve()
+    identity = source_identity(repository, args.tested_commit)
     # This script owns only this newly created directory. Template libraries and worlds are read-only.
     work.mkdir(parents=True)
     evidence.mkdir(parents=True)
@@ -114,8 +120,14 @@ def run(args: argparse.Namespace, summary: dict) -> None:
     host = work / "server"
     processes: list[CapturedProcess] = []
     snapshots: list[dict] = []
-    summary.update(tested_commit=args.tested_commit, candidate_jar_sha256=digest_file(args.candidate_jar), forge=FORGE)
+    summary.update(identity, candidate_built_by_harness=False, forge=FORGE)
     try:
+        if args.build_candidate:
+            summary.update(build_candidate(repository, default_build_command(repository), args.candidate_jar.resolve(),
+                                           evidence / "00-build-candidate.log"))
+        summary.update(candidate_jar_sha256=digest_file(args.candidate_jar))
+        if args.build_candidate and summary["candidate_jar_sha256"] != summary["candidate_jar_sha256_at_build"]:
+            raise SmokeError("The candidate jar changed after the harness built it")
         prepare(args.template, host, args.candidate_jar, port)
         def cycle(number: int) -> CapturedProcess:
             process = launch(args, host, evidence, number)
@@ -157,6 +169,8 @@ def run(args: argparse.Namespace, summary: dict) -> None:
         process = cycle(8); restored = ready(process); snapshots.append(restored); same(terminal, restored); stop(process)
         if restored["balance"] != 120 or restored["analysis_progress"] != 200 or restored["phase"] != "PROCESSED":
             raise SmokeError("Final exactly-once credit differs")
+        if source_identity(repository) != identity or digest_file(args.candidate_jar) != summary["candidate_jar_sha256"]:
+            raise SmokeError("The tested source or candidate jar changed during the native run")
         summary.update(status="PASS", cycles=8, failed_flush_waiting=True, claim_waiting=True, rebind_waiting=True,
                        lost_completion_flush=True, lost_credit_flush=True, credit_exactly_once=True,
                        fe_crash_atomic=False, fe_limitation="Plug FE and registry progress are separate saves; crashes can lose paid FE or roll back FE independently.")
@@ -174,14 +188,22 @@ def run(args: argparse.Namespace, summary: dict) -> None:
             raise SmokeError("Native evidence exceeds 100 MiB")
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+def parser() -> argparse.ArgumentParser:
+    result = argparse.ArgumentParser(description=__doc__)
     for name in ("template", "candidate-jar", "work-dir", "evidence-dir"):
-        parser.add_argument("--" + name, type=Path, required=True)
-    parser.add_argument("--tested-commit", required=True)
-    parser.add_argument("--java", default=str(Path(os.environ["JAVA_HOME"]) / "bin" / "java.exe"))
-    parser.add_argument("--startup-timeout", type=float, default=240)
-    args = parser.parse_args(); summary = {"status": "FAIL"}
+        result.add_argument("--" + name, type=Path, required=True)
+    result.add_argument("--repository", type=Path, default=ROOT,
+                        help="Clean checkout under test; its HEAD is recorded as the tested commit")
+    result.add_argument("--tested-commit", help="Optional; refused unless it names the repository's HEAD")
+    result.add_argument("--build-candidate", action="store_true",
+                        help="Build --candidate-jar from the clean HEAD with the Gradle jar task first")
+    result.add_argument("--java", default=str(Path(os.environ.get("JAVA_HOME", "")) / "bin" / "java.exe"))
+    result.add_argument("--startup-timeout", type=float, default=240)
+    return result
+
+
+def main() -> int:
+    args = parser().parse_args(); summary = {"status": "FAIL"}
     try:
         run(args, summary); print(json.dumps(summary, indent=2)); return 0
     except (SmokeError, OSError, ValueError) as failure:

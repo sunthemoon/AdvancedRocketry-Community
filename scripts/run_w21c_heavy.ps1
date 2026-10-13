@@ -31,10 +31,13 @@ try {
         'GameTest' { & .\gradlew.bat --offline runGameTestServer --console=plain *> $log }
         'Build' { & .\gradlew.bat --offline clean build --console=plain *> $log }
         'Native' {
-            if (-not $TestedCommit) { throw 'Native evidence requires a committed source identity.' }
-            & python -B scripts/run_w21c_research_restart.py --template 'D:/GitHub/ARCE-Task-Evidence/v1.8.0/guard-forced-setup-05/native-05/server' `
-                --candidate-jar build/libs/advancedrocketry-community-1.20.1-1.8.0-dev.jar `
-                --work-dir build/w21c-native --evidence-dir (Join-Path $Evidence 'native') --tested-commit $TestedCommit *> $log
+            # The harness records HEAD, refuses an unclean tree and builds the jar it tests (W21c review L4).
+            $native = @('-B', 'scripts/run_w21c_research_restart.py',
+                '--template', 'D:/GitHub/ARCE-Task-Evidence/v1.8.0/guard-forced-setup-05/native-05/server',
+                '--candidate-jar', 'build/libs/advancedrocketry-community-1.20.1-1.8.0-dev.jar',
+                '--work-dir', 'build/w21c-native', '--evidence-dir', (Join-Path $Evidence 'native'), '--build-candidate')
+            if ($TestedCommit) { $native += @('--tested-commit', $TestedCommit) }
+            & python @native *> $log
         }
     }
     $code = $LASTEXITCODE
