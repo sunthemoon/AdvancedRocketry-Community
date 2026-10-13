@@ -25,6 +25,25 @@ public final class RespawnCoexistenceGameTests {
     private RespawnCoexistenceGameTests() { }
 
     @GameTest(template = "atmosphere_test", timeoutTicks = 40)
+    public static void aLaterSpawnSetterReplacesACompletedRecoveryWithoutAnInterveningTick(GameTestHelper helper) {
+        BlockPos first = new BlockPos(25_000_000, 80, 25_000_000);
+        BlockPos second = first.above();
+        SleepRespawnGameTests.withOptions(false, false, helper, "W37FNextPoint", (player, respawns) -> {
+            player.setRespawnPosition(CelestialIds.MOON_LEVEL, first, 14.5F, false, false);
+            var restored = respawns.respawn(player);
+            SleepRespawnGameTests.assertOverworldFallback(helper, restored, CelestialIds.MOON_LEVEL, first, false,
+                    RespawnOutcome.DISABLED);
+            // The handler adopted this player, but no living tick has yet completed the retained recovery.
+            restored.setRespawnPosition(CelestialIds.MOON_LEVEL, second, -28.75F, true, false);
+            var latest = respawns.respawn(restored);
+            SleepRespawnGameTests.assertOverworldFallback(helper, latest, CelestialIds.MOON_LEVEL, second, true,
+                    RespawnOutcome.DISABLED);
+            helper.assertTrue(latest.getRespawnAngle() == -28.75F, "An earlier recovery overwrote a later setter");
+        }, () -> { });
+        helper.succeed();
+    }
+
+    @GameTest(template = "atmosphere_test", timeoutTicks = 40)
     public static void cancellingEverySpawnSetterCannotEnterAStrangersStation(GameTestHelper helper) {
         ServerLevel space = NonPlayerAtmosphereGameTests.level(helper, CelestialIds.SPACE_LEVEL);
         List<Runnable> cleanup = new ArrayList<>();
