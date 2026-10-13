@@ -16,6 +16,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.GameType;
@@ -84,6 +85,9 @@ public final class UnlitTorchFluidGameTests {
                 spreadTo(fluid, f, before);
                 helper.assertTrue(!((LiquidBlockContainer) before.getBlock()).placeLiquid(f.level, f.origin, before,
                         fluid.defaultFluidState()), "Direct placement admitted a quarantined torch");
+                BucketItem bucket = (BucketItem) (fluid.isSame(Fluids.WATER) ? Items.WATER_BUCKET : Items.LAVA_BUCKET);
+                helper.assertTrue(!bucket.emptyContents(f.player(GameType.SURVIVAL), f.level, f.origin, null),
+                        "Native bucket fallback admitted a quarantined torch");
                 assertKept(helper, f, torch, before, root, savedIdentity);
                 helper.assertTrue(f.newDrops().isEmpty(), "Quarantine emitted an item");
                 f.set(source, Blocks.IRON_BLOCK.defaultBlockState());

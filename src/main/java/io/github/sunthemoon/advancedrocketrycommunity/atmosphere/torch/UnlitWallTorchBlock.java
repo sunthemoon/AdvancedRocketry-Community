@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -41,6 +42,12 @@ public final class UnlitWallTorchBlock extends WallTorchBlock implements EntityB
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new UnlitTorchBlockEntity(pos, state);
+    }
+
+    /** Buckets must use the position-aware container gate, not the non-solid replacement fallback. */
+    @Override
+    public boolean canBeReplaced(BlockState state, Fluid fluid) {
+        return false;
     }
 
     @Override
