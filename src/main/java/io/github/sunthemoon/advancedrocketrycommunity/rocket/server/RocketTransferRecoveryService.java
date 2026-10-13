@@ -341,9 +341,11 @@ final class RocketTransferRecoveryService {
                     settledTransfers.remove(resumed.transferId());
                   }
                   io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, resumed);
-                  result(Status.RECOVERED, resumed, action, currentSources, currentDestinations).log(
+                  // Report the observation that selected this action, not the post-rebind phase.
+                  Result recovered = result(Status.RECOVERED, record, action, sources, destinations);
+                  recovered.log(
                           AdvancedRocketryCommunity.LOGGER, RocketTransferEntities.isReplaceableLandedAuthority(destination, resumed));
-                  completed(result(Status.RECOVERED, resumed, action, sources, destinations));
+                  completed(recovered);
                 });
                 return retryLater(record);
             }
