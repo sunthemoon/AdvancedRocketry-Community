@@ -70,6 +70,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.network.RocketFligh
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManager;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationRocketAuthority;
+import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntime;
@@ -181,6 +182,11 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(stationWarp::onPlayerLoggedOut);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerAboutToStart);
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerStarted);
+        // ADR-065 §5.3: the offline member notices; reconciled after the station start-up recovery.
+        StationNoticeService stationNotices = new StationNoticeService();
+        stationManager.installLifecycleListener(stationNotices);
+        MinecraftForge.EVENT_BUS.addListener(stationNotices::onPlayerLoggedIn);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, stationNotices::onServerStarted);
         // ADR-065 §5.2.1: the station orbital clock advances once per logical-server END tick.
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerTick);
         MinecraftForge.EVENT_BUS.addListener(this::onSolarServerStarted);
