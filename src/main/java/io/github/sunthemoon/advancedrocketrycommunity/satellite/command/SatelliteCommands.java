@@ -333,7 +333,7 @@ public final class SatelliteCommands {
                 + " system=" + instance.system() + " version=" + instance.tableVersion()
                 + " entries=" + instance.yield().size() + " items=" + items
                 + " expires=" + (instance.expiresAt().isPresent() ? instance.expiresAt().getAsLong() : "none")
-                + " source=" + instance.sourceMission()
+                + " origin=" + instance.origin().kind() + "/" + instance.origin().id()
                 + " allocated=" + instance.allocatedMission().map(UUID::toString).orElse("none")), false);
         return 1;
     }

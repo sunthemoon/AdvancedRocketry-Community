@@ -95,7 +95,7 @@ final class QueueBoundsTest {
         resources.startSurvey(new ResourceMissions.SurveyStart(survey, surveyMission, owner, SYSTEM, VERSION, 1, 100, 1L,
                 (count, time) -> List.of(new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION, instanceId, owner,
                         SYSTEM, TYPE, VERSION, VERSION, 5L, YIELD, time, OptionalLong.empty(), InstanceState.PENDING,
-                        surveyMission, Optional.empty()))), 0L);
+                        InstanceOrigin.survey(surveyMission), Optional.empty()))), 0L);
         resources.claimSurvey(surveyMission, owner, 1_728_000L, 200L);
         UUID terminal = UUID.randomUUID();
         long time = 300L;

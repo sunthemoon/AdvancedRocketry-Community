@@ -24,24 +24,25 @@ public final class SatelliteMissionRegistry {
             .comparingLong(UUID::getMostSignificantBits)
             .thenComparingLong(UUID::getLeastSignificantBits);
 
-    private final Map<UUID, SatelliteState> satellites = new LinkedHashMap<>();
-    private final Map<UUID, MissionState> missions = new LinkedHashMap<>();
-    private final Map<UUID, ResearchAccount> accounts = new LinkedHashMap<>();
+    final Map<UUID, SatelliteState> satellites = new LinkedHashMap<>();
+    final Map<UUID, MissionState> missions = new LinkedHashMap<>();
+    final Map<UUID, ResearchAccount> accounts = new LinkedHashMap<>();
     private final Map<UUID, AsteroidInstance> instances = new LinkedHashMap<>();
     /** ADR-050 §5: maintained incrementally; derived on restore, never persisted. */
     private final Map<UUID, Integer> satellitesByOwner = new java.util.HashMap<>();
     /** ADR-049 §9 receiver → linked solar satellites; derived on restore, never persisted. */
     private final ReceiverLinkIndex receiverLinks = new ReceiverLinkIndex();
     private final MissionDeadlineScheduler scheduler = new MissionDeadlineScheduler();
-    private final MonotonicMissionClock clock;
+    final MonotonicMissionClock clock;
     /** ADR-050 sections 5–7: counters, pruning queues, byte budgets and admission limits. */
     private final MissionRetention retention = new MissionRetention();
-    private final StorageBudget budget = new StorageBudget();
+    final StorageBudget budget = new StorageBudget();
     /** ADR-051 sections 2 and 7: live instances, the expiry queue and the terminal → mission index. */
     private final InstanceLedger ledger = new InstanceLedger();
     private final TerminalIndex terminals = new TerminalIndex();
     private final ResourceMissions resources = new ResourceMissions(this);
-    private final RecordSizer sizer;
+    private final GroundSurveys groundSurveys = new GroundSurveys(this);
+    final RecordSizer sizer;
     private RegistryLimits limits = RegistryLimits.DEFAULTS;
     private RestoreReport restoreReport = new RestoreReport(0, 0, 0, 0);
     /**
@@ -157,14 +158,16 @@ public final class SatelliteMissionRegistry {
      * still load, but a missing-account repair must fit the fixed load count and storage budget.
      */
     public synchronized RestoreReport finishRestore() {
-        int accountsAdded = AccountRecovery.restore(satellites.values(), accounts, budget);
-        RegistryInvariants.Plan plan = RegistryInvariants.plan(satellites, missions, instances);
+        int accountsAdded = AccountRecovery.restore(satellites.values(), groundSurveys.all(), accounts, budget);
+        RegistryInvariants.Plan plan = RegistryInvariants.plan(satellites, missions, instances, groundSurveys.records());
+        plan.groundQuarantines().forEach((id, reason) -> groundSurveys.put(
+                groundSurveys.job(id).orElseThrow().quarantine(reason)));
         plan.missionQuarantines().forEach((id, reason) -> putMission(missions.get(id).quarantine(reason, false)));
         plan.recoveries().forEach(id -> satellites.put(id, satellites.get(id).requireRecovery()));
         plan.instanceQuarantines().forEach(id -> storeInstance(instances.get(id).quarantine()));
         scheduler.rebuild(missions.values());
         RestoreReport report = new RestoreReport(plan.missionQuarantines().size(), plan.recoveries().size(),
-                plan.instanceQuarantines().size(), accountsAdded);
+                plan.instanceQuarantines().size(), accountsAdded, plan.groundQuarantines().size());
         if (report.changed()) {
             changedSinceEpoch = true;
         }
@@ -406,6 +409,7 @@ public final class SatelliteMissionRegistry {
                 this::removeMission);
         int expired = ledger.pass(logicalTime, instances::get, this::storeInstance,
                 instance -> dropInstance(instance.instanceId()));
+        pruned += groundSurveys.prune(logicalTime);
         if (drained.completed() > 0 || pruned > 0 || expired > 0) {
             changedSinceEpoch = true;
         }
@@ -703,6 +707,7 @@ public final class SatelliteMissionRegistry {
         if (previous != null) {
             ledger.changed(previous, null);
             budget.release(StorageBudget.Section.INSTANCES, instanceId);
+            groundSurveys.instanceRemoved(previous);
         }
     }
 
@@ -765,6 +770,8 @@ public final class SatelliteMissionRegistry {
     public ResourceMissions resources() {
         return resources;
     }
+
+    public GroundSurveys groundSurveys() { return groundSurveys; }
 
     private static void requireAll(Object... values) {
         for (Object value : values) {

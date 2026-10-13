@@ -10,11 +10,14 @@ public final class SatelliteLimits {
     public static final int SATELLITE_SCHEMA_VERSION = 2;
     public static final int LEGACY_MISSION_SCHEMA_VERSION = 1;
     public static final int MISSION_SCHEMA_VERSION = 2;
-    public static final int INSTANCE_SCHEMA_VERSION = 1;
+    public static final int LEGACY_INSTANCE_SCHEMA_VERSION = 1;
+    public static final int INSTANCE_SCHEMA_VERSION = 2;
+    public static final int GROUND_SURVEY_SCHEMA_VERSION = 1;
     public static final int RESEARCH_ACCOUNT_SCHEMA_VERSION = 1;
-    /** Registry root 3 (ADR-050 §10); roots 1 and 2 are migrated before use. */
-    public static final int REGISTRY_SCHEMA_VERSION = 3;
-    public static final String REGISTRY_FORMAT_EPOCH = "v1.6.0-satellite-missions";
+    public static final int INSTANCE_REGISTRY_SCHEMA_VERSION = 3;
+    public static final int GROUND_REGISTRY_SCHEMA_VERSION = 4;
+    public static final int REGISTRY_SCHEMA_VERSION = GROUND_REGISTRY_SCHEMA_VERSION;
+    public static final String REGISTRY_FORMAT_EPOCH = "v1.8.0-ground-surveys";
 
     public static final int MAX_DEFINITIONS = 16;
     public static final int MAX_KIND_DEFINITIONS = 16;
@@ -49,6 +52,9 @@ public final class SatelliteLimits {
     public static final int MAX_RESEARCH_ACCOUNTS = 4_096;
     public static final int MAX_ACTIVE_MISSIONS = 1_024;
     public static final int MAX_INSTANCES = 2_048;
+    public static final int MAX_GROUND_SURVEYS = 2_048;
+    public static final int MAX_GROUND_SURVEYS_PER_OWNER = 16;
+    public static final int MAX_GROUND_SURVEY_RECORD_NBT_BYTES = 4 * 1024;
     public static final int MAX_COMPLETIONS_PER_PASS = 32;
     public static final int MAX_QUEUE_INSPECTIONS_PER_PASS = 64;
     public static final int SCHEDULER_INTERVAL_TICKS = 20;

@@ -20,11 +20,20 @@ final class RegistryInvariants {
     private RegistryInvariants() {
     }
 
-    record Plan(Map<UUID, String> missionQuarantines, Set<UUID> recoveries, Set<UUID> instanceQuarantines) {
+    record Plan(Map<UUID, String> missionQuarantines, Set<UUID> recoveries, Set<UUID> instanceQuarantines,
+                Map<UUID, String> groundQuarantines) {
     }
 
     static Plan plan(Map<UUID, SatelliteState> satellites, Map<UUID, MissionState> missions,
                      Map<UUID, AsteroidInstance> instances) {
+        return plan(satellites, missions, instances, Map.of());
+    }
+
+    static Plan plan(Map<UUID, SatelliteState> satellites, Map<UUID, MissionState> missions,
+                     Map<UUID, AsteroidInstance> instances, Map<UUID, GroundSurveyJob> jobs) {
+        GroundSurveyInvariants.Plan ground = GroundSurveyInvariants.plan(jobs, instances);
+        Map<UUID, AsteroidInstance> checked = new LinkedHashMap<>(instances);
+        ground.instances().forEach(id -> checked.put(id, instances.get(id).quarantine()));
         Map<UUID, String> quarantines = new LinkedHashMap<>();
         for (MissionState mission : missions.values()) {
             if (!mission.status().unfinished() || mission.status() == MissionStatus.QUARANTINED) {
@@ -34,7 +43,7 @@ final class RegistryInvariants {
             String reason = satellite == null ? "MISSING_SATELLITE"
                     : !satellite.ownerId().equals(mission.ownerId()) ? "SATELLITE_OWNER_MISMATCH"
                     : !satellite.currentMissionId().filter(mission.missionId()::equals).isPresent()
-                    ? "SATELLITE_NOT_BOUND" : instanceProblem(mission, instances);
+                    ? "SATELLITE_NOT_BOUND" : instanceProblem(mission, checked);
             if (reason != null) {
                 quarantines.put(mission.missionId(), reason);
             }
@@ -54,13 +63,13 @@ final class RegistryInvariants {
         missions.values().forEach(mission -> mission.quarantine()
                 .ifPresent(quarantine -> reasons.put(mission.missionId(), quarantine.reason())));
         reasons.putAll(quarantines);
-        Set<UUID> instanceQuarantines = new LinkedHashSet<>();
+        Set<UUID> instanceQuarantines = new LinkedHashSet<>(ground.instances());
         for (AsteroidInstance instance : instances.values()) {
             if (instanceBroken(instance, missions, reasons)) {
                 instanceQuarantines.add(instance.instanceId());
             }
         }
-        return new Plan(quarantines, recoveries, instanceQuarantines);
+        return new Plan(quarantines, recoveries, instanceQuarantines, ground.jobs());
     }
 
     /** A survey or asteroid mission whose instances do not point back at it, or null. */
@@ -68,6 +77,8 @@ final class RegistryInvariants {
         if (mission.kind() == MissionKind.ASTEROID) {
             AsteroidInstance instance = instances.get(mission.instanceId().orElseThrow());
             return instance != null && instance.state() == InstanceState.ALLOCATED
+                    && instance.ownerId().equals(mission.ownerId())
+                    && instance.system().equals(mission.targetBodyId())
                     && instance.allocatedMission().filter(mission.missionId()::equals).isPresent()
                     ? null : INSTANCE_MISMATCH;
         }
@@ -75,7 +86,9 @@ final class RegistryInvariants {
             for (UUID id : survey.instances()) {
                 AsteroidInstance instance = instances.get(id);
                 if (instance == null || instance.state() != InstanceState.PENDING
-                        || !instance.sourceMission().equals(mission.missionId())) {
+                        || !instance.origin().equals(InstanceOrigin.survey(mission.missionId()))
+                        || !instance.ownerId().equals(mission.ownerId())
+                        || !instance.system().equals(mission.targetBodyId())) {
                     return INSTANCE_MISMATCH;
                 }
             }
@@ -90,11 +103,17 @@ final class RegistryInvariants {
             MissionState mission = missions.get(instance.allocatedMission().orElseThrow());
             return mission == null || !mission.status().unfinished()
                     || INSTANCE_MISMATCH.equals(reasons.get(mission.missionId()))
+                    || mission.kind() != MissionKind.ASTEROID
+                    || !mission.ownerId().equals(instance.ownerId())
+                    || !mission.targetBodyId().equals(instance.system())
                     || !mission.instanceId().filter(instance.instanceId()::equals).isPresent();
         }
-        if (instance.state() == InstanceState.PENDING) {
-            MissionState mission = missions.get(instance.sourceMission());
+        if (instance.state() == InstanceState.PENDING && instance.origin().kind() == InstanceOrigin.Kind.SURVEY_MISSION) {
+            MissionState mission = missions.get(instance.origin().id());
             return mission == null || !mission.status().unfinished()
+                    || mission.kind() != MissionKind.SURVEY
+                    || !mission.ownerId().equals(instance.ownerId())
+                    || !mission.targetBodyId().equals(instance.system())
                     || !(mission.payload() instanceof MissionPayload.Survey survey)
                     || !survey.instances().contains(instance.instanceId());
         }

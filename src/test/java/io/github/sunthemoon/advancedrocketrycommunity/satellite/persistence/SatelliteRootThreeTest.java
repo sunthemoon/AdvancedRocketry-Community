@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Save
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceOrigin;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionPayload;
@@ -54,8 +55,9 @@ final class SatelliteRootThreeTest {
         var migration = SavedDataSchemaMigrator.migrate(ManagedSavedDataType.SATELLITE_MISSIONS, legacy);
         assertEquals(SavedDataSchemaMigrator.MigrationStatus.MIGRATED, migration.status());
         CompoundTag payload = migration.payload();
-        assertEquals(3, payload.getInt("schema_version"));
-        assertEquals("v1.6.0-satellite-missions", payload.getString("format_epoch"));
+        assertEquals(4, payload.getInt("schema_version"));
+        assertEquals("v1.8.0-ground-surveys", payload.getString("format_epoch"));
+        assertTrue(payload.getList("ground_surveys", Tag.TAG_COMPOUND).isEmpty());
         assertEquals(1L, payload.getLong("save_epoch"));
         assertTrue(payload.getList("instances", CompoundTag.TAG_COMPOUND).isEmpty());
         CompoundTag satellite = payload.getList("satellites", CompoundTag.TAG_COMPOUND).getCompound(0);
@@ -77,7 +79,7 @@ final class SatelliteRootThreeTest {
         rootOne.remove("format_epoch");
         CompoundTag fromOne = SavedDataSchemaMigrator.migrate(ManagedSavedDataType.SATELLITE_MISSIONS, rootOne).payload();
         assertEquals(1, fromOne.getInt("migrated_from_schema"));
-        assertEquals(3, fromOne.getInt("schema_version"));
+        assertEquals(4, fromOne.getInt("schema_version"));
     }
 
     @Test
@@ -142,7 +144,7 @@ final class SatelliteRootThreeTest {
         }
         AsteroidInstance instance = new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION, UUID.randomUUID(),
                 UUID.randomUUID(), longId(96), longId(97), "0123456789abcdef", "fedcba9876543210", Long.MIN_VALUE,
-                yield, 0L, OptionalLong.of(Long.MAX_VALUE), InstanceState.ALLOCATED, UUID.randomUUID(),
+                yield, 0L, OptionalLong.of(Long.MAX_VALUE), InstanceState.ALLOCATED, InstanceOrigin.survey(UUID.randomUUID()),
                 Optional.of(UUID.randomUUID()));
         int instanceBytes = SatelliteNbtSize.uncompressedBytes(SatelliteNbtCodec.encodeInstance(instance));
         assertTrue(instanceBytes <= SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES, "instance " + instanceBytes);
@@ -223,6 +225,7 @@ final class SatelliteRootThreeTest {
         legacy.putInt("schema_version", 2);
         legacy.putString("format_epoch", SavedDataSchemaMigrator.FORMAT_EPOCH);
         legacy.remove("instances");
+        legacy.remove("ground_surveys");
         legacy.remove("save_epoch");
         legacy.getList("satellites", CompoundTag.TAG_COMPOUND).forEach(raw -> {
             CompoundTag satellite = (CompoundTag) raw;

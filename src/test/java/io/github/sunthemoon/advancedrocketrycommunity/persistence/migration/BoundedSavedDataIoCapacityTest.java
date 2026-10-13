@@ -153,6 +153,33 @@ final class BoundedSavedDataIoCapacityTest {
     }
 
     /**
+     * W21b review F1: the payload bound measured during the validation write is exact, and incompressible data
+     * at that bound still passes the compressed-size check of the fastest deflate level.
+     */
+    @Test
+    void validationPayloadBoundIsExactAtTheSatelliteRootBound() throws Exception {
+        ManagedSavedDataType type = ManagedSavedDataType.SATELLITE_MISSIONS;
+        int bound = io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits.MAX_REGISTRY_NBT_BYTES;
+        for (int delta : new int[]{0, 1}) {
+            CompoundTag payload = new CompoundTag();
+            payload.putByteArray("padding", new byte[0]);
+            byte[] padding = new byte[bound + delta - (int) serialized(payload)];
+            new java.util.Random(21).nextBytes(padding);
+            payload.putByteArray("padding", padding);
+            assertEquals(bound + delta, serialized(payload));
+            if (delta == 0) {
+                BoundedSavedDataIo.validatePayload(payload, type, bound);
+            } else {
+                SavedDataMigrationException refused = assertThrows(SavedDataMigrationException.class,
+                        () -> BoundedSavedDataIo.validatePayload(payload, type, bound));
+                assertEquals(MigrationDiagnosticId.OVERSIZED_DATA, refused.diagnosticId());
+                // Without the payload bound the raw quota's 64 KiB file overhead still admits it.
+                BoundedSavedDataIo.validatePayload(payload, type);
+            }
+        }
+    }
+
+    /**
      * Review F1: a tiny crafted file declaring one huge array or list is refused as oversized before
      * anything is allocated when the declaration exceeds what the file can back (deflate expands at
      * most about 1032:1) or the type's heap quota. A smaller declaration still fails closed and can

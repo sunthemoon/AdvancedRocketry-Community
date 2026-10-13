@@ -22,7 +22,7 @@ public record AsteroidInstance(
         long createdAt,
         OptionalLong expiresAt,
         InstanceState state,
-        UUID sourceMission,
+        InstanceOrigin origin,
         Optional<UUID> allocatedMission
 ) {
     public AsteroidInstance {
@@ -34,7 +34,7 @@ public record AsteroidInstance(
         Objects.requireNonNull(candidateFingerprint, "candidateFingerprint");
         Objects.requireNonNull(expiresAt, "expiresAt");
         Objects.requireNonNull(state, "state");
-        Objects.requireNonNull(sourceMission, "sourceMission");
+        Objects.requireNonNull(origin, "origin");
         Objects.requireNonNull(allocatedMission, "allocatedMission");
         if (schemaVersion != SatelliteLimits.INSTANCE_SCHEMA_VERSION) {
             throw new IllegalArgumentException("Unsupported asteroid instance schema " + schemaVersion);
@@ -42,6 +42,9 @@ public record AsteroidInstance(
         if (!MissionPayload.HEX16.matcher(tableVersion).matches()
                 || !MissionPayload.HEX16.matcher(candidateFingerprint).matches()) {
             throw new IllegalArgumentException("Asteroid instance versions must be 16 hex characters");
+        }
+        if (system.toString().length() > 128 || asteroidType.toString().length() > 128) {
+            throw new IllegalArgumentException("Asteroid instance identifiers exceed their bound");
         }
         yield = RewardEntry.validated(yield, SatelliteLimits.MAX_REWARD_ENTRIES, SatelliteLimits.MAX_YIELD_ITEMS);
         if (createdAt < 0L || (expiresAt.isPresent() && expiresAt.getAsLong() < createdAt)) {
@@ -72,13 +75,13 @@ public record AsteroidInstance(
     /** ADR-050 section 9: an instance whose mission reference is broken is held for an operator. */
     public AsteroidInstance quarantine() {
         return new AsteroidInstance(schemaVersion, instanceId, ownerId, system, asteroidType, tableVersion,
-                candidateFingerprint, seed, yield, createdAt, expiresAt, InstanceState.QUARANTINED, sourceMission,
+                candidateFingerprint, seed, yield, createdAt, expiresAt, InstanceState.QUARANTINED, origin,
                 allocatedMission);
     }
 
     /** A lifecycle transition (ADR-051 section 2); the record constructor checks the combination. */
     public AsteroidInstance transition(InstanceState next, OptionalLong nextExpiresAt, Optional<UUID> nextAllocation) {
         return new AsteroidInstance(schemaVersion, instanceId, ownerId, system, asteroidType, tableVersion,
-                candidateFingerprint, seed, yield, createdAt, nextExpiresAt, next, sourceMission, nextAllocation);
+                candidateFingerprint, seed, yield, createdAt, nextExpiresAt, next, origin, nextAllocation);
     }
 }

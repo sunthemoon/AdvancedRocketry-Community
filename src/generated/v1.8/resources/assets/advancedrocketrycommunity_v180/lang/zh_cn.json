@@ -532,6 +532,7 @@
   "status.advancedrocketrycommunity.pump.target_out_of_bounds": "目标超出世界边界",
   "status.advancedrocketrycommunity.pump.target_protected": "目标受保护",
   "status.advancedrocketrycommunity.pump.target_unloaded": "区块未加载",
+  "status.advancedrocketrycommunity.satellite.offline_repair_required": "需要离线修复；请备份世界并联系管理员",
   "subtitle.advancedrocketrycommunity.air_hiss_loop": "空气嘶嘶作响",
   "subtitle.advancedrocketrycommunity.basic_laser_gun": "激光开火",
   "subtitle.advancedrocketrycommunity.combustion_rocket": "火箭发动机轰鸣",

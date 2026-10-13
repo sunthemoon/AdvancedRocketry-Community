@@ -31,6 +31,8 @@ final class InstanceLedger {
     private final Map<UUID, Integer> liveByOwner = new HashMap<>();
     /** Every record of an owner, whatever its state; small (live instances are limited per owner). */
     private final Map<UUID, Set<UUID>> byOwner = new HashMap<>();
+    /** Ground-origin instances per job ID, so a job's backlinks are found without scanning every instance. */
+    private final Map<UUID, Set<UUID>> byGroundJob = new HashMap<>();
     private final TreeSet<Entry> queue = new TreeSet<>(ORDER);
     private final Map<UUID, Entry> queued = new HashMap<>();
 
@@ -44,9 +46,18 @@ final class InstanceLedger {
                 return ids.isEmpty() ? null : ids;
             });
         }
+        if (previous != null && previous.origin().kind() == InstanceOrigin.Kind.GROUND_SURVEY) {
+            byGroundJob.computeIfPresent(previous.origin().id(), (job, ids) -> {
+                ids.remove(previous.instanceId());
+                return ids.isEmpty() ? null : ids;
+            });
+        }
         dequeue((next != null ? next : previous).instanceId());
         if (next != null) {
             byOwner.computeIfAbsent(next.ownerId(), owner -> new HashSet<>()).add(next.instanceId());
+            if (next.origin().kind() == InstanceOrigin.Kind.GROUND_SURVEY) {
+                byGroundJob.computeIfAbsent(next.origin().id(), job -> new HashSet<>()).add(next.instanceId());
+            }
             if (next.state().live()) {
                 liveByOwner.merge(next.ownerId(), 1, Integer::sum);
             }
@@ -71,6 +82,11 @@ final class InstanceLedger {
     /** The owner's instance IDs in ID order. */
     List<UUID> owned(UUID owner) {
         return byOwner.getOrDefault(owner, Set.of()).stream().sorted(ID_ORDER).toList();
+    }
+
+    /** IDs of the instances whose origin names this ground job; normally at most one. */
+    Set<UUID> groundOrigins(UUID jobId) {
+        return Set.copyOf(byGroundJob.getOrDefault(jobId, Set.of()));
     }
 
     /**
@@ -116,7 +132,7 @@ final class InstanceLedger {
         return new AsteroidInstance(instance.schemaVersion(), instance.instanceId(), instance.ownerId(), instance.system(),
                 instance.asteroidType(), instance.tableVersion(), instance.candidateFingerprint(), instance.seed(),
                 instance.yield(), instance.createdAt(), instance.expiresAt(), InstanceState.EXPIRED,
-                instance.sourceMission(), java.util.Optional.empty());
+                instance.origin(), java.util.Optional.empty());
     }
 
     /** When the queue next acts on an instance, or {@code Long.MAX_VALUE} while it waits for a mission. */
@@ -124,7 +140,8 @@ final class InstanceLedger {
         return switch (instance.state()) {
             case AVAILABLE -> instance.expiresAt().orElseThrow();
             case DEPLETED, EXPIRED -> instance.expiresAt().isPresent()
-                    ? Math.addExact(instance.expiresAt().getAsLong(), REMOVE_AFTER_TICKS) : Long.MAX_VALUE;
+                    ? instance.expiresAt().getAsLong() > Long.MAX_VALUE - REMOVE_AFTER_TICKS ? Long.MAX_VALUE
+                    : instance.expiresAt().getAsLong() + REMOVE_AFTER_TICKS : Long.MAX_VALUE;
             case PENDING, ALLOCATED, QUARANTINED -> Long.MAX_VALUE;
         };
     }
