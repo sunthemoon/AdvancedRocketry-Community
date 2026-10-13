@@ -20,7 +20,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.LootParams;
 
 /** Standing extinguished torch: no flame or light; drops its saved source item; quarantined data stays in place. */
-public final class UnlitTorchBlock extends TorchBlock implements EntityBlock {
+public final class UnlitTorchBlock extends TorchBlock implements EntityBlock, UnlitTorchFluidBarrier {
     public UnlitTorchBlock(Properties properties) {
         super(properties, ParticleTypes.SMOKE);
     }

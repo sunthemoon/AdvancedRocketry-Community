@@ -22,7 +22,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /** Wall extinguished torch with the native {@code facing}; otherwise the same rules as {@link UnlitTorchBlock}. */
-public final class UnlitWallTorchBlock extends WallTorchBlock implements EntityBlock {
+public final class UnlitWallTorchBlock extends WallTorchBlock implements EntityBlock, UnlitTorchFluidBarrier {
     private String descriptionId;
 
     public UnlitWallTorchBlock(Properties properties) {
