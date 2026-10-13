@@ -581,7 +581,7 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key (?!research(?:\\s|\\.)|machines\\.(?:sawmillVanillaWood|crystallizerMaximumGravity)\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!research(?:\\s|\\.)|machines\\.(?:sawmillVanillaWood|crystallizerMaximumGravity)\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET|PLANET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
@@ -725,6 +725,36 @@
       "batches": ["<startup>"],
       "test": "environment: W34 vacuum damage configuration created by the run",
       "reason": "The ADR-066 section 3.3 vacuum damage defaults to 2.0 once on a new config; the OXYGEN section is already excluded from the generic 99-warning budget. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-w37-planet-section-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key PLANET was corrected from null to its default, SimpleCommentedConfig:\\{\\}\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W37 planet-respawn configuration created by the run",
+      "reason": "The new ADR-066 section 3.3 PLANET section is defaulted once on a new config; it is excluded from the generic budget, which remains 99."
+    },
+    {
+      "id": "forge-w37-allow-planet-respawn-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key PLANET\\.allowPlanetRespawn was corrected from null to its default, false\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W37 planet-respawn configuration created by the run",
+      "reason": "allowPlanetRespawn defaults to false once on a new config. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-w37-force-planet-respawn-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key PLANET\\.forcePlanetRespawn was corrected from null to its default, false\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W37 planet-respawn configuration created by the run",
+      "reason": "forcePlanetRespawn defaults to false once on a new config. Non-null corrections and other values do not match."
     },
     {
       "id": "forge-propulsion-rocket-defaulted",

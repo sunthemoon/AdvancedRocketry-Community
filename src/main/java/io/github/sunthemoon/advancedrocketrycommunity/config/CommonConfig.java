@@ -372,6 +372,16 @@ public final class CommonConfig {
                     "Zero disables vacuum damage only; oxygen use, breathability and planetary exposure continue.")
             .defineInRange("OXYGEN.vacuumDamage", (double) PlayerLifeSupportEngine.VACUUM_DAMAGE, 0.0,
                     PlayerLifeSupportEngine.MAX_VACUUM_DAMAGE);
+    /** ADR-066 section 3.3: both default false; force is a respawn option only, never permission to sleep without air. */
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PLANET_RESPAWN = BUILDER
+            .comment("Respawn at a saved bed or respawn anchor on another planet or in Space, when its arrival is",
+                    "loaded, free of solid and liquid hazards, permitted by its station and breathable.",
+                    "When false, or when a check fails, the player respawns by the Overworld rules; the saved point is kept.")
+            .define("PLANET.allowPlanetRespawn", false);
+    public static final ForgeConfigSpec.BooleanValue FORCE_PLANET_RESPAWN = BUILDER
+            .comment("With allowPlanetRespawn, skip only the arrival air check. It never allows sleeping without air,",
+                    "and never skips the loaded, solid or liquid hazard, station permission or missing-body checks.")
+            .define("PLANET.forcePlanetRespawn", false);
 
     public static final RocketPropulsionConfig ROCKET = new RocketPropulsionConfig(BUILDER);
 
@@ -382,6 +392,8 @@ public final class CommonConfig {
     public static double vacuumDamage() { return SPEC.isLoaded() ? VACUUM_DAMAGE.get() : VACUUM_DAMAGE.getDefault(); }
     public static double jetPackForce() { return SPEC.isLoaded() ? JET_PACK_FORCE.get() : JET_PACK_FORCE.getDefault(); }
     public static boolean lowGravityBoots() { return serverSwitchValue(LOW_GRAVITY_BOOTS); }
+    public static boolean allowPlanetRespawn() { return serverSwitchValue(ALLOW_PLANET_RESPAWN); }
+    public static boolean forcePlanetRespawn() { return serverSwitchValue(FORCE_PLANET_RESPAWN); }
 
     /** ADR-054 framework settings; the defaults (the limits at their maxima) until the COMMON config is loaded. */
     public static EndgameSettings endgameSettings() {
@@ -516,6 +528,7 @@ public final class CommonConfig {
     private static final Set<ForgeConfigSpec.BooleanValue> SERVER_SWITCHES = Set.of(SMALL_PLATE_PRESS_ENABLED, SAWMILL_VANILLA_WOOD,
             COMBUSTION_GENERATOR_ENABLED, SOLAR_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
             CLASSIC_GRAVITY_ENABLED, CLASSIC_EQUIPMENT_ENABLED, LOW_GRAVITY_BOOTS, SCRUBBER_REQUIRES_CARTRIDGE, OXYGEN_DETECTION,
+            ALLOW_PLANET_RESPAWN, FORCE_PLANET_RESPAWN,
             ENDGAME_LASER_DRILL, ENDGAME_LASER_PHYSICAL, ENDGAME_RAILGUN, ENDGAME_BLACK_HOLE_GENERATOR,
             ENDGAME_GRAVITY_FIELD, ENDGAME_SPACE_ELEVATOR,
             OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,
