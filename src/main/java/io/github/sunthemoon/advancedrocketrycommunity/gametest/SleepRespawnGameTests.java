@@ -143,7 +143,8 @@ public final class SleepRespawnGameTests {
      * Supplied sealed rooms admit sleep on the Moon and outside stations in Space; a room still being scanned does
      * not. Both admission and room supply use the installed production authority and native startSleepInBed.
      */
-    @GameTest(template = TEMPLATE, timeoutTicks = 60)
+    // Adjacent airlock fixtures manually advance the installed atmosphere manager; isolate this real-tick scan.
+    @GameTest(template = TEMPLATE, batch = "sleep_rooms", timeoutTicks = 60)
     public static void sealedBreathableRoomsAdmitSleepButAPendingRoomDoesNot(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel moon = NonPlayerAtmosphereGameTests.level(helper, CelestialIds.MOON_LEVEL);
