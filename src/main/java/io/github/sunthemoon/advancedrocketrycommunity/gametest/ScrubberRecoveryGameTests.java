@@ -24,6 +24,7 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
+import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -34,10 +35,13 @@ import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
@@ -163,6 +167,77 @@ public final class ScrubberRecoveryGameTests {
         } finally { vent.load(new CompoundTag()); level.setBlock(ventPos, before, quiet); }
     }
 
+    @GameTest(template = "atmosphere_test", batch = "scrubber_stale_binding", timeoutTicks = 40)
+    public static void emptyConflictingAssociationIsReleasedAtTheVentWithoutMovingAnItem(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper)) {
+            UUID identity = f.facade.identity();
+            f.replayReplacedFacade(null);
+            ListTag banks = f.vent.scrubbers().encode().getList("banks", 10); UUID generation = f.vent.scrubbers().generation();
+            helper.assertTrue(banks.size() == 1 && banks.getCompound(0).getCompound("cartridge").isEmpty(), "Snapshot must hold one empty association");
+            f.openPlayer();
+            f.assertRemovalRefused("Empty association");
+            CompoundTag before = f.vent.scrubbers().encode();
+            helper.assertTrue(f.vent.scrubbers().recoverOrphan(f.vent).isEmpty() && f.items().extractItem(0, 1, false).isEmpty(),
+                    "An absent cartridge was withdrawn");
+            f.observe();
+            helper.assertTrue(f.facade.protectedData() && before.equals(f.vent.scrubbers().encode()), "Observation admitted the conflicting facade");
+            f.replies.clear();
+            helper.assertTrue(f.useVent() == InteractionResult.CONSUME && f.player.getMainHandItem().isEmpty(), "Vent did not release the empty association");
+            helper.assertTrue(f.replies.equals(List.of(message("vent.scrubber_association_released"))), "Release message differs");
+            helper.assertTrue(f.vent.scrubbers().encode().getList("banks", 10).isEmpty() && generation.equals(f.vent.scrubbers().generation())
+                    && f.facade.identity().equals(identity) && !bound(f.facade), "Release kept the association or binding, or changed an identity");
+            helper.assertTrue(f.useVent() == InteractionResult.FAIL && f.replies.equals(List.of(message("vent.scrubber_association_released"),
+                    message("vent.scrubber_recovery_refused"))), "A second release was not refused");
+            f.assertRemovable("Empty association");
+            helper.assertTrue(f.vent.scrubbers().encode().getList("banks", 10).isEmpty() && f.noCartridgeDropped(), "Removal invented an association or a cartridge");
+            helper.succeed();
+        }
+    }
+
+    @GameTest(template = "atmosphere_test", batch = "scrubber_stale_binding_frontier", timeoutTicks = 40)
+    public static void emptyAssociationBehindAnUnloadedFacadeChunkIsKept(GameTestHelper helper) {
+        var level = helper.getLevel(); var chunks = level.getChunkSource();
+        BlockPos ventPos = frontier(helper, 224), facadePos = ventPos.east(); BlockState before = level.getBlockState(ventPos);
+        helper.assertTrue(level.getBlockEntity(ventPos) == null, "Frontier fixture must be BE-free");
+        level.setBlock(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState(), QUIET);
+        var vent = (OxygenVentBlockEntity) level.getBlockEntity(ventPos);
+        try {
+            CompoundTag bank = new ScrubberBank().encode(); ListTag banks = new ListTag(); CompoundTag entry = new CompoundTag();
+            entry.putInt("face", Direction.EAST.ordinal()); entry.putString("identity", UUID.randomUUID().toString());
+            entry.put("cartridge", new CompoundTag()); banks.add(entry); bank.put("banks", banks);
+            CompoundTag saved = new CompoundTag(); saved.put(OxygenVentPersistence.DATA_KEY, OxygenVentPersistence.encode(0, 0, 0, 0, 0, bank));
+            vent.load(saved);
+            helper.assertTrue(!vent.protectedDeviceData() && bank.equals(vent.scrubbers().encode()), "Frontier fixture must load a supported empty association");
+            helper.assertTrue(chunks.getChunkNow(facadePos.getX() >> 4, facadePos.getZ() >> 4) == null, "Fixture setup loaded the unavailable facade chunk");
+            helper.assertTrue(!vent.scrubbers().releaseEmptyOrphan(vent) && vent.scrubbers().recoverOrphan(vent).isEmpty()
+                    && bank.equals(vent.scrubbers().encode()) && chunks.getChunkNow(facadePos.getX() >> 4, facadePos.getZ() >> 4) == null,
+                    "Release loaded an unavailable chunk or dropped its unresolved association");
+            helper.succeed();
+        } finally { vent.load(new CompoundTag()); level.setBlock(ventPos, before, QUIET); }
+    }
+
+    /** Native neighbour-shape propagation would load the very chunk a frontier fixture must leave absent. */
+    private static final int QUIET = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
+    /**
+     * The east edge of an already-loaded chunk whose neighbour is absent, found without acquiring chunks or tickets. The
+     * neighbour must also hold no FULL-level ticket: {@code hasChunkAt} already reports such a chunk, and a following
+     * read (Forge's comparator update in {@code setChanged}, or the facade's {@code owner()}) waits for it to load.
+     */
+    private static BlockPos frontier(GameTestHelper helper, int y) {
+        var chunks = helper.getLevel().getChunkSource(); BlockPos origin = helper.absolutePos(BlockPos.ZERO);
+        for (int x = -32; x <= 32; x++) {
+            int cx = (origin.getX() >> 4) + x, cz = origin.getZ() >> 4;
+            if (chunks.getChunkNow(cx, cz) != null && chunks.getChunkNow(cx + 1, cz) == null && !chunks.hasChunk(cx + 1, cz)) {
+                return new BlockPos((cx << 4) + 15, y, (cz << 4) + 8);
+            }
+        }
+        throw new GameTestAssertException("No loaded frontier available for the unloaded guard fixture");
+    }
+    private static String message(String key) { return Component.translatable("message.advancedrocketrycommunity." + key).getString(); }
+    private static boolean bound(ScrubberBlockEntity facade) {
+        return facade.saveWithoutMetadata().getCompound(ScrubberBlockEntity.KEY).contains("owner_position");
+    }
+
     private static final class Fixture implements AutoCloseable {
         private final GameTestHelper helper;
         private final BlockPos ventPos;
@@ -212,6 +287,48 @@ public final class ScrubberRecoveryGameTests {
             var state = vent.getBlockState();
             return state.getBlock().use(state, helper.getLevel(), ventPos, player, InteractionHand.MAIN_HAND,
                     new BlockHitResult(Vec3.atCenterOf(ventPos), Direction.UP, ventPos, false));
+        }
+        /** The review's mixed snapshot: the vent root naming replacement B (charged or not) replayed beside still-bound A. */
+        private void replayReplacedFacade(ItemStack cartridge) {
+            CompoundTag oldFacade = facade.saveWithoutMetadata();
+            levelSet(facadePos, Blocks.AIR.defaultBlockState());
+            levelSet(facadePos, ModBlocks.CO2_SCRUBBER.get().defaultBlockState());
+            facade = (ScrubberBlockEntity) helper.getLevel().getBlockEntity(facadePos);
+            observe();
+            helper.assertTrue(cartridge == null || items().insertItem(0, cartridge, false).isEmpty(), "Replacement facade did not accept cartridge");
+            CompoundTag newerVent = vent.saveWithoutMetadata(); UUID replacement = facade.identity();
+            vent.load(newerVent); facade.load(oldFacade); observe();
+            helper.assertTrue(!replacement.equals(facade.identity()) && bound(facade), "Replay did not restore bound facade A");
+        }
+        /** Every ordinary removal path refuses, and the bank and physical facade stay unchanged. */
+        private void assertRemovalRefused(String scenario) {
+            var level = helper.getLevel(); var state = facade.getBlockState();
+            CompoundTag bank = vent.scrubbers().encode(), root = facade.saveWithoutMetadata();
+            var event = new BlockEvent.BreakEvent(level, facadePos, state, helper.makeMockSurvivalPlayer());
+            DeviceProtection.breaking(event);
+            helper.assertTrue(event.isCanceled() && facade.protectedData(), scenario + ": Forge break admitted the facade");
+            helper.assertTrue(!state.getBlock().onDestroyedByPlayer(state, level, facadePos, helper.makeMockSurvivalPlayer(), true,
+                    level.getFluidState(facadePos)) && !state.getBlock().canEntityDestroy(state, level, facadePos, null)
+                    && state.getDestroyProgress(helper.makeMockSurvivalPlayer(), level, facadePos) == 0, scenario + ": native removal admitted the facade");
+            state.getBlock().onBlockExploded(state, level, facadePos, null); facade.detach();
+            helper.assertTrue(!player.gameMode.destroyBlock(facadePos), scenario + ": player break admitted the facade");
+            helper.assertTrue(level.getBlockEntity(facadePos) == facade && bank.equals(vent.scrubbers().encode())
+                    && root.equals(facade.saveWithoutMetadata()), scenario + ": refused removal changed the bank or facade");
+        }
+        /** The released facade is ordinarily removable; the creative breaker drops nothing. */
+        private void assertRemovable(String scenario) {
+            var level = helper.getLevel(); var state = facade.getBlockState();
+            var event = new BlockEvent.BreakEvent(level, facadePos, state, helper.makeMockSurvivalPlayer());
+            DeviceProtection.breaking(event);
+            helper.assertTrue(!event.isCanceled() && !facade.protectedData() && state.getBlock().canEntityDestroy(state, level, facadePos, null)
+                    && state.getDestroyProgress(helper.makeMockSurvivalPlayer(), level, facadePos) > 0, scenario + ": released facade is still protected");
+            player.setGameMode(GameType.CREATIVE);
+            helper.assertTrue(player.gameMode.destroyBlock(facadePos) && !level.getBlockState(facadePos).is(ModBlocks.CO2_SCRUBBER.get()),
+                    scenario + ": player could not remove the released facade");
+        }
+        private boolean noCartridgeDropped() {
+            return helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(ventPos).inflate(4),
+                    item -> item.getItem().is(ModItems.CARBON_SCRUBBER_CARTRIDGE.get())).isEmpty();
         }
         @Override public void close() {
             try {

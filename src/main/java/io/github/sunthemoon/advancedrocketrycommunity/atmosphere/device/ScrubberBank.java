@@ -87,11 +87,17 @@ public final class ScrubberBank {
     }
     /** Explicit withdrawal only: an unloaded or unreadable neighbour is not proof of an orphan. */
     public ItemStack recoverOrphan(OxygenVentBlockEntity vent) {
-        if (operating || !vent.deviceAvailable() || vent.scrubbers() != this) { return ItemStack.EMPTY; }
+        ItemStack result = releaseOrphan(vent, true); return result == null ? ItemStack.EMPTY : result;
+    }
+    /** The same proof releases an orphaned association that holds no cartridge; no item moves. */
+    public boolean releaseEmptyOrphan(OxygenVentBlockEntity vent) { return releaseOrphan(vent, false) != null; }
+    /** Releases the first provable orphan whose slot is charged (or empty); null when there is none. */
+    private ItemStack releaseOrphan(OxygenVentBlockEntity vent, boolean charged) {
+        if (operating || !vent.deviceAvailable() || vent.scrubbers() != this) { return null; }
         var level = (ServerLevel) vent.getLevel();
         for (Direction direction : Direction.values()) {
             int i = direction.ordinal();
-            if (identities[i] == null || cartridges[i].isEmpty()) { continue; }
+            if (identities[i] == null || cartridges[i].isEmpty() == charged) { continue; }
             var position = vent.getBlockPos().relative(direction);
             var chunk = level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
             if (chunk == null) { continue; }
@@ -110,7 +116,7 @@ public final class ScrubberBank {
                 return result;
             } finally { operating = false; }
         }
-        return ItemStack.EMPTY;
+        return null;
     }
     public ItemStack stack(OxygenVentBlockEntity vent, ScrubberBlockEntity facade) {
         int i = slot(vent, facade); if (i < 0) { return ItemStack.EMPTY; }

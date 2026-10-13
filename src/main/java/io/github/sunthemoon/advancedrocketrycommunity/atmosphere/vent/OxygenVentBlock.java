@@ -58,11 +58,14 @@ public final class OxygenVentBlock extends BaseEntityBlock {
                 return InteractionResult.FAIL;
             }
             ItemStack recovered = vent.scrubbers().recoverOrphan(vent);
+            // A cartridge is recovered first; an orphaned association without one is released only otherwise.
+            boolean released = recovered.isEmpty() && vent.scrubbers().releaseEmptyOrphan(vent);
             if (!recovered.isEmpty()) { player.setItemInHand(hand, recovered); }
-            player.displayClientMessage(Component.translatable(recovered.isEmpty()
-                    ? "message.advancedrocketrycommunity.vent.scrubber_recovery_refused"
-                    : "message.advancedrocketrycommunity.vent.scrubber_cartridge_recovered"), true);
-            return recovered.isEmpty() ? InteractionResult.FAIL : InteractionResult.CONSUME;
+            player.displayClientMessage(Component.translatable(!recovered.isEmpty()
+                    ? "message.advancedrocketrycommunity.vent.scrubber_cartridge_recovered"
+                    : released ? "message.advancedrocketrycommunity.vent.scrubber_association_released"
+                    : "message.advancedrocketrycommunity.vent.scrubber_recovery_refused"), true);
+            return recovered.isEmpty() && !released ? InteractionResult.FAIL : InteractionResult.CONSUME;
         }
         if (held.is(ModItems.OXYGEN_CANISTER.get())) {
             boolean accepted = vent.fillFromPlayer(player, hand);

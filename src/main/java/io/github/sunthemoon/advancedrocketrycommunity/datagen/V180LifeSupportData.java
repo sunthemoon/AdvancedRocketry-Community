@@ -63,8 +63,10 @@ public final class V180LifeSupportData implements DataProvider {
         names.put("message." + NS + ".detector.mode", zh ? "探测模式：%s（潜行右键切换）" : "Detector: %s (sneak-use to cycle)");
         names.put("message." + NS + ".vent.scrubber_cartridge_recovered", zh ? "已取回失去关联的洗涤滤芯。"
                 : "Recovered an orphaned scrubber cartridge.");
-        names.put("message." + NS + ".vent.scrubber_recovery_refused", zh ? "没有可安全取回的滤芯；相邻洗涤器必须已加载且数据可读。"
-                : "No cartridge can be safely recovered; adjacent scrubbers must be loaded and readable.");
+        names.put("message." + NS + ".vent.scrubber_association_released", zh ? "已解除一个过期的洗涤器关联；它没有滤芯，未移动任何物品。"
+                : "Released a stale scrubber association; it held no cartridge, so no item moved.");
+        names.put("message." + NS + ".vent.scrubber_recovery_refused", zh ? "没有可取回的内容：未发现失去关联的滤芯或过期关联。未加载或不可读的洗涤器保持不变。"
+                : "Nothing to recover: no orphaned cartridge or stale association was found. Unloaded or unreadable scrubbers are left unchanged.");
         String[] ids = {"breathable", "vacuum", "non_breathable_atmosphere", "high_pressure", "hot", "cold"};
         String[] en = {"Breathable", "Vacuum", "Non-breathable atmosphere", "High pressure", "Hot", "Cold"};
         String[] cn = {"可呼吸", "真空", "不可呼吸的大气", "高压", "高温", "低温"};
