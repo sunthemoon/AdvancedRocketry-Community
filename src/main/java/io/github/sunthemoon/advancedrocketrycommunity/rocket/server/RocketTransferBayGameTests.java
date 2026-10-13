@@ -78,11 +78,14 @@ public final class RocketTransferBayGameTests {
                     new RocketBlock(new RocketPosition(0, 1, 0),
                             new RocketBlockState(net.minecraft.resources.ResourceLocation.tryParse("minecraft:iron_block"), Map.of())));
             var stats = new RocketStats(2, 100, 1_000, 1_000, 1, 1, 1, 0);
+            var propulsion = new RocketPropulsion(RocketPropulsion.Mode.ABSTRACT, 1_000, 0, 1, 1,
+                    RocketPropulsion.Settings.DEFAULTS);
             var sourceSnapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), position(origin),
-                    blocks, List.of(new RocketPosition(0, 1, 0)), stats, level.getGameTime());
+                    blocks, List.of(new RocketPosition(0, 1, 0)), stats, level.getGameTime(), propulsion);
             var destination = sourceSnapshot.relocated(UUID.randomUUID(), level.dimension().location(), position(target), level.getGameTime());
             UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID();
-            var fuel = RocketFuelState.empty(1_000).fill(1_000).state();
+            var fuel = RocketFuelState.empty(propulsion).fill(1_000).state();
+            helper.assertTrue(fuel.propulsion().isPresent(), "Live schema-3 fixture needs a native fuel vector");
             var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                     level.dimension().location(), level.dimension().location(), 500, level.getGameTime());
             var flight = RocketFlightData.initial(logical, 1_000, 1, plan.sourceBody(), plan.sourceDimension(), position(origin), level.getGameTime())
