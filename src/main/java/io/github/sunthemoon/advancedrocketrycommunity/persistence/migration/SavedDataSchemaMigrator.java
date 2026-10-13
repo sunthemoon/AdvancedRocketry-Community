@@ -74,12 +74,15 @@ public final class SavedDataSchemaMigrator {
 
         if (type == ManagedSavedDataType.SATELLITE_MISSIONS) {
             try {
-                CompoundTag migrated = SatelliteRegistryPayload.upgrade(source, schema);
+                SatelliteRegistryPayload.Upgrade upgrade = SatelliteRegistryPayload.upgradeWithSnapshot(source, schema);
+                CompoundTag migrated = upgrade.payload();
                 stampCurrent(type, migrated);
                 if (schema == LEGACY_SCHEMA_VERSION && !migrated.contains(MIGRATED_FROM_KEY)) {
                     migrated.putInt(MIGRATED_FROM_KEY, LEGACY_SCHEMA_VERSION);
                 }
                 SatelliteRegistryPayload.decodeCurrent(migrated);
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                        "ARCE_SATELLITE_SCHEMA4_UPGRADE source_schema={} budget={}", schema, upgrade.snapshot());
                 return new MigrationResult(MigrationStatus.MIGRATED, schema, migrated);
             } catch (RuntimeException exception) {
                 throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,

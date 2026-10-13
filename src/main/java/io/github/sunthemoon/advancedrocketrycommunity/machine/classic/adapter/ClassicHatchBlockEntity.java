@@ -43,6 +43,7 @@ public final class ClassicHatchBlockEntity extends BlockEntity {
                 .orElseThrow(() -> new IllegalArgumentException("Not a physical classic hatch block"));
     }
 
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     ClassicOwnerState ownerState() { return storage; }
     ClassicHatchKind kind() { return kind; }
     ClassicHatchCheckpoint checkpoint() { return checkpoint; }

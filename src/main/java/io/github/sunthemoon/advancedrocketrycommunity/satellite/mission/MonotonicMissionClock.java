@@ -32,6 +32,15 @@ public final class MonotonicMissionClock {
         return logicalGameTime;
     }
 
+    /** Read-only preview for a transaction that can still be refused. */
+    public long preview(long observedGameTime) {
+        if (observedGameTime < 0L) {
+            throw new IllegalArgumentException("Observed game time cannot be negative");
+        }
+        return observedGameTime >= lastObservedGameTime
+                ? saturatingAdd(logicalGameTime, observedGameTime - lastObservedGameTime) : logicalGameTime;
+    }
+
     public long logicalGameTime() {
         return logicalGameTime;
     }

@@ -290,3 +290,66 @@ final Low findings are applied in this text. Reports and dispositions are in the
 Acceptance freezes this contract for the v1.6 slices. It is not a
 runtime-completion claim, a Gate PASS or a publication decision. Later changes
 need a new revision and review.
+
+## Implementation note: ground survey origins and registry schema 4 (W21b, 2026-10-13)
+
+ADR-066 section 6.1 records the owner-confirmed decision D2 and directs this revision of
+ADR-051. Three reviews and one fix pass support it:
+- the W21a design, `records/W21A-DESIGN.md`, reviewed APPROVE-WITH-CHANGES (SHA-256
+  `0c76c2d4…`);
+- the W21b implementation, reviewed MERGE-WITH-FOLLOWUP (SHA-256 `d2a7401c…`);
+- the W21bF fixes.
+
+It adds ground survey jobs beside the existing mission and instance contract. It does not
+change ADR-051's other decisions.
+
+1. **Tagged origins.** An instance's mandatory `sourceMission` becomes a bounded tagged
+   origin, `SURVEY_MISSION` or `GROUND_SURVEY`, with exactly one UUID (instance schema 2).
+   Schema-1 instances migrate their source UUID to `SURVEY_MISSION` and keep every other field.
+2. **The registry, root schema 4.**
+   - Instances and `save_epoch` are required from historical root 3. `ground_surveys` is
+     required only from root 4. Roots 1 and 2 forbid both.
+   - Epoch 3 stays `v1.6.0-satellite-missions`. Epoch 4 is the literal
+     `v1.8.0-ground-surveys`, not a moving constant.
+   - The 1/2 → 3 step runs through a historical instance-schema-1 validator before the
+     separate 3 → 4 step. An already-current input is a no-op: no backup and no write.
+   - An old host rejects root 4. A downgrade needs the pre-upgrade backup.
+3. **The state matrix.** The phase, analysis and field matrix in `records/W21B.md` is
+   normative.
+   - CANCELLED keeps its partial progress.
+   - QUARANTINED validates its first non-QUARANTINED previous phase, and keeps the first
+     reason, the claim and any CREDITED marker.
+   - The final survey tick publishes READY with AVAILABLE in one mutation. The final
+     analysis tick publishes CREDITED and PROCESSED with the account credit in one mutation.
+4. **The release boundary.**
+   - An ACTIVE quarantined job with its PENDING instance, and duplicate RUNNING processor
+     claims, are offline-repair-only. Both release commands refuse without changing records,
+     reservations, time or epoch, and give `OFFLINE_REPAIR_REQUIRED`.
+   - Releasing a non-quarantined instance is IDEMPOTENT.
+5. **Invariants.** The existing survey and mining checks are **tightened**, not unchanged.
+   - They now also require the owner, the system or target body, and the mission kind to
+     match.
+   - `startSurvey` and `startResource` have enforced exactly these equalities since
+     `ce55ee33`, so no valid old record is newly quarantined.
+   - Ground-origin backlinks are checked in both directions.
+   - A ground mutation checks only the touched job, its instance and their peers.
+6. **Admission and cost.**
+   - Before any mutation, admission checks the fixed counts, the record bytes, the
+     unchanged instance and account section budgets, the 1 MiB job reservation, the 16 MiB
+     root and the bounded reader.
+   - The full-root encode and bounded-read preflight runs only for operations that add
+     records (START and account creation). Advances, claims, rebinds and credits are bounded
+     by each job's reserved largest lifecycle encoding, which is 1,406 bytes at most.
+   - Measured on the review's registry: an advance takes 64 µs, and START on a 16.7 MB root
+     takes 337 ms, against the 500 ms spike budget.
+   - **Effective capacity.** The 1 MiB section divided by the per-job reservation allows
+     about 745 to 858 jobs. Jobs then refuse with `STORAGE_BUDGET` well before the 2,048 count
+     limit, because PROCESSED jobs stay while their instance is retained. Raising the budget is
+     an owner decision. Restore is not affected: a root with 2,048 jobs still loads.
+7. **Isolation (R-030).**
+   - A cross-record inconsistency holds only the jobs and instances involved, plus any
+     dependent invalid mining mission. The hold lasts until a valid repair, and grants no
+     credit and no refund. One aggregate restore warning is logged per changed load.
+   - A strict decode, schema, count or read failure preserves the whole satellite registry
+     and blocks its use. The pre-start service then refuses world startup and keeps the
+     original file.

@@ -90,6 +90,32 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
     `scripts/gametest_expected_log.json`, with the test and the reason.
   - If the checker fails on an entry that has nothing to do with your work, record it and
     do not chase it.
+- **No GameTest scheduling from inside a scheduled callback:**
+  - Never call `helper.onEachTick`, `runAtTickTime`, `runAfterDelay` or `succeedWhen` from
+    inside an `onEachTick` or `runAtTickTime` callback.
+  - Why: vanilla iterates its fastutil schedule map while it runs those callbacks.
+    `onEachTick` inserts one entry per remaining tick, which forces a rehash, and the server
+    then crashes with `NullPointerException ... "this.wrapped" is null` in
+    `GameTestInfo.tickInternal`. This happened in W21c's hosted run 38353212060. It can pass
+    locally by luck.
+  - Instead, register one `onEachTick` at test start, and move between steps with a mutable
+    state variable.
+- **Operator-only NBT:**
+  - A block entity that stores an owner, an identity or a retained or guarded root must
+    override `onlyOpCanSetNbt()` to return `true`.
+  - Test it with an assertion like `ForceFieldGameTests` line 308.
+  - Why: otherwise a creative player without operator rights can load any root through an
+    item's `BlockEntityTag`. The W17 and W18 reviews both found this gap.
+- **Background commands must end by themselves:**
+  - Never start an interactive program: a bare `python` or `node` REPL, `tail -F`, or a
+    watch loop.
+  - Always pass `python` a script or `-c`, and give polling loops a time limit.
+  - Why: on 2026-10-12 a worker's background `python` with no console became a REPL that
+    printed the same traceback forever. It wrote 24.9 GB into the Claude temp folder and
+    filled C:, and Gradle runs on C: then failed.
+  - Before `runGameTestServer`, `runData` or a full `build`, check that C: and D: each have
+    at least 10 GB free (AGENTS.md section 9). The Gradle home and the temp folders are on
+    C:.
 
 ## When you finish
 

@@ -63,7 +63,12 @@ public final class ResourceMissionCommands {
         AdvancedRocketryCommunity.LOGGER.info("ARCE_SATELLITE_ADMIN action={} id={} result={} by={}",
                 action, id, result.code(), actor);
         if (!result.success()) {
-            source.sendFailure(Component.literal(action + " rejected: " + result.code()));
+            String reason = result.code() == io.github.sunthemoon.advancedrocketrycommunity.satellite.mission
+                    .SatelliteOperationCode.OFFLINE_REPAIR_REQUIRED
+                    ? io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData
+                    .get(source.getServer()).groundSurveyQuery(jobs -> jobs.instanceReleaseProblem(id)) : null;
+            source.sendFailure(Component.literal(action + " rejected: " + result.code()
+                    + (reason == null ? "" : "; " + reason)));
             return 0;
         }
         source.sendSuccess(() -> Component.literal(action + " " + id + ": " + result.code()), true);

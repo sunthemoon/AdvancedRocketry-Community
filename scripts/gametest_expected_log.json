@@ -217,6 +217,16 @@
       "reason": "An oversized combustion input must refuse the chunk save before the stored root is replaced."
     },
     {
+      "id": "solar-array-chunk-save-refused",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: Refusing chunk save with non-admissible solar input; back up and repair first",
+      "stack_contains": "SolarArrayGameTests.nonAdmissibleArrayRootRefusesOutgoingChunk",
+      "counts": {"defaultBatch": 1},
+      "test": "SolarArrayGameTests.nonAdmissibleArrayRootRefusesOutgoingChunk",
+      "reason": "A non-admissible solar array root must retain the shared whole-chunk save refusal."
+    },
+    {
       "id": "solar-chunk-save-refused",
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
@@ -398,9 +408,9 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} reason=destination_pad_blocked fuel=\\d+",
-      "counts": {"destination_readiness": 1, "flight": 1, "planetary_changed_pad": 1, "named_pad_occupancy": 1},
-      "test": "RocketDestinationReadinessGameTests, RocketFlightGameTests, PlanetaryLandingGameTests, NamedLandingPadOccupancyGameTests.wideParkedStructureAppearingAfterPreparationRefusesPreSpawn",
-      "reason": "Each test blocks the destination pad and requires the rocket to return to its source; W13F uses a wide parked structure outside the arrival entity AABB."
+      "counts": {"destination_readiness": 1, "flight": 1, "planetary_changed_pad": 1, "named_pad_occupancy": 1, "legacy_pad_occupancy": 1},
+      "test": "RocketDestinationReadinessGameTests, RocketFlightGameTests, PlanetaryLandingGameTests, NamedLandingPadOccupancyGameTests.wideParkedStructureAppearingAfterPreparationRefusesPreSpawn, LegacyLandingPadOccupancyGameTests.wideParkedStructureAppearingAfterPreparationRefusesUnnamedPreSpawn",
+      "reason": "Each test blocks the destination pad and requires the rocket to return to its source; W13F (named pad) and W24 (unnamed station pad) use a wide parked structure outside the arrival entity AABB."
     },
     {
       "id": "transfer-recovery-keep-source",
@@ -484,6 +494,9 @@
         "station_controls_confirm_core": 1,
         "station_controls_core_reach": 1,
         "station_controls_warp_parity": 2,
+        "station_notice_delivery": 1,
+        "station_notice_failure": 1,
+        "station_notice_login": 1,
         "station_warp_abort": 2,
         "station_warp_charge": 1,
         "station_warp_commit": 1,
@@ -498,8 +511,26 @@
         "station_warp_target_removed": 1,
         "tau_ceti_path": 1
       },
-      "test": "StationWarpGameTests, StationWarpAbortGameTests, TauCetiPathGameTests, StationControlsGameTests, StationControllerMenuGameTests",
-      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops. StationControlsGameTests deletes one charged station after a quote (core reach), one after its cancelled confirmations (confirm core) and two after their warps (parity). StationControllerMenuGameTests deletes four charged stations after their refused or cancelled confirmations (confirm binding)."
+      "test": "StationWarpGameTests, StationWarpAbortGameTests, TauCetiPathGameTests, StationControlsGameTests, StationControllerMenuGameTests, StationNoticeGameTests",
+      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops. StationControlsGameTests deletes one charged station after a quote (core reach), one after its cancelled confirmations (confirm core) and two after their warps (parity). StationControllerMenuGameTests deletes four charged stations after their refused or cancelled confirmations (confirm binding). StationNoticeGameTests deletes one charged station after its warp in each of the delivery, login and notice-failure tests."
+    },
+    {
+      "id": "station-notices-refused",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_STATION_NOTICES_REFUSED: the station notice store is kept unchanged and unavailable \\(Unsupported station notice schema 2\\); back it up and repair it offline",
+      "counts": {"station_notice_refused": 1},
+      "test": "StationNoticeGameTests.aRefusedNoticeRootIsKeptWhileLiveNoticesContinue",
+      "reason": "A future-schema notice root must be kept verbatim and logged once, while live warp notices continue (ADR-065 section 5.3)."
+    },
+    {
+      "id": "station-notice-failed",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_STATION_NOTICE_FAILED station=[0-9a-f-]{36} code=WARP_COMMITTED error=IllegalStateException",
+      "counts": {"station_notice_failure": 1},
+      "test": "StationNoticeGameTests.aFailingOutcomeNoticeNeitherEscapesNorSkipsTheAudit",
+      "reason": "An injected notice failure after the checked write must be caught and logged once, while the warp stands and its audit line is still written (W22 review F7)."
     },
     {
       "id": "satellite-receiver-release-skipped",
@@ -514,7 +545,7 @@
       "id": "satellite-restore-quarantine",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
-      "message": "ARCE_SATELLITE_RESTORE quarantined_missions=\\d+ recovery_required=\\d+ quarantined_instances=\\d+ accounts_added=\\d+",
+      "message": "ARCE_SATELLITE_RESTORE quarantined_missions=\\d+ recovery_required=\\d+ quarantined_instances=\\d+ accounts_added=\\d+ quarantined_ground_surveys=\\d+",
       "counts": {"satellite_lifecycle": 1},
       "test": "SatelliteLifecycleGameTests",
       "reason": "Restoring a satellite registry with an invalid mission must quarantine it and report recovery."

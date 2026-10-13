@@ -70,7 +70,7 @@ public final class SolarGeneratorMenu extends AbstractContainerMenu {
         return new View(energy, credit, SolarGeneration.Reason.fromCode(reason), sky == 1, day, context, weather);
     }
     public View view() { return project(data); }
-    public static boolean admitted(Player player, SolarGeneratorBlockEntity generator) {
+    public static boolean admitted(Player player, net.minecraft.world.level.block.entity.BlockEntity generator) {
         return player instanceof ServerPlayer connected && !(player instanceof FakePlayer) && player.isAlive()
                 && !player.isRemoved() && !player.isSpectator() && !connected.hasDisconnected() && connected.connection != null
                 && generator.getLevel() == player.level() && connected.getServer() != null

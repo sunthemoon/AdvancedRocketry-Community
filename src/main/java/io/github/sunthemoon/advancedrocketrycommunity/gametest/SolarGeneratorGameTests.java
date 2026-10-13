@@ -79,6 +79,7 @@ public final class SolarGeneratorGameTests {
     @GameTest(template = "empty", timeoutTicks = 20)
     public static void registeredPanelAndGeneratorHaveOnlyTheSelectedDeviceShape(GameTestHelper helper) {
         var generator = place(helper);
+        helper.assertTrue(generator.onlyOpCanSetNbt(), "Generator root accepts non-operator item NBT");
         helper.setBlock(POSITION.east(), ModBlocks.SOLAR_PANEL.get());
         helper.assertTrue(generator.getType() == ModBlockEntities.SOLAR_GENERATOR.get()
                 && generator.getBlockState().getProperties().isEmpty(), "Generator acquired orientation or wrong BE type");

@@ -46,4 +46,9 @@ public record RocketLandingPadSelection(
     public boolean success() {
         return destinationSnapshot != null;
     }
+
+    /** The translated pad reason shown to the player, or null when the detail is audit text only. */
+    public String refusalKey() {
+        return !success() && detail.startsWith("message.advancedrocketrycommunity.pad.reason.") ? detail : null;
+    }
 }

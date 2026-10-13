@@ -644,6 +644,71 @@ as a complete audit feed. Audit details remain in the existing server audit.
 Byte-budget admission, schema/overflow/restart and removed-member privacy tests
 are required. It is evidence scope, not a second version-status file.
 
+### W22 implementation note: station notices and their data preservation
+
+This note documents the section 5.3 implementation (W22 and W22F, 2026-10-13). It does not
+change a decision or accept a risk. The risk is R-029. Nothing in it refuses a save or throws
+from serialization.
+
+**Who is told.** A start, commit or abort notice names the affected station. It goes to:
+- the online owner and members;
+- the acting player, while they still hold VISIT access, so a de-opped former actor is told
+  nothing more;
+- visitors currently inside the region.
+
+A visitor without VISIT access gets the brief form: the station, the code and the target,
+without the warp cost or the energy balance. These stay limited to VISIT holders, as
+`/arce station warp status` already does. The countdown uses only the action bar.
+
+**Departures from the section 5.3 text.**
+- One station keeps up to 33 acknowledgements: the owner's and 32 members'. The byte and node
+  budgets include the owner.
+- The code keys are in the v1.8 language namespace (`advancedrocketrycommunity_v180`), not
+  `advancedrocketrycommunity_v150`. `runData` now writes only `src/generated/v1.8`.
+
+**Persisted identifiers.** Stored outcomes are validated on decode against these:
+- the `StationManagementCode` names and their `success` flags;
+- the notice kind keys;
+- `StationLimits.MAX_NAME_LENGTH`;
+- the warp cost classes.
+
+They are persisted identifiers (AGENTS.md section 8). Renaming or removing one, or changing a
+`success` flag, needs a notice schema bump with a migration. Otherwise every server whose store
+holds that code refuses the whole notice root (below).
+
+**Durability.** The notice store is saved by ordinary autosave, while the warp itself is a
+checked, forced write. A crash after a committed warp and before the next autosave leaves the
+previous summary, or an empty one. An offline member is then never told of that warp; the
+`ARCE_STATION_WARP` audit line remains in the server log. The store is a summary, not an audit
+feed, as section 5.3 says. If notice delivery throws inside the warp commit, the exception is
+caught after the checked write. One WARN is logged (`ARCE_STATION_NOTICE_FAILED`), and both the
+outcome and the audit line are kept.
+
+**Notice root.**
+- **Scope.** An `advancedrocketrycommunity_station_notices` root that reads as NBT but does not
+  decode is kept by reference and written back unchanged. "Does not decode" means unknown,
+  future, malformed, or over a section 5.3 bound. The affected unit is the whole server's
+  offline member-notice store:
+  - no outcome is recorded;
+  - no login notice is shown;
+  - no acknowledgement is recorded.
+
+  Live notices continue as described above, and no stored summary is deleted.
+- **Duration.** Until the file is repaired. A restart with the same file refuses it again.
+- **Log volume.** One WARN (`ARCE_STATION_NOTICES_REFUSED`) per load.
+- **Recovery.** Back up, then repair or remove `data/advancedrocketrycommunity_station_notices.dat`
+  offline, and restart. Removal loses only the outcomes that no owner or member has seen yet.
+- **Unreadable file.** A `.dat` that cannot be read as NBT at all makes vanilla
+  `DimensionDataStorage` log an ERROR and start an empty store, as for the beacon index (R-028).
+- **Revision exhaustion.** A summary at revision `Long.MAX_VALUE` keeps its last outcome and
+  refuses later ones, with one WARN (`ARCE_STATION_NOTICE_NOT_KEPT`) per refusal. It cannot be
+  reached in practice.
+
+**Open follow-ups from the review:**
+- a new member is shown the latest outcome from before they joined (F8);
+- default station names contain the creator's player name (F9);
+- two tests could be tightened (F10).
+
 ## 6. Landing pads, light and force fields (C17b)
 
 ### 6.1 Landing pads and stationary geometry
@@ -850,6 +915,49 @@ updates at most once/20 ticks and only to a equipped/holding authenticated playe
 Body changes/logout/resource reload clear client caches. No C2S position query,
 cross-body survey or automatic route discovery is added.
 
+### W18 implementation note: beacon data preservation
+
+This note documents protection mechanics, not a changed decision or accepted
+risk (risk R-028). Neither mechanism refuses a save or throws from serialization.
+
+- **Index root.** A `advancedrocketrycommunity_planetary_beacons` SavedData root
+  that reads as NBT but does not decode (unknown, future, malformed or over a
+  section 7 bound) is kept by reference and written back unchanged. The affected
+  unit is the whole server's beacon index, across every Level: no beacon
+  registers, updates or removes its record, and every finder receives an empty
+  snapshot. None of its records is deleted. It lasts until the file is repaired,
+  because a restart with the same file refuses it again; one WARN is logged per
+  load. Recovery is an offline repair of the `.dat` file from a backup and a
+  restart. Loaded beacons then re-register on their next validation. A beacon
+  removed while the index was unavailable leaves its old record, which its owner
+  sees as a last-known marker. Once the index works again, the owner's finder
+  removes that record the next time its position is loaded and holds no such
+  beacon (the W18F rule below).
+- **Unreadable index file.** The preservation above covers only a root that
+  reads as NBT. When the `.dat` file itself cannot be read, for example a
+  truncated gzip, vanilla `DimensionDataStorage` logs an ERROR and starts an
+  empty index, and the first registration overwrites the file. This is a
+  project-wide vanilla residual: no ARCE SavedData guards against it. The loss is
+  soft, because each beacon re-registers once its chunk is loaded.
+- **Block-entity root.** An `arce_planetary_beacon` root that does not decode is
+  kept and written back unchanged. The affected unit is that one beacon: it stays
+  inactive and unregistered and logs nothing, so an operator finds such a beacon
+  only by using it, which replies with the invalid-data status. The beacon holds
+  no item, fluid or energy. Ordinary removal is therefore allowed and drops the
+  plain block; it discards only the unreadable identity and name. A record that
+  the beacon wrote before its root became unreadable stays in the index with its
+  last active flag, so its owner can see a last-known marker. While the beacon
+  stands, nothing proves that record stale. Once the beacon is removed, the
+  W18F rule below removes the record. Recovery is an offline repair of the chunk
+  data or replacing the beacon. Since W18F, item NBT reaches this root only
+  from a creative operator (`onlyOpCanSetNbt`).
+- **Stale records (W18F).** A record is removed only by its own beacon's
+  removal, or when its owner's finder snapshot finds its own position loaded
+  and holding no beacon or another readable beacon. The snapshot checks at most
+  the viewer's 32 records, reads only loaded chunks, never loads or tickets a
+  chunk, and logs one INFO line per removal. A record whose position stays
+  unloaded, or whose owner never uses a finder, is kept.
+
 ## 8. Satellite bay (C17c)
 
 `rocket_satellite_bay` holds one ordinary package (schema 1 root, native item
@@ -966,6 +1074,39 @@ server synchronization. Client art is original or individually approved imports;
 all profiles have recipes/loot/tags/translations and client-only JEI presentation
 where that adds obtainable machine content. Neither solar profile produces a
 satellite nor replaces ADR-049's orbital solar transmitter.
+
+### W17 implementation note: solar array save protection
+
+This note documents protection mechanics, not a changed decision or accepted
+risk. W17 applies the existing `GuardedChunkSaves` mechanism, through
+`SolarProtection`, to the array controller's `arce_solar_array` root (risk
+R-021, solar array supplement). Only a root that is present and fails the
+4,096-byte, depth-16 or 1,024-node preflight triggers it; a bounded unknown or
+future root is saved verbatim, stops generation, output and ordinary removal,
+and refuses nothing. The affected unit is the whole terrain chunk; the Level
+capability retains denial across unload, and its existing 256-coordinate
+saturation can refuse further terrain saves in that Level. The live raw Tag is
+retained by reference and ordinary removal is refused. The existing guard throws
+at the chunk save event so ChunkMap reports refusal and restores the dirty flag;
+exceptions from BE serialization are not used to control saves. Guard logs have
+no retry-volume bound. Denial lasts through the Level lifecycle, with no
+production online reset. Back up, stop and repair the root offline before
+restarting; restarting alone is not repair. The 2026-10-06 single-generator owner
+decision did not cover arrays; this note relies on section 2 above and grants no
+risk acceptance, native stop/restart evidence or Gate result.
+
+*Additions from the W17 review (W17F, 2026-10-13; the decision is unchanged).*
+- **Layout exception.** The code-defined 3-by-22 solar array is a scoped
+  exception to ADR-016's 16-cell axis bound. It reuses the unchanged kernel
+  matchers, transform, footprint index and dirty queue, with 66 inspected
+  cells and the existing controller, cell-reference and per-tick limits.
+- **One collector per panel.** A panel counts for only one formed array. A
+  panel that another formed array already counts makes the second array a
+  CONFLICT, as a shared plug does.
+- **Operator-only item NBT.** The array controller and the single solar
+  generator accept item NBT only from operators. This closes the creative path
+  by which a non-operator could reach the guard above. It does not remove the
+  administrative and corrupt-data risk.
 
 ## 10. D3: two-store crash durability decision (owner-confirmed D3-A)
 

@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device;
 
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import java.util.Set;
@@ -8,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,10 +29,27 @@ public final class ScrubberBlockEntity extends BlockEntity {
     private LazyOptional<IItemHandler> items = createItems();
     public ScrubberBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.CO2_SCRUBBER.get(), pos, state); }
     public UUID identity() { return identity; }
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     public boolean available() { return refused == null && DeviceAccess.loaded(this); }
     public void unbind(OxygenVentBlockEntity owner, UUID generation) {
-        if (available() && boundTo(owner, generation)) { ownerPosition = null; ownerGeneration = null; capabilityGeneration++;
-            items.invalidate(); items = createItems(); setChanged(); }
+        if (available() && boundTo(owner, generation)) { clearBinding(); }
+    }
+    /**
+     * Explicit player release of a provably stale binding; no item moves. Proof needs the loaded owner cell to hold no
+     * vent, or a readable vent whose bank disowns this facade. An unloaded cell, a vent block without its entity, or a
+     * retained vent root proves nothing, and no chunk is acquired.
+     */
+    public boolean releaseStaleBinding() {
+        if (!available() || ownerPosition == null || !(level instanceof ServerLevel server)) { return false; }
+        var chunk = server.getChunkSource().getChunkNow(ownerPosition.getX() >> 4, ownerPosition.getZ() >> 4);
+        if (chunk == null) { return false; }
+        boolean stale = chunk.getBlockEntities().get(ownerPosition) instanceof OxygenVentBlockEntity vent
+                ? vent.scrubbers().disowns(vent, this) : !(chunk.getBlockState(ownerPosition).getBlock() instanceof OxygenVentBlock);
+        if (stale) { clearBinding(); }
+        return stale;
+    }
+    private void clearBinding() {
+        ownerPosition = null; ownerGeneration = null; capabilityGeneration++; items.invalidate(); items = createItems(); setChanged();
     }
     public boolean bind(OxygenVentBlockEntity owner, UUID generation) {
         if (!available() || !owner.deviceAvailable() || owner.getBlockPos().distManhattan(worldPosition) != 1) { return false; }

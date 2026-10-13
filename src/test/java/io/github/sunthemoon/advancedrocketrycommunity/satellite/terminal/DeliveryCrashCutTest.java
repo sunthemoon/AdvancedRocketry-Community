@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceOrigin;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.DeliveryReconciliation;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind;
@@ -156,7 +157,7 @@ final class DeliveryCrashCutTest {
                         (count, time) -> List.of(new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION,
                                 instanceId, owner, SYSTEM, ModIdentity.id("small_asteroid"), "0123456789abcdef",
                                 "0123456789abcdef", 5L, REWARD, time, OptionalLong.empty(), InstanceState.PENDING,
-                                surveyMission, Optional.empty()))), 10L)).code());
+                                InstanceOrigin.survey(surveyMission), Optional.empty()))), 10L)).code());
         assertEquals(SatelliteOperationCode.SUCCESS, data.resources(missions -> missions.claimSurvey(surveyMission,
                 owner, 168_000L, 200L)).code());
         TerminalDelivery terminal = TerminalDelivery.create();

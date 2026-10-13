@@ -42,6 +42,9 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.COMBUSTION_GENERATOR.get());
                         output.accept(ModItems.SOLAR_GENERATOR.get());
                         output.accept(ModItems.SOLAR_PANEL.get());
+                        output.accept(ModItems.SOLAR_ARRAY.get());
+                        output.accept(ModItems.SOLAR_ARRAY_PANEL.get());
+                        output.accept(ModItems.POWER_OUTPUT_PLUG.get());
                         output.accept(ModItems.FORCE_FIELD_PROJECTOR.get());
                         output.accept(ModItems.PRESSURIZED_TANK.get());
                         output.accept(ModItems.STATION_LIGHT.get());
@@ -49,6 +52,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.STATION_GRAVITY_CONTROLLER.get());
                         output.accept(ModItems.STATION_ALTITUDE_CONTROLLER.get());
                         output.accept(ModItems.STATION_ORIENTATION_CONTROLLER.get());
+                        output.accept(ModItems.PLANETARY_BEACON.get());
+                        output.accept(ModItems.BEACON_FINDER.get());
                         output.accept(ModItems.THERMITE.get());
                         output.accept(ModItems.CARBON_BRICK.get());
                         output.accept(ModItems.USER_INTERFACE.get());
@@ -109,6 +114,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.PIPE_SEAL.get());
                         output.accept(ModItems.ATMOSPHERE_DETECTOR.get());
                         output.accept(ModItems.JACKHAMMER.get());
+                        output.accept(ModItems.BASIC_LASER_GUN.get());
                         output.accept(io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent.WORKSTATION.get());
                         io.github.sunthemoon.advancedrocketrycommunity.equipment.suit.SuitEquipmentContent.modules().values()
                                 .forEach(item -> output.accept(item.get().getDefaultInstance()));

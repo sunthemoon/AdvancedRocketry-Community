@@ -153,12 +153,23 @@ class ClassicAdvancementReachabilityTest {
             Set<String> printed = new HashSet<>();
             route(goal, 0, producers, printed, report);
         });
-        report.append("\n## Unreachable graph nodes\n\n");
-        if (result.unavailable().isEmpty()) {
+        report.append("\n## Unreachable required graph nodes\n\n");
+        Set<String> requiredUnavailable = new java.util.TreeSet<>(result.unavailable());
+        requiredUnavailable.removeAll(PackagedRecipeGraph.OPTIONAL_CROSS_MOD_INPUTS);
+        if (requiredUnavailable.isEmpty()) {
             report.append("none\n");
         } else {
-            result.unavailable().forEach(node -> report.append("- ").append(node).append('\n'));
+            requiredUnavailable.forEach(node -> report.append("- ").append(node).append('\n'));
         }
+        report.append("\n## Optional cross-mod inputs\n\n")
+                .append("Exactly the ten nodes authorized by TASK-W19-ROOT-DECISION-01 (3c08ab5d). ")
+                .append("They remain in the graph and are not survival roots.\n\n");
+        new java.util.TreeSet<>(PackagedRecipeGraph.OPTIONAL_CROSS_MOD_INPUTS).forEach(node ->
+                report.append("- ").append(node).append(result.unavailable().contains(node)
+                        ? " (unavailable without another mod)\n" : " (available)\n"));
+        report.append("\n## Code-backed producer citations\n\n");
+        graph.codeSources.forEach((producer, source) -> report.append("- ").append(producer)
+                .append(" <- ").append(source).append('\n'));
         Path file = Path.of("build/reports/classic-advancement-reachability.md");
         Files.createDirectories(file.getParent());
         Files.writeString(file, report.toString());

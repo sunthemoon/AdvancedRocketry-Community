@@ -18,6 +18,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.
 import io.github.sunthemoon.advancedrocketrycommunity.station.forge.StationPlatformGenerator;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeService;
+import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSummary;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
@@ -101,8 +104,9 @@ public final class StationWarpAbortGameTests {
                     helper.assertTrue(isolated.countdown(fixture.id()).isEmpty(), "The countdown never ended");
                     helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
                             && fixture.data.warpEnergy(fixture.id()) == 2_500_000, "A disabled warp committed");
-                    helper.assertTrue(owner.contains("Station warp aborted: "
-                            + StationManagementCode.WARP_DISABLED.description() + "."), "Abort differs: " + owner);
+                    helper.assertTrue(fixture.notices(fixture.ownerId).contains(aborted("Kill switch",
+                            StationManagementCode.WARP_DISABLED, MOON)), "Abort differs: "
+                            + fixture.notices(fixture.ownerId));
                 } finally {
                     fixture.close();
                 }
@@ -115,13 +119,17 @@ public final class StationWarpAbortGameTests {
         }
     }
 
-    /** WARP review R2 (M02): an operator who confirmed and is de-opped before the commit cannot warp. */
+    /**
+     * WARP review R2 (M02): an operator who confirmed and is de-opped before the commit cannot warp. W22 review F3: the
+     * former actor, who left the region, is told nothing from the de-op on; the abort is still kept and audited.
+     */
     @GameTest(template = "empty", batch = "station_warp_deop", timeoutTicks = 400)
     public static void aDeoppedOperatorsCountdownAborts(GameTestHelper helper) {
         StationWarpGameTests.Fixture fixture = new StationWarpGameTests.Fixture(helper, "De-op", CelestialIds.EARTH_ID, 2_500_000);
         StationRocketAuthority previous = fixture.warp.installRocketAuthority(NOTHING_IN_MOTION);
         UUID operatorId = UUID.randomUUID();
         com.mojang.authlib.GameProfile profile = new com.mojang.authlib.GameProfile(operatorId, "warpOperator");
+        AuditLogCapture audit = new AuditLogCapture();
         boolean scheduled = false;
         try {
             // PlayerList.op uses the GameTest server's operator level (0); an explicit level-4 entry is an operator.
@@ -133,16 +141,39 @@ public final class StationWarpAbortGameTests {
             fixture.run(operatorId, "arce station warp confirm " + fixture.id());
             helper.assertTrue(last(operator).startsWith("Warp countdown started"),
                     "An operator could not start the countdown: " + operator);
+            // While an operator, the actor is told the full start notice and the first second.
+            List<String> toldAsOperator = List.of(StationWarpGameTests.notice("warp_started", "De-op",
+                            StationWarpGameTests.code(StationManagementCode.WARP_STARTED), CelestialIds.EARTH_ID, MOON,
+                            10, StationWarpGameTests.warpClass("in_system"), 2_000_000),
+                    ConnectedTestPlayers.ACTION_BAR + StationWarpGameTests.notice("warp_countdown", "De-op", MOON, 10));
+            helper.assertTrue(fixture.notices(operatorId).equals(toldAsOperator),
+                    "The operator's notices differ: " + fixture.notices(operatorId));
             fixture.server.getPlayerList().getOps().remove(profile);
+            // Outside the region, so that only the actor's own authority could still tell them anything.
+            BlockPos gap = fixture.pad.east(StationLimits.REGION_SIZE / 2 + 32);
+            fixture.server.getPlayerList().getPlayer(operatorId).teleportTo(fixture.space, gap.getX() + 0.5D,
+                    gap.getY(), gap.getZ() + 0.5D, 0.0F, 0.0F);
             scheduled = true;
             helper.runAfterDelay(COMMIT_DELAY, () -> {
                 try {
+                    helper.assertTrue(fixture.warp.countdown(fixture.id()).isEmpty(), "The countdown never ended");
                     helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
                             && fixture.data.warpEnergy(fixture.id()) == 2_500_000, "A de-opped operator warped");
-                    helper.assertTrue(operator.contains("Station warp aborted: "
-                            + StationManagementCode.WARP_ACTOR_CHANGED.description() + "."),
-                            "Abort differs: " + operator);
+                    helper.assertTrue(fixture.notices(operatorId).equals(toldAsOperator),
+                            "The de-opped former actor was still told: " + fixture.notices(operatorId));
+                    // The abort is still the station's summary, told to nobody live, and still audited.
+                    StationNoticeSummary summary = StationNoticeSavedData.get(fixture.server).summary(fixture.id());
+                    helper.assertTrue(summary.revision() == 1L && summary.players().isEmpty()
+                                    && summary.outcome().map(outcome -> ConnectedTestPlayers.token(
+                                    StationNoticeService.component(outcome))).filter(aborted("De-op",
+                                    StationManagementCode.WARP_ACTOR_CHANGED, MOON)::equals).isPresent(),
+                            "The abort was not kept: " + summary);
+                    String commit = "ARCE_STATION_WARP action=commit code=WARP_ACTOR_CHANGED station=" + fixture.id()
+                            + " actor=" + operatorId + " ";
+                    helper.assertTrue(audit.lines().stream().filter(line -> line.startsWith(commit)).count() == 1L,
+                            "The abort was not audited once: " + audit.lines());
                 } finally {
+                    audit.close();
                     fixture.server.getPlayerList().getOps().remove(profile);
                     fixture.warp.installRocketAuthority(previous);
                     fixture.close();
@@ -151,6 +182,7 @@ public final class StationWarpAbortGameTests {
             });
         } finally {
             if (!scheduled) {
+                audit.close();
                 fixture.server.getPlayerList().getOps().remove(profile);
                 fixture.warp.installRocketAuthority(previous);
                 fixture.close();
@@ -244,9 +276,9 @@ public final class StationWarpAbortGameTests {
                     helper.assertTrue(isolated.countdown(fixture.id()).isEmpty(), "The countdown never ended");
                     helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
                             && fixture.data.warpEnergy(fixture.id()) == 9_000_000, "A removed target was warped to");
-                    helper.assertTrue(owner.contains("Station warp aborted: "
-                            + StationManagementCode.WARP_TARGET_UNAVAILABLE.description() + "."),
-                            "Abort differs: " + owner);
+                    helper.assertTrue(fixture.notices(fixture.ownerId).contains(aborted("Removed target",
+                                    StationManagementCode.WARP_TARGET_UNAVAILABLE, StarSystemContent.TAU_CETI_E)),
+                            "Abort differs: " + fixture.notices(fixture.ownerId));
                 } finally {
                     fixture.close();
                 }
@@ -294,9 +326,9 @@ public final class StationWarpAbortGameTests {
                 try {
                     helper.assertTrue(fixture.station().orbitBody().equals(CelestialIds.EARTH_ID)
                             && fixture.data.warpEnergy(fixture.id()) == 5_000_000, "A repriced warp moved or charged");
-                    helper.assertTrue(owner.stream().anyMatch(line -> line.equals("Station warp aborted: "
-                                    + StationManagementCode.WARP_QUOTE_CHANGED.description() + ".")),
-                            "Repricing did not abort: " + owner);
+                    helper.assertTrue(fixture.notices(fixture.ownerId).contains(aborted("Repriced warp",
+                                    StationManagementCode.WARP_QUOTE_CHANGED, MOON)),
+                            "Repricing did not abort: " + fixture.notices(fixture.ownerId));
                 } finally {
                     fixture.close();
                 }
@@ -319,6 +351,11 @@ public final class StationWarpAbortGameTests {
 
     private static String last(List<String> replies) {
         return StationWarpGameTests.last(replies);
+    }
+
+    /** The code token of an abort notice (ADR-065 section 5.3): the station, the reason's code key and the target. */
+    private static String aborted(String station, StationManagementCode reason, ResourceLocation target) {
+        return StationWarpGameTests.notice("warp_aborted", station, StationWarpGameTests.code(reason), target);
     }
 
     private static void expect(GameTestHelper helper, List<String> replies, StationManagementCode code, String label) {

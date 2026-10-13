@@ -61,6 +61,13 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<SolarGeneratorBlockEntity>> SOLAR_GENERATOR =
             BLOCK_ENTITIES.register("solar_generator", () -> BlockEntityType.Builder.of(
                     ModBlockEntities::solarGenerator, ModBlocks.SOLAR_GENERATOR.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayBlockEntity>> SOLAR_ARRAY =
+            BLOCK_ENTITIES.register("solar_array", () -> BlockEntityType.Builder.of(
+                    ModBlockEntities::solarArray, ModBlocks.SOLAR_ARRAY.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayOutputBlockEntity>> POWER_OUTPUT_PLUG =
+            BLOCK_ENTITIES.register("power_output_plug", () -> BlockEntityType.Builder.of(
+                    (position, state) -> new io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayOutputBlockEntity(
+                            ModBlockEntities.POWER_OUTPUT_PLUG.get(), position, state), ModBlocks.POWER_OUTPUT_PLUG.get()).build(null));
     public static final RegistryObject<BlockEntityType<ElectrolyzerBlockEntity>> ELECTROLYZER =
             BLOCK_ENTITIES.register(
                     "electrolyzer",
@@ -271,6 +278,11 @@ public final class ModBlockEntities {
             "centrifuge", () -> BlockEntityType.Builder.of((position, state) -> new ClassicControllerBlockEntity(
                     ModBlockEntities.CENTRIFUGE.get(), position, state,
                     ClassicMachineDefinition.CENTRIFUGE), ModBlocks.CENTRIFUGE.get()).build(null));
+    /** ADR-065 C17c: the planetary beacon controller; the BE ID equals the block ID. */
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlockEntity>>
+            PLANETARY_BEACON = BLOCK_ENTITIES.register("planetary_beacon", () -> BlockEntityType.Builder.of(
+            io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlockEntity::new,
+            ModBlocks.PLANETARY_BEACON.get()).build(null));
 
     private ModBlockEntities() {
     }
@@ -280,6 +292,12 @@ public final class ModBlockEntities {
                     io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlockEntity::new,
                     ModBlocks.LANDING_PAD.get()).build(null));
 
+    static io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayBlockEntity solarArray(
+            net.minecraft.core.BlockPos position, net.minecraft.world.level.block.state.BlockState state) {
+        return new io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarArrayBlockEntity(SOLAR_ARRAY.get(), position, state,
+                () -> ModMenuTypes.SOLAR_ARRAY.get(), CommonConfig::solarGeneratorEnabled,
+                CommonConfig::solarGeneratorMultiplier, () -> ModBlocks.SOLAR_EXPOSURE);
+    }
     static SolarGeneratorBlockEntity solarGenerator(net.minecraft.core.BlockPos position,
                                                     net.minecraft.world.level.block.state.BlockState state) {
         return new SolarGeneratorBlockEntity(SOLAR_GENERATOR.get(), position, state,
