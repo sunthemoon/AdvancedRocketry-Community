@@ -38,6 +38,12 @@ final class PackagedRecipeGraph {
     static final String OVERWORLD = "access:overworld";
     static final String ENERGY = "energy:fe";
     static final String ROCKET = "travel:rocket";
+    /** ADR-063 revision 6: disable surface access, not discovery or the system's orbitable bodies. */
+    static final Set<String> TAU_CETI_LEVELS = Set.of("access:tau_ceti_f", "access:tau_ceti_g");
+    static final Set<String> TAU_CETI_ITEMS = Set.of(id("lightwood_log"), id("lightwood_leaves"),
+            id("lightwood_sapling"), id("lightwood_planks"), id("electric_mushroom"),
+            id("blue_crystal_block"), id("green_crystal_block"), id("orange_crystal_block"),
+            id("red_crystal_block"), id("violet_crystal_block"), id("yellow_crystal_block"));
     /** ADR-066 §5.1: the chemical reactor's special recipes are the only source of this enchantment. */
     static final String SPACE_BREATHING = "enchantment:" + NAMESPACE + ":space_breathing";
     /** TASK-W19-ROOT-DECISION-01 (3c08ab5d): compatibility inputs, never vanilla/native roots. */
