@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 14:08) |
+| Slice | Scope | Pipeline state (2026-10-13 14:20) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -50,7 +50,7 @@ give their SHA-256 values.
 | [W20](TASK-W20-LASER-GUN.md) | C18b basic laser gun (ADR-066 section 5.3) | **Merged** `284709bf` (hosted run 38289378640; Root review; no persistence) |
 | [W21a](TASK-W21A-OBSERVATORY-DESIGN.md) | C18c observatory and processor: design note (ADR-051 amendment, registry schema 4, instance schema 2, frozen patterns) | **Design merged** `fa890675`. Independent review (Codex) APPROVE-WITH-CHANGES (SHA-256 `0c76c2d4…`): W21b applies R2, R4 and R5; W21c applies R1 and R3, and needs a Root decision on the power-plug owner access |
 | [W21b](TASK-W21B-REGISTRY-SCHEMA4.md) | Satellite registry schema 4, ground survey jobs, migration and invariants (no blocks) | **Merged** `a7b0af22` (hosted run 38344780650; review MERGE-WITH-FOLLOWUP; W21bF fixed F1 to F4, F6 and F8). ADR-051 W21b note and R-030 added. Open: F9, a station-scale timing miss under machine load |
-| W21c | C18c observatory and data processor: blocks, menus, runtime; R1, R3, R4; the Root power-plug decision | Delivered through `5e75d1a2` (Codex; the controllers extend `ClassicControllerBlockEntity` with research profiles; 2,763 unit tests, 863 GameTests, 8 native cycles). Shared branch with W21bF merged in (`368cae1b`); branch CI 38353212060. Independent review (Claude) running since 14:03 |
+| W21c | C18c observatory and data processor: blocks, menus, runtime; R1, R3, R4; the Root power-plug decision | Delivered through `5e75d1a2`. Branch CI 38353212060 on `368cae1b` **failed**: `ResearchGameTests.ready()` runs its action inside an `onEachTick` callback, and the actions call `helper.onEachTick` again. That rehashes vanilla's schedule map during iteration, and the server crashed with an NPE in `GameTestInfo.tickInternal`. This is a test bug; a fix follows the independent review (Claude, running since 14:03) |
 | [W22](TASK-W22-STATION-NOTICES.md) | C17b section 5.3 station notices: translatable warp notices, visitor notices, the offline member-notice SavedData | **Merged** `286bdfe9` (hosted run 38337117540; review MERGE-WITH-FOLLOWUP; W22F fixed F2, F3 and F7). The ADR-065 W22 note and R-029 were added. Open follow-ups: F8 (a new member is shown the outcome from before they joined), F9 (default names contain the creator's name), F10 (two tests) |
 | [W23](TASK-W23-OPERATOR-NBT-AUDIT.md) | Parallel bug: operator-only item NBT for every block entity that stores an owner, identity or guarded root | **Merged** `e8f4d02a` (hosted run 38328763897; Root review: additions only) |
 | [W24](TASK-W24-LEGACY-PAD-OCCUPANCY.md) | Parallel bug: the legacy landing-pad selector's occupancy (W13 review R1, legacy half) | **Merged** `58d763d4` (hosted run 38336046793; Root review) |
@@ -86,6 +86,7 @@ Hosted CI runs on each implementer branch after Root pushes it (workflow change
 - C18c observatory and advancements (ADR-066 section 6).
 - C18d presentation and client configuration (ADR-066 section 7).
 - Parallel bugs:
+  - audit existing GameTests for scheduling from inside a scheduled callback (the W21c CI crash pattern; WORKER-RULES now forbids it);
   - the hosted chunk-save CME (being fixed by W08 under ADR-073) (runs 38064322640 and 38156329125 attempt 2, both at
     batch `endgame_gravity_station`). Root cause, from the bytecode of the mapped
     Forge 47.4.10 jar:
