@@ -146,8 +146,9 @@ final class TorchCombustionService {
                 if (!CombustionAir.settled(level)) {
                     yield TorchQueue.Outcome.DEFER;
                 }
-                TorchWorldChanges.extinguish(level, pos, state, pair.get(), CommonConfig.dropExtinguishedTorches());
-                yield TorchQueue.Outcome.DONE;
+                TorchWorldChanges.Result result = TorchWorldChanges.extinguish(level, pos, state, pair.get(),
+                        CommonConfig.dropExtinguishedTorches());
+                yield result == TorchWorldChanges.Result.DEFERRED ? TorchQueue.Outcome.DEFER : TorchQueue.Outcome.DONE;
             }
         };
     }

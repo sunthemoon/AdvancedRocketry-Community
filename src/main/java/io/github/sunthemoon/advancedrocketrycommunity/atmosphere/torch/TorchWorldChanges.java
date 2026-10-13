@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.Deferred
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,7 +27,7 @@ import net.minecraftforge.registries.ForgeRegistries;
  * A cancelled change leaves the block, its data and every item untouched.
  */
 final class TorchWorldChanges {
-    enum Result { CHANGED, CANCELLED, REFUSED }
+    enum Result { CHANGED, CANCELLED, REFUSED, DEFERRED }
 
     private TorchWorldChanges() {
     }
@@ -59,6 +60,10 @@ final class TorchWorldChanges {
 
     /** Restores the pair's exact lit block in the saved orientation; the caller has checked the air and the root. */
     static Result relight(ServerPlayer player, ServerLevel level, BlockPos pos, BlockState unlit, BlockState lit) {
+        // WallTorchBlock.canSurvive reads the support through Level.getBlockState (FULL, create=true).
+        if (!requiredCellsLoaded(level, pos)) {
+            return Result.DEFERRED;
+        }
         if (!lit.canSurvive(level, pos)) {
             return Result.REFUSED;
         }
@@ -71,7 +76,10 @@ final class TorchWorldChanges {
 
     private static Result admit(ServerLevel level, BlockPos pos, BlockState before, BlockState after,
                                 @Nullable Entity actor) {
-        if (!CombustionAir.loaded(level, pos) || !level.getBlockState(pos).equals(before)
+        if (!requiredCellsLoaded(level, pos)) {
+            return Result.DEFERRED;
+        }
+        if (!level.getBlockState(pos).equals(before)
                 || UnlitTorchBlockEntity.protectedAt(level, pos)) {
             return Result.REFUSED;
         }
@@ -79,7 +87,37 @@ final class TorchWorldChanges {
                 ? pos.relative(before.getValue(WallTorchBlock.FACING).getOpposite()) : pos.below();
         BlockState against = CombustionAir.loaded(level, support) ? level.getBlockState(support) : Blocks.AIR.defaultBlockState();
         TorchChange event = new TorchChange(BlockSnapshot.create(level.dimension(), level, pos), against, actor, after);
-        return MinecraftForge.EVENT_BUS.post(event) ? Result.CANCELLED : Result.CHANGED;
+        if (MinecraftForge.EVENT_BUS.post(event)) {
+            return Result.CANCELLED;
+        }
+        // A preflight subscriber may change availability/state. Do not mutate from a stale admission snapshot.
+        if (!requiredCellsLoaded(level, pos)) {
+            return Result.DEFERRED;
+        }
+        return level.getBlockState(pos).equals(before) && !UnlitTorchBlockEntity.protectedAt(level, pos)
+                ? Result.CHANGED : Result.REFUSED;
+    }
+
+    /**
+     * Native UPDATE_ALL shape notifications read the six adjacent cells. Assigning the new block entity also calls
+     * BlockEntity.setChanged -> Level.updateNeighbourForOutputSignal, which can read a second cell beyond a conductor.
+     * Check both rings without acquiring chunks; deferred conversions retain their bounded queue entry.
+     */
+    private static boolean requiredCellsLoaded(ServerLevel level, BlockPos pos) {
+        if (!CombustionAir.loaded(level, pos)) {
+            return false;
+        }
+        for (Direction side : Direction.values()) {
+            if (!nativeReadAvailable(level, pos.relative(side)) || !nativeReadAvailable(level, pos.relative(side, 2))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean nativeReadAvailable(ServerLevel level, BlockPos pos) {
+        // Level.getBlockState returns air outside build height without consulting its chunk source.
+        return level.isOutsideBuildHeight(pos) || CombustionAir.loaded(level, pos);
     }
 
     /** Preflight for a torch change; it changes no room boundary, so atmosphere invalidation skips it. */
