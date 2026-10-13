@@ -72,7 +72,7 @@ give their SHA-256 values.
 | Root fix | Mixin refmap lost on a Gradle build-cache hit (W19's `MixinPackagingTest` failure); a release jar could ship without the ADR-073 refmap | **Merged** `798a2465`: the refmaps and mappings are declared `compileJava` outputs; verified miss then hit; hosted run 38258700306 passed |
 | Root incident | C: filled to 0 GB: a W16 worker's background bare `python` REPL wrote 24.9 GB | Cleaned 21:40; WORKER-RULES now forbids interactive or unbounded background commands |
 
-Hosted run 38371580132 passed on the shared branch at `888a81b2`, which holds every merge above. Hosted run 38206390869 passed at
+Hosted run 38400162712 passed on the shared branch at `01e6b457` (on rerun), which holds every merge above except the documents merged since. Hosted run 38206390869 passed at
 `ebf4c07b`, before the force field merge. Run 38208930066 passed at `17fb7e15`; run 38219141393 checks `487da4e6`.
 
 ## Queued
@@ -143,6 +143,8 @@ parallel bugs.
   - W21b F9;
   - W21c M1;
   - W22 F8 to F10;
+  - the intermittent `cancellationreleasesexactlyonetransferclaim` GameTest ("Pad fixture/flight did not
+    become ready"; hosted run 38400162712 failed once at `01e6b457` and passed on rerun);
   - the 5 ms atmosphere-boundary budget, which needs an ADR (it recurred on 2026-10-13);
   - the HotSpot C2 crash, if it recurs.
 
