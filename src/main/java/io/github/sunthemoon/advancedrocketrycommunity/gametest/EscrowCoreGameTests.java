@@ -38,14 +38,20 @@ public final class EscrowCoreGameTests {
         var op1 = first.operation(1); first.apply(op1);
         var second = EscrowTestEndpoints.chainSource(first, position.offset(4, 0, 0));
         var op2 = second.operation(2); second.apply(op2);
+        // Precondition: the freshly generated and modified fixture chunk is saved once before the proof,
+        // so vanilla's eager save of a dirty chunk cannot supersede this single-attempt barrier.
+        level.getChunkSource().save(false);
         var runtime = EscrowRuntime.of(level.getServer()); var barrier = new EscrowBarrier(); var started = new AtomicBoolean();
+        // Pace the asynchronous chunk, entity and IO waits to real server ticks (WORKER-RULES).
+        var pacer = new GameTestTickPacer(helper.getLevel().getServer());
         helper.onEachTick(() -> {
+            pacer.pace();
             barrier.tick(level.getServer().getTickCount()); if (started.get()) { return; }
             started.set(barrier.beginJoint(runtime.store(level), List.of(
                     new EscrowBarrier.Target(op1.source(), first.sourceState(), EscrowTestEndpoints.validator(op1.source(), first.sourceState())),
                     new EscrowBarrier.Target(op2.source(), second.sourceState(), EscrowTestEndpoints.validator(op2.source(), second.sourceState()))),
                     level.getServer().getTickCount(), result -> {
-                        helper.assertTrue(result.confirmed() && result.proofs().size() == 2, "Joint terrain proof did not confirm both endpoints");
+                        helper.assertTrue(result.confirmed() && result.proofs().size() == 2, "Joint terrain proof did not confirm both endpoints: " + result.reason() + ", proofs " + result.proofs().size());
                         var a = result.proofs().get(op1.source().key()); var b = result.proofs().get(op2.source().key());
                         helper.assertTrue(a.capture() == b.capture(), "Joint endpoints did not share their own store/readback");
                         a.release(); helper.assertTrue(b.valid(), "Releasing one joint endpoint invalidated the other");
@@ -69,7 +75,10 @@ public final class EscrowCoreGameTests {
         var op = fixture.operation(1); fixture.apply(op); var monitor = EscrowRuntime.of(level.getServer()).monitor();
         var store = EscrowRuntime.of(level.getServer()).store(level); var barrier = new EscrowBarrier();
         AtomicInteger phase = new AtomicInteger(); AtomicBoolean pending = new AtomicBoolean();
+        // Pace the asynchronous chunk, entity and IO waits to real server ticks (WORKER-RULES).
+        var pacer = new GameTestTickPacer(helper.getLevel().getServer());
         helper.onEachTick(() -> {
+            pacer.pace();
             barrier.tick(level.getServer().getTickCount()); if (pending.get() || !level.areEntitiesLoaded(fixture.bank().chunkPosition().toLong())) { return; }
             int index = phase.get(); if (index >= 2) {
                 helper.assertTrue(EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
@@ -147,7 +156,10 @@ public final class EscrowCoreGameTests {
         finally { MinecraftForge.EVENT_BUS.unregister(listener); }
         var op = fixture.operation(1); fixture.apply(op); var barrier = new EscrowBarrier();
         AtomicBoolean ran = new AtomicBoolean();
+        // Pace the asynchronous chunk, entity and IO waits to real server ticks (WORKER-RULES).
+        var pacer = new GameTestTickPacer(helper.getLevel().getServer());
         helper.onEachTick(() -> {
+            pacer.pace();
             if (!level.areEntitiesLoaded(fixture.bank().chunkPosition().toLong()) || !ran.compareAndSet(false, true)) { return; }
             armed.set(true); var result = new java.util.concurrent.atomic.AtomicReference<EscrowBarrier.Result>();
             try {
@@ -179,7 +191,10 @@ public final class EscrowCoreGameTests {
             helper.assertTrue(result.outcome() == EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE
                     && writer.containsCaptured(op.id()), "Definite predecessor failure cancelled a captured admission"); replies.incrementAndGet();
         });
+        // Pace the asynchronous chunk, entity and IO waits to real server ticks (WORKER-RULES).
+        var pacer = new GameTestTickPacer(helper.getLevel().getServer());
         helper.onEachTick(() -> {
+            pacer.pace();
             if (held.getCount() == 0 && queued.compareAndSet(false, true)) {
                 writer.request(() -> EscrowLedgerWriter.Snapshot.of(ledger.generation(3), Set.of(op.id())), result -> {
                     helper.assertTrue(result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED, "Captured successor did not commit"); replies.incrementAndGet();

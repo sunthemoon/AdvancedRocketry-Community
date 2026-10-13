@@ -1,0 +1,30 @@
+{
+  "type": "advancedrocketrycommunity:chemical_reacting",
+  "energy_per_tick": 10,
+  "fluid_inputs": [],
+  "fluid_outputs": [],
+  "item_inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:armors/boots"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "advancedrocketrycommunity:pipe_seal"
+      }
+    },
+    {
+      "count": 4,
+      "ingredient": {
+        "tag": "advancedrocketrycommunity:sheets/titanium_aluminide"
+      }
+    }
+  ],
+  "item_outputs": [],
+  "processing_time": 100,
+  "schema_version": 1,
+  "special": "space_breathing_feet"
+}

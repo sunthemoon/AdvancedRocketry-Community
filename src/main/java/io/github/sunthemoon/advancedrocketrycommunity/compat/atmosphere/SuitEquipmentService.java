@@ -46,6 +46,11 @@ public final class SuitEquipmentService {
         return count;
     }
 
+    /** Whether a registered external provider owns this item, enabled or not (ADR-066 §5.1). */
+    public boolean claims(net.minecraft.world.item.Item item) {
+        return catalog.find(item) != null;
+    }
+
     /** Metadata-only prediction on either physical side. */
     public boolean isChest(ItemStack stack) {
         var piece = catalog.find(stack.getItem());

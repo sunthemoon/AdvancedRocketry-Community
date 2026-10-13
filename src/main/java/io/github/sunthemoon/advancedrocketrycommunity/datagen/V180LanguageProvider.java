@@ -31,11 +31,13 @@ public final class V180LanguageProvider extends LanguageProvider {
     protected void addTranslations() {
         add("flight.advancedrocketrycommunity.request.journal_pending", chinese
                 ? "等待转移日志持久化确认；需要燃料 %s" : "Waiting for durable transfer confirmation; required fuel %s");
+        V180ResearchLanguage.entries(chinese).forEach(this::add);
         V180LandingPadData.language(chinese).forEach(this::add);
         V180PumpLanguage.translations(chinese).forEach(this::add);
         V180ClassicMachineData.language(chinese).forEach(this::add);
         V180ArcCuttingData.language(chinese).forEach(this::add);
         V180C16cMachineData.language(chinese).forEach(this::add);
+        V180ChemicalSpecialData.language(chinese).forEach(this::add);
         V180RecipeMenuLanguage.translations(chinese).forEach(this::add);
         V180ClassicAdvancementLanguage.translations(chinese).forEach(this::add);
         V180ClassicMilestoneLanguage.translations(chinese).forEach(this::add);

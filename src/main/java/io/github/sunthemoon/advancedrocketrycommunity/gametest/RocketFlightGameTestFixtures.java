@@ -59,25 +59,25 @@ final class RocketFlightGameTestFixtures {
     }
 
     static void assembleFueledRocket(
-            GameTestHelper helper,
+            GameTestHelper helper, GameTestTickDriver driver,
             BlockPos origin,
             UUID owner,
             Consumer<RocketEntity> ready
     ) {
-        assembleFueledRocket(helper, origin, owner, () -> {}, ready);
+        assembleFueledRocket(helper, driver, origin, owner, () -> {}, ready);
     }
 
-    static void assembleFueledRocket(GameTestHelper helper, BlockPos origin, UUID owner,
+    static void assembleFueledRocket(GameTestHelper helper, GameTestTickDriver driver, BlockPos origin, UUID owner,
             Runnable cleanupOnFailure, Consumer<RocketEntity> ready) {
-        assembleFueledRocket(helper, origin, owner, cleanupOnFailure, helper.getTick() + ASSEMBLY_WAIT_TICKS, ready);
+        assembleFueledRocket(helper, driver, origin, owner, cleanupOnFailure, helper.getTick() + ASSEMBLY_WAIT_TICKS, ready);
     }
 
-    static void assembleFueledRocket(GameTestHelper helper, BlockPos origin, UUID owner,
+    static void assembleFueledRocket(GameTestHelper helper, GameTestTickDriver driver, BlockPos origin, UUID owner,
             Runnable cleanupOnFailure, long deadline, Consumer<RocketEntity> ready) {
         ServerLevel level = helper.getLevel();
         ChunkPos chunk = new ChunkPos(helper.absolutePos(origin));
         // One shared budget for origin readiness and visibility, inside even the 40-tick callers.
-        helper.runAfterDelay(1, () -> awaitPaced(helper, deadline, () -> level.areEntitiesLoaded(chunk.toLong()), () -> {
+        driver.after(1, () -> awaitPaced(helper, driver, deadline, () -> level.areEntitiesLoaded(chunk.toLong()), () -> {
             UUID entityId;
             try {
                 helper.assertTrue(level.areEntitiesLoaded(chunk.toLong()), "Flight test origin entities did not load");
@@ -86,7 +86,7 @@ final class RocketFlightGameTestFixtures {
                 cleanupOnFailure.run();
                 throw failure;
             }
-            awaitPaced(helper, deadline, () -> level.getEntity(entityId) != null, () -> {
+            awaitPaced(helper, driver, deadline, () -> level.getEntity(entityId) != null, () -> {
                 RocketEntity rocket;
                 try {
                     rocket = (RocketEntity) level.getEntity(entityId);
@@ -123,24 +123,24 @@ final class RocketFlightGameTestFixtures {
     }
 
     /** Runs the original assertions on readiness or expiry; a timeout never silently succeeds. */
-    static void awaitPaced(GameTestHelper helper, long deadline, BooleanSupplier ready, Runnable assertions) {
-        awaitPaced(helper, deadline, ready, assertions, new GameTestTickPacer(helper.getLevel().getServer()));
+    static void awaitPaced(GameTestHelper helper, GameTestTickDriver driver, long deadline, BooleanSupplier ready, Runnable assertions) {
+        awaitPaced(helper, driver, deadline, ready, assertions, new GameTestTickPacer(helper.getLevel().getServer()));
     }
 
-    private static void awaitPaced(GameTestHelper helper, long deadline, BooleanSupplier ready,
+    private static void awaitPaced(GameTestHelper helper, GameTestTickDriver driver, long deadline, BooleanSupplier ready,
             Runnable assertions, GameTestTickPacer pacer) {
         if (ready.getAsBoolean() || helper.getTick() >= deadline) {
             assertions.run();
             return;
         }
         pacer.pace();
-        helper.runAfterDelay(1, () -> awaitPaced(helper, deadline, ready, assertions, pacer));
+        driver.after(1, () -> awaitPaced(helper, driver, deadline, ready, assertions, pacer));
     }
 
-    static void awaitFlightState(GameTestHelper helper, ServerLevel destination, UUID logical,
+    static void awaitFlightState(GameTestHelper helper, GameTestTickDriver driver, ServerLevel destination, UUID logical,
             RocketFlightState state,
             int ticks, Runnable assertions) {
-        awaitPaced(helper, helper.getTick() + ticks, () -> hasFlightState(destination, logical, state)
+        awaitPaced(helper, driver, helper.getTick() + ticks, () -> hasFlightState(destination, logical, state)
                 && RocketTransferSavedData.get(destination.getServer()).acknowledgedCurrent(), assertions);
     }
 

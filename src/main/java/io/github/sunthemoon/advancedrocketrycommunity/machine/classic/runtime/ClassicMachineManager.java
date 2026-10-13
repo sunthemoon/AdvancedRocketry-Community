@@ -88,9 +88,16 @@ public final class ClassicMachineManager {
     }
     private Optional<MultiblockPatternDefinition> pattern(ClassicControllerBlockEntity controller) {
         return patterns.current().flatMap(catalog -> catalog.get(controller.definition().pattern().toString()))
+                .filter(pattern -> !controller.definition().research() || researchPatternMatches(controller, pattern))
                 .filter(pattern -> !pattern.allowMirrorLocalX() && pattern.cells().size() <= 4_096
                         && pattern.allowedRotations().equals(java.util.EnumSet.allOf(
                                 io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternRotation.class)));
+    }
+    private static boolean researchPatternMatches(ClassicControllerBlockEntity controller, MultiblockPatternDefinition pattern) {
+        var expected = io.github.sunthemoon.advancedrocketrycommunity.machine.research.ResearchPatterns.definition(
+                controller.definition().equals(ClassicMachineDefinition.ASTROBODY_DATA_PROCESSOR));
+        return pattern.size().equals(expected.size()) && pattern.controllerAnchor().equals(expected.controllerAnchor())
+                && pattern.cells().equals(expected.cells());
     }
     private boolean index(ClassicControllerBlockEntity controller) {
         var cells = pattern(controller).map(controller::footprint).orElseGet(() -> {
@@ -128,6 +135,7 @@ public final class ClassicMachineManager {
         while (queued.hasNext() && budget-- > 0) {
             BlockPos position = queued.next(); queued.remove(); var controller = controllers.get(position);
             if (controller == null || !controller.physical()) { continue; }
+            if (controller.definition().research()) { continue; }
             List<ClassicMachineRecipe> catalog = catalog(controller);
             if (catalog == null) { controller.catalogUnavailable(); continue; }
             if (controller.needsLookup() && !search.pending(position)) {

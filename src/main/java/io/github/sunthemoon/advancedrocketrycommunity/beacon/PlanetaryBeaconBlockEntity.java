@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * The planetary beacon controller (ADR-065 section 7). It owns the beacon's identity, owner, name and enabled switch,
- * and mirrors them into the server's index on lifecycle events: the first tick after loading, each structure
+ * and mirrors them into the server's index on lifecycle events: the first validation after loading, each structure
  * validation, and each change by its owner or an operator. Its index record is active only while the full loaded
  * structure is formed, the beacon is enabled and it has an owner; unforming or disabling marks it inactive, and
  * unloading leaves the last known record. Removal deletes its own record only.
@@ -66,7 +66,7 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity {
             state = state.nextGeneration();
             setChanged();
         }
-        if (validated || reconcile) {
+        if ((validated || reconcile) && structure.status() != BeaconStructure.Status.PENDING) {
             reconcile = false;
             reconcile(level, services.get());
         }
@@ -77,6 +77,11 @@ public final class PlanetaryBeaconBlockEntity extends BlockEntity {
      * that a refused replacement of this beacon's own record still takes its activity and generation.
      */
     private void reconcile(ServerLevel level, BeaconServices services) {
+        if (structure.status() == BeaconStructure.Status.PENDING) {
+            // Loading (or controls used before validation) must not overwrite the last known activity.
+            reconcile = true;
+            return;
+        }
         if (state.owner().isEmpty()) {
             registration = Registration.NO_OWNER;
             return;

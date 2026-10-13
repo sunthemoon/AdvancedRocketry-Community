@@ -73,6 +73,8 @@ public final class ResourceMissionService {
     public TerminalDirectory directory() {
         return directory;
     }
+    /** Detached immutable tables for ground research; no second reload authority. */
+    public Optional<ResourceTables> resourceTables() { return tables.current(); }
 
     public TerminalObservations observations() {
         return observations;

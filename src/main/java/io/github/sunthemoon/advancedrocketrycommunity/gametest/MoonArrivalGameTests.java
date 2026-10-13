@@ -46,13 +46,15 @@ public final class MoonArrivalGameTests {
 
     @GameTest(template = "rocket_test", batch = "moon_arrival_highlands", timeoutTicks = 1_000)
     public static void aMoonRocketArrivesAtY80OverTheHighestHighlands(GameTestHelper helper) {
-        fly(helper, moon -> MoonPadArea.shape(moon, PAD_REACH, V180PlanetWorldgen.MOON_SURFACE_MAX),
+        var driver = new GameTestTickDriver(helper);
+        fly(helper, driver, moon -> MoonPadArea.shape(moon, PAD_REACH, V180PlanetWorldgen.MOON_SURFACE_MAX),
                 V180PlanetWorldgen.MOON_SURFACE_MAX);
     }
 
     @GameTest(template = "rocket_test", batch = "moon_arrival_crater", timeoutTicks = 1_000)
     public static void aMoonRocketArrivesAtY80OverACrater(GameTestHelper helper) {
-        fly(helper, moon -> {
+        var driver = new GameTestTickDriver(helper);
+        fly(helper, driver, moon -> {
             BlockPos pad = SafeCelestialTravel.FIXED_FEET_POSITION;
             // A flat lowland of y 20 under a crater of radius 12 centred on the pad (its reach is 21 blocks).
             MoonPadArea.shape(moon, 22, 20);
@@ -79,7 +81,7 @@ public final class MoonArrivalGameTests {
     }
 
     /** Shapes the ground, waits for the pads to settle, flies a rocket to the Moon and checks its arrival height. */
-    private static void fly(GameTestHelper helper, Consumer<ServerLevel> shape, int highestGround) {
+    private static void fly(GameTestHelper helper, GameTestTickDriver driver, Consumer<ServerLevel> shape, int highestGround) {
         ServerLevel earth = helper.getLevel();
         ServerLevel moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable");
@@ -92,15 +94,15 @@ public final class MoonArrivalGameTests {
         BlockPos pad = SafeCelestialTravel.FIXED_FEET_POSITION;
         int ground = moon.getHeight(Heightmap.Types.WORLD_SURFACE, pad.getX(), pad.getZ()) - 1;
         helper.assertTrue(ground <= highestGround, "The shaped ground is higher than the terrain bound: " + ground);
-        helper.runAfterDelay(80, () -> {
+        driver.after(80, () -> {
             clearPadRockets(earth);
             clearPadRockets(moon);
-            assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
+            assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
                 UUID logical = rocket.assemblyTransactionId().orElseThrow();
                 RocketFlightRequestResult result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON,
                         UUID.randomUUID());
                 RocketFlightGameTestFixtures.assertPendingLaunch(helper, result, rocket);
-                RocketFlightGameTestFixtures.awaitFlightState(helper, moon, logical, RocketFlightState.LANDED, 270, () -> {
+                RocketFlightGameTestFixtures.awaitFlightState(helper, driver, moon, logical, RocketFlightState.LANDED, 270, () -> {
                     RocketEntity landed = findLogicalRocket(moon, logical);
                     helper.assertTrue(landed != null, "The rocket did not arrive on the Moon");
                     helper.assertTrue(landed.flightData().orElseThrow().state() == RocketFlightState.LANDED,

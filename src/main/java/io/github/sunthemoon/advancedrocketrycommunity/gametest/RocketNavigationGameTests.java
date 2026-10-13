@@ -41,13 +41,14 @@ public final class RocketNavigationGameTests {
 
     @GameTest(template = "rocket_test", batch = "rocket_navigation", timeoutTicks = 40)
     public static void navigationUsesAuthorityOneGenerationAndReadOnlyPlanning(GameTestHelper helper) {
-        helper.runAfterDelay(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.after(1, () -> {
             var catalogs = new PlanetaryCatalogManager();
             helper.assertTrue(catalogs.applyCandidate(pair(false)), "Catalog fixture rejected");
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var owner = actor(helper, "NavOwner");
             var outsider = actor(helper, "NavOutsider");
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner.getUUID(), rocket -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), owner.getUUID(), rocket -> {
                 var stations = StationRegistrySavedData.get(helper.getLevel().getServer());
                 UUID station = UUID.randomUUID();
                 try {
@@ -94,10 +95,11 @@ public final class RocketNavigationGameTests {
 
     @GameTest(template = "rocket_test", batch = "rocket_navigation_menu", timeoutTicks = 60)
     public static void menuRefreshesRevokedStationsAndChangedFuelWithoutReopening(GameTestHelper helper) {
-        helper.runAfterDelay(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.after(1, () -> {
             var owner = actor(helper, "NavMenu");
             var other = actor(helper, "NavWrongViewer");
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner.getUUID(), rocket -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), owner.getUUID(), rocket -> {
                 var stations = StationRegistrySavedData.get(helper.getLevel().getServer());
                 UUID station = UUID.randomUUID();
                 Runnable cleanup = () -> { owner.containerMenu = owner.inventoryMenu; stations.delete(station); stations.release(station); rocket.discard(); };
@@ -122,7 +124,7 @@ public final class RocketNavigationGameTests {
                     stations.removeMember(station, owner.getUUID());
                     RocketRuntime.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, new TravelTarget.Station(station), UUID.randomUUID());
                     helper.assertTrue(original.equals(rocket.flightData().orElseThrow()), "Stale station view bypassed server access");
-                    helper.runAfterDelay(21, () -> {
+                    driver.after(21, () -> {
                         try {
                             helper.assertTrue(menu.navigation().stations().isEmpty() && menu.accessibleStations().isEmpty(), "Open menu retained revoked station");
                             owner.setPos(rocket.getX() + 100, rocket.getY(), rocket.getZ());
@@ -139,12 +141,13 @@ public final class RocketNavigationGameTests {
 
     @GameTest(template = "rocket_test", batch = "rocket_navigation_refresh", timeoutTicks = 130)
     public static void catalogServiceSharesReopenBudgetAndRecoversLatestGeneration(GameTestHelper helper) {
-        helper.runAfterDelay(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.after(1, () -> {
             var catalogs = new PlanetaryCatalogManager();
             helper.assertTrue(catalogs.applyCandidate(pair(false)), "Refresh fixture rejected");
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var owner = actor(helper, "NavRefresh");
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner.getUUID(), rocket -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), owner.getUUID(), rocket -> {
                 Runnable cleanup = () -> { owner.containerMenu = owner.inventoryMenu; manager.clear(); rocket.discard(); };
                 try {
                     owner.setPos(rocket.position());
@@ -156,7 +159,7 @@ public final class RocketNavigationGameTests {
                     helper.assertTrue(manager.navigationCatalog(owner, rocket).isEmpty(), "Reopening bypassed full-catalog budget");
                     helper.assertTrue(catalogs.applyCandidate(pair(true)), "Reload fixture rejected");
                     helper.assertTrue(manager.navigationCatalog(owner, rocket).isEmpty(), "Generation change bypassed budget");
-                    helper.runAfterDelay(101, () -> {
+                    driver.after(101, () -> {
                         try {
                             var latest = manager.navigationCatalog(owner, rocket).orElseThrow();
                             helper.assertTrue(latest.catalogGeneration() > first.catalogGeneration()

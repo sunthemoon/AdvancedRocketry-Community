@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.beacon.persistence.BeaconI
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,13 +27,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.DirectionalPlaceContext;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -45,7 +48,10 @@ import net.minecraft.world.phys.Vec3;
  * block, every direct record and every player; it is safe to call twice.
  */
 final class BeaconGameTestFixture implements AutoCloseable {
+    private static final TicketType<UUID> TICKET = TicketType.create("arce_beacon_test",
+            Comparator.comparing(UUID::toString));
     final GameTestHelper helper;
+    private final GameTestTickDriver driver;
     final ServerLevel level;
     final MinecraftServer server;
     final Map<UUID, List<String>> replies = new HashMap<>();
@@ -54,10 +60,13 @@ final class BeaconGameTestFixture implements AutoCloseable {
     private final List<UUID> records = new ArrayList<>();
     private final List<ServerPlayer> players = new ArrayList<>();
     private final List<ServerPlayer> operators = new ArrayList<>();
+    private final List<ChunkPos> fixtureChunks = new ArrayList<>();
+    private final UUID ticketId = UUID.randomUUID();
     private boolean closed;
 
     BeaconGameTestFixture(GameTestHelper helper) {
         this.helper = helper;
+        this.driver = new GameTestTickDriver(helper);
         this.level = helper.getLevel();
         this.server = level.getServer();
         helper.assertTrue(BeaconRuntime.services().isPresent(), "The beacon services are not installed");
@@ -164,8 +173,8 @@ final class BeaconGameTestFixture implements AutoCloseable {
     PlanetaryBeaconBlockEntity placeStack(@Nullable ServerPlayer placer, BlockPos at, ItemStack stack) {
         InteractionResult result;
         if (placer == null) {
-            result = ((BlockItem) stack.getItem()).place(new BlockPlaceContext(level, null, InteractionHand.MAIN_HAND,
-                    stack, new BlockHitResult(Vec3.atCenterOf(at), Direction.UP, at, false)));
+            result = ((BlockItem) stack.getItem()).place(new DirectionalPlaceContext(level, at, Direction.SOUTH,
+                    stack, Direction.UP));
         } else {
             placer.setYRot(0.0F);
             result = use(placer, at, stack);
@@ -174,9 +183,9 @@ final class BeaconGameTestFixture implements AutoCloseable {
         controllers.add(at.immutable());
         helper.assertTrue(result.consumesAction(), "Placing the beacon was refused: " + result);
         BlockState state = level.getBlockState(at);
-        helper.assertTrue(state.is(ModBlocks.PLANETARY_BEACON.get()) && (placer == null
-                || state.getValue(io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock.FACING)
-                == Direction.NORTH), "The beacon was not placed facing north: " + state);
+        helper.assertTrue(state.is(ModBlocks.PLANETARY_BEACON.get())
+                && state.getValue(io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlock.FACING)
+                == Direction.NORTH, "The beacon was not placed facing north: " + state);
         return (PlanetaryBeaconBlockEntity) level.getBlockEntity(at);
     }
 
@@ -285,6 +294,25 @@ final class BeaconGameTestFixture implements AutoCloseable {
         return position;
     }
 
+    /** Test-owned tickets for an isolated chunk; releasing them permits a native unload. */
+    void forceChunk(BlockPos at, boolean force) {
+        ChunkPos chunk = new ChunkPos(at);
+        if (!fixtureChunks.contains(chunk)) {
+            helper.assertTrue(force && !level.getForcedChunks().contains(chunk.toLong()),
+                    "The fixture does not own this chunk's forced ticket");
+            fixtureChunks.add(chunk);
+        }
+        if (force) {
+            level.getChunkSource().addRegionTicket(TICKET, chunk, 2, ticketId);
+        } else {
+            level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, ticketId);
+        }
+        level.setChunkForced(chunk.x, chunk.z, force);
+        if (force) {
+            level.getChunkAt(at);
+        }
+    }
+
     String body(BlockPos at) {
         Optional<String> body = services().body(server, level.dimension(), at);
         helper.assertTrue(body.isPresent(), "The GameTest Overworld has no server-resolved body");
@@ -292,8 +320,13 @@ final class BeaconGameTestFixture implements AutoCloseable {
     }
 
     /** Polls {@code ready} once per tick for at most {@code ticks}, then runs {@code next}; closes on failure. */
+    /** Runs {@code next} after {@code ticks} through the setup-registered driver, never a nested vanilla registration. */
+    void after(int ticks, Runnable next) {
+        driver.after(ticks, next);
+    }
+
     void await(int ticks, String what, BooleanSupplier ready, Runnable next) {
-        helper.runAfterDelay(1, () -> {
+        driver.after(1, () -> {
             boolean done;
             try {
                 done = ready.getAsBoolean();
@@ -334,6 +367,10 @@ final class BeaconGameTestFixture implements AutoCloseable {
             }
             records.forEach(id -> index().remove(id));
         } finally {
+            for (ChunkPos chunk : fixtureChunks) {
+                level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, ticketId);
+                level.setChunkForced(chunk.x, chunk.z, false);
+            }
             for (ServerPlayer operator : operators) {
                 server.getPlayerList().getOps().remove(operator.getGameProfile());
             }

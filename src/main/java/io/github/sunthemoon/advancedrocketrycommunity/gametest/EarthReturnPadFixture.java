@@ -64,8 +64,9 @@ public final class EarthReturnPadFixture {
 
     @GameTest(template = "rocket_test", batch = "flight", timeoutTicks = 40)
     public static void provisionedEarthPadStillRejectsSnowAndGrass(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var earth = helper.getLevel();
-        RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
+        RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
             var selector = new RocketLandingPadSelector();
             try {
                 var selection = selector.select(earth, rocket.snapshot().orElseThrow(), UUID.randomUUID(),

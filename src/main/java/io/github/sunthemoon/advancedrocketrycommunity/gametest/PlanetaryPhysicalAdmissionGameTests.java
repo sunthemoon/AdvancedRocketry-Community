@@ -44,11 +44,12 @@ public final class PlanetaryPhysicalAdmissionGameTests {
 
     @GameTest(template = "rocket_test", batch = "planetary_physical_admission", timeoutTicks = 40)
     public static void repeatedQuotesDoNotLoadTerrainAndInvalidSourceFormsDoNotLaunch(GameTestHelper helper) {
-        helper.runAfterDelay(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.after(1, () -> {
             var catalogs = catalogs(false);
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "PhysicalAdmission"));
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), player.getUUID(), rocket -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), player.getUUID(), rocket -> {
                 try {
                     player.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
                     var server = helper.getLevel().getServer();
@@ -87,11 +88,12 @@ public final class PlanetaryPhysicalAdmissionGameTests {
 
     @GameTest(template = "rocket_test", batch = "planetary_physical_admission", timeoutTicks = 40)
     public static void mappedBodyWithoutStartedLevelCannotQuoteOrDebit(GameTestHelper helper) {
-        helper.runAfterDelay(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.after(1, () -> {
             var catalogs = catalogs(true);
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var player = new FakePlayer(helper.getLevel(), new GameProfile(UUID.randomUUID(), "MissingPlanet"));
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), player.getUUID(), rocket -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), player.getUUID(), rocket -> {
                 try {
                     denied(helper, manager, player, rocket, VENUS);
                     helper.succeed();

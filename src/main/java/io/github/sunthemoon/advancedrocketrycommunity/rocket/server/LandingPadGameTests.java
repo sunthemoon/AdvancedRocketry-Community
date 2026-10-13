@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -119,15 +120,16 @@ public final class LandingPadGameTests {
 
     @GameTest(template = "rocket_test", batch = "landing_pads", timeoutTicks = 400)
     public static void namedFlightLandsOnPadReleasesCommitClaimAndKeepsDefaultCell(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         Fixture f = fixture(helper); var snapshot = sourceSnapshot(helper);
         var entry = LandingPadService.register(f.space, f.pad, f.station.ownerId(), false, "Arrival");
-        await(helper, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
+        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
             RocketEntity source = addSource(helper, snapshot, f.station.ownerId());
             UUID logical = source.assemblyTransactionId().orElseThrow(); UUID transfer = UUID.randomUUID();
             var result = RocketRuntime.requestAdminPadFlight(source, f.station.stationId(), entry.reference(), transfer);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.assertPendingLaunch(helper, result, source);
             helper.assertTrue(transfer.equals(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim()), "Prepared claim missing");
-            await(helper, helper.getTick() + 270, () -> {
+            await(helper, driver, helper.getTick() + 270, () -> {
                 var journal = RocketTransferSavedData.get(f.space.getServer()); var record = journal.find(transfer).orElse(null);
                 var destination = record == null || record.destinationEntityId().isEmpty() ? null : f.space.getEntity(record.destinationEntityId().orElseThrow());
                 return destination instanceof RocketEntity r && r.flightData().orElseThrow().state() == RocketFlightState.LANDED;
@@ -152,9 +154,10 @@ public final class LandingPadGameTests {
 
     @GameTest(template = "rocket_test", batch = "landing_pads", timeoutTicks = 180)
     public static void cancellationReleasesExactlyOneTransferClaim(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         Fixture f = fixture(helper); var snapshot = sourceSnapshot(helper);
         var entry = LandingPadService.register(f.space, f.pad, f.station.ownerId(), false, "Cancel");
-        await(helper, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
+        await(helper, driver, 80, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
             var source = addSource(helper, snapshot, f.station.ownerId()); var transfer = UUID.randomUUID();
             var countdown = countdown(source, f.station, entry, transfer);
             var service = new RocketTransferService();
@@ -172,9 +175,10 @@ public final class LandingPadGameTests {
 
     @GameTest(template = "rocket_test", batch = "landing_pads", timeoutTicks = 300)
     public static void allFiveRecoveryPhasesAndFourPresenceCutsReleaseClaimsAfterReload(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         Fixture f = fixture(helper); var snapshot = sourceSnapshot(helper);
         var entry = LandingPadService.register(f.space, f.pad, f.station.ownerId(), false, "Recovery");
-        await(helper, 100, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
+        await(helper, driver, 100, () -> ready(helper.getLevel(), snapshot.sourceOrigin()) && f.space.areEntitiesLoaded(new ChunkPos(f.pad).toLong()), () -> {
             int cuts = 0;
             for (RocketTransferPhase phase : RocketTransferPhase.values()) {
                 for (int presence = 0; presence < 4; presence++) {
@@ -280,12 +284,12 @@ public final class LandingPadGameTests {
         helper.assertTrue(helper.getLevel().addFreshEntity(rocket), "Source spawn failed"); return rocket;
     }
     private static boolean ready(ServerLevel level, RocketPosition position) { return level.areEntitiesLoaded(ChunkPos.asLong(position.x() >> 4, position.z() >> 4)); }
-    private static void await(GameTestHelper helper, long deadline, BooleanSupplier ready, Runnable done) {
-        await(helper, deadline, ready, done, new GameTestTickPacer(helper.getLevel().getServer()));
+    private static void await(GameTestHelper helper, GameTestTickDriver driver, long deadline, BooleanSupplier ready, Runnable done) {
+        await(helper, driver, deadline, ready, done, new GameTestTickPacer(helper.getLevel().getServer()));
     }
-    private static void await(GameTestHelper helper, long deadline, BooleanSupplier ready, Runnable done, GameTestTickPacer pacer) {
+    private static void await(GameTestHelper helper, GameTestTickDriver driver, long deadline, BooleanSupplier ready, Runnable done, GameTestTickPacer pacer) {
         if (ready.getAsBoolean() || helper.getTick() >= deadline) { helper.assertTrue(ready.getAsBoolean(), "Pad fixture/flight did not become ready"); done.run(); return; }
-        pacer.pace(); helper.runAfterDelay(1, () -> await(helper, deadline, ready, done, pacer));
+        pacer.pace(); driver.after(1, () -> await(helper, driver, deadline, ready, done, pacer));
     }
     private static void rejected(GameTestHelper helper, Runnable operation) {
         boolean refused = false; try { operation.run(); } catch (IllegalArgumentException expected) { refused = true; }

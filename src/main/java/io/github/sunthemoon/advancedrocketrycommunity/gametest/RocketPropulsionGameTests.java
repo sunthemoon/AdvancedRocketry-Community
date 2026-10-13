@@ -35,27 +35,33 @@ public final class RocketPropulsionGameTests {
     private RocketPropulsionGameTests() { }
     @GameTest(template = "rocket_test", batch = "propulsion_mono", timeoutTicks = 800)
     public static void advancedMonoLaunchDebitsActualRocketFuel(GameTestHelper helper) {
-        flight(helper, ModBlocks.ADVANCED_ROCKET_MOTOR.get(), RocketPropulsion.Mode.MONO, 3, 5);
+        var driver = new GameTestTickDriver(helper);
+        flight(helper, driver, ModBlocks.ADVANCED_ROCKET_MOTOR.get(), RocketPropulsion.Mode.MONO, 3, 5);
     }
     @GameTest(template = "rocket_test", batch = "propulsion_bipropellant", timeoutTicks = 800)
     public static void bipropellantLaunchDebitsHydrogenAndOxygen(GameTestHelper helper) {
-        flight(helper, ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get(), RocketPropulsion.Mode.BIPROPELLANT, 1, 1);
+        var driver = new GameTestTickDriver(helper);
+        flight(helper, driver, ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get(), RocketPropulsion.Mode.BIPROPELLANT, 1, 1);
     }
     @GameTest(template = "rocket_test", batch = "propulsion_advanced_bipropellant", timeoutTicks = 800)
     public static void advancedBipropellantLaunchDebitsBothBanks(GameTestHelper helper) {
-        flight(helper, ModBlocks.ADVANCED_BIPROPELLANT_ROCKET_MOTOR.get(), RocketPropulsion.Mode.BIPROPELLANT, 3, 5);
+        var driver = new GameTestTickDriver(helper);
+        flight(helper, driver, ModBlocks.ADVANCED_BIPROPELLANT_ROCKET_MOTOR.get(), RocketPropulsion.Mode.BIPROPELLANT, 3, 5);
     }
     @GameTest(template = "rocket_test", batch = "propulsion_nuclear", timeoutTicks = 800)
     public static void nuclearLaunchDebitsWorkingFluid(GameTestHelper helper) {
-        flight(helper, ModBlocks.NUCLEAR_ROCKET_MOTOR.get(), RocketPropulsion.Mode.NUCLEAR, 2, 7);
+        var driver = new GameTestTickDriver(helper);
+        flight(helper, driver, ModBlocks.NUCLEAR_ROCKET_MOTOR.get(), RocketPropulsion.Mode.NUCLEAR, 2, 7);
     }
     @GameTest(template = "rocket_test", batch = "propulsion_basic", timeoutTicks = 800)
     public static void basicRocketKeepsItsMetricsAndAbstractFuelLaunch(GameTestHelper helper) {
-        flight(helper, ModBlocks.ROCKET_MOTOR.get(), RocketPropulsion.Mode.MONO, 1, 1);
+        var driver = new GameTestTickDriver(helper);
+        flight(helper, driver, ModBlocks.ROCKET_MOTOR.get(), RocketPropulsion.Mode.MONO, 1, 1);
     }
     @GameTest(template = "rocket_test", batch = "propulsion_waiver", timeoutTicks = 800)
     public static void capturedFuelWaiverLaunchesEmptyBanksAndKeepsLandedMenuReady(GameTestHelper helper) {
-        flight(helper, ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get(), RocketPropulsion.Mode.BIPROPELLANT, 1, 1, false);
+        var driver = new GameTestTickDriver(helper);
+        flight(helper, driver, ModBlocks.BIPROPELLANT_ROCKET_MOTOR.get(), RocketPropulsion.Mode.BIPROPELLANT, 1, 1, false);
     }
     @GameTest(template = "rocket_test")
     public static void mixedModesAndWrongTankRolesRefuseBeforeExtraction(GameTestHelper helper) {
@@ -164,15 +170,15 @@ public final class RocketPropulsionGameTests {
             }
         }
     }
-    private static void flight(GameTestHelper helper, Block motor, RocketPropulsion.Mode mode, long numerator, long denominator) {
-        flight(helper, motor, mode, numerator, denominator, true);
+    private static void flight(GameTestHelper helper, GameTestTickDriver driver, Block motor, RocketPropulsion.Mode mode, long numerator, long denominator) {
+        flight(helper, driver, motor, mode, numerator, denominator, true);
     }
-    private static void flight(GameTestHelper helper, Block motor, RocketPropulsion.Mode mode, long numerator, long denominator,
+    private static void flight(GameTestHelper helper, GameTestTickDriver driver, Block motor, RocketPropulsion.Mode mode, long numerator, long denominator,
             boolean requireFuel) {
         ServerLevel earth = helper.getLevel(); ServerLevel moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable");
         clearTransferJournal(earth); primePadChunks(moon);
-        awaitMoon(helper, moon, new GameTestTickPacer(earth.getServer()), 0, () -> {
+        awaitMoon(helper, driver, moon, new GameTestTickPacer(earth.getServer()), 0, () -> {
             BlockPos origin = new BlockPos(3, 2, 3); placeLegalRocket(helper, origin); helper.setBlock(origin, motor);
             if (mode == RocketPropulsion.Mode.NUCLEAR) {
                 helper.setBlock(origin.above(), ModBlocks.NUCLEAR_CORE.get());
@@ -219,17 +225,17 @@ public final class RocketPropulsionGameTests {
             long expected = !requireFuel ? 0 : basic ? q : (q * numerator + denominator * efficiency - 1) / (denominator * efficiency);
             helper.assertTrue(plan.propulsionDebit().primary() == expected
                     && plan.propulsionDebit().oxidizer() == (mode == RocketPropulsion.Mode.BIPROPELLANT ? expected : 0), "Incorrect captured vector");
-            awaitLanding(helper, earth, moon, logical, request, mode, expected,
+            awaitLanding(helper, driver, earth, moon, logical, request, mode, expected,
                     new GameTestTickPacer(earth.getServer()), 0);
         });
     }
-    private static void awaitMoon(GameTestHelper helper, ServerLevel moon, GameTestTickPacer pacer, int attempts, Runnable ready) {
+    private static void awaitMoon(GameTestHelper helper, GameTestTickDriver driver, ServerLevel moon, GameTestTickPacer pacer, int attempts, Runnable ready) {
         ChunkPos pad = new ChunkPos(io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel.FIXED_FEET_POSITION);
         if (moon.areEntitiesLoaded(pad.toLong()) && moon.isPositionEntityTicking(pad.getMiddleBlockPosition(0))) { ready.run(); return; }
         helper.assertTrue(attempts < 400, "Moon pad did not become entity-ready"); pacer.pace();
-        helper.runAfterDelay(1, () -> awaitMoon(helper, moon, pacer, attempts + 1, ready));
+        driver.after(1, () -> awaitMoon(helper, driver, moon, pacer, attempts + 1, ready));
     }
-    private static void awaitLanding(GameTestHelper helper, ServerLevel earth, ServerLevel moon, UUID logical, UUID request,
+    private static void awaitLanding(GameTestHelper helper, GameTestTickDriver driver, ServerLevel earth, ServerLevel moon, UUID logical, UUID request,
             RocketPropulsion.Mode mode, long expected, GameTestTickPacer pacer, int attempts) {
         RocketEntity arrived = findLogicalRocket(moon, logical);
         if (arrived != null && arrived.flightData().orElseThrow().state() == RocketFlightState.LANDED) {
@@ -251,6 +257,6 @@ public final class RocketPropulsionGameTests {
             arrived.discard(); helper.succeed(); return;
         }
         helper.assertTrue(attempts < 350, "Propulsion flight did not land"); pacer.pace();
-        helper.runAfterDelay(1, () -> awaitLanding(helper, earth, moon, logical, request, mode, expected, pacer, attempts + 1));
+        driver.after(1, () -> awaitLanding(helper, driver, earth, moon, logical, request, mode, expected, pacer, attempts + 1));
     }
 }

@@ -243,6 +243,7 @@ public final class ClassicMilestoneAdvancementGameTests {
 
     @GameTest(template = "rocket_test", batch = "classic_moon_landing", timeoutTicks = 800)
     public static void moonLandingRewardsOnlyPassengersAtTheLandingCompletion(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
         ServerLevel moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon unavailable");
@@ -287,7 +288,7 @@ public final class ClassicMilestoneAdvancementGameTests {
             cleanup.run();
             throw failure;
         }
-        RocketFlightGameTestFixtures.awaitPaced(helper, helper.getTick() + 400,
+        RocketFlightGameTestFixtures.awaitPaced(helper, driver, helper.getTick() + 400,
                 () -> passenger.serverLevel() == moon && passenger.getVehicle() instanceof RocketEntity
                         && RocketFlightGameTestFixtures.hasFlightState(moon, logical[0], RocketFlightState.DESCENT),
                 () -> {
@@ -299,7 +300,7 @@ public final class ClassicMilestoneAdvancementGameTests {
                 cleanup.run();
                 throw failure;
             }
-            RocketFlightGameTestFixtures.awaitFlightState(helper, moon, logical[0], RocketFlightState.LANDED, 300, () -> {
+            RocketFlightGameTestFixtures.awaitFlightState(helper, driver, moon, logical[0], RocketFlightState.LANDED, 300, () -> {
                 try {
                     RocketEntity landed = RocketFlightGameTestFixtures.loadedLogicalRocket(moon, logical[0]);
                     helper.assertTrue(landed != null && landed.flightData().orElseThrow().state()

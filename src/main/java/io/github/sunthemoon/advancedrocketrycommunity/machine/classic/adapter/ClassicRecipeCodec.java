@@ -24,6 +24,9 @@ public final class ClassicRecipeCodec {
             "advancedrocketrycommunity:cutting", "advancedrocketrycommunity:crystallizing",
             "advancedrocketrycommunity:chemical_reacting", "advancedrocketrycommunity:laser_etching",
             "advancedrocketrycommunity:centrifuging");
+    /** W32 chemical special recipes: row 0 is the subject, returned with only the named change (ADR-064 §9.2). */
+    public static final Set<String> SPECIALS = Set.of("space_breathing_head", "space_breathing_chest",
+            "space_breathing_legs", "space_breathing_feet", "carbon_cartridge_refresh");
 
     public static ClassicValidatedRecipe decode(ResourceLocation id, String text) {
         ClassicValueChecks.id(id);
@@ -32,9 +35,11 @@ public final class ClassicRecipeCodec {
         var expected = new java.util.HashSet<>(FIELDS);
         if (type.equals("advancedrocketrycommunity:cutting") && root.has("sawmill")) { expected.add("sawmill"); }
         if (type.equals("advancedrocketrycommunity:centrifuging") && root.has("chance_outputs")) { expected.add("chance_outputs"); }
+        if (type.equals("advancedrocketrycommunity:chemical_reacting") && root.has("special")) { expected.add("special"); }
         fields(root, expected);
         ClassicValueChecks.require(TYPES.contains(type)
                 && integer(root, "schema_version", 1, 1) == 1, "Recipe type/schema");
+        String special = root.has("special") ? string(root, "special") : null;
         Boolean sawmill = null;
         if (root.has("sawmill")) {
             var flag = root.get("sawmill");
@@ -65,7 +70,7 @@ public final class ClassicRecipeCodec {
         }
         return new ClassicValidatedRecipe(id, type, sawmill, canonical, List.copyOf(inputs), List.copyOf(outputs),
                 fluids(root, "fluid_inputs"), fluids(root, "fluid_outputs"),
-                integer(root, "processing_time", 1, 72_000), integer(root, "energy_per_tick", 1, 10_000), chances);
+                integer(root, "processing_time", 1, 72_000), integer(root, "energy_per_tick", 1, 10_000), chances, special);
     }
 
     private static List<ClassicFluidRow> fluids(JsonObject root, String key) {

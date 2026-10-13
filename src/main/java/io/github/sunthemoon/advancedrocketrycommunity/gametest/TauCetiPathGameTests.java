@@ -75,6 +75,7 @@ public final class TauCetiPathGameTests {
 
     @GameTest(template = "rocket_test", batch = BATCH, timeoutTicks = 1_400)
     public static void aDiscoveredTauCetiFIsReachedByWarpAndADockedRocketLandsAndReturns(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
         ServerLevel surface = earth.getServer().getLevel(ExoplanetContent.TAU_CETI_F_LEVEL);
         helper.assertTrue(surface != null, "Tau Ceti f has no Level");
@@ -108,7 +109,7 @@ public final class TauCetiPathGameTests {
                     "a warp to the undiscovered Tau Ceti f");
             helper.assertTrue(SatelliteRuntime.launch(fixture.server.getPlayerList().getPlayer(fixture.ownerId),
                     satellite, ExoplanetContent.TAU_CETI_F).success(), "The data satellite did not start on Tau Ceti f");
-            assembleFueledRocket(helper, new BlockPos(3, 2, 3), fixture.ownerId, cleanup, rocket -> {
+            assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), fixture.ownerId, cleanup, rocket -> {
                 try {
                     logical[0] = rocket.assemblyTransactionId().orElseThrow();
                     RocketFlightRequestResult docking = RocketRuntime.requestAdminStationFlight(rocket, fixture.id(),
@@ -116,7 +117,7 @@ public final class TauCetiPathGameTests {
                     RocketFlightGameTestFixtures.assertPendingLaunch(helper, docking, rocket);
                     // LANDED precedes the production warp guard's margin. Read its installed authority
                     // without issuing speculative commands, still within the original flight window.
-                    RocketFlightGameTestFixtures.awaitPaced(helper, helper.getTick() + FLIGHT, () ->
+                    RocketFlightGameTestFixtures.awaitPaced(helper, driver, helper.getTick() + FLIGHT, () ->
                             RocketFlightGameTestFixtures.hasFlightState(fixture.space, logical[0], RocketFlightState.LANDED)
                                     && fixture.warp.diagnostics(fixture.server, java.util.Optional.of(fixture.id())).stream()
                                             .anyMatch(line -> line.startsWith("station=" + fixture.id() + " ")
@@ -134,16 +135,16 @@ public final class TauCetiPathGameTests {
                                 && quote.contains("Docked rockets move with the station") && !quote.contains("no rocket routes"),
                                 "Tau Ceti f quote differs: " + quote);
                         fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
-                        helper.runAfterDelay(StationWarpGameTests.COMMIT_DELAY, () -> guarded(cleanup, () -> {
+                        driver.after(StationWarpGameTests.COMMIT_DELAY, () -> guarded(cleanup, () -> {
                             helper.assertTrue(fixture.station().orbitBody().equals(ExoplanetContent.TAU_CETI_F)
                                     && fixture.data.warpEnergy(fixture.id()) == 1_000_000,
                                     "The station did not warp to Tau Ceti f's orbit once");
                             RocketEntity docked = landed(helper, fixture.space, logical[0], "the warped station", observerJournal);
-                            whenLandingReady(helper, surface, new GameTestTickPacer(fixture.server), 1, cleanup, () -> {
+                            whenLandingReady(helper, driver, surface, new GameTestTickPacer(fixture.server), 1, cleanup, () -> {
                                 RocketFlightRequestResult down = RocketRuntime.requestAdminFlight(docked,
                                         new TravelTarget.BodySurface(ExoplanetContent.TAU_CETI_F), UUID.randomUUID());
                                 RocketFlightGameTestFixtures.assertPendingLaunch(helper, down, docked);
-                                RocketFlightGameTestFixtures.awaitFlightState(helper, surface, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
+                                RocketFlightGameTestFixtures.awaitFlightState(helper, driver, surface, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
                                     RocketEntity onF = landed(helper, surface, logical[0], "Tau Ceti f", observerJournal);
                                     helper.assertTrue(onF.flightData().orElseThrow().currentBody()
                                             .equals(ExoplanetContent.TAU_CETI_F), "The rocket did not land on Tau Ceti f");
@@ -155,7 +156,7 @@ public final class TauCetiPathGameTests {
                                     RocketFlightRequestResult up = RocketRuntime.requestAdminStationFlight(onF, fixture.id(),
                                             UUID.randomUUID());
                                     RocketFlightGameTestFixtures.assertPendingLaunch(helper, up, onF);
-                                    RocketFlightGameTestFixtures.awaitFlightState(helper, fixture.space, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
+                                    RocketFlightGameTestFixtures.awaitFlightState(helper, driver, fixture.space, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
                                         RocketEntity back = landed(helper, fixture.space, logical[0], "the station on return",
                                                 observerJournal);
                                         helper.assertTrue(fixture.station().region().contains(back.blockPosition().getX(),
@@ -184,7 +185,7 @@ public final class TauCetiPathGameTests {
      * Runs {@code then} once Tau Ceti f's first pad has loaded entities and ticks them, checking once per paced tick;
      * a failed attempt bound fails the test through the caller's guarded cleanup.
      */
-    private static void whenLandingReady(GameTestHelper helper, ServerLevel surface, GameTestTickPacer pacer,
+    private static void whenLandingReady(GameTestHelper helper, GameTestTickDriver driver, ServerLevel surface, GameTestTickPacer pacer,
             int attempt, Runnable cleanup, Runnable then) {
         if (surface.areEntitiesLoaded(FIRST_PAD.toLong())
                 && surface.isPositionEntityTicking(FIRST_PAD.getMiddleBlockPosition(0))) {
@@ -193,8 +194,8 @@ public final class TauCetiPathGameTests {
         }
         helper.assertTrue(attempt < LANDING_READY_ATTEMPTS, "Tau Ceti f's first pad did not become entity-ready");
         pacer.pace();
-        helper.runAfterDelay(1, () -> guarded(cleanup,
-                () -> whenLandingReady(helper, surface, pacer, attempt + 1, cleanup, then)));
+        driver.after(1, () -> guarded(cleanup,
+                () -> whenLandingReady(helper, driver, surface, pacer, attempt + 1, cleanup, then)));
     }
 
     @GameTest(template = "empty", batch = "tau_ceti_landing_f", timeoutTicks = 2_400)

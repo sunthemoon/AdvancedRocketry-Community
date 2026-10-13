@@ -29,17 +29,19 @@ public final class PlanetaryLandingGameTests {
 
     @GameTest(template = "rocket_test", batch = "planetary_changed_pad", timeoutTicks = 240)
     public static void removedPlanetarySupportReturnsOneRocketWithOriginalFuelLedger(GameTestHelper helper) {
-        changedSupport(helper, PlanetaryContent.MARS, Blocks.AIR.defaultBlockState());
+        var driver = new GameTestTickDriver(helper);
+        changedSupport(helper, driver, PlanetaryContent.MARS, Blocks.AIR.defaultBlockState());
     }
 
     @GameTest(template = "rocket_test", batch = "planetary_changed_pad", timeoutTicks = 240)
     public static void floodedPlanetarySupportIsRejectedBeforeFluidTicks(GameTestHelper helper) {
-        changedSupport(helper, PlanetaryContent.VENUS, Blocks.WATER.defaultBlockState());
+        var driver = new GameTestTickDriver(helper);
+        changedSupport(helper, driver, PlanetaryContent.VENUS, Blocks.WATER.defaultBlockState());
     }
 
-    private static void changedSupport(GameTestHelper helper, ResourceLocation body, BlockState replacement) {
-        helper.runAfterDelay(1, () -> {
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID(), source -> {
+    private static void changedSupport(GameTestHelper helper, GameTestTickDriver driver, ResourceLocation body, BlockState replacement) {
+        driver.after(1, () -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), UUID.randomUUID(), source -> {
                 var server = helper.getLevel().getServer();
                 var world = server.getLevel(PlanetaryContent.level(body));
                 var logical = source.assemblyTransactionId().orElseThrow();
@@ -74,7 +76,7 @@ public final class PlanetaryLandingGameTests {
                         helper.succeed();
                         return;
                     }
-                    RocketFlightGameTestFixtures.awaitFlightState(helper, helper.getLevel(), logical, RocketFlightState.FUELED, 190, () -> {
+                    RocketFlightGameTestFixtures.awaitFlightState(helper, driver, helper.getLevel(), logical, RocketFlightState.FUELED, 190, () -> {
                         try {
                             var state = source.flightData().orElseThrow();
                             helper.assertTrue(source.isAlive() && state.state() == RocketFlightState.FUELED,

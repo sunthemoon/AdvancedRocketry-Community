@@ -149,6 +149,8 @@ public final class V180MaterialData {
                     ModBlocks.FLUID_INPUT_HATCH.get(), ModBlocks.FLUID_OUTPUT_HATCH.get(), ModBlocks.POWER_INPUT_PLUG.get(), ModBlocks.LATHE.get());
             tag(BlockTags.NEEDS_IRON_TOOL).add(ModBlocks.ITEM_INPUT_HATCH.get(), ModBlocks.ITEM_OUTPUT_HATCH.get(),
                     ModBlocks.FLUID_INPUT_HATCH.get(), ModBlocks.FLUID_OUTPUT_HATCH.get(), ModBlocks.POWER_INPUT_PLUG.get(), ModBlocks.LATHE.get());
+            tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.OBSERVATORY.get(), ModBlocks.ASTROBODY_DATA_PROCESSOR.get());
+            tag(BlockTags.NEEDS_IRON_TOOL).add(ModBlocks.OBSERVATORY.get(), ModBlocks.ASTROBODY_DATA_PROCESSOR.get());
             tag(BlockTags.NEEDS_IRON_TOOL).add(earlier);
             Block[] arcCutting = {ModBlocks.ARC_FURNACE.get(), ModBlocks.CUTTING_MACHINE.get(), ModBlocks.BLAST_BRICK.get(), ModBlocks.SAW_BLADE.get()};
             tag(BlockTags.MINEABLE_WITH_PICKAXE).add(arcCutting);

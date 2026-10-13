@@ -49,6 +49,7 @@ public final class MicrowaveReceiverGameTests {
 
     @GameTest(template = "empty", batch = "satellite", timeoutTicks = 140)
     public static void theHolderKeepsTheLinkUntilItsChipLeaves(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         MinecraftServer server = helper.getLevel().getServer();
         FakePlayer owner = player(helper);
         SatelliteIdentity identity = launch(server, owner.getUUID(), Optional.empty());
@@ -58,13 +59,13 @@ public final class MicrowaveReceiverGameTests {
         SatelliteMissionSavedData data = SatelliteMissionSavedData.get(server);
 
         // Every link change waits for the holder's own 20-tick check.
-        helper.runAfterDelay(22, () -> {
+        driver.after(22, () -> {
             helper.assertTrue(link(data, identity).equals(Optional.ofNullable(first.receiverId())),
                     "The first receiver did not claim the free link");
             helper.assertTrue(first.status(0) == SolarLinks.LinkStatus.HOLDING && first.output() == 4,
                     "A power-4 satellite over Earth should give 4 FE/t, got " + first.output());
             second.menuInventory().insertItem(0, chip(identity), false);
-            helper.runAfterDelay(22, () -> {
+            driver.after(22, () -> {
                 helper.assertTrue(second.status(0) == SolarLinks.LinkStatus.ELSEWHERE && second.output() == 0
                                 && link(data, identity).equals(Optional.of(first.receiverId())),
                         "A duplicated chip took the link or produced power");
@@ -79,7 +80,7 @@ public final class MicrowaveReceiverGameTests {
 
                 first.menuInventory().extractItem(0, 1, false);
                 // The holder releases at its next check, then the other receiver claims at its own.
-                helper.runAfterDelay(42, () -> {
+                driver.after(42, () -> {
                     helper.assertTrue(link(data, identity).equals(Optional.of(second.receiverId()))
                                     && second.status(0) == SolarLinks.LinkStatus.HOLDING && second.output() == 4
                                     && first.output() == 0,

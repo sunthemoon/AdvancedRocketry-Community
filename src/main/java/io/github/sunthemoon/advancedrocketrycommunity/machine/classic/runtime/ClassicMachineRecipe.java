@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModRecipes;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -60,6 +61,17 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
     }
     private List<ProcessOutput> retainedOutputs(List<ProcessInput> inputs, List<ProcessOutput> outputs) {
         rows.chanceOutputs().forEach(row -> stackLimit(row.itemId(), row.count()));
+        if (special().isPresent()) {
+            // Any overlap would let another row debit the subject; resolution disables such a recipe instead.
+            var subject = inputs.get(0);
+            for (int i = 1; i < rows.itemInputs().size(); i++) {
+                if (!java.util.Collections.disjoint(subject.alternatives(), inputs.get(i).alternatives())) {
+                    throw new IllegalArgumentException("Special subject overlaps another input");
+                }
+            }
+            // Like the retained lens: the debited subject returns, changed, in the same transaction.
+            outputs.add(new ProcessOutput(subject.key(subject.alternatives().get(0)), subject.amount()));
+        }
         if (retainsLens()) {
             for (ProcessInput input : inputs) {
                 if (input.alternatives().equals(List.of("advancedrocketrycommunity:laser_lens"))) {
@@ -70,6 +82,9 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
         return outputs;
     }
     boolean retainsLens() { return rows.type().equals("advancedrocketrycommunity:laser_etching"); }
+    public Optional<ClassicSpecialRecipe> special() {
+        return rows.special() == null ? Optional.empty() : ClassicSpecialRecipe.of(rows.special());
+    }
     static int stackLimit(ResourceLocation id, int count) {
         var item = BuiltInRegistries.ITEM.getOptional(id).orElseThrow(() -> new IllegalArgumentException("Unknown chance Item"));
         var stack = new ItemStack(item, count);
@@ -92,7 +107,10 @@ public final class ClassicMachineRecipe implements Recipe<Container> {
         }
     }
     @Override public ResourceLocation getId() { return rows.id(); }
-    public boolean enabled() { return rows.enabled(io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig.sawmillVanillaWood()); }
+    public boolean enabled() {
+        return rows.enabled(io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig.sawmillVanillaWood())
+                && special().map(ClassicSpecialRecipe::enabled).orElse(true);
+    }
     @Override public RecipeSerializer<?> getSerializer() {
         return switch (rows.type()) {
             case "advancedrocketrycommunity:arc_furnace" -> ModRecipes.ARC_FURNACE_SERIALIZER.get();

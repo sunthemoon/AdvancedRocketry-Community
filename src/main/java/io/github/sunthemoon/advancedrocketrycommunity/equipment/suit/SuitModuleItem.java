@@ -10,6 +10,8 @@ import net.minecraft.world.level.Level;
 public final class SuitModuleItem extends Item {
     private final int base;
     public SuitModuleItem(int base) { super(new Properties().stacksTo(1)); this.base = base; }
+    /** Base tank capacity, or 0 for a module that holds no gas. */
+    public int tankBase() { return base; }
     @Override public ItemStack getDefaultInstance() { ItemStack stack = super.getDefaultInstance(); initialize(stack); return stack; }
     @Override public void onCraftedBy(ItemStack stack, Level level, Player player) {
         super.onCraftedBy(stack, level, player);
