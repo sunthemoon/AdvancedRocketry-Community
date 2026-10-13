@@ -10,13 +10,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * The finder's waypoints (ADR-065 section 7): a heading strip at the top of the screen with one mark per cached
+ * The finder's waypoints (ADR-065 section 7): a heading strip below the visible boss bars with one mark per cached
  * marker, bright for a live beacon and grey for a last-known one, and the name and distance of the marker nearest the
  * view direction. It shows only what the server last sent; an empty snapshot shows nothing.
  */
@@ -24,7 +27,7 @@ public final class BeaconFinderOverlay {
     public static final IGuiOverlay OVERLAY = BeaconFinderOverlay::render;
     private static final String HUD = "hud." + ModIdentity.MOD_ID + ".beacon_finder.";
     private static final int HALF_WIDTH = 91;
-    private static final int TOP = 3;
+    private static long bossBottom;
     private static final int STRIP = 0x80FFFFFF;
     private static final int LIVE = 0xFF55E0FF;
     private static final int LAST_KNOWN = 0xFF9A9A9A;
@@ -43,9 +46,14 @@ public final class BeaconFinderOverlay {
         if (snapshot.markers().isEmpty()) {
             return;
         }
+        var placement = BeaconFinderLayout.top(bossBottom, height, minecraft.font.lineHeight);
+        if (placement.isEmpty()) {
+            return;
+        }
+        int top = placement.getAsInt();
         int centre = width / 2;
-        graphics.fill(centre - HALF_WIDTH, TOP + 2, centre + HALF_WIDTH + 1, TOP + 3, STRIP);
-        graphics.fill(centre, TOP - 1, centre + 1, TOP + 6, STRIP);
+        graphics.fill(centre - HALF_WIDTH, top + 2, centre + HALF_WIDTH + 1, top + 3, STRIP);
+        graphics.fill(centre, top - 1, centre + 1, top + 6, STRIP);
         Vec3 eye = player.getEyePosition(partialTick);
         float yaw = player.getViewYRot(partialTick);
         BeaconMarkerSnapshotPacket.Marker focused = null;
@@ -59,7 +67,7 @@ public final class BeaconFinderOverlay {
             int x = centre + BeaconWaypointMath.stripOffset(relative, HALF_WIDTH);
             int colour = Math.abs(relative) > BeaconWaypointMath.STRIP_DEGREES ? BEHIND
                     : marker.live() ? LIVE : LAST_KNOWN;
-            graphics.fill(x - 1, TOP, x + 2, TOP + 5, colour);
+            graphics.fill(x - 1, top, x + 2, top + 5, colour);
             if (Math.abs(relative) < focusedAngle) {
                 focused = marker;
                 focusedAngle = Math.abs(relative);
@@ -67,8 +75,27 @@ public final class BeaconFinderOverlay {
             }
         }
         if (focused != null) {
-            graphics.drawCenteredString(minecraft.font, label(focused, focusedDistance), centre, TOP + 8,
+            graphics.drawCenteredString(minecraft.font, label(focused, focusedDistance), centre, top + 8,
                     focused.live() ? LIVE : LAST_KNOWN);
+        }
+    }
+
+    /** Frame-local occupancy, including Forge-customized increments and vanilla's visible-bar height limit. */
+    @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, value = Dist.CLIENT)
+    public static final class BossBars {
+        private BossBars() {
+        }
+
+        @SubscribeEvent
+        public static void beginFrame(RenderGuiEvent.Pre event) {
+            bossBottom = 0;
+        }
+
+        @SubscribeEvent(priority = EventPriority.LOWEST, receiveCanceled = true)
+        public static void bar(CustomizeGuiOverlayEvent.BossEventProgress event) {
+            if (!event.isCanceled()) {
+                bossBottom = BeaconFinderLayout.includeBossBar(bossBottom, event.getY());
+            }
         }
     }
 

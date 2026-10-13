@@ -3,6 +3,15 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "beacon-index-unavailable",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_BEACON_INDEX_REFUSED: the planetary beacon index is kept unchanged and unavailable \\(.*\\); back it up and repair it offline",
+      "counts": {"beacon_index_unavailable": 1},
+      "test": "BeaconServiceBoundaryGameTests.anUnavailableIndexBlocksBeaconUpdatesAndClearsTheFinderWithoutChangingTheRoot",
+      "reason": "The test deliberately loads an unsupported index root and checks refusal at both the beacon and finder adapters."
+    },
+    {
       "id": "landing-pad-recovery-prepared-0",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
