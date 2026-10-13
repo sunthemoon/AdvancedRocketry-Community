@@ -25,7 +25,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class ResearchReleaseCommands {
     private static final UUID OWNER = UUID.nameUUIDFromBytes("arce-w21c-native-owner".getBytes(StandardCharsets.UTF_8));
-    private static BlockPos position(int index) { return new BlockPos(8 + 16 * index, 220, 8); }
+    private static BlockPos position(int index) { return new BlockPos(8 + 16 * index, 300, 8); }
     @SubscribeEvent public static void register(RegisterCommandsEvent event) {
         if (!Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks")
                 || !Boolean.getBoolean("advancedrocketrycommunity.researchVerificationPaused")) { return; }

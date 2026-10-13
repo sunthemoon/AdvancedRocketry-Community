@@ -156,10 +156,15 @@ public final class ResearchGameTests {
         helper.succeed();
     }
     static ResearchFixture fixture(GameTestHelper helper, boolean processor, Direction facing, UUID owner, int x) {
-        return new ResearchFixture(helper.getLevel(), helper.absolutePos(new BlockPos(5 + x, 6, 5)), processor, facing, owner);
+        var anchor = helper.absolutePos(new BlockPos(5 + x, 6, 5));
+        // GameTest runs in a normal generated world. Keep observation fixtures above its terrain;
+        // an unintended hillside/earlier structure is not the deliberately tested sky obstruction.
+        var origin = new BlockPos(anchor.getX(), helper.getLevel().getMaxBuildHeight() - 12, anchor.getZ());
+        return new ResearchFixture(helper.getLevel(), origin, processor, facing, owner);
     }
     static void night(ResearchFixture fixture) {
-        fixture.level.setWeatherParameters(100_000, 0, false, false); fixture.level.setDayTime(18_000); fixture.level.updateSkyBrightness();
+        fixture.level.setWeatherParameters(100_000, 0, false, false); fixture.level.setRainLevel(0); fixture.level.setThunderLevel(0);
+        fixture.level.setDayTime(18_000); fixture.level.updateSkyBrightness();
     }
     static void ready(GameTestHelper helper, List<ResearchFixture> fixtures, boolean sky, Runnable action) {
         var pacer = new GameTestTickPacer(helper.getLevel().getServer()); boolean[] done = {false};
