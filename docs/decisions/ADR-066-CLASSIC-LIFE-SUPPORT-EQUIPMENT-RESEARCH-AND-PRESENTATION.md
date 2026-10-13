@@ -689,6 +689,57 @@ change the selected availability/tech path and require a new owner decision;
 it is not an implementation fallback. Observatory and processor remain in scope.
 D2's precise ADR-051 revision/extension review remains an implementation input.
 
+### W21c implementation note on research device identity, roots and power (2026-10-13)
+
+The observatory and the astrobody data processor are classic controllers with research profiles. Each holds only a
+schema-1 identity root, `arce_observatory` or `arce_astrobody_data_processor`: the owner and device UUIDs, the
+immutable home Level and position, and a sticky collision flag. Every job, progress, completion and credit lives in
+the satellite registry (ADR-051). The identity authority is the immutable home, corroborated by every retained
+registry source and processor claim, including READY and PROCESSED jobs. A bounded server directory tracks loaded
+devices independently of the live-work indexes: at most 16,384 devices, refused rather than evicted at capacity. It
+lives in the overworld capability and is cleared at Level unload and server stop. It rebuilds its retained view only
+when the registry's ground section changes, and an idle controller costs one index lookup per tick.
+
+A device whose root disagrees with its actual Level and position, with a retained registry record, or with an
+already loaded canonical device receives the collision flag on its own root. The flag survives unload, reload and
+restart, and no online command clears it. A flagged device cannot start, claim, rebind, cancel or pay. Collision
+detection never rewrites the original's jobs, instances, progress or research account, and never completes,
+transfers, deletes or credits anything. Without a retained registry record, the device that loads second is the one
+flagged. An operator who edits a device root (item NBT or `/data`) can therefore make an edited copy load first and
+quarantine the idle original; with a retained record, the registry decides instead.
+
+A flagged copy refuses ordinary removal (player break, explosion and entity destruction), and so does every power
+plug it has claimed, because the kernel treats a flagged controller as an unavailable owner. Both stay until an
+operator removes them with a command or the world is repaired offline. A research controller holds no item or fluid
+bank, and a plug's FE stays in the plug either way, so this refusal protects no resource; it is the kernel's removal
+policy applied to an unavailable owner.
+
+An unsupported or malformed bounded root is retained unchanged and the device stays inert in offline repair. A
+controller that has a kernel root but no research root, for example one placed by `/setblock` (no placing player) and
+then saved and reloaded, is given a synthesized empty research root. It then stays OFFLINE_REPAIR_REQUIRED and refuses
+ordinary removal until an operator command or offline repair. An outgoing root above 4,096 bytes, depth 8 or 64
+nodes uses section 2's existing `GuardedChunkSaves` refusal; R-027 records that scope.
+
+Moving ACTIVE or RUNNING work is an owner-authorized registry rebind to a formed, idle, canonical device. Progress is
+kept, and an analysis rebind takes a new claim epoch, so nothing pays until that claim is flushed. Breaking a device
+keeps its job and refunds nothing; the job pauses, and the owner's other devices show SOURCE_MISSING for it until the
+owner rebinds it. Collision detection writes no per-tick log; menus show the refusal. R4's offline-only cases, a
+quarantined ACTIVE job with its PENDING instance and duplicate RUNNING claims, read OFFLINE_REPAIR_REQUIRED in menus
+and print their repair in `ground-survey inspect` and `release`. Any other quarantined job reads QUARANTINED, and
+`ground-survey inspect` names the online `ground-survey release` command for it.
+
+The existing power plug stays the only physical FE owner, and Forge extraction still returns 0. A paid advance checks
+every binding and the aggregate FE, publishes the registry advance, and then debits the plugs on the same server
+thread. If a debit ever fell short after publication, the advance stays published, one ERROR names the device, and
+that controller refuses paid research until it reloads; no exception leaves the server tick. The registry is flushed
+on its coalesced 100-tick schedule and plug FE is saved with its chunk, so after a crash either store can be the newer
+one. If the registry is older, progress or credit since its last flush is lost while the FE paid for it stays debited.
+If the plug's chunk is older, progress or credit is kept and the plug returns to its last saved FE, so the player gets
+back FE already paid, up to the time since that chunk was saved. Neither direction duplicates FE or makes it
+exportable. This is ADR-016's accepted independently persisted energy; no crash-atomic power guarantee is claimed.
+
+This is a development implementation note, not owner acceptance or a Gate result.
+
 ### 6.2 Advancement identities and triggers
 
 All stable IDs below are under `advancedrocketrycommunity:classic/`; DataGen

@@ -42,8 +42,11 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     private boolean ready;
     private boolean transaction;
     private boolean lookupNeeded = true;
+    private boolean debitShortfall;
     private final Set<ChunkPos> unavailable = new HashSet<>();
     private ClassicWait reason = ClassicWait.UNFORMED;
+    private PatternDiagnostic firstDiagnostic;
+    Optional<PatternDiagnostic> firstDiagnostic() { return Optional.ofNullable(firstDiagnostic); }
 
     public ClassicControllerBlockEntity(BlockPos position, BlockState state) {
         this(ModBlockEntities.LATHE.get(), position, state, ClassicMachineDefinition.LATHE);
@@ -136,6 +139,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         var world = new ServerLevelPatternWorldView(server, roles);
         var validation = MultiblockPatternValidator.validate(pattern, checkpoint.structure().selectedTransform(),
                 new PatternPosition(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ()), world);
+        firstDiagnostic = validation.diagnostics().stream().findFirst().orElse(null);
         ClassicResources resources = checkpoint.resources();
         Set<BlockPos> claims = new HashSet<>(checkpoint.claimedParts());
         if (validation.formed()) {
@@ -247,6 +251,39 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
             var hatch = loadedHatch(position); if (hatch != null && hatch.kind() == ClassicHatchKind.POWER_INPUT) { result += hatch.energyStored(); }
         }
         return result;
+    }
+    /** Transient: a post-publication debit fell short, so paid research stops until this block entity reloads. */
+    boolean debitShortfall() { return debitShortfall; }
+    /** Research-only kernel transaction; no unchecked public power extraction is exposed. */
+    boolean paidResearchAdvance(int required, java.util.function.BooleanSupplier mutation) {
+        if (!definition.research() || required < 1 || required > 10_000 || transaction || repair || debitShortfall
+                || !physical() || !formed() || checkpoint.job().isPresent() || !allPartsLoaded()) { return false; }
+        var plugs = new ArrayList<ClassicHatchBlockEntity>();
+        int available = 0;
+        for (BlockPos position : checkpoint.structure().partPositions()) {
+            var hatch = loadedHatch(position);
+            if (hatch == null || !acceptsBinding(hatch)) { return false; }
+            if (hatch.kind() == ClassicHatchKind.POWER_INPUT) { plugs.add(hatch); available += hatch.energyStored(); }
+        }
+        if (available < required) { return false; }
+        transaction = true;
+        try {
+            // Registry operations invoke no world/native callbacks. Bindings and FE cannot change between
+            // their checked publication and this debit on the same server thread.
+            if (!mutation.getAsBoolean()) { return false; }
+            int remaining = required;
+            for (var hatch : plugs) { remaining -= hatch.debit(remaining); }
+            setChanged();
+            if (remaining != 0) {
+                // Unreachable as argued above, but the published advance cannot be withdrawn and an exception would
+                // escape the server tick. Log once and refuse further paid research here until the device reloads.
+                debitShortfall = true;
+                io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.error(
+                        "ARCE_RESEARCH_DEBIT_SHORTFALL level={} pos={} required={} missing={}; paid research stops until the controller reloads",
+                        level.dimension().location(), worldPosition.toShortString(), required, remaining);
+            }
+            return true;
+        } finally { transaction = false; }
     }
     void catalogUnavailable() { reason = ClassicWait.LIMIT; }
     void tickProcess(ClassicMachineRecipe recipe, ProcessDefinition process) {
@@ -388,7 +425,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     }
     @Override public void load(CompoundTag outer) {
         if (transaction) { throw new IllegalStateException("Reentrant controller load"); }
-        super.load(outer); invalidate(); repair = false; retained = new CompoundTag();
+        super.load(outer); invalidate(); repair = false; debitShortfall = false; retained = new CompoundTag();
         for (String key : List.of(ClassicCheckpointCodec.ROOT, ClassicResourcesCodec.ROOT, "arce_recipe_signature",
                 "arce_process_journal", "arce_process", "arce_machine")) {
             if (outer.contains(key)) {
