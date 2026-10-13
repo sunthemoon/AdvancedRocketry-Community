@@ -325,7 +325,8 @@ public final class GroundSurveys {
 
     private Result preflight(GroundSurveyJob next, AsteroidInstance instance, boolean remove,
             ResearchAccount account, long now, long observedTime) {
-        if (account != null && !registry.accounts.containsKey(account.ownerId())) {
+        boolean newAccount = account != null && !registry.accounts.containsKey(account.ownerId());
+        if (newAccount) {
             if (registry.accounts.size() >= SatelliteLimits.MAX_RESEARCH_ACCOUNTS) {
                 return result(Code.CAPACITY_REACHED, false, jobs.get(next.jobId()));
             }
@@ -334,9 +335,9 @@ public final class GroundSurveys {
             }
         }
         int jobBytes = registry.sizer.groundSurveyBytes(next);
+        int instanceBytes = instance == null || remove ? 0 : registry.sizer.instanceBytes(instance);
         if (jobBytes < 0 || jobBytes > SatelliteLimits.MAX_GROUND_SURVEY_RECORD_NBT_BYTES
-                || instance != null && !remove && (registry.sizer.instanceBytes(instance) < 0
-                || registry.sizer.instanceBytes(instance) > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES)) {
+                || instanceBytes < 0 || instanceBytes > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES) {
             return result(Code.STORAGE_BUDGET, false, jobs.get(next.jobId()));
         }
         // Check both the original and candidate; a mutation cannot hide an existing broken pair.
@@ -347,11 +348,35 @@ public final class GroundSurveys {
         if (problem != null) { return new Result(Code.INVARIANT_FAILED, false, Optional.ofNullable(current), problem); }
         try {
             Math.addExact(registry.saveEpoch(), 1L);
-            if (!registry.sizer.groundMutationFits(registry, next, instance, remove, account, now, observedTime)) {
-                return result(Code.STORAGE_BUDGET, false, jobs.get(next.jobId()));
+            // START and account creation add records and keep the whole-root preflight. Other changes stay
+            // inside their records' lifecycle reservations, which bound the root without encoding it.
+            boolean adds = current == null || newAccount;
+            if ((adds || !reservationsBoundRoot())
+                    && !registry.sizer.groundMutationFits(registry, next, instance, remove, account, now, observedTime)) {
+                return result(Code.STORAGE_BUDGET, false, current);
             }
-        } catch (ArithmeticException exception) { return result(Code.CAPACITY_REACHED, false, jobs.get(next.jobId())); }
+        } catch (ArithmeticException exception) { return result(Code.CAPACITY_REACHED, false, current); }
         return null;
+    }
+
+    /** A change that adds no record fits when the reservations bound the root; otherwise the root is encoded. */
+    boolean fitsWithoutNewRecord(GroundSurveyJob job, AsteroidInstance instance, long now, long observedTime) {
+        return reservationsBoundRoot()
+                || registry.sizer.groundMutationFits(registry, job, instance, false, null, now, observedTime);
+    }
+
+    /**
+     * Each reservation is the largest encoding its record can reach and an account encodes in at most
+     * {@link RecordSizer#ACCOUNT_BYTES}, so their sum plus the root framing bounds the encoded root. Only a
+     * restored root above its section budgets can fail this; its changes then take the whole-root preflight.
+     */
+    private boolean reservationsBoundRoot() {
+        long bound = RecordSizer.ROOT_FRAMING_BYTES + (long) registry.accounts.size() * RecordSizer.ACCOUNT_BYTES;
+        for (StorageBudget.Section section : List.of(StorageBudget.Section.SATELLITES, StorageBudget.Section.MISSIONS,
+                StorageBudget.Section.INSTANCES, StorageBudget.Section.GROUND_SURVEYS)) {
+            bound += registry.budget.reserved(section);
+        }
+        return bound <= SatelliteLimits.MAX_REGISTRY_NBT_BYTES;
     }
 
     /**

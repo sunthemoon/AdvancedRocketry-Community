@@ -107,7 +107,8 @@ public final class CodecRecordSizer implements RecordSizer {
     public boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,
             AsteroidInstance instance, boolean removeInstance, ResearchAccount account, long now, long observedTime) {
         try {
-            var root = SatelliteRegistryPayload.encodeCurrent(registry, new net.minecraft.nbt.CompoundTag());
+            // The root bound is checked once, on the edited root, by the validation write below.
+            var root = SatelliteRegistryPayload.encodeUnchecked(registry, new net.minecraft.nbt.CompoundTag());
             root.getCompound("clock").putLong("logical_game_time", now);
             root.getCompound("clock").putLong("last_observed_game_time", observedTime);
             root.putLong("save_epoch", Math.addExact(registry.saveEpoch(), 1L));
@@ -119,8 +120,8 @@ public final class CodecRecordSizer implements RecordSizer {
             if (account != null) {
                 replace(root, "research_accounts", "owner_id", account.ownerId(), SatelliteNbtCodec.encodeAccount(account));
             }
-            if (bytes(root) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) { return false; }
-            BoundedSavedDataIo.validatePayload(root, ManagedSavedDataType.SATELLITE_MISSIONS);
+            BoundedSavedDataIo.validatePayload(root, ManagedSavedDataType.SATELLITE_MISSIONS,
+                    SatelliteLimits.MAX_REGISTRY_NBT_BYTES);
             return true;
         } catch (ArithmeticException exception) {
             throw exception;

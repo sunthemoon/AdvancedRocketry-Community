@@ -76,6 +76,15 @@ public final class SatelliteRegistryPayload {
 
     /** Shared by repair validation and SavedData writes. */
     static CompoundTag encodeCurrent(SatelliteMissionRegistry registry, CompoundTag target) {
+        encodeUnchecked(registry, target);
+        if (SatelliteNbtSize.uncompressedBytes(target) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) {
+            throw new IllegalStateException("Encoded satellite registry exceeds its fixed NBT bound");
+        }
+        return target;
+    }
+
+    /** The current encoding before its root bound is checked; a caller that edits the root checks it after. */
+    static CompoundTag encodeUnchecked(SatelliteMissionRegistry registry, CompoundTag target) {
         SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.SATELLITE_MISSIONS, target);
         CompoundTag clock = new CompoundTag();
         clock.putLong("logical_game_time", registry.logicalGameTime());
@@ -98,9 +107,6 @@ public final class SatelliteRegistryPayload {
         ListTag jobs = new ListTag();
         registry.groundSurveys().all().forEach(job -> jobs.add(GroundSurveyCodec.encode(job)));
         target.put(GROUND_SURVEYS, jobs);
-        if (SatelliteNbtSize.uncompressedBytes(target) > SatelliteLimits.MAX_REGISTRY_NBT_BYTES) {
-            throw new IllegalStateException("Encoded satellite registry exceeds its fixed NBT bound");
-        }
         return target;
     }
 

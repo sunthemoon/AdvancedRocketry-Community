@@ -132,10 +132,13 @@ final class GroundSurveyBoundsTest {
     }
 
     @Test void groundInstanceReleaseChecksRootAndEpochBeforePublishingOrAdvancingTime() {
+        // The job's reservation alone exceeds the root bound, so the reservations cannot bound the root and the
+        // release takes the whole-root preflight, which this sizer refuses.
         var rootRefuser = new RecordSizer() {
             public int satelliteBytes(SatelliteState state) { return 1; }
             public int missionBytes(MissionState state) { return 1; }
             public int instanceBytes(AsteroidInstance instance) { return 4_096; }
+            public int groundSurveyBytes(GroundSurveyJob job) { return SatelliteLimits.MAX_REGISTRY_NBT_BYTES; }
             public boolean groundMutationFits(SatelliteMissionRegistry r, GroundSurveyJob j, AsteroidInstance i,
                     boolean remove, ResearchAccount account, long now, long observedTime) { return false; }
         };

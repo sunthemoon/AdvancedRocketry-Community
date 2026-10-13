@@ -395,8 +395,7 @@ public final class ResourceMissions {
                     GroundSurveyJob job = registry.groundSurveys().job(instance.origin().id()).orElseThrow();
                     int reserved = registry.sizer.instanceBytes(next);
                     if (reserved < 0 || reserved > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES
-                            || !registry.sizer.groundMutationFits(registry, job, next, false, null,
-                                    now, observedGameTime)) {
+                            || !registry.groundSurveys().fitsWithoutNewRecord(job, next, now, observedGameTime)) {
                         return registry.result(SatelliteOperationCode.STORAGE_BUDGET, false, null, mission);
                     }
                 }
