@@ -435,16 +435,16 @@ public final class SleepRespawnGameTests {
     }
 
     /** Respawns through the real {@code PlayerList.respawn}, as the death screen's respawn packet does. */
-    private interface Respawns {
+    interface Respawns {
         ServerPlayer respawn(ServerPlayer player);
     }
 
-    private interface RespawnSteps {
+    interface RespawnSteps {
         void run(ServerPlayer player, Respawns respawns);
     }
 
     /** Holds both options in memory for one synchronous test body; the newest player and the fixtures are released. */
-    private static void withOptions(boolean allow, boolean force, GameTestHelper helper, String name, RespawnSteps steps,
+    static void withOptions(boolean allow, boolean force, GameTestHelper helper, String name, RespawnSteps steps,
                                     Runnable cleanup) {
         MinecraftServer server = helper.getLevel().getServer();
         ServerPlayer[] newest = {join(helper, name, new ArrayList<>())};
@@ -482,7 +482,7 @@ public final class SleepRespawnGameTests {
                 "An accepted respawn reported a fallback: " + chat);
     }
 
-    private static void assertOverworldFallback(GameTestHelper helper, ServerPlayer reborn, ResourceKey<Level> savedLevel,
+    static void assertOverworldFallback(GameTestHelper helper, ServerPlayer reborn, ResourceKey<Level> savedLevel,
                                                 BlockPos saved, boolean forced, RespawnOutcome outcome) {
         List<String> chat = chat(reborn);
         MinecraftServer server = helper.getLevel().getServer();
@@ -520,7 +520,7 @@ public final class SleepRespawnGameTests {
     }
 
     /** Reserves and commits a station owned by {@code owner}; returns a bed position at its landing pad. */
-    private static BlockPos commitStation(GameTestHelper helper, StationRegistrySavedData stations, UUID stationId,
+    static BlockPos commitStation(GameTestHelper helper, StationRegistrySavedData stations, UUID stationId,
                                           UUID owner, List<Runnable> cleanup) {
         StationReservation reservation = stations.reserve(stationId, owner, "W37 " + stationId.toString().substring(0, 8),
                 CelestialIds.EARTH_ID, helper.getLevel().getGameTime());
@@ -545,7 +545,7 @@ public final class SleepRespawnGameTests {
      * A vanilla bed facing east (head here, foot to the west) on a stone floor one block wider on every side, with
      * air above. Every chunk within the stand-up reach is loaded first (fixture setup only).
      */
-    private static Runnable placeBedOnPlatform(ServerLevel level, BlockPos head) {
+    static Runnable placeBedOnPlatform(ServerLevel level, BlockPos head) {
         int reach = SleepRespawnService.ARRIVAL_REACH;
         for (int x = (head.getX() - reach - 1) >> 4; x <= (head.getX() + reach) >> 4; x++) {
             for (int z = (head.getZ() - reach) >> 4; z <= (head.getZ() + reach) >> 4; z++) {

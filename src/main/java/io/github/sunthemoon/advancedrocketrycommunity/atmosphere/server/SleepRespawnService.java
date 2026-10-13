@@ -1,6 +1,5 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server;
 
-import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SleepRespawnRules;
@@ -164,14 +163,12 @@ public final class SleepRespawnService {
         if (outcome.accepted()) {
             return;
         }
-        player.setRespawnPosition(Level.OVERWORLD, null, 0.0F, false, false);
-        if (player.getRespawnPosition() != null) {
-            AdvancedRocketryCommunity.LOGGER.warn("ARCE_PLANET_RESPAWN_NOT_CLEARED player={} level={} outcome={}; "
-                    + "another listener kept the saved point, so the native respawn continues",
-                    player.getUUID(), dimension.location(), outcome);
-            return;
-        }
         refusals.put(player.getUUID(), new Refusal(saved, outcome));
+        // The setter is a cancellable gameplay operation, not a reliable preservation boundary.
+        player.respawnDimension = Level.OVERWORLD;
+        player.respawnPosition = null;
+        player.respawnAngle = 0.0F;
+        player.respawnForced = false;
     }
 
     public void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
@@ -185,7 +182,10 @@ public final class SleepRespawnService {
         // The point is kept: the options and checks decline it for this respawn only.
         if (player.getRespawnPosition() == null) {
             SavedPoint saved = refusal.saved();
-            player.setRespawnPosition(saved.dimension(), saved.position(), saved.angle(), saved.forced(), false);
+            player.respawnDimension = saved.dimension();
+            player.respawnPosition = saved.position();
+            player.respawnAngle = saved.angle();
+            player.respawnForced = saved.forced();
         }
         player.sendSystemMessage(Component.translatable(respawnKey(refusal.outcome())));
     }
