@@ -161,6 +161,33 @@ blocks direct sunlight, but ordinary outdoor cover alone does not cool hot air
 or lower pressure. Returning to safety resets exposure; there is no persistent
 or offline exposure debt.
 
+### Other living entities and spawning
+
+Mobs and other non-player living entities follow the same breathability and
+exposure rules, without suit oxygen. Each entity gets at most one attempt in
+every 20 of its own ticks: suffocation in vacuum first, otherwise the
+highest-priority exposure above. The passive armor tags protect them as they
+protect players. Entities with the vanilla `Invulnerable` flag and armor stands
+are not affected.
+
+The entity-type tag `advancedrocketrycommunity:atmosphere_bypass` is empty by
+default. A pack can add its vacuum-adapted types to it. A tagged type ignores
+breathability, exposure and the spawn rule below. It still takes fire, drowning,
+fall and all other damage, and it still follows gravity.
+
+Natural spawning, chunk-generation spawning and mob spawners deny an untagged
+mob on a non-breathable world when its eye cell is unloaded, still being
+scanned, or without breathable air. On a world with environment effects they
+also deny any exposed cell outside a supplied sealed room. Chunk-generation
+spawns never count a room, because the new chunk has none. Biome spawn tables
+still choose the candidates; no extra spawner is added. Spawn eggs and
+`/summon` are explicit exceptions: they place the mob even in vacuum, where it
+then suffocates like any other mob. This is not natural spawning being allowed.
+
+The COMMON value `OXYGEN.vacuumDamage` (0 to 20, default 2) sets the health
+points of each vacuum attempt for players and other entities. Zero disables only
+the vacuum damage; oxygen use, breathability and exposure continue.
+
 ## Using the flight star map
 
 Open a rocket's flight console, then select **Star map**. The diagram shows

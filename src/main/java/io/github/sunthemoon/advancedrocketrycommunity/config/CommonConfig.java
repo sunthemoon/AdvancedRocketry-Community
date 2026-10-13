@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.config;
 
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportEngine;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.blackhole.BlackHoleSettings;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorRules;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorSettings;
@@ -365,6 +366,12 @@ public final class CommonConfig {
     public static final ForgeConfigSpec.IntValue SPACE_SUIT_O2_BUFFER = BUILDER
             .comment("Built-in active oxygen refill target; lowering it never discards existing oxygen.")
             .defineInRange("OXYGEN.spaceSuitO2Buffer", 2_000, 1, 2_000);
+    /** ADR-066 section 3.3: the default keeps the present engine's damage, not the legacy value of 1. */
+    public static final ForgeConfigSpec.DoubleValue VACUUM_DAMAGE = BUILDER
+            .comment("Health points of each scheduled vacuum attempt (once per second) for players and other living entities.",
+                    "Zero disables vacuum damage only; oxygen use, breathability and planetary exposure continue.")
+            .defineInRange("OXYGEN.vacuumDamage", (double) PlayerLifeSupportEngine.VACUUM_DAMAGE, 0.0,
+                    PlayerLifeSupportEngine.MAX_VACUUM_DAMAGE);
 
     public static final RocketPropulsionConfig ROCKET = new RocketPropulsionConfig(BUILDER);
 
@@ -372,6 +379,7 @@ public final class CommonConfig {
 
     public static int suitTankMultiplier() { return SPEC.isLoaded() ? SUIT_TANK_CAPACITY.get() : 1; }
     public static int suitOxygenTarget() { return SPEC.isLoaded() ? SPACE_SUIT_O2_BUFFER.get() : 2_000; }
+    public static double vacuumDamage() { return SPEC.isLoaded() ? VACUUM_DAMAGE.get() : VACUUM_DAMAGE.getDefault(); }
     public static double jetPackForce() { return SPEC.isLoaded() ? JET_PACK_FORCE.get() : JET_PACK_FORCE.getDefault(); }
     public static boolean lowGravityBoots() { return serverSwitchValue(LOW_GRAVITY_BOOTS); }
 
