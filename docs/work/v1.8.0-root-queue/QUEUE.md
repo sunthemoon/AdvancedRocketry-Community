@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 10:58) |
+| Slice | Scope | Pipeline state (2026-10-13 11:25) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -56,7 +56,7 @@ give their SHA-256 values.
 | [W24](TASK-W24-LEGACY-PAD-OCCUPANCY.md) | Parallel bug: the legacy landing-pad selector's occupancy (W13 review R1, legacy half) | **Merged** `58d763d4` (hosted run 38336046793; Root review) |
 | [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | Delivered through `19ab684a`. Independent review (Claude) MERGE-WITH-FOLLOWUP (SHA-256 `e3d1fd91…`): two High and two Medium latent defects confirmed by probe (a writer stuck after an invalidated ambiguous L2 replacement, retirement without its operation, drain time that grows with uptime, quadratic entity capture). W11b1F (Claude, since 10:56) fixes them with regression tests and native re-runs. Root merges W11b1 after W11b1F, with the C3 startup-scope risk entry and the ADR-065 note |
 | [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | **Merged** `811a5796`. Independent review (Codex) **APPROVE-WITH-CHANGES** (SHA-256 `8ec318a3…`): W11b2's implementation applies R1 to R6 (R1 and R2 High: a failed checked journal write stops dependent transfer effects; fenced retries stay classified, ticket-free and leave unrelated warps available). W11b2 starts after W11b1 merges |
-| W11b2 | D3-A rocket integration with R1 to R6 (admission stays disabled) | Implementer (Codex) running since 09:51, on top of the unmerged W11b1 (`19ab684a`) so the chain does not wait for its review |
+| W11b2 | D3-A rocket integration with R1 to R6 (admission stays disabled) | Checkpoint `9502a056` (Codex): neutral schema 3, interlocks, checked-journal acknowledgement; 2,716 unit tests, 855 GameTests; not integration-ready. Continuation 01 (a new Codex session, since 11:22): recovery fences, floors, settlement, relocation and startup policy, native S1 and S2, journal benchmarks. It merges the W11b1F fixes when they land |
 | Root fix | Mixin refmap lost on a Gradle build-cache hit (W19's `MixinPackagingTest` failure); a release jar could ship without the ADR-073 refmap | **Merged** `798a2465`: the refmaps and mappings are declared `compileJava` outputs; verified miss then hit; hosted run 38258700306 passed |
 | Root incident | C: filled to 0 GB: a W16 worker's background bare `python` REPL wrote 24.9 GB | Cleaned 21:40; WORKER-RULES now forbids interactive or unbounded background commands |
 
