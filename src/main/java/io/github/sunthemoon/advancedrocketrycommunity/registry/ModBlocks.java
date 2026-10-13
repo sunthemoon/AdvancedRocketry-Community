@@ -420,6 +420,19 @@ public final class ModBlocks {
                 .lightLevel(state -> 14).pushReaction(PushReaction.DESTROY);
     }
 
+    /** ADR-066 section 3.2 extinguished combustion torches: no light, no item, one identity root each. */
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchBlock>
+            UNLIT_TORCH = BLOCKS.register("unlit_torch", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchBlock(unlitTorchProperties()));
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitWallTorchBlock>
+            UNLIT_WALL_TORCH = BLOCKS.register("unlit_wall_torch", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitWallTorchBlock(unlitTorchProperties()));
+
+    private static BlockBehaviour.Properties unlitTorchProperties() {
+        return BlockBehaviour.Properties.of().noCollission().instabreak().sound(SoundType.WOOD)
+                .lightLevel(state -> 0).pushReaction(PushReaction.BLOCK);
+    }
+
     public static final RegistryObject<Block> LANDING_PAD = BLOCKS.register("landing_pad", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadBlock(
                     metalProperties().pushReaction(PushReaction.BLOCK)));

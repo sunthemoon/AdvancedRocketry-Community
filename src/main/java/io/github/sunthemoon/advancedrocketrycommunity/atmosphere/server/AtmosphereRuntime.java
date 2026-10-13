@@ -62,6 +62,14 @@ public final class AtmosphereRuntime {
         }
     }
 
+    /** Server-thread read of the Level's supplied volumes after its last atmosphere tick. */
+    public static java.util.Map<io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeId,
+            io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.AtmosphereVolume> suppliedVolumes(ServerLevel level) {
+        AtmosphereManager current = manager;
+        return current == null || !level.getServer().isSameThread() ? java.util.Map.of()
+                : current.suppliedVolumes(level.dimension());
+    }
+
     /** Read-only diagnostics for commands and integration tests. */
     public static Optional<AtmosphereLevelMetrics> metrics(ServerLevel level) {
         AtmosphereManager current = manager;

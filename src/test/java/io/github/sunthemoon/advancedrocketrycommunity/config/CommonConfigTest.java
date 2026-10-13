@@ -65,7 +65,11 @@ class CommonConfigTest {
         assertSame(CommonConfig.GROUND_SURVEYS_ENABLED, CommonConfig.SPEC.getValues().get("research.groundSurveysEnabled"));
         assertTrue(CommonConfig.GROUND_SURVEYS_ENABLED.getDefault());
         assertTrue(CommonConfig.groundSurveysEnabled());
-        assertEquals(93, countValues(CommonConfig.SPEC.getValues()));
+        // W33 adds the consumed C18a torch drop switch, default false.
+        assertSame(CommonConfig.DROP_EXTINGUISHED_TORCHES, CommonConfig.SPEC.getValues().get("OXYGEN.dropExtinguishedTorches"));
+        assertFalse(CommonConfig.DROP_EXTINGUISHED_TORCHES.getDefault());
+        assertFalse(CommonConfig.dropExtinguishedTorches());
+        assertEquals(94, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test

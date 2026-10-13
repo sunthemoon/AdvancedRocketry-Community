@@ -4,6 +4,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.environment.EnvironmentalConditions;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.AtmosphereVolume;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumeId;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.AtmosphereBoundaryCatalog;
 import java.util.HashMap;
@@ -93,6 +95,12 @@ public final class AtmosphereManager {
 
     public Optional<AtmosphereLevelMetrics> metrics(ResourceKey<Level> levelKey) {
         return Optional.ofNullable(levels.get(levelKey)).map(AtmosphereLevelService::metrics);
+    }
+
+    /** Read-only: the Level's supplied volumes after its last tick; empty for a Level without a service. */
+    public Map<VolumeId, AtmosphereVolume> suppliedVolumes(ResourceKey<Level> levelKey) {
+        AtmosphereLevelService service = levels.get(levelKey);
+        return service == null ? Map.of() : service.suppliedVolumes();
     }
 
     public void tick(MinecraftServer server) {
