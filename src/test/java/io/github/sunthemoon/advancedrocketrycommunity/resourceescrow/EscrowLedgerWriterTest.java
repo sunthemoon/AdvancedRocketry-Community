@@ -258,6 +258,19 @@ class EscrowLedgerWriterTest {
         assertTrue(outcomes.stream().allMatch(c -> c.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN));
         writer.close(); assertEquals(foreign, EscrowCodec.decode(policy.read(file()).orElseThrow()));
     }
+    /** Review W11b1 finding 3: about 14 hours of uptime; a queued successor must not wait out the cadence from tick 0. */
+    @Test @Timeout(60) void shutdownDrainAtAHighServerTickDoesNotRestartTheWriterClock() throws Exception {
+        var base = EscrowTestFixtures.ledger(); var outcomes = new ArrayList<EscrowLedgerWriter.Completion>();
+        var writer = new EscrowLedgerWriter(file(), 0); writer.tick(1_000_000);
+        assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(1), Set.of()), outcomes::add));
+        assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(2), Set.of()), outcomes::add));
+        assertEquals(1_000_000, writer.lastIoStart());
+        long started = System.nanoTime(); writer.close(); long elapsed = System.nanoTime() - started;
+        assertTrue(elapsed < TimeUnit.SECONDS.toNanos(5), "Shutdown drain took " + TimeUnit.NANOSECONDS.toMillis(elapsed) + " ms");
+        assertEquals(List.of(1L, 2L), outcomes.stream().map(EscrowLedgerWriter.Completion::generation).toList());
+        assertTrue(outcomes.stream().allMatch(c -> c.outcome() == EscrowLedgerWriter.Outcome.COMMITTED));
+        assertEquals(2, CheckedSavedDataFile.readPayload(file(), ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow().getLong("writer_generation"));
+    }
     private static void await(CountDownLatch latch) {
         try { if (!latch.await(5, TimeUnit.SECONDS)) { throw new AssertionError("Writer test gate timed out"); } }
         catch (InterruptedException failure) { throw new AssertionError(failure); }

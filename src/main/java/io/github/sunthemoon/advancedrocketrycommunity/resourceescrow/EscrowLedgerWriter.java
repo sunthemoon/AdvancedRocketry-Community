@@ -194,7 +194,9 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     long lastIoStart() { owner(); return lastIoStart; }
     public void drain() {
         owner(); draining = true; drainUnknown = 0;
-        long tick = retryAt;
+        // Continue the server clock: lastIoStart holds a real tick, so restarting at retryAt (0 unless an UNKNOWN
+        // happened) would wait out the cadence for as many iterations as the server's uptime in ticks.
+        long tick = Math.max(this.tick, retryAt);
         // Only this bounded completion queue is pumped; no gameplay, applies or new barriers.
         while (active != null) {
             tick(tick++);
