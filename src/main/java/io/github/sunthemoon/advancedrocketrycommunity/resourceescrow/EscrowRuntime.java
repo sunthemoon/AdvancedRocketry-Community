@@ -36,6 +36,7 @@ public final class EscrowRuntime {
     private EscrowChainReleaseProbe chainProbe;
     private EscrowRecoveryReleaseProbe recoveryProbe;
     private EscrowBenchmarkProbe benchmark;
+    private EscrowRocketAuditProbe rocketAuditProbe;
     EscrowTimingSink timings() { return benchmark == null ? EscrowTimingSink.NONE : benchmark; }
     private EscrowReconciliationScheduler scheduler;
     private EscrowTestReconciliation reconciliation;
@@ -47,7 +48,10 @@ public final class EscrowRuntime {
         scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition, reconciliation);
         return reconciliation;
     }
-    public void checkpoint(String cut) { if (probe != null) { probe.checkpoint(cut); } }
+    public void checkpoint(String cut) {
+        if (probe != null) { probe.checkpoint(cut); }
+        if (rocketAuditProbe != null) { rocketAuditProbe.checkpoint(cut); }
+    }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
@@ -100,7 +104,7 @@ public final class EscrowRuntime {
             var coordinator = data.bind(event.getServer());
             if (runtime.scheduler == null) {
                 runtime.scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition,
-                        (op, records, completion) -> completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.WAITING_UNLOADED, false)));
+                        (op, records, completion) -> RocketEscrowAudit.attempt(coordinator, event.getServer(), op, records, completion));
             }
             data.tick(event.getServer().getTickCount());
             if (data.ledger().floors().stream().anyMatch(floor -> floor.hasUUID("transfer_id"))) {
@@ -115,7 +119,10 @@ public final class EscrowRuntime {
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.equals("BENCH")) {
+            if (testCase.startsWith("RA_")) {
+                if (runtime.rocketAuditProbe == null) { runtime.rocketAuditProbe = new EscrowRocketAuditProbe(event.getServer()); }
+                runtime.rocketAuditProbe.tick();
+            } else if (testCase.equals("BENCH")) {
                 if (runtime.benchmark == null) { runtime.benchmark = new EscrowBenchmarkProbe(event.getServer(), runtime); }
                 runtime.benchmark.tick();
             } else if (testCase.equals("E5")) {

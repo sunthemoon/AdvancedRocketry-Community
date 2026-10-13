@@ -235,6 +235,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
     protected void readAdditionalSaveData(CompoundTag parent) {
         boolean live = isAddedToWorld();
         RocketEscrowSection retained = escrowSection;
+        if (live) { io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this); }
         // Vanilla has already applied base fields (including Pos). This protects the mod payload,
         // not command success or relocation; the coordinator must separately detect relocation.
         if (live && !RocketEscrowGate.idle(this)) { return; }
@@ -341,6 +342,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     protected void addAdditionalSaveData(CompoundTag parent) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         if (preservedBlockedData != null) {
             parent.put(DATA_KEY, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
                     .preserve(preservedBlockedData, io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES
@@ -364,6 +366,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     public void tick() {
         super.tick();
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         setNoGravity(true);
         setDeltaMovement(Vec3.ZERO);
         if (!level().isClientSide && !activeStateLogged) {

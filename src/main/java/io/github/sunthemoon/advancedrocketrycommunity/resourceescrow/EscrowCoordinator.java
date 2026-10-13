@@ -161,6 +161,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public boolean frozen(EscrowEndpoint.Key endpoint) { owner(); return frontiers.containsKey(endpoint); }
     public boolean writerIdle() { return writer.idle(); }
+    EscrowReason currentReason(EscrowOperation op) { owner(); return transitions.getOrDefault(op.id(), op.reason()); }
     public EscrowFloors.Usage floorUsage() { owner(); return EscrowFloors.usage(data.ledger(), queued.values()); }
     void collectFloors(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData journal) {
         owner(); floorJournal = journal;

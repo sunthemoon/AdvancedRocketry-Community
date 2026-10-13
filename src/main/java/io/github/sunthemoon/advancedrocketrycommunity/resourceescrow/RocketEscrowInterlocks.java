@@ -20,6 +20,7 @@ public final class RocketEscrowInterlocks {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void joined(net.minecraftforge.event.entity.EntityJoinLevelEvent event) {
         if (!event.getLevel().isClientSide && event.getEntity() instanceof RocketEntity rocket) {
+            RocketEscrowAudit.observe(rocket);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.onRocketJoined(rocket);
         }
     }
@@ -27,6 +28,7 @@ public final class RocketEscrowInterlocks {
     public static void left(net.minecraftforge.event.entity.EntityLeaveLevelEvent event) {
         // Forge posts this on tracking loss as well as removal. A previously loaded proof is no longer current.
         if (!event.getLevel().isClientSide && event.getEntity() instanceof RocketEntity rocket) {
+            RocketEscrowAudit.observe(rocket);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.onRocketJoined(rocket);
         }
     }
