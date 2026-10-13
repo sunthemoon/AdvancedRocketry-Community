@@ -11,13 +11,13 @@
     {
       "count": 2,
       "ingredient": {
-        "tag": "forge:dusts/redstone"
+        "item": "advancedrocketrycommunity:control_board"
       }
     },
     {
       "count": 1,
       "ingredient": {
-        "tag": "forge:ingots/gold"
+        "item": "advancedrocketrycommunity:tracking_circuit"
       }
     },
     {
