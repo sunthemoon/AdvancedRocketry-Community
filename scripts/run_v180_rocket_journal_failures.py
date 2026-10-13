@@ -28,6 +28,11 @@ def validate_authority(rockets: list[dict], journal: dict, mode: str, baseline: 
     wrapper = rocket["RocketEntityData"]
     if wrapper["schema_version"] != 3 or wrapper["flight_data"]["fuel"]["amount"] != 1000:
         raise smoke.SmokeError("Failed journal write changed source fuel/schema")
+    flight = wrapper["flight_data"]
+    if (rocket["Pos"] != [384.5, 101.0, 384.5] or flight["current_dimension"] != EARTH
+            or flight["current_origin"] != [384, 101, 384] or rocket.get("Passengers", [])
+            or flight["passengers"]["assignments"]):
+        raise smoke.SmokeError("Failed journal write relocated or occupied the source")
     if wrapper["resource_escrow"] != {"schema_version": 1, "resource_epoch": 0, "markers": []}:
         raise smoke.SmokeError("Journal failure created escrow authority")
     entries = journal.get("transfers", [])
@@ -37,13 +42,16 @@ def validate_authority(rockets: list[dict], journal: dict, mode: str, baseline: 
     elif mode == "ADVANCEMENT":
         if len(entries) != 1 or entries[0]["phase"] != "PREPARED" or "destination_entity_id" in entries[0]:
             raise smoke.SmokeError("Failed advancement changed the durable journal phase")
+        if flight["state"] not in ("TRANSIT", "FUELED"):
+            raise smoke.SmokeError("Failed advancement published an invalid source state")
         if entries[0]["source_entity_id"] != rocket["UUID"]:
             raise smoke.SmokeError("Retained journal changed source identity")
     else:
         raise smoke.SmokeError("Unknown native failure mode")
     authority = dict(identity=rocket["UUID"], snapshot=wrapper["snapshot"],
                      logical=wrapper["assembly_transaction_id"], owner=wrapper["owner_id"],
-                     fuel=wrapper["flight_data"]["fuel"], escrow=wrapper["resource_escrow"])
+                     fuel=flight["fuel"], escrow=wrapper["resource_escrow"], position=rocket["Pos"],
+                     dimension=flight["current_dimension"], origin=flight["current_origin"])
     if baseline is not None and authority != baseline:
         raise smoke.SmokeError("Restart changed conserved source authority")
     return authority
@@ -73,7 +81,12 @@ def inspect(world: Path, mode: str, baseline: dict | None) -> dict:
         if region.parent.name != "entities":
             continue
         for slot in allocated_slots(region):
-            rockets.extend(entity for entity in record(region, slot).get("Entities", []) if "RocketEntityData" in entity)
+            for entity in record(region, slot).get("Entities", []):
+                if "RocketEntityData" not in entity:
+                    continue
+                if region.parent != world / "entities":
+                    raise smoke.SmokeError("Failed journal write created a rocket in another Level")
+                rockets.append(entity)
         files[region.relative_to(world).as_posix()] = digest(region)
     journal_path = world / "data" / JOURNAL
     journal = {}

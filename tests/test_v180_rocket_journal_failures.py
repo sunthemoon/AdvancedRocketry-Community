@@ -4,20 +4,43 @@ from pathlib import Path
 import struct
 from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_rocket_journal_failures as runner
 
 
 def rocket():
-    return {"UUID": [1, 2, 3, 4], "RocketEntityData": {
+    return {"UUID": [1, 2, 3, 4], "Pos": [384.5, 101.0, 384.5], "RocketEntityData": {
         "schema_version": 3, "assembly_transaction_id": [2, 3, 4, 5], "owner_id": [3, 4, 5, 6],
         "snapshot": {"payload": {"items": [17, 64]}},
-        "flight_data": {"fuel": {"amount": 1000}, "state": "FUELED"},
+        "flight_data": {"fuel": {"amount": 1000}, "state": "FUELED", "current_dimension": runner.EARTH,
+                        "current_origin": [384, 101, 384], "passengers": {"assignments": []}},
         "resource_escrow": {"schema_version": 1, "resource_epoch": 0, "markers": []}}}
 
 
 class RocketJournalFailuresTest(unittest.TestCase):
+    def test_source_placement_and_passengers_are_not_rewritten(self):
+        cases = []
+        changed = rocket(); changed["Pos"] = [384.5, 102.0, 384.5]; cases.append(changed)
+        changed = rocket(); changed["Passengers"] = [{"id": "minecraft:pig"}]; cases.append(changed)
+        for key, value in (("current_dimension", "advancedrocketrycommunity:moon"), ("current_origin", [0, 100, 0]),
+                           ("passengers", {"assignments": [{"seat": 0}]})):
+            changed = rocket(); changed["RocketEntityData"]["flight_data"][key] = value; cases.append(changed)
+        for changed in cases:
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.validate_authority([changed], {}, "ADMISSION", None)
+
+    def test_saved_entity_in_another_level_is_not_a_source(self):
+        with TemporaryDirectory() as directory:
+            world = Path(directory)
+            region = world / "dimensions/advancedrocketrycommunity/moon/entities/r.0.0.mca"
+            region.parent.mkdir(parents=True)
+            region.write_bytes(struct.pack(">I", 513) + bytes(8188))
+            with patch.object(runner, "record", return_value={"Entities": [rocket()]}):
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.inspect(world, "ADMISSION", None)
+
     def test_only_empty_regions_have_no_header(self):
         with TemporaryDirectory() as directory:
             region = Path(directory) / "r.0.0.mca"
