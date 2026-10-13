@@ -1,8 +1,9 @@
 # W27a design note: the satellite bay and its deployment receipts (C17c-02)
 
-Date: 2026-10-13. Round 2: revised for independent review, not an accepted implementation or Gate
-result. Round 1 was `b55a41f2` on base `dac5cfd7`; this revision starts at `5ab9d343`, which includes
-the shared-branch merge and W21b schema 4. Write scope: this design and `W27A2.md` only. Inputs:
+Date: 2026-10-13. Round 3: round 2 with the text fixes N1 to N9 from its independent review. It is
+not an accepted implementation or Gate result. Round 1 was `b55a41f2` on base `dac5cfd7`. Round 2
+started at `5ab9d343`, which includes the shared-branch merge and W21b schema 4, and was reviewed at
+`408bc7a8`. Round 3's write scope is this design and `W27A3.md` only. Inputs:
 ADR-065 sections 4.1, 4.1.1, 8, 10 and 11 with the W11b1 note; [W11A-DESIGN.md](W11A-DESIGN.md) round 2;
 [W11B2-DESIGN.md](W11B2-DESIGN.md), and W11b2 branch HEAD pinned for this read at
 `899dcc16cd6c23310f09e947fc9c3700806163e3`, including `W11B2.md`, `RocketTransferFences` and
@@ -11,8 +12,13 @@ ADR-051. This note changes no code, test, ADR, risk entry, status file or ledger
 text proposed for Root. The full independent review is
 `D:/GitHub/ARCE-Task-Evidence/root-queue/W27a-review/REVIEW.md`, verified SHA-256
 `6f5b186fb066868bb4037fc6c23c20213977e901935bce56b75810f09ed245a1`. Root's decisions are in
-`TASK-W27A2-BAY-REDESIGN.md`. Steps D0 to D7 are defined in section 4, cuts B1 to B18 in section 9;
-section 12 answers F1-F5.
+`TASK-W27A2-BAY-REDESIGN.md`. The round-2 review is
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W27a2-review/REVIEW.md`, verified SHA-256
+`c9ef87a19da6f34cbff98305576bd55445ca2790dc2b5d23d010931eb1b9c30d`; round 3 follows
+`TASK-W27A3-BAY-TEXT-FIXES.md`. Round 3 read the W11b2 transfer classes it cites at `7540d088`, where
+the review found the recovery code unchanged from that pin. Steps D0 to D7 are defined in section 4, cuts
+B1 to B18 in section 9.
+Section 12 answers F1-F5, and section 13 lists the round-3 changes for N1-N9.
 
 ## 0. Checked facts
 
@@ -65,9 +71,24 @@ share one admission authority (sections 2, 3, 7 and 8).
 ## 2. The receipt store
 
 **File and root.** `data/advancedrocketrycommunity_bay_receipts.dat`, `ManagedSavedDataType.BAY_RECEIPTS`,
-introduced in v1.8.0, schema 1, epoch `v1.8.0-bay-receipts`, no legacy schema. An Overworld-owned
-`BayReceiptSavedData`, bound to the server-lifetime escrow runtime (no static collections), is created
-lazily on the first admission. Root: `schema_version`, `format_epoch`, `store_id` UUID, nondecreasing
+introduced in v1.8.0, schema 1, epoch `v1.8.0-bay-receipts`, no legacy schema. It is an Overworld-owned
+`BayReceiptSavedData`, bound to the server-lifetime escrow runtime (no static collections).
+
+**Loaded at startup (N6).** The *file* is created lazily on the first admission, but an existing file is
+always loaded at startup. At `ServerStartingEvent`, after the Levels exist and before the first server
+tick, so before any login, command or block-entity tick is processed, the coordinator reads it with the
+storage's load-only lookup (which never creates it), then validates and indexes it. The index has three
+states:
+- NOT_LOADED, before that point;
+- NO_FILE, when no file existed (the first admission creates it);
+- LOADED.
+
+Every receipt fence (section 3), bay insertion check (section 6) and admission answers from this RAM
+index. The index also holds queued, captured and unknown receipts, so it stays answerable while the
+writer is BAY_RECEIPTS_UNAVAILABLE. While it is NOT_LOADED it fails closed: DEPLOYMENT_PENDING for every
+satellite, and no admission.
+
+Root: `schema_version`, `format_epoch`, `store_id` UUID, nondecreasing
 `issued_through` and `writer_generation`, and `receipts` (at most 4,096). The section is at most 4,194,304
 bytes and the root at most 4,195,328 (1 KiB of framing), depth 4, 131,072 nodes. A future or invalid root
 refuses whole-world startup and keeps its bytes, as RESOURCE_ESCROW does (W11b1 C3; risk entry C).
@@ -96,7 +117,7 @@ a sizing cross-check, not an implemented codec result; tests must exercise the r
 | `schema_version`, `op`, `seq` | 1; the unique operation UUID; a positive sequence no greater than `issued_through` |
 | `rocket`, `bay`, `satellite` | The key: logical rocket UUID, bay position relative to the snapshot origin (int[3]), and the satellite UUID from the package identity |
 | `owner`, `definition`, `kind`, `orbit` | The agreed owner UUID; definition ID; closed kind ID; the physical checkpoint body. `orbit` is request/audit context, not an initial-mission identity or an existing satellite's replay target |
-| `package_sig` | SHA-256 (32 bytes) of the raw package tag in sorted-key canonical form (W11b2's streaming digest) |
+| `package_sig` | SHA-256 (32 bytes) of the raw package tag in sorted-key canonical form: the merged W11b1 NC1 signature, `RocketNativeResources.signature`, whose 262,144-byte limit covers the 4,096-byte package bound (N7) |
 | `transfer`, `src_before`, `src_after`, `dst_before`, `dst_after` | Exact T at the checkpoint; content hashes (32 bytes each) of its source and destination snapshots before/after the immutable consumption group. Before hashes identify the source revision; after hashes are set with REGISTERED. Snapshot IDs, end dimensions/origins and source entity UUID are taken only from that checked T, never a different transfer |
 | `phase`, `reason`, `preexisting`, `released` | The phase; bounded reason name; whether the registry already held X at D1; durable released-but-unresolved flag, initially 0, forced to 1 before delegating a released flight |
 | `registry_epoch`, `created_tick`, `updated_tick`, `attempts` | The ADR-050 save epoch after the proving write (audit only); server ticks; a retry count of at most 1,000 |
@@ -106,7 +127,9 @@ four hashes; released receipts cannot re-arm or retire online; unknown fields re
 and never normalizes. No released software wrote this draft schema, so this refinement needs no migration.
 
 **Writer.** Generalize `EscrowLedgerWriter` into one typed writer per managed type, or adopt W11b2
-continuation 03's journal writer if it already did so. It keeps the W11b1 behaviour: one captured
+continuation 03's journal writer if it already did so. Its generation digest uses the shared streaming
+canonical digest extracted by the W11b2 integration (section 9), because a receipt root of up to 4 MiB
+exceeds W11b1's 262,144-byte canonical limit (N7). It keeps the W11b1 behaviour: one captured
 generation and one successor; exact `(generation, digest, outcome)` completions on the server thread;
 unknown outcomes resolved by bounded readback or retried as the exact candidate every 200 ticks; three
 unresolved failures make the store unavailable (BAY_RECEIPTS_UNAVAILABLE); a drain at
@@ -137,7 +160,30 @@ pending reservation again. Retirement/offline durable resolution releases it onl
 acknowledgement. A definite pre-replace D1 failure releases only a never-applied admission with no
 captured successor; UNKNOWN keeps every reservation. REPAIR or releasing the flight wait is not a
 resolution. Full, unavailable or blocked storage keeps the package; nothing is evicted or reset by
-decommission, and no online command deletes a receipt.
+decommission, and no online command deletes a blocking receipt. The one online deletion is section 5's
+audited operator command for orphaned REJECTED receipts (N5).
+
+**Frozen admission contract (N7).** Root freezes this text into W11b3's and W27c1's scopes before either
+implements it. The authority runs on the server thread only, performs no IO, and keeps no per-consumer
+counter: it derives the pending and retained unions above from both stores' RAM indexes and their
+writers' queued, captured and unknown candidates, and recomputes them at startup before the first
+admission.
+- `tryReserve(op, owner, rocket, consumer)` returns one of:
+  - RESERVED: the `op` joins the pending union as a queued admission;
+  - ALREADY_HELD: the same `op` with the same owner, rocket and consumer already counts, and nothing
+    more is charged;
+  - IDENTITY_CONFLICT: the `op` is held with another owner, rocket or consumer;
+  - SERVER_FULL (64) or ROCKET_FULL (8);
+  - UNAVAILABLE: either store's index is not yet loaded (NOT_LOADED). An invalid or future root never
+    gets this far, because it refuses whole-world startup.
+
+  A refusal changes nothing. Each consumer checks its own store's writer availability (for the bay,
+  BAY_RECEIPTS_UNAVAILABLE) before it calls `tryReserve`.
+- The bay alone also calls `tryRetain(op, owner)` against the 4,096/128 retained union and the 1 KiB
+  byte reservation. It returns RESERVED, ALREADY_HELD, IDENTITY_CONFLICT, SERVER_FULL, OWNER_FULL or
+  UNAVAILABLE.
+- There is no release call. A reservation ends only when its `op` leaves every counted state, that is,
+  at the exact resolutions listed above.
 
 <div style="page-break-after: always;"></div>
 
@@ -149,15 +195,49 @@ section 2's write policy, save epoch and threading. Composition adds three thing
    changes, restore reports).
 2. `checkpoint(watch)`. On the server thread it captures the sequence `s` and, for each watched satellite,
    immutable identity tuple `I = (satelliteId, ownerId, definitionId, kind)`. It runs the
-   existing checked replace, then `forceDirectory`.
-   - COMMITTED sets `acknowledged = (s, digest)`.
-   - If the committer was attempted and threw, a bounded `readPayload` comparison decides between
-     COMMITTED and UNKNOWN, as `StationRegistrySavedData.java:554-580` does. UNKNOWN clears `acknowledged`.
-3. Every write entry (terminal barrier `flush`, bay `checkpoint`, the 100-tick coalesced flush and
-   autosave/stop `save(File)`) uses this one captured-outcome/epoch bookkeeping, so a later successful
-   write can prove an earlier registration. Replace-then-throw readback resolves the exact frozen
-   candidate, advances E once at most, and neither clears `flushPending` nor starts a new E+1 candidate
-   while UNKNOWN remains unresolved. Failure retains dirty/pending state and retries that candidate.
+   existing checked replace, then `forceDirectory` where supported.
+   - COMMITTED sets `acknowledged = (s, w)`, where w is the epoch the capture carried (item 3).
+   - If the committer was attempted and threw, the same call reads the file back with a bounded
+     `readPayload` and compares the decoded tag with the candidate by `equals`, as
+     `StationRegistrySavedData.java:554-580` does. An equal file is COMMITTED. A readable, different
+     file is FAILED, a definite failure. An unreadable file is UNKNOWN, which clears `acknowledged`.
+3. **One epoch rule for every write entry (N2).** The terminal barrier `flush`, the bay `checkpoint`, the
+   100-tick coalesced flush and autosave/stop `save(File)` share this bookkeeping, so a later successful
+   write can prove an earlier registration. ADR-050's save epoch E never advances past a mutation that
+   is not in the file:
+   - Every attempt is a fresh capture of the current RAM registry. Frozen candidate bytes are never
+     written again, whether after a definite failure or after UNKNOWN.
+   - A capture made while the registry has changed since E carries `w = max(E, h) + 1`. Here h is the
+     highest epoch carried by an earlier candidate of this session whose outcome is UNKNOWN; h = E when
+     there is none. A value that may already be on disk is therefore never reused for different content
+     (the review's "skip E+1"), and a receipt's audit `registry_epoch` names exactly one file.
+   - E advances once, to w, only when that capture is COMMITTED within its own call and `s` still equals
+     `mutationSequence`. Then h becomes E, and dirty, `flushPending` and the changed-since-E flag clear.
+     On the server thread nothing runs between capture and resolution, so the second condition is a
+     guard, not a wait.
+   - FAILED leaves E, h, dirty, `flushPending` and the changed flag unchanged. UNKNOWN does the same,
+     except that h becomes w. The coalesced flush, autosave, barriers and the D3 retry keep making
+     fresh captures.
+   - Mutations are not refused while an outcome is UNKNOWN. They stamp the unchanged E: mission
+     `start_epoch`, delivery `ack_epoch`, and ground-survey start and claim epochs. Every consumer that
+     waits for `save_epoch > stamp` (`DeliveryReconciliation.java:53`, `ResourceMissions.java:220`,
+     `GroundSurveys.java:154,249`, `MissionRetention.eligibleAt`) keeps waiting until a capture that
+     contains the stamp commits.
+   - There is no delayed readback of an old candidate, and nothing but a capture committed in its own
+     call advances E. The next fresh COMMITTED write supersedes an UNKNOWN candidate and proves every
+     registration up to its own `s`.
+
+   This is today's synchronous behaviour on a committer throw (no advance, dirty kept, fresh retry at
+   the next write), plus same-call readback and the skip. It keeps ADR-050 section 2 and ADR-051
+   section 6: a mission, acknowledgement or ground survey is treated as durable only once a file that
+   contains it has been written. In the review's scenario the acknowledgement stamped E is in the
+   committed fresh capture, so the terminal drops its receipt only when the file it would reload holds
+   the acknowledgement, and no REMATERIALIZED reward can follow. The review's other option, refusing
+   epoch-stamped mutations as `StationRegistrySavedData` quarantines updates
+   (`StationRegistrySavedData.java:482,554-563`), would stop mission starts, claims, acknowledgements,
+   launches, decommissions and ground surveys server-wide for as long as the disk fails. It is not
+   needed once E cannot advance on a stale capture. No separate snapshot epoch is introduced; ADR-050
+   section 2 still reserves that for the follow-up ADR of an off-thread registry writer.
 
 W21b root schema 4, literal epoch `v1.8.0-ground-surveys`, tagged instance origins and `ground_surveys`
 are preserved. A clean current-schema load does not write or advance `save_epoch`; RAM proof metadata
@@ -167,8 +247,12 @@ adds no registry NBT fields/schema migration. All existing state/clock mutations
 `s >= m` and its captured I equals the receipt's `(satellite, owner, definition, kind)`. Decommission of X is fenced from
 D1 until REGISTERED is durable (section 4), and nothing else removes satellites (pruning removes only
 missions), so `s >= m` already implies presence; the tuple check is defence in depth, and a mismatch gives
-REPAIR with REGISTRY_SIGNATURE_CONFLICT. The digest is W11b2's streaming canonical digest, because W11b1's
-canonical buffer stops at 262,144 bytes and the registry may reach 16 MiB (`SatelliteLimits.java:62`).
+REPAIR with REGISTRY_SIGNATURE_CONFLICT. No registry digest is computed (N9). The proof needs only `s` and
+I, and replace-then-throw readback compares tags by `equals`, so bookkeeping adds no canonical pass over
+a registry of up to 16 MiB (`SatelliteLimits.java:62`) on the server thread; the readback runs only
+after a committer throw. Under S2 a COMMITTED replace is proof whether or not the directory was forced.
+Only `checkpoint` forces the directory, as defence beyond S2; the other write entries keep today's
+policy.
 
 **Fresh data versus replay.** At a fresh DATA launch, D2 must return SUCCESS with X and the atomic initial
 mission `M = SatelliteManager.initialMissionId(X)` for the receipt's checkpoint body. Verify that returned
@@ -193,7 +277,9 @@ mission or require an existing non-data satellite to have launched into the pres
 
 **Cost.** At most one `checkpoint` per tick covers every registration of that tick (at most 32); ADR-050
 section 2 already performs this synchronous barrier for each terminal launch. W27d measures it at a 16 MiB
-registry against docs/17 P95 and P99. If that fails, stop and report: an off-thread registry writer needs
+registry against docs/17 P95 and P99. Because every write entry now carries the bookkeeping, W27d also
+times the 100-tick coalesced flush and autosave at a 16 MiB registry, under the same budgets and stop
+rule (N9). If either fails, stop and report: an off-thread registry writer needs
 ADR-050 section 2's follow-up ADR with separate snapshot and durable epochs. The bay contract does not
 depend on the transport.
 
@@ -205,6 +291,8 @@ depend on the transport.
 - `decommission` of X returns DEPLOYMENT_PENDING while a receipt for X is INTENT or REPAIR, or is
   REGISTERED without an exact acknowledgement yet. A durable REGISTERED receipt leaves the ADR-049
   section 7 rules unchanged.
+- While the receipt index is NOT_LOADED (section 2), `launch`, `launchIdle` and `decommission` return
+  DEPLOYMENT_PENDING for every satellite (N6).
 - A blocked registry (`preservedBlockedData`) refuses admission with REGISTRY_BLOCKED.
 
 ## 4. The sequence
@@ -260,8 +348,24 @@ source class requires W11b2's complete-envelope recovery within v1.8 and separat
 hash tolerance. Neutral destination endpoints from ordinary transfers remain eligible. The hook always
 rechecks the underlying escrow protection even after admission, and a conflict becomes locked REPAIR.
 
-**Ownership and binding.** At server start, load/validate/index both coordinator stores before exposing
-rocket recovery. A durable INTENT/REGISTERED/REPAIR receipt claims its exact T; an unknown in-session
+**What the restriction excludes (N3).**
+- `RocketEscrowSection` binds `ledger_id` at a rocket's first escrow operation and never unbinds it, and
+  its epoch only grows (W11b2 `RocketEscrowSection.java:10-15`). Once W11b3 loaders are enabled, every
+  rocket whose propulsion or cargo was ever filled through escrow is permanently non-neutral, so every
+  launch of it gets BAY_SOURCE_PROTECTED.
+- Rockets fuelled by hand or by the existing `FuelLoaderBlockEntity` change only flight data and stay
+  eligible.
+- The restriction is safe. It does, however, take the bay out of the automated W11b3 flow, a limit that
+  ADR-065 section 8 does not set. Root or the owner must therefore accept it explicitly, recorded with its
+  source, before W27e enables admission. Section 10's ADR-065 note states it.
+- The bay menu shows BAY_SOURCE_PROTECTED with its own message, so a player can tell why the bay refused.
+  W27d A1 tests the refusal, the byte-equal package and the message.
+- The named follow-up is W27f: envelope- and floor-aware bay consumption, built on W11b2's
+  complete-envelope recovery. It is not designed or scheduled here.
+
+**Ownership and binding.** At `ServerStartingEvent` (section 2), load, validate and index both coordinator
+stores before the first tick, so before any rocket recovery, login, command or terminal can reach the
+registry or the journal. A durable INTENT/REGISTERED/REPAIR receipt claims its exact T; an unknown in-session
 candidate claims the same tuple. One session claim binds store UUID, operation/group IDs, L, T, owner,
 PREPARED phase, checked record digest, source/destination snapshot IDs, end dimensions/origins, and
 allowed before/after hashes. The source reference includes T's `sourceEntityId`, the physical Level,
@@ -271,7 +375,8 @@ Claims/proofs are reconstructed in RAM every session, never accepted from a call
 For a held, non-released claim, missing T, another T/owner/end/snapshot ID, invalid checksum, unexpected phase or a hash outside the
 group is TRANSFER_AUTHORITY_CONFLICT/REPAIR; do not substitute another record or invoke ordinary recovery.
 
-**R0 claim.** Remove the claimed T from ordinary live/settled/recovery elections. The hook reports
+**R0 claim.** Move the claimed T into the transfer service's in-session claimed set (section 8.1), out of
+the live, settled and fenced sets and every ordinary recovery election. The hook reports
 OWNED_WAIT until completion, including during every asynchronous D1-D7 write. Both automatic and manual
 recovery, queued callbacks and login work consult it again at their final action boundary. A callback
 captured before a receipt claim must be invalidated, not grandfathered in. Before source discovery or
@@ -337,6 +442,13 @@ restore one. Only the final exact removal acknowledgement returns READY_SOURCE(T
 transfer service. It restores live classification, rechecks the source and normal W11b2 journal/escrow
 guards, then advances normally from consumed T'. With no receipts after a crash, ordinary recovery may
 roll consumed T' back to a stationary source; this is safe and is not claimed to resume the flight.
+When no member registered and this session holds source authority (the in-session live source, or an R2
+reconstruction), the exact acknowledgement of the last REJECTED outcome returns READY_SOURCE(T,
+sourceUUID) instead; nothing was consumed. The only other exit is RELEASED_TO_ORDINARY (section 8.1).
+It applies when every member resolved to REJECTED before this session established any source authority,
+for example a restart whose INTENT members all became INTERRUPTED. Nothing was consumed, so T becomes
+unclassified and ordinary W11b2 recovery applies, exactly as for a rocket without bays. The next launch
+re-arms the REJECTED receipts.
 
 Released-but-unresolved REPAIR/REGISTRY_BLOCKED cases retain their reservation and logical lock. Release
 of the flight wait is possible only for a coherent, checked, recognized payload authority, through the
@@ -389,6 +501,30 @@ bay, or when a checkpoint finds their bay without that package; they never block
 whichever bay now holds its package, keeping its `op`. REPAIR receipts have no online exit in v1.8 (the
 offline whole-world procedure of W11A-DESIGN section 5). A receipt whose wait was released (section 7)
 cannot meet conditions 2 to 4 online and stays retained.
+
+**Orphaned REJECTED receipts (N5).**
+- **The leak.** A REJECTED receipt does not lock L, so `RocketEntity.kill` is allowed on the idle rocket
+  that carries its package (W11b2 `RocketEntity.java:476-477`). After a `/kill`, neither retirement
+  trigger fires. The receipt would then keep one of its owner's 128 slots and one of the server's 4,096
+  retained slots for ever.
+- **Why retiring it is safe.** A REJECTED receipt never registered X and never blocks anything, so
+  retiring it cannot lose or double a satellite.
+- **The command.** The operator-only command `/arce bay receipt retire-rejected <satellite>` (the
+  permission of `/arce rocket recover`) retires exactly one REJECTED receipt. It refuses unless all of
+  these hold:
+  - the refusal is exactly acknowledged;
+  - no INTENT, REGISTERED, REPAIR or released receipt names the receipt's rocket;
+  - the transfer and transaction journals hold no record for that rocket.
+
+  It writes through the receipt writer and frees only the retained slot, on the exact removal
+  acknowledgement. It logs one audit line with the operator, the key and `op`. It is the only online
+  deletion of a receipt.
+- **A surviving package.** If the package still exists somewhere, its next checkpoint creates a new
+  receipt, and ADR-049's IDEMPOTENT replay of X prevents a second registration.
+- **Not automatic.** Retirement on an observed entity removal is not used, because a removal event does
+  not distinguish `/kill` from a transfer's source removal or an unload.
+- **Tests.** W27c1 tests the leak (orphan receipts until the owner's 128 are full, retire one, admit
+  again) and every refusal of the command. W27d repeats the leak with a real rocket and `/kill`.
 
 **Tombstones.** The bay uses none of the ledger's 64 tombstones. In the source, the consumed bay's
 `consumed_op` marker plays that role, and while REGISTERED exists it governs every recognized copy. After retirement,
@@ -443,6 +579,7 @@ no unconsumed copy remains under the S2 assumptions; risk entry D lists what lie
   adapter ID (at most 128 visits, cached per snapshot ID and hash); there is no world or structure scan.
 - **Status.** The world menu shows phase and reason in two `ContainerData` slots, looked up by X in the
   receipt index or the runtime rejection map (at most 4,096 entries, cleared at stop). No new channel.
+  Every reason has its own EN and zh message, including BAY_SOURCE_PROTECTED (N3).
 
 ## 7. The orbit checkpoint and the production launch service
 
@@ -501,7 +638,9 @@ The current non-data `SatelliteKindLifecycle.launchIdle` already has branch 2; t
 `SatelliteManager.launch` wrapper checks definition/target first. This extraction deliberately moves
 that wrapper's existing-identity case ahead of new admission too, as Root's F4 decision directs. It
 preserves ADR-049 replay semantics rather than claiming that the old data wrapper already handles
-removed definitions. Pin that changed wrapper ordering explicitly in parity tests.
+removed definitions. Pin that changed wrapper ordering explicitly in parity tests. Players can see the
+change at the terminal: such a data package now returns IDEMPOTENT and is extracted, and launch and
+decommission can return the new DEPLOYMENT_PENDING. Section 10 proposes an ADR-049 note for both (N8).
 
 **Production launch service.** Extract `SatelliteLaunchService` from `SatelliteManager.launch`
 (`SatelliteManager.java:195-235`) and `SatelliteKindLifecycle.launchIdle` (`:43-113`):
@@ -521,20 +660,14 @@ by UUID. The service is internal; no public API is added for non-data kinds.
   released receipt names L. Every W11b2 matrix row therefore also covers a bay-pending rocket at rest:
   the mutation layers, boarding, mounting, teleport, `/kill`, `/data`, disassembly and launch. The
   transfer service has **no** exemption. D5 and recovery actions use coordinator-owned scoped permits; ordinary
-  escrow locks, markers, floors, tombstones and journal UNKNOWN still refuse.
-- **Required W11b2 hook (not present at `899dcc16`).** Add an internal
-  `RocketTransferBayRecoveryGate.beforeAction(server, journal, record, action)` dispatch contract,
-  implemented/registered by the coordinator's `BayTransferRecovery`. `action` distinguishes
-  RECOVER_AUTO, RECOVER_BY_ID, ELECT_DUPLICATES, RECONNECT, SETTLE_SOURCE, REMOVE_JOURNAL,
-  TICK_SOURCE, SPAWN_DESTINATION and each deferred flight/recovery callback. Results are UNCLAIMED
-  (ordinary W11b2 rules), OWNED_WAIT/REPAIR (no ordinary action), or a coordinator-only exact action
-  permit/READY_SOURCE handoff. The existence of a bay claim is queried before ticketing/classification;
-  it is not cleared by `RocketTransferFences.permit`. Root must add these entry/final-boundary hooks to
-  W11b2's scope; W27d supplies the bay protocol, not a second independent transfer-recovery service.
-  Specifically wire `recoverNext`, `recoverById`, `recover`, `tryReconnect`,
-  `settleRecoveredSource`, `finishSourceSettlementIfComplete`, `classify`/`actionAllowed`, entity
-  join/leave, and `tickLive`/`spawnDestination`. Journal remove/rebind/phase callbacks recheck ownership
-  before publication. Keep `RocketTransferService` below its class-size ceiling by extracting dispatch.
+  escrow locks, markers, floors, tombstones and journal UNKNOWN still refuse. Inside the transfer
+  service's classification and final-boundary predicates, the bay part of this lock is never read
+  through `logicalLocked`: the claim query of section 8.1 answers first, and only an UNCLAIMED record
+  reaches `logicalLocked`. An UNCLAIMED record's L has no blocking receipt by construction, so a bay
+  deployment never produces a fence reason (N1).
+- **Required W11b2 hook (not present at `899dcc16` or `7540d088`).** Section 8.1 is the exact contract,
+  written as the text Root pastes into W11b2's scope. W27d supplies the bay protocol behind it, not a
+  second independent transfer-recovery service.
 - **Permit scope.** A private coordinator-created token binds session, action, op/group, L, T, owner,
   exact checked old/next record digests, end, snapshot ID/hash pair, entity UUID, physical reference and
   expected wrapper/resources. It expires on mutation/save observation/join/leave or after that action;
@@ -579,16 +712,126 @@ by UUID. The service is internal; no public API is added for non-data kinds.
   admitted neutral case and refusals. Bay and W11b3 share `EscrowAdmissionAuthority`; W11b3 is not a
   dependency for an isolated bay, but mixed-consumer capacity/recovery tests are a prerequisite for
   enabling them together.
-- **ADR-044.** A waiting PREPARED record keeps blocking warps of the station regions it overlaps, like any
-  PREPARED record.
+- **ADR-044.** A claimed PREPARED record counts as classified and as moving (section 8.1). It blocks warps
+  only of the station regions it overlaps, like a fenced one, and never blocks every warp.
+
+### 8.1 The W11b2 hook contract (N1; the text for W11b2's scope)
+
+W11b2 adds the internal interface `RocketTransferBayRecoveryGate` in `rocket/server`, and a fourth
+in-session set, `claimedTransfers`, beside `liveTransfers`, `settledTransfers` and the fence set
+(`RocketTransferFences.ids()`). The coordinator's `BayTransferRecovery` registers the implementation once
+per server lifetime. Until then, and in every W11b2 test without a bay, a default implementation answers
+UNCLAIMED, so W11b2 behaviour is unchanged. Both methods below run on the server thread and read only
+coordinator RAM. They load no chunk, add no ticket, scan no entity and write no file.
+
+**1. `claim(server, journal, record)`** returns exactly one of:
+- UNCLAIMED. No INTENT, REGISTERED, REPAIR or released receipt names `record.logicalRocketId()`.
+  Ordinary W11b2 rules apply, including `logicalLocked`.
+- HELD(state, reason), with state OWNED_WAIT or REPAIR. A claim on L whose flight is not delegated. It
+  holds every journal record of L, including one that is not the bound T; such a record makes the claim
+  REPAIR with TRANSFER_AUTHORITY_CONFLICT. A released claim answers HELD until the coordinator has
+  delegated its flight in this session.
+- RELEASED_FLIGHT. A released claim (section 8, released-flight permits) whose flight the coordinator
+  has delegated in this session.
+- READY_SOURCE(sourceUuid). The claim ended in this call: the last blocking member was resolved by an
+  exact acknowledgement (retirement, or a REJECTED outcome when nothing registered), and this session
+  holds source authority (the in-session live source, or an R2 reconstruction).
+- RELEASED_TO_ORDINARY. The claim ended with no member registered and nothing consumed, before this
+  session established any source authority.
+
+READY_SOURCE and RELEASED_TO_ORDINARY are each reported once; later calls answer UNCLAIMED.
+
+**2. `beforeAction(server, journal, record, action)`** guards one final action boundary. It returns
+UNCLAIMED, HELD, or PERMIT(token), an exact coordinator-created permit (section 8, permit scope).
+`action` is one of RECOVER_AUTO, RECOVER_BY_ID, ELECT_DUPLICATES, RECONNECT, SETTLE_SOURCE,
+REMOVE_JOURNAL, TICK_SOURCE and SPAWN_DESTINATION, or a deferred `afterAcknowledged` callback named by
+the action it performs. A claim's end is applied only through classification: for a record still in
+`claimedTransfers`, `beforeAction` answers HELD until classification has applied READY_SOURCE or
+RELEASED_TO_ORDINARY.
+
+**Classification comes before any ticket.** Every entry already calls
+`RocketTransferRecoveryService.classify` first: `tick`, `recoverNext`, `recoverById`, `tryReconnect`,
+`stationRegionInMotion` and `journalDiagnostics`. It now asks `claim` for each journal record, in
+journal order, before the fence classification:
+- HELD: add T to `claimedTransfers` and remove it from `liveTransfers` and `settledTransfers`. Drop any
+  fence reason, attempt or approval for T, with no log line.
+- RELEASED_FLIGHT: T stays in, or enters, `liveTransfers`. It is not in `claimedTransfers` or the fence
+  set, and its flight steps pass only through PERMIT at the boundaries below.
+- READY_SOURCE: remove T from `claimedTransfers`, drop any fence entry for T, and add T to
+  `liveTransfers`. `tickLive` then continues PREPARED T (or T') from its TRANSIT source to
+  `spawnDestination`; there is no rollback.
+- RELEASED_TO_ORDINARY: remove T from `claimedTransfers`. T is unclassified and enters ordinary
+  recovery, as a rocket without bays would.
+- UNCLAIMED: unchanged W11b2 classification.
+
+`claimedTransfers` holds only HELD records. When the journal acknowledgement is current it is pruned to
+the journal's entries, as the fence maps are. A record is in at most one of `liveTransfers`,
+`settledTransfers`, the fence set and `claimedTransfers`.
+
+**What the set changes.**
+- `step` takes `fenced ∪ claimed` as its excluded set. A claimed T is never a candidate, never gets a
+  `recoveryEntityChunksLoaded` ticket and never holds the cursor; other records keep their round-robin
+  turn.
+- `reevaluateOne` and `permit` see only fenced records. A claimed record is never fenced, so it never
+  reaches `loadedReason`.
+- `stationRegionInMotion` passes `moving = live ∪ fenced ∪ claimed` and `classified = moving ∪ settled`.
+  Under ADR-044 section 5 a claimed PREPARED record then blocks only the station regions it overlaps,
+  and no claim blocks every warp.
+- `journalDiagnostics` counts claimed records as classified and adds `claimed=<n>`. It lists up to four
+  as `[claimed_transfer=<T> logical=<L> state=<OWNED_WAIT|REPAIR> reason=<R>]`, without the "load an end,
+  then /arce rocket recover" hint. A REPAIR entry adds `repair=offline-whole-world`.
+- A claimed record, like a fenced one, is not settled. It keeps refusing its rocket's resource mutations
+  and keeps its landing region reserved.
+
+**Final boundaries.** Each consults the hook before `logicalLocked` or any escrow check.
+- `RocketTransferFences.actionAllowed`, `permit` and `loadedReason`, and
+  `RocketTransferEscrowRules.flightAllowed` call `beforeAction`. `flightAllowed` covers `tickLive`,
+  `spawnDestination`, `failBackToSource` and the prepare callback.
+  - HELD returns "not allowed" and, in the same call, moves T into `claimedTransfers` as classification
+    does. It never calls `fence`.
+  - PERMIT allows exactly the permitted action. Only the escrow part of the lock is then evaluated:
+    ledger records, markers, floors, tombstones and journal UNKNOWN. An escrow conflict makes the claim
+    REPAIR; it is not a fence.
+- `RocketTransferFences.joined`, for entity join and leave: for a held or released claim, the coordinator
+  is told and invalidates that group's proofs. There is no fence.
+- `recoverById` (`/arce rocket recover <T>`): a held T returns RETRY_LATER before `permit`,
+  `retryChecked` or any ticket. The claim line in `journalDiagnostics` says why.
+- `tryReconnect` skips a held record, as it skips a fenced one, with no election, move or settlement.
+  The coordinator moves an assigned online passenger to the proven survivor under its permit, or leaves
+  the player in place until READY_SOURCE.
+- `recover`, `settleRecoveredSource`, `finishSourceSettlementIfComplete`, and every deferred
+  `afterAcknowledged` callback (journal remove, rebind and phase) call `beforeAction` again at the point
+  of action. A callback captured before the claim existed is refused, not grandfathered.
+- The bay checkpoint in `tickSource` (D1) moves T from `liveTransfers` into `claimedTransfers` in the
+  same call that reserves capacity. The `tick` loop already iterates a sorted copy.
+
+**Logging.** A claim never produces `ARCE_TRANSFER_FENCED`. The coordinator writes one
+`ARCE_BAY_CLAIM transfer=<T> logical=<L> state=<state> reason=<R>` line per claim transition.
+
+**Size.** Keep `RocketTransferService` below its class-size ceiling by extracting the dispatch.
+
+**Tests.** W11b2 runs these with a stub gate, and W27d with real bays:
+1. With a claim held, an unrelated station still warps, while a station whose region T overlaps is
+   refused.
+2. A second unclassified record recovers while the claim is held, and the cursor moves past T.
+3. T never receives an ordinary recovery `FLIGHT_TICKET`.
+4. No `ARCE_TRANSFER_FENCED` line appears for a healthy deployment.
+5. `/arce rocket recover <T>` returns RETRY_LATER with no fence and no ticket.
+6. A final-boundary HELD adds T to the set in the same call.
+7. After READY_SOURCE, T continues to `spawnDestination` and does not roll back.
+8. RELEASED_TO_ORDINARY gives the ordinary stationary recovery.
+9. With the default gate, the existing W11b2 suites pass unchanged.
 
 ## 9. Slices, tests and S2 cuts
 
 | Slice and dependency | Scope | Tests and cuts |
 |---|---|---|
-| W27b; shared branch only | Bay block, block entity, menu, capability, locks, schema-1 root, `satellite_bay_v1`, section 6's ordinary-drop/guarded-retention policy, recipe, original art, EN and zh. Deployment disabled; Root records any save refusal first. | A0 root codec at every bound. A1 menu, hopper/dropper simulation and actual calls; owner/receipt refusals; transaction lock; assembly/disassembly byte-equal; raw unknown/future roots; `onlyOpCanSetNbt`; valid normal/explosion drops exactly once, guarded roots no drops and no non-op carrier restoration. S1 native save/reload, serializer refusal with exact chunk/Level scope. |
-| W27c; W11b1, and reviewed W11b2 off-thread writer if reused | Receipt type, codec, writer, index and single admission authority; shared launch service; registry acknowledgements/checkpoint/fences and all write-entry bookkeeping; transaction-journal acknowledgement; gated driver, no production entry. | A0 actual full-field 1 KiB and root/list framing, 4,096/128 retained and 64/8 pending; F2-F4 matrices below. A1 real files, injected committers, schema-4/epoch preservation and startup refusal. Driver S2 B1-B3/B9/B11-B13 tests receipt/registry ordering only, never source recovery acceptance. |
-| W27d; W27b, W27c, W11b2 integrated and independently reviewed | Exact section 8 hook plus section 4.1 protocol, TRANSIT wait, D0-D7, journal rewrite/barriers and duplicate-absence proofs, narrow permits/restart dispatch, status/messages/audit. Require actual off-thread checked journal writer, its authority guards and required evidence, not just a branch name. Admission off by default. | A0 every D1-D7 prefix for one/eight bays and mixed outcomes; action-scope/end/hash/phase/epoch refusals. A1 real rockets/data/solar, source missing/present, duplicate join and offline login. F5 matrix below. Benchmarks: 32 registrations at 16 MiB, D5 on 2,048 blocks/128 payloads and bounded recovery reads. Native S2 all B1-B18 via real restart service. |
+| W27b; shared branch only | Bay block, block entity, menu, capability, locks, schema-1 root, `satellite_bay_v1`, section 6's ordinary-drop/guarded-retention policy, recipe, original art, EN and zh. Deployment disabled; Root records any save refusal first. | A0 root codec at every bound. A1 menu, hopper/dropper simulation and actual calls; owner refusal (the receipt refusal moves to W27c1, which owns the index); transaction lock; assembly/disassembly byte-equal; raw unknown/future roots; `onlyOpCanSetNbt`; valid normal/explosion drops exactly once, guarded roots no drops and no non-op carrier restoration. S1 native save/reload, serializer refusal with exact chunk/Level scope. |
+| W11b2 integration (Root's W11b2 scope, not a W27 slice) | The section 8.1 hook contract. One shared, public, bounded streaming canonical digest, extracted from W11b2's package-private `rocket/flight/persistence/RocketJournalDigest` with a caller-supplied depth limit (35 for the journal, 4 for receipt roots). Owner: the W11b2 implementer, under Root's scope, so the journal and the receipt writer share one implementation. | Section 8.1 tests with a stub gate; the digest's existing journal tests through the new depth parameter. |
+| W27c1; W11b1, integrated W11b2 (shared digest; off-thread writer if reused), Root's frozen section 2 admission contract | Receipt type, codec, writer, startup-loaded index (N6), the single admission authority, the bay's insertion receipt refusal, and the REJECTED-retirement command (N5). `package_sig` covers a package of at most 4,096 bytes, so it uses the merged W11b1 `RocketNativeResources.signature`; the receipt root of up to 4 MiB needs the shared streaming digest. Gated; no production entry. | A0 actual full-field 1 KiB and root/list framing, 4,096/128 retained and 64/8 pending; the F3 matrix at the authority. A1 real files, injected committers, startup refusal of a future or invalid root, startup indexing before the first tick, NOT_LOADED failing closed, insertion refused while a blocking receipt exists (moved from W27b), and the N5 leak and command refusals. |
+| W27c2; W27c1 | Registry `mutationSequence`, `checkpoint` and the section 3 epoch rule for all four write entries. These are composed into `SatelliteMissionSavedData`, as W11b2 composed its journal, because `AtomicSavedData.save(File)` is final and CELESTIAL and ENDGAME share that base. Also the DEPLOYMENT_PENDING fences, read from the W27c1 index, and `SatelliteLaunchService` with terminal parity, including the section 7 ordering change (N8). | F2 and F4 matrices; the registry transport matrix including the N2 cases. Driver S2 B1-B3/B9/B11-B13 tests receipt/registry ordering only, never source recovery acceptance. |
+| W27c3; integrated W11b2 (shared digest) | The ROCKET_TRANSACTIONS checked policy and acknowledgement (section 8, "Transaction journal"), which W11b2 does not adopt. It is a persistence slice, so it gets its own one-page design and a read-only review before merge (AGENTS.md section 13). | A1 checked write, readback and refusal; B14 at unit level. |
+| W27d; W27b, W27c1-W27c3, W11b2 integrated and independently reviewed with the section 8.1 hook | Section 4.1 protocol behind the section 8.1 hook, TRANSIT wait, D0-D7, journal rewrite/barriers and duplicate-absence proofs, narrow permits/restart dispatch, status/messages/audit. Require actual off-thread checked journal writer, its authority guards and required evidence, not just a branch name. Admission off by default. | A0 every D1-D7 prefix for one/eight bays and mixed outcomes; action-scope/end/hash/phase/epoch refusals. A1 real rockets/data/solar, source missing/present, duplicate join and offline login; the section 8.1 tests with real bays; an escrow-bound rocket refused with BAY_SOURCE_PROTECTED, its package byte-equal and the menu message shown, while a hand-fuelled rocket deploys (N3); trapped passengers and pending saturation behave as risk entry C states (N4); the N5 leak after `/kill`. F5 matrix below. Benchmarks: 32 registrations at 16 MiB; the coalesced flush and autosave at 16 MiB with the bookkeeping on (N9); D5 on 2,048 blocks/128 payloads; bounded recovery reads. Native S2 all B1-B18 via real restart service. |
 | W27e; W27d | Packaged evidence; Root and owner decide on enabling admission; V1 menus, V2 two clients. | Full matrix, two restarts each, pinned JAR, docs/17 reference load. |
 
 **Pinned regression matrices (planned, not executed).**
@@ -625,6 +868,16 @@ by UUID. The service is internal; no public API is added for non-data kinds.
   resources/accounts and raw blocked roots. Cover *each* barrier/coalesced/autosave/stop entry, and
   replace-then-throw without double E advancement or lost `flushPending`. Prove obsolete callbacks and
   stale before/after hashes do not acquire a coordinator permit.
+- N2 epoch cases (W27c2):
+  - Make a checkpoint UNKNOWN. Then start a mission, acknowledge a delivery and start a ground survey.
+    Then let a fresh write commit, and crash.
+  - Expect no REMATERIALIZED reward, no claim or survey advance for a mission missing from the loaded
+    file, and E advanced once, to `w = h + 1`.
+  - Repeat with the coalesced flush and with autosave as the resolving write.
+  - Repeat with a definite FAILED: the retry is a fresh capture, never the old bytes.
+  - A second UNKNOWN carries a higher epoch again, so no carried value is reused.
+  - Before the resolving commit, every waiting consumer (claim, receipt drop, survey advance, prune)
+    still waits.
 
 **Cuts.** Each cut stops on both sides of its boundary; for writes, that means staged-only and
 replaced-before-callback. Two restarts follow. The fixture is a neutral-wrapper Earth to Moon rocket with one data bay
@@ -645,9 +898,9 @@ exactly once and its bay consumed, or the receipt is REJECTED with the package b
 | B10 | Signature conflict; blocked registry | REPAIR or REGISTRY_BLOCKED; coherent flight may be released by an exact permit, incoherent authority remains frozen; L locked and receipt/pending charge retained, package kept. |
 | B11 | Full store: retained 4,096/owner 128, mixed pending 64/rocket 8; REPAIR/released/UNKNOWN and restart | Shared authority refuses before INTENT, counts each unique op once, package byte-equal; REJECTED re-arm reacquires pending capacity without a new op. |
 | B12 | Receipt write failed before replacement, and unknown, at D1, D4 and D7 | Exact-candidate retry; no early release or registration. |
-| B13 | Registry checkpoint failed, and unknown | INTENT kept; decommission and terminal launch refused; a later success promotes. |
+| B13 | Registry checkpoint failed, and unknown; restart with a durable INTENT | INTENT kept; decommission and terminal launch refused; a later success promotes. After the restart, a decommission of X on the first server tick is refused with DEPLOYMENT_PENDING, because the index was loaded at `ServerStartingEvent` (N6). |
 | B14 | Unproved transaction journal or a stale assembly record at D0 | If RAM already has no record for L, require its exact checked write before D1; failure rejects all bays. If a record for L actually remains, refuse ASSEMBLY_JOURNAL_PENDING until legitimate transaction recovery/removal is durably proved; writing the stale record is not absence proof. |
-| B15 | Receipt/registry/journal replacement followed by exception, before callback/readback resolution | Resolve exact candidate as COMMITTED or UNKNOWN; no duplicate epoch increment, slot release, outcome or gameplay effect. Restart reads the actual target; package and T follow that authority. |
+| B15 | Receipt/registry/journal replacement followed by exception, before callback/readback resolution | Resolve exact candidate as COMMITTED or UNKNOWN; no duplicate epoch increment, slot release, outcome or gameplay effect. A registry retry after UNKNOWN is a fresh capture carrying a higher epoch (section 3). Restart reads the actual target; package and T follow that authority. |
 | B16 | Source/duplicate-absence proof invalidated while retirement is captured/queued | Superseding save, late join/leave or motion cancels replacement at the guard. Receipt/claim persists; new proof required, no stale token retirement. |
 | B17 | REPAIR/unloaded work ahead of healthy groups; partial D1 and mixed REGISTERED/REJECTED/REPAIR group | Bounded fair scheduling completes eligible unrelated work without bypassing 64/8. Group hashes stay immutable; coherent released-flight work remains unresolved/locked; no online repair deletion or partial-consumption proof based only on remaining receipts. |
 | B18 | Clean server stopping with active/successor/unknown writes, and crash teardown | Stop drains authority without executing launch/rebuild/mount/spawn callbacks; crash publishes no completion. Restart recreates reservations/claims before real recovery, never trusts session tokens or an unapplied capture. |
@@ -680,8 +933,15 @@ REGISTERED is durable. While REGISTERED exists, recognized copies of its bay are
 coordinator authority and never registered again. A bay-first recovery dispatcher claims exact logical
 rocket/transfer/end/snapshot authority before ordinary recovery, duplicate election, reconnect
 settlement or journal removal. It establishes a neutral source at its recorded altitude/TRANSIT state,
-keeps PREPARED T through D7, and obtains stable survivor/duplicate-absence proofs. The first slice refuses
-non-neutral source wrappers whose complete reconstruction authority is absent from T. Hash tolerance
+keeps PREPARED T through D7, and obtains stable survivor/duplicate-absence proofs. The transfer service
+holds a claimed record in its own classified set: it is never fenced, receives no ordinary recovery
+ticket, and blocks only overlapping station warps. The first slice refuses
+non-neutral source wrappers whose complete reconstruction authority is absent from T. Because an escrow
+binding is never removed, this excludes every rocket ever filled through W11b3 escrow loaders; rockets
+fuelled by hand or by the fuel loader stay eligible. This limit, which section 8 does not set, needs
+Root's or the owner's explicit acceptance before admission is enabled. Envelope- and floor-aware
+consumption is the named follow-up, W27f. An existing receipt file is loaded and indexed before the first
+server tick. An audited operator command retires only orphaned, acknowledged REJECTED receipts. Hash tolerance
 is local to the coordinator's action permits, never a transfer-service exemption. Released unresolved
 operations keep the shared 64/8 reservation and lock. One admission authority counts unique
 durable/queued/captured/unknown operations across both stores, including REPAIR. Immutable satellite
@@ -691,14 +951,32 @@ autosaves and save events alone are never proof. Native forced-stop
 evidence and owner acceptance remain separate.
 
 **ADR-050 implementation note, "W27".** The registry's checked replace records an exact acknowledgement
-(session mutation sequence and digest), resolves a failed commit by bounded readback, and forces the
-directory where supported. Launch and decommission consult the bay receipt fence (DEPLOYMENT_PENDING).
-Every registry write entry shares the same captured outcome and one-time epoch advancement, including
-replace-then-throw resolution; UNKNOWN retains dirty/flush-pending state and the exact candidate.
+(session mutation sequence and carried epoch). It resolves a committer throw by a bounded readback in
+the same call, compared by `equals`; no registry digest is computed. The bay checkpoint forces the
+directory where supported. Launch and decommission consult the bay receipt fence (DEPLOYMENT_PENDING),
+which fails closed until the receipt index is loaded. Every registry write entry is a fresh capture
+under one epoch rule. E advances once, to the carried epoch, only when a capture commits within its own
+call with no mutation since it was captured. A definite failure or an UNKNOWN outcome keeps E and the
+dirty and flush-pending state. A later capture carries an epoch above every candidate whose outcome is
+unknown, so no carried value is reused. Frozen bytes are never rewritten, and no delayed readback
+advances E. Start, acknowledgement and ground-survey stamps therefore become durable only in a file that
+contains them. No snapshot epoch is introduced, and no mutation is refused while an outcome is unknown.
 Write policy, synchronous threading, schema-4 literal epoch, tagged origins, ground surveys and limits
 are unchanged, and the section 2 gate for an off-thread writer still applies. The replay tuple contains
 satellite UUID, owner, definition and kind, never current/retained initial mission. Fresh data launch
 still atomically creates its initial mission, whose later progression is not a deployment conflict.
+
+**ADR-049 implementation note, "W27: replay before new-launch validation" (N8).** This note changes no
+decision and applies section 6's replay rule. The shared launch service checks an existing satellite
+with the same identity before new-launch catalogs, targets, stats, research and quotas, for every kind.
+For a data package, players see two changes at the terminal:
+- A package whose definition or target has since been removed or disallowed now returns IDEMPOTENT, and
+  the terminal extracts it. Today it is refused with DEFINITION_NOT_FOUND, TARGET_NOT_ALLOWED or
+  CATALOG_UNAVAILABLE and kept (`SatelliteManager.java:207-210,706-721`).
+- Launch and decommission can return the new code DEPLOYMENT_PENDING. This happens while a bay
+  deployment of that satellite is unresolved, or before the receipt index is loaded.
+
+The F4 matrix pins both.
 
 **Risk entry C (new ID): bay receipt protection scope and availability.** A future or invalid receipt root
 refuses whole-world startup and keeps its bytes, as in R-031; recovery is the W11b1 whole-world offline
@@ -710,8 +988,39 @@ flight through coordinator-scoped permits but locks the rocket
 receipt never retires online. Full capacity (4,096, 128 per owner, 64 and 8 pending) refuses
 deployments. REPAIR and released/unresolved receipts keep the pending 64/8 charge until exact durable
 resolution; durably REJECTED receipts retain only their 4,096/128/byte slot and must reacquire pending
-capacity before INTENT. Non-neutral source reconstruction is refused in the first bay slice. Valid
-world-bay removal drops the package once and an empty bay; raw/future/quarantined roots remain in place
+capacity before INTENT. Non-neutral source reconstruction is refused in the first bay slice.
+
+The hold has three further consequences (N4, and N1 for the third). Each has a stated scope, duration,
+log volume and recovery:
+- **Passengers stay aboard.** While a claim holds L, or a released receipt still locks it,
+  `RocketEscrowGate.idle` is false. `RocketEscrowInterlocks.mount:36-38` therefore cancels dismounting
+  as well as mounting.
+  - Scope: the passengers of that one rocket. They cannot leave it at altitude during the wait. A
+    released receipt keeps the lock after its released flight completes, so they cannot dismount at the
+    destination either.
+  - Duration: the whole wait. For an incoherent REPAIR, which is never released, and for every released
+    receipt, it lasts until the offline repair.
+- **Loaders stop for every player.** The 64 pending slots have no per-owner limit. One owner with 8
+  rockets of 8 bays, or one REGISTRY_BLOCKED event, can hold all 64 indefinitely.
+  - Scope: the whole server. Every W11b3 loader operation and every new deployment is refused.
+  - Duration: until the holds resolve. For REPAIR or REGISTRY_BLOCKED that means the offline repair.
+- **Overlapping stations cannot warp.** A claimed PREPARED record counts as moving.
+  - Scope: only the station regions that the rocket's snapshots overlap.
+  - Duration: the wait, and until the offline repair for REPAIR.
+
+Logging is the one audit line per claim transition and per backoff transition stated below. Recovery is
+automatic once retryable storage succeeds; for REPAIR, REGISTRY_BLOCKED and released receipts it is the
+whole-world offline procedure.
+
+Two mitigations are open for Root or the owner, and this design adopts neither:
+- a scoped permit that lets online passengers off at a safe position without touching the payload
+  authority;
+- a per-owner pending limit, which changes ADR-065 section 10 and is therefore an owner decision.
+
+Both should be decided before W27e enables admission; W27d tests the behaviour as stated here.
+Orphaned, acknowledged REJECTED receipts can be retired only by the audited operator command.
+
+Valid world-bay removal drops the package once and an empty bay; raw/future/quarantined roots remain in place
 under break/explosion protection and are saved unchanged when serializable. If serialization would
 omit them, `GuardedChunkSaves` denies the entire terrain chunk; after 256 denial coordinates, all later
 terrain saves in that ServerLevel are denied until Level close, with no production online reset.
@@ -762,8 +1071,17 @@ evidence are still open in `W11B2.md`. A non-neutral source is not deployable by
 slice. The shared ADR-065 note records W29's per-slot stability fix; that is not bay D6 evidence, and
 observed save/proof invalidation still requires retries. Multi-copy proof cost and the 32-registration
 maximum are unmeasured. Proposed save-denial scope must be registered by Root before implementation.
+The coalesced-flush and autosave cost of the bookkeeping at 16 MiB is unmeasured (W27d).
 
-No current-version Required Gate is met by this note. Next: one independent read-only review, then W27b.
+Open decisions for Root or the owner, each needed before W27e enables admission:
+- explicit acceptance of the neutral-source limit and its W11b3 consequence (section 4.1, N3);
+- the passenger-exit permit and the per-owner pending limit (risk entry C, N4).
+
+The latter is an owner decision because it changes ADR-065 section 10.
+
+No current-version Required Gate is met by this note. Next, at Root's discretion: a narrow re-check of
+sections 2, 3, 4.1, 8.1 and 9, or acceptance. Then Root freezes section 8.1 into W11b2's scope and the
+section 2 admission contract into W11b3's and W27c1's scopes, and dispatches W27b.
 
 ## 12. Answers to the round-1 findings
 
@@ -784,3 +1102,27 @@ tense, immutable multi-bay group rules, mixed-consumer enabling conditions, and 
 apply before retirement as well as after it. Round 1's separate bounded receipt store, decommission
 interlock, raw identity retention, explicit adapter, flight lock, production server/owner service,
 performance stop rule and pause-only native probe remain.
+
+## 13. Round 3 changes
+
+Round 3 fixes only the specification gaps that the round-2 review names (verdict APPROVE-WITH-CHANGES:
+N1 and N2 Medium, N3 to N9 Low). It follows the review's recommendations. The protocol and everything the
+review approved are unchanged: the altitude resume, R0-R4, D0-D7, the receipt store and its bounds, the
+proof tuple I, the shared admission union, replay before admission, the orbitability check and the
+crash-point walk. These are design changes, not runtime results.
+
+| Finding | Change | Sections | Tests and slice |
+|---|---|---|---|
+| N1, Medium | A fourth in-session set, `claimedTransfers`, holds every HELD record. It is excluded from `step`, so a claim gets no ticket and never holds the cursor. It counts as classified and, for PREPARED, as moving, so only overlapping station warps are refused. It is consulted before `logicalLocked` at every classification and final boundary, and never logged or recorded as a fence. A final-boundary HELD joins the set in the same call. READY_SOURCE moves T to `liveTransfers` and clears its fence state. RELEASED_TO_ORDINARY is the only other exit. Section 8.1 is the contract text for W11b2's scope. | 4.1 R0/R4, 8, 8.1 | The nine section 8.1 tests: W11b2 with a stub gate, W27d with real bays. |
+| N2, Medium | Every write entry makes a fresh capture. E advances once, to the carried epoch, only when that capture is COMMITTED in its own call with `s` equal to `mutationSequence`. FAILED and UNKNOWN keep E, dirty and `flushPending`. A later capture carries an epoch above every UNKNOWN candidate ("skip E+1"). Frozen bytes are never rewritten, and no delayed readback advances E. Mutations are not refused; stamped records stay non-durable until a file that contains them commits. | 3, 10 (ADR-050 note) | N2 epoch cases in W27c2's registry transport matrix; B15. |
+| N3, Low | The escrow-binding consequence is stated. Explicit acceptance by Root or the owner is required before W27e. The menu shows BAY_SOURCE_PROTECTED. The follow-up is named W27f. | 4.1, 6, 10, 11 | W27d A1. |
+| N4, Low | Risk entry C now states that passengers stay aboard, that loaders stop for every player, and that overlapping stations cannot warp, each with its scope, duration, log volume and recovery. The passenger exit and the per-owner limit are left open for Root and the owner. | 10, 11 | W27d A1 checks the stated behaviour. |
+| N5, Low | An audited operator command retires one orphaned, acknowledged REJECTED receipt. It is the only online receipt deletion. | 2, 5 | W27c1 leak and refusals; W27d leak after `/kill`. |
+| N6, Low | An existing receipt file is loaded and indexed at `ServerStartingEvent`. NOT_LOADED is distinguished from NO_FILE, and DEPLOYMENT_PENDING fails closed while NOT_LOADED. | 2, 3, 4.1 | W27c1 A1; B13 first-tick decommission. |
+| N7, Low | W27c is split into W27c1 (store, index, authority), W27c2 (registry bookkeeping, fences, launch service) and W27c3 (transaction-journal policy). The streaming digest extraction is owned by the W11b2 integration. `package_sig` uses the merged W11b1 signature. The admission contract is frozen for Root. Receipt-refusal tests move to W27c1. | 2, 9 | Slice table. |
+| N8, Low | A proposed ADR-049 note covers the IDEMPOTENT extraction of a removed or disallowed data package and the new DEPLOYMENT_PENDING. | 7, 10 | F4 matrix (W27c2). |
+| N9, Low | No registry digest: readback compares by `equals`. Only `checkpoint` forces the directory, and either choice is proof under S2. W27d times the coalesced flush and autosave at 16 MiB. | 3, 9 | W27d benchmarks under the same stop rule. |
+
+Not changed in round 3: code, tests, ADRs, the risk register, status files and the ledger. Section 10
+holds proposed text only. The decisions that Root or the owner must still make are listed at the end of
+section 11.
