@@ -108,6 +108,24 @@ class ClassicAdvancementReachabilityTest {
     }
 
     @Test
+    void withoutTauCetiLevelsEveryNonPendingClassicAdvancementRemainsReachable() throws IOException {
+        Success disabled = assertInstanceOf(Success.class, RecipeGraphReachability.evaluate(graph.nodes, graph.roots,
+                graph.withoutInputs(PackagedRecipeGraph.TAU_CETI_LEVELS), RecipeGraphReachability.DEFAULT_LIMITS));
+        Set<String> missing = new java.util.TreeSet<>();
+        StringBuilder report = new StringBuilder("# Classic advancement reachability without Tau Ceti Levels\n\n");
+        goals.forEach((suffix, goal) -> {
+            report.append("- classic/").append(suffix).append(" -> ").append(goal);
+            if (AWAITING.containsKey(suffix)) { report.append(" (awaiting content)\n"); }
+            else if (goal == null || !disabled.available().containsKey(goal)) {
+                missing.add(suffix); report.append(" (unreachable)\n");
+            } else { report.append(" (reachable)\n"); }
+        });
+        Files.writeString(Path.of("build/reports/classic-advancement-reachability-without-tau-ceti.md"), report);
+        assertEquals(Set.of(), missing, "No implemented classic advancement depends on either Tau Ceti Level");
+        assertTrue(java.util.Collections.disjoint(disabled.available().keySet(), PackagedRecipeGraph.TAU_CETI_LEVELS));
+    }
+
+    @Test
     void crystallizerAndDilithiumHaveRealInventoryCriteriaAndSurvivalRoutes() {
         for (Milestone milestone : List.of(Milestone.CRYSTALLIZER, Milestone.DILITHIUM)) {
             assertEquals(Kind.INVENTORY, milestone.kind());

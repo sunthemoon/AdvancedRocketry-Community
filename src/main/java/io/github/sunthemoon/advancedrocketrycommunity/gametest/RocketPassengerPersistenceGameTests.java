@@ -81,6 +81,7 @@ public final class RocketPassengerPersistenceGameTests {
 
     @GameTest(template = TEMPLATE, batch = "legacy_passenger_recovery", timeoutTicks = 400)
     public static void legacyVehicleLoginKeepsRefueledJournalAuthority(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var earth = helper.getLevel();
         var moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon unavailable");
@@ -92,7 +93,7 @@ public final class RocketPassengerPersistenceGameTests {
         var transfer = UUID.randomUUID();
         var launch = RocketRuntime.requestAdminFlight(source, RocketDestination.MOON, transfer);
         helper.assertTrue(launch.success(), "Fixture launch failed: " + launch.code());
-        RocketFlightGameTestFixtures.awaitFlightState(helper, moon, source.assemblyTransactionId().orElseThrow(),
+        RocketFlightGameTestFixtures.awaitFlightState(helper, driver, moon, source.assemblyTransactionId().orElseThrow(),
                 RocketFlightState.LANDED, 270, () -> {
             var journal = RocketTransferSavedData.get(earth.getServer());
             var record = journal.find(transfer).orElseThrow();

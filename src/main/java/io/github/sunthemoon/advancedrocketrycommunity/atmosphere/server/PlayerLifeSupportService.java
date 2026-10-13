@@ -8,11 +8,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLife
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportEngine;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerLifeSupportInput;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerProtectionStatus;
+import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.DoubleSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -27,6 +29,7 @@ public final class PlayerLifeSupportService {
     private final SnapshotSink snapshotSink;
     private final SuitEquipmentService equipment;
     private final PlayerEnvironmentalService environment;
+    private final DoubleSupplier vacuumDamage;
     private final Map<UUID, PlayerState> players = new HashMap<>();
     private boolean ticking;
 
@@ -36,9 +39,16 @@ public final class PlayerLifeSupportService {
 
     public PlayerLifeSupportService(AtmosphereManager atmosphere, SnapshotSink snapshotSink,
                                     SuitEquipmentService equipment) {
+        this(atmosphere, snapshotSink, equipment, CommonConfig::vacuumDamage);
+    }
+
+    /** ADR-066 section 3.3: the configured vacuum damage replaces only the damage of each scheduled attempt. */
+    public PlayerLifeSupportService(AtmosphereManager atmosphere, SnapshotSink snapshotSink,
+                                    SuitEquipmentService equipment, DoubleSupplier vacuumDamage) {
         this.atmosphere = Objects.requireNonNull(atmosphere, "atmosphere");
         this.snapshotSink = Objects.requireNonNull(snapshotSink, "snapshotSink");
         this.equipment = Objects.requireNonNull(equipment, "equipment");
+        this.vacuumDamage = Objects.requireNonNull(vacuumDamage, "vacuumDamage");
         environment = new PlayerEnvironmentalService(atmosphere, (player, message) -> player.displayClientMessage(message, true));
     }
 
@@ -94,9 +104,10 @@ public final class PlayerLifeSupportService {
             // An external debit failure may disable its provider during the operation.
             suitPieces = equipment.countPieces(player);
             state.vacuumPhase = decision.vacuumPhase();
-            if (decision.damage() > 0.0F) {
+            float damage = PlayerLifeSupportEngine.vacuumDamage(decision, vacuumDamage.getAsDouble());
+            if (damage > 0.0F) {
                 suffocationAttempt = true;
-                player.hurt(ModDamageTypes.vacuum(player.serverLevel()), decision.damage());
+                player.hurt(ModDamageTypes.vacuum(player.serverLevel()), damage);
             }
             snapshot = new PlayerLifeSupportSnapshot(
                     decision.status(),

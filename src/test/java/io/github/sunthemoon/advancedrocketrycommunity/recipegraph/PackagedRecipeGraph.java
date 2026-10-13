@@ -27,7 +27,8 @@ import java.util.stream.Stream;
  * build's superseded-file exclusions), for the evaluator in {@link RecipeGraphReachability}.
  *
  * <p>Node names: an item is its ID, an item tag {@code #ns:path}, a fluid {@code fluid:ns:path}, a formed machine
- * {@code machine:ns:path}, plus {@code energy:fe}, {@code access:<level>} and {@code travel:rocket}. Survival
+ * {@code machine:ns:path}, an enchantment {@code enchantment:ns:path}, plus {@code energy:fe},
+ * {@code access:<level>} and {@code travel:rocket}. Survival
  * assumptions are explicit roots: the Overworld, vanilla items, water and lava, and vanilla tags that no packaged
  * file defines. Items of other mods are ignored. Unknown recipe types, ingredient forms and pattern matchers fail,
  * so a changed data shape cannot be skipped or misread.
@@ -37,6 +38,14 @@ final class PackagedRecipeGraph {
     static final String OVERWORLD = "access:overworld";
     static final String ENERGY = "energy:fe";
     static final String ROCKET = "travel:rocket";
+    /** ADR-063 revision 6: disable surface access, not discovery or the system's orbitable bodies. */
+    static final Set<String> TAU_CETI_LEVELS = Set.of("access:tau_ceti_f", "access:tau_ceti_g");
+    static final Set<String> TAU_CETI_ITEMS = Set.of(id("lightwood_log"), id("lightwood_leaves"),
+            id("lightwood_sapling"), id("lightwood_planks"), id("electric_mushroom"),
+            id("blue_crystal_block"), id("green_crystal_block"), id("orange_crystal_block"),
+            id("red_crystal_block"), id("violet_crystal_block"), id("yellow_crystal_block"));
+    /** ADR-066 §5.1: the chemical reactor's special recipes are the only source of this enchantment. */
+    static final String SPACE_BREATHING = "enchantment:" + NAMESPACE + ":space_breathing";
     /** TASK-W19-ROOT-DECISION-01 (3c08ab5d): compatibility inputs, never vanilla/native roots. */
     static final Set<String> OPTIONAL_CROSS_MOD_INPUTS = Set.of(
             id("silicon_dust"), id("steel_dust"), id("titanium_dust"),
@@ -228,6 +237,17 @@ final class PackagedRecipeGraph {
                     if (json.has("chance_outputs")) {
                         // Reachability is existential, not a yield guarantee or a simulation of the four-success cap.
                         json.getAsJsonArray("chance_outputs").forEach(output -> outputs.add(result(output)));
+                    }
+                    if (json.has("special")) {
+                        // W32: item row 0 is the subject; like the etcher lens it is a requirement that returns,
+                        // changed, in the same batch, so the graph never treats it as a new Item.
+                        String special = json.get("special").getAsString();
+                        switch (special) {
+                            case "space_breathing_head", "space_breathing_chest", "space_breathing_legs",
+                                    "space_breathing_feet" -> outputs.add(SPACE_BREATHING);
+                            case "carbon_cartridge_refresh" -> { }
+                            default -> throw new IllegalStateException("Unmodelled special " + special + " in " + recipe);
+                        }
                     }
                     // The etcher lens is an input requirement. This monotone graph never consumes any node;
                     // retaining the lens needs no extra output or renewable lens source.

@@ -140,13 +140,13 @@ public final class PrecisionAssemblerMenuGameTests {
             opened.set(menu);
             viewer.set(player);
             player.getInventory().setItem(9, new ItemStack(Items.IRON_INGOT, 2));
-            player.getInventory().setItem(10, new ItemStack(Items.REDSTONE, 2));
+            player.getInventory().setItem(10, new ItemStack(ModItems.CONTROL_BOARD.get(), 2));
             helper.assertTrue(menu.quickMoveStack(player, PrecisionAssemblerMenu.MACHINE_SLOT_COUNT)
                             .getCount() == 2,
                     "Iron did not enter the first menu channel");
             helper.assertTrue(menu.quickMoveStack(player, PrecisionAssemblerMenu.MACHINE_SLOT_COUNT + 1)
                             .getCount() == 2,
-                    "Redstone did not enter the second menu channel");
+                    "Control boards did not enter the second menu channel");
             IEnergyStorage energy = PrecisionAssemblerGameTests.port(helper, PrecisionAssemblerGameTests.ENERGY)
                     .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow();
             helper.assertTrue(energy.receiveEnergy(800, false) == 800, "Energy fixture was rejected");

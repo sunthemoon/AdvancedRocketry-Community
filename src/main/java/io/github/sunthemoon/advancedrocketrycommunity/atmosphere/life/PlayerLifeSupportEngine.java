@@ -3,8 +3,21 @@ package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life;
 /** Pure finite transition used only by the authoritative server adapter. */
 public final class PlayerLifeSupportEngine {
     public static final float VACUUM_DAMAGE = 2.0F;
+    /** ADR-066 section 3.3: the finite upper bound of the configured vacuum damage per scheduled second. */
+    public static final double MAX_VACUUM_DAMAGE = 20.0D;
 
     private PlayerLifeSupportEngine() {
+    }
+
+    /**
+     * ADR-066 section 3.3 {@code vacuumDamage}: the configured health points replace the damage of a scheduled
+     * vacuum attempt. Zero removes only the damage; the decision's status, oxygen and phase are unchanged.
+     */
+    public static float vacuumDamage(PlayerLifeSupportDecision decision, double configured) {
+        if (!Double.isFinite(configured) || configured < 0.0D || configured > MAX_VACUUM_DAMAGE) {
+            throw new IllegalArgumentException("Vacuum damage must be finite and between 0 and 20");
+        }
+        return decision.damage() > 0.0F ? (float) configured : 0.0F;
     }
 
     public static PlayerLifeSupportDecision tick(PlayerLifeSupportInput input) {

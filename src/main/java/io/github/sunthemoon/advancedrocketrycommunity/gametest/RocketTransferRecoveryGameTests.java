@@ -37,16 +37,17 @@ public final class RocketTransferRecoveryGameTests {
 
     @GameTest(template = TEMPLATE, batch = "flight_recovery", timeoutTicks = 400)
     public static void transferRecoveryReconcilesAllEntityPresenceCases(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
         ServerLevel moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable");
         clearTransferJournal(earth);
         primePadChunks(earth);
         primePadChunks(moon);
-        helper.runAfterDelay(40, () -> {
+        driver.after(40, () -> {
             RocketManager recoveryManager = new RocketManager();
 
-            prepareRecoveryScenario(helper,
+            prepareRecoveryScenario(helper, driver,
                     new BlockPos(3, 2, 3), sourceOnly -> {
                 // Drain asynchronous entity-chunk reads so the recovery matrix observes a persisted,
                 // restart-equivalent boundary instead of racing the accelerated GameTest clock.
@@ -57,7 +58,7 @@ public final class RocketTransferRecoveryGameTests {
                 );
                 if (sourceOnlyReport.status() == RocketTransferRecoveryReport.Status.RETRY_LATER) {
                     retrySourceRecovery(
-                            helper,
+                            helper, driver,
                             earth,
                             moon,
                             recoveryManager,
@@ -68,7 +69,7 @@ public final class RocketTransferRecoveryGameTests {
                     return;
                 }
                 continueRecoveryMatrix(
-                        helper,
+                        helper, driver,
                         earth,
                         moon,
                         recoveryManager,
@@ -80,7 +81,7 @@ public final class RocketTransferRecoveryGameTests {
     }
 
     private static void retrySourceRecovery(
-            GameTestHelper helper,
+            GameTestHelper helper, GameTestTickDriver driver,
             ServerLevel earth,
             ServerLevel moon,
             RocketManager recoveryManager,
@@ -88,7 +89,7 @@ public final class RocketTransferRecoveryGameTests {
             int attempt,
             GameTestTickPacer pacer
     ) {
-        helper.runAfterDelay(1, () -> {
+        driver.after(1, () -> {
             RocketTransferRecoveryReport report = recoveryManager.recoverTransfer(
                     earth.getServer(),
                     sourceOnly.transferId()
@@ -97,7 +98,7 @@ public final class RocketTransferRecoveryGameTests {
                     && attempt < 20) {
                 pacer.pace();
                 retrySourceRecovery(
-                        helper,
+                        helper, driver,
                         earth,
                         moon,
                         recoveryManager,
@@ -108,7 +109,7 @@ public final class RocketTransferRecoveryGameTests {
                 return;
             }
             continueRecoveryMatrix(
-                    helper,
+                    helper, driver,
                     earth,
                     moon,
                     recoveryManager,
@@ -119,7 +120,7 @@ public final class RocketTransferRecoveryGameTests {
     }
 
     private static void continueRecoveryMatrix(
-            GameTestHelper helper,
+            GameTestHelper helper, GameTestTickDriver driver,
             ServerLevel earth,
             ServerLevel moon,
             RocketManager recoveryManager,
@@ -137,7 +138,7 @@ public final class RocketTransferRecoveryGameTests {
             assertSingleAuthority(helper, earth, moon, sourceOnly.logicalRocketId(), earth, "source-only");
 
             clearRecoveryScenario(earth, moon);
-            prepareRecoveryScenario(helper,
+            prepareRecoveryScenario(helper, driver,
                     new BlockPos(6, 2, 3), destinationOnly -> {
                 RocketEntity destinationOnlySource = findLogicalRocket(earth, destinationOnly.logicalRocketId());
                 helper.assertTrue(destinationOnlySource != null, "Destination-only setup source is missing");
@@ -165,7 +166,7 @@ public final class RocketTransferRecoveryGameTests {
                 );
 
                 clearRecoveryScenario(earth, moon);
-                prepareRecoveryScenario(helper, new BlockPos(9, 2, 3), both -> {
+                prepareRecoveryScenario(helper, driver, new BlockPos(9, 2, 3), both -> {
                     spawnRecoveryDestination(moon, both);
                     RocketTransferRecoveryReport bothReport = recoveryManager.recoverTransfer(
                             earth.getServer(),
@@ -182,7 +183,7 @@ public final class RocketTransferRecoveryGameTests {
                     assertSingleAuthority(helper, earth, moon, both.logicalRocketId(), earth, "both");
 
                     clearRecoveryScenario(earth, moon);
-                    prepareRecoveryScenario(helper, new BlockPos(12, 2, 3), neither -> {
+                    prepareRecoveryScenario(helper, driver, new BlockPos(12, 2, 3), neither -> {
                         RocketEntity neitherSource = findLogicalRocket(earth, neither.logicalRocketId());
                         helper.assertTrue(neitherSource != null, "Neither setup source is missing");
                         neitherSource.discard();
@@ -211,12 +212,12 @@ public final class RocketTransferRecoveryGameTests {
     }
 
     private static void prepareRecoveryScenario(
-            GameTestHelper helper,
+            GameTestHelper helper, GameTestTickDriver driver,
             BlockPos origin,
             java.util.function.Consumer<RocketTransferRecord> ready
     ) {
         ServerLevel earth = helper.getLevel();
-        assembleFueledRocket(helper, origin, UUID.randomUUID(), source -> {
+        assembleFueledRocket(helper, driver, origin, UUID.randomUUID(), source -> {
             UUID transferId = UUID.randomUUID();
             RocketFlightRequestResult launch = RocketRuntime.requestAdminFlight(
                     source,

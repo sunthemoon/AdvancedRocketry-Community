@@ -351,14 +351,19 @@ public final class PrecisionAssemblerGameTests {
     }
 
     static void insertInputs(GameTestHelper helper) {
+        insertInputs(helper, ModItems.CONTROL_BOARD.get());
+    }
+
+    /** Historical-signature fixtures still seed their original redstone input. */
+    static void insertInputs(GameTestHelper helper, net.minecraft.world.item.Item secondInput) {
         IItemHandler iron = port(helper, INPUT_0).getCapability(
                 ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
-        IItemHandler redstone = port(helper, INPUT_1).getCapability(
+        IItemHandler board = port(helper, INPUT_1).getCapability(
                 ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
         helper.assertTrue(iron.insertItem(0, new ItemStack(Items.IRON_INGOT, 2), false).isEmpty(),
                 "Iron input fixture was rejected");
-        helper.assertTrue(redstone.insertItem(0, new ItemStack(Items.REDSTONE, 2), false).isEmpty(),
-                "Redstone input fixture was rejected");
+        helper.assertTrue(board.insertItem(0, new ItemStack(secondInput, 2), false).isEmpty(),
+                "Second input fixture was rejected");
     }
 
     private static void receiveEnergy(GameTestHelper helper, int amount) {
@@ -368,13 +373,13 @@ public final class PrecisionAssemblerGameTests {
                 "Energy input fixture was rejected");
     }
 
-    static void assertInputs(GameTestHelper helper, int iron, int redstone) {
+    static void assertInputs(GameTestHelper helper, int iron, int boards) {
         helper.assertTrue(port(helper, INPUT_0).getCapability(ForgeCapabilities.ITEM_HANDLER)
                 .resolve().orElseThrow().getStackInSlot(0).getCount() == iron,
                 "Iron input count changed unexpectedly");
         helper.assertTrue(port(helper, INPUT_1).getCapability(ForgeCapabilities.ITEM_HANDLER)
-                .resolve().orElseThrow().getStackInSlot(0).getCount() == redstone,
-                "Redstone input count changed unexpectedly");
+                .resolve().orElseThrow().getStackInSlot(0).getCount() == boards,
+                "Control board input count changed unexpectedly");
     }
 
     static void assertCompletedBatch(GameTestHelper helper) {
@@ -431,7 +436,9 @@ public final class PrecisionAssemblerGameTests {
         PrecisionAssemblerBlockEntity machine = controller(helper);
         Map<ProcessResourceKey, ProcessResourceBalance> balances = new LinkedHashMap<>();
         balances.put(resource("item_input_0", Items.IRON_INGOT), balance(2, Items.IRON_INGOT));
-        balances.put(resource("item_input_1", Items.REDSTONE), balance(2, Items.REDSTONE));
+        var secondInput = port(helper, INPUT_1).getCapability(ForgeCapabilities.ITEM_HANDLER)
+                .resolve().orElseThrow().getStackInSlot(0).getItem();
+        balances.put(resource("item_input_1", secondInput), balance(2, secondInput));
         balances.put(resource("item_output_0", ModItems.ADVANCED_CIRCUIT.get()),
                 balance(0, ModItems.ADVANCED_CIRCUIT.get()));
         balances.put(resource("item_output_1", Items.REDSTONE_TORCH),

@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.Precisio
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -438,8 +439,8 @@ public final class PrecisionAssemblerRemovalGameTests {
                 "Successful removal changed a pre-existing Item entity"));
         helper.assertTrue(added.values().stream().map(ItemStack::of).filter(stack -> stack.is(Items.IRON_INGOT))
                 .mapToInt(ItemStack::getCount).sum() == 2, "Removal lost or duplicated iron");
-        helper.assertTrue(added.values().stream().map(ItemStack::of).filter(stack -> stack.is(Items.REDSTONE))
-                .mapToInt(ItemStack::getCount).sum() == 2, "Removal lost or duplicated redstone");
+        helper.assertTrue(added.values().stream().map(ItemStack::of).filter(stack -> stack.is(ModItems.CONTROL_BOARD.get()))
+                .mapToInt(ItemStack::getCount).sum() == 2, "Removal lost or duplicated control boards");
         return added;
     }
 

@@ -226,6 +226,7 @@ public final class SolarGeneratorGameTests {
 
     @GameTest(template = "empty", batch = "solar_environment", timeoutTicks = 40)
     public static void nativeSurfaceDayRoofNightAndWeatherPublishScalarCredit(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var level = helper.getLevel(); BlockPos anchor = helper.absolutePos(POSITION);
         BlockPos position = new BlockPos(anchor.getX(), level.getMaxBuildHeight() - 2, anchor.getZ());
         BlockPos roof = position.above();
@@ -246,19 +247,19 @@ public final class SolarGeneratorGameTests {
             helper.assertTrue(installed instanceof SolarGeneratorBlockEntity, "Registered surface generator was not installed");
             var generator = (SolarGeneratorBlockEntity) installed;
             level.setDayTime(6_000); level.setRainLevel(0); level.setThunderLevel(0); level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
-            await(helper, "DAY_SKY", roof, () -> level.isDay() && level.canSeeSky(roof), () -> {
+            await(helper, driver, "DAY_SKY", roof, () -> level.isDay() && level.canSeeSky(roof), () -> {
                 state(generator, 0); tick(generator);
                 helper.assertTrue(generator.reason() == SolarGeneration.Reason.GENERATING && generator.actualCredit() > 0, "Native daytime did not generate");
                 int clear = generator.actualCredit();
                 level.setRainLevel(1); level.setThunderLevel(1); state(generator, 0); tick(generator);
                 helper.assertTrue(generator.environment().weatherPermille() == 250 && generator.actualCredit() <= clear, "Weather attenuation/display differs");
                 level.setRainLevel(0); level.setThunderLevel(0); level.setBlock(roof, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
-                await(helper, "ROOF", roof, () -> !level.canSeeSky(roof), () -> {
+                await(helper, driver, "ROOF", roof, () -> !level.canSeeSky(roof), () -> {
                     state(generator, 777); tick(generator);
                     helper.assertTrue(generator.reason() == SolarGeneration.Reason.SKY_BLOCKED && generator.actualCredit() == 0
                             && port(generator).extractEnergy(100, false) == 100, "Roof blocked stored export or allowed credit");
                     level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); level.setDayTime(18_000);
-                    await(helper, "NIGHT_SKY", roof, () -> !level.isDay() && level.canSeeSky(roof), () -> {
+                    await(helper, driver, "NIGHT_SKY", roof, () -> !level.isDay() && level.canSeeSky(roof), () -> {
                         state(generator, 777); tick(generator);
                         helper.assertTrue(generator.reason() == SolarGeneration.Reason.NOT_DAYLIGHT && generator.actualCredit() == 0,
                                 "Native night was replaced by a custom calendar or stale credit");
@@ -314,6 +315,7 @@ public final class SolarGeneratorGameTests {
 
     @GameTest(template = "empty", batch = "solar_space", timeoutTicks = 40)
     public static void stockNoSkylightSpaceUsesOrdinaryColumnUpdatesAndCommittedOrbit(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var server = helper.getLevel().getServer(); ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
         helper.assertTrue(space != null && !space.dimensionType().hasSkyLight(), "Stock Space fixture unavailable");
         var data = StationRegistrySavedData.get(server); UUID id = UUID.randomUUID();
@@ -339,7 +341,7 @@ public final class SolarGeneratorGameTests {
             data.commit(id); committed[0] = true;
             Block[] roofs = {Blocks.AIR, Blocks.STONE, Blocks.GLASS, Blocks.WHITE_STAINED_GLASS, Blocks.OAK_LEAVES, Blocks.TINTED_GLASS, Blocks.WATER, Blocks.GLASS_PANE};
             boolean[] open = {true, false, true, true, false, false, false, true};
-            inspectRoofs(helper, space, fixture, roofs, open, 0, () -> {
+            inspectRoofs(helper, driver, space, fixture, roofs, open, 0, () -> {
                 data.foldWarpCredits(Map.of(id, 1));
                 var observed = data.find(id).orElseThrow();
                 helper.assertTrue(data.checkedRelocation(server, observed, CelestialIds.MOON_ID, 1) == StationRegistrySavedData.CheckedUpdate.COMMITTED,
@@ -425,14 +427,14 @@ public final class SolarGeneratorGameTests {
     private static CelestialCatalogManager catalogs() {
         var catalogs = new CelestialCatalogManager(); catalogs.applyCandidate(CelestialCatalog.create(CelestialDefaults.definitions())); return catalogs;
     }
-    private static void await(GameTestHelper helper, String stage, BlockPos roof, java.util.function.BooleanSupplier ready,
+    private static void await(GameTestHelper helper, GameTestTickDriver driver, String stage, BlockPos roof, java.util.function.BooleanSupplier ready,
                               java.util.function.BooleanSupplier verify, Runnable restore) {
-        helper.runAfterDelay(1, () -> {
+        driver.after(1, () -> {
             boolean pending = false;
             Throwable failed = null;
             try {
                 boolean published = ready.getAsBoolean();
-                if (!published && helper.getTick() < 39) { await(helper, stage, roof, ready, verify, restore); pending = true; return; }
+                if (!published && helper.getTick() < 39) { await(helper, driver, stage, roof, ready, verify, restore); pending = true; return; }
                 try {
                     helper.assertTrue(published, "Ordinary producer did not publish within 40 ticks");
                 } catch (RuntimeException | Error assertion) {
@@ -459,11 +461,11 @@ public final class SolarGeneratorGameTests {
             // Observation must not replace the original assertion or prevent its existing restore.
         }
     }
-    private static void inspectRoofs(GameTestHelper helper, ServerLevel space, SolarGeneratorBlockEntity fixture,
+    private static void inspectRoofs(GameTestHelper helper, GameTestTickDriver driver, ServerLevel space, SolarGeneratorBlockEntity fixture,
                                      Block[] roofs, boolean[] open, int index, Runnable verify, Runnable restore) {
         if (index == roofs.length) { space.setBlock(fixture.getBlockPos().above(), Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); verify.run(); return; }
         space.setBlock(fixture.getBlockPos().above(), roofs[index].defaultBlockState(), Block.UPDATE_ALL);
-        helper.runAfterDelay(1, () -> {
+        driver.after(1, () -> {
             boolean pending = false;
             try {
                 helper.assertTrue(helper.getTick() < 39, "Roof controls exceeded 40 ticks");
@@ -471,7 +473,7 @@ public final class SolarGeneratorGameTests {
                 helper.assertTrue(fixture.environment().available() && fixture.environment().sky() == open[index]
                         && fixture.environment().day() == 2 && fixture.environment().weatherPermille() == 1_000
                         && fixture.actualCredit() == (open[index] ? 2 : 0), "Stock no-skylight column case differs: " + index);
-                inspectRoofs(helper, space, fixture, roofs, open, index + 1, verify, restore); pending = index + 1 < roofs.length;
+                inspectRoofs(helper, driver, space, fixture, roofs, open, index + 1, verify, restore); pending = index + 1 < roofs.length;
             } finally { if (!pending) { restore.run(); } }
         });
     }

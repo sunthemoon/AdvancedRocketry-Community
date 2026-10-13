@@ -746,6 +746,16 @@
       "reason": "The finite active oxygen target defaults to 2000 once on a new config. Non-null corrections and other values do not match."
     },
     {
+      "id": "forge-w34-vacuum-damage-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key OXYGEN\\.vacuumDamage was corrected from null to its default, 2\\.0\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W34 vacuum damage configuration created by the run",
+      "reason": "The ADR-066 section 3.3 vacuum damage defaults to 2.0 once on a new config; the OXYGEN section is already excluded from the generic 99-warning budget. Non-null corrections and other values do not match."
+    },
+    {
       "id": "forge-propulsion-rocket-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",

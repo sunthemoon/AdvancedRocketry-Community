@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerChannels;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerPortBlockEntity;
@@ -63,7 +64,7 @@ public final class PrecisionAssemblerMigrationGameTests {
         helper.runAtTickTime(28, () -> {
             helper.assertItemEntityCountIs(Items.IRON_INGOT,
                     PrecisionAssemblerGameTests.CONTROLLER, 1.5D, 2);
-            helper.assertItemEntityCountIs(Items.REDSTONE,
+            helper.assertItemEntityCountIs(ModItems.CONTROL_BOARD.get(),
                     PrecisionAssemblerGameTests.CONTROLLER, 1.5D, 2);
             helper.succeed();
         });

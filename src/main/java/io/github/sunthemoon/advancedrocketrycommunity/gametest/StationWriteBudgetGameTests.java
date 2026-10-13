@@ -47,6 +47,7 @@ public final class StationWriteBudgetGameTests {
 
     @GameTest(template = "empty", batch = "station_write_budget", timeoutTicks = 400)
     public static void checkedWritesShareOneServerWideSpacing(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
         StationRegistrySavedData data = StationRegistrySavedData.get(server);
@@ -93,13 +94,13 @@ public final class StationWriteBudgetGameTests {
             helper.onEachTick(() -> warp.onServerTick(
                     new TickEvent.ServerTickEvent(TickEvent.Phase.END, () -> true, server)));
             scheduled = true;
-            helper.runAfterDelay((int) StationLimits.WARP_COUNTDOWN_TICKS + 20, () -> {
+            driver.after((int) StationLimits.WARP_COUNTDOWN_TICKS + 20, () -> {
                 try {
                     helper.assertTrue(warp.countdown(second.stationId()).isPresent()
                                     && data.find(second.stationId()).orElseThrow().orbitBody().equals(CelestialIds.EARTH_ID),
                             "A due warp committed inside the spacing");
                     perHundred.set(0);
-                    helper.runAfterDelay(3, () -> {
+                    driver.after(3, () -> {
                         try {
                             helper.assertTrue(warp.countdown(second.stationId()).isEmpty()
                                             && data.find(second.stationId()).orElseThrow().orbitBody()

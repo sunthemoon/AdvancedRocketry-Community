@@ -51,6 +51,7 @@ final class BeaconGameTestFixture implements AutoCloseable {
     private static final TicketType<UUID> TICKET = TicketType.create("arce_beacon_test",
             Comparator.comparing(UUID::toString));
     final GameTestHelper helper;
+    private final GameTestTickDriver driver;
     final ServerLevel level;
     final MinecraftServer server;
     final Map<UUID, List<String>> replies = new HashMap<>();
@@ -65,6 +66,7 @@ final class BeaconGameTestFixture implements AutoCloseable {
 
     BeaconGameTestFixture(GameTestHelper helper) {
         this.helper = helper;
+        this.driver = new GameTestTickDriver(helper);
         this.level = helper.getLevel();
         this.server = level.getServer();
         helper.assertTrue(BeaconRuntime.services().isPresent(), "The beacon services are not installed");
@@ -318,8 +320,13 @@ final class BeaconGameTestFixture implements AutoCloseable {
     }
 
     /** Polls {@code ready} once per tick for at most {@code ticks}, then runs {@code next}; closes on failure. */
+    /** Runs {@code next} after {@code ticks} through the setup-registered driver, never a nested vanilla registration. */
+    void after(int ticks, Runnable next) {
+        driver.after(ticks, next);
+    }
+
     void await(int ticks, String what, BooleanSupplier ready, Runnable next) {
-        helper.runAfterDelay(1, () -> {
+        driver.after(1, () -> {
             boolean done;
             try {
                 done = ready.getAsBoolean();

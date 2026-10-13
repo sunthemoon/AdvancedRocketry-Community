@@ -69,7 +69,28 @@ class CommonConfigTest {
         assertSame(CommonConfig.DROP_EXTINGUISHED_TORCHES, CommonConfig.SPEC.getValues().get("OXYGEN.dropExtinguishedTorches"));
         assertFalse(CommonConfig.DROP_EXTINGUISHED_TORCHES.getDefault());
         assertFalse(CommonConfig.dropExtinguishedTorches());
-        assertEquals(94, countValues(CommonConfig.SPEC.getValues()));
+        // W34 adds the consumed ADR-066 section 3.3 vacuum damage value.
+        assertSame(CommonConfig.VACUUM_DAMAGE, CommonConfig.SPEC.getValues().get("OXYGEN.vacuumDamage"));
+        assertEquals(95, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void vacuumDamageIsFiniteFromZeroToTwentyAndKeepsThePresentEngineDamage() {
+        ForgeConfigSpec.ValueSpec damage = assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                CommonConfig.SPEC.getSpec().get("OXYGEN.vacuumDamage"));
+        ForgeConfigSpec.Range<Double> range = damage.getRange();
+        assertEquals(0.0, range.getMin());
+        assertEquals(20.0, range.getMax());
+        assertEquals(2.0, CommonConfig.VACUUM_DAMAGE.getDefault());
+        assertEquals((double) io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life
+                .PlayerLifeSupportEngine.VACUUM_DAMAGE, CommonConfig.VACUUM_DAMAGE.getDefault());
+        assertTrue(damage.test(0.0));
+        assertTrue(damage.test(20.0));
+        assertFalse(damage.test(-0.001));
+        assertFalse(damage.test(20.001));
+        assertFalse(damage.test(Double.NaN));
+        assertFalse(damage.test(Double.POSITIVE_INFINITY));
+        assertEquals(2.0, CommonConfig.vacuumDamage());
     }
 
     @Test

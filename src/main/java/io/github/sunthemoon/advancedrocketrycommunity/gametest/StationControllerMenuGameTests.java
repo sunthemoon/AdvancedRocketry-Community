@@ -44,6 +44,7 @@ public final class StationControllerMenuGameTests {
      */
     @GameTest(template = "empty", batch = "station_controls_confirm_binding", timeoutTicks = 200)
     public static void aConfirmationRunsOnlyTheQuoteItsMenuShows(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         List<Warp> warps = new ArrayList<>();
         StationRocketAuthority previous = StationWarpRuntime.service().orElseThrow()
                 .installRocketAuthority(StationWarpGameTests.NOTHING_IN_MOTION);
@@ -69,7 +70,7 @@ public final class StationControllerMenuGameTests {
             helper.assertTrue(reopen.menu != closed, "Reopening returned the same menu");
             noQuoteShown(helper, reopen.menu, "after reopening");
             scheduled = true;
-            helper.runAfterDelay(RATE_TICKS, () -> step(cleanup, () -> {
+            driver.after(RATE_TICKS, () -> step(cleanup, () -> {
                 next.confirmRefused();
                 reopen.confirmRefused();
                 // A request that fails: rockets in motion (or, for an interstellar B, more than the balance).
@@ -81,13 +82,13 @@ public final class StationControllerMenuGameTests {
                 retry.requestFails("Request A again");
                 StationWarpRuntime.service().orElseThrow()
                         .installRocketAuthority(StationWarpGameTests.NOTHING_IN_MOTION);
-                helper.runAfterDelay(RATE_TICKS, () -> step(cleanup, () -> {
+                driver.after(RATE_TICKS, () -> step(cleanup, () -> {
                     failed.confirmRefused();
                     retry.confirmRefused();
-                    helper.runAfterDelay(RATE_TICKS, () -> step(cleanup, () -> {
+                    driver.after(RATE_TICKS, () -> step(cleanup, () -> {
                         long fresh = retry.request();
                         helper.assertTrue(fresh != retry.token, "A new quote reused the old token");
-                        helper.runAfterDelay(RATE_TICKS, () -> {
+                        driver.after(RATE_TICKS, () -> {
                             try {
                                 StationControlsGameTests.click(helper, retry.menu, retry.owner,
                                         WarpControllerMenu.BUTTON_CONFIRM, 0, fresh, StationManagementCode.WARP_STARTED);
@@ -125,6 +126,7 @@ public final class StationControllerMenuGameTests {
      */
     @GameTest(template = "empty", batch = "station_controls_viewer_access", timeoutTicks = 100)
     public static void aMenuClosesWhenItsHolderLosesVisitAccess(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         StationWarpGameTests.Fixture fixture = new StationWarpGameTests.Fixture(helper, "Viewer access",
                 CelestialIds.EARTH_ID, 0);
         List<BlockPos> placed = new ArrayList<>();
@@ -178,7 +180,7 @@ public final class StationControllerMenuGameTests {
             helper.assertTrue(ownerMenu.lastView().filter(view -> view.value(0) == 50).isPresent(),
                     "The former owner is not shown the change: " + ownerMenu.lastView());
             scheduled = true;
-            helper.runAfterDelay(2, () -> step(cleanup, () -> {
+            driver.after(2, () -> step(cleanup, () -> {
                 helper.assertTrue(member.containerMenu == member.inventoryMenu
                         && operator.containerMenu == operator.inventoryMenu, "A revoked viewer's menu stayed open");
                 helper.assertTrue(memberMenu.lastView().equals(memberView)
@@ -187,7 +189,7 @@ public final class StationControllerMenuGameTests {
                         "A revoked viewer's intent was handled");
                 helper.assertTrue(owner.containerMenu == ownerMenu, "The former owner's menu was closed");
                 fixture.data.removeMember(fixture.id(), fixture.ownerId);
-                helper.runAfterDelay(2, () -> {
+                driver.after(2, () -> {
                     try {
                         helper.assertTrue(owner.containerMenu == owner.inventoryMenu,
                                 "The removed former owner's menu stayed open");

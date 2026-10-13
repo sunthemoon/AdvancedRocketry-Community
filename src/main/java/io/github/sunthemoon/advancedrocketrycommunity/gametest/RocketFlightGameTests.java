@@ -45,11 +45,12 @@ public final class RocketFlightGameTests {
 
     @GameTest(template = TEMPLATE, batch = "station_flight", timeoutTicks = 800)
     public static void earthStationEarthUsesApprovedPadAndPreservesNeighborSpace(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
         ServerLevel space = earth.getServer().getLevel(CelestialIds.SPACE_LEVEL);
         helper.assertTrue(space != null, "Space Level is unavailable");
         clearTransferJournal(earth);
-        helper.runAfterDelay(40, () -> {
+        driver.after(40, () -> {
             UUID owner = UUID.randomUUID();
             StationPlatformGenerator platforms = new StationPlatformGenerator();
             StationState station = new StationCreationService(platforms, bodyId -> true).create(
@@ -62,7 +63,7 @@ public final class RocketFlightGameTests {
             helper.assertTrue(platforms.intact(space, station.cell()),
                     "Station platform was not generated exactly");
 
-            assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner, outbound -> {
+            assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), owner, outbound -> {
                 UUID logical = outbound.assemblyTransactionId().orElseThrow();
                 long initialFuel = outbound.flightData().orElseThrow().fuel().amount();
                 RocketFlightRequestResult outward = RocketRuntime.requestAdminStationFlight(
@@ -72,7 +73,7 @@ public final class RocketFlightGameTests {
                 );
                 helper.assertTrue(outward.success(), "Earth-to-station launch failed: " + outward.code());
 
-                awaitFlightState(helper, space, logical, RocketFlightState.LANDED, 270, () -> {
+                awaitFlightState(helper, driver, space, logical, RocketFlightState.LANDED, 270, () -> {
                     RocketEntity landedSpace = findLogicalRocket(space, logical);
                     helper.assertTrue(landedSpace != null, "Station transfer did not create a Space rocket");
                     helper.assertTrue(
@@ -113,7 +114,7 @@ public final class RocketFlightGameTests {
                     helper.assertTrue(returning.success(),
                             "Station-to-Earth launch failed: " + returning.code());
 
-                    awaitFlightState(helper, earth, logical, RocketFlightState.LANDED, 270, () -> {
+                    awaitFlightState(helper, driver, earth, logical, RocketFlightState.LANDED, 270, () -> {
                         RocketEntity landedEarth = findLogicalRocket(earth, logical);
                         helper.assertTrue(landedEarth != null, "Station return did not create an Earth rocket");
                         helper.assertTrue(
@@ -151,6 +152,7 @@ public final class RocketFlightGameTests {
 
     @GameTest(template = TEMPLATE, batch = "flight", timeoutTicks = 1_000)
     public static void earthMoonRoundTripConservesFuelAndBlockedPadReturnsSource(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
         ServerLevel moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable");
@@ -167,26 +169,27 @@ public final class RocketFlightGameTests {
             clearPadRockets(earth);
             clearPadRockets(moon);
         });
-        helper.runAfterDelay(80, () -> {
+        driver.after(80, () -> {
             clearPadRockets(earth);
             clearPadRockets(moon);
-            startRoundTrip(helper, earth, moon);
+            startRoundTrip(helper, driver, earth, moon);
         });
     }
 
     @GameTest(template = TEMPLATE, batch = "flight_concurrency", timeoutTicks = 500)
     public static void simultaneousRocketsUseDisjointAuthorityAndPads(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
         ServerLevel moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable");
         clearTransferJournal(earth);
         primePadChunks(earth);
         primePadChunks(moon);
-        helper.runAfterDelay(40, () -> {
+        driver.after(40, () -> {
             clearPadRockets(earth);
             clearPadRockets(moon);
-            assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID(), first -> {
-                assembleFueledRocket(helper, new BlockPos(12, 2, 3), UUID.randomUUID(), second -> {
+            assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), UUID.randomUUID(), first -> {
+                assembleFueledRocket(helper, driver, new BlockPos(12, 2, 3), UUID.randomUUID(), second -> {
                     UUID firstLogical = first.assemblyTransactionId().orElseThrow();
                     UUID secondLogical = second.assemblyTransactionId().orElseThrow();
                     long firstFuel = first.flightData().orElseThrow().fuel().amount();
@@ -214,7 +217,7 @@ public final class RocketFlightGameTests {
                             "Concurrent transfers reserved an overlapping Moon pad"
                     );
 
-                    awaitPaced(helper, helper.getTick() + 270, () ->
+                    awaitPaced(helper, driver, helper.getTick() + 270, () ->
                             hasFlightState(moon, firstLogical, RocketFlightState.LANDED)
                                     && hasFlightState(moon, secondLogical, RocketFlightState.LANDED), () -> {
                         RocketEntity firstLanded = findLogicalRocket(moon, firstLogical);
@@ -254,13 +257,13 @@ public final class RocketFlightGameTests {
     }
 
     private static void startRoundTrip(
-            GameTestHelper helper,
+            GameTestHelper helper, GameTestTickDriver driver,
             ServerLevel earth,
             ServerLevel moon
     ) {
         UUID owner = UUID.randomUUID();
         BlockPos origin = new BlockPos(3, 2, 3);
-        assembleFueledRocket(helper, origin, owner, outbound -> {
+        assembleFueledRocket(helper, driver, origin, owner, outbound -> {
             UUID logical = outbound.assemblyTransactionId().orElseThrow();
             long initialFuel = outbound.flightData().orElseThrow().fuel().amount();
             UUID outwardId = UUID.randomUUID();
@@ -271,7 +274,7 @@ public final class RocketFlightGameTests {
             );
             helper.assertTrue(outward.success(), "Earth-to-Moon launch failed: " + outward.code());
 
-            awaitFlightState(helper, moon, logical, RocketFlightState.LANDED, 270, () -> {
+            awaitFlightState(helper, driver, moon, logical, RocketFlightState.LANDED, 270, () -> {
                 RocketEntity landedMoon = findLogicalRocket(moon, logical);
                 helper.assertTrue(landedMoon != null, "Earth-to-Moon transfer did not create a Moon rocket");
                 helper.assertTrue(
@@ -304,7 +307,7 @@ public final class RocketFlightGameTests {
                 );
                 helper.assertTrue(returning.success(), "Moon-to-Earth launch failed: " + returning.code());
 
-                awaitFlightState(helper, earth, logical, RocketFlightState.LANDED, 270, () -> {
+                awaitFlightState(helper, driver, earth, logical, RocketFlightState.LANDED, 270, () -> {
                     RocketEntity landedEarth = findLogicalRocket(earth, logical);
                     helper.assertTrue(landedEarth != null, "Moon-to-Earth transfer did not create an Earth rocket");
                     helper.assertTrue(
@@ -334,20 +337,20 @@ public final class RocketFlightGameTests {
                     assertSnapshotBlocks(helper, earthWorld, returnedSnapshot);
                     clearSnapshotBlocks(earth, returnedSnapshot);
 
-                    startBlockedPadCase(helper, earth, moon);
+                    startBlockedPadCase(helper, driver, earth, moon);
                 });
             });
         });
     }
 
     private static void startBlockedPadCase(
-            GameTestHelper helper,
+            GameTestHelper helper, GameTestTickDriver driver,
             ServerLevel earth,
             ServerLevel moon
     ) {
         UUID owner = UUID.randomUUID();
         BlockPos origin = new BlockPos(12, 2, 3);
-        assembleFueledRocket(helper, origin, owner, source -> {
+        assembleFueledRocket(helper, driver, origin, owner, source -> {
             UUID logical = source.assemblyTransactionId().orElseThrow();
             long fuelBefore = source.flightData().orElseThrow().fuel().amount();
             UUID transferId = UUID.randomUUID();
@@ -363,7 +366,7 @@ public final class RocketFlightGameTests {
             BlockPos blockedPosition = new BlockPos(blocked.x(), blocked.y(), blocked.z());
             moon.setBlock(blockedPosition, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
 
-            awaitFlightState(helper, earth, logical, RocketFlightState.FUELED, 190, () -> {
+            awaitFlightState(helper, driver, earth, logical, RocketFlightState.FUELED, 190, () -> {
                 RocketEntity recovered = findLogicalRocket(earth, logical);
                 helper.assertTrue(recovered != null, "Blocked destination lost the source rocket");
                 helper.assertTrue(

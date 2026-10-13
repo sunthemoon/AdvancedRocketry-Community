@@ -117,6 +117,94 @@ class PackagedRecipeGraphTest {
     }
 
     @Test
+    void trackingCircuitRequiresItsRealMachineEnergyAndEveryClassicInput() {
+        Producer producer = graph.producers.get("recipe:" + id("precision_tracking_circuit"));
+        assertNotNull(producer);
+        assertEquals(Set.of(List.of("machine:" + id("precision_assembler")), List.of(ENERGY),
+                List.of("#forge:dusts/redstone"), List.of("minecraft:ender_eye"), List.of(id("basic_circuit_plate"))),
+                new HashSet<>(producer.slots()));
+        assertEquals(List.of(id("tracking_circuit")), producer.outputs());
+        Set<String> roots = producer.slots().stream().flatMap(List::stream).collect(Collectors.toSet());
+        assertTrue(evaluate(producer, roots).available().containsKey(id("tracking_circuit")));
+        for (List<String> slot : producer.slots()) {
+            Set<String> missing = new HashSet<>(roots); missing.removeAll(slot);
+            assertTrue(evaluate(producer, missing).unavailable().contains(id("tracking_circuit")), "Missing " + slot);
+        }
+    }
+
+    @Test
+    void precisionStandInsRequireTheRebalancedClassicComponentsButAreNotTheOnlyCircuitRoute() {
+        Producer circuit = graph.producers.get("recipe:" + id("precision_control_circuit"));
+        Producer guidance = graph.producers.get("recipe:" + id("precision_guidance_module"));
+        assertTrue(circuit.slots().contains(List.of(id("control_board"))));
+        assertTrue(guidance.slots().containsAll(List.of(List.of(id("control_board")), List.of(id("tracking_circuit")))));
+        Success withoutStandIns = assertInstanceOf(Success.class, RecipeGraphReachability.evaluate(graph.nodes, graph.roots,
+                graph.producerList().stream().filter(producer -> !Set.of(circuit.id(), guidance.id()).contains(producer.id())).toList(),
+                RecipeGraphReachability.DEFAULT_LIMITS));
+        assertEquals(PackagedRecipeGraph.OPTIONAL_CROSS_MOD_INPUTS, withoutStandIns.unavailable());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"helmet, #forge:armors/helmets", "chestplate, #forge:armors/chestplates",
+            "leggings, #forge:armors/leggings", "boots, #forge:armors/boots"})
+    void spaceBreathingRecipesNeedTheirArmorSealPlatesAndTheChestTankAndYieldOnlyTheEnchantment(
+            String piece, String armor) {
+        Producer producer = graph.producers.get("recipe:" + id("chemical_reacting_space_breathing_" + piece));
+        assertNotNull(producer);
+        Set<List<String>> required = new HashSet<>(Set.of(List.of("machine:" + id("chemical_reactor")), List.of(ENERGY),
+                List.of(armor), List.of(id("pipe_seal")), List.of("#" + id("sheets/titanium_aluminide"))));
+        if (piece.equals("chestplate")) {
+            required.add(List.of(id("super_high_pressure_tank")));
+        }
+        assertEquals(required, new HashSet<>(producer.slots()));
+        assertEquals(List.of(PackagedRecipeGraph.SPACE_BREATHING), producer.outputs(), "The armor piece is retained, not made");
+        Set<String> roots = producer.slots().stream().flatMap(List::stream).collect(Collectors.toSet());
+        assertTrue(evaluate(producer, roots).available().containsKey(PackagedRecipeGraph.SPACE_BREATHING));
+        for (List<String> slot : producer.slots()) {
+            Set<String> missing = new HashSet<>(roots);
+            missing.removeAll(slot);
+            assertTrue(evaluate(producer, missing).unavailable().contains(PackagedRecipeGraph.SPACE_BREATHING),
+                    () -> piece + " still seals without " + slot);
+        }
+        assertFalse(PackagedRecipeGraph.tagMembers(armor.substring(1), "items").isEmpty(), "Forge armor tag on the classpath");
+    }
+
+    @Test
+    void cartridgeRefreshRetainsTheCartridgeAndYieldsTheLegacyCharcoal() {
+        Producer refresh = graph.producers.get("recipe:" + id("chemical_reacting_carbon_cartridge_refresh"));
+        assertNotNull(refresh);
+        assertEquals(Set.of(List.of("machine:" + id("chemical_reactor")), List.of(ENERGY),
+                List.of(id("carbon_scrubber_cartridge"))), new HashSet<>(refresh.slots()));
+        assertEquals(List.of("minecraft:charcoal"), refresh.outputs(), "Refreshing cannot manufacture a second cartridge");
+    }
+
+    @Test
+    void spaceBreathingIsReachableInSurvivalOnlyThroughTheChemicalReactor() {
+        Success result = assertInstanceOf(Success.class, RecipeGraphReachability.evaluate(graph.nodes, graph.roots,
+                graph.producerList(), RecipeGraphReachability.DEFAULT_LIMITS));
+        assertTrue(result.available().containsKey(PackagedRecipeGraph.SPACE_BREATHING), "space_breathing unreachable");
+        assertEquals(Set.of("chemical_reacting_space_breathing_helmet", "chemical_reacting_space_breathing_chestplate",
+                        "chemical_reacting_space_breathing_leggings", "chemical_reacting_space_breathing_boots").stream()
+                        .map(recipe -> "recipe:" + id(recipe)).collect(Collectors.toSet()),
+                graph.producers.values().stream().filter(producer -> producer.outputs().contains(PackagedRecipeGraph.SPACE_BREATHING))
+                        .map(Producer::id).collect(Collectors.toSet()));
+        Success withoutReactor = assertInstanceOf(Success.class, RecipeGraphReachability.evaluate(graph.nodes, graph.roots,
+                graph.withoutInputs(Set.of("machine:" + id("chemical_reactor"))), RecipeGraphReachability.DEFAULT_LIMITS));
+        assertFalse(withoutReactor.available().containsKey(PackagedRecipeGraph.SPACE_BREATHING));
+    }
+
+    @Test
+    void unknownSpecialRecipesFailInsteadOfBeingSkipped() throws IOException {
+        Path recipe = temporary.resolve("data/advancedrocketrycommunity/recipes/future_special.json");
+        Files.createDirectories(recipe.getParent());
+        Files.writeString(recipe, "{\"type\":\"advancedrocketrycommunity:chemical_reacting\",\"special\":\"future\","
+                + "\"item_inputs\":[{\"ingredient\":{\"item\":\"minecraft:stone\"},\"count\":1}],\"item_outputs\":[],"
+                + "\"fluid_inputs\":[],\"fluid_outputs\":[],\"processing_time\":1,\"energy_per_tick\":1}");
+        IllegalStateException failure = assertThrows(IllegalStateException.class, () -> PackagedRecipeGraph.load(temporary));
+        assertEquals("Unmodelled special future in " + id("future_special"), failure.getMessage());
+    }
+
+    @Test
     void newMachinePatternsRequireControllersHatchesAndStructuralParts() {
         Set<String> motors = Set.of(id("motor"), id("advanced_motor"), id("enhanced_motor"), id("elite_motor"));
         Map<String, Set<Set<String>>> expected = Map.of(

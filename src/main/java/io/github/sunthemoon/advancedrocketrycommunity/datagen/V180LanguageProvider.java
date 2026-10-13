@@ -35,6 +35,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180ClassicMachineData.language(chinese).forEach(this::add);
         V180ArcCuttingData.language(chinese).forEach(this::add);
         V180C16cMachineData.language(chinese).forEach(this::add);
+        V180ChemicalSpecialData.language(chinese).forEach(this::add);
         V180RecipeMenuLanguage.translations(chinese).forEach(this::add);
         V180ClassicAdvancementLanguage.translations(chinese).forEach(this::add);
         V180ClassicMilestoneLanguage.translations(chinese).forEach(this::add);
@@ -56,6 +57,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180LiquidIoBoardData.language(chinese).forEach(this::add);
         V180ControlBoardData.language(chinese).forEach(this::add);
         V180CircuitPlateData.language(chinese).forEach(this::add);
+        V180TrackingCircuitData.language(chinese).forEach(this::add);
         V180SolarLanguage.entries(chinese).forEach(this::add);
         V180SolarArrayLanguage.entries(chinese).forEach(this::add);
         V180AirlockData.language(chinese).forEach(this::add);

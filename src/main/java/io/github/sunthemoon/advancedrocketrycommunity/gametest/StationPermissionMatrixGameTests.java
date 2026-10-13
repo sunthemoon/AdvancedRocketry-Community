@@ -62,13 +62,14 @@ public final class StationPermissionMatrixGameTests {
 
     @GameTest(template = "empty", batch = "station_permission_matrix", timeoutTicks = 900)
     public static void everyCellOfTheStationAuthorityMatrixMatchesTheTable(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         Fixture fixture = new Fixture(helper);
         boolean scheduled = false;
         try {
             fixture.setUp();
             scheduled = true;
             // The players' chunk tickets must settle first, so that a cell's chunk delta is its own.
-            awaitStableChunks(helper, fixture, 0, -1, () -> {
+            awaitStableChunks(helper, driver, fixture, 0, -1, () -> {
                 try (AuditLogCapture audit = new AuditLogCapture()) {
                     fixture.run(audit);
                 } finally {
@@ -84,15 +85,15 @@ public final class StationPermissionMatrixGameTests {
     }
 
     /** Runs {@code then} once the loaded-chunk counts of every Level were unchanged for 40 ticks. */
-    private static void awaitStableChunks(GameTestHelper helper, Fixture fixture, int stableTicks, int lastTotal,
+    private static void awaitStableChunks(GameTestHelper helper, GameTestTickDriver driver, Fixture fixture, int stableTicks, int lastTotal,
                                           Runnable then) {
-        helper.runAfterDelay(1, () -> {
+        driver.after(1, () -> {
             int total = fixture.loadedChunks().values().stream().mapToInt(Integer::intValue).sum();
             int stable = total == lastTotal ? stableTicks + 1 : 0;
             if (stable >= 40) {
                 then.run();
             } else {
-                awaitStableChunks(helper, fixture, stable, total, then);
+                awaitStableChunks(helper, driver, fixture, stable, total, then);
             }
         });
     }

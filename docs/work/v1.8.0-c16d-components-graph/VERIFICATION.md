@@ -77,6 +77,7 @@ W31 recomputed the SHA-256 on 2026-10-13; it matches the merge message prefix.
 | Unit | Disposition | Delivery |
 |---|---|---|
 | `item_variant:ic/3` | IMPLEMENTED | `advancedrocketrycommunity:control_board` (`c2934b83`) |
+| `item_variant:ic/1` | IMPLEMENTED | `advancedrocketrycommunity:tracking_circuit` (W35, merge `2c99a1db`; hosted run 38419018623) |
 | `item_variant:ic/4` | IMPLEMENTED | `advancedrocketrycommunity:item_io_board` (`fd88f71b`) |
 | `item_variant:ic/5` | IMPLEMENTED | `advancedrocketrycommunity:liquid_io_board` (`0dc14e4f`) |
 | `item_variant:itemCircuitPlate/0` | IMPLEMENTED | `advancedrocketrycommunity:basic_circuit_plate` (`b3595a73`; made by the laser etcher) |
