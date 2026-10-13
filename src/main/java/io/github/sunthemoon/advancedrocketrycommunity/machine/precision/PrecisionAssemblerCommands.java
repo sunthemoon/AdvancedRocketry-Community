@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecyc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessJournalPersistence;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessStatePersistence;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.commands.CommandSourceStack;
@@ -128,22 +129,22 @@ public final class PrecisionAssemblerCommands {
         IEnergyStorage energy = fixture.ports().energy()
                 .getCapability(ForgeCapabilities.ENERGY).resolve().orElse(null);
         ItemStack iron = new ItemStack(Items.IRON_INGOT, 2);
-        ItemStack redstone = new ItemStack(Items.REDSTONE, 2);
+        ItemStack boards = new ItemStack(ModItems.CONTROL_BOARD.get(), 2);
         if (first == null || second == null || energy == null
                 || !first.insertItem(0, iron, true).isEmpty()
-                || !second.insertItem(0, redstone, true).isEmpty()
+                || !second.insertItem(0, boards, true).isEmpty()
                 || !energy.canReceive()
                 || (long) energy.getMaxEnergyStored() - energy.getEnergyStored() < ENERGY_AMOUNT) {
             return fail(source, "Precision fixture rejected simulated seed resources");
         }
         if (!receiveEnergyFully(energy, ENERGY_AMOUNT)
                 || !first.insertItem(0, iron, false).isEmpty()
-                || !second.insertItem(0, redstone, false).isEmpty()) {
+                || !second.insertItem(0, boards, false).isEmpty()) {
             return fail(source, "Precision fixture rejected committed seed resources");
         }
         PrecisionAssemblerRuntime.markProcessReady(source.getLevel(), fixture.controller().getBlockPos());
         AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_RELEASE_TEST_PRECISION_SEED controller={} iron=2 redstone=2 energy={}",
+                "ARCE_RELEASE_TEST_PRECISION_SEED controller={} iron=2 control_board=2 energy={}",
                 compact(fixture.controller().getBlockPos()), ENERGY_AMOUNT);
         source.sendSuccess(() -> Component.literal("Seeded Precision Assembler fixture"), false);
         return 1;

@@ -145,7 +145,7 @@ public final class RecipeSignatureMigrationGameTests {
         AtomicReference<RetainedCut> cut = new AtomicReference<>();
         PrecisionAssemblerGameTests.placeStructure(helper);
         helper.runAtTickTime(8, () -> {
-            PrecisionAssemblerGameTests.insertInputs(helper);
+            PrecisionAssemblerGameTests.insertInputs(helper, Items.REDSTONE);
             PrecisionAssemblerGameTests.port(helper, PrecisionAssemblerGameTests.ENERGY)
                     .getCapability(ForgeCapabilities.ENERGY).resolve().orElseThrow().receiveEnergy(800, false);
             var machine = PrecisionAssemblerGameTests.controller(helper); CompoundTag saved = machine.saveWithFullMetadata();
@@ -172,7 +172,7 @@ public final class RecipeSignatureMigrationGameTests {
         AtomicReference<RetainedCut> cut = new AtomicReference<>();
         PrecisionAssemblerGameTests.placeStructure(helper);
         helper.runAtTickTime(8, () -> {
-            PrecisionAssemblerGameTests.insertInputs(helper); var machine = PrecisionAssemblerGameTests.controller(helper);
+            PrecisionAssemblerGameTests.insertInputs(helper, Items.REDSTONE); var machine = PrecisionAssemblerGameTests.controller(helper);
             var recipe = oldPrecision(); var pending = PrecisionAssemblerGameTests.preparedJournal(helper, recipe);
             CompoundTag saved = machine.saveWithFullMetadata();
             legacyProgress(saved, recipe.processDefinition(), 20, machine.resourceRevision(), PRECISION_SHA);

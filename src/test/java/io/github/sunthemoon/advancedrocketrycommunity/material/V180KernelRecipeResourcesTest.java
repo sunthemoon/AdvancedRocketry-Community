@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.zip.ZipFile;
 import org.junit.jupiter.api.Test;
 
-/** ADR-064 section 2.4: current tag recipes supersede, but never edit, historical item recipes. */
+/** ADR-064 sections 2.4/10.3: current selectors/components supersede immutable historical recipes. */
 class V180KernelRecipeResourcesTest {
     private static final String PREFIX = "data/advancedrocketrycommunity/recipes/";
     private static final Map<String, List<String>> TAGS = Map.of(
@@ -28,7 +28,7 @@ class V180KernelRecipeResourcesTest {
                     "minecraft:gold_ingot", "minecraft:quartz", "minecraft:copper_ingot"));
 
     @Test
-    void currentPayloadsChangeOnlySelectorsAndKeepHistoricalInputs() throws IOException {
+    void currentPayloadsChangeOnlyRebalancedSelectorsAndKeepHistoricalAccounting() throws IOException {
         for (String id : TAGS.keySet()) {
             JsonObject historical = json(Path.of("src/generated/v1.2/resources", PREFIX + id + ".json"));
             JsonObject expected = historical.deepCopy();
@@ -39,6 +39,14 @@ class V180KernelRecipeResourcesTest {
                 assertEquals(Map.of("item", HISTORICAL_ITEMS.get(id).get(i)), selector(oldIngredients.get(i)), id);
                 newIngredients.get(i).remove("item");
                 newIngredients.get(i).addProperty("tag", TAGS.get(id).get(i));
+            }
+            if (id.startsWith("precision_")) {
+                newIngredients.get(1).remove("tag");
+                newIngredients.get(1).addProperty("item", "advancedrocketrycommunity:control_board");
+                if (id.equals("precision_guidance_module")) {
+                    newIngredients.get(2).remove("tag");
+                    newIngredients.get(2).addProperty("item", "advancedrocketrycommunity:tracking_circuit");
+                }
             }
             assertEquals(expected, current(id), "only ingredient selectors change: " + id);
         }

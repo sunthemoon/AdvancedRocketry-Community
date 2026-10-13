@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFailureCode;
@@ -105,7 +106,7 @@ public final class PrecisionAssemblerProcessSafetyGameTests {
                     .byKey(ModIdentity.id("precision_guidance_module")).isPresent(),
                     "Five-input recipe was not loaded");
             PrecisionAssemblerGameTests.insertInputs(helper);
-            insert(helper, new BlockPos(1, 1, 2), Items.GOLD_INGOT);
+            insert(helper, new BlockPos(1, 1, 2), ModItems.TRACKING_CIRCUIT.get());
             insert(helper, new BlockPos(3, 1, 2), Items.QUARTZ);
             insert(helper, new BlockPos(1, 1, 3), Items.COPPER_INGOT);
             IEnergyStorage energy = PrecisionAssemblerGameTests.port(

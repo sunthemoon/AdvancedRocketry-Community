@@ -54,6 +54,20 @@ class CodeAcquisitionGraphTest {
         assertEquals(PackagedRecipeGraph.OPTIONAL_CROSS_MOD_INPUTS, forbidden.unavailable());
     }
 
+    @Test
+    void tauLessWholeGraphHasExactlyTheDocumentedOptionalContentLosses() {
+        Success disabled = evaluate(graph.roots, graph.withoutInputs(PackagedRecipeGraph.TAU_CETI_LEVELS));
+        Set<String> expected = new TreeSet<>(PackagedRecipeGraph.OPTIONAL_CROSS_MOD_INPUTS);
+        expected.addAll(PackagedRecipeGraph.TAU_CETI_ITEMS);
+        expected.addAll(PackagedRecipeGraph.TAU_CETI_LEVELS);
+        expected.add("block:" + id("lightwood_leaves"));
+        assertEquals(expected, disabled.unavailable(), "No C16-C18 node may depend on Tau Ceti surface access");
+        graph.withoutInputs(PackagedRecipeGraph.TAU_CETI_LEVELS).forEach(producer -> {
+            assertTrue(java.util.Collections.disjoint(producer.outputs(), PackagedRecipeGraph.TAU_CETI_LEVELS));
+            producer.slots().forEach(slot -> assertTrue(java.util.Collections.disjoint(slot, PackagedRecipeGraph.TAU_CETI_LEVELS)));
+        });
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"drain:hydrogen", "drain:oxygen", "drain:nitrogen", "gas_harvester",
             "gas_harvest:gas_giant.json", "volcano", "pump:enriched_lava",

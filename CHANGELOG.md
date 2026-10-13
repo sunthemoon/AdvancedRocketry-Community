@@ -6,6 +6,21 @@ Rocketry maintainers.
 
 ## v1.8.0 — in development
 
+- Add the Tracking Circuit with its classic Precision Assembler recipe: one
+  redstone dust, one ender eye and one Basic Circuit Plate make one circuit in
+  900 ticks at 50 FE/t. It has original artwork and English/Chinese labels.
+  The legacy item had no workbench recipe; none is added.
+- Rebalance `precision_control_circuit`: its second input is now two Control
+  Circuit Boards instead of two redstone dust. Two iron ingots still occupy
+  the first input; outputs remain one Advanced Circuit and two redstone torches,
+  with the same 20 ticks at 40 FE/t.
+- Rebalance `precision_guidance_module`: its second input is now two Control
+  Circuit Boards instead of two redstone dust, and its third is one Tracking
+  Circuit instead of one gold ingot. Two iron ingots, one quartz and one copper
+  ingot, its comparator output, and 30 ticks at 50 FE/t remain unchanged.
+  Both recipe IDs remain stable. Active jobs with old recipe signatures retain
+  their resources and follow the existing recipe-change recovery rules.
+
 - Add Basic and Advanced Circuit Plates through the Precision Assembler. Each
   uses a gold ingot, a silicon wafer and redstone dust or a redstone block,
   for 900 ticks at 100 FE/t. Existing circuit recipes are unchanged; the
