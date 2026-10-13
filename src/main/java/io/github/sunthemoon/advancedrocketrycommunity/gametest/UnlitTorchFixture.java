@@ -54,26 +54,31 @@ final class UnlitTorchFixture implements AutoCloseable, GameTestListener {
     private boolean closed;
     private boolean ownsForce;
 
-    private UnlitTorchFixture(GameTestHelper helper, ServerLevel level, BlockPos origin, AABB bounds, boolean pin) {
+    UnlitTorchFixture(GameTestHelper helper, ServerLevel level, BlockPos origin, AABB bounds, boolean pin) {
         this.helper = helper;
         this.level = level;
         this.origin = origin;
         this.bounds = bounds;
-        if (pin) {
-            ChunkPos chunk = new ChunkPos(origin);
-            if (!level.getForcedChunks().contains(chunk.toLong())) {
-                ownsForce = true;
-                level.setChunkForced(chunk.x, chunk.z, true);
-            }
-            level.getChunk(chunk.x, chunk.z); // One explicitly forced fixture chunk, loaded before any placement.
-        }
-        oldDrops = currentDrops();
         try {
+            if (pin) {
+                ChunkPos chunk = new ChunkPos(origin);
+                if (!level.getForcedChunks().contains(chunk.toLong())) {
+                    ownsForce = true;
+                    level.setChunkForced(chunk.x, chunk.z, true);
+                }
+                level.getChunk(chunk.x, chunk.z); // One explicitly forced fixture chunk, loaded before any placement.
+            }
+            oldDrops = currentDrops();
             Field field = GameTestHelper.class.getDeclaredField("testInfo");
             field.setAccessible(true);
             ((GameTestInfo) field.get(helper)).addListener(this);
         } catch (ReflectiveOperationException failure) {
-            throw new IllegalStateException("Cannot install fixture timeout cleanup", failure);
+            IllegalStateException primary = new IllegalStateException("Cannot install fixture timeout cleanup", failure);
+            close(primary);
+            throw primary;
+        } catch (RuntimeException | Error failure) {
+            close(failure);
+            throw failure;
         }
     }
 
@@ -209,7 +214,11 @@ final class UnlitTorchFixture implements AutoCloseable, GameTestListener {
             try { level.setBlock(cell, before.get(cell), QUIET); }
             catch (RuntimeException | Error next) { failure = combine(failure, next); }
         }
-        try { level.getEntitiesOfClass(ItemEntity.class, bounds, entity -> !oldDrops.contains(entity.getUUID())).forEach(ItemEntity::discard); }
+        try {
+            if (oldDrops != null) {
+                level.getEntitiesOfClass(ItemEntity.class, bounds, entity -> !oldDrops.contains(entity.getUUID())).forEach(ItemEntity::discard);
+            }
+        }
         catch (RuntimeException | Error next) { failure = combine(failure, next); }
         try {
             if (ownsForce) {
