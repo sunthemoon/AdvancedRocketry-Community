@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.compat.atmosphere.SuitEqui
 import java.util.Objects;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /** Item-use bridge to the mod-owned service; session state clears through server-stop handling. */
@@ -20,6 +21,12 @@ public final class SuitEquipmentRuntime {
     public static boolean isChest(ItemStack stack) {
         SuitEquipmentService current = service;
         return current != null && current.isChest(stack);
+    }
+
+    /** Fails closed: without the installed catalog, every item counts as provider-owned. */
+    public static boolean claimed(Item item) {
+        SuitEquipmentService current = service;
+        return current == null || current.claims(item);
     }
 
     public static OxygenTransferResult fillOneCanister(ServerPlayer player, InteractionHand hand) {

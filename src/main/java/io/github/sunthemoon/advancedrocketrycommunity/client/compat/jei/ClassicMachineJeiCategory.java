@@ -34,10 +34,21 @@ final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMach
     }
     @Override public void setRecipe(IRecipeLayoutBuilder builder, ClassicMachineRecipe recipe, IFocusGroup focuses) {
         var alternatives = recipe.resolveInputs();
+        var special = recipe.special().orElse(null);
         for (int index = 0; index < alternatives.size(); index++) {
             var stacks = new ArrayList<ItemStack>();
             for (String id : alternatives.get(index)) {
                 stacks.add(new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(id)), recipe.rows().itemInputs().get(index).count()));
+            }
+            if (special != null && index == 0) {
+                // The subject leaves as its changed self in the first output slot, never as a second Item.
+                var inputs = stacks.stream().map(special::previewInput).toList();
+                var input = builder.addInputSlot(4, 4).setStandardSlotBackground().addItemStacks(inputs);
+                var output = builder.addOutputSlot(132, 4).setStandardSlotBackground()
+                        .addItemStacks(stacks.stream().map(special::preview).toList())
+                        .addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable("jei.advancedrocketrycommunity.special_subject")));
+                builder.createFocusLink(input, output);
+                continue;
             }
             var slot = builder.addInputSlot(4, 4 + index * 18).setStandardSlotBackground().addItemStacks(stacks);
             if (stacks.stream().anyMatch(stack -> BuiltInRegistries.ITEM.getKey(stack.getItem()).equals(ModIdentity.id("laser_lens")))
@@ -45,8 +56,9 @@ final class ClassicMachineJeiCategory extends AbstractRecipeCategory<ClassicMach
                 slot.addRichTooltipCallback((view, tooltip) -> tooltip.add(Component.translatable("jei.advancedrocketrycommunity.retained")));
             }
         }
+        int shift = special == null ? 0 : 1;
         for (int index = 0; index < recipe.rows().itemOutputs().size(); index++) {
-            builder.addOutputSlot(132, 4 + index * 18).setStandardSlotBackground().addItemStack(recipe.output(index));
+            builder.addOutputSlot(132, 4 + (index + shift) * 18).setStandardSlotBackground().addItemStack(recipe.output(index));
         }
         for (int index = 0; index < recipe.rows().fluidInputs().size(); index++) {
             var row = recipe.rows().fluidInputs().get(index);
