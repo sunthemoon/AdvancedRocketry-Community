@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 
 class EscrowLedgerWriterTest {
@@ -176,6 +178,148 @@ class EscrowLedgerWriterTest {
             assertEquals(data.ledger(), EscrowCodec.decode(CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW)
                     .read(file()).orElseThrow()));
         } finally { release.countDown(); coordinator.close(); }
+    }
+    /** Review W11b1 finding 1, probe "wedge": ambiguous L2, then a newer endpoint save before the 200-tick retry. */
+    @Test @Timeout(60) void anAmbiguousRetirementWhoseProofIsLaterInvalidatedResolvesWithoutWedgingTheWriter() throws Exception {
+        var op = EscrowTestFixtures.operation(1); var base = EscrowTestFixtures.ledger(op).generation(1);
+        var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW);
+        policy.replace(file(), () -> EscrowCodec.encode(base));
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base));
+        AtomicInteger moves = new AtomicInteger(), unknown = new AtomicInteger();
+        var writer = new EscrowLedgerWriter(file(), 1, (staged, target) -> {
+            // Windows backup/antivirus/indexer handle: the replacement is refused without moving.
+            if (moves.incrementAndGet() == 1) { throw new java.nio.file.AccessDeniedException(target.toString()); }
+            CheckedSavedDataFile.atomicMove(staged, target);
+        }, cut -> { if (cut.equals("WRITE_UNKNOWN")) { unknown.incrementAndGet(); } });
+        var coordinator = new EscrowCoordinator(data, writer); var callbacks = new ArrayList<Boolean>();
+        var savedGenerations = new ArrayList<java.util.concurrent.atomic.AtomicLong>();
+        var proofs = frozenProofs(coordinator, base, op, savedGenerations);
+        coordinator.tick(10); assertTrue(coordinator.retire(Set.of(op.id()), proofs, callbacks::add));
+        long tick = 10, deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (unknown.get() == 0 && System.nanoTime() < deadline) { coordinator.tick(++tick); Thread.sleep(1); }
+        assertEquals(1, unknown.get(), "The first replacement must be ambiguous");
+        savedGenerations.get(0).incrementAndGet(); // Vanilla saves one endpoint chunk before the retry.
+        for (int i = 0; i < 2_000 && !writer.idle(); i++) { coordinator.tick(++tick); Thread.sleep(1); }
+        assertTrue(writer.idle(), "The ledger writer wedged on an invalidated uncertain retirement");
+        assertFalse(writer.unavailable()); assertEquals(1, unknown.get());
+        assertEquals(1, moves.get(), "An invalidated proof authorized another replacement");
+        assertEquals(List.of(false), callbacks, "Retirement callbacks must be final");
+        assertEquals(List.of(op), coordinator.ledger().records()); assertEquals(base, EscrowCodec.decode(policy.read(file()).orElseThrow()));
+        assertTrue(coordinator.frozen(op.source().key()) && coordinator.frozen(op.destination().key()) && coordinator.locked(op.source().key()));
+        // The writer accepts and commits a later non-retiring generation.
+        tick += 10; coordinator.tick(tick); assertTrue(data.isDirty()); coordinator.autosave(); assertFalse(writer.idle());
+        while (!writer.idle() && System.nanoTime() < deadline + TimeUnit.SECONDS.toNanos(10)) { coordinator.tick(++tick); Thread.sleep(1); }
+        assertEquals(3, EscrowCodec.decode(policy.read(file()).orElseThrow()).writerGeneration());
+        assertEquals(List.of(op), EscrowCodec.decode(policy.read(file()).orElseThrow()).records());
+        long started = System.nanoTime(); coordinator.close();
+        assertTrue(System.nanoTime() - started < TimeUnit.SECONDS.toNanos(5), "Shutdown drain did not finish");
+    }
+    /** Review W11b1 finding 6, probe "retire": an ambiguous first move, then a commit, reports one final callback. */
+    @Test @Timeout(60) void anAmbiguousRetirementThatLaterCommitsCallsBackOnceWithTrue() throws Exception {
+        var op = EscrowTestFixtures.operation(1); var base = EscrowTestFixtures.ledger(op).generation(1);
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base)); AtomicInteger moves = new AtomicInteger();
+        var writer = new EscrowLedgerWriter(file(), 1, (staged, target) -> {
+            if (moves.incrementAndGet() == 1) { throw new IOException("Ambiguous replacement outcome"); }
+            CheckedSavedDataFile.atomicMove(staged, target);
+        });
+        var callbacks = new ArrayList<Boolean>();
+        try (var coordinator = new EscrowCoordinator(data, writer)) {
+            var proofs = frozenProofs(coordinator, base, op, new ArrayList<>());
+            coordinator.tick(10); assertTrue(coordinator.retire(Set.of(op.id()), proofs, callbacks::add));
+            long tick = 10, deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (!writer.idle() && System.nanoTime() < deadline) { coordinator.tick(++tick); Thread.sleep(1); }
+            assertTrue(writer.idle()); assertEquals(2, moves.get());
+            assertEquals(List.of(true), callbacks); assertTrue(coordinator.ledger().records().isEmpty());
+            assertFalse(coordinator.frozen(op.source().key()) || coordinator.frozen(op.destination().key()));
+        }
+    }
+    private Map<EscrowEndpoint.Key, EscrowBarrier.Proof> frozenProofs(EscrowCoordinator coordinator, EscrowLedger base, EscrowOperation op,
+                                                                      List<java.util.concurrent.atomic.AtomicLong> savedGenerations) {
+        var proofs = new java.util.HashMap<EscrowEndpoint.Key, EscrowBarrier.Proof>();
+        for (var endpoint : List.of(op.source(), op.destination())) {
+            var frontier = new EscrowPrefix.State(base.id(), endpoint.afterEpoch(), endpoint.afterSignature(),
+                    EscrowPrefix.chains(base.records()).get(endpoint.key()).stream().map(EscrowPrefix.Link::marker).toList());
+            var generation = new java.util.concurrent.atomic.AtomicLong(1); savedGenerations.add(generation);
+            var capture = new EscrowChunkStore.Capture(java.util.concurrent.CompletableFuture.completedFuture(null), null, directory,
+                    new net.minecraft.world.level.ChunkPos(0, 0), generation, 1, 0, () -> { }, () -> { });
+            proofs.put(endpoint.key(), new EscrowBarrier.Proof(frontier, capture, new AtomicBoolean(true), new AtomicBoolean(true)));
+            coordinator.freeze(endpoint.key(), frontier);
+        }
+        return proofs;
+    }
+    /** Shutdown always finishes: a persistently unknown outcome stops after a bounded number of drain attempts. */
+    @Test @Timeout(60) void shutdownStopsRetryingAPersistentlyUnknownGenerationAndLeavesTheTargetFile() throws Exception {
+        var base = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)).generation(1);
+        var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW);
+        policy.replace(file(), () -> EscrowCodec.encode(base));
+        AtomicInteger moves = new AtomicInteger(); var outcomes = new ArrayList<EscrowLedgerWriter.Completion>();
+        var writer = new EscrowLedgerWriter(file(), 1, (staged, target) -> {
+            moves.incrementAndGet(); throw new java.nio.file.AccessDeniedException(target.toString());
+        });
+        writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.retire(Set.of(base.records().get(0).id())).generation(2), Set.of()),
+                outcomes::add, () -> true);
+        poll(writer, () -> !outcomes.isEmpty());
+        long started = System.nanoTime(); writer.close();
+        assertTrue(System.nanoTime() - started < TimeUnit.SECONDS.toNanos(30), "Shutdown drain did not finish");
+        assertEquals(1 + EscrowLedgerWriter.DRAIN_UNKNOWN_ATTEMPTS, moves.get());
+        assertTrue(outcomes.stream().allMatch(c -> c.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN));
+        assertEquals(base, EscrowCodec.decode(policy.read(file()).orElseThrow()));
+        assertFalse(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(3), Set.of()), outcomes::add));
+    }
+    /** A foreign target is not mistaken for the last durable generation; the candidate stays unknown. */
+    @Test @Timeout(60) void anInvalidatedUncertainRetryAgainstAForeignTargetStaysUnknown() throws Exception {
+        var base = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)).generation(1);
+        var policy = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW);
+        policy.replace(file(), () -> EscrowCodec.encode(base));
+        AtomicBoolean valid = new AtomicBoolean(true); var outcomes = new ArrayList<EscrowLedgerWriter.Completion>();
+        var writer = new EscrowLedgerWriter(file(), 1, (staged, target) -> { throw new IOException("Unknown replacement outcome"); });
+        writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.retire(Set.of(base.records().get(0).id())).generation(2), Set.of()),
+                outcomes::add, valid::get);
+        poll(writer, () -> !outcomes.isEmpty());
+        var foreign = base.generation(7); policy.replace(file(), () -> EscrowCodec.encode(foreign)); valid.set(false);
+        long tick = 1_000, deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (outcomes.size() < 3 && System.nanoTime() < deadline) { writer.tick(tick++); Thread.sleep(1); }
+        assertEquals(3, outcomes.size()); assertFalse(writer.idle());
+        assertTrue(outcomes.stream().allMatch(c -> c.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN));
+        writer.close(); assertEquals(foreign, EscrowCodec.decode(policy.read(file()).orElseThrow()));
+    }
+    /** Review W11b1 finding 3: about 14 hours of uptime; a queued successor must not wait out the cadence from tick 0. */
+    @Test @Timeout(60) void shutdownDrainAtAHighServerTickDoesNotRestartTheWriterClock() throws Exception {
+        var base = EscrowTestFixtures.ledger(); var outcomes = new ArrayList<EscrowLedgerWriter.Completion>();
+        var writer = new EscrowLedgerWriter(file(), 0); writer.tick(1_000_000);
+        assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(1), Set.of()), outcomes::add));
+        assertTrue(writer.request(() -> EscrowLedgerWriter.Snapshot.of(base.generation(2), Set.of()), outcomes::add));
+        assertEquals(1_000_000, writer.lastIoStart());
+        long started = System.nanoTime(); writer.close(); long elapsed = System.nanoTime() - started;
+        assertTrue(elapsed < TimeUnit.SECONDS.toNanos(5), "Shutdown drain took " + TimeUnit.NANOSECONDS.toMillis(elapsed) + " ms");
+        assertEquals(List.of(1L, 2L), outcomes.stream().map(EscrowLedgerWriter.Completion::generation).toList());
+        assertTrue(outcomes.stream().allMatch(c -> c.outcome() == EscrowLedgerWriter.Outcome.COMMITTED));
+        assertEquals(2, CheckedSavedDataFile.readPayload(file(), ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow().getLong("writer_generation"));
+    }
+    /** Review W11b1 finding 5: no autosave after the server stops, and the crash path joins IO without callbacks. */
+    @Test @Timeout(60) void crashPathStartsNoGenerationAndJoinsTheWriterWithoutCallbacks() throws Exception {
+        var idleData = ResourceEscrowSavedData.create(); var idleWriter = new EscrowLedgerWriter(directory.resolve("idle").resolve(file().getFileName()), 0);
+        try (var idle = new EscrowCoordinator(idleData, idleWriter)) {
+            idleData.attach(idle, () -> false); idleData.setDirty(); idleData.save(file().toFile());
+            assertTrue(idleWriter.idle(), "A stopped server started a ledger generation from saveAllChunks");
+        }
+        CountDownLatch staged = new CountDownLatch(1), release = new CountDownLatch(1); AtomicBoolean moved = new AtomicBoolean();
+        var writer = new EscrowLedgerWriter(file(), 0, (pending, target) -> {
+            staged.countDown(); await(release); CheckedSavedDataFile.atomicMove(pending, target); moved.set(true);
+        });
+        var data = ResourceEscrowSavedData.create(); var coordinator = new EscrowCoordinator(data, writer);
+        data.attach(coordinator, () -> true); data.setDirty(); data.save(file().toFile());
+        assertFalse(writer.idle()); assertTrue(staged.await(5, TimeUnit.SECONDS));
+        var releaser = new Thread(() -> {
+            try { Thread.sleep(200); } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
+            release.countDown();
+        });
+        releaser.start(); coordinator.abort(); releaser.join();
+        assertTrue(moved.get(), "World ownership could be released while the ledger IO thread was active");
+        assertEquals(0, data.ledger().writerGeneration(), "The crash path pumped a writer callback");
+        assertEquals(1, CheckedSavedDataFile.readPayload(file(), ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow().getLong("writer_generation"));
+        assertFalse(writer.request(() -> EscrowLedgerWriter.Snapshot.of(EscrowTestFixtures.ledger().generation(2), Set.of()), result -> { }));
+        coordinator.autosave(); coordinator.close(); assertTrue(writer.idle());
     }
     private static void await(CountDownLatch latch) {
         try { if (!latch.await(5, TimeUnit.SECONDS)) { throw new AssertionError("Writer test gate timed out"); } }

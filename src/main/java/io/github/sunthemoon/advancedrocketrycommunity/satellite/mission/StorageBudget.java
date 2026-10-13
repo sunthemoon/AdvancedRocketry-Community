@@ -16,7 +16,8 @@ final class StorageBudget {
         SATELLITES(4L * 1024L * 1024L),
         MISSIONS(6L * 1024L * 1024L),
         INSTANCES(2L * 1024L * 1024L),
-        ACCOUNTS(1024L * 1024L);
+        ACCOUNTS(1024L * 1024L),
+        GROUND_SURVEYS(1024L * 1024L);
 
         final long bytes;
 

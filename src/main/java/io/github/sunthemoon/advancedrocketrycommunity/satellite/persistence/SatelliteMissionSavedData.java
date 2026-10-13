@@ -5,6 +5,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.Atom
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.GroundSurveyJob;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.GroundSurveys;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteMissionRegistry;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationResult;
@@ -39,8 +41,8 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
             flushPending = true;
             io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.warn(
                     "ARCE_SATELLITE_RESTORE quarantined_missions={} recovery_required={} quarantined_instances={} "
-                            + "accounts_added={}", report.quarantinedMissions(), report.recoveries(),
-                    report.quarantinedInstances(), report.accountsAdded());
+                            + "accounts_added={} quarantined_ground_surveys={}", report.quarantinedMissions(), report.recoveries(),
+                    report.quarantinedInstances(), report.accountsAdded(), report.quarantinedGroundSurveys());
         }
     }
 
@@ -86,6 +88,22 @@ public final class SatelliteMissionSavedData extends AtomicSavedData {
         setDirty();
         registry.markChanged();
         flushPending = true;
+    }
+
+    public GroundSurveys.Result groundSurveys(java.util.function.Function<GroundSurveys, GroundSurveys.Result> operation) {
+        requireOperational();
+        GroundSurveys.Result result = operation.apply(registry.groundSurveys());
+        if (result.changed()) { changed(); }
+        return result;
+    }
+
+    public List<GroundSurveyJob> groundSurveys() {
+        return operational() ? registry.groundSurveys().all() : List.of();
+    }
+
+    public <T> T groundSurveyQuery(java.util.function.Function<GroundSurveys, T> query) {
+        requireOperational();
+        return query.apply(registry.groundSurveys());
     }
 
     /** Whether a state change waits for the coalesced flush (clock-only changes never set it). */

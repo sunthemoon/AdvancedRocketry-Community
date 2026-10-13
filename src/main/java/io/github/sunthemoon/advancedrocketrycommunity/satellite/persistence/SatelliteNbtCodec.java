@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceState;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceOrigin;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionPayload;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionQuarantine;
@@ -37,6 +38,9 @@ final class SatelliteNbtCodec {
     private static final Set<String> MISSION_V2_KEYS = Set.of(
             "kind", "seed", "start_epoch", "reward_version", "instance_id", "quarantine");
     private static final Set<String> DATA_KEYS = Set.of("research_yield", "discovery_cost", "discovery_required");
+    private static final Set<String> INSTANCE_KEYS = Set.of("schema_version", "instance_id", "owner_id", "system",
+            "asteroid_type", "table_version", "candidate_fingerprint", "seed", "yield", "created_at", "expires_at",
+            "state", "origin_kind", "origin_id", "allocated_mission");
     private static final Set<String> SURVEY_KEYS = Set.of("instances", "candidate_fingerprint");
     private static final Set<String> RESOURCE_KEYS = Set.of("reward", "bound_terminal", "terminal_level",
             "terminal_pos", "rebound", "paid_terminal", "acknowledged", "ack_epoch");
@@ -183,7 +187,8 @@ final class SatelliteNbtCodec {
         target.putLong("created_at", instance.createdAt());
         instance.expiresAt().ifPresent(value -> target.putLong("expires_at", value));
         target.putString("state", instance.state().name().toLowerCase(Locale.ROOT));
-        target.putUUID("source_mission", instance.sourceMission());
+        target.putString("origin_kind", instance.origin().kind().name().toLowerCase(Locale.ROOT));
+        target.putUUID("origin_id", instance.origin().id());
         instance.allocatedMission().ifPresent(value -> target.putUUID("allocated_mission", value));
         requireBound(target, SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES);
         return target;
@@ -191,6 +196,7 @@ final class SatelliteNbtCodec {
 
     static AsteroidInstance decodeInstance(CompoundTag source) {
         requireBound(source, SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES);
+        requireKeys(source, INSTANCE_KEYS);
         return new AsteroidInstance(
                 requireSchema(source, SatelliteLimits.INSTANCE_SCHEMA_VERSION, "asteroid instance"),
                 requireUuid(source, "instance_id"),
@@ -204,9 +210,33 @@ final class SatelliteNbtCodec {
                 requireNonNegativeLong(source, "created_at"),
                 optionalLong(source, "expires_at"),
                 requireEnum(source, "state", InstanceState.class),
-                requireUuid(source, "source_mission"),
+                new InstanceOrigin(requireEnum(source, "origin_kind", InstanceOrigin.Kind.class),
+                        requireUuid(source, "origin_id")),
                 optionalUuid(source, "allocated_mission")
         );
+    }
+
+    /** Strict schema-1 validation happens before replacing its source field. */
+    static CompoundTag upgradeLegacyInstance(CompoundTag source) {
+        requireBound(source, SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES);
+        requireSchema(source, SatelliteLimits.LEGACY_INSTANCE_SCHEMA_VERSION, "legacy instance");
+        if (source.contains("origin_kind") || source.contains("origin_id")) {
+            throw new IllegalArgumentException("Legacy instance already carries tagged origin fields");
+        }
+        UUID mission = requireUuid(source, "source_mission");
+        CompoundTag result = source.copy();
+        result.remove("source_mission");
+        result.putInt("schema_version", SatelliteLimits.INSTANCE_SCHEMA_VERSION);
+        result.putString("origin_kind", "survey_mission");
+        result.putUUID("origin_id", mission);
+        decodeInstance(result);
+        return result;
+    }
+
+    static void requireKeys(CompoundTag source, Set<String> allowed) {
+        if (!allowed.containsAll(source.getAllKeys())) {
+            throw new IllegalArgumentException("Unknown satellite record key");
+        }
     }
 
     static CompoundTag encodeAccount(ResearchAccount account) {
@@ -425,13 +455,13 @@ final class SatelliteNbtCodec {
         return entries;
     }
 
-    private static void requireBound(CompoundTag source, int bound) {
+    static void requireBound(CompoundTag source, int bound) {
         if (SatelliteNbtSize.uncompressedBytes(source) > bound) {
             throw new IllegalArgumentException("Satellite runtime record exceeds its fixed NBT bound");
         }
     }
 
-    private static int requireSchema(CompoundTag source, int expected, String recordName) {
+    static int requireSchema(CompoundTag source, int expected, String recordName) {
         int value = requireInt(source, "schema_version");
         if (value != expected) {
             throw new IllegalArgumentException("Unsupported " + recordName + " schema " + value);
@@ -439,21 +469,21 @@ final class SatelliteNbtCodec {
         return value;
     }
 
-    private static int requireInt(CompoundTag source, String key) {
+    static int requireInt(CompoundTag source, String key) {
         if (!source.contains(key, Tag.TAG_INT)) {
             throw new IllegalArgumentException("Missing satellite integer " + key);
         }
         return source.getInt(key);
     }
 
-    private static long requireLong(CompoundTag source, String key) {
+    static long requireLong(CompoundTag source, String key) {
         if (!source.contains(key, Tag.TAG_LONG)) {
             throw new IllegalArgumentException("Missing satellite long " + key);
         }
         return source.getLong(key);
     }
 
-    private static long requireNonNegativeLong(CompoundTag source, String key) {
+    static long requireNonNegativeLong(CompoundTag source, String key) {
         long value = requireLong(source, key);
         if (value < 0L) {
             throw new IllegalArgumentException("Satellite long " + key + " cannot be negative");
@@ -468,14 +498,14 @@ final class SatelliteNbtCodec {
         return source.getBoolean(key);
     }
 
-    private static String requireString(CompoundTag source, String key) {
+    static String requireString(CompoundTag source, String key) {
         if (!source.contains(key, Tag.TAG_STRING)) {
             throw new IllegalArgumentException("Missing satellite string " + key);
         }
         return source.getString(key);
     }
 
-    private static String requireBoundedString(CompoundTag source, String key, int maxChars) {
+    static String requireBoundedString(CompoundTag source, String key, int maxChars) {
         String value = requireString(source, key);
         if (value.isEmpty() || value.length() > maxChars) {
             throw new IllegalArgumentException("Satellite string " + key + " is outside its bound");
@@ -483,7 +513,7 @@ final class SatelliteNbtCodec {
         return value;
     }
 
-    private static CompoundTag requireCompound(CompoundTag source, String key) {
+    static CompoundTag requireCompound(CompoundTag source, String key) {
         if (!source.contains(key, Tag.TAG_COMPOUND)) {
             throw new IllegalArgumentException("Missing satellite compound " + key);
         }
@@ -498,7 +528,7 @@ final class SatelliteNbtCodec {
         return list;
     }
 
-    private static UUID requireUuid(CompoundTag source, String key) {
+    static UUID requireUuid(CompoundTag source, String key) {
         if (!source.hasUUID(key)) {
             throw new IllegalArgumentException("Missing satellite UUID " + key);
         }
@@ -512,7 +542,7 @@ final class SatelliteNbtCodec {
         return Optional.of(requireUuid(source, key));
     }
 
-    private static OptionalLong optionalLong(CompoundTag source, String key) {
+    static OptionalLong optionalLong(CompoundTag source, String key) {
         if (!source.contains(key)) {
             return OptionalLong.empty();
         }
@@ -526,7 +556,7 @@ final class SatelliteNbtCodec {
         return Optional.of(requireLocation(source, key));
     }
 
-    private static ResourceLocation requireLocation(CompoundTag source, String key) {
+    static ResourceLocation requireLocation(CompoundTag source, String key) {
         return parseLocation(requireString(source, key), key);
     }
 
@@ -541,7 +571,7 @@ final class SatelliteNbtCodec {
         return parsed;
     }
 
-    private static <E extends Enum<E>> E requireEnum(
+    static <E extends Enum<E>> E requireEnum(
             CompoundTag source,
             String key,
             Class<E> type

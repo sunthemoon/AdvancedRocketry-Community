@@ -1,20 +1,27 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 
 /** Bounded disk codec for Minecraft's outer SavedData wrapper. */
-final class BoundedSavedDataIo {
+public final class BoundedSavedDataIo {
     private static final String DATA_KEY = "data";
     /**
      * A single NBT charge is made before the element is allocated: arrays charge 1, 4 or 8 bytes per
@@ -29,6 +36,9 @@ final class BoundedSavedDataIo {
     /** Compressed bytes already buffered by the gzip reader, and output it may still hold. */
     static final long COMPRESSED_SLACK_BYTES = 1_024L;
     static final long INFLATED_SLACK_BYTES = 64L * 1_024L;
+    /** Inflated read-ahead; well inside {@link #INFLATED_SLACK_BYTES}, the output the reader may still hold. */
+    static final int INFLATED_BUFFER_BYTES = 8 * 1_024;
+    private static final int WRAPPER_BYTES = wrapperBytes();
 
     private BoundedSavedDataIo() {
     }
@@ -40,42 +50,68 @@ final class BoundedSavedDataIo {
                 throw oversized(type, "compressed file size is " + compressedBytes + " bytes");
             }
 
-            // The raw decompressed-byte quota below is the size bound. NbtAccounter estimates heap cost;
-            // its quota is the raw bound times the type's measured factor (stations 8: about 5.7x at
-            // capacity), and no single declaration may exceed what the remaining raw bytes can back.
-            long expandedLimit = type.maxCompressedBytes();
-            long heapLimit = Math.multiplyExact(expandedLimit, type.heapAccountingFactor());
-            try (InputStream file = Files.newInputStream(path, StandardOpenOption.READ);
-                 CountingInputStream compressed = new CountingInputStream(file);
-                 GZIPInputStream gzip = new GZIPInputStream(compressed);
-                 QuotaInputStream bounded = new QuotaInputStream(gzip, expandedLimit);
-                 DataInputStream input = new DataInputStream(bounded)) {
-                BoundedAccounter accounter = new BoundedAccounter(heapLimit, () -> Math.min(bounded.remaining(),
-                        Math.max(0L, compressedBytes - compressed.count() + COMPRESSED_SLACK_BYTES)
-                                * MAX_INFLATION_RATIO + INFLATED_SLACK_BYTES));
-                CompoundTag outer;
-                try {
-                    outer = NbtIo.read(input, accounter);
-                } catch (RuntimeException exception) {
-                    if (accounter.getUsage() > heapLimit || accounter.refusedDeclaration() || bounded.exceeded()) {
-                        throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
-                    }
-                    throw exception;
-                }
-                if (input.read() != -1) {
-                    throw invalid(type, "compressed NBT contains trailing expanded data");
-                }
-                if (!outer.contains(DATA_KEY, Tag.TAG_COMPOUND)) {
-                    throw invalid(type, "outer SavedData wrapper is missing data");
-                }
-                return outer;
-            } catch (QuotaExceededException exception) {
-                throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
+            try (InputStream file = Files.newInputStream(path, StandardOpenOption.READ)) {
+                return readCompressed(file, compressedBytes, type);
             }
         } catch (SavedDataMigrationException exception) {
             throw exception;
         } catch (IOException | RuntimeException exception) {
             throw invalid(type, "cannot decode compressed SavedData", exception);
+        }
+    }
+
+    /** Uses the exact disk-reader quotas before an in-memory transaction can publish its root. */
+    public static void validatePayload(CompoundTag payload, ManagedSavedDataType type) {
+        validatePayload(payload, type, Long.MAX_VALUE);
+    }
+
+    /**
+     * {@link #validatePayload(CompoundTag, ManagedSavedDataType)} that also refuses a payload whose own encoding
+     * exceeds {@code maxPayloadBytes}, measured during the same write. Writing and reading never change the
+     * payload, so the wrapper holds it without a copy.
+     */
+    public static void validatePayload(CompoundTag payload, ManagedSavedDataType type, long maxPayloadBytes) {
+        CompoundTag outer = new CompoundTag();
+        outer.put(DATA_KEY, payload);
+        byte[] encoded = writeForValidation(outer, type, maxPayloadBytes);
+        try (InputStream input = new ByteArrayInputStream(encoded)) {
+            CompoundTag decoded = readCompressed(input, encoded.length, type);
+            if (!payload.equals(decoded.getCompound(DATA_KEY))) {
+                throw invalid(type, "bounded read changed the payload");
+            }
+        } catch (IOException exception) {
+            throw invalid(type, "cannot round-trip encoded payload", exception);
+        }
+    }
+
+    private static CompoundTag readCompressed(InputStream file, long compressedBytes, ManagedSavedDataType type)
+            throws IOException {
+        long expandedLimit = type.maxCompressedBytes();
+        long heapLimit = Math.multiplyExact(expandedLimit, type.heapAccountingFactor());
+        // The buffer sits below the quota, which still counts exactly the bytes the NBT reader takes. Its
+        // inflated read-ahead only lowers the compressed estimate below, which cannot admit more data.
+        try (CountingInputStream compressed = new CountingInputStream(file);
+             GZIPInputStream gzip = new GZIPInputStream(compressed);
+             QuotaInputStream bounded = new QuotaInputStream(new BufferedInputStream(gzip, INFLATED_BUFFER_BYTES),
+                     expandedLimit);
+             DataInputStream input = new DataInputStream(bounded)) {
+            BoundedAccounter accounter = new BoundedAccounter(heapLimit, () -> Math.min(bounded.remaining(),
+                    Math.max(0L, compressedBytes - compressed.count() + COMPRESSED_SLACK_BYTES)
+                            * MAX_INFLATION_RATIO + INFLATED_SLACK_BYTES));
+            CompoundTag outer;
+            try {
+                outer = NbtIo.read(input, accounter);
+            } catch (RuntimeException exception) {
+                if (accounter.getUsage() > heapLimit || accounter.refusedDeclaration() || bounded.exceeded()) {
+                    throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
+                }
+                throw exception;
+            }
+            if (input.read() != -1) { throw invalid(type, "compressed NBT contains trailing expanded data"); }
+            if (!outer.contains(DATA_KEY, Tag.TAG_COMPOUND)) { throw invalid(type, "outer wrapper is missing data"); }
+            return outer;
+        } catch (QuotaExceededException exception) {
+            throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
         }
     }
 
@@ -95,6 +131,50 @@ final class BoundedSavedDataIo {
                     type.dataName() + " cannot encode migrated SavedData",
                     exception
             );
+        }
+    }
+
+    /**
+     * The validation copy of {@link #write}. It is never stored, so it deflates at the fastest level: the expanded
+     * and heap quotas do not depend on the level, and a payload within its raw bound compresses below the
+     * compressed bound at any level, because deflate's stored blocks add only a few bytes per 64 KiB.
+     */
+    private static byte[] writeForValidation(CompoundTag outer, ManagedSavedDataType type, long maxPayloadBytes) {
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            int raw;
+            try (DataOutputStream data = new DataOutputStream(new BufferedOutputStream(new FastGzipOutputStream(output)))) {
+                NbtIo.write(outer, data);
+                raw = data.size();
+            }
+            if (raw - WRAPPER_BYTES > maxPayloadBytes) {
+                throw oversized(type, "payload encodes in " + (raw - WRAPPER_BYTES) + " bytes");
+            }
+            if (output.size() > type.maxCompressedBytes()) {
+                throw oversized(type, "compressed NBT exceeds the fixed byte limit");
+            }
+            return output.toByteArray();
+        } catch (IOException exception) {
+            throw invalid(type, "cannot encode payload for validation", exception);
+        }
+    }
+
+    /** The bytes the outer wrapper adds to its payload's own named-root encoding. */
+    private static int wrapperBytes() {
+        CompoundTag outer = new CompoundTag();
+        outer.put(DATA_KEY, new CompoundTag());
+        return rawBytes(outer) - rawBytes(new CompoundTag());
+    }
+
+    private static int rawBytes(CompoundTag tag) {
+        try {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            try (DataOutputStream output = new DataOutputStream(bytes)) {
+                NbtIo.write(tag, output);
+            }
+            return bytes.size();
+        } catch (IOException exception) {
+            throw new IllegalStateException("In-memory NBT sizing failed", exception);
         }
     }
 
@@ -262,6 +342,13 @@ final class BoundedSavedDataIo {
 
         private boolean refusedDeclaration() {
             return refusedDeclaration;
+        }
+    }
+
+    private static final class FastGzipOutputStream extends GZIPOutputStream {
+        private FastGzipOutputStream(OutputStream output) throws IOException {
+            super(output, 64 * 1_024);
+            def.setLevel(Deflater.BEST_SPEED);
         }
     }
 

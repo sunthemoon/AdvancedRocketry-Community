@@ -29,6 +29,7 @@ public final class EscrowReconciliationScheduler {
         EscrowReason manual = EscrowReason.NONE;
         Retry(EscrowOperation op) { failures = op.phase() == EscrowOperation.Phase.STALLED ? 3 : 0; }
     }
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private final Thread owner = Thread.currentThread();
     private final Supplier<EscrowLedger> ledger;
     private final BiConsumer<UUID, EscrowReason> transition;
@@ -63,13 +64,23 @@ public final class EscrowReconciliationScheduler {
     private void completed(UUID id, Retry retry, Result result) {
         owner(); if (retries.get(id) != retry) { return; }
         EscrowTags.require(retry.active, "Duplicate reconciliation callback"); retry.active = false;
+        // Design section 5: one bounded line per state change and backoff transition. A continuing stall is silent.
         if (result.reason().manual()) {
             retry.manual = result.reason(); transition.accept(id, result.reason());
+            LOGGER.warn("Escrow record {} needs audited settlement or offline repair: {}", id, result.reason());
         } else if (result.reason().retryableProofFailure()) {
+            int previous = retry.failures;
             retry.failures = Math.min(3, retry.failures + 1);
             retry.next = tick + EscrowReason.backoff(retry.failures);
             if (retry.failures >= 3) { transition.accept(id, result.reason()); }
+            if (retry.failures != previous && retry.failures >= 3) {
+                LOGGER.warn("Escrow record {} is STALLED after {} proof failures ({}); retrying every {} ticks",
+                        id, retry.failures, result.reason(), EscrowReason.backoff(retry.failures));
+            } else if (retry.failures != previous) {
+                LOGGER.info("Escrow record {} proof failed ({}); backing off {} ticks", id, result.reason(), EscrowReason.backoff(retry.failures));
+            }
         } else if (result.proved()) {
+            if (retry.failures > 0) { LOGGER.info("Escrow record {} proof succeeded after {} failures", id, retry.failures); }
             retry.failures = 0; retry.next = tick + 1; transition.accept(id, EscrowReason.NONE);
         } else {
             retry.next = tick + (result.reason() == EscrowReason.WAITING_UNLOADED ? 20 : 1);

@@ -19,6 +19,12 @@ class EscrowHarnessTest(unittest.TestCase):
         self.assertIn("G3", escrow.CASES)
         self.assertTrue({"C1", "C2", "E2", "G3L2"}.issubset(escrow.CASES))
         self.assertTrue({"C3", "E5"}.issubset(escrow.CASES))
+        # Review W11b1: a newer save between an ambiguous L2 attempt and its retry, stopped through the writer drain.
+        self.assertIn("E4L2_RESAVE", escrow.CASES)
+        self.assertEqual(("G3", "G3L2", "E4L2_RESAVE"), escrow.DRAIN_STOPS)
+        match = escrow.RESAVE_RESOLVED.search("[Server thread/INFO] [io.gi.su.ad.re.EscrowLedgerWriter/]: Escrow ledger "
+                                              "generation 4 resolved as FAILED_BEFORE_REPLACE after an unknown outcome")
+        self.assertEqual("4", match.group(1))
 
     def test_benchmark_percentiles_keep_main_and_io_separate_and_budgets_unchanged(self):
         with tempfile.TemporaryDirectory() as temporary:

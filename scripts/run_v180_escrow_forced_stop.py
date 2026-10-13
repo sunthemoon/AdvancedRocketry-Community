@@ -23,7 +23,9 @@ from inspect_celestial_saved_data import NbtReader
 from run_v060_flight_server_smoke import _server_command
 
 
-CASES = tuple(f"K{i}" for i in range(11)) + ("C1", "C2", "C3", "E2", "E2_CAPTURE", "E4L1_FAIL", "E4L1_UNKNOWN", "E4L2_FAIL", "E4L2_UNKNOWN", "E5", "G3", "G3L2")
+CASES = tuple(f"K{i}" for i in range(11)) + ("C1", "C2", "C3", "E2", "E2_CAPTURE", "E4L1_FAIL", "E4L1_UNKNOWN", "E4L2_FAIL", "E4L2_UNKNOWN", "E4L2_RESAVE", "E5", "G3", "G3L2")
+DRAIN_STOPS = ("G3", "G3L2", "E4L2_RESAVE")
+RESAVE_RESOLVED = re.compile(r"Escrow ledger generation (\d+) resolved as FAILED_BEFORE_REPLACE after an unknown outcome")
 RESULT = re.compile(r"ARCE_RELEASE_ESCROW_RESULT source=(\d+) bank=(\d+) records=(\d+) source_epoch=(\d+) bank_epoch=(\d+) ledger=([0-9a-f-]{36})")
 CHAIN_RESULT = re.compile(r"ARCE_RELEASE_ESCROW_CHAIN_RESULT source_a=(\d+) source_b=(\d+) bank=(\d+) records=(\d+) epochs=1,1,2")
 E5_RESULT = re.compile(r"ARCE_RELEASE_ESCROW_E5_RESULT records=(\d+) manual=(\d+) stalled=(\d+) unloaded=(\d+) healthy=(\d+)")
@@ -173,11 +175,12 @@ def run(args) -> dict:
                 log = evidence / f"{cut}-restart-{restart}.log"
                 process = smoke.CapturedProcess(command, session, log)
                 if restart == 0:
-                    if cut in ("G3", "G3L2"):
+                    if cut in DRAIN_STOPS:
                         process.wait_for(re.compile(r"ARCE_RELEASE_ESCROW_DRAIN_READY cut=" + cut + r"(?: |$)"), args.startup_timeout)
                         process.command("stop")
                         if process.finish() != 0:
                             raise smoke.SmokeError("Native queued-writer shutdown failed")
+                        cut_lines = list(process.lines)
                     else:
                         process.wait_for(re.compile(r"ARCE_RELEASE_ESCROW_PAUSED cut=" + cut + r"(?: |$)"), args.startup_timeout)
                         process.process.kill()  # Only this harness-owned process; no JVM shutdown hooks.
@@ -201,6 +204,15 @@ def run(args) -> dict:
                         raise smoke.SmokeError("Shutdown did not retain its acknowledged, unapplied L1")
                     if cut == "G3L2" and row["cut_disk"]["ledger"]["records"]:
                         raise smoke.SmokeError("Shutdown did not drain the proven L2 generation")
+                    if cut == "E4L2_RESAVE":
+                        # The ambiguous L2 was not replaced; the newer save invalidated its proof before the retry, so
+                        # the drain resolves it as FAILED_BEFORE_REPLACE instead of retrying forever or landing it.
+                        disk = row["cut_disk"]
+                        resolved = [match for match in map(RESAVE_RESOLVED.search, cut_lines) if match]
+                        amounts = (disk["source"]["arce_escrow_fixture"]["amount"], disk["bank"]["arce_escrow_fixture"]["amount"])
+                        if (len(disk["ledger"]["records"]) != 1 or amounts != (4000, 1000) or len(resolved) != 1
+                                or int(resolved[0].group(1)) != disk["ledger"]["writer_generation"] + 1):
+                            raise smoke.SmokeError("Invalidated ambiguous L2 was not resolved and retained by the drain")
                 else:
                     pattern = E5_RESULT if cut == "E5" else CHAIN_RESULT if cut in ("C1", "C2", "C3") else RESULT
                     index = process.wait_for(pattern, args.startup_timeout)
@@ -230,7 +242,7 @@ def run(args) -> dict:
                 (evidence / "results.json").write_text(json.dumps(report | {"in_progress": row}, indent=2), encoding="utf-8")
             row["status"] = "PASS"
             report["cases"].append(row)
-            stop_mode = "writer-drain stop" if cut in ("G3", "G3L2") else "hard stop"
+            stop_mode = "writer-drain stop" if cut in DRAIN_STOPS else "hard stop"
             print(f"{cut}: PASS ({stop_mode}, two restarts, raw stores)", flush=True)
         report["status"] = "PASS"
         report.pop("in_progress", None)

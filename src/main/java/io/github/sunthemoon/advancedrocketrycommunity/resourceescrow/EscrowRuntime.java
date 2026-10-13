@@ -17,6 +17,8 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkDataEvent;
+import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -56,13 +58,18 @@ public final class EscrowRuntime {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && "start".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"))
-                && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN"))) {
+                && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN") || testCase.equals("E4L2_RESAVE"))) {
             EscrowTestEndpoints.requireEnabled(server);
+            var first = new java.util.concurrent.atomic.AtomicBoolean(true);
             return (staged, target) -> {
                 var type = io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW;
                 var payload = io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
                 boolean empty = payload.getList("records", 10).isEmpty();
-                if (payload.getLong("writer_generation") > 1 && (testCase.equals("E4L2_UNKNOWN") == empty)) {
+                // E4L2_RESAVE: only the first L2 move is ambiguous; a later move would succeed if a guard ever allowed it.
+                // The generation-1 baseline is also empty, so it must not consume that single injection.
+                boolean ambiguous = payload.getLong("writer_generation") > 1 && (testCase.equals("E4L2_RESAVE")
+                        ? empty && first.getAndSet(false) : testCase.equals("E4L2_UNKNOWN") == empty);
+                if (ambiguous) {
                     throw new java.io.IOException("Release-test ambiguous replacement outcome");
                 }
                 io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.atomicMove(staged, target);
@@ -153,6 +160,27 @@ public final class EscrowRuntime {
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) { data.stop(); }
         if (runtime.barrier != null) { runtime.barrier.close(); }
+        if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
+    }
+    /**
+     * Crash path: runServer calls stopServer without ServerStoppingEvent. stopServer still unloads the overworld after
+     * saveAllChunks and before LevelStorageAccess.close(), so the writer is joined while world storage is owned.
+     */
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void unload(LevelEvent.Unload event) {
+        if (event.getLevel() instanceof ServerLevel level && level.dimension() == Level.OVERWORLD) { crashStop(level.getServer(), level); }
+    }
+    /** Backstop when stopServer failed before the overworld unloaded; ownership may already be released. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopped(ServerStoppedEvent event) {
+        crashStop(event.getServer(), event.getServer().overworld());
+    }
+    private static void crashStop(MinecraftServer server, ServerLevel overworld) {
+        if (overworld == null) { return; }
+        EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
+        if (runtime == null || runtime.stopping) { return; }
+        runtime.stopping = true;
+        if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
+        ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server);
+        if (data != null) { data.abort(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {

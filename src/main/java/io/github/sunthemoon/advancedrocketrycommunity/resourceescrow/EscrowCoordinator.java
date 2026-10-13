@@ -105,26 +105,23 @@ public final class EscrowCoordinator implements AutoCloseable {
         } else { data.setDirty(); }
     }
     public void freeze(EscrowEndpoint.Key endpoint, EscrowPrefix.State frontier) {
-        owner(); var chain = EscrowPrefix.chains(data.ledger().records()).get(endpoint);
+        owner();
+        // A queued admission still reaches L1 after the freeze, and its marker would be absent from this frontier.
+        EscrowTags.require(!admitting(endpoint), "Queued admission touches the endpoint");
+        var chain = EscrowPrefix.chains(data.ledger().records()).get(endpoint);
         EscrowTags.require(chain != null && EscrowPrefix.classify(data.ledger().id(), chain, frontier)
                 == EscrowPrefix.Classification.AFTER, "Proof needs the complete live prefix");
         EscrowPrefix.State old = frontiers.putIfAbsent(endpoint, frontier);
         EscrowTags.require(old == null || old.equals(frontier), "Frozen frontier changed");
     }
+    /** The callback runs at most once: true after exact L2 acknowledgement, false after a definite failure. */
     public boolean retire(Set<UUID> ids, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs,
                           Consumer<Boolean> callback) {
         owner(); EscrowTags.require(ids.size() <= EscrowLimits.OPERATIONS, "Retirement count exceeded");
         Set<UUID> retired = Set.copyOf(ids); // Successor capture must not retain a caller-owned mutable set.
         EscrowPrefix.requireRetirementPrefix(data.ledger().records(), retired);
         if (!ordinaryRetirementAllowed(retired)) { return false; }
-        for (EscrowOperation op : data.ledger().records()) {
-            if (!retired.contains(op.id())) { continue; }
-            for (EscrowEndpoint endpoint : List.of(op.source(), op.destination())) {
-                EscrowBarrier.Proof proof = proofs.get(endpoint.key());
-                EscrowTags.require(proof != null && proof.valid()
-                        && proof.frontier().equals(frontiers.get(endpoint.key())), "Retirement lacks a valid frozen endpoint proof");
-            }
-        }
+        requireCoveringProofs(data.ledger().records(), retired, proofs, frontiers);
         if (closed || tick - lastStart < 10) { return false; }
         Set<EscrowEndpoint.Key> affected = data.ledger().records().stream().filter(op -> retired.contains(op.id()))
                 .flatMap(op -> java.util.stream.Stream.of(op.source().key(), op.destination().key()))
@@ -138,6 +135,8 @@ public final class EscrowCoordinator implements AutoCloseable {
                     && frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) ? retired : null, frozenProofs);
         }, result -> {
             acknowledge(result);
+            // UNKNOWN is not final: the writer retries this exact candidate. The callback reports only the resolution.
+            if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
             if (result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
                     && result.snapshot().ledger().records().stream().noneMatch(op -> retired.contains(op.id()))) {
                 // L2 changes the marker prefix, even when the endpoint still has later records.
@@ -149,6 +148,18 @@ public final class EscrowCoordinator implements AutoCloseable {
         }, () -> frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid));
         if (accepted) { lastStart = tick; }
         return accepted;
+    }
+    /** Every endpoint of every retired operation needs a valid frozen proof whose markers contain that operation. */
+    static void requireCoveringProofs(List<EscrowOperation> records, Set<UUID> retired,
+                                      Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs, Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers) {
+        for (var chain : EscrowPrefix.chains(records).entrySet()) {
+            EscrowBarrier.Proof proof = proofs.get(chain.getKey());
+            for (EscrowPrefix.Link link : chain.getValue()) {
+                if (!retired.contains(link.operation().id())) { continue; }
+                EscrowTags.require(proof != null && proof.valid() && proof.frontier().equals(frontiers.get(chain.getKey()))
+                        && proof.frontier().markers().contains(link.marker()), "Retirement lacks a valid frozen endpoint proof covering its operation");
+            }
+        }
     }
     public void tick(long now) { owner(); tick = now; writer.tick(now); }
     public void transition(UUID id, EscrowReason reason) {
@@ -162,6 +173,9 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (previous != reason) { transitions.put(id, reason); data.setDirty(); }
     }
     public boolean frozen(EscrowEndpoint.Key endpoint) { owner(); return frontiers.containsKey(endpoint); }
+    public boolean admitting(EscrowEndpoint.Key endpoint) {
+        owner(); return queued.values().stream().anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
+    }
     public boolean writerIdle() { return writer.idle(); }
     EscrowReason currentReason(EscrowOperation op) { owner(); return transitions.getOrDefault(op.id(), op.reason()); }
     private boolean ordinaryRetirementAllowed(Set<UUID> ids) {
@@ -187,5 +201,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                 .anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
     }
     @Override public void close() { owner(); if (!closed) { closed = true; writer.close(); frontiers.clear(); } }
+    /** Crash path, where ServerStoppingEvent never ran: no drain or callbacks, but the writer is joined. */
+    public void abort() { owner(); if (!closed) { closed = true; writer.abort(); frontiers.clear(); } }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Escrow coordinator requires its owner thread"); }
 }

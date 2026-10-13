@@ -10,13 +10,16 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPositio
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -27,6 +30,8 @@ import net.minecraft.world.phys.AABB;
 
 /** Selects one of eight server-owned surface pads after catalog/Level admission. */
 public final class RocketLandingPadSelector {
+    /** Audit-only refusal: terrain, bounds, budgets or a transfer reservation. */
+    public static final String UNSAFE = "unsafe";
     private static final int PAD_SPACING = 64;
     private static final int[][] OFFSETS = {
             {0, 0},
@@ -83,8 +88,16 @@ public final class RocketLandingPadSelector {
                 continue;
             }
             RocketRegion region = RocketRegion.fromSnapshot(relocated);
-            if (reservations.stream().anyMatch(region::overlaps)
-                    || !available(target, relocated, null, false)) {
+            if (reservations.stream().anyMatch(region::overlaps)) {
+                continue;
+            }
+            String refusal = unavailable(target, relocated, null, false);
+            if (NamedLandingPadOccupancy.ENTITY_BUDGET.equals(refusal)) {
+                // The fixed pads share almost the same discovery box, so a later candidate cannot do better.
+                return RocketLandingPadSelection.failure(candidates, chunksLoaded, refusal);
+            }
+            if (refusal != null) {
+                // An occupied or unsafe candidate falls through to the next fixed pad.
                 continue;
             }
             return RocketLandingPadSelection.success(relocated, candidates, chunksLoaded);
@@ -146,9 +159,11 @@ public final class RocketLandingPadSelector {
                 return RocketLandingPadSelection.failure(1, 0, "station landing exceeds chunk bound");
             }
             int loaded = loadChunks(target, chunks);
-            if (reservations.stream().anyMatch(region::overlaps)
-                    || !available(target, relocated, null, false)) {
-                return RocketLandingPadSelection.failure(1, loaded, "station pad is occupied or unsafe");
+            String refusal = reservations.stream().anyMatch(region::overlaps)
+                    ? UNSAFE : unavailable(target, relocated, null, false);
+            if (refusal != null) {
+                return RocketLandingPadSelection.failure(1, loaded,
+                        refusal.equals(UNSAFE) ? "station pad is occupied or unsafe" : refusal);
             }
             return RocketLandingPadSelection.success(relocated, 1, loaded);
         } catch (RuntimeException exception) {
@@ -163,42 +178,59 @@ public final class RocketLandingPadSelector {
             UUID allowedRocketId,
             boolean allowMatchingRocket
     ) {
+        return unavailable(target, destination, allowedRocketId, allowMatchingRocket) == null;
+    }
+
+    /**
+     * Null when the exact destination is available. An occupant or the discovery budget is a
+     * translated pad reason; every other refusal is {@link #UNSAFE}, which is audit text only.
+     */
+    public String unavailable(
+            ServerLevel target,
+            RocketStructureSnapshot destination,
+            UUID allowedRocketId,
+            boolean allowMatchingRocket
+    ) {
         Objects.requireNonNull(target, "target");
         Objects.requireNonNull(destination, "destination");
         if (!target.dimension().location().equals(destination.sourceDimension())) {
-            return false;
+            return UNSAFE;
         }
         RocketRegion region;
         try {
             region = RocketRegion.fromSnapshot(destination);
         } catch (RuntimeException exception) {
-            return false;
+            return UNSAFE;
         }
         if (region.minimum().y() < target.getMinBuildHeight()
                 || region.maximum().y() >= target.getMaxBuildHeight()
                 || !withinBorder(target, region)) {
-            return false;
+            return UNSAFE;
         }
         Set<ChunkPos> chunks = chunks(region);
         if (chunks.size() > RocketFlightLimits.MAX_LANDING_CHUNKS) {
-            return false;
+            return UNSAFE;
         }
         loadChunks(target, chunks);
         int inspected = 0;
         for (RocketBlock block : destination.blocks()) {
             if (++inspected > RocketFlightLimits.MAX_LANDING_BLOCK_INSPECTIONS) {
-                return false;
+                return UNSAFE;
             }
             RocketPosition absolute;
             try {
                 absolute = destination.sourceOrigin().add(block.position());
             } catch (RuntimeException exception) {
-                return false;
+                return UNSAFE;
             }
             BlockPos position = new BlockPos(absolute.x(), absolute.y(), absolute.z());
             if (!target.getBlockState(position).isAir() || target.getBlockEntity(position) != null) {
-                return false;
+                return UNSAFE;
             }
+        }
+        if (!legacySurface(target) && !target.dimension().equals(CelestialIds.SPACE_LEVEL)
+                && !supported(target, destination)) {
+            return UNSAFE;
         }
         AABB box = new AABB(
                 region.minimum().x(),
@@ -208,12 +240,26 @@ public final class RocketLandingPadSelector {
                 (double) region.maximum().y() + 1.0D,
                 (double) region.maximum().z() + 1.0D
         );
-        return (legacySurface(target) || target.dimension().equals(CelestialIds.SPACE_LEVEL) || supported(target, destination))
-                && target.getEntitiesOfClass(RocketEntity.class, box).stream().allMatch(rocket ->
-                allowMatchingRocket
-                        && allowedRocketId != null
-                        && allowedRocketId.equals(rocket.getUUID())
-        );
+        Predicate<RocketEntity> matching = rocket -> allowMatchingRocket
+                && allowedRocketId != null
+                && allowedRocketId.equals(rocket.getUUID());
+        if (!target.getEntitiesOfClass(RocketEntity.class, box).stream().allMatch(matching)) {
+            return NamedLandingPadOccupancy.OCCUPIED;
+        }
+        // A parked rocket's small entity box can miss an arrival that its structure covers (W13 R1).
+        return NamedLandingPadOccupancy.unavailable(target, region, stationRegion(target, region), matching);
+    }
+
+    /** The committed station owning a Space arrival, so a recheck discovers what selection did. */
+    private static StationRegion stationRegion(ServerLevel target, RocketRegion region) {
+        if (!target.dimension().equals(CelestialIds.SPACE_LEVEL)) {
+            return null;
+        }
+        return StationRegistrySavedData.get(target.getServer())
+                .findAt(region.minimum().x(), region.minimum().z())
+                .map(StationState::region)
+                .filter(station -> station.contains(region.maximum().x(), region.maximum().z()))
+                .orElse(null);
     }
 
     private static Candidate candidate(

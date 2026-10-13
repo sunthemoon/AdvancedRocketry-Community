@@ -112,7 +112,7 @@ final class RocketTransferService {
             auditPrepare(rocket, plan, selected, RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE);
             return new RocketFlightRequestResult(
                     RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE,
-                    plan.requiredFuel(), plan.landingPad() == null ? null : selected.detail()
+                    plan.requiredFuel(), selected.refusalKey()
             );
         }
 

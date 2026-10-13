@@ -16,11 +16,19 @@ final class AccountRecovery {
 
     static int restore(Collection<SatelliteState> satellites, Map<UUID, ResearchAccount> accounts,
                        StorageBudget budget) {
+        return restore(satellites, java.util.List.of(), accounts, budget);
+    }
+
+    static int restore(Collection<SatelliteState> satellites, Collection<GroundSurveyJob> jobs,
+                       Map<UUID, ResearchAccount> accounts, StorageBudget budget) {
         Set<UUID> missing = new LinkedHashSet<>();
         for (SatelliteState satellite : satellites) {
             if (!accounts.containsKey(satellite.ownerId())) {
                 missing.add(satellite.ownerId());
             }
+        }
+        for (GroundSurveyJob job : jobs) {
+            if (!accounts.containsKey(job.ownerId())) { missing.add(job.ownerId()); }
         }
         if (missing.isEmpty()) {
             return 0;

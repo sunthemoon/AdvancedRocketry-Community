@@ -12,6 +12,7 @@ import net.minecraft.world.level.storage.LevelResource;
 public final class ResourceEscrowSavedData extends SavedData {
     private EscrowLedger ledger;
     private EscrowCoordinator coordinator;
+    private java.util.function.BooleanSupplier serverActive = () -> false;
 
     private ResourceEscrowSavedData(EscrowLedger ledger) { this.ledger = ledger; }
     public static ResourceEscrowSavedData create() { return new ResourceEscrowSavedData(EscrowLedger.empty(UUID.randomUUID())); }
@@ -20,8 +21,12 @@ public final class ResourceEscrowSavedData extends SavedData {
     public EscrowLedger ledger() { return ledger; }
     @Override public CompoundTag save(CompoundTag target) { return EscrowCodec.encode(ledger); }
     @Override public void save(File file) {
-        if (isDirty() && coordinator != null) { coordinator.autosave(); }
+        // The crash path reaches saveAllChunks without ServerStoppingEvent; no new generation starts during teardown.
+        if (isDirty() && coordinator != null && serverActive.getAsBoolean()) { coordinator.autosave(); }
         // An unbound/closed root cannot use vanilla's unchecked writer or clear dirty state.
+    }
+    void attach(EscrowCoordinator coordinator, java.util.function.BooleanSupplier serverActive) {
+        this.coordinator = coordinator; this.serverActive = serverActive;
     }
     void acknowledged(EscrowLedger next, boolean dirty) { ledger = next; setDirty(dirty); }
     public EscrowCoordinator bind(MinecraftServer server) {
@@ -33,7 +38,7 @@ public final class ResourceEscrowSavedData extends SavedData {
                     EscrowRuntime.of(server).ledgerCommitter(server),
                     EscrowRuntime.of(server)::checkpoint);
             writer.timings(EscrowRuntime.of(server).timings());
-            coordinator = new EscrowCoordinator(this, writer);
+            attach(new EscrowCoordinator(this, writer), () -> server.isRunning() && !server.isStopped());
             coordinator.tick(server.getTickCount()); // The first explicit write uses the real server clock, not tick zero.
         }
         return coordinator;
@@ -49,4 +54,5 @@ public final class ResourceEscrowSavedData extends SavedData {
     }
     public void tick(long tick) { if (coordinator != null) { coordinator.tick(tick); } }
     public void stop() { if (coordinator != null) { coordinator.close(); } }
+    public void abort() { if (coordinator != null) { coordinator.abort(); } }
 }

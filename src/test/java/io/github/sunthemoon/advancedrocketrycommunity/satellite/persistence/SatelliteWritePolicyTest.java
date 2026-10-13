@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.SatelliteIds;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceOrigin;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.DeliveryReconciliation;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind;
@@ -109,7 +110,7 @@ final class SatelliteWritePolicyTest {
                     for (int index = 0; index < count; index++) {
                         created.add(new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION, instances.get(index),
                                 owner, SYSTEM, TYPE, VERSION, VERSION, index, YIELD, time, OptionalLong.empty(),
-                                InstanceState.PENDING, surveyMission, Optional.empty()));
+                                InstanceState.PENDING, InstanceOrigin.survey(surveyMission), Optional.empty()));
                     }
                     return created;
                 }), 0L)));

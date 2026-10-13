@@ -44,7 +44,8 @@ public enum SatelliteOperationCode {
     // and an asteroid instance that does not exist.
     WRONG_TERMINAL,
     RECONCILING,
-    INSTANCE_NOT_FOUND;
+    INSTANCE_NOT_FOUND,
+    OFFLINE_REPAIR_REQUIRED;
 
     public String translationKey() {
         return "status.advancedrocketrycommunity.satellite."

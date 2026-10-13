@@ -17,7 +17,7 @@ public final class EscrowSaveMonitor {
     private ChunkDataEvent.Save ownEvent;
     public AtomicLong watch(String level, boolean entities, ChunkPos pos) {
         Slot slot = new Slot(level, entities, pos.toLong());
-        EscrowTags.require(slots.containsKey(slot) || slots.size() < 128, "Escrow monitor capacity exceeded");
+        if (!slots.containsKey(slot) && slots.size() >= 128) { throw new EscrowChunkStore.CaptureBounds("Escrow monitor capacity exceeded"); }
         Watch watch = slots.computeIfAbsent(slot, key -> new Watch()); watch.references++;
         // The new own capture excludes its own Save event, not an earlier capture's proof of this slot.
         watch.generation.incrementAndGet(); return watch.generation;

@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.Celestia
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceOrigin;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.DeliveryReconciliation;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind;
@@ -112,7 +113,7 @@ public final class ResourceMissionService {
                     .map(generated -> new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION, UUID.randomUUID(),
                             chip.ownerId(), system, generated.type().id(), generated.type().tableVersion(),
                             fingerprint, generated.seed(), generated.yield(), createdAt, OptionalLong.empty(),
-                            InstanceState.PENDING, missionId, Optional.empty()))
+                            InstanceState.PENDING, InstanceOrigin.survey(missionId), Optional.empty()))
                     .toList();
             return data.resources(missions -> missions.startSurvey(new ResourceMissions.SurveyStart(
                     chip.satelliteId(), missionId, chip.ownerId(), system, fingerprint,
