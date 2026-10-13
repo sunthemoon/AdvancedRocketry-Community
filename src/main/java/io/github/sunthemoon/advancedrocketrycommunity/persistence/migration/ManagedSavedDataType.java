@@ -124,11 +124,12 @@ public enum ManagedSavedDataType {
             return "v1.8.0-station-orbital-controls";
         }
         if (this == SATELLITE_MISSIONS) {
+            // Historical epochs are literals; a later root changes the current constant, never these.
             if (schema == SatelliteLimits.INSTANCE_REGISTRY_SCHEMA_VERSION) {
                 return "v1.6.0-satellite-missions";
             }
             if (schema == SatelliteLimits.GROUND_REGISTRY_SCHEMA_VERSION) {
-                return SatelliteLimits.REGISTRY_FORMAT_EPOCH;
+                return "v1.8.0-ground-surveys";
             }
         }
         if (this == ENDGAME) {
