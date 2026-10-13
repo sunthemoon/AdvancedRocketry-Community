@@ -42,6 +42,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     private boolean ready;
     private boolean transaction;
     private boolean lookupNeeded = true;
+    private boolean ineligibleCandidate;
     private boolean debitShortfall;
     private final Set<ChunkPos> unavailable = new HashSet<>();
     private ClassicWait reason = ClassicWait.UNFORMED;
@@ -217,12 +218,13 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         if (level instanceof ServerLevel server) { ClassicRuntime.manager(server).resourceChanged(this); }
     }
     boolean needsLookup() { return lookupNeeded && formed() && checkpoint.job().isEmpty() && !transaction; }
-    void lookupStarted() { lookupNeeded = false; reason = ClassicWait.LOOKUP; }
+    void lookupStarted() { lookupNeeded = false; ineligibleCandidate = false; reason = ClassicWait.LOOKUP; }
     boolean candidateMatches(ClassicMachineRecipe recipe, ProcessDefinition process) {
         if (transaction || !formed() || !allPartsLoaded() || !recipe.enabled()) { return false; }
         ClassicCheckpoint before = checkpoint; transaction = true;
         try {
             var result = ClassicBatch.prepare(before.resources(), activeBanks(), recipe, process);
+            if (result.reason() == ClassicWait.INELIGIBLE) { ineligibleCandidate = true; }
             return checkpoint == before && formed() && allPartsLoaded()
                     && (result.plan().isPresent() || result.reason() == ClassicWait.OUTPUT);
         } catch (IllegalArgumentException | IllegalStateException limit) { reason = ClassicWait.LIMIT; return false; }
@@ -230,7 +232,10 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     }
     void lookupCompleted(Optional<ClassicMachineRecipe> selected) {
         if (!formed() || checkpoint.job().isPresent()) { return; }
-        if (selected.isEmpty()) { if (reason != ClassicWait.LIMIT) { reason = ClassicWait.INPUT; } return; }
+        if (selected.isEmpty()) {
+            if (reason != ClassicWait.LIMIT) { reason = ineligibleCandidate ? ClassicWait.INELIGIBLE : ClassicWait.INPUT; }
+            return;
+        }
         if (checkpoint.batchOrdinal() == Long.MAX_VALUE) { reason = ClassicWait.LIMIT; return; }
         var recipe = selected.orElseThrow();
         checkpoint = checkpoint.job(Optional.of(new ClassicCheckpoint.Job(recipe.getId(), recipe.rows().jsonSignature(),

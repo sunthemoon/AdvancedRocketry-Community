@@ -164,6 +164,7 @@ public final class StationSkyContextGameTests {
      */
     @GameTest(template = "empty", batch = "station_sky_context_wiring", timeoutTicks = 200)
     public static void theRegisteredServiceFollowsARealRespawnLevelRoundTripAndLogout(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         MinecraftServer server = helper.getLevel().getServer();
         ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
         StationSkyContextService service = io.github.sunthemoon.advancedrocketrycommunity.station.orbit
@@ -186,7 +187,7 @@ public final class StationSkyContextGameTests {
             platforms.removeTemplate(space, station.cell());
             data.flush(server);
         };
-        helper.runAfterDelay(2 * StationSkyContextService.PASS_TICKS + 1, () -> {
+        driver.after(2 * StationSkyContextService.PASS_TICKS + 1, () -> {
             try {
                 helper.assertTrue(service.lastSent(viewerId).equals(Optional.of(CelestialIds.EARTH_ID)),
                         "The registered tick pass did not send the station's body");
@@ -200,7 +201,7 @@ public final class StationSkyContextGameTests {
                 cleanup.run();
                 throw failure;
             }
-            helper.runAfterDelay(2 * StationSkyContextService.PASS_TICKS + 1, () -> {
+            driver.after(2 * StationSkyContextService.PASS_TICKS + 1, () -> {
                 try {
                     helper.assertTrue(service.lastSent(viewerId).equals(Optional.of(CelestialIds.EARTH_ID)),
                             "The context was not re-sent after the respawn and the Level round trip");

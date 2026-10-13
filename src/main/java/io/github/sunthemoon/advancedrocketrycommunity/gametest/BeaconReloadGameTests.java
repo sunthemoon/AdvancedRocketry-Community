@@ -89,7 +89,7 @@ public final class BeaconReloadGameTests {
                             && fixture.index().isDirty(), "Validation did not write the new active generation once");
                     marker(helper, finder.snapshot(owner), id, true);
                     fixture.index().setDirty(false);
-                    helper.runAfterDelay(5, () -> {
+                    fixture.after(5, () -> {
                         try {
                             helper.assertTrue(fixture.index().get(id).equals(Optional.of(after))
                                     && !fixture.index().isDirty(), "The reload caused another index rewrite");

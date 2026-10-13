@@ -100,18 +100,19 @@ public final class PlanetaryWorldGameTests {
 
     @GameTest(template = "rocket_test", batch = "planetary_surface_flight", timeoutTicks = 1000)
     public static void earthMarsVenusEarthKeepsOneRocketAndExactFuelDebits(GameTestHelper helper) {
-        helper.runAfterDelay(20, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.after(20, () -> {
             helper.setBlock(new BlockPos(4, 2, 3), io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.ROCKET_FUEL_TANK.get());
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), UUID.randomUUID(), rocket -> {
                 var logical = rocket.assemblyTransactionId().orElseThrow();
                 var original = rocket.snapshot().orElseThrow();
                 var route = List.of(PlanetaryContent.MARS, PlanetaryContent.VENUS, CelestialIds.EARTH_ID);
-                fly(helper, rocket, logical, original.blocks(), route, 0);
+                fly(helper, driver, rocket, logical, original.blocks(), route, 0);
             });
         });
     }
 
-    private static void fly(GameTestHelper helper, RocketEntity rocket, UUID logical,
+    private static void fly(GameTestHelper helper, GameTestTickDriver driver, RocketEntity rocket, UUID logical,
             List<io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock> blocks,
             List<net.minecraft.resources.ResourceLocation> route, int index) {
         var server = helper.getLevel().getServer();
@@ -124,7 +125,7 @@ public final class PlanetaryWorldGameTests {
             helper.assertTrue(result.requiredFuel() > 0, "Planetary flight omitted its fuel debit");
             // Successful native preparation has already initialized this server's journal.
             var journal = RocketTransferSavedData.get(server);
-            RocketFlightGameTestFixtures.awaitPaced(helper, helper.getTick() + 270, () -> {
+            RocketFlightGameTestFixtures.awaitPaced(helper, driver, helper.getTick() + 270, () -> {
                 var level = destination.equals(CelestialIds.EARTH_ID)
                         ? server.overworld() : server.getLevel(PlanetaryContent.level(destination));
                 var landed = level == null ? null : RocketFlightGameTestFixtures.loadedLogicalRocket(level, logical);
@@ -156,7 +157,7 @@ public final class PlanetaryWorldGameTests {
                     throw failure;
                 }
                 if (index + 1 < route.size()) {
-                    fly(helper, landed, logical, blocks, route, index + 1);
+                    fly(helper, driver, landed, logical, blocks, route, index + 1);
                 } else {
                     cleanRocket(server, logical);
                     helper.succeed();

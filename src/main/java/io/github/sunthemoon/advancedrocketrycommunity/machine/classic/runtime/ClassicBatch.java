@@ -30,18 +30,30 @@ final class ClassicBatch {
         var banks = new LinkedHashMap<ClassicBankKey, ClassicResourceBank>();
         resources.banks().stream().filter(bank -> active.contains(bank.key()))
                 .sorted(java.util.Comparator.comparing(bank -> bank.key().channel())).forEach(bank -> banks.put(bank.key(), bank));
+        var special = recipe.special().orElse(null);
+        // Item rows precede fluid rows; a special's row 0 is its subject (alternatives disjoint from other rows).
+        Set<String> subjectIds = special == null ? Set.of() : Set.copyOf(definition.inputs().get(0).alternatives());
         var slots = new ArrayList<Slot>(); var supplies = new ArrayList<ClassicItemMatcher.Supply>();
+        var unfiltered = new ArrayList<ClassicItemMatcher.Supply>();
         banks.values().stream().filter(bank -> bank.key().kind() == ClassicBankKind.ITEM_INPUT).forEach(bank -> {
             for (int i = 0; i < 4; i++) {
                 ItemStack stack = bank.item(i); slots.add(new Slot(bank.key(), i));
-                supplies.add(new ClassicItemMatcher.Supply(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString(), stack.getCount()));
+                String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+                boolean admitted = special == null || stack.isEmpty() || special.admits(stack, subjectIds.contains(id));
+                // A refused stack supplies no row: it is never debited, whatever its Item ID.
+                supplies.add(new ClassicItemMatcher.Supply(admitted ? id : "", stack.getCount()));
+                unfiltered.add(new ClassicItemMatcher.Supply(id, stack.getCount()));
             }
         });
         var demands = new ArrayList<ClassicItemMatcher.Demand>();
         definition.inputs().stream().filter(input -> input.kind() == ProcessResourceKind.ITEM).forEach(input ->
                 demands.add(new ClassicItemMatcher.Demand(Set.copyOf(input.alternatives()), Math.toIntExact(input.amount()))));
         var consumed = ClassicItemMatcher.consumed(supplies, demands);
-        if (consumed.isEmpty()) { return refused(ClassicWait.INPUT); }
+        if (consumed.isEmpty()) {
+            return refused(special != null && ClassicItemMatcher.consumed(unfiltered, demands).isPresent()
+                    ? ClassicWait.INELIGIBLE : ClassicWait.INPUT);
+        }
+        ItemStack subject = null;
         for (int i = 0; i < slots.size(); i++) {
             Slot slot = slots.get(i); var bank = banks.get(slot.key()); ItemStack stack = bank.item(slot.index());
             ItemStack original = stack.copy(); int debit = consumed.orElseThrow()[i];
@@ -51,7 +63,14 @@ final class ClassicBatch {
                     .equals("advancedrocketrycommunity:laser_lens") && debit > 0) {
                 banks.put(slot.key(), banks.get(slot.key()).withItem(slot.index(), original));
             }
+            if (special != null && debit > 0 && subjectIds.contains(BuiltInRegistries.ITEM.getKey(original.getItem()).toString())) {
+                // Eligibility made the subject one unstackable unit; it leaves only as its changed self.
+                if (subject != null || debit != 1) { return refused(ClassicWait.INELIGIBLE); }
+                subject = special.transform(original);
+                if (subject == null) { return refused(ClassicWait.INELIGIBLE); }
+            }
         }
+        if (special != null && subject == null) { return refused(ClassicWait.INELIGIBLE); }
         for (var row : recipe.rows().fluidInputs()) {
             int remaining = row.amount();
             for (var key : List.copyOf(banks.keySet())) {
@@ -65,6 +84,7 @@ final class ClassicBatch {
             if (remaining > 0) { return refused(ClassicWait.INPUT); }
         }
         var itemOutputs = new ArrayList<ItemStack>();
+        if (subject != null) { itemOutputs.add(subject); }
         for (int row = 0; row < recipe.rows().itemOutputs().size(); row++) { itemOutputs.add(recipe.output(row)); }
         for (var row : chosen) {
             ClassicMachineRecipe.stackLimit(row.itemId(), row.count());

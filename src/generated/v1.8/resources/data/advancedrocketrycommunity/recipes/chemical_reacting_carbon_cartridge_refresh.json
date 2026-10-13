@@ -1,0 +1,23 @@
+{
+  "type": "advancedrocketrycommunity:chemical_reacting",
+  "energy_per_tick": 20,
+  "fluid_inputs": [],
+  "fluid_outputs": [],
+  "item_inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "advancedrocketrycommunity:carbon_scrubber_cartridge"
+      }
+    }
+  ],
+  "item_outputs": [
+    {
+      "count": 1,
+      "item": "minecraft:charcoal"
+    }
+  ],
+  "processing_time": 40,
+  "schema_version": 1,
+  "special": "carbon_cartridge_refresh"
+}
