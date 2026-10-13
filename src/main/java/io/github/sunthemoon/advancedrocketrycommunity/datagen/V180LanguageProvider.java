@@ -39,6 +39,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180AtmosphereAnalyzerLanguage.translations(chinese).forEach(this::add);
         V180SealDetectorLanguage.translations(chinese).forEach(this::add);
         V180JackhammerLanguage.translations(chinese).forEach(this::add);
+        V180LaserGunData.translations(chinese).forEach(this::add);
         V180EquipmentData.language(chinese).forEach(this::add);
         V180LifeSupportData.language(chinese).forEach(this::add);
         V180MotionLanguage.translations(chinese).forEach(this::add);

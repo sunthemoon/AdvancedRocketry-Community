@@ -1,0 +1,133 @@
+{
+  "schema_version": 2,
+  "batch_id": "v1.8.0-c18b-laser-gun-w20",
+  "target_version": "v1.8.0",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "source_branch": "codex/v1.8.0-w20-laser-gun",
+  "source_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+  "authoring_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+  "license": "MIT",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "preauthoring_record": "docs/provenance/v1.8.0-c18b-laser-gun-preauthoring.md",
+  "entries": [
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/basic_laser_gun.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w20-laser-gun",
+      "source_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LaserGunData.java",
+      "source_sha256": "0e5a25309146471a49279de7b3171fa00ec909548e66f17c36c0ed0fa1ca1fe7",
+      "authoring_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "target_sha256": "a59acb363641806d44dc6041761c9d8359acca20adee50989ba524457f87593d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Reference minecraft:item/handheld and the new texture by resource ID; no model file copied."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/basic_laser_gun.png",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w20-laser-gun",
+      "source_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LaserGunData.java",
+      "source_sha256": "0e5a25309146471a49279de7b3171fa00ec909548e66f17c36c0ed0fa1ca1fe7",
+      "authoring_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "target_sha256": "f885eff929ef551e80d340e5612f89a0e41c8567af0ae70c036966848b0d116f",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Original 16x16 code-drawn grid with V180MaterialArt.png and tint 0x8EE5D6; no bitmap input."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/basic_laser_gun.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w20-laser-gun",
+      "source_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LaserGunData.java",
+      "source_sha256": "0e5a25309146471a49279de7b3171fa00ec909548e66f17c36c0ed0fa1ca1fe7",
+      "authoring_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "target_sha256": "fb22b92ad3c3c00b9bf88d548e7857056e1d8d4661bda1f21225f072b40b037b",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "New acquisition recipe: three steel plates, two iron rods, one diamond and one basic circuit plate, yielding one gun. Not a legacy recipe conversion."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/tools/basic_laser_gun.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w20-laser-gun",
+      "source_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LaserGunData.java",
+      "source_sha256": "0e5a25309146471a49279de7b3171fa00ec909548e66f17c36c0ed0fa1ca1fe7",
+      "authoring_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "target_sha256": "9ad9a616a6cd04d61553821c04dbd7fdb691b06f0470a4c659254c6613c44323",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Deterministic v1.8 DataGen from new MIT source; no copied upstream or official asset."
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w20-laser-gun",
+      "source_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LaserGunData.java",
+      "source_sha256": "0e5a25309146471a49279de7b3171fa00ec909548e66f17c36c0ed0fa1ca1fe7",
+      "authoring_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "target_sha256": "b82e8e9817acef447afddbe395ba03caad0432932e8dc62c20b4f583e4a4143d",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Deterministic v1.8 DataGen from new MIT source; no copied upstream or official asset."
+      ],
+      "new_keys": [
+        "item.advancedrocketrycommunity.basic_laser_gun",
+        "tooltip.advancedrocketrycommunity.basic_laser_gun.use",
+        "tooltip.advancedrocketrycommunity.basic_laser_gun.limits",
+        "message.advancedrocketrycommunity.basic_laser_gun.main_hand",
+        "message.advancedrocketrycommunity.basic_laser_gun.disabled"
+      ]
+    },
+    {
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "status": "NEW",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_branch": "codex/v1.8.0-w20-laser-gun",
+      "source_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180LaserGunData.java",
+      "source_sha256": "0e5a25309146471a49279de7b3171fa00ec909548e66f17c36c0ed0fa1ca1fe7",
+      "authoring_commit": "5ffd335803819642e41a9e746a91da00f559ca25",
+      "target_sha256": "5e3ea4f78d8bc4bea756bc216d59ebfc7e13800af96b7558dbad801bc5ce3d05",
+      "license": "MIT",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "transformation": [
+        "Deterministic v1.8 DataGen from new MIT source; no copied upstream or official asset."
+      ],
+      "new_keys": [
+        "item.advancedrocketrycommunity.basic_laser_gun",
+        "tooltip.advancedrocketrycommunity.basic_laser_gun.use",
+        "tooltip.advancedrocketrycommunity.basic_laser_gun.limits",
+        "message.advancedrocketrycommunity.basic_laser_gun.main_hand",
+        "message.advancedrocketrycommunity.basic_laser_gun.disabled"
+      ]
+    }
+  ],
+  "review": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "reviewer": null,
+    "reviewed_at": null,
+    "findings": [
+      "Original icon/model and recipe need maintainer review; real-client V1/V2 and audio listening remain open. Existing W16 sound assets are reused unchanged."
+    ],
+    "content_digest": "4cd09682e649c90ead40c405bf2f05768fd1b21ec095cde372575f3479aeae21"
+  }
+}
