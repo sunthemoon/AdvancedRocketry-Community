@@ -58,6 +58,21 @@ class RocketAuditNativeOracleTest(unittest.TestCase):
         with self.assertRaises(audit.smoke.SmokeError):
             self.inspect()
 
+    def test_neutral_upgrade_never_creates_a_ledger(self):
+        with patch.object(Path, "exists", return_value=False), patch.object(audit, "digest", return_value="a" * 64), \
+                patch.object(audit, "record", return_value=dict(Entities=[self.entity])):
+            self.assertEqual("absent", audit.inspect_upgrade(Path("world"))["ledger"])
+        with patch.object(Path, "exists", return_value=True):
+            with self.assertRaises(audit.smoke.SmokeError):
+                audit.inspect_upgrade(Path("world"))
+
+    def test_neutral_upgrade_rejects_a_bound_or_credited_envelope(self):
+        self.wrapper["resource_escrow"]["resource_epoch"] = 1
+        with patch.object(Path, "exists", return_value=False), \
+                patch.object(audit, "record", return_value=dict(Entities=[self.entity])):
+            with self.assertRaises(audit.smoke.SmokeError):
+                audit.inspect_upgrade(Path("world"))
+
 
 if __name__ == "__main__":
     unittest.main()

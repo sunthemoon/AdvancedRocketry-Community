@@ -14,7 +14,20 @@ import run_dedicated_server_smoke as smoke
 from run_v060_flight_server_smoke import _server_command
 from run_v180_escrow_forced_stop import digest, ledger, record, LEDGER
 
-CASES = ("RA_BEFORE_REPAIR", "RA_AFTER_REPAIR")
+CASES = ("RA_SCHEMA_TWO", "RA_BEFORE_REPAIR", "RA_AFTER_REPAIR")
+
+
+def inspect_upgrade(world: Path) -> dict:
+    if (world / "data" / LEDGER).exists():
+        raise smoke.SmokeError("Neutral upgrade created a ledger")
+    rockets = [entry for entry in record(world / "entities/r.0.0.mca")["Entities"] if "RocketEntityData" in entry]
+    if len(rockets) != 1:
+        raise smoke.SmokeError("Lost or duplicated migration rocket")
+    wrapper = rockets[0]["RocketEntityData"]
+    if (wrapper["schema_version"] != 3 or wrapper["flight_data"]["fuel"]["amount"] != 0
+            or wrapper["resource_escrow"] != {"schema_version": 1, "resource_epoch": 0, "markers": []}):
+        raise smoke.SmokeError("Wrong neutral upgrade authority")
+    return dict(wrapper=wrapper, ledger="absent", file_sha256=digest(world / "entities/r.0.0.mca"))
 
 
 def inspect(world: Path, repaired: bool) -> dict:
@@ -83,14 +96,17 @@ def run(args) -> dict:
                 if restart == 0:
                     process.wait_for(re.compile(r"ARCE_RELEASE_ROCKET_AUDIT_PAUSED cut=" + cut), args.startup_timeout)
                     process.process.kill(); process.abort(); process = None
-                    row["cut_disk"] = inspect(session / ("world-" + cut), cut == "RA_AFTER_REPAIR")
+                    row["cut_disk"] = (inspect_upgrade(session / ("world-" + cut)) if cut == "RA_SCHEMA_TWO"
+                                       else inspect(session / ("world-" + cut), cut == "RA_AFTER_REPAIR"))
                 else:
-                    process.wait_for(re.compile(r"ARCE_RELEASE_ROCKET_AUDIT_RESULT records=1 reason=RELOCATED_ENDPOINT fuel=0 x=66\.5"), args.startup_timeout)
+                    pattern = (r"ARCE_RELEASE_ROCKET_UPGRADE_RESULT schema=3 ledger=absent fuel=0" if cut == "RA_SCHEMA_TWO"
+                               else r"ARCE_RELEASE_ROCKET_AUDIT_RESULT records=1 reason=RELOCATED_ENDPOINT fuel=0 x=66\.5")
+                    process.wait_for(re.compile(pattern), args.startup_timeout)
                     process.command("stop"); code = process.finish()
                     if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                         raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")
                     process = None
-                    disk = inspect(session / ("world-" + cut), True)
+                    disk = inspect_upgrade(session / ("world-" + cut)) if cut == "RA_SCHEMA_TWO" else inspect(session / ("world-" + cut), True)
                     if disk["wrapper"] != row["cut_disk"]["wrapper"]:
                         raise smoke.SmokeError("Restart changed the protected real-rocket wrapper")
                     row["restarts"].append(dict(restart=restart, exit_code=code, disk=disk))
