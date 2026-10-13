@@ -175,6 +175,7 @@ public final class PlanetaryExposureGameTests {
 
     @GameTest(template = "atmosphere_test", batch = "planetary_sunlight", timeoutTicks = 40)
     public static void sunlightUsesTimeLoadedColumnAndRoofWithoutLoadingFarChunks(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel level = helper.getLevel();
         long time = level.getDayTime();
         BlockPos column = helper.absolutePos(new BlockPos(3, 2, 3));
@@ -196,16 +197,16 @@ public final class PlanetaryExposureGameTests {
         }
         // Lighting is asynchronous, not guaranteed to publish after a fixed two ticks.
         // Observe the loaded column within the existing 40-tick test deadline.
-        awaitRoofLighting(helper, level, eye, roof, original, cleanup);
+        awaitRoofLighting(helper, driver, level, eye, roof, original, cleanup);
     }
 
-    private static void awaitRoofLighting(GameTestHelper helper, ServerLevel level, BlockPos eye, BlockPos roof,
+    private static void awaitRoofLighting(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, BlockPos eye, BlockPos roof,
             net.minecraft.world.level.block.state.BlockState original, Runnable cleanup) {
-        helper.runAfterDelay(1, () -> {
+        driver.after(1, () -> {
             boolean pending = false;
             try {
                 if (level.canSeeSky(eye) && helper.getTick() < 30) {
-                    awaitRoofLighting(helper, level, eye, roof, original, cleanup);
+                    awaitRoofLighting(helper, driver, level, eye, roof, original, cleanup);
                     pending = true;
                     return;
                 }

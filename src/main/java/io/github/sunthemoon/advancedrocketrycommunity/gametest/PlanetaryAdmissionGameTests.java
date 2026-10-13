@@ -56,11 +56,12 @@ public final class PlanetaryAdmissionGameTests {
 
     @GameTest(template = "rocket_test", batch = "planetary_admission", timeoutTicks = 100)
     public static void closedDestinationsRejectWithoutChangingFuelOrSavedAuthority(GameTestHelper helper) {
-        helper.runAtTickTime(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.at(1, () -> {
             var catalogs = catalogs(true, false, false);
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var player = player(helper.getLevel(), UUID.randomUUID());
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), player.getUUID(), rocket -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), player.getUUID(), rocket -> {
                 player.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
                 var server = helper.getLevel().getServer();
                 var stations = StationRegistrySavedData.get(server);
@@ -110,11 +111,12 @@ public final class PlanetaryAdmissionGameTests {
 
     @GameTest(template = "rocket_test", batch = "planetary_admission", timeoutTicks = 100)
     public static void closedMappedSourceCanLaunchAndCancelThroughPlayerAuthority(GameTestHelper helper) {
-        helper.runAtTickTime(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.at(1, () -> {
             var catalogs = catalogs(false, true, true);
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var owner = player(helper.getLevel(), UUID.randomUUID());
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), owner.getUUID(), rocket -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), owner.getUUID(), rocket -> {
                 try {
                     launchAndCancel(helper, manager, rocket, owner, MOON);
                 } finally {
@@ -128,7 +130,8 @@ public final class PlanetaryAdmissionGameTests {
 
     @GameTest(template = "rocket_test", batch = "planetary_admission", timeoutTicks = 100)
     public static void closedOrbitStationCanDepartButStillRequiresLiveMembership(GameTestHelper helper) {
-        helper.runAtTickTime(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.at(1, () -> {
             var catalogs = catalogs(true, true, false);
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
             var server = helper.getLevel().getServer();
@@ -152,7 +155,7 @@ public final class PlanetaryAdmissionGameTests {
                 stations.reserve(stationId, ownerId, "Closed orbit fixture", CelestialIds.EARTH_ID,
                         helper.getLevel().getGameTime());
                 var station = stations.commit(stationId);
-                RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
+                RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
                     try {
                         try {
                             var old = original.flightData().orElseThrow();
@@ -172,7 +175,7 @@ public final class PlanetaryAdmissionGameTests {
                         space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
                         space.getChunkAt(rocket.blockPosition());
                         helper.assertTrue(space.addFreshEntity(rocket), "Station rocket was not installed");
-                        awaitVisible(helper, space, rocket, () -> {
+                        awaitVisible(helper, driver, space, rocket, () -> {
                             var owner = player(space, ownerId);
                             owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
                             // Transferring ownership retains the old owner as a member; explicitly revoke both.
@@ -211,7 +214,8 @@ public final class PlanetaryAdmissionGameTests {
      */
     @GameTest(template = "rocket_test", batch = "planetary_admission_warp", timeoutTicks = 100)
     public static void dockedRocketDepartsFromTheStationsNewOrbitAfterRelocation(GameTestHelper helper) {
-        helper.runAtTickTime(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.at(1, () -> {
             var catalogs = catalogs(true, true, true, List.of(new RouteDefinition(1, ModIdentity.id("test_moon_orbit"),
                     RouteAnchor.bodySurface(CelestialIds.MOON_ID), RouteAnchor.orbit(CelestialIds.MOON_ID), 25, true)));
             var manager = new RocketManager(catalogs.celestialView(), catalogs);
@@ -238,7 +242,7 @@ public final class PlanetaryAdmissionGameTests {
                         helper.getLevel().getGameTime());
                 var station = stations.commit(stationId);
                 stations.foldWarpCredits(java.util.Map.of(stationId, 100_000));
-                RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
+                RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), ownerId, cleanup, original -> {
                     try {
                         try {
                             var old = original.flightData().orElseThrow();
@@ -258,7 +262,7 @@ public final class PlanetaryAdmissionGameTests {
                         space.getChunkSource().addRegionTicket(FIXTURE_TICKET, ticketChunk.get(), 2, stationId);
                         space.getChunkAt(rocket.blockPosition());
                         helper.assertTrue(space.addFreshEntity(rocket), "Station rocket was not installed");
-                        awaitVisible(helper, space, rocket, () -> {
+                        awaitVisible(helper, driver, space, rocket, () -> {
                             var owner = player(space, ownerId);
                             owner.setPos(rocket.getX(), rocket.getY(), rocket.getZ());
                             var committed = stations.checkedRelocation(server, stations.find(stationId).orElseThrow(),
@@ -289,7 +293,8 @@ public final class PlanetaryAdmissionGameTests {
     /** ADR-044 §5 (WARP review R2, M12): a rocket built on a station records the station's orbit body. */
     @GameTest(template = "rocket_test", batch = "planetary_admission_station_built", timeoutTicks = 100)
     public static void rocketBuiltOnAStationRecordsItsOrbitBody(GameTestHelper helper) {
-        helper.runAtTickTime(1, () -> {
+        var driver = new GameTestTickDriver(helper);
+        driver.at(1, () -> {
             var server = helper.getLevel().getServer();
             var space = server.getLevel(CelestialIds.SPACE_LEVEL);
             helper.assertTrue(space != null, "Space is unavailable");
@@ -297,7 +302,7 @@ public final class PlanetaryAdmissionGameTests {
             UUID stationId = UUID.randomUUID();
             UUID ownerId = UUID.randomUUID();
             var built = new RocketEntity(ModEntities.ROCKET.get(), space);
-            RocketFlightGameTestFixtures.assembleFueledRocket(helper, new BlockPos(3, 2, 3), ownerId, original -> {
+            RocketFlightGameTestFixtures.assembleFueledRocket(helper, driver, new BlockPos(3, 2, 3), ownerId, original -> {
                 try {
                     stations.reserve(stationId, ownerId, "Built-here fixture", CelestialIds.MOON_ID,
                             helper.getLevel().getGameTime());
@@ -323,21 +328,21 @@ public final class PlanetaryAdmissionGameTests {
         });
     }
 
-    private static void awaitVisible(GameTestHelper helper, ServerLevel level, RocketEntity rocket,
+    private static void awaitVisible(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, RocketEntity rocket,
             Runnable assertions, Runnable cleanup) {
-        awaitVisible(helper, level, rocket, assertions, cleanup, new GameTestTickPacer(level.getServer()));
+        awaitVisible(helper, driver, level, rocket, assertions, cleanup, new GameTestTickPacer(level.getServer()));
     }
 
-    private static void awaitVisible(GameTestHelper helper, ServerLevel level, RocketEntity rocket,
+    private static void awaitVisible(GameTestHelper helper, GameTestTickDriver driver, ServerLevel level, RocketEntity rocket,
             Runnable assertions, Runnable cleanup, GameTestTickPacer pacer) {
-        helper.runAfterDelay(1, () -> {
+        driver.after(1, () -> {
             boolean scheduled = false;
             try {
                 if (level.getEntity(rocket.getId()) != rocket) {
                     // Fail and release our external resources before the enclosing 100-tick timeout.
                     helper.assertTrue(helper.getTick() < 80, "Station fixture entity never became visible");
                     pacer.pace();
-                    awaitVisible(helper, level, rocket, assertions, cleanup, pacer);
+                    awaitVisible(helper, driver, level, rocket, assertions, cleanup, pacer);
                     scheduled = true;
                 } else {
                     assertions.run();
