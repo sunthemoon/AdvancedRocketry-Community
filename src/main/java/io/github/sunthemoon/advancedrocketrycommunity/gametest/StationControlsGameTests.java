@@ -213,6 +213,7 @@ public final class StationControlsGameTests {
 
     @GameTest(template = "empty", batch = "station_controls_warp_parity", timeoutTicks = 400)
     public static void theWarpControllerReachesTheSameOutcomeAsTheCommand(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         StationWarpGameTests.Fixture command = new StationWarpGameTests.Fixture(helper, "Command warp",
                 CelestialIds.EARTH_ID, 2_500_000);
         StationWarpGameTests.Fixture screen = new StationWarpGameTests.Fixture(helper, "Screen warp",
@@ -255,7 +256,7 @@ public final class StationControlsGameTests {
             StationState commandBefore = command.station();
             StationState screenBefore = screen.station();
             scheduled = true;
-            helper.runAfterDelay(RATE_TICKS, () -> {
+            driver.after(RATE_TICKS, () -> {
                 try {
                     menu.broadcastChanges();
                     long token = menu.lastView().orElseThrow().token();
@@ -266,7 +267,7 @@ public final class StationControlsGameTests {
                     cleanup.run();
                     throw failure;
                 }
-                helper.runAfterDelay(StationWarpGameTests.COMMIT_DELAY, () -> {
+                driver.after(StationWarpGameTests.COMMIT_DELAY, () -> {
                     try {
                         helper.assertTrue(command.station().equals(commandBefore.withOrbitBody(StationWarpGameTests.MOON)),
                                 "The command warp did not relocate only the orbit");
@@ -356,6 +357,7 @@ public final class StationControlsGameTests {
 
     @GameTest(template = "empty", batch = "station_controls_menu_checks", timeoutTicks = 100)
     public static void screensAreRateLimitedAndCompareTheObservedStation(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         StationWarpGameTests.Fixture fixture = new StationWarpGameTests.Fixture(helper, "Menu checks",
                 CelestialIds.EARTH_ID, 0);
         List<BlockPos> placed = new ArrayList<>();
@@ -379,13 +381,13 @@ public final class StationControlsGameTests {
             helper.assertTrue(menu.status().equals(before), "A foreign intent was handled: " + menu.status());
             helper.assertTrue(fixture.station().orbitalControls().eastRate() == 0, "A refused click changed the rate");
             scheduled = true;
-            helper.runAfterDelay(RATE_TICKS, () -> {
+            driver.after(RATE_TICKS, () -> {
                 try {
                     menu.broadcastChanges();
                     click(helper, menu, owner, 2, StationManagementCode.ORIENTATION_SET);
                     helper.assertTrue(fixture.station().orbitalControls().eastRate() == 1, "The rate was not set");
                     // A fixed phase needs the rotation stopped first.
-                    helper.runAfterDelay(RATE_TICKS, () -> {
+                    driver.after(RATE_TICKS, () -> {
                         try {
                             menu.broadcastChanges();
                             click(helper, menu, owner, OrientationControllerMenu.FIRST_PHASE_BUTTON + 1,

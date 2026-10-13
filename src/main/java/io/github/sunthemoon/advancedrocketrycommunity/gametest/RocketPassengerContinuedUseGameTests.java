@@ -31,7 +31,8 @@ public final class RocketPassengerContinuedUseGameTests {
 
     @GameTest(template = "rocket_test", batch = "passenger_logout_cleanup", timeoutTicks = 400)
     public static void logoutImmediatelyCancelsOnlyItsPendingReconnect(GameTestHelper helper) {
-        afterLanding(helper, rocket -> {
+        var driver = new GameTestTickDriver(helper);
+        afterLanding(helper, driver, rocket -> {
             var level = (ServerLevel) rocket.level();
             var player = new TrackingPlayer(level, rocket.ownerId().orElseThrow());
             var other = new TrackingPlayer(level, UUID.randomUUID());
@@ -93,7 +94,8 @@ public final class RocketPassengerContinuedUseGameTests {
 
     @GameTest(template = "rocket_test", batch = "passenger_entity_readiness", timeoutTicks = 400)
     public static void loginWaitsForThePlayersEntityChunk(GameTestHelper helper) {
-        afterLanding(helper, rocket -> {
+        var driver = new GameTestTickDriver(helper);
+        afterLanding(helper, driver, rocket -> {
             var level = (ServerLevel) rocket.level();
             var player = new TrackingPlayer(level, rocket.ownerId().orElseThrow());
             var manager = new RocketManager();
@@ -118,7 +120,8 @@ public final class RocketPassengerContinuedUseGameTests {
 
     @GameTest(template = "rocket_test", batch = "passenger_refueled_disassembly", timeoutTicks = 400)
     public static void refueledArrivalDisassemblyReleasesTransferRecord(GameTestHelper helper) {
-        afterLanding(helper, rocket -> {
+        var driver = new GameTestTickDriver(helper);
+        afterLanding(helper, driver, rocket -> {
             var player = new RocketDisassemblyGameTests.ConsentPlayer(
                     (ServerLevel) rocket.level(), rocket.ownerId().orElseThrow());
             player.setPos(rocket.position());
@@ -147,7 +150,8 @@ public final class RocketPassengerContinuedUseGameTests {
 
     @GameTest(template = "rocket_test", batch = "passenger_leave", timeoutTicks = 400)
     public static void departedPassengerLoginDoesNotTeleportBack(GameTestHelper helper) {
-        afterLanding(helper, rocket -> {
+        var driver = new GameTestTickDriver(helper);
+        afterLanding(helper, driver, rocket -> {
             var player = new TrackingPlayer((ServerLevel) rocket.level(), rocket.ownerId().orElseThrow());
             var manager = new RocketManager();
             manager.onInstalled();
@@ -166,7 +170,8 @@ public final class RocketPassengerContinuedUseGameTests {
 
     @GameTest(template = "rocket_test", batch = "passenger_new_board", timeoutTicks = 400)
     public static void newlyBoardedPassengerReconnectsAfterLanding(GameTestHelper helper) {
-        afterLanding(helper, rocket -> {
+        var driver = new GameTestTickDriver(helper);
+        afterLanding(helper, driver, rocket -> {
             var player = new TrackingPlayer((ServerLevel) rocket.level(), UUID.randomUUID());
             var manager = new RocketManager();
             manager.onInstalled();
@@ -185,7 +190,7 @@ public final class RocketPassengerContinuedUseGameTests {
         });
     }
 
-    private static void afterLanding(GameTestHelper helper, Consumer<RocketEntity> check) {
+    private static void afterLanding(GameTestHelper helper, GameTestTickDriver driver, Consumer<RocketEntity> check) {
         var earth = helper.getLevel();
         var moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon unavailable");
@@ -197,7 +202,7 @@ public final class RocketPassengerContinuedUseGameTests {
         var transfer = UUID.randomUUID();
         var launched = RocketRuntime.requestAdminFlight(source, RocketDestination.MOON, transfer);
         helper.assertTrue(launched.success(), "Fixture launch failed: " + launched.code());
-        RocketFlightGameTestFixtures.awaitFlightState(helper, moon, source.assemblyTransactionId().orElseThrow(),
+        RocketFlightGameTestFixtures.awaitFlightState(helper, driver, moon, source.assemblyTransactionId().orElseThrow(),
                 RocketFlightState.LANDED, 270, () -> {
             var journal = RocketTransferSavedData.get(earth.getServer());
             var record = journal.find(transfer).orElseThrow();

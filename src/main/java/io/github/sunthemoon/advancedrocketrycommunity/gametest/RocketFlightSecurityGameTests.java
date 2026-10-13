@@ -37,16 +37,17 @@ public final class RocketFlightSecurityGameTests {
 
     @GameTest(template = TEMPLATE, batch = "flight_security", timeoutTicks = 200)
     public static void hostileFlightIntentsCannotChangeAuthority(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         ServerLevel earth = helper.getLevel();
         ServerLevel moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon Level is unavailable");
         clearTransferJournal(earth);
         primePadChunks(moon);
-        helper.runAfterDelay(40, () -> {
+        driver.after(40, () -> {
             clearPadRockets(earth);
             clearPadRockets(moon);
             ServerPlayer owner = new FlightFakePlayer(earth);
-            assembleFueledRocket(helper,
+            assembleFueledRocket(helper, driver,
                     new BlockPos(3, 2, 3),
                     UUID.randomUUID(), unauthorizedRocket -> {
                 long unauthorizedFuel = unauthorizedRocket.flightData().orElseThrow().fuel().amount();
@@ -67,7 +68,7 @@ public final class RocketFlightSecurityGameTests {
                 );
                 unauthorizedRocket.discard();
 
-                assembleFueledRocket(helper, new BlockPos(12, 2, 3), owner.getUUID(), rocket -> {
+                assembleFueledRocket(helper, driver, new BlockPos(12, 2, 3), owner.getUUID(), rocket -> {
                     long fuelBefore = rocket.flightData().orElseThrow().fuel().amount();
 
                     owner.setPos(rocket.getX() + 100.0D, rocket.getY(), rocket.getZ());

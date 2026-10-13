@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.GuardedChunkSaves;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -163,11 +164,12 @@ public final class SolarArrayGameTests {
 
     @GameTest(template = "solar_array_test", batch = "solar_array_surface", timeoutTicks = 80)
     public static void surfaceDayNightWeatherRoofAndOverflowUseNativeSamples(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var level = helper.getLevel(); long day = level.getDayTime(); float rain = level.getRainLevel(1), thunder = level.getThunderLevel(1);
         var fixture = fixture(helper, 63); BlockPos roof = fixture.position.above(); fixture.set(roof, Blocks.AIR.defaultBlockState());
         Runnable restore = () -> { try { fixture.close(); } finally { level.setDayTime(day); level.setRainLevel(rain); level.setThunderLevel(thunder); } };
         level.setDayTime(6_000); level.setRainLevel(0); level.setThunderLevel(0);
-        await(helper, () -> level.isDay() && level.canSeeSky(roof), () -> {
+        await(helper, driver, () -> level.isDay() && level.canSeeSky(roof), () -> {
             fixture.energy(0); fixture.tick();
             helper.assertTrue(fixture.array.actualCredit() == 126 && fixture.array.reason() == SolarGeneration.Reason.GENERATING, "Surface daytime array rate differs");
             level.setRainLevel(1); level.setThunderLevel(1); fixture.energy(0); fixture.tick();
@@ -176,11 +178,11 @@ public final class SolarArrayGameTests {
             helper.assertTrue(fixture.array.energyStored() == 20_000 && fixture.array.actualCredit() == 1, "Nearly full buffer lost or wrapped FE");
             fixture.tick(); helper.assertTrue(fixture.array.actualCredit() == 0 && fixture.array.reason() == SolarGeneration.Reason.BUFFER_FULL, "Full buffer continued credit");
             level.setDayTime(18_000);
-            await(helper, () -> !level.isDay(), () -> {
+            await(helper, driver, () -> !level.isDay(), () -> {
                 fixture.energy(777); fixture.tick();
                 helper.assertTrue(fixture.array.actualCredit() == 0 && fixture.array.reason() == SolarGeneration.Reason.NOT_DAYLIGHT, "Night array generated");
                 fixture.set(roof, Blocks.STONE.defaultBlockState());
-                await(helper, () -> !level.canSeeSky(roof), () -> {
+                await(helper, driver, () -> !level.canSeeSky(roof), () -> {
                     fixture.tick(); helper.assertTrue(fixture.array.reason() == SolarGeneration.Reason.SKY_BLOCKED && fixture.array.actualCredit() == 0, "Roof did not block collection");
                     restore.run(); helper.succeed();
                 }, restore);
@@ -190,6 +192,7 @@ public final class SolarArrayGameTests {
 
     @GameTest(template = "solar_array_test", batch = "solar_array_station", timeoutTicks = 100)
     public static void operationalStationExposureAndMissingBodyUseSharedFallback(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var server = helper.getLevel().getServer(); ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
         helper.assertTrue(space != null, "Space fixture unavailable");
         var stations = StationRegistrySavedData.get(server); UUID id = UUID.randomUUID();
@@ -209,7 +212,7 @@ public final class SolarArrayGameTests {
                 finally { forced.forEach(chunk -> space.setChunkForced(chunk.x, chunk.z, false)); }
             }
         };
-        await(helper, () -> forced.stream().allMatch(chunk -> space.getChunkSource().getChunkNow(chunk.x, chunk.z) != null), () -> {
+        await(helper, driver, () -> forced.stream().allMatch(chunk -> space.getChunkSource().getChunkNow(chunk.x, chunk.z) != null), () -> {
             fixture[0] = new SolarArrayFixture(space, pos); fixture[0].install(pos, 63); fixture[0].set(pos.above(), Blocks.AIR.defaultBlockState());
             helper.assertTrue(!fixture[0].exposure.read(space, pos, fixture[0].array).available(), "Reservation became station authority");
             stations.commit(id); committed[0] = true; fixture[0].energy(0); fixture[0].tick();
@@ -393,15 +396,15 @@ public final class SolarArrayGameTests {
         helper.succeed();
     }
 
-    private static void await(GameTestHelper helper, BooleanSupplier ready, Runnable verify, Runnable restore) {
-        await(helper, new GameTestTickPacer(helper.getLevel().getServer()), ready, verify, restore);
+    private static void await(GameTestHelper helper, GameTestTickDriver driver, BooleanSupplier ready, Runnable verify, Runnable restore) {
+        await(helper, driver, new GameTestTickPacer(helper.getLevel().getServer()), ready, verify, restore);
     }
-    private static void await(GameTestHelper helper, GameTestTickPacer pacer, BooleanSupplier ready, Runnable verify, Runnable restore) {
-        helper.runAfterDelay(1, () -> {
+    private static void await(GameTestHelper helper, GameTestTickDriver driver, GameTestTickPacer pacer, BooleanSupplier ready, Runnable verify, Runnable restore) {
+        driver.after(1, () -> {
             try {
                 if (!ready.getAsBoolean()) {
                     helper.assertTrue(helper.getTick() < 75, "Solar fixture readiness was not published within its tick budget");
-                    pacer.pace(); await(helper, pacer, ready, verify, restore); return;
+                    pacer.pace(); await(helper, driver, pacer, ready, verify, restore); return;
                 }
                 verify.run();
             } catch (RuntimeException | Error failed) { restore.run(); throw failed; }

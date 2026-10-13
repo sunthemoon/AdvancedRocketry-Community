@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.CellObservation;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePosition;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.ServerLevelVolumeWorldView;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -24,6 +25,7 @@ public final class ForceFieldUnloadGameTests {
             "arce_force_field_unload_fixture", java.util.Comparator.comparingLong(ChunkPos::toLong));
     @GameTest(template = "empty", batch = "force_field_unload", timeoutTicks = 400)
     public static void differentChunksActuallyUnloadReloadWithoutLosingSealedClaims(GameTestHelper helper) {
+        var driver = new GameTestTickDriver(helper);
         var f = new ForceFieldGameTests.Fixture(helper, Direction.EAST);
         boolean previous = ForceFieldConfig.enabled();
         ForceFieldConfig.ENABLED.set(false);
@@ -45,17 +47,17 @@ public final class ForceFieldUnloadGameTests {
             if (event.getLevel() == f.level && event.getChunk().getPos().equals(targetChunk)) { targetUnloaded.set(true); }
         };
         MinecraftForge.EVENT_BUS.addListener(witness);
-        poll(helper, f, targetChunk, field, previous, unloaded, targetUnloaded, witness, 0, false);
+        poll(helper, driver, f, targetChunk, field, previous, unloaded, targetUnloaded, witness, 0, false);
     }
-    private static void poll(GameTestHelper helper, ForceFieldGameTests.Fixture f, ChunkPos targetChunk,
+    private static void poll(GameTestHelper helper, GameTestTickDriver driver, ForceFieldGameTests.Fixture f, ChunkPos targetChunk,
             ForceFieldBlockEntity originalField, boolean previous, AtomicBoolean unloaded, AtomicBoolean targetUnloaded,
             Consumer<ChunkEvent.Unload> witness, int attempts, boolean releasedTarget) {
-        helper.runAfterDelay(1, () -> {
+        driver.after(1, () -> {
             var target = originalField.getBlockPos();
             boolean sourceUnavailable = !ForceFieldService.loaded(f.level, f.identity.source());
             boolean diskReady = unloaded.get() && targetUnloaded.get() && sourceUnavailable && !ForceFieldService.loaded(f.level, target);
             if ((!releasedTarget && !sourceUnavailable || releasedTarget && !diskReady) && attempts < 350) {
-                poll(helper, f, targetChunk, originalField, previous, unloaded, targetUnloaded, witness, attempts + 1, releasedTarget);
+                poll(helper, driver, f, targetChunk, originalField, previous, unloaded, targetUnloaded, witness, attempts + 1, releasedTarget);
                 return;
             }
             boolean handedOff = false;
@@ -71,7 +73,7 @@ public final class ForceFieldUnloadGameTests {
                     assertSealed(helper, f, target);
                     // A nearby FULL chunk retains generation dependencies. Release our ticket to witness true disk unloads.
                     f.level.getChunkSource().removeRegionTicket(FIXTURE_TICKET, targetChunk, 0, targetChunk);
-                    poll(helper, f, targetChunk, originalField, previous, unloaded, targetUnloaded, witness, attempts + 1, true);
+                    poll(helper, driver, f, targetChunk, originalField, previous, unloaded, targetUnloaded, witness, attempts + 1, true);
                     handedOff = true;
                     return;
                 }

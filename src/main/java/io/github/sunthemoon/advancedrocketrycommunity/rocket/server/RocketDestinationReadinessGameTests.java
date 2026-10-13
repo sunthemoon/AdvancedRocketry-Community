@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -57,7 +58,7 @@ public final class RocketDestinationReadinessGameTests {
     }
 
     private static void awaitSource(Fixture fixture, int attempt) {
-        fixture.helper.runAfterDelay(1, () -> fixture.guard(() -> {
+        fixture.driver.after(1, () -> fixture.guard(() -> {
             BlockPos sourceOrigin = fixture.helper.absolutePos(new BlockPos(3, 2, 3));
             if (!fixture.earth.areEntitiesLoaded(new ChunkPos(sourceOrigin).toLong())
                     || !fixture.earth.isPositionEntityTicking(sourceOrigin)) {
@@ -77,7 +78,7 @@ public final class RocketDestinationReadinessGameTests {
     }
 
     private static void awaitLoadedButNotTicking(Fixture fixture, int attempt) {
-        fixture.helper.runAfterDelay(1, () -> fixture.guard(() -> {
+        fixture.driver.after(1, () -> fixture.guard(() -> {
             fixture.helper.assertTrue(!fixture.moon.isPositionEntityTicking(MOON_ORIGIN),
                     "The FULL-only remote fixture unexpectedly became entity-ticking");
             if (!fixture.moon.areEntitiesLoaded(fixture.chunk.toLong())) {
@@ -96,7 +97,7 @@ public final class RocketDestinationReadinessGameTests {
     }
 
     private static void awaitReady(Fixture fixture, int attempt) {
-        fixture.helper.runAfterDelay(1, () -> fixture.guard(() -> {
+        fixture.driver.after(1, () -> fixture.guard(() -> {
             if (!RocketTransferEntities.destinationEntityChunkReady(fixture.moon, fixture.record.destinationSnapshot())) {
                 fixture.helper.assertTrue(attempt < READINESS_ATTEMPTS, "Ticketed destination did not become ready");
                 fixture.assertWaitUnchanged();
@@ -117,6 +118,7 @@ public final class RocketDestinationReadinessGameTests {
 
     private static final class Fixture {
         private final GameTestHelper helper;
+        private final GameTestTickDriver driver;
         private final ServerLevel earth;
         private final ServerLevel moon;
         /** Retries wait for asynchronous chunk and entity loading; each lasts a server tick (GameTestTickPacer). */
@@ -138,6 +140,7 @@ public final class RocketDestinationReadinessGameTests {
 
         private Fixture(GameTestHelper helper, ServerLevel moon) {
             this.helper = helper;
+            this.driver = new GameTestTickDriver(helper);
             earth = helper.getLevel();
             this.moon = moon;
             pacer = new GameTestTickPacer(earth.getServer());
