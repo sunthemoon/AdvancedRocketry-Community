@@ -247,6 +247,17 @@ public final class RocketTransferSavedData extends SavedData {
 
     public long mutationSequence() { return mutationSequence; }
 
+    /** Current and last acknowledged authority protect removal failures without locking new identities. */
+    public boolean resourceMutationUnproved(UUID logical) {
+        if (!operational()) { return true; }
+        if (!isDirty()) { return findByLogicalRocket(logical).isPresent() && !acknowledgedCurrent(); }
+        var acknowledged = checkpoint.acknowledged();
+        // No retained disk generation after an observed failure means the affected identities are unknown.
+        if (failedWrite && acknowledged.isEmpty()) { return true; }
+        return findByLogicalRocket(logical).isPresent()
+                || acknowledged.map(value -> value.logicalRockets().contains(logical)).orElse(false);
+    }
+
     public CheckedWriteResult checkedWriteResult() {
         return new CheckedWriteResult(writeOutcome, mutationSequence,
                 checkpoint.acknowledged().map(RocketJournalCheckpoint.Acknowledgement::sequence).orElse(null),

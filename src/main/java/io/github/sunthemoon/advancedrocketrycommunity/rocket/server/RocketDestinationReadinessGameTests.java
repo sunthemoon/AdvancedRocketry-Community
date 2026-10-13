@@ -36,7 +36,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Actual pre-authority call-site checks; the local journal is not a durability fixture. */
+/** Actual pre-authority readiness checks with an acknowledged, isolated setup journal. */
 @net.minecraftforge.gametest.GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @net.minecraftforge.gametest.PrefixGameTestTemplate(false)
 public final class RocketDestinationReadinessGameTests {
@@ -126,7 +126,8 @@ public final class RocketDestinationReadinessGameTests {
         private final UUID logical = UUID.randomUUID();
         private final UUID owner = UUID.randomUUID();
         private final RocketTransferService service = new RocketTransferService();
-        private final RocketTransferSavedData journal = new RocketTransferSavedData();
+        private RocketTransferSavedData journal = new RocketTransferSavedData();
+        private java.nio.file.Path setupDirectory;
         private final Map<BlockPos, BlockState> sourceBlocks = new LinkedHashMap<>();
         private RocketEntity source;
         private RocketEntity destination;
@@ -187,6 +188,11 @@ public final class RocketDestinationReadinessGameTests {
             helper.assertTrue(earth.getEntity(source.getUUID()) == source,
                     "Ready source is not visible through the native UUID lookup");
             journal.put(record);
+            try {
+                setupDirectory = java.nio.file.Files.createTempDirectory("arce-destination-readiness-");
+                journal.save(setupDirectory.resolve(RocketTransferSavedData.DATA_NAME + ".dat").toFile());
+            } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
+            helper.assertTrue(journal.acknowledgedCurrent(), "Readiness setup journal was not acknowledged");
         }
 
         private RocketTransferRecord newRecord() {
@@ -244,6 +250,12 @@ public final class RocketDestinationReadinessGameTests {
         }
 
         private void assertBlockedPadReturn() {
+            // Only now expose the record to automatic recovery. The cold/full-only checks above
+            // use a genuinely acknowledged local journal without allowing another manager to tick it.
+            var registered = RocketTransferSavedData.get(earth.getServer());
+            registered.put(record);
+            helper.assertTrue(registered.flushChecked(earth.getServer()), "Ready fixture journal was not acknowledged");
+            journal = registered;
             for (var block : record.destinationSnapshot().blocks()) {
                 RocketPosition absolute = record.destinationSnapshot().sourceOrigin().add(block.position());
                 BlockPos at = new BlockPos(absolute.x(), absolute.y(), absolute.z());
@@ -269,6 +281,7 @@ public final class RocketDestinationReadinessGameTests {
             record = newRecord();
             source.updateFlightData(record.sourceFlightData());
             journal.put(record);
+            helper.assertTrue(journal.flushChecked(earth.getServer()), "Ready-spawn fixture journal was not acknowledged");
             service.spawnDestination(earth.getServer(), journal, record, source);
             RocketTransferRecord spawned = journal.find(record.transferId()).orElseThrow();
             helper.assertTrue(spawned.phase() == RocketTransferPhase.DESTINATION_SPAWNED,
@@ -303,6 +316,20 @@ public final class RocketDestinationReadinessGameTests {
             if (source != null) {
                 cleanup.add(source::discard);
             }
+            if (record != null && journal == RocketTransferSavedData.get(earth.getServer())) {
+                cleanup.add(() -> {
+                    journal.remove(record.transferId());
+                    helper.assertTrue(journal.flushChecked(earth.getServer()), "Fixture journal cleanup was not acknowledged");
+                });
+            }
+            if (setupDirectory != null) {
+                cleanup.add(() -> {
+                    try {
+                        java.nio.file.Files.deleteIfExists(setupDirectory.resolve(RocketTransferSavedData.DATA_NAME + ".dat"));
+                        java.nio.file.Files.deleteIfExists(setupDirectory);
+                    } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
+                });
+            }
             if (obstructionBefore != null) {
                 cleanup.add(() -> moon.setBlock(MOON_ORIGIN, obstructionBefore, Block.UPDATE_ALL));
             }
@@ -329,8 +356,7 @@ public final class RocketDestinationReadinessGameTests {
             if (failure instanceof Error error) {
                 throw error;
             }
-            // The fixture journal is never cached. Production flush may save other cached SavedData,
-            // but cannot persist this local instance; this test does not assert transaction durability.
+            // The detached setup file and only this fixture's registered transfer are removed.
         }
 
         private void assertCleanup() {

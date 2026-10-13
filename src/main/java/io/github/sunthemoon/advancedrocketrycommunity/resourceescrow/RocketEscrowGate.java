@@ -13,14 +13,14 @@ public final class RocketEscrowGate {
             return false;
         }
         var section = rocket.escrowSection();
+        UUID logical = rocket.assemblyTransactionId().orElseThrow();
         if (io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
-                .get(level.getServer()).isDirty()) { return false; }
+                .get(level.getServer()).resourceMutationUnproved(logical)) { return false; }
         if (!section.markers().isEmpty()) { return false; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null) { return section.ledger() == null; }
         var ledger = data.ledger();
         if (section.ledger() != null && !section.ledger().equals(ledger.id())) { return false; }
-        UUID logical = rocket.assemblyTransactionId().orElseThrow();
         if (data.bind(level.getServer()).logicalLocked(logical)) { return false; }
         return ledger.tombstones().stream().noneMatch(tombstone -> {
             for (var raw : EscrowTags.list(tombstone, "missing", 2)) {

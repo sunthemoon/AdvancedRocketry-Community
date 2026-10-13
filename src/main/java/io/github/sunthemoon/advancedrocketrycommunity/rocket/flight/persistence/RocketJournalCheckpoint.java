@@ -5,14 +5,15 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 
 /** Session-local acknowledgement. RAM phase, dirty state and a successful ordinary save are not proof. */
 final class RocketJournalCheckpoint {
     enum Outcome { UNACKNOWLEDGED, COMMITTED, NOT_COMMITTED, UNKNOWN }
-    record Acknowledgement(long sequence, String digest, Map<UUID, String> records) {
-        Acknowledgement { records = Map.copyOf(records); }
+    record Acknowledgement(long sequence, String digest, Map<UUID, String> records, Set<UUID> logicalRockets) {
+        Acknowledgement { records = Map.copyOf(records); logicalRockets = Set.copyOf(logicalRockets); }
     }
 
     private Acknowledgement acknowledged;
@@ -26,7 +27,10 @@ final class RocketJournalCheckpoint {
                   Map<UUID, String> records) {
         // Capture all fallible encoding/digest work before replacing authority.
         Acknowledgement candidate = new Acknowledgement(sequence,
-                RocketJournalDigest.of(payload, RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES), records);
+                RocketJournalDigest.of(payload, RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES), records,
+                payload.getList("transfers", net.minecraft.nbt.Tag.TAG_COMPOUND).stream()
+                        .map(raw -> ((CompoundTag) raw).getUUID("logical_rocket_id"))
+                        .collect(java.util.stream.Collectors.toSet()));
         boolean[] attempted = {false};
         try {
             var checked = new CheckedSavedDataPolicy(policy.type(), (staged, target) -> {

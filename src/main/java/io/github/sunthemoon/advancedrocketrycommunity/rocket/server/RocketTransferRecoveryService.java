@@ -157,7 +157,7 @@ final class RocketTransferRecoveryService {
         if (server == null || journal.entries().isEmpty()) {
             return true;
         }
-        if (!journal.acknowledgedCurrent()) { return false; }
+        if (!journal.retryChecked(server)) { return false; }
         if (!player.serverLevel().areEntitiesLoaded(player.chunkPosition().toLong())) {
             return false;
         }

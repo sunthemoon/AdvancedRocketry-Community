@@ -87,6 +87,8 @@ class RocketJournalCheckpointTest {
         var data = new RocketTransferSavedData(); data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE));
         var prepared = RocketTransferSavedDataTest.record(); data.put(prepared);
         long sequence = data.mutationSequence();
+        assertTrue(data.resourceMutationUnproved(prepared.logicalRocketId()));
+        assertFalse(data.resourceMutationUnproved(UUID.randomUUID()));
         assertFalse(data.checkedWriteResult().acknowledgedCurrent());
         for (int attempt = 0; attempt < 3; attempt++) {
             data.saveChecked(target(), policy);
@@ -97,6 +99,7 @@ class RocketJournalCheckpointTest {
             assertTrue(RocketTransferSavedData.load(CheckedSavedDataFile.readPayload(target(), TYPE).orElseThrow()).entries().isEmpty());
         }
         data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE));
+        assertFalse(data.resourceMutationUnproved(prepared.logicalRocketId()));
         var spawned = prepared.destinationSpawned(UUID.randomUUID()); data.put(spawned); data.saveChecked(target(), policy);
         assertFalse(data.acknowledgedCurrent()); assertTrue(data.isDirty());
         for (int restart = 0; restart < 2; restart++) {
@@ -104,6 +107,8 @@ class RocketJournalCheckpointTest {
             assertEquals(prepared.phase(), loaded.find(prepared.transferId()).orElseThrow().phase());
             assertEquals(prepared.checksum(), loaded.find(prepared.transferId()).orElseThrow().checksum());
             assertFalse(loaded.acknowledgedCurrent());
+            assertTrue(loaded.resourceMutationUnproved(prepared.logicalRocketId()));
+            assertFalse(loaded.resourceMutationUnproved(UUID.randomUUID()));
         }
     }
     @Test void failedRemovalCannotReturnAnAcknowledgedNoTransferGuard() {
@@ -113,12 +118,33 @@ class RocketJournalCheckpointTest {
         assertEquals(record.transferId(), before.transfer()); assertNotNull(before.recordDigest());
         data.remove(record.transferId());
         assertTrue(data.mutationSequence() > before.sequence());
+        assertTrue(data.resourceMutationUnproved(record.logicalRocketId()));
+        assertFalse(data.resourceMutationUnproved(UUID.randomUUID()));
         data.saveChecked(target(), new CheckedSavedDataPolicy(TYPE, (staged, target) -> { throw new IOException("Injected removal failure"); }));
         assertTrue(data.isDirty()); assertTrue(data.acknowledgedGuard(record.logicalRocketId()).isEmpty());
+        assertTrue(data.resourceMutationUnproved(record.logicalRocketId()));
+        assertFalse(data.resourceMutationUnproved(UUID.randomUUID()));
         assertEquals(record.transferId(), RocketTransferSavedData.load(CheckedSavedDataFile.readPayload(target(), TYPE).orElseThrow())
                 .findByLogicalRocket(record.logicalRocketId()).orElseThrow().transferId());
         data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE));
+        assertFalse(data.resourceMutationUnproved(record.logicalRocketId()));
         assertNull(data.acknowledgedGuard(record.logicalRocketId()).orElseThrow().transfer());
+    }
+    @Test void unknownOutcomeRetainsAConservativeResourceFenceUntilAnExactRetry() {
+        var data = new RocketTransferSavedData(); var record = RocketTransferSavedDataTest.record();
+        data.put(record); data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE));
+        data.put(record.destinationSpawned(UUID.randomUUID()));
+        data.saveChecked(target(), new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+            Files.write(target, new byte[]{1, 2, 3}); throw new IOException("Injected ambiguous authority");
+        }));
+        assertEquals(RocketTransferSavedData.WriteOutcome.UNKNOWN, data.checkedWriteResult().outcome());
+        assertNull(data.checkedWriteResult().acknowledgedSequence());
+        assertTrue(data.resourceMutationUnproved(record.logicalRocketId()));
+        assertTrue(data.resourceMutationUnproved(UUID.randomUUID()));
+        data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE));
+        assertEquals(RocketTransferSavedData.WriteOutcome.COMMITTED, data.checkedWriteResult().outcome());
+        assertFalse(data.resourceMutationUnproved(record.logicalRocketId()));
+        assertFalse(data.resourceMutationUnproved(UUID.randomUUID()));
     }
     @Test void streamedDigestMatchesNc1AndKeepsByteAndDepthLimits() {
         var payload = new CompoundTag(); payload.putString("z", "last"); payload.putString("a", "first");
