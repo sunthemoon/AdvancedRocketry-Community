@@ -223,18 +223,30 @@ public final class SleepRespawnService {
         if (pending.isEmpty()) { return; } // Unknown/corrupt data is kept verbatim; no repeated log.
         Point saved = pending.orElseThrow().point();
         player.respawnDimension = saved.dimension();
+        boolean alreadyRestored = matches(player, saved);
         player.respawnPosition = saved.position();
         player.respawnAngle = saved.angle();
         player.respawnForced = saved.forced();
-        if (saved.dimension().equals(player.getRespawnDimension()) && saved.position().equals(player.getRespawnPosition())
-                && Float.floatToRawIntBits(saved.angle()) == Float.floatToRawIntBits(player.getRespawnAngle())
-                && saved.forced() == player.isRespawnForced()) {
-            RespawnPointBackup.complete(persisted(player, false));
-            if (notify) { player.sendSystemMessage(Component.translatable(respawnKey(pending.orElseThrow().outcome()))); }
+        if (matches(player, saved)) {
+            // restoreFrom aliases PlayerPersisted between old/new objects. Until the packet handler adopts the
+            // replacement, the old connection player can still be saved on disconnect with its native point empty.
+            // Keep the backup through that window (and an exception later in respawn-event dispatch).
+            if (player.connection != null && player.connection.player == player) {
+                RespawnPointBackup.complete(persisted(player, false));
+            }
+            if (notify && !alreadyRestored) {
+                player.sendSystemMessage(Component.translatable(respawnKey(pending.orElseThrow().outcome())));
+            }
         }
     }
 
     /** The bed head and, for a vanilla bed, its foot; one cell for any other sleeping place. */
+    private static boolean matches(ServerPlayer player, Point saved) {
+        return saved.dimension().equals(player.getRespawnDimension()) && saved.position().equals(player.getRespawnPosition())
+                && Float.floatToRawIntBits(saved.angle()) == Float.floatToRawIntBits(player.getRespawnAngle())
+                && saved.forced() == player.isRespawnForced();
+    }
+
     private static List<BlockPos> occupied(ServerLevel level, BlockPos head) {
         if (!level.isOutsideBuildHeight(head) && level.hasChunkAt(head)) {
             BlockState state = level.getBlockState(head);

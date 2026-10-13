@@ -172,6 +172,7 @@ public final class DeathRespawnGameTests {
 
     private static ServerPlayer packet(ServerPlayer player) {
         player.connection.handleClientCommand(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
+        player.connection.tick(); // The handler adopted the replacement; its END tick can complete verified recovery.
         return player.connection.player;
     }
 

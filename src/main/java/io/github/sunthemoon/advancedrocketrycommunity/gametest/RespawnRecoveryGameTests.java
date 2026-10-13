@@ -56,7 +56,9 @@ public final class RespawnRecoveryGameTests {
             if (done[0]) { return; }
             if (replacement.getRespawnPosition() == null) { return; }
             try {
-                assertRestored(helper, replacement);
+                assertTuple(helper, replacement);
+                helper.assertTrue(hasBackup(replacement) && replacement.connection.player == player,
+                        "Retry deleted recovery while the native connection still owned the cleared old player");
                 done[0] = true;
                 helper.succeed();
             } finally {
@@ -110,9 +112,14 @@ public final class RespawnRecoveryGameTests {
     }
 
     private static void assertRestored(GameTestHelper helper, ServerPlayer player) {
+        assertTuple(helper, player);
+        helper.assertTrue(!hasBackup(player), "Verified reconnect did not complete the supported backup");
+    }
+
+    private static void assertTuple(GameTestHelper helper, ServerPlayer player) {
         helper.assertTrue(player.getRespawnDimension().equals(CelestialIds.MOON_LEVEL)
                         && FAR.equals(player.getRespawnPosition()) && player.isRespawnForced()
-                        && player.getRespawnAngle() == -72.25F && !hasBackup(player)
+                        && player.getRespawnAngle() == -72.25F
                         && player.serverLevel().dimension().equals(Level.OVERWORLD),
                 "The complete respawn tuple was not durably restored after the interruption");
     }
