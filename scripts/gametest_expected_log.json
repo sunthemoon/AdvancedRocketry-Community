@@ -7,7 +7,7 @@
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
       "message": "Exception caught during firing event: W37F injected respawn listener interruption",
-      "stack_contains": "RespawnRecoveryGameTests",
+      "stack_contains": "RespawnRecoveryGameTests.anEarlierThrowingListenerLeavesABackupForLaterTicks",
       "counts": {"respawn_recovery": 1},
       "test": "RespawnRecoveryGameTests.anEarlierThrowingListenerLeavesABackupForLaterTicks",
       "reason": "A HIGHEST respawn listener throws after native replacement insertion; the test catches the deliberate exception and verifies the persisted tuple is restored on a later tick."
