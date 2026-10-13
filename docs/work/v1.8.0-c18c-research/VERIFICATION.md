@@ -110,6 +110,13 @@ unregistered modern ID (W30 section 2.1). Two C18c rows stay PLANNED:
   server.
 - **Art and provenance:** the manual review of the NEW art and the provenance review are open.
 - **Follow-ups of this batch:**
+  - found by W31 on 2026-10-13 with `python -B scripts/validate_repository.py` (its v0.9.0
+    resource audit): the generated block models of the observatory and the astrobody data
+    processor (written by `4d9496ab`) use the side and top texture
+    `advancedrocketrycommunity:block/machine_casing`, which does not exist. Only
+    `machine_casing_front`, `machine_casing_side` and `machine_casing_top` exist. It is the same
+    defect that `0596d124` fixed for the cutting machine. A client would draw the missing-texture
+    pattern on those faces;
   - W21b F9: a station-scale timing miss under machine load (R-030);
   - W21c M1 (optional): a pause on an over-reserved restored root;
   - the two world-first advancements, after W11b2's rocket journal schema 3.
