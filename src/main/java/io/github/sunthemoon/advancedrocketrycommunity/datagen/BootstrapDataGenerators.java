@@ -115,5 +115,7 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeClient(), new V180SoundArt(output));
         generator.addProvider(event.includeClient(), new V180SoundDefinitions(output, existingFiles));
         generator.addProvider(event.includeClient(), new V180SuitComponentArt(output));
+        generator.addProvider(event.includeServer(), new V180AtmosphereEntityTags(output, event.getLookupProvider(),
+                existingFiles));
     }
 }
