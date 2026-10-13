@@ -65,12 +65,16 @@ class CommonConfigTest {
         assertSame(CommonConfig.GROUND_SURVEYS_ENABLED, CommonConfig.SPEC.getValues().get("research.groundSurveysEnabled"));
         assertTrue(CommonConfig.GROUND_SURVEYS_ENABLED.getDefault());
         assertTrue(CommonConfig.groundSurveysEnabled());
+        // W33 adds the consumed C18a torch drop switch, default false.
+        assertSame(CommonConfig.DROP_EXTINGUISHED_TORCHES, CommonConfig.SPEC.getValues().get("OXYGEN.dropExtinguishedTorches"));
+        assertFalse(CommonConfig.DROP_EXTINGUISHED_TORCHES.getDefault());
+        assertFalse(CommonConfig.dropExtinguishedTorches());
         // W34 adds the consumed ADR-066 section 3.3 vacuum damage value.
         assertSame(CommonConfig.VACUUM_DAMAGE, CommonConfig.SPEC.getValues().get("OXYGEN.vacuumDamage"));
         // W37 adds the two consumed ADR-066 section 3.3 planet-respawn options.
         assertSame(CommonConfig.ALLOW_PLANET_RESPAWN, CommonConfig.SPEC.getValues().get("PLANET.allowPlanetRespawn"));
         assertSame(CommonConfig.FORCE_PLANET_RESPAWN, CommonConfig.SPEC.getValues().get("PLANET.forcePlanetRespawn"));
-        assertEquals(96, countValues(CommonConfig.SPEC.getValues()));
+        assertEquals(97, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test

@@ -297,6 +297,61 @@ or a Gate result; independent persistence review remains required before merge.
   cell when noncombustible/PENDING; do not consume the held item/durability.
   Existing arbitrary fires/lava/lightning are not globally simulated/extinguished.
 
+### W33 implementation note on unlit torch roots (2026-10-13)
+
+The `unlit_torch` and `unlit_wall_torch` blocks share one block entity whose schema-1 root
+`arce_unlit_torch` holds exactly the pair, block and item IDs. A root that does not decode
+(unknown, future or malformed) is kept as raw data and written back unchanged. A decoded
+root whose pair, blocks or item no longer resolve in the live `torch_pairs` catalog and
+registries, or whose saved block does not match the block's shape, is kept as well. Both
+cases are quarantined: player breaking, explosions, relighting and support loss are refused,
+the blocks' pushing reaction is always `BLOCK`, and nothing drops. The quarantine affects
+only that block, lasts until the matching pack, mod or backup is restored or the root is
+repaired offline, and adds no log line. A restored data pack lifts it after a reload; a
+missing mod needs a restart with the mod installed. A torch with no root at all, for example one placed by `/setblock`,
+breaks with no drop and is not relit.
+
+After two independent reviews (W33F and W33G, 2026-10-14), the quarantine also covers:
+
+- native water and lava flow;
+- native buckets, and dispensers emptying them;
+- Forge `FluidUtil.tryPlaceFluid`.
+
+How:
+
+- Both unlit blocks implement `LiquidBlockContainer`. Their gate admits only water and lava,
+  and refuses while the torch is quarantined.
+- Both are registered `forceSolidOn`, so Forge's non-solid destroy-and-replace fallback does
+  not apply. That flag sets only `isSolid()`; collision, shape and light stay a torch's. The
+  side effects are listed in `records/W33G.md`, for example a cactus beside an unlit torch
+  breaking.
+- A lava source formed by the `lavaSourceConversion` gamerule drops a resolvable torch once
+  where vanilla would fizz.
+
+Not covered:
+
+- forced command replacement;
+- mods or vanilla code that call `setBlock` or `destroyBlock` directly, including
+  nether-portal frame generation.
+
+Extinguishing, the drop mode and relighting change a torch only while its chunk and all eight
+neighbouring chunks are FULL, checked without acquiring any. Otherwise:
+
+- a conversion defers in its bounded queue;
+- a relight is refused without spending an item.
+
+This is the neighbourhood vanilla gives its own block ticks. Longer callback chains are
+vanilla's behaviour for any block change.
+
+An outgoing root that fails `BoundedNbt.fits` at 2 KiB, depth 8 or 64 nodes uses section
+2's existing `GuardedChunkSaves` refusal, with W14's whole-chunk scope, 256-coordinate
+Level saturation, retained dirty state and unbounded EventBus/ChunkMap ERROR pair per
+retry. There is no online reset and no player-file veto. Such a root is reachable only
+through retained unsupported loaded data or operator NBT, never through an ordinary
+conversion. Recovery is an offline backup and scoped repair of the root, then a restart
+and a successful native save. R-027 records the save scope and R-034 the quarantine. This
+is a development implementation note, not owner acceptance or a Gate result.
+
 ### 3.3 Actors, gravity, sleep and safety
 
 - A non-player `LivingEntity` reuses the atmosphere/exposure pure decisions,
@@ -373,6 +428,24 @@ or a Gate result; independent persistence review remains required before merge.
   cannot authorize a station. Clear phase on Level change/logout/vehicle/return.
   Coordinate selection, protection/TELEPORT event and transfer lifecycle use
   existing server travel services; announce destination/refusal in translations.
+
+### W38 implementation note on gravity-scaled falls (2026-10-14)
+
+Leaf B scales a living entity's fall once, through one `LivingFallEvent` listener:
+
+- **Factor.** It uses the multiplier the gravity tick applied (the owned transient modifier),
+  never the complete attribute.
+- **Arithmetic.** Double precision, saturated at `Float.MAX_VALUE`.
+- **Untouched events.** Canceled events, the switch off, malformed values and factor 1.
+- **Mounts.** An entity riding a living entity keeps the distance its mount already scaled.
+  A player on a living mount therefore inherits the mount's Level factor, not their own
+  field or station factor. Passengers of boats and minecarts use their own factor
+  (`records/W38-DESIGN.md`).
+- **Horse family.** `AbstractHorse` and `Llama` never post `LivingFallEvent`. Their falls, and
+  their riders' falls, keep native Overworld damage: scaled zero times, never twice. Closing
+  this needs an interception mechanism and its own ADR under ADR-073.
+
+This is a development implementation note, not owner acceptance or a Gate result.
 
 ## 4. Gas charging and finite player resources
 

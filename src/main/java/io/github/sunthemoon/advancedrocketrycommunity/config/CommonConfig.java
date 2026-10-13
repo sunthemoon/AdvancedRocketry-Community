@@ -343,6 +343,10 @@ public final class CommonConfig {
     public static final ForgeConfigSpec.BooleanValue OXYGEN_DETECTION = BUILDER
             .comment("Enable server-authoritative atmosphere-detector redstone measurements.")
             .define("OXYGEN.oxygenDetection", true);
+    public static final ForgeConfigSpec.BooleanValue DROP_EXTINGUISHED_TORCHES = BUILDER
+            .comment("Remove a torch that goes out for lack of combustion air and drop its item, instead of leaving an",
+                    "unlit torch that drops the same item when broken.")
+            .define("OXYGEN.dropExtinguishedTorches", false);
 
     public static final ForgeConfigSpec.BooleanValue CLASSIC_GRAVITY_ENABLED = BUILDER
             .comment("Apply Level gravity to non-player living entities; disabling removes only the owned modifier.",
@@ -529,7 +533,7 @@ public final class CommonConfig {
             COMBUSTION_GENERATOR_ENABLED, SOLAR_GENERATOR_ENABLED, PUMP_ENABLED, CLASSIC_DEVICES_ENABLED,
             CLASSIC_GRAVITY_ENABLED, CLASSIC_EQUIPMENT_ENABLED, LOW_GRAVITY_BOOTS, SCRUBBER_REQUIRES_CARTRIDGE, OXYGEN_DETECTION,
             ALLOW_PLANET_RESPAWN, FORCE_PLANET_RESPAWN,
-            ENDGAME_LASER_DRILL, ENDGAME_LASER_PHYSICAL, ENDGAME_RAILGUN, ENDGAME_BLACK_HOLE_GENERATOR,
+            DROP_EXTINGUISHED_TORCHES, ENDGAME_LASER_DRILL, ENDGAME_LASER_PHYSICAL, ENDGAME_RAILGUN, ENDGAME_BLACK_HOLE_GENERATOR,
             ENDGAME_GRAVITY_FIELD, ENDGAME_SPACE_ELEVATOR,
             OVERWORLD_ORES_ENABLED, PLANET_ORES_ENABLED, CRATERS_ENABLED, VOLCANOES_ENABLED, GEODES_ENABLED,
             CHARRED_TREES_ENABLED, LIGHTWOOD_TREES_ENABLED, SWAMP_TREES_ENABLED, INVERTED_PILLARS_ENABLED,
@@ -581,6 +585,7 @@ public final class CommonConfig {
 
     public static boolean scrubberRequiresCartridge() { return serverSwitchValue(SCRUBBER_REQUIRES_CARTRIDGE); }
     public static boolean oxygenDetection() { return serverSwitchValue(OXYGEN_DETECTION); }
+    public static boolean dropExtinguishedTorches() { return serverSwitchValue(DROP_EXTINGUISHED_TORCHES); }
 
     public static boolean classicGravityEnabled() {
         return serverSwitchValue(CLASSIC_GRAVITY_ENABLED);

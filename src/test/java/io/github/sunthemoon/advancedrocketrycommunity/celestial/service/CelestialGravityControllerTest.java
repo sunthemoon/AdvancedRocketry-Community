@@ -175,6 +175,57 @@ class CelestialGravityControllerTest {
                 () -> new CelestialGravityController(environments, position, player, null));
     }
 
+    @Test
+    void fallDistanceIsMultipliedOnceInDoublePrecision() {
+        assertEquals((float) (40.0D * 0.165D), CelestialGravityController.scaledFallDistance(40.0F, 0.165D));
+        assertEquals(6.6F, CelestialGravityController.scaledFallDistance(40.0F, 0.165D));
+        assertEquals((float) (3.3F * 0.38D), CelestialGravityController.scaledFallDistance(3.3F, 0.38D));
+        assertEquals(160.0F, CelestialGravityController.scaledFallDistance(40.0F, 4.0D));
+        assertTrue(CelestialGravityController.scaledFallDistance(-0.0F, 0.165D) == 0.0F);
+    }
+
+    @Test
+    void factorOneKeepsEveryDistanceAndZeroGravityLandsSoftly() {
+        for (float distance : new float[]{0.0F, Float.MIN_VALUE, 1.0E-7F, 2.999F, 3.0F, 255.5F, 1.0E30F, Float.MAX_VALUE}) {
+            assertEquals(distance, CelestialGravityController.scaledFallDistance(distance, 1.0D));
+            assertEquals(0.0F, CelestialGravityController.scaledFallDistance(distance, 0.0D));
+        }
+    }
+
+    @Test
+    void largeProductsSaturateAtTheLargestFiniteFloat() {
+        assertEquals(Float.MAX_VALUE, CelestialGravityController.scaledFallDistance(Float.MAX_VALUE, 4.0D));
+        assertEquals(Float.MAX_VALUE, CelestialGravityController.scaledFallDistance(Float.MAX_VALUE / 2.0F, 2.5D));
+        assertEquals(Float.MAX_VALUE, CelestialGravityController.scaledFallDistance(Float.MAX_VALUE, 1.0D + 1.0E-9D));
+        float justBelow = Math.nextDown(Float.MAX_VALUE / 4.0F);
+        assertEquals((float) (justBelow * 4.0D), CelestialGravityController.scaledFallDistance(justBelow, 4.0D));
+        assertTrue(Float.isFinite(CelestialGravityController.scaledFallDistance(justBelow, 4.0D)));
+    }
+
+    @Test
+    void malformedDistancesAreRefusedForEveryFactor() {
+        for (float distance : new float[]{Float.NaN, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, -Float.MIN_VALUE,
+                -0.5F, -3.0F, -Float.MAX_VALUE}) {
+            for (double factor : new double[]{0.0D, 0.165D, 1.0D, 4.0D}) {
+                assertTrue(Float.isNaN(CelestialGravityController.scaledFallDistance(distance, factor)),
+                        "distance " + distance + " factor " + factor);
+            }
+        }
+    }
+
+    @Test
+    void factorsOutsideTheCelestialBoundsAreRefused() {
+        for (double factor : new double[]{Double.NaN, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY,
+                -Double.MIN_VALUE, -0.001D, Math.nextUp(4.0D), 4.001D, 10.0D}) {
+            for (float distance : new float[]{0.0F, 3.0F, 40.0F}) {
+                assertTrue(Float.isNaN(CelestialGravityController.scaledFallDistance(distance, factor)),
+                        "distance " + distance + " factor " + factor);
+            }
+        }
+        assertEquals(0.0F, CelestialGravityController.scaledFallDistance(40.0F, 0.0D));
+        assertEquals(160.0F, CelestialGravityController.scaledFallDistance(40.0F, 4.0D));
+    }
+
     private static AttributeModifier ownedModifier(double amount, AttributeModifier.Operation operation) {
         return new AttributeModifier(CelestialGravityController.MODIFIER_ID, "ARCE residue fixture", amount, operation);
     }
