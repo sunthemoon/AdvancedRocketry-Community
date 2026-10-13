@@ -65,6 +65,7 @@ public final class StationWarpGameTests {
     static final ResourceLocation MOON = CelestialIds.MOON_ID;
     static final StationRocketAuthority NOTHING_IN_MOTION = (server, station) -> false;
     static final int COMMIT_DELAY = (int) StationLimits.WARP_COUNTDOWN_TICKS + 3;
+    static final String NOTICE = "station.advancedrocketrycommunity.notice.";
     /** Keeps a fixture's pad chunk loaded across ticks (test setup only; production never loads chunks). */
     private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create(
             "arce_gametest_station_warp", java.util.Comparator.comparing(UUID::toString), 0);
@@ -154,8 +155,13 @@ public final class StationWarpGameTests {
             fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
             helper.assertTrue(last(owner).startsWith("Warp countdown started; station=" + fixture.id()),
                     "Confirmation differs: " + owner);
-            helper.assertTrue(member.stream().anyMatch(line -> line.startsWith("Station warp countdown started by warpOwner")),
-                    "Members were not told: " + member);
+            // ADR-065 section 5.3: code tokens, not English prose; the station is named and the countdown begins.
+            String started = notice("warp_started", "In-system warp", code(StationManagementCode.WARP_STARTED),
+                    CelestialIds.EARTH_ID, MOON, 10, warpClass("in_system"), 2_000_000);
+            String firstSecond = ConnectedTestPlayers.ACTION_BAR + notice("warp_countdown", "In-system warp", MOON, 10);
+            helper.assertTrue(fixture.notices(memberId).equals(List.of(started, firstSecond))
+                            && fixture.notices(fixture.ownerId).equals(List.of(started, firstSecond)),
+                    "Members were not told: " + fixture.notices(memberId) + " " + fixture.notices(fixture.ownerId));
             StationState before = fixture.station();
             scheduled = true;
             helper.runAfterDelay(COMMIT_DELAY, () -> {
@@ -166,14 +172,19 @@ public final class StationWarpGameTests {
                     StationRegistrySavedData onDisk = StationRegistrySavedData.load(fixture.stationFile());
                     helper.assertTrue(onDisk.find(fixture.id()).filter(after::equals).isPresent()
                             && onDisk.warpEnergy(fixture.id()) == 500_000, "The checked write is not on disk");
-                    List<String> countdown = member.stream().filter(line -> line.startsWith(ConnectedTestPlayers.ACTION_BAR))
-                            .toList();
+                    List<String> countdown = fixture.notices(memberId).stream()
+                            .filter(line -> line.startsWith(ConnectedTestPlayers.ACTION_BAR)).toList();
                     helper.assertTrue(countdown.equals(List.of(10, 5, 3, 2, 1).stream().map(seconds ->
-                                    ConnectedTestPlayers.ACTION_BAR + "Station warp to " + MOON + " in " + seconds + " s")
-                            .toList()), "Countdown announcements differ: " + countdown);
-                    helper.assertTrue(member.stream().anyMatch(line -> line.equals("Station warped: "
-                            + CelestialIds.EARTH_ID + " -> " + MOON
-                            + " (in-system, 2000000 FE); warp energy left 500000 FE.")), "Commit notice differs: " + member);
+                                    ConnectedTestPlayers.ACTION_BAR + notice("warp_countdown", "In-system warp", MOON,
+                                            seconds)).toList()),
+                            "Countdown announcements differ: " + countdown);
+                    String committed = notice("warp_committed", "In-system warp",
+                            code(StationManagementCode.WARP_COMMITTED), CelestialIds.EARTH_ID, MOON,
+                            warpClass("in_system"), 2_000_000, 500_000);
+                    helper.assertTrue(fixture.notices(memberId).stream()
+                                    .filter(line -> !line.startsWith(ConnectedTestPlayers.ACTION_BAR)).toList()
+                                    .equals(List.of(started, committed)),
+                            "Commit notice differs: " + fixture.notices(memberId));
                     fixture.run(fixture.ownerId, "arce station warp " + CelestialIds.EARTH_ID);
                     expect(helper, owner, StationManagementCode.WARP_COOLDOWN, "warp right after the commit");
                 } finally {
@@ -332,8 +343,10 @@ public final class StationWarpGameTests {
                         "Countdown did not start: " + owners);
             }
             cancelled.run(cancelled.ownerId, "arce station warp cancel");
-            helper.assertTrue(owners.get(0).stream().anyMatch(line -> line.startsWith("Station warp cancelled by"))
-                    && last(owners.get(0)).startsWith("Warp countdown cancelled"), "Cancel differs: " + owners.get(0));
+            String cancel = notice("warp_aborted", "Cancelled warp", code(StationManagementCode.WARP_CANCELLED), MOON);
+            helper.assertTrue(cancelled.notices(cancelled.ownerId).contains(cancel)
+                    && last(owners.get(0)).startsWith("Warp countdown cancelled"), "Cancel differs: " + owners.get(0)
+                    + " " + cancelled.notices(cancelled.ownerId));
             changed.data.addMember(changed.id(), UUID.randomUUID());
             scheduled = true;
             helper.runAfterDelay(COMMIT_DELAY, () -> {
@@ -343,11 +356,13 @@ public final class StationWarpGameTests {
                                 && fixture.data.warpEnergy(fixture.id()) == 5_000_000,
                                 "An aborted warp moved or charged the station");
                     }
-                    helper.assertTrue(owners.get(1).stream().anyMatch(line -> line.equals("Station warp aborted: "
-                            + StationManagementCode.STATION_CHANGED.description() + ".")),
-                            "Abort reason missing: " + owners.get(1));
-                    helper.assertTrue(owners.get(0).stream().noneMatch(line -> line.startsWith("Station warp aborted")
-                            || line.startsWith("Station warped")), "A cancelled countdown still committed");
+                    helper.assertTrue(changed.notices(changed.ownerId).contains(notice("warp_aborted", "Changed warp",
+                                    code(StationManagementCode.STATION_CHANGED), MOON)),
+                            "Abort reason missing: " + changed.notices(changed.ownerId));
+                    helper.assertTrue(cancelled.notices(cancelled.ownerId).stream()
+                            .filter(line -> line.startsWith(NOTICE + "warp_aborted(")
+                                    || line.startsWith(NOTICE + "warp_committed(")).toList().equals(List.of(cancel)),
+                            "A cancelled countdown still committed: " + cancelled.notices(cancelled.ownerId));
                 } finally {
                     cancelled.warp.installRocketAuthority(previous);
                     cancelled.close();
@@ -396,8 +411,10 @@ public final class StationWarpGameTests {
                 try {
                     helper.assertTrue(fixture.station().orbitBody().equals(MOON)
                             && fixture.data.warpEnergy(fixture.id()) == 500_000, "The countdown did not survive logout");
-                    helper.assertTrue(member.stream().anyMatch(line -> line.startsWith("Station warped: ")),
-                            "The online member was not told: " + member);
+                    helper.assertTrue(fixture.notices(memberId).contains(notice("warp_committed", "Logout warp",
+                                    code(StationManagementCode.WARP_COMMITTED), CelestialIds.EARTH_ID, MOON,
+                                    warpClass("in_system"), 2_000_000, 500_000)),
+                            "The online member was not told: " + fixture.notices(memberId));
                 } finally {
                     fixture.warp.installRocketAuthority(production);
                     fixture.close();
@@ -526,6 +543,20 @@ public final class StationWarpGameTests {
         }
     }
 
+    /** The code token of a station notice (ADR-065 section 5.3): its key and its arguments, never English prose. */
+    static String notice(String kind, Object... arguments) {
+        return NOTICE + kind + "(" + java.util.Arrays.stream(arguments).map(String::valueOf)
+                .collect(java.util.stream.Collectors.joining(", ")) + ")";
+    }
+
+    static String code(StationManagementCode code) {
+        return "station.advancedrocketrycommunity.code." + code.name().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    static String warpClass(String costClass) {
+        return "station.advancedrocketrycommunity.warp_class." + costClass;
+    }
+
     static void expect(GameTestHelper helper, List<String> replies, StationManagementCode code, String label) {
         helper.assertTrue(!replies.isEmpty() && last(replies).contains(code.description()),
                 label + ": expected " + code + " but got " + replies);
@@ -561,6 +592,7 @@ public final class StationWarpGameTests {
         final StationState created;
         final BlockPos pad;
         final List<ServerPlayer> online = new ArrayList<>();
+        final Map<UUID, List<String>> tokens = new java.util.HashMap<>();
         final List<BlockPos> cores = new ArrayList<>();
         net.minecraft.world.level.ChunkPos ticket;
 
@@ -612,9 +644,21 @@ public final class StationWarpGameTests {
         }
 
         List<String> join(UUID playerId, String name, boolean serverPermissions) {
+            return join(playerId, name, pad, serverPermissions);
+        }
+
+        /** Joins in Space at {@code position}; the player's code tokens accumulate across rejoins. */
+        List<String> join(UUID playerId, String name, BlockPos position, boolean serverPermissions) {
             List<String> replies = new ArrayList<>();
-            online.add(ConnectedTestPlayers.join(server, playerId, name, space, pad, replies, serverPermissions));
+            online.add(ConnectedTestPlayers.join(server, playerId, name, space, position, replies, serverPermissions,
+                    tokens.computeIfAbsent(playerId, ignored -> new ArrayList<>())));
             return replies;
+        }
+
+        /** The station notices the player received, as code tokens in order, the action-bar ones marked. */
+        List<String> notices(UUID playerId) {
+            return tokens.getOrDefault(playerId, List.of()).stream().filter(token -> token.startsWith(NOTICE)
+                    || token.startsWith(ConnectedTestPlayers.ACTION_BAR + NOTICE)).toList();
         }
 
         void look(UUID playerId, BlockPos target) {
@@ -647,6 +691,9 @@ public final class StationWarpGameTests {
             cores.forEach(position -> space.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState()));
             cores.clear();
             data.delete(id());
+            // The fixture deletes through the registry, so it also drops the station's notice summary (ADR-065 §5.3).
+            io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSavedData.get(server)
+                    .remove(id());
             platforms.removeTemplate(space, created.cell());
             data.flush(server);
             if (ticket != null) {
