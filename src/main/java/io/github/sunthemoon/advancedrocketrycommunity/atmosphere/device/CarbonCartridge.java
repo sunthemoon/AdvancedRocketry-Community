@@ -5,14 +5,16 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.util.Set;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 /** One unstackable finite cartridge; unrelated bounded item data survives consumption. */
 public final class CarbonCartridge {
     public static final String KEY = "arce_carbon_scrubber_cartridge";
     public static final int MAX_USES = 32_766;
-    public static int uses(ItemStack stack) {
-        if (stack.getCount() != 1 || !stack.is(ModItems.CARBON_SCRUBBER_CARTRIDGE.get())
+    public static int uses(ItemStack stack) { return uses(stack, ModItems.CARBON_SCRUBBER_CARTRIDGE.get()); }
+    static int uses(ItemStack stack, Item cartridge) {
+        if (stack.getCount() != 1 || !stack.is(cartridge)
                 || !EquipmentNbt.safe(stack)) { return -1; }
         Tag raw = stack.hasTag() ? stack.getTag().get(KEY) : null;
         if (raw == null) { return MAX_USES; }
@@ -27,6 +29,11 @@ public final class CarbonCartridge {
     }
     public static ItemStack prepare(ItemStack stack) {
         int uses = uses(stack); return uses < 0 ? null : withUses(stack, uses);
+    }
+    /** ADR-066 §3.1 lossless chemical refresh of a spent cartridge: only its use count changes; null refuses. */
+    public static ItemStack refresh(ItemStack stack) { return refresh(stack, ModItems.CARBON_SCRUBBER_CARTRIDGE.get()); }
+    static ItemStack refresh(ItemStack stack, Item cartridge) {
+        return uses(stack, cartridge) == 0 ? withUses(stack, MAX_USES) : null;
     }
     private static ItemStack withUses(ItemStack stack, int uses) {
         ItemStack result = stack.copy();
