@@ -100,6 +100,8 @@ final class PopulatedManagedDataFixture {
             return root.addZone(ProtectedZone.of("spawn", overworld, -32, -32, 32, 32, List.of(OWNER)), 256);
         });
         payloads.put(ManagedSavedDataType.ENDGAME, endgame.save(new CompoundTag()));
+        payloads.put(ManagedSavedDataType.RESOURCE_ESCROW,
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.create().save(new CompoundTag()));
         return payloads;
     }
 
@@ -111,6 +113,7 @@ final class PopulatedManagedDataFixture {
             case STATIONS -> StationRegistrySavedData.load(payload);
             case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload);
             case ENDGAME -> EndgameSavedData.load(payload);
+            case RESOURCE_ESCROW -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.load(payload);
         };
     }
 

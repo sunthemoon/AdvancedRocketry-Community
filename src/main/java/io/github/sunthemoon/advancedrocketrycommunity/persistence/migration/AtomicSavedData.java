@@ -8,17 +8,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.storage.LevelResource;
 
-/** Checked replacement for the two discovery authorities and the endgame root, including ordinary autosave. */
+/** Synchronous checked policy for existing roots. Escrow supplies its own asynchronous single writer. */
 public abstract class AtomicSavedData extends SavedData {
     private final ManagedSavedDataType type;
     private boolean saveFailureReported;
 
     protected AtomicSavedData(ManagedSavedDataType type) {
-        if (type != ManagedSavedDataType.CELESTIAL && type != ManagedSavedDataType.SATELLITE_MISSIONS
-                && type != ManagedSavedDataType.ENDGAME) {
-            throw new IllegalArgumentException("Atomic storage only supports the discovery authorities and the endgame root");
-        }
-        this.type = type;
+        this.type = java.util.Objects.requireNonNull(type);
     }
 
     @Override
@@ -46,7 +42,7 @@ public abstract class AtomicSavedData extends SavedData {
     final void flush(Path file, CheckedSavedDataFile.Committer committer) {
         // A failed explicit barrier must also remain eligible for a later ordinary save.
         setDirty();
-        CheckedSavedDataFile.replace(file, type, () -> save(new CompoundTag()), committer);
+        new CheckedSavedDataPolicy(type, committer).replace(file, () -> save(new CompoundTag()));
         // No fallible operation follows replacement before acknowledgment.
         setDirty(false);
         saveFailureReported = false;
