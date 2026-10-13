@@ -1135,6 +1135,78 @@ exactly-once. Choosing B does not waive known reproducible non-crash duplication
 or malformed-data loss. The owner selected D3-A, not this added residual or a
 same-tick-only substitute. No implementation may silently choose B to shorten tests.
 
+
+### W11b1 implementation note: the D3-A escrow core (admission disabled)
+
+This note records the section 10 coordinator core as implemented. It does not change a
+decision or accept a risk. The risks are R-031 and R-032.
+
+**Sources.**
+- **Design:** `records/W11A-DESIGN.md`, round 2. Its independent design reviews returned
+  REDESIGN, then APPROVE-WITH-CHANGES (C1 to C6).
+- **Implementation:** W11b1 and continuation 01. The actual-diff review (SHA-256 `e3d1fd91…`)
+  returned MERGE-WITH-FOLLOWUP.
+- **Fixes:** W11b1F fixed all eleven review findings.
+
+**What exists.** The following are implemented:
+- the server-scoped coordinator;
+- the bounded codecs;
+- a per-type checked writer policy;
+- one immutable ledger writer with exact generation acknowledgements;
+- the barrier's own store with force-then-stable-readback;
+- the stable Anvil reader with an endpoint-record size probe;
+- fair reconciliation with persisted three-failure STALLED;
+- joint same-slot proofs and per-endpoint prefix retirement;
+- test-only endpoints.
+
+**Production admission is disabled.** No production block, item or command can create a
+record. Ledger creation is lazy, so a production world has no ledger file.
+
+**Startup scope (R-031).**
+- **Refusal.** `RESOURCE_ESCROW` is a schema-1 managed root. An existing future or invalid
+  root refuses the whole world's startup and keeps its raw bytes. There is no online deletion,
+  fallback or per-file restoration. The refusal persists across restarts until an offline
+  whole-world repair succeeds.
+- **Logging.** One bounded startup diagnostic, with its stack, is logged per failed startup.
+  Repeated launches have no lifetime log cap. The startup hint names the escrow ledger only in
+  worlds that have one.
+- **Recovery.**
+  1. Stop the server.
+  2. Back up all Levels' terrain, entities and POI, the global data, journals and ledger, the
+     player data and the metadata, together with hashes.
+  3. Repair only a copy, or restore one consistent complete backup.
+  4. Keep the malformed originals.
+  5. Validate the copy natively: check conservation, run two save-and-restart cycles, and
+     take fresh endpoint proofs.
+
+  Never delete or restore the escrow root alone.
+
+**Residual outside S2 (R-032).** A vanilla writer failure that the mod cannot observe is
+outside the S2 claim, as round 2 of the design states. Examples:
+- a failed region-cache eviction close;
+- an external-file move failure;
+- a later write that corrupts a chunk after its confirmation.
+
+The native cuts E1 and E3 are diagnostics, not PASS: there is no Mixin and no extra seam to
+inject those failures. Direct writes by other mods or tools bypass the save monitor. S2
+proves stopped-process ordering after forced writes. It does not cover hardware or OS crashes,
+power loss, or a rollback of one world file.
+
+**Measured on this machine, not on the docs/17 reference machine.**
+- Saturated 256-region terrain and entity caches.
+- Both `sync-chunk-writes` settings.
+- The main-thread cost is a lower bound.
+- No reference-load or soak result exists yet.
+
+**Open items.**
+- The native E2 recovery case failed once with `BARRIER_UNSTABLE`. The reader's stability
+  check compares the whole region file's size and modification time, so a vanilla save of
+  another chunk in the same region during startup makes the readback unstable. In production
+  this is a retryable stall. Track it until the check is per slot, or until repeated clean runs
+  close it.
+- The endpoint chunk and Level save-veto scope is registered by W11b2, when real endpoints
+  exist.
+
 ## 11. Network, provenance, progression and verification
 
 ### 11.1 Exact proposed protocol transitions and message table
