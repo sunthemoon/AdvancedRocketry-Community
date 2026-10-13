@@ -3,6 +3,15 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "escrow-transfer-fence-loaded-only",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=(FLOOR_PROOF_REQUIRED|ENDPOINT_JOIN_PROOF_REQUIRED|WAITING_UNLOADED) repair=offline-whole-world",
+      "counts": {"escrow_transfer_fence": 5},
+      "test": "RocketTransferFenceGameTests.startupJoinAndOperatorRetriesNeverTicketUnloadedOrUnavailableEnds",
+      "reason": "Two startup fences, one endpoint join and two loaded-only observations emit one warning per reason transition; repeated attempts emit none."
+    },
+    {
       "id": "landing-pad-recovery-prepared-0",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

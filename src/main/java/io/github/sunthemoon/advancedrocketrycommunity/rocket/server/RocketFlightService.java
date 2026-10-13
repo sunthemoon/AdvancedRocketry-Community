@@ -544,6 +544,8 @@ final class RocketFlightService {
         );
     }
 
+    void onRocketJoined(RocketEntity rocket) { transfers.onRocketJoined(rocket); }
+
     void clear() {
         requests.clear();
         rateLimiter.clear();

@@ -222,6 +222,7 @@ final class RocketTransferService {
         if (!journal.operational()) {
             return;
         }
+        recovery.classify(server, journal);
         if ((journal.isDirty() || !journal.entries().isEmpty()) && !journal.retryChecked(server)) { return; }
         recovery.recoverNext(server, journal);
         recovery.tickReconnects(server, journal);
@@ -278,7 +279,9 @@ final class RocketTransferService {
      */
     boolean stationRegionInMotion(MinecraftServer server, int minX, int minZ, int maxX, int maxZ) {
         Objects.requireNonNull(server, "server");
-        return stationRegionInMotion(RocketTransferSavedData.get(server), liveTransfers, settledTransfers,
+        recovery.classify(server, RocketTransferSavedData.get(server));
+        Set<UUID> moving = new HashSet<>(liveTransfers); moving.addAll(recovery.fencedIds());
+        return stationRegionInMotion(RocketTransferSavedData.get(server), moving, settledTransfers,
                 server.overworld().getGameTime(),
                 io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds.SPACE_LEVEL.location(),
                 minX, minZ, maxX, maxZ);
@@ -303,8 +306,13 @@ final class RocketTransferService {
 
     /** Operator line for the warp in-motion rule: journal state and this session's classification. */
     String journalDiagnostics(MinecraftServer server) {
-        return journalDiagnostics(RocketTransferSavedData.get(server), liveTransfers, settledTransfers);
+        recovery.classify(server, RocketTransferSavedData.get(server));
+        Set<UUID> classifiedLive = new HashSet<>(liveTransfers); classifiedLive.addAll(recovery.fencedIds());
+        return journalDiagnostics(RocketTransferSavedData.get(server), classifiedLive, settledTransfers)
+                + " fenced=" + recovery.fencedIds().size() + recovery.fencedDiagnostics();
     }
+
+    void onRocketJoined(RocketEntity rocket) { recovery.onRocketJoined(rocket); }
 
     // BEGIN transfer service diagnostics
     String transferFailureDiagnostics(UUID transferId, boolean active) {
@@ -371,8 +379,8 @@ final class RocketTransferService {
                 record.destinationFlightData().fuel().amount(),
                 record.sourceFlightData().passengers().assignments().size(),
                 record.checksum(),
-                RocketTransferEntities.findMatches(server, record, false).size(),
-                RocketTransferEntities.findMatches(server, record, true).size()
+                RocketTransferEntities.loadedMatches(server, record, false).size(),
+                RocketTransferEntities.loadedMatches(server, record, true).size()
         ));
     }
 

@@ -18,6 +18,12 @@ public final class RocketEscrowInterlocks {
         return entity instanceof RocketEntity rocket && !entity.level().isClientSide && !RocketEscrowGate.idle(rocket);
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void joined(net.minecraftforge.event.entity.EntityJoinLevelEvent event) {
+        if (!event.getLevel().isClientSide && event.getEntity() instanceof RocketEntity rocket) {
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.onRocketJoined(rocket);
+        }
+    }
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void mount(EntityMountEvent event) {
         if (protectedRocket(event.getEntityMounting()) || protectedRocket(event.getEntityBeingMounted())) { event.setCanceled(true); }
     }

@@ -242,6 +242,8 @@ public final class RocketManager implements RocketOperationService {
         }
     }
 
+    void onRocketJoined(RocketEntity rocket) { flights.onRocketJoined(rocket); }
+
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             flights.onPlayerLoggedOut(player.getUUID());

@@ -126,6 +126,13 @@ final class RocketTransferEntities {
             RocketTransferRecord record,
             boolean destination
     ) {
+        ServerLevel level = level(server, (destination ? record.destinationSnapshot() : record.sourceSnapshot()).sourceDimension());
+        if (level != null) { loadOrigin(level, destination ? record.destinationSnapshot() : record.sourceSnapshot()); }
+        return loadedMatches(server, record, destination);
+    }
+
+    /** Reads the visible entity index only; never acquires a ticket or invokes a chunk getter. */
+    static List<RocketEntity> loadedMatches(MinecraftServer server, RocketTransferRecord record, boolean destination) {
         RocketStructureSnapshot snapshot = destination
                 ? record.destinationSnapshot()
                 : record.sourceSnapshot();
@@ -133,7 +140,6 @@ final class RocketTransferEntities {
         if (level == null) {
             return List.of();
         }
-        loadOrigin(level, snapshot);
         RocketRegion region = RocketRegion.fromSnapshot(snapshot);
         AABB box = new AABB(
                 region.minimum().x() - 1.0D,
@@ -175,6 +181,28 @@ final class RocketTransferEntities {
         }
         matches.sort(Comparator.comparing(Entity::getUUID, RocketTransferAuthorityOrder.preferred(expectedId)));
         return List.copyOf(matches);
+    }
+
+    /** Both election regions, including the query margin, must be loaded and entity-ticking. */
+    static boolean recoveryEndsAlreadyLoaded(MinecraftServer server, RocketTransferRecord record) {
+        return endAlreadyLoaded(server, record.sourceSnapshot()) && endAlreadyLoaded(server, record.destinationSnapshot());
+    }
+
+    private static boolean endAlreadyLoaded(MinecraftServer server, RocketStructureSnapshot snapshot) {
+        ServerLevel level = level(server, snapshot.sourceDimension());
+        if (level == null) { return false; }
+        var region = RocketRegion.fromSnapshot(snapshot);
+        int minX = (region.minimum().x() - 1) >> 4, maxX = (region.maximum().x() + 2) >> 4;
+        int minZ = (region.minimum().z() - 1) >> 4, maxZ = (region.maximum().z() + 2) >> 4;
+        // Skinny snapshots can have a large footprint despite the block bound. Never scan it here.
+        if ((long) (maxX - minX + 1) * (maxZ - minZ + 1) > RocketFlightLimits.MAX_LANDING_CHUNKS) { return false; }
+        for (int x = minX; x <= maxX; x++) {
+            for (int z = minZ; z <= maxZ; z++) {
+                if (!level.areEntitiesLoaded(ChunkPos.asLong(x, z))
+                        || !level.isPositionEntityTicking(new BlockPos(x << 4, snapshot.sourceOrigin().y(), z << 4))) { return false; }
+            }
+        }
+        return true;
     }
 
     static RocketEntity loadedSettledAuthority(MinecraftServer server, RocketTransferRecord record) {

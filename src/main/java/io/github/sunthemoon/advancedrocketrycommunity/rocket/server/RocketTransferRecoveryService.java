@@ -60,6 +60,7 @@ final class RocketTransferRecoveryService {
     private final Set<UUID> liveTransfers;
     private final Set<UUID> settledTransfers;
     private final RocketPassengerReconnectQueue reconnects = new RocketPassengerReconnectQueue();
+    private final RocketTransferFences fences = new RocketTransferFences();
     private int recoveryCursor;
 
     RocketTransferRecoveryService(Set<UUID> liveTransfers, Set<UUID> settledTransfers) {
@@ -70,14 +71,17 @@ final class RocketTransferRecoveryService {
     Result recoverNext(MinecraftServer server, RocketTransferSavedData journal) {
         List<RocketTransferRecord> entries = journal.entries();
         if (entries.isEmpty()) { return Result.notFound(null); }
+        classify(server, journal);
         if (!journal.retryChecked(server)) { return retryLater(entries.get(0)); }
-        Step step = step(entries, liveTransfers, settledTransfers, recoveryCursor,
+        var promoted = fences.reevaluateOne(server, journal, liveTransfers, settledTransfers);
+        if (promoted != null) { return recover(server, journal, promoted, true); }
+        Step step = step(entries, liveTransfers, settledTransfers, fences.ids(), recoveryCursor,
                 candidate -> RocketTransferEntities.recoveryEntityChunksLoaded(server, candidate));
         recoveryCursor = step.cursor();
         if (step.candidate() == null) {
             return Result.notFound(null);
         }
-        return step.ready() ? recover(server, journal, step.candidate()) : retryLater(step.candidate());
+        return step.ready() ? recover(server, journal, step.candidate(), false) : retryLater(step.candidate());
     }
 
     /**
@@ -88,9 +92,15 @@ final class RocketTransferRecoveryService {
      */
     static Step step(List<RocketTransferRecord> entries, Set<UUID> live, Set<UUID> settled, int cursor,
                      java.util.function.Predicate<RocketTransferRecord> loaded) {
+        return step(entries, live, settled, Set.of(), cursor, loaded);
+    }
+
+    static Step step(List<RocketTransferRecord> entries, Set<UUID> live, Set<UUID> settled, Set<UUID> fenced, int cursor,
+                     java.util.function.Predicate<RocketTransferRecord> loaded) {
         List<RocketTransferRecord> unclassified = entries.stream()
                 .filter(candidate -> !live.contains(candidate.transferId()))
                 .filter(candidate -> !settled.contains(candidate.transferId()))
+                .filter(candidate -> !fenced.contains(candidate.transferId()))
                 .toList();
         if (unclassified.isEmpty()) {
             return new Step(null, false, 0);
@@ -115,11 +125,15 @@ final class RocketTransferRecoveryService {
         if (record == null) {
             return Result.notFound(transferId);
         }
+        classify(server, journal);
+        boolean fenced = fences.ids().contains(transferId);
+        if (!fences.permit(server, record, liveTransfers, settledTransfers)) { return retryLater(record); }
         if (!journal.retryChecked(server)) { return retryLater(record); }
-        if (!RocketTransferEntities.recoveryEntityChunksLoaded(server, record)) {
+        if (fenced ? !RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record)
+                : !RocketTransferEntities.recoveryEntityChunksLoaded(server, record)) {
             return retryLater(record);
         }
-        return recover(server, journal, record);
+        return recover(server, journal, record, fenced);
     }
 
     void onPlayerLoggedIn(ServerPlayer player, RocketTransferSavedData journal) {
@@ -150,6 +164,19 @@ final class RocketTransferRecoveryService {
 
     void clear() {
         reconnects.clear();
+        fences.clear();
+    }
+
+    void classify(MinecraftServer server, RocketTransferSavedData journal) { fences.classify(server, journal, liveTransfers, settledTransfers); }
+    Set<UUID> fencedIds() { return fences.ids(); }
+    String fencedDiagnostics() { return fences.ids().stream().sorted().limit(4)
+            .map(id -> " [fenced_transfer=" + id + " reason=" + fences.reason(id) + " repair=offline-whole-world]")
+            .collect(java.util.stream.Collectors.joining()); }
+    void onRocketJoined(RocketEntity rocket) {
+        if (rocket.level() instanceof net.minecraft.server.level.ServerLevel level && rocket.assemblyTransactionId().isPresent()) {
+            fences.joined(level.getServer(), rocket.assemblyTransactionId().orElseThrow(), RocketTransferFences.state(rocket).protectedResources(),
+                    RocketTransferSavedData.get(level.getServer()), liveTransfers, settledTransfers);
+        }
     }
 
     private boolean tryReconnect(ServerPlayer player, RocketTransferSavedData journal) {
@@ -157,11 +184,14 @@ final class RocketTransferRecoveryService {
         if (server == null || journal.entries().isEmpty()) {
             return true;
         }
+        classify(server, journal);
         if (!journal.retryChecked(server)) { return false; }
         if (!player.serverLevel().areEntitiesLoaded(player.chunkPosition().toLong())) {
             return false;
         }
         for (RocketTransferRecord record : journal.entries()) {
+            // A fenced assignment is intentionally finished for this login; it remains durably assigned.
+            if (fences.ids().contains(record.transferId())) { continue; }
             RocketEntity settled = RocketTransferEntities.loadedSettledAuthority(server, record);
             if (settled == null && RocketTransferEntities.nearbyArrivalStillLoading(player, record)) {
                 // A newly boarded passenger may be in the adjacent, already loaded chunk.
@@ -178,6 +208,10 @@ final class RocketTransferRecoveryService {
             }
             List<RocketEntity> candidates = RocketTransferEntities.findMatches(
                     server, record, record.phase().destinationAuthoritative());
+            var action = record.phase().destinationAuthoritative() ? RocketTransferRecoveryAction.KEEP_DESTINATION : RocketTransferRecoveryAction.KEEP_SOURCE;
+            if (!fences.actionAllowed(server, record, action,
+                    record.phase().destinationAuthoritative() ? List.of() : candidates,
+                    record.phase().destinationAuthoritative() ? candidates : List.of(), liveTransfers, settledTransfers)) { continue; }
             if (candidates.isEmpty()) {
                 recoverById(server, record.transferId());
                 return false;
@@ -220,14 +254,16 @@ final class RocketTransferRecoveryService {
     private Result recover(
             MinecraftServer server,
             RocketTransferSavedData journal,
-            RocketTransferRecord record
+            RocketTransferRecord record,
+            boolean loadedOnly
     ) {
-        List<RocketEntity> sources = RocketTransferEntities.findMatches(server, record, false);
-        List<RocketEntity> destinations = RocketTransferEntities.findMatches(server, record, true);
+        List<RocketEntity> sources = loadedOnly ? RocketTransferEntities.loadedMatches(server, record, false) : RocketTransferEntities.findMatches(server, record, false);
+        List<RocketEntity> destinations = loadedOnly ? RocketTransferEntities.loadedMatches(server, record, true) : RocketTransferEntities.findMatches(server, record, true);
         RocketTransferRecoveryAction action = RocketTransferRecoveryDecision.decide(
                 record.phase(),
                 new RocketTransferPresence(!sources.isEmpty(), !destinations.isEmpty())
         );
+        if (!fences.actionAllowed(server, record, action, sources, destinations, liveTransfers, settledTransfers)) { return retryLater(record); }
         if (!journal.acknowledgedCurrent()) { return retryLater(record); }
         Status status;
         switch (action) {

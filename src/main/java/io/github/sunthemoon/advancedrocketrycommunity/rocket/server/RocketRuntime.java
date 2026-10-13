@@ -35,6 +35,10 @@ public final class RocketRuntime {
         service = null;
     }
 
+    public static void onRocketJoined(RocketEntity rocket) {
+        if (service instanceof RocketManager manager) { manager.onRocketJoined(rocket); }
+    }
+
     public static RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,
             io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requestId) {
         return service instanceof RocketManager manager ? manager.requestAdminPadFlight(rocket, stationId, pad, requestId)
