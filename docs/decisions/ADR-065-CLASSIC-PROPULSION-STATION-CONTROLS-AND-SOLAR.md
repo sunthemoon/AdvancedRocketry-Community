@@ -1199,7 +1199,7 @@ power loss, or a rollback of one world file.
 - No reference-load or soak result exists yet.
 
 **Open items.**
-- The native E2 recovery case failed once with `BARRIER_UNSTABLE`. The reader's stability
+- *(Closed by W29, 2026-10-13: the reader now checks the endpoint's slot, not the whole file; two consecutive native selections passed 24/24 with no `BARRIER_UNSTABLE`.)* The native E2 recovery case failed once with `BARRIER_UNSTABLE`. The reader's stability
   check compares the whole region file's size and modification time, so a vanilla save of
   another chunk in the same region during startup makes the readback unstable. In production
   this is a retryable stall. Track it until the check is per slot, or until repeated clean runs
