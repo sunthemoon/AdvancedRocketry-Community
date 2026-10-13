@@ -320,6 +320,11 @@ final class BeaconGameTestFixture implements AutoCloseable {
     }
 
     /** Polls {@code ready} once per tick for at most {@code ticks}, then runs {@code next}; closes on failure. */
+    /** Runs {@code next} after {@code ticks} through the setup-registered driver, never a nested vanilla registration. */
+    void after(int ticks, Runnable next) {
+        driver.after(ticks, next);
+    }
+
     void await(int ticks, String what, BooleanSupplier ready, Runnable next) {
         driver.after(1, () -> {
             boolean done;
