@@ -378,8 +378,15 @@ class ManifestValidationTests(unittest.TestCase):
     def test_named_pad_occupancy_return_has_its_own_exact_count(self) -> None:
         rules = load_manifest(DEFAULT_MANIFEST)
         returned = next(item for item in rules if item.id == "transfer-returned-to-source")
+        # W24 adds the legacy (unnamed station pad) pre-spawn refusal in its own batch.
         self.assertEqual(
-            {"destination_readiness": 1, "flight": 1, "planetary_changed_pad": 1, "named_pad_occupancy": 1},
+            {
+                "destination_readiness": 1,
+                "flight": 1,
+                "planetary_changed_pad": 1,
+                "named_pad_occupancy": 1,
+                "legacy_pad_occupancy": 1,
+            },
             returned.counts,
         )
 

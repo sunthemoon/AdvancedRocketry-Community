@@ -644,6 +644,71 @@ as a complete audit feed. Audit details remain in the existing server audit.
 Byte-budget admission, schema/overflow/restart and removed-member privacy tests
 are required. It is evidence scope, not a second version-status file.
 
+### W22 implementation note: station notices and their data preservation
+
+This note documents the section 5.3 implementation (W22 and W22F, 2026-10-13). It does not
+change a decision or accept a risk. The risk is R-029. Nothing in it refuses a save or throws
+from serialization.
+
+**Who is told.** A start, commit or abort notice names the affected station. It goes to:
+- the online owner and members;
+- the acting player, while they still hold VISIT access, so a de-opped former actor is told
+  nothing more;
+- visitors currently inside the region.
+
+A visitor without VISIT access gets the brief form: the station, the code and the target,
+without the warp cost or the energy balance. These stay limited to VISIT holders, as
+`/arce station warp status` already does. The countdown uses only the action bar.
+
+**Departures from the section 5.3 text.**
+- One station keeps up to 33 acknowledgements: the owner's and 32 members'. The byte and node
+  budgets include the owner.
+- The code keys are in the v1.8 language namespace (`advancedrocketrycommunity_v180`), not
+  `advancedrocketrycommunity_v150`. `runData` now writes only `src/generated/v1.8`.
+
+**Persisted identifiers.** Stored outcomes are validated on decode against these:
+- the `StationManagementCode` names and their `success` flags;
+- the notice kind keys;
+- `StationLimits.MAX_NAME_LENGTH`;
+- the warp cost classes.
+
+They are persisted identifiers (AGENTS.md section 8). Renaming or removing one, or changing a
+`success` flag, needs a notice schema bump with a migration. Otherwise every server whose store
+holds that code refuses the whole notice root (below).
+
+**Durability.** The notice store is saved by ordinary autosave, while the warp itself is a
+checked, forced write. A crash after a committed warp and before the next autosave leaves the
+previous summary, or an empty one. An offline member is then never told of that warp; the
+`ARCE_STATION_WARP` audit line remains in the server log. The store is a summary, not an audit
+feed, as section 5.3 says. If notice delivery throws inside the warp commit, the exception is
+caught after the checked write. One WARN is logged (`ARCE_STATION_NOTICE_FAILED`), and both the
+outcome and the audit line are kept.
+
+**Notice root.**
+- **Scope.** An `advancedrocketrycommunity_station_notices` root that reads as NBT but does not
+  decode is kept by reference and written back unchanged. "Does not decode" means unknown,
+  future, malformed, or over a section 5.3 bound. The affected unit is the whole server's
+  offline member-notice store:
+  - no outcome is recorded;
+  - no login notice is shown;
+  - no acknowledgement is recorded.
+
+  Live notices continue as described above, and no stored summary is deleted.
+- **Duration.** Until the file is repaired. A restart with the same file refuses it again.
+- **Log volume.** One WARN (`ARCE_STATION_NOTICES_REFUSED`) per load.
+- **Recovery.** Back up, then repair or remove `data/advancedrocketrycommunity_station_notices.dat`
+  offline, and restart. Removal loses only the outcomes that no owner or member has seen yet.
+- **Unreadable file.** A `.dat` that cannot be read as NBT at all makes vanilla
+  `DimensionDataStorage` log an ERROR and start an empty store, as for the beacon index (R-028).
+- **Revision exhaustion.** A summary at revision `Long.MAX_VALUE` keeps its last outcome and
+  refuses later ones, with one WARN (`ARCE_STATION_NOTICE_NOT_KEPT`) per refusal. It cannot be
+  reached in practice.
+
+**Open follow-ups from the review:**
+- a new member is shown the latest outcome from before they joined (F8);
+- default station names contain the creator's player name (F9);
+- two tests could be tightened (F10).
+
 ## 6. Landing pads, light and force fields (C17b)
 
 ### 6.1 Landing pads and stationary geometry

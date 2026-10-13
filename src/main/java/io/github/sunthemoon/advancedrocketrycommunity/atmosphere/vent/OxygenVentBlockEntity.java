@@ -63,6 +63,12 @@ public final class OxygenVentBlockEntity extends BlockEntity {
         createCapabilityViews();
     }
 
+    /** Item NBT cannot plant a scrubber bank or a guarded device root; only an operator's is loaded. */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     public static void serverTick(
             Level level,
             BlockPos position,
