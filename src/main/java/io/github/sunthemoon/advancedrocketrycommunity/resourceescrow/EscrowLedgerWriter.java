@@ -150,16 +150,24 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         if (completion != null) {
             EscrowTags.require(captured != null && completion.generation() == captured.ledger().writerGeneration()
                     && completion.digest().equals(captured.digest()), "Stale or foreign writer callback");
-            running = false;
+            running = false; boolean wasUnavailable = unavailable();
             if (completion.outcome() == Outcome.UNKNOWN) {
-                uncertain = true; failures++; retryAt = tick + 200; active.callback().accept(completion);
+                if (!uncertain) {
+                    LOGGER.info("Escrow ledger generation {} has an unknown replacement outcome; retrying the exact candidate", completion.generation());
+                }
+                uncertain = true; failures++; retryAt = tick + 200; logAvailability(wasUnavailable, completion.generation());
+                active.callback().accept(completion);
                 checkpoint.accept("WRITE_UNKNOWN");
                 if (draining && ++drainUnknown >= DRAIN_UNKNOWN_ATTEMPTS) { abandon(completion.generation()); }
             } else {
                 Request finished = active;
+                if (uncertain) {
+                    LOGGER.info("Escrow ledger generation {} resolved as {} after an unknown outcome", completion.generation(), completion.outcome());
+                }
                 if (completion.outcome() == Outcome.COMMITTED) {
                     failures = 0; durableGeneration = completion.generation(); durableDigest = completion.digest();
                 } else { failures++; }
+                uncertain = false; logAvailability(wasUnavailable, completion.generation());
                 captured = null; active = successor; successor = null;
                 // Successful authority is published before successor capture; failure cancellation is delayed
                 // until after capture, so a successor that still contains an admission keeps its reservation.
@@ -173,6 +181,14 @@ public final class EscrowLedgerWriter implements AutoCloseable {
             }
         }
         if (active != null && captured != null && !running && tick >= retryAt) { startIo(); }
+    }
+    private void logAvailability(boolean wasUnavailable, long generation) {
+        if (!wasUnavailable && unavailable()) {
+            LOGGER.warn("Escrow ledger is unavailable after {} unresolved writes at generation {}; admission is refused until an exact acknowledgement",
+                    failures, generation);
+        } else if (wasUnavailable && !unavailable()) {
+            LOGGER.info("Escrow ledger is available again at generation {}", generation);
+        }
     }
     private static boolean previous(Optional<CompoundTag> disk, Optional<CompoundTag> again, long generation, String digest, UUID ledger) {
         if (!disk.equals(again)) { return false; }

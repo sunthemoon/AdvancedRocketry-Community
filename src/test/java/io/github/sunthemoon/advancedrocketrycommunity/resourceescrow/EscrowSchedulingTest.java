@@ -80,4 +80,43 @@ class EscrowSchedulingTest {
         assertTrue(EscrowReason.SUPERSEDING_SAVE.retryableProofFailure());
         assertFalse(EscrowReason.SUPERSEDING_SAVE.barrierFailure());
     }
+    /** Review W11b1 low 9: one bounded line per backoff transition and state change; a continuing stall adds none. */
+    @Test void stateChangesAndBackoffTransitionsLogOneLineEach() {
+        var op = EscrowTestFixtures.operation(1); var ledger = new AtomicReference<>(EscrowTestFixtures.ledger(op));
+        var results = new java.util.ArrayDeque<>(List.of(EscrowReason.BARRIER_IO, EscrowReason.BARRIER_IO, EscrowReason.BARRIER_VETO,
+                EscrowReason.BARRIER_VETO, EscrowReason.NONE, EscrowReason.OTHER_STATE));
+        try (var capture = new LogCapture(EscrowReconciliationScheduler.class)) {
+            var scheduler = new EscrowReconciliationScheduler(ledger::get,
+                    (id, reason) -> ledger.set(EscrowTestFixtures.ledger(ledger.get().records().get(0).withReason(reason))),
+                    (record, all, done) -> {
+                        var reason = results.removeFirst();
+                        done.accept(new EscrowReconciliationScheduler.Result(reason, reason == EscrowReason.NONE));
+                    });
+            for (long tick : new long[] {0, 100, 500, 1_700, 2_900, 2_901, 3_000, 9_000}) { scheduler.tick(tick); }
+            assertTrue(results.isEmpty());
+            var lines = capture.lines(); assertEquals(5, lines.size(), lines.toString());
+            assertTrue(lines.get(0).startsWith("INFO") && lines.get(0).contains("backing off 100 ticks"));
+            assertTrue(lines.get(1).startsWith("INFO") && lines.get(1).contains("backing off 400 ticks"));
+            assertTrue(lines.get(2).startsWith("WARN") && lines.get(2).contains("STALLED after 3 proof failures (BARRIER_VETO)"));
+            assertTrue(lines.get(3).startsWith("INFO") && lines.get(3).contains("succeeded after 3 failures"));
+            assertTrue(lines.get(4).startsWith("WARN") && lines.get(4).contains("OTHER_STATE"));
+        }
+    }
+    private static final class LogCapture extends org.apache.logging.log4j.core.appender.AbstractAppender implements AutoCloseable {
+        private final List<String> lines = new java.util.concurrent.CopyOnWriteArrayList<>();
+        private final String source;
+        private final org.apache.logging.log4j.core.LoggerContext context;
+        private final org.apache.logging.log4j.core.config.LoggerConfig config;
+        LogCapture(Class<?> type) {
+            super("arce-escrow-log-" + java.util.UUID.randomUUID(), null, null, true, org.apache.logging.log4j.core.config.Property.EMPTY_ARRAY);
+            var logger = (org.apache.logging.log4j.core.Logger) org.apache.logging.log4j.LogManager.getLogger(type.getName());
+            source = logger.getName(); context = logger.getContext(); config = context.getConfiguration().getLoggerConfig(source);
+            start(); config.addAppender(this, null, null); context.updateLoggers();
+        }
+        @Override public void append(org.apache.logging.log4j.core.LogEvent event) {
+            if (source.equals(event.getLoggerName())) { lines.add(event.getLevel() + " " + event.getMessage().getFormattedMessage()); }
+        }
+        List<String> lines() { return List.copyOf(lines); }
+        @Override public void close() { config.removeAppender(getName()); context.updateLoggers(); stop(); }
+    }
 }
