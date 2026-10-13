@@ -8,6 +8,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SleepRespa
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SleepRespawnRules.RespawnOutcome;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SleepRespawnRules.SleepRefusal;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SleepRespawnRules.StationAccess;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.RespawnPointBackup.Backup;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.RespawnPointBackup.Point;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
@@ -15,14 +17,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.Statio
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessAction;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -44,7 +45,6 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
@@ -60,7 +60,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
  *       Overworld respawn, and the new player gets the point back. Nothing loads a chunk.</li>
  * </ul>
  *
- * Pending refusals are currently tick-local; durable recovery is implemented in the following W37F fix.
+ * A set-aside tuple is owned by the player's persisted Forge data, not a tick-local map.
  */
 public final class SleepRespawnService {
     /** The vanilla bed and anchor stand-up searches read blocks at most this far from the saved block. */
@@ -72,7 +72,6 @@ public final class SleepRespawnService {
     private final AtmosphereManager atmosphere;
     private final CelestialCatalogManager catalogs;
     private final Supplier<Options> options;
-    private final Map<UUID, Refusal> refusals = new HashMap<>();
 
     public SleepRespawnService(AtmosphereManager atmosphere, CelestialCatalogManager catalogs, Supplier<Options> options) {
         this.atmosphere = Objects.requireNonNull(atmosphere, "atmosphere");
@@ -97,8 +96,9 @@ public final class SleepRespawnService {
         bus.addListener(this::onSleepInBed);
         bus.addListener(this::onLeaveLevel);
         bus.addListener(this::onRespawn);
+        bus.addListener(this::onPlayerTick);
+        bus.addListener(this::onLogin);
         bus.addListener(this::onServerTick);
-        bus.addListener(this::onServerStopped);
     }
 
     /** A non-Overworld mapped surface or Space: the Space Level, any Level of this mod, or a Level the catalog maps. */
@@ -152,18 +152,22 @@ public final class SleepRespawnService {
 
     /** The decision for a player about to respawn; a refused off-world point is set aside for this respawn only. */
     void beforeRespawn(MinecraftServer server, ServerPlayer player) {
+        Optional<Backup> pending = backup(player);
         BlockPos position = player.getRespawnPosition();
         ResourceKey<Level> dimension = player.getRespawnDimension();
-        if (position == null || !offWorldHost(dimension)) {
+        Point saved = pending.map(Backup::point).orElseGet(() -> position == null ? null
+                : new Point(dimension, position, player.getRespawnAngle(), player.isRespawnForced()));
+        if (saved == null || !offWorldHost(saved.dimension())) {
             return;
         }
-        SavedPoint saved = new SavedPoint(dimension, position.immutable(), player.getRespawnAngle(),
-                player.isRespawnForced());
         RespawnOutcome outcome = SleepRespawnRules.decideRespawn(options.get(), new Probe(server, player, saved));
         if (outcome.accepted()) {
+            if (pending.isPresent()) { restore(player, false); }
             return;
         }
-        refusals.put(player.getUUID(), new Refusal(saved, outcome));
+        CompoundTag persisted = persisted(player, true);
+        if (persisted == null) { return; } // A foreign malformed Forge parent is not overwritten.
+        RespawnPointBackup.store(persisted, new Backup(saved, outcome));
         // The setter is a cancellable gameplay operation, not a reliable preservation boundary.
         player.respawnDimension = Level.OVERWORLD;
         player.respawnPosition = null;
@@ -172,36 +176,61 @@ public final class SleepRespawnService {
     }
 
     public void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        if (refusals.isEmpty() || !(event.getEntity() instanceof ServerPlayer player)) {
-            return;
-        }
-        Refusal refusal = refusals.remove(player.getUUID());
-        if (refusal == null) {
-            return;
-        }
-        // The point is kept: the options and checks decline it for this respawn only.
-        if (player.getRespawnPosition() == null) {
-            SavedPoint saved = refusal.saved();
-            player.respawnDimension = saved.dimension();
-            player.respawnPosition = saved.position();
-            player.respawnAngle = saved.angle();
-            player.respawnForced = saved.forced();
-        }
-        player.sendSystemMessage(Component.translatable(respawnKey(refusal.outcome())));
+        if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()) { restore(player, true); }
     }
 
+    public void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread() && !player.isDeadOrDying()) {
+            restore(player, true);
+        }
+    }
+
+    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if (event.phase == TickEvent.Phase.END && event.side.isServer() && event.player instanceof ServerPlayer player
+                && player.server.isSameThread() && player.server.getPlayerList().getPlayer(player.getUUID()) == player
+                && !player.isDeadOrDying()) {
+            restore(player, true);
+        }
+    }
+
+    /** An interrupted native respawn may leave the connection pointing at the old player until repaired. */
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            clear();
+            for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
+                if (!player.isDeadOrDying()) { restore(player, true); }
+            }
         }
     }
 
-    public void onServerStopped(ServerStoppedEvent event) {
-        clear();
+    private static Optional<Backup> backup(ServerPlayer player) {
+        CompoundTag persisted = persisted(player, false);
+        return persisted == null ? Optional.empty() : RespawnPointBackup.decode(persisted.get(RespawnPointBackup.KEY));
     }
 
-    public void clear() {
-        refusals.clear();
+    private static CompoundTag persisted(ServerPlayer player, boolean create) {
+        CompoundTag forge = player.getPersistentData();
+        Tag parent = forge.get(Player.PERSISTED_NBT_TAG);
+        if (parent instanceof CompoundTag compound) { return compound; }
+        if (parent != null || !create) { return null; }
+        CompoundTag compound = new CompoundTag();
+        forge.put(Player.PERSISTED_NBT_TAG, compound);
+        return compound;
+    }
+
+    private static void restore(ServerPlayer player, boolean notify) {
+        Optional<Backup> pending = backup(player);
+        if (pending.isEmpty()) { return; } // Unknown/corrupt data is kept verbatim; no repeated log.
+        Point saved = pending.orElseThrow().point();
+        player.respawnDimension = saved.dimension();
+        player.respawnPosition = saved.position();
+        player.respawnAngle = saved.angle();
+        player.respawnForced = saved.forced();
+        if (saved.dimension().equals(player.getRespawnDimension()) && saved.position().equals(player.getRespawnPosition())
+                && Float.floatToRawIntBits(saved.angle()) == Float.floatToRawIntBits(player.getRespawnAngle())
+                && saved.forced() == player.isRespawnForced()) {
+            RespawnPointBackup.complete(persisted(player, false));
+            if (notify) { player.sendSystemMessage(Component.translatable(respawnKey(pending.orElseThrow().outcome()))); }
+        }
     }
 
     /** The bed head and, for a vanilla bed, its foot; one cell for any other sleeping place. */
@@ -242,12 +271,12 @@ public final class SleepRespawnService {
     private final class Probe implements SleepRespawnRules.RespawnProbe {
         private final MinecraftServer server;
         private final ServerPlayer player;
-        private final SavedPoint saved;
+        private final Point saved;
         private ServerLevel level;
         private BlockState state;
         private Vec3 arrival;
 
-        private Probe(MinecraftServer server, ServerPlayer player, SavedPoint saved) {
+        private Probe(MinecraftServer server, ServerPlayer player, Point saved) {
             this.server = server;
             this.player = player;
             this.saved = saved;
@@ -330,9 +359,4 @@ public final class SleepRespawnService {
         }
     }
 
-    private record SavedPoint(ResourceKey<Level> dimension, BlockPos position, float angle, boolean forced) {
-    }
-
-    private record Refusal(SavedPoint saved, RespawnOutcome outcome) {
-    }
 }
