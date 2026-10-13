@@ -372,11 +372,12 @@ public final class ResourceMissions {
             if (instance == null) {
                 return registry.result(SatelliteOperationCode.INSTANCE_NOT_FOUND, false, null, null);
             }
-            if (registry.groundSurveys().instanceReleaseProblem(instance) != null) {
-                return registry.result(SatelliteOperationCode.OFFLINE_REPAIR_REQUIRED, false, null, null);
-            }
+            // Only a held instance has anything to release; a healthy ground pair is not sent to offline repair.
             if (instance.state() != InstanceState.QUARANTINED) {
                 return registry.result(SatelliteOperationCode.IDEMPOTENT, false, null, null);
+            }
+            if (registry.groundSurveys().instanceReleaseProblem(instance) != null) {
+                return registry.result(SatelliteOperationCode.OFFLINE_REPAIR_REQUIRED, false, null, null);
             }
             MissionState mission = instance.allocatedMission().map(registry::missionRecord).orElse(null);
             if (mission != null && (mission.status().unfinished() || mission.status() == MissionStatus.CLAIMED)) {
@@ -395,8 +396,7 @@ public final class ResourceMissions {
                     GroundSurveyJob job = registry.groundSurveys().job(instance.origin().id()).orElseThrow();
                     int reserved = registry.sizer.instanceBytes(next);
                     if (reserved < 0 || reserved > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES
-                            || !registry.sizer.groundMutationFits(registry, job, next, false, null,
-                                    now, observedGameTime)) {
+                            || !registry.groundSurveys().fitsWithoutNewRecord(job, next, now, observedGameTime)) {
                         return registry.result(SatelliteOperationCode.STORAGE_BUDGET, false, null, mission);
                     }
                 }

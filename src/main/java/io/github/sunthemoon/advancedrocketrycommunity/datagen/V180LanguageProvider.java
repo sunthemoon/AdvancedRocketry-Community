@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.Entry;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.Material;
 import io.github.sunthemoon.advancedrocketrycommunity.material.MaterialCatalog.Product;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.SatelliteOperationCode;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.data.PackOutput;
@@ -46,6 +47,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180MotionLanguage.translations(chinese).forEach(this::add);
         V180StationLightLanguage.translations(chinese).forEach(this::add);
         V180StationControlData.language(chinese).forEach(this::add);
+        V180StationNoticeLanguage.translations(chinese).forEach(this::add);
         V180BeaconData.language(chinese).forEach(this::add);
         V180ThermiteLanguage.translations(chinese).forEach(this::add);
         V180CraftingComponentData.language(chinese).forEach(this::add);
@@ -136,6 +138,20 @@ public final class V180LanguageProvider extends LanguageProvider {
             String key = (entry.isBlock() ? "block." : "item.") + NS + "." + entry.id();
             add(key, name(entry, names.get(entry.material())));
         }
+        // Satellite codes appended in v1.8; the v0.8 and v1.6 providers translate the earlier ones.
+        for (SatelliteOperationCode code : SatelliteOperationCode.values()) {
+            if (code.ordinal() > SatelliteOperationCode.INSTANCE_NOT_FOUND.ordinal()) {
+                add(code.translationKey(), satelliteCode(code));
+            }
+        }
+    }
+
+    private String satelliteCode(SatelliteOperationCode code) {
+        return switch (code) {
+            case OFFLINE_REPAIR_REQUIRED -> chinese ? "需要离线修复；请备份世界并联系管理员"
+                    : "Offline repair required; back up the world and ask an administrator";
+            default -> throw new IllegalArgumentException("Translated before v1.8: " + code);
+        };
     }
 
     private String name(Entry entry, String[] material) {

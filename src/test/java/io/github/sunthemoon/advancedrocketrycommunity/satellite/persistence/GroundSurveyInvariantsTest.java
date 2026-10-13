@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.*;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.List;
@@ -101,14 +102,18 @@ final class GroundSurveyInvariantsTest {
                 List.of(instance(first, InstanceState.AVAILABLE), instance(second, InstanceState.AVAILABLE))));
         assertTrue(data.operational());
         assertEquals(2, data.instances().stream().filter(value -> value.state() == InstanceState.AVAILABLE).count());
+        CompoundTag available = data.save(new CompoundTag());
         for (GroundSurveyJob job : data.groundSurveys()) {
             assertEquals(GroundSurveyJob.Phase.READY, job.effectivePhase());
             assertEquals(GroundSurveys.Code.OFFLINE_REPAIR_REQUIRED,
                     data.groundSurveys(jobs -> jobs.release(job.jobId())).code());
             assertTrue(data.groundSurveyQuery(jobs -> jobs.instanceReleaseProblem(job.instanceId())).contains("RUNNING"));
-            assertEquals(SatelliteOperationCode.OFFLINE_REPAIR_REQUIRED,
-                    data.resources(resources -> resources.releaseInstance(job.instanceId(), 24_000, 99)).code());
+            // W21b review F3: an AVAILABLE instance is not held, so instance release has nothing to do.
+            var release = data.resources(resources -> resources.releaseInstance(job.instanceId(), 24_000, 99));
+            assertEquals(SatelliteOperationCode.IDEMPOTENT, release.code());
+            assertFalse(release.changed());
         }
+        assertEquals(available, data.save(new CompoundTag()));
         CompoundTag held = data.save(new CompoundTag());
         // Also hold the instances, as after an offline diagnostic; release cannot bypass the conflicting claims.
         for (Tag raw : held.getList("instances", Tag.TAG_COMPOUND)) { ((CompoundTag) raw).putString("state", "quarantined"); }
@@ -120,6 +125,69 @@ final class GroundSurveyInvariantsTest {
         }
         assertEquals(before, data.save(new CompoundTag()));
         assertEquals(before, SatelliteMissionSavedData.load(before).save(new CompoundTag()));
+    }
+
+    /** W21b review F2: records the load would hold, left unrepaired as an online bug would leave them. */
+    @Test void anUnrelatedBrokenRecordDoesNotStopAnotherJobButTheBrokenPairStillRefusesWithItsCause() {
+        var registry = SatelliteMissionRegistry.restore(0, 0, 2, CodecRecordSizer.INSTANCE);
+        registry.restoreAccount(new ResearchAccount(1, OWNER, 77, 100, 23));
+        GroundSurveyJob healthy = active(0, OWNER);
+        GroundSurveyJob broken = active(1, OWNER);
+        registry.restoreInstance(instance(healthy, InstanceState.PENDING));
+        registry.restoreInstance(instance(broken, InstanceState.AVAILABLE));
+        registry.groundSurveys().restore(healthy);
+        registry.groundSurveys().restore(broken);
+        // A PENDING survey-origin instance whose mission is missing; the load would quarantine it.
+        registry.restoreInstance(pending(7, OWNER, InstanceOrigin.survey(id(555))));
+        GroundSurveys jobs = registry.groundSurveys();
+
+        assertEquals(GroundSurveys.Code.SUCCESS, jobs.advanceSurvey(healthy.jobId(), healthy.source(), 24_000, 1).code());
+        assertEquals(GroundSurveys.Code.SUCCESS, jobs.rebindSurvey(healthy.jobId(), OWNER, device(250), 2).code());
+        assertEquals(1, jobs.job(healthy.jobId()).orElseThrow().surveyProgress());
+
+        CompoundTag before = SatelliteRegistryPayload.encodeCurrent(registry, new CompoundTag());
+        var advance = jobs.advanceSurvey(broken.jobId(), broken.source(), 24_000, 3);
+        assertEquals(GroundSurveys.Code.INVARIANT_FAILED, advance.code());
+        assertEquals("GROUND_PHASE_MISMATCH", advance.reason());
+        // Cancel would drop the wrongly retained instance and hide the pair; it refuses on the original state.
+        var cancel = jobs.cancel(broken.jobId(), OWNER, false, 3);
+        assertEquals(GroundSurveys.Code.INVARIANT_FAILED, cancel.code());
+        assertEquals("GROUND_PHASE_MISMATCH", cancel.reason());
+        assertEquals(before, SatelliteRegistryPayload.encodeCurrent(registry, new CompoundTag()));
+    }
+
+    @Test void touchedDevicesProcessorsInstancesAndStrayBacklinksStillRefuseWithoutChange() {
+        for (String peer : List.of("device", "processor", "instance", "stray_origin")) {
+            var registry = SatelliteMissionRegistry.restore(0, 0, 2, CodecRecordSizer.INSTANCE);
+            registry.restoreAccount(new ResearchAccount(1, OWNER, 77, 100, 23));
+            GroundSurveyJob touched = peer.equals("processor") ? running(0, OWNER, device(300)) : active(0, OWNER);
+            registry.restoreInstance(instance(touched, peer.equals("processor") ? InstanceState.AVAILABLE
+                    : InstanceState.PENDING));
+            registry.groundSurveys().restore(touched);
+            switch (peer) {
+                case "device" -> registry.groundSurveys().restore(active(1, OWNER).rebound(touched.source()));
+                case "processor" -> registry.groundSurveys().restore(running(1, OWNER, device(300)));
+                case "instance" -> registry.groundSurveys().restore(new GroundSurveyJob(1, id(101), OWNER,
+                        touched.instanceId(), device(201), touched.snapshot(), 20, 20, 0, 0, 1,
+                        GroundSurveyJob.Phase.ACTIVE, java.util.OptionalLong.empty(), java.util.OptionalLong.empty(),
+                        touched.analysis(), java.util.Optional.empty()));
+                case "stray_origin" -> registry.restoreInstance(pending(9, OWNER, InstanceOrigin.ground(touched.jobId())));
+                default -> throw new AssertionError(peer);
+            }
+            CompoundTag before = SatelliteRegistryPayload.encodeCurrent(registry, new CompoundTag());
+            var result = peer.equals("processor")
+                    ? registry.groundSurveys().advanceAnalysis(touched.jobId(), device(300), 5)
+                    : registry.groundSurveys().advanceSurvey(touched.jobId(), touched.source(), 24_000, 5);
+            assertEquals(GroundSurveys.Code.INVARIANT_FAILED, result.code(), peer);
+            assertEquals(switch (peer) {
+                case "device" -> "DUPLICATE_SOURCE";
+                case "processor" -> "DUPLICATE_PROCESSOR";
+                case "instance" -> "DUPLICATE_INSTANCE";
+                default -> "GROUND_SNAPSHOT_MISMATCH";
+            }, result.reason(), peer);
+            assertEquals(before, SatelliteRegistryPayload.encodeCurrent(registry, new CompoundTag()), peer);
+            assertEquals(0, registry.logicalGameTime(), peer);
+        }
     }
 
     @Test void retainedGroundStatesAcceptReadyProcessedAndTheirQuarantinedPreviousPhase() {

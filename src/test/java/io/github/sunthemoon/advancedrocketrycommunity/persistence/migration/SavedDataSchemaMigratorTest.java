@@ -134,6 +134,10 @@ final class SavedDataSchemaMigratorTest {
         assertEquals("v1.8.0-ground-surveys",
                 ManagedSavedDataType.SATELLITE_MISSIONS.formatEpoch());
         assertEquals("v1.6.0-satellite-missions", ManagedSavedDataType.SATELLITE_MISSIONS.formatEpoch(3));
+        // W21b review F6: root 4 keeps its own epoch when a later root moves the current constant, and the
+        // current constant always names the current root's epoch.
+        assertEquals("v1.8.0-ground-surveys", ManagedSavedDataType.SATELLITE_MISSIONS.formatEpoch(4));
+        assertEquals(SatelliteLimits.REGISTRY_FORMAT_EPOCH, ManagedSavedDataType.SATELLITE_MISSIONS.formatEpoch());
     }
 
     private static CompoundTag loadFixture(String name) throws Exception {

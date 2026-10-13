@@ -43,6 +43,7 @@ final class GroundSurveyLedger {
     int owned(UUID owner) { return owners.getOrDefault(owner, Set.of()).size(); }
     Set<UUID> ownedIds(UUID owner) { return Set.copyOf(owners.getOrDefault(owner, Set.of())); }
     Set<UUID> forInstance(UUID instance) { return Set.copyOf(instances.getOrDefault(instance, Set.of())); }
+    boolean instanceShared(UUID instance, UUID except) { return busy(instances, instance, except); }
     boolean deviceBusy(UUID device, UUID except) { return busy(devices, device, except); }
     boolean processorBusy(UUID processor, UUID except) { return busy(processors, processor, except); }
 

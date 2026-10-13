@@ -12,6 +12,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
+import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNotice;
+import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessAction;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
@@ -20,15 +22,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationLoc
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteCooldown;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -52,6 +51,8 @@ public final class StationWarpService {
     private final StationWarpCredits credits = new StationWarpCredits();
     private final StationWarpConfirmations confirmations = new StationWarpConfirmations();
     private final StationWarpCountdowns countdowns = new StationWarpCountdowns();
+    /** ADR-065 section 5.3 notices; stateless, its summaries live in their own SavedData. */
+    private final StationNoticeService notices;
     private final StationWriteCooldown cooldown = new StationWriteCooldown(StationLimits.WARP_COOLDOWN_TICKS);
     private volatile StationRocketAuthority rocketAuthority = StationRocketAuthority.FAIL_CLOSED;
     private final StationWriteBudget writeBudget;
@@ -64,10 +65,18 @@ public final class StationWarpService {
     /** {@code writeBudget} is shared with station expansion and gravity (review B9). */
     public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> systemHasRoutes,
                               Supplier<WarpSettings> settings, StationWriteBudget writeBudget) {
+        this(catalogs, systemHasRoutes, settings, writeBudget, new StationNoticeService());
+    }
+
+    /** With the notice service to use; a GameTest passes one whose outcome delivery fails (W22 review F7). */
+    public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> systemHasRoutes,
+                              Supplier<WarpSettings> settings, StationWriteBudget writeBudget,
+                              StationNoticeService notices) {
         this.writeBudget = Objects.requireNonNull(writeBudget, "writeBudget");
         this.catalogs = Objects.requireNonNull(catalogs, "catalogs");
         this.systemHasRoutes = Objects.requireNonNull(systemHasRoutes, "systemHasRoutes");
         this.settings = Objects.requireNonNull(settings, "settings");
+        this.notices = Objects.requireNonNull(notices, "notices");
     }
 
     /** True when any route of the current planetary catalog touches a body of the given system. */
@@ -304,10 +313,9 @@ public final class StationWarpService {
             case CAPACITY_REACHED -> StationManagementCode.WARP_CAPACITY_REACHED;
         };
         if (started == StationManagementCode.WARP_STARTED) {
-            notifyMembers(server, confirmed, Component.literal(String.format(java.util.Locale.ROOT,
-                    "Station warp countdown started by %s: %s -> %s in %d seconds (%s, %d FE).",
-                    player.getGameProfile().getName(), confirmed.observed().orbitBody(), confirmed.target(),
-                    StationWarpCountdowns.START_SECONDS, confirmed.costClass().label(), confirmed.cost())), false);
+            notices.deliver(server, confirmed.stationId(), confirmed.actorId(), StationNotice.started(
+                    confirmed.observed().name(), confirmed.observed().orbitBody(), confirmed.target(),
+                    StationWarpCountdowns.START_SECONDS, costClass(confirmed), confirmed.cost()), false);
             announce(server, confirmed, StationWarpCountdowns.START_SECONDS);
         }
         return audit("confirm", player, StationWarpResult.quoted(started, confirmed, current.balance()));
@@ -346,8 +354,9 @@ public final class StationWarpService {
             return audit("cancel", player, StationWarpResult.of(StationManagementCode.WARP_NO_COUNTDOWN,
                     located.station()));
         }
-        notifyMembers(player.getServer(), cancelled.orElseThrow().quote(), Component.literal(
-                "Station warp cancelled by " + player.getGameProfile().getName() + "."), false);
+        WarpQuote quote = cancelled.orElseThrow().quote();
+        notices.deliverOutcome(player.getServer(), quote.stationId(), player.getUUID(), StationNotice.aborted(
+                quote.observed().name(), StationManagementCode.WARP_CANCELLED, quote.target()));
         return audit("cancel", player, StationWarpResult.quoted(StationManagementCode.WARP_CANCELLED,
                 cancelled.orElseThrow().quote(), located.authority().warpEnergy(located.station().stationId())));
     }
@@ -450,12 +459,19 @@ public final class StationWarpService {
             result.station().ifPresent(station -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic
                     .ClassicAdvancementEvents.stationWarped(presentVisitors(server, station)));
         }
-        Component message = code == StationManagementCode.WARP_COMMITTED
-                ? Component.literal(String.format(java.util.Locale.ROOT,
-                "Station warped: %s -> %s (%s, %d FE); warp energy left %d FE.", confirmed.observed().orbitBody(),
-                confirmed.target(), confirmed.costClass().label(), confirmed.cost(), result.balance()))
-                : Component.literal("Station warp aborted: " + code.description() + ".");
-        notifyMembers(server, confirmed, message, false);
+        // W22 review F7: the notices follow the checked write, so a failure in them is logged once and never escapes
+        // the tick, skips the audit line below or changes the outcome.
+        try {
+            String name = confirmed.observed().name();
+            notices.deliverOutcome(server, confirmed.stationId(), confirmed.actorId(),
+                    code == StationManagementCode.WARP_COMMITTED
+                            ? StationNotice.committed(name, confirmed.observed().orbitBody(), confirmed.target(),
+                            costClass(confirmed), confirmed.cost(), result.balance())
+                            : StationNotice.aborted(name, code, confirmed.target()));
+        } catch (RuntimeException failure) {
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_STATION_NOTICE_FAILED station={} code={} error={}",
+                    confirmed.stationId(), code, failure.getClass().getSimpleName());
+        }
         AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_STATION_WARP action=commit code={} station={} actor={} from={} to={} class={} cost={} balance={}",
                 code, confirmed.stationId(), confirmed.actorId(), confirmed.observed().orbitBody(), confirmed.target(),
@@ -623,26 +639,14 @@ public final class StationWarpService {
                 .map(StationState::stationId).filter(station.stationId()::equals).isPresent();
     }
 
-    private static void announce(MinecraftServer server, WarpQuote quote, int secondsLeft) {
-        notifyMembers(server, quote, Component.literal(String.format(java.util.Locale.ROOT,
-                "Station warp to %s in %d s", quote.target(), secondsLeft)), true);
+    /** ADR-065 section 5.3: the countdown uses only the action bar. */
+    private void announce(MinecraftServer server, WarpQuote quote, int secondsLeft) {
+        notices.deliver(server, quote.stationId(), quote.actorId(),
+                StationNotice.countdown(quote.observed().name(), quote.target(), secondsLeft), true);
     }
 
-    /** Owner, members and the actor, when online; chat, or the action bar for the countdown. */
-    private static void notifyMembers(MinecraftServer server, WarpQuote quote, Component message, boolean actionBar) {
-        if (server == null) {
-            return;
-        }
-        Set<UUID> recipients = new LinkedHashSet<>();
-        recipients.add(quote.observed().ownerId());
-        recipients.addAll(quote.observed().sortedMembers());
-        recipients.add(quote.actorId());
-        for (UUID recipient : recipients) {
-            ServerPlayer online = server.getPlayerList().getPlayer(recipient);
-            if (online != null) {
-                online.displayClientMessage(message, actionBar);
-            }
-        }
+    private static String costClass(WarpQuote quote) {
+        return quote.costClass().name().toLowerCase(java.util.Locale.ROOT);
     }
 
     private static StationWarpResult audit(String action, ServerPlayer player, StationWarpResult result) {

@@ -53,6 +53,7 @@ public final class StationManager implements StationOperationService {
     private final StationOrbitEnvironmentResolver orbitEnvironments;
     private final ElevatorEndpointService elevatorEndpoints;
     private final Map<UUID, Long> lastDenialNotice = new LinkedHashMap<>();
+    private volatile StationLifecycleListener lifecycle = StationLifecycleListener.NONE;
 
     public StationManager(CelestialCatalogManager celestialCatalogs) {
         this(celestialCatalogs, StationWriteBudget.unbounded());
@@ -91,7 +92,7 @@ public final class StationManager implements StationOperationService {
             return StationCreationResult.failure(StationCreationCode.INVALID_SOURCE);
         }
         String name = player.getScoreboardName() + " Station";
-        return creation.create(server, player.getUUID(), name, orbitBody, true);
+        return created(server, creation.create(server, player.getUUID(), name, orbitBody, true));
     }
 
     public StationCreationResult createForOperator(
@@ -100,7 +101,17 @@ public final class StationManager implements StationOperationService {
             String name,
             ResourceLocation orbitBody
     ) {
-        return creation.create(server, ownerId, name, orbitBody, false);
+        return created(server, creation.create(server, ownerId, name, orbitBody, false));
+    }
+
+    /** Wires the ADR-065 section 5.3 notice store; until then the lifecycle callbacks do nothing. */
+    public void installLifecycleListener(StationLifecycleListener listener) {
+        lifecycle = Objects.requireNonNull(listener, "listener");
+    }
+
+    private StationCreationResult created(MinecraftServer server, StationCreationResult result) {
+        result.station().ifPresent(station -> lifecycle.created(server, station));
+        return result;
     }
 
     public Optional<StationState> station(MinecraftServer server, UUID stationId) {
@@ -168,6 +179,7 @@ public final class StationManager implements StationOperationService {
         StationState updated = data.removeMember(state.stationId(), memberId);
         data.flush(server);
         auditAccess("remove", stationId, actorId, memberId, true);
+        lifecycle.teamChanged(server, updated);
         return updated;
     }
 
@@ -184,6 +196,7 @@ public final class StationManager implements StationOperationService {
         StationState updated = data.transferOwnership(state.stationId(), ownerId);
         data.flush(server);
         auditAccess("transfer", stationId, actorId, ownerId, true);
+        lifecycle.teamChanged(server, updated);
         return updated;
     }
 
@@ -237,6 +250,7 @@ public final class StationManager implements StationOperationService {
                 "ARCE_STATION_DELETED station={} actor={} inspected={} removed={} chunks={}",
                 stationId, actorId, removed.inspected(), removed.changed(), removed.chunksLoaded()
         );
+        lifecycle.deleted(server, stationId);
         return deleted;
     }
 

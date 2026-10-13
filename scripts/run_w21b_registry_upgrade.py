@@ -11,15 +11,71 @@ import platform
 import re
 import shutil
 import socket
+import subprocess
+import time
 from pathlib import Path
 
-from inspect_celestial_saved_data import NbtReader
-from run_dedicated_server_smoke import CapturedProcess, READY_MARKER, SAVE_MARKER, SmokeError, digest_file
+try:
+    from .inspect_celestial_saved_data import NbtReader
+    from .run_dedicated_server_smoke import CapturedProcess, READY_MARKER, SAVE_MARKER, SmokeError, digest_file
+except ImportError:
+    from inspect_celestial_saved_data import NbtReader
+    from run_dedicated_server_smoke import CapturedProcess, READY_MARKER, SAVE_MARKER, SmokeError, digest_file
 
 
+ROOT = Path(__file__).resolve().parents[1]
 DATA_FILE = "advancedrocketrycommunity_satellite_missions.dat"
 FORGE = "1.20.1-47.4.10"
 MAX_EVIDENCE = 100 * 1024 * 1024
+BUILD_TIMEOUT_SECONDS = 1_800
+
+
+def git(repository: Path, *args: str) -> str:
+    try:
+        completed = subprocess.run(("git", *args), cwd=repository, capture_output=True, text=True,
+                                   encoding="utf-8", errors="replace", check=False, timeout=120)
+    except subprocess.TimeoutExpired as exception:
+        raise SmokeError(f"git {' '.join(args)} timed out") from exception
+    if completed.returncode != 0:
+        raise SmokeError(f"git {' '.join(args)} failed: {completed.stderr.strip()}")
+    return completed.stdout
+
+
+def source_identity(repository: Path, tested_commit: str | None = None) -> dict:
+    """The tested source is HEAD of a clean tree; a given --tested-commit must name that HEAD."""
+    head = git(repository, "rev-parse", "HEAD").strip()
+    if git(repository, "status", "--porcelain", "--untracked-files=all"):
+        raise SmokeError("The tested worktree has uncommitted or untracked changes")
+    if tested_commit is not None and (len(tested_commit) < 7 or not head.startswith(tested_commit.lower())):
+        raise SmokeError(f"--tested-commit {tested_commit} is not HEAD {head}")
+    return {"tested_commit": head, "worktree_clean": True}
+
+
+def build_candidate(repository: Path, command: list[str], jar: Path, log: Path) -> dict:
+    """Builds the candidate from the clean HEAD and records the jar's SHA-256 as soon as the build ends."""
+    before = source_identity(repository)
+    started = time.time()
+    with log.open("w", encoding="utf-8") as output:
+        try:
+            completed = subprocess.run(command, cwd=repository, stdout=output, stderr=subprocess.STDOUT,
+                                       check=False, timeout=BUILD_TIMEOUT_SECONDS)
+        except subprocess.TimeoutExpired as exception:
+            raise SmokeError("Candidate build timed out") from exception
+    if completed.returncode != 0:
+        raise SmokeError(f"Candidate build failed with exit code {completed.returncode}")
+    # Two seconds cover the coarsest file timestamp; a jar from an earlier build is older than that.
+    if not jar.is_file() or jar.stat().st_mtime < started - 2:
+        raise SmokeError("Candidate build did not write the candidate jar")
+    built = {"candidate_jar_sha256_at_build": digest_file(jar), "candidate_build_log": log.name,
+             "candidate_built_by_harness": True}
+    if source_identity(repository) != before:
+        raise SmokeError("The tested source changed during the candidate build")
+    return built
+
+
+def default_build_command(repository: Path) -> list[str]:
+    wrapper = repository / ("gradlew.bat" if platform.system() == "Windows" else "gradlew")
+    return [str(wrapper), "--offline", "--console=plain", "jar"]
 
 
 def payload(file: Path) -> dict:
@@ -84,6 +140,8 @@ def run(args: argparse.Namespace, summary: dict) -> None:
     work, evidence = args.work_dir.resolve(), args.evidence_dir.resolve()
     if work.exists() or evidence.exists() or work == evidence or work in evidence.parents or evidence in work.parents:
         raise SmokeError("Disposable work and evidence directories must be new and disjoint")
+    repository = args.repository.resolve()
+    identity = source_identity(repository, args.tested_commit)
     # Deletion is restricted to this newly created task directory; source templates/worlds are read-only.
     work.mkdir(parents=True)
     evidence.mkdir(parents=True)
@@ -91,11 +149,16 @@ def run(args: argparse.Namespace, summary: dict) -> None:
     with socket.socket() as binding:
         binding.bind(("127.0.0.1", 0))
         port = binding.getsockname()[1]
-    summary.update(tested_commit=args.tested_commit, old_jar_sha256=digest_file(args.old_jar),
-                   candidate_jar_sha256=digest_file(args.candidate_jar), forge=FORGE, port=port,
-                   fixture_sha256=digest_file(args.fixture))
+    summary.update(identity, candidate_built_by_harness=False)
     processes: list[CapturedProcess] = []
     try:
+        if args.build_candidate:
+            summary.update(build_candidate(repository, default_build_command(repository), args.candidate_jar.resolve(),
+                                           evidence / "00-build-candidate.log"))
+        summary.update(old_jar_sha256=digest_file(args.old_jar), candidate_jar_sha256=digest_file(args.candidate_jar),
+                       forge=FORGE, port=port, fixture_sha256=digest_file(args.fixture))
+        if args.build_candidate and summary["candidate_jar_sha256"] != summary["candidate_jar_sha256_at_build"]:
+            raise SmokeError("The candidate jar changed after the harness built it")
         old = work / "old"
         prepare(args.template, old, args.old_jar, port)
         process = launch(args.java, old, evidence, "01-old-create"); processes.append(process)
@@ -162,6 +225,8 @@ def run(args: argparse.Namespace, summary: dict) -> None:
         process.wait_for(READY_MARKER, args.startup_timeout); stop(process)
         if projection(payload(downgraded_file), upgraded=False) != projection(before, upgraded=False):
             raise SmokeError("Backup recovery changed the legacy domain state")
+        if source_identity(repository) != identity or digest_file(args.candidate_jar) != summary["candidate_jar_sha256"]:
+            raise SmokeError("The tested source or candidate jar changed during the native run")
         summary.update(status="PASS", upgraded_instances=7, backups=1, backup_recovery=True)
     finally:
         for process in processes:
@@ -181,7 +246,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("template", "old-jar", "candidate-jar", "fixture", "work-dir", "evidence-dir"):
         parser.add_argument("--" + name, type=Path, required=True)
-    parser.add_argument("--tested-commit", required=True)
+    parser.add_argument("--repository", type=Path, default=ROOT,
+                        help="Clean checkout under test; its HEAD is recorded as the tested commit")
+    parser.add_argument("--tested-commit", help="Optional; refused unless it names the repository's HEAD")
+    parser.add_argument("--build-candidate", action="store_true",
+                        help="Build --candidate-jar from the clean HEAD with the Gradle jar task first")
     parser.add_argument("--java", default=str(Path(os.environ["JAVA_HOME"]) / "bin" / "java.exe"))
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
