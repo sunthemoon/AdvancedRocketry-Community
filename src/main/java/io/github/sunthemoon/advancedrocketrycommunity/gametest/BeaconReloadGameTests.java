@@ -113,8 +113,13 @@ public final class BeaconReloadGameTests {
 
     private static void awaitTickReady(BeaconGameTestFixture fixture, BlockPos at, Runnable next) {
         int[] attempts = {40};
+        GameTestTickPacer pacer = new GameTestTickPacer(fixture.server);
         fixture.await(40, "the fixture chunk's native ticker readiness", () -> {
             boolean ready = tickReady(fixture, at);
+            if (!ready) {
+                // Entity sections load asynchronously; give each unchanged tick the normal server's 50 ms.
+                pacer.pace();
+            }
             if (--attempts[0] == 0 && !ready) {
                 fixture.helper.assertTrue(false, "Fixture chunk is not ticker-ready: status="
                         + fixture.level.getChunkAt(at).getFullStatus() + ", entities="
