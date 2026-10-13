@@ -49,7 +49,12 @@ public final class ResearchService {
     void logout(UUID player) { intents.remove(player); }
     private SatelliteMissionSavedData data() { return SatelliteMissionSavedData.get(server); }
     private long now() { return server.overworld().getGameTime(); }
-    private void refreshDirectory() { directory.retained(data().groundSurveys()); }
+    /** O(1) unless the ground section changed since the last rebuild. A blocked registry retains nothing. */
+    private void refreshDirectory() {
+        var data = data();
+        if (!data.operational()) { directory.refresh(data, -1, List::of); return; }
+        data.groundSurveyQuery(jobs -> directory.refresh(jobs, jobs.version(), jobs::all));
+    }
     void observe(ResearchControllerBlockEntity controller) {
         if (closed || !server.isSameThread() || controller.identity().isEmpty()) { return; }
         refreshDirectory(); admit(controller);
@@ -74,12 +79,9 @@ public final class ResearchService {
         if (!data().operational()) { controller.status(ResearchStatus.REGISTRY_BLOCKED); return; }
         if (!CommonConfig.groundSurveysEnabled()) { controller.status(ResearchStatus.DISABLED); return; }
         if (!controller.formed()) { controller.status(controller.reason() == ClassicWait.UNLOADED ? ResearchStatus.UNLOADED : ResearchStatus.UNFORMED); return; }
-        if (work(controller).isEmpty()) {
-            var shown = displayed(controller);
-            controller.status(shown.map(job -> job.phase() == Phase.QUARANTINED ? ResearchStatus.OFFLINE_REPAIR_REQUIRED
-                    : job.phase() == Phase.PROCESSED || !controller.processor() && job.phase() == Phase.READY
-                    ? ResearchStatus.COMPLETE : ResearchStatus.IDLE).orElse(ResearchStatus.IDLE)); return;
-        }
+        // Every loaded controller runs this each tick: an idle one costs one lookup, and its menu computes the rest.
+        refreshDirectory();
+        if (!directory.working(controller.device())) { controller.status(ResearchStatus.IDLE); return; }
         if (queue.enqueue(controller.device().level(), controller)) { controller.status(ResearchStatus.QUEUED); }
         else { controller.status(ResearchStatus.CAPACITY_REACHED); }
     }
@@ -116,6 +118,14 @@ public final class ResearchService {
                 .filter(job -> controller.processor() ? job.analysis().claim().map(claim -> claim.processor().equals(controller.device())).orElse(false)
                         : job.source().equals(controller.device())).max(Comparator.comparingLong(GroundSurveyJob::createdAt)
                                 .thenComparing(job -> job.jobId().toString()));
+    }
+    /** The menu's status: an idle controller's status is computed here, for an open menu only, never per tick. */
+    ResearchStatus shownStatus(ResearchControllerBlockEntity controller, GroundSurveyJob job) {
+        ResearchStatus status = controller.researchStatus();
+        if (status != ResearchStatus.IDLE || job == null) { return status; }
+        if (job.phase() == Phase.QUARANTINED) { return ResearchStatus.OFFLINE_REPAIR_REQUIRED; }
+        return job.phase() == Phase.PROCESSED || !controller.processor() && job.phase() == Phase.READY
+                ? ResearchStatus.COMPLETE : ResearchStatus.IDLE;
     }
     private ResearchStatus basic(ResearchControllerBlockEntity controller, boolean enabled) {
         if (!controller.physical()) { return ResearchStatus.UNLOADED; }
@@ -170,13 +180,7 @@ public final class ResearchService {
             controller.status(ResearchStatus.UNLOADED); return false;
         }
         var job = work(controller).orElse(null);
-        if (job == null) {
-            var shown = displayed(controller);
-            controller.status(shown.map(value -> value.phase() == Phase.QUARANTINED ? ResearchStatus.OFFLINE_REPAIR_REQUIRED
-                    : value.phase() == Phase.PROCESSED || !controller.processor() && value.phase() == Phase.READY
-                    ? ResearchStatus.COMPLETE : ResearchStatus.IDLE).orElse(ResearchStatus.IDLE));
-            return false;
-        }
+        if (job == null) { controller.status(ResearchStatus.IDLE); return false; }
         if (!controller.processor()) {
             refusal = observing(controller, job);
             if (refusal != null) { controller.status(refusal); return false; }

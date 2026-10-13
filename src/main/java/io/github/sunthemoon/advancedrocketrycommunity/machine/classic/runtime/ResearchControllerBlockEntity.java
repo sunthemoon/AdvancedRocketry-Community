@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.GroundSurveyJob.Device;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +28,10 @@ public final class ResearchControllerBlockEntity extends ClassicControllerBlockE
         this.processor = processor;
     }
     public boolean processor() { return processor; }
+    /** Only the two research types get a ticker; the other classic controllers keep none. */
+    static boolean ticks(BlockEntityType<?> type) {
+        return type == ModBlockEntities.OBSERVATORY.get() || type == ModBlockEntities.ASTROBODY_DATA_PROCESSOR.get();
+    }
     public String rootKey() { return processor ? PROCESSOR_ROOT : OBSERVATORY_ROOT; }
     public Optional<ResearchIdentity> identity() { return Optional.ofNullable(identity); }
     public Optional<UUID> researchOwner() { return identity().flatMap(ResearchIdentity::owner); }

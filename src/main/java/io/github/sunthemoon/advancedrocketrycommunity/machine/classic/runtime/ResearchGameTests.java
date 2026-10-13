@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.*;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
@@ -28,6 +29,11 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 public final class ResearchGameTests {
     @GameTest(template = "empty", batch = "research_formation", timeoutTicks = 200)
     public static void bothPatternsFormInAllRotationsAndRejectAWrongPart(GameTestHelper helper) {
+        var level = helper.getLevel();
+        helper.assertTrue(ModBlocks.LATHE.get().getTicker(level, ModBlocks.LATHE.get().defaultBlockState(), ModBlockEntities.LATHE.get()) == null
+                && ModBlocks.OBSERVATORY.get().getTicker(level, ModBlocks.OBSERVATORY.get().defaultBlockState(), ModBlockEntities.OBSERVATORY.get()) != null
+                && ModBlocks.ASTROBODY_DATA_PROCESSOR.get().getTicker(level, ModBlocks.ASTROBODY_DATA_PROCESSOR.get().defaultBlockState(),
+                        ModBlockEntities.ASTROBODY_DATA_PROCESSOR.get()) != null, "Only the research controllers may tick");
         for (boolean processor : new boolean[]{false, true}) {
             for (Direction facing : new Direction[]{Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST}) {
                 try (var fixture = fixture(helper, processor, facing, UUID.randomUUID(), 0)) {

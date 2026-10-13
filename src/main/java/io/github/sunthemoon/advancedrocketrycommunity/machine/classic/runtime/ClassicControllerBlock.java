@@ -46,7 +46,7 @@ public final class ClassicControllerBlock extends BaseEntityBlock {
     }
     @Override public <T extends BlockEntity> net.minecraft.world.level.block.entity.BlockEntityTicker<T> getTicker(
             Level level, BlockState state, net.minecraft.world.level.block.entity.BlockEntityType<T> type) {
-        return level.isClientSide ? null : (world, position, blockState, entity) -> {
+        return level.isClientSide || !ResearchControllerBlockEntity.ticks(type) ? null : (world, position, blockState, entity) -> {
             if (entity instanceof ResearchControllerBlockEntity research) { research.loadedTick(); }
         };
     }

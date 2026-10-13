@@ -44,7 +44,7 @@ public final class ResearchControllerMenu extends AbstractContainerMenu {
     private void refresh() {
         if (controller == null || !(controller.getLevel() instanceof ServerLevel level)) { return; }
         var service = ResearchRuntime.service(level); var job = service.displayed(controller).orElse(null);
-        data.set(0, controller.researchStatus().ordinal());
+        data.set(0, service.shownStatus(controller, job).ordinal());
         int relation = controller.researchOwner().map(owner -> owner.equals(viewer) ? 1 : 2).orElse(0);
         data.set(1, (job == null ? 0 : job.phase().ordinal() + 1 | (job.analysis().state().ordinal() + 1) << 3) | relation << 5);
         setWide(data, 2, job == null ? 0 : controller.processor() ? job.analysis().progress() : job.surveyProgress());

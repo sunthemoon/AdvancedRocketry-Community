@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /** Server-owned loaded identities, independent of ACTIVE/RUNNING indexes. No eviction admits a copy. */
 public final class ResearchDeviceDirectory {
@@ -19,18 +20,38 @@ public final class ResearchDeviceDirectory {
     private final Map<UUID, Home> homes = new HashMap<>(), retained = new HashMap<>();
     private final Set<UUID> ambiguous = new HashSet<>();
     private final Map<UUID, Integer> canonicalCounts = new HashMap<>();
+    private final Set<Device> working = new HashSet<>();
+    private Object retainedSection;
+    private long retainedVersion;
+
+    /**
+     * Rebuilds the retained authorities and the work index only when the ground section changed: another section
+     * object (a reloaded or blocked registry) or another change count. Returns whether it rebuilt.
+     */
+    public boolean refresh(Object section, long version, Supplier<List<GroundSurveyJob>> jobs) {
+        if (section == retainedSection && version == retainedVersion) { return false; }
+        retained(jobs.get()); retainedSection = section; retainedVersion = version; return true;
+    }
 
     /** Every retained phase and credited claim participates, not only live-work indexes. */
     public void retained(List<GroundSurveyJob> jobs) {
         if (jobs.size() > io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits.MAX_GROUND_SURVEYS) {
             throw new IllegalArgumentException("Retained research directory bound");
         }
-        retained.clear(); ambiguous.clear();
+        retained.clear(); ambiguous.clear(); working.clear(); retainedSection = null;
         for (var job : jobs) {
             remember(new Home(job.source(), job.ownerId(), false));
-            job.analysis().claim().ifPresent(claim -> remember(new Home(claim.processor(), job.ownerId(), true)));
+            if (job.phase() == GroundSurveyJob.Phase.ACTIVE) { working.add(job.source()); }
+            job.analysis().claim().ifPresent(claim -> {
+                remember(new Home(claim.processor(), job.ownerId(), true));
+                if (job.phase() == GroundSurveyJob.Phase.READY && job.analysis().state() == GroundSurveyJob.AnalysisState.RUNNING) {
+                    working.add(claim.processor());
+                }
+            });
         }
     }
+    /** Whether the device can hold ACTIVE or RUNNING work. A false answer needs no registry query. */
+    public boolean working(Device device) { return working.contains(device); }
     private void remember(Home home) {
         Home previous = retained.putIfAbsent(home.device().id(), home);
         if (previous != null && !previous.equals(home)) { ambiguous.add(home.device().id()); }
@@ -62,5 +83,7 @@ public final class ResearchDeviceDirectory {
         for (var entry : remove) { forget(entry.getKey(), entry.getValue().token()); }
     }
     public int loadedCount() { return loaded.size(); }
-    public void clear() { loaded.clear(); homes.clear(); retained.clear(); ambiguous.clear(); canonicalCounts.clear(); }
+    public void clear() {
+        loaded.clear(); homes.clear(); retained.clear(); ambiguous.clear(); canonicalCounts.clear(); working.clear(); retainedSection = null;
+    }
 }

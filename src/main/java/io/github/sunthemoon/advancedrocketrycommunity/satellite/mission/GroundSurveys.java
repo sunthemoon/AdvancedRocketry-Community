@@ -29,6 +29,7 @@ public final class GroundSurveys {
     private final SatelliteMissionRegistry registry;
     private final Map<UUID, GroundSurveyJob> jobs = new LinkedHashMap<>();
     private final GroundSurveyLedger ledger = new GroundSurveyLedger();
+    private long version;
 
     GroundSurveys(SatelliteMissionRegistry registry) { this.registry = registry; }
     /** Read-only start timestamp preview for the loaded-world ground research adapter. */
@@ -40,6 +41,11 @@ public final class GroundSurveys {
         synchronized (registry) {
             var job = jobs.get(id); return job == null ? "Job not found" : offlineRepair(job);
         }
+    }
+
+    /** Counts every change to the job records, so a derived view rebuilds only when this section changed. */
+    public long version() {
+        synchronized (registry) { return version; }
     }
 
     public List<GroundSurveyJob> all() {
@@ -73,6 +79,7 @@ public final class GroundSurveys {
 
     void put(GroundSurveyJob job) {
         ledger.changed(jobs.put(job.jobId(), job), job, !hasInstanceReference(job));
+        version++;
     }
 
     void instanceRemoved(AsteroidInstance instance) {
@@ -318,6 +325,7 @@ public final class GroundSurveys {
                 continue;
             }
             jobs.remove(job.jobId());
+            version++;
             ledger.changed(job, null, true);
             registry.budget.release(StorageBudget.Section.GROUND_SURVEYS, job.jobId());
             removed++;
