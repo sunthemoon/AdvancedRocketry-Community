@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 18:15) |
+| Slice | Scope | Pipeline state (2026-10-13 19:10) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -59,9 +59,10 @@ give their SHA-256 values.
 | [W27a](TASK-W27A-SATELLITE-BAY-DESIGN.md) | C17c-02 satellite bay: design note (receipt store and sequence on the D3-A core) | Delivered `b55a41f2` and `9fffc35b` (Claude). Its review (Codex; task ready in `root-queue/W27a-review/`) starts at the next free Codex slot; the bay itself waits for W11b2 and W11b3 |
 | [W28](TASK-W28-GAMETEST-SCHEDULING-AUDIT.md) | Parallel bug: audit and fix GameTests that schedule from inside scheduled callbacks, plus a guard | Implementer (Codex) running since 16:30 |
 | [W29](TASK-W29-ANVIL-SLOT-STABILITY.md) | Escrow follow-up: per-slot readback stability (the native E2 `BARRIER_UNSTABLE`) | **Merged** (hosted run 38382392596). The W11b1 open item E2 `BARRIER_UNSTABLE` is closed in the ADR-065 note. Open: the intermittent first-attempt joint-proof GameTest, which now names its reason |
-| [W30](TASK-W30-STATUS-RECONCILIATION.md) | Status reconciliation proposal for Root: COMPLETION-PLAN C16 to C19, the ledger, pre-handover items, CURRENT_VERSION | Claude, running since 17:19 (proposal only; Root applies) |
-| [W31](TASK-W31-LEDGER-EVIDENCE.md) | Per-batch delivery evidence files and a ready-to-apply ledger patch | Claude, running since 17:53 (Root applies the ledger) |
+| [W30](TASK-W30-STATUS-RECONCILIATION.md) | Status reconciliation proposal for Root: COMPLETION-PLAN C16 to C19, the ledger, pre-handover items, CURRENT_VERSION | **Merged** `0622b982`. Applied by Root: COMPLETION-PLAN `eed1c6e3`, CURRENT_VERSION `6ef115b0` (history moved to the log) |
+| [W31](TASK-W31-LEDGER-EVIDENCE.md) | Per-batch delivery evidence files and a ready-to-apply ledger patch | **Merged** `777b8b5d`. Root applied the test-fixture patch `ce593e67` and the ledger patch `065c0c36` (146 units delivered, 40 PLANNED; validator PASS; ledger tests 58 OK). Root fix `9dbaa637`: the C16c and research controller models used a missing `machine_casing` texture |
 | [W32](TASK-W32-CHEMICAL-SPECIAL-RECIPES.md) | Chemical reactor special recipes: `space_breathing` application, lossless cartridge refresh | Implementer (Claude) running since 18:19 |
+| [W33](TASK-W33-TORCHES.md) | C18a combustion torches, unlit torches and fire starters (ADR-066 section 3.2) | Implementer (Claude) running since 19:09; design note first, then one read-only review |
 | [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | **Merged** `f1eb5d83` (admission disabled; review MERGE-WITH-FOLLOWUP; W11b1F fixed all 11 findings; native 24/24; Root fix `548f0c3f` paces the escrow GameTests; hosted run 38360139403). ADR-065 W11b1 note, R-031 and R-032 added. E2 `BARRIER_UNSTABLE` closed by W29 |
 | [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | **Merged** `811a5796`. Independent review (Codex) **APPROVE-WITH-CHANGES** (SHA-256 `8ec318a3…`): W11b2's implementation applies R1 to R6 (R1 and R2 High: a failed checked journal write stops dependent transfer effects; fenced retries stay classified, ticket-free and leave unrelated warps available). W11b2 starts after W11b1 merges |
 | W11b2 | D3-A rocket integration with R1 to R6 (admission stays disabled) | Continuation 02 at `e22544cc` (W11b1F imported; 2,875 unit tests, 872 GameTests). Its benchmark found each checked journal write synchronous on the server thread, at 86 to 122 ms. Root decision: move the writes to an off-thread writer. Continuation 03 (Codex, since 15:36): off-thread journal writer, credited-rocket reconciliation, durable settlement, the full native matrix |
