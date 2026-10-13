@@ -61,6 +61,12 @@ final class RocketTransferEntities {
     }
 
     static RocketEntity rebuildDestination(MinecraftServer server, RocketTransferRecord record) {
+        RocketEntity destination = createDestination(server, record);
+        return destination != null && ((ServerLevel) destination.level()).addFreshEntity(destination) ? destination : null;
+    }
+
+    /** Recovery can acknowledge the new UUID before exposing its materialized entity. */
+    static RocketEntity createDestination(MinecraftServer server, RocketTransferRecord record) {
         ServerLevel level = level(server, record.destinationSnapshot().sourceDimension());
         if (level == null) {
             return null;
@@ -77,7 +83,7 @@ final class RocketTransferEntities {
                 record.destinationFlightData()
         );
         positionAtAltitude(destination, record.destinationSnapshot().sourceOrigin());
-        return level.addFreshEntity(destination) ? destination : null;
+        return destination;
     }
 
     static RocketEntity authorityEntity(MinecraftServer server, RocketTransferRecord record) {

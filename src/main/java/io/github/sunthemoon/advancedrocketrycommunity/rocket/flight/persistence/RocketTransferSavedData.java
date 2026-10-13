@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightDecodeResult;
@@ -32,14 +33,30 @@ public final class RocketTransferSavedData extends SavedData {
 
     private final Map<UUID, RocketTransferRecord> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
+    private final RocketJournalCheckpoint checkpoint = new RocketJournalCheckpoint();
+    private long mutationSequence = 1;
+    private MinecraftServer ownerServer;
+    private boolean saveFailureReported;
+    private long lastAttemptTick;
+    private boolean attempted;
+    private boolean failedWrite;
+    private WriteOutcome writeOutcome = WriteOutcome.UNACKNOWLEDGED;
+
+    public enum WriteOutcome { UNACKNOWLEDGED, COMMITTED, NOT_COMMITTED, UNKNOWN }
+
+    /** The attempt's outcome does not imply acknowledgement of a later RAM mutation. */
+    public record CheckedWriteResult(WriteOutcome outcome, long mutationSequence,
+                                     Long acknowledgedSequence, boolean acknowledgedCurrent) { }
 
     public static RocketTransferSavedData get(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
-        return server.overworld().getDataStorage().computeIfAbsent(
+        RocketTransferSavedData data = server.overworld().getDataStorage().computeIfAbsent(
                 RocketTransferSavedData::load,
                 RocketTransferSavedData::new,
                 DATA_NAME
         );
+        data.ownerServer = server;
+        return data;
     }
 
     public static RocketTransferSavedData load(CompoundTag source) {
@@ -68,6 +85,7 @@ public final class RocketTransferSavedData extends SavedData {
                 data.insertValidated(record);
             }
             if (migration.changed()) {
+                data.mutationSequence++;
                 data.setDirty();
             }
         } catch (RuntimeException exception) {
@@ -127,6 +145,7 @@ public final class RocketTransferSavedData extends SavedData {
             ensureNoAuthorityConflict(record);
         }
         entries.put(record.transferId(), record);
+        mutationSequence++;
         setDirty();
     }
 
@@ -157,6 +176,7 @@ public final class RocketTransferSavedData extends SavedData {
             throw new IllegalArgumentException("Migrated transfer record exceeds the fixed NBT limit");
         }
         entries.put(migrated.transferId(), migrated);
+        mutationSequence++;
         setDirty();
     }
 
@@ -165,6 +185,7 @@ public final class RocketTransferSavedData extends SavedData {
             throw new IllegalStateException("Transfer journal is blocked by unsupported or invalid data");
         }
         if (entries.remove(Objects.requireNonNull(transferId, "transferId")) != null) {
+            mutationSequence++;
             setDirty();
         }
     }
@@ -193,6 +214,7 @@ public final class RocketTransferSavedData extends SavedData {
             entries.put(previousTransferId, previous);
             throw exception;
         }
+        mutationSequence++;
         setDirty();
     }
 
@@ -202,6 +224,79 @@ public final class RocketTransferSavedData extends SavedData {
         if (isDirty()) {
             server.overworld().getDataStorage().save();
         }
+    }
+
+    /** Non-throwing exact-snapshot barrier; callers must inspect the result before dependent effects. */
+    public boolean flushChecked(MinecraftServer server) {
+        if (!server.isSameThread() || !operational()) { return false; }
+        if (!acknowledgedCurrent()) { setDirty(); }
+        flush(server);
+        return acknowledgedCurrent();
+    }
+
+    /** A persistent failure cannot turn a per-tick retry into a synchronous write storm. */
+    public boolean retryChecked(MinecraftServer server) {
+        if (acknowledgedCurrent()) { return true; }
+        if (failedWrite && attempted && (long) server.getTickCount() - lastAttemptTick < 200) { return false; }
+        return flushChecked(server);
+    }
+
+    public boolean acknowledgedCurrent() {
+        return operational() && !isDirty() && checkpoint.current(mutationSequence);
+    }
+
+    public long mutationSequence() { return mutationSequence; }
+
+    public CheckedWriteResult checkedWriteResult() {
+        return new CheckedWriteResult(writeOutcome, mutationSequence,
+                checkpoint.acknowledged().map(RocketJournalCheckpoint.Acknowledgement::sequence).orElse(null),
+                acknowledgedCurrent());
+    }
+
+    public record JournalGuard(UUID logical, UUID transfer, String recordDigest, String rootDigest, long sequence) { }
+
+    public Optional<JournalGuard> acknowledgedGuard(UUID logical) {
+        if (!acknowledgedCurrent()) { return Optional.empty(); }
+        var acknowledged = checkpoint.acknowledged().orElseThrow();
+        var record = findByLogicalRocket(logical).orElse(null);
+        return Optional.of(new JournalGuard(logical, record == null ? null : record.transferId(),
+                record == null ? null : acknowledged.records().get(record.transferId()),
+                acknowledged.digest(), acknowledged.sequence()));
+    }
+
+    @Override
+    public void save(java.io.File file) {
+        if (!isDirty() || !operational()) { return; }
+        if (ownerServer != null && !ownerServer.isSameThread()) {
+            throw new IllegalStateException("Transfer journal writes require the server thread");
+        }
+        if (ownerServer != null) { lastAttemptTick = ownerServer.getTickCount(); attempted = true; }
+        try {
+            saveChecked(file.toPath(), CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS));
+        } catch (RuntimeException failure) {
+            setDirty();
+            failedWrite = true;
+            writeOutcome = WriteOutcome.NOT_COMMITTED;
+        }
+        if (isDirty() && !saveFailureReported) {
+            com.mojang.logging.LogUtils.getLogger().error("ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked");
+            saveFailureReported = true;
+        } else if (!isDirty()) { saveFailureReported = false; }
+    }
+
+    // Package-private injected policy exercises the same writer without adding a production fault switch.
+    void saveChecked(java.nio.file.Path file, CheckedSavedDataPolicy policy) {
+        if (!operational()) { return; }
+        CompoundTag payload = save(new CompoundTag());
+        var digests = new LinkedHashMap<UUID, String>();
+        for (Tag raw : payload.getList("transfers", Tag.TAG_COMPOUND)) {
+            var record = (CompoundTag) raw;
+            digests.put(record.getUUID("transfer_id"), RocketJournalDigest.of(record, RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES));
+        }
+        RocketJournalCheckpoint.Outcome result = checkpoint.write(file, policy, mutationSequence, payload, digests);
+        writeOutcome = WriteOutcome.valueOf(result.name());
+        setDirty(result != RocketJournalCheckpoint.Outcome.COMMITTED);
+        failedWrite = isDirty();
     }
 
     @Override

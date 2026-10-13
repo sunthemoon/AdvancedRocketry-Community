@@ -133,6 +133,7 @@ final class RocketDisassemblyService {
         ServerLevel level = player.serverLevel();
         RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
         long fuel = rocket.flightData().orElseThrow().fuel().totalAmount();
+        if (!flights.releaseLandedReservation(rocket)) { return reject(player, RocketValidationCode.REGION_BUSY); }
         RocketTransactionResult result = execute(level, rocket, snapshot, fuel);
         reportTransaction(level, snapshot, player, result);
         if (result.success() && fuel > 0L) {
@@ -160,6 +161,7 @@ final class RocketDisassemblyService {
         if (expectedDiscardFuel >= 0L && expectedDiscardFuel != fuel) {
             return RocketValidationCode.WORLD_CHANGED;
         }
+        if (!flights.releaseLandedReservation(rocket)) { return RocketValidationCode.REGION_BUSY; }
         RocketTransactionResult result = execute((ServerLevel) rocket.level(), rocket,
                 rocket.snapshot().orElseThrow(), fuel);
         AdvancedRocketryCommunity.LOGGER.info(
@@ -174,7 +176,6 @@ final class RocketDisassemblyService {
         // Never zero fuel first: unsuccessful restoration must leave entity fuel intact.
         RocketTransactionResult result = transactions.disassemble(level, rocket.ownerId().orElseThrow(), rocket, snapshot);
         if (result.success()) {
-            flights.releaseLandedReservation(rocket);
             if (discardedFuel > 0L) {
                 AdvancedRocketryCommunity.LOGGER.info(
                         "ARCE_ROCKET_FUEL_DISCARDED entity={} logical={} amount={} vector={} reason=confirmed_disassembly",

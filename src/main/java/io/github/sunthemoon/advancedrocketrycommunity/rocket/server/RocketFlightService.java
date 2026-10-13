@@ -438,6 +438,9 @@ final class RocketFlightService {
     }
 
     private RocketFlightRequestResult board(ServerPlayer player, RocketEntity rocket) {
+        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
+        }
         RocketFlightData flight = rocket.flightData().orElseThrow();
         if (!stationary(flight.state())) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
@@ -459,6 +462,9 @@ final class RocketFlightService {
     }
 
     private RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
+        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) {
+            return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
+        }
         RocketFlightData flight = rocket.flightData().orElseThrow();
         if (!stationary(flight.state())) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
@@ -591,8 +597,8 @@ final class RocketFlightService {
         return transfers.recover(server, transferId);
     }
 
-    void releaseLandedReservation(RocketEntity rocket) {
-        transfers.releaseLandedReservation(rocket);
+    boolean releaseLandedReservation(RocketEntity rocket) {
+        return transfers.releaseLandedReservation(rocket);
     }
 
     boolean resourceMutationAllowed(RocketEntity rocket) {
