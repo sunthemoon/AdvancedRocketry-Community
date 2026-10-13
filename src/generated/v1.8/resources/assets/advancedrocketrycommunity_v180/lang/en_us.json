@@ -265,6 +265,7 @@
   "jei.advancedrocketrycommunity.retained": "Retained in its input slot",
   "jei.advancedrocketrycommunity.small_plate_press.redstone": "Redstone pulse",
   "jei.advancedrocketrycommunity.solar_array": "Horizontal layout: 3 wide, 22 deep. Front row: output plug, controller, output plug. With the controller facing you, the 63 cells behind it accept array panels, air or machine casing; at least one panel is required. The controller UP face must be exposed to sky or space. Surfaces generate only in daytime; rain and thunder reduce output. Stations use committed orbit-body sunlight; a missing orbit explicitly shows Space fallback. Uses the shared solar enable switch and multiplier. Buffer: 20,000 FE. Both plugs share 1,000 FE/t output. Ordinary breaking destroys stored FE.",
+  "jei.advancedrocketrycommunity.special_subject": "The same item returns with its other data kept",
   "key.advancedrocketrycommunity.toggle_jetpack": "Toggle Jetpack (Sneak: Mode)",
   "key.categories.advancedrocketrycommunity": "Advanced Rocketry",
   "message.advancedrocketrycommunity.atmosphere_analyzer.ambient_body": "%s (actual environment)",
