@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 19:10) |
+| Slice | Scope | Pipeline state (2026-10-13 19:25) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -56,8 +56,8 @@ give their SHA-256 values.
 | [W24](TASK-W24-LEGACY-PAD-OCCUPANCY.md) | Parallel bug: the legacy landing-pad selector's occupancy (W13 review R1, legacy half) | **Merged** `58d763d4` (hosted run 38336046793; Root review) |
 | [W25](TASK-W25-SCRUBBER-STALE-BINDINGS.md) | Parallel bug: release provably stale scrubber facade bindings (W14F review L1 and L2) | **Merged** `06f1a898` (hosted run 38354701151; Root review) |
 | [W26](TASK-W26-BEACON-FOLLOWUPS.md) | Parallel bug: beacon F4 (load-time inactive flicker), F6 (tests), F7 (finder strip versus the boss bar) | **Merged** `7fb7e50c` (hosted run 38369606917; Root review). Open: V1 of the strip position |
-| [W27a](TASK-W27A-SATELLITE-BAY-DESIGN.md) | C17c-02 satellite bay: design note (receipt store and sequence on the D3-A core) | Delivered `b55a41f2` and `9fffc35b` (Claude). Its review (Codex; task ready in `root-queue/W27a-review/`) starts at the next free Codex slot; the bay itself waits for W11b2 and W11b3 |
-| [W28](TASK-W28-GAMETEST-SCHEDULING-AUDIT.md) | Parallel bug: audit and fix GameTests that schedule from inside scheduled callbacks, plus a guard | Implementer (Codex) running since 16:30 |
+| [W27a](TASK-W27A-SATELLITE-BAY-DESIGN.md) | C17c-02 satellite bay: design note (receipt store and sequence on the D3-A core) | Delivered `b55a41f2` and `9fffc35b` (Claude). Independent review (Codex) running since 19:21; the bay itself waits for W11b2 and W11b3 |
+| [W28](TASK-W28-GAMETEST-SCHEDULING-AUDIT.md) | Parallel bug: audit and fix GameTests that schedule from inside scheduled callbacks, plus a guard | Delivered through `29324f10` (Codex): 40 nested scheduling sites now use setup-registered tick continuations; an AST guard with 13 tests; the assertion audit lost nothing. Root fixes on the branch: `4b116fae` saves the joint-proof fixture chunk before its single-attempt barrier (the intermittent failure seen by W28 and W29), and `ffa7250f` moves a W26 beacon delay that the guard caught onto the driver. Branch CI 38389630543 on `ffa7250f` |
 | [W29](TASK-W29-ANVIL-SLOT-STABILITY.md) | Escrow follow-up: per-slot readback stability (the native E2 `BARRIER_UNSTABLE`) | **Merged** (hosted run 38382392596). The W11b1 open item E2 `BARRIER_UNSTABLE` is closed in the ADR-065 note. Open: the intermittent first-attempt joint-proof GameTest, which now names its reason |
 | [W30](TASK-W30-STATUS-RECONCILIATION.md) | Status reconciliation proposal for Root: COMPLETION-PLAN C16 to C19, the ledger, pre-handover items, CURRENT_VERSION | **Merged** `0622b982`. Applied by Root: COMPLETION-PLAN `eed1c6e3`, CURRENT_VERSION `6ef115b0` (history moved to the log) |
 | [W31](TASK-W31-LEDGER-EVIDENCE.md) | Per-batch delivery evidence files and a ready-to-apply ledger patch | **Merged** `777b8b5d`. Root applied the test-fixture patch `ce593e67` and the ledger patch `065c0c36` (146 units delivered, 40 PLANNED; validator PASS; ledger tests 58 OK). Root fix `9dbaa637`: the C16c and research controller models used a missing `machine_casing` texture |
