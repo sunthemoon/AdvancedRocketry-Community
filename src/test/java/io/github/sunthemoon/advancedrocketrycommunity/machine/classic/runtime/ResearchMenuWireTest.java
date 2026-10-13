@@ -13,7 +13,9 @@ import org.junit.jupiter.api.Test;
 class ResearchMenuWireTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @Test void actualSignedShortPacketsRoundTripEveryWideBoundary() {
-        for (int value : new int[]{32_767, 32_768, 65_535, 65_536, 72_000, ResearchControllerMenu.MAX_FE}) {
+        // The frozen observatory has 23 eligible shell cells (230,000 FE). Also test the
+        // shared kernel's conservative 64-part aggregate ceiling used by this wire schema.
+        for (int value : new int[]{32_767, 32_768, 65_535, 65_536, 72_000, 230_000, ResearchControllerMenu.MAX_FE}) {
             for (int low : new int[]{2, 4, 6}) {
                 var source = new SimpleContainerData(16); ResearchControllerMenu.setWide(source, low, value);
                 var target = new SimpleContainerData(16);
