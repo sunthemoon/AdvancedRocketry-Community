@@ -55,9 +55,10 @@ It owns no inventory. The block entity overrides `onlyOpCanSetNbt()` to return `
 
 ## Conversion, the queue and volume events
 
-- **Placement** (`EntityPlaceEvent`, lowest priority, not cancelled). A tagged torch in a cell
-  reading `NON_BREATHABLE` or `PENDING` is refused when it has no catalog pair, or when the
-  Level queue is full. Otherwise its position is queued. Other cells place normally.
+- **Placement** (`EntityPlaceEvent`, lowest priority, not cancelled). An unsupported tagged
+  torch is refused regardless of air. A supported torch in a cell reading `NON_BREATHABLE`
+  or `PENDING` is refused when the Level queue is full; otherwise its position is queued.
+  Supported torches in other cells place normally.
 - **Block events.** `NeighborNotifyEvent` queues the changed cell and its notified neighbours
   that hold supported tagged torches in noncombustible or pending cells.
 - **Volume events.** After the atmosphere tick, the service compares the Level's supplied
@@ -67,7 +68,8 @@ It owns no inventory. The block entity overrides `onlyOpCanSetNbt()` to return `
 - **The queue.** One FIFO per Level, at most 8,192 distinct positions, and 256 checks per
   tick, shared one-for-one between queued positions and sweep cells. A check of a combustible,
   unmanaged, changed or unloaded cell drops the entry. A pending or unsettled cell goes back
-  to the tail and is not revisited in the same tick. Full queues log one WARN for each overload
+  to the tail and is not revisited in the same tick. Entries stay counted during callbacks,
+  including deferred entries, so callback offers cannot exceed the cap. Full queues log one WARN for each overload
   episode, and `metrics(level)` exposes counts. Queues clear on Level unload and server stop.
 - **Extinguishing.** A standing torch becomes `unlit_torch`; a wall torch becomes
   `unlit_wall_torch` with the same `facing`. Both get the pair, block and item identity.
@@ -91,11 +93,12 @@ and creative players spend nothing. A refused relight spends nothing.
 ## The environmental-change adapter (frozen here, ADR-054 style)
 
 Each change checks the FULL chunk (`getChunkNow`), the world border and build height, and the
-quarantine. Then the new state is set without neighbour updates, and a cancellable
-`BlockEvent.EntityPlaceEvent` is posted. A relight names the player. An environmental extinguish
+quarantine. A cancellable preflight `BlockEvent.EntityPlaceEvent` reports the proposed new
+state without mutating the world. A relight names the player. An environmental extinguish
 or removal names no entity, so there is no FakePlayer and no operator bypass. A cancellation
-restores the snapshot, with the original block and data and no drops. Otherwise neighbours are
-notified, as Forge does after item placement. No client value chooses a position or state.
+leaves the original block and data untouched, with no drops. Otherwise the new state is
+applied with neighbour notifications, as Forge does after item placement. No client value
+chooses a position or state.
 
 ## Tests
 

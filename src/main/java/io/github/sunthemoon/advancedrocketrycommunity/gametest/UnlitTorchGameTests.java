@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -52,8 +53,10 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ChunkDataEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -93,6 +96,8 @@ public final class UnlitTorchGameTests {
         UnlitTorchFixture f = UnlitTorchFixture.moon(helper);
         FakePlayer player = f.player(GameType.SURVIVAL);
         List<BlockPos> cells = new ArrayList<>();
+        int[] cancellations = {0};
+        Runnable[] release = {null};
         f.run(() -> {
             f.set(f.origin.below(), Blocks.IRON_BLOCK.defaultBlockState());
             place(helper, player, Items.TORCH, f.origin.below(), Direction.UP, true);
@@ -108,7 +113,19 @@ public final class UnlitTorchGameTests {
                         && f.level.getBlockState(cell).getValue(WallTorchBlock.FACING) == facing, "Vanilla wall placement differs: " + facing);
                 cells.add(cell);
             }
-        }, () -> cells.stream().allMatch(cell -> !CombustionTorches.isCombustionTorch(f.level.getBlockState(cell))), () -> {
+            release[0] = f.vetoChanges(Set.copyOf(cells), cancellations);
+        }, () -> {
+            if (release[0] != null) {
+                if (cancellations[0] < cells.size()) { return false; }
+                helper.assertTrue(cells.stream().allMatch(cell -> CombustionTorches.isCombustionTorch(f.level.getBlockState(cell)))
+                        && f.newDrops().isEmpty(), "Cancelled conversion changed a torch or dropped an item");
+                release[0].run();
+                release[0] = null;
+                cells.forEach(cell -> f.level.updateNeighborsAt(cell, f.level.getBlockState(cell).getBlock()));
+                return false;
+            }
+            return cells.stream().allMatch(cell -> !CombustionTorches.isCombustionTorch(f.level.getBlockState(cell)));
+        }, () -> {
             assertUnlit(helper, f.level, f.origin, ModBlocks.UNLIT_TORCH.get(), null, STANDING);
             int wall = 1;
             for (Direction facing : Direction.Plane.HORIZONTAL) {
@@ -285,13 +302,28 @@ public final class UnlitTorchGameTests {
         FakePlayer player = f.player(GameType.SURVIVAL);
         BlockPos wall = f.origin.east(3);
         int[] settled = {0};
+        int[] cancellations = {0};
+        Runnable[] release = {null};
         f.run(() -> {
             f.set(f.origin.below(), Blocks.IRON_BLOCK.defaultBlockState());
             place(helper, player, Items.TORCH, f.origin.below(), Direction.UP, true);
             f.set(wall.west(), Blocks.IRON_BLOCK.defaultBlockState());
             player.setYRot(Direction.WEST.toYRot());
             place(helper, player, Items.TORCH, wall.west(), Direction.EAST, true);
-        }, () -> f.level.isEmptyBlock(f.origin) && f.level.isEmptyBlock(wall) && ++settled[0] > 5, () -> {
+            release[0] = f.vetoChanges(Set.of(f.origin, wall), cancellations);
+        }, () -> {
+            if (release[0] != null) {
+                if (cancellations[0] < 2) { return false; }
+                helper.assertTrue(f.level.getBlockState(f.origin).is(Blocks.TORCH) && f.level.getBlockState(wall).is(Blocks.WALL_TORCH)
+                        && f.newDrops().isEmpty(), "Cancelled drop mode removed a torch or dropped an item");
+                release[0].run();
+                release[0] = null;
+                f.level.updateNeighborsAt(f.origin, Blocks.TORCH);
+                f.level.updateNeighborsAt(wall, Blocks.WALL_TORCH);
+                return false;
+            }
+            return f.level.isEmptyBlock(f.origin) && f.level.isEmptyBlock(wall) && ++settled[0] > 5;
+        }, () -> {
             helper.assertTrue(f.level.getBlockEntity(f.origin) == null && f.level.getBlockEntity(wall) == null,
                     "Drop mode left an unlit torch");
             assertDrops(helper, f, Map.of(Items.TORCH, 2));
@@ -308,6 +340,14 @@ public final class UnlitTorchGameTests {
                     && CombustionTorches.pairFor(Blocks.REDSTONE_TORCH.defaultBlockState()).isEmpty(), "Fixture tag differs");
             place(helper, player, Items.REDSTONE_TORCH, f.origin.below(), Direction.UP, false);
             helper.assertTrue(f.level.isEmptyBlock(f.origin) && f.newDrops().isEmpty(), "Unsupported tagged torch was placed");
+            try (UnlitTorchFixture air = UnlitTorchFixture.overworld(helper)) {
+                helper.assertTrue(AtmosphereAnalyzerRuntime.readAt(air.level, air.origin).state() == AnalyzerReading.State.BREATHABLE,
+                        "Unsupported torch fixture is not breathable");
+                air.set(air.origin.below(), Blocks.IRON_BLOCK.defaultBlockState());
+                place(helper, air.player(GameType.SURVIVAL), Items.REDSTONE_TORCH, air.origin.below(), Direction.UP, false);
+                helper.assertTrue(air.level.isEmptyBlock(air.origin) && air.newDrops().isEmpty(),
+                        "Breathable air admitted an unsupported tagged torch");
+            }
         }, () -> true, () -> { });
     }
 
@@ -345,6 +385,22 @@ public final class UnlitTorchGameTests {
                 air.set(airPlain.below(), Blocks.IRON_BLOCK.defaultBlockState());
                 air.unlit(airSoul, null, soulIdentity);
                 air.unlit(airPlain, null, STANDING);
+                Consumer<BlockEvent.EntityPlaceEvent> cancel = event -> {
+                    if (event.getLevel() == air.level && Set.of(airSoul, airPlain).contains(event.getPos())) {
+                        event.setCanceled(true);
+                    }
+                };
+                MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, false, BlockEvent.EntityPlaceEvent.class, cancel);
+                try {
+                    for (BlockPos cell : List.of(airSoul, airPlain)) {
+                        UnlitTorchBlockEntity entity = (UnlitTorchBlockEntity) air.level.getBlockEntity(cell);
+                        CompoundTag root = entity.saveWithoutMetadata();
+                        ItemStack flint = new ItemStack(Items.FLINT_AND_STEEL);
+                        helper.assertTrue(!use(breathing, cell, Direction.UP, flint).consumesAction() && flint.getDamageValue() == 0
+                                && air.level.getBlockEntity(cell) == entity && entity.saveWithoutMetadata().equals(root)
+                                && air.newDrops().isEmpty(), "Cancelled relight changed a root, spent durability or dropped an item");
+                    }
+                } finally { MinecraftForge.EVENT_BUS.unregister(cancel); }
                 helper.assertTrue(use(breathing, airSoul, Direction.UP, new ItemStack(Items.FLINT_AND_STEEL)).consumesAction()
                         && use(breathing, airPlain, Direction.UP, new ItemStack(Items.FLINT_AND_STEEL)).consumesAction()
                         && air.level.getBlockState(airSoul).is(Blocks.SOUL_TORCH)

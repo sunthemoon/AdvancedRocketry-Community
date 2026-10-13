@@ -75,6 +75,28 @@ class TorchQueueTest {
     }
 
     @Test
+    void offersDuringDeferredChecksCannotExceedCapacityOrDuplicateTheInFlightEntry() {
+        TorchQueue queue = new TorchQueue();
+        LongStream.range(0, TorchQueue.MAX_POSITIONS).forEach(queue::offer);
+        List<Long> seen = new ArrayList<>();
+        queue.tick(position -> {
+            seen.add(position);
+            assertEquals(TorchQueue.Offer.PRESENT, queue.offer(position));
+            assertEquals(TorchQueue.Offer.FULL, queue.offer(-position - 1));
+            assertTrue(queue.full());
+            return TorchQueue.Outcome.DEFER;
+        }, position -> false);
+        assertEquals(LongStream.range(0, TorchQueue.CHECKS_PER_TICK).boxed().toList(), seen);
+        assertEquals(TorchQueue.MAX_POSITIONS, queue.metrics().queued());
+        seen.clear();
+        queue.tick(position -> {
+            seen.add(position);
+            return TorchQueue.Outcome.DONE;
+        }, position -> false);
+        assertEquals(LongStream.range(TorchQueue.CHECKS_PER_TICK, 2L * TorchQueue.CHECKS_PER_TICK).boxed().toList(), seen);
+    }
+
+    @Test
     void sweepsShareTheBudgetOneForOneAndQueueTheirCandidates() {
         TorchQueue queue = new TorchQueue();
         LongStream.range(0, 1_000).forEach(queue::offer);

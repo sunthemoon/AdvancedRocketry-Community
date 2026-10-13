@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import com.mojang.authlib.GameProfile;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.DeferredRoomBoundary;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,7 +32,10 @@ import net.minecraft.world.level.block.WallTorchBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.level.BlockEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 
 /**
  * Owned torch fixture cells, an optionally forced Moon chunk and the drops they make; everything is restored on
@@ -44,6 +49,7 @@ final class UnlitTorchFixture implements AutoCloseable, GameTestListener {
     private final GameTestHelper helper;
     private final AABB bounds;
     private final Map<BlockPos, BlockState> before = new LinkedHashMap<>();
+    private final List<Runnable> cleanup = new ArrayList<>();
     private Set<UUID> oldDrops;
     private boolean closed;
     private boolean ownsForce;
@@ -126,6 +132,20 @@ final class UnlitTorchFixture implements AutoCloseable, GameTestListener {
         return drops;
     }
 
+    /** Vetoes only environmental changes at these fixture cells, with cleanup even on timeout. */
+    Runnable vetoChanges(Set<BlockPos> cells, int[] cancellations) {
+        Consumer<BlockEvent.EntityPlaceEvent> veto = event -> {
+            if (event instanceof DeferredRoomBoundary && event.getLevel() == level && cells.contains(event.getPos())) {
+                cancellations[0]++;
+                event.setCanceled(true);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, false, BlockEvent.EntityPlaceEvent.class, veto);
+        Runnable release = () -> MinecraftForge.EVENT_BUS.unregister(veto);
+        cleanup.add(release);
+        return release;
+    }
+
     /** Waits for the condition, then verifies and succeeds. */
     void await(BooleanSupplier ready, Runnable verify) {
         run(() -> { }, ready, verify);
@@ -178,6 +198,11 @@ final class UnlitTorchFixture implements AutoCloseable, GameTestListener {
         }
         closed = true;
         Throwable failure = primary;
+        for (Runnable action : cleanup) {
+            try { action.run(); }
+            catch (RuntimeException | Error next) { failure = combine(failure, next); }
+        }
+        cleanup.clear();
         List<BlockPos> cells = new ArrayList<>(before.keySet());
         Collections.reverse(cells);
         for (BlockPos cell : cells) {

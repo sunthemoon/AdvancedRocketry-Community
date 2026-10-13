@@ -1,10 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.PrimitiveIterator;
 
@@ -81,30 +78,30 @@ public final class TorchQueue {
     public void tick(Checker checker, SweepReader reader) {
         int budget = CHECKS_PER_TICK;
         int unvisited = positions.size();
-        List<Long> deferred = new ArrayList<>();
         while (budget > 0 && (unvisited > 0 || !sweeps.isEmpty())) {
             boolean progressed = false;
             if (unvisited > 0) {
-                Iterator<Long> head = positions.iterator();
-                long position = head.next();
-                head.remove();
+                long position = positions.iterator().next();
                 unvisited--;
                 budget--;
                 checks++;
                 progressed = true;
-                if (checker.check(position) == Outcome.DEFER) {
-                    deferred.add(position);
+                // Keep the entry counted during world-change callbacks, which can offer more positions.
+                Outcome outcome = checker.check(position);
+                positions.remove(position);
+                if (outcome == Outcome.DEFER) {
+                    positions.add(position);
                     deferrals++;
                 }
             }
-            if (budget > 0 && !sweeps.isEmpty() && positions.size() + deferred.size() < MAX_POSITIONS) {
+            if (budget > 0 && !sweeps.isEmpty() && positions.size() < MAX_POSITIONS) {
                 PrimitiveIterator.OfLong sweep = sweeps.removeFirst();
                 long cell = sweep.nextLong();
                 budget--;
                 sweepCells++;
                 progressed = true;
-                if (reader.candidate(cell) && !deferred.contains(cell)) {
-                    positions.add(cell);
+                if (reader.candidate(cell)) {
+                    offer(cell);
                 }
                 if (sweep.hasNext()) {
                     sweeps.addLast(sweep);
@@ -114,7 +111,6 @@ public final class TorchQueue {
                 break;
             }
         }
-        positions.addAll(deferred);
         if (positions.size() <= MAX_POSITIONS / 2) {
             overloaded = false;
         }

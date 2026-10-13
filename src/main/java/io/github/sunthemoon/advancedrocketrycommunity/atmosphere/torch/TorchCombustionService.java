@@ -41,12 +41,12 @@ final class TorchCombustionService {
         if (!CombustionTorches.isCombustionTorch(placed)) {
             return Optional.empty();
         }
+        if (CombustionTorches.pairFor(placed).isEmpty()) {
+            return Optional.of(Refusal.UNSUPPORTED);
+        }
         CombustionAir air = CombustionAir.at(level, pos);
         if (air == CombustionAir.COMBUSTIBLE || air == CombustionAir.UNMANAGED) {
             return Optional.empty();
-        }
-        if (CombustionTorches.pairFor(placed).isEmpty()) {
-            return Optional.of(Refusal.UNSUPPORTED);
         }
         TorchQueue queue = state(level).queue;
         if (queue.full()) {
