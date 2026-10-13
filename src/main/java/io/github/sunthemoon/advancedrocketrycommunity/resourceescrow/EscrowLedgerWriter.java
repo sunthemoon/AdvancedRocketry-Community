@@ -1,11 +1,13 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
+import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -38,6 +40,9 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     }
     public record Completion(long generation, String digest, Outcome outcome, Snapshot snapshot) { }
     private record Request(Supplier<Snapshot> capture, Consumer<Completion> callback, BooleanSupplier beforeReplace) { }
+    /** Shutdown stops retrying one unresolved candidate after this many further unknown outcomes. */
+    static final int DRAIN_UNKNOWN_ATTEMPTS = 3;
+    private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
     private final Thread owner = Thread.currentThread();
     private final Path file;
     private final CheckedSavedDataFile.Committer committer;
@@ -54,8 +59,11 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     private boolean draining;
     private boolean uncertain;
     private int failures;
+    private int drainUnknown;
     private long retryAt;
     private long lastGeneration;
+    private long durableGeneration;
+    private String durableDigest; // Null until this session commits; the loaded generation is matched by ID and number.
     private long tick;
     private long lastIoStart = -10;
     private EscrowTimingSink timings = EscrowTimingSink.NONE;
@@ -69,7 +77,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     }
     public EscrowLedgerWriter(Path file, long generation, CheckedSavedDataFile.Committer committer,
                               java.util.function.Consumer<String> checkpoint) {
-        this.file = file; this.lastGeneration = generation; this.committer = committer;
+        this.file = file; this.lastGeneration = generation; this.durableGeneration = generation; this.committer = committer;
         this.checkpoint = checkpoint;
     }
     public boolean request(Supplier<Snapshot> capture, Consumer<Completion> callback) {
@@ -94,21 +102,22 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         }
         timings.sample("ledger_capture_main", System.nanoTime() - started);
         EscrowTags.require(next.ledger().writerGeneration() > lastGeneration, "Nonincreasing writer generation");
-        lastGeneration = next.ledger().writerGeneration(); captured = next; uncertain = false; startIo();
+        lastGeneration = next.ledger().writerGeneration(); captured = next; uncertain = false; drainUnknown = 0; startIo();
     }
     private void startIo() {
         if (tick < Math.max(retryAt, lastIoStart + 10)) { return; }
         lastIoStart = tick;
         running = true; Snapshot snapshot = captured; BooleanSupplier beforeReplace = active.beforeReplace();
-        boolean previouslyUncertain = uncertain;
+        boolean previouslyUncertain = uncertain; long durable = durableGeneration; String durableSignature = durableDigest;
         io.execute(() -> {
             long started = System.nanoTime();
-            boolean[] attempted = {false}; Outcome outcome;
+            boolean[] attempted = {false}, refused = {false}; Outcome outcome;
             var policy = new CheckedSavedDataPolicy(ManagedSavedDataType.RESOURCE_ESCROW, (staged, target) -> {
                 if (snapshot.ledger().writerGeneration() > 1) {
                     checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K8" : "K1");
                 }
-                EscrowTags.require(beforeReplace.getAsBoolean(), "Proof invalidated before ledger replacement");
+                refused[0] = !beforeReplace.getAsBoolean();
+                EscrowTags.require(!refused[0], "Proof invalidated before ledger replacement");
                 attempted[0] = true; committer.commit(staged, target);
                 if (snapshot.ledger().writerGeneration() > 1) {
                     checkpoint.accept(snapshot.ledger().records().isEmpty() ? "K9" : "K2");
@@ -121,8 +130,13 @@ public final class EscrowLedgerWriter implements AutoCloseable {
                 outcome = attempted[0] || previouslyUncertain ? Outcome.UNKNOWN : Outcome.FAILED_BEFORE_REPLACE;
                 if (attempted[0] || previouslyUncertain) {
                     try {
-                        if (policy.read(file).filter(snapshot.payload()::equals).isPresent()) {
+                        Optional<CompoundTag> disk = policy.read(file);
+                        if (disk.filter(snapshot.payload()::equals).isPresent()) {
                             CheckedSavedDataPolicy.forceDirectory(file.getParent()); outcome = Outcome.COMMITTED;
+                        } else if (refused[0] && previous(disk, policy.read(file), durable, durableSignature, snapshot.ledger().id())) {
+                            // This writer never moves a candidate whose guard refused, and the earlier ambiguous move
+                            // cannot land later. A stable readback of the last durable generation resolves it.
+                            outcome = Outcome.FAILED_BEFORE_REPLACE;
                         }
                     } catch (RuntimeException | IOException unreadable) { /* Keep this exact candidate for retry. */ }
                 }
@@ -140,9 +154,12 @@ public final class EscrowLedgerWriter implements AutoCloseable {
             if (completion.outcome() == Outcome.UNKNOWN) {
                 uncertain = true; failures++; retryAt = tick + 200; active.callback().accept(completion);
                 checkpoint.accept("WRITE_UNKNOWN");
+                if (draining && ++drainUnknown >= DRAIN_UNKNOWN_ATTEMPTS) { abandon(completion.generation()); }
             } else {
                 Request finished = active;
-                if (completion.outcome() == Outcome.COMMITTED) { failures = 0; } else { failures++; }
+                if (completion.outcome() == Outcome.COMMITTED) {
+                    failures = 0; durableGeneration = completion.generation(); durableDigest = completion.digest();
+                } else { failures++; }
                 captured = null; active = successor; successor = null;
                 // Successful authority is published before successor capture; failure cancellation is delayed
                 // until after capture, so a successor that still contains an admission keeps its reservation.
@@ -157,13 +174,26 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         }
         if (active != null && captured != null && !running && tick >= retryAt) { startIo(); }
     }
+    private static boolean previous(Optional<CompoundTag> disk, Optional<CompoundTag> again, long generation, String digest, UUID ledger) {
+        if (!disk.equals(again)) { return false; }
+        if (disk.isEmpty()) { return generation == 0; }
+        EscrowLedger durable = EscrowCodec.decode(disk.get());
+        return durable.id().equals(ledger) && durable.writerGeneration() == generation
+                && (digest == null || digest.equals(RocketNativeResources.signature(disk.get())));
+    }
+    /** Like a hard stop for this ledger: no further move and no callback. Restart validates the target file. */
+    private void abandon(long generation) {
+        LOGGER.warn("Escrow ledger shutdown stopped retrying generation {} after {} unknown outcomes; restart uses the durable ledger file",
+                generation, drainUnknown);
+        active = null; successor = null; captured = null;
+    }
     public boolean containsCaptured(UUID admission) { owner(); return captured != null && captured.admissions().contains(admission); }
     public boolean unavailable() { owner(); return failures >= 3; }
     public boolean idle() { owner(); return active == null; }
     public long lastGeneration() { owner(); return lastGeneration; }
     long lastIoStart() { owner(); return lastIoStart; }
     public void drain() {
-        owner(); draining = true;
+        owner(); draining = true; drainUnknown = 0;
         long tick = retryAt;
         // Only this bounded completion queue is pumped; no gameplay, applies or new barriers.
         while (active != null) {
