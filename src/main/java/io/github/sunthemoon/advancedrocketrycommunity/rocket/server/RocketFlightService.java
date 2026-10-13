@@ -559,6 +559,7 @@ final class RocketFlightService {
     }
 
     void onRocketJoined(RocketEntity rocket) { transfers.onRocketJoined(rocket); }
+    void installBayRecoveryGate(RocketTransferBayRecoveryGate gate) { transfers.installBayRecoveryGate(gate); }
 
     void clear() {
         requests.clear();

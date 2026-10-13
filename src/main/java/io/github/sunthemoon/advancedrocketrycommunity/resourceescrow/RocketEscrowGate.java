@@ -9,6 +9,11 @@ public final class RocketEscrowGate {
     private RocketEscrowGate() { }
 
     public static boolean idle(RocketEntity rocket) {
+        return escrowIdle(rocket);
+    }
+
+    /** Bay-scoped permits may bypass only the bay hold, never these existing escrow protections. */
+    public static boolean escrowIdle(RocketEntity rocket) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()) {
             return false;
         }
@@ -35,6 +40,10 @@ public final class RocketEscrowGate {
     }
 
     public static boolean logicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
+        return escrowLogicalLocked(server, logical);
+    }
+
+    public static boolean escrowLogicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return false; }
         return data.bind(server).logicalLocked(logical) || data.ledger().tombstones().stream().anyMatch(tombstone -> {
