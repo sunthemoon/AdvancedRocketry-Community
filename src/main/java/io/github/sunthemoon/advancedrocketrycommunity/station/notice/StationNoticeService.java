@@ -29,10 +29,11 @@ import net.minecraftforge.event.server.ServerStartedEvent;
 
 /**
  * Sends the ADR-065 section 5.3 warp notices and keeps the offline member summaries. Recipients come from the live
- * registry each time: the online owner and members, the acting player, and players in Space inside the live region,
- * each once. Players with VISIT access get the full notice and other visitors its {@link StationNotice#forVisitors}
- * form. A commit or abort replaces the station's summary; an owner or member who was offline sees it once at the
- * next login. This service holds no state: the summaries live in {@link StationNoticeSavedData}.
+ * registry each time: the online owner and members, the acting player while they still hold VISIT access, and players
+ * in Space inside the live region, each once. Players with VISIT access get the full notice and other visitors its
+ * {@link StationNotice#forVisitors} form. A commit or abort replaces the station's summary; an owner or member who was
+ * offline sees it once at the next login. This service holds no state: the summaries live in
+ * {@link StationNoticeSavedData}.
  */
 public final class StationNoticeService implements StationLifecycleListener {
     private static final StationAccessService ACCESS = new StationAccessService();
@@ -163,9 +164,10 @@ public final class StationNoticeService implements StationLifecycleListener {
     }
 
     /**
-     * The live owner and members who are online, the actor when online, and players in Space inside the live region,
-     * each with whether they hold VISIT access now. Without a live station (deleted, or an unavailable registry) only
-     * the actor is told.
+     * The live owner and members who are online, the actor when online and still holding VISIT access (W22 review F3:
+     * the same check as every other recipient), and players in Space inside the live region, each with whether they
+     * hold VISIT access now. Without a live station (deleted, or an unavailable registry) only an actor who is an
+     * operator now is told.
      */
     private static Collection<Recipient> recipients(MinecraftServer server, UUID stationId, UUID actorId) {
         Map<UUID, Recipient> recipients = new LinkedHashMap<>();
@@ -174,7 +176,10 @@ public final class StationNoticeService implements StationLifecycleListener {
             addOnline(server, recipients, station.ownerId());
             station.sortedMembers().forEach(member -> addOnline(server, recipients, member));
         });
-        addOnline(server, recipients, actorId);
+        ServerPlayer actor = server.getPlayerList().getPlayer(actorId);
+        if (actor != null && authorized(live, actor)) {
+            recipients.putIfAbsent(actorId, new Recipient(actor, true));
+        }
         ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
         if (live.isPresent() && space != null) {
             for (ServerPlayer player : space.players()) {
