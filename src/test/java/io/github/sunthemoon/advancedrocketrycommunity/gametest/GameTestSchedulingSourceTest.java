@@ -139,7 +139,7 @@ class GameTestSchedulingSourceTest {
     private Set<String> check(String body, String helpers) throws IOException {
         Path source = temporary.resolve("AuditCase.java");
         Files.writeString(source, "import net.minecraft.gametest.framework.*; class AuditCase {"
-                + " GameTestHelper h; @GameTest(template=\"empty\") void test(GameTestHelper h) { this.h=h; "
+                + " GameTestHelper h; @net.minecraft.gametest.framework.GameTest(template=\"empty\") void test(GameTestHelper h) { this.h=h; "
                 + body + " } " + helpers + " }", StandardCharsets.UTF_8);
         return audit(List.of(source));
     }
@@ -174,7 +174,8 @@ class GameTestSchedulingSourceTest {
                     public Void visitMethod(MethodTree method, Void unused) {
                         methods.put(trees.getElement(getCurrentPath()), getCurrentPath());
                         if (method.getModifiers().getAnnotations().stream()
-                                .anyMatch(a -> a.getAnnotationType().toString().equals("GameTest"))) {
+                                .anyMatch(a -> a.getAnnotationType().toString().equals("GameTest")
+                                        || a.getAnnotationType().toString().equals(FRAMEWORK + "GameTest"))) {
                             roots.add(getCurrentPath());
                         }
                         return super.visitMethod(method, unused);
