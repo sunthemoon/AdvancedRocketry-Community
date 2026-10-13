@@ -2,7 +2,7 @@
   "parent": "minecraft:block/orientable",
   "textures": {
     "front": "advancedrocketrycommunity:block/observatory",
-    "side": "advancedrocketrycommunity:block/machine_casing",
-    "top": "advancedrocketrycommunity:block/machine_casing"
+    "side": "advancedrocketrycommunity:block/machine_casing_side",
+    "top": "advancedrocketrycommunity:block/machine_casing_top"
   }
 }
