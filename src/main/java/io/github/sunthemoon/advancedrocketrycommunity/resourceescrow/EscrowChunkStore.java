@@ -23,6 +23,10 @@ public final class EscrowChunkStore {
     static final class SupersededCapture extends IllegalArgumentException {
         SupersededCapture() { super("Capture superseded before store"); }
     }
+    /** A capture or watch refused by an escrow bound, never truncated; reported as BARRIER_BOUNDS. */
+    static final class CaptureBounds extends IllegalArgumentException {
+        CaptureBounds(String message) { super(message); }
+    }
     public record Capture(CompletableFuture<Void> stored, IOWorker worker, Path directory, ChunkPos chunk,
                            AtomicLong generation, long capturedGeneration, int bytes, Runnable restoreDirty,
                            Runnable releaseWatch) { }
@@ -57,7 +61,7 @@ public final class EscrowChunkStore {
             chunk.setUnsaved(true); chunk.setUnsaved(false); // Same clear-before-serialization ordering as ChunkMap.save.
             CompoundTag tag = ChunkSerializer.write(level, chunk);
             monitor.postOwn(new ChunkDataEvent.Save(chunk, level, tag));
-            EscrowTags.bound(tag, AnvilRecordReader.DECODED_BYTES, 64, 262_144);
+            bounded(tag);
             tag = tag.copy(); // Event listeners may retain their tag; only this detached root goes to the worker.
             int bytes = validate(tag, validator);
             unchanged(generation, capturedGeneration);
@@ -99,7 +103,7 @@ public final class EscrowChunkStore {
         void add(CompoundTag entity) {
             // A list element has no 3-byte named header; the whole root is still checked once by validate().
             var size = BoundedNbt.measure(entity, (int) (AnvilRecordReader.DECODED_BYTES - bytes + 3), 62, 262_144 - nodes);
-            EscrowTags.require(size != null, "Entity capture limit exceeded");
+            if (size == null) { throw new CaptureBounds("Entity capture limit exceeded"); }
             bytes += size.bytes() - 3; nodes += size.nodes(); tag.add(entity);
         }
         ListTag tag() { return tag; }
@@ -107,8 +111,11 @@ public final class EscrowChunkStore {
     private static void unchanged(AtomicLong generation, long captured) {
         if (generation.get() != captured) { throw new SupersededCapture(); }
     }
+    private static void bounded(CompoundTag tag) {
+        if (!BoundedNbt.fits(tag, AnvilRecordReader.DECODED_BYTES, 64, 262_144)) { throw new CaptureBounds("Endpoint capture exceeds the decoded record bounds"); }
+    }
     private static int validate(CompoundTag tag, Predicate<CompoundTag> validator) {
-        EscrowTags.bound(tag, AnvilRecordReader.DECODED_BYTES, 64, 262_144);
+        bounded(tag);
         EscrowTags.require(validator.test(tag), "Captured endpoint identity/frontier mismatch");
         return RocketNbtSize.uncompressedBytes(tag);
     }

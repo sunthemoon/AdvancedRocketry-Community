@@ -36,7 +36,7 @@ class EscrowEntityCaptureTest {
         assertTrue(BoundedNbt.fits(list.tag(), AnvilRecordReader.DECODED_BYTES, 64, NODES), "The old whole-list check disagrees");
         var overflow = list.tag().copy(); overflow.add(items.get(fitting));
         assertFalse(BoundedNbt.fits(overflow, AnvilRecordReader.DECODED_BYTES, 64, NODES));
-        var refused = assertThrows(IllegalArgumentException.class, () -> list.add(items.get(fitting)));
+        var refused = assertThrows(EscrowChunkStore.CaptureBounds.class, () -> list.add(items.get(fitting)));
         assertEquals("Entity capture limit exceeded", refused.getMessage());
         assertEquals(fitting, list.tag().size(), "A refused entity must not be appended or truncated");
         // The complete vanilla envelope still fits the single root check that validate() performs.
@@ -56,11 +56,11 @@ class EscrowEntityCaptureTest {
         assertNotNull(named); assertEquals(AnvilRecordReader.DECODED_BYTES, named.bytes());
         var extra = new CompoundTag(); reference.add(extra);
         assertFalse(BoundedNbt.fits(reference, AnvilRecordReader.DECODED_BYTES, 64, NODES));
-        assertThrows(IllegalArgumentException.class, () -> list.add(extra));
+        assertThrows(EscrowChunkStore.CaptureBounds.class, () -> list.add(extra));
         var deep = new EscrowChunkStore.EntityList(); CompoundTag nested = new CompoundTag(), cursor = nested;
         for (int depth = 1; depth < 62; depth++) { CompoundTag child = new CompoundTag(); cursor.put("c", child); cursor = child; }
         deep.add(nested); // 62 levels below the "Entities" list: the deepest entity the root check accepts.
         CompoundTag deeper = new CompoundTag(); deeper.put("c", nested);
-        assertThrows(IllegalArgumentException.class, () -> new EscrowChunkStore.EntityList().add(deeper));
+        assertThrows(EscrowChunkStore.CaptureBounds.class, () -> new EscrowChunkStore.EntityList().add(deeper));
     }
 }

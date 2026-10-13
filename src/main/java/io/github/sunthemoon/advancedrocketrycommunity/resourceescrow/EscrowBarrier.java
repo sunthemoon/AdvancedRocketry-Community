@@ -45,6 +45,7 @@ public final class EscrowBarrier implements AutoCloseable {
     private final java.util.Set<EscrowChunkStore.Capture> outstanding = new java.util.HashSet<>();
     private int ioFailures;
     private int supersedingSaves;
+    private int refusals;
     private final Consumer<String> checkpoint;
     private final EscrowTimingSink timings;
     public EscrowBarrier() { this(cut -> { }); }
@@ -92,10 +93,10 @@ public final class EscrowBarrier implements AutoCloseable {
         EscrowChunkStore.Capture capture;
         long started = System.nanoTime();
         try { capture = store.captureAndStore(endpoint, validator); }
-        catch (EscrowChunkStore.SupersededCapture newer) {
-            budget.release(AnvilRecordReader.DECODED_BYTES); supersedingSaves++; callback.accept(new Result(null, EscrowReason.SUPERSEDING_SAVE)); return true;
+        catch (RuntimeException failure) {
+            EscrowReason reason = captureReason(failure);
+            budget.release(AnvilRecordReader.DECODED_BYTES); count(reason); callback.accept(new Result(null, reason)); return true;
         }
-        catch (RuntimeException failure) { budget.release(AnvilRecordReader.DECODED_BYTES); ioFailures++; callback.accept(new Result(null, EscrowReason.BARRIER_VETO)); return true; }
         finally { timings.sample("capture_main", System.nanoTime() - started); }
         budget.captured(capture.bytes());
         outstanding.add(capture);
@@ -143,7 +144,7 @@ public final class EscrowBarrier implements AutoCloseable {
             else if (!attempt.validator().test(AnvilRecordReader.read(capture.directory(), capture.chunk()).root())) {
                 reason = EscrowReason.BARRIER_UNSTABLE;
             }
-        } catch (Exception failureRead) { reason = EscrowReason.BARRIER_UNSTABLE; }
+        } catch (Exception failureRead) { reason = readbackReason(failureRead); }
         timings.sample("readback_io", System.nanoTime() - started);
         complete(capture, attempt.frontier(), attempt.callback(), reason);
     }
@@ -172,13 +173,28 @@ public final class EscrowBarrier implements AutoCloseable {
             } else {
                 result.capture().restoreDirty().run();
                 result.capture().releaseWatch().run();
-                if (reason == EscrowReason.SUPERSEDING_SAVE) { supersedingSaves++; } else { ioFailures++; }
-                result.callback().accept(new Result(null, reason));
+                count(reason); result.callback().accept(new Result(null, reason));
             }
+        }
+    }
+    /** Design reason table: IO/force/unstable and superseding saves differ from veto/external/bounds refusals. */
+    static EscrowReason captureReason(RuntimeException failure) {
+        return failure instanceof EscrowChunkStore.SupersededCapture ? EscrowReason.SUPERSEDING_SAVE
+                : failure instanceof EscrowChunkStore.CaptureBounds ? EscrowReason.BARRIER_BOUNDS : EscrowReason.BARRIER_VETO;
+    }
+    static EscrowReason readbackReason(Exception failure) {
+        return failure instanceof AnvilRecordReader.Refusal refusal ? refusal.reason() : EscrowReason.BARRIER_UNSTABLE;
+    }
+    private void count(EscrowReason reason) {
+        switch (reason) {
+            case SUPERSEDING_SAVE -> supersedingSaves++;
+            case BARRIER_VETO, BARRIER_EXTERNAL, BARRIER_BOUNDS -> refusals++;
+            default -> ioFailures++;
         }
     }
     public int ioFailures() { return ioFailures; }
     public int supersedingSaves() { return supersedingSaves; }
+    public int refusals() { return refusals; }
     /** Discard unfinished barriers without invalidating proofs held by already-frozen ledger generations. */
     public void quiesce() {
         owner(); synchronized (lifecycle) {

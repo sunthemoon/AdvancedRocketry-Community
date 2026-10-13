@@ -120,6 +120,20 @@ class EscrowJointProofTest {
             assertEquals(List.of(true), outcomes); assertTrue(coordinator.ledger().records().isEmpty());
         }
     }
+    /** Review W11b1 finding 7: veto and bounds refusals are not IO failures, and a full monitor is a bound. */
+    @Test void barrierCaptureReasonsSeparateRefusalsFromSupersession() {
+        assertEquals(EscrowReason.SUPERSEDING_SAVE, EscrowBarrier.captureReason(new EscrowChunkStore.SupersededCapture()));
+        assertEquals(EscrowReason.BARRIER_BOUNDS, EscrowBarrier.captureReason(new EscrowChunkStore.CaptureBounds("Entity capture limit exceeded")));
+        assertEquals(EscrowReason.BARRIER_VETO, EscrowBarrier.captureReason(new IllegalArgumentException("Captured endpoint identity/frontier mismatch")));
+        assertEquals(EscrowReason.BARRIER_UNSTABLE, EscrowBarrier.readbackReason(new java.io.IOException("Anvil record changed during readback")));
+        var monitor = new EscrowSaveMonitor();
+        for (int i = 0; i < 128; i++) { monitor.watch("minecraft:overworld", false, new ChunkPos(i, 0)); }
+        var full = assertThrows(EscrowChunkStore.CaptureBounds.class, () -> monitor.watch("minecraft:overworld", false, new ChunkPos(128, 0)));
+        assertEquals(EscrowReason.BARRIER_BOUNDS, EscrowBarrier.captureReason(full));
+        for (EscrowReason reason : List.of(EscrowReason.BARRIER_VETO, EscrowReason.BARRIER_EXTERNAL, EscrowReason.BARRIER_BOUNDS)) {
+            assertTrue(reason.retryableProofFailure() && !reason.manual()); // Same STALLED handling; distinct persisted reason.
+        }
+    }
     private EscrowBarrier.Proof proof(EscrowPrefix.State state) {
         var capture = new EscrowChunkStore.Capture(CompletableFuture.completedFuture(null), null, directory,
                 new ChunkPos(0, 0), new AtomicLong(1), 1, 0, () -> { }, () -> { });

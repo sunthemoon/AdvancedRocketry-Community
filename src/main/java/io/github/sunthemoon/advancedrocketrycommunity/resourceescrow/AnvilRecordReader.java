@@ -32,6 +32,12 @@ public final class AnvilRecordReader {
                     && decodedBytes <= DECODED_BYTES * 3 / 4;
         }
     }
+    /** A readable record that a proof must refuse: external or beyond the bounds, not an unstable read. */
+    public static final class Refusal extends IOException {
+        private final EscrowReason reason;
+        Refusal(EscrowReason reason, String message) { super(message); this.reason = reason; }
+        public EscrowReason reason() { return reason; }
+    }
     public record Record(CompoundTag root, SizeProbe size) {
         public Record { root = root.copy(); }
         @Override public CompoundTag root() { return root.copy(); }
@@ -57,7 +63,7 @@ public final class AnvilRecordReader {
             Header header = header(file, pos);
             if ((header.compression() & 128) != 0) {
                 if (!header.equals(header(file, pos)) || !same(before, attributes(path))) { throw new IOException("Unstable external Anvil header"); }
-                if (!probe) { throw new IOException("External Anvil records cannot prove an escrow endpoint"); }
+                if (!probe) { throw new Refusal(EscrowReason.BARRIER_EXTERNAL, "External Anvil records cannot prove an escrow endpoint"); }
                 // A size-only probe may inspect the fixed vanilla filename, but it can never issue proof.
                 SizeProbe size = externalProbe(directory, pos, header.compression() & 127);
                 if (!header.equals(header(file, pos)) || !same(before, attributes(path))) { throw new IOException("Unstable external Anvil header"); }
@@ -65,7 +71,7 @@ public final class AnvilRecordReader {
             }
             int compressed = header.length() - 1;
             if (compressed > COMPRESSED_BYTES) {
-                if (!probe) { throw new IOException("Compressed Anvil record limit exceeded"); }
+                if (!probe) { throw new Refusal(EscrowReason.BARRIER_BOUNDS, "Compressed Anvil record limit exceeded"); }
                 return new Record(new CompoundTag(), new SizeProbe(false, compressed, -1, false));
             }
             byte[] bytes = bytes(file, header.start() + 5, compressed);
@@ -88,7 +94,9 @@ public final class AnvilRecordReader {
                 };
                 CompoundTag root = NbtIo.read(input, accounter);
                 if (input.read() != -1) { throw new IOException("Trailing Anvil NBT"); }
-                EscrowTags.bound(root, DECODED_BYTES, 64, 262_144);
+                if (!io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt.fits(root, DECODED_BYTES, 64, 262_144)) {
+                    throw new Refusal(EscrowReason.BARRIER_BOUNDS, "Anvil record exceeds the escrow NBT envelope");
+                }
                 return new Record(root, new SizeProbe(false, compressed, decoded.length, true));
             } catch (RuntimeException invalid) { throw new IOException("Invalid bounded Anvil NBT", invalid); }
         }
@@ -115,7 +123,7 @@ public final class AnvilRecordReader {
             byte[] buffer = new byte[8_192]; int count;
             while ((count = source.read(buffer)) != -1) {
                 if (count > DECODED_BYTES - output.size()) {
-                    if (probe) { return null; } throw new IOException("Decoded Anvil record limit exceeded");
+                    if (probe) { return null; } throw new Refusal(EscrowReason.BARRIER_BOUNDS, "Decoded Anvil record limit exceeded");
                 }
                 output.write(buffer, 0, count);
             }
