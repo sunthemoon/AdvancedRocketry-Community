@@ -523,6 +523,7 @@
   "status.advancedrocketrycommunity.pump.target_out_of_bounds": "Target outside world bounds",
   "status.advancedrocketrycommunity.pump.target_protected": "Target protected",
   "status.advancedrocketrycommunity.pump.target_unloaded": "Target chunk not loaded",
+  "status.advancedrocketrycommunity.satellite.offline_repair_required": "Offline repair required; back up the world and ask an administrator",
   "subtitle.advancedrocketrycommunity.air_hiss_loop": "Air hisses",
   "subtitle.advancedrocketrycommunity.basic_laser_gun": "Laser fires",
   "subtitle.advancedrocketrycommunity.combustion_rocket": "Rocket engine roars",
