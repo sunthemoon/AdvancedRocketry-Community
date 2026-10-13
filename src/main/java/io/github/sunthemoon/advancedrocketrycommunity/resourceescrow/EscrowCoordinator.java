@@ -104,6 +104,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         EscrowPrefix.State old = frontiers.putIfAbsent(endpoint, frontier);
         EscrowTags.require(old == null || old.equals(frontier), "Frozen frontier changed");
     }
+    /** The callback runs at most once: true after exact L2 acknowledgement, false after a definite failure. */
     public boolean retire(Set<UUID> ids, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs,
                           Consumer<Boolean> callback) {
         owner(); EscrowTags.require(ids.size() <= EscrowLimits.OPERATIONS, "Retirement count exceeded");
@@ -122,6 +123,8 @@ public final class EscrowCoordinator implements AutoCloseable {
             return snapshot(false, frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) ? retired : null);
         }, result -> {
             acknowledge(result);
+            // UNKNOWN is not final: the writer retries this exact candidate. The callback reports only the resolution.
+            if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
             if (result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
                     && result.snapshot().ledger().records().stream().noneMatch(op -> retired.contains(op.id()))) {
                 // L2 changes the marker prefix, even when the endpoint still has later records.
