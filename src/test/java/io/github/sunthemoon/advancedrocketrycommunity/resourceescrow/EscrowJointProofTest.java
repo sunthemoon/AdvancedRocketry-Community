@@ -20,6 +20,32 @@ import org.junit.jupiter.api.io.TempDir;
 class EscrowJointProofTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path directory;
+    @Test void jointTargetLimitAcceptsAll128AndRefusesOverflowDuplicatesAndOtherSlots() {
+        var targets = new ArrayList<EscrowBarrier.Target>();
+        for (int i = 1; i <= 128; i++) {
+            var op = EscrowTestFixtures.operation(i);
+            targets.add(new EscrowBarrier.Target(op.destination(), frontier(op.destination(), op), root -> true));
+        }
+        try (var barrier = new EscrowBarrier()) {
+            barrier.quiesce(); // Exercise validation without a live store or changing capture quotas.
+            assertFalse(barrier.beginJoint(null, targets, 0, result -> fail("Quiesced capture")));
+            var overflow = new ArrayList<>(targets); overflow.add(targets.get(0));
+            assertThrows(IllegalArgumentException.class, () -> barrier.beginJoint(null, overflow, 0, result -> { }));
+            assertThrows(IllegalArgumentException.class, () -> barrier.beginJoint(null, List.of(), 0, result -> { }));
+            assertThrows(IllegalArgumentException.class, () -> barrier.beginJoint(null, List.of(targets.get(0), targets.get(0)), 0, result -> { }));
+            var other = EscrowTestFixtures.operation(129);
+            assertThrows(IllegalArgumentException.class, () -> barrier.beginJoint(null, List.of(targets.get(0),
+                    new EscrowBarrier.Target(other.source(), frontier(other.source(), other), root -> true)), 0, result -> { }));
+        }
+        AtomicInteger releases = new AtomicInteger();
+        var capture = new EscrowChunkStore.Capture(CompletableFuture.completedFuture(null), null, directory,
+                new ChunkPos(0, 0), new AtomicLong(1), 1, 0, () -> { }, releases::incrementAndGet);
+        var base = new EscrowBarrier.Proof(targets.get(0).frontier(), capture, new AtomicBoolean(true), new AtomicBoolean(true));
+        var proofs = EscrowBarrier.splitProof(base, targets); assertEquals(128, proofs.size());
+        var tokens = new ArrayList<>(proofs.values());
+        for (int i = 0; i < 127; i++) { tokens.get(i).release(); assertEquals(0, releases.get()); }
+        tokens.get(127).release(); assertEquals(1, releases.get());
+    }
     @Test void jointLeaseReleasesItsWatchOnlyAfterEveryEndpointAndSupersedesAllTokens() {
         var a = EscrowTestFixtures.operation(1); var b = EscrowTestFixtures.operation(2);
         AtomicInteger releases = new AtomicInteger(); AtomicLong generation = new AtomicLong(1);
@@ -64,6 +90,6 @@ class EscrowJointProofTest {
     }
     private static EscrowPrefix.State frontier(EscrowEndpoint endpoint, EscrowOperation op) {
         return new EscrowPrefix.State(EscrowTestFixtures.id(500), endpoint.afterEpoch(), endpoint.afterSignature(),
-                List.of(new EscrowPrefix.Marker(op.id(), op.sequence(), "SOURCE", endpoint.afterEpoch())));
+                List.of(new EscrowPrefix.Marker(op.id(), op.sequence(), endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? "DESTINATION" : "SOURCE", endpoint.afterEpoch())));
     }
 }

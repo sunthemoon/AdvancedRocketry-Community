@@ -35,7 +35,11 @@ class EscrowCodecIntersectionTest {
                     EscrowOperation.Phase.PREPARED, EscrowReason.NONE, tooManyNodes, RocketNativeResources.signature(tooManyNodes), op.source(), op.destination(), op.guard()));
         }
         var floors = new ArrayList<CompoundTag>(); var tombstones = new ArrayList<CompoundTag>();
-        for (int i = 1; i <= 256; i++) { floors.add(EscrowTestFixtures.floor(i)); }
+        for (int i = 1; i <= 256; i++) {
+            var floor = EscrowTestFixtures.floor(i); floor.putUUID("transfer_id", EscrowTestFixtures.id(i + 1000));
+            // All allowed fixed-width fields, including the optional UUID, define the maximum valid floor.
+            assertEquals(360, RocketNbtSize.uncompressedBytes(floor)); floors.add(floor);
+        }
         for (int i = 1; i <= 64; i++) { tombstones.add(exactTombstone(i)); }
         var ledger = new EscrowLedger(EscrowTestFixtures.id(500), 64, 1, records, floors, tombstones);
         var encoded = EscrowCodec.encode(ledger); assertEquals(ledger, EscrowCodec.decode(encoded));
