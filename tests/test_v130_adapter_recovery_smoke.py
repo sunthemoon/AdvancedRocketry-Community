@@ -30,7 +30,7 @@ def entity():
     blocks = [{"position": position, "palette": index} for index, position in enumerate(positions)]
     blocks[-1]["block_entity"] = {"adapter": runner.ADAPTER,
                                   "data": {"payload_version": 1, "data": copy.deepcopy(runner.INVENTORY)}}
-    data = {"schema_version": 2,
+    data = {"schema_version": 3, "resource_escrow": {"schema_version": 1, "resource_epoch": 0, "markers": []},
             "owner_id": nbt_uuid("00000000-0000-0000-0000-000000000005"),
             "assembly_transaction_id": nbt_uuid(TRANSACTION_ID),
             "snapshot": {"schema_version": 1, "snapshot_id": SNAPSHOT_ID,

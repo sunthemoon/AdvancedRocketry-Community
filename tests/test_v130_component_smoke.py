@@ -15,7 +15,8 @@ class ComponentSmokeTests(unittest.TestCase):
             "block_palette": [{"id": name, "properties": {}} for name in runner.RELATIVE.values()],
             "relative_blocks": [{"position": list(pos), "palette": index} for index, pos in enumerate(runner.RELATIVE)],
         }
-        data = {"schema_version": 2, "owner_id": [0, 0, 0, 5], "assembly_transaction_id": [0, 0, 1, number],
+        data = {"schema_version": 3, "resource_escrow": {"schema_version": 1, "resource_epoch": 0, "markers": []},
+                "owner_id": [0, 0, 0, 5], "assembly_transaction_id": [0, 0, 1, number],
                 "snapshot": snapshot, "flight_data": {"schema_version": 2, "state": "ASSEMBLED",
                 "logical_rocket_id": [0, 0, 1, number], "fuel": {"capacity": 2000 if updated else 1500,
                 "amount": 0, "committed_debits": []}, "passengers": {"seat_capacity": 1, "assignments": []}}}

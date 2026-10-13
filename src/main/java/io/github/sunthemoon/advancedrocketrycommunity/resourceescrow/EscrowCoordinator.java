@@ -151,6 +151,12 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public boolean frozen(EscrowEndpoint.Key endpoint) { owner(); return frontiers.containsKey(endpoint); }
     public boolean writerIdle() { return writer.idle(); }
+    public boolean logicalLocked(UUID logical) {
+        owner();
+        return frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
+                || java.util.stream.Stream.concat(data.ledger().records().stream(), queued.values().stream())
+                .anyMatch(op -> logical.equals(op.guard().rocket()));
+    }
     public boolean locked(EscrowEndpoint.Key endpoint) {
         return frontiers.containsKey(endpoint) || java.util.stream.Stream.concat(data.ledger().records().stream(), queued.values().stream())
                 .anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
