@@ -85,6 +85,17 @@ public final class ScrubberBank {
     public boolean admits(OxygenVentBlockEntity vent, ScrubberBlockEntity facade) {
         return slot(vent, facade) >= 0;
     }
+    /** Loaded proof that this idle bank cannot own the facade: another generation, or no exact face-and-identity entry. */
+    public boolean disowns(OxygenVentBlockEntity vent, ScrubberBlockEntity facade) {
+        if (operating || !vent.deviceAvailable() || vent.scrubbers() != this) { return false; }
+        if (!facade.boundTo(vent, generation)) { return true; }
+        for (Direction direction : Direction.values()) {
+            if (vent.getBlockPos().relative(direction).equals(facade.getBlockPos())) {
+                return !facade.identity().equals(identities[direction.ordinal()]);
+            }
+        }
+        return true;
+    }
     /** Explicit withdrawal only: an unloaded or unreadable neighbour is not proof of an orphan. */
     public ItemStack recoverOrphan(OxygenVentBlockEntity vent) {
         ItemStack result = releaseOrphan(vent, true); return result == null ? ItemStack.EMPTY : result;

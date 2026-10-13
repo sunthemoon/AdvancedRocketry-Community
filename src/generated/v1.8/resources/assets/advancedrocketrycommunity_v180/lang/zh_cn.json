@@ -334,6 +334,7 @@
   "message.advancedrocketrycommunity.propulsion.mode": "推进模式：%s。燃料表显示航线基准费用；实际加注及扣除按各资源银行分别计算。%s",
   "message.advancedrocketrycommunity.propulsion.recovery_pending": "火箭转移恢复尚未完成，暂时不能更改资源。请等待乘客重新连接并完成恢复。",
   "message.advancedrocketrycommunity.pump.status": "%s | %s FE | %s mB",
+  "message.advancedrocketrycommunity.scrubber.binding_released": "已解除此洗涤器过期的通风口绑定；未移动任何物品，现在可以拆除。",
   "message.advancedrocketrycommunity.seal_detector.boundary.open": "开放",
   "message.advancedrocketrycommunity.seal_detector.boundary.sealed": "密封",
   "message.advancedrocketrycommunity.seal_detector.boundary.unavailable": "信息不可用",

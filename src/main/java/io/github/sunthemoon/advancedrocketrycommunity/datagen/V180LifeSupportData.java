@@ -61,6 +61,8 @@ public final class V180LifeSupportData implements DataProvider {
         names.put("block." + NS + ".atmosphere_detector", zh ? "大气探测器" : "Atmosphere Detector");
         names.put("item." + NS + "." + CARTRIDGE, zh ? "碳洗涤滤芯" : "Carbon Scrubber Cartridge");
         names.put("message." + NS + ".detector.mode", zh ? "探测模式：%s（潜行右键切换）" : "Detector: %s (sneak-use to cycle)");
+        names.put("message." + NS + ".scrubber.binding_released", zh ? "已解除此洗涤器过期的通风口绑定；未移动任何物品，现在可以拆除。"
+                : "Released this scrubber's stale vent binding; no item moved, and it can now be removed.");
         names.put("message." + NS + ".vent.scrubber_cartridge_recovered", zh ? "已取回失去关联的洗涤滤芯。"
                 : "Recovered an orphaned scrubber cartridge.");
         names.put("message." + NS + ".vent.scrubber_association_released", zh ? "已解除一个过期的洗涤器关联；它没有滤芯，未移动任何物品。"

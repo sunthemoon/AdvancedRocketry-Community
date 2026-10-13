@@ -18,7 +18,8 @@ class LifeSupportDataTest {
         }
     }
     @Test void staleAssociationFeedbackIsLocalizedAndDistinctFromRecoveryAndRefusal() {
-        var keys = List.of("vent.scrubber_cartridge_recovered", "vent.scrubber_association_released", "vent.scrubber_recovery_refused");
+        var keys = List.of("vent.scrubber_cartridge_recovered", "vent.scrubber_association_released", "vent.scrubber_recovery_refused",
+                "scrubber.binding_released");
         for (boolean chinese : new boolean[]{false, true}) {
             var language = V180LifeSupportData.language(chinese);
             var texts = keys.stream().map(key -> language.get("message.advancedrocketrycommunity." + key)).toList();

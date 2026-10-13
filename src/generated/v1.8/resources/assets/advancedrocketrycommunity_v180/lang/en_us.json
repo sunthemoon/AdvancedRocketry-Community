@@ -334,6 +334,7 @@
   "message.advancedrocketrycommunity.propulsion.mode": "Propulsion mode: %s. The fuel table shows route-base cost; actual Fluid debits are computed independently per bank. %s",
   "message.advancedrocketrycommunity.propulsion.recovery_pending": "Rocket transfer recovery is pending. Resources cannot change until recovery and passenger reconnect finish.",
   "message.advancedrocketrycommunity.pump.status": "%s | %s FE | %s mB",
+  "message.advancedrocketrycommunity.scrubber.binding_released": "Released this scrubber's stale vent binding; no item moved, and it can now be removed.",
   "message.advancedrocketrycommunity.seal_detector.boundary.open": "OPEN",
   "message.advancedrocketrycommunity.seal_detector.boundary.sealed": "SEALED",
   "message.advancedrocketrycommunity.seal_detector.boundary.unavailable": "UNAVAILABLE",

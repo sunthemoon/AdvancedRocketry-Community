@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.device;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -25,8 +26,11 @@ public final class ScrubberBlock extends BaseEntityBlock {
         ItemStack held = player.getItemInHand(hand);
         if (held.isEmpty() && player.isShiftKeyDown()) {
             ItemStack removed = items.extractItem(0, 1, false);
-            if (removed.isEmpty()) { return InteractionResult.FAIL; }
-            player.setItemInHand(hand, removed); return InteractionResult.CONSUME;
+            if (!removed.isEmpty()) { player.setItemInHand(hand, removed); return InteractionResult.CONSUME; }
+            // With nothing to withdraw, the same action releases a provably stale vent binding.
+            if (!entity.releaseStaleBinding()) { return InteractionResult.FAIL; }
+            player.displayClientMessage(Component.translatable("message.advancedrocketrycommunity.scrubber.binding_released"), true);
+            return InteractionResult.CONSUME;
         }
         if (CarbonCartridge.uses(held) < 0 || !items.insertItem(0, held, true).isEmpty()
                 || !items.insertItem(0, held, false).isEmpty()) { return InteractionResult.FAIL; }

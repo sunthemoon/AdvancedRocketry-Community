@@ -216,6 +216,115 @@ public final class ScrubberRecoveryGameTests {
         } finally { vent.load(new CompoundTag()); level.setBlock(ventPos, before, QUIET); }
     }
 
+    @GameTest(template = "atmosphere_test", batch = "scrubber_stale_binding", timeoutTicks = 40)
+    public static void facadeBoundToAnotherGenerationIsReleasedAtTheFacadeWithoutTouchingTheBank(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper)) {
+            CompoundTag oldFacade = f.facade.saveWithoutMetadata(); UUID oldGeneration = f.vent.scrubbers().generation();
+            // The vent is replaced and A rebinds to its generation; then A's chunk reverts to the old binding.
+            f.levelSet(f.ventPos, Blocks.AIR.defaultBlockState());
+            f.levelSet(f.ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState());
+            f.vent = (OxygenVentBlockEntity) helper.getLevel().getBlockEntity(f.ventPos); f.observe();
+            helper.assertTrue(f.items().insertItem(0, cartridge("other-generation"), false).isEmpty(), "Rebound facade did not accept cartridge");
+            f.facade.load(oldFacade); f.observe();
+            CompoundTag bank = f.vent.scrubbers().encode();
+            helper.assertTrue(!oldGeneration.equals(f.vent.scrubbers().generation()) && bound(f.facade) && bank.getList("banks", 10).size() == 1,
+                    "Snapshot must bind A to a generation the vent no longer has");
+            f.openPlayer();
+            f.assertRemovalRefused("Other generation");
+            helper.assertTrue(f.items().extractItem(0, 1, false).isEmpty(), "Stale facade withdrew the bank cartridge");
+            f.replies.clear();
+            helper.assertTrue(f.useVent() == InteractionResult.FAIL && bank.equals(f.vent.scrubbers().encode())
+                    && f.replies.equals(List.of(message("vent.scrubber_recovery_refused"))), "Vent recovery claimed a matching identity");
+            f.replies.clear();
+            helper.assertTrue(f.useFacade() == InteractionResult.CONSUME && f.player.getMainHandItem().isEmpty()
+                    && f.replies.equals(List.of(message("scrubber.binding_released"))), "Facade did not release its stale binding");
+            helper.assertTrue(!bound(f.facade) && !f.facade.protectedData() && bank.equals(f.vent.scrubbers().encode()),
+                    "Release touched the bank or kept the binding");
+            // The released matching identity rebinds normally and withdraws the bank's single cartridge.
+            f.observe();
+            helper.assertTrue(f.useFacade() == InteractionResult.CONSUME && f.player.getMainHandItem().getTag().getString("marker").equals("other-generation")
+                    && CarbonCartridge.uses(f.player.getMainHandItem()) == CarbonCartridge.MAX_USES, "Rebound facade did not withdraw the cartridge");
+            f.player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+            helper.assertTrue(f.useFacade() == InteractionResult.FAIL && f.items().extractItem(0, 1, false).isEmpty(), "Cartridge was withdrawn twice");
+            f.assertRemovable("Other generation");
+            helper.assertTrue(f.vent.scrubbers().encode().getList("banks", 10).isEmpty() && f.noCartridgeDropped(), "Removal duplicated a cartridge");
+            helper.succeed();
+        }
+    }
+
+    @GameTest(template = "atmosphere_test", batch = "scrubber_stale_binding", timeoutTicks = 40)
+    public static void facadeWhoseOwnerCellHoldsNoVentIsReleasedOnlyWithLoadedProof(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper)) {
+            var level = helper.getLevel(); CompoundTag oldFacade = f.facade.saveWithoutMetadata();
+            // The vent is removed, while A's chunk keeps the old binding.
+            f.levelSet(f.ventPos, Blocks.AIR.defaultBlockState()); f.facade.load(oldFacade);
+            helper.assertTrue(bound(f.facade), "Replay did not restore the binding");
+            // A retained vent root, and a vent block without its entity, prove nothing.
+            f.levelSet(f.ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState());
+            f.vent = (OxygenVentBlockEntity) level.getBlockEntity(f.ventPos);
+            CompoundTag retained = new CompoundTag(); retained.put(OxygenVentPersistence.DATA_KEY, StringTag.valueOf("retained")); f.vent.load(retained);
+            helper.assertTrue(f.vent.protectedDeviceData() && !f.facade.releaseStaleBinding() && oldFacade.equals(f.facade.saveWithoutMetadata()),
+                    "A retained vent root was treated as proof");
+            f.vent.load(new CompoundTag()); level.removeBlockEntity(f.ventPos);
+            var chunk = level.getChunkAt(f.ventPos);
+            helper.assertTrue(!f.facade.releaseStaleBinding() && chunk.getBlockEntities().get(f.ventPos) == null
+                    && oldFacade.equals(f.facade.saveWithoutMetadata()), "A vent block without its entity was treated as proof");
+            f.levelSet(f.ventPos, Blocks.AIR.defaultBlockState());
+            f.openPlayer();
+            f.assertRemovalRefused("No vent");
+            f.replies.clear();
+            helper.assertTrue(f.useFacade() == InteractionResult.CONSUME && f.player.getMainHandItem().isEmpty() && !bound(f.facade)
+                    && f.replies.equals(List.of(message("scrubber.binding_released"))), "Facade did not release its stale binding");
+            helper.assertTrue(f.useFacade() == InteractionResult.FAIL, "A released facade was released again");
+            f.assertRemovable("No vent");
+            helper.assertTrue(f.noCartridgeDropped(), "Removal dropped a cartridge");
+            helper.succeed();
+        }
+    }
+
+    @GameTest(template = "atmosphere_test", batch = "scrubber_stale_binding", timeoutTicks = 40)
+    public static void facadeUnreferencedBySameGenerationBankIsReleasedAndItsCartridgeStaysRecoverable(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper)) {
+            f.replayReplacedFacade(cartridge("unreferenced"));
+            CompoundTag bank = f.vent.scrubbers().encode();
+            f.openPlayer();
+            f.assertRemovalRefused("Unreferenced facade");
+            f.replies.clear();
+            helper.assertTrue(f.useFacade() == InteractionResult.CONSUME && f.player.getMainHandItem().isEmpty()
+                    && f.replies.equals(List.of(message("scrubber.binding_released"))), "Facade did not release its unreferenced binding");
+            helper.assertTrue(!bound(f.facade) && bank.equals(f.vent.scrubbers().encode()), "Release touched the bank or kept the binding");
+            f.assertRemovable("Unreferenced facade");
+            helper.assertTrue(bank.equals(f.vent.scrubbers().encode()), "Removing the released facade changed the bank");
+            helper.assertTrue(f.useVent() == InteractionResult.CONSUME && f.player.getMainHandItem().getTag().getString("marker").equals("unreferenced")
+                    && CarbonCartridge.uses(f.player.getMainHandItem()) == CarbonCartridge.MAX_USES, "The bank cartridge was not recoverable");
+            helper.assertTrue(f.vent.scrubbers().encode().getList("banks", 10).isEmpty() && f.vent.scrubbers().recoverOrphan(f.vent).isEmpty()
+                    && !f.vent.scrubbers().releaseEmptyOrphan(f.vent) && f.noCartridgeDropped(), "Recovery duplicated or retained the cartridge");
+            helper.succeed();
+        }
+    }
+
+    @GameTest(template = "atmosphere_test", batch = "scrubber_stale_binding_frontier", timeoutTicks = 40)
+    public static void staleBindingToAnUnloadedOwnerCellStaysProtected(GameTestHelper helper) {
+        var level = helper.getLevel(); var chunks = level.getChunkSource();
+        BlockPos facadePos = frontier(helper, 228), ownerPos = facadePos.east(); BlockState before = level.getBlockState(facadePos);
+        helper.assertTrue(level.getBlockEntity(facadePos) == null, "Frontier fixture must be BE-free");
+        level.setBlock(facadePos, ModBlocks.CO2_SCRUBBER.get().defaultBlockState(), QUIET);
+        var facade = (ScrubberBlockEntity) level.getBlockEntity(facadePos);
+        try {
+            CompoundTag root = new CompoundTag(); root.putInt("schema_version", 1); root.putString("identity", UUID.randomUUID().toString());
+            root.putLong("owner_position", ownerPos.asLong()); root.putString("owner_generation", UUID.randomUUID().toString());
+            CompoundTag saved = new CompoundTag(); saved.put(ScrubberBlockEntity.KEY, root); facade.load(saved);
+            CompoundTag kept = facade.saveWithoutMetadata();
+            helper.assertTrue(bound(facade) && facade.available(), "Frontier fixture must load a supported bound facade");
+            helper.assertTrue(chunks.getChunkNow(ownerPos.getX() >> 4, ownerPos.getZ() >> 4) == null, "Fixture setup loaded the unavailable owner chunk");
+            var items = facade.getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(IllegalStateException::new);
+            helper.assertTrue(facade.protectedData() && !facade.releaseStaleBinding() && items.extractItem(0, 1, false).isEmpty()
+                    && kept.equals(facade.saveWithoutMetadata()) && chunks.getChunkNow(ownerPos.getX() >> 4, ownerPos.getZ() >> 4) == null,
+                    "An unloaded owner cell released the binding or was loaded");
+            helper.succeed();
+        } finally { facade.load(new CompoundTag()); level.setBlock(facadePos, before, QUIET); }
+    }
+
     /** Native neighbour-shape propagation would load the very chunk a frontier fixture must leave absent. */
     private static final int QUIET = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
     /**
@@ -233,6 +342,9 @@ public final class ScrubberRecoveryGameTests {
         }
         throw new GameTestAssertException("No loaded frontier available for the unloaded guard fixture");
     }
+    private static ItemStack cartridge(String marker) {
+        ItemStack stack = new ItemStack(ModItems.CARBON_SCRUBBER_CARTRIDGE.get()); stack.getOrCreateTag().putString("marker", marker); return stack;
+    }
     private static String message(String key) { return Component.translatable("message.advancedrocketrycommunity." + key).getString(); }
     private static boolean bound(ScrubberBlockEntity facade) {
         return facade.saveWithoutMetadata().getCompound(ScrubberBlockEntity.KEY).contains("owner_position");
@@ -244,7 +356,7 @@ public final class ScrubberRecoveryGameTests {
         private final BlockPos facadePos;
         private final BlockState beforeVent;
         private final BlockState beforeFacade;
-        private final OxygenVentBlockEntity vent;
+        private OxygenVentBlockEntity vent;
         private final AtmosphereVolume volume;
         private ScrubberBlockEntity facade;
         private ServerPlayer player;
@@ -287,6 +399,11 @@ public final class ScrubberRecoveryGameTests {
             var state = vent.getBlockState();
             return state.getBlock().use(state, helper.getLevel(), ventPos, player, InteractionHand.MAIN_HAND,
                     new BlockHitResult(Vec3.atCenterOf(ventPos), Direction.UP, ventPos, false));
+        }
+        private InteractionResult useFacade() {
+            var state = facade.getBlockState();
+            return state.getBlock().use(state, helper.getLevel(), facadePos, player, InteractionHand.MAIN_HAND,
+                    new BlockHitResult(Vec3.atCenterOf(facadePos), Direction.UP, facadePos, false));
         }
         /** The review's mixed snapshot: the vent root naming replacement B (charged or not) replayed beside still-bound A. */
         private void replayReplacedFacade(ItemStack cartridge) {
