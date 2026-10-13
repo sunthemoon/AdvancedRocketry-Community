@@ -54,6 +54,37 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (writer.request(() -> snapshot(true, null), this::acknowledge)) { lastStart = tick; return true; }
         return false;
     }
+    /** O1 only. This acknowledgement does not prove endpoints, remove journals or authorize unlock. */
+    boolean beginSettlement(EscrowSettlementIntent intent, Consumer<Boolean> completion) {
+        owner();
+        if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
+                || tick - lastStart < 10) { return false; }
+        EscrowLedger candidate;
+        if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
+            EscrowTags.require(intent.ledger().equals(data.ledger().id())
+                    && data.ledger().floors().stream().anyMatch(intent.floor()::equals)
+                    && data.ledger().records().stream().noneMatch(op -> op.guard().rocket().equals(intent.floor().getUUID("rocket_id"))),
+                    "Floor changed since preview");
+            candidate = data.ledger().append(List.of(intent.floorOperation(nextSequence(), tick)));
+        } else { candidate = intent.freeze(data.ledger()); }
+        EscrowFloors.preflight(candidate);
+        var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
+        if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
+            var op = candidate.records().stream().filter(record -> intent.ids().contains(record.id())).findFirst().orElseThrow();
+            var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
+            EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared floor-intent admission refused: " + reservation);
+        }
+        boolean accepted = writer.request(() -> EscrowLedgerWriter.Snapshot.of(frozen, Set.of()), result -> {
+            acknowledge(result);
+            if (result.outcome() != EscrowLedgerWriter.Outcome.UNKNOWN && !closed) {
+                completion.accept(result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
+                        && intent.ids().stream().allMatch(id -> data.ledger().records().stream()
+                        .anyMatch(op -> op.id().equals(id) && op.settlement().equals(intent.encode()))));
+            }
+        });
+        if (accepted) { issued = Math.max(issued, candidate.issuedThrough()); lastStart = tick; admission.refresh(); }
+        return accepted;
+    }
     public void autosave() {
         owner(); if (closed || !data.isDirty() || tick - lastStart < 10) { return; }
         // Only acknowledged records are included. Queued preparations are never implicit autosave admissions.
@@ -201,12 +232,16 @@ public final class EscrowCoordinator implements AutoCloseable {
     public boolean logicalLocked(UUID logical) {
         owner();
         return frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
-                || java.util.stream.Stream.concat(data.ledger().records().stream(), queued.values().stream())
+                || unresolved()
                 .anyMatch(op -> logical.equals(op.guard().rocket()));
     }
     public boolean locked(EscrowEndpoint.Key endpoint) {
-        return frontiers.containsKey(endpoint) || java.util.stream.Stream.concat(data.ledger().records().stream(), queued.values().stream())
+        return frontiers.containsKey(endpoint) || unresolved()
                 .anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
+    }
+    private java.util.stream.Stream<EscrowOperation> unresolved() {
+        return java.util.stream.Stream.of(data.ledger().records().stream(), queued.values().stream(), writer.capturedOperations().stream())
+                .flatMap(java.util.function.Function.identity());
     }
     @Override public void close() { owner(); if (!closed) { closed = true; writer.close(); frontiers.clear(); } }
     /** Crash path, where ServerStoppingEvent never ran: no drain or callbacks, but the writer is joined. */

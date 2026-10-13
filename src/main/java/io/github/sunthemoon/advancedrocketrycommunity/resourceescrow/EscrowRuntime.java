@@ -39,6 +39,9 @@ public final class EscrowRuntime {
     private EscrowRecoveryReleaseProbe recoveryProbe;
     private EscrowBenchmarkProbe benchmark;
     private EscrowRocketAuditProbe rocketAuditProbe;
+    private EscrowSettlementProbe settlementProbe;
+    private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
+    EscrowSettlementOperator settlement() { return settlement; }
     EscrowTimingSink timings() { return benchmark == null ? EscrowTimingSink.NONE : benchmark; }
     private EscrowReconciliationScheduler scheduler;
     private EscrowTestReconciliation reconciliation;
@@ -53,6 +56,7 @@ public final class EscrowRuntime {
     public void checkpoint(String cut) {
         if (probe != null) { probe.checkpoint(cut); }
         if (rocketAuditProbe != null) { rocketAuditProbe.checkpoint(cut); }
+        if (settlementProbe != null) { settlementProbe.checkpoint(cut); }
     }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
@@ -126,7 +130,10 @@ public final class EscrowRuntime {
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("RA_")) {
+            if (testCase.startsWith("SO_")) {
+                if (runtime.settlementProbe == null) { runtime.settlementProbe = new EscrowSettlementProbe(event.getServer()); }
+                runtime.settlementProbe.tick();
+            } else if (testCase.startsWith("RA_")) {
                 if (runtime.rocketAuditProbe == null) { runtime.rocketAuditProbe = new EscrowRocketAuditProbe(event.getServer()); }
                 runtime.rocketAuditProbe.tick();
             } else if (testCase.equals("BENCH")) {
@@ -156,6 +163,7 @@ public final class EscrowRuntime {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
+        runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.quiesce(); }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) { data.stop(); }
@@ -178,6 +186,7 @@ public final class EscrowRuntime {
         EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
+        runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server);
         if (data != null) { data.abort(); }

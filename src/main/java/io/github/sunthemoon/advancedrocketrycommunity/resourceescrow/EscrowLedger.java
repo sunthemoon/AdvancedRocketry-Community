@@ -23,14 +23,24 @@ public record EscrowLedger(UUID id, long issuedThrough, long writerGeneration,
         for (EscrowOperation op : records) {
             EscrowTags.require(ids.add(op.id()) && sequences.add(op.sequence()) && op.sequence() <= issuedThrough,
                     "Duplicate or unissued operation");
-            EscrowTags.require(devices.add(op.source().identity()), "Multiple operations for a device");
+            EscrowTags.require(op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL
+                    || devices.add(op.source().identity()), "Multiple operations for a device");
             int count = rockets.merge(op.destination().logicalRocket(), 1, Integer::sum);
             EscrowTags.require(count <= EscrowLimits.PER_ROCKET, "Rocket pending limit exceeded");
         }
         EscrowPrefix.validateChains(records);
+        EscrowSettlementIntent.validateComponents(records);
         floors = copySections(floors, false); tombstones = copySections(tombstones, true);
         for (CompoundTag floor : floors) {
             EscrowTags.require(floor.getLong("highest_seq") <= issuedThrough, "Floor is beyond the issued watermark");
+        }
+        for (EscrowOperation op : records) {
+            if (!op.settlement().isEmpty()) {
+                EscrowTags.require(id.equals(EscrowSettlementIntent.decode(op.settlement()).ledger()), "Foreign settlement ledger");
+            }
+            if (op.kind() == EscrowOperation.Kind.TRANSFER_FLOOR_RETIRE) {
+                EscrowTags.require(floors.stream().anyMatch(op.payload()::equals), "Floor intent lost its authoritative floor");
+            }
         }
     }
 

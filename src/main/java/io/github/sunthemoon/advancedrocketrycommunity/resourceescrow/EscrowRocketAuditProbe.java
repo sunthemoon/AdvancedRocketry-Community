@@ -77,7 +77,7 @@ final class EscrowRocketAuditProbe {
             case 0 -> {
                 var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
                 source = EscrowTestEndpoints.create(level, POSITION, data.ledger().id());
-                rocket = createRocket(source.logical(), true); EscrowTags.require(level.addFreshEntity(rocket), "Rocket publication failed");
+                rocket = createRocket(level, source.logical(), true); EscrowTags.require(level.addFreshEntity(rocket), "Rocket publication failed");
                 EscrowTags.require(rocket.startRiding(source.bank(), true), "Neutral forced-mount control failed"); rocket.stopRiding();
                 commandTeleport(65.5D); EscrowTags.require(rocket.getX() == 65.5D, "Neutral command-teleport control failed"); commandTeleport(64.5D);
                 EscrowTags.require(!travelCanceled(), "Neutral dimension-event control failed");
@@ -122,7 +122,7 @@ final class EscrowRocketAuditProbe {
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event); return event.isCanceled();
     }
 
-    private RocketEntity createRocket(UUID logical, boolean typed) {
+    static RocketEntity createRocket(ServerLevel level, UUID logical, boolean typed) {
         var descriptor = new RocketPropulsion(RocketPropulsion.Mode.MONO, 2_000, 0, 1, 1,
                 RocketPropulsion.Settings.DEFAULTS.withAllowedFluids(Map.of(RocketPropulsion.Role.MONO, List.of("minecraft:water"),
                         RocketPropulsion.Role.BIPROPELLANT_FUEL, List.of(), RocketPropulsion.Role.OXIDIZER, List.of(), RocketPropulsion.Role.WORKING_FLUID, List.of())));
@@ -136,7 +136,7 @@ final class EscrowRocketAuditProbe {
     private void migration() {
         EscrowTags.require(ResourceEscrowSavedData.existing(server) == null, "Neutral migration created a ledger");
         if (!recovery) {
-            rocket = createRocket(UUID.randomUUID(), false);
+            rocket = createRocket(level, UUID.randomUUID(), false);
             var legacy = rocket.saveWithoutId(new CompoundTag()); var wrapper = legacy.getCompound("RocketEntityData");
             var expected = wrapper.copy();
             wrapper.putInt("schema_version", 2); wrapper.remove("resource_escrow"); rocket.load(legacy);

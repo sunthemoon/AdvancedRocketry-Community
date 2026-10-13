@@ -32,6 +32,7 @@ public final class EscrowFloors {
 
     /** Reserve count and maximum section growth before queued L1 state changes. */
     static void preflight(EscrowLedger candidate) {
+        EscrowSettlementIntent.reserve(candidate);
         var usage = usage(candidate, List.of());
         EscrowTags.require(usage.total() <= EscrowLimits.FLOORS, "Escrow floor capacity exhausted");
         Map<Key, CompoundTag> existing = new HashMap<>(); candidate.floors().forEach(floor -> existing.put(key(floor), floor));

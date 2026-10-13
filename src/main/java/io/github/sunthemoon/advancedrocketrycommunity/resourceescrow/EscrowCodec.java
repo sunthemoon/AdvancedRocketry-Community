@@ -23,28 +23,31 @@ public final class EscrowCodec {
                 && EscrowLimits.EPOCH.equals(EscrowTags.string(root, "format_epoch")), "Unsupported escrow root");
         var records = new ArrayList<EscrowOperation>();
         for (var tag : EscrowTags.list(root, "records", EscrowLimits.OPERATIONS)) { records.add(operation((CompoundTag) tag)); }
-        return new EscrowLedger(EscrowTags.uuid(root, "ledger_id"), EscrowTags.number(root, "issued_through"),
+        var result = new EscrowLedger(EscrowTags.uuid(root, "ledger_id"), EscrowTags.number(root, "issued_through"),
                 EscrowTags.number(root, "writer_generation"), records,
                 sections(root, "floors", EscrowLimits.FLOORS), sections(root, "tombstones", EscrowLimits.TOMBSTONES));
+        EscrowSettlementIntent.reserve(result); return result;
     }
     public static CompoundTag operation(EscrowOperation op) {
         CompoundTag tag = new CompoundTag(); tag.putInt("schema_version", 1); tag.putUUID("op_id", op.id());
         tag.putLong("seq", op.sequence()); tag.putUUID("owner", op.owner()); tag.putLong("created_tick", op.createdTick());
-        tag.putString("kind", "FLUID_PROPULSION_FILL"); tag.putString("phase", op.phase().name());
+        tag.putString("kind", op.kind().name()); tag.putString("phase", op.phase().name());
         tag.putString("reason", op.reason().name()); tag.put("payload", op.payload()); tag.putString("payload_hash", op.payloadHash());
         tag.put("source", endpoint(op.source())); tag.put("destination", endpoint(op.destination())); tag.put("transfer_guard", guard(op.guard()));
+        if (!op.settlement().isEmpty()) { tag.put("settlement", op.settlement()); }
         EscrowTags.bound(tag, EscrowLimits.OP_BYTES, 16, 512); return tag;
     }
     public static EscrowOperation operation(CompoundTag tag) {
         EscrowTags.bound(tag, EscrowLimits.OP_BYTES, 16, 512);
-        EscrowTags.fields(tag, "schema_version", "op_id", "seq", "owner", "created_tick", "kind", "phase", "reason", "payload", "payload_hash", "source", "destination", "transfer_guard");
-        EscrowTags.require(EscrowTags.integer(tag, "schema_version") == 1
-                && EscrowTags.string(tag, "kind").equals("FLUID_PROPULSION_FILL"), "Unsupported escrow operation");
+        EscrowTags.fields(tag, "schema_version", "op_id", "seq", "owner", "created_tick", "kind", "phase", "reason", "payload", "payload_hash", "source", "destination", "transfer_guard", "settlement");
+        EscrowTags.require(EscrowTags.integer(tag, "schema_version") == 1, "Unsupported escrow operation");
         return new EscrowOperation(EscrowTags.uuid(tag, "op_id"), EscrowTags.number(tag, "seq"), EscrowTags.uuid(tag, "owner"),
                 EscrowTags.number(tag, "created_tick"), EscrowTags.enumeration(EscrowOperation.Phase.class, tag, "phase"),
                 EscrowTags.enumeration(EscrowReason.class, tag, "reason"), EscrowTags.compound(tag, "payload"),
                 EscrowTags.string(tag, "payload_hash"), endpoint(EscrowTags.compound(tag, "source")),
-                endpoint(EscrowTags.compound(tag, "destination")), guard(EscrowTags.compound(tag, "transfer_guard")));
+                endpoint(EscrowTags.compound(tag, "destination")), guard(EscrowTags.compound(tag, "transfer_guard")),
+                EscrowTags.enumeration(EscrowOperation.Kind.class, tag, "kind"),
+                tag.contains("settlement") ? EscrowTags.compound(tag, "settlement") : new CompoundTag());
     }
     public static CompoundTag endpoint(EscrowEndpoint endpoint) {
         CompoundTag tag = new CompoundTag(); tag.putString("kind", endpoint.kind().name()); tag.putString("level", endpoint.level());
@@ -73,6 +76,13 @@ public final class EscrowCodec {
         EscrowTags.fields(tag, "rocket_id", "transfer_id", "journal_generation", "journal_digest");
         return new EscrowGuard(EscrowTags.uuid(tag, "rocket_id"), tag.contains("transfer_id") ? EscrowTags.uuid(tag, "transfer_id") : null,
                 EscrowTags.number(tag, "journal_generation"), EscrowTags.string(tag, "journal_digest"));
+    }
+    static EscrowGuard floorGuard(CompoundTag floor) {
+        CompoundTag tag = new CompoundTag();
+        for (String field : List.of("rocket_id", "transfer_id", "journal_generation", "journal_digest")) {
+            if (floor.contains(field)) { tag.put(field, floor.get(field).copy()); }
+        }
+        return guard(tag);
     }
     static void validateSection(CompoundTag tag, boolean tombstone) {
         EscrowTags.bound(tag, tombstone ? 2_048 : 1_024, 16, 128);

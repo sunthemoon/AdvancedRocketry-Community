@@ -83,7 +83,8 @@ public final class EscrowReconciliationScheduler {
             if (retry.failures > 0) { LOGGER.info("Escrow record {} proof succeeded after {} failures", id, retry.failures); }
             retry.failures = 0; retry.next = tick + 1; transition.accept(id, EscrowReason.NONE);
         } else {
-            retry.next = tick + (result.reason() == EscrowReason.WAITING_UNLOADED ? 20 : 1);
+            retry.next = tick + (result.reason() == EscrowReason.WAITING_UNLOADED
+                    || result.reason() == EscrowReason.RECONCILIATION_UNIMPLEMENTED ? 20 : 1);
         }
     }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Reconciliation requires its owner thread"); }

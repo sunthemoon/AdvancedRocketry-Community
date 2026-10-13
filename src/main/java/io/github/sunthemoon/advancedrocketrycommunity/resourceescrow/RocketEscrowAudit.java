@@ -38,7 +38,7 @@ public final class RocketEscrowAudit {
         return EscrowReason.NONE;
     }
 
-    private static EscrowReason placement(EscrowEndpoint endpoint, RocketEntity rocket) {
+    static EscrowReason placement(EscrowEndpoint endpoint, RocketEntity rocket) {
         if (!rocket.operational()) { return EscrowReason.INVALID_ENDPOINT; }
         var flight = rocket.flightData().orElseThrow(); var origin = flight.currentOrigin();
         return placement(endpoint, new Placement(rocket.getUUID(), rocket.assemblyTransactionId().orElseThrow(),
@@ -91,6 +91,6 @@ public final class RocketEscrowAudit {
             if (reason != EscrowReason.NONE) { invalidate(level, op.destination(), rocket); }
         }
         // No historical fuel reconstruction, missing-identity election or unproved L2 fallback.
-        completion.accept(new EscrowReconciliationScheduler.Result(reason == EscrowReason.NONE ? EscrowReason.WAITING_UNLOADED : reason, false));
+        completion.accept(new EscrowReconciliationScheduler.Result(reason == EscrowReason.NONE ? EscrowReason.RECONCILIATION_UNIMPLEMENTED : reason, false));
     }
 }
