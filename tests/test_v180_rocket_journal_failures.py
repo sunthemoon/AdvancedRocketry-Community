@@ -85,6 +85,27 @@ class RocketJournalFailuresTest(unittest.TestCase):
         with self.assertRaises(runner.smoke.SmokeError):
             runner.validate_authority([rocket()], {}, "ADVANCEMENT", None)
 
+    def test_prepared_source_has_exact_transit_altitude_then_exact_recovery_origin(self):
+        op = {"phase": "PREPARED", "source_entity_id": rocket()["UUID"]}
+        journal = {"transfers": [op]}
+        transit = rocket()
+        transit["Pos"][1] = 149.0
+        transit["RocketEntityData"]["flight_data"]["state"] = "TRANSIT"
+        baseline = runner.validate_authority([transit], journal, "ADVANCEMENT", None)
+        runner.validate_authority([rocket()], journal, "ADVANCEMENT", baseline)
+        for source in (transit, rocket()):
+            expected_y = source["Pos"][1]
+            for height in (100.0, 101.0, 125.0, 149.0, 150.0):
+                if height == expected_y:
+                    continue
+                changed = deepcopy(source); changed["Pos"][1] = height
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.validate_authority([changed], journal, "ADVANCEMENT", baseline)
+        for state in ("ASSEMBLED", "COUNTDOWN", "ASCENT", "DESCENT", "LANDED"):
+            changed = rocket(); changed["RocketEntityData"]["flight_data"]["state"] = state
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.validate_authority([changed], journal, "ADVANCEMENT", baseline)
+
     def test_missing_or_duplicate_entities_fail(self):
         for entries in ([], [rocket(), rocket()]):
             with self.assertRaises(runner.smoke.SmokeError):

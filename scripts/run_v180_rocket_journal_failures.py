@@ -29,10 +29,14 @@ def validate_authority(rockets: list[dict], journal: dict, mode: str, baseline: 
     if wrapper["schema_version"] != 3 or wrapper["flight_data"]["fuel"]["amount"] != 1000:
         raise smoke.SmokeError("Failed journal write changed source fuel/schema")
     flight = wrapper["flight_data"]
-    if (rocket["Pos"] != [384.5, 101.0, 384.5] or flight["current_dimension"] != EARTH
+    # Acknowledged PREPARED permits countdown/ascent before the failed destination
+    # publication. RocketTransferEntities.positionAtAltitude uses the fixed 48-block
+    # flight altitude; PREPARED restart recovery rolls this source back to its origin.
+    expected_y = 149.0 if mode == "ADVANCEMENT" and flight["state"] == "TRANSIT" else 101.0
+    if (rocket["Pos"] != [384.5, expected_y, 384.5] or flight["current_dimension"] != EARTH
             or flight["current_origin"] != [384, 101, 384] or rocket.get("Passengers", [])
             or flight["passengers"]["assignments"]):
-        raise smoke.SmokeError("Failed journal write relocated or occupied the source")
+        raise smoke.SmokeError(f"Failed journal write relocated or occupied the source: position={rocket['Pos']}, expected_y={expected_y}")
     if wrapper["resource_escrow"] != {"schema_version": 1, "resource_epoch": 0, "markers": []}:
         raise smoke.SmokeError("Journal failure created escrow authority")
     entries = journal.get("transfers", [])
@@ -50,7 +54,7 @@ def validate_authority(rockets: list[dict], journal: dict, mode: str, baseline: 
         raise smoke.SmokeError("Unknown native failure mode")
     authority = dict(identity=rocket["UUID"], snapshot=wrapper["snapshot"],
                      logical=wrapper["assembly_transaction_id"], owner=wrapper["owner_id"],
-                     fuel=flight["fuel"], escrow=wrapper["resource_escrow"], position=rocket["Pos"],
+                     fuel=flight["fuel"], escrow=wrapper["resource_escrow"],
                      dimension=flight["current_dimension"], origin=flight["current_origin"])
     if baseline is not None and authority != baseline:
         raise smoke.SmokeError("Restart changed conserved source authority")
@@ -100,7 +104,8 @@ def inspect(world: Path, mode: str, baseline: dict | None) -> dict:
         journal = NbtReader(raw).read_root()["data"]
         files["data/" + JOURNAL] = digest(journal_path)
     authority = validate_authority(rockets, journal, mode, baseline)
-    return dict(authority=authority, journal=journal, state=rockets[0]["RocketEntityData"]["flight_data"]["state"], files=files)
+    return dict(authority=authority, journal=journal, state=rockets[0]["RocketEntityData"]["flight_data"]["state"],
+                position=rockets[0]["Pos"], files=files)
 
 
 def check_log(lines: list[str]) -> None:
