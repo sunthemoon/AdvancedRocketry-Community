@@ -361,10 +361,14 @@ public final class PlanetaryAdmissionGameTests {
         helper.assertTrue(manager.flightQuotes(owner, rocket).forTarget(destination).canLaunch(), "Departure quote is unavailable");
         try {
             manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.LAUNCH, destination, transfer);
+            helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED
+                    && !journal.acknowledgedCurrent(), "Departure changed authority before acknowledgement");
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN,
                     "Authorized closed-source departure did not enter countdown");
             helper.assertTrue(journal.find(transfer).isPresent(), "Accepted departure did not persist its journal");
             manager.requestFlightIntent(owner, rocket.getId(), RocketFlightAction.CANCEL, destination, UUID.randomUUID());
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED,
                     "Cancellation did not restore fueled state");
             helper.assertTrue(rocket.flightData().orElseThrow().fuel().equals(fuel), "Cancelled departure changed fuel");

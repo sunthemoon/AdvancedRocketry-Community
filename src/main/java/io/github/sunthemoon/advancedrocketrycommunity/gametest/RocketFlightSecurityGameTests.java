@@ -116,6 +116,9 @@ public final class RocketFlightSecurityGameTests {
                             RocketDestination.MOON,
                             launchId
                     );
+                    helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED,
+                            "Valid owner launch started before journal acknowledgement");
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
                     helper.assertTrue(
                             rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN,
                             "Valid owner launch did not start countdown"
@@ -150,6 +153,7 @@ public final class RocketFlightSecurityGameTests {
                             cancellation.stationId(),
                             UUID.randomUUID()
                     );
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
                     helper.assertTrue(
                             rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED,
                             "Countdown cancellation did not restore FUELED"

@@ -6,6 +6,18 @@ import net.minecraft.gametest.framework.GameTestHelper;
 /** Serializes deliberately injected presence-matrix fixture cuts, never a gameplay write boundary. */
 public final class RocketJournalGameTestSupport {
     private RocketJournalGameTestSupport() { }
+    public static void assertPendingLaunch(GameTestHelper helper,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult result,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
+        helper.assertTrue(helper.getLevel().getServer() instanceof GameTestServer, "Not a GameTest fixture");
+        helper.assertTrue(result.code() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.JOURNAL_PENDING
+                && !result.success(), "Launch did not await its exact journal acknowledgement: " + result.code());
+        helper.assertTrue(rocket.flightData().orElseThrow().state() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState.FUELED
+                || rocket.flightData().orElseThrow().state() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState.LANDED,
+                "Launch started flight before its exact acknowledgement");
+        helper.assertTrue(!RocketTransferSavedData.get(helper.getLevel().getServer()).acknowledgedCurrent(),
+                "Launch synchronously acknowledged its newly captured generation");
+    }
     public static io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport recoverFixture(
             GameTestHelper helper,
             java.util.function.Supplier<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport> recover) {

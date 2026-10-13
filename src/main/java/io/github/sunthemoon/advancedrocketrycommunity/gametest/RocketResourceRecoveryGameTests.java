@@ -127,6 +127,7 @@ public final class RocketResourceRecoveryGameTests {
                 fixture.manager.onInstalled();
                 fixture.manager.onPlayerLoggedIn(new net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(passenger));
                 helper.assertTrue(passenger.getVehicle() == fixture.rocket, "Offline passenger did not reconnect to source");
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
                 helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
                         "Passenger reconnect did not retire source recovery authority");
                 helper.assertTrue(fixture.manager.resourceMutationAllowed(fixture.rocket), "Reconnected source stayed locked");
@@ -278,6 +279,7 @@ public final class RocketResourceRecoveryGameTests {
             journal().stop();
             helper.assertTrue(restored.operational(), "Journal round trip blocked");
             earth.getServer().overworld().getDataStorage().set(RocketTransferSavedData.DATA_NAME, restored);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             var playerData = player.saveWithoutId(new CompoundTag());
             player = new ResourcePlayer(player.serverLevel(), owner);
             player.load(playerData);

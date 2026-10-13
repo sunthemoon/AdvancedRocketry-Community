@@ -113,7 +113,7 @@ public final class TauCetiPathGameTests {
                     logical[0] = rocket.assemblyTransactionId().orElseThrow();
                     RocketFlightRequestResult docking = RocketRuntime.requestAdminStationFlight(rocket, fixture.id(),
                             UUID.randomUUID());
-                    helper.assertTrue(docking.success(), "Earth-to-station launch failed: " + docking.code());
+                    RocketFlightGameTestFixtures.assertPendingLaunch(helper, docking, rocket);
                     // LANDED precedes the production warp guard's margin. Read its installed authority
                     // without issuing speculative commands, still within the original flight window.
                     RocketFlightGameTestFixtures.awaitPaced(helper, helper.getTick() + FLIGHT, () ->
@@ -142,7 +142,7 @@ public final class TauCetiPathGameTests {
                             whenLandingReady(helper, surface, new GameTestTickPacer(fixture.server), 1, cleanup, () -> {
                                 RocketFlightRequestResult down = RocketRuntime.requestAdminFlight(docked,
                                         new TravelTarget.BodySurface(ExoplanetContent.TAU_CETI_F), UUID.randomUUID());
-                                helper.assertTrue(down.success(), "Station-to-Tau Ceti f launch failed: " + down.code());
+                                RocketFlightGameTestFixtures.assertPendingLaunch(helper, down, docked);
                                 RocketFlightGameTestFixtures.awaitFlightState(helper, surface, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
                                     RocketEntity onF = landed(helper, surface, logical[0], "Tau Ceti f", observerJournal);
                                     helper.assertTrue(onF.flightData().orElseThrow().currentBody()
@@ -154,7 +154,7 @@ public final class TauCetiPathGameTests {
                                             "The station kept a copy of the rocket");
                                     RocketFlightRequestResult up = RocketRuntime.requestAdminStationFlight(onF, fixture.id(),
                                             UUID.randomUUID());
-                                    helper.assertTrue(up.success(), "Tau Ceti f-to-station launch failed: " + up.code());
+                                    RocketFlightGameTestFixtures.assertPendingLaunch(helper, up, onF);
                                     RocketFlightGameTestFixtures.awaitFlightState(helper, fixture.space, logical[0], RocketFlightState.LANDED, FLIGHT, () -> guarded(cleanup, () -> {
                                         RocketEntity back = landed(helper, fixture.space, logical[0], "the station on return",
                                                 observerJournal);
