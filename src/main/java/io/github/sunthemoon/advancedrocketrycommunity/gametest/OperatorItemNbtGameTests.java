@@ -95,7 +95,9 @@ public final class OperatorItemNbtGameTests {
             ClassicControllerBlockEntity.class, SuitWorkstationBlockEntity.class, RocketAssemblerBlockEntity.class,
             io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerBlockEntity.class,
             FuelLoaderBlockEntity.class, SatelliteTerminalBlockEntity.class, SatelliteBuilderBlockEntity.class,
-            MicrowaveReceiverBlockEntity.class);
+            MicrowaveReceiverBlockEntity.class,
+            // W33: the unlit torch's identity root and its retained, quarantined roots.
+            io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.UnlitTorchBlockEntity.class);
     /** Block entities that save no root of their own, so item NBT reaches no server-decided state. */
     private static final Set<Class<? extends BlockEntity>> NO_ROOT = Set.of(
             WarpCoreBlockEntity.class, SolarArrayOutputBlockEntity.class, PipeSealBlockEntity.class);
