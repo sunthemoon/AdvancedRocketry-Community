@@ -118,54 +118,54 @@ class V180ContentLedgerTests(unittest.TestCase):
         self.assertTrue(any("block:centrifuge: decision token 'later'" in error for error in errors))
 
     def test_planned_needs_a_v18_batch(self) -> None:
-        self._edit_ledger("block:lathe", plan="C20a")
-        self.assertIn("ledger: block:lathe: PLANNED plan 'C20a' is not a v1.8 batch", self._errors())
+        self._edit_ledger("block:oxygenCharger", plan="C20a")
+        self.assertIn("ledger: block:oxygenCharger: PLANNED plan 'C20a' is not a v1.8 batch", self._errors())
 
     def test_implemented_plan_must_not_be_future(self) -> None:
         self._edit_ledger("block:railgun", plan="v1.9.0")
         self.assertTrue(any("block:railgun: IMPLEMENTED plan 'v1.9.0'" in error for error in self._errors()))
 
     def test_v18_delivery_needs_evidence(self) -> None:
-        self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0", target="anything")
+        self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0", target="anything", evidence="")
         self.assertIn("ledger: block:centrifuge: REDESIGNED in v1.8.0 needs the delivering batch's evidence file",
                       self._errors())
 
     def test_v18_delivery_with_evidence_passes(self) -> None:
-        evidence = self.root / "docs/work/v1.8.0-c16c-machines/VERIFICATION.md"
+        evidence = self.root / "docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md"
         evidence.parent.mkdir(parents=True)
         evidence.write_text("| block:centrifuge | centrifuge GameTests |", encoding="utf-8")
         self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0", target="anything",
-                          decision="ADR-061 ADR-062", evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
+                          decision="ADR-061 ADR-062", evidence="docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md")
         self.assertEqual([], self._errors())
 
     def test_v18_evidence_must_list_the_unit(self) -> None:
-        evidence = self.root / "docs/work/v1.8.0-c16c-machines/VERIFICATION.md"
+        evidence = self.root / "docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md"
         evidence.parent.mkdir(parents=True)
         evidence.write_text("| block:crystallizer | crystallizer GameTests |", encoding="utf-8")
         self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0", target="anything",
-                          decision="ADR-061 ADR-062", evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
-        self.assertIn("ledger: block:centrifuge: evidence file docs/work/v1.8.0-c16c-machines/VERIFICATION.md does "
+                          decision="ADR-061 ADR-062", evidence="docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md")
+        self.assertIn("ledger: block:centrifuge: evidence file docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md does "
                       "not list the unit", self._errors())
 
     def test_v18_evidence_matches_ids_as_whole_tokens(self) -> None:
-        evidence = self.root / "docs/work/v1.8.0-c16c-machines/VERIFICATION.md"
+        evidence = self.root / "docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md"
         evidence.parent.mkdir(parents=True)
         evidence.write_text("| block:centrifugeX | advancedrocketrycommunity:machine_casing |", encoding="utf-8")
         self._edit_ledger("block:centrifuge", disposition="REDESIGNED", plan="v1.8.0",
                           target="advancedrocketrycommunity:centrifuge", decision="ADR-061 ADR-062",
-                          evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
+                          evidence="docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md")
         errors = self._errors()
-        self.assertIn("ledger: block:centrifuge: evidence file docs/work/v1.8.0-c16c-machines/VERIFICATION.md does "
+        self.assertIn("ledger: block:centrifuge: evidence file docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md does "
                       "not list the unit", errors)
 
     def test_v18_evidence_must_list_the_delivered_id(self) -> None:
-        evidence = self.root / "docs/work/v1.8.0-c16c-machines/VERIFICATION.md"
+        evidence = self.root / "docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md"
         evidence.parent.mkdir(parents=True)
         evidence.write_text("| block:lathe | advancedrocketrycommunity:machine_casing |", encoding="utf-8")
         self._edit_ledger("block:lathe", disposition="REDESIGNED", plan="v1.8.0",
                           target="advancedrocketrycommunity:warp_core", decision="ADR-061 ADR-062",
-                          evidence="docs/work/v1.8.0-c16c-machines/VERIFICATION.md")
-        self.assertIn("ledger: block:lathe: evidence file docs/work/v1.8.0-c16c-machines/VERIFICATION.md does not "
+                          evidence="docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md")
+        self.assertIn("ledger: block:lathe: evidence file docs/work/v1.8.0-c16c-ledger-fixture/VERIFICATION.md does not "
                       "list advancedrocketrycommunity:warp_core", self._errors())
 
     def test_v18_evidence_must_be_a_batch_evidence_file(self) -> None:
@@ -176,8 +176,9 @@ class V180ContentLedgerTests(unittest.TestCase):
                       self._errors())
 
     def test_planned_row_cannot_carry_evidence(self) -> None:
-        self._edit_ledger("block:lathe", evidence="docs/work/v1.8.0-content-audit.md")
-        self.assertIn("ledger: block:lathe: evidence is recorded only for rows delivered in v1.8.0", self._errors())
+        self._edit_ledger("block:oxygenCharger", evidence="docs/work/v1.8.0-content-audit.md")
+        self.assertIn("ledger: block:oxygenCharger: evidence is recorded only for rows delivered in v1.8.0",
+                      self._errors())
 
     def test_unknown_disposition_fails(self) -> None:
         self._edit_ledger("block:lathe", disposition="UNKNOWN")
@@ -241,8 +242,8 @@ class V180ContentLedgerTests(unittest.TestCase):
 
     def test_owning_units_are_not_delivered_after_the_asset(self) -> None:
         # This check governs legacy imports; the shipped tank now uses NEW art.
-        self._set_rule("textures/blocks/liquidtank.png", handling="IMPORT", units="config:CLIENT.advancedVFX")
-        self.assertTrue(any(error.endswith("owning unit config:CLIENT.advancedVFX is delivered in C18d, after the "
+        self._set_rule("textures/blocks/liquidtank.png", handling="IMPORT", units="entity:ARSpaceElevatorCapsule")
+        self.assertTrue(any(error.endswith("owning unit entity:ARSpaceElevatorCapsule is delivered in C18d, after the "
                                            "rule's batch C16a") for error in self._errors()))
 
     def test_model_textures_do_not_land_after_their_model(self) -> None:

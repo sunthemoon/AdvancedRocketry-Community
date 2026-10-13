@@ -29,7 +29,8 @@ public final class V180C16cMachineData implements DataProvider {
             var textures = new JsonObject();
             if (controller) {
                 textures.addProperty("front", NS + ":block/" + block);
-                for (String face : List.of("side", "top")) { textures.addProperty(face, NS + ":block/machine_casing"); }
+                // The machine casing ships separate side and top textures (see V180ArcCuttingData).
+                for (String face : List.of("side", "top")) { textures.addProperty(face, NS + ":block/machine_casing_" + face); }
             } else { textures.addProperty("all", NS + ":block/" + block); }
             model.add("textures", textures); files.put(asset("models/block/" + block), model);
             files.put(asset("models/item/" + block), object("parent", NS + ":block/" + block));

@@ -22,7 +22,7 @@ public final class V180ResearchData implements DataProvider {
         var files = new LinkedHashMap<String, JsonObject>();
         for (String id : IDS) {
             var model = object("parent", "minecraft:block/orientable"); var textures = object("front", NS + ":block/" + id);
-            textures.addProperty("side", NS + ":block/machine_casing"); textures.addProperty("top", NS + ":block/machine_casing"); model.add("textures", textures);
+            textures.addProperty("side", NS + ":block/machine_casing_side"); textures.addProperty("top", NS + ":block/machine_casing_top"); model.add("textures", textures);
             files.put(asset("models/block/" + id), model); files.put(asset("models/item/" + id), object("parent", NS + ":block/" + id));
             var variants = new JsonObject(); String[] facings = {"north", "east", "south", "west"};
             for (int i = 0; i < facings.length; i++) { var row = object("model", NS + ":block/" + id); row.addProperty("y", i * 90); variants.add("facing=" + facings[i], row); }
