@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.AsteroidInstance;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceOrigin;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceState;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionKind;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.MissionPayload;
@@ -157,7 +158,7 @@ final class RewardVerifierTest {
     private static AsteroidInstance instance(UUID id, AsteroidType type, long seed, List<RewardEntry> yield) {
         return new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION, id, UUID.randomUUID(), EARTH, type.id(),
                 type.tableVersion(), "0123456789abcdef", seed, yield, 0L, OptionalLong.of(100L), InstanceState.AVAILABLE,
-                UUID.randomUUID(), Optional.empty());
+                InstanceOrigin.survey(UUID.randomUUID()), Optional.empty());
     }
 
     private static SatelliteState satellite(SatelliteKind kind, int cargo, int rating) {

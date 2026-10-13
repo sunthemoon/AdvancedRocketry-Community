@@ -127,11 +127,13 @@ final class SavedDataSchemaMigratorTest {
         assertEquals(StationLimits.REGISTRY_SCHEMA_VERSION, ManagedSavedDataType.STATIONS.currentSchemaVersion());
         assertEquals(2, SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION);
         // ADR-050 §10: the satellite registry evolves independently, like stations.
-        assertEquals(3, SatelliteLimits.REGISTRY_SCHEMA_VERSION);
+        assertEquals(4, SatelliteLimits.REGISTRY_SCHEMA_VERSION);
+        assertEquals(3, SatelliteLimits.INSTANCE_REGISTRY_SCHEMA_VERSION);
         assertEquals(SatelliteLimits.REGISTRY_SCHEMA_VERSION,
                 ManagedSavedDataType.SATELLITE_MISSIONS.currentSchemaVersion());
-        assertEquals("v1.6.0-satellite-missions",
+        assertEquals("v1.8.0-ground-surveys",
                 ManagedSavedDataType.SATELLITE_MISSIONS.formatEpoch());
+        assertEquals("v1.6.0-satellite-missions", ManagedSavedDataType.SATELLITE_MISSIONS.formatEpoch(3));
     }
 
     private static CompoundTag loadFixture(String name) throws Exception {

@@ -123,8 +123,13 @@ public enum ManagedSavedDataType {
         if (this == STATIONS && schema == StationLimits.CONTROLS_REGISTRY_SCHEMA_VERSION) {
             return "v1.8.0-station-orbital-controls";
         }
-        if (this == SATELLITE_MISSIONS && schema == SatelliteLimits.REGISTRY_SCHEMA_VERSION) {
-            return SatelliteLimits.REGISTRY_FORMAT_EPOCH;
+        if (this == SATELLITE_MISSIONS) {
+            if (schema == SatelliteLimits.INSTANCE_REGISTRY_SCHEMA_VERSION) {
+                return "v1.6.0-satellite-missions";
+            }
+            if (schema == SatelliteLimits.GROUND_REGISTRY_SCHEMA_VERSION) {
+                return SatelliteLimits.REGISTRY_FORMAT_EPOCH;
+            }
         }
         if (this == ENDGAME) {
             return EndgameLimits.ROOT_FORMAT_EPOCH;
@@ -204,7 +209,7 @@ public enum ManagedSavedDataType {
         }
         if (this == SATELLITE_MISSIONS) {
             // Root 3 requires the instance list and save epoch; older roots must not carry them (ADR-050 §10).
-            boolean v160Root = schema >= SatelliteLimits.REGISTRY_SCHEMA_VERSION;
+            boolean v160Root = schema >= SatelliteLimits.INSTANCE_REGISTRY_SCHEMA_VERSION;
             boolean hasInstances = payload.contains(SATELLITE_INSTANCES_KEY, Tag.TAG_LIST);
             boolean hasEpoch = payload.contains(SATELLITE_SAVE_EPOCH_KEY, Tag.TAG_LONG);
             boolean valid = v160Root
@@ -216,6 +221,12 @@ public enum ManagedSavedDataType {
                         dataName + " schema " + schema + (v160Root ? " is missing its v1.6 sections"
                                 : " cannot carry v1.6 sections")
                 );
+            }
+            boolean groundRoot = schema >= SatelliteLimits.GROUND_REGISTRY_SCHEMA_VERSION;
+            if (groundRoot ? !payload.contains("ground_surveys", Tag.TAG_LIST) : payload.contains("ground_surveys")) {
+                throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                        dataName + " schema " + schema + (groundRoot ? " is missing ground_surveys"
+                                : " cannot carry ground_surveys"));
             }
         }
     }

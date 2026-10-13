@@ -116,7 +116,7 @@ final class InstanceLedger {
         return new AsteroidInstance(instance.schemaVersion(), instance.instanceId(), instance.ownerId(), instance.system(),
                 instance.asteroidType(), instance.tableVersion(), instance.candidateFingerprint(), instance.seed(),
                 instance.yield(), instance.createdAt(), instance.expiresAt(), InstanceState.EXPIRED,
-                instance.sourceMission(), java.util.Optional.empty());
+                instance.origin(), java.util.Optional.empty());
     }
 
     /** When the queue next acts on an instance, or {@code Long.MAX_VALUE} while it waits for a mission. */
@@ -124,7 +124,8 @@ final class InstanceLedger {
         return switch (instance.state()) {
             case AVAILABLE -> instance.expiresAt().orElseThrow();
             case DEPLETED, EXPIRED -> instance.expiresAt().isPresent()
-                    ? Math.addExact(instance.expiresAt().getAsLong(), REMOVE_AFTER_TICKS) : Long.MAX_VALUE;
+                    ? instance.expiresAt().getAsLong() > Long.MAX_VALUE - REMOVE_AFTER_TICKS ? Long.MAX_VALUE
+                    : instance.expiresAt().getAsLong() + REMOVE_AFTER_TICKS : Long.MAX_VALUE;
             case PENDING, ALLOCATED, QUARANTINED -> Long.MAX_VALUE;
         };
     }

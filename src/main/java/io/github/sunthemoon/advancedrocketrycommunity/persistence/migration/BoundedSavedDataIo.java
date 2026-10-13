@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.persistence.migration;
 
 import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +15,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.Tag;
 
 /** Bounded disk codec for Minecraft's outer SavedData wrapper. */
-final class BoundedSavedDataIo {
+public final class BoundedSavedDataIo {
     private static final String DATA_KEY = "data";
     /**
      * A single NBT charge is made before the element is allocated: arrays charge 1, 4 or 8 bytes per
@@ -40,42 +41,56 @@ final class BoundedSavedDataIo {
                 throw oversized(type, "compressed file size is " + compressedBytes + " bytes");
             }
 
-            // The raw decompressed-byte quota below is the size bound. NbtAccounter estimates heap cost;
-            // its quota is the raw bound times the type's measured factor (stations 8: about 5.7x at
-            // capacity), and no single declaration may exceed what the remaining raw bytes can back.
-            long expandedLimit = type.maxCompressedBytes();
-            long heapLimit = Math.multiplyExact(expandedLimit, type.heapAccountingFactor());
-            try (InputStream file = Files.newInputStream(path, StandardOpenOption.READ);
-                 CountingInputStream compressed = new CountingInputStream(file);
-                 GZIPInputStream gzip = new GZIPInputStream(compressed);
-                 QuotaInputStream bounded = new QuotaInputStream(gzip, expandedLimit);
-                 DataInputStream input = new DataInputStream(bounded)) {
-                BoundedAccounter accounter = new BoundedAccounter(heapLimit, () -> Math.min(bounded.remaining(),
-                        Math.max(0L, compressedBytes - compressed.count() + COMPRESSED_SLACK_BYTES)
-                                * MAX_INFLATION_RATIO + INFLATED_SLACK_BYTES));
-                CompoundTag outer;
-                try {
-                    outer = NbtIo.read(input, accounter);
-                } catch (RuntimeException exception) {
-                    if (accounter.getUsage() > heapLimit || accounter.refusedDeclaration() || bounded.exceeded()) {
-                        throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
-                    }
-                    throw exception;
-                }
-                if (input.read() != -1) {
-                    throw invalid(type, "compressed NBT contains trailing expanded data");
-                }
-                if (!outer.contains(DATA_KEY, Tag.TAG_COMPOUND)) {
-                    throw invalid(type, "outer SavedData wrapper is missing data");
-                }
-                return outer;
-            } catch (QuotaExceededException exception) {
-                throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
+            try (InputStream file = Files.newInputStream(path, StandardOpenOption.READ)) {
+                return readCompressed(file, compressedBytes, type);
             }
         } catch (SavedDataMigrationException exception) {
             throw exception;
         } catch (IOException | RuntimeException exception) {
             throw invalid(type, "cannot decode compressed SavedData", exception);
+        }
+    }
+
+    /** Uses the exact disk-reader quotas before an in-memory transaction can publish its root. */
+    public static void validatePayload(CompoundTag payload, ManagedSavedDataType type) {
+        CompoundTag outer = new CompoundTag();
+        outer.put(DATA_KEY, payload.copy());
+        byte[] encoded = write(outer, type);
+        try (InputStream input = new ByteArrayInputStream(encoded)) {
+            CompoundTag decoded = readCompressed(input, encoded.length, type);
+            if (!payload.equals(decoded.getCompound(DATA_KEY))) {
+                throw invalid(type, "bounded read changed the payload");
+            }
+        } catch (IOException exception) {
+            throw invalid(type, "cannot round-trip encoded payload", exception);
+        }
+    }
+
+    private static CompoundTag readCompressed(InputStream file, long compressedBytes, ManagedSavedDataType type)
+            throws IOException {
+        long expandedLimit = type.maxCompressedBytes();
+        long heapLimit = Math.multiplyExact(expandedLimit, type.heapAccountingFactor());
+        try (CountingInputStream compressed = new CountingInputStream(file);
+             GZIPInputStream gzip = new GZIPInputStream(compressed);
+             QuotaInputStream bounded = new QuotaInputStream(gzip, expandedLimit);
+             DataInputStream input = new DataInputStream(bounded)) {
+            BoundedAccounter accounter = new BoundedAccounter(heapLimit, () -> Math.min(bounded.remaining(),
+                    Math.max(0L, compressedBytes - compressed.count() + COMPRESSED_SLACK_BYTES)
+                            * MAX_INFLATION_RATIO + INFLATED_SLACK_BYTES));
+            CompoundTag outer;
+            try {
+                outer = NbtIo.read(input, accounter);
+            } catch (RuntimeException exception) {
+                if (accounter.getUsage() > heapLimit || accounter.refusedDeclaration() || bounded.exceeded()) {
+                    throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
+                }
+                throw exception;
+            }
+            if (input.read() != -1) { throw invalid(type, "compressed NBT contains trailing expanded data"); }
+            if (!outer.contains(DATA_KEY, Tag.TAG_COMPOUND)) { throw invalid(type, "outer wrapper is missing data"); }
+            return outer;
+        } catch (QuotaExceededException exception) {
+            throw oversized(type, "expanded NBT exceeds the fixed byte limit", exception);
         }
     }
 

@@ -227,6 +227,7 @@ final class PopulatedWorldDataPreservationTest {
                 });
         CompoundTag satellites = payloads.get(ManagedSavedDataType.SATELLITE_MISSIONS);
         satellites.remove("instances");
+        satellites.remove("ground_surveys");
         satellites.remove("save_epoch");
         satellites.getList("satellites", CompoundTag.TAG_COMPOUND).forEach(record -> {
             CompoundTag satellite = (CompoundTag) record;

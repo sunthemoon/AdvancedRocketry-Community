@@ -36,7 +36,8 @@ public final class SatelliteRecordFit {
     public static int instanceBytes(ResourceLocation type, List<ResourceLocation> yieldItems) {
         AsteroidInstance instance = new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION, ANY, ANY,
                 filler('s'), type, HEX16, HEX16, Long.MIN_VALUE, entries(yieldItems, 4_096), Long.MAX_VALUE - 1,
-                OptionalLong.of(Long.MAX_VALUE), InstanceState.ALLOCATED, ANY, Optional.of(ANY));
+                OptionalLong.of(Long.MAX_VALUE), InstanceState.ALLOCATED,
+                io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.InstanceOrigin.survey(ANY), Optional.of(ANY));
         try {
             return SatelliteNbtSize.uncompressedBytes(SatelliteNbtCodec.encodeInstance(instance));
         } catch (IllegalArgumentException overBound) {

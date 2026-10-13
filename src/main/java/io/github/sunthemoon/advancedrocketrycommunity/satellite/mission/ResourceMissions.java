@@ -94,7 +94,7 @@ public final class ResourceMissions {
             List<UUID> ids = created.stream().map(AsteroidInstance::instanceId).toList();
             if (created.size() != count || new HashSet<>(ids).size() != count || created.stream().anyMatch(instance ->
                     instance.state() != InstanceState.PENDING || !instance.ownerId().equals(start.ownerId())
-                            || !instance.sourceMission().equals(start.missionId())
+                            || !instance.origin().equals(InstanceOrigin.survey(start.missionId()))
                             || !instance.system().equals(start.system())
                             || registry.instanceRecord(instance.instanceId()) != null)) {
                 throw new IllegalArgumentException("Survey generation returned inconsistent instances");
@@ -186,7 +186,7 @@ public final class ResourceMissions {
             for (UUID id : ((MissionPayload.Survey) mission.payload()).instances()) {
                 AsteroidInstance instance = registry.instanceRecord(id);
                 if (instance != null && instance.state() == InstanceState.PENDING
-                        && instance.sourceMission().equals(missionId)) {
+                        && instance.origin().equals(InstanceOrigin.survey(missionId))) {
                     registry.storeInstance(instance.transition(InstanceState.AVAILABLE, OptionalLong.of(expiresAt),
                             Optional.empty()));
                 }
@@ -265,7 +265,7 @@ public final class ResourceMissions {
                 for (UUID id : survey.instances()) {
                     AsteroidInstance instance = registry.instanceRecord(id);
                     if (instance != null && instance.state() == InstanceState.PENDING
-                            && instance.sourceMission().equals(missionId)) {
+                            && instance.origin().equals(InstanceOrigin.survey(missionId))) {
                         registry.dropInstance(id);
                     }
                 }
@@ -367,10 +367,13 @@ public final class ResourceMissions {
      */
     public SatelliteOperationResult releaseInstance(UUID instanceId, long ttlTicks, long observedGameTime) {
         synchronized (registry) {
-            long now = registry.advanceClock(observedGameTime);
+            long now = registry.clock.preview(observedGameTime);
             AsteroidInstance instance = registry.instanceRecord(instanceId);
             if (instance == null) {
                 return registry.result(SatelliteOperationCode.INSTANCE_NOT_FOUND, false, null, null);
+            }
+            if (registry.groundSurveys().instanceReleaseProblem(instance) != null) {
+                return registry.result(SatelliteOperationCode.OFFLINE_REPAIR_REQUIRED, false, null, null);
             }
             if (instance.state() != InstanceState.QUARANTINED) {
                 return registry.result(SatelliteOperationCode.IDEMPOTENT, false, null, null);
@@ -381,10 +384,27 @@ public final class ResourceMissions {
                         ? SatelliteOperationCode.ALREADY_CLAIMED : SatelliteOperationCode.MISSION_BUSY,
                         false, null, mission);
             }
-            OptionalLong expiresAt = instance.expiresAt().isPresent() ? instance.expiresAt()
-                    : OptionalLong.of(Math.addExact(now, ttlTicks));
-            registry.storeInstance(instance.transition(expiresAt.getAsLong() > now ? InstanceState.AVAILABLE
-                    : InstanceState.EXPIRED, expiresAt, Optional.empty()));
+            AsteroidInstance next;
+            try {
+                OptionalLong expiresAt = instance.expiresAt().isPresent() ? instance.expiresAt()
+                        : OptionalLong.of(Math.addExact(now, ttlTicks));
+                next = instance.transition(expiresAt.getAsLong() > now ? InstanceState.AVAILABLE
+                        : InstanceState.EXPIRED, expiresAt, Optional.empty());
+                if (instance.origin().kind() == InstanceOrigin.Kind.GROUND_SURVEY) {
+                    Math.addExact(registry.saveEpoch(), 1L);
+                    GroundSurveyJob job = registry.groundSurveys().job(instance.origin().id()).orElseThrow();
+                    int reserved = registry.sizer.instanceBytes(next);
+                    if (reserved < 0 || reserved > SatelliteLimits.MAX_INSTANCE_RECORD_NBT_BYTES
+                            || !registry.sizer.groundMutationFits(registry, job, next, false, null,
+                                    now, observedGameTime)) {
+                        return registry.result(SatelliteOperationCode.STORAGE_BUDGET, false, null, mission);
+                    }
+                }
+            } catch (ArithmeticException exception) {
+                return registry.result(SatelliteOperationCode.CAPACITY_REACHED, false, null, mission);
+            }
+            registry.storeInstance(next);
+            registry.advanceClock(observedGameTime);
             return registry.result(SatelliteOperationCode.SUCCESS, true, null, mission);
         }
     }

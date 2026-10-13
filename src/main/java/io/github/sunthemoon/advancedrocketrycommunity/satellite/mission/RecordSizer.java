@@ -17,6 +17,18 @@ public interface RecordSizer {
 
     int instanceBytes(AsteroidInstance instance);
 
+    default int groundSurveyBytes(GroundSurveyJob job) {
+        return SatelliteLimits.MAX_GROUND_SURVEY_RECORD_NBT_BYTES;
+    }
+
+    /** Detached full-root/read preflight; the persisted implementation uses the same disk codec. */
+    default boolean groundMutationFits(SatelliteMissionRegistry registry, GroundSurveyJob job,
+            AsteroidInstance instance, boolean removeInstance,
+            io.github.sunthemoon.advancedrocketrycommunity.progression.ResearchAccount account, long now,
+            long observedTime) {
+        return true;
+    }
+
     RecordSizer BOUNDS = new RecordSizer() {
         @Override
         public int satelliteBytes(SatelliteState satellite) {

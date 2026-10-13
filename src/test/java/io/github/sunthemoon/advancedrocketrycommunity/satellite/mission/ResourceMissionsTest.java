@@ -244,7 +244,7 @@ final class ResourceMissionsTest {
         resources.startSurvey(new ResourceMissions.SurveyStart(survey, surveyMission, missionOwner, SYSTEM, VERSION, 1,
                 1_000, 7L, (created, time) -> List.of(new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION,
                 UUID.randomUUID(), missionOwner, SYSTEM, TYPE, VERSION, VERSION, 1L, YIELD, time, OptionalLong.empty(),
-                InstanceState.PENDING, surveyMission, Optional.empty()))), 0L);
+                InstanceState.PENDING, InstanceOrigin.survey(surveyMission), Optional.empty()))), 0L);
         resources.claimSurvey(surveyMission, missionOwner, TTL, 1_000L);
         UUID instanceId = ((MissionPayload.Survey) registry.mission(surveyMission).orElseThrow().payload())
                 .instances().get(0);
@@ -360,7 +360,7 @@ final class ResourceMissionsTest {
                     for (int index = 0; index < created; index++) {
                         instances.add(new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION, UUID.randomUUID(),
                                 owner, SYSTEM, TYPE, VERSION, VERSION, index, YIELD, time, OptionalLong.empty(),
-                                InstanceState.PENDING, missionId, Optional.empty()));
+                                InstanceState.PENDING, InstanceOrigin.survey(missionId), Optional.empty()));
                     }
                     return instances;
                 });
