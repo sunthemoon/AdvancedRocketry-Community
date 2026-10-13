@@ -372,11 +372,12 @@ public final class ResourceMissions {
             if (instance == null) {
                 return registry.result(SatelliteOperationCode.INSTANCE_NOT_FOUND, false, null, null);
             }
-            if (registry.groundSurveys().instanceReleaseProblem(instance) != null) {
-                return registry.result(SatelliteOperationCode.OFFLINE_REPAIR_REQUIRED, false, null, null);
-            }
+            // Only a held instance has anything to release; a healthy ground pair is not sent to offline repair.
             if (instance.state() != InstanceState.QUARANTINED) {
                 return registry.result(SatelliteOperationCode.IDEMPOTENT, false, null, null);
+            }
+            if (registry.groundSurveys().instanceReleaseProblem(instance) != null) {
+                return registry.result(SatelliteOperationCode.OFFLINE_REPAIR_REQUIRED, false, null, null);
             }
             MissionState mission = instance.allocatedMission().map(registry::missionRecord).orElse(null);
             if (mission != null && (mission.status().unfinished() || mission.status() == MissionStatus.CLAIMED)) {

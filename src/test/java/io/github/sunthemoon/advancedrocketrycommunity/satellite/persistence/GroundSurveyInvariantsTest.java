@@ -102,14 +102,18 @@ final class GroundSurveyInvariantsTest {
                 List.of(instance(first, InstanceState.AVAILABLE), instance(second, InstanceState.AVAILABLE))));
         assertTrue(data.operational());
         assertEquals(2, data.instances().stream().filter(value -> value.state() == InstanceState.AVAILABLE).count());
+        CompoundTag available = data.save(new CompoundTag());
         for (GroundSurveyJob job : data.groundSurveys()) {
             assertEquals(GroundSurveyJob.Phase.READY, job.effectivePhase());
             assertEquals(GroundSurveys.Code.OFFLINE_REPAIR_REQUIRED,
                     data.groundSurveys(jobs -> jobs.release(job.jobId())).code());
             assertTrue(data.groundSurveyQuery(jobs -> jobs.instanceReleaseProblem(job.instanceId())).contains("RUNNING"));
-            assertEquals(SatelliteOperationCode.OFFLINE_REPAIR_REQUIRED,
-                    data.resources(resources -> resources.releaseInstance(job.instanceId(), 24_000, 99)).code());
+            // W21b review F3: an AVAILABLE instance is not held, so instance release has nothing to do.
+            var release = data.resources(resources -> resources.releaseInstance(job.instanceId(), 24_000, 99));
+            assertEquals(SatelliteOperationCode.IDEMPOTENT, release.code());
+            assertFalse(release.changed());
         }
+        assertEquals(available, data.save(new CompoundTag()));
         CompoundTag held = data.save(new CompoundTag());
         // Also hold the instances, as after an offline diagnostic; release cannot bypass the conflicting claims.
         for (Tag raw : held.getList("instances", Tag.TAG_COMPOUND)) { ((CompoundTag) raw).putString("state", "quarantined"); }

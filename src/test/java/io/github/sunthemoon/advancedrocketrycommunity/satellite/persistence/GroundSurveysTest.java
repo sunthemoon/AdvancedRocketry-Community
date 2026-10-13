@@ -199,6 +199,18 @@ final class GroundSurveysTest {
         assertEquals(1, registry.groundSurveys().all().size());
     }
 
+    /** W21b review F3, its probe case: the PENDING instance of a healthy ACTIVE job is not held. */
+    @Test void instanceReleaseOfAHealthyActivePairIsIdempotentAndChangesNothing() {
+        var registry = SatelliteMissionRegistry.create(0, CodecRecordSizer.INSTANCE);
+        assertEquals(GroundSurveys.Code.SUCCESS, registry.groundSurveys().start(start(0, OWNER, 0), 0).code());
+        CompoundTag before = encoded(registry);
+        var release = registry.resources().releaseInstance(id(1_000), 24_000, 5);
+        assertEquals(SatelliteOperationCode.IDEMPOTENT, release.code());
+        assertFalse(release.changed());
+        assertEquals(InstanceState.PENDING, registry.instance(id(1_000)).orElseThrow().state());
+        assertEquals(before, encoded(registry));
+    }
+
     private static GroundSurveys.Start start(long index, UUID owner, long time) {
         AsteroidInstance original = pending(index, owner, InstanceOrigin.ground(id(100 + index)));
         AsteroidInstance instance = new AsteroidInstance(2, original.instanceId(), owner, SYSTEM, TYPE, VERSION, VERSION,
