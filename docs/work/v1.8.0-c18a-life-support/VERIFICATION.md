@@ -1,0 +1,127 @@
+# V180 C18a: life-support devices, airlock, thermite and living gravity, delivery evidence
+
+Date: 2026-10-13. Written by W31 under
+[TASK-W31](../v1.8.0-root-queue/TASK-W31-LEDGER-EVIDENCE.md) for the C18a ledger rows that
+W30's proposal (`records/W30-STATUS-PROPOSAL.md` on branch `codex/v1.8.0-w30-status`,
+`2bc87cee`, sections 1.1 and 2 and Appendix A) marks delivered. The facts come from
+[QUEUE.md](../v1.8.0-root-queue/QUEUE.md), the merge commit messages, the records in
+`docs/work/v1.8.0-root-queue/records/` and the earlier C18a folders named below. Every SHA
+below resolves with `git cat-file -e` and is an ancestor of `codex/v1.8.0-classic-content` at
+`e4bd8a12`.
+
+This file is development evidence only. **It approves no Required Gate, candidate, version or
+release.** Only the owner marks a Gate as passed (AGENTS.md sections 5 and 13).
+
+## Merges and tested HEADs
+
+| Merge on `codex/v1.8.0-classic-content` | Slices | Tested HEAD | Hosted run |
+|---|---|---|---|
+| `a859d2f4` | W14, W14F (ADR-066 sections 3 and 4): CO2 scrubber facades with an unstackable cartridge bank, pipe seals and detectors, retained-root protection; W14F closes review F1 and F2 | `02d86c65` | 38249148243 |
+| `06f1a898` | W25: release provably stale scrubber facade bindings (W14F review L1 and L2) | `977e0258` | 38354701151 |
+
+The registering commit inside `a859d2f4` is `38af92d9` (scrubber, cartridge, pipe seal,
+detector and `OXYGEN.scrubberRequiresCartrige`).
+
+Delivered before the Root handover, as commits on the shared branch:
+
+| Content | Commits | Records |
+|---|---|---|
+| Atmosphere analyzer | `9fce551e` | `docs/work/v1.8.0-c18a-atmosphere-analyzer/` |
+| Airlock door | `c263f7d9` (paired door and bounded native fixtures), `61ae5001` (resources and recipe), `ee77c51a` (geometry-based vacuum exposure) | `docs/work/v1.8.0-c18a-airlock/` |
+| Seal detector | `9cd5890b` (resources and recipe), `33a3156e`, `c554e810` (installed-rule coverage), `b0013161` (admission fixtures) | `docs/work/v1.8.0-c18a-seal-detector/` |
+| Thermite and thermite torch | `e82e5682` (resources), `a6675a4e` (material and torches), `ead0ece2` (survival crafting coverage) | `docs/work/v1.8.0-c18a-thermite/` |
+| Living gravity, leaf A | `1b6071d1` (the `environment.classicGravityEnabled` switch), `8b3fdca9` | `docs/work/v1.8.0-c18a-living-gravity/` |
+
+The living-gravity path applies one transient modifier on the Forge `ENTITY_GRAVITY` attribute
+(`celestial/service/CelestialGravityController.java`); there is no coremod. The thermite item
+carries the tag `forge:dusts/thermite`.
+
+## Hosted CI
+
+Each run is the workflow `v1.8 development regression`
+(`.github/workflows/v180-development.yml`): the ledger validator with `--require-accepted`,
+`clean build` with fresh unit tests, the artifact audit, the client-boundary check, `runData`
+twice with a clean-tree check, all Forge GameTests and `check_gametest_log.py`. It runs no
+dedicated server, no restart and no real client.
+
+On 2026-10-13 W31 read each run back through the GitHub REST API
+(`/repos/sunthemoon/AdvancedRocketry-Community/actions/runs/<id>`).
+
+| Run | Head SHA returned | Branch | Attempt | Conclusion |
+|---|---|---|---|---|
+| 38249148243 | `02d86c65` | `codex/v1.8.0-w14-life-support` | 1 | success |
+| 38354701151 | `977e0258` | `codex/v1.8.0-w25-scrubber-bindings` | 1 | success |
+| 38371580132 | `888a81b2` | `codex/v1.8.0-classic-content` | 1 | success |
+
+Every pre-handover commit in the table above is an ancestor of `02d86c65` and `977e0258`. Run
+38371580132 tested the shared branch after every Root-queue merge. Since `888a81b2` the shared
+branch has changed only documents.
+
+## Independent reviews
+
+The reviews are kept outside the repository. W31 recomputed the SHA-256 values on 2026-10-13;
+they match the merge message. W25 had a Root review only (the assertion audit lost nothing).
+The pre-handover slices record their reviews in their own folders.
+
+| Review | Path | Verdict | SHA-256 |
+|---|---|---|---|
+| W14-review | `D:/GitHub/ARCE-Task-Evidence/root-queue/W14-review/REVIEW.md` | BLOCK on F1 and F2 | `121651590cfb1678801b4da6e805ec52f001a36762400df322887f6219f0e0b5` |
+| W14F-review | `D:/GitHub/ARCE-Task-Evidence/root-queue/W14F-review/REVIEW.md` | MERGE-WITH-FOLLOWUP | `d5f9bead354ef3b505cf41fbf0b9b7a2f2078872e7452894d97ecd2e80223fe3` |
+
+## Delivered ledger units
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `asm_rule:GravityHandler.applyGravity(living)` | REDESIGNED | planetary gravity on living entities: one transient ARCE modifier on the Forge gravity attribute, no coremod (`1b6071d1`, `8b3fdca9`) |
+| `block:airlock_door` | IMPLEMENTED | `advancedrocketrycommunity:airlock_door` (`c263f7d9`, `61ae5001`): a sealing door, the block half of the small airlock |
+| `block:oxygenDetection` | IMPLEMENTED | `advancedrocketrycommunity:atmosphere_detector` (W14): redstone output by atmosphere state |
+| `block:oxygenScrubber` | IMPLEMENTED | `advancedrocketrycommunity:co2_scrubber` (W14, W14F, W25): cartridge-based vent support with a finite fourth debit |
+| `block:pipeSealer` | IMPLEMENTED | `advancedrocketrycommunity:pipe_seal` (W14): a sealing block that passes pipes |
+| `block:thermiteTorch` | IMPLEMENTED | `advancedrocketrycommunity:thermite_torch` (`a6675a4e`): a light that works in vacuum |
+| `config:OXYGEN.scrubberRequiresCartrige` | REDESIGNED | COMMON `OXYGEN.scrubberRequiresCartrige` (W14): exempts cartridge use only |
+| `item:atmAnalyser` | IMPLEMENTED | `advancedrocketrycommunity:atmosphere_analyzer` (`9fce551e`): a handheld environment readout |
+| `item:carbonScrubberCartridge` | IMPLEMENTED | `advancedrocketrycommunity:carbon_scrubber_cartridge` (W14): the scrubber consumable |
+| `item:sealDetector` | IMPLEMENTED | `advancedrocketrycommunity:seal_detector` (`9cd5890b` and the seal tests above; ADR-067): reports the seal state of a block |
+| `item:thermite` | IMPLEMENTED | `advancedrocketrycommunity:thermite` (`a6675a4e`): the thermite torch ingredient |
+| `material:Thermite` | IMPLEMENTED | `advancedrocketrycommunity:thermite`: the legacy `dustThermite` is the thermite item, tagged `forge:dusts/thermite` |
+
+Twelve rows: 10 IMPLEMENTED and 2 REDESIGNED. Appendix A also moves `item:smallAirlockDoor`
+to MERGED into `block:airlock_door`, because the airlock door's item uses a `block.` language
+key; a MERGED row names no evidence.
+
+Fifteen C18a rows stay PLANNED (W30 section 2.3):
+
+- `block:oxygenCharger`: the gas charge pad waits for D4 (ADR-066 sections 4 and 9);
+- torches and fire starters (ADR-066 section 3.2): `block:unlitTorch`, `command:root/addtorch`,
+  `config:OXYGEN.torchBlocks`, `config:OXYGEN.dropExtinguishedTorches`,
+  `event:PlanetEventHandler.blockPlacedEvent(PlaceEvent)` and
+  `event:PlanetEventHandler.blockRightClicked(RightClickBlock)`;
+- non-player effects and spawn admission (section 3.3): `config:OXYGEN.entityAtmBypass` and
+  `event:PlanetEventHandler.CheckSpawn(CheckSpawn)`;
+- gravity-scaled fall damage, leaf B: `event:PlanetEventHandler.fallEvent(LivingFallEvent)`;
+- `config:OXYGEN.vacuumDamage`, `config:PLANET.allowPlanetRespawn`,
+  `config:PLANET.forcePlanetRespawn`, `event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent)`
+  and `event:PlanetEventHandler.playerTick(LivingUpdateEvent)`.
+
+## Open items
+
+- **S1 (dedicated server and native restart):** not done for the scrubber, seals, detectors,
+  analyzer, airlock, seal detector or thermite.
+- **S2 (crash cut across stores):** no crash-cut evidence. The scrubber's retained root and its
+  facade bindings span several block entities.
+- **V1 and V2:** no real-GPU V1 or two-client V2 evidence. The airlock and thermite need V1 and
+  V2.
+- **Dedicated server:** W08's review R02 stays open: start the packaged SRG jar on a dedicated
+  server.
+- **Art and provenance:** the manual review of the NEW art and the provenance review are open,
+  including the thermite art's provenance approval.
+- **Follow-ups of this batch:**
+  - W14F-review L3: one inaccurate record sentence;
+  - the lossless carbon-cartridge refresh in the chemical reactor (ADR-066 section 3.1);
+  - leaf B of living gravity, with the vehicle and passenger Medium M1
+    (`docs/work/v1.8.0-c18a-living-gravity/TASK-01.md`).
+
+## Gate statement
+
+No Gate is approved. This file supports the ledger delivery marks only. S1, S2, V1, V2 and the
+art and provenance reviews remain open, as listed above.
