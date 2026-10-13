@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 09:55) |
+| Slice | Scope | Pipeline state (2026-10-13 10:10) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -49,7 +49,8 @@ give their SHA-256 values.
 | [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps | **Merged** `3d499253` (hosted run 38261140501; Root review). ADR-064 §10.2 implementation note added for the five optional cross-mod dusts |
 | [W20](TASK-W20-LASER-GUN.md) | C18b basic laser gun (ADR-066 section 5.3) | **Merged** `284709bf` (hosted run 38289378640; Root review; no persistence) |
 | [W21a](TASK-W21A-OBSERVATORY-DESIGN.md) | C18c observatory and processor: design note (ADR-051 amendment, registry schema 4, instance schema 2, frozen patterns) | **Design merged** `fa890675`. Independent review (Codex) APPROVE-WITH-CHANGES (SHA-256 `0c76c2d4…`): W21b applies R2, R4 and R5; W21c applies R1 and R3, and needs a Root decision on the power-plug owner access |
-| [W21b](TASK-W21B-REGISTRY-SCHEMA4.md) | Satellite registry schema 4, ground survey jobs, migration and invariants (no blocks) | Implementer (Codex) running since 08:11 |
+| [W21b](TASK-W21B-REGISTRY-SCHEMA4.md) | Satellite registry schema 4, ground survey jobs, migration and invariants (no blocks) | Delivered `dd4b419b`, `3e7ddeff` and `8c22fce3` (Codex; 2,753 unit tests, 848 GameTests, native upgrade, idempotence and downgrade refusal). Independent actual-diff review (Claude) is ready in `root-queue/W21b-review/` and waits for a Claude slot, after W11b1's review |
+| W21c | C18c observatory and data processor: blocks, menus, runtime; R1, R3, R4; the Root power-plug decision | Implementer (Codex) running since 10:09, on top of the unmerged W21b (`8c22fce3`) |
 | [W22](TASK-W22-STATION-NOTICES.md) | C17b section 5.3 station notices: translatable warp notices, visitor notices, the offline member-notice SavedData | Delivered through `397a96b0`. Branch CI 38328021348 passed. Review (Claude) MERGE-WITH-FOLLOWUP (SHA-256 `1cbb1109…`). W22F (Claude, since 08:56) fixes F2 (visitors get the brief form), F3 (the actor's current authority is checked) and F7 (notice failure cannot skip the audit). At merge Root adds R-029 and the ADR-065 W22 note, with F4 to F6 |
 | [W23](TASK-W23-OPERATOR-NBT-AUDIT.md) | Parallel bug: operator-only item NBT for every block entity that stores an owner, identity or guarded root | **Merged** `e8f4d02a` (hosted run 38328763897; Root review: additions only) |
 | [W24](TASK-W24-LEGACY-PAD-OCCUPANCY.md) | Parallel bug: the legacy landing-pad selector's occupancy (W13 review R1, legacy half) | Implementer (Claude) running since 08:45 |
