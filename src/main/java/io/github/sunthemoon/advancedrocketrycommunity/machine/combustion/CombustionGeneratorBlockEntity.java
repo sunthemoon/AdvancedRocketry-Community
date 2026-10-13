@@ -45,6 +45,12 @@ public final class CombustionGeneratorBlockEntity extends BlockEntity implements
         createCaps();
     }
 
+    /** As the solar generator: item NBT cannot plant a guarded or refused root; only an operator's is loaded. */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     public static void serverTick(ServerLevel level, BlockPos position, BlockState blockState,
             CombustionGeneratorBlockEntity generator) {
         if (generator.repairRequired() || generator.isRemoved()) {

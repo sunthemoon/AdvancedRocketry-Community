@@ -52,6 +52,15 @@ public final class FuelLoaderBlockEntity extends BlockEntity {
         createCapabilityView();
     }
 
+    /**
+     * Vanilla's {@code BlockEntityTag} merge cannot set the owner or target rocket for a non-operator. The block's
+     * own carried-root load in {@code setPlacedBy} is separate.
+     */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     public static void serverTick(Level level, BlockPos position, BlockState state, FuelLoaderBlockEntity loader) {
         if (level instanceof ServerLevel serverLevel && !loader.isRemoved()) { loader.tickServer(serverLevel); }
     }
