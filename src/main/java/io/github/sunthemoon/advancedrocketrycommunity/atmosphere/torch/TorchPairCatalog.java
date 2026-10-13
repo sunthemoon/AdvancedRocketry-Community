@@ -170,6 +170,6 @@ public final class TorchPairCatalog {
     }
 
     private static ResourceLocation minecraft(String path) {
-        return new ResourceLocation("minecraft", path);
+        return ResourceLocation.tryBuild("minecraft", path);
     }
 }
