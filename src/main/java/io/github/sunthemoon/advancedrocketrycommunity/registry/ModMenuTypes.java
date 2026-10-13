@@ -30,6 +30,8 @@ public final class ModMenuTypes {
             ForgeRegistries.MENU_TYPES,
             AdvancedRocketryCommunity.MOD_ID
     );
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerMenu>> GROUND_RESEARCH = MENUS.register(
+            "ground_research", () -> IForgeMenuType.create(io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerMenu::new));
 
     public static final RegistryObject<MenuType<CombustionGeneratorMenu>> COMBUSTION_GENERATOR = MENUS.register(
             "combustion_generator", () -> IForgeMenuType.create(CombustionGeneratorMenu::new));

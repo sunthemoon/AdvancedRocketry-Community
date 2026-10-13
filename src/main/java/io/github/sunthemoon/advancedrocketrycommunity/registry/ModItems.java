@@ -254,6 +254,8 @@ public final class ModItems {
     public static final RegistryObject<Item> FLUID_OUTPUT_HATCH = blockItem("fluid_output_hatch", ModBlocks.FLUID_OUTPUT_HATCH);
     public static final RegistryObject<Item> POWER_INPUT_PLUG = blockItem("power_input_plug", ModBlocks.POWER_INPUT_PLUG);
     public static final RegistryObject<Item> LATHE = blockItem("lathe", ModBlocks.LATHE);
+    public static final RegistryObject<Item> OBSERVATORY = blockItem("observatory", ModBlocks.OBSERVATORY);
+    public static final RegistryObject<Item> ASTROBODY_DATA_PROCESSOR = blockItem("astrobody_data_processor", ModBlocks.ASTROBODY_DATA_PROCESSOR);
     public static final RegistryObject<Item> CRYSTALLIZER = blockItem("crystallizer", ModBlocks.CRYSTALLIZER);
     public static final RegistryObject<Item> CHEMICAL_REACTOR = blockItem("chemical_reactor", ModBlocks.CHEMICAL_REACTOR);
     public static final RegistryObject<Item> PRECISION_LASER_ETCHER = blockItem("precision_laser_etcher", ModBlocks.PRECISION_LASER_ETCHER);

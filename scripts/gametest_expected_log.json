@@ -572,11 +572,40 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key (?!machines\\.(?:sawmillVanillaWood|crystallizerMaximumGravity)\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!research(?:\\s|\\.)|machines\\.(?:sawmillVanillaWood|crystallizerMaximumGravity)\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
       "reason": "Forge fills each key missing from a newly created configuration file; a run that reuses existing files logs fewer. A key corrected from a non-null value does not match."
+    },
+    {
+      "id": "w21c-research-section-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key research was corrected from null to its default, SimpleCommentedConfig:\\{\\}\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W21C ground research configuration creation",
+      "reason": "The new research section is defaulted once; the unrelated generic budget remains 99."
+    },
+    {
+      "id": "w21c-ground-surveys-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key research\\.groundSurveysEnabled was corrected from null to its default, true\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W21C ground research configuration creation",
+      "reason": "The default-on research switch is defaulted once; non-null repairs and other values are not admitted."
+    },
+    {
+      "id": "w21cf-research-debit-shortfall",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_RESEARCH_DEBIT_SHORTFALL level=minecraft:overworld pos=-?\\d+, -?\\d+, -?\\d+ required=20 missing=10; paid research stops until the controller reloads",
+      "counts": {"research_debit": 1},
+      "test": "ResearchClaimGameTests.postPublicationShortfallStopsPaidResearchWithoutThrowing",
+      "reason": "W21c review I2: the test forces the unreachable post-publication FE shortfall once; it must log once instead of throwing through the server tick."
     },
     {
       "id": "w10-crystallizer-config-key-defaulted",

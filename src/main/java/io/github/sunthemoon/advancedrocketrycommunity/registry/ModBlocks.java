@@ -178,6 +178,14 @@ public final class ModBlocks {
     public static final RegistryObject<ClassicHatchBlock> POWER_INPUT_PLUG = classicHatch(ClassicHatchKind.POWER_INPUT);
     public static final RegistryObject<ClassicControllerBlock> LATHE = BLOCKS.register("lathe", () ->
             new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK)));
+    public static final RegistryObject<ClassicControllerBlock> OBSERVATORY = BLOCKS.register("observatory", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerBlockEntity(
+                            ModBlockEntities.OBSERVATORY.get(), position, state, false)));
+    public static final RegistryObject<ClassicControllerBlock> ASTROBODY_DATA_PROCESSOR = BLOCKS.register("astrobody_data_processor", () ->
+            new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
+                    (position, state) -> new io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime.ResearchControllerBlockEntity(
+                            ModBlockEntities.ASTROBODY_DATA_PROCESSOR.get(), position, state, true)));
     public static final RegistryObject<ClassicControllerBlock> ARC_FURNACE = BLOCKS.register("arc_furnace", () ->
             new ClassicControllerBlock(metalProperties().requiresCorrectToolForDrops().pushReaction(PushReaction.BLOCK),
                     (position, state) -> new ClassicControllerBlockEntity(
