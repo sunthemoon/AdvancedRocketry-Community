@@ -55,9 +55,9 @@ import net.minecraftforge.eventbus.api.IEventBus;
  *   <li>Sleep is refused at an unloaded, unpermitted, PENDING or unbreathable bed cell. Owner decision 05: in Space a
  *       supplied room outside committed stations qualifies; inside one, live VISIT permission is required.</li>
  *   <li>The operation-scoped bed spawn setter boundary (D1 outcome 3) is deferred to W37b.</li>
- *   <li>Respawn: {@code PlayerList.respawn} removes the old player from its Level before it reads the saved point.
- *       That removal decides; a refused point is cleared from the discarded player, so vanilla uses its existing
- *       Overworld respawn, and the new player gets the point back. Nothing loads a chunk.</li>
+ *   <li>Death respawn: each connected dead player's END tick decides, even after KILLED corpse removal.
+ *       DISCARDED removal remains the final check for immediate respawn and a mod's living-player respawn call.
+ *       A refused point is durably set aside so vanilla uses the Overworld, then restored to the replacement.</li>
  * </ul>
  *
  * A set-aside tuple is owned by the player's persisted Forge data, not a tick-local map.
@@ -79,7 +79,7 @@ public final class SleepRespawnService {
         this.options = Objects.requireNonNull(options, "options");
     }
 
-    /** The COMMON {@code PLANET} options, read on every respawn. */
+    /** The COMMON {@code PLANET} options, read on every dead tick and final respawn check. */
     public static Options configuredOptions() {
         return new Options(CommonConfig.allowPlanetRespawn(), CommonConfig.forcePlanetRespawn());
     }
@@ -187,9 +187,10 @@ public final class SleepRespawnService {
 
     public void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase == TickEvent.Phase.END && event.side.isServer() && event.player instanceof ServerPlayer player
-                && player.server.isSameThread() && player.server.getPlayerList().getPlayer(player.getUUID()) == player
-                && !player.isDeadOrDying()) {
-            restore(player, true);
+                && player.server.isSameThread() && player.server.getPlayerList().getPlayer(player.getUUID()) == player) {
+            // Connection ticks still call Player.tick after KILLED removal. See W37F's javap ordering evidence.
+            // Native End credits return is a non-death CHANGED_DIMENSION path, explicitly outside this policy.
+            if (player.isDeadOrDying()) { beforeRespawn(player.server, player); } else { restore(player, true); }
         }
     }
 

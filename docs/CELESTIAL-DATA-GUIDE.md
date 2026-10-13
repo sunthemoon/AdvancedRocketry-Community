@@ -197,7 +197,9 @@ also needs permission to visit that station, and an unavailable station
 registry refuses. A supplied sealed room outside every station qualifies. The
 action bar gives the reason. Overworld beds, and worlds that are neither this
 mod's nor mapped, keep the vanilla rules. An admitted bed away from the
-Overworld never replaces the player's saved respawn point.
+Overworld currently cannot reach vanilla's bed spawn setter, because the built-in
+dimension types are not natural. Preserving the saved point when these types
+become natural requires a separate operation-scoped setter boundary.
 
 The built-in dimension types are still not `natural`, so vanilla itself still
 refuses sleep there after this check passes. Actual sleeping needs that type
@@ -213,7 +215,9 @@ permit a visit; and the air there must be breathable. `PLANET.forcePlanetRespawn
 (default false) skips only that last air check, and only while
 `allowPlanetRespawn` is true. It never allows sleeping without air. When any
 check fails, the player respawns by the Overworld rules, is told why in chat,
-and keeps the saved point for later. The check never loads a chunk.
+and keeps the saved point for later. The check never loads a chunk. This policy
+covers death respawns, including delayed death-screen requests. The native End
+credits return is a non-death dimension return and keeps vanilla behavior.
 
 ## Using the flight star map
 
