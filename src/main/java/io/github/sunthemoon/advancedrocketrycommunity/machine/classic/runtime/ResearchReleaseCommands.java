@@ -46,6 +46,11 @@ public final class ResearchReleaseCommands {
                 for (int i = 0; i < 3; i++) {
                     var fixture = new ResearchFixture(level, position(i), i != 0, Direction.NORTH, OWNER);
                     if (!fixture.controller.formed()) { throw new IllegalStateException("Native fixture did not form: " + fixture.controller.reason()); }
+                    var block = fixture.controller.getBlockState();
+                    if (!new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_PICKAXE).isCorrectToolForDrops(block)
+                            || new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE_PICKAXE).isCorrectToolForDrops(block)) {
+                        throw new IllegalStateException("Research controller tool tags differ from the classic iron-tool tier");
+                    }
                     fixture.feed(i == 0 ? 10_000 : 4_000);
                 }
             } else if (action.equals("start")) {
