@@ -524,7 +524,7 @@
       "id": "satellite-restore-quarantine",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
-      "message": "ARCE_SATELLITE_RESTORE quarantined_missions=\\d+ recovery_required=\\d+ quarantined_instances=\\d+ accounts_added=\\d+",
+      "message": "ARCE_SATELLITE_RESTORE quarantined_missions=\\d+ recovery_required=\\d+ quarantined_instances=\\d+ accounts_added=\\d+ quarantined_ground_surveys=\\d+",
       "counts": {"satellite_lifecycle": 1},
       "test": "SatelliteLifecycleGameTests",
       "reason": "Restoring a satellite registry with an invalid mission must quarantine it and report recovery."

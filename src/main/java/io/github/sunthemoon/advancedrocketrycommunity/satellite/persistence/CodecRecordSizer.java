@@ -33,6 +33,9 @@ public final class CodecRecordSizer implements RecordSizer {
 
     private static final UUID ANY = new UUID(-1L, -1L);
     private static final String LONGEST_REASON = "Q".repeat(48);
+    // Unlike mission reason codes, ground reasons permit every 48-character string.
+    // NBT modified UTF-8 uses at most three bytes per Java char, including surrogate chars.
+    private static final String LONGEST_GROUND_REASON = "\u0800".repeat(48);
     private static final ResourceLocation LONGEST_LEVEL = ResourceLocation.tryParse("f:" + "l".repeat(126));
     private static final BlockPos FAR = new BlockPos(30_000_000, 319, -30_000_000);
 
@@ -96,7 +99,7 @@ public final class CodecRecordSizer implements RecordSizer {
         GroundSurveyJob largest = new GroundSurveyJob(job.schemaVersion(), job.jobId(), job.ownerId(), job.instanceId(),
                 source, job.snapshot(), job.surveyTicks(), job.surveyEnergy(), job.surveyTicks(), job.createdAt(),
                 job.startEpoch(), GroundSurveyJob.Phase.PROCESSED, OptionalLong.of(Long.MAX_VALUE),
-                OptionalLong.of(Long.MAX_VALUE), analysis, Optional.empty()).quarantine(LONGEST_REASON);
+                OptionalLong.of(Long.MAX_VALUE), analysis, Optional.empty()).quarantine(LONGEST_GROUND_REASON);
         return bounded(() -> bytes(GroundSurveyCodec.encode(largest)), SatelliteLimits.MAX_GROUND_SURVEY_RECORD_NBT_BYTES);
     }
 

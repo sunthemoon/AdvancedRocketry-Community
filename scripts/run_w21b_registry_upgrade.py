@@ -52,7 +52,7 @@ def prepare(template: Path, target: Path, jar: Path, port: int, world: Path | No
     (target / "eula.txt").write_text("eula=true\n", encoding="ascii")
     (target / "server.properties").write_text(
         f"server-ip=127.0.0.1\nserver-port={port}\nonline-mode=false\nlevel-name=world\n"
-        "level-type=minecraft:flat\ngenerate-structures=false\nview-distance=2\nsimulation-distance=2\n"
+        "level-type=minecraft:normal\ngenerate-structures=false\nview-distance=2\nsimulation-distance=2\n"
         "max-players=1\nspawn-protection=0\nsync-chunk-writes=true\nenable-rcon=false\n",
         encoding="ascii",
     )

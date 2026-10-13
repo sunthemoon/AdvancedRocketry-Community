@@ -28,7 +28,8 @@ public final class GroundSurveyRegistryGameTests {
         var data = SatelliteMissionSavedData.create(0);
         var start = start(owner, job, instance, source);
         helper.assertTrue(data.groundSurveys(jobs -> jobs.start(start, 0)).changed(), "Ground job did not start");
-        var file = Files.createTempFile("arce-ground-gametest-", ".dat");
+        var directory = Files.createTempDirectory("arce-ground-gametest-");
+        var file = directory.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat");
         try {
             data.flush(file);
             for (int tick = 1; tick <= 20; tick++) {
@@ -50,7 +51,7 @@ public final class GroundSurveyRegistryGameTests {
             helper.assertTrue(credited.equals(data.save(new CompoundTag())), "Replay changed the registry");
             helper.assertTrue(SatelliteMissionSavedData.load(credited).account(owner).balance() == 120,
                     "Credit was not retained on reload");
-        } finally { Files.deleteIfExists(file); }
+        } finally { Files.deleteIfExists(file); Files.deleteIfExists(directory); }
         helper.succeed();
     }
 
@@ -60,7 +61,8 @@ public final class GroundSurveyRegistryGameTests {
         GroundSurveyJob.Device source = device();
         var data = SatelliteMissionSavedData.create(0);
         data.groundSurveys(jobs -> jobs.start(start(owner, job, instance, source), 0));
-        var file = Files.createTempFile("arce-ground-cancel-", ".dat");
+        var directory = Files.createTempDirectory("arce-ground-cancel-");
+        var file = directory.resolve(SatelliteMissionSavedData.DATA_NAME + ".dat");
         try {
             data.flush(file);
             data.groundSurveys(jobs -> jobs.advanceSurvey(job, source, 24_000, 1));
@@ -70,7 +72,7 @@ public final class GroundSurveyRegistryGameTests {
             helper.assertTrue(loaded.operational() && loaded.groundSurveys().get(0).surveyProgress() == 1,
                     "Cancellation lost its partial progress or blocked reload");
             helper.assertTrue(loaded.account(owner).balance() == 0, "Cancellation paid research");
-        } finally { Files.deleteIfExists(file); }
+        } finally { Files.deleteIfExists(file); Files.deleteIfExists(directory); }
         helper.succeed();
     }
 

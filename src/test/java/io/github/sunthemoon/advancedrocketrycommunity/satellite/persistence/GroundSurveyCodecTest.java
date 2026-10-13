@@ -49,8 +49,11 @@ final class GroundSurveyCodecTest {
         GroundSurveyJob largest = new GroundSurveyJob(1, base.jobId(), OWNER, base.instanceId(), source, snapshot,
                 72_000, 10_000, 72_000, 0, Long.MAX_VALUE, GroundSurveyJob.Phase.PROCESSED,
                 OptionalLong.of(Long.MAX_VALUE), OptionalLong.of(Long.MAX_VALUE), analysis, Optional.empty())
-                .quarantine("Q".repeat(48));
+                .quarantine("\u0800".repeat(48));
         int bytes = SatelliteNbtSize.uncompressedBytes(GroundSurveyCodec.encode(largest));
+        assertEquals(1_406, bytes);
+        assertEquals(1_310, SatelliteNbtSize.uncompressedBytes(GroundSurveyCodec.encode(largest.released()
+                .quarantine("Q".repeat(48)))));
         assertEquals(bytes, CodecRecordSizer.INSTANCE.groundSurveyBytes(largest));
         assertEquals(largest, GroundSurveyCodec.decode(GroundSurveyCodec.encode(largest)));
         assertTrue(bytes <= 4_096);
@@ -59,6 +62,16 @@ final class GroundSurveyCodecTest {
                 ResourceLocation.tryParse("x:" + "a".repeat(127)), 0));
         assertThrows(IllegalArgumentException.class, () -> new GroundSurveyJob.Quarantine(
                 "Q".repeat(49), GroundSurveyJob.Phase.PROCESSED));
+    }
+
+    @Test void lifecycleReservationCoversModifiedUtf8WithoutNarrowingTheCharacterBound() {
+        for (String reason : List.of("Q".repeat(48), "\u0000".repeat(48), "\u07ff".repeat(48),
+                "\u0800".repeat(48), "\ud800".repeat(48))) {
+            GroundSurveyJob held = processed(0, OWNER).quarantine(reason);
+            assertEquals(held, GroundSurveyCodec.decode(GroundSurveyCodec.encode(held)));
+            assertTrue(SatelliteNbtSize.uncompressedBytes(GroundSurveyCodec.encode(held))
+                    <= CodecRecordSizer.INSTANCE.groundSurveyBytes(held));
+        }
     }
 
     static Stream<String> corruptions() {
