@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": {
+      "item": "minecraft:glass"
+    },
+    "C": {
+      "item": "advancedrocketrycommunity:machine_casing"
+    },
+    "L": {
+      "item": "advancedrocketrycommunity:laser_lens"
+    },
+    "M": {
+      "item": "advancedrocketrycommunity:motor"
+    },
+    "P": {
+      "tag": "forge:plates/steel"
+    }
+  },
+  "pattern": [
+    "PLP",
+    "BCB",
+    "PMP"
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:observatory"
+  }
+}

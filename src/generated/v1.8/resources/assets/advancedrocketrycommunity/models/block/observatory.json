@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "advancedrocketrycommunity:block/observatory",
+    "side": "advancedrocketrycommunity:block/machine_casing_side",
+    "top": "advancedrocketrycommunity:block/machine_casing_top"
+  }
+}

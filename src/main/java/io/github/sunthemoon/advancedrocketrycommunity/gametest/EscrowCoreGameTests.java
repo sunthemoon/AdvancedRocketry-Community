@@ -48,7 +48,7 @@ public final class EscrowCoreGameTests {
                     new EscrowBarrier.Target(op1.source(), first.sourceState(), EscrowTestEndpoints.validator(op1.source(), first.sourceState())),
                     new EscrowBarrier.Target(op2.source(), second.sourceState(), EscrowTestEndpoints.validator(op2.source(), second.sourceState()))),
                     level.getServer().getTickCount(), result -> {
-                        helper.assertTrue(result.confirmed() && result.proofs().size() == 2, "Joint terrain proof did not confirm both endpoints");
+                        helper.assertTrue(result.confirmed() && result.proofs().size() == 2, "Joint terrain proof did not confirm both endpoints: " + result.reason() + ", proofs " + result.proofs().size());
                         var a = result.proofs().get(op1.source().key()); var b = result.proofs().get(op2.source().key());
                         helper.assertTrue(a.capture() == b.capture(), "Joint endpoints did not share their own store/readback");
                         a.release(); helper.assertTrue(b.valid(), "Releasing one joint endpoint invalidated the other");

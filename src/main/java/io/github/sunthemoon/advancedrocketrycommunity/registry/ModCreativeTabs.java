@@ -28,6 +28,8 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.FLUID_OUTPUT_HATCH.get());
                         output.accept(ModItems.POWER_INPUT_PLUG.get());
                         output.accept(ModItems.LATHE.get());
+                        output.accept(ModItems.OBSERVATORY.get());
+                        output.accept(ModItems.ASTROBODY_DATA_PROCESSOR.get());
                         output.accept(ModItems.CRYSTALLIZER.get());
                         output.accept(ModItems.CHEMICAL_REACTOR.get());
                         output.accept(ModItems.PRECISION_LASER_ETCHER.get());

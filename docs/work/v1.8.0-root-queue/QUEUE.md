@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 15:45) |
+| Slice | Scope | Pipeline state (2026-10-13 19:30) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -45,24 +45,32 @@ give their SHA-256 values.
 | [W16](TASK-W16-PRESENTATION.md) | C18d HUD, client configuration, sounds | **Merged** `6a20a674` (hosted run 38240401114; Root review). Follow-up: fold the `advancedrocketrycommunity_v180` sound namespace into the main namespace |
 | [W15](TASK-W15-RECIPE-GRAPH-MACHINES.md) | C16d: machine recipe types in `PackagedRecipeGraph`, strict failure restored, crystallizer and dilithium advancements | **Merged** `f5038f2f` (hosted run 38239083487; Root audit: every changed assertion is stricter). The graph reports 18 acquisition gaps, which go to W19 |
 | [W17](TASK-W17-SOLAR-ARRAY.md) | C17c solar array | **Merged** `b9ace0cd` (hosted run 38283733951; review BLOCK, closed by W17F; Root reviewed the F1 claim diff). ADR-065 W17 note extended (F5, panel exclusivity, operator-only NBT) |
-| [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | **Merged** `804be2ab` (hosted run 38283811217; review MERGE-WITH-FOLLOWUP; W18F fixes F1 to F3 and F5; Root wrote [records/W18F.md](records/W18F.md)). Follow-ups: F4, F6, F7 (finder strip overlaps the boss bar), F8 |
+| [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | **Merged** `804be2ab` (hosted run 38283811217; review MERGE-WITH-FOLLOWUP; W18F fixes F1 to F3 and F5; Root wrote [records/W18F.md](records/W18F.md)). F4, F6 and F7 fixed by W26. Open: F8 (provenance in the same commit as the assets) |
 | [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps | **Merged** `3d499253` (hosted run 38261140501; Root review). ADR-064 §10.2 implementation note added for the five optional cross-mod dusts |
 | [W20](TASK-W20-LASER-GUN.md) | C18b basic laser gun (ADR-066 section 5.3) | **Merged** `284709bf` (hosted run 38289378640; Root review; no persistence) |
 | [W21a](TASK-W21A-OBSERVATORY-DESIGN.md) | C18c observatory and processor: design note (ADR-051 amendment, registry schema 4, instance schema 2, frozen patterns) | **Design merged** `fa890675`. Independent review (Codex) APPROVE-WITH-CHANGES (SHA-256 `0c76c2d4…`): W21b applies R2, R4 and R5; W21c applies R1 and R3, and needs a Root decision on the power-plug owner access |
 | [W21b](TASK-W21B-REGISTRY-SCHEMA4.md) | Satellite registry schema 4, ground survey jobs, migration and invariants (no blocks) | **Merged** `a7b0af22` (hosted run 38344780650; review MERGE-WITH-FOLLOWUP; W21bF fixed F1 to F4, F6 and F8). ADR-051 W21b note and R-030 added. Open: F9, a station-scale timing miss under machine load |
-| W21c | C18c observatory and data processor: blocks, menus, runtime; R1, R3, R4; the Root power-plug decision | Delivered through `5e75d1a2`. Review (Claude) MERGE-WITH-FOLLOWUP (SHA-256 `8917c9fa…`): no duplicate instance, credit or FE path. M1: merge only the W21bF tree and re-verify it there; follow-ups L1, L2, L4, L5, L6 (unbudgeted per-tick registry queries) and I2. Branch CI 38353212060 crashed on nested GameTest scheduling. W21cF (Claude, since 14:24) fixes the crash and the follow-ups and re-verifies. At merge Root adds the ADR-066 note, the R-027 scope and the collision risk entry |
+| W21c | C18c observatory and data processor | **Merged** `5e75f835` (hosted run 38368323736; review MERGE-WITH-FOLLOWUP; W21cF fixed the CI crash and L1, L2, L4 to L6, I2). ADR-066 W21c note, R-027 scope and R-033 added. Open: V1 of the menu texts; the optional M1 pause on an over-reserved restored root |
 | [W22](TASK-W22-STATION-NOTICES.md) | C17b section 5.3 station notices: translatable warp notices, visitor notices, the offline member-notice SavedData | **Merged** `286bdfe9` (hosted run 38337117540; review MERGE-WITH-FOLLOWUP; W22F fixed F2, F3 and F7). The ADR-065 W22 note and R-029 were added. Open follow-ups: F8 (a new member is shown the outcome from before they joined), F9 (default names contain the creator's name), F10 (two tests) |
 | [W23](TASK-W23-OPERATOR-NBT-AUDIT.md) | Parallel bug: operator-only item NBT for every block entity that stores an owner, identity or guarded root | **Merged** `e8f4d02a` (hosted run 38328763897; Root review: additions only) |
 | [W24](TASK-W24-LEGACY-PAD-OCCUPANCY.md) | Parallel bug: the legacy landing-pad selector's occupancy (W13 review R1, legacy half) | **Merged** `58d763d4` (hosted run 38336046793; Root review) |
 | [W25](TASK-W25-SCRUBBER-STALE-BINDINGS.md) | Parallel bug: release provably stale scrubber facade bindings (W14F review L1 and L2) | **Merged** `06f1a898` (hosted run 38354701151; Root review) |
-| [W26](TASK-W26-BEACON-FOLLOWUPS.md) | Parallel bug: beacon F4 (load-time inactive flicker), F6 (tests), F7 (finder strip versus the boss bar) | Implementer (Codex) running since 13:23 |
-| [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | **Merged** `f1eb5d83` (admission disabled; review MERGE-WITH-FOLLOWUP; W11b1F fixed all 11 findings; native 24/24; Root fix `548f0c3f` paces the escrow GameTests; hosted run 38360139403). ADR-065 W11b1 note, R-031 and R-032 added. Open: native E2 `BARRIER_UNSTABLE` (the reader's stability check compares the whole region file) |
+| [W26](TASK-W26-BEACON-FOLLOWUPS.md) | Parallel bug: beacon F4 (load-time inactive flicker), F6 (tests), F7 (finder strip versus the boss bar) | **Merged** `7fb7e50c` (hosted run 38369606917; Root review). Open: V1 of the strip position |
+| [W27a](TASK-W27A-SATELLITE-BAY-DESIGN.md) | C17c-02 satellite bay: design note (receipt store and sequence on the D3-A core) | Delivered `b55a41f2` and `9fffc35b` (Claude). Independent review (Codex) running since 19:21; the bay itself waits for W11b2 and W11b3 |
+| [W28](TASK-W28-GAMETEST-SCHEDULING-AUDIT.md) | Parallel bug: audit and fix GameTests that schedule from inside scheduled callbacks, plus a guard | Delivered through `29324f10` (Codex): 40 nested scheduling sites now use setup-registered tick continuations; an AST guard with 13 tests; the assertion audit lost nothing. Root fixes on the branch: `4b116fae` saves the joint-proof fixture chunk before its single-attempt barrier (the intermittent failure seen by W28 and W29), and `ffa7250f` moves a W26 beacon delay that the guard caught onto the driver. Branch CI 38389630543 on `ffa7250f` |
+| [W29](TASK-W29-ANVIL-SLOT-STABILITY.md) | Escrow follow-up: per-slot readback stability (the native E2 `BARRIER_UNSTABLE`) | **Merged** (hosted run 38382392596). The W11b1 open item E2 `BARRIER_UNSTABLE` is closed in the ADR-065 note. Open: the intermittent first-attempt joint-proof GameTest, which now names its reason |
+| [W30](TASK-W30-STATUS-RECONCILIATION.md) | Status reconciliation proposal for Root: COMPLETION-PLAN C16 to C19, the ledger, pre-handover items, CURRENT_VERSION | **Merged** `0622b982`. Applied by Root: COMPLETION-PLAN `eed1c6e3`, CURRENT_VERSION `6ef115b0` (history moved to the log) |
+| [W31](TASK-W31-LEDGER-EVIDENCE.md) | Per-batch delivery evidence files and a ready-to-apply ledger patch | **Merged** `777b8b5d`. Root applied the test-fixture patch `ce593e67` and the ledger patch `065c0c36` (146 units delivered, 40 PLANNED; validator PASS; ledger tests 58 OK). Root fix `9dbaa637`: the C16c and research controller models used a missing `machine_casing` texture |
+| [W32](TASK-W32-CHEMICAL-SPECIAL-RECIPES.md) | Chemical reactor special recipes: `space_breathing` application, lossless cartridge refresh | Delivered through `4d651a3d` (Claude; 2,887 unit tests, 899 GameTests). Root review: the refresh changes only the use count of a fully spent cartridge; the enchantment copies the stack and adds level 1, refusing sealed, incompatible or unsupported stacks; the graph models both. Branch CI 38390433422 on `5f880382` |
+| [W33](TASK-W33-TORCHES.md) | C18a combustion torches, unlit torches and fire starters (ADR-066 section 3.2) | Implementer (Claude) running since 19:09; design note first, then one read-only review |
+| [W34](TASK-W34-NONPLAYER-ATMOSPHERE.md) | C18a non-player atmosphere effects, `atmosphere_bypass`, spawn admission, `vacuumDamage` | Implementer (Claude) running since 19:29 |
+| [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | **Merged** `f1eb5d83` (admission disabled; review MERGE-WITH-FOLLOWUP; W11b1F fixed all 11 findings; native 24/24; Root fix `548f0c3f` paces the escrow GameTests; hosted run 38360139403). ADR-065 W11b1 note, R-031 and R-032 added. E2 `BARRIER_UNSTABLE` closed by W29 |
 | [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | **Merged** `811a5796`. Independent review (Codex) **APPROVE-WITH-CHANGES** (SHA-256 `8ec318a3…`): W11b2's implementation applies R1 to R6 (R1 and R2 High: a failed checked journal write stops dependent transfer effects; fenced retries stay classified, ticket-free and leave unrelated warps available). W11b2 starts after W11b1 merges |
 | W11b2 | D3-A rocket integration with R1 to R6 (admission stays disabled) | Continuation 02 at `e22544cc` (W11b1F imported; 2,875 unit tests, 872 GameTests). Its benchmark found each checked journal write synchronous on the server thread, at 86 to 122 ms. Root decision: move the writes to an off-thread writer. Continuation 03 (Codex, since 15:36): off-thread journal writer, credited-rocket reconciliation, durable settlement, the full native matrix |
 | Root fix | Mixin refmap lost on a Gradle build-cache hit (W19's `MixinPackagingTest` failure); a release jar could ship without the ADR-073 refmap | **Merged** `798a2465`: the refmaps and mappings are declared `compileJava` outputs; verified miss then hit; hosted run 38258700306 passed |
 | Root incident | C: filled to 0 GB: a W16 worker's background bare `python` REPL wrote 24.9 GB | Cleaned 21:40; WORKER-RULES now forbids interactive or unbounded background commands |
 
-The shared branch `a859d2f4` holds every merge above. Hosted run 38251946851 passed at `a859d2f4`. Hosted run 38206390869 passed at
+Hosted run 38371580132 passed on the shared branch at `888a81b2`, which holds every merge above. Hosted run 38206390869 passed at
 `ebf4c07b`, before the force field merge. Run 38208930066 passed at `17fb7e15`; run 38219141393 checks `487da4e6`.
 
 ## Queued
@@ -75,42 +83,66 @@ Hosted CI runs on each implementer branch after Root pushes it (workflow change
 
 ## Next candidates
 
-- The four C16c machines (crystallizer, chemical reactor, laser etcher, centrifuge) on
-  the W01 kernel, after W05.
-- C17a loader variants, monitoring station and linker (ADR-065 section 4).
-- C17b station controls and landing pad (ADR-065 sections 5 and 6.1); the landing pad
-  waits for W02.
-- C17c beacon and finder, satellite bay, solar array (ADR-065 sections 7 to 9).
-- C18a scrubber, charger and seals (ADR-066 sections 3 and 4).
-- C18b motion upgrades and jetpack (ADR-066 section 5.2), and the laser gun. The same task fixes W03 review M1 (decode refused workstation roots from detached copies) and L1 (R-026 and the ADR-066 note name the noncanonical-NBT trigger).
-- C18c observatory and advancements (ADR-066 section 6).
-- C18d presentation and client configuration (ADR-066 section 7).
-- Parallel bugs:
-  - audit existing GameTests for scheduling from inside a scheduled callback (the W21c CI crash pattern; WORKER-RULES now forbids it);
-  - the hosted chunk-save CME (being fixed by W08 under ADR-073) (runs 38064322640 and 38156329125 attempt 2, both at
-    batch `endgame_gravity_station`). Root cause, from the bytecode of the mapped
-    Forge 47.4.10 jar:
-    - vanilla 1.20.1 `IOWorker.loadAsync` returns the pending write's `CompoundTag`
-      without a copy;
-    - `ChunkStorage.upgradeChunkTag` then puts and removes `__context` on that
-      top-level tag;
-    - so when a chunk is unloaded and quickly reloaded, the main thread modifies the
-      tag while the IO thread is writing it.
+Source: W30's verified reconciliation, `records/W30-STATUS-PROPOSAL.md` on branch
+`codex/v1.8.0-w30-status` (`2bc87cee`), section 5. Dispatch order: progress first, then the
+parallel bugs.
 
-    The single `CompoundTag.write` frame under `NbtIo` shows the top-level tag. Later
-    Minecraft versions copy the pending data. The fix is the owner's choice: a Mixin
-    backport (needs an ADR), or a bounded ERROR expectation (needs a change to the log
-    ADR's exact-count rule);
-  - the unpaced multi-leg planetary flight test (run 38084795112);
-  - the 5 ms wall-clock budget per atmosphere-boundary callback (recurred on 2026-10-13 in W11b1's first native selection: `force_field_boundary` was rejected at startup under load)
-    (`AtmosphereBoundaryRegistry.MAX_CALLBACK_NANOS`). Under machine load, the adapter
-    test mod's provider exceeded it and mod loading failed (W01 record, crash at
-    2026-10-12 00:18). Changing the budget needs an ADR.
-  - a HotSpot C2 compiler crash on the hosted runner: SIGSEGV in
-    `BoolNode::Ideal`, Temurin 17.0.20.1. It happened in run 38156329125 attempt 1, the
-    shared branch after the W03 merge, during the batch `flight_concurrency`, and exit
-    code 134 ended the GameTest server. The job was re-run. If the crash recurs, pin the
-    JDK or exclude the method from compilation.
+- **Escrow chain:**
+  - W11b3: `fluid_fuel_loader` and the linker's rocket-binding half, with packaged S2 evidence
+    (also W02 F3's refill);
+  - W11c: cargo Fluid loaders and unloaders;
+  - W11d: item cargo loaders and unloaders;
+  - W11e: the full linker and the monitoring station;
+  - the satellite bay, after W27a's review (ADR-065 sections 4.2, 4.3 and 8).
+- **C16d** (ADR-064 section 10):
+  - the tracking circuit;
+  - the graph run with the Tau Ceti Levels removed;
+  - the rebalance and its CHANGELOG entries.
+- **C16a-07b:** one formation GameTest per motor tier (ADR-064 section 4.1).
+- **Chemical reactor special recipes:**
+  - the `space_breathing` enchantment application (ADR-066 section 5.1);
+  - the lossless carbon-cartridge refresh (section 3.1).
+- **C18a environment rules** (ADR-066 sections 3.2 and 3.3), in three or four tasks:
+  - torches and fire starters;
+  - non-player atmosphere effects, `atmosphere_bypass` and spawn admission;
+  - `vacuumDamage`;
+  - sleep and the two respawn options;
+  - underwater breathing;
+  - the space safety return;
+  - gravity-scaled fall damage, after its M1.
+- **The gas charge pad** (ADR-066 sections 4 and 9, D4). Needs the **owner's decision** first:
+  prove the player-file save ordering, or approve an alternative interaction.
+- **World-first advancements** `one_small_step` and `first_station_warp` (ADR-066 section 6.2,
+  D3), after W11b2.
+- **C18d** (ADR-066 section 7.1):
+  - client rendering of the black-hole sky;
+  - the elevator capsule effect, which needs an S2C carrier;
+  - producers for the `lathe`, `rolling_machine` and `machine_large` sounds;
+  - the sound-namespace fold;
+  - the manual listen;
+  - OBJ loading, once the assets are imported.
+- **Per-asset closure** of the 154 REVIEW assets (ADR-066 section 7.3).
+- **C19:**
+  - merge the validator chain (`82f82b1f`, `d605be33`);
+  - the full Python suite and the strict validator;
+  - the evidence references;
+  - `PORTING_MATRIX`;
+  - the ADR-068, ADR-070 and ADR-071 decisions;
+  - R32-03;
+  - the ledger closure.
+- **S1, V1 and V2** for every merged slice, plus W08 R02. These are for the final campaign.
+- **Parallel bugs** (open follow-ups):
+  - W01 L1 to L3;
+  - W02F (native restart; the locked rocket);
+  - W04 N4 to N6;
+  - W10-R1;
+  - W13 N1 to N3;
+  - W18 F8;
+  - W21b F9;
+  - W21c M1;
+  - W22 F8 to F10;
+  - the 5 ms atmosphere-boundary budget, which needs an ADR (it recurred on 2026-10-13);
+  - the HotSpot C2 crash, if it recurs.
 
 ## Parked
 
