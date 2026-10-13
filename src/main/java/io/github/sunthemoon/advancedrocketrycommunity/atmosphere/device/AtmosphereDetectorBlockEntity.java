@@ -23,6 +23,7 @@ public final class AtmosphereDetectorBlockEntity extends BlockEntity {
     private Reason reason = Reason.UNAVAILABLE;
     public AtmosphereDetectorBlockEntity(BlockPos pos, BlockState state) { super(ModBlockEntities.ATMOSPHERE_DETECTOR.get(), pos, state); }
     public boolean protectedData() { return refused != null; }
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     public DetectorMode mode() { return mode; }
     public Reason reason() { return reason; }
     public boolean signal() { return !protectedData() && reason == Reason.AVAILABLE && getBlockState().getValue(AtmosphereDetectorBlock.POWERED); }

@@ -54,6 +54,7 @@ public abstract class ClassicControllerBlockEntity extends BlockEntity {
 
     protected abstract ResourceLocation patternId();
     protected abstract List<ClassicValidatedRecipe> boundedRecipes();
+    @Override public final boolean onlyOpCanSetNbt() { return true; }
     final ResourceLocation machineKind() { return machineKind; }
     final ClassicOwnerState ownerState() { return storage; }
     final ClassicControllerFrame frame() { return frame; }

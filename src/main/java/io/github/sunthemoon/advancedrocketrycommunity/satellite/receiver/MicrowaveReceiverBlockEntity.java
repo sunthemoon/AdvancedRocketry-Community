@@ -73,6 +73,15 @@ public final class MicrowaveReceiverBlockEntity extends BlockEntity implements M
         createCapabilities();
     }
 
+    /**
+     * Vanilla's {@code BlockEntityTag} merge cannot set the receiver ID for a non-operator. The block's own
+     * carried-root load in {@code setPlacedBy} is separate.
+     */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     public static void serverTick(Level level, BlockPos position, BlockState state, MicrowaveReceiverBlockEntity receiver) {
         MinecraftServer server = level.getServer();
         if (receiver.blocked() || server == null) {
