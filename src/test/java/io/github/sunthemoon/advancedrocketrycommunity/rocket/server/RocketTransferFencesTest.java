@@ -22,6 +22,8 @@ final class RocketTransferFencesTest {
         assertFalse(RocketTransferEntities.columnsAlreadyLoaded(0, 16, 0, 0, (x, z) -> { fail("Oversize region was inspected"); return true; }));
         assertFalse(RocketTransferEntities.columnsAlreadyLoaded(Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 0,
                 (x, z) -> { fail("Overflow region was inspected"); return true; }));
+        assertTrue(RocketTransferEntities.columnsAlreadyLoaded(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE,
+                (x, z) -> x == Integer.MAX_VALUE && z == Integer.MAX_VALUE));
         assertFalse(RocketTransferEntities.columnsAlreadyLoaded(0, 3, 0, 3, (x, z) -> x != 2 || z != 2));
     }
 

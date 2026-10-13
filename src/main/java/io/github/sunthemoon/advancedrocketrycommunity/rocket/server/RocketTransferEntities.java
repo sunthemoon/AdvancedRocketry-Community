@@ -204,9 +204,9 @@ final class RocketTransferEntities {
         long width = (long) maxX - minX + 1, depth = (long) maxZ - minZ + 1;
         if (width <= 0 || depth <= 0 || width > RocketFlightLimits.MAX_LANDING_CHUNKS
                 || depth > RocketFlightLimits.MAX_LANDING_CHUNKS || width * depth > RocketFlightLimits.MAX_LANDING_CHUNKS) { return false; }
-        for (int x = minX; x <= maxX; x++) {
-            for (int z = minZ; z <= maxZ; z++) {
-                if (!loaded.test(x, z)) { return false; }
+        for (int x = 0; x < width; x++) {
+            for (int z = 0; z < depth; z++) {
+                if (!loaded.test(minX + x, minZ + z)) { return false; }
             }
         }
         return true;
