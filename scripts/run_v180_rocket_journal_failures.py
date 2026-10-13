@@ -49,6 +49,21 @@ def validate_authority(rockets: list[dict], journal: dict, mode: str, baseline: 
     return authority
 
 
+def allocated_slots(region: Path) -> list[int]:
+    # Vanilla can create an empty entity-region file without storing any sections.
+    # An empty file has no authority; a nonempty, truncated header is corruption.
+    size = region.stat().st_size
+    if size == 0:
+        return []
+    if size < 8192:
+        raise smoke.SmokeError(f"Truncated entity-region header: {region}")
+    with region.open("rb") as stream:
+        header = stream.read(4096)
+    if len(header) != 4096:
+        raise smoke.SmokeError(f"Incomplete entity-region location table: {region}")
+    return [i for i, location in enumerate(struct.unpack(">1024I", header)) if location]
+
+
 def inspect(world: Path, mode: str, baseline: dict | None) -> dict:
     if (world / "data" / LEDGER).exists():
         raise smoke.SmokeError("Journal-only fixture created an escrow ledger")
@@ -57,9 +72,7 @@ def inspect(world: Path, mode: str, baseline: dict | None) -> dict:
     for region in sorted(world.rglob("r.*.mca")):
         if region.parent.name != "entities":
             continue
-        with region.open("rb") as stream:
-            slots = [i for i, location in enumerate(struct.unpack(">1024I", stream.read(4096))) if location]
-        for slot in slots:
+        for slot in allocated_slots(region):
             rockets.extend(entity for entity in record(region, slot).get("Entities", []) if "RocketEntityData" in entity)
         files[region.relative_to(world).as_posix()] = digest(region)
     journal_path = world / "data" / JOURNAL

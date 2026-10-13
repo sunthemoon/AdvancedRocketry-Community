@@ -1,6 +1,8 @@
 from copy import deepcopy
 import sys
 from pathlib import Path
+import struct
+from tempfile import TemporaryDirectory
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -16,6 +18,20 @@ def rocket():
 
 
 class RocketJournalFailuresTest(unittest.TestCase):
+    def test_only_empty_regions_have_no_header(self):
+        with TemporaryDirectory() as directory:
+            region = Path(directory) / "r.0.0.mca"
+            region.write_bytes(b"")
+            self.assertEqual([], runner.allocated_slots(region))
+            for size in (1, 4095, 4096, 8191):
+                region.write_bytes(bytes(size))
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.allocated_slots(region)
+            table = [0] * 1024
+            table[3], table[1000] = 513, 769
+            region.write_bytes(struct.pack(">1024I", *table) + bytes(4096))
+            self.assertEqual([3, 1000], runner.allocated_slots(region))
+
     def test_admission_requires_the_old_fueled_authority(self):
         self.assertEqual(1000, runner.validate_authority([rocket()], {}, "ADMISSION", None)["fuel"]["amount"])
         for state in ("COUNTDOWN", "ASCENT", "TRANSIT", "LANDED"):
