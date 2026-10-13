@@ -29,7 +29,7 @@ public final class RocketJournalBenchmark {
         if (Runtime.getRuntime().maxMemory() > 4L * 1024 * 1024 * 1024) { throw new IllegalStateException("Heap exceeds Xmx4G"); }
         var report = new LinkedHashMap<String, Object>();
         report.put("status", "IN_PROGRESS"); report.put("source_commit", args[2]); report.put("jar_sha256", args[3]);
-        report.put("scope", "Isolated owner capture/publish, writer and elapsed costs; domain mutations are outside write intervals. No players, reference world load, native watchdog or soak. In-place comparator is the current vanilla NbtIo algorithm, not a pinned old binary.");
+        report.put("scope", "Isolated candidate validation plus owner capture/publish, writer and elapsed costs. Candidate put/remove costs are measured separately and included in combined owner time; immutable fixture construction is outside the intervals. No players, reference world load, native watchdog or soak. In-place comparator is the current vanilla NbtIo algorithm, not a pinned old binary.");
         report.put("max_heap_bytes", Runtime.getRuntime().maxMemory());
         var peak = new AtomicLong(); var running = new AtomicBoolean(true);
         var writers = new ArrayList<RocketTransferSavedData>();
@@ -44,23 +44,35 @@ public final class RocketJournalBenchmark {
             var cycle = new RocketTransferSavedData(); writers.add(cycle); var small = snapshot(0);
             var records = new ArrayList<RocketTransferRecord>(); var samples = new ArrayList<Timing>();
             Path checked = directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
-            for (int i = 0; i < 8; i++) { var record = record(small, i); records.add(record); cycle.put(record); samples.add(write(cycle, checked)); }
+            for (int i = 0; i < 8; i++) {
+                var record = record(small, i); records.add(record);
+                long mutation = System.nanoTime(); cycle.put(record);
+                samples.add(write(cycle, checked, System.nanoTime() - mutation));
+            }
             for (var phase : List.of(RocketTransferPhase.DESTINATION_SPAWNED, RocketTransferPhase.PASSENGERS_TRANSFERRED,
                     RocketTransferPhase.SOURCE_REMOVED, RocketTransferPhase.COMMITTED)) {
                 for (int i = 0; i < records.size(); i++) {
                     var record = records.get(i); record = phase == RocketTransferPhase.DESTINATION_SPAWNED
                             ? record.destinationSpawned(new UUID(9, i + 1)) : record.advance(phase);
-                    records.set(i, record); cycle.put(record); samples.add(write(cycle, checked));
+                    records.set(i, record);
+                    long mutation = System.nanoTime(); cycle.put(record);
+                    samples.add(write(cycle, checked, System.nanoTime() - mutation));
                 }
             }
-            for (var record : records) { cycle.remove(record.transferId()); samples.add(write(cycle, checked)); }
+            for (var record : records) {
+                long mutation = System.nanoTime(); cycle.remove(record.transferId());
+                samples.add(write(cycle, checked, System.nanoTime() - mutation));
+            }
             report.put("eight_transfer_cycle", Map.of(
                     "main", statistics(samples.stream().map(Timing::mainMs).toList()),
+                    "candidate_validation", statistics(samples.stream().map(Timing::mutationMs).toList()),
+                    "capture_publication", statistics(samples.stream().map(Timing::captureMs).toList()),
                     "writer", statistics(samples.stream().map(Timing::writerMs).toList()),
                     "elapsed", statistics(samples.stream().map(Timing::elapsedMs).toList())));
-            if (percentile(samples.stream().map(Timing::mainMs).sorted().toList(), .95) > 50
+            if (samples.stream().mapToDouble(Timing::mainMs).average().orElseThrow() > 25
+                    || percentile(samples.stream().map(Timing::mainMs).sorted().toList(), .95) > 50
                     || percentile(samples.stream().map(Timing::mainMs).sorted().toList(), .99) > 100) {
-                throw new IllegalStateException("Owner capture/publish exceeds unchanged docs/17 budgets");
+                throw new IllegalStateException("Candidate validation plus owner capture/publish exceeds unchanged docs/17 budgets");
             }
             cycle.stop(); persist(output, report);
 
@@ -81,7 +93,13 @@ public final class RocketJournalBenchmark {
             if (destinationBytes != RocketLimits.MAX_TOTAL_NBT_BYTES) { throw new IllegalStateException("Maximum destination fixture does not reach exact snapshot bound"); }
             var full = new RocketTransferSavedData();
             writers.add(full);
-            for (int i = 0; i < RocketFlightLimits.MAX_ACTIVE_TRANSFERS; i++) { full.put(record(maximum, i)); }
+            var maximumAdmissions = new ArrayList<Double>();
+            for (int i = 0; i < RocketFlightLimits.MAX_ACTIVE_TRANSFERS; i++) {
+                var candidate = record(maximum, i);
+                long mutation = System.nanoTime(); full.put(candidate);
+                maximumAdmissions.add((System.nanoTime() - mutation) / 1_000_000D);
+            }
+            report.put("maximum_candidate_validation", statistics(maximumAdmissions));
             report.put("maximum_fixture", Map.of("records", full.entries().size(), "blocks_per_snapshot", maximum.blocks().size(),
                     "source_snapshot_bytes", bytes, "destination_snapshot_bytes", destinationBytes,
                     "journal_bytes", RocketNbtSize.uncompressedBytes(full.save(new CompoundTag())),
@@ -92,7 +110,7 @@ public final class RocketJournalBenchmark {
             report.put("maximum_in_place_capture_owner_ms", vanillaCapture);
             NbtIo.writeCompressed(outer, directory.resolve("in-place.dat").toFile());
             report.put("maximum_in_place_owner_ms", (System.nanoTime() - start) / 1_000_000D); persist(output, report);
-            Timing maximumWrite = write(full, checked);
+            Timing maximumWrite = write(full, checked, 0);
             report.put("maximum_checked_capture_publish_owner_ms", maximumWrite.mainMs());
             report.put("maximum_checked_writer_ms", maximumWrite.writerMs());
             report.put("maximum_checked_elapsed_ms", maximumWrite.elapsedMs());
@@ -120,8 +138,10 @@ public final class RocketJournalBenchmark {
                 "p50_ms", percentile(sorted, .50), "p95_ms", percentile(sorted, .95), "p99_ms", percentile(sorted, .99), "maximum_ms", sorted.get(sorted.size() - 1));
     }
     private static double percentile(List<Double> sorted, double p) { return sorted.get((int) Math.ceil(p * sorted.size()) - 1); }
-    private record Timing(double mainMs, double writerMs, double elapsedMs) { }
-    private static Timing write(RocketTransferSavedData data, Path file) throws InterruptedException {
+    private record Timing(double mutationMs, double captureMs, double writerMs, double elapsedMs) {
+        double mainMs() { return mutationMs + captureMs; }
+    }
+    private static Timing write(RocketTransferSavedData data, Path file, long mutationNanos) throws InterruptedException {
         long start = System.nanoTime();
         if (!data.requestWrite(file, CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS))) {
             throw new IllegalStateException("Writer rejected the reference cycle");
@@ -133,7 +153,8 @@ public final class RocketJournalBenchmark {
             if (System.nanoTime() - start > 30_000_000_000L) { throw new IllegalStateException("Journal benchmark write did not complete"); }
             if (!data.acknowledgedCurrent()) { Thread.sleep(1); }
         }
-        return new Timing(main / 1_000_000D, data.lastWriterNanos() / 1_000_000D, (System.nanoTime() - start) / 1_000_000D);
+        return new Timing(mutationNanos / 1_000_000D, main / 1_000_000D, data.lastWriterNanos() / 1_000_000D,
+                (System.nanoTime() - start + mutationNanos) / 1_000_000D);
     }
     private static RocketStructureSnapshot snapshot(int padding) {
         byte[] entropy = new byte[RocketLimits.MAX_BLOCK_ENTITY_NBT_BYTES]; new Random(20261013).nextBytes(entropy);
