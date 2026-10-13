@@ -45,6 +45,7 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
     }
     public ClassicHatchKind kind() { return kind; }
     public boolean repairRequired() { return rejected != null; }
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     ClassicBankKey bankKey() {
         return new ClassicBankKey(kind.bankKind().orElseThrow(), worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
     }

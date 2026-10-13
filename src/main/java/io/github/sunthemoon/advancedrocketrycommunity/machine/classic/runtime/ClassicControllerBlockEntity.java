@@ -67,6 +67,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     public long consumedEnergy() { return checkpoint.job().map(job -> job.progress().consumedEnergy()).orElse(0L); }
     public boolean formed() { return ready && !repair && checkpoint.structure().formationState() == MultiblockFormationState.FORMED; }
     public boolean repairRequired() { return repair; }
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     boolean transaction() { return transaction; }
     boolean physical() {
         if (isRemoved() || !(level instanceof ServerLevel server) || !server.getServer().isSameThread()) { return false; }
