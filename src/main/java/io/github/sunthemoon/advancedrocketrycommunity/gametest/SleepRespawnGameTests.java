@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SleepRespa
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SleepRespawnRules.SleepRefusal;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.VentOperatingStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereManager;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.SleepRespawnService;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVentBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
@@ -140,7 +141,7 @@ public final class SleepRespawnGameTests {
 
     /**
      * Supplied sealed rooms admit sleep on the Moon and outside stations in Space; a room still being scanned does
-     * not. A private atmosphere authority seals the rooms, so the ordinary vent ticks of other tests never interfere.
+     * not. Both admission and room supply use the installed production authority and native startSleepInBed.
      */
     @GameTest(template = TEMPLATE, timeoutTicks = 60)
     public static void sealedBreathableRoomsAdmitSleepButAPendingRoomDoesNot(GameTestHelper helper) {
@@ -155,16 +156,9 @@ public final class SleepRespawnGameTests {
         ServerPlayer player = join(helper, "ARCEW37Room", tokens);
         Set<ChunkPos> forcedMoon = new LinkedHashSet<>();
         Set<ChunkPos> forcedSpace = new LinkedHashSet<>();
-        CelestialCatalogManager catalogs = catalogs(CelestialDefaults.definitions());
-        AtmosphereManager rooms = new AtmosphereManager(new CelestialEnvironmentService(catalogs));
-        AtmosphereManager pending = new AtmosphereManager(new CelestialEnvironmentService(catalogs));
-        SleepRespawnService service = new SleepRespawnService(rooms, catalogs, () -> Options.DEFAULTS);
-        SleepRespawnService pendingService = new SleepRespawnService(pending, catalogs, () -> Options.DEFAULTS);
         Runnable cleanup = () -> {
             try {
                 server.getPlayerList().remove(player);
-                rooms.clear();
-                pending.clear();
                 clearBox(moon, moonVent.offset(-2, 0, -2), moonVent.offset(2, 3, 2));
                 clearBox(space, spaceVent.offset(-2, 0, -2), spaceVent.offset(2, 3, 2));
                 clearBox(moon, pendingVent.offset(-4, 0, -4), pendingVent.offset(4, 8, 4));
@@ -180,8 +174,6 @@ public final class SleepRespawnGameTests {
             force(space, spaceVent, 4, forcedSpace);
             vents[0] = roomWithBed(moon, moonVent, 2, 3);
             vents[1] = roomWithBed(space, spaceVent, 2, 3);
-            // 343 traversable cells exceed one scan task's 256-observation budget (AtmosphereAnalyzerGameTests).
-            vents[2] = roomWithBed(moon, pendingVent, 4, 8);
         } catch (RuntimeException failed) {
             cleanup.run();
             throw failed;
@@ -189,6 +181,7 @@ public final class SleepRespawnGameTests {
         GameTestTickPacer pacer = new GameTestTickPacer(server);
         long start = helper.getTick();
         boolean[] finished = {false};
+        boolean[] pendingPlaced = {false};
         // One callback for the whole wait; cross-Level heightmaps settle at the end of the setup tick.
         helper.onEachTick(() -> {
             if (finished[0]) {
@@ -199,14 +192,10 @@ public final class SleepRespawnGameTests {
                 if (helper.getTick() <= start) {
                     return;
                 }
-                // Observe and scan in this same tick, so the vents' shared status is this authority's own result.
-                rooms.observeVent(moon, vents[0]);
-                rooms.observeVent(space, vents[1]);
-                rooms.tick(server);
-                if (!(suppliedBed(rooms, moon, moonVent) && suppliedBed(rooms, space, spaceVent))) {
+                if (!(suppliedBed(moon, moonVent) && suppliedBed(space, spaceVent))) {
                     helper.assertTrue(helper.getTick() < 50, "The supplied rooms did not seal: moon="
                             + vents[0].status() + " space=" + vents[1].status() + " metrics="
-                            + rooms.metrics(moon.dimension()) + " / " + rooms.metrics(space.dimension()));
+                            + AtmosphereRuntime.metrics(moon) + " / " + AtmosphereRuntime.metrics(space));
                     return;
                 }
                 for (OxygenVentBlockEntity vent : List.of(vents[0], vents[1])) {
@@ -216,22 +205,32 @@ public final class SleepRespawnGameTests {
                     BlockPos seed = vent.getBlockPos().above();
                     player.teleportTo(level, seed.getX() + 0.5D, seed.getY(), seed.getZ() + 0.5D, 0.0F, 0.0F);
                     tokens.clear();
-                    PlayerSleepInBedEvent admitted = new PlayerSleepInBedEvent(player, Optional.of(head));
-                    service.onSleepInBed(admitted);
-                    helper.assertTrue(admitted.getResultStatus() == null && tokens.isEmpty(),
+                    player.startSleepInBed(head);
+                    helper.assertTrue(tokens.stream().noneMatch(token -> token.contains(".sleep.")),
                             "A supplied sealed room refused sleep in " + level.dimension().location() + ": " + tokens);
+                    try (IncompleteFullChunk incomplete = new IncompleteFullChunk(level, vent.getBlockPos())) {
+                        helper.assertTrue(level.hasChunkAt(vent.getBlockPos()) && !incomplete.completed(),
+                                "The provider fixture did not keep a visible holder with an incomplete FULL future");
+                        helper.assertTrue(AtmosphereRuntime.breathabilityAt(level, head).orElse(null) == BreathabilityState.VACUUM
+                                        && !incomplete.completed(),
+                                "The provider lookup forced an unfinished vent chunk or granted its unavailable air");
+                    }
                 }
-                pending.observeVent(moon, vents[2]);
-                pending.tick(server);
+                if (!pendingPlaced[0]) {
+                    // Delay creation until both supplied rooms are qualified; the production scan then begins.
+                    // 343 traversable cells exceed one task's unchanged 256-observation budget.
+                    vents[2] = roomWithBed(moon, pendingVent, 4, 8);
+                    pendingPlaced[0] = true;
+                    return;
+                }
                 BlockPos pendingHead = bedHead(pendingVent);
-                helper.assertTrue(pending.breathabilityAt(moon, pendingHead) == BreathabilityState.PENDING,
-                        "The large room was not pending after one scan tick: " + pending.metrics(moon.dimension()));
+                helper.assertTrue(AtmosphereRuntime.breathabilityAt(moon, pendingHead).orElse(null) == BreathabilityState.PENDING,
+                        "The large room was not pending after one production scan tick: " + AtmosphereRuntime.metrics(moon));
                 player.teleportTo(moon, pendingVent.getX() + 0.5D, pendingVent.getY() + 1, pendingVent.getZ() + 0.5D,
                         0.0F, 0.0F);
                 tokens.clear();
-                PlayerSleepInBedEvent refused = new PlayerSleepInBedEvent(player, Optional.of(pendingHead));
-                pendingService.onSleepInBed(refused);
-                helper.assertTrue(refused.getResultStatus() == Player.BedSleepingProblem.NOT_POSSIBLE_HERE
+                var refused = player.startSleepInBed(pendingHead);
+                helper.assertTrue(refused.left().orElse(null) == Player.BedSleepingProblem.NOT_POSSIBLE_HERE
                                 && tokens.contains(actionBar(SleepRespawnService.sleepKey(SleepRefusal.PENDING))),
                         "A pending room admitted sleep: " + tokens);
                 finished[0] = true;
@@ -579,11 +578,13 @@ public final class SleepRespawnGameTests {
         return Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST).setValue(BedBlock.PART, part);
     }
 
-    private static boolean suppliedBed(AtmosphereManager atmosphere, ServerLevel level, BlockPos vent) {
+    private static boolean suppliedBed(ServerLevel level, BlockPos vent) {
         BlockPos head = bedHead(vent);
-        return atmosphere.breathabilityAt(level, head) == BreathabilityState.BREATHABLE
-                && atmosphere.breathabilityAt(level, head.west()) == BreathabilityState.BREATHABLE
-                && atmosphere.controlledAt(level, head) && atmosphere.controlledAt(level, head.west());
+        return AtmosphereRuntime.breathabilityAt(level, head).orElse(null) == BreathabilityState.BREATHABLE
+                && AtmosphereRuntime.breathabilityAt(level, head.west()).orElse(null) == BreathabilityState.BREATHABLE
+                && AtmosphereRuntime.suppliedVolumes(level).values().stream().anyMatch(volume ->
+                    volume.cells().contains(new io.github.sunthemoon.advancedrocketrycommunity.atmosphere.scan.VolumePosition(
+                            head.getX(), head.getY(), head.getZ())));
     }
 
     /** The bed head inside a room whose vent is in the floor at {@code vent}; the cell above the vent stays clear. */

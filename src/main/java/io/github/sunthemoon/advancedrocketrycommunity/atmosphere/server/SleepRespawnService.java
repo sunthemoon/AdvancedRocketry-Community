@@ -39,6 +39,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
@@ -222,8 +223,8 @@ public final class SleepRespawnService {
         Optional<Backup> pending = backup(player);
         if (pending.isEmpty()) { return; } // Unknown/corrupt data is kept verbatim; no repeated log.
         Point saved = pending.orElseThrow().point();
-        player.respawnDimension = saved.dimension();
         boolean alreadyRestored = matches(player, saved);
+        player.respawnDimension = saved.dimension();
         player.respawnPosition = saved.position();
         player.respawnAngle = saved.angle();
         player.respawnForced = saved.forced();
@@ -240,16 +241,17 @@ public final class SleepRespawnService {
         }
     }
 
-    /** The bed head and, for a vanilla bed, its foot; one cell for any other sleeping place. */
     private static boolean matches(ServerPlayer player, Point saved) {
         return saved.dimension().equals(player.getRespawnDimension()) && saved.position().equals(player.getRespawnPosition())
                 && Float.floatToRawIntBits(saved.angle()) == Float.floatToRawIntBits(player.getRespawnAngle())
                 && saved.forced() == player.isRespawnForced();
     }
 
+    /** The bed head and, for a vanilla bed, its foot; one cell for any other sleeping place. */
     private static List<BlockPos> occupied(ServerLevel level, BlockPos head) {
-        if (!level.isOutsideBuildHeight(head) && level.hasChunkAt(head)) {
-            BlockState state = level.getBlockState(head);
+        LevelChunk chunk = level.getChunkSource().getChunkNow(head.getX() >> 4, head.getZ() >> 4);
+        if (!level.isOutsideBuildHeight(head) && chunk != null) {
+            BlockState state = chunk.getBlockState(head);
             if (state.getBlock() instanceof BedBlock) {
                 return List.of(head, head.relative(state.getValue(BedBlock.FACING).getOpposite()));
             }
@@ -258,7 +260,8 @@ public final class SleepRespawnService {
     }
 
     private Cell cell(ServerLevel level, ServerPlayer player, BlockPos position) {
-        if (level.isOutsideBuildHeight(position) || !level.hasChunkAt(position)) {
+        if (level.isOutsideBuildHeight(position)
+                || level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4) == null) {
             return Cell.unloaded();
         }
         return new Cell(true, atmosphere.breathabilityAt(level, position),
