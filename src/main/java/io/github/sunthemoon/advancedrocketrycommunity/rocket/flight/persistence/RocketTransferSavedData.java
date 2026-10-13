@@ -347,13 +347,13 @@ public final class RocketTransferSavedData extends SavedData {
         if (writer == null && operational() && isDirty() && ownerServer != null) {
             requestWrite(ownerServer.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
                     .resolve("data").resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()),
-                    CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS));
+                    RocketJournalFailurePolicy.checked(ownerServer));
         }
         stopping = true; effects.clear();
         if (writer != null) {
             writer.drain(this::publish);
             if (operational() && isDirty() && !failedWrite) {
-                writer.request(capture(), CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS));
+                writer.request(capture(), RocketJournalFailurePolicy.checked(ownerServer));
             }
             writer.close(this::publish);
         }
@@ -369,7 +369,7 @@ public final class RocketTransferSavedData extends SavedData {
         }
         if (ownerServer != null) { lastAttemptTick = ownerServer.getTickCount(); attempted = true; }
         try {
-            requestWrite(file.toPath(), CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS));
+            requestWrite(file.toPath(), RocketJournalFailurePolicy.checked(ownerServer));
         } catch (RuntimeException failure) {
             setDirty();
             failedWrite = true;
