@@ -54,7 +54,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
  * ADR-066 section 3.3 W37: sleep admission on a non-Overworld mapped surface and in Space, the unchanged Overworld
- * bed rules, D1 outcome 3's kept respawn point, and the two planet-respawn options through the real
+ * bed rules and the two planet-respawn options through the real
  * {@code PlayerList.respawn}. Every fixture is built and released inside its own test.
  */
 @GameTestHolder(ModIdentity.MOD_ID)
@@ -252,7 +252,7 @@ public final class SleepRespawnGameTests {
     }
 
     /**
-     * Breathable Tau Ceti f: the registered listener admits the bed and the saved point stays (D1 outcome 3). While
+     * Breathable Tau Ceti f: the registered listener admits the bed. While
      * the dimension type is not natural, vanilla itself still refuses with NOT_POSSIBLE_HERE.
      */
     @GameTest(template = TEMPLATE, timeoutTicks = 40)
@@ -282,12 +282,13 @@ public final class SleepRespawnGameTests {
             } else {
                 helper.assertTrue(result.left().orElse(null) == Player.BedSleepingProblem.NOT_POSSIBLE_HERE
                         && !player.isSleeping(), "The unnatural dimension type did not keep vanilla's refusal: " + result);
-                // The admitted operation's own setter, as vanilla calls it after the natural check, is cancelled.
-                player.setRespawnPosition(ExoplanetContent.TAU_CETI_F_LEVEL, head, player.getYRot(), false, true);
-                helper.assertTrue(player.getRespawnDimension() == Level.OVERWORLD && home.equals(player.getRespawnPosition()),
-                        "The admitted bed operation's setter replaced the saved point");
+                // W37F R4: a setter AFTER the returned sleep operation is unrelated and must not be cancelled.
+                player.setRespawnPosition(ExoplanetContent.TAU_CETI_F_LEVEL, head, 37.5F, false, false);
+                helper.assertTrue(player.getRespawnDimension() == ExoplanetContent.TAU_CETI_F_LEVEL
+                                && head.equals(player.getRespawnPosition()) && player.getRespawnAngle() == 37.5F,
+                        "An unrelated same-tuple setter was cancelled after the sleep call returned");
             }
-            // Preservation is operation-scoped: an unrelated forced point (as /spawnpoint) is still saved.
+            // An unrelated forced point (as /spawnpoint) is also saved.
             player.setRespawnPosition(ExoplanetContent.TAU_CETI_F_LEVEL, head, 0.0F, true, false);
             helper.assertTrue(player.getRespawnDimension() == ExoplanetContent.TAU_CETI_F_LEVEL
                     && head.equals(player.getRespawnPosition()) && player.isRespawnForced(),

@@ -44,7 +44,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -56,14 +55,13 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * <ul>
  *   <li>Sleep is refused at an unloaded, unpermitted, PENDING or unbreathable bed cell. Owner decision 05: in Space a
  *       supplied room outside committed stations qualifies; inside one, live VISIT permission is required.</li>
- *   <li>D1 outcome 3: an admitted off-world bed operation keeps the player's saved respawn point; only the native
- *       setter of that same operation is cancelled.</li>
+ *   <li>The operation-scoped bed spawn setter boundary (D1 outcome 3) is deferred to W37b.</li>
  *   <li>Respawn: {@code PlayerList.respawn} removes the old player from its Level before it reads the saved point.
  *       That removal decides; a refused point is cleared from the discarded player, so vanilla uses its existing
  *       Overworld respawn, and the new player gets the point back. Nothing loads a chunk.</li>
  * </ul>
  *
- * Both transient maps live at most until the end of the server tick; there is no persisted or per-Level state.
+ * Pending refusals are currently tick-local; durable recovery is implemented in the following W37F fix.
  */
 public final class SleepRespawnService {
     /** The vanilla bed and anchor stand-up searches read blocks at most this far from the saved block. */
@@ -75,7 +73,6 @@ public final class SleepRespawnService {
     private final AtmosphereManager atmosphere;
     private final CelestialCatalogManager catalogs;
     private final Supplier<Options> options;
-    private final Map<UUID, BedOperation> bedOperations = new HashMap<>();
     private final Map<UUID, Refusal> refusals = new HashMap<>();
 
     public SleepRespawnService(AtmosphereManager atmosphere, CelestialCatalogManager catalogs, Supplier<Options> options) {
@@ -99,7 +96,6 @@ public final class SleepRespawnService {
 
     public void register(IEventBus bus) {
         bus.addListener(this::onSleepInBed);
-        bus.addListener(this::onSetSpawn);
         bus.addListener(this::onLeaveLevel);
         bus.addListener(this::onRespawn);
         bus.addListener(this::onServerTick);
@@ -133,24 +129,10 @@ public final class SleepRespawnService {
         }
         SleepRefusal refusal = SleepRespawnRules.admitSleep(cells);
         if (refusal == SleepRefusal.NONE) {
-            bedOperations.put(player.getUUID(), new BedOperation(level.dimension(), head));
             return;
         }
         event.setResult(Player.BedSleepingProblem.NOT_POSSIBLE_HERE);
         player.displayClientMessage(Component.translatable(sleepKey(refusal)), true);
-    }
-
-    /** D1 outcome 3: the native setter of an admitted off-world bed operation, and nothing else, is cancelled. */
-    public void onSetSpawn(PlayerSetSpawnEvent event) {
-        if (bedOperations.isEmpty() || !(event.getEntity() instanceof ServerPlayer player)) {
-            return;
-        }
-        BedOperation operation = bedOperations.get(player.getUUID());
-        if (operation != null && !event.isForced() && operation.level().equals(event.getSpawnLevel())
-                && operation.head().equals(event.getNewSpawn())) {
-            bedOperations.remove(player.getUUID());
-            event.setCanceled(true);
-        }
     }
 
     public void onLeaveLevel(EntityLeaveLevelEvent event) {
@@ -219,7 +201,6 @@ public final class SleepRespawnService {
     }
 
     public void clear() {
-        bedOperations.clear();
         refusals.clear();
     }
 
@@ -347,9 +328,6 @@ public final class SleepRespawnService {
             BlockPos eye = BlockPos.containing(arrival.x, arrival.y + player.getEyeHeight(Pose.STANDING), arrival.z);
             return SleepRespawnRules.worse(atmosphere.breathabilityAt(level, feet), atmosphere.breathabilityAt(level, eye));
         }
-    }
-
-    private record BedOperation(ResourceKey<Level> level, BlockPos head) {
     }
 
     private record SavedPoint(ResourceKey<Level> dimension, BlockPos position, float angle, boolean forced) {
