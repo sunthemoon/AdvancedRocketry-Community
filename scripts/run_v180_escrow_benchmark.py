@@ -70,7 +70,11 @@ def run(args) -> dict:
         escrow.smoke.write_server_configuration(session, port, True)
         for sync in (args.sync or ["true", "false"]):
             properties = escrow.smoke.expected_server_properties(port, True)
-            properties.update({"sync-chunk-writes": sync, "level-name": "world-" + sync, "level-type": "minecraft:flat", "max-tick-time": "60000"})
+            properties.update({"sync-chunk-writes": sync, "level-name": "world-" + sync, "level-type": "minecraft:flat", "max-tick-time": "60000",
+                               "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1},
+                                                                           {"block": "minecraft:dirt", "height": 2},
+                                                                           {"block": "minecraft:grass_block", "height": 1}],
+                                                                  "biome": "minecraft:plains"}, separators=(",", ":"))})
             (session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(properties.items())), encoding="ascii")
             command = escrow._server_command(args.java)
             command[2] = "-Xmx4G"

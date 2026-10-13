@@ -54,6 +54,10 @@ final class EscrowBenchmarkProbe implements EscrowTimingSink {
             var chunk = new ChunkPos(4 + i, 4); level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             level.getChunk(chunk.x, chunk.z);
         }
+        for (int i = 0; i < 3; i++) {
+            var chunk = new ChunkPos(32 + i, 4); level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
+            level.getChunk(chunk.x, chunk.z);
+        }
     }
     @Override public void sample(String phase, long nanos) {
         if (!measuring) { return; }
@@ -78,9 +82,12 @@ final class EscrowBenchmarkProbe implements EscrowTimingSink {
         if (done) { return; }
         if (data == null) {
             for (int i = 0; i < 16; i++) { if (!level.areEntitiesLoaded(new ChunkPos(4 + i, 4).toLong())) { return; } }
+            for (int i = 0; i < 3; i++) { if (!level.areEntitiesLoaded(new ChunkPos(32 + i, 4).toLong())) { return; } }
             data = ResourceEscrowSavedData.forTests(server); coordinator = data.bind(server);
             for (int i = 0; i < 64; i++) {
-                var pos = new BlockPos(64 + (i / 4) * 16, 100, 64 + (i % 4) * 2);
+                // Independent blocked slots must not veto a healthy endpoint's joint slot proof.
+                var pos = i >= 8 && i <= 10 ? new BlockPos((32 + i - 8) * 16, 100, 64)
+                        : new BlockPos(64 + (i / 4) * 16, 100, 64 + (i % 4) * 2);
                 fixtures.add(i > 0 && i < 8 ? EscrowTestEndpoints.chainSource(fixtures.get(0), pos) : EscrowTestEndpoints.create(level, pos, data.ledger().id()));
             }
             fixtures.get(0).bank().getPersistentData().getCompound("arce_escrow_fixture").putInt("capacity", 8000);
