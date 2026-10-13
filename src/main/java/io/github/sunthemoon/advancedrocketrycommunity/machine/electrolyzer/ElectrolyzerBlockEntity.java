@@ -83,6 +83,12 @@ public final class ElectrolyzerBlockEntity extends BlockEntity implements MenuPr
         super(ModBlockEntities.ELECTROLYZER.get(), position, state);
     }
 
+    /** Item NBT cannot plant a process, a legacy root or a guarded recipe input; only an operator's is loaded. */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     public static void serverTick(
             Level level,
             BlockPos position,

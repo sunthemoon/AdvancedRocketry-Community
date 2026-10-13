@@ -67,6 +67,12 @@ public final class PrecisionAssemblerBlockEntity extends BlockEntity implements 
         items = new PrecisionAssemblerItemBank(this::setChanged);
     }
 
+    /** Item NBT cannot plant a machine instance ID, a process or a preserved root; only an operator's is loaded. */
+    @Override
+    public boolean onlyOpCanSetNbt() {
+        return true;
+    }
+
     @Override
     public void onLoad() {
         super.onLoad();

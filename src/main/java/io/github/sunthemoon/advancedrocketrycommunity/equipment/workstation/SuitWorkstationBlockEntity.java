@@ -27,6 +27,7 @@ public final class SuitWorkstationBlockEntity extends BlockEntity implements Men
 
     public SuitWorkstationBlockEntity(BlockPos pos, BlockState state) { super(SuitEquipmentContent.ENTITY.get(), pos, state); }
     public boolean repairRequired() { return refused != null; }
+    @Override public boolean onlyOpCanSetNbt() { return true; }
     public boolean available() {
         if (isRemoved() || operating || repairRequired() || !(level instanceof ServerLevel server)
                 || !server.getServer().isSameThread() || server.getServer().getLevel(server.dimension()) != server) { return false; }

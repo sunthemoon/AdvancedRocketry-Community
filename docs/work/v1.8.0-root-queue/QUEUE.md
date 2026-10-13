@@ -25,7 +25,7 @@ CI run and its independent review both pass. The reviews are kept in
 `D:/GitHub/ARCE-Task-Evidence/root-queue/<task>-review/REVIEW.md`, and the merge commits
 give their SHA-256 values.
 
-| Slice | Scope | Pipeline state (2026-10-13 08:10) |
+| Slice | Scope | Pipeline state (2026-10-13 09:55) |
 |---|---|---|
 | [W03](TASK-W03-EQUIPMENT.md) | C18b workstation, pressure tanks, modules | **Merged** `1e36af58` |
 | [W01](TASK-W01-HATCH-KERNEL.md), [W01F](TASK-W01F-REVIEW-FIXES.md), [W05](TASK-W05-ARC-FURNACE-CUTTING.md), [W01G](TASK-W01G-REVIEW-FIXES.md) | Hatch family, generic controller, lathe, arc furnace, cutting machine | **Merged** `ab5d9808`. Follow-up Lows L1–L3 are open |
@@ -48,11 +48,14 @@ give their SHA-256 values.
 | [W18](TASK-W18-BEACON-FINDER.md) | C17c planetary beacon and beacon finder | **Merged** `804be2ab` (hosted run 38283811217; review MERGE-WITH-FOLLOWUP; W18F fixes F1 to F3 and F5; Root wrote [records/W18F.md](records/W18F.md)). Follow-ups: F4, F6, F7 (finder strip overlaps the boss bar), F8 |
 | [W19](TASK-W19-ACQUISITION-GRAPH.md) | C16d: close the strict graph's 18 acquisition gaps | **Merged** `3d499253` (hosted run 38261140501; Root review). ADR-064 §10.2 implementation note added for the five optional cross-mod dusts |
 | [W20](TASK-W20-LASER-GUN.md) | C18b basic laser gun (ADR-066 section 5.3) | **Merged** `284709bf` (hosted run 38289378640; Root review; no persistence) |
-| [W21a](TASK-W21A-OBSERVATORY-DESIGN.md) | C18c observatory and processor: design note (ADR-051 amendment, registry schema 4, instance schema 2, frozen patterns) | Delivered `a080b91b` and `5fdefb2a` (Claude). Independent review (Codex) interrupted at 02:24 and resumed at 08:05 |
-| [W22](TASK-W22-STATION-NOTICES.md) | C17b section 5.3 station notices: translatable warp notices, visitor notices, the offline member-notice SavedData | Design note `c4d24dca`; the implementation was uncommitted when the 02:24 termination hit. A new Claude session continues from the worktree since 08:05. Root removed the stale `heavy-jvm` lock that W22's interrupted `runData` left |
-| [W23](TASK-W23-OPERATOR-NBT-AUDIT.md) | Parallel bug: operator-only item NBT for every block entity that stores an owner, identity or guarded root | Implementer (Claude) running since 08:07 |
-| [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | Round 1 ended IN PROGRESS at `6a1efe15`. Continuation 01 committed through `7772fc33` (stalled-record reconciliation, shared-slot prefixes, writer cadence) before every worker process was terminated at 02:24 (exit 0x40010004; no reboot). Resumed in the same Codex session at 08:05. E1, E3 and the writer-failure residual go into a Root risk entry; then an independent actual-diff review |
+| [W21a](TASK-W21A-OBSERVATORY-DESIGN.md) | C18c observatory and processor: design note (ADR-051 amendment, registry schema 4, instance schema 2, frozen patterns) | **Design merged** `fa890675`. Independent review (Codex) APPROVE-WITH-CHANGES (SHA-256 `0c76c2d4…`): W21b applies R2, R4 and R5; W21c applies R1 and R3, and needs a Root decision on the power-plug owner access |
+| [W21b](TASK-W21B-REGISTRY-SCHEMA4.md) | Satellite registry schema 4, ground survey jobs, migration and invariants (no blocks) | Implementer (Codex) running since 08:11 |
+| [W22](TASK-W22-STATION-NOTICES.md) | C17b section 5.3 station notices: translatable warp notices, visitor notices, the offline member-notice SavedData | Delivered through `397a96b0`. Branch CI 38328021348 passed. Review (Claude) MERGE-WITH-FOLLOWUP (SHA-256 `1cbb1109…`). W22F (Claude, since 08:56) fixes F2 (visitors get the brief form), F3 (the actor's current authority is checked) and F7 (notice failure cannot skip the audit). At merge Root adds R-029 and the ADR-065 W22 note, with F4 to F6 |
+| [W23](TASK-W23-OPERATOR-NBT-AUDIT.md) | Parallel bug: operator-only item NBT for every block entity that stores an owner, identity or guarded root | **Merged** `e8f4d02a` (hosted run 38328763897; Root review: additions only) |
+| [W24](TASK-W24-LEGACY-PAD-OCCUPANCY.md) | Parallel bug: the legacy landing-pad selector's occupancy (W13 review R1, legacy half) | Implementer (Claude) running since 08:45 |
+| [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | Delivered through `19ab684a` (round 1 and continuation 01; 2,617 unit tests, 819 GameTests, 23 native cases; benchmark on this machine). Independent actual-diff review (Claude) is ready in `root-queue/W11b1-review/` and starts at the next free Claude slot. Root adds the risk entries and the ADR-065 note at merge |
 | [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | **Merged** `811a5796`. Independent review (Codex) **APPROVE-WITH-CHANGES** (SHA-256 `8ec318a3…`): W11b2's implementation applies R1 to R6 (R1 and R2 High: a failed checked journal write stops dependent transfer effects; fenced retries stay classified, ticket-free and leave unrelated warps available). W11b2 starts after W11b1 merges |
+| W11b2 | D3-A rocket integration with R1 to R6 (admission stays disabled) | Implementer (Codex) running since 09:51, on top of the unmerged W11b1 (`19ab684a`) so the chain does not wait for its review |
 | Root fix | Mixin refmap lost on a Gradle build-cache hit (W19's `MixinPackagingTest` failure); a release jar could ship without the ADR-073 refmap | **Merged** `798a2465`: the refmaps and mappings are declared `compileJava` outputs; verified miss then hit; hosted run 38258700306 passed |
 | Root incident | C: filled to 0 GB: a W16 worker's background bare `python` REPL wrote 24.9 GB | Cleaned 21:40; WORKER-RULES now forbids interactive or unbounded background commands |
 
@@ -80,7 +83,6 @@ Hosted CI runs on each implementer branch after Root pushes it (workflow change
 - C18c observatory and advancements (ADR-066 section 6).
 - C18d presentation and client configuration (ADR-066 section 7).
 - Parallel bugs:
-  - (dispatched as W23) audit every existing block entity that stores an owner, identity or retained root for `onlyOpCanSetNbt()`;
   - the hosted chunk-save CME (being fixed by W08 under ADR-073) (runs 38064322640 and 38156329125 attempt 2, both at
     batch `endgame_gravity_station`). Root cause, from the bytecode of the mapped
     Forge 47.4.10 jar:
@@ -96,7 +98,7 @@ Hosted CI runs on each implementer branch after Root pushes it (workflow change
     backport (needs an ADR), or a bounded ERROR expectation (needs a change to the log
     ADR's exact-count rule);
   - the unpaced multi-leg planetary flight test (run 38084795112);
-  - the 5 ms wall-clock budget per atmosphere-boundary callback
+  - the 5 ms wall-clock budget per atmosphere-boundary callback (recurred on 2026-10-13 in W11b1's first native selection: `force_field_boundary` was rejected at startup under load)
     (`AtmosphereBoundaryRegistry.MAX_CALLBACK_NANOS`). Under machine load, the adapter
     test mod's provider exceeded it and mod loading failed (W01 record, crash at
     2026-10-12 00:18). Changing the budget needs an ADR.
