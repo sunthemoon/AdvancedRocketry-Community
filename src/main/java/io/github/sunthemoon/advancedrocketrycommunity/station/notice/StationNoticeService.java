@@ -33,9 +33,9 @@ import net.minecraftforge.event.server.ServerStartedEvent;
  * in Space inside the live region, each once. Players with VISIT access get the full notice and other visitors its
  * {@link StationNotice#forVisitors} form. A commit or abort replaces the station's summary; an owner or member who was
  * offline sees it once at the next login. This service holds no state: the summaries live in
- * {@link StationNoticeSavedData}.
+ * {@link StationNoticeSavedData}. It is not final so that a GameTest can inject a failing delivery (W22 review F7).
  */
-public final class StationNoticeService implements StationLifecycleListener {
+public class StationNoticeService implements StationLifecycleListener {
     private static final StationAccessService ACCESS = new StationAccessService();
 
     /** A live notice to its recipients, in chat or on the action bar; returns the players told. */

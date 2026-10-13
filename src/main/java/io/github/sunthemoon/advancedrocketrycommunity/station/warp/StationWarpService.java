@@ -52,7 +52,7 @@ public final class StationWarpService {
     private final StationWarpConfirmations confirmations = new StationWarpConfirmations();
     private final StationWarpCountdowns countdowns = new StationWarpCountdowns();
     /** ADR-065 section 5.3 notices; stateless, its summaries live in their own SavedData. */
-    private final StationNoticeService notices = new StationNoticeService();
+    private final StationNoticeService notices;
     private final StationWriteCooldown cooldown = new StationWriteCooldown(StationLimits.WARP_COOLDOWN_TICKS);
     private volatile StationRocketAuthority rocketAuthority = StationRocketAuthority.FAIL_CLOSED;
     private final StationWriteBudget writeBudget;
@@ -65,10 +65,18 @@ public final class StationWarpService {
     /** {@code writeBudget} is shared with station expansion and gravity (review B9). */
     public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> systemHasRoutes,
                               Supplier<WarpSettings> settings, StationWriteBudget writeBudget) {
+        this(catalogs, systemHasRoutes, settings, writeBudget, new StationNoticeService());
+    }
+
+    /** With the notice service to use; a GameTest passes one whose outcome delivery fails (W22 review F7). */
+    public StationWarpService(CelestialCatalogManager catalogs, Predicate<ResourceLocation> systemHasRoutes,
+                              Supplier<WarpSettings> settings, StationWriteBudget writeBudget,
+                              StationNoticeService notices) {
         this.writeBudget = Objects.requireNonNull(writeBudget, "writeBudget");
         this.catalogs = Objects.requireNonNull(catalogs, "catalogs");
         this.systemHasRoutes = Objects.requireNonNull(systemHasRoutes, "systemHasRoutes");
         this.settings = Objects.requireNonNull(settings, "settings");
+        this.notices = Objects.requireNonNull(notices, "notices");
     }
 
     /** True when any route of the current planetary catalog touches a body of the given system. */
@@ -451,12 +459,19 @@ public final class StationWarpService {
             result.station().ifPresent(station -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic
                     .ClassicAdvancementEvents.stationWarped(presentVisitors(server, station)));
         }
-        String name = confirmed.observed().name();
-        notices.deliverOutcome(server, confirmed.stationId(), confirmed.actorId(),
-                code == StationManagementCode.WARP_COMMITTED
-                        ? StationNotice.committed(name, confirmed.observed().orbitBody(), confirmed.target(),
-                        costClass(confirmed), confirmed.cost(), result.balance())
-                        : StationNotice.aborted(name, code, confirmed.target()));
+        // W22 review F7: the notices follow the checked write, so a failure in them is logged once and never escapes
+        // the tick, skips the audit line below or changes the outcome.
+        try {
+            String name = confirmed.observed().name();
+            notices.deliverOutcome(server, confirmed.stationId(), confirmed.actorId(),
+                    code == StationManagementCode.WARP_COMMITTED
+                            ? StationNotice.committed(name, confirmed.observed().orbitBody(), confirmed.target(),
+                            costClass(confirmed), confirmed.cost(), result.balance())
+                            : StationNotice.aborted(name, code, confirmed.target()));
+        } catch (RuntimeException failure) {
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_STATION_NOTICE_FAILED station={} code={} error={}",
+                    confirmed.stationId(), code, failure.getClass().getSimpleName());
+        }
         AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_STATION_WARP action=commit code={} station={} actor={} from={} to={} class={} cost={} balance={}",
                 code, confirmed.stationId(), confirmed.actorId(), confirmed.observed().orbitBody(), confirmed.target(),

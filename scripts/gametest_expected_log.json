@@ -495,6 +495,7 @@
         "station_controls_core_reach": 1,
         "station_controls_warp_parity": 2,
         "station_notice_delivery": 1,
+        "station_notice_failure": 1,
         "station_notice_login": 1,
         "station_warp_abort": 2,
         "station_warp_charge": 1,
@@ -511,7 +512,7 @@
         "tau_ceti_path": 1
       },
       "test": "StationWarpGameTests, StationWarpAbortGameTests, TauCetiPathGameTests, StationControlsGameTests, StationControllerMenuGameTests, StationNoticeGameTests",
-      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops. StationControlsGameTests deletes one charged station after a quote (core reach), one after its cancelled confirmations (confirm core) and two after their warps (parity). StationControllerMenuGameTests deletes four charged stations after their refused or cancelled confirmations (confirm binding). StationNoticeGameTests deletes one charged station after its warp in each of the delivery and login tests."
+      "reason": "Each test ends or aborts a charged warp, and the station must record the warp energy it drops. StationControlsGameTests deletes one charged station after a quote (core reach), one after its cancelled confirmations (confirm core) and two after their warps (parity). StationControllerMenuGameTests deletes four charged stations after their refused or cancelled confirmations (confirm binding). StationNoticeGameTests deletes one charged station after its warp in each of the delivery, login and notice-failure tests."
     },
     {
       "id": "station-notices-refused",
@@ -521,6 +522,15 @@
       "counts": {"station_notice_refused": 1},
       "test": "StationNoticeGameTests.aRefusedNoticeRootIsKeptWhileLiveNoticesContinue",
       "reason": "A future-schema notice root must be kept verbatim and logged once, while live warp notices continue (ADR-065 section 5.3)."
+    },
+    {
+      "id": "station-notice-failed",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_STATION_NOTICE_FAILED station=[0-9a-f-]{36} code=WARP_COMMITTED error=IllegalStateException",
+      "counts": {"station_notice_failure": 1},
+      "test": "StationNoticeGameTests.aFailingOutcomeNoticeNeitherEscapesNorSkipsTheAudit",
+      "reason": "An injected notice failure after the checked write must be caught and logged once, while the warp stands and its audit line is still written (W22 review F7)."
     },
     {
       "id": "satellite-receiver-release-skipped",

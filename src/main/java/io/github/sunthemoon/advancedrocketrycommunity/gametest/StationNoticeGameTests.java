@@ -1,15 +1,22 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialDefaults;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNotice;
 import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeSummary;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationWriteBudget;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationRocketAuthority;
+import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpService;
+import io.github.sunthemoon.advancedrocketrycommunity.station.warp.WarpSettings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalLong;
@@ -21,7 +28,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.ServerOpListEntry;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -250,6 +260,74 @@ public final class StationNoticeGameTests {
         }
         helper.assertTrue(StationNoticeSavedData.get(fixture.server) == original, "The store was not restored");
         helper.succeed();
+    }
+
+    /**
+     * W22 review F7: an outcome notice that fails after the checked write is caught and logged once. The warp stands,
+     * nothing escapes the tick, and the commit's audit line is still written. A private service with an injected
+     * failing notice service on a private catalog, ticked by the test.
+     */
+    @GameTest(template = "empty", batch = "station_notice_failure", timeoutTicks = 400)
+    public static void aFailingOutcomeNoticeNeitherEscapesNorSkipsTheAudit(GameTestHelper helper) {
+        StationWarpGameTests.Fixture fixture = new StationWarpGameTests.Fixture(helper, "Notice failure",
+                CelestialIds.EARTH_ID, 2_500_000);
+        CelestialCatalogManager catalogs = new CelestialCatalogManager();
+        StationNoticeService failing = new StationNoticeService() {
+            @Override
+            public void deliverOutcome(MinecraftServer server, UUID stationId, UUID actorId, StationNotice outcome) {
+                throw new IllegalStateException("injected notice failure");
+            }
+        };
+        StationWarpService isolated = new StationWarpService(catalogs, system -> false, () -> WarpSettings.DEFAULTS,
+                StationWriteBudget.unbounded(), failing);
+        isolated.installRocketAuthority(StationWarpGameTests.NOTHING_IN_MOTION);
+        AuditLogCapture audit = new AuditLogCapture();
+        boolean scheduled = false;
+        try {
+            helper.assertTrue(catalogs.applyCandidate(CelestialCatalog.create(CelestialDefaults.definitions())),
+                    "The private catalog was rejected");
+            fixture.core(fixture.pad.east(2));
+            fixture.join(fixture.ownerId, "failureOwner");
+            fixture.look(fixture.ownerId, fixture.pad.east(2));
+            ServerPlayer owner = fixture.server.getPlayerList().getPlayer(fixture.ownerId);
+            helper.assertTrue(isolated.request(owner, true, StationWarpGameTests.MOON).code()
+                    == StationManagementCode.WARP_ISSUED, "The request was refused");
+            helper.assertTrue(isolated.confirm(owner, true, fixture.id()).code() == StationManagementCode.WARP_STARTED,
+                    "The countdown did not start");
+            helper.onEachTick(() -> isolated.onServerTick(
+                    new TickEvent.ServerTickEvent(TickEvent.Phase.END, () -> true, fixture.server)));
+            scheduled = true;
+            helper.runAfterDelay(StationWarpGameTests.COMMIT_DELAY, () -> {
+                try {
+                    helper.assertTrue(isolated.countdown(fixture.id()).isEmpty(), "The countdown never ended");
+                    helper.assertTrue(fixture.station().orbitBody().equals(StationWarpGameTests.MOON)
+                            && fixture.data.warpEnergy(fixture.id()) == 500_000, "The warp's outcome changed");
+                    helper.assertTrue(StationRegistrySavedData.load(fixture.stationFile()).find(fixture.id())
+                                    .filter(state -> state.orbitBody().equals(StationWarpGameTests.MOON)).isPresent(),
+                            "The checked write is not on disk");
+                    String station = " station=" + fixture.id() + " ";
+                    List<String> lines = audit.lines().stream().filter(line -> line.contains(station)).toList();
+                    helper.assertTrue(lines.stream().filter(line -> line.startsWith("ARCE_STATION_NOTICE_FAILED"))
+                                    .toList().equals(List.of("ARCE_STATION_NOTICE_FAILED station=" + fixture.id()
+                                            + " code=WARP_COMMITTED error=IllegalStateException")),
+                            "The notice failure was not logged once: " + lines);
+                    helper.assertTrue(lines.stream().filter(line -> line.startsWith(
+                                    "ARCE_STATION_WARP action=commit code=WARP_COMMITTED" + station)).count() == 1L,
+                            "The commit's audit line is missing: " + lines);
+                    helper.assertTrue(StationNoticeSavedData.get(fixture.server).summary(fixture.id()).revision() == 0L,
+                            "A failed delivery kept a summary");
+                } finally {
+                    audit.close();
+                    fixture.close();
+                }
+                helper.succeed();
+            });
+        } finally {
+            if (!scheduled) {
+                audit.close();
+                fixture.close();
+            }
+        }
     }
 
     /** Whether any int array in the tree is exactly {@code player}'s UUID. */
