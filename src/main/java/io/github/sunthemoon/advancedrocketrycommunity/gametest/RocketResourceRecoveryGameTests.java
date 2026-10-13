@@ -66,6 +66,9 @@ public final class RocketResourceRecoveryGameTests {
             fixture.recover(RocketTransferRecoveryReport.Status.RECOVERED);
             fixture.assertBalances(0, 0, 2_000);
             fixture.manager.requestDisassembly(fixture.player, fixture.rocket);
+            helper.assertTrue(fixture.rocket.isAlive(), "Unacknowledged retirement disassembled an arrival");
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            fixture.manager.requestDisassembly(fixture.player, fixture.rocket);
             helper.assertTrue(fixture.rocket.isRemoved(), "Empty arrival disassembly refused");
             helper.assertTrue(fixture.journal().find(fixture.record.transferId()).isEmpty(),
                     "Disassembly retained reconstructable arrival resources");
@@ -260,15 +263,19 @@ public final class RocketResourceRecoveryGameTests {
         }
 
         void recover(RocketTransferRecoveryReport.Status expected) {
-            var installed = RocketRuntime.recoverTransfer(earth.getServer(), record.transferId());
+            var installed = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
+                    .recoverFixture(helper, () -> RocketRuntime.recoverTransfer(earth.getServer(), record.transferId()));
             helper.assertTrue(installed.status() == expected, "Installed recovery status differs: " + installed);
-            var report = manager.recoverTransfer(earth.getServer(), record.transferId());
+            var report = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
+                    .recoverFixture(helper, () -> manager.recoverTransfer(earth.getServer(), record.transferId()));
             helper.assertTrue(report.status() == expected, "Recovery status differs: " + report);
         }
 
         void reloadJournalAndPlayer() {
             earth.getServer().saveEverything(false, true, true);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             var restored = RocketTransferSavedData.load(journal().save(new CompoundTag()));
+            journal().stop();
             helper.assertTrue(restored.operational(), "Journal round trip blocked");
             earth.getServer().overworld().getDataStorage().set(RocketTransferSavedData.DATA_NAME, restored);
             var playerData = player.saveWithoutId(new CompoundTag());

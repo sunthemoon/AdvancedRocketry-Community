@@ -212,8 +212,9 @@ public final class RocketPropulsionGameTests {
             rocket.updateFlightData(before.withFuel(fuel, earth.getGameTime()));
             UUID request = UUID.randomUUID(); UUID logical = rocket.assemblyTransactionId().orElseThrow();
             var launch = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, request);
-            helper.assertTrue(launch.success(), "Launch refused " + launch.code());
-            var plan = rocket.flightData().orElseThrow().plan().orElseThrow();
+            RocketFlightGameTestFixtures.assertPendingLaunch(helper, launch, rocket);
+            var plan = RocketTransferSavedData.get(earth.getServer()).find(request).orElseThrow()
+                    .sourceFlightData().plan().orElseThrow();
             long q = plan.requiredFuel(); long efficiency = mode == RocketPropulsion.Mode.MONO && !basic ? 2 : 1;
             long expected = !requireFuel ? 0 : basic ? q : (q * numerator + denominator * efficiency - 1) / (denominator * efficiency);
             helper.assertTrue(plan.propulsionDebit().primary() == expected

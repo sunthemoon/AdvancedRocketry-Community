@@ -30,6 +30,10 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketTransferRecoveryGameTests {
+    private static RocketTransferRecoveryReport recoverAcknowledged(GameTestHelper helper, RocketManager manager, UUID transfer) {
+        return io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
+                .recoverFixture(helper, () -> manager.recoverTransfer(helper.getLevel().getServer(), transfer));
+    }
     private static final String TEMPLATE = "rocket_test";
 
     private RocketTransferRecoveryGameTests() {
@@ -51,8 +55,8 @@ public final class RocketTransferRecoveryGameTests {
                 // Drain asynchronous entity-chunk reads so the recovery matrix observes a persisted,
                 // restart-equivalent boundary instead of racing the accelerated GameTest clock.
                 earth.getServer().saveEverything(false, true, true);
-                RocketTransferRecoveryReport sourceOnlyReport = recoveryManager.recoverTransfer(
-                        earth.getServer(),
+                RocketTransferRecoveryReport sourceOnlyReport = recoverAcknowledged(
+                        helper, recoveryManager,
                         sourceOnly.transferId()
                 );
                 if (sourceOnlyReport.status() == RocketTransferRecoveryReport.Status.RETRY_LATER) {
@@ -89,8 +93,8 @@ public final class RocketTransferRecoveryGameTests {
             GameTestTickPacer pacer
     ) {
         helper.runAfterDelay(1, () -> {
-            RocketTransferRecoveryReport report = recoveryManager.recoverTransfer(
-                    earth.getServer(),
+            RocketTransferRecoveryReport report = recoverAcknowledged(
+                    helper, recoveryManager,
                     sourceOnly.transferId()
             );
             if (report.status() == RocketTransferRecoveryReport.Status.RETRY_LATER
@@ -143,8 +147,8 @@ public final class RocketTransferRecoveryGameTests {
                 helper.assertTrue(destinationOnlySource != null, "Destination-only setup source is missing");
                 destinationOnlySource.discard();
                 spawnRecoveryDestination(moon, destinationOnly);
-                RocketTransferRecoveryReport destinationOnlyReport = recoveryManager.recoverTransfer(
-                        earth.getServer(),
+                RocketTransferRecoveryReport destinationOnlyReport = recoverAcknowledged(
+                        helper, recoveryManager,
                         destinationOnly.transferId()
                 );
                 assertRecovery(
@@ -167,8 +171,8 @@ public final class RocketTransferRecoveryGameTests {
                 clearRecoveryScenario(earth, moon);
                 prepareRecoveryScenario(helper, new BlockPos(9, 2, 3), both -> {
                     spawnRecoveryDestination(moon, both);
-                    RocketTransferRecoveryReport bothReport = recoveryManager.recoverTransfer(
-                            earth.getServer(),
+                    RocketTransferRecoveryReport bothReport = recoverAcknowledged(
+                            helper, recoveryManager,
                             both.transferId()
                     );
                     assertRecovery(
@@ -189,8 +193,8 @@ public final class RocketTransferRecoveryGameTests {
                         RocketTransferSavedData journal = RocketTransferSavedData.get(earth.getServer());
                         journal.put(neither.destinationSpawned(UUID.randomUUID()));
                         journal.flush(earth.getServer());
-                        RocketTransferRecoveryReport neitherReport = recoveryManager.recoverTransfer(
-                                earth.getServer(),
+                        RocketTransferRecoveryReport neitherReport = recoverAcknowledged(
+                                helper, recoveryManager,
                                 neither.transferId()
                         );
                         assertRecovery(
@@ -223,7 +227,8 @@ public final class RocketTransferRecoveryGameTests {
                     RocketDestination.MOON,
                     transferId
             );
-            helper.assertTrue(launch.success(), "Recovery setup launch failed: " + launch.code());
+            RocketFlightGameTestFixtures.assertPendingLaunch(helper, launch, source);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             ready.accept(RocketTransferSavedData.get(earth.getServer()).find(transferId).orElseThrow());
         });
     }

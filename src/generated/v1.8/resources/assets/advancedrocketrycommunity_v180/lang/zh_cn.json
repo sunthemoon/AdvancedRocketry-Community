@@ -140,6 +140,7 @@
   "body.advancedrocketrycommunity.tau_ceti_f": "鲸鱼座τ f",
   "body.advancedrocketrycommunity.tau_ceti_g": "鲸鱼座τ g",
   "enchantment.advancedrocketrycommunity.space_breathing": "太空呼吸",
+  "flight.advancedrocketrycommunity.request.journal_pending": "等待转移日志持久化确认；需要燃料 %s",
   "fluid_type.advancedrocketrycommunity.enriched_lava": "富集熔岩",
   "fluid_type.advancedrocketrycommunity.hydrogen": "氢气",
   "fluid_type.advancedrocketrycommunity.nitrogen": "氮气",

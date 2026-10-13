@@ -67,12 +67,14 @@ public final class RocketDestinationReadinessGameTests {
                 return;
             }
             fixture.createSource(sourceOrigin);
-            fixture.assertColdWait();
+            awaitJournal(fixture, () -> {
+              fixture.assertColdWait();
             // Radius zero retains a FULL block chunk without requesting ENTITY_TICKING.
             fixture.moon.getChunkSource().addRegionTicket(FIXTURE_TICKET, fixture.chunk, 0, fixture.ticket);
             fixture.ticketLevel = 0;
             fixture.moon.getChunkAt(MOON_ORIGIN);
             awaitLoadedButNotTicking(fixture, 1);
+            }, 1);
         }));
     }
 
@@ -104,14 +106,29 @@ public final class RocketDestinationReadinessGameTests {
                 awaitReady(fixture, attempt + 1);
                 return;
             }
-            try {
-                fixture.assertBlockedPadReturn();
-                fixture.assertReadySpawn();
-            } finally {
-                fixture.close();
+            fixture.assertBlockedPadReturn();
+            awaitJournal(fixture, () -> {
+                fixture.prepareReadySpawn();
+                awaitJournal(fixture, () -> {
+                    fixture.service.spawnDestination(fixture.earth.getServer(), fixture.journal, fixture.record, fixture.source);
+                    fixture.helper.assertTrue(!fixture.journal.acknowledgedCurrent(), "Spawn synchronously awaited IO");
+                    awaitJournal(fixture, () -> {
+                        try { fixture.assertReadySpawn(); } finally { fixture.close(); }
+                        fixture.assertCleanup(); fixture.helper.succeed();
+                    }, 1);
+                }, 1);
+            }, 1);
+        }));
+    }
+
+    private static void awaitJournal(Fixture fixture, Runnable ready, int attempt) {
+        fixture.helper.runAfterDelay(1, () -> fixture.guard(() -> {
+            fixture.journal.pollWriter(fixture.earth.getServer().getTickCount());
+            if (!fixture.journal.acknowledgedCurrent()) {
+                fixture.helper.assertTrue(attempt < READINESS_ATTEMPTS, "Isolated journal was not acknowledged");
+                fixture.pacer.pace(); awaitJournal(fixture, ready, attempt + 1); return;
             }
-            fixture.assertCleanup();
-            fixture.helper.succeed();
+            ready.run();
         }));
     }
 
@@ -192,7 +209,7 @@ public final class RocketDestinationReadinessGameTests {
                 setupDirectory = java.nio.file.Files.createTempDirectory("arce-destination-readiness-");
                 journal.save(setupDirectory.resolve(RocketTransferSavedData.DATA_NAME + ".dat").toFile());
             } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
-            helper.assertTrue(journal.acknowledgedCurrent(), "Readiness setup journal was not acknowledged");
+            helper.assertTrue(!journal.acknowledgedCurrent(), "Setup unexpectedly awaited journal IO");
         }
 
         private RocketTransferRecord newRecord() {
@@ -250,12 +267,7 @@ public final class RocketDestinationReadinessGameTests {
         }
 
         private void assertBlockedPadReturn() {
-            // Only now expose the record to automatic recovery. The cold/full-only checks above
-            // use a genuinely acknowledged local journal without allowing another manager to tick it.
-            var registered = RocketTransferSavedData.get(earth.getServer());
-            registered.put(record);
-            helper.assertTrue(registered.flushChecked(earth.getServer()), "Ready fixture journal was not acknowledged");
-            journal = registered;
+            helper.assertTrue(journal.acknowledgedCurrent(), "Ready fixture journal was not acknowledged");
             for (var block : record.destinationSnapshot().blocks()) {
                 RocketPosition absolute = record.destinationSnapshot().sourceOrigin().add(block.position());
                 BlockPos at = new BlockPos(absolute.x(), absolute.y(), absolute.z());
@@ -277,12 +289,15 @@ public final class RocketDestinationReadinessGameTests {
             moon.setBlock(MOON_ORIGIN, obstructionBefore, Block.UPDATE_ALL);
         }
 
-        private void assertReadySpawn() {
+        private void prepareReadySpawn() {
             record = newRecord();
             source.updateFlightData(record.sourceFlightData());
             journal.put(record);
-            helper.assertTrue(journal.flushChecked(earth.getServer()), "Ready-spawn fixture journal was not acknowledged");
-            service.spawnDestination(earth.getServer(), journal, record, source);
+            helper.assertTrue(!journal.flushChecked(earth.getServer()), "Preparation unexpectedly awaited IO");
+        }
+
+        private void assertReadySpawn() {
+            helper.assertTrue(journal.acknowledgedCurrent(), "Ready-spawn generation was not acknowledged");
             RocketTransferRecord spawned = journal.find(record.transferId()).orElseThrow();
             helper.assertTrue(spawned.phase() == RocketTransferPhase.DESTINATION_SPAWNED,
                     "Ready free pad did not acquire destination authority");
@@ -316,10 +331,11 @@ public final class RocketDestinationReadinessGameTests {
             if (source != null) {
                 cleanup.add(source::discard);
             }
-            if (record != null && journal == RocketTransferSavedData.get(earth.getServer())) {
+            if (record != null) {
                 cleanup.add(() -> {
                     journal.remove(record.transferId());
-                    helper.assertTrue(journal.flushChecked(earth.getServer()), "Fixture journal cleanup was not acknowledged");
+                    journal.flush(earth.getServer()); journal.stop();
+                    helper.assertTrue(journal.acknowledgedCurrent(), "Fixture journal cleanup was not acknowledged");
                 });
             }
             if (setupDirectory != null) {

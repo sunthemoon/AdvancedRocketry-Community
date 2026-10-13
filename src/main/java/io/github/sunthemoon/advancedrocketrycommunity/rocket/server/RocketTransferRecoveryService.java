@@ -62,6 +62,7 @@ final class RocketTransferRecoveryService {
     private final RocketPassengerReconnectQueue reconnects = new RocketPassengerReconnectQueue();
     private final RocketTransferFences fences = new RocketTransferFences();
     private int recoveryCursor;
+    private final java.util.Map<UUID, Result> completedResults = new java.util.LinkedHashMap<>();
 
     RocketTransferRecoveryService(Set<UUID> liveTransfers, Set<UUID> settledTransfers) {
         this.liveTransfers = Objects.requireNonNull(liveTransfers, "liveTransfers");
@@ -121,6 +122,8 @@ final class RocketTransferRecoveryService {
         if (!journal.operational()) {
             return Result.notFound(transferId);
         }
+        Result completed = takeCompleted(transferId);
+        if (completed != null) { return completed; }
         RocketTransferRecord record = journal.find(transferId).orElse(null);
         if (record == null) {
             return Result.notFound(transferId);
@@ -163,6 +166,7 @@ final class RocketTransferRecoveryService {
     }
 
     void clear() {
+        completedResults.clear();
         reconnects.clear();
         fences.clear();
     }
@@ -286,7 +290,8 @@ final class RocketTransferRecoveryService {
                         source,
                         record.sourceSnapshot().sourceOrigin()
                 );
-                status = settleRecoveredSource(server, journal, record);
+                status = settleRecoveredSource(server, journal, record,
+                        () -> completedSource(result(Status.RECOVERED, record, action, sources, destinations)));
             }
             case REBUILD_SOURCE -> {
                 RocketEntity source = RocketTransferEntities.rebuildSource(server, record);
@@ -299,7 +304,8 @@ final class RocketTransferRecoveryService {
                         source,
                         record.sourceSnapshot().sourceOrigin()
                 );
-                status = settleRecoveredSource(server, journal, record);
+                status = settleRecoveredSource(server, journal, record,
+                        () -> completedSource(result(Status.RECOVERED, record, action, sources, destinations)));
             }
             case KEEP_DESTINATION, REMOVE_SOURCE_KEEP_DESTINATION, REBUILD_DESTINATION -> {
                 RocketEntity destination = destinations.isEmpty()
@@ -312,29 +318,38 @@ final class RocketTransferRecoveryService {
                         ? record.destinationSpawned(destination.getUUID())
                         : record.rebindDestination(destination.getUUID());
                 journal.put(resumed);
-                if (!journal.flushChecked(server)) { liveTransfers.remove(record.transferId()); return retryLater(record); }
-                if (destinations.isEmpty() && !((net.minecraft.server.level.ServerLevel) destination.level()).addFreshEntity(destination)) {
-                    return retryLater(record);
-                }
-                RocketTransferEntities.discardAll(sources);
-                if (!destinations.isEmpty()) { RocketTransferEntities.keepOne(destinations); }
-                RocketTransferEntities.remountOnlinePassengers(
+                journal.afterAcknowledged(server, resumed.logicalRocketId(), () -> {
+                  var currentSources = RocketTransferEntities.loadedMatches(server, resumed, false);
+                  var currentDestinations = RocketTransferEntities.loadedMatches(server, resumed, true);
+                  if (!fences.actionAllowed(server, resumed, action, currentSources, currentDestinations,
+                          liveTransfers, settledTransfers)) { return; }
+                  if (destinations.isEmpty() && !((net.minecraft.server.level.ServerLevel) destination.level()).addFreshEntity(destination)) { return; }
+                  if (!destinations.isEmpty() && !destination.isAlive()) { return; }
+                  RocketTransferEntities.discardAll(currentSources);
+                  currentDestinations.stream().filter(other -> other != destination).forEach(RocketEntity::discard);
+                  RocketTransferEntities.remountOnlinePassengers(
                         server,
                         resumed,
                         destination,
                         resumed.destinationSnapshot().sourceOrigin()
                 );
-                if (RocketTransferEntities.isReplaceableLandedAuthority(destination, resumed)) {
+                  if (RocketTransferEntities.isReplaceableLandedAuthority(destination, resumed)) {
                     settledTransfers.add(resumed.transferId());
                     liveTransfers.remove(resumed.transferId());
                 } else {
                     liveTransfers.add(resumed.transferId());
                     settledTransfers.remove(resumed.transferId());
-                }
-                status = Status.RECOVERED;
+                  }
+                  io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, resumed);
+                  result(Status.RECOVERED, resumed, action, currentSources, currentDestinations).log(
+                          AdvancedRocketryCommunity.LOGGER, RocketTransferEntities.isReplaceableLandedAuthority(destination, resumed));
+                  completed(result(Status.RECOVERED, resumed, action, sources, destinations));
+                });
+                return retryLater(record);
             }
             default -> throw new IllegalStateException("Unhandled transfer recovery action " + action);
         }
+        if (status == Status.RETRY_LATER) { return retryLater(record); }
         io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, record);
         Result result = result(status, record, action, sources, destinations);
         result.log(AdvancedRocketryCommunity.LOGGER,
@@ -346,18 +361,37 @@ final class RocketTransferRecoveryService {
     private Status settleRecoveredSource(
             MinecraftServer server,
             RocketTransferSavedData journal,
-            RocketTransferRecord record
+            RocketTransferRecord record,
+            Runnable recovered
     ) {
         liveTransfers.remove(record.transferId());
         if (allPassengersOnline(server, record)) {
             journal.remove(record.transferId());
-            if (!journal.flushChecked(server)) { return Status.RETRY_LATER; }
-            settledTransfers.remove(record.transferId());
-            return Status.RECOVERED;
+            journal.afterAcknowledged(server, record.logicalRocketId(), () -> {
+                settledTransfers.remove(record.transferId());
+                io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, record);
+                recovered.run();
+            });
+            return Status.RETRY_LATER;
         }
         settledTransfers.add(record.transferId());
         return Status.WAITING_FOR_PASSENGERS;
     }
+
+    private void completedSource(Result result) {
+        result.log(AdvancedRocketryCommunity.LOGGER, false);
+        completed(result);
+    }
+
+    void completed(Result result) {
+        if (!completedResults.containsKey(result.transferId())
+                && completedResults.size() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
+            completedResults.remove(completedResults.keySet().iterator().next());
+        }
+        completedResults.put(result.transferId(), result);
+    }
+
+    Result takeCompleted(UUID transferId) { return completedResults.remove(transferId); }
 
     private void finishSourceSettlementIfComplete(
             MinecraftServer server,
@@ -372,15 +406,15 @@ final class RocketTransferRecoveryService {
             return;
         }
         journal.remove(record.transferId());
-        if (!journal.flushChecked(server)) { return; }
-        liveTransfers.remove(record.transferId());
-        settledTransfers.remove(record.transferId());
-        AdvancedRocketryCommunity.LOGGER.info(
+        journal.afterAcknowledged(server, record.logicalRocketId(), () -> {
+          liveTransfers.remove(record.transferId()); settledTransfers.remove(record.transferId());
+          AdvancedRocketryCommunity.LOGGER.info(
                 "ARCE_TRANSFER_SOURCE_SETTLEMENT_RELEASED transfer={} logical={} entity={}",
                 record.transferId(),
                 record.logicalRocketId(),
                 authority.getUUID()
-        );
+          );
+        });
     }
 
     private static boolean allPassengersOnline(MinecraftServer server, RocketTransferRecord record) {

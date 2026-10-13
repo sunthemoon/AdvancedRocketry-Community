@@ -143,6 +143,18 @@ final class RocketFlightGameTestFixtures {
         awaitPaced(helper, helper.getTick() + ticks, () -> hasFlightState(destination, logical, state), assertions);
     }
 
+    static void assertPendingLaunch(GameTestHelper helper,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult result,
+            RocketEntity rocket) {
+        helper.assertTrue(result.code() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.JOURNAL_PENDING
+                && !result.success(), "Launch did not await its exact journal acknowledgement: " + result.code());
+        helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED
+                || rocket.flightData().orElseThrow().state() == RocketFlightState.LANDED,
+                "Launch started flight before its exact acknowledgement");
+        helper.assertTrue(!RocketTransferSavedData.get(((ServerLevel) rocket.level()).getServer()).acknowledgedCurrent(),
+                "Launch synchronously acknowledged its newly captured generation");
+    }
+
     static boolean hasFlightState(ServerLevel level, UUID logical, RocketFlightState state) {
         RocketEntity rocket = loadedLogicalRocket(level, logical);
         return rocket != null && rocket.flightData().map(data -> data.state() == state).orElse(false);

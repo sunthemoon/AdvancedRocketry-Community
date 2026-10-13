@@ -77,8 +77,8 @@ final class EscrowFloorsTest {
 
     @Test void collectionWaitsForBothJournalAndLedgerAcknowledgementsAndFailureKeepsTheFloor() throws Exception {
         var root = ledger(List.of(), List.of(floor(named(1, 1, 0))));
-        var journal = new RocketTransferSavedData();
         for (boolean fail : List.of(false, true)) {
+            var journal = new RocketTransferSavedData();
             var failing = new java.util.concurrent.atomic.AtomicBoolean(fail);
             var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
             var directory = java.nio.file.Files.createDirectory(temp.resolve("case-" + fail));
@@ -90,6 +90,12 @@ final class EscrowFloorsTest {
                 var unchecked = new RocketTransferSavedData(); coordinator.collectFloors(unchecked);
                 assertFalse(data.isDirty()); assertEquals(1, coordinator.floorUsage().used());
                 journal.setDirty(); journal.save(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.ROCKET_TRANSFERS.fileName()).toFile());
+                assertFalse(journal.acknowledgedCurrent(), "Autosave must not wait for the journal writer");
+                long journalDeadline = System.nanoTime() + 5_000_000_000L;
+                int journalTick = 1;
+                while (!journal.acknowledgedCurrent() && System.nanoTime() < journalDeadline) {
+                    journal.pollWriter(journalTick++); Thread.sleep(5);
+                }
                 assertTrue(journal.acknowledgedCurrent()); coordinator.collectFloors(journal);
                 assertEquals(1, coordinator.floorUsage().used(), "Queued collection is not retirement");
                 long deadline = System.nanoTime() + 5_000_000_000L;
@@ -105,7 +111,7 @@ final class EscrowFloorsTest {
                     while (!writer.idle() && System.nanoTime() < recoveryDeadline) { coordinator.tick(tick++); Thread.sleep(5); }
                 }
                 assertTrue(writer.idle()); assertEquals(0, coordinator.floorUsage().used());
-            }
+            } finally { journal.stop(); }
         }
     }
 

@@ -140,6 +140,7 @@
   "body.advancedrocketrycommunity.tau_ceti_f": "Tau Ceti f",
   "body.advancedrocketrycommunity.tau_ceti_g": "Tau Ceti g",
   "enchantment.advancedrocketrycommunity.space_breathing": "Space Breathing",
+  "flight.advancedrocketrycommunity.request.journal_pending": "Waiting for durable transfer confirmation; required fuel %s",
   "fluid_type.advancedrocketrycommunity.enriched_lava": "Enriched Lava",
   "fluid_type.advancedrocketrycommunity.hydrogen": "Hydrogen",
   "fluid_type.advancedrocketrycommunity.nitrogen": "Nitrogen",

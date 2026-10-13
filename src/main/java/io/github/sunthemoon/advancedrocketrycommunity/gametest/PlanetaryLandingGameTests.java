@@ -54,7 +54,7 @@ public final class PlanetaryLandingGameTests {
                 };
                 try {
                     var result = RocketRuntime.requestAdminFlight(source, new TravelTarget.BodySurface(body), transfer);
-                    helper.assertTrue(result.success(), "Initial planetary pad was not admitted: " + result.code());
+                    RocketFlightGameTestFixtures.assertPendingLaunch(helper, result, source);
                     var destination = journal.find(transfer).orElseThrow().destinationSnapshot();
                     var selector = new RocketLandingPadSelector();
                     helper.assertTrue(selector.available(world, destination, null, false), "Reserved pad was not available");

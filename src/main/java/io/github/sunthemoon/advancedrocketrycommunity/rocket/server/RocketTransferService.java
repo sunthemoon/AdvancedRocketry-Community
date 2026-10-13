@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferAudit.auditPhase;
+import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferAudit.auditPrepare;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -50,6 +51,10 @@ final class RocketTransferService {
     );
 
     RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown) {
+        return prepareLaunch(rocket, countdown, () -> { });
+    }
+
+    RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown, Runnable accepted) {
         Objects.requireNonNull(rocket, "rocket");
         Objects.requireNonNull(countdown, "countdown");
         if (!(rocket.level() instanceof ServerLevel sourceLevel) || !rocket.operational()) {
@@ -152,19 +157,17 @@ final class RocketTransferService {
             } else {
                 journal.replace(previous.transferId(), record);
             }
-            if (!journal.flushChecked(server)) {
-                liveTransfers.remove(record.transferId());
-                return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
-            }
-            if (previous != null) { liveTransfers.remove(previous.transferId()); settledTransfers.remove(previous.transferId()); }
-            RocketTransferEntities.keepLoaded(sourceLevel, record.sourceSnapshot(), record.transferId());
-            RocketTransferEntities.keepLoaded(destinationLevel, record.destinationSnapshot(), record.transferId());
-            rocket.updateFlightData(countdown);
-            RocketFlightFeedback.countdownAccepted(rocket);
-            liveTransfers.add(record.transferId());
-            // BEGIN transfer service diagnostics
-            diagnostics.prepared(record.transferId());
-            // END transfer service diagnostics
+            if (!journal.afterAcknowledged(server, record.logicalRocketId(), () -> {
+                if (!rocket.isAlive() || !RocketTransferEscrowRules.flightAllowed(server, record)) { return; }
+                if (previous != null) { liveTransfers.remove(previous.transferId()); settledTransfers.remove(previous.transferId()); }
+                RocketTransferEntities.keepLoaded(sourceLevel, record.sourceSnapshot(), record.transferId());
+                RocketTransferEntities.keepLoaded(destinationLevel, record.destinationSnapshot(), record.transferId());
+                rocket.updateFlightData(countdown.cancelCountdown(sourceLevel.getGameTime()).startCountdown(sourceLevel.getGameTime()));
+                RocketFlightFeedback.countdownAccepted(rocket);
+                liveTransfers.add(record.transferId()); diagnostics.prepared(record.transferId());
+                auditPrepare(rocket, plan, selected, RocketFlightRequestCode.SUCCESS);
+                accepted.run();
+            })) { return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED); }
         } catch (RuntimeException exception) {
             io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
             // Retain any captured authority, including uncertain replacement. Recovery may retry it.
@@ -181,11 +184,14 @@ final class RocketTransferService {
                     plan.requiredFuel()
             );
         }
-        auditPrepare(rocket, plan, selected, RocketFlightRequestCode.SUCCESS);
-        return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, plan.requiredFuel());
+        return new RocketFlightRequestResult(RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel());
     }
 
     RocketFlightRequestResult cancelCountdown(RocketEntity rocket) {
+        return cancelCountdown(rocket, () -> { });
+    }
+
+    RocketFlightRequestResult cancelCountdown(RocketEntity rocket, Runnable accepted) {
         Objects.requireNonNull(rocket, "rocket");
         if (!(rocket.level() instanceof ServerLevel level) || !rocket.operational()) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.ENTITY_UNAVAILABLE);
@@ -208,9 +214,9 @@ final class RocketTransferService {
                 || !record.sourceEntityId().equals(rocket.getUUID())) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
         }
-        failBackToSource(level.getServer(), journal, record, rocket, RocketTransferReturnReason.COUNTDOWN_CANCELLED);
+        failBackToSource(level.getServer(), journal, record, rocket, RocketTransferReturnReason.COUNTDOWN_CANCELLED, accepted);
         return new RocketFlightRequestResult(journal.acknowledgedCurrent() ? RocketFlightRequestCode.SUCCESS
-                : RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED, plan.requiredFuel());
+                : RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel());
     }
 
     void tick(MinecraftServer server) {
@@ -417,7 +423,7 @@ final class RocketTransferService {
             return false;
         }
         var journal = RocketTransferSavedData.get(level.getServer());
-        if (journal.isDirty() || !journal.entries().isEmpty() && !journal.acknowledgedCurrent()) { return false; }
+        if (!journal.canQueueEffect() || journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow())) { return false; }
         var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
         return resourceMutationAllowed(journal.operational(), record == null ? null : record.phase(),
                 record != null && settledTransfers.contains(record.transferId()) && !liveTransfers.contains(record.transferId()),
@@ -443,12 +449,13 @@ final class RocketTransferService {
         ).orElse(null);
         if (record != null && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record)) {
             journal.remove(record.transferId());
-            if (!journal.flushChecked(level.getServer())) { return false; }
-            liveTransfers.remove(record.transferId());
-            settledTransfers.remove(record.transferId());
-            auditPhase(record, "landed_reservation_released", rocket.getUUID());
+            journal.afterAcknowledged(level.getServer(), record.logicalRocketId(), () -> {
+                liveTransfers.remove(record.transferId()); settledTransfers.remove(record.transferId());
+                auditPhase(record, "landed_reservation_released", rocket.getUUID());
+            });
+            return false;
         }
-        return true;
+        return !journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow());
     }
 
     void clear() {
@@ -518,7 +525,7 @@ final class RocketTransferService {
             RocketTransferEntities.positionAscent(source, record.sourceSnapshot().sourceOrigin(), elapsed);
             RocketFlightFeedback.ascentTrail(source, elapsed);
             if (elapsed >= RocketFlightLimits.ASCENT_TICKS) {
-                source.updateFlightData(record.sourceFlightData());
+                source.updateFlightData(flight.beginTransit(record.transferId(), now));
                 RocketTransferEntities.positionAtAltitude(source, record.sourceSnapshot().sourceOrigin());
                 flight = source.flightData().orElseThrow();
                 RocketFlightFeedback.transitStarted(source);
@@ -571,7 +578,7 @@ final class RocketTransferService {
             // BEGIN transfer service diagnostics
             diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.DESTINATION_UNAVAILABLE);
             // END transfer service diagnostics
-            failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_PAD_BLOCKED);
+            failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_PAD_BLOCKED, () -> { });
             return;
         }
         RocketEntity destination = ModEntities.ROCKET.get().create(destinationLevel);
@@ -579,7 +586,7 @@ final class RocketTransferService {
         diagnostics.branch(record.transferId(), TransferFailureDiagnostics.Branch.SPAWN_ATTEMPT);
         // END transfer service diagnostics
         if (destination == null) {
-            failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_ENTITY_CREATE_FAILED);
+            failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_ENTITY_CREATE_FAILED, () -> { });
             return;
         }
         destination.initializeTransferred(
@@ -590,12 +597,14 @@ final class RocketTransferService {
         );
         RocketTransferEntities.positionAtAltitude(destination, record.destinationSnapshot().sourceOrigin());
         RocketTransferRecord spawned = record.destinationSpawned(destination.getUUID());
-        if (!updatePhase(server, journal, spawned)) { return; }
-        if (!destinationLevel.addFreshEntity(destination)) {
-            failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_ENTITY_SPAWN_FAILED);
-            return;
-        }
-        RocketFlightFeedback.destinationSpawned(destination);
+        updatePhase(server, journal, spawned, () -> {
+            destination.updateFlightData(RocketTransferEntities.currentArrival(record, destinationLevel.getGameTime()));
+            if (!destinationLevel.addFreshEntity(destination)) {
+                failBackToSource(server, journal, record, source, RocketTransferReturnReason.DESTINATION_ENTITY_SPAWN_FAILED, () -> { });
+                return;
+            }
+            RocketFlightFeedback.destinationSpawned(destination);
+        });
     }
 
     private void transferPassengers(
@@ -608,17 +617,18 @@ final class RocketTransferService {
             liveTransfers.remove(record.transferId());
             return;
         }
-        if (!updatePhase(server, journal, record.advance(RocketTransferPhase.PASSENGERS_TRANSFERRED))) { return; }
-        for (RocketPassengerSeat seat : record.destinationFlightData().passengers().assignments()) {
-            ServerPlayer passenger = server.getPlayerList().getPlayer(seat.passengerId());
-            if (passenger != null) {
-                RocketTransferEntities.movePassenger(
+        updatePhase(server, journal, record.advance(RocketTransferPhase.PASSENGERS_TRANSFERRED), () -> {
+            for (RocketPassengerSeat seat : record.destinationFlightData().passengers().assignments()) {
+                ServerPlayer passenger = server.getPlayerList().getPlayer(seat.passengerId());
+                if (passenger != null) {
+                    RocketTransferEntities.movePassenger(
                         passenger,
                         destination,
                         record.destinationSnapshot().sourceOrigin()
-                );
+                    );
+                }
             }
-        }
+        });
     }
 
     private void removeSource(
@@ -626,11 +636,10 @@ final class RocketTransferService {
             RocketTransferSavedData journal,
             RocketTransferRecord record
     ) {
-        if (!updatePhase(server, journal, record.advance(RocketTransferPhase.SOURCE_REMOVED))) { return; }
-        RocketEntity source = RocketTransferEntities.findSource(server, record);
-        if (source != null) {
-            source.discard();
-        }
+        updatePhase(server, journal, record.advance(RocketTransferPhase.SOURCE_REMOVED), () -> {
+            RocketEntity source = RocketTransferEntities.findSource(server, record);
+            if (source != null) { source.discard(); }
+        });
     }
 
     private void tickDestination(
@@ -681,12 +690,13 @@ final class RocketTransferService {
             if (migrated.isPresent()) {
                 record = migrated.orElseThrow();
                 journal.migrateCommitted(record);
-                if (!journal.flushChecked(server)) { liveTransfers.remove(record.transferId()); return; }
-                AdvancedRocketryCommunity.LOGGER.info(
-                        "ARCE_TRANSFER_SCHEMA_MIGRATED transfer={} schema={}",
-                        record.transferId(),
-                        record.schemaVersion()
-                );
+                RocketTransferRecord changed = record;
+                journal.afterAcknowledged(server, changed.logicalRocketId(), () -> {
+                    liveTransfers.add(changed.transferId());
+                    AdvancedRocketryCommunity.LOGGER.info("ARCE_TRANSFER_SCHEMA_MIGRATED transfer={} schema={}",
+                            changed.transferId(), changed.schemaVersion());
+                });
+                return;
             } else {
                 AdvancedRocketryCommunity.LOGGER.warn(
                         "ARCE_TRANSFER_SCHEMA_MIGRATION_BLOCKED transfer={} phase={}",
@@ -709,7 +719,7 @@ final class RocketTransferService {
             RocketTransferSavedData journal,
             RocketTransferRecord record,
             RocketEntity source,
-            RocketTransferReturnReason reason
+            RocketTransferReturnReason reason, Runnable accepted
     ) {
         RocketFlightData safe = RocketTransferEntities.stationarySource(
                 record,
@@ -725,15 +735,17 @@ final class RocketTransferService {
                 record.sourceSnapshot().sourceOrigin()
         );
         journal.remove(record.transferId());
-        if (!journal.flushChecked(server)) { liveTransfers.remove(record.transferId()); return; }
-        liveTransfers.remove(record.transferId());
-        io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, record);
-        reason.log(
+        journal.afterAcknowledged(server, record.logicalRocketId(), () -> {
+            liveTransfers.remove(record.transferId());
+            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, record);
+            reason.log(
                 AdvancedRocketryCommunity.LOGGER,
                 record.transferId(),
                 record.logicalRocketId(),
                 safe.fuel().amount()
-        );
+            );
+            accepted.run();
+        });
     }
 
     private boolean updatePhase(
@@ -741,15 +753,22 @@ final class RocketTransferService {
             RocketTransferSavedData journal,
             RocketTransferRecord updated
     ) {
+        return updatePhase(server, journal, updated, () -> { });
+    }
+
+    private boolean updatePhase(MinecraftServer server, RocketTransferSavedData journal,
+                                RocketTransferRecord updated, Runnable effect) {
         journal.put(updated);
-        if (!journal.flushChecked(server)) { liveTransfers.remove(updated.transferId()); return false; }
-        liveTransfers.add(updated.transferId());
-        if (updated.phase() == RocketTransferPhase.COMMITTED) {
-            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, updated);
-        }
-        auditPhase(updated, updated.phase().name().toLowerCase(java.util.Locale.ROOT),
+        return journal.afterAcknowledged(server, updated.logicalRocketId(), () -> {
+            if (!RocketTransferEscrowRules.flightAllowed(server, updated)) { return; }
+            liveTransfers.add(updated.transferId());
+            if (updated.phase() == RocketTransferPhase.COMMITTED) {
+                io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, updated);
+            }
+            auditPhase(updated, updated.phase().name().toLowerCase(java.util.Locale.ROOT),
                 updated.destinationEntityId().orElse(updated.sourceEntityId()));
-        return true;
+            effect.run();
+        });
     }
 
     private static RocketFlightData scheduledTransit(RocketFlightData countdown) {
@@ -771,25 +790,6 @@ final class RocketTransferService {
 
     private static long elapsed(long gameTime, long started) {
         return gameTime <= started ? 0L : gameTime - started;
-    }
-
-    private static void auditPrepare(
-            RocketEntity rocket,
-            RocketFlightPlan plan,
-            RocketLandingPadSelection selection,
-            RocketFlightRequestCode code
-    ) {
-        AdvancedRocketryCommunity.LOGGER.info(
-                "ARCE_TRANSFER_PREPARE transfer={} logical={} source={} destination={} code={} candidates={} chunks={} detail={}",
-                plan.requestId(),
-                rocket.assemblyTransactionId().orElse(null),
-                rocket.level().dimension().location(),
-                plan.destinationDimension(),
-                code,
-                selection.candidatesChecked(),
-                selection.chunksLoaded(),
-                selection.detail()
-        );
     }
 
 }

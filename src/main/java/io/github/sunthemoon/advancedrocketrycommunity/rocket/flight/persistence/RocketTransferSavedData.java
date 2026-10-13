@@ -1,17 +1,14 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence;
 
+import static io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferJournalCodec.*;
+
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightDecodeResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotDecodeResult;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -41,6 +38,20 @@ public final class RocketTransferSavedData extends SavedData {
     private boolean attempted;
     private boolean failedWrite;
     private WriteOutcome writeOutcome = WriteOutcome.UNACKNOWLEDGED;
+    private RocketJournalWriter writer;
+    private java.nio.file.Path writerFile;
+    private boolean stopping;
+    private static final class Effect {
+        final UUID logical;
+        final RocketTransferRecord expected;
+        final Runnable action;
+        boolean committed;
+        Effect(UUID logical, RocketTransferRecord expected, Runnable action) {
+            this.logical = logical; this.expected = expected; this.action = action;
+        }
+    }
+    private final Map<Long, Effect> effects = new LinkedHashMap<>();
+    private long lastWriterNanos;
 
     public enum WriteOutcome { UNACKNOWLEDGED, COMMITTED, NOT_COMMITTED, UNKNOWN }
 
@@ -218,12 +229,14 @@ public final class RocketTransferSavedData extends SavedData {
         setDirty();
     }
 
-    /** Synchronously persists each authority boundary rather than waiting for autosave. */
+    /** Enqueues only this journal, never an unrelated world-wide SavedData save. */
     public void flush(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
-        if (isDirty()) {
-            server.overworld().getDataStorage().save();
-        }
+        if (!server.isSameThread()) { throw new IllegalStateException("Journal capture requires the server thread"); }
+        // Detached GameTest journals retain their already-bound isolated file. get(server) binds live roots.
+        if (isDirty()) { save((ownerServer == null && writerFile != null ? writerFile
+                : server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
+                .resolve("data").resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName())).toFile()); }
     }
 
     /** Non-throwing exact-snapshot barrier; callers must inspect the result before dependent effects. */
@@ -236,6 +249,7 @@ public final class RocketTransferSavedData extends SavedData {
 
     /** A persistent failure cannot turn a per-tick retry into a synchronous write storm. */
     public boolean retryChecked(MinecraftServer server) {
+        pollWriter(server.getTickCount());
         if (acknowledgedCurrent()) { return true; }
         if (failedWrite && attempted && (long) server.getTickCount() - lastAttemptTick < 200) { return false; }
         return flushChecked(server);
@@ -275,49 +289,129 @@ public final class RocketTransferSavedData extends SavedData {
                 acknowledged.digest(), acknowledged.sequence()));
     }
 
+    /** At most one dependent continuation per captured generation, and at most two generations. */
+    public boolean afterAcknowledged(MinecraftServer server, UUID logical, Runnable effect) {
+        if (!server.isSameThread() || !operational() || stopping) { return false; }
+        if (!queueEffect(logical, effect)) { return false; }
+        flushChecked(server); return true;
+    }
+
+    boolean queueEffect(UUID logical, Runnable effect) {
+        if (!operational() || stopping) { return false; }
+        if (acknowledgedCurrent()) { effect.run(); return true; }
+        if (effects.containsKey(mutationSequence) || effects.size() == 2) { return false; }
+        effects.put(mutationSequence, new Effect(logical, findByLogicalRocket(logical).orElse(null),
+                Objects.requireNonNull(effect))); return true;
+    }
+
+    public boolean canQueueEffect() { return !stopping && !failedWrite && effects.size() < 2; }
+
+    public void pollWriter(long tick) {
+        if (writer != null) { writer.tick(tick, this::publish); }
+        if (!stopping && acknowledgedCurrent()) {
+            // A later disjoint generation may already be in RAM when the earlier exact write completes.
+            // Wait for a clean acknowledgement, then require that it still contains the same authority.
+            for (var entry : List.copyOf(effects.entrySet())) {
+                if (!acknowledgedCurrent()) { break; }
+                Effect effect = entry.getValue();
+                if (!effect.committed) {
+                    if (entry.getKey() < mutationSequence) { effects.remove(entry.getKey()); }
+                    continue;
+                }
+                effects.remove(entry.getKey());
+                if (findByLogicalRocket(effect.logical).orElse(null) == effect.expected) {
+                    try { effect.action.run(); }
+                    catch (RuntimeException failure) {
+                        com.mojang.logging.LogUtils.getLogger().error("ARCE_TRANSFER_EFFECT_FAILED logical={} generation={}; retain journal authority for recovery",
+                                effect.logical, entry.getKey(), failure);
+                    }
+                }
+            }
+        }
+    }
+
+    private void publish(RocketJournalWriter.Completion completion) {
+        checkpoint.publish(completion); lastWriterNanos = completion.writerNanos();
+        Effect effect = effects.get(completion.sequence());
+        if (effect != null && completion.outcome() == RocketJournalCheckpoint.Outcome.COMMITTED) { effect.committed = true; }
+        writeOutcome = WriteOutcome.valueOf(completion.outcome().name());
+        failedWrite = completion.outcome() != RocketJournalCheckpoint.Outcome.COMMITTED;
+        setDirty(!checkpoint.current(mutationSequence) || failedWrite);
+        if (failedWrite && !saveFailureReported) {
+            com.mojang.logging.LogUtils.getLogger().error("ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked");
+            saveFailureReported = true;
+        } else if (!failedWrite) { saveFailureReported = false; }
+    }
+
+    public void stop() {
+        if (writer == null && operational() && isDirty() && ownerServer != null) {
+            requestWrite(ownerServer.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)
+                    .resolve("data").resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()),
+                    CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS));
+        }
+        stopping = true; effects.clear();
+        if (writer != null) {
+            writer.drain(this::publish);
+            if (operational() && isDirty() && !failedWrite) {
+                writer.request(capture(), CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS));
+            }
+            writer.close(this::publish);
+        }
+    }
+    public void abort() { stopping = true; effects.clear(); if (writer != null) { writer.abort(); } }
+
     @Override
     public void save(java.io.File file) {
-        if (!isDirty() || !operational()) { return; }
+        if (!isDirty() || !operational() || stopping
+                || ownerServer != null && (!ownerServer.isRunning() || ownerServer.isStopped())) { return; }
         if (ownerServer != null && !ownerServer.isSameThread()) {
             throw new IllegalStateException("Transfer journal writes require the server thread");
         }
         if (ownerServer != null) { lastAttemptTick = ownerServer.getTickCount(); attempted = true; }
         try {
-            saveChecked(file.toPath(), CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS));
+            requestWrite(file.toPath(), CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS));
         } catch (RuntimeException failure) {
             setDirty();
             failedWrite = true;
             writeOutcome = WriteOutcome.NOT_COMMITTED;
         }
-        if (isDirty() && !saveFailureReported) {
-            com.mojang.logging.LogUtils.getLogger().error("ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked");
-            saveFailureReported = true;
-        } else if (!isDirty()) { saveFailureReported = false; }
     }
 
-    // Package-private injected policy exercises the same writer without adding a production fault switch.
+    // Detached unit diagnostics await IO, but production never joins from flush/autosave.
     void saveChecked(java.nio.file.Path file, CheckedSavedDataPolicy policy) {
         if (!operational()) { return; }
-        CompoundTag payload = save(new CompoundTag());
-        var digests = new LinkedHashMap<UUID, String>();
-        for (Tag raw : payload.getList("transfers", Tag.TAG_COMPOUND)) {
-            var record = (CompoundTag) raw;
-            digests.put(record.getUUID("transfer_id"), RocketJournalDigest.of(record, RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES));
-        }
-        RocketJournalCheckpoint.Outcome result = checkpoint.write(file, policy, mutationSequence, payload, digests);
-        writeOutcome = WriteOutcome.valueOf(result.name());
-        setDirty(result != RocketJournalCheckpoint.Outcome.COMMITTED);
-        failedWrite = isDirty();
+        if (ownerServer != null) { throw new IllegalStateException("A live journal cannot synchronously await IO"); }
+        requestWrite(file, policy); writer.drain(this::publish);
     }
 
+    boolean requestWrite(java.nio.file.Path file, CheckedSavedDataPolicy policy) {
+        if (!operational() || stopping) { return false; }
+        java.nio.file.Path normalized = file.toAbsolutePath().normalize();
+        if (writer == null) { writerFile = normalized; writer = new RocketJournalWriter(normalized); }
+        if (!writerFile.equals(normalized)) { throw new IllegalArgumentException("Journal writer cannot rebind its target"); }
+        return writer.request(capture(), policy);
+    }
+    RocketJournalWriter.Snapshot capture() { return new RocketJournalWriter.Snapshot(mutationSequence, entries()); }
+    long lastWriterNanos() { return lastWriterNanos; }
+    void drainForTests() { if (writer != null) { writer.drain(this::publish); } }
     @Override
     public CompoundTag save(CompoundTag target) {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
+        return encode(entries(), target);
+    }
+
+    static CompoundTag encode(List<RocketTransferRecord> records, CompoundTag target) {
         SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.ROCKET_TRANSFERS, target);
         ListTag transfers = new ListTag();
-        entries().forEach(record -> transfers.add(encodeRecord(record)));
+        records.stream().sorted(Comparator.comparing(RocketTransferRecord::transferId)).forEach(record -> {
+            CompoundTag encoded = encodeRecord(record);
+            if (RocketNbtSize.uncompressedBytes(encoded) > RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES) {
+                throw new IllegalStateException("Encoded transfer record exceeds the fixed NBT limit");
+            }
+            transfers.add(encoded);
+        });
         target.put("transfers", transfers);
         if (RocketNbtSize.uncompressedBytes(target) > RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES) {
             throw new IllegalStateException("Encoded transfer journal exceeds the fixed NBT limit");
@@ -355,140 +449,4 @@ public final class RocketTransferSavedData extends SavedData {
         }
     }
 
-    private static CompoundTag encodeRecord(RocketTransferRecord record) {
-        CompoundTag target = new CompoundTag();
-        target.putInt("schema_version", record.schemaVersion());
-        target.putUUID("transfer_id", record.transferId());
-        target.putString("phase", record.phase().name());
-        target.putUUID("logical_rocket_id", record.logicalRocketId());
-        target.putUUID("owner_id", record.ownerId());
-        target.putUUID("source_entity_id", record.sourceEntityId());
-        record.destinationEntityId().ifPresent(id -> target.putUUID("destination_entity_id", id));
-        target.put("source_snapshot", RocketSnapshotNbtCodec.encode(record.sourceSnapshot()));
-        target.put("destination_snapshot", RocketSnapshotNbtCodec.encode(record.destinationSnapshot()));
-        target.put("source_flight", RocketFlightNbtCodec.encode(record.sourceFlightData()));
-        target.put("destination_flight", RocketFlightNbtCodec.encode(record.destinationFlightData()));
-        target.putLong("required_fuel", record.requiredFuel());
-        target.putLong("created_at_game_time", record.createdAtGameTime());
-        target.putString("checksum", record.checksum());
-        return target;
-    }
-
-    private static RocketTransferRecord decodeRecord(CompoundTag source) {
-        if (RocketNbtSize.uncompressedBytes(source) > RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES) {
-            throw new IllegalArgumentException("Transfer record exceeds the fixed NBT limit");
-        }
-        int schema = requireInt(source, "schema_version");
-        UUID transferId = requireUuid(source, "transfer_id");
-        RocketTransferPhase phase = RocketTransferPhase.valueOf(requireString(source, "phase", 64));
-        UUID logicalRocketId = requireUuid(source, "logical_rocket_id");
-        UUID ownerId = requireUuid(source, "owner_id");
-        UUID sourceEntityId = requireUuid(source, "source_entity_id");
-        UUID destinationEntityId = source.contains("destination_entity_id")
-                ? requireUuid(source, "destination_entity_id")
-                : null;
-        RocketStructureSnapshot sourceSnapshot = decodeSnapshot(
-                requireCompound(source, "source_snapshot"),
-                "source"
-        );
-        RocketStructureSnapshot destinationSnapshot = decodeSnapshot(
-                requireCompound(source, "destination_snapshot"),
-                "destination"
-        );
-        RocketFlightData sourceFlight = decodeFlight(requireCompound(source, "source_flight"), "source");
-        RocketFlightData destinationFlight = decodeFlight(
-                requireCompound(source, "destination_flight"),
-                "destination"
-        );
-        long requiredFuel = requireNonNegativeLong(source, "required_fuel");
-        long createdAt = requireNonNegativeLong(source, "created_at_game_time");
-        String checksum = requireString(source, "checksum", 64);
-        if (!checksum.matches("[0-9a-f]{64}")) {
-            throw new IllegalArgumentException("Transfer checksum is malformed");
-        }
-        return RocketTransferRecord.restore(
-                schema,
-                transferId,
-                phase,
-                logicalRocketId,
-                ownerId,
-                sourceEntityId,
-                destinationEntityId,
-                sourceSnapshot,
-                destinationSnapshot,
-                sourceFlight,
-                destinationFlight,
-                requiredFuel,
-                createdAt,
-                checksum
-        );
-    }
-
-    private static RocketStructureSnapshot decodeSnapshot(CompoundTag source, String side) {
-        RocketSnapshotDecodeResult decoded = RocketSnapshotNbtCodec.decode(source);
-        if (decoded.status() != RocketSnapshotDecodeResult.Status.VALID) {
-            throw new IllegalArgumentException(side + " transfer snapshot is invalid: " + decoded.message());
-        }
-        return decoded.snapshot().orElseThrow();
-    }
-
-    private static RocketFlightData decodeFlight(CompoundTag source, String side) {
-        RocketFlightDecodeResult decoded = RocketFlightNbtCodec.decode(source);
-        if (decoded.status() != RocketFlightDecodeResult.Status.VALID) {
-            throw new IllegalArgumentException(side + " transfer flight data is invalid: " + decoded.message());
-        }
-        return decoded.data().orElseThrow();
-    }
-
-    private static int requireInt(CompoundTag source, String key) {
-        if (!source.contains(key, Tag.TAG_INT)) {
-            throw new IllegalArgumentException("Missing transfer integer " + key);
-        }
-        return source.getInt(key);
-    }
-
-    private static long requireNonNegativeLong(CompoundTag source, String key) {
-        if (!source.contains(key, Tag.TAG_LONG)) {
-            throw new IllegalArgumentException("Missing transfer long " + key);
-        }
-        long value = source.getLong(key);
-        if (value < 0L) {
-            throw new IllegalArgumentException("Negative transfer long " + key);
-        }
-        return value;
-    }
-
-    private static UUID requireUuid(CompoundTag source, String key) {
-        if (!source.hasUUID(key)) {
-            throw new IllegalArgumentException("Missing transfer UUID " + key);
-        }
-        return source.getUUID(key);
-    }
-
-    private static String requireString(CompoundTag source, String key, int maximumLength) {
-        if (!source.contains(key, Tag.TAG_STRING)) {
-            throw new IllegalArgumentException("Missing transfer string " + key);
-        }
-        String value = source.getString(key);
-        if (value.isEmpty() || value.length() > maximumLength) {
-            throw new IllegalArgumentException("Transfer string " + key + " is outside its bound");
-        }
-        return value;
-    }
-
-    private static CompoundTag requireCompound(CompoundTag source, String key) {
-        if (!source.contains(key, Tag.TAG_COMPOUND)) {
-            throw new IllegalArgumentException("Missing transfer compound " + key);
-        }
-        return source.getCompound(key);
-    }
-
-    private static ListTag requireList(CompoundTag source, String key, byte elementType) {
-        Tag raw = source.get(key);
-        if (!(raw instanceof ListTag list)
-                || (!list.isEmpty() && list.getElementType() != elementType)) {
-            throw new IllegalArgumentException("Missing or invalid transfer list " + key);
-        }
-        return list;
-    }
 }

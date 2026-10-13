@@ -23,6 +23,10 @@ final class RocketJournalCheckpoint {
     Optional<Acknowledgement> acknowledged() { return Optional.ofNullable(acknowledged); }
     boolean current(long sequence) { return acknowledged != null && acknowledged.sequence() == sequence; }
 
+    void publish(RocketJournalWriter.Completion completion) {
+        outcome = completion.outcome(); acknowledged = completion.acknowledged();
+    }
+
     Outcome write(Path file, CheckedSavedDataPolicy policy, long sequence, CompoundTag payload,
                   Map<UUID, String> records) {
         // Capture all fallible encoding/digest work before replacing authority.

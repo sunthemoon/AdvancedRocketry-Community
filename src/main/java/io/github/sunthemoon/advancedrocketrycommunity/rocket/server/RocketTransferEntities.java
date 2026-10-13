@@ -66,6 +66,13 @@ final class RocketTransferEntities {
     }
 
     /** Recovery can acknowledge the new UUID before exposing its materialized entity. */
+    static RocketFlightData currentArrival(RocketTransferRecord record, long gameTime) {
+        return record.sourceFlightData().arriveAtDestination(record.destinationFlightData().fuel(),
+                record.destinationFlightData().currentBody(), record.destinationFlightData().currentDimension(),
+                record.destinationSnapshot().sourceOrigin(), gameTime);
+    }
+
+    /** Recovery can acknowledge the new UUID before exposing its materialized entity. */
     static RocketEntity createDestination(MinecraftServer server, RocketTransferRecord record) {
         ServerLevel level = level(server, record.destinationSnapshot().sourceDimension());
         if (level == null) {
