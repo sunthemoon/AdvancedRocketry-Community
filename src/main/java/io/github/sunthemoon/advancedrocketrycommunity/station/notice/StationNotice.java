@@ -70,4 +70,16 @@ public record StationNotice(StationNoticeKind kind, List<String> arguments) {
     public StationNotice brief() {
         return new StationNotice(StationNoticeKind.WARP_OUTCOME, List.of(arguments.get(0), arguments.get(1)));
     }
+
+    /**
+     * What a visitor without VISIT access is sent (W22 review F2): a start or commit as the station, the code and the
+     * target, without the warp cost or the energy balance. A countdown or an abort carries neither and is unchanged.
+     */
+    public StationNotice forVisitors() {
+        return switch (kind) {
+            case WARP_STARTED, WARP_COMMITTED -> new StationNotice(StationNoticeKind.WARP_VISITOR,
+                    List.of(arguments.get(0), arguments.get(1), arguments.get(3)));
+            case WARP_COUNTDOWN, WARP_ABORTED, WARP_OUTCOME, WARP_VISITOR -> this;
+        };
+    }
 }

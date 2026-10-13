@@ -46,6 +46,7 @@ class V180StationNoticeLanguageTest {
                 "station.advancedrocketrycommunity.notice.warp_committed",
                 "station.advancedrocketrycommunity.notice.warp_aborted",
                 "station.advancedrocketrycommunity.notice.warp_outcome",
+                "station.advancedrocketrycommunity.notice.warp_visitor",
                 "station.advancedrocketrycommunity.notice.while_away",
                 "station.advancedrocketrycommunity.warp_class.in_system",
                 "station.advancedrocketrycommunity.warp_class.interstellar"));

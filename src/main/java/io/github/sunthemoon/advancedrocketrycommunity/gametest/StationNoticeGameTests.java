@@ -21,14 +21,16 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.players.ServerOpListEntry;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
  * ADR-065 section 5.3 on the real server: warp notices as code tokens, sent to the online owner and members and to
- * visitors inside the station's region but to nobody elsewhere; the offline member summary shown once at login; a
- * removed member's acknowledgement gone from the saved root; and a refused root kept while live notices continue.
- * The countdown is counted in server ticks, as in StationWarpGameTests; nothing waits for loading.
+ * visitors inside the station's region (without VISIT access, in the visitor form) but to nobody elsewhere; the
+ * offline member summary shown once at login; a removed member's acknowledgement gone from the saved root; and a
+ * refused root kept while live notices continue. The countdown is counted in server ticks, as in StationWarpGameTests;
+ * nothing waits for loading.
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -45,6 +47,8 @@ public final class StationNoticeGameTests {
         StationWarpGameTests.Fixture beta = new StationWarpGameTests.Fixture(helper, "Notice beta",
                 CelestialIds.EARTH_ID, 0);
         StationRocketAuthority previous = alpha.warp.installRocketAuthority(StationWarpGameTests.NOTHING_IN_MOTION);
+        UUID operatorId = UUID.randomUUID();
+        com.mojang.authlib.GameProfile operatorProfile = new com.mojang.authlib.GameProfile(operatorId, "noticeOperator");
         boolean scheduled = false;
         try {
             alpha.core(alpha.pad.east(2));
@@ -52,11 +56,13 @@ public final class StationNoticeGameTests {
             UUID memberId = UUID.randomUUID();
             alpha.data.invite(alpha.id(), memberId);
             alpha.data.acceptInvitation(alpha.id(), memberId);
-            // A member elsewhere (inside the other station), a visitor without access inside this region, a stranger
-            // inside the other region and a player in the gap between them.
+            // A member elsewhere (inside the other station), a visitor without access and an operator who is not a
+            // member inside this region, a stranger inside the other region and a player in the gap between them.
             alpha.join(memberId, "noticeMember", beta.pad, false);
             UUID visitorId = UUID.randomUUID();
             alpha.join(visitorId, "noticeVisitor", alpha.pad.west(3), false);
+            alpha.server.getPlayerList().getOps().add(new ServerOpListEntry(operatorProfile, 4, false));
+            alpha.join(operatorId, "noticeOperator", alpha.pad.west(5), true);
             UUID strangerId = UUID.randomUUID();
             alpha.join(strangerId, "noticeStranger", beta.pad.east(3), false);
             UUID gapId = UUID.randomUUID();
@@ -70,21 +76,32 @@ public final class StationNoticeGameTests {
             String committed = StationWarpGameTests.notice("warp_committed", "Notice alpha",
                     StationWarpGameTests.code(StationManagementCode.WARP_COMMITTED), CelestialIds.EARTH_ID,
                     StationWarpGameTests.MOON, StationWarpGameTests.warpClass("in_system"), 2_000_000, 500_000);
-            List<String> expected = new ArrayList<>(List.of(started));
+            List<String> countdown = new ArrayList<>();
             for (int seconds : List.of(10, 5, 3, 2, 1)) {
-                expected.add(ConnectedTestPlayers.ACTION_BAR + StationWarpGameTests.notice("warp_countdown",
+                countdown.add(ConnectedTestPlayers.ACTION_BAR + StationWarpGameTests.notice("warp_countdown",
                         "Notice alpha", StationWarpGameTests.MOON, seconds));
             }
+            List<String> expected = new ArrayList<>(List.of(started));
+            expected.addAll(countdown);
             expected.add(committed);
+            // W22 review F2: a visitor without VISIT access is told the station, the code and the target only.
+            List<String> visitorExpected = new ArrayList<>(List.of(StationWarpGameTests.notice("warp_visitor",
+                    "Notice alpha", StationWarpGameTests.code(StationManagementCode.WARP_STARTED),
+                    StationWarpGameTests.MOON)));
+            visitorExpected.addAll(countdown);
+            visitorExpected.add(StationWarpGameTests.notice("warp_visitor", "Notice alpha",
+                    StationWarpGameTests.code(StationManagementCode.WARP_COMMITTED), StationWarpGameTests.MOON));
             scheduled = true;
             helper.runAfterDelay(StationWarpGameTests.COMMIT_DELAY, () -> {
                 try {
                     helper.assertTrue(alpha.station().orbitBody().equals(StationWarpGameTests.MOON),
                             "The warp did not commit");
-                    for (UUID told : List.of(alpha.ownerId, memberId, visitorId)) {
+                    for (UUID told : List.of(alpha.ownerId, memberId, operatorId)) {
                         helper.assertTrue(alpha.notices(told).equals(expected),
                                 "Notices differ for " + told + ": " + alpha.notices(told));
                     }
+                    helper.assertTrue(alpha.notices(visitorId).equals(visitorExpected),
+                            "The visitor's notices differ: " + alpha.notices(visitorId));
                     for (UUID untold : List.of(strangerId, gapId)) {
                         helper.assertTrue(alpha.notices(untold).isEmpty(),
                                 "A player outside the region was told: " + alpha.notices(untold));
@@ -96,6 +113,10 @@ public final class StationNoticeGameTests {
                         helper.assertTrue(everything.stream().noneMatch(token -> token.contains(hidden.toString())),
                                 "The visitor learned " + hidden + ": " + everything);
                     }
+                    // Nothing the visitor received carries the cost, the balance or the cost class.
+                    helper.assertTrue(everything.stream().noneMatch(token -> token.contains("2000000")
+                                    || token.contains("500000") || token.contains("warp_class")),
+                            "The visitor learned the warp energy: " + everything);
                     StationNoticeSummary summary = StationNoticeSavedData.get(alpha.server).summary(alpha.id());
                     helper.assertTrue(summary.revision() == 1L && summary.outcome().map(outcome -> ConnectedTestPlayers
                                     .token(StationNoticeService.component(outcome))).filter(committed::equals)
@@ -103,6 +124,7 @@ public final class StationNoticeGameTests {
                     helper.assertTrue(summary.players().equals(Set.of(alpha.ownerId, memberId)),
                             "Only the owner and the member told live are acknowledged: " + summary);
                 } finally {
+                    alpha.server.getPlayerList().getOps().remove(operatorProfile);
                     alpha.warp.installRocketAuthority(previous);
                     alpha.close();
                     beta.close();
@@ -111,6 +133,7 @@ public final class StationNoticeGameTests {
             });
         } finally {
             if (!scheduled) {
+                alpha.server.getPlayerList().getOps().remove(operatorProfile);
                 alpha.warp.installRocketAuthority(previous);
                 alpha.close();
                 beta.close();

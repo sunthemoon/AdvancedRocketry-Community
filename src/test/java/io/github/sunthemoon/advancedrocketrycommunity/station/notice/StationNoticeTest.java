@@ -46,10 +46,10 @@ class StationNoticeTest {
     @Test
     void everyKindHasAStableCodeTokenKey() {
         assertEquals(List.of(PREFIX + "warp_started", PREFIX + "warp_countdown", PREFIX + "warp_committed",
-                PREFIX + "warp_aborted", PREFIX + "warp_outcome"),
+                PREFIX + "warp_aborted", PREFIX + "warp_outcome", PREFIX + "warp_visitor"),
                 Arrays.stream(StationNoticeKind.values()).map(StationNoticeKind::key).toList());
         assertEquals(PREFIX + "while_away", StationNoticeKind.WHILE_AWAY);
-        assertEquals(List.of(false, false, true, true, true),
+        assertEquals(List.of(false, false, true, true, true, false),
                 Arrays.stream(StationNoticeKind.values()).map(StationNoticeKind::stored).toList());
         assertEquals(Arrays.stream(WarpCostClass.values()).map(value -> value.name().toLowerCase(Locale.ROOT)).toList(),
                 StationNoticeKind.COST_CLASSES);
@@ -70,6 +70,31 @@ class StationNoticeTest {
         assertEquals(List.of("Alpha", "WARP_CANCELLED", MOON.toString()),
                 StationNotice.aborted("Alpha", StationManagementCode.WARP_CANCELLED, MOON).arguments());
         assertEquals("Alpha", started.station());
+    }
+
+    /** W22 review F2: a visitor without VISIT access learns the station, the code and the target, never the energy. */
+    @Test
+    void theVisitorFormDropsTheCostAndTheBalance() {
+        StationNotice started = StationNotice.started("Alpha", EARTH, MOON, 10, "in_system", 2_000_000).forVisitors();
+        assertEquals(StationNoticeKind.WARP_VISITOR, started.kind());
+        assertEquals(List.of("Alpha", "WARP_STARTED", MOON.toString()), started.arguments());
+        StationNotice committed = StationNotice.committed("Alpha", EARTH, MOON, "interstellar", 8_000_000, 500_000)
+                .forVisitors();
+        assertEquals(List.of("Alpha", "WARP_COMMITTED", MOON.toString()), committed.arguments());
+        for (StationNotice unchanged : List.of(StationNotice.countdown("Alpha", MOON, 5),
+                StationNotice.aborted("Alpha", StationManagementCode.WARP_ACTOR_CHANGED, MOON), committed)) {
+            assertSame(unchanged, unchanged.forVisitors(), unchanged.toString());
+        }
+        assertFalse(StationNoticeKind.WARP_VISITOR.stored());
+        assertThrows(IllegalStateException.class, committed::summary);
+        for (StationManagementCode code : StationManagementCode.values()) {
+            assertEquals(code == StationManagementCode.WARP_STARTED || code == StationManagementCode.WARP_COMMITTED,
+                    StationNoticeKind.WARP_VISITOR.allows(code), code.name());
+        }
+        TranslatableContents contents = (TranslatableContents) StationNoticeService.component(started).getContents();
+        assertEquals(PREFIX + "warp_visitor", contents.getKey());
+        assertEquals("station.advancedrocketrycommunity.code.warp_started",
+                ((TranslatableContents) ((Component) contents.getArgs()[1]).getContents()).getKey());
     }
 
     @Test

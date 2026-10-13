@@ -4,6 +4,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessAction;
+import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationLifecycleListener;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode;
 import java.util.Collection;
@@ -28,19 +30,23 @@ import net.minecraftforge.event.server.ServerStartedEvent;
 /**
  * Sends the ADR-065 section 5.3 warp notices and keeps the offline member summaries. Recipients come from the live
  * registry each time: the online owner and members, the acting player, and players in Space inside the live region,
- * each once. A commit or abort replaces the station's summary; an owner or member who was offline sees it once at the
+ * each once. Players with VISIT access get the full notice and other visitors its {@link StationNotice#forVisitors}
+ * form. A commit or abort replaces the station's summary; an owner or member who was offline sees it once at the
  * next login. This service holds no state: the summaries live in {@link StationNoticeSavedData}.
  */
 public final class StationNoticeService implements StationLifecycleListener {
+    private static final StationAccessService ACCESS = new StationAccessService();
+
     /** A live notice to its recipients, in chat or on the action bar; returns the players told. */
     public Set<UUID> deliver(MinecraftServer server, UUID stationId, UUID actorId, StationNotice notice,
                              boolean actionBar) {
         Objects.requireNonNull(notice, "notice");
-        Component message = component(notice);
+        Component full = component(notice);
+        Component visitor = component(notice.forVisitors());
         Set<UUID> told = new LinkedHashSet<>();
-        for (ServerPlayer player : recipients(server, stationId, actorId)) {
-            player.displayClientMessage(message, actionBar);
-            told.add(player.getUUID());
+        for (Recipient recipient : recipients(server, stationId, actorId)) {
+            recipient.player().displayClientMessage(recipient.authorized() ? full : visitor, actionBar);
+            told.add(recipient.player().getUUID());
         }
         return told;
     }
@@ -157,11 +163,12 @@ public final class StationNoticeService implements StationLifecycleListener {
     }
 
     /**
-     * The live owner and members who are online, the actor when online, and players in Space inside the live region.
-     * Without a live station (deleted, or an unavailable registry) only the actor is told.
+     * The live owner and members who are online, the actor when online, and players in Space inside the live region,
+     * each with whether they hold VISIT access now. Without a live station (deleted, or an unavailable registry) only
+     * the actor is told.
      */
-    private static Collection<ServerPlayer> recipients(MinecraftServer server, UUID stationId, UUID actorId) {
-        Map<UUID, ServerPlayer> recipients = new LinkedHashMap<>();
+    private static Collection<Recipient> recipients(MinecraftServer server, UUID stationId, UUID actorId) {
+        Map<UUID, Recipient> recipients = new LinkedHashMap<>();
         Optional<StationState> live = StationRegistrySavedData.get(server).find(stationId);
         live.ifPresent(station -> {
             addOnline(server, recipients, station.ownerId());
@@ -172,17 +179,31 @@ public final class StationNoticeService implements StationLifecycleListener {
         if (live.isPresent() && space != null) {
             for (ServerPlayer player : space.players()) {
                 if (live.get().region().contains(player.getBlockX(), player.getBlockZ())) {
-                    recipients.putIfAbsent(player.getUUID(), player);
+                    recipients.putIfAbsent(player.getUUID(), new Recipient(player, authorized(live, player)));
                 }
             }
         }
         return recipients.values();
     }
 
-    private static void addOnline(MinecraftServer server, Map<UUID, ServerPlayer> recipients, UUID playerId) {
+    private static void addOnline(MinecraftServer server, Map<UUID, Recipient> recipients, UUID playerId) {
         ServerPlayer online = server.getPlayerList().getPlayer(playerId);
         if (online != null) {
-            recipients.putIfAbsent(playerId, online);
+            recipients.putIfAbsent(playerId, new Recipient(online, true));
         }
+    }
+
+    /**
+     * VISIT access now, as {@code /arce station warp status} checks it: the live owner, a live member or an operator.
+     * Without a live station only an operator holds it.
+     */
+    private static boolean authorized(Optional<StationState> live, ServerPlayer player) {
+        boolean operator = player.hasPermissions(2);
+        return live.map(station -> ACCESS.allowed(station, player.getUUID(), operator, StationAccessAction.VISIT))
+                .orElse(operator);
+    }
+
+    /** One player told once; {@code authorized} players get the full notice, other visitors its visitor form. */
+    private record Recipient(ServerPlayer player, boolean authorized) {
     }
 }

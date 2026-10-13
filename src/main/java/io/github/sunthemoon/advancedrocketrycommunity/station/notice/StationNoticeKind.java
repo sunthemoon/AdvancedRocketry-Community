@@ -13,7 +13,8 @@ import net.minecraft.resources.ResourceLocation;
  * The station warp notices of ADR-065 section 5.3, each a stable translatable key in the v1.8 language namespace with
  * a fixed list of argument roles. The first argument always names the station; an outcome's second argument is the
  * existing station code key. Only commit and abort outcomes, and the brief outcome that always fits the envelope, are
- * stored for offline members.
+ * stored for offline members. A visitor without VISIT access is sent the visitor form of a start or commit, which is
+ * never stored.
  */
 public enum StationNoticeKind {
     WARP_STARTED("warp_started", false, Role.TEXT, Role.CODE, Role.BODY, Role.BODY, Role.NUMBER, Role.COST_CLASS,
@@ -22,7 +23,9 @@ public enum StationNoticeKind {
     WARP_COMMITTED("warp_committed", true, Role.TEXT, Role.CODE, Role.BODY, Role.BODY, Role.COST_CLASS, Role.NUMBER,
             Role.NUMBER),
     WARP_ABORTED("warp_aborted", true, Role.TEXT, Role.CODE, Role.BODY),
-    WARP_OUTCOME("warp_outcome", true, Role.TEXT, Role.CODE);
+    WARP_OUTCOME("warp_outcome", true, Role.TEXT, Role.CODE),
+    /** A start or commit for a visitor (W22 review F2): the station, the code and the target, no cost or balance. */
+    WARP_VISITOR("warp_visitor", false, Role.TEXT, Role.CODE, Role.BODY);
 
     public static final String PREFIX = "station.advancedrocketrycommunity.notice.";
     /** The login wrapper around one stored outcome. */
@@ -64,6 +67,8 @@ public enum StationNoticeKind {
             case WARP_COMMITTED -> code == StationManagementCode.WARP_COMMITTED;
             case WARP_ABORTED -> abort;
             case WARP_OUTCOME -> abort || code == StationManagementCode.WARP_COMMITTED;
+            case WARP_VISITOR -> code == StationManagementCode.WARP_STARTED
+                    || code == StationManagementCode.WARP_COMMITTED;
         };
     }
 

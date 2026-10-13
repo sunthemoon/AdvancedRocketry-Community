@@ -31,6 +31,7 @@ public final class V180StationNoticeLanguage {
             case WARP_COMMITTED -> "[%1$s] %2$s %3$s -> %4$s (%5$s, %6$s FE); warp energy left %7$s FE.";
             case WARP_ABORTED -> "[%1$s] Warp to %3$s aborted: %2$s";
             case WARP_OUTCOME -> "[%1$s] %2$s";
+            case WARP_VISITOR -> "[%1$s] %2$s Target: %3$s";
         };
     }
 
@@ -41,6 +42,7 @@ public final class V180StationNoticeLanguage {
             case WARP_COMMITTED -> "[%1$s] %2$s %3$s -> %4$s（%5$s，%6$s FE）；剩余跃迁能量 %7$s FE。";
             case WARP_ABORTED -> "[%1$s] 跃迁至 %3$s 已中止：%2$s";
             case WARP_OUTCOME -> "[%1$s] %2$s";
+            case WARP_VISITOR -> "[%1$s] %2$s 目标：%3$s";
         };
     }
 }
