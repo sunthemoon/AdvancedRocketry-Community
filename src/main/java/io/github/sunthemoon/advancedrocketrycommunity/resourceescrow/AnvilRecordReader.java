@@ -42,11 +42,16 @@ public final class AnvilRecordReader {
         public Record { root = root.copy(); }
         @Override public CompoundTag root() { return root.copy(); }
     }
-    private record Header(int location, int timestamp, int length, int compression, long start) { }
+    private record Header(int location, int timestamp, int length, int compression, long start) {
+        long end() { return start + 4L + length; }
+    }
     private AnvilRecordReader() { }
 
     public static SizeProbe probe(Path directory, ChunkPos pos) throws IOException {
         return read(directory, pos, true).size();
+    }
+    static SizeProbe probe(Path directory, ChunkPos pos, Runnable afterRead) throws IOException {
+        return read(directory, pos, true, afterRead).size();
     }
     public static Record read(Path directory, ChunkPos pos) throws IOException { return read(directory, pos, false); }
     static Record read(Path directory, ChunkPos pos, Runnable afterRead) throws IOException {
@@ -58,15 +63,16 @@ public final class AnvilRecordReader {
     private static Record read(Path directory, ChunkPos pos, boolean probe, Runnable afterRead) throws IOException {
         Path path = directory.resolve("r." + Math.floorDiv(pos.x, 32) + "." + Math.floorDiv(pos.z, 32) + ".mca");
         if (!Files.isDirectory(directory, LinkOption.NOFOLLOW_LINKS)) { throw new IOException("Missing Anvil directory"); }
-        BasicFileAttributes before = attributes(path);
+        Object identity = attributes(path).fileKey();
         try (FileChannel file = FileChannel.open(path, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
             Header header = header(file, pos);
             if ((header.compression() & 128) != 0) {
-                if (!header.equals(header(file, pos)) || !same(before, attributes(path))) { throw new IOException("Unstable external Anvil header"); }
+                if (!stable(path, identity, file, pos, header)) { throw new IOException("Unstable external Anvil header"); }
                 if (!probe) { throw new Refusal(EscrowReason.BARRIER_EXTERNAL, "External Anvil records cannot prove an escrow endpoint"); }
                 // A size-only probe may inspect the fixed vanilla filename, but it can never issue proof.
                 SizeProbe size = externalProbe(directory, pos, header.compression() & 127);
-                if (!header.equals(header(file, pos)) || !same(before, attributes(path))) { throw new IOException("Unstable external Anvil header"); }
+                afterRead.run();
+                if (!stable(path, identity, file, pos, header)) { throw new IOException("Unstable external Anvil header"); }
                 return new Record(new CompoundTag(), size);
             }
             int compressed = header.length() - 1;
@@ -77,8 +83,9 @@ public final class AnvilRecordReader {
             byte[] bytes = bytes(file, header.start() + 5, compressed);
             byte[] decoded = expand(bytes, header.compression(), probe);
             afterRead.run();
-            if (!header.equals(header(file, pos)) || !Arrays.equals(bytes, bytes(file, header.start() + 5, compressed))
-                    || !same(before, attributes(path))) { throw new IOException("Anvil record changed during readback"); }
+            // Both payload reads lie between the two header reads; see stable().
+            if (!Arrays.equals(bytes, bytes(file, header.start() + 5, compressed))
+                    || !stable(path, identity, file, pos, header)) { throw new IOException("Anvil record changed during readback"); }
             if (decoded == null) { return new Record(new CompoundTag(), new SizeProbe(false, compressed, DECODED_BYTES + 1, false)); }
             try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(decoded))) {
                 // Preallocation charges have an independent heap quota. Raw expanded bytes remain the exact bound.
@@ -153,6 +160,15 @@ public final class AnvilRecordReader {
         BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
         if (!attributes.isRegularFile()) { throw new IOException("Anvil authority must be a regular file"); } return attributes;
     }
+    /**
+     * W29: the endpoint's slot is stable, not the whole region file. Vanilla RegionFile.write writes new sectors,
+     * then the header, then frees the old sectors, so sectors a header entry names are never rewritten while it
+     * names them. Another chunk's save changes the file's size and time but neither this slot nor its record.
+     */
+    private static boolean stable(Path path, Object identity, FileChannel file, ChunkPos pos, Header header) throws IOException {
+        return header.equals(header(file, pos)) && file.size() >= header.end() && Objects.equals(identity, attributes(path).fileKey());
+    }
+    /** The external file belongs to this chunk alone, so its whole-file attributes are this record's. */
     private static boolean same(BasicFileAttributes first, BasicFileAttributes second) {
         return Objects.equals(first.fileKey(), second.fileKey()) && first.size() == second.size()
                 && first.lastModifiedTime().equals(second.lastModifiedTime());
