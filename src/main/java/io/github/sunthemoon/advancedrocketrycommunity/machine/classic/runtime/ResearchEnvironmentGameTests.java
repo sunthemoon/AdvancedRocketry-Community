@@ -20,6 +20,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -60,6 +61,57 @@ public final class ResearchEnvironmentGameTests {
             } finally { fixture.level.setBlock(roof, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); }
             helper.succeed();
         }));
+    }
+    /**
+     * W21c review L5: a real ticket change takes a footprint chunk out of FULL while the queued controller's own chunk
+     * stays FULL. The kernel sees no Unload event, so only the footprint scan stands between it and a payment.
+     */
+    @GameTest(template = "empty", batch = "research_unload", timeoutTicks = 600)
+    public static void realFootprintChunkUnloadPausesWithoutPaymentOrLoading(GameTestHelper helper) {
+        var server = helper.getLevel().getServer(); var moon = server.getLevel(CelestialIds.MOON_LEVEL);
+        helper.assertTrue(moon != null, "Moon Level unavailable");
+        // The plug (local x 0) and controller (x 1) sit in chunk home; the x 2 slabs and casing cross into chunk edge.
+        // Nothing else holds tickets this far out on the Moon, so only this fixture keeps either chunk FULL.
+        var origin = new BlockPos(-2_033, 128, -2_040);
+        var fixture = new ResearchFixture(moon, origin, true, Direction.NORTH, UUID.randomUUID());
+        var home = new ChunkPos(origin); var edge = new ChunkPos(origin.east());
+        var data = SatelliteMissionSavedData.get(server); var service = ResearchRuntime.service(moon); int[] at = new int[3];
+        ResearchGameTests.steps(helper, ResearchGameTests.ticking(List.of(fixture), false), ResearchGameTests.then(() -> {
+            helper.assertTrue(!home.equals(edge) && fixture.cells.stream().anyMatch(cell -> new ChunkPos(cell).equals(edge))
+                    && new ChunkPos(fixture.power.get(0).getBlockPos()).equals(home), "Fixture does not cross into a plug-free chunk");
+            UUID owner = fixture.controller.researchOwner().orElseThrow(), job = UUID.randomUUID();
+            var source = new GroundSurveyJob.Device(UUID.randomUUID(), moon.dimension().location(), 0);
+            long now = server.overworld().getGameTime(), created = data.groundSurveyQuery(jobs -> jobs.previewTime(now));
+            var instance = new AsteroidInstance(2, UUID.randomUUID(), owner, CelestialIds.EARTH_ID, ModIdentity.id("small_asteroid"),
+                    "0123456789abcdef", "0123456789abcdef", 1, List.of(new RewardEntry(net.minecraft.resources.ResourceLocation.tryParse("minecraft:iron_ore"), 1)),
+                    created, OptionalLong.empty(), InstanceState.PENDING, InstanceOrigin.ground(job), Optional.empty());
+            helper.assertTrue(data.groundSurveys(jobs -> jobs.start(new GroundSurveys.Start(job, owner, source, instance, 20, 20, 200, 20, 120), now)).changed(), "Unload job refused");
+            fixture.flush();
+            for (int tick = 0; tick < 20; tick++) { helper.assertTrue(data.groundSurveys(jobs -> jobs.advanceSurvey(job, source, 24_000, now)).changed(), "Unload survey refused"); }
+            helper.assertTrue(service.intent(fixture.controller, owner, 4), "Unload processor claim refused"); fixture.flush(); fixture.feed(4_000);
+        }), ResearchGameTests.waitTicks(server, 2), ResearchGameTests.then(() -> {
+            at[0] = server.getTickCount(); at[1] = analysis(service, fixture); at[2] = fixture.power.get(0).energyStored();
+        }), ResearchGameTests.waitTicks(server, 20), ResearchGameTests.then(() -> {
+            int ticks = server.getTickCount() - at[0], paid = analysis(service, fixture) - at[1];
+            helper.assertTrue(ticks >= 20 && paid == ticks && at[2] - fixture.power.get(0).energyStored() == ResearchService.ENERGY_PER_TICK * ticks
+                    && fixture.controller.researchStatus() == ResearchStatus.QUEUED, "Moon processor natural ticks " + ticks + " paid " + paid);
+            // This tick's ticker has queued the processor; the server's END tick serves it after this ticket change.
+            fixture.stopTicking(home); fixture.release(edge); fixture.applyTickets();
+            helper.assertTrue(moon.getChunkSource().getChunkNow(edge.x, edge.z) == null && moon.getChunkSource().getChunkNow(home.x, home.z) != null
+                    && fixture.controller.physical() && fixture.controller.formed(), "The ticket change did not take out only the edge chunk");
+            at[1] = analysis(service, fixture); at[2] = fixture.power.get(0).energyStored();
+        }), ResearchGameTests.waitTicks(server, 20), ResearchGameTests.then(() -> {
+            helper.assertTrue(fixture.controller.researchStatus() == ResearchStatus.UNLOADED, "Unloaded footprint read " + fixture.controller.researchStatus());
+            helper.assertTrue(analysis(service, fixture) == at[1] && fixture.power.get(0).energyStored() == at[2], "Unloaded footprint paid");
+            helper.assertTrue(moon.getChunkSource().getChunkNow(edge.x, edge.z) == null && !moon.isPositionEntityTicking(origin),
+                    "Research loaded or ticked the unloaded footprint");
+            fixture.restoreTickets(); fixture.applyTickets();
+        }), () -> analysis(service, fixture) > at[1], ResearchGameTests.then(() -> {
+            fixture.close(); helper.succeed();
+        }));
+    }
+    private static int analysis(ResearchService service, ResearchFixture fixture) {
+        return service.work(fixture.controller).orElseThrow().analysis().progress();
     }
     @GameTest(template = "empty", batch = "research_no_power", timeoutTicks = 400)
     public static void formedObservatoryWithoutPlugCannotPay(GameTestHelper helper) {

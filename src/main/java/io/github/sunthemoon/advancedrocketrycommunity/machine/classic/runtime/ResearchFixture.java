@@ -30,6 +30,7 @@ final class ResearchFixture implements AutoCloseable {
     final ResearchControllerBlockEntity controller;
     final List<BlockPos> cells = new ArrayList<>();
     final List<ChunkPos> tickets = new ArrayList<>();
+    final List<ChunkPos> fullOnly = new ArrayList<>();
     final List<ClassicHatchBlockEntity> power = new ArrayList<>();
     final PatternTransform transform;
     final MultiblockPatternDefinition pattern;
@@ -79,9 +80,20 @@ final class ResearchFixture implements AutoCloseable {
     boolean ticking() { return level.isPositionEntityTicking(origin); }
     void flush() { SatelliteMissionSavedData.get(level.getServer()).flush(level.getServer()); }
     void revalidate() { ClassicRuntime.manager(level).changed(origin); ClassicRuntime.manager(level).tick(); }
+    /** Removes this fixture's ticking ticket from one chunk. */
+    void release(ChunkPos chunk) { level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, chunk); }
+    /** Keeps one chunk FULL without ticking it; its neighbours then lose FULL unless something else holds them. */
+    void stopTicking(ChunkPos chunk) { release(chunk); level.getChunkSource().addRegionTicket(TICKET, chunk, 0, chunk); fullOnly.add(chunk); }
+    void restoreTickets() {
+        tickets.forEach(chunk -> level.getChunkSource().addRegionTicket(TICKET, chunk, 2, chunk));
+        fullOnly.forEach(chunk -> level.getChunkSource().removeRegionTicket(TICKET, chunk, 0, chunk)); fullOnly.clear();
+    }
+    /** Applies pending ticket changes now, as the next chunk-source tick would; bounded. */
+    void applyTickets() { for (int task = 0; task < 1_000 && level.getChunkSource().pollTask(); task++) { } }
     @Override public void close() {
         level.setBlock(origin, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); ClassicRuntime.manager(level).forget(controller);
         for (BlockPos cell : cells) { level.setBlock(cell, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); }
         tickets.forEach(chunk -> level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, chunk));
+        fullOnly.forEach(chunk -> level.getChunkSource().removeRegionTicket(TICKET, chunk, 0, chunk));
     }
 }

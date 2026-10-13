@@ -148,6 +148,28 @@ public final class ResearchGameTests {
             helper.succeed();
         });
     }
+    /** W21c review L5: the block-entity ticker and the END-tick scheduler alone pay each natural tick; no direct call. */
+    @GameTest(template = "empty", batch = "research_natural", timeoutTicks = 400)
+    public static void productionTickerAndSchedulerPayEachNaturalTick(GameTestHelper helper) {
+        UUID owner = UUID.randomUUID(); var survey = fixture(helper, false, Direction.NORTH, owner, 0);
+        var server = helper.getLevel().getServer(); var service = ResearchRuntime.service(survey.level); int[] baseline = new int[3];
+        steps(helper, ticking(List.of(survey), true), then(() -> {
+            night(survey); helper.assertTrue(service.intent(survey.controller, owner, 0), "Natural START refused"); survey.flush(); survey.feed(10_000);
+        }), waitTicks(server, 2), then(() -> {
+            baseline[0] = server.getTickCount(); baseline[1] = service.work(survey.controller).orElseThrow().surveyProgress();
+            baseline[2] = survey.controller.storedEnergy();
+            helper.assertTrue(baseline[1] >= 1, "The first natural tick after the flushed START did not pay");
+        }), waitTicks(server, 40), then(() -> {
+            try (survey) {
+                int ticks = server.getTickCount() - baseline[0], paid = service.work(survey.controller).orElseThrow().surveyProgress() - baseline[1];
+                helper.assertTrue(ticks >= 40 && paid == ticks && baseline[2] - survey.controller.storedEnergy() == ResearchService.ENERGY_PER_TICK * ticks,
+                        "Natural ticks " + ticks + " paid " + paid + " survey ticks");
+                // The GameTest runs after the Level tick and before the server's END tick, so this tick's ticker queued it.
+                helper.assertTrue(survey.controller.researchStatus() == ResearchStatus.QUEUED, "Ticker did not queue: " + survey.controller.researchStatus());
+            }
+            helper.succeed();
+        }));
+    }
     /** W21a design section 4: breaking a device keeps the job, pauses it with SOURCE_MISSING and refunds nothing. */
     @GameTest(template = "empty", batch = "research_break", timeoutTicks = 400)
     public static void breakingAnActiveSourceKeepsThePausedJobWithoutRefundOrDuplicate(GameTestHelper helper) {
