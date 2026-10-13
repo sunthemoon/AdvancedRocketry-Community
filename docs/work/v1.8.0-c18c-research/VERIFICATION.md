@@ -23,8 +23,10 @@ release.** Only the owner marks a Gate as passed (AGENTS.md sections 5 and 13).
 | `5e75f835` | W21c, W21cF: the observatory and the astrobody data processor as classic controllers with research profiles | `cabba779` | 38368323736 |
 
 Commits inside these merges: `e6ae40ae` (the milestone advancements, in `667fa40c`), `8bf4fb5f`
-(the crystallizer and dilithium advancements, in `f5038f2f`) and `4d9496ab` (observatory and
-processor blocks, in `5e75f835`).
+(in `f5038f2f`: the crystallizer advancement, which used `minecraft:impossible` until then, and
+the reachability proof for both; the generated `classic/dilithium.json` is unchanged since
+`e6ae40ae`) and
+`4d9496ab` (observatory and processor blocks, in `5e75f835`).
 
 The six inventory tutorial advancements (`classic/root`, `classic/block_press`,
 `classic/rolling`, `classic/electrolysis`, `classic/suited_up`, `classic/warp_core`) were
