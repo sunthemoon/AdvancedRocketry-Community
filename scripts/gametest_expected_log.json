@@ -408,9 +408,9 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_RETURNED_TO_SOURCE transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} reason=destination_pad_blocked fuel=\\d+",
-      "counts": {"destination_readiness": 1, "flight": 1, "planetary_changed_pad": 1, "named_pad_occupancy": 1},
-      "test": "RocketDestinationReadinessGameTests, RocketFlightGameTests, PlanetaryLandingGameTests, NamedLandingPadOccupancyGameTests.wideParkedStructureAppearingAfterPreparationRefusesPreSpawn",
-      "reason": "Each test blocks the destination pad and requires the rocket to return to its source; W13F uses a wide parked structure outside the arrival entity AABB."
+      "counts": {"destination_readiness": 1, "flight": 1, "planetary_changed_pad": 1, "named_pad_occupancy": 1, "legacy_pad_occupancy": 1},
+      "test": "RocketDestinationReadinessGameTests, RocketFlightGameTests, PlanetaryLandingGameTests, NamedLandingPadOccupancyGameTests.wideParkedStructureAppearingAfterPreparationRefusesPreSpawn, LegacyLandingPadOccupancyGameTests.wideParkedStructureAppearingAfterPreparationRefusesUnnamedPreSpawn",
+      "reason": "Each test blocks the destination pad and requires the rocket to return to its source; W13F (named pad) and W24 (unnamed station pad) use a wide parked structure outside the arrival entity AABB."
     },
     {
       "id": "transfer-recovery-keep-source",
