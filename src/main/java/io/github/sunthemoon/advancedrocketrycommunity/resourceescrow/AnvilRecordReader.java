@@ -67,12 +67,12 @@ public final class AnvilRecordReader {
         try (FileChannel file = FileChannel.open(path, StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS)) {
             Header header = header(file, pos);
             if ((header.compression() & 128) != 0) {
-                if (!stable(path, identity, file, pos, header)) { throw new IOException("Unstable external Anvil header"); }
+                if (!header.equals(header(file, pos)) || !intact(path, identity, file, header)) { throw new IOException("Unstable external Anvil header"); }
                 if (!probe) { throw new Refusal(EscrowReason.BARRIER_EXTERNAL, "External Anvil records cannot prove an escrow endpoint"); }
                 // A size-only probe may inspect the fixed vanilla filename, but it can never issue proof.
                 SizeProbe size = externalProbe(directory, pos, header.compression() & 127);
                 afterRead.run();
-                if (!stable(path, identity, file, pos, header)) { throw new IOException("Unstable external Anvil header"); }
+                if (!header.equals(header(file, pos)) || !intact(path, identity, file, header)) { throw new IOException("Unstable external Anvil header"); }
                 return new Record(new CompoundTag(), size);
             }
             int compressed = header.length() - 1;
@@ -83,9 +83,9 @@ public final class AnvilRecordReader {
             byte[] bytes = bytes(file, header.start() + 5, compressed);
             byte[] decoded = expand(bytes, header.compression(), probe);
             afterRead.run();
-            // Both payload reads lie between the two header reads; see stable().
-            if (!Arrays.equals(bytes, bytes(file, header.start() + 5, compressed))
-                    || !stable(path, identity, file, pos, header)) { throw new IOException("Anvil record changed during readback"); }
+            // The header is reread first, so the second payload read is of the record that this header names.
+            if (!header.equals(header(file, pos)) || !Arrays.equals(bytes, bytes(file, header.start() + 5, compressed))
+                    || !intact(path, identity, file, header)) { throw new IOException("Anvil record changed during readback"); }
             if (decoded == null) { return new Record(new CompoundTag(), new SizeProbe(false, compressed, DECODED_BYTES + 1, false)); }
             try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(decoded))) {
                 // Preallocation charges have an independent heap quota. Raw expanded bytes remain the exact bound.
@@ -161,12 +161,13 @@ public final class AnvilRecordReader {
         if (!attributes.isRegularFile()) { throw new IOException("Anvil authority must be a regular file"); } return attributes;
     }
     /**
-     * W29: the endpoint's slot is stable, not the whole region file. Vanilla RegionFile.write writes new sectors,
-     * then the header, then frees the old sectors, so sectors a header entry names are never rewritten while it
-     * names them. Another chunk's save changes the file's size and time but neither this slot nor its record.
+     * W29: stability is the endpoint's slot (its header entries and record bytes, compared by the caller), not the
+     * whole region file. Vanilla RegionFile.write writes new sectors, then the header, then frees the old sectors,
+     * so sectors a header entry names are never rewritten while it names them. Another chunk's save changes the
+     * file's size and time but neither this slot nor its record. The file must still end at or after the record.
      */
-    private static boolean stable(Path path, Object identity, FileChannel file, ChunkPos pos, Header header) throws IOException {
-        return header.equals(header(file, pos)) && file.size() >= header.end() && Objects.equals(identity, attributes(path).fileKey());
+    private static boolean intact(Path path, Object identity, FileChannel file, Header header) throws IOException {
+        return file.size() >= header.end() && Objects.equals(identity, attributes(path).fileKey());
     }
     /** The external file belongs to this chunk alone, so its whole-file attributes are this record's. */
     private static boolean same(BasicFileAttributes first, BasicFileAttributes second) {
