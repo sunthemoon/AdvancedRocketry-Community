@@ -82,6 +82,8 @@ public final class ResearchDeviceDirectory {
         var remove = loaded.entrySet().stream().filter(entry -> entry.getKey().level().equals(level)).toList();
         for (var entry : remove) { forget(entry.getKey(), entry.getValue().token()); }
     }
+    /** Whether this exact device is loaded and canonical; an unloaded or broken device is not. */
+    public boolean loaded(Device device) { var entry = loaded.get(device); return entry != null && entry.canonical(); }
     public int loadedCount() { return loaded.size(); }
     public void clear() {
         loaded.clear(); homes.clear(); retained.clear(); ambiguous.clear(); canonicalCounts.clear(); working.clear(); retainedSection = null;

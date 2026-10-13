@@ -596,7 +596,7 @@
   "status.advancedrocketrycommunity.research.registry_blocked": "注册表已阻断；请备份并离线修复",
   "status.advancedrocketrycommunity.research.running": "运行中",
   "status.advancedrocketrycommunity.research.source_mismatch": "任务绑定在另一台设备上",
-  "status.advancedrocketrycommunity.research.source_missing": "来源缺失；所有者须重新绑定",
+  "status.advancedrocketrycommunity.research.source_missing": "任务所在设备未加载或已移除；所有者可在此重新绑定",
   "status.advancedrocketrycommunity.research.storage_budget": "存储预算已达上限",
   "status.advancedrocketrycommunity.research.system_changed": "恒星系已变化",
   "status.advancedrocketrycommunity.research.unauthorized": "只有所有者可以操作",

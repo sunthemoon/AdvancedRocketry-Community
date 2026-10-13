@@ -596,7 +596,7 @@
   "status.advancedrocketrycommunity.research.registry_blocked": "Registry blocked; back up and repair offline",
   "status.advancedrocketrycommunity.research.running": "Running",
   "status.advancedrocketrycommunity.research.source_mismatch": "Job is bound to another device",
-  "status.advancedrocketrycommunity.research.source_missing": "Source missing; owner must rebind",
+  "status.advancedrocketrycommunity.research.source_missing": "Job's device is not loaded or was removed; the owner can rebind here",
   "status.advancedrocketrycommunity.research.storage_budget": "Storage budget reached",
   "status.advancedrocketrycommunity.research.system_changed": "Star system changed",
   "status.advancedrocketrycommunity.research.unauthorized": "Only the owner can operate",

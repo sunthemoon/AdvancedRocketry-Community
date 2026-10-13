@@ -30,13 +30,13 @@ public final class V180ResearchLanguage {
         String[] statusesEn = {"Idle", "Running", "Complete", "Registry blocked; back up and repair offline", "Ground research disabled",
             "Multiblock not formed", "Waiting for loaded cells", "Lens cannot see sky", "Waiting for night", "Precipitation pauses observation",
             "Body or station permission unavailable", "Star system changed", "Asteroid tables unavailable", "Insufficient power", "Waiting for registry save",
-            "Queued", "Source missing; owner must rebind", "Copied identity quarantined; repair offline", "Quarantined; an operator can release it",
+            "Queued", "Job's device is not loaded or was removed; the owner can rebind here", "Copied identity quarantined; repair offline", "Quarantined; an operator can release it",
             "Research account full", "Back up and repair job/instance or device offline", "Only the owner can operate", "Observatory busy", "Processor busy",
             "Owner record limit", "Global capacity reached", "Storage budget reached", "Analysis already claimed or credited", "Job not ready",
             "No matching job", "Survey cancelled", "Job identity conflict; try again", "Job is bound to another device"};
         String[] statusesZh = {"待机", "运行中", "已完成", "注册表已阻断；请备份并离线修复", "地面研究已禁用", "多方块未形成", "等待单元加载",
             "透镜无法看见天空", "等待夜间", "降水暂停观测", "天体或空间站访问权限不可用", "恒星系已变化", "小行星数据表不可用", "能量不足",
-            "等待注册表保存", "排队中", "来源缺失；所有者须重新绑定", "复制的设备身份已隔离；须离线修复", "任务已隔离；管理员可在线解除", "研究账户已满",
+            "等待注册表保存", "排队中", "任务所在设备未加载或已移除；所有者可在此重新绑定", "复制的设备身份已隔离；须离线修复", "任务已隔离；管理员可在线解除", "研究账户已满",
             "请备份并离线修复任务/实例或设备", "只有所有者可以操作", "天文台忙碌", "处理器忙碌", "所有者记录已达上限", "全局容量已达上限",
             "存储预算已达上限", "分析已被认领或已记入研究点", "任务尚未就绪",
             "没有对应的任务", "巡天已取消", "任务标识冲突；请重试", "任务绑定在另一台设备上"};

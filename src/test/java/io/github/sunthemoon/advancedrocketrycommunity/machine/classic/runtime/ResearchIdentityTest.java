@@ -45,6 +45,13 @@ class ResearchIdentityTest {
         assertEquals(ResearchDeviceDirectory.Admission.COLLISION, directory.observe(identity, identity.home(), true, new Object()));
         assertEquals(ResearchDeviceDirectory.Admission.ACCEPTED, directory.observe(identity, identity.home(), false, new Object()));
     }
+    @Test void onlyALoadedCanonicalDeviceCountsAsPresent() {
+        var directory = new ResearchDeviceDirectory(); var identity = identity(); Object original = new Object();
+        assertFalse(directory.loaded(identity.home()));
+        directory.observe(identity, identity.home(), false, original); assertTrue(directory.loaded(identity.home()));
+        var copy = new Device(id, moon, 10); directory.observe(identity, copy, false, new Object()); assertFalse(directory.loaded(copy));
+        directory.forget(identity.home(), original); assertFalse(directory.loaded(identity.home()));
+    }
     @Test void unknownOrOversizedRootIsNotNormalized() {
         var root = identity().encode(); assertEquals(identity(), ResearchIdentity.decode(root));
         root.putInt("schema_version", 2); assertThrows(IllegalArgumentException.class, () -> ResearchIdentity.decode(root));

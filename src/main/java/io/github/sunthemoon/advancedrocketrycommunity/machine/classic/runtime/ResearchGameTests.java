@@ -148,6 +148,43 @@ public final class ResearchGameTests {
             helper.succeed();
         });
     }
+    /** W21a design section 4: breaking a device keeps the job, pauses it with SOURCE_MISSING and refunds nothing. */
+    @GameTest(template = "empty", batch = "research_break", timeoutTicks = 400)
+    public static void breakingAnActiveSourceKeepsThePausedJobWithoutRefundOrDuplicate(GameTestHelper helper) {
+        UUID owner = UUID.randomUUID(); var source = fixture(helper, false, Direction.NORTH, owner, 0);
+        var replacement = fixture(helper, false, Direction.NORTH, owner, 16);
+        var service = ResearchRuntime.service(source.level); var data = SatelliteMissionSavedData.get(source.level.getServer());
+        var broken = new Object() { GroundSurveyJob job; int fe; ResearchControllerMenu menu; };
+        steps(helper, ticking(List.of(source, replacement), true), then(() -> {
+            night(source); helper.assertTrue(service.intent(source.controller, owner, 0), "Source START refused"); source.flush(); source.feed(1_000);
+            for (int tick = 0; tick < 3; tick++) { helper.assertTrue(service.advance(source.controller), "Source advance refused"); }
+            broken.job = service.work(source.controller).orElseThrow(); broken.fe = source.power.get(0).energyStored();
+            broken.menu = new ResearchControllerMenu(1, replacement.controller, helper.makeMockPlayer()); broken.menu.broadcastChanges();
+            helper.assertTrue(broken.menu.status() == ResearchStatus.IDLE, "A loaded source read as missing: " + broken.menu.status());
+            helper.assertTrue(!ClassicRemovalPolicy.blocks(source.level, source.origin), "An ACTIVE source refused an ordinary break");
+            source.level.destroyBlock(source.origin, false);
+            helper.assertTrue(data.groundSurveyQuery(jobs -> jobs.job(broken.job.jobId())).orElseThrow().equals(broken.job),
+                    "Breaking the source changed the job");
+            helper.assertTrue(data.instance(broken.job.instanceId()).orElseThrow().state() == InstanceState.PENDING
+                    && data.groundSurveyQuery(jobs -> jobs.owned(owner)).size() == 1, "Breaking the source resolved or duplicated the job");
+            helper.assertTrue(source.power.get(0).energyStored() == broken.fe && data.account(owner).balance() == 0,
+                    "Breaking the source refunded FE or credited research");
+        }), waitTicks(source.level.getServer(), 20), then(() -> {
+            try (source; replacement) {
+                helper.assertTrue(data.groundSurveyQuery(jobs -> jobs.job(broken.job.jobId())).orElseThrow().equals(broken.job)
+                        && source.power.get(0).energyStored() == broken.fe, "The orphaned job progressed or was paid");
+                broken.menu.broadcastChanges();
+                helper.assertTrue(broken.menu.status() == ResearchStatus.SOURCE_MISSING, "Orphaned job read " + broken.menu.status());
+                helper.assertTrue(service.intent(replacement.controller, owner, 5), "Owner rebind after a break refused"); replacement.feed(100);
+                var rebound = service.work(replacement.controller).orElseThrow();
+                helper.assertTrue(rebound.jobId().equals(broken.job.jobId()) && rebound.instanceId().equals(broken.job.instanceId())
+                        && rebound.surveyProgress() == 3 && service.advance(replacement.controller)
+                        && service.work(replacement.controller).orElseThrow().surveyProgress() == 4, "Rebind after a break lost or reset paid work");
+                helper.assertTrue(data.groundSurveyQuery(jobs -> jobs.owned(owner)).size() == 1, "Rebind after a break duplicated the job");
+            }
+            helper.succeed();
+        }));
+    }
     @GameTest(template = "empty", batch = "research_roots", timeoutTicks = 200)
     public static void retainedUnknownDeviceRootKeepsClaimsInert(GameTestHelper helper) {
         try (var fixture = fixture(helper, true, Direction.NORTH, UUID.randomUUID(), 0)) {

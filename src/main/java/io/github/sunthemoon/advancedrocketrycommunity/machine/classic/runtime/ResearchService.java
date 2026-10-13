@@ -124,8 +124,13 @@ public final class ResearchService {
         ResearchStatus status = controller.researchStatus();
         if (status != ResearchStatus.IDLE || job == null) { return status; }
         if (job.phase() == Phase.QUARANTINED) { return quarantined(job); }
-        return job.phase() == Phase.PROCESSED || !controller.processor() && job.phase() == Phase.READY
-                ? ResearchStatus.COMPLETE : ResearchStatus.IDLE;
+        if (job.phase() == Phase.PROCESSED || !controller.processor() && job.phase() == Phase.READY) { return ResearchStatus.COMPLETE; }
+        // W21a design section 4: a job whose device was broken stays and pauses until its owner rebinds it.
+        // An unloaded device looks the same from here, and rebinding is the owner's remedy for both.
+        Device device = job.phase() == Phase.ACTIVE ? job.source() : job.analysis().state() == AnalysisState.RUNNING
+                ? job.analysis().claim().orElseThrow().processor() : null;
+        return device != null && !device.equals(controller.device()) && !directory.loaded(device)
+                ? ResearchStatus.SOURCE_MISSING : ResearchStatus.IDLE;
     }
     private ResearchStatus basic(ResearchControllerBlockEntity controller, boolean enabled) {
         if (!controller.physical()) { return ResearchStatus.UNLOADED; }
