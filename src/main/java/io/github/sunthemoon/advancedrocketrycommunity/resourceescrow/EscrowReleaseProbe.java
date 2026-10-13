@@ -23,6 +23,8 @@ final class EscrowReleaseProbe {
     private volatile boolean pausing;
     private boolean selected;
     private boolean injected;
+    private boolean resave;
+    private boolean resaved;
     private ResourceEscrowSavedData data;
     private EscrowCoordinator coordinator;
     private EscrowTestEndpoints.Fixture fixture;
@@ -37,7 +39,7 @@ final class EscrowReleaseProbe {
         cut = System.getProperty("advancedrocketrycommunity.escrowCheckpoint", "none");
         recovery = System.getProperty("advancedrocketrycommunity.escrowScenario").equals("recover");
         EscrowTags.require(cut.equals("none") || cut.equals("G3") || cut.equals("G3L2") || cut.equals("E2") || cut.equals("E2_CAPTURE")
-                || cut.matches("E4L[12]_(?:FAIL|UNKNOWN)")
+                || cut.matches("E4L[12]_(?:FAIL|UNKNOWN)") || cut.equals("E4L2_RESAVE")
                 || cut.matches("K(?:[0-9]|10)"), "Unknown escrow checkpoint");
         ChunkPos chunk = new ChunkPos(POSITION);
         level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
@@ -47,6 +49,10 @@ final class EscrowReleaseProbe {
         if (!injected && (cut.equals("E4L1_FAIL") && name.equals("K1")
                 || cut.equals("E4L2_FAIL") && name.equals("K8"))) {
             injected = true; throw new IllegalStateException("Release-test definite pre-replacement failure");
+        }
+        if (cut.equals("E4L2_RESAVE") && name.equals("WRITE_UNKNOWN") && !resaved) {
+            EscrowTags.require(!coordinator.writerIdle() && data.ledger().records().size() == 1, "Unknown L2 released its candidate");
+            resave = true; return; // The next probe tick saves the source chunk before the 200-tick retry.
         }
         if (cut.endsWith("_UNKNOWN") && name.equals("WRITE_UNKNOWN")) {
             EscrowTags.require(!coordinator.writerIdle() && data.ledger().records().size() == (cut.startsWith("E4L1") ? 0 : 1),
@@ -72,6 +78,13 @@ final class EscrowReleaseProbe {
     }
     void tick() {
         if (pausing) { pause(); }
+        if (resave && !resaved) {
+            // A newer vanilla save of an endpoint lands between the ambiguous L2 attempt and its retry (review W11b1).
+            resaved = true; EscrowTags.require(proofs.get(op.source().key()).valid(), "Proof was already invalid");
+            newerSave();
+            EscrowTags.require(!proofs.get(op.source().key()).valid(), "A newer save did not invalidate the L2 proof");
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_ESCROW_DRAIN_READY cut={}", cut);
+        }
         if (done || waiting || !level.areEntitiesLoaded(new ChunkPos(POSITION).toLong())) { return; }
         if (data == null) {
             data = ResourceEscrowSavedData.forTests(server); coordinator = data.bind(server);
@@ -111,7 +124,8 @@ final class EscrowReleaseProbe {
                         EscrowTags.require(data.ledger().records().size() == 1 && coordinator.locked(op.destination().key()), "Failed L2 released resources");
                         checkpoint(cut); return;
                     }
-                    if (!committed && cut.equals("E4L2_UNKNOWN")) { return; }
+                    // A resolved FAILED_BEFORE_REPLACE keeps the record locked; only a later fresh proof retires it.
+                    if (!committed && (cut.equals("E4L2_UNKNOWN") || cut.equals("E4L2_RESAVE"))) { return; }
                     if (!committed) { throw new IllegalStateException("Native fixture L2 failed"); }
                     checkpoint("K10"); EscrowTestEndpoints.clearRetired(fixture); waiting = false; step = 6;
                 });

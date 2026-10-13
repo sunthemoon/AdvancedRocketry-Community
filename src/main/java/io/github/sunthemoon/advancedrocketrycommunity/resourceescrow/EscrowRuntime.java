@@ -54,13 +54,16 @@ public final class EscrowRuntime {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && "start".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"))
-                && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN"))) {
+                && (testCase.equals("E4L1_UNKNOWN") || testCase.equals("E4L2_UNKNOWN") || testCase.equals("E4L2_RESAVE"))) {
             EscrowTestEndpoints.requireEnabled(server);
+            var first = new java.util.concurrent.atomic.AtomicBoolean(true);
             return (staged, target) -> {
                 var type = io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW;
                 var payload = io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
                 boolean empty = payload.getList("records", 10).isEmpty();
-                if (payload.getLong("writer_generation") > 1 && (testCase.equals("E4L2_UNKNOWN") == empty)) {
+                // E4L2_RESAVE: only the first L2 move is ambiguous; a later move would succeed if a guard ever allowed it.
+                boolean ambiguous = testCase.equals("E4L2_RESAVE") ? empty && first.getAndSet(false) : testCase.equals("E4L2_UNKNOWN") == empty;
+                if (payload.getLong("writer_generation") > 1 && ambiguous) {
                     throw new java.io.IOException("Release-test ambiguous replacement outcome");
                 }
                 io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.atomicMove(staged, target);
