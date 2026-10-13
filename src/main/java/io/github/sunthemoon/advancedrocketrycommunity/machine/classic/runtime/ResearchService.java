@@ -81,7 +81,7 @@ public final class ResearchService {
         if (!controller.formed()) { controller.status(controller.reason() == ClassicWait.UNLOADED ? ResearchStatus.UNLOADED : ResearchStatus.UNFORMED); return; }
         // Every loaded controller runs this each tick: an idle one costs one lookup, and its menu computes the rest.
         refreshDirectory();
-        if (!directory.working(controller.device())) { controller.status(ResearchStatus.IDLE); return; }
+        if (!directory.working(controller.device())) { controller.idle(server.getTickCount()); return; }
         if (queue.enqueue(controller.device().level(), controller)) { controller.status(ResearchStatus.QUEUED); }
         else { controller.status(ResearchStatus.CAPACITY_REACHED); }
     }
@@ -123,7 +123,7 @@ public final class ResearchService {
     ResearchStatus shownStatus(ResearchControllerBlockEntity controller, GroundSurveyJob job) {
         ResearchStatus status = controller.researchStatus();
         if (status != ResearchStatus.IDLE || job == null) { return status; }
-        if (job.phase() == Phase.QUARANTINED) { return ResearchStatus.OFFLINE_REPAIR_REQUIRED; }
+        if (job.phase() == Phase.QUARANTINED) { return quarantined(job); }
         return job.phase() == Phase.PROCESSED || !controller.processor() && job.phase() == Phase.READY
                 ? ResearchStatus.COMPLETE : ResearchStatus.IDLE;
     }
@@ -180,25 +180,24 @@ public final class ResearchService {
             controller.status(ResearchStatus.UNLOADED); return false;
         }
         var job = work(controller).orElse(null);
-        if (job == null) { controller.status(ResearchStatus.IDLE); return false; }
+        if (job == null) { controller.idle(server.getTickCount()); return false; }
         if (!controller.processor()) {
             refusal = observing(controller, job);
             if (refusal != null) { controller.status(refusal); return false; }
         }
-        long epoch = controller.processor() ? job.analysis().claim().orElseThrow().epoch() : job.startEpoch();
-        if (data().saveEpoch() <= epoch) { controller.status(ResearchStatus.WAITING_SAVE); return false; }
+        if (data().saveEpoch() <= epoch(controller, job)) { controller.status(ResearchStatus.WAITING_SAVE); return false; }
         int cost = controller.processor() ? job.analysis().energy() : job.surveyEnergy();
         if (controller.storedEnergy() < cost) { controller.status(ResearchStatus.NO_POWER); return false; }
         return controller.paidResearchAdvance(cost, () -> {
             var result = data().groundSurveys(jobs -> controller.processor()
                     ? jobs.advanceAnalysis(job.jobId(), controller.device(), now())
                     : jobs.advanceSurvey(job.jobId(), controller.device(), CommonConfig.asteroidInstanceTtlTicks(), now()));
-            controller.status(result.code() == GroundSurveys.Code.SUCCESS ? ResearchStatus.RUNNING : status(result.code()));
+            controller.status(status(controller, result));
             return result.changed();
         });
     }
     boolean intent(ResearchControllerBlockEntity controller, UUID owner, int button) {
-        if (!server.isSameThread() || controller.researchOwner().filter(owner::equals).isEmpty()) { controller.status(ResearchStatus.UNAUTHORIZED); return false; }
+        if (!server.isSameThread() || controller.researchOwner().filter(owner::equals).isEmpty()) { answer(controller, ResearchStatus.UNAUTHORIZED); return false; }
         refreshDirectory();
         if (button == 2 || button == 3) {
             var choices = choices(controller); if (choices.isEmpty()) { return false; }
@@ -208,27 +207,30 @@ public final class ResearchService {
         if (button == 1) {
             if (!data().operational() || controller.identity().isEmpty() || !admit(controller)) { return false; }
             var job = selected(controller).orElse(null);
-            return job != null && result(controller, data().groundSurveys(jobs -> jobs.cancel(job.jobId(), owner, false, now())));
+            if (job == null) { answer(controller, ResearchStatus.JOB_NOT_FOUND); return false; }
+            return result(controller, data().groundSurveys(jobs -> jobs.cancel(job.jobId(), owner, false, now())), ResearchStatus.CANCELLED);
         }
         var refusal = basic(controller, true);
-        if (refusal != null) { controller.status(refusal); return false; }
+        if (refusal != null) { answer(controller, refusal); return false; }
         if (button == 0 && !controller.processor()) { return start(controller, owner); }
         var job = selected(controller).orElse(null);
-        if (job == null) { controller.status(ResearchStatus.NOT_READY); return false; }
-        if (button == 4 && controller.processor()) { return result(controller, data().groundSurveys(jobs -> jobs.claim(job.jobId(), owner, controller.device(), now()))); }
+        if (job == null) { answer(controller, ResearchStatus.JOB_NOT_FOUND); return false; }
+        if (button == 4 && controller.processor()) {
+            return result(controller, data().groundSurveys(jobs -> jobs.claim(job.jobId(), owner, controller.device(), now())), ResearchStatus.WAITING_SAVE);
+        }
         if (button == 5) {
             return result(controller, data().groundSurveys(jobs -> controller.processor()
                     ? jobs.rebindAnalysis(job.jobId(), owner, controller.device(), now())
-                    : jobs.rebindSurvey(job.jobId(), owner, controller.device(), now())));
+                    : jobs.rebindSurvey(job.jobId(), owner, controller.device(), now())), ResearchStatus.WAITING_SAVE);
         }
         return false;
     }
     private boolean start(ResearchControllerBlockEntity controller, UUID owner) {
         ResourceLocation system = system(controller).orElse(null);
-        if (system == null) { controller.status(ResearchStatus.BODY_UNAVAILABLE); return false; }
+        if (system == null) { answer(controller, ResearchStatus.BODY_UNAVAILABLE); return false; }
         var tables = ResourceMissionRuntime.service().flatMap(service -> service.resourceTables()).orElse(null);
         var candidates = tables == null ? List.<AsteroidType>of() : ResourceAlgorithms.candidates(tables.asteroidTypes(), system);
-        if (candidates.isEmpty()) { controller.status(ResearchStatus.CATALOG_UNAVAILABLE); return false; }
+        if (candidates.isEmpty()) { answer(controller, ResearchStatus.CATALOG_UNAVAILABLE); return false; }
         UUID id = UUID.randomUUID(); var generated = ResourceAlgorithms.survey(seeds.next(), candidates, 1).get(0);
         long createdAt = data().groundSurveyQuery(jobs -> jobs.previewTime(now()));
         var instance = new AsteroidInstance(SatelliteLimits.INSTANCE_SCHEMA_VERSION, UUID.randomUUID(), owner, system,
@@ -236,17 +238,55 @@ public final class ResearchService {
                 generated.yield(), createdAt, OptionalLong.empty(), InstanceState.PENDING, InstanceOrigin.ground(id), Optional.empty());
         var request = new GroundSurveys.Start(id, owner, controller.device(), instance, SURVEY_TICKS, ENERGY_PER_TICK,
                 ANALYSIS_TICKS, ENERGY_PER_TICK, CREDIT);
-        return result(controller, data().groundSurveys(jobs -> jobs.start(request, now())));
+        return result(controller, data().groundSurveys(jobs -> jobs.start(request, now())), ResearchStatus.WAITING_SAVE);
     }
-    private boolean result(ResearchControllerBlockEntity controller, GroundSurveys.Result result) {
-        controller.status(result.code() == GroundSurveys.Code.SUCCESS ? ResearchStatus.WAITING_SAVE : status(result.code()));
+    private void answer(ResearchControllerBlockEntity controller, ResearchStatus status) { controller.answer(status, server.getTickCount()); }
+    private boolean result(ResearchControllerBlockEntity controller, GroundSurveys.Result result, ResearchStatus success) {
+        answer(controller, result.code() == GroundSurveys.Code.SUCCESS ? success : status(controller, result));
         result.job().ifPresent(job -> controller.selection(job.jobId())); return result.changed() || result.code() == GroundSurveys.Code.IDEMPOTENT;
     }
+    private static long epoch(ResearchControllerBlockEntity controller, GroundSurveyJob job) {
+        return controller.processor() ? job.analysis().claim().map(Claim::epoch).orElse(Long.MAX_VALUE) : job.startEpoch();
+    }
+    private ResearchStatus quarantined(GroundSurveyJob job) {
+        String hint = data().groundSurveyQuery(jobs -> jobs.recoveryHint(job.jobId())); return quarantined(hint);
+    }
+    /** R4: only the two offline-repair cases read as offline repair; an operator can release any other quarantine. */
+    static ResearchStatus quarantined(String recoveryHint) {
+        return recoveryHint == null ? ResearchStatus.QUARANTINED : ResearchStatus.OFFLINE_REPAIR_REQUIRED;
+    }
+    /** A registry answer about one job: a quarantine by its recovery boundary, a repeated intent by the job's state. */
+    private ResearchStatus status(ResearchControllerBlockEntity controller, GroundSurveys.Result result) {
+        var job = result.job().orElse(null);
+        if (job != null && result.code() == GroundSurveys.Code.QUARANTINED) { return quarantined(job); }
+        if (job != null && result.code() == GroundSurveys.Code.IDEMPOTENT) {
+            return data().saveEpoch() <= epoch(controller, job) ? ResearchStatus.WAITING_SAVE : ResearchStatus.QUEUED;
+        }
+        return status(result.code());
+    }
+    /** Exhaustive, so a new registry code cannot fall through to "Job not ready". */
     static ResearchStatus status(GroundSurveys.Code code) {
-        try { return ResearchStatus.valueOf(code.name()); }
-        catch (IllegalArgumentException absent) { return code == GroundSurveys.Code.QUARANTINED ? ResearchStatus.OFFLINE_REPAIR_REQUIRED
-                : code == GroundSurveys.Code.SOURCE_MISMATCH || code == GroundSurveys.Code.IDENTITY_CONFLICT
-                ? ResearchStatus.DEVICE_COLLISION : ResearchStatus.NOT_READY; }
+        return switch (code) {
+            case SUCCESS -> ResearchStatus.RUNNING;
+            case IDEMPOTENT -> ResearchStatus.QUEUED;
+            case JOB_NOT_FOUND -> ResearchStatus.JOB_NOT_FOUND;
+            case UNAUTHORIZED -> ResearchStatus.UNAUTHORIZED;
+            case IDENTITY_CONFLICT -> ResearchStatus.IDENTITY_CONFLICT;
+            case DEVICE_BUSY -> ResearchStatus.DEVICE_BUSY;
+            case PROCESSOR_BUSY -> ResearchStatus.PROCESSOR_BUSY;
+            case OWNER_LIMIT -> ResearchStatus.OWNER_LIMIT;
+            case CAPACITY_REACHED -> ResearchStatus.CAPACITY_REACHED;
+            case STORAGE_BUDGET -> ResearchStatus.STORAGE_BUDGET;
+            case WAITING_SAVE -> ResearchStatus.WAITING_SAVE;
+            case NOT_READY -> ResearchStatus.NOT_READY;
+            case ALREADY_CLAIMED -> ResearchStatus.ALREADY_CLAIMED;
+            case CANCELLED -> ResearchStatus.CANCELLED;
+            case QUARANTINED -> ResearchStatus.QUARANTINED;
+            case SOURCE_MISMATCH -> ResearchStatus.SOURCE_MISMATCH;
+            case ACCOUNT_FULL -> ResearchStatus.ACCOUNT_FULL;
+            // The touched job or one of its peers breaks the load plan's rules, which quarantine it at the next load.
+            case OFFLINE_REPAIR_REQUIRED, INVARIANT_FAILED -> ResearchStatus.OFFLINE_REPAIR_REQUIRED;
+        };
     }
     void close() { closed = true; environments = null; queue.clear(); directory.clear(); intents.clear(); }
 }

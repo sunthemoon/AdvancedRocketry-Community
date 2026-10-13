@@ -22,6 +22,7 @@ public final class ResearchControllerBlockEntity extends ClassicControllerBlockE
     private Tag rejected;
     private ResearchStatus status = ResearchStatus.UNFORMED;
     private UUID selection;
+    private int answeredUntil;
 
     public ResearchControllerBlockEntity(BlockEntityType<?> type, BlockPos position, BlockState state, boolean processor) {
         super(type, position, state, processor ? ClassicMachineDefinition.ASTROBODY_DATA_PROCESSOR : ClassicMachineDefinition.OBSERVATORY);
@@ -52,6 +53,10 @@ public final class ResearchControllerBlockEntity extends ClassicControllerBlockE
     }
     public ResearchStatus researchStatus() { return status; }
     void status(ResearchStatus status) { this.status = status; }
+    /** An intent's answer stays visible for two seconds unless work or a pause replaces it. */
+    void answer(ResearchStatus status, int tick) { this.status = status; answeredUntil = tick + 40; }
+    /** The per-tick idle status; it does not hide a recent answer. */
+    void idle(int tick) { if (tick - answeredUntil >= 0) { status = ResearchStatus.IDLE; } }
     UUID selection() { return selection; }
     void selection(UUID id) { selection = id; }
     @Override public boolean onlyOpCanSetNbt() { return true; }

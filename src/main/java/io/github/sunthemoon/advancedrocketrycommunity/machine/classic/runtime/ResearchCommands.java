@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.GroundSurveyJob;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import java.util.UUID;
 import net.minecraft.commands.Commands;
@@ -25,10 +26,13 @@ public final class ResearchCommands {
                     var job = data.groundSurveyQuery(jobs -> jobs.job(id)).orElse(null);
                     if (job == null) { source.sendFailure(Component.literal("Ground survey not found")); return 0; }
                     String hint = data.groundSurveyQuery(jobs -> jobs.recoveryHint(id));
+                    // R4: an offline-only case prints its repair; any other quarantine names the online release.
+                    String recovery = hint != null ? hint : job.phase() == GroundSurveyJob.Phase.QUARANTINED
+                            ? "Operator release: /arce ground-survey release " + id : null;
                     source.sendSuccess(() -> Component.literal("job=" + id + " owner=" + job.ownerId() + " instance=" + job.instanceId()
                             + " source=" + job.source() + " phase=" + job.phase() + " survey=" + job.surveyProgress() + "/" + job.surveyTicks()
                             + " analysis=" + job.analysis().state() + ":" + job.analysis().progress() + "/" + job.analysis().ticks()
-                            + " claim=" + job.analysis().claim() + (hint == null ? "" : " recovery=" + hint)), false); return 1;
+                            + " claim=" + job.analysis().claim() + (recovery == null ? "" : " recovery=" + recovery)), false); return 1;
                 }
                 var result = data.groundSurveys(jobs -> action.equals("cancel")
                         ? jobs.cancel(id, source.getEntity() == null ? new UUID(0, 0) : source.getEntity().getUUID(), true,
