@@ -40,7 +40,7 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 9dbaa637027c10a0845edea295888cff0b470c4b
 latest_hosted_regression: run 38384816407 at 0796704be048431ea3717c3c59129e3352723f36, passed
-ledger_planned_units: 40
+ledger_planned_units: 39
 asset_review_items: 154
 required_gates_approved: none
 last_updated: 2026-10-13
@@ -78,7 +78,7 @@ It does not run:
 
 What is still open:
 
-- **Ledger.** 40 units are still PLANNED. They are listed with their ADR sections in
+- **Ledger.** 39 units are still PLANNED. They are listed with their ADR sections in
   `docs/work/v1.8.0-root-queue/records/W30-STATUS-PROPOSAL.md`, section 2.3. The backlog is in
   QUEUE.md.
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).

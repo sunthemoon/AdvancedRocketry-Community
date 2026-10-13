@@ -497,7 +497,7 @@ item:thermite,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:thermite,ADR-062 ADR-
 item:wafer,MERGED,-,item_variant:wafer/0,ADR-062,,
 item_variant:dataUnit/0,IMPLEMENTED,v0.8.0,advancedrocketrycommunity:data_storage_unit,V0.8.0,,
 item_variant:ic/0,IMPLEMENTED,v0.1.0,advancedrocketrycommunity:basic_circuit,V0.1.0,,
-item_variant:ic/1,PLANNED,C16d,tracking circuit,ADR-062,component,
+item_variant:ic/1,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:tracking_circuit,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
 item_variant:ic/2,IMPLEMENTED,v0.1.0,advancedrocketrycommunity:advanced_circuit,V0.1.0,,
 item_variant:ic/3,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:control_board,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
 item_variant:ic/4,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:item_io_board,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
