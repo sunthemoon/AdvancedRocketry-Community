@@ -76,8 +76,11 @@ final class EscrowRocketAuditProbe {
         switch (step) {
             case 0 -> {
                 var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
-                source = EscrowTestEndpoints.create(level, POSITION, data.ledger().id()); source.bank().discard();
+                source = EscrowTestEndpoints.create(level, POSITION, data.ledger().id());
                 rocket = createRocket(source.logical(), true); EscrowTags.require(level.addFreshEntity(rocket), "Rocket publication failed");
+                EscrowTags.require(rocket.startRiding(source.bank(), true), "Neutral forced-mount control failed"); rocket.stopRiding();
+                commandTeleport(65.5D); EscrowTags.require(rocket.getX() == 65.5D, "Neutral command-teleport control failed"); commandTeleport(64.5D);
+                EscrowTags.require(!travelCanceled(), "Neutral dimension-event control failed");
                 var sample = source.operation(coordinator.nextSequence()); var fuel = rocket.flightData().orElseThrow().fuel();
                 var destination = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), rocket.getUUID(), source.logical(),
                         ModIdentity.id("rocket").toString(), 4, 0, 4, EscrowEndpoint.Unit.PRIMARY, 0, fuel.resourceSignature(),
@@ -89,8 +92,13 @@ final class EscrowRocketAuditProbe {
             }
             case 1 -> waiting = coordinator.commitPreparations();
             case 2 -> {
+                commandTeleport(65.5D); EscrowTags.require(rocket.getX() == 64.5D, "Pending command teleport moved the rocket");
+                EscrowTags.require(!rocket.startRiding(source.bank(), true) && !rocket.isPassenger(), "Pending forced mount succeeded");
+                EscrowTags.require(travelCanceled(), "Pending dimension travel was not canceled"); source.bank().discard();
                 var parent = rocket.saveWithoutId(new CompoundTag()); var protectedBefore = parent.getCompound("RocketEntityData").copy();
                 ListTag pos = new ListTag(); pos.add(DoubleTag.valueOf(66.5D)); pos.add(DoubleTag.valueOf(100D)); pos.add(DoubleTag.valueOf(64.5D)); parent.put("Pos", pos);
+                parent.getCompound("RocketEntityData").getCompound("flight_data").getCompound("fuel").putLong("amount", 1_000);
+                parent.getCompound("RocketEntityData").getCompound("resource_escrow").putLong("resource_epoch", 9);
                 repairing = true; rocket.load(parent); // Same Entity.load boundary used by live /data.
                 EscrowTags.require(protectedBefore.equals(rocket.saveWithoutId(new CompoundTag()).getCompound("RocketEntityData")), "Live load changed the protected payload");
                 EscrowTags.require(server.saveEverything(false, true, true), "Moved fixture save refused");
@@ -104,6 +112,14 @@ final class EscrowRocketAuditProbe {
             }
             default -> throw new IllegalStateException("Unknown rocket audit stage");
         }
+    }
+
+    private void commandTeleport(double x) {
+        server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "tp " + rocket.getUUID() + " " + x + " 100 64.5");
+    }
+    private boolean travelCanceled() {
+        var event = new net.minecraftforge.event.entity.EntityTravelToDimensionEvent(rocket, net.minecraft.world.level.Level.NETHER);
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event); return event.isCanceled();
     }
 
     private RocketEntity createRocket(UUID logical, boolean typed) {
