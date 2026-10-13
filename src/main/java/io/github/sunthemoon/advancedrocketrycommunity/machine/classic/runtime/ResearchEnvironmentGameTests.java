@@ -75,8 +75,13 @@ public final class ResearchEnvironmentGameTests {
         var origin = new BlockPos(-2_033, 128, -2_040);
         var fixture = new ResearchFixture(moon, origin, true, Direction.NORTH, UUID.randomUUID());
         var home = new ChunkPos(origin); var edge = new ChunkPos(origin.east());
+        // Vanilla ticks no block entity in a Level without players or forced chunks. One forced chunk eight chunks
+        // away keeps the Moon ticking without making either fixture chunk FULL.
+        var keeper = new ChunkPos(home.x - 8, home.z); boolean ownsKeeper = !moon.getForcedChunks().contains(keeper.toLong());
+        if (ownsKeeper) { moon.setChunkForced(keeper.x, keeper.z, true); }
+        Runnable release = () -> { if (ownsKeeper) { moon.setChunkForced(keeper.x, keeper.z, false); } };
         var data = SatelliteMissionSavedData.get(server); var service = ResearchRuntime.service(moon); int[] at = new int[3];
-        ResearchGameTests.steps(helper, ResearchGameTests.ticking(List.of(fixture), false), ResearchGameTests.then(() -> {
+        ResearchGameTests.steps(helper, () -> { fixture.close(); release.run(); }, ResearchGameTests.ticking(List.of(fixture), false), ResearchGameTests.then(() -> {
             helper.assertTrue(!home.equals(edge) && fixture.cells.stream().anyMatch(cell -> new ChunkPos(cell).equals(edge))
                     && new ChunkPos(fixture.power.get(0).getBlockPos()).equals(home), "Fixture does not cross into a plug-free chunk");
             UUID owner = fixture.controller.researchOwner().orElseThrow(), job = UUID.randomUUID();
@@ -107,7 +112,7 @@ public final class ResearchEnvironmentGameTests {
                     "Research loaded or ticked the unloaded footprint");
             fixture.restoreTickets(); fixture.applyTickets();
         }), () -> analysis(service, fixture) > at[1], ResearchGameTests.then(() -> {
-            fixture.close(); helper.succeed();
+            fixture.close(); release.run(); helper.succeed();
         }));
     }
     private static int analysis(ResearchService service, ResearchFixture fixture) {

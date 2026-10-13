@@ -175,12 +175,14 @@ public final class ResearchGameTests {
     public static void breakingAnActiveSourceKeepsThePausedJobWithoutRefundOrDuplicate(GameTestHelper helper) {
         UUID owner = UUID.randomUUID(); var source = fixture(helper, false, Direction.NORTH, owner, 0);
         var replacement = fixture(helper, false, Direction.NORTH, owner, 16);
-        var service = ResearchRuntime.service(source.level); var data = SatelliteMissionSavedData.get(source.level.getServer());
+        var service = ResearchRuntime.service(source.level); var server = source.level.getServer(); var data = SatelliteMissionSavedData.get(server);
         var broken = new Object() { GroundSurveyJob job; int fe; ResearchControllerMenu menu; };
         steps(helper, ticking(List.of(source, replacement), true), then(() -> {
             night(source); helper.assertTrue(service.intent(source.controller, owner, 0), "Source START refused"); source.flush(); source.feed(1_000);
-            for (int tick = 0; tick < 3; tick++) { helper.assertTrue(service.advance(source.controller), "Source advance refused"); }
+        }), waitTicks(server, 3), then(() -> {
+            // Natural ticks have now run both tickers and paid the source; nothing pays between here and the break.
             broken.job = service.work(source.controller).orElseThrow(); broken.fe = source.power.get(0).energyStored();
+            helper.assertTrue(broken.job.surveyProgress() >= 1, "The source did not pay before the break");
             broken.menu = new ResearchControllerMenu(1, replacement.controller, helper.makeMockPlayer()); broken.menu.broadcastChanges();
             helper.assertTrue(broken.menu.status() == ResearchStatus.IDLE, "A loaded source read as missing: " + broken.menu.status());
             helper.assertTrue(!ClassicRemovalPolicy.blocks(source.level, source.origin), "An ACTIVE source refused an ordinary break");
@@ -191,7 +193,7 @@ public final class ResearchGameTests {
                     && data.groundSurveyQuery(jobs -> jobs.owned(owner)).size() == 1, "Breaking the source resolved or duplicated the job");
             helper.assertTrue(source.power.get(0).energyStored() == broken.fe && data.account(owner).balance() == 0,
                     "Breaking the source refunded FE or credited research");
-        }), waitTicks(source.level.getServer(), 20), then(() -> {
+        }), waitTicks(server, 20), then(() -> {
             try (source; replacement) {
                 helper.assertTrue(data.groundSurveyQuery(jobs -> jobs.job(broken.job.jobId())).orElseThrow().equals(broken.job)
                         && source.power.get(0).energyStored() == broken.fe, "The orphaned job progressed or was paid");
@@ -200,8 +202,9 @@ public final class ResearchGameTests {
                 helper.assertTrue(service.intent(replacement.controller, owner, 5), "Owner rebind after a break refused"); replacement.feed(100);
                 var rebound = service.work(replacement.controller).orElseThrow();
                 helper.assertTrue(rebound.jobId().equals(broken.job.jobId()) && rebound.instanceId().equals(broken.job.instanceId())
-                        && rebound.surveyProgress() == 3 && service.advance(replacement.controller)
-                        && service.work(replacement.controller).orElseThrow().surveyProgress() == 4, "Rebind after a break lost or reset paid work");
+                        && rebound.surveyProgress() == broken.job.surveyProgress() && service.advance(replacement.controller)
+                        && service.work(replacement.controller).orElseThrow().surveyProgress() == broken.job.surveyProgress() + 1,
+                        "Rebind after a break lost or reset paid work");
                 helper.assertTrue(data.groundSurveyQuery(jobs -> jobs.owned(owner)).size() == 1, "Rebind after a break duplicated the job");
             }
             helper.succeed();
@@ -241,12 +244,20 @@ public final class ResearchGameTests {
      * that callback, and scheduling from inside it inserts entries mid-iteration (the W21c CI crash). A step therefore
      * never schedules; it returns false to be called again on the next tick.
      */
-    static void steps(GameTestHelper helper, Step... steps) {
+    static void steps(GameTestHelper helper, Step... steps) { steps(helper, () -> { }, steps); }
+    /** As above; cleanup runs once if a step throws. A timeout runs no step, so it runs no cleanup either. */
+    static void steps(GameTestHelper helper, Runnable cleanup, Step... steps) {
         var pacer = new GameTestTickPacer(helper.getLevel().getServer()); int[] next = {0};
         helper.onEachTick(() -> {
-            while (next[0] < steps.length) {
-                if (!steps[next[0]].run()) { pacer.pace(); return; }
-                next[0]++;
+            try {
+                while (next[0] < steps.length) {
+                    if (!steps[next[0]].run()) { pacer.pace(); return; }
+                    next[0]++;
+                }
+            } catch (RuntimeException | Error failure) {
+                next[0] = steps.length;
+                try { cleanup.run(); } catch (RuntimeException suppressed) { failure.addSuppressed(suppressed); }
+                throw failure;
             }
         });
     }
