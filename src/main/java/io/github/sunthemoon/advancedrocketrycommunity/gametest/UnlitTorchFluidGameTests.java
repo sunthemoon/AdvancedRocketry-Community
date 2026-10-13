@@ -16,11 +16,13 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Blocks;
@@ -258,6 +260,49 @@ public final class UnlitTorchFluidGameTests {
             helper.assertTrue(f.newDrops().stream().allMatch(drop -> drop.getItem().is(Items.TORCH))
                     && f.newDrops().stream().mapToInt(drop -> drop.getItem().getCount()).sum() == expectedDrops,
                     "Native fluid drop rule changed");
+        }, () -> true, () -> { });
+    }
+
+    /**
+     * N1, kept by Root: with lavaSourceConversion, two horizontal lava sources form a source in a resolvable torch's
+     * cell. The source branch drops the torch item once, where vanilla lava would fizz with no drop.
+     */
+    @GameTest(template = "rocket_test", batch = "unlit_torch_fluid", timeoutTicks = 100)
+    public static void lavaSourceConversionDropsTheTorchOnce(GameTestHelper helper) {
+        UnlitTorchFixture f = UnlitTorchFixture.overworld(helper);
+        f.run(() -> {
+            GameRules.BooleanValue rule = f.level.getGameRules().getRule(GameRules.RULE_LAVA_SOURCE_CONVERSION);
+            boolean original = rule.get();
+            rule.set(true, f.level.getServer());
+            try {
+                BlockPos cell = f.origin;
+                BlockState iron = Blocks.IRON_BLOCK.defaultBlockState();
+                for (BlockPos wall : List.of(cell.below(), cell.north(), cell.south())) {
+                    f.set(wall, iron);
+                }
+                for (Direction side : List.of(Direction.WEST, Direction.EAST)) {
+                    BlockPos source = cell.relative(side);
+                    for (BlockPos wall : List.of(source.below(), source.north(), source.south(), source.relative(side))) {
+                        f.set(wall, iron);
+                    }
+                }
+                ResourceLocation torchId = id("minecraft", "torch");
+                f.unlit(cell, null, new UnlitTorchRoot.Identity(torchId, torchId, torchId));
+                f.set(cell.west(), Blocks.LAVA.defaultBlockState());
+                f.set(cell.east(), Blocks.LAVA.defaultBlockState());
+                Fluids.LAVA.tick(f.level, cell.west(), f.level.getFluidState(cell.west()));
+                helper.assertTrue(f.level.getFluidState(cell).isSourceOfType(Fluids.LAVA) && f.level.getBlockEntity(cell) == null,
+                        "Horizontal lava did not form a source in the torch cell");
+                // Later ticks of either source, or of the new one, must not drop a second item.
+                for (BlockPos source : List.of(cell.east(), cell.west(), cell)) {
+                    Fluids.LAVA.tick(f.level, source, f.level.getFluidState(source));
+                }
+                List<ItemEntity> drops = f.newDrops();
+                helper.assertTrue(drops.size() == 1 && drops.get(0).getItem().is(Items.TORCH)
+                        && drops.get(0).getItem().getCount() == 1, "Lava source conversion did not drop exactly one torch item");
+            } finally {
+                rule.set(original, f.level.getServer());
+            }
         }, () -> true, () -> { });
     }
 

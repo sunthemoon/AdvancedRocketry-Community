@@ -33,6 +33,7 @@ interface UnlitTorchFluidBarrier extends LiquidBlockContainer {
         if (fluid.getType().isSame(Fluids.WATER) || fluid.isSource()) {
             // WaterFluid.beforeDestroyingBlock supplies the block entity to the native loot callback.
             // BucketItem's source placement also ordinarily destroys a non-solid block with drops (even for lava).
+            // A lava source formed by lavaSourceConversion takes this branch too: one drop where vanilla would fizz.
             Block.dropResources(state, level, pos, level.getBlockEntity(pos));
         } else {
             // LavaFluid.beforeDestroyingBlock only calls fizz (level event 1501); no torch item drops.
