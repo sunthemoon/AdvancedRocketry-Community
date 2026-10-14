@@ -422,7 +422,7 @@ event:PlanetEventHandler.fogColor(RenderFogEvent),REDESIGNED,v1.8.0,atmosphere-d
 event:PlanetEventHandler.onCrafting(ItemCraftedEvent),REJECTED,-,-,ADR-062,the handler body is commented out in the legacy build,
 event:PlanetEventHandler.onWorldGen(GenerateMinable),REDESIGNED,v1.4.0,per-biome feature lists,ADR-033,vanilla ores only where a planet lists them,
 event:PlanetEventHandler.playerLoggedInEvent(ServerConnectionFromClientEvent),REDESIGNED,v1.4.0,celestial sync on login,ADR-035,,
-event:PlanetEventHandler.playerTick(LivingUpdateEvent),PLANNED,C18a,space Level safety return and suit underwater breathing,ADR-062,players adrift in space return to a station or the Overworld; sealed suits keep air under water; the Moon advancement is C18c,
+event:PlanetEventHandler.playerTick(LivingUpdateEvent),REDESIGNED,v1.8.0,suit underwater breathing and the space safety return,ADR-062 ADR-066,nearest authorized loaded station or the Overworld; air only after a paid oxygen debit; the Moon advancement is C18c,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 event:PlanetEventHandler.serverTickEvent(WorldTickEvent),DEFERRED,post-2.0,-,ADR-062,terraforming family,
 event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent),PLANNED,C18a,no sleeping in unbreathable air,ADR-062,,
 event:PlanetEventHandler.SpawnEntity(PotentialSpawns),REDESIGNED,v1.4.0,biome spawners in planet data,ADR-033,,
