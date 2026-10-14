@@ -40,7 +40,7 @@ accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 7f95791f7004bd7cdb5b818c25b62873a7b25876
 latest_hosted_regression: run 38511588324 at c5c453c9009d1b55d3de29db25ad011147d341ea, passed
-ledger_planned_units: 28
+ledger_planned_units: 27
 asset_review_items: 154
 required_gates_approved: none
 last_updated: 2026-10-14
