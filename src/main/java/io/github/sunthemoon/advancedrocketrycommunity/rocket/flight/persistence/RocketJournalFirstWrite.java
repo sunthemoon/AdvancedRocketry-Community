@@ -12,11 +12,14 @@ import net.minecraft.nbt.CompoundTag;
 /** First-write ownership survives failed moves; only a known commit retires the absence proof. */
 final class RocketJournalFirstWrite {
     private boolean committed, appeared;
+    /** This attempt's beforeMove proved the target absent; attempts are sequential (one active request). */
+    private boolean provedAbsent;
     private String attemptedDigest;
 
     synchronized void beforeMove(Path staged, Path target, CheckedSavedDataPolicy policy) throws IOException {
         if (committed) { return; }
-        if (!ManagedRootSupplier.stillAbsent(target)) {
+        provedAbsent = ManagedRootSupplier.stillAbsent(target);
+        if (!provedAbsent) {
             // UNKNOWN may have moved our exact candidate. No other or unreadable payload establishes ownership.
             boolean ownCandidate = false;
             if (attemptedDigest != null) {
@@ -39,7 +42,9 @@ final class RocketJournalFirstWrite {
 
     synchronized void completed(RocketJournalCheckpoint.Outcome outcome) {
         if (outcome == RocketJournalCheckpoint.Outcome.COMMITTED) { committed = true; attemptedDigest = null; }
-        else if (outcome == RocketJournalCheckpoint.Outcome.NOT_COMMITTED) { attemptedDigest = null; }
+        // A failure before the committer proves nothing about the disk: an earlier UNKNOWN candidate may be there.
+        else if (outcome == RocketJournalCheckpoint.Outcome.NOT_COMMITTED && provedAbsent) { attemptedDigest = null; }
+        provedAbsent = false;
     }
 
     synchronized boolean appeared() { return appeared; }

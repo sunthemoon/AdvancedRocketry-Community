@@ -103,6 +103,43 @@ class RocketJournalFirstWriteTest {
         } finally { data.abort(); }
     }
 
+    /** W44K: a failure before the committer proves nothing about the disk, so the UNKNOWN candidate stays retained. */
+    @Test void aStagingFailureAfterAnUnknownMoveKeepsTheCandidateForItsRetry() throws Exception {
+        var data = RocketTransferSavedData.created(ManagedRootPresence.PROVEN_ABSENT);
+        var moves = new AtomicInteger();
+        var policy = new CheckedSavedDataPolicy(ManagedSavedDataType.ROCKET_TRANSFERS, (staged, target) -> {
+            CheckedSavedDataFile.atomicMove(staged, target);
+            if (moves.incrementAndGet() == 1) { throw new AssertionError("injected after the first move"); }
+        });
+        Path pending = target().resolveSibling(target().getFileName() + ".arce-pending");
+        try {
+            data.requestWrite(target(), policy);
+            await(data, RocketTransferSavedData.WriteOutcome.UNKNOWN);
+            byte[] candidate = Files.readAllBytes(target());
+            Files.createDirectory(pending); // The retry's staging fails before the committer runs.
+            awaitRetry(data, 200, RocketTransferSavedData.WriteOutcome.NOT_COMMITTED);
+            assertEquals(1, moves.get(), "the staging failure never reached the committer");
+            assertArrayEquals(candidate, Files.readAllBytes(target()));
+            assertTrue(data.operational());
+            Files.delete(pending);
+            awaitRetry(data, 400, RocketTransferSavedData.WriteOutcome.COMMITTED);
+            assertEquals(2, moves.get());
+            assertTrue(data.acknowledgedCurrent());
+            assertTrue(data.operational());
+            assertEquals(ManagedRootPresence.PROVEN_ABSENT, data.presence());
+        } finally { data.abort(); }
+    }
+
+    private static void awaitRetry(RocketTransferSavedData data, long tick,
+                                   RocketTransferSavedData.WriteOutcome expected) throws InterruptedException {
+        long deadline = System.nanoTime() + 5_000_000_000L;
+        while (data.checkedWriteResult().outcome() != expected && data.operational() && System.nanoTime() < deadline) {
+            data.pollWriter(tick);
+            Thread.sleep(1);
+        }
+        assertEquals(expected, data.checkedWriteResult().outcome());
+    }
+
     private static void await(RocketTransferSavedData data, RocketTransferSavedData.WriteOutcome expected)
             throws InterruptedException {
         long deadline = System.nanoTime() + 5_000_000_000L;
