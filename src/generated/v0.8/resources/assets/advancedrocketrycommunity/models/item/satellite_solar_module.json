@@ -1,3 +1,6 @@
 {
-  "parent": "minecraft:item/daylight_detector"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "advancedrocketrycommunity:item/satellite_solar_module"
+  }
 }

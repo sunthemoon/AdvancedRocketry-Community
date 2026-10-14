@@ -579,7 +579,7 @@ public final class SleepRespawnGameTests {
         return Blocks.RED_BED.defaultBlockState().setValue(BedBlock.FACING, Direction.EAST).setValue(BedBlock.PART, part);
     }
 
-    private static boolean suppliedBed(ServerLevel level, BlockPos vent) {
+    static boolean suppliedBed(ServerLevel level, BlockPos vent) {
         BlockPos head = bedHead(vent);
         return AtmosphereRuntime.breathabilityAt(level, head).orElse(null) == BreathabilityState.BREATHABLE
                 && AtmosphereRuntime.breathabilityAt(level, head.west()).orElse(null) == BreathabilityState.BREATHABLE
@@ -589,12 +589,12 @@ public final class SleepRespawnGameTests {
     }
 
     /** The bed head inside a room whose vent is in the floor at {@code vent}; the cell above the vent stays clear. */
-    private static BlockPos bedHead(BlockPos vent) {
+    static BlockPos bedHead(BlockPos vent) {
         return vent.offset(1, 1, 1);
     }
 
     /** A sealed iron room with its vent in the floor centre and an east-facing bed beside the vent's cell. */
-    private static OxygenVentBlockEntity roomWithBed(ServerLevel level, BlockPos vent, int radius, int height) {
+    static OxygenVentBlockEntity roomWithBed(ServerLevel level, BlockPos vent, int radius, int height) {
         AtmosphereGameTests.buildShell(level, vent.offset(-radius, 0, -radius), vent.offset(radius, height, radius));
         OxygenVentBlockEntity placed = AtmosphereGameTests.placePreparedVent(level, vent);
         BlockPos head = bedHead(vent);
@@ -603,7 +603,7 @@ public final class SleepRespawnGameTests {
         return placed;
     }
 
-    private static void force(ServerLevel level, BlockPos center, int radius, Set<ChunkPos> added) {
+    static void force(ServerLevel level, BlockPos center, int radius, Set<ChunkPos> added) {
         for (int x = (center.getX() - radius) >> 4; x <= (center.getX() + radius) >> 4; x++) {
             for (int z = (center.getZ() - radius) >> 4; z <= (center.getZ() + radius) >> 4; z++) {
                 ChunkPos chunk = new ChunkPos(x, z);
@@ -620,7 +620,7 @@ public final class SleepRespawnGameTests {
      * Clears a fixture box. Bed heads go first: the foot then removes itself, and only a head drops an item, so no
      * item is left behind.
      */
-    private static void clearBox(ServerLevel level, BlockPos minimum, BlockPos maximum) {
+    static void clearBox(ServerLevel level, BlockPos minimum, BlockPos maximum) {
         for (BlockPos cell : BlockPos.betweenClosed(minimum, maximum)) {
             BlockState state = level.getBlockState(cell);
             if (state.getBlock() instanceof BedBlock && state.getValue(BedBlock.PART) == BedPart.HEAD) {

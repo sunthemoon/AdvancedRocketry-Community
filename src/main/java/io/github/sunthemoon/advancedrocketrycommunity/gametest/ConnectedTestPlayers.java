@@ -41,6 +41,12 @@ final class ConnectedTestPlayers {
     /** As {@link #join}; every message is also recorded in {@code tokens} as its {@link #token}. */
     static ServerPlayer join(MinecraftServer server, UUID id, String name, ServerLevel level, BlockPos position,
                              List<String> replies, boolean serverPermissions, List<String> tokens) {
+        return join(server, id, name, level, position, replies, serverPermissions, tokens, true);
+    }
+
+    /** Native survival bed/monster rules need a non-creative connected player; existing fixtures stay creative. */
+    static ServerPlayer join(MinecraftServer server, UUID id, String name, ServerLevel level, BlockPos position,
+                             List<String> replies, boolean serverPermissions, List<String> tokens, boolean creative) {
         ServerPlayer player = new ServerPlayer(server, level, new GameProfile(id, name)) {
             @Override
             public boolean isSpectator() {
@@ -49,7 +55,7 @@ final class ConnectedTestPlayers {
 
             @Override
             public boolean isCreative() {
-                return true;
+                return creative;
             }
 
             @Override

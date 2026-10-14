@@ -1,0 +1,9 @@
+{
+  "error": 82,
+  "expectations": 88,
+  "fatal": 0,
+  "latest_log_sha256": "7f314968bfc510fd9be3111492dbe3d40602a4342c71cc05f122b87b2e6120d5",
+  "required_passed": 1004,
+  "tested_commit": "a20700ef54221987faa953a8f4fd0034d0d62cc6",
+  "warn": 241
+}

@@ -476,6 +476,26 @@ the two respawn options. Records: `records/W37.md` and `W37F.md` to `W37J.md`.
 The protection's scope, duration, logs and recovery are R-036. This is a development
 implementation note, not owner acceptance or a Gate result.
 
+**W37b addendum (2026-10-14).** The six off-world types now set `natural=true`, written by one v1.8
+writer (D1 outcome 1; the v1.4 copies are no longer packaged), so W37's sleep admission is reachable.
+D1 outcome 3 is implemented by `BedRespawnPreserver`, scoped to the operation and never cancelling:
+
+- **Snapshot.** It snapshots the native spawn tuple after W37's admission of a native off-world bed
+  call.
+- **Attribution.** It recognises vanilla's own bed setter by the nearest native dispatch and the
+  method descriptors.
+- **Restore.** It writes the snapshot back at the native call's `SleepingTimeCheckEvent`, before both
+  late refusals and a successful sleep. It writes only when the bed tuple is still in place and no
+  foreign setter superseded it.
+- **Fallbacks.** A tick START, logout, orderly stop and every command flush pending operations
+  before their saves.
+- **Accepted residuals (Root).** The integrated-server pause save (`IntegratedServer.tickServer`
+  53), crash cleanup without `ServerStoppingEvent` (`runServer` 417, then `stopServer`), and a
+  third-party task saving players in the same inter-tick window. Each needs a compound failure, and
+  each can only persist the off-world bed tuple, which the W37 respawn validation still judges.
+
+Records: `records/W37B.md`; Root review SHA-256 `1d58efc2…`.
+
 ## 4. Gas charging and finite player resources
 
 `gas_charge_pad` stores one oxygen or hydrogen bank up to 16,000 mB, accepts

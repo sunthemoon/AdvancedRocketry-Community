@@ -1,0 +1,125 @@
+{
+  "tested_commit": "a20700ef54221987faa953a8f4fd0034d0d62cc6",
+  "archives": [
+    {
+      "archive": "archived-log-check.log.gz",
+      "uncompressed_bytes": 249,
+      "uncompressed_sha256": "512d749dfb2cb59e95687d90ae3ce151cf83410f49df889c877545c8aea3b006"
+    },
+    {
+      "archive": "art-results.xml.gz",
+      "uncompressed_bytes": 1184,
+      "uncompressed_sha256": "da86bb9a09bd0b27bc44fb59826f349417edec80ce49272fc3970c6aab862d48"
+    },
+    {
+      "archive": "art-tests.log.gz",
+      "uncompressed_bytes": 18498,
+      "uncompressed_sha256": "dc7c246ca42252d50416d130a0101775a77e32050237febf3b37a1938f50b9b6"
+    },
+    {
+      "archive": "client-imports.log.gz",
+      "uncompressed_bytes": 70,
+      "uncompressed_sha256": "41d7f9b8f46d1eeaf40be07406c7c5b8fe4fc53b75ce90cd23b55ed7c489293c"
+    },
+    {
+      "archive": "compile-tests.log.gz",
+      "uncompressed_bytes": 47198,
+      "uncompressed_sha256": "7311505e827745abec6eaaf7540d366eccf540f8926b8f7e8b07c2cf0964c6fa"
+    },
+    {
+      "archive": "compile.log.gz",
+      "uncompressed_bytes": 19655,
+      "uncompressed_sha256": "2f201cbcfda7a7f703463465305d9c84931e907b96853d64685d931766142f3e"
+    },
+    {
+      "archive": "data.log.gz",
+      "uncompressed_bytes": 22686,
+      "uncompressed_sha256": "b66b547e4b9979c171fe648fc7606258a7edf47a7cab6d88bac51b678353fe5d"
+    },
+    {
+      "archive": "disk-before-data.txt.gz",
+      "uncompressed_bytes": 80,
+      "uncompressed_sha256": "0761374afec897b3ffe938a96c845d559bde0a7a095b65eb4ebb3191172f9602"
+    },
+    {
+      "archive": "disk-before-gametest.txt.gz",
+      "uncompressed_bytes": 80,
+      "uncompressed_sha256": "e2651653e1b2383f3c5d9b7f340bd10f3e3362888b82d8741959982375983bd7"
+    },
+    {
+      "archive": "gametest-latest.log.gz",
+      "uncompressed_bytes": 3258103,
+      "uncompressed_sha256": "7f314968bfc510fd9be3111492dbe3d40602a4342c71cc05f122b87b2e6120d5"
+    },
+    {
+      "archive": "gametest-log-check.log.gz",
+      "uncompressed_bytes": 244,
+      "uncompressed_sha256": "b6e244b209af4ce767e6e57daa92c123dba8fae2e86134892ee4d53ef13440bd"
+    },
+    {
+      "archive": "gametest.log.gz",
+      "uncompressed_bytes": 3024889,
+      "uncompressed_sha256": "5d373c14025824181b42387ec52afa58f4bd0a6c1373eb6106271c4b6309c9b8"
+    },
+    {
+      "archive": "material-fixture-failure.log.gz",
+      "uncompressed_bytes": 2148,
+      "uncompressed_sha256": "efd606fad1fcaf0418b6429a41f44af22340f0f8629da1884a5ccfa78bd3ac0e"
+    },
+    {
+      "archive": "material-fixture-failure.xml.gz",
+      "uncompressed_bytes": 10877,
+      "uncompressed_sha256": "36ea2a3e609a5e48bfa269a5045dfb3970cc4c7ea71a6e0971ea68620c095fba"
+    },
+    {
+      "archive": "material-results.xml.gz",
+      "uncompressed_bytes": 869,
+      "uncompressed_sha256": "0c17268c35b3a2f52c2534441d2b1577a3d51efc9cdfe0a873b2d02896203326"
+    },
+    {
+      "archive": "material-tests.log.gz",
+      "uncompressed_bytes": 1869,
+      "uncompressed_sha256": "d698dc70a30b1614def14b55df954711ed34d6e838c7c50bab5efe1e61f8d6c3"
+    },
+    {
+      "archive": "material-values.log.gz",
+      "uncompressed_bytes": 1631,
+      "uncompressed_sha256": "8bb0cc9866b7aa8369f8817265bf14e7d8d85dea2920b081fdfb1643238733b9"
+    },
+    {
+      "archive": "provenance-results.xml.gz",
+      "uncompressed_bytes": 1072,
+      "uncompressed_sha256": "c1e3f2866f5f5724176071efc2398e34dc9d395d43f0850953d9af3e332ba076"
+    },
+    {
+      "archive": "provenance-tests.log.gz",
+      "uncompressed_bytes": 1651,
+      "uncompressed_sha256": "43fe253472b650f0f9505949af24cdd029f81583d035e8ffbeb0fd90bb5e6e2e"
+    },
+    {
+      "archive": "pure-generation.log.gz",
+      "uncompressed_bytes": 88,
+      "uncompressed_sha256": "f8ff13d5420db5006239365d7fdbcf76bf49fffe67a635156e8a98bec8903651"
+    },
+    {
+      "archive": "resource-results.xml.gz",
+      "uncompressed_bytes": 1240,
+      "uncompressed_sha256": "223d289379dc6ba1d28bf101562b720ac4f9c35fac361343de31bb0d40871e6c"
+    },
+    {
+      "archive": "resource-tests.log.gz",
+      "uncompressed_bytes": 1651,
+      "uncompressed_sha256": "41ef9f855aab2f12c12e4e6c24ad0ca56e483f3f10b8a37bcf62114f82cd2ed1"
+    },
+    {
+      "archive": "screen.log.gz",
+      "uncompressed_bytes": 15,
+      "uncompressed_sha256": "07104ed85e247e17b754a4b0ae94af301e67b039ad8b79a461396a467cf8c190"
+    },
+    {
+      "archive": "unit-suite.log.gz",
+      "uncompressed_bytes": 1654,
+      "uncompressed_sha256": "3ace134334f0a2bf1f9cc2f2aec6078e9d2cc398ace983662cdf44f94b0c6b2d"
+    }
+  ]
+}
