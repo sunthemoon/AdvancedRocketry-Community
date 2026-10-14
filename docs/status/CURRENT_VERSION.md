@@ -38,9 +38,9 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 4f9e6597d6594bcded8dedde487807fbd1d8bc17
-latest_hosted_regression: run 38533807522 at 66d6b94a2e09266cfe4e5f62cf1ed41ff74712ec, passed
-ledger_planned_units: 25
+latest_code_commit: 3682e1216bc58d958dfa5fc40f08c594db1d5dec
+latest_hosted_regression: run 38557029770 at e15bab385e2c09c4c58745991b39cb1287d7e936, passed
+ledger_planned_units: 24
 asset_review_items: 154
 required_gates_approved: none
 last_updated: 2026-10-14

@@ -424,7 +424,7 @@ event:PlanetEventHandler.onWorldGen(GenerateMinable),REDESIGNED,v1.4.0,per-biome
 event:PlanetEventHandler.playerLoggedInEvent(ServerConnectionFromClientEvent),REDESIGNED,v1.4.0,celestial sync on login,ADR-035,,
 event:PlanetEventHandler.playerTick(LivingUpdateEvent),REDESIGNED,v1.8.0,suit underwater breathing and the space safety return,ADR-062 ADR-066,nearest authorized loaded station or the Overworld; air only after a paid oxygen debit; the Moon advancement is C18c,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 event:PlanetEventHandler.serverTickEvent(WorldTickEvent),DEFERRED,post-2.0,-,ADR-062,terraforming family,
-event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent),PLANNED,C18a,no sleeping in unbreathable air,ADR-062,,
+event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent),REDESIGNED,v1.8.0,sleep admission and the bed preserver,ADR-062 ADR-066,natural off-world types; an admitted bed keeps the existing point (D1 outcome 3),docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 event:PlanetEventHandler.SpawnEntity(PotentialSpawns),REDESIGNED,v1.4.0,biome spawners in planet data,ADR-033,,
 event:PlanetEventHandler.tick(ServerTickEvent),REDESIGNED,v0.8.0,mission scheduler and transfer journal,ADR-050,,
 event:PlanetEventHandler.tickClient(ClientTickEvent),REDESIGNED,v1.4.0,client sky state,ADR-036,,
