@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -41,8 +42,12 @@ P1 = uuid.UUID("00000000-0000-4000-8000-0000000000a1")
 P2 = uuid.UUID("00000000-0000-4000-8000-0000000000a2")
 # Case: (boundary, cut kept on restarts, source state and durable receipt at the halt, ERROR markers it may log).
 CASES = {
+    "FM1": ("before_election_move", False, "EMPTY", False, ()),
+    "FM2a": ("after_election_force", False, "ELECTED", False, ()),
     "FM2b": ("after_election_force", False, "ELECTED", False, ()),
     "FM6a": ("journal_unknown", False, "ELECTED", False, ()),
+    "FM6b": ("journal_unknown", False, "EMPTY", False, ()),
+    "FM7": ("fixture_stop", True, "EMPTY", False, ("ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED",)),
     "FM3": ("receipt_confirmed", False, "ELECTED", True, ()),
     "FM4a": ("awards_dispatched", False, "ELECTED", True, ()),
     "FM4b": ("awards_dispatched", False, "ELECTED", True, ()),
@@ -79,10 +84,24 @@ def inspect(world: Path, case: str, event_id: str, source: str, durable_receipt:
     journal = read_root(journal_path)
     outbox = journal.get(OUTBOX, {})
     event = outbox.get("event")
+    if source == "EMPTY":
+        if outbox != {"schema_version": 1, "state": "EMPTY"} or event_id is not None:
+            raise smoke.SmokeError(f"{case}: an uncommitted candidate became authority")
+        if progression_path.exists() and read_root(progression_path)[MOON_RECEIPT] != {"occurred": 0}:
+            raise smoke.SmokeError(f"{case}: a receipt exists without source authority")
+        transfers = journal.get("transfers", [])
+        if len(transfers) != 1 or transfers[0]["phase"] != "COMMITTED":
+            raise smoke.SmokeError(f"{case}: the saved DESCENT fixture lost its committed record")
+        return dict(outbox="EMPTY", receipt="absent", transfers=1,
+                    journal_sha256=smoke.digest_file(journal_path))
     if event is None or ints_uuid(event["event_id"]) != event_id:
         raise smoke.SmokeError(f"{case}: the journal outbox does not hold E {event_id}: {outbox.get('state')}")
     if event["participants"] != uuid_ints(P1) + uuid_ints(P2):
         raise smoke.SmokeError(f"{case}: E does not hold exactly [P1, P2]")
+    fingerprint = hashlib.sha256(event["kind"].encode("utf-8") + b"\0" + uuid.UUID(event_id).bytes
+                                 + (2).to_bytes(4, "big") + P1.bytes + P2.bytes).hexdigest()
+    if event["fingerprint"] != fingerprint:
+        raise smoke.SmokeError(f"{case}: E's participant fingerprint is invalid")
     if outbox["state"] != source:
         raise smoke.SmokeError(f"{case}: the source is {outbox['state']}, not {source}")
     transfers = [entry for entry in journal.get("transfers", []) if entry.get("transfer_id") == event["transfer_id"]]
@@ -122,6 +141,8 @@ def command(java: str, cut: str | None) -> list[str]:
     value[2] = "-Xmx4G"
     if cut is not None:
         value.insert(1, "-Darce.releaseTest.firstEventCut=" + cut)
+    else:
+        value.insert(1, "-Darce.releaseTest.firstEventParticipants=true")
     return value
 
 
@@ -132,7 +153,7 @@ def halted(case: str, process: smoke.CapturedProcess, timeout: float) -> dict:
     if code != 75 or len(marks) != 1:
         raise smoke.SmokeError(f"{case}: expected one release-test halt with status 75, got {code} and {marks}")
     cut, boundary, event, thread = next(iter(marks))
-    expected_thread = "ARCE-rocket-journal" if case == "FM2b" else "Server thread"
+    expected_thread = "ARCE-rocket-journal" if case in ("FM1", "FM2a", "FM2b") else "Server thread"
     if cut != case or boundary != CASES[case][0] or thread.strip() != expected_thread:
         raise smoke.SmokeError(f"{case}: halted at {cut} {boundary} on {thread}")
     return dict(exit_code=code, boundary=boundary, event=event, thread=thread.strip())
@@ -146,7 +167,7 @@ def delivered(case: str, process: smoke.CapturedProcess, event_id: str, timeout:
         index = process.wait_for(STATUS, 30, start_at=start)
         source, event, receipt, hold = STATUS.search(process.lines[index]).groups()
         if source == "KNOWN:DELIVERED" and receipt == "CONFIRMED" and hold == "none":
-            if event != event_id:
+            if event_id is not None and event != event_id:
                 raise smoke.SmokeError(f"{case}: DELIVERED names {event}, not E {event_id}")
             return process.lines[index].rstrip()
         if hold not in ("none", "SOURCE_UNCONFIRMED"):
@@ -170,6 +191,42 @@ def landed(case: str, process: smoke.CapturedProcess, timeout: float) -> dict:
         if time.monotonic() > deadline:
             raise smoke.SmokeError(f"{case}: the Moon rocket did not reach LANDED within {timeout} s")
         time.sleep(2)
+
+
+def snapshot(world: Path, evidence: Path, case: str, start: int) -> dict:
+    """Preserve the actual roots at each boundary, not only their interpreted contents."""
+    destination = evidence / f"{case}-start-{start}-roots"
+    destination.mkdir()
+    files = {}
+    for path in sorted((world / "data").glob("advancedrocketrycommunity_*.dat*")):
+        if path.is_file():
+            shutil.copy2(path, destination / path.name)
+            files[path.name] = smoke.digest_file(destination / path.name)
+    # H uses no players: advancement files must stay absent, never treated as actual awards.
+    advancements = world / "advancements"
+    if advancements.exists() and any(advancements.iterdir()):
+        raise smoke.SmokeError(f"{case}: a headless fixture unexpectedly has player advancement files")
+    return dict(files=files, award_oracle="N", connected_players=0, advancement_files=[])
+
+
+def pending(case: str, process: smoke.CapturedProcess, timeout: float) -> dict:
+    """Observe a complete failed-election retry interval without saving or stopping a blocked writer."""
+    refusal = re.compile(r"first_event_cut election_move_refused")
+    index = process.wait_for(refusal, timeout)
+    process.wait_for(refusal, timeout, start_at=index + 1)
+    begin = len(process.lines)
+    process.command("arce progression status")
+    index = process.wait_for(STATUS, 30, start_at=begin)
+    source, event, receipt, hold = STATUS.search(process.lines[index]).groups()
+    if receipt == "CONFIRMED" or source in ("KNOWN:ELECTED", "KNOWN:DELIVERED"):
+        raise smoke.SmokeError(f"{case}: an uncommitted election produced durable delivery")
+    loaded = [match for match in map(ACTIVE.search, process.lines) if match]
+    if not loaded:
+        raise smoke.SmokeError(f"{case}: no loaded destination to inspect")
+    rocket = FlightHarness.report(process, MOON, loaded[-1].group(1))
+    if rocket["state"] != "DESCENT" or any("event=landing_complete" in line for line in process.lines):
+        raise smoke.SmokeError(f"{case}: the refused election published LANDED")
+    return dict(status=process.lines[index].rstrip(), rocket=rocket, retries_observed=2)
 
 
 def run(args) -> dict:
@@ -213,11 +270,13 @@ def run(args) -> dict:
             row = dict(case=case, starts=[])
             report["in_progress"] = row
             # The initial start, the two restarts and, for FM8a, the recovery start and one more idempotent start.
-            plan = [case, case if kept else None, case if kept else None] + ([None, None] if kept else [])
+            plan = [case, case if kept else None, case if kept else None] + ([None] if case == "FM7" else
+                                                                         [None, None] if kept else [])
             event_id = None
             for start, cut in enumerate(plan):
                 process = smoke.CapturedProcess(command(args.java, cut), session, evidence / f"{case}-start-{start}.log")
-                entry = dict(start=start, cut=cut, log=f"{case}-start-{start}.log")
+                entry = dict(start=start, role="initial" if start == 0 else f"restart-{start}",
+                             cut=cut, log=f"{case}-start-{start}.log")
                 process.wait_for(smoke.READY_MARKER, args.startup_timeout)
                 if start == 0:
                     entity = harness.assemble(process)["entity"]
@@ -228,25 +287,54 @@ def run(args) -> dict:
                     entry["launch"] = LAUNCH_LOG.search(process.lines[index]).group(7)
                     if entry["launch"] not in ("SUCCESS", "JOURNAL_PENDING"):
                         raise smoke.SmokeError(f"{case}: the Moon launch was refused: {entry['launch']}")
-                if cut is not None:
+                if case == "FM7" and cut is not None:
+                    entry["pending"] = pending(case, process, args.flight_timeout)
+                    entry["disk"] = inspect(world, case, None, "EMPTY", False)
+                    entry["roots"] = snapshot(world, evidence, case, start)
+                    if start < 2:
+                        process.command("arce progression release-test halt")
+                        entry.update(halted(case, process, args.flight_timeout))
+                    else:
+                        process.command("arce progression release-test release")
+                        entry["status"] = delivered(case, process, None, args.delivery_timeout)
+                        event_id = STATUS.search(entry["status"]).group(2)
+                        entry["rocket"] = landed(case, process, args.delivery_timeout)
+                        save_start = len(process.lines)
+                        process.command("save-all flush")
+                        process.wait_for(smoke.SAVE_MARKER, 60, start_at=save_start)
+                        process.command("stop")
+                        entry["exit_code"] = process.finish()
+                        if entry["exit_code"] != 0:
+                            raise smoke.SmokeError(f"{case}: online recovery did not stop cleanly")
+                        entry["recovered_disk"] = inspect(world, case, event_id, "DELIVERED", True)
+                        entry["online_recovery"] = True
+                elif cut is not None:
                     entry.update(halted(case, process, args.flight_timeout))
                     if start == 0:
                         event_id = entry["event"]
-                        if case == "FM2b":
+                        if case in ("FM1", "FM2a", "FM2b"):
                             if event_id != "null":
-                                raise smoke.SmokeError("FM2b: the writer-thread seam unexpectedly supplied an event UUID")
-                            event_id = ints_uuid(read_root(world / "data" / JOURNAL)[OUTBOX]["event"]["event_id"])
-                            entry.update(event=event_id, event_read_from="committed journal", marker_event="null")
+                                raise smoke.SmokeError(f"{case}: the writer-thread seam unexpectedly supplied an event UUID")
+                            if halt_source != "EMPTY":
+                                event_id = ints_uuid(read_root(world / "data" / JOURNAL)[OUTBOX]["event"]["event_id"])
+                                entry.update(event=event_id, event_read_from="committed journal", marker_event="null")
                         elections = [line for line in process.lines if "ARCE_FIRST_EVENT_ELECTED" in line]
-                        if len(elections) != 1 or ELECTED not in elections[0] or event_id not in elections[0]:
+                        if len(elections) != 1 or ELECTED not in elections[0]:
                             raise smoke.SmokeError(f"{case}: the flight did not elect exactly E")
+                        if halt_source == "EMPTY":
+                            entry["uncommitted_candidate"] = re.search(r"event=([0-9a-f-]{36})", elections[0]).group(1)
+                            event_id = None
+                        elif event_id not in elections[0]:
+                            raise smoke.SmokeError(f"{case}: the election does not match disk authority")
                     elif entry["event"] != event_id:
                         raise smoke.SmokeError(f"{case}: the restart halted on another event")
                     entry["disk"] = inspect(world, case, event_id, halt_source, halt_receipt)
-                    if case in ("FM2b", "FM6a") and any("event=landing_complete" in line for line in process.lines):
+                    if case in ("FM1", "FM2a", "FM2b", "FM6a", "FM6b") and any("event=landing_complete" in line for line in process.lines):
                         raise smoke.SmokeError(f"{case}: LANDED was published before the server confirmation")
                 else:
                     entry["status"] = delivered(case, process, event_id, args.delivery_timeout)
+                    if event_id is None:
+                        event_id = STATUS.search(entry["status"]).group(2)
                     entry["rocket"] = landed(case, process, args.delivery_timeout)
                     save_start = len(process.lines)
                     process.command("save-all flush")
@@ -256,14 +344,20 @@ def run(args) -> dict:
                     if entry["exit_code"] != 0:
                         raise smoke.SmokeError(f"{case}: start {start} exited {entry['exit_code']}")
                     entry["disk"] = inspect(world, case, event_id, "DELIVERED", True)
-                if start > 0 and any(ELECTED in line for line in process.lines):
+                if start > 0 and not (case in ("FM1", "FM6b") and start == 1 or case == "FM7" and start <= 2) and any(ELECTED in line for line in process.lines):
                     raise smoke.SmokeError(f"{case}: start {start} elected a second Moon landing")
+                if case in ("FM1", "FM2a", "FM6b", "FM7") and start == 0 and not any(
+                        "first_event_fixture descent_saved" in line for line in process.lines):
+                    raise smoke.SmokeError(f"{case}: DESCENT was not saved before the election")
+                if "roots" not in entry:
+                    entry["roots"] = snapshot(world, evidence, case, start)
                 entry["landing_complete_logged"] = any("event=landing_complete" in line for line in process.lines)
                 entry["errors"] = check_errors(case, process.lines)
                 process = None
                 row["starts"].append(entry)
-            done = [entry for entry in row["starts"] if entry["cut"] is None]
-            if any(entry["disk"]["event"] != done[0]["disk"]["event"] for entry in done):
+            done = [entry for entry in row["starts"] if entry["cut"] is None or entry.get("online_recovery")]
+            if any(entry.get("recovered_disk", entry["disk"])["event"] !=
+                   done[0].get("recovered_disk", done[0]["disk"])["event"] for entry in done):
                 raise smoke.SmokeError(f"{case}: the restarts disagree on E")
             if done[-1]["rocket"]["entity"] != done[-2]["rocket"]["entity"]:
                 raise smoke.SmokeError(f"{case}: the second recovered start loaded another Moon rocket")

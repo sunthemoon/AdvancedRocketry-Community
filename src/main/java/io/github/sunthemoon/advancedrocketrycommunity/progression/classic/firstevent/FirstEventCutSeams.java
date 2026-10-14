@@ -25,6 +25,8 @@ import net.minecraft.server.MinecraftServer;
  */
 public final class FirstEventCutSeams {
     public static final String PROPERTY = "arce.releaseTest.firstEventCut";
+    /** Participant-only recovery fixture; never enables a halt or IO failure. */
+    public static final String PARTICIPANTS_PROPERTY = "arce.releaseTest.firstEventParticipants";
     /** The release-test halt status of {@code ReleaseTestCommands}. */
     public static final int HALT_STATUS = 75;
     /** The fixed sorted participants of the synthetic M and WARP fixtures, and the later observer who is never one. */
@@ -47,6 +49,7 @@ public final class FirstEventCutSeams {
 
     private static final AtomicBoolean ELECTION_MOVED = new AtomicBoolean();
     private static final AtomicBoolean UNRELATED_FAILED = new AtomicBoolean();
+    private static final AtomicBoolean RELEASED = new AtomicBoolean();
 
     private FirstEventCutSeams() {
     }
@@ -119,6 +122,7 @@ public final class FirstEventCutSeams {
     public static void validateAtStartup(MinecraftServer server) {
         ELECTION_MOVED.set(false);
         UNRELATED_FAILED.set(false);
+        RELEASED.set(false);
         configured().ifPresent(cut -> {
             EscrowTestEndpoints.requireEnabled(server);
             AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_cut id={} armed", cut.id());
@@ -146,7 +150,27 @@ public final class FirstEventCutSeams {
      * has zero connected players (W44 section 6.1, rows M and WARP).
      */
     public static Optional<List<UUID>> participants(MinecraftServer server, FirstEventKind kind) {
-        return active(server).map(cut -> List.of(P1, P2));
+        if (active(server).isPresent()) { return Optional.of(List.of(P1, P2)); }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS) && Boolean.getBoolean(PARTICIPANTS_PROPERTY)) {
+            EscrowTestEndpoints.requireEnabled(server);
+            return Optional.of(List.of(P1, P2));
+        }
+        return Optional.empty();
+    }
+
+    /** Saves the complete terminal DESCENT fixture on S, before any election write can block W. */
+    public static void beforeMoonElection(MinecraftServer server, Runnable save) {
+        if (is(server, Cut.FM1, Cut.FM2A, Cut.FM6B, Cut.FM7)) {
+            save.run();
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture descent_saved");
+        }
+    }
+
+    /** Removes a persistent test failure online, without altering roots or production retry timing. */
+    static void release(MinecraftServer server) {
+        active(server).orElseThrow(() -> new IllegalStateException("No first-event cut is armed"));
+        RELEASED.set(true);
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture released");
     }
 
     /** Warp visitor count seam: the real saturating count in production; 4,097 for FW8b. */
@@ -278,7 +302,7 @@ public final class FirstEventCutSeams {
                 if (election) { ELECTION_MOVED.set(true); }
             }));
             case FM7 -> Optional.of(new CheckedSavedDataPolicy(type, (staged, target) -> {
-                if (electionGeneration(staged, target)) {
+                if (!RELEASED.get() && electionGeneration(staged, target)) {
                     AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_cut election_move_refused");
                     throw new IOException("Release-test election refusal before the move");
                 }

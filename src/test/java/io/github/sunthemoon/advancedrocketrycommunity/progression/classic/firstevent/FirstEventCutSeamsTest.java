@@ -16,6 +16,7 @@ class FirstEventCutSeamsTest {
     @AfterEach void clear() {
         System.clearProperty(FirstEventCutSeams.PROPERTY);
         System.clearProperty(EscrowTestEndpoints.HOOKS);
+        System.clearProperty(FirstEventCutSeams.PARTICIPANTS_PROPERTY);
     }
 
     @Test void absentPropertyOrDisabledHooksKeepEverySeamAtItsProductionValue() {
@@ -46,6 +47,17 @@ class FirstEventCutSeamsTest {
                 FirstEventCutSeams.stationPolicy(null, () -> fail("the production policy never runs the hook")).type());
         assertDoesNotThrow(() -> FirstEventCutSeams.boundary(null, FirstEventCutSeams.RECEIPT_CONFIRMED,
                 FirstEventKind.FIRST_STATION_WARP, null));
+        assertDoesNotThrow(() -> FirstEventCutSeams.beforeMoonElection(null, () -> fail("production does not save a fixture")));
+    }
+
+    @Test void aParticipantOnlyFixtureStillRequiresHooksAndTheEmptyServerGate() {
+        System.setProperty(FirstEventCutSeams.PARTICIPANTS_PROPERTY, "true");
+        assertTrue(FirstEventCutSeams.participants(null, FirstEventKind.FIRST_MOON_LANDING).isEmpty());
+        System.setProperty(EscrowTestEndpoints.HOOKS, "true");
+        assertThrows(NullPointerException.class,
+                () -> FirstEventCutSeams.participants(null, FirstEventKind.FIRST_MOON_LANDING));
+        assertTrue(FirstEventCutSeams.configured().isEmpty(), "participant-only recovery cannot arm an IO cut");
+        assertDoesNotThrow(() -> FirstEventCutSeams.beforeMoonElection(null, () -> fail("no cut is armed")));
     }
 
     @Test void theInventoryNamesExactlyTheThirtyNineHeadlessRows() {
