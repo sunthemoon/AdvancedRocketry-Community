@@ -75,6 +75,34 @@ class RocketJournalFirstWriteTest {
         } finally { data.abort(); }
     }
 
+    @Test void anUnknownMovedCandidateDoesNotOwnADifferentValidJournal() throws Exception {
+        var data = RocketTransferSavedData.created(ManagedRootPresence.PROVEN_ABSENT);
+        var attempts = new AtomicInteger();
+        var policy = new CheckedSavedDataPolicy(ManagedSavedDataType.ROCKET_TRANSFERS, (staged, file) -> {
+            if (attempts.incrementAndGet() == 1) {
+                CheckedSavedDataFile.atomicMove(staged, file);
+                throw new AssertionError("injected after first move");
+            }
+            CheckedSavedDataFile.atomicMove(staged, file);
+        });
+        try {
+            data.requestWrite(target(), policy);
+            await(data, RocketTransferSavedData.WriteOutcome.UNKNOWN);
+            var foreign = new RocketTransferSavedData();
+            foreign.put(RocketTransferSavedDataTest.committed(RocketTransferSavedDataTest.record()));
+            CheckedSavedDataFile.replace(target(), ManagedSavedDataType.ROCKET_TRANSFERS,
+                    () -> foreign.save(new net.minecraft.nbt.CompoundTag()));
+            byte[] original = Files.readAllBytes(target());
+            assertTrue(RocketTransferSavedData.load(CheckedSavedDataFile.readPayload(target(),
+                    ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow()).operational());
+            data.pollWriter(200);
+            data.drainForTests();
+            assertEquals(1, attempts.get(), "a readable but different payload must not authorize replacement");
+            assertArrayEquals(original, Files.readAllBytes(target()));
+            assertEquals(ManagedRootPresence.UNREADABLE, data.presence());
+        } finally { data.abort(); }
+    }
+
     private static void await(RocketTransferSavedData data, RocketTransferSavedData.WriteOutcome expected)
             throws InterruptedException {
         long deadline = System.nanoTime() + 5_000_000_000L;
