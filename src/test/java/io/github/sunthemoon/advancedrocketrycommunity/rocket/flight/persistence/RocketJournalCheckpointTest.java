@@ -17,6 +17,28 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class RocketJournalCheckpointTest {
+    @Test void directoryIsForcedAfterRenameAndAfterCandidateReadback() {
+        var forced = new java.util.concurrent.atomic.AtomicInteger();
+        var payload = empty();
+        var checkpoint = new RocketJournalCheckpoint(parent -> {
+            assertEquals(directory.toAbsolutePath(), parent);
+            assertEquals(payload, CheckedSavedDataFile.readPayload(target(), TYPE).orElseThrow());
+            forced.incrementAndGet();
+        });
+        assertEquals(RocketJournalCheckpoint.Outcome.COMMITTED,
+                checkpoint.write(target(), CheckedSavedDataPolicy.atomic(TYPE), 1, payload, Map.of()));
+        assertEquals(1, forced.get());
+        var movedThenFailed = new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+            CheckedSavedDataFile.atomicMove(staged, target); throw new IOException("After rename");
+        });
+        assertEquals(RocketJournalCheckpoint.Outcome.COMMITTED,
+                checkpoint.write(target(), movedThenFailed, 2, payload, Map.of()));
+        assertEquals(2, forced.get());
+        var unavailable = new RocketJournalCheckpoint(parent -> { throw new IOException("Directory force failed"); });
+        assertEquals(RocketJournalCheckpoint.Outcome.UNKNOWN,
+                unavailable.write(target(), CheckedSavedDataPolicy.atomic(TYPE), 3, payload, Map.of()));
+        assertTrue(unavailable.acknowledged().isEmpty());
+    }
     @Test void unrelatedWritesDoNotInvalidateAnUnchangedAcknowledgedRecord() {
         var data = new RocketTransferSavedData(); var record = RocketTransferSavedDataTest.record();
         try {
