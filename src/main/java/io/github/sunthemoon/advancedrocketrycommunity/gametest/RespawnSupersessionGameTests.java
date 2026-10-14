@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -93,6 +94,61 @@ public final class RespawnSupersessionGameTests {
                     spawnpoint(server, player, Level.OVERWORLD.location().toString(), newer, 0.0F);
                     assertNativeRespawnAt(helper, server, DeathRespawnGameTests.packet(player), newer);
                 });
+    }
+
+    @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
+    public static void aNewerOriginalPointWithAVetoedNativeSetterDoesNotResurrectTheBackup(GameTestHelper helper) {
+        newerOriginalWithoutCopy(helper, false, "W37JVetoClone");
+    }
+
+    @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
+    public static void aNewerOriginalPointWithoutAnArrivalDoesNotResurrectTheBackup(GameTestHelper helper) {
+        newerOriginalWithoutCopy(helper, true, "W37JNoArrival");
+    }
+
+    private static void newerOriginalWithoutCopy(GameTestHelper helper, boolean noArrival, String name) {
+        MinecraftServer server = helper.getLevel().getServer();
+        BlockPos newer = standing(helper);
+        ServerPlayer player = dying(helper, name);
+        int[] setters = {0};
+        Consumer<PlayerSetSpawnEvent> veto = event -> {
+            if (event.getEntity().getUUID().equals(player.getUUID())) {
+                setters[0]++;
+                event.setCanceled(true);
+            }
+        };
+        ServerPlayer[] reborn = {null};
+        DeathRespawnGameTests.afterEachEnd(helper, () -> {
+                    MinecraftForge.EVENT_BUS.unregister(veto);
+                    DeathRespawnGameTests.remove(server, player.getUUID());
+                },
+                () -> {
+                    assertSetAside(helper, player, FAR);
+                    for (int tick = 0; tick < 25; tick++) { player.connection.tick(); }
+                    helper.assertTrue(player.getRemovalReason() == Entity.RemovalReason.KILLED,
+                            "The fixture did not reach corpse removal");
+                    spawnpoint(server, player, Level.OVERWORLD.location().toString(), newer, 31.25F);
+                    helper.assertTrue(newer.equals(player.getRespawnPosition()) && DeathRespawnGameTests.pending(player),
+                            "The original's newer point and pending envelope did not coexist at the cut");
+                    if (noArrival) {
+                        helper.setBlock(new BlockPos(2, 1, 2), Blocks.OBSIDIAN);
+                        helper.setBlock(new BlockPos(2, 2, 2), Blocks.OBSIDIAN);
+                    }
+                    // Installed after the command, so it cannot veto the original's newer tuple.
+                    MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, true, PlayerSetSpawnEvent.class, veto);
+                    reborn[0] = DeathRespawnGameTests.packet(player);
+                    helper.assertTrue(setters[0] == (noArrival ? 0 : 1),
+                            "Native respawn did not take the intended arrival/setter branch: " + setters[0]);
+                    helper.assertTrue(reborn[0].getRespawnPosition() == null && !DeathRespawnGameTests.pending(reborn[0]),
+                            "The freshly cleared replacement resurrected the superseded Moon point");
+                    if (!noArrival) {
+                        helper.assertTrue(reborn[0].position().closerThan(Vec3.atBottomCenterOf(newer), 1.0D),
+                                "The veto fixture did not arrive at the newer native point");
+                    }
+                    assertNoKeptMessage(helper, reborn[0]);
+                },
+                () -> helper.assertTrue(reborn[0].getRespawnPosition() == null && !DeathRespawnGameTests.pending(reborn[0]),
+                        "A later END resurrected the superseded backup"));
     }
 
     @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)

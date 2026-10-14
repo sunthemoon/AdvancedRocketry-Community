@@ -20,6 +20,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAcc
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -112,6 +113,8 @@ public final class SleepRespawnService {
     /** Players already reported per diagnostic in this server session (server thread). */
     private final Map<Diagnostic, Set<UUID>> reported = new EnumMap<>(Diagnostic.class);
     private final RespawnSaveReconciler saveCopies = new RespawnSaveReconciler();
+    /** Original identity through native Clone -> respawn dispatch; expired no later than the next END. */
+    private final Map<ServerPlayer, ServerPlayer> cloneOriginals = new IdentityHashMap<>();
 
     public SleepRespawnService(AtmosphereManager atmosphere, CelestialCatalogManager catalogs, Supplier<Options> options) {
         this.atmosphere = Objects.requireNonNull(atmosphere, "atmosphere");
@@ -140,6 +143,7 @@ public final class SleepRespawnService {
     public void register(IEventBus bus) {
         bus.addListener(this::onSleepInBed);
         bus.addListener(this::onLeaveLevel);
+        bus.addListener(EventPriority.LOWEST, this::onClone);
         bus.addListener(this::onRespawn);
         bus.addListener(this::onLogin);
         bus.addListener(EventPriority.LOWEST, this::onLogout);
@@ -233,8 +237,30 @@ public final class SleepRespawnService {
         clear(player);
     }
 
+    public void onClone(PlayerEvent.Clone event) {
+        if (event.getEntity() instanceof ServerPlayer replacement && event.getOriginal() instanceof ServerPlayer original
+                && replacement.server.isSameThread()) {
+            if (backup(replacement).isPresent()) {
+                cloneOriginals.put(replacement, original);
+                reconcileOriginal(replacement, original);
+            }
+        }
+    }
+
+    private void reconcileOriginal(ServerPlayer replacement, ServerPlayer original) {
+        if (!cleared(original) && backup(replacement).isPresent()) {
+            // Native restoreFrom shares PlayerPersisted before Clone, but copies no respawn fields. A replacement's
+            // defaults therefore cannot resurrect a backup already superseded on the original at the native read.
+            release(replacement);
+        }
+    }
+
     public void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()) { restore(player, true); }
+        if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()) {
+            ServerPlayer original = cloneOriginals.remove(player);
+            if (original != null) { reconcileOriginal(player, original); }
+            restore(player, true);
+        }
     }
 
     public void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
@@ -252,12 +278,14 @@ public final class SleepRespawnService {
                 if (pending) { release(player); }
             } else { governing(player); }
             saveCopies.forget(player);
+            cloneOriginals.entrySet().removeIf(entry -> entry.getKey() == player || entry.getValue() == player);
         }
     }
 
     public void onServerStopped(ServerStoppedEvent event) {
         reported.clear();
         saveCopies.clear();
+        cloneOriginals.clear();
     }
 
     /**
@@ -272,6 +300,7 @@ public final class SleepRespawnService {
         if (event.phase == TickEvent.Phase.END) {
             MinecraftServer server = event.getServer();
             saveCopies.prune(server);
+            cloneOriginals.clear();
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 if (player instanceof FakePlayer) { continue; }
                 saveCopies.reconcile(player, false); // Follow later changes even after the original backup was released.
