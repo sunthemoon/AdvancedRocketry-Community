@@ -227,7 +227,7 @@ public final class RespawnSupersessionGameTests {
     }
 
     /** /spawnpoint through the real dispatcher; a name selector also finds a dead player. */
-    private static void spawnpoint(MinecraftServer server, ServerPlayer player, String dimension, BlockPos at,
+    static void spawnpoint(MinecraftServer server, ServerPlayer player, String dimension, BlockPos at,
                                    float angle) {
         server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(),
                 "execute in " + dimension + " run spawnpoint " + player.getScoreboardName() + " " + at.getX() + " "

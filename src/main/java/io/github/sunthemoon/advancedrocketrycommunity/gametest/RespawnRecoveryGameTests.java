@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -69,6 +70,77 @@ public final class RespawnRecoveryGameTests {
                 server.getPlayerList().remove(replacement);
             }
         });
+    }
+
+    /**
+     * W37I: in the interrupted-listener window above, the PlayerList holds the replacement, which commands select, but
+     * a disconnect saves the connection's player, the old one. A newer point set on the replacement survives that save.
+     */
+    @GameTest(template = "atmosphere_test", batch = "respawn_recovery", timeoutTicks = 40)
+    public static void aNewerPointOnAnUnadoptedReplacementSurvivesTheLogoutSave(GameTestHelper helper) {
+        interruptedLogout(helper, true, "W37INewerUnadopted");
+    }
+
+    /** W37I: with no newer point, the old player's logout save keeps the backup and the reconnect restores it. */
+    @GameTest(template = "atmosphere_test", batch = "respawn_recovery", timeoutTicks = 40)
+    public static void aRestoredPointOnAnUnadoptedReplacementSurvivesTheLogoutSave(GameTestHelper helper) {
+        interruptedLogout(helper, false, "W37IRestoredUnadopted");
+    }
+
+    private static void interruptedLogout(GameTestHelper helper, boolean newer, String name) {
+        MinecraftServer server = helper.getLevel().getServer();
+        UUID id = UUID.randomUUID();
+        ServerPlayer player = join(helper, id, name);
+        player.setRespawnPosition(CelestialIds.MOON_LEVEL, FAR, -72.25F, true, false);
+        Consumer<PlayerEvent.PlayerRespawnEvent> interrupt = event -> {
+            if (event.getEntity().getUUID().equals(id)) { throw new IllegalStateException(INTERRUPTED); }
+        };
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, false, PlayerEvent.PlayerRespawnEvent.class, interrupt);
+        try {
+            try {
+                server.getPlayerList().respawn(player, false);
+                helper.fail("The injected respawn listener did not interrupt dispatch");
+            } catch (IllegalStateException expected) {
+                helper.assertTrue(INTERRUPTED.equals(expected.getMessage()), "Unexpected exception: " + expected);
+            }
+        } finally {
+            MinecraftForge.EVENT_BUS.unregister(interrupt);
+        }
+        ServerPlayer replacement = server.getPlayerList().getPlayer(id);
+        helper.assertTrue(replacement != null && replacement != player && replacement.connection.player == player
+                && hasBackup(replacement), "The fixture did not reach the interrupted-listener window");
+        BlockPos point = helper.absolutePos(new BlockPos(2, 1, 2));
+        Predicate<ServerPlayer> atNewer = holder -> Level.OVERWORLD.equals(holder.getRespawnDimension())
+                && point.equals(holder.getRespawnPosition()) && holder.getRespawnAngle() == 12.5F
+                && holder.isRespawnForced();
+        DeathRespawnGameTests.afterEachEnd(helper, () -> {
+                    server.getPlayerList().remove(replacement); // Vanilla leaves the unadopted replacement listed.
+                    DeathRespawnGameTests.remove(server, id);
+                },
+                () -> {
+                    assertTuple(helper, replacement); // The server-tick retry restored the point; it is not complete.
+                    helper.assertTrue(hasBackup(replacement) && replacement.connection.player == player,
+                            "The retry completed the backup before the connection adopted the replacement");
+                    if (newer) {
+                        RespawnSupersessionGameTests.spawnpoint(server, replacement, Level.OVERWORLD.location().toString(),
+                                point, 12.5F);
+                        helper.assertTrue(atNewer.test(replacement), "The command did not select the listed replacement");
+                    }
+                },
+                () -> {
+                    if (newer) {
+                        helper.assertTrue(atNewer.test(replacement) && !hasBackup(replacement) && atNewer.test(player),
+                                "The newer point was not carried to the player that the logout save writes");
+                    }
+                    server.getPlayerList().remove(player); // A disconnect removes and saves the connection's player.
+                    ServerPlayer reconnected = join(helper, id, name);
+                    if (newer) {
+                        helper.assertTrue(atNewer.test(reconnected) && !hasBackup(reconnected),
+                                "The newer point was lost at the logout save: " + reconnected.getRespawnPosition());
+                    } else {
+                        assertRestored(helper, reconnected);
+                    }
+                });
     }
 
     @GameTest(template = "atmosphere_test", batch = "respawn_recovery", timeoutTicks = 40)

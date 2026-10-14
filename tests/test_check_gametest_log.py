@@ -364,8 +364,9 @@ class ManifestValidationTests(unittest.TestCase):
         # W21cF adds one forced research debit shortfall (w21cf-research-debit-shortfall).
         # W33 adds one oversized unlit torch root chunk-save refusal (w33-unlit-torch-chunk-save-refused).
         # W37F adds one deliberate earlier respawn-listener interruption.
+        # W37I adds two more, one per interrupted-window logout test (w37i-respawn-listener-interruption-logout).
         self.assertEqual(
-            83, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            85, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_recipe_and_recovery_cases_have_independent_counts(self) -> None:

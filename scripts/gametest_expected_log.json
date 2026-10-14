@@ -13,6 +13,16 @@
       "reason": "A HIGHEST respawn listener throws after native replacement insertion; the test catches the deliberate exception and verifies the persisted tuple is restored on a later tick."
     },
     {
+      "id": "w37i-respawn-listener-interruption-logout",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: W37F injected respawn listener interruption",
+      "stack_contains": "RespawnRecoveryGameTests.interruptedLogout",
+      "counts": {"respawn_recovery": 2},
+      "test": "RespawnRecoveryGameTests.aNewerPointOnAnUnadoptedReplacementSurvivesTheLogoutSave, RespawnRecoveryGameTests.aRestoredPointOnAnUnadoptedReplacementSurvivesTheLogoutSave",
+      "reason": "W37I: each test enters W37F's interrupted-listener window with the same deliberate HIGHEST respawn listener exception, catches it, and checks the old connection player's logout save and the reconnect."
+    },
+    {
       "id": "w37h-planet-respawn-unencodable-tuple",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

@@ -295,10 +295,26 @@ public final class SleepRespawnService {
         Optional<Backup> pending = backup(player);
         if (pending.isPresent() && !RespawnPointBackup.governs(pending.orElseThrow().point(), player.getRespawnDimension(),
                 player.getRespawnPosition(), player.getRespawnAngle(), player.isRespawnForced())) {
+            carryToSavedPlayer(player);
             release(player);
             return Optional.empty();
         }
         return pending;
+    }
+
+    /**
+     * W37I: until the connection adopts a replacement, its logout save writes the connection's player, the old one,
+     * whose tuple is this service's clear. In W37F's interrupted-listener window it never adopts it. A newer tuple that
+     * supersedes the backup on the replacement is therefore copied there too. This writes only into the cleared tuple.
+     */
+    private static void carryToSavedPlayer(ServerPlayer replacement) {
+        ServerPlayer saved = replacement.connection == null ? null : replacement.connection.player;
+        if (saved != null && saved != replacement && saved.getUUID().equals(replacement.getUUID()) && cleared(saved)) {
+            saved.respawnDimension = replacement.getRespawnDimension();
+            saved.respawnPosition = replacement.getRespawnPosition();
+            saved.respawnAngle = replacement.getRespawnAngle();
+            saved.respawnForced = replacement.isRespawnForced();
+        }
     }
 
     /** Removes the pending backup; an opaque retained root returns to its key. */
@@ -308,13 +324,18 @@ public final class SleepRespawnService {
 
     /** This service's own clear; the setter is a cancellable gameplay operation, not a preservation boundary. */
     private static void clear(ServerPlayer player) {
-        if (player.respawnPosition != null || !Level.OVERWORLD.equals(player.respawnDimension)
-                || Float.floatToRawIntBits(player.respawnAngle) != 0 || player.respawnForced) {
+        if (!cleared(player)) {
             player.respawnDimension = Level.OVERWORLD;
             player.respawnPosition = null;
             player.respawnAngle = 0.0F;
             player.respawnForced = false;
         }
+    }
+
+    /** The exact cleared tuple: Overworld, no position, raw angle 0.0F, not forced. */
+    private static boolean cleared(ServerPlayer player) {
+        return player.respawnPosition == null && Level.OVERWORLD.equals(player.respawnDimension)
+                && Float.floatToRawIntBits(player.respawnAngle) == 0 && !player.respawnForced;
     }
 
     private static CompoundTag persisted(ServerPlayer player, boolean create) {
