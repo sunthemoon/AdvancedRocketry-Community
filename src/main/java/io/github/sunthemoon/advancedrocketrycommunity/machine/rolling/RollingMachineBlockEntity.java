@@ -16,6 +16,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessFai
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessMachineState;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.ProcessProgress;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.ClassicSound;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.MachineSoundProfile;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.ProcessingFlagCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.ProcessingSoundSource;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -24,6 +28,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -35,7 +41,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /** Thin Minecraft lifecycle adapter around the immutable multiblock controller state. */
 public final class RollingMachineBlockEntity extends BlockEntity implements MenuProvider,
-        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected {
+        io.github.sunthemoon.advancedrocketrycommunity.machine.recipe.RecipeSignatureProtected, ProcessingSoundSource {
     private MultiblockControllerState controllerState;
     private final RollingMachineProcessController process;
     private final RollingMachineMenuData menuData;
@@ -44,6 +50,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
     private Tag preservedControllerRoot;
     @Nullable
     private PatternValidationResult lastValidation;
+    private boolean processingActive;
 
     public RollingMachineBlockEntity(BlockPos position, BlockState state) {
         super(ModBlockEntities.ROLLING_MACHINE.get(), position, state);
@@ -81,6 +88,9 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
                 new LoadedPartBindingGateway(new RollingMachineBindingAccess(level))
         );
         lastValidation = result.validation();
+        if (result.controllerState().formationState() != MultiblockFormationState.FORMED) {
+            updateProcessingState(false);
+        }
         long generation = controllerState.generation();
         if (!controllerState.equals(result.controllerState())) {
             controllerState = result.controllerState();
@@ -95,6 +105,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
     }
 
     void invalidateMissingDefinition(ServerLevel level) {
+        updateProcessingState(false);
         if (persistenceStatus == MultiblockNbtStatus.UNSUPPORTED_SCHEMA
                 || persistenceStatus == MultiblockNbtStatus.INVALID_DATA) {
             return;
@@ -119,6 +130,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
     }
 
     void markWaitingForUnload() {
+        updateProcessingState(false);
         if (persistenceStatus != MultiblockNbtStatus.SUPPORTED
                 || controllerState.generation() == 0
                 || controllerState.partPositions().isEmpty()) {
@@ -135,6 +147,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
     }
 
     void unbindForRemoval(ServerLevel level) {
+        updateProcessingState(false);
         MultiblockLifecycleCoordinator.controllerRemoved(
                 controllerState,
                 level.dimension(),
@@ -180,14 +193,43 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
     }
 
     boolean tickProcess(ServerLevel level) {
-        return process.tick(level, this);
+        var before = process.progress();
+        boolean advanced = false;
+        try {
+            boolean requeue = process.tick(level, this);
+            advanced = formationState() == MultiblockFormationState.FORMED
+                    && process.state() == ProcessMachineState.RUNNING
+                    && process.progress().isPresent() && !process.progress().equals(before);
+            return requeue;
+        } finally { updateProcessingState(advanced); }
     }
+
+    @Override public boolean processingActive() { return processingActive; }
+    @Override public ClassicSound activeProcessingSound() {
+        return MachineSoundProfile.loop("rolling_machine", processingActive);
+    }
+    private void updateProcessingState(boolean next) {
+        if (processingActive == next) { return; }
+        processingActive = next;
+        if (level instanceof ServerLevel server && !isRemoved()) {
+            server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+    @Override public CompoundTag getUpdateTag() { return ProcessingFlagCodec.encode(processingActive); }
+    @Override public void handleUpdateTag(CompoundTag tag) { processingActive = ProcessingFlagCodec.decode(tag); }
+    @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
+    @Override public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
+        handleUpdateTag(packet.getTag());
+    }
+    @Override public void onChunkUnloaded() { updateProcessingState(false); super.onChunkUnloaded(); }
+    @Override public void setRemoved() { updateProcessingState(false); super.setRemoved(); }
 
     void recordExternalResourceMutation(ServerLevel level) {
         process.recordExternalMutation(level, this);
     }
 
     void requireRecoveryAfterUnexpectedTickFailure() {
+        updateProcessingState(false);
         process.requireRecoveryAfterUnexpectedTickFailure();
     }
 
@@ -264,6 +306,7 @@ public final class RollingMachineBlockEntity extends BlockEntity implements Menu
 
     @Override
     public void load(CompoundTag parent) {
+        updateProcessingState(false);
         super.load(parent);
         lastValidation = null;
         preservedControllerRoot = null;
