@@ -42,7 +42,8 @@ public final class SuitReserveTransition {
                 input.volumeState(),
                 input.equippedSuitPieces(),
                 input.oxygenUnits() + transferred,
-                input.vacuumPhase()
+                input.vacuumPhase(),
+                input.underwaterOxygenRequired()
         ));
         return new Result(decision, reserveUnits - transferred, transferred);
     }
@@ -50,8 +51,8 @@ public final class SuitReserveTransition {
     private static boolean transferAdmitted(PlayerLifeSupportInput input, boolean reserveEligible) {
         return reserveEligible
                 && input.equippedSuitPieces() == PlayerLifeSupportInput.COMPLETE_SUIT_PIECES
-                && !input.baseAtmosphereBreathable()
-                && input.volumeState() != BreathabilityState.BREATHABLE
+                && (input.underwaterOxygenRequired() || !input.baseAtmosphereBreathable()
+                    && input.volumeState() != BreathabilityState.BREATHABLE)
                 && input.vacuumPhase() == PlayerLifeSupportInput.TICKS_PER_OXYGEN_OR_DAMAGE - 1;
     }
 
