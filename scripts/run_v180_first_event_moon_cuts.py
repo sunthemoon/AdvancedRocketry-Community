@@ -23,9 +23,14 @@ import shutil
 import time
 import uuid
 
-import run_dedicated_server_smoke as smoke
-from inspect_celestial_saved_data import NbtReader
-from run_v060_flight_server_smoke import FlightHarness, EARTH, MOON, LAUNCH_LOG, _server_command
+if __package__:
+    from . import run_dedicated_server_smoke as smoke
+    from .inspect_celestial_saved_data import NbtReader
+    from .run_v060_flight_server_smoke import FlightHarness, EARTH, MOON, LAUNCH_LOG, _server_command
+else:
+    import run_dedicated_server_smoke as smoke
+    from inspect_celestial_saved_data import NbtReader
+    from run_v060_flight_server_smoke import FlightHarness, EARTH, MOON, LAUNCH_LOG, _server_command
 
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 PROGRESSION = "advancedrocketrycommunity_classic_progression.dat"
@@ -36,6 +41,8 @@ P1 = uuid.UUID("00000000-0000-4000-8000-0000000000a1")
 P2 = uuid.UUID("00000000-0000-4000-8000-0000000000a2")
 # Case: (boundary, cut kept on restarts, source state and durable receipt at the halt, ERROR markers it may log).
 CASES = {
+    "FM2b": ("after_election_force", False, "ELECTED", False, ()),
+    "FM6a": ("journal_unknown", False, "ELECTED", False, ()),
     "FM3": ("receipt_confirmed", False, "ELECTED", True, ()),
     "FM4a": ("awards_dispatched", False, "ELECTED", True, ()),
     "FM4b": ("awards_dispatched", False, "ELECTED", True, ()),
@@ -125,7 +132,8 @@ def halted(case: str, process: smoke.CapturedProcess, timeout: float) -> dict:
     if code != 75 or len(marks) != 1:
         raise smoke.SmokeError(f"{case}: expected one release-test halt with status 75, got {code} and {marks}")
     cut, boundary, event, thread = next(iter(marks))
-    if cut != case or boundary != CASES[case][0] or thread.strip() != "Server thread":
+    expected_thread = "ARCE-rocket-journal" if case == "FM2b" else "Server thread"
+    if cut != case or boundary != CASES[case][0] or thread.strip() != expected_thread:
         raise smoke.SmokeError(f"{case}: halted at {cut} {boundary} on {thread}")
     return dict(exit_code=code, boundary=boundary, event=event, thread=thread.strip())
 
@@ -224,12 +232,19 @@ def run(args) -> dict:
                     entry.update(halted(case, process, args.flight_timeout))
                     if start == 0:
                         event_id = entry["event"]
+                        if case == "FM2b":
+                            if event_id != "null":
+                                raise smoke.SmokeError("FM2b: the writer-thread seam unexpectedly supplied an event UUID")
+                            event_id = ints_uuid(read_root(world / "data" / JOURNAL)[OUTBOX]["event"]["event_id"])
+                            entry.update(event=event_id, event_read_from="committed journal", marker_event="null")
                         elections = [line for line in process.lines if "ARCE_FIRST_EVENT_ELECTED" in line]
                         if len(elections) != 1 or ELECTED not in elections[0] or event_id not in elections[0]:
                             raise smoke.SmokeError(f"{case}: the flight did not elect exactly E")
                     elif entry["event"] != event_id:
                         raise smoke.SmokeError(f"{case}: the restart halted on another event")
                     entry["disk"] = inspect(world, case, event_id, halt_source, halt_receipt)
+                    if case in ("FM2b", "FM6a") and any("event=landing_complete" in line for line in process.lines):
+                        raise smoke.SmokeError(f"{case}: LANDED was published before the server confirmation")
                 else:
                     entry["status"] = delivered(case, process, event_id, args.delivery_timeout)
                     entry["rocket"] = landed(case, process, args.delivery_timeout)
