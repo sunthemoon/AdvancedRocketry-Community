@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.AuditLogCapture;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
@@ -68,9 +69,19 @@ public final class NamedLandingPadOccupancyGameTests {
             f.assertReviewGeometry(parked);
             UUID transfer = UUID.randomUUID();
             var before = source.flightData().orElseThrow();
-            var result = new RocketTransferService().prepareLaunch(source, f.countdown(source, transfer));
+            List<String> diagnostics;
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult result;
+            try (var log = new AuditLogCapture("ARCE_PAD_OCCUPANCY_REFUSED")) {
+                result = new RocketTransferService().prepareLaunch(source, f.countdown(source, transfer));
+                diagnostics = log.lines();
+            }
             helper.assertTrue(result.code() == RocketFlightRequestCode.LANDING_PAD_UNAVAILABLE
                     && result.detailKey().endsWith("occupied"), "Wide occupant was not a stated preparation refusal");
+            // W13F review N3: the station-wide refusal names the rocket that caused it.
+            helper.assertTrue(!diagnostics.isEmpty() && diagnostics.stream().allMatch(line -> line.contains("reason=occupied")
+                    && line.contains("rocket=" + parked.getUUID())
+                    && line.contains("rocket_pos=" + parked.blockPosition().toShortString())),
+                    "The occupancy refusal did not name its rocket: " + diagnostics);
             f.assertNoClaimOrDestination(transfer);
             helper.assertTrue(source.flightData().orElseThrow().equals(before), "Refusal changed source authority/fuel");
 
@@ -143,10 +154,18 @@ public final class NamedLandingPadOccupancyGameTests {
             f.addRocket(f.space, parkedSnapshot);
             UUID refusedTransfer = UUID.randomUUID();
             int loadedBefore = f.space.getChunkSource().getLoadedChunksCount();
-            var refused = staging.select(f.space, snapshot, refusedTransfer, f.station, f.entry.reference(),
-                    List.of(), f.space.getGameTime());
+            List<String> diagnostics;
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelection refused;
+            try (var log = new AuditLogCapture("ARCE_PAD_OCCUPANCY_REFUSED")) {
+                refused = staging.select(f.space, snapshot, refusedTransfer, f.station, f.entry.reference(),
+                        List.of(), f.space.getGameTime());
+                diagnostics = log.lines();
+            }
             helper.assertTrue(!refused.success() && refused.detail().endsWith("entity_budget"),
                     "Discovery overflow was silently accepted/truncated");
+            helper.assertTrue(!diagnostics.isEmpty() && diagnostics.stream().allMatch(line -> line.contains("reason=entity_budget")
+                    && line.contains("inspected=" + NamedLandingPadStaging.MAX_OCCUPANCY_ENTITY_INSPECTIONS)),
+                    "The entity-budget refusal was not reported: " + diagnostics);
             helper.assertTrue(refused.chunksLoaded() == 0 && f.space.getChunkSource().getLoadedChunksCount() == loadedBefore
                     && f.currentEntry().claim() == null
                     && RocketTransferSavedData.get(f.space.getServer()).find(refusedTransfer).isEmpty(),
