@@ -101,7 +101,8 @@ def run(args) -> dict:
             target = world / "data" / root_file
             shutil.copy2(source, target)
             original = smoke.digest_file(target)
-            before = read_root(target)
+            # A refused root is compared by its hash only; FW10c's near-4-MiB root exceeds the inspector's array bound.
+            before = read_root(target) if outcome == "MIGRATE" else None
             properties = smoke.expected_server_properties(port, True)
             properties.update({"level-name": world.name, "level-type": "minecraft:flat", "max-tick-time": "60000"})
             (session / "server.properties").write_text("".join(f"{k}={v}\n" for k, v in sorted(properties.items())),
