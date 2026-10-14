@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternMatcher;
+import java.util.Objects;
 import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -70,11 +71,14 @@ public final class ClassicModelProjectionGameTests {
         helper.assertTrue(tag.getAllKeys().equals(formed ? Set.of(ClassicModelProjection.FORMED) : Set.of()),
                 "Model projection exposed other fields: " + tag.getAllKeys());
         var packet = controller.getUpdatePacket();
-        helper.assertTrue(packet.getPos().equals(controller.getBlockPos()) && packet.getTag().equals(tag),
-                "Vanilla block-entity packet did not carry the projection");
+        // Vanilla sends an empty update tag as a null payload; the client must read that as not formed.
+        helper.assertTrue(packet.getPos().equals(controller.getBlockPos())
+                && Objects.equals(packet.getTag(), tag.isEmpty() ? null : tag), "Vanilla block-entity packet did not carry the projection");
         var replica = new ClassicControllerBlockEntity(controller.getType(), controller.getBlockPos(),
                 controller.getBlockState(), controller.definition());
         var saved = replica.saveWithFullMetadata();
+        CompoundTag previous = new CompoundTag(); ClassicModelProjection.encode(previous, true);
+        replica.handleUpdateTag(previous);
         replica.onDataPacket(null, packet);
         helper.assertTrue(replica.modelFormed() == formed && replica.saveWithFullMetadata().equals(saved),
                 "Client packet changed persistent machine state");
