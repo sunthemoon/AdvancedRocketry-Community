@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.registry;
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.OxygenCanisterItem;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitArmorItem;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitMaterial;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.AtmosphereAnalyzerItem;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.instrument.SealDetectorItem;
 import io.github.sunthemoon.advancedrocketrycommunity.config.CommonConfig;
@@ -14,7 +15,6 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.DataSate
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.content.SatelliteControlChipItem;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.StandingAndWallBlockItem;
@@ -288,7 +288,7 @@ public final class ModItems {
     private static RegistryObject<Item> spaceSuit(String name, ArmorItem.Type type) {
         return ITEMS.register(
                 name,
-                () -> new SpaceSuitArmorItem(ArmorMaterials.IRON, type, new Item.Properties())
+                () -> new SpaceSuitArmorItem(SpaceSuitMaterial.INSTANCE, type, new Item.Properties())
         );
     }
 

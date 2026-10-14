@@ -4,6 +4,8 @@ import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.api.atmosphere.SuitOxygenProvider;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitOxygen;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitArmorItem;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content.SpaceSuitMaterial;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.PlayerProtectionStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereManager;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLifeSupportService;
@@ -28,6 +30,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraftforge.common.util.FakePlayer;
@@ -44,6 +47,30 @@ public final class SuitEquipmentGameTests {
     };
 
     private SuitEquipmentGameTests() { }
+
+    @GameTest(template = "atmosphere_test", timeoutTicks = 20)
+    public static void registeredSpaceSuitKeepsItsIdsAndIronGameplayValues(GameTestHelper helper) {
+        for (var entry : Map.of(
+                "space_suit_helmet", ModItems.SPACE_SUIT_HELMET.get(),
+                "space_suit_chestplate", ModItems.SPACE_SUIT_CHESTPLATE.get(),
+                "space_suit_leggings", ModItems.SPACE_SUIT_LEGGINGS.get(),
+                "space_suit_boots", ModItems.SPACE_SUIT_BOOTS.get()).entrySet()) {
+            helper.assertTrue(ModIdentity.id(entry.getKey()).equals(ForgeRegistries.ITEMS.getKey(entry.getValue())),
+                    "Suit registry identity changed");
+            helper.assertTrue(entry.getValue() instanceof SpaceSuitArmorItem, "Suit behavior adapter changed");
+            SpaceSuitArmorItem suit = (SpaceSuitArmorItem) entry.getValue();
+            helper.assertTrue(suit.getMaterial() == SpaceSuitMaterial.INSTANCE, "Suit still uses a placeholder material");
+            helper.assertTrue(suit.getDefense() == ArmorMaterials.IRON.getDefenseForType(suit.getType())
+                            && suit.getMaxDamage() == ArmorMaterials.IRON.getDurabilityForType(suit.getType())
+                            && suit.getToughness() == ArmorMaterials.IRON.getToughness(),
+                    "Suit protection or durability changed");
+            int layer = suit.getEquipmentSlot() == EquipmentSlot.LEGS ? 2 : 1;
+            helper.assertTrue(suit.getArmorTexture(new ItemStack(suit), null, suit.getEquipmentSlot(), null).equals(
+                    ModIdentity.MOD_ID + ":textures/models/armor/space_suit_layer_" + layer + ".png"),
+                    "Suit texture layer is not bound");
+        }
+        helper.succeed();
+    }
 
     @GameTest(template = "atmosphere_test", timeoutTicks = 20)
     public static void mixedAndWrongSlotEquipmentUsesTheServerCadence(GameTestHelper helper) {
