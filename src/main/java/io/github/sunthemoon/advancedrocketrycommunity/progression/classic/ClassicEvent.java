@@ -12,7 +12,14 @@ public enum ClassicEvent {
     /** A committed rocket descent completed in the Moon Level with the player aboard. */
     MOON_LANDING("moon_landing"),
     /** A checked station warp committed while the player was present in the station with VISIT access. */
-    STATION_WARP("station_warp");
+    STATION_WARP("station_warp"),
+    /**
+     * W44: the player is a participant of the durable world-first Moon landing receipt; fired only by the delivery
+     * service after the matching source proof.
+     */
+    FIRST_MOON_LANDING("first_moon_landing"),
+    /** W44: the player is a participant of the durable world-first station warp receipt; fired as above. */
+    FIRST_STATION_WARP("first_station_warp");
 
     private final String serializedName;
 

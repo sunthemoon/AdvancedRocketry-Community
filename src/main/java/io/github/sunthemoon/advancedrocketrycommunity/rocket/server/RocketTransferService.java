@@ -50,6 +50,9 @@ final class RocketTransferService {
             liveTransfers,
             settledTransfers
     );
+    /** W44 N6: the COMMITTED destination tick and its world-first Moon completion. */
+    private final RocketDestinationCompletion destinations = new RocketDestinationCompletion(
+            liveTransfers, settledTransfers, recovery.bays());
 
     RocketFlightRequestResult prepareLaunch(RocketEntity rocket, RocketFlightData countdown) {
         return prepareLaunch(rocket, countdown, RocketRequestCompletion.NONE);
@@ -232,6 +235,8 @@ final class RocketTransferService {
             return;
         }
         recovery.classify(server, journal);
+        // W44 section 2.4: confirm one baseline whatever the transfer count, before the dispatch predicate.
+        journal.tickBaseline(server);
         if ((journal.isDirty() || !journal.entries().isEmpty()) && !journal.retryChecked(server)) { return; }
         recovery.recoverNext(server, journal);
         recovery.tickReconnects(server, journal);
@@ -472,7 +477,7 @@ final class RocketTransferService {
             case DESTINATION_SPAWNED -> transferPassengers(server, journal, record);
             case PASSENGERS_TRANSFERRED -> removeSource(server, journal, record);
             case SOURCE_REMOVED -> updatePhase(server, journal, record.advance(RocketTransferPhase.COMMITTED));
-            case COMMITTED -> tickDestination(server, journal, record);
+            case COMMITTED -> destinations.tickDestination(server, journal, record);
         }
     }
 
@@ -627,80 +632,6 @@ final class RocketTransferService {
             RocketEntity source = RocketTransferEntities.findSource(server, record);
             if (source != null) { source.discard(); }
         });
-    }
-
-    private void tickDestination(
-            MinecraftServer server,
-            RocketTransferSavedData journal,
-            RocketTransferRecord record
-    ) {
-        RocketEntity destination = RocketTransferEntities.findDestination(server, record);
-        if (destination == null) {
-            liveTransfers.remove(record.transferId());
-            return;
-        }
-        RocketFlightData flight = destination.flightData().orElseThrow();
-        if (flight.state() == RocketFlightState.DESCENT) {
-            long elapsed = elapsed(destination.level().getGameTime(), flight.stateStartedGameTime());
-            RocketTransferEntities.positionDescent(
-                    destination,
-                    record.destinationSnapshot().sourceOrigin(),
-                    elapsed
-            );
-            RocketFlightFeedback.descentTrail(destination, elapsed);
-            if (elapsed >= RocketFlightLimits.DESCENT_TICKS) {
-                destination.updateFlightData(flight.land(destination.level().getGameTime()));
-                RocketTransferEntities.positionAtOrigin(destination, record.destinationSnapshot().sourceOrigin());
-                RocketFlightFeedback.landed(destination);
-                auditPhase(record, "landing_complete", destination.getUUID());
-                io.github.sunthemoon.advancedrocketrycommunity.progression.classic.ClassicAdvancementEvents
-                        .rocketLanded((ServerLevel) destination.level(), RocketTransferEntities.aboard(destination));
-            }
-        }
-        cleanupLandedIfComplete(server, journal, record, destination);
-    }
-
-    private void cleanupLandedIfComplete(
-            MinecraftServer server,
-            RocketTransferSavedData journal,
-            RocketTransferRecord record,
-            RocketEntity destination
-    ) {
-        if (!flightAllowed(server, journal, record, TICK_SOURCE)) { return; }
-        if (!RocketTransferEntities.isReplaceableLandedAuthority(destination, record)) {
-            return;
-        }
-        if (record.schemaVersion() == 1) {
-            Optional<RocketTransferRecord> migrated = RocketRuntime.migrateCommittedLegacyTransfer(
-                    server,
-                    record
-            );
-            if (migrated.isPresent()) {
-                record = migrated.orElseThrow();
-                journal.migrateCommitted(record);
-                RocketTransferRecord changed = record;
-                journal.afterAcknowledged(server, changed.logicalRocketId(), () -> {
-                    if (!flightAllowed(server, journal, changed, TICK_SOURCE)) { return; }
-                    liveTransfers.add(changed.transferId());
-                    AdvancedRocketryCommunity.LOGGER.info("ARCE_TRANSFER_SCHEMA_MIGRATED transfer={} schema={}",
-                            changed.transferId(), changed.schemaVersion());
-                });
-                return;
-            } else {
-                AdvancedRocketryCommunity.LOGGER.warn(
-                        "ARCE_TRANSFER_SCHEMA_MIGRATION_BLOCKED transfer={} phase={}",
-                        record.transferId(),
-                        record.phase()
-                );
-            }
-        }
-        boolean allOnline = destination.flightData().orElseThrow().passengers().assignments().stream()
-                .allMatch(seat -> server.getPlayerList().getPlayer(seat.passengerId()) != null);
-        if (allOnline) {
-            liveTransfers.remove(record.transferId());
-            settledTransfers.add(record.transferId());
-            auditPhase(record, "landed_reservation_retained", destination.getUUID());
-        }
     }
 
     private boolean failBackToSource(MinecraftServer server, RocketTransferSavedData journal,

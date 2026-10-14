@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence;
 
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import java.nio.file.Path;
@@ -17,7 +18,8 @@ import net.minecraft.nbt.Tag;
 
 /** One immutable active snapshot and one successor; only the owner publishes acknowledgements. */
 final class RocketJournalWriter implements AutoCloseable {
-    record Snapshot(long sequence, List<RocketTransferRecord> records) {
+    record Snapshot(long sequence, List<RocketTransferRecord> records,
+                    FirstEventOutbox firstMoonLanding) {
         Snapshot {
             if (sequence < 1 || records.size() > RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
                 throw new IllegalArgumentException("Journal capture exceeds its fixed bound");
@@ -25,6 +27,11 @@ final class RocketJournalWriter implements AutoCloseable {
             // Records, flights, snapshots and their nested resource values are immutable domain objects.
             // No NBT encoding, digest, world access or block traversal belongs in this capture.
             records = List.copyOf(records);
+            // W44 section 2.4: the outbox is an immutable record with an immutable participant list, so capture stays O(1).
+            java.util.Objects.requireNonNull(firstMoonLanding, "firstMoonLanding");
+        }
+        Snapshot(long sequence, List<RocketTransferRecord> records) {
+            this(sequence, records, FirstEventOutbox.empty());
         }
     }
     record Completion(long sequence, RocketJournalCheckpoint.Outcome outcome,
@@ -33,7 +40,7 @@ final class RocketJournalWriter implements AutoCloseable {
     static final int DRAIN_UNKNOWN_ATTEMPTS = 3;
     private final Thread owner = Thread.currentThread();
     private final Path file;
-    private final RocketJournalCheckpoint disk = new RocketJournalCheckpoint();
+    private final RocketJournalCheckpoint disk;
     private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
         var thread = new Thread(r, "ARCE-rocket-journal"); thread.setDaemon(true); return thread;
     });
@@ -43,7 +50,12 @@ final class RocketJournalWriter implements AutoCloseable {
     private long tick, retryAt, lastSequence;
     private int drainUnknown;
 
-    RocketJournalWriter(Path file) { this.file = file.toAbsolutePath().normalize(); }
+    RocketJournalWriter(Path file) { this(file, CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
+    /** The directory force is resolved on the owner thread; a gated release-test cut may replace it (W44 6.1). */
+    RocketJournalWriter(Path file, CheckedSavedDataPolicy.DirectoryForce force) {
+        this.file = file.toAbsolutePath().normalize();
+        this.disk = new RocketJournalCheckpoint(force);
+    }
     boolean request(Snapshot snapshot, CheckedSavedDataPolicy policy) {
         owner();
         if (closed || draining) { return false; }
@@ -63,7 +75,8 @@ final class RocketJournalWriter implements AutoCloseable {
             long started = System.nanoTime();
             RocketJournalCheckpoint.Outcome outcome;
             try {
-                CompoundTag payload = RocketTransferSavedData.encode(request.snapshot().records(), new CompoundTag());
+                CompoundTag payload = RocketTransferSavedData.encode(request.snapshot().records(),
+                        request.snapshot().firstMoonLanding(), new CompoundTag());
                 var digests = new LinkedHashMap<UUID, String>();
                 for (Tag raw : payload.getList("transfers", Tag.TAG_COMPOUND)) {
                     var record = (CompoundTag) raw;

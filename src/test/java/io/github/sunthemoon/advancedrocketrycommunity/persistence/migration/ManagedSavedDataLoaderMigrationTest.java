@@ -66,6 +66,8 @@ final class ManagedSavedDataLoaderMigrationTest {
             case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload);
             case ENDGAME -> EndgameSavedData.load(payload);
             case RESOURCE_ESCROW -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.load(payload);
+            case CLASSIC_PROGRESSION -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
+                    .ClassicProgressionSavedData.load(payload);
         };
     }
 
@@ -78,6 +80,8 @@ final class ManagedSavedDataLoaderMigrationTest {
             case SATELLITE_MISSIONS -> ((SatelliteMissionSavedData) data).operational();
             case ENDGAME -> ((EndgameSavedData) data).operational();
             case RESOURCE_ESCROW -> ((io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData) data).operational();
+            case CLASSIC_PROGRESSION -> ((io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
+                    .ClassicProgressionSavedData) data).operational();
         };
         assertTrue(operational, type + " must remain operational after migration");
     }
@@ -108,6 +112,10 @@ final class ManagedSavedDataLoaderMigrationTest {
                 assertEquals(0, canonical.getList("zones", CompoundTag.TAG_COMPOUND).size());
             }
             case RESOURCE_ESCROW -> assertEquals(0, canonical.getList("records", CompoundTag.TAG_COMPOUND).size());
+            case CLASSIC_PROGRESSION -> {
+                assertEquals(0, canonical.getCompound("first_moon_landing").getByte("occurred"));
+                assertEquals(0, canonical.getCompound("first_station_warp").getByte("occurred"));
+            }
         }
     }
 

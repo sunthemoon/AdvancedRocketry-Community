@@ -560,6 +560,8 @@
   "station.advancedrocketrycommunity.code.warp_cooldown": "空间站刚刚发生变化；请等待 5 秒。",
   "station.advancedrocketrycommunity.code.warp_countdown_active": "本空间站已有跃迁倒计时在进行。",
   "station.advancedrocketrycommunity.code.warp_disabled": "本服务器已禁用空间站跃迁。",
+  "station.advancedrocketrycommunity.code.warp_first_event_over_budget": "玩家过多或空间站存储空间不足，无法记录首次跃迁。",
+  "station.advancedrocketrycommunity.code.warp_first_event_unavailable": "世界首次记录暂时不可用；请稍后再尝试跃迁。",
   "station.advancedrocketrycommunity.code.warp_insufficient_energy": "空间站的跃迁能量不足以支付费用。",
   "station.advancedrocketrycommunity.code.warp_issued": "已发出跃迁确认。",
   "station.advancedrocketrycommunity.code.warp_no_confirmation": "没有待处理的跃迁确认；请先发起跃迁报价。",

@@ -20,13 +20,20 @@ final class StationStorageBudgetTest {
     void theHeadroomHoldsOneBalanceEntryForEveryStation() {
         assertTrue((long) StationLimits.MAX_WARP_ENERGY_ENTRIES * ENTRY
                 <= StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES);
-        assertEquals(BOUND - StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES, StationStorageBudget.GROWTH_LIMIT);
+        // W44 section 1.5: the 128-KiB first-warp outbox bound is reserved permanently beside the balance headroom.
+        assertEquals(128 * 1_024, StationStorageBudget.FIRST_WARP_RESERVE);
+        assertEquals(BOUND - StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES - 128 * 1_024, StationStorageBudget.GROWTH_LIMIT);
+        assertEquals(BOUND - 128 * 1_024, StationStorageBudget.BALANCE_ENTRY_LIMIT);
     }
 
     @Test
     void aBalanceEntryIsAdmittedUpToTheBoundAndOtherGrowthUpToTheHeadroom() {
-        assertTrue(new StationStorageBudget().admitsBalanceEntry(RECORDS, 0, () -> BOUND - ENTRY));
-        assertFalse(new StationStorageBudget().admitsBalanceEntry(RECORDS, 0, () -> BOUND - ENTRY + 1));
+        long balanceLimit = StationStorageBudget.BALANCE_ENTRY_LIMIT;
+        assertTrue(new StationStorageBudget().admitsBalanceEntry(RECORDS, 0, () -> balanceLimit - ENTRY));
+        assertFalse(new StationStorageBudget().admitsBalanceEntry(RECORDS, 0, () -> balanceLimit - ENTRY + 1));
+        // The outbox preflight may use the reserve, up to the unchanged root bound.
+        assertTrue(new StationStorageBudget().admitsOutbox(RECORDS, 0, () -> balanceLimit, 128 * 1_024));
+        assertFalse(new StationStorageBudget().admitsOutbox(RECORDS, 0, () -> balanceLimit, 128 * 1_024 + 1));
         long growthLimit = StationStorageBudget.GROWTH_LIMIT;
         assertTrue(new StationStorageBudget().admitsGrowth(RECORDS, 0, () -> growthLimit - ENTRY, ENTRY));
         assertFalse(new StationStorageBudget().admitsGrowth(RECORDS, 0, () -> growthLimit - ENTRY + 1, ENTRY));

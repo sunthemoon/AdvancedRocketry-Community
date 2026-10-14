@@ -13,8 +13,16 @@ import java.util.function.LongSupplier;
  * a limit. It grows only after a mutation succeeded (WARP review R13).
  */
 final class StationStorageBudget {
-    static final long GROWTH_LIMIT =
-            (long) StationLimits.MAX_REGISTRY_NBT_BYTES - StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES;
+    /**
+     * W44 section 1.5: the 128-KiB first-warp outbox bound is reserved permanently, before any eligible request or
+     * debit. While the slot is EMPTY it is the outbox's future room; after the election it covers its actual bytes.
+     */
+    static final long FIRST_WARP_RESERVE = io.github.sunthemoon.advancedrocketrycommunity.progression.classic
+            .firstevent.FirstEventKind.FIRST_STATION_WARP.maxOutboxBytes();
+    static final long GROWTH_LIMIT = (long) StationLimits.MAX_REGISTRY_NBT_BYTES
+            - StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES - FIRST_WARP_RESERVE;
+    /** A new balance entry may use the balance headroom, never the first-warp reserve. */
+    static final long BALANCE_ENTRY_LIMIT = (long) StationLimits.MAX_REGISTRY_NBT_BYTES - FIRST_WARP_RESERVE;
     private static final long ROOT_BYTES = 1_024L;
 
     private long encodedUpperBound = -1L;
@@ -27,7 +35,12 @@ final class StationStorageBudget {
     /** One new warp balance entry, admitted inside the headroom up to the bound itself. */
     boolean admitsBalanceEntry(int records, int balances, LongSupplier encodedBytes) {
         return fits(records, balances, encodedBytes, StationLimits.MAX_WARP_ENERGY_ENTRY_NBT_BYTES,
-                StationLimits.MAX_REGISTRY_NBT_BYTES);
+                BALANCE_ENTRY_LIMIT);
+    }
+
+    /** W44 section 5 preflight: an elected outbox of at most {@code outboxBytes} fits the unchanged root bound. */
+    boolean admitsOutbox(int records, int balances, LongSupplier encodedBytes, long outboxBytes) {
+        return fits(records, balances, encodedBytes, outboxBytes, StationLimits.MAX_REGISTRY_NBT_BYTES);
     }
 
     /** Records growth that has happened. */
