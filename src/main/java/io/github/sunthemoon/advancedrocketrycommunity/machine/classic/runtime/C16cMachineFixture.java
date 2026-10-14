@@ -46,6 +46,11 @@ final class C16cMachineFixture implements AutoCloseable {
     int energyLeft, injected;
 
     C16cMachineFixture(GameTestHelper helper, String kind, Direction facing) {
+        this(helper, kind, facing, MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState());
+        helper.assertTrue(controller.formed(), "W10 " + kind + " did not form: " + controller.reason());
+    }
+    /** Places {@code motor} in every motor cell; the caller checks whether it formed. */
+    C16cMachineFixture(GameTestHelper helper, String kind, Direction facing, BlockState motor) {
         this.helper = helper; this.kind = kind; origin = helper.absolutePos(new BlockPos(4, 4, 4));
         pattern = MultiblockPatternJsonCodec.decode(V180C16cMachineData.pattern(kind).toString().getBytes(StandardCharsets.UTF_8));
         transform = new PatternTransform(switch (facing) {
@@ -67,7 +72,7 @@ final class C16cMachineFixture implements AutoCloseable {
             } else if (matcher instanceof PatternMatcher.BlockTag tag) {
                 state = tag.tagId().equals(V180ArcCuttingData.CLEARANCE_TAG) ? Blocks.AIR.defaultBlockState()
                         : tag.tagId().equals("minecraft:slabs") ? Blocks.OAK_SLAB.defaultBlockState()
-                        : MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState();
+                        : motor;
             } else if (matcher instanceof PatternMatcher.Port port) {
                 state = switch (port.channel()) {
                     case "item_input" -> ModBlocks.ITEM_INPUT_HATCH.get().defaultBlockState(); case "item_output" -> ModBlocks.ITEM_OUTPUT_HATCH.get().defaultBlockState();
@@ -79,7 +84,6 @@ final class C16cMachineFixture implements AutoCloseable {
         }
         controller = (ClassicControllerBlockEntity) helper.getLevel().getBlockEntity(origin);
         manager = ClassicRuntime.manager(helper.getLevel()); manager.observe(controller); manager.tick();
-        helper.assertTrue(controller.formed(), "W10 " + kind + " did not form: " + controller.reason());
     }
     BlockPos world(PatternPosition local) {
         var position = transform.localToWorld(local, pattern.controllerAnchor(), new PatternPosition(origin.getX(), origin.getY(), origin.getZ()));

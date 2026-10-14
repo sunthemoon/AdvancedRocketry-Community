@@ -1205,7 +1205,78 @@ power loss, or a rollback of one world file.
   this is a retryable stall. Track it until the check is per slot, or until repeated clean runs
   close it.
 - The endpoint chunk and Level save-veto scope is registered by W11b2, when real endpoints
-  exist.
+  exist. *(Registered with W11b2 part 1, 2026-10-14: R-035.)*
+
+### W11b2 part 1 implementation note: D3-A rocket integration (admission disabled)
+
+This note records W11b2 part 1 as merged together with its fixes. It does not change a decision
+or accept a risk. The risks are R-031, R-032 and R-035.
+
+**Sources.**
+- **Design:** `records/W11B2-DESIGN.md`. Its independent review returned APPROVE-WITH-CHANGES
+  (R1 to R6, SHA-256 `8ec318a3…`).
+- **Implementation:** W11b2 up to continuation 05 (`0638009f..3c47fa07`), recorded in
+  `records/W11B2.md`.
+- **Reviews and fixes.** The actual-diff review returned BLOCK (SHA-256 `8c1da511…`, F1 to F10).
+  W11B2-P1F fixed F1, F2, F5, F6 and F7 (`records/W11B2-P1F.md`). Root's review of the fixes
+  returned MERGE-WITH-FOLLOWUP (SHA-256 `8266bf6f…`, N1 and N2).
+
+**What exists.**
+- **The transfer journal.** Every write is a checked write on an off-thread writer: stage, force,
+  decoded readback, atomic move, then a forced parent directory. Windows has no portable
+  directory force. An acknowledgement is published on the server thread, for one exact snapshot.
+  - Launch, phase, cleanup, migration, replacement and reconnect effects run only after their
+    generation is acknowledged.
+  - Failed or unknown writes keep authority and dirty state and retry every 200 ticks.
+  - Any `Throwable` on the writer thread publishes UNKNOWN.
+  - A normal stop drains, then writes the final RAM state. A crash writes nothing.
+- **Rocket entity schema 3.** It adds the escrow section. It is neutral and omits `ledger_id` only
+  at epoch 0 with no markers. Schemas 1 and 2 still load. An invalid section quarantines the
+  wrapper verbatim.
+- **Legacy scalar fuel.** Rockets saved before native propulsion keep playing. Resource
+  comparisons use capacity, amount and debits when either side is scalar.
+- **The section 8.1 hook.**
+  - Ledger-first fence classification runs before any ticket.
+  - Re-evaluation is bounded and loaded-only.
+  - Final guards apply at every entry in the design.
+  - The bay recovery gate is inert while no production caller installs it.
+- **The shared admission authority:** 64 per server and 8 per rocket. It lives inside a
+  coordinator that has a ledger. W27c1 lifts it to server lifetime.
+- **The interlocks.**
+  - Mount, teleport, spreadplayers, dimension travel, `kill` and live `/data` consult only ledger
+    protection: markers, a bound section, records naming the rocket, logical locks and
+    tombstones.
+  - A dismount is never cancelled.
+  - Board, leave and refuelling wait only for the rocket's own record version to be
+    acknowledged.
+  - A blocked journal refuses launch and resource mutation, as before.
+
+**Production admission is disabled.** A ledger can be created only by the GameTest server or the
+release-test hooks. Settlement (O1 is on the W11b2 branch; O2 to O4 and the O-veto are in progress)
+and credited-world reconciliation are not part of part 1.
+
+**Behaviour every world sees.**
+- **Pending results.** Launch and cancel answer JOURNAL_PENDING and report the result later.
+  `/arce rocket recover` answers RETRY_LATER first.
+- **The baseline write.** The first start rewrites an existing journal once, as a checked
+  baseline.
+- **Downgrade.** After schema-3 saves, an older jar quarantines every rocket verbatim, so a
+  downgrade needs a whole-world backup.
+- **Paused transfers (F3, open).** While any journal write is unacknowledged, no live transfer
+  advances. Phase advances are serialized across the server. At the measured eight-transfer
+  writer p95 of about 125 ms, an advance pauses every flight for 2 to 3 ticks. At the largest
+  legal journal it pauses them for about 117 ticks.
+
+**Open before W11b3 or any admission:**
+- F3: per-record scheduling, with native multi-transfer timing evidence.
+- F8: the landed reservation is released before a disassembly that can still fail.
+- F9: a failing respawn rewrites the journal on each recovery attempt.
+- N1: a section bound to the current ledger is never idle. Restore "another ledger, or no
+  ledger, is not idle", and add a test.
+- N2: with two queued generations, `failBackToSource` removes the record in RAM but cannot queue
+  its effect, so the landing pad stays reserved.
+
+This is a development implementation note, not owner acceptance or a Gate result.
 
 ## 11. Network, provenance, progression and verification
 

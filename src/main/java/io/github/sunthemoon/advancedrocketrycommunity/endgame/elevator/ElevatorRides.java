@@ -81,6 +81,28 @@ public final class ElevatorRides {
         return pending.size();
     }
 
+    /** Departure-local projection only, bounded independently of the authority's pending map. */
+    public List<ElevatorCapsuleCodec.Entry> capsuleProjection(ServerLevel level,
+                                                             ElevatorEndpointBlockEntity endpoint) {
+        List<ElevatorCapsuleCodec.Entry> result = new ArrayList<>();
+        long now = level.getServer().overworld().getGameTime();
+        for (Ride ride : pending.values()) {
+            if (!ride.departureLevel().equals(level.dimension()) || !ride.departurePos().equals(endpoint.getBlockPos())
+                    || endpoint.deviceId().filter(ride.departure()::equals).isEmpty()) {
+                continue;
+            }
+            ServerPlayer rider = level.getServer().getPlayerList().getPlayer(ride.rider());
+            if (rider != null && rider.level() == level) {
+                int remaining = (int) Math.max(0, Math.min(ElevatorRules.RIDE_COUNTDOWN_TICKS, ride.dueTick() - now));
+                result.add(new ElevatorCapsuleCodec.Entry(rider.getId(), remaining));
+                if (result.size() == ElevatorCapsuleCodec.MAX_RIDES) {
+                    break;
+                }
+            }
+        }
+        return List.copyOf(result);
+    }
+
     /** The arrival tickets held (ADR-054 section 13): one per pending ride, released when it ends. */
     public int tickets() {
         return pending.size();
@@ -129,6 +151,7 @@ public final class ElevatorRides {
         // The pre-load: the chunk exists because the endpoint was built in it, so it is read from disk, never generated.
         arrivalLevel.getChunkSource().addRegionTicket(ARRIVAL, ride.arrivalChunk(), 0, ride.rider());
         pending.put(ride.rider(), ride);
+        departure.capsuleProjectionChanged();
         ElevatorPairs.audit(service, now, "ride_request", ElevatorRules.Check.OK, departureId, player.getUUID(),
                 "pair=" + ride.pairId() + " arrival=" + ride.arrival());
         return ElevatorRules.Check.of(EndgameCode.RIDE_COUNTDOWN);
@@ -272,6 +295,8 @@ public final class ElevatorRides {
 
     private void release(MinecraftServer server, Ride ride) {
         pending.remove(ride.rider());
+        endpoint(server, ride.departureLevel(), ride.departurePos(), ride.departure())
+                .ifPresent(ElevatorEndpointBlockEntity::capsuleProjectionChanged);
         ServerLevel level = server.getLevel(ride.arrivalLevel());
         if (level != null) {
             level.getChunkSource().removeRegionTicket(ARRIVAL, ride.arrivalChunk(), 0, ride.rider());

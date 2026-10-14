@@ -185,7 +185,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
         }
         RocketFlightData previous = flightData;
         RocketFlightData candidate = normalizeFlightData(Objects.requireNonNull(updatedFlightData, "updatedFlightData"));
-        boolean resourceChanged = previous != null && !previous.fuel().resourceSignature().equals(candidate.fuel().resourceSignature());
+        boolean resourceChanged = previous != null && !previous.fuel().sameResources(candidate.fuel());
         if (resourceChanged && !RocketEscrowGate.idle(this)) {
             throw new IllegalStateException("Rocket resources are protected by escrow");
         }

@@ -10,12 +10,14 @@ import io.github.sunthemoon.advancedrocketrycommunity.endgame.root.EndgameRoot;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameService;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameTimings;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -45,6 +47,8 @@ public abstract class ElevatorEndpointBlockEntity extends CargoEndpointBlockEnti
     private ElevatorRules.Check pairCheck = ElevatorRules.Check.of(EndgameCode.NOT_BOUND);
     private long nextPairCheck;
     private boolean tether;
+    private final ElevatorCapsuleCountdown capsules = new ElevatorCapsuleCountdown();
+    private long capsuleTicks;
 
     protected ElevatorEndpointBlockEntity(BlockEntityType<?> type, BlockPos position, BlockState state) {
         super(type, position, state, ENERGY_CAPACITY, MAX_INPUT_PER_TICK, Set.of());
@@ -179,18 +183,64 @@ public abstract class ElevatorEndpointBlockEntity extends CargoEndpointBlockEnti
         return describeCargo() + " placement=" + placement().name() + " pair=" + pairCheck.describe();
     }
 
-    // ---- Render state: the tether flag only (section 9) --------------------------------------------------------
+    // ---- Transient render projection (ADR-059 section 9, ADR-066 section 7.1) -----------------------------------
+
+    /** A pending ride's membership changed, not an ordinary countdown tick. Persistence is not dirtied. */
+    void capsuleProjectionChanged() {
+        if (level instanceof ServerLevel server && !isRemoved()) {
+            server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state, ElevatorEndpointBlockEntity endpoint) {
+        endpoint.capsuleTicks++;
+        endpoint.capsules.expire(endpoint.capsuleTicks);
+    }
+
+    public List<ElevatorCapsuleCodec.Entry> capsulesForRender() {
+        return capsules.live(capsuleTicks);
+    }
+
+    /** A missing/non-player/left-platform entity is not retained or retried without a new projection. */
+    public void discardCapsule(int entityId) {
+        capsules.discard(entityId);
+    }
+
+    @Override
+    public void setRemoved() {
+        capsules.clear();
+        super.setRemoved();
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        capsules.clear();
+        super.onChunkUnloaded();
+    }
 
     @Override
     public CompoundTag getUpdateTag() {
         CompoundTag tag = new CompoundTag();
         tag.putBoolean("tether", tether);
+        ElevatorCapsuleCodec.encode(tag, level instanceof ServerLevel server ? EndgameRuntime.devices()
+                .map(devices -> devices.elevatorRides().capsuleProjection(server, this)).orElse(List.of()) : List.of());
         return tag;
     }
 
     @Override
     public void handleUpdateTag(CompoundTag tag) {
         tether = tag.getBoolean("tether");
+        capsules.update(ElevatorCapsuleCodec.decode(tag), capsuleTicks);
+    }
+
+    @Override
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
+        if (packet.getTag() == null) {
+            // The original tether handler ignored null tags. Only the new projection is cleared here.
+            capsules.clear();
+        } else {
+            handleUpdateTag(packet.getTag());
+        }
     }
 
     @Nullable

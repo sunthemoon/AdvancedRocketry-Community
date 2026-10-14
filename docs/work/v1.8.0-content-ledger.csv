@@ -395,7 +395,7 @@ entity:ARAbductedItem,REDESIGNED,v1.7.0,client railgun effect,ADR-056,no entity,
 entity:ARHoverCraft,DEFERRED,post-2.0,-,ADR-062,with the hovercraft item,
 entity:ARPlanetUIButton,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity,
 entity:ARPlanetUIItem,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity,
-entity:ARSpaceElevatorCapsule,PLANNED,C18d,client capsule ride effect,ADR-059 ADR-062,visual only; rides stay server-side,
+entity:ARSpaceElevatorCapsule,REDESIGNED,v1.8.0,client elevator_capsule effect,ADR-059 ADR-062 ADR-066,visual only; bounded update-tag projection; rides stay server-side,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
 entity:ARStarUIButton,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity,
 entity:deployedRocket,REJECTED,-,-,ADR-051 ADR-062,station-deployed mining rockets,
 entity:laserNode,REJECTED,-,-,ADR-055 ADR-062,laser node with off-thread world edits,
@@ -422,7 +422,7 @@ event:PlanetEventHandler.fogColor(RenderFogEvent),REDESIGNED,v1.8.0,atmosphere-d
 event:PlanetEventHandler.onCrafting(ItemCraftedEvent),REJECTED,-,-,ADR-062,the handler body is commented out in the legacy build,
 event:PlanetEventHandler.onWorldGen(GenerateMinable),REDESIGNED,v1.4.0,per-biome feature lists,ADR-033,vanilla ores only where a planet lists them,
 event:PlanetEventHandler.playerLoggedInEvent(ServerConnectionFromClientEvent),REDESIGNED,v1.4.0,celestial sync on login,ADR-035,,
-event:PlanetEventHandler.playerTick(LivingUpdateEvent),PLANNED,C18a,space Level safety return and suit underwater breathing,ADR-062,players adrift in space return to a station or the Overworld; sealed suits keep air under water; the Moon advancement is C18c,
+event:PlanetEventHandler.playerTick(LivingUpdateEvent),REDESIGNED,v1.8.0,suit underwater breathing and the space safety return,ADR-062 ADR-066,nearest authorized loaded station or the Overworld; air only after a paid oxygen debit; the Moon advancement is C18c,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 event:PlanetEventHandler.serverTickEvent(WorldTickEvent),DEFERRED,post-2.0,-,ADR-062,terraforming family,
 event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent),PLANNED,C18a,no sleeping in unbreathable air,ADR-062,,
 event:PlanetEventHandler.SpawnEntity(PotentialSpawns),REDESIGNED,v1.4.0,biome spawners in planet data,ADR-033,,

@@ -82,5 +82,11 @@
       }
     ],
     "subtitle": "subtitle.advancedrocketrycommunity.rolling_machine"
+  },
+  "ui_select": {
+    "sounds": [
+      "advancedrocketrycommunity:ui_select"
+    ],
+    "subtitle": "subtitle.advancedrocketrycommunity.ui_select"
   }
 }

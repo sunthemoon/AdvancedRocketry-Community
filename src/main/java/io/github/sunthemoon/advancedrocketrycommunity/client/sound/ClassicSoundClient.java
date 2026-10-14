@@ -13,6 +13,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModSounds;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.sound.ClassicSound;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.ProcessingSoundSource;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -46,7 +47,8 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 /**
  * ADR-066 section 7.1 classic sounds, physical client only. Loops follow state the server already synchronizes to
  * nearby clients (the vent's {@code LIT} block state, the gravity controller's and laser drill's {@code active}
- * update tag, the rocket's synchronized flight state); one-shots play on an accepted client effect. Nothing is sent
+ * update tag, processing controllers' {@code active} update tag, the rocket's synchronized flight state);
+ * one-shots play on an accepted client effect. Nothing is sent
  * to the server. Every ten client ticks a bounded scan of the loaded chunks within 32 blocks of the listener, nearest
  * chunks first and at most 2,048 block entities and 64 rockets, offers the active sources to
  * {@link ClassicLoopSelection}; each playing loop checks its own source every tick. All loops stop at logout, Level
@@ -232,6 +234,9 @@ public final class ClassicSoundClient {
         }
         if (blockEntity instanceof OrbitalLaserDrillBlockEntity drill) {
             return drill.activeForRender() ? ClassicSound.LASER_DRILL : null;
+        }
+        if (blockEntity instanceof ProcessingSoundSource machine) {
+            return machine.activeProcessingSound();
         }
         return null;
     }

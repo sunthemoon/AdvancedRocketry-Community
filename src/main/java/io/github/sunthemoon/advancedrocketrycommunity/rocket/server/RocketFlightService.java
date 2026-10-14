@@ -308,7 +308,7 @@ final class RocketFlightService {
         }
         RocketFlightData countdown = docked.withPlan(pad == null ? planned.plan() : planned.plan().withLandingPad(pad))
                 .startCountdown(rocket.level().getGameTime());
-        return transfers.prepareLaunch(rocket, countdown, () -> {
+        return transfers.prepareLaunch(rocket, countdown, new RocketRequestCompletion(() -> {
             if (requests.outcome(requestId) != RocketOperationLedger.Outcome.ACTIVE) { return; }
             requests.finish(requestId, true);
             var player = ((ServerLevel) rocket.level()).getServer().getPlayerList().getPlayer(actorId);
@@ -318,7 +318,7 @@ final class RocketFlightService {
                 report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId,
                         new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, planned.requiredFuel()));
             }
-        });
+        }, () -> requests.finish(requestId, false)));
     }
 
     RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,
@@ -381,11 +381,11 @@ final class RocketFlightService {
                 || !flight.plan().orElseThrow().destinationTarget().equals(destination)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
-        return transfers.cancelCountdown(rocket, () -> {
+        return transfers.cancelCountdown(rocket, new RocketRequestCompletion(() -> {
             requests.finish(requestId, true);
             report(player, rocket, RocketFlightAction.CANCEL, destination, requestId,
                     new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, flight.plan().orElseThrow().requiredFuel()));
-        });
+        }, () -> requests.finish(requestId, false)));
     }
 
     private RocketFlightPlanResult plan(
@@ -452,7 +452,7 @@ final class RocketFlightService {
     }
 
     private RocketFlightRequestResult board(ServerPlayer player, RocketEntity rocket) {
-        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) {
+        if (!passengerMutationAllowed(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         RocketFlightData flight = rocket.flightData().orElseThrow();
@@ -476,7 +476,7 @@ final class RocketFlightService {
     }
 
     private RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
-        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) {
+        if (!passengerMutationAllowed(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         RocketFlightData flight = rocket.flightData().orElseThrow();
@@ -489,6 +489,13 @@ final class RocketFlightService {
         player.stopRiding();
         rocket.updateFlightData(flight.withPassengers(flight.passengers().remove(player.getUUID())));
         return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
+    }
+
+    private static boolean passengerMutationAllowed(RocketEntity rocket) {
+        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) { return false; }
+        var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
+                .get(((ServerLevel) rocket.level()).getServer());
+        return !journal.operational() || !journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow());
     }
 
     private static Access access(ServerPlayer player, int rocketEntityId) {

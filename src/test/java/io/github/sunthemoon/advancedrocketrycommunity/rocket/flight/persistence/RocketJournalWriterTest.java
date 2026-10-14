@@ -25,6 +25,31 @@ import org.junit.jupiter.api.io.TempDir;
 
 @Timeout(15)
 class RocketJournalWriterTest {
+    @Test void writerErrorPublishesUnknownClearsRunningAndHasBoundedDrainRetries() {
+        for (boolean afterMove : List.of(false, true)) {
+            var completions = new ArrayList<RocketJournalWriter.Completion>();
+            var failures = new AtomicInteger();
+            try (var writer = new RocketJournalWriter(target())) {
+                assertTrue(writer.request(new RocketJournalWriter.Snapshot(1, List.of()), atomic()));
+                writer.drain(completions::add);
+                assertNotNull(completions.get(0).acknowledged()); completions.clear();
+                var snapshot = new RocketJournalWriter.Snapshot(2, List.of(RocketTransferSavedDataTest.record()));
+                var error = new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+                    failures.incrementAndGet();
+                    if (afterMove) { CheckedSavedDataFile.atomicMove(staged, target); }
+                    throw new AssertionError("Injected writer Error");
+                });
+                assertTrue(writer.request(snapshot, error)); writer.drain(completions::add);
+                assertTrue(writer.idle()); assertEquals(RocketJournalWriter.DRAIN_UNKNOWN_ATTEMPTS, failures.get());
+                assertEquals(RocketJournalWriter.DRAIN_UNKNOWN_ATTEMPTS, completions.size());
+                assertTrue(completions.stream().allMatch(c -> c.outcome() == RocketJournalCheckpoint.Outcome.UNKNOWN
+                        && c.acknowledged() == null));
+                assertTrue(writer.request(snapshot, atomic())); writer.drain(completions::add);
+                assertTrue(writer.idle());
+                assertEquals(RocketJournalCheckpoint.Outcome.COMMITTED, completions.get(completions.size() - 1).outcome());
+            }
+        }
+    }
     @TempDir Path directory;
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.ROCKET_TRANSFERS;

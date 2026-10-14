@@ -14,19 +14,19 @@ public final class RocketEscrowGate {
 
     /** Bay-scoped permits may bypass only the bay hold, never these existing escrow protections. */
     public static boolean escrowIdle(RocketEntity rocket) {
-        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()) {
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) {
             return false;
         }
         var section = rocket.escrowSection();
-        UUID logical = rocket.assemblyTransactionId().orElseThrow();
-        if (io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
-                .get(level.getServer()).resourceMutationUnproved(logical)) { return false; }
+        UUID logical = rocket.assemblyTransactionId().orElse(null);
         if (!section.markers().isEmpty()) { return false; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null) { return section.ledger() == null; }
         var ledger = data.ledger();
         if (section.ledger() != null && !section.ledger().equals(ledger.id())) { return false; }
-        if (data.bind(level.getServer()).logicalLocked(logical)) { return false; }
+        if (logical != null && data.bind(level.getServer()).logicalLocked(logical)) { return false; }
+        if (ledger.records().stream().anyMatch(record -> rocket.getUUID().equals(record.source().identity())
+                || rocket.getUUID().equals(record.destination().identity()))) { return false; }
         String signature = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.hash("arce-escrow-rocket-1:" + logical + ":"
                 + rocket.snapshot().orElseThrow().contentHash() + ":" + rocket.flightData().orElseThrow().fuel().resourceSignature());
         return !EscrowSettlementTombstones.stateLocked(ledger, logical, rocket.getUUID(), section, signature,

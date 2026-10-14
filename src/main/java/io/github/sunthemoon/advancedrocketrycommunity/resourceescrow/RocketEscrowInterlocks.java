@@ -34,6 +34,7 @@ public final class RocketEscrowInterlocks {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void mount(EntityMountEvent event) {
+        if (event.isDismounting()) { return; }
         if (protectedRocket(event.getEntityMounting()) || protectedRocket(event.getEntityBeingMounted())) { event.setCanceled(true); }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)

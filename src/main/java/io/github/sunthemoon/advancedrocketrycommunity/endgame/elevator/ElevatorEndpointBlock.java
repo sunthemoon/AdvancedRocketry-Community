@@ -105,7 +105,10 @@ public final class ElevatorEndpointBlock extends EndgameDeviceBlock {
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
                                                                   BlockEntityType<T> type) {
         if (level.isClientSide) {
-            return null;
+            return anchor ? createTickerHelper(type, ModBlockEntities.ELEVATOR_ANCHOR.get(),
+                    ElevatorEndpointBlockEntity::clientTick)
+                    : createTickerHelper(type, ModBlockEntities.ELEVATOR_TERMINAL.get(),
+                    ElevatorEndpointBlockEntity::clientTick);
         }
         return anchor ? createTickerHelper(type, ModBlockEntities.ELEVATOR_ANCHOR.get(),
                 ElevatorEndpointBlockEntity::serverTick)
