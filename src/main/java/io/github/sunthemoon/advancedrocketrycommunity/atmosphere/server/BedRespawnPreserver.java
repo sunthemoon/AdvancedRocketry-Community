@@ -47,6 +47,7 @@ public final class BedRespawnPreserver {
     /** Registered first by the sleep service. HIGHEST precedes lower priorities, not earlier HIGHEST registrations. */
     public void register(IEventBus bus) {
         bus.addListener(EventPriority.HIGHEST, this::onTimeCheck);
+        bus.addListener(EventPriority.HIGHEST, this::onSleepEntry);
         bus.addListener(EventPriority.HIGHEST, true, this::onSetterEntry);
         bus.addListener(EventPriority.LOWEST, true, this::onSetterExit);
         bus.addListener(EventPriority.LOWEST, this::onSleep);
@@ -57,6 +58,22 @@ public final class BedRespawnPreserver {
         bus.addListener(this::onStopped);
     }
 
+    private void onSleepEntry(PlayerSleepInBedEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread() && pending.containsKey(player)) {
+            Call call = call();
+            if (call.admission) { retireReturned(player, call.depth); }
+        }
+    }
+
+    private void retireReturned(ServerPlayer player, int depth) {
+        TreeMap<Integer, Operation> operations = pending.get(player);
+        if (operations == null) { return; }
+        var returned = operations.tailMap(depth, true);
+        returned.descendingMap().values().forEach(operation -> restore(player, operation));
+        returned.clear();
+        if (operations.isEmpty()) { pending.remove(player); }
+    }
+
     private void onSleep(PlayerSleepInBedEvent event) {
         if (event.getResultStatus() != null || !(event.getEntity() instanceof ServerPlayer player)
                 || !player.server.isSameThread() || !offWorld.test(player.level().dimension())
@@ -65,20 +82,32 @@ public final class BedRespawnPreserver {
         }
         Call call = call();
         if (!call.admission) { return; } // A synthetic event is not a native operation.
-        TreeMap<Integer, Operation> operations = pending.computeIfAbsent(player, ignored -> new TreeMap<>());
         // A returned early refusal at this depth cannot be reused; deeper returned calls are stale too.
-        operations.tailMap(call.depth, true).clear();
+        retireReturned(player, call.depth);
+        TreeMap<Integer, Operation> operations = pending.computeIfAbsent(player, ignored -> new TreeMap<>());
         operations.put(call.depth, new Operation(Tuple.read(player), player.level().dimension(),
                 event.getOptionalPos().orElseThrow().immutable()));
     }
 
     private void onSetterEntry(PlayerSetSpawnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || !player.server.isSameThread()) { return; }
+        Call call = call();
+        if (!call.spawnSetter) { return; }
         Operation operation = setterOperation(event);
         if (operation != null) {
             // Vanilla evaluated getYRot immediately before its setter. The event exposes no angle argument.
             operation.written = new Tuple(operation.dimension, operation.bed,
                     Float.floatToRawIntBits(event.getEntity().getYRot()), false);
             operation.setterEvent = event;
+        } else if (!call.bedSetter) {
+            TreeMap<Integer, Operation> operations = pending.get(player);
+            if (operations != null) {
+                operations.forEach((depth, pendingOperation) -> {
+                    if (call.depth == 0 || depth <= call.timeDepth) {
+                        pendingOperation.foreignSetter(call.setterDepth, event);
+                    }
+                });
+            }
         }
     }
 
@@ -142,9 +171,13 @@ public final class BedRespawnPreserver {
             // consume that operation: its eventual primary callback still has to preserve the nested setter.
             // In a native time-check callback the write has finished; restore before a reentrant save, retaining
             // the entry until the primary callback unwinds it normally.
-            if (call.timeWindow) {
+            if (call.timeDepth > 0) {
                 TreeMap<Integer, Operation> active = pending.get(player);
-                if (active != null) { active.descendingMap().values().forEach(operation -> restore(player, operation)); }
+                if (active != null) {
+                    active.descendingMap().forEach((depth, operation) -> {
+                        if (depth <= call.timeDepth) { restore(player, operation); }
+                    });
+                }
             }
             return;
         }
@@ -154,6 +187,7 @@ public final class BedRespawnPreserver {
 
     private static void restore(ServerPlayer player, Operation operation) {
         if (operation.written != null && operation.setterEvent != null && !operation.setterEvent.isCanceled()
+                && !operation.superseded()
                 && operation.written.equals(Tuple.read(player))) {
             operation.before.write(player);
         }
@@ -166,13 +200,16 @@ public final class BedRespawnPreserver {
             boolean bedSetter = false;
             boolean admission = false;
             boolean timeCheck = false;
-            boolean timeWindow = false;
-            for (int index = 0; index < frames.size(); index++) {
+            boolean spawnSetter = false;
+            int timeDepth = 0;
+            int setterDepth = 0;
+            for (int index = frames.size() - 1; index >= 0; index--) {
                 StackWalker.StackFrame frame = frames.get(index);
                 if (nativeSleep(frame)) { depth++; }
+                if (frame.getDeclaringClass() == ServerPlayer.class && frame.getMethodType().equals(SET)) { setterDepth++; }
                 if (frame.getDeclaringClass() == ForgeEventFactory.class && index + 1 < frames.size()
                         && nativeSleep(frames.get(index + 1)) && frame.getMethodName().equals("fireSleepingTimeCheck")) {
-                    timeWindow = true;
+                    timeDepth = Math.max(timeDepth, depth);
                 }
             }
             // Inspect the nearest dispatch, not any enclosing factory. A synthetic post inside a native listener
@@ -186,14 +223,14 @@ public final class BedRespawnPreserver {
                     if (factory.getDeclaringClass() == ForgeEventFactory.class) {
                         admission = factory.getMethodName().equals("onPlayerSleepInBed") && nativeSleep(caller);
                         timeCheck = factory.getMethodName().equals("fireSleepingTimeCheck") && nativeSleep(caller);
-                        bedSetter = factory.getMethodName().equals("onPlayerSpawnSet")
-                                && caller.getDeclaringClass() == ServerPlayer.class && caller.getMethodType().equals(SET)
-                                && index + 3 < frames.size() && nativeSleep(frames.get(index + 3));
+                        spawnSetter = factory.getMethodName().equals("onPlayerSpawnSet")
+                                && caller.getDeclaringClass() == ServerPlayer.class && caller.getMethodType().equals(SET);
+                        bedSetter = spawnSetter && index + 3 < frames.size() && nativeSleep(frames.get(index + 3));
                     }
                 }
                 break;
             }
-            return new Call(depth, bedSetter, admission, timeCheck, timeWindow);
+            return new Call(depth, bedSetter, admission, timeCheck, timeDepth, setterDepth, spawnSetter);
         });
     }
 
@@ -205,7 +242,8 @@ public final class BedRespawnPreserver {
         return frame.getDeclaringClass() == ServerPlayer.class && frame.getMethodType().equals(SLEEP);
     }
 
-    private record Call(int depth, boolean bedSetter, boolean admission, boolean timeCheck, boolean timeWindow) { }
+    private record Call(int depth, boolean bedSetter, boolean admission, boolean timeCheck, int timeDepth,
+                        int setterDepth, boolean spawnSetter) { }
 
     private static final class Operation {
         private Tuple before;
@@ -213,11 +251,25 @@ public final class BedRespawnPreserver {
         private PlayerSetSpawnEvent setterEvent;
         private final ResourceKey<Level> dimension;
         private final BlockPos bed;
+        // At most one event per active native setter depth, not an unbounded history of intervening writes.
+        private final TreeMap<Integer, PlayerSetSpawnEvent> foreign = new TreeMap<>();
+        private boolean foreignCommitted;
 
         private Operation(Tuple before, ResourceKey<Level> dimension, BlockPos bed) {
             this.before = before;
             this.dimension = dimension;
             this.bed = bed;
+        }
+
+        private void foreignSetter(int depth, PlayerSetSpawnEvent event) {
+            var completed = foreign.tailMap(depth, true);
+            foreignCommitted |= completed.values().stream().anyMatch(previous -> !previous.isCanceled());
+            completed.clear();
+            foreign.put(depth, event);
+        }
+
+        private boolean superseded() {
+            return foreignCommitted || foreign.values().stream().anyMatch(event -> !event.isCanceled());
         }
     }
 

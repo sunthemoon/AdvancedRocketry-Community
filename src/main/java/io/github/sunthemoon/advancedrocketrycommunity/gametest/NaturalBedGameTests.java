@@ -17,18 +17,16 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.model.CelestialB
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialEnvironmentService;
-import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.NaturalBedFixtures.Fixture;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.NaturalBedFixtures.Room;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -41,7 +39,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.CompassItem;
-import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.storage.LevelResource;
@@ -294,12 +291,23 @@ public final class NaturalBedGameTests {
             fixture.server.getCommands().performPrefixedCommand(fixture.server.createCommandSourceStack(), "save-all");
             newer.assertSame(helper, fixture.player);
             assertFile(helper, fixture.player, newer);
+            interrupted(helper, fixture.player, room.head());
+            fixture.player.setRespawnPosition(room.level.dimension(), room.head(), fixture.player.getYRot(), false, false);
+            Tuple same = Tuple.read(fixture.player);
+            fixture.server.getCommands().performPrefixedCommand(fixture.server.createCommandSourceStack(), "save-all");
+            same.assertSame(helper, fixture.player);
+            assertFile(helper, fixture.player, same);
+            fixture.player.setRespawnPosition(Level.OVERWORLD, saved.position, -72.25F, true, false);
+            interrupted(helper, fixture.player, room.head());
+            helper.assertTrue(fixture.player.startSleepInBed(room.head()).right().isPresent(), "The next bed call failed");
+            saved.assertSame(helper, fixture.player);
+            fixture.player.stopSleepInBed(true, true);
         });
     }
 
     @GameTest(template = TEMPLATE, batch = "natural_beds_start", timeoutTicks = 60)
     public static void earlierTimeCheckFailureIsRestoredBeforeNextTickSave(GameTestHelper helper) {
-        Fixture fixture = new Fixture(helper, "W37BStart");
+        Fixture fixture = new Fixture(helper, "W37BStart", HOSTS);
         boolean[] interrupted = {false};
         boolean[] done = {false};
         int[] interruptedTick = {-1};
@@ -408,7 +416,7 @@ public final class NaturalBedGameTests {
     }
 
     private static void withRooms(GameTestHelper helper, String name, Consumer<Fixture> checks) {
-        Fixture fixture = new Fixture(helper, name);
+        Fixture fixture = new Fixture(helper, name, HOSTS);
         boolean[] done = {false};
         GameTestTickPacer pacer = new GameTestTickPacer(fixture.server);
         helper.onEachTick(() -> {
@@ -429,58 +437,6 @@ public final class NaturalBedGameTests {
                 throw failure;
             }
         });
-    }
-
-    private record Room(ServerLevel level, BlockPos vent) {
-        BlockPos head() { return SleepRespawnGameTests.bedHead(vent); }
-    }
-
-    private static final class Fixture implements AutoCloseable {
-        final MinecraftServer server;
-        final List<Room> rooms = new ArrayList<>();
-        final List<Runnable> cleanup = new ArrayList<>();
-        ServerPlayer player;
-        final long originalTime;
-
-        Fixture(GameTestHelper helper, String name) {
-            server = helper.getLevel().getServer();
-            originalTime = server.overworld().getDayTime();
-            player = join(helper, name);
-            server.overworld().setDayTime(18000);
-            try {
-                for (ResourceKey<Level> key : HOSTS) {
-                    ServerLevel level = NonPlayerAtmosphereGameTests.level(helper, key);
-                    BlockPos column = helper.absolutePos(new BlockPos(4, 0, 4));
-                    BlockPos vent = new BlockPos(column.getX(), 200, column.getZ());
-                    if (key.equals(CelestialIds.SPACE_LEVEL)) {
-                        BlockPos bed = SleepRespawnGameTests.commitStation(helper, StationRegistrySavedData.get(server),
-                                UUID.randomUUID(), player.getUUID(), cleanup);
-                        vent = bed.offset(-1, -1, -1);
-                    }
-                    BlockPos center = vent;
-                    Set<ChunkPos> forced = new LinkedHashSet<>();
-                    SleepRespawnGameTests.force(level, center, 3, forced);
-                    cleanup.add(() -> {
-                        SleepRespawnGameTests.clearBox(level, center.offset(-2, 0, -2), center.offset(2, 3, 2));
-                        forced.forEach(chunk -> level.setChunkForced(chunk.x, chunk.z, false));
-                    });
-                    SleepRespawnGameTests.roomWithBed(level, center, 2, 3);
-                    rooms.add(new Room(level, center));
-                }
-            } catch (RuntimeException failure) { close(); throw failure; }
-        }
-
-        boolean ready() {
-            return rooms.stream().allMatch(room -> SleepRespawnGameTests.suppliedBed(room.level, room.vent));
-        }
-
-        @Override
-        public void close() {
-            if (player.isSleeping()) { player.stopSleepInBed(true, true); }
-            server.getPlayerList().remove(player);
-            cleanup.forEach(Runnable::run);
-            server.overworld().setDayTime(originalTime);
-        }
     }
 
     private record Tuple(ResourceKey<Level> dimension, BlockPos position, int angleBits, boolean forced) {

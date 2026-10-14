@@ -8,9 +8,9 @@
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
       "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
       "stack_contains": "NaturalBedGameTests.interrupted",
-      "counts": {"natural_beds_command": 2, "natural_beds_start": 1},
+      "counts": {"natural_beds_command": 4, "natural_beds_start": 1},
       "test": "NaturalBedGameTests.earlierTimeCheckFailureIsRestoredBeforeImmediateSaveAll, NaturalBedGameTests.earlierTimeCheckFailureIsRestoredBeforeNextTickSave",
-      "reason": "Scoped throwing foreign listeners precede the primary HIGHEST callback. The command fixture verifies exact-match restoration and newer-setter retention; the START fixture verifies next-tick restoration. All three interruptions are caught and followed by native player-file readback."
+      "reason": "Scoped throwing foreign listeners precede the primary HIGHEST callback. The command fixture verifies exact-match restoration, different/identical-tuple foreign setters and a subsequent bed call in the same window; the START fixture verifies next-tick restoration. All five interruptions are caught; command/START saves have native player-file readback."
     },
     {
       "id": "w37j-respawn-save-listener-interruptions",
