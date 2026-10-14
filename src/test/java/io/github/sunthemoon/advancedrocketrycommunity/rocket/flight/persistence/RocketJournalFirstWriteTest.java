@@ -86,5 +86,40 @@ class RocketJournalFirstWriteTest {
         assertEquals(expected, data.checkedWriteResult().outcome());
     }
 
+    @Test void unreadableTransitionCancelsAllWorkEvenIfTheAppearedFileIsRemoved() throws Exception {
+        var data = RocketTransferSavedData.created(ManagedRootPresence.PROVEN_ABSENT);
+        var replacements = new AtomicInteger();
+        var discarded = new AtomicInteger();
+        try {
+            data.put(RocketTransferSavedDataTest.record());
+            assertTrue(data.queueEffect(data.entries().get(0).logicalRocketId(), () -> fail("unreadable effect ran"),
+                    discarded::incrementAndGet));
+            Files.writeString(target(), "appeared journal");
+            data.requestWrite(target(), new CheckedSavedDataPolicy(ManagedSavedDataType.ROCKET_TRANSFERS,
+                    (staged, file) -> { replacements.incrementAndGet(); CheckedSavedDataFile.atomicMove(staged, file); }));
+            long deadline = System.nanoTime() + 5_000_000_000L;
+            while (data.operational() && System.nanoTime() < deadline) {
+                data.pollWriter(0);
+                Thread.sleep(1);
+            }
+            assertEquals(ManagedRootPresence.UNREADABLE, data.presence());
+            assertEquals(1, discarded.get());
+            Path pending = target().resolveSibling(target().getFileName() + ".arce-pending");
+            for (int tick = 1; tick <= 1_000; tick++) {
+                if (tick == 300) { Files.delete(target()); }
+                data.pollWriter(tick);
+                if (tick % 20 == 0) { data.save(target().toFile()); }
+                assertFalse(data.isDirty(), "UNREADABLE must stay non-dirty at tick " + tick);
+                assertFalse(Files.exists(pending), "no retry may stage at tick " + tick);
+                if (tick < 300) { assertEquals("appeared journal", Files.readString(target())); }
+                else { assertFalse(Files.exists(target()), "no retry may recreate the removed target"); }
+                Thread.sleep(1);
+            }
+            assertEquals(0, replacements.get());
+            assertFalse(data.requestWrite(target(), CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS)));
+            assertFalse(data.operational(), "removing the file cannot recover this cached session root");
+        } finally { data.abort(); }
+    }
+
     private Path target() { return root.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()); }
 }

@@ -420,6 +420,7 @@ public final class RocketTransferSavedData extends SavedData {
     public boolean canQueueEffect() { return !stopping && !failedWrite && effects.size() < 2; }
 
     public void pollWriter(long tick) {
+        if (!operational()) { return; }
         if (writer != null) { writer.tick(tick, this::publish); }
         if (!stopping && acknowledgedCurrent()) {
             // A later disjoint generation may already be in RAM when the earlier exact write completes.
@@ -445,7 +446,10 @@ public final class RocketTransferSavedData extends SavedData {
 
     private void publish(RocketJournalWriter.Completion completion) {
         firstWrite.completed(completion.outcome());
-        if (firstWrite.appeared() && presence == ManagedRootPresence.PROVEN_ABSENT) { becomeUnreadable(); }
+        if (firstWrite.appeared() && presence == ManagedRootPresence.PROVEN_ABSENT) {
+            becomeUnreadable();
+            return;
+        }
         checkpoint.publish(completion); lastWriterNanos = completion.writerNanos();
         Effect effect = effects.get(completion.sequence());
         if (effect != null && completion.outcome() == RocketJournalCheckpoint.Outcome.COMMITTED) { effect.committed = true; }
@@ -466,9 +470,13 @@ public final class RocketTransferSavedData extends SavedData {
     /** Nothing was overwritten; the root holds every transfer until a plain restart re-reads the file. */
     private void becomeUnreadable() {
         presence = ManagedRootPresence.UNREADABLE;
+        // This completion has finished its IO. Cancel the retained request and successor before tick can retry.
+        if (writer != null) { writer.abort(); }
+        checkpoint.unknown();
         entries.clear();
         firstMoonLanding = FirstEventOutbox.empty();
         discardEffects();
+        setDirty(false);
         AdvancedRocketryCommunity.LOGGER.error("ARCE_MANAGED_ROOT_UNREADABLE type={} file={} stage=first_write",
                 DATA_NAME, writerFile);
     }
