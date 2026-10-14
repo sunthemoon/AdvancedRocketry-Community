@@ -242,6 +242,16 @@ def extract_lang(data: bytes, transformation: dict[str, Any], label: str) -> tup
     return json.dumps(output, ensure_ascii=False, sort_keys=True, indent=2).encode("utf-8"), description
 
 
+def check_animation(data: bytes, label: str) -> None:
+    """An animation file is a UTF-8 JSON object with an ``animation`` object, as the texture loader reads it."""
+    try:
+        value = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        raise ValueError(f"{label}: not a UTF-8 JSON animation file") from None
+    if not isinstance(value, dict) or not isinstance(value.get("animation"), dict):
+        raise ValueError(f"{label}: has no animation object")
+
+
 def render(entry: dict[str, Any], status: str, data: bytes) -> tuple[bytes, list[str]]:
     """The target bytes and the record's transformation list."""
     transformation = entry["transformation"]
@@ -249,6 +259,8 @@ def render(entry: dict[str, Any], status: str, data: bytes) -> tuple[bytes, list
     source_rest = entry["source_path"][len(SOURCE_ROOTS[status]):]
     target_rest = entry["target_path"][len(TARGET_ROOT):]
     label = entry["source_path"]
+    if label.endswith(".png.mcmeta"):
+        check_animation(data, label)
     if kind == "copy":
         if status == NEW:
             return data, ["Byte copy of the repository-owned file at its authoring commit."]

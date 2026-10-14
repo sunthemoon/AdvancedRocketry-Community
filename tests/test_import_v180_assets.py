@@ -489,6 +489,17 @@ class ImportV180AssetsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "no format check"):
             MODULE.validate_plan(plan)
 
+    def test_animation_file_needs_its_image_and_an_animation_object(self) -> None:
+        plan = copy.deepcopy(self.plan)
+        plan["entries"][2]["source_path"] = LEGACY + "textures/models/widget.png.mcmeta"
+        plan["entries"][2]["target_path"] = TARGET + "textures/models/widget.png.mcmeta"
+        with self.assertRaisesRegex(ValueError, "animation without its image"):
+            MODULE.validate_plan(plan)
+        MODULE.check_animation(b'{"animation": {"frametime": 2}}', "a.png.mcmeta")
+        for data in (b'{"frames": []}', b"\xff", b"[]"):
+            with self.subTest(data), self.assertRaisesRegex(ValueError, "animation"):
+                MODULE.check_animation(data, "a.png.mcmeta")
+
     def test_existing_foreign_target_is_not_overwritten(self) -> None:
         _write(self.root / (TARGET + "textures/item/gadget.png"), b"someone else's file")
         with self.assertRaisesRegex(MODULE.ImportFailure, "other content"):
