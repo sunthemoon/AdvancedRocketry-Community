@@ -40,6 +40,7 @@ final class RocketJournalCheckpoint {
     Outcome outcome() { return outcome; }
     Optional<Acknowledgement> acknowledged() { return Optional.ofNullable(acknowledged); }
     boolean current(long sequence) { return acknowledged != null && acknowledged.sequence() == sequence; }
+    Outcome unknown() { acknowledged = null; outcome = Outcome.UNKNOWN; return outcome; }
 
     void publish(RocketJournalWriter.Completion completion) {
         outcome = completion.outcome(); acknowledged = completion.acknowledged();

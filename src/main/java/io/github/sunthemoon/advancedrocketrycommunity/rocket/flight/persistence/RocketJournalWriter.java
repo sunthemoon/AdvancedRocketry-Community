@@ -75,6 +75,9 @@ final class RocketJournalWriter implements AutoCloseable {
                 // Encoding failed before replacement. Any previously unknown disk authority stays unknown.
                 outcome = disk.outcome() == RocketJournalCheckpoint.Outcome.UNKNOWN
                         ? RocketJournalCheckpoint.Outcome.UNKNOWN : RocketJournalCheckpoint.Outcome.NOT_COMMITTED;
+            } catch (Throwable unknown) {
+                // An Error may occur after replacement. Never retain proof of the previous disk generation.
+                outcome = disk.unknown();
             }
             completions.add(new Completion(request.snapshot().sequence(), outcome,
                     disk.acknowledged().orElse(null), System.nanoTime() - started));
