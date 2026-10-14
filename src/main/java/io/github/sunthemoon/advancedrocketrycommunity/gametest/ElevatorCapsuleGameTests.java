@@ -88,6 +88,9 @@ public final class ElevatorCapsuleGameTests {
             ServerPlayer observer = ConnectedTestPlayers.join(fixture.server, UUID.randomUUID(), "capsuleObserver",
                     fixture.level, fixture.anchorPos.above().north(), new ArrayList<>());
             joined.add(observer);
+            // Same-Level command teleports do not immediately refresh ChunkMap's player section. Establish the
+            // real subscription now, rather than relying on the next connection tick before the first flush.
+            fixture.level.getChunkSource().move(observer);
             observer.connection = new ServerGamePacketListenerImpl(fixture.server, observer.connection.connection,
                     observer) {
                 @Override
