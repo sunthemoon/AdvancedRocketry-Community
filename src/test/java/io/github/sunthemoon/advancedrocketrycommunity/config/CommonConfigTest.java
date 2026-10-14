@@ -65,9 +65,13 @@ class CommonConfigTest {
         assertSame(CommonConfig.GROUND_SURVEYS_ENABLED, CommonConfig.SPEC.getValues().get("research.groundSurveysEnabled"));
         assertTrue(CommonConfig.GROUND_SURVEYS_ENABLED.getDefault());
         assertTrue(CommonConfig.groundSurveysEnabled());
+        // W33 adds the consumed C18a torch drop switch, default false.
+        assertSame(CommonConfig.DROP_EXTINGUISHED_TORCHES, CommonConfig.SPEC.getValues().get("OXYGEN.dropExtinguishedTorches"));
+        assertFalse(CommonConfig.DROP_EXTINGUISHED_TORCHES.getDefault());
+        assertFalse(CommonConfig.dropExtinguishedTorches());
         // W34 adds the consumed ADR-066 section 3.3 vacuum damage value.
         assertSame(CommonConfig.VACUUM_DAMAGE, CommonConfig.SPEC.getValues().get("OXYGEN.vacuumDamage"));
-        assertEquals(94, countValues(CommonConfig.SPEC.getValues()));
+        assertEquals(95, countValues(CommonConfig.SPEC.getValues()));
     }
 
     @Test

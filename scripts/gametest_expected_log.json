@@ -236,6 +236,25 @@
       "reason": "A non-admissible solar array root must retain the shared whole-chunk save refusal."
     },
     {
+      "id": "w33-unlit-torch-chunk-save-refused",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: Refusing non-lossless unlit torch root; back up and repair offline",
+      "stack_contains": "UnlitTorchGameTests.oversizedRetainedRootRefusesTheChunkSave",
+      "counts": {"unlit_torch": 1},
+      "test": "UnlitTorchGameTests.oversizedRetainedRootRefusesTheChunkSave",
+      "reason": "A retained unlit torch root above 2 KiB must refuse the whole chunk save through the shared guard; the event bus logs the thrown refusal at ERROR."
+    },
+    {
+      "id": "w33-torch-queue-overloaded",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.TorchCombustionService/",
+      "message": "Torch queue of advancedrocketrycommunity:moon is full \\(8192 positions\\); refusing new torch placements until it drains",
+      "counts": {"unlit_torch_queue": 1},
+      "test": "UnlitTorchGameTests.fullQueueFailsNewPlacementsClosedAndDrains",
+      "reason": "The test fills the Moon torch queue and checks that the first refused placement of the overload episode is reported once."
+    },
+    {
       "id": "solar-chunk-save-refused",
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
@@ -705,6 +724,16 @@
       "batches": ["<startup>"],
       "test": "environment: W14 life-support configuration created by the run",
       "reason": "The detector switch defaults to true exactly once; the OXYGEN section is already excluded from the generic 99-warning budget."
+    },
+    {
+      "id": "forge-w33-drop-extinguished-torches-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key OXYGEN\\.dropExtinguishedTorches was corrected from null to its default, false\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W33 torch configuration created by the run",
+      "reason": "The torch drop switch defaults to false exactly once; the OXYGEN section is already excluded from the generic 99-warning budget."
     },
     {
       "id": "forge-equipment-active-target-defaulted",

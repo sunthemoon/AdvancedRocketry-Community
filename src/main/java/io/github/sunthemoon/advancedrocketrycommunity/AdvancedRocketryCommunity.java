@@ -236,6 +236,8 @@ public final class AdvancedRocketryCommunity {
                 .service.EndgameRuntime.devices().map(devices -> devices.fieldGravity(player))
                 .orElse(java.util.OptionalDouble.empty()), CommonConfig::classicGravityEnabled);
         MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingTick);
+        // ADR-066 section 3.3 leaf B: the fall uses the multiplier the tick applied, once per landing (W38).
+        MinecraftForge.EVENT_BUS.addListener(gravityController::onLivingFall);
         CelestialCommands celestialCommands = new CelestialCommands(
                 celestialCatalogs,
                 new SafeCelestialTravel()

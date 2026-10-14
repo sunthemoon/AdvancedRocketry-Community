@@ -1,0 +1,8 @@
+[FAIL] line 7751: unsuccessful or unrecognized required-test summary: 2 required tests failed :(
+[FAIL] line 7778: shutdown before successful required-test summary
+[FAIL] the log has no successful required-test summary
+[FAIL] line 1863: unexpected ERROR, batch 'endgame_laser_physical_attached', logger 'net.minecraft.gametest.framework.LogTestReporter/': paddedbootscancelonlyfalldamageandlowgravitynarrowsthem failed! Disabled equipment still cancelled the fall [no GameTest frame]
+[FAIL] line 6198: unexpected ERROR, batch 'gravity_fall', logger 'net.minecraft.gametest.framework.LogTestReporter/': slowfallingandfallimmunitykeeptheirnativereach failed! The slow fall did not land [no GameTest frame]
+[INFO] 919 game tests complete; 2 required tests failed :(
+[INFO] FATAL 0, ERROR 83, WARN 230
+checker exit 1

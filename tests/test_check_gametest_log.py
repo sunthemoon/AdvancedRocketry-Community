@@ -362,8 +362,9 @@ class ManifestValidationTests(unittest.TestCase):
         # rejections (8 each) and one dropped unknown message index.
         # W17 adds one deliberate solar array chunk-save refusal.
         # W21cF adds one forced research debit shortfall (w21cf-research-debit-shortfall).
+        # W33 adds one oversized unlit torch root chunk-save refusal (w33-unlit-torch-chunk-save-refused).
         self.assertEqual(
-            81, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            82, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_recipe_and_recovery_cases_have_independent_counts(self) -> None:

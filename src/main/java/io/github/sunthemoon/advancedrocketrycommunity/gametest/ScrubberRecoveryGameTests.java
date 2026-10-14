@@ -24,7 +24,6 @@ import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
-import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -134,21 +133,18 @@ public final class ScrubberRecoveryGameTests {
 
     @GameTest(template = "atmosphere_test", batch = "scrubber_recovery", timeoutTicks = 40)
     public static void recoveryDoesNotLoadAnUnavailableFacadeChunk(GameTestHelper helper) {
-        var level = helper.getLevel(); var chunks = level.getChunkSource();
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO), position = null;
-        // Find an already-loaded frontier without acquiring chunks or changing tickets.
-        for (int x = -32; x <= 32 && position == null; x++) {
-            int cx = (origin.getX() >> 4) + x, cz = origin.getZ() >> 4;
-            if (chunks.getChunkNow(cx, cz) != null && chunks.getChunkNow(cx + 1, cz) == null) {
-                position = new BlockPos((cx << 4) + 15, 220, (cz << 4) + 8);
-            }
+        try (OwnedLoadedFrontier frontier = new OwnedLoadedFrontier(helper, helper.getLevel(), 220)) {
+            recoveryDoesNotLoadAnUnavailableFacadeChunk(helper, frontier);
         }
-        helper.assertTrue(position != null, "No loaded frontier available for the unloaded guard fixture");
-        BlockPos ventPos = position, facadePos = position.east(); BlockState before = level.getBlockState(ventPos);
+    }
+
+    private static void recoveryDoesNotLoadAnUnavailableFacadeChunk(GameTestHelper helper, OwnedLoadedFrontier frontier) {
+        var level = helper.getLevel(); var chunks = level.getChunkSource();
+        BlockPos ventPos = frontier.edge, facadePos = ventPos.east(); BlockState before = level.getBlockState(ventPos);
         helper.assertTrue(level.getBlockEntity(ventPos) == null, "Frontier fixture must be BE-free");
         // Native neighbour-shape propagation would load the very chunk this fixture must leave absent.
         int quiet = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
-        level.setBlock(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState(), quiet);
+        frontier.set(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState());
         var vent = (OxygenVentBlockEntity) level.getBlockEntity(ventPos);
         try {
             CompoundTag bank = new ScrubberBank().encode(); ListTag banks = new ListTag(); CompoundTag entry = new CompoundTag();
@@ -196,10 +192,16 @@ public final class ScrubberRecoveryGameTests {
 
     @GameTest(template = "atmosphere_test", batch = "scrubber_stale_binding_frontier", timeoutTicks = 40)
     public static void emptyAssociationBehindAnUnloadedFacadeChunkIsKept(GameTestHelper helper) {
+        try (OwnedLoadedFrontier frontier = new OwnedLoadedFrontier(helper, helper.getLevel(), 224)) {
+            emptyAssociationBehindAnUnloadedFacadeChunkIsKept(helper, frontier);
+        }
+    }
+
+    private static void emptyAssociationBehindAnUnloadedFacadeChunkIsKept(GameTestHelper helper, OwnedLoadedFrontier frontier) {
         var level = helper.getLevel(); var chunks = level.getChunkSource();
-        BlockPos ventPos = frontier(helper, 224), facadePos = ventPos.east(); BlockState before = level.getBlockState(ventPos);
+        BlockPos ventPos = frontier.edge, facadePos = ventPos.east(); BlockState before = level.getBlockState(ventPos);
         helper.assertTrue(level.getBlockEntity(ventPos) == null, "Frontier fixture must be BE-free");
-        level.setBlock(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState(), QUIET);
+        frontier.set(ventPos, ModBlocks.OXYGEN_VENT.get().defaultBlockState());
         var vent = (OxygenVentBlockEntity) level.getBlockEntity(ventPos);
         try {
             CompoundTag bank = new ScrubberBank().encode(); ListTag banks = new ListTag(); CompoundTag entry = new CompoundTag();
@@ -305,10 +307,16 @@ public final class ScrubberRecoveryGameTests {
 
     @GameTest(template = "atmosphere_test", batch = "scrubber_stale_binding_frontier", timeoutTicks = 40)
     public static void staleBindingToAnUnloadedOwnerCellStaysProtected(GameTestHelper helper) {
+        try (OwnedLoadedFrontier frontier = new OwnedLoadedFrontier(helper, helper.getLevel(), 228)) {
+            staleBindingToAnUnloadedOwnerCellStaysProtected(helper, frontier);
+        }
+    }
+
+    private static void staleBindingToAnUnloadedOwnerCellStaysProtected(GameTestHelper helper, OwnedLoadedFrontier frontier) {
         var level = helper.getLevel(); var chunks = level.getChunkSource();
-        BlockPos facadePos = frontier(helper, 228), ownerPos = facadePos.east(); BlockState before = level.getBlockState(facadePos);
+        BlockPos facadePos = frontier.edge, ownerPos = facadePos.east(); BlockState before = level.getBlockState(facadePos);
         helper.assertTrue(level.getBlockEntity(facadePos) == null, "Frontier fixture must be BE-free");
-        level.setBlock(facadePos, ModBlocks.CO2_SCRUBBER.get().defaultBlockState(), QUIET);
+        frontier.set(facadePos, ModBlocks.CO2_SCRUBBER.get().defaultBlockState());
         var facade = (ScrubberBlockEntity) level.getBlockEntity(facadePos);
         try {
             CompoundTag root = new CompoundTag(); root.putInt("schema_version", 1); root.putString("identity", UUID.randomUUID().toString());
@@ -327,21 +335,6 @@ public final class ScrubberRecoveryGameTests {
 
     /** Native neighbour-shape propagation would load the very chunk a frontier fixture must leave absent. */
     private static final int QUIET = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE;
-    /**
-     * The east edge of an already-loaded chunk whose neighbour is absent, found without acquiring chunks or tickets. The
-     * neighbour must also hold no FULL-level ticket: {@code hasChunkAt} already reports such a chunk, and a following
-     * read (Forge's comparator update in {@code setChanged}, or the facade's {@code owner()}) waits for it to load.
-     */
-    private static BlockPos frontier(GameTestHelper helper, int y) {
-        var chunks = helper.getLevel().getChunkSource(); BlockPos origin = helper.absolutePos(BlockPos.ZERO);
-        for (int x = -32; x <= 32; x++) {
-            int cx = (origin.getX() >> 4) + x, cz = origin.getZ() >> 4;
-            if (chunks.getChunkNow(cx, cz) != null && chunks.getChunkNow(cx + 1, cz) == null && !chunks.hasChunk(cx + 1, cz)) {
-                return new BlockPos((cx << 4) + 15, y, (cz << 4) + 8);
-            }
-        }
-        throw new GameTestAssertException("No loaded frontier available for the unloaded guard fixture");
-    }
     private static ItemStack cartridge(String marker) {
         ItemStack stack = new ItemStack(ModItems.CARBON_SCRUBBER_CARTRIDGE.get()); stack.getOrCreateTag().putString("marker", marker); return stack;
     }
