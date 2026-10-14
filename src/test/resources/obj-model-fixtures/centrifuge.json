@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "centrifuge",
+  "kind": "advancedrocketrycommunity:centrifuge",
+  "model": "advancedrocketrycommunity:models/centrifuge.obj",
+  "orientation": {
+    "mirror_x": true,
+    "pattern_rotation": {"north": "ZERO", "east": "CLOCKWISE_90", "south": "CLOCKWISE_180", "west": "CLOCKWISE_270"},
+    "y_rotation_degrees": {"north": 0, "east": -90, "south": 180, "west": 90},
+    "drum_axis_model_xz": [0, 0]
+  },
+  "scale": 1.0,
+  "offset_north": [1.0, -1.0, 2.0],
+  "rendering": {
+    "render_type": "entity_cutout",
+    "flip_v": true,
+    "shade_quads": true,
+    "emissive_ambient": false,
+    "automatic_culling": false,
+    "light_cell_above_controller": 1
+  },
+  "fallback_texture": "advancedrocketrycommunity:textures/block/centrifuge.png",
+  "bounding_volume": {
+    "model": [-2.0, 0.0, -2.0, 1.0, 4.0, 1.0],
+    "controller_relative": {
+      "north": [0, -1, 0, 3, 3, 3],
+      "east": [-2, -1, 0, 1, 3, 3],
+      "south": [-2, -1, -2, 1, 3, 1],
+      "west": [0, -1, -2, 3, 3, 1]
+    }
+  },
+  "unchanged": {
+    "pattern": "advancedrocketrycommunity:centrifuge",
+    "pattern_canonical_sha256": "90bf4d6164e46dcdacf05707444ed44854baf28e995d41f6dc5d1da2ba201631",
+    "pattern_size": [3, 4, 3],
+    "controller_anchor": [0, 1, 0],
+    "controller_collision": "full_block"
+  }
+}
