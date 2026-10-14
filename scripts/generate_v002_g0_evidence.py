@@ -48,6 +48,7 @@ MAX_ARCHIVE_ENTRY_SIZE = 32 * 1024 * 1024
 MAX_ARCHIVE_TOTAL_SIZE = 128 * 1024 * 1024
 MAX_ARCHIVE_COMPRESSION_RATIO = 100
 ALLOWED_COMPRESSION_METHODS = frozenset((zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED))
+CODE_SUFFIXES = (".java", ".class")
 MODS_TOML_PATH = "META-INF/mods.toml"
 MANIFEST_PATH = "META-INF/MANIFEST.MF"
 SOURCES_MANIFEST_CONTENT = b"Manifest-Version: 1.0\r\n\r\n"
@@ -123,7 +124,14 @@ def _archive_path_error(value: str) -> str | None:
 
 
 def _is_license_or_notice_path(value: str) -> bool:
+    """Return whether an entry is a license or notice document.
+
+    Java sources and classes are code even when a type is named after the word,
+    such as the station notice types (`StationNotice.java`).
+    """
     filename = PurePosixPath(value).name.lower()
+    if filename.endswith(CODE_SUFFIXES):
+        return False
     return "license" in filename or "notice" in filename
 
 

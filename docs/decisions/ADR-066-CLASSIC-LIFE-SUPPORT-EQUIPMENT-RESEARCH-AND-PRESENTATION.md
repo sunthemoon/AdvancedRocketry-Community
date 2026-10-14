@@ -447,6 +447,55 @@ Leaf B scales a living entity's fall once, through one `LivingFallEvent` listene
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
+### W37 implementation note on sleep admission and planet respawn (2026-10-14)
+
+W37 (with W37F to W37J after four independent reviews) implements the sleep bullet's admission and
+the two respawn options. Records: `records/W37.md` and `W37F.md` to `W37J.md`.
+
+- **Sleep admission.** On an ARCE off-world Level a bed is refused when its head or foot cell is
+  unbreathable, PENDING or in a chunk that is not complete, or when station VISIT is denied
+  (owner decision 05). The Overworld, Nether and End are unchanged. While the off-world types keep
+  `natural=false`, vanilla refuses those beds first; W37b changes the types and D1 outcome 3.
+- **Respawn decision.** `PLANET.allowPlanetRespawn` (default false) and `PLANET.forcePlanetRespawn`
+  (default false; skips only the arrival air check) judge an off-world saved point for a death
+  respawn and for the End exit. The decision runs at `ServerTickEvent` END at LOWEST for dead or
+  credits-viewing connected players, with a final `DISCARDED` check for an immediate respawn.
+- **The refused point is kept.** A refused tuple is set aside in
+  `ForgeData.PlayerPersisted.arce_planet_respawn_backup` (schema 1, core bounded to 1 KiB and nine
+  nodes, written before the clear) and cleared and restored by direct field writes, so no listener
+  can veto either. A restore writes only into the exact cleared tuple; any other native tuple
+  supersedes the backup, also when judged from the `Clone` original. While another mod's throwing
+  respawn listener leaves the connection unadopted, the logout (and shutdown) path copies the
+  replacement's latest tuple into the saved old player before `PlayerList.remove` saves it.
+- **Diagnostics.** One WARN per player, per case, per server session for the fail-open cases (an
+  unencodable native tuple, a foreign `PlayerPersisted` parent, an unreadable or future backup).
+- **Accepted.** `loadedVent` reads a vent only from a complete chunk for every atmosphere consumer
+  (W37F review F8). A foreign exact null clear leaves the backup governing, so a restore can undo
+  another mod's reset of an already-refused point (Root, W37I).
+
+The protection's scope, duration, logs and recovery are R-036. This is a development
+implementation note, not owner acceptance or a Gate result.
+
+**W37b addendum (2026-10-14).** The six off-world types now set `natural=true`, written by one v1.8
+writer (D1 outcome 1; the v1.4 copies are no longer packaged), so W37's sleep admission is reachable.
+D1 outcome 3 is implemented by `BedRespawnPreserver`, scoped to the operation and never cancelling:
+
+- **Snapshot.** It snapshots the native spawn tuple after W37's admission of a native off-world bed
+  call.
+- **Attribution.** It recognises vanilla's own bed setter by the nearest native dispatch and the
+  method descriptors.
+- **Restore.** It writes the snapshot back at the native call's `SleepingTimeCheckEvent`, before both
+  late refusals and a successful sleep. It writes only when the bed tuple is still in place and no
+  foreign setter superseded it.
+- **Fallbacks.** A tick START, logout, orderly stop and every command flush pending operations
+  before their saves.
+- **Accepted residuals (Root).** The integrated-server pause save (`IntegratedServer.tickServer`
+  53), crash cleanup without `ServerStoppingEvent` (`runServer` 417, then `stopServer`), and a
+  third-party task saving players in the same inter-tick window. Each needs a compound failure, and
+  each can only persist the off-world bed tuple, which the W37 respawn validation still judges.
+
+Records: `records/W37B.md`; Root review SHA-256 `1d58efc2…`.
+
 ## 4. Gas charging and finite player resources
 
 `gas_charge_pad` stores one oxygen or hydrogen bank up to 16,000 mB, accepts

@@ -49,7 +49,7 @@ public final class V180Worldgen {
                     V180PlanetWorldgen.noiseSettings(context);
                     V180ExoplanetWorldgen.noiseSettings(context);
                 })
-                .add(Registries.DIMENSION_TYPE, V180ExoplanetWorldgen::dimensionTypes)
+                .add(Registries.DIMENSION_TYPE, V180OffWorldDimensionTypes::bootstrap)
                 .add(Registries.LEVEL_STEM, V180ExoplanetWorldgen::levels)
                 .add(ForgeRegistries.Keys.BIOME_MODIFIERS, V180MaterialWorldgen::biomeModifiers);
     }

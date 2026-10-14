@@ -309,10 +309,10 @@ config:OXYGEN.torchBlocks,REDESIGNED,v1.8.0,torch_pairs data catalog,ADR-062 ADR
 config:OXYGEN.vacuumDamage,IMPLEMENTED,v1.8.0,COMMON OXYGEN.vacuumDamage,ADR-062 ADR-066,"0 to 20 per scheduled second, default 2.0; zero stops damage only",docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:PERFORMANCE.atmosphereCalculationMethod,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,,
 config:PERFORMANCE.oxygenVentSize,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,,
-config:PLANET.allowPlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,,
+config:PLANET.allowPlanetRespawn,IMPLEMENTED,v1.8.0,COMMON PLANET.allowPlanetRespawn,ADR-062 ADR-066,default false; refused points are kept (R-036),docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:Planet.BlacklistedBiomes,REJECTED,-,-,ADR-031 ADR-062,biome lists of random planet generation,
 config:PLANET.blackListVanillaBiomes,REJECTED,-,-,ADR-031 ADR-062,random planet generation is not revived,
-config:PLANET.forcePlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,,
+config:PLANET.forcePlanetRespawn,IMPLEMENTED,v1.8.0,COMMON PLANET.forcePlanetRespawn,ADR-062 ADR-066,default false; skips only the arrival air check,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:Planet.HighPressureBiomes,REJECTED,-,-,ADR-031 ADR-062,biome lists of random planet generation,
 config:PLANET.maxBiomesPerPlanet,REJECTED,-,-,ADR-031 ADR-062,random planet generation is not revived,
 config:PLANET.minDimension,REJECTED,-,-,ADR-031 ADR-062,random planet generation is not revived,
@@ -424,7 +424,7 @@ event:PlanetEventHandler.onWorldGen(GenerateMinable),REDESIGNED,v1.4.0,per-biome
 event:PlanetEventHandler.playerLoggedInEvent(ServerConnectionFromClientEvent),REDESIGNED,v1.4.0,celestial sync on login,ADR-035,,
 event:PlanetEventHandler.playerTick(LivingUpdateEvent),REDESIGNED,v1.8.0,suit underwater breathing and the space safety return,ADR-062 ADR-066,nearest authorized loaded station or the Overworld; air only after a paid oxygen debit; the Moon advancement is C18c,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 event:PlanetEventHandler.serverTickEvent(WorldTickEvent),DEFERRED,post-2.0,-,ADR-062,terraforming family,
-event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent),PLANNED,C18a,no sleeping in unbreathable air,ADR-062,,
+event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent),REDESIGNED,v1.8.0,sleep admission and the bed preserver,ADR-062 ADR-066,natural off-world types; an admitted bed keeps the existing point (D1 outcome 3),docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 event:PlanetEventHandler.SpawnEntity(PotentialSpawns),REDESIGNED,v1.4.0,biome spawners in planet data,ADR-033,,
 event:PlanetEventHandler.tick(ServerTickEvent),REDESIGNED,v0.8.0,mission scheduler and transfer journal,ADR-050,,
 event:PlanetEventHandler.tickClient(ClientTickEvent),REDESIGNED,v1.4.0,client sky state,ADR-036,,

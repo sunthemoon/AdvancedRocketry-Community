@@ -3,6 +3,91 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "w37b-earlier-time-check-interruption",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+      "stack_contains": "NaturalBedGameTests.interrupted",
+      "counts": {"natural_beds_command": 4, "natural_beds_start": 1},
+      "test": "NaturalBedGameTests.earlierTimeCheckFailureIsRestoredBeforeImmediateSaveAll, NaturalBedGameTests.earlierTimeCheckFailureIsRestoredBeforeNextTickSave",
+      "reason": "Scoped throwing foreign listeners precede the primary HIGHEST callback. The command fixture verifies exact-match restoration, different/identical-tuple foreign setters and a subsequent bed call in the same window; the START fixture verifies next-tick restoration. All five interruptions are caught; command/START saves have native player-file readback."
+    },
+    {
+      "id": "w37j-respawn-save-listener-interruptions",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: W37J injected respawn listener interruption",
+      "stack_contains": "RespawnSaveReconciliationGameTests.openWindow",
+      "counts": {"respawn_save_reconciliation": 7},
+      "test": "RespawnSaveReconciliationGameTests.openWindow (seven native save regressions)",
+      "reason": "Each fixture deliberately aborts native respawn dispatch before adoption, catches that exception, and checks the old-object file before reconnect or cleanup."
+    },
+    {
+      "id": "w37j-unadopted-save-reconnect-duplicate-uuid",
+      "level": "WARN",
+      "logger": "net.minecraft.server.level.ServerLevel/",
+      "message": "Force-added player with duplicate UUID [0-9a-f-]{36}",
+      "counts": {"respawn_save_reconciliation": 7},
+      "test": "RespawnSaveReconciliationGameTests.assertFileAndReconnect (seven regressions)",
+      "reason": "The native old-object disconnect leaves the unadopted replacement in its Level. Reconnect discards it without a replacement save masking the file under test."
+    },
+    {
+      "id": "w37f-respawn-listener-interruption",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: W37F injected respawn listener interruption",
+      "stack_contains": "RespawnRecoveryGameTests.anEarlierThrowingListenerLeavesABackupForLaterTicks",
+      "counts": {"respawn_recovery": 1},
+      "test": "RespawnRecoveryGameTests.anEarlierThrowingListenerLeavesABackupForLaterTicks",
+      "reason": "A HIGHEST respawn listener throws after native replacement insertion; the test catches the deliberate exception and verifies the persisted tuple is restored on a later tick."
+    },
+    {
+      "id": "w37i-respawn-listener-interruption-logout",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: W37F injected respawn listener interruption",
+      "stack_contains": "RespawnRecoveryGameTests.interruptedLogout",
+      "counts": {"respawn_recovery": 2},
+      "test": "RespawnRecoveryGameTests.aNewerPointOnAnUnadoptedReplacementSurvivesTheLogoutSave, RespawnRecoveryGameTests.aRestoredPointOnAnUnadoptedReplacementSurvivesTheLogoutSave",
+      "reason": "W37I: each test enters W37F's interrupted-listener window with the same deliberate HIGHEST respawn listener exception, catches it, and checks the old connection player's logout save and the reconnect."
+    },
+    {
+      "id": "w37i-unadopted-replacement-duplicate-uuid",
+      "level": "WARN",
+      "logger": "net.minecraft.server.level.ServerLevel/",
+      "message": "Force-added player with duplicate UUID [0-9a-f-]{36}",
+      "counts": {"respawn_recovery": 2},
+      "test": "RespawnRecoveryGameTests.aNewerPointOnAnUnadoptedReplacementSurvivesTheLogoutSave, RespawnRecoveryGameTests.aRestoredPointOnAnUnadoptedReplacementSurvivesTheLogoutSave",
+      "reason": "W37I: after the old connection player's logout save, vanilla leaves the unadopted replacement in its Level, so each test's reconnect force-adds the new player and discards the replacement, as vanilla does for a real reconnect after that window."
+    },
+    {
+      "id": "w37h-planet-respawn-unencodable-tuple",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_PLANET_RESPAWN_DIAGNOSTIC player=[0-9a-f-]{36} case=unencodable_tuple: the saved respawn tuple is outside the backup bounds, so its refusal is skipped and vanilla reads it; recovery: set a valid respawn point, for example with /spawnpoint \\(ADR-066 planet respawn backup note\\)",
+      "counts": {"death_respawn": 1},
+      "test": "DeathRespawnGameTests.anUnencodableNativeTupleDoesNotFailADeadTickOrEraseAnUnreadableBackup",
+      "reason": "W37H F5: one dead player gets a NaN angle and then an out-of-bounds x on later ticks; the skipped refusal is reported once per player per server session."
+    },
+    {
+      "id": "w37h-planet-respawn-unreadable-backup",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_PLANET_RESPAWN_DIAGNOSTIC player=[0-9a-f-]{36} case=unreadable_backup: ForgeData\\.PlayerPersisted\\.arce_planet_respawn_backup is unreadable or from a later version and is kept verbatim, so the player respawns without it; recovery: with the player offline, back up the player file and copy its tuple to the Spawn fields \\(ADR-066 planet respawn backup note\\)",
+      "counts": {"death_respawn": 1, "respawn_save_reconciliation": 1},
+      "test": "DeathRespawnGameTests.anUnencodableNativeTupleDoesNotFailADeadTickOrEraseAnUnreadableBackup, RespawnSaveReconciliationGameTests.logoutReconciliationReturnsTheRetainedOpaqueRoot",
+      "reason": "W37H F5: a schema 99 backup root is kept verbatim. W37J also returns a retained schema 99 root after reconciliation; reconnect reports it once, while the valid native point remains intact."
+    },
+    {
+      "id": "w37h-planet-respawn-foreign-parent",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_PLANET_RESPAWN_DIAGNOSTIC player=[0-9a-f-]{36} case=foreign_persisted_parent: ForgeData\\.PlayerPersisted is not a compound, so a refused point cannot be set aside and vanilla reads it; recovery: with the player offline, back up the player file and make ForgeData\\.PlayerPersisted a compound \\(ADR-066 planet respawn backup note\\)",
+      "counts": {"death_respawn": 1},
+      "test": "DeathRespawnGameTests.aForeignPersistedParentIsKeptAndItsRefusalSkipped",
+      "reason": "W37H F5: a dead player has a string PlayerPersisted parent; it is not overwritten, and the skipped refusal is reported once per player per server session."
+    },
+    {
       "id": "legacy-scalar-keep-source-recovery",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
@@ -627,7 +712,7 @@
       "id": "forge-config-key-defaulted",
       "level": "WARN",
       "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
-      "message": "Incorrect key (?!research(?:\\s|\\.)|machines\\.(?:sawmillVanillaWood|crystallizerMaximumGravity)\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
+      "message": "Incorrect key (?!research(?:\\s|\\.)|machines\\.(?:sawmillVanillaWood|crystallizerMaximumGravity)\\b|forceField(?:\\.enabled)? was|(?:OXYGEN|ROCKET|PLANET)(?:\\s|\\.)|equipment\\.(?:jetPackForce|lowGravityBoots)\\s)[\\w.]+ was corrected from null to its default, .*",
       "max": 99,
       "batches": ["<startup>"],
       "test": "environment: configuration files created by the run",
@@ -781,6 +866,36 @@
       "batches": ["<startup>"],
       "test": "environment: W34 vacuum damage configuration created by the run",
       "reason": "The ADR-066 section 3.3 vacuum damage defaults to 2.0 once on a new config; the OXYGEN section is already excluded from the generic 99-warning budget. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-w37-planet-section-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key PLANET was corrected from null to its default, SimpleCommentedConfig:\\{\\}\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W37 planet-respawn configuration created by the run",
+      "reason": "The new ADR-066 section 3.3 PLANET section is defaulted once on a new config; it is excluded from the generic budget, which remains 99."
+    },
+    {
+      "id": "forge-w37-allow-planet-respawn-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key PLANET\\.allowPlanetRespawn was corrected from null to its default, false\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W37 planet-respawn configuration created by the run",
+      "reason": "allowPlanetRespawn defaults to false once on a new config. Non-null corrections and other values do not match."
+    },
+    {
+      "id": "forge-w37-force-planet-respawn-defaulted",
+      "level": "WARN",
+      "logger": "net.minecraftforge.common.ForgeConfigSpec/CORE",
+      "message": "Incorrect key PLANET\\.forcePlanetRespawn was corrected from null to its default, false\\.\\s*",
+      "max": 1,
+      "batches": ["<startup>"],
+      "test": "environment: W37 planet-respawn configuration created by the run",
+      "reason": "forcePlanetRespawn defaults to false once on a new config. Non-null corrections and other values do not match."
     },
     {
       "id": "forge-propulsion-rocket-defaulted",

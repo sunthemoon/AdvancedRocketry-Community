@@ -188,6 +188,40 @@ The COMMON value `OXYGEN.vacuumDamage` (0 to 20, default 2) sets the health
 points of each vacuum attempt for players and other entities. Zero disables only
 the vacuum damage; oxygen use, breathability and exposure continue.
 
+### Sleeping and respawning away from the Overworld
+
+On another planet, in Space, or in any other world of this mod or mapped by the
+catalog, a bed refuses sleep when either bed cell is unloaded, still being
+scanned, or without breathable air. In Space, a bed inside a committed station
+also needs permission to visit that station, and an unavailable station
+registry refuses. A supplied sealed room outside every station qualifies. The
+action bar gives the reason. Overworld beds, and worlds that are neither this
+mod's nor mapped, keep the vanilla rules. An admitted bed away from the
+Overworld currently cannot reach vanilla's bed spawn setter, because the built-in
+dimension types are not natural. Preserving the saved point when these types
+become natural requires a separate operation-scoped setter boundary.
+
+The built-in dimension types are still not `natural`, so vanilla itself still
+refuses sleep there after this check passes. Actual sleeping needs that type
+change, which has not been made yet.
+
+A saved respawn point in such a world (a bed or respawn anchor set by a command,
+another mod or older data) is used only when the COMMON value
+`PLANET.allowPlanetRespawn` is true (default false). It must then be a real bed,
+or a respawn anchor that vanilla would use, whose world still exists and is
+mapped; every chunk around it must already be loaded; vanilla must find a
+standing place free of solid blocks and liquids; in Space, a station there must
+permit a visit; and the air there must be breathable. `PLANET.forcePlanetRespawn`
+(default false) skips only that last air check, and only while
+`allowPlanetRespawn` is true. It never allows sleeping without air. When any
+check fails, the player respawns by the Overworld rules, is told why in chat,
+and keeps the saved point for later. The check never loads a chunk. This policy
+covers death respawns, including delayed death-screen requests, and the return
+from the End after the credits, which is judged the same way. A point set while
+an earlier one is kept aside, by a command, a bed or another mod, is newer: it
+replaces the kept point. Clearing the point is not a newer point: while a point
+is kept aside, an empty point means the kept one comes back.
+
 ## Using the flight star map
 
 Open a rocket's flight console, then select **Star map**. The diagram shows

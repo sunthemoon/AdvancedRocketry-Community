@@ -57,6 +57,23 @@ def _placeholder_contract(value: str) -> tuple[str, ...]:
     return tuple(item for item in PLACEHOLDER.findall(value) if item != "%%")
 
 
+def _placeholder_arguments(value: str) -> tuple[tuple[int, str], ...]:
+    """Return the sorted (argument, conversion) pairs a translation consumes.
+
+    Minecraft's TranslatableContents gives "%n$s" argument n and each bare "%s"
+    the next argument in turn, so a translation may reorder explicit arguments
+    for its word order without changing what it shows.
+    """
+    arguments: list[tuple[int, str]] = []
+    implicit = 0
+    for placeholder in _placeholder_contract(value):
+        index, _, conversion = placeholder[1:].rpartition("$")
+        if not index:
+            implicit += 1
+        arguments.append((int(index) if index else implicit, conversion))
+    return tuple(sorted(arguments))
+
+
 def audit_languages(paths: Iterable[Path]) -> tuple[dict[str, object], list[str]]:
     merged: dict[str, dict[str, str]] = {"en_us": {}, "zh_cn": {}}
     sources: dict[str, dict[str, str]] = {"en_us": {}, "zh_cn": {}}
@@ -95,7 +112,7 @@ def audit_languages(paths: Iterable[Path]) -> tuple[dict[str, object], list[str]
     for key in sorted(zh_keys - en_keys):
         errors.append(f"en_us is missing translation key {key}")
     for key in sorted(en_keys & zh_keys):
-        if _placeholder_contract(merged["en_us"][key]) != _placeholder_contract(
+        if _placeholder_arguments(merged["en_us"][key]) != _placeholder_arguments(
             merged["zh_cn"][key]
         ):
             errors.append(f"translation placeholder contract differs for {key}")
