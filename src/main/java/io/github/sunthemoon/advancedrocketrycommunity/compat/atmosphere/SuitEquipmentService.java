@@ -101,8 +101,7 @@ public final class SuitEquipmentService {
     }
 
     private PlayerLifeSupportDecision unpaid(ServerPlayer player, PlayerLifeSupportInput input) {
-        return PlayerLifeSupportEngine.tick(new PlayerLifeSupportInput(input.baseAtmosphereBreathable(), input.volumeState(),
-                countPieces(player), 0, input.vacuumPhase()));
+        return PlayerLifeSupportEngine.unpaid(input, countPieces(player));
     }
 
     public OxygenTransferResult fillOneCanister(ServerPlayer player, InteractionHand hand) {

@@ -21,13 +21,15 @@ public final class PlayerLifeSupportEngine {
     }
 
     public static PlayerLifeSupportDecision tick(PlayerLifeSupportInput input) {
-        if (input.baseAtmosphereBreathable()) {
+        boolean ambientBreathable = input.baseAtmosphereBreathable()
+                || input.volumeState() == BreathabilityState.BREATHABLE;
+        if (!input.underwaterOxygenRequired() && input.baseAtmosphereBreathable()) {
             return protectedDecision(
                     PlayerProtectionStatus.BREATHABLE_ENVIRONMENT,
                     input.oxygenUnits()
             );
         }
-        if (input.volumeState() == BreathabilityState.BREATHABLE) {
+        if (!input.underwaterOxygenRequired() && input.volumeState() == BreathabilityState.BREATHABLE) {
             return protectedDecision(
                     PlayerProtectionStatus.BREATHABLE_VOLUME,
                     input.oxygenUnits()
@@ -45,12 +47,17 @@ public final class PlayerLifeSupportEngine {
                     input.oxygenUnits() - consumed,
                     consumed,
                     nextPhase,
-                    0.0F
+                    0.0F,
+                    input.underwaterOxygenRequired() && intervalElapsed
             );
         }
 
         PlayerProtectionStatus status;
-        if (input.volumeState() == BreathabilityState.PENDING) {
+        if (input.baseAtmosphereBreathable()) {
+            status = PlayerProtectionStatus.BREATHABLE_ENVIRONMENT;
+        } else if (input.volumeState() == BreathabilityState.BREATHABLE) {
+            status = PlayerProtectionStatus.BREATHABLE_VOLUME;
+        } else if (input.volumeState() == BreathabilityState.PENDING) {
             status = PlayerProtectionStatus.VOLUME_PENDING;
         } else if (input.equippedSuitPieces() > 0
                 && input.equippedSuitPieces() < PlayerLifeSupportInput.COMPLETE_SUIT_PIECES) {
@@ -65,8 +72,14 @@ public final class PlayerLifeSupportEngine {
                 input.oxygenUnits(),
                 0,
                 nextPhase,
-                intervalElapsed ? VACUUM_DAMAGE : 0.0F
+                intervalElapsed && !ambientBreathable ? VACUUM_DAMAGE : 0.0F
         );
+    }
+
+    /** Re-evaluate a rejected resource commit without granting oxygen protection or underwater air. */
+    public static PlayerLifeSupportDecision unpaid(PlayerLifeSupportInput input, int recognizedSuitPieces) {
+        return tick(new PlayerLifeSupportInput(input.baseAtmosphereBreathable(), input.volumeState(),
+                recognizedSuitPieces, 0, input.vacuumPhase(), input.underwaterOxygenRequired()));
     }
 
     private static PlayerLifeSupportDecision protectedDecision(

@@ -8,8 +8,14 @@ public record PlayerLifeSupportDecision(
         int oxygenUnits,
         int oxygenConsumed,
         int vacuumPhase,
-        float damage
+        float damage,
+        boolean restoreUnderwaterAir
 ) {
+    public PlayerLifeSupportDecision(PlayerProtectionStatus status, int oxygenUnits, int oxygenConsumed,
+                                     int vacuumPhase, float damage) {
+        this(status, oxygenUnits, oxygenConsumed, vacuumPhase, damage, false);
+    }
+
     public PlayerLifeSupportDecision {
         Objects.requireNonNull(status, "status");
         if (oxygenUnits < 0 || oxygenUnits > AtmosphereLimits.SUIT_OXYGEN_CAPACITY) {
@@ -27,6 +33,9 @@ public record PlayerLifeSupportDecision(
         }
         if (status.protectedFromVacuum() && damage != 0.0F) {
             throw new IllegalArgumentException("A protected decision cannot apply vacuum damage");
+        }
+        if (restoreUnderwaterAir && (status != PlayerProtectionStatus.SUIT_OXYGEN || oxygenConsumed != 1)) {
+            throw new IllegalArgumentException("Underwater air requires a scheduled suit oxygen payment");
         }
     }
 }
