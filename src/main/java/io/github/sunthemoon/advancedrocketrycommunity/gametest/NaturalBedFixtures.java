@@ -18,10 +18,36 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.CommandEvent;
+import net.minecraftforge.eventbus.api.IEventListener;
 
 /** Owns the connected player, supplied-room fixtures, time and chunk tickets for the W37B native checks. */
 final class NaturalBedFixtures {
     private NaturalBedFixtures() { }
+
+    /** A previously registered listener cancels, and a terminal listener uncancels, the actual save-all command. */
+    static void saveWithReversedCommandCancellation(MinecraftServer server) {
+        var source = server.createCommandSourceStack();
+        var probe = new CommandEvent(server.getCommands().getDispatcher().parse("save-all", source));
+        try {
+            var field = MinecraftForge.EVENT_BUS.getClass().getDeclaredField("busID");
+            field.setAccessible(true);
+            IEventListener[] listeners = probe.getListenerList().getListeners(field.getInt(MinecraftForge.EVENT_BUS));
+            IEventListener first = listeners[0];
+            IEventListener last = listeners[listeners.length - 1];
+            listeners[0] = event -> { event.setCanceled(true); first.invoke(event); };
+            listeners[listeners.length - 1] = event -> { last.invoke(event); event.setCanceled(false); };
+            try {
+                if (server.getCommands().performPrefixedCommand(source, "save-all") <= 0) {
+                    throw new IllegalStateException("The uncancelled native save-all command did not execute");
+                }
+            }
+            finally { listeners[0] = first; listeners[listeners.length - 1] = last; }
+        } catch (ReflectiveOperationException failure) {
+            throw new IllegalStateException("Pinned CommandEvent dispatch fixture no longer matches EventBus", failure);
+        }
+    }
 
     static final class Room {
         final ServerLevel level;

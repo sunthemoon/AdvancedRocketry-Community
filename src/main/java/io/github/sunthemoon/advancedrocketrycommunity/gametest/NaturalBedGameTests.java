@@ -315,7 +315,7 @@ public final class NaturalBedGameTests {
             Tuple saved = Tuple.read(fixture.player);
             interrupted(helper, fixture.player, room.head());
             helper.assertTrue(room.head().equals(fixture.player.getRespawnPosition()), "The native write was not exposed");
-            fixture.server.getCommands().performPrefixedCommand(fixture.server.createCommandSourceStack(), "save-all");
+            NaturalBedFixtures.saveWithReversedCommandCancellation(fixture.server);
             saved.assertSame(helper, fixture.player);
             assertFile(helper, fixture.player, saved);
             interrupted(helper, fixture.player, room.head());

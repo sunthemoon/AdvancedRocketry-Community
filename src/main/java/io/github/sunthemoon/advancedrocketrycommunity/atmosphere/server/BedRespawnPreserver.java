@@ -54,7 +54,7 @@ public final class BedRespawnPreserver {
         bus.addListener(EventPriority.HIGHEST, this::onTick);
         bus.addListener(EventPriority.HIGHEST, this::onLogout);
         bus.addListener(EventPriority.HIGHEST, this::onStopping);
-        bus.addListener(EventPriority.HIGHEST, this::onCommand);
+        bus.addListener(EventPriority.HIGHEST, true, this::onCommand);
         bus.addListener(this::onStopped);
     }
 
