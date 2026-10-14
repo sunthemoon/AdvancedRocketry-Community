@@ -1,0 +1,2717 @@
+{
+  "counts": {
+    "CLEAR": 182,
+    "HIT": 1,
+    "SUSPECT": 4
+  },
+  "files": {
+    "assets/advancedrocketrycommunity/textures/block/advanced_bipropellant_rocket_motor_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.7256,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/advanced_bipropellant_rocket_motor_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.6881,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/advanced_bipropellant_rocket_motor_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/advanced_motor_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.479,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/advanced_motor_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/jukebox_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.4151,
+        "reference": "1.20.1:assets/minecraft/textures/block/jukebox_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/advanced_motor_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 6,
+        "overlap": 0.0,
+        "rank": 0.5858,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/advanced_rocket_motor_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.7256,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/advanced_rocket_motor_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.6881,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/advanced_rocket_motor_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/airlock_door_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/beacon.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6278,
+        "reference": "1.20.1:assets/minecraft/textures/block/beacon.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/airlock_door_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/beacon.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5791,
+        "reference": "1.20.1:assets/minecraft/textures/block/beacon.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/arc_furnace.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/respawn_anchor_top_off.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.4845,
+        "reference": "1.20.1:assets/minecraft/textures/block/respawn_anchor_top_off.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/astrobody_data_processor.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/scaffolding_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.9062,
+        "method": "same",
+        "orientation": 2,
+        "overlap": 0.0,
+        "rank": 0.4579,
+        "reference": "1.20.1:assets/minecraft/textures/block/scaffolding_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/atmosphere_detector.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.514,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/bipropellant_fuel_tank_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/bipropellant_fuel_tank_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.6918,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/bipropellant_fuel_tank_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/bipropellant_rocket_motor_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.7256,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/bipropellant_rocket_motor_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.6918,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/bipropellant_rocket_motor_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/blast_brick.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/tnt_bottom.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 2,
+        "overlap": 0.0,
+        "rank": 0.7018,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/tnt_bottom.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/centrifuge.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5015,
+        "reference": "1.20.1:assets/minecraft/textures/block/bee_nest_bottom.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/charcoal_log.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/loom_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 5,
+        "overlap": 0.0,
+        "rank": 0.4785,
+        "reference": "1.20.1:assets/minecraft/textures/block/loom_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/charcoal_log_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/netherite_block.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.4913,
+        "reference": "1.20.1:assets/minecraft/textures/block/netherite_block.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/chemical_reactor.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/quartz_block_lines.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.3998,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/quartz_block_lines.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/co2_scrubber.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.6398,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/combustion_front.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 6,
+        "overlap": 0.0,
+        "rank": 0.7,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/combustion_front_lit.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_horizontal.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.5833,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_horizontal.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/combustion_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5857,
+        "reference": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/combustion_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.5601,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/stone_slab_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/crystal.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/hay_block_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 4,
+        "overlap": 0.0,
+        "rank": 0.2871,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/hay_block_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/crystallizer.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/itemframe_background.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5822,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/itemframe_background.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/cutting_machine.png": {
+      "best": "1.20.1:assets/minecraft/textures/painting/earth.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "orientation": 2,
+        "overlap": 0.0,
+        "rank": 0.4529,
+        "reference": "1.20.1:assets/minecraft/textures/painting/earth.png",
+        "scale": -2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/dark_moon_turf.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/mycelium_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.2272,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/mycelium_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/electric_mushroom.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.25,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/electrolyzer_front.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.5273,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/electrolyzer_front_active.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/iron_block.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.5507,
+        "reference": "1.20.1:assets/minecraft/textures/block/iron_block.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/elite_motor_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.4804,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/elite_motor_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/jukebox_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.4115,
+        "reference": "1.20.1:assets/minecraft/textures/block/jukebox_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/elite_motor_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.5899,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/dispenser_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/enhanced_motor_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.479,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/enhanced_motor_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/jukebox_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.4149,
+        "reference": "1.20.1:assets/minecraft/textures/block/jukebox_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/enhanced_motor_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.5254,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/ferric_sand.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/concrete_cyan.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.2518,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/concrete_cyan.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_flow.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/budding_amethyst.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.1424,
+        "reference": "1.20.1:assets/minecraft/textures/block/budding_amethyst.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/enriched_lava_still.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/glowstone.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.2663,
+        "reference": "1.20.1:assets/minecraft/textures/block/glowstone.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_flow.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/magma.png#frame0",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.1365,
+        "reference": "1.20.1:assets/minecraft/textures/block/magma.png#frame0",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/hydrogen_still.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/glowstone.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.2953,
+        "reference": "1.20.1:assets/minecraft/textures/block/glowstone.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_flow.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/magma.png#frame0",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.1365,
+        "reference": "1.20.1:assets/minecraft/textures/block/magma.png#frame0",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/nitrogen_still.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/glowstone.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.2953,
+        "reference": "1.20.1:assets/minecraft/textures/block/glowstone.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/oxygen_flow.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/magma.png#frame0",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.1365,
+        "reference": "1.20.1:assets/minecraft/textures/block/magma.png#frame0",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/oxygen_still.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/glowstone.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.2953,
+        "reference": "1.20.1:assets/minecraft/textures/block/glowstone.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_flow.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/magma.png#frame0",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.1365,
+        "reference": "1.20.1:assets/minecraft/textures/block/magma.png#frame0",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid/rocket_fuel_still.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/glowstone.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.2953,
+        "reference": "1.20.1:assets/minecraft/textures/block/glowstone.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid_input_hatch.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6929,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/fluid_output_hatch.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6929,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/force_field.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/force_field_projector_front.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.6628,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/force_field_projector_side.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.8043,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "SUSPECT"
+    },
+    "assets/advancedrocketrycommunity/textures/block/geode_shell.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/reinforced_deepslate_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.447,
+        "reference": "1.20.1:assets/minecraft/textures/block/reinforced_deepslate_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/item_input_hatch.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6058,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/item_output_hatch.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6058,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/landing_pad.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/netherite_block.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5524,
+        "reference": "1.20.1:assets/minecraft/textures/block/netherite_block.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/lathe.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5822,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/lightwood_leaves.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/glowstone.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.8828,
+        "method": "same",
+        "orientation": 6,
+        "overlap": 0.0,
+        "rank": 0.2029,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/glowstone.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/lightwood_log.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/pumpkin_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 6,
+        "overlap": 0.0,
+        "rank": 0.3699,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/pumpkin_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/lightwood_log_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/item_frame.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.6474,
+        "reference": "1.20.1:assets/minecraft/textures/block/item_frame.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/lightwood_planks.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/birch_planks.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 4,
+        "overlap": 0.0,
+        "rank": 0.6215,
+        "reference": "1.20.1:assets/minecraft/textures/block/birch_planks.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/lightwood_sapling.png": {
+      "best": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.4545,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          64,
+          13
+        ],
+        "orientation": 3,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+        "reference_scale": 1,
+        "region": 256,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/material/coil_side.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.7488,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/material/coil_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/stripped_spruce_log_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 2,
+        "overlap": 0.0,
+        "rank": 0.7209,
+        "reference": "1.20.1:assets/minecraft/textures/block/stripped_spruce_log_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/material/crystal_ore_overlay.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.1875,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/material/ore_overlay.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/iron_block.png",
+      "record": {
+        "colours": 2,
+        "iou": 0.2422,
+        "method": "same",
+        "orientation": 2,
+        "overlap": 0.0128,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/iron_block.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/material/storage.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/polished_andesite.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6958,
+        "reference": "1.20.1:assets/minecraft/textures/block/polished_andesite.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/moon_turf.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/mycelium_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.2272,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/mycelium_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/motor_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.4804,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/motor_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/end_portal_frame_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.4271,
+        "reference": "1.20.1:assets/minecraft/textures/block/end_portal_frame_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/motor_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.5246,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/nuclear_core_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/nuclear_core_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.6918,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/nuclear_core_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/nuclear_fuel_tank_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/nuclear_fuel_tank_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.6918,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/nuclear_fuel_tank_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/nuclear_rocket_motor_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.7256,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/nuclear_rocket_motor_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.6918,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/nuclear_rocket_motor_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/observatory.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/birch_trapdoor.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.4718,
+        "reference": "1.20.1:assets/minecraft/textures/block/birch_trapdoor.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/orbital_laser_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/cherry_log_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 5,
+        "overlap": 0.0,
+        "rank": 0.5137,
+        "reference": "1.20.1:assets/minecraft/textures/block/cherry_log_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/orbital_laser_front.png": {
+      "best": "1.20.1:assets/minecraft/textures/painting/plant.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 6,
+        "overlap": 0.0,
+        "rank": 0.4799,
+        "reference": "1.20.1:assets/minecraft/textures/painting/plant.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/oxidizer_fuel_tank_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/oxidizer_fuel_tank_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.6918,
+        "reference": "1.20.1:assets/minecraft/textures/block/dropper_front_vertical.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/oxidizer_fuel_tank_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6823,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/daylight_detector_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/pipe_seal.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/crafting_table_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.4953,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/crafting_table_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/planetary_beacon_front.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/dark_oak_door_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.4002,
+        "reference": "1.20.1:assets/minecraft/textures/block/dark_oak_door_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/planetary_beacon_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/cut_red_sandstone.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.5868,
+        "reference": "1.20.1:assets/minecraft/textures/block/cut_red_sandstone.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/planetary_beacon_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/quartz_block_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.5891,
+        "reference": "1.20.1:assets/minecraft/textures/block/quartz_block_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/power_input_plug.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.4674,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/power_output_plug.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/beacon.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.6258,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/beacon.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/precision_assembler_front.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/observer_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.4875,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/observer_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/precision_laser_etcher.png": {
+      "best": "1.20.1:assets/minecraft/textures/entity/decorated_pot/plenty_pottery_pattern.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.875,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5467,
+        "reference": "1.20.1:assets/minecraft/textures/entity/decorated_pot/plenty_pottery_pattern.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/pressurized_tank_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.6723,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/pressurized_tank_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/iron_block.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.7015,
+        "reference": "1.20.1:assets/minecraft/textures/block/iron_block.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/pressurized_tank_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.6559,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/pump_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/quartz_block_lines_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.4339,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/quartz_block_lines_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/pump_side.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/furnace_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.584,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/furnace_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/pump_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/quartz_pillar_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 4,
+        "overlap": 0.0,
+        "rank": 0.5782,
+        "reference": "1.20.1:assets/minecraft/textures/block/quartz_pillar_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/quartz_crucible.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/comparator.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.358,
+        "reference": "1.20.1:assets/minecraft/textures/block/comparator.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/railgun_front.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.5476,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/satellite_builder_front.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/observer_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.4535,
+        "reference": "1.20.1:assets/minecraft/textures/block/observer_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/saw_blade.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/sea_lantern.png#frame0",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 2,
+        "overlap": 0.0,
+        "rank": 0.743,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/sea_lantern.png#frame0"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/small_plate_press_bottom.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.7023,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/small_plate_press_side.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.516,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/small_plate_press_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/cherry_door_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.8594,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.4968,
+        "reference": "1.20.1:assets/minecraft/textures/block/cherry_door_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/solar_array_front.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/blast_furnace_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.5306,
+        "reference": "1.20.1:assets/minecraft/textures/block/blast_furnace_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/solar_array_panel.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/beacon.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5955,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/beacon.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/solar_array_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/barrel_bottom.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 2,
+        "overlap": 0.0,
+        "rank": 0.7793,
+        "reference": "1.20.1:assets/minecraft/textures/block/barrel_bottom.png"
+      },
+      "verdict": "SUSPECT"
+    },
+    "assets/advancedrocketrycommunity/textures/block/solar_array_top.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/beacon.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5955,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/beacon.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/solar_generator_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/jigsaw_bottom.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.589,
+        "reference": "1.20.1:assets/minecraft/textures/block/jigsaw_bottom.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/solar_generator_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/respawn_anchor_top_off.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.7761,
+        "reference": "1.20.1:assets/minecraft/textures/block/respawn_anchor_top_off.png"
+      },
+      "verdict": "SUSPECT"
+    },
+    "assets/advancedrocketrycommunity/textures/block/solar_generator_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/chiseled_bookshelf_empty.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.5548,
+        "reference": "1.20.1:assets/minecraft/textures/block/chiseled_bookshelf_empty.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/solar_panel.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/chiseled_bookshelf_empty.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.5797,
+        "reference": "1.20.1:assets/minecraft/textures/block/chiseled_bookshelf_empty.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/station_altitude_controller_side.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/door_dark_oak_upper.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.3834,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/door_dark_oak_upper.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/station_controller_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/quartz_block_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.6129,
+        "reference": "1.20.1:assets/minecraft/textures/block/quartz_block_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/station_controller_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/cartography_table_side3.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 4,
+        "overlap": 0.0,
+        "rank": 0.5675,
+        "reference": "1.20.1:assets/minecraft/textures/block/cartography_table_side3.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/station_gravity_controller_side.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/door_dark_oak_upper.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.4948,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/door_dark_oak_upper.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/station_light.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/glow_item_frame.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.9402,
+        "reference": "1.20.1:assets/minecraft/textures/block/glow_item_frame.png"
+      },
+      "verdict": "HIT"
+    },
+    "assets/advancedrocketrycommunity/textures/block/station_orientation_controller_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/painting/water.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "orientation": 4,
+        "overlap": 0.0,
+        "rank": 0.398,
+        "reference": "1.20.1:assets/minecraft/textures/painting/water.png",
+        "scale": -2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/suit_workstation_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/painting/wanderer.png#frame0",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.5417,
+        "reference": "1.20.1:assets/minecraft/textures/painting/wanderer.png#frame0"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/suit_workstation_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/painting/wanderer.png#frame0",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 3,
+        "overlap": 0.0,
+        "rank": 0.5417,
+        "reference": "1.20.1:assets/minecraft/textures/painting/wanderer.png#frame0"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/suit_workstation_top.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.5346,
+        "reference": "1.20.1:assets/minecraft/textures/block/stonecutter_bottom.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/thermite_torch.png": {
+      "best": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5385,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          148,
+          230
+        ],
+        "orientation": 2,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+        "reference_scale": 1,
+        "region": 256,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/unlit_torch.png": {
+      "best": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.2308,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          172,
+          244
+        ],
+        "orientation": 2,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+        "reference_scale": 1,
+        "region": 192,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/warp_controller_side.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/door_dark_oak_upper.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.4249,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/door_dark_oak_upper.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/warp_core_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/jukebox_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.5546,
+        "reference": "1.20.1:assets/minecraft/textures/block/jukebox_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/entity/suit_components.png": {
+      "best": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+      "record": {
+        "candidate_scale": 2,
+        "classes": 10,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.8148,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          -7,
+          187
+        ],
+        "orientation": 0,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+        "reference_scale": 1,
+        "region": 144,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/advanced_circuit_plate.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/clock_08.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.9111,
+        "method": "same",
+        "orientation": 2,
+        "overlap": 0.0,
+        "rank": 0.3852,
+        "reference": "1.20.1:assets/minecraft/textures/item/clock_08.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/advanced_solar_panel.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/cow/cow.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          43,
+          -5
+        ],
+        "orientation": 4,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/cow/cow.png",
+        "reference_scale": 1,
+        "region": 134,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/airlock_door.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/banner_base.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.3774,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          6,
+          6
+        ],
+        "orientation": 7,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/banner_base.png",
+        "reference_scale": 1,
+        "region": 256,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/anti_fog_visor.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.4375,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/atmosphere_analyzer.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/chest/christmas_double.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 8,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.4167,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          23,
+          -2
+        ],
+        "orientation": 2,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/chest/christmas_double.png",
+        "reference_scale": 2,
+        "region": 202,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/basic_circuit_plate.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/cactus_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.9388,
+        "method": "same",
+        "orientation": 2,
+        "overlap": 0.0,
+        "rank": 0.4456,
+        "reference": "1.20.1:assets/minecraft/textures/block/cactus_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/basic_laser_gun.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.3125,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/beacon_finder.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/enderdragon/dragon.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5278,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          9,
+          17
+        ],
+        "orientation": 3,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/enderdragon/dragon.png",
+        "reference_scale": 4,
+        "region": 220,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/bionic_leg_upgrade.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.1875,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/carbon_brick.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/heart_of_the_sea.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.9211,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.7674,
+        "reference": "1.20.1:assets/minecraft/textures/item/heart_of_the_sea.png"
+      },
+      "verdict": "SUSPECT"
+    },
+    "assets/advancedrocketrycommunity/textures/item/carbon_scrubber_cartridge.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.375,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/control_board.png": {
+      "best": "1.20.1:assets/minecraft/textures/gui/container/villager2.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 7,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.6259,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          286,
+          0
+        ],
+        "orientation": 6,
+        "phase": 0,
+        "reference": "1.20.1:assets/minecraft/textures/gui/container/villager2.png",
+        "reference_scale": 1,
+        "region": 256,
+        "votes": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/earthbright_visor.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.4375,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/enriched_lava_bucket.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/chest/christmas_double.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5641,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          11,
+          7
+        ],
+        "orientation": 1,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/chest/christmas_double.png",
+        "reference_scale": 2,
+        "region": 240,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/flight_speed_upgrade.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.375,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/high_pressure_tank.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/music_disc_pigstep.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.85,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.238,
+        "reference": "1.20.1:assets/minecraft/textures/item/music_disc_pigstep.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/hover_upgrade.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.3125,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/iron_saw_blade.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.375,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/item_io_board.png": {
+      "best": "1.20.1:assets/minecraft/textures/gui/container/villager2.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 7,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.6357,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          286,
+          0
+        ],
+        "orientation": 0,
+        "phase": 0,
+        "reference": "1.20.1:assets/minecraft/textures/gui/container/villager2.png",
+        "reference_scale": 1,
+        "region": 256,
+        "votes": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/jackhammer.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/horse/armor/horse_armor_diamond.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.3061,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          23,
+          57
+        ],
+        "orientation": 1,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/horse/armor/horse_armor_diamond.png",
+        "reference_scale": 1,
+        "region": 123,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/jetpack.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.5,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/liquid_io_board.png": {
+      "best": "1.20.1:assets/minecraft/textures/gui/container/villager2.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 7,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.6279,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          286,
+          0
+        ],
+        "orientation": 0,
+        "phase": 0,
+        "reference": "1.20.1:assets/minecraft/textures/gui/container/villager2.png",
+        "reference_scale": 1,
+        "region": 256,
+        "votes": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/low_pressure_tank.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/music_disc_pigstep.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.85,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.3042,
+        "reference": "1.20.1:assets/minecraft/textures/item/music_disc_pigstep.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/boule.png": {
+      "best": "1.12.2:assets/minecraft/textures/gui/title/background/panorama_5.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.6905,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          107,
+          240
+        ],
+        "orientation": 4,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/gui/title/background/panorama_5.png",
+        "reference_scale": 1,
+        "region": 256,
+        "votes": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/crystal.png": {
+      "best": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5385,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          186,
+          217
+        ],
+        "orientation": 4,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+        "reference_scale": 1,
+        "region": 256,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/dust.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.1875,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/fan.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/alex.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.3958,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          14,
+          0
+        ],
+        "orientation": 0,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/alex.png",
+        "reference_scale": 1,
+        "region": 230,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/gear.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/horse/horse_skeleton.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.4328,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          29,
+          46
+        ],
+        "orientation": 1,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/horse/horse_skeleton.png",
+        "reference_scale": 1,
+        "region": 201,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/ingot.png": {
+      "best": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.6923,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          -10,
+          6
+        ],
+        "orientation": 2,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/colormap/grass.png",
+        "reference_scale": 1,
+        "region": 96,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/nugget.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/nether_wart_stage_1.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.4286,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          -4,
+          0
+        ],
+        "orientation": 0,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/nether_wart_stage_1.png",
+        "reference_scale": 1,
+        "region": 97,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/plate.png": {
+      "best": "1.20.1:assets/minecraft/textures/particle/nautilus.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.8889,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.3757,
+        "reference": "1.20.1:assets/minecraft/textures/particle/nautilus.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/raw.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/gunpowder.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.8737,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.3992,
+        "reference": "1.20.1:assets/minecraft/textures/item/gunpowder.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/rod.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/grass_top.png",
+      "record": {
+        "colours": 2,
+        "iou": 0.1875,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0082,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/grass_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/material/sheet.png": {
+      "best": "1.12.2:assets/minecraft/textures/items/item_frame.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.8848,
+        "method": "same",
+        "orientation": 0,
+        "overlap": 0.0,
+        "rank": 0.4371,
+        "reference": "1.12.2:assets/minecraft/textures/items/item_frame.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/nitrogen_canister.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.375,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/padded_landing_boots.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.3125,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/pressure_tank.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/music_disc_pigstep.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.85,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.2498,
+        "reference": "1.20.1:assets/minecraft/textures/item/music_disc_pigstep.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/quartz_crucible_shell.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.4375,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/rocket_fuel_bucket.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/chest/christmas_double.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5641,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          11,
+          7
+        ],
+        "orientation": 1,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/chest/christmas_double.png",
+        "reference_scale": 2,
+        "region": 240,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/satellite_solar_module.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.3125,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/seal_detector.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/alex.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.45,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          16,
+          -3
+        ],
+        "orientation": 1,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/alex.png",
+        "reference_scale": 1,
+        "region": 173,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/space_suit_boots.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.375,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/space_suit_chestplate.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/ender_eye.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.8504,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.3427,
+        "reference": "1.20.1:assets/minecraft/textures/item/ender_eye.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/space_suit_helmet.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/cauldron.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.9,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.3829,
+        "reference": "1.20.1:assets/minecraft/textures/item/cauldron.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/space_suit_leggings.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.3125,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/super_high_pressure_tank.png": {
+      "best": "1.12.2:assets/minecraft/textures/items/record_chirp.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.85,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.1903,
+        "reference": "1.12.2:assets/minecraft/textures/items/record_chirp.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/thermite.png": {
+      "best": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 7,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5574,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          189,
+          224
+        ],
+        "orientation": 1,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/colormap/foliage.png",
+        "reference_scale": 1,
+        "region": 256,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/tracking_circuit.png": {
+      "best": "1.20.1:assets/minecraft/textures/particle/nautilus.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.8649,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.4334,
+        "reference": "1.20.1:assets/minecraft/textures/particle/nautilus.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/user_interface.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/armorstand/wood.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.4833,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          37,
+          55
+        ],
+        "orientation": 4,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/armorstand/wood.png",
+        "reference_scale": 1,
+        "region": 82,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/models/armor/space_suit_layer_1.png": {
+      "best": "1.12.2:assets/minecraft/textures/gui/container/beacon.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5461,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          24,
+          83
+        ],
+        "orientation": 2,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/gui/container/beacon.png",
+        "reference_scale": 2,
+        "region": 1926,
+        "votes": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/models/armor/space_suit_layer_2.png": {
+      "best": "1.20.1:assets/minecraft/textures/entity/conduit/base.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.1231,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.20.1:assets/minecraft/textures/entity/conduit/base.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    }
+  },
+  "schema_version": 1,
+  "vanilla": {
+    "1.12.2": {
+      "bytes": 10180113,
+      "sha256": "8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f"
+    },
+    "1.20.1": {
+      "bytes": 23028853,
+      "sha256": "56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f"
+    }
+  }
+}
