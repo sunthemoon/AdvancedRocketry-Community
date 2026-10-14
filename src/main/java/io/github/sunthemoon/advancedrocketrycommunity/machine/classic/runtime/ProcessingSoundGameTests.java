@@ -88,7 +88,8 @@ public final class ProcessingSoundGameTests {
             assertProjection(helper, f.controller, false, sound);
             f.clearOutput(); f.tick(1); assertProjection(helper, f.controller, true, sound);
             var part = f.world(f.pattern.cells().entrySet().stream()
-                    .filter(cell -> cell.getValue() instanceof io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternMatcher.ExactBlock)
+                    .filter(cell -> cell.getValue() instanceof io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternMatcher.BlockTag tag
+                            && tag.tagId().endsWith(":motors"))
                     .findFirst().orElseThrow().getKey());
             var state = helper.getLevel().getBlockState(part);
             helper.getLevel().setBlock(part, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
