@@ -176,13 +176,24 @@ No candidate or release approval is assigned.
   stormland's trees.
 - A station warp to Tau Ceti no longer warns that the star system has no
   rocket routes.
-- Data packs: Rolling Machine, Precision Assembler and Electrolyzer recipes
-  must name items; tag ingredients are refused until the classic machine
-  family resolves tags after they load. Electrolyzer ingredients also take
-  the bounded form (one `item` per entry, at most 32 entries, no Forge custom
-  ingredient types). Small plate press recipes take
-  exactly `type`, `schema_version`, `ingredient` (items or tags) and
-  `result`; Forge's `conditions` key is not accepted.
+- Data packs: Rolling Machine, Precision Assembler, Electrolyzer and Small
+  Plate Press recipes, and the recipes of the Lathe, Electric Arc Furnace,
+  Cutting Machine, Crystallizer, Chemical Reactor, Precision Laser Etcher and
+  Centrifuge, accept item tags. An ingredient is one entry or a list of 1 to
+  32 entries; each entry is exactly one `item` or one `tag`, and Forge custom
+  ingredient types are not accepted. Tags are resolved after they load.
+  Except on the Small Plate Press, a recipe whose ingredient then names no
+  item or more than 32 items is disabled, with an error in the log, until the
+  next tag reload. Small plate press recipes take exactly `type`,
+  `schema_version`, `ingredient` (items or tags) and `result`; Forge's
+  `conditions` key is not accepted.
+- The legacy `makeMaterialsForOtherMods` setting is gone, and no setting
+  replaces it. Machine recipes take common `forge:` tags, so other mods'
+  ingots, plates and dusts work wherever this mod uses the same material, and
+  this mod's materials carry the same tags for other mods' recipes. The legacy
+  setting, on by default, also made machine recipes for materials that only
+  other mods define, such as plates of another mod's metal. Those recipes are
+  no longer generated; a data pack can add them.
 
 ## v1.7.0 — in development
 
