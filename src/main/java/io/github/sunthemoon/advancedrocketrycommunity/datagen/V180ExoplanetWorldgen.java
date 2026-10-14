@@ -312,7 +312,7 @@ public final class V180ExoplanetWorldgen {
     public static void dimensionTypes(BootstapContext<DimensionType> context) {
         for (ResourceLocation id : List.of(ExoplanetContent.TAU_CETI_F, ExoplanetContent.TAU_CETI_G)) {
             context.register(ResourceKey.create(Registries.DIMENSION_TYPE, id), new DimensionType(OptionalLong.empty(),
-                    true, false, false, false, 1, true, false, 0, 256, 256, BlockTags.INFINIBURN_OVERWORLD,
+                    true, false, false, true, 1, true, false, 0, 256, 256, BlockTags.INFINIBURN_OVERWORLD,
                     SkyProfiles.SURFACE_EFFECTS, 0, new DimensionType.MonsterSettings(false, false,
                     ConstantInt.of(0), 0)));
         }
