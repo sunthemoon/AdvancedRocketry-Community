@@ -8,6 +8,8 @@ gate. The process must halt with the release-test status at the row's named boun
 the cut, except FM8a, whose receipt refusal remains through both restarts and is removed only for a recovery start and
 one more idempotent start. Every completed start checks the raw roots: the same event E in the journal outbox, the
 receipt R(E) with the identical event and fingerprint, DELIVERED, no second election and no unexpected ERROR line.
+It also waits until the Moon rocket that recovery loaded or rebuilt reports LANDED, and the last two completed starts
+must load the same rocket.
 Server copies are deleted afterwards.
 """
 from __future__ import annotations
@@ -23,7 +25,7 @@ import uuid
 
 import run_dedicated_server_smoke as smoke
 from inspect_celestial_saved_data import NbtReader
-from run_v060_flight_server_smoke import FlightHarness, EARTH, LAUNCH_LOG, _server_command
+from run_v060_flight_server_smoke import FlightHarness, EARTH, MOON, LAUNCH_LOG, _server_command
 
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 PROGRESSION = "advancedrocketrycommunity_classic_progression.dat"
@@ -45,6 +47,7 @@ CASES = {
 HALT = re.compile(r"ARCE_RELEASE_TEST first_event_cut id=(\S+) boundary=(\S+) event=(\S+) thread=(.+)$")
 STATUS = re.compile(r"kind=first_moon_landing source=(\S+) event=(\S+) receipt=(\S+) hold=(\S+)")
 ELECTED = "ARCE_FIRST_EVENT_ELECTED kind=first_moon_landing"
+ACTIVE = re.compile(r"ARCE_ROCKET_ENTITY_ACTIVE entity=([0-9a-f-]{36}) operational=true .*flight_state=([A-Z_]+)")
 
 
 def uuid_ints(value: uuid.UUID) -> list[int]:
@@ -145,6 +148,22 @@ def delivered(case: str, process: smoke.CapturedProcess, event_id: str, timeout:
         time.sleep(2)
 
 
+def landed(case: str, process: smoke.CapturedProcess, timeout: float) -> dict:
+    """The Moon rocket that recovery loaded (or rebuilt) reaches LANDED: a lagging entity is projected (FM4b)."""
+    deadline = time.monotonic() + timeout
+    while True:
+        loaded = [match for match in map(ACTIVE.search, process.lines) if match]
+        if loaded:
+            entity = loaded[-1].group(1)
+            report = FlightHarness.report(process, MOON, entity)
+            if report["state"] == "LANDED":
+                return dict(entity=entity, loaded_state=loaded[-1].group(2), state=report["state"],
+                            landing_logged=any("event=landing_complete" in line for line in process.lines))
+        if time.monotonic() > deadline:
+            raise smoke.SmokeError(f"{case}: the Moon rocket did not reach LANDED within {timeout} s")
+        time.sleep(2)
+
+
 def run(args) -> dict:
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     intended = Path("D:/GitHub/ARCE-Task-Evidence/Temp").resolve()
@@ -213,6 +232,7 @@ def run(args) -> dict:
                     entry["disk"] = inspect(world, case, event_id, halt_source, halt_receipt)
                 else:
                     entry["status"] = delivered(case, process, event_id, args.delivery_timeout)
+                    entry["rocket"] = landed(case, process, args.delivery_timeout)
                     save_start = len(process.lines)
                     process.command("save-all flush")
                     process.wait_for(smoke.SAVE_MARKER, 60, start_at=save_start)
@@ -227,9 +247,11 @@ def run(args) -> dict:
                 entry["errors"] = check_errors(case, process.lines)
                 process = None
                 row["starts"].append(entry)
-            done = [entry["disk"] for entry in row["starts"] if entry["cut"] is None]
-            if any(disk["event"] != done[0]["event"] for disk in done):
+            done = [entry for entry in row["starts"] if entry["cut"] is None]
+            if any(entry["disk"]["event"] != done[0]["disk"]["event"] for entry in done):
                 raise smoke.SmokeError(f"{case}: the restarts disagree on E")
+            if done[-1]["rocket"]["entity"] != done[-2]["rocket"]["entity"]:
+                raise smoke.SmokeError(f"{case}: the second recovered start loaded another Moon rocket")
             row["event"] = event_id
             row["status"] = "PASS"
             report["cases"].append(row)
