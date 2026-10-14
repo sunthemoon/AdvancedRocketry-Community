@@ -34,6 +34,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.Atmosphe
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereServerEvents;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.NonPlayerAtmosphereService;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.PlayerLifeSupportService;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.SleepRespawnService;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.service.MultiblockPatternReloadListener;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.precision.PrecisionAssemblerManager;
@@ -430,6 +431,9 @@ public final class AdvancedRocketryCommunity {
             NonPlayerAtmosphereService nonPlayers = new NonPlayerAtmosphereService(atmosphereManager);
             MinecraftForge.EVENT_BUS.addListener(nonPlayers::onLivingTick);
             MinecraftForge.EVENT_BUS.addListener(nonPlayers::onPositionCheck);
+            // ADR-066 section 3.3: sleep admission and the two planet-respawn options.
+            new SleepRespawnService(atmosphereManager, celestialCatalogs, SleepRespawnService::configuredOptions)
+                    .register(MinecraftForge.EVENT_BUS);
             MinecraftForge.EVENT_BUS.addListener(new AtmosphereCommands(atmosphereManager)::register);
         }
     }

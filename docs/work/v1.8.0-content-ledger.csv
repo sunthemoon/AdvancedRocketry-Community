@@ -309,10 +309,10 @@ config:OXYGEN.torchBlocks,REDESIGNED,v1.8.0,torch_pairs data catalog,ADR-062 ADR
 config:OXYGEN.vacuumDamage,IMPLEMENTED,v1.8.0,COMMON OXYGEN.vacuumDamage,ADR-062 ADR-066,"0 to 20 per scheduled second, default 2.0; zero stops damage only",docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:PERFORMANCE.atmosphereCalculationMethod,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,,
 config:PERFORMANCE.oxygenVentSize,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,,
-config:PLANET.allowPlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,,
+config:PLANET.allowPlanetRespawn,IMPLEMENTED,v1.8.0,COMMON PLANET.allowPlanetRespawn,ADR-062 ADR-066,default false; refused points are kept (R-036),docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:Planet.BlacklistedBiomes,REJECTED,-,-,ADR-031 ADR-062,biome lists of random planet generation,
 config:PLANET.blackListVanillaBiomes,REJECTED,-,-,ADR-031 ADR-062,random planet generation is not revived,
-config:PLANET.forcePlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,,
+config:PLANET.forcePlanetRespawn,IMPLEMENTED,v1.8.0,COMMON PLANET.forcePlanetRespawn,ADR-062 ADR-066,default false; skips only the arrival air check,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:Planet.HighPressureBiomes,REJECTED,-,-,ADR-031 ADR-062,biome lists of random planet generation,
 config:PLANET.maxBiomesPerPlanet,REJECTED,-,-,ADR-031 ADR-062,random planet generation is not revived,
 config:PLANET.minDimension,REJECTED,-,-,ADR-031 ADR-062,random planet generation is not revived,
