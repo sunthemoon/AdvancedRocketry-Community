@@ -593,6 +593,8 @@ public final class StationWarpGameTests {
         final BlockPos pad;
         final List<ServerPlayer> online = new ArrayList<>();
         final Map<UUID, List<String>> tokens = new java.util.HashMap<>();
+        /** Every message's full JSON, hover and click events included, per player. */
+        final Map<UUID, List<String>> serialized = new java.util.HashMap<>();
         final List<BlockPos> cores = new ArrayList<>();
         net.minecraft.world.level.ChunkPos ticket;
 
@@ -651,7 +653,8 @@ public final class StationWarpGameTests {
         List<String> join(UUID playerId, String name, BlockPos position, boolean serverPermissions) {
             List<String> replies = new ArrayList<>();
             online.add(ConnectedTestPlayers.join(server, playerId, name, space, position, replies, serverPermissions,
-                    tokens.computeIfAbsent(playerId, ignored -> new ArrayList<>())));
+                    tokens.computeIfAbsent(playerId, ignored -> new ArrayList<>()), true,
+                    serialized.computeIfAbsent(playerId, ignored -> new ArrayList<>())));
             return replies;
         }
 
