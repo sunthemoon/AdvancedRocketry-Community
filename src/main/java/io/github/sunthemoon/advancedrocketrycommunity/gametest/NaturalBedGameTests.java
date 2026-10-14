@@ -174,6 +174,19 @@ public final class NaturalBedGameTests {
             MinecraftForge.EVENT_BUS.post(new SleepingTimeCheckEvent(player, Optional.of(room.head())));
             unrelated.assertSame(helper, player);
             enter(player, room);
+            boolean[] reposted = {false};
+            Consumer<PlayerSleepInBedEvent> synthetic = event -> {
+                if (event.getEntity() == player && !reposted[0]) {
+                    reposted[0] = true;
+                    MinecraftForge.EVENT_BUS.post(new PlayerSleepInBedEvent(player, Optional.of(room.head().west())));
+                }
+            };
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, PlayerSleepInBedEvent.class, synthetic);
+            try {
+                helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Reposted-admission sleep failed");
+                unrelated.assertSame(helper, player);
+                player.stopSleepInBed(true, true);
+            } finally { MinecraftForge.EVENT_BUS.unregister(synthetic); }
             boolean[] nested = {false};
             Consumer<PlayerSetSpawnEvent> nest = event -> {
                 if (event.getEntity() == player && !nested[0]) {

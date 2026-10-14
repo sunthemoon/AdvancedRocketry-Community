@@ -23,6 +23,7 @@ import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraftforge.eventbus.EventBus;
 
 /**
  * D1 outcome 3: preserve native spawn fields around an admitted off-world bed operation, not around arbitrary
@@ -141,7 +142,7 @@ public final class BedRespawnPreserver {
             // consume that operation: its eventual primary callback still has to preserve the nested setter.
             // In a native time-check callback the write has finished; restore before a reentrant save, retaining
             // the entry until the primary callback unwinds it normally.
-            if (call.timeCheck) {
+            if (call.timeWindow) {
                 TreeMap<Integer, Operation> active = pending.get(player);
                 if (active != null) { active.descendingMap().values().forEach(operation -> restore(player, operation)); }
             }
@@ -163,33 +164,48 @@ public final class BedRespawnPreserver {
             var frames = stream.toList();
             int depth = 0;
             boolean bedSetter = false;
-            boolean foundSetter = false;
             boolean admission = false;
             boolean timeCheck = false;
+            boolean timeWindow = false;
             for (int index = 0; index < frames.size(); index++) {
                 StackWalker.StackFrame frame = frames.get(index);
                 if (nativeSleep(frame)) { depth++; }
-                if (!foundSetter && frame.getDeclaringClass() == ServerPlayer.class && frame.getMethodType().equals(SET)) {
-                    foundSetter = true;
-                    bedSetter = index + 1 < frames.size() && nativeSleep(frames.get(index + 1));
-                }
                 if (frame.getDeclaringClass() == ForgeEventFactory.class && index + 1 < frames.size()
-                        && nativeSleep(frames.get(index + 1))) {
-                    // Forge names are not Minecraft-obfuscated. Require the direct factory caller, too, so a
-                    // synthetic check/admission nested inside an event listener cannot consume an outer operation.
-                    admission |= frame.getMethodName().equals("onPlayerSleepInBed");
-                    timeCheck |= frame.getMethodName().equals("fireSleepingTimeCheck");
+                        && nativeSleep(frames.get(index + 1)) && frame.getMethodName().equals("fireSleepingTimeCheck")) {
+                    timeWindow = true;
                 }
             }
-            return new Call(depth, bedSetter, admission, timeCheck);
+            // Inspect the nearest dispatch, not any enclosing factory. A synthetic post inside a native listener
+            // must not borrow that outer call's attribution. Forge/EventBus method names are not obfuscated.
+            for (int index = 0; index < frames.size(); index++) {
+                if (!postFrame(frames.get(index))) { continue; }
+                while (index + 1 < frames.size() && postFrame(frames.get(index + 1))) { index++; }
+                if (index + 2 < frames.size()) {
+                    StackWalker.StackFrame factory = frames.get(index + 1);
+                    StackWalker.StackFrame caller = frames.get(index + 2);
+                    if (factory.getDeclaringClass() == ForgeEventFactory.class) {
+                        admission = factory.getMethodName().equals("onPlayerSleepInBed") && nativeSleep(caller);
+                        timeCheck = factory.getMethodName().equals("fireSleepingTimeCheck") && nativeSleep(caller);
+                        bedSetter = factory.getMethodName().equals("onPlayerSpawnSet")
+                                && caller.getDeclaringClass() == ServerPlayer.class && caller.getMethodType().equals(SET)
+                                && index + 3 < frames.size() && nativeSleep(frames.get(index + 3));
+                    }
+                }
+                break;
+            }
+            return new Call(depth, bedSetter, admission, timeCheck, timeWindow);
         });
+    }
+
+    private static boolean postFrame(StackWalker.StackFrame frame) {
+        return frame.getDeclaringClass() == EventBus.class && frame.getMethodName().equals("post");
     }
 
     private static boolean nativeSleep(StackWalker.StackFrame frame) {
         return frame.getDeclaringClass() == ServerPlayer.class && frame.getMethodType().equals(SLEEP);
     }
 
-    private record Call(int depth, boolean bedSetter, boolean admission, boolean timeCheck) { }
+    private record Call(int depth, boolean bedSetter, boolean admission, boolean timeCheck, boolean timeWindow) { }
 
     private static final class Operation {
         private Tuple before;
