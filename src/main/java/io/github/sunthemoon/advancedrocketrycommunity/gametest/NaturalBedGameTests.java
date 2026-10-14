@@ -263,44 +263,46 @@ public final class NaturalBedGameTests {
     @GameTest(template = TEMPLATE, batch = "natural_beds_vacuum", timeoutTicks = 40)
     public static void vacuumAdmissionOnAllSixNativeHostsUsesTheW37Rule(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
-        ServerPlayer player = join(helper, "W37BVacuum");
-        List<CelestialBodyDefinition> bodies = new ArrayList<>(CelestialDefaults.definitions());
-        bodies.addAll(PlanetaryContent.definitions());
-        bodies.addAll(StarSystemContent.definitions());
-        bodies.addAll(ExoplanetContent.definitions());
-        bodies.replaceAll(body -> new CelestialBodyDefinition(body.id(), body.parentId(), body.levelKey(),
-                body.gravityMultiplier(), new AtmosphereDefinition(0, false, 288, ModIdentity.id("vacuum")),
-                body.orbit(), body.visualProfile(), body.capabilities(), body.solarIntensity(), body.radiation(),
-                false, body.discoveryRequired()));
-        CelestialCatalogManager catalogs = new CelestialCatalogManager();
-        helper.assertTrue(catalogs.applyCandidate(CelestialCatalog.create(bodies)), "Invalid vacuum fixture catalog");
-        AtmosphereManager air = new AtmosphereManager(new CelestialEnvironmentService(catalogs));
-        SleepRespawnService admission = new SleepRespawnService(air, catalogs, () -> new Options(false, false));
-        // Controlled catalog supplies the counterfactual vacuum on normally breathable Tau Ceti f. The real
-        // startSleepInBed, real Levels and same production W37 admission code run; no runtime authority is replaced.
-        Consumer<PlayerSleepInBedEvent> listener = event -> {
-            if (event.getEntity() == player) { admission.onSleepInBed(event); }
-        };
-        MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, false, PlayerSleepInBedEvent.class, listener);
-        List<Runnable> cleanup = new ArrayList<>();
-        try {
-            for (ResourceKey<Level> key : HOSTS) {
-                ServerLevel level = NonPlayerAtmosphereGameTests.level(helper, key);
-                BlockPos column = helper.absolutePos(new BlockPos(4, 0, 4));
-                BlockPos head = new BlockPos(column.getX(), 200, column.getZ());
-                cleanup.add(SleepRespawnGameTests.placeBedOnPlatform(level, head));
-                player.teleportTo(level, head.getX() + 0.5D, head.getY(), head.getZ() + 0.5D, 0, 0);
-                Tuple before = Tuple.read(player);
-                helper.assertTrue(player.startSleepInBed(head).left().orElse(null)
-                                == Player.BedSleepingProblem.NOT_POSSIBLE_HERE && !player.isSleeping(),
-                        "An unbreathable native bed was admitted in " + key.location());
-                before.assertSame(helper, player);
+        try (var discovery = new NaturalBedFixtures.DiscoveryScope(server)) {
+            ServerPlayer player = join(helper, "W37BVacuum");
+            List<CelestialBodyDefinition> bodies = new ArrayList<>(CelestialDefaults.definitions());
+            bodies.addAll(PlanetaryContent.definitions());
+            bodies.addAll(StarSystemContent.definitions());
+            bodies.addAll(ExoplanetContent.definitions());
+            bodies.replaceAll(body -> new CelestialBodyDefinition(body.id(), body.parentId(), body.levelKey(),
+                    body.gravityMultiplier(), new AtmosphereDefinition(0, false, 288, ModIdentity.id("vacuum")),
+                    body.orbit(), body.visualProfile(), body.capabilities(), body.solarIntensity(), body.radiation(),
+                    false, body.discoveryRequired()));
+            CelestialCatalogManager catalogs = new CelestialCatalogManager();
+            helper.assertTrue(catalogs.applyCandidate(CelestialCatalog.create(bodies)), "Invalid vacuum fixture catalog");
+            AtmosphereManager air = new AtmosphereManager(new CelestialEnvironmentService(catalogs));
+            SleepRespawnService admission = new SleepRespawnService(air, catalogs, () -> new Options(false, false));
+            // Controlled catalog supplies the counterfactual vacuum on normally breathable Tau Ceti f. The real
+            // startSleepInBed, real Levels and same production W37 admission code run; no runtime authority is replaced.
+            Consumer<PlayerSleepInBedEvent> listener = event -> {
+                if (event.getEntity() == player) { admission.onSleepInBed(event); }
+            };
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGH, false, PlayerSleepInBedEvent.class, listener);
+            List<Runnable> cleanup = new ArrayList<>();
+            try {
+                for (ResourceKey<Level> key : HOSTS) {
+                    ServerLevel level = NonPlayerAtmosphereGameTests.level(helper, key);
+                    BlockPos column = helper.absolutePos(new BlockPos(4, 0, 4));
+                    BlockPos head = new BlockPos(column.getX(), 200, column.getZ());
+                    cleanup.add(SleepRespawnGameTests.placeBedOnPlatform(level, head));
+                    player.teleportTo(level, head.getX() + 0.5D, head.getY(), head.getZ() + 0.5D, 0, 0);
+                    Tuple before = Tuple.read(player);
+                    helper.assertTrue(player.startSleepInBed(head).left().orElse(null)
+                                    == Player.BedSleepingProblem.NOT_POSSIBLE_HERE && !player.isSleeping(),
+                            "An unbreathable native bed was admitted in " + key.location());
+                    before.assertSame(helper, player);
+                }
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(listener);
+                server.getPlayerList().remove(player);
+                cleanup.forEach(Runnable::run);
+                air.clear();
             }
-        } finally {
-            MinecraftForge.EVENT_BUS.unregister(listener);
-            server.getPlayerList().remove(player);
-            cleanup.forEach(Runnable::run);
-            air.clear();
         }
         helper.succeed();
     }

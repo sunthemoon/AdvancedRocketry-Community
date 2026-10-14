@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetContent;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.CelestialSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
@@ -12,6 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -25,6 +27,31 @@ import net.minecraftforge.eventbus.api.IEventListener;
 /** Owns the connected player, supplied-room fixtures, time and chunk tickets for the W37B native checks. */
 final class NaturalBedFixtures {
     private NaturalBedFixtures() { }
+
+    /** Visits and save-all must affect only this test's copy, never the next batch's discovery authority. */
+    static final class DiscoveryScope implements AutoCloseable {
+        private final MinecraftServer server;
+        private final CelestialSavedData original;
+        private boolean closed;
+
+        DiscoveryScope(MinecraftServer server) { this(server, false); }
+
+        DiscoveryScope(MinecraftServer server, boolean empty) {
+            this.server = server;
+            original = CelestialSavedData.get(server);
+            var copy = empty ? CelestialSavedData.create() : CelestialSavedData.load(original.save(new CompoundTag()));
+            server.overworld().getDataStorage().set(CelestialSavedData.DATA_NAME, copy);
+        }
+
+        @Override
+        public void close() {
+            if (closed) { return; }
+            closed = true;
+            server.overworld().getDataStorage().set(CelestialSavedData.DATA_NAME, original);
+            // A native save-all may already have persisted the copy; checked restoration must replace that too.
+            original.flush(server);
+        }
+    }
 
     /** A previously registered listener cancels, and a terminal listener uncancels, the actual save-all command. */
     static void saveWithReversedCommandCancellation(MinecraftServer server) {
@@ -64,14 +91,17 @@ final class NaturalBedFixtures {
         final List<Runnable> cleanup = new ArrayList<>();
         ServerPlayer player;
         final long originalTime;
+        final DiscoveryScope discovery;
+        private boolean closed;
 
         Fixture(GameTestHelper helper, String name, List<ResourceKey<Level>> hosts) {
             server = helper.getLevel().getServer();
             originalTime = server.overworld().getDayTime();
-            player = ConnectedTestPlayers.join(server, UUID.randomUUID(), name, helper.getLevel(),
-                    helper.absolutePos(new BlockPos(1, 1, 1)), new ArrayList<>(), false, new ArrayList<>(), false);
-            server.overworld().setDayTime(18000);
+            discovery = new DiscoveryScope(server);
             try {
+                player = ConnectedTestPlayers.join(server, UUID.randomUUID(), name, helper.getLevel(),
+                        helper.absolutePos(new BlockPos(1, 1, 1)), new ArrayList<>(), false, new ArrayList<>(), false);
+                server.overworld().setDayTime(18000);
                 for (ResourceKey<Level> key : hosts) {
                     ServerLevel level = NonPlayerAtmosphereGameTests.level(helper, key);
                     BlockPos column = helper.absolutePos(new BlockPos(4, 0, 4));
@@ -117,10 +147,20 @@ final class NaturalBedFixtures {
 
         @Override
         public void close() {
-            if (player.isSleeping()) { player.stopSleepInBed(true, true); }
-            server.getPlayerList().remove(player);
-            cleanup.forEach(Runnable::run);
-            server.overworld().setDayTime(originalTime);
+            if (closed) { return; }
+            closed = true;
+            try {
+                if (player != null) {
+                    if (player.isSleeping()) { player.stopSleepInBed(true, true); }
+                    server.getPlayerList().remove(player);
+                }
+            } finally {
+                try { cleanup.forEach(Runnable::run); }
+                finally {
+                    server.overworld().setDayTime(originalTime);
+                    discovery.close();
+                }
+            }
         }
     }
 }
