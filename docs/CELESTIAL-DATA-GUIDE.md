@@ -216,8 +216,10 @@ permit a visit; and the air there must be breathable. `PLANET.forcePlanetRespawn
 `allowPlanetRespawn` is true. It never allows sleeping without air. When any
 check fails, the player respawns by the Overworld rules, is told why in chat,
 and keeps the saved point for later. The check never loads a chunk. This policy
-covers death respawns, including delayed death-screen requests. The native End
-credits return is a non-death dimension return and keeps vanilla behavior.
+covers death respawns, including delayed death-screen requests, and the return
+from the End after the credits, which is judged the same way. A point set while
+an earlier one is kept aside, by a command, a bed or another mod, is newer: it
+replaces the kept point.
 
 ## Using the flight star map
 

@@ -210,30 +210,68 @@ public final class DeathRespawnGameTests {
         helper.succeed();
     }
 
+    /** F2: the End credits return is judged like a death respawn; the default options refuse the planet bed. */
     @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
-    public static void nativeEndCreditsExitRetainsItsExcludedNonDeathBehavior(GameTestHelper helper) {
+    public static void aRefusedEndExitLandsAtTheOverworldSpawnAndKeepsThePoint(GameTestHelper helper) {
+        endExit(helper, false, "W37HEndRefused");
+    }
+
+    /** Holds allow on across a server tick, so it has a batch of its own: concurrent tests keep the default options. */
+    @GameTest(template = "atmosphere_test", batch = "end_exit_allowed", timeoutTicks = 40)
+    public static void anAcceptedEndExitLandsAtTheSavedPoint(GameTestHelper helper) {
+        endExit(helper, true, "W37HEndAccepted");
+    }
+
+    private static void endExit(GameTestHelper helper, boolean allow, String name) {
         MinecraftServer server = helper.getLevel().getServer();
         var planet = NonPlayerAtmosphereGameTests.level(helper, ExoplanetContent.TAU_CETI_F_LEVEL);
         var end = NonPlayerAtmosphereGameTests.level(helper, Level.END);
         BlockPos column = helper.absolutePos(new BlockPos(4, 0, 4));
         BlockPos head = new BlockPos(column.getX(), 200, column.getZ());
         Runnable bed = SleepRespawnGameTests.placeBedOnPlatform(planet, head);
-        ServerPlayer player = join(helper, "W37FEnd");
-        try {
-            player.setRespawnPosition(planet.dimension(), head, 0, false, false);
-            player.teleportTo(end, 0.5, 100, 0.5, 0, 0);
-            player.changeDimension(server.overworld()); // Real End->Overworld credits path, not a forged wonGame flag.
-            helper.assertTrue(player.wonGame && !player.isDeadOrDying()
-                            && player.getRemovalReason() == Entity.RemovalReason.CHANGED_DIMENSION && !pending(player),
-                    "End exit was not the excluded native non-death return");
-            ServerPlayer reborn = packet(player);
-            helper.assertTrue(reborn.serverLevel() == planet && head.equals(reborn.getRespawnPosition()),
-                    "The excluded End return did not retain native saved-bed behavior");
-        } finally {
-            remove(server, player.getUUID());
-            bed.run();
-        }
-        helper.succeed();
+        Runnable loaded = forceReach(planet, head);
+        if (allow) { SwitchOverrides.set(CommonConfig.ALLOW_PLANET_RESPAWN, true); }
+        ServerPlayer player = join(helper, name);
+        player.setRespawnPosition(planet.dimension(), head, -14.5F, false, false);
+        player.teleportTo(end, 0.5, 100, 0.5, 0, 0);
+        player.changeDimension(server.overworld()); // Real End->Overworld credits path, not a forged wonGame flag.
+        helper.assertTrue(player.wonGame && !player.isDeadOrDying()
+                        && player.getRemovalReason() == Entity.RemovalReason.CHANGED_DIMENSION,
+                "The fixture did not take the native End credits exit");
+        ServerPlayer[] reborn = {null};
+        afterEachEnd(helper, () -> {
+                    SwitchOverrides.clear(CommonConfig.ALLOW_PLANET_RESPAWN);
+                    remove(server, player.getUUID());
+                    loaded.run();
+                    bed.run();
+                },
+                () -> {
+                    helper.assertTrue(player.wonGame && (allow
+                                    ? !pending(player) && head.equals(player.getRespawnPosition())
+                                    : pending(player) && player.getRespawnPosition() == null),
+                            "The credits ticks were not judged: pending=" + pending(player));
+                    reborn[0] = packet(player); // handleClientCommand: wonGame, so respawn(player, true).
+                    if (allow) {
+                        helper.assertTrue(reborn[0].serverLevel() == planet
+                                        && reborn[0].position().closerThan(Vec3.atCenterOf(head), 3)
+                                        && head.equals(reborn[0].getRespawnPosition()),
+                                "The accepted End exit did not land at the saved bed: " + reborn[0].position());
+                        helper.assertTrue(SleepRespawnGameTests.chat(reborn[0]).stream()
+                                        .noneMatch(token -> token.contains(".planet_respawn.")),
+                                "An accepted End exit reported a fallback");
+                    } else {
+                        SleepRespawnGameTests.assertOverworldFallback(helper, reborn[0], planet.dimension(), head, false,
+                                RespawnOutcome.DISABLED);
+                        BlockPos spawn = server.overworld().getSharedSpawnPos();
+                        int radius = Math.max(1, server.getSpawnRadius(server.overworld())) + 1;
+                        helper.assertTrue(Math.abs(reborn[0].getBlockX() - spawn.getX()) <= radius
+                                        && Math.abs(reborn[0].getBlockZ() - spawn.getZ()) <= radius
+                                        && reborn[0].getRespawnAngle() == -14.5F,
+                                "The refused End exit did not land at the Overworld spawn: " + reborn[0].position());
+                    }
+                },
+                () -> helper.assertTrue(!pending(reborn[0]) && head.equals(reborn[0].getRespawnPosition()),
+                        "The End exit's recovery was not completed"));
     }
 
     /** The real respawn packet handler; it adopts the replacement, which the next server-tick END can complete. */

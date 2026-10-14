@@ -63,10 +63,10 @@ import net.minecraftforge.eventbus.api.IEventBus;
  *   <li>Sleep is refused at an unloaded, unpermitted, PENDING or unbreathable bed cell. Owner decision 05: in Space a
  *       supplied room outside committed stations qualifies; inside one, live VISIT permission is required.</li>
  *   <li>The operation-scoped bed spawn setter boundary (D1 outcome 3) is deferred to W37b.</li>
- *   <li>Death respawn: the server tick's END decides for each dead player in the player list, even after KILLED
- *       corpse removal and without any player tick. DISCARDED removal remains the final check for immediate respawn
- *       and a mod's living-player respawn call. A refused point is durably set aside so vanilla uses the Overworld,
- *       then restored to the replacement.</li>
+ *   <li>Death respawn and the End exit: the server tick's END decides for each dead player in the player list, even
+ *       after KILLED corpse removal and without any player tick, and for each player watching the End credits.
+ *       DISCARDED removal remains the final check for immediate respawn and a mod's living-player respawn call.
+ *       A refused point is durably set aside so vanilla uses the Overworld, then restored to the replacement.</li>
  *   <li>A newer point always wins: a set-aside point governs only its own restored tuple or this service's exact
  *       clear, and only until another party sets the point. It never overwrites a newer record.</li>
  * </ul>
@@ -232,18 +232,19 @@ public final class SleepRespawnService {
     }
 
     /**
-     * The per-tick decision, run last in the server tick: a dead player is decided, and any other player's pending
-     * recovery is retried (an interrupted respawn can leave the connection on the old player). Until the respawn
-     * packet's native read, only the inter-tick task queue (packets, commands, /reload completion) and the config
-     * watcher can change what it read. Native End credits return is a non-death CHANGED_DIMENSION path, explicitly
-     * outside this policy.
+     * The per-tick decision, run last in the server tick. A dead player, or one watching the End credits, is decided;
+     * any other player's pending recovery is retried (an interrupted respawn can leave the connection on the old
+     * player). The End exit removes the player with CHANGED_DIMENSION, so no DISCARDED check follows; the credits
+     * packet's respawn(player, true) reads the point this decision left. Until either respawn packet's native read,
+     * only the inter-tick task queue (packets, commands, /reload completion) and the config watcher can change what
+     * it read.
      */
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             MinecraftServer server = event.getServer();
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 if (player instanceof FakePlayer) { continue; }
-                if (player.isDeadOrDying()) { beforeRespawn(server, player); } else { restore(player, true); }
+                if (player.isDeadOrDying() || player.wonGame) { beforeRespawn(server, player); } else { restore(player, true); }
             }
         }
     }
