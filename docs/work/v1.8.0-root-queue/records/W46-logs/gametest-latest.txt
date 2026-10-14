@@ -18,120 +18,120 @@
 [14Oct2026 13:31:03.116] [modloading-worker-0/INFO] [net.minecraftforge.common.ForgeMod/FORGEMOD]: Forge mod loading, version 47.4.10, for MC 1.20.1 with MCP 20230612.114412
 [14Oct2026 13:31:03.121] [modloading-worker-0/INFO] [net.minecraftforge.common.MinecraftForge/FORGE]: MinecraftForge v47.4.10 Initialized
 [14Oct2026 13:31:04.342] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file D:\GitHub\arce-v180-w46-elevator-capsule\build\gametest\config\advancedrocketrycommunity-common.toml is not correct. Correcting
-[14Oct2026 13:31:04.344] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key research was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.344] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key research.groundSurveysEnabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.345] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.345] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.sawmillVanillaWood was corrected from null to its default, true. 
-[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.combustionGeneratorEnabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.solarGeneratorEnabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.tankCapacityMultiplier was corrected from null to its default, 1.0. 
-[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.pumpEnabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.crystallizerMaximumGravity was corrected from null to its default, 0.0. 
-[14Oct2026 13:31:04.347] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.347] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096. 
-[14Oct2026 13:31:04.347] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024. 
-[14Oct2026 13:31:04.348] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.348] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations.warpEnabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.349] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations.warpCostInSystem was corrected from null to its default, 2000000. 
-[14Oct2026 13:31:04.349] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations.warpCostInterstellar was corrected from null to its default, 8000000. 
-[14Oct2026 13:31:04.349] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations.checkedWriteTicksPer100Stations was corrected from null to its default, 3. 
-[14Oct2026 13:31:04.350] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.surveyScanJobLimit was corrected from null to its default, 4. 
-[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.surveyScanCooldownTicks was corrected from null to its default, 100. 
-[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.surveyScanReadsPerTick was corrected from null to its default, 16384. 
-[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.unfinishedMissionsGlobal was corrected from null to its default, 1024. 
-[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.unfinishedMissionsPerOwner was corrected from null to its default, 64. 
-[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.finishedMissionsPerOwner was corrected from null to its default, 128. 
-[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.missionsTotal was corrected from null to its default, 3072. 
-[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.satellitesGlobal was corrected from null to its default, 4096. 
-[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.satellitesPerOwner was corrected from null to its default, 256. 
-[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidInstancesGlobal was corrected from null to its default, 2048. 
-[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidInstancesPerOwner was corrected from null to its default, 16. 
-[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.intentIntervalTicks was corrected from null to its default, 10. 
-[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.selectionIntervalTicks was corrected from null to its default, 2. 
-[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidInstanceTtlTicks was corrected from null to its default, 168000. 
-[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidMissionTimePercent was corrected from null to its default, 100. 
-[14Oct2026 13:31:04.353] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.gasMissionTimePercent was corrected from null to its default, 100. 
-[14Oct2026 13:31:04.354] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.354] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.354] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.enabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.354] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.physicalMining was corrected from null to its default, false. 
-[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.energyPercent was corrected from null to its default, 100. 
-[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.operationIntervalTicks was corrected from null to its default, 20. 
-[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.maxDepth was corrected from null to its default, 64. 
-[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.activeGlobal was corrected from null to its default, 32. 
-[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.activePerOwner was corrected from null to its default, 4. 
-[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.logicalOperationsPerTick was corrected from null to its default, 32. 
-[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.layersPerTick was corrected from null to its default, 7. 
-[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.railgun was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.railgun.enabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.railgun.energyPercent was corrected from null to its default, 100. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.railgun.launchesPerTick was corrected from null to its default, 4. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator.enabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator.energyPercent was corrected from null to its default, 100. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator.activePerOwner was corrected from null to its default, 4. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator.activeGlobal was corrected from null to its default, 64. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.enabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.perChunk was corrected from null to its default, 16. 
-[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.perOwnerPerChunk was corrected from null to its default, 4. 
-[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.activePerOwner was corrected from null to its default, 8. 
-[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.activePerLevel was corrected from null to its default, 256. 
-[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.activeGlobal was corrected from null to its default, 1024. 
-[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.spaceElevator was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.spaceElevator.enabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.spaceElevator.energyPercent was corrected from null to its default, 100. 
-[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.spaceElevator.launchesPerTick was corrected from null to its default, 4. 
-[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.intentIntervalTicks was corrected from null to its default, 10. 
-[14Oct2026 13:31:04.358] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.selectionIntervalTicks was corrected from null to its default, 2. 
-[14Oct2026 13:31:04.358] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.endpointsGlobal was corrected from null to its default, 2048. 
-[14Oct2026 13:31:04.358] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.endpointsPerOwner was corrected from null to its default, 64. 
-[14Oct2026 13:31:04.359] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.zones was corrected from null to its default, 256. 
-[14Oct2026 13:31:04.359] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.transitRecords was corrected from null to its default, 256. 
-[14Oct2026 13:31:04.359] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.transitPerOwner was corrected from null to its default, 32. 
-[14Oct2026 13:31:04.362] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key classic was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.363] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key classic.smallPlatePress was corrected from null to its default, true. 
-[14Oct2026 13:31:04.364] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.overworldOres was corrected from null to its default, true. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.planetOres was corrected from null to its default, true. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.craters was corrected from null to its default, true. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.volcanoes was corrected from null to its default, true. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.geodes was corrected from null to its default, true. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.charredTrees was corrected from null to its default, true. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.lightwoodTrees was corrected from null to its default, true. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.swampTrees was corrected from null to its default, true. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.invertedPillars was corrected from null to its default, true. 
-[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.crystalClusters was corrected from null to its default, true. 
-[14Oct2026 13:31:04.366] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.electricMushrooms was corrected from null to its default, true. 
-[14Oct2026 13:31:04.367] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key energy was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.367] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key energy.solarGeneratorMultiplier was corrected from null to its default, 1. 
-[14Oct2026 13:31:04.369] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key lifeSupport was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.369] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key lifeSupport.classicDevicesEnabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.scrubberRequiresCartrige was corrected from null to its default, true. 
-[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.oxygenDetection was corrected from null to its default, true. 
-[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.dropExtinguishedTorches was corrected from null to its default, false. 
-[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.suitTankCapacity was corrected from null to its default, 1. 
-[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.spaceSuitO2Buffer was corrected from null to its default, 2000. 
-[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.vacuumDamage was corrected from null to its default, 2.0. 
-[14Oct2026 13:31:04.374] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key environment was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.374] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key environment.classicGravityEnabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.376] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key equipment was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.376] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key equipment.classicEnabled was corrected from null to its default, true. 
-[14Oct2026 13:31:04.376] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key equipment.jetPackForce was corrected from null to its default, 1.3. 
-[14Oct2026 13:31:04.376] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key equipment.lowGravityBoots was corrected from null to its default, false. 
-[14Oct2026 13:31:04.378] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:04.378] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.thrustMultiplier was corrected from null to its default, 1.0. 
-[14Oct2026 13:31:04.378] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.fuelCapacityMultiplier was corrected from null to its default, 1.0. 
-[14Oct2026 13:31:04.378] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.nuclearCoreThrustRatio was corrected from null to its default, 1.0. 
-[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.gravityAffectsFuels was corrected from null to its default, true. 
-[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketsRequireFuel was corrected from null to its default, true. 
-[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.canBeFueledByHand was corrected from null to its default, true. 
-[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketFuels was corrected from null to its default, [advancedrocketrycommunity:rocket_fuel]. 
-[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketBipropellants was corrected from null to its default, [advancedrocketrycommunity:hydrogen]. 
-[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketOxidizers was corrected from null to its default, [advancedrocketrycommunity:oxygen]. 
-[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketNuclearWorkingFluids was corrected from null to its default, [advancedrocketrycommunity:hydrogen]. 
+[14Oct2026 13:31:04.344] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key research was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.344] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key research.groundSurveysEnabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.345] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.345] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.sawmillVanillaWood was corrected from null to its default, true.
+[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.combustionGeneratorEnabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.solarGeneratorEnabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.tankCapacityMultiplier was corrected from null to its default, 1.0.
+[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.pumpEnabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.346] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key machines.crystallizerMaximumGravity was corrected from null to its default, 0.0.
+[14Oct2026 13:31:04.347] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.347] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxVolumeCells was corrected from null to its default, 4096.
+[14Oct2026 13:31:04.347] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key atmosphere.maxInspectionsPerLevelTick was corrected from null to its default, 1024.
+[14Oct2026 13:31:04.348] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.348] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations.warpEnabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.349] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations.warpCostInSystem was corrected from null to its default, 2000000.
+[14Oct2026 13:31:04.349] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations.warpCostInterstellar was corrected from null to its default, 8000000.
+[14Oct2026 13:31:04.349] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key stations.checkedWriteTicksPer100Stations was corrected from null to its default, 3.
+[14Oct2026 13:31:04.350] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.surveyScanJobLimit was corrected from null to its default, 4.
+[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.surveyScanCooldownTicks was corrected from null to its default, 100.
+[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.surveyScanReadsPerTick was corrected from null to its default, 16384.
+[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.unfinishedMissionsGlobal was corrected from null to its default, 1024.
+[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.unfinishedMissionsPerOwner was corrected from null to its default, 64.
+[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.finishedMissionsPerOwner was corrected from null to its default, 128.
+[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.missionsTotal was corrected from null to its default, 3072.
+[14Oct2026 13:31:04.351] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.satellitesGlobal was corrected from null to its default, 4096.
+[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.satellitesPerOwner was corrected from null to its default, 256.
+[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidInstancesGlobal was corrected from null to its default, 2048.
+[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidInstancesPerOwner was corrected from null to its default, 16.
+[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.intentIntervalTicks was corrected from null to its default, 10.
+[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.selectionIntervalTicks was corrected from null to its default, 2.
+[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidInstanceTtlTicks was corrected from null to its default, 168000.
+[14Oct2026 13:31:04.352] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.asteroidMissionTimePercent was corrected from null to its default, 100.
+[14Oct2026 13:31:04.353] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key satellites.gasMissionTimePercent was corrected from null to its default, 100.
+[14Oct2026 13:31:04.354] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.354] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.354] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.enabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.354] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.physicalMining was corrected from null to its default, false.
+[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.energyPercent was corrected from null to its default, 100.
+[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.operationIntervalTicks was corrected from null to its default, 20.
+[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.maxDepth was corrected from null to its default, 64.
+[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.activeGlobal was corrected from null to its default, 32.
+[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.activePerOwner was corrected from null to its default, 4.
+[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.logicalOperationsPerTick was corrected from null to its default, 32.
+[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.laserDrill.layersPerTick was corrected from null to its default, 7.
+[14Oct2026 13:31:04.355] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.railgun was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.railgun.enabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.railgun.energyPercent was corrected from null to its default, 100.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.railgun.launchesPerTick was corrected from null to its default, 4.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator.enabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator.energyPercent was corrected from null to its default, 100.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator.activePerOwner was corrected from null to its default, 4.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.blackHoleGenerator.activeGlobal was corrected from null to its default, 64.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.enabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.perChunk was corrected from null to its default, 16.
+[14Oct2026 13:31:04.356] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.perOwnerPerChunk was corrected from null to its default, 4.
+[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.activePerOwner was corrected from null to its default, 8.
+[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.activePerLevel was corrected from null to its default, 256.
+[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.gravityField.activeGlobal was corrected from null to its default, 1024.
+[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.spaceElevator was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.spaceElevator.enabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.spaceElevator.energyPercent was corrected from null to its default, 100.
+[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.spaceElevator.launchesPerTick was corrected from null to its default, 4.
+[14Oct2026 13:31:04.357] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.intentIntervalTicks was corrected from null to its default, 10.
+[14Oct2026 13:31:04.358] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.selectionIntervalTicks was corrected from null to its default, 2.
+[14Oct2026 13:31:04.358] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.endpointsGlobal was corrected from null to its default, 2048.
+[14Oct2026 13:31:04.358] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.endpointsPerOwner was corrected from null to its default, 64.
+[14Oct2026 13:31:04.359] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.zones was corrected from null to its default, 256.
+[14Oct2026 13:31:04.359] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.transitRecords was corrected from null to its default, 256.
+[14Oct2026 13:31:04.359] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key endgame.transitPerOwner was corrected from null to its default, 32.
+[14Oct2026 13:31:04.362] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key classic was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.363] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key classic.smallPlatePress was corrected from null to its default, true.
+[14Oct2026 13:31:04.364] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.overworldOres was corrected from null to its default, true.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.planetOres was corrected from null to its default, true.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.craters was corrected from null to its default, true.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.volcanoes was corrected from null to its default, true.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.geodes was corrected from null to its default, true.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.charredTrees was corrected from null to its default, true.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.lightwoodTrees was corrected from null to its default, true.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.swampTrees was corrected from null to its default, true.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.invertedPillars was corrected from null to its default, true.
+[14Oct2026 13:31:04.365] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.crystalClusters was corrected from null to its default, true.
+[14Oct2026 13:31:04.366] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key worldgen.electricMushrooms was corrected from null to its default, true.
+[14Oct2026 13:31:04.367] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key energy was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.367] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key energy.solarGeneratorMultiplier was corrected from null to its default, 1.
+[14Oct2026 13:31:04.369] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key lifeSupport was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.369] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key lifeSupport.classicDevicesEnabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.scrubberRequiresCartrige was corrected from null to its default, true.
+[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.oxygenDetection was corrected from null to its default, true.
+[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.dropExtinguishedTorches was corrected from null to its default, false.
+[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.suitTankCapacity was corrected from null to its default, 1.
+[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.spaceSuitO2Buffer was corrected from null to its default, 2000.
+[14Oct2026 13:31:04.372] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key OXYGEN.vacuumDamage was corrected from null to its default, 2.0.
+[14Oct2026 13:31:04.374] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key environment was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.374] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key environment.classicGravityEnabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.376] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key equipment was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.376] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key equipment.classicEnabled was corrected from null to its default, true.
+[14Oct2026 13:31:04.376] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key equipment.jetPackForce was corrected from null to its default, 1.3.
+[14Oct2026 13:31:04.376] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key equipment.lowGravityBoots was corrected from null to its default, false.
+[14Oct2026 13:31:04.378] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:04.378] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.thrustMultiplier was corrected from null to its default, 1.0.
+[14Oct2026 13:31:04.378] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.fuelCapacityMultiplier was corrected from null to its default, 1.0.
+[14Oct2026 13:31:04.378] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.nuclearCoreThrustRatio was corrected from null to its default, 1.0.
+[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.gravityAffectsFuels was corrected from null to its default, true.
+[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketsRequireFuel was corrected from null to its default, true.
+[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.canBeFueledByHand was corrected from null to its default, true.
+[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketFuels was corrected from null to its default, [advancedrocketrycommunity:rocket_fuel].
+[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketBipropellants was corrected from null to its default, [advancedrocketrycommunity:hydrogen].
+[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketOxidizers was corrected from null to its default, [advancedrocketrycommunity:oxygen].
+[14Oct2026 13:31:04.379] [main/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key ROCKET.rocketNuclearWorkingFluids was corrected from null to its default, [advancedrocketrycommunity:hydrogen].
 [14Oct2026 13:31:04.391] [modloading-worker-0/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Advanced Rocketry: Community Edition 1.20.1-1.8.0-dev initialized
 [14Oct2026 13:31:04.393] [modloading-worker-0/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: ARCE-BETA-1100 optional_compat=jei status=absent version=absent
 [14Oct2026 13:31:04.410] [main/INFO] [io.github.sunthemoon.arceadaptertest.AdapterTestMod/]: ARCE_ADAPTER_REGISTRATION_CONFLICTS rejected=2
@@ -158,18 +158,18 @@
 [14Oct2026 13:31:08.304] [main/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Accepted multiblock pattern catalog generation 1 with 16 definitions
 [14Oct2026 13:31:08.742] [main/INFO] [net.minecraftforge.gametest.ForgeGameTestHooks/]: Enabled Gametest Namespaces: [advancedrocketrycommunity, arce_adapter_test]
 [14Oct2026 13:31:09.278] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file .\world\serverconfig\forge-server.toml is not correct. Correcting
-[14Oct2026 13:31:09.280] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false. 
-[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false. 
-[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false. 
-[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1. 
-[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05. 
-[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler. 
-[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true. 
-[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false. 
+[14Oct2026 13:31:09.280] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringBlockEntities was corrected from null to its default, false.
+[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.removeErroringEntities was corrected from null to its default, false.
+[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.fullBoundingBoxLadders was corrected from null to its default, false.
+[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBaseSummonChance was corrected from null to its default, 0.1.
+[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.zombieBabyChance was corrected from null to its default, 0.05.
+[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.permissionHandler was corrected from null to its default, forge:default_handler.
+[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.advertiseDedicatedServerToLan was corrected from null to its default, true.
+[14Oct2026 13:31:09.281] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key server.useItemWithDurationZero was corrected from null to its default, false.
 [14Oct2026 13:31:09.286] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Configuration file .\world\serverconfig\advancedrocketrycommunity-force-field.toml is not correct. Correcting
-[14Oct2026 13:31:09.286] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key forceField was corrected from null to its default, SimpleCommentedConfig:{}. 
-[14Oct2026 13:31:09.286] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key forceField.enabled was corrected from null to its default, true. 
+[14Oct2026 13:31:09.286] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key forceField was corrected from null to its default, SimpleCommentedConfig:{}.
+[14Oct2026 13:31:09.286] [Server thread/WARN] [net.minecraftforge.common.ForgeConfigSpec/CORE]: Incorrect key forceField.enabled was corrected from null to its default, true.
 [14Oct2026 13:31:09.317] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: [ARCE-BETA-1000] Beta world data check complete: managed=0, migrated=0, backup=none
 [14Oct2026 13:31:09.339] [Server thread/INFO] [io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/]: Planetary bindings ready: 11 recorded bodies
 [14Oct2026 13:31:12.364] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
