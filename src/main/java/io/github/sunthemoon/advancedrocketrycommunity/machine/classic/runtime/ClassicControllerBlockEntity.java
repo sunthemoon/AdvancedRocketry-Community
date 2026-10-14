@@ -8,6 +8,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern
 import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.forge.*;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.*;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.ClassicSound;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.MachineSoundProfile;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.ProcessingFlagCodec;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.ProcessingSoundSource;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +24,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
@@ -34,7 +40,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Forge lifetime adapter. Immutable controller checkpoints own every Item/Fluid and active job. */
-public class ClassicControllerBlockEntity extends BlockEntity implements MenuProvider {
+public class ClassicControllerBlockEntity extends BlockEntity implements MenuProvider, ProcessingSoundSource {
     private final ClassicMachineDefinition definition;
     private ClassicCheckpoint checkpoint;
     private CompoundTag retained;
@@ -44,6 +50,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     private boolean lookupNeeded = true;
     private boolean ineligibleCandidate;
     private boolean debitShortfall;
+    private boolean processingActive;
     private final Set<ChunkPos> unavailable = new HashSet<>();
     private ClassicWait reason = ClassicWait.UNFORMED;
     private PatternDiagnostic firstDiagnostic;
@@ -71,6 +78,27 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     public long consumedEnergy() { return checkpoint.job().map(job -> job.progress().consumedEnergy()).orElse(0L); }
     public boolean formed() { return ready && !repair && checkpoint.structure().formationState() == MultiblockFormationState.FORMED; }
     public boolean repairRequired() { return repair; }
+    @Override public boolean processingActive() { return processingActive; }
+    @Override public ClassicSound activeProcessingSound() {
+        return MachineSoundProfile.loop(definition.kind().getPath(), processingActive);
+    }
+    private void updateProcessingState(boolean progressing) {
+        boolean next = progressing && MachineSoundProfile.loop(definition.kind().getPath(), true) != null;
+        if (processingActive == next) { return; }
+        processingActive = next;
+        if (level instanceof ServerLevel server && !isRemoved()) {
+            server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+    @Override public CompoundTag getUpdateTag() {
+        return MachineSoundProfile.loop(definition.kind().getPath(), true) == null
+                ? new CompoundTag() : ProcessingFlagCodec.encode(processingActive);
+    }
+    @Override public void handleUpdateTag(CompoundTag tag) { processingActive = ProcessingFlagCodec.decode(tag); }
+    @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
+    @Override public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
+        handleUpdateTag(packet.getTag());
+    }
     @Override public boolean onlyOpCanSetNbt() { return true; }
     boolean transaction() { return transaction; }
     boolean physical() {
@@ -114,6 +142,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         return Set.copyOf(cells);
     }
     void invalidate() {
+        updateProcessingState(false);
         ready = false; lookupNeeded = true;
         checkpoint.claimedParts().forEach(position -> { var hatch = loadedHatch(position); if (hatch != null) { hatch.refreshFacades(); } });
     }
@@ -290,8 +319,16 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
             return true;
         } finally { transaction = false; }
     }
-    void catalogUnavailable() { reason = ClassicWait.LIMIT; }
+    void catalogUnavailable() { updateProcessingState(false); reason = ClassicWait.LIMIT; }
     void tickProcess(ClassicMachineRecipe recipe, ProcessDefinition process) {
+        var before = checkpoint.job().map(ClassicCheckpoint.Job::progress);
+        try { advanceProcess(recipe, process); }
+        finally {
+            var after = checkpoint.job().map(ClassicCheckpoint.Job::progress);
+            updateProcessingState(formed() && after.isPresent() && !after.equals(before));
+        }
+    }
+    private void advanceProcess(ClassicMachineRecipe recipe, ProcessDefinition process) {
         if (repair || transaction || !formed() || checkpoint.job().isEmpty()) { return; }
         var job = checkpoint.job().orElseThrow();
         if (!allPartsLoaded()) { invalidate(); reason = ClassicWait.UNLOADED; return; }
