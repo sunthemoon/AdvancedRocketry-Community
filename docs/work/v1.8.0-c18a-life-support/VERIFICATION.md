@@ -181,3 +181,20 @@ The records are `records/W39.md` and `records/W40.md`.
 | `event:PlanetEventHandler.playerTick(LivingUpdateEvent)` | REDESIGNED | Two server player-tick services replace the legacy handler. W39: a sealed, oxygenated suit restores air under water once per 20 ticks, only after its oxygen debit commits; vanilla drowning stays native. W40: a connected player adrift outside every committed station region of the Space Level for 100 ticks returns to the nearest station it may VISIT whose arrival is loaded and safe, or to the Overworld after a complete pass finds none. The query is fair, resumable and budgeted; it loads no chunk. The legacy farthest-station rule is not kept. The Moon advancement is C18c |
 
 This addendum is development evidence only. It approves no Required Gate, candidate, version or release.
+
+## Addendum (Root, 2026-10-14): W37 sleep admission and planet respawn
+
+| Merge on `codex/v1.8.0-classic-content` | Slice | Tested HEAD | Hosted run | Reviews |
+|---|---|---|---|---|
+| `4f9e6597` | W37 with W37F to W37J (ADR-066 section 3.3) | `de1935ae` | 38530882792 (success) | W37 BLOCK `cfd61b74…`; W37F BLOCK `bc7d5b2b…`; W37H and W37I BLOCK `eaeb57cf…`; W37J Root review MERGE `e01e344d…` |
+
+The records are `records/W37.md` and `W37F.md` to `W37J.md`; the reviews are kept in `D:/GitHub/ARCE-Task-Evidence/root-queue/`.
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `config:PLANET.allowPlanetRespawn` | IMPLEMENTED | COMMON `PLANET.allowPlanetRespawn`, default false: an off-world saved point is used for a death respawn or the End exit only when it is loaded, free of hazards, permitted by its station and breathable; otherwise the Overworld rules apply and the point is kept (R-036) |
+| `config:PLANET.forcePlanetRespawn` | IMPLEMENTED | COMMON `PLANET.forcePlanetRespawn`, default false: with allowPlanetRespawn, skips only the arrival air check |
+
+`event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent)` stays PLANNED: W37's sleep refusal is implemented, but with the off-world types still `natural=false` vanilla refuses those beds first, so the row is delivered with W37b.
+
+This addendum is development evidence only. It approves no Required Gate, candidate, version or release.
