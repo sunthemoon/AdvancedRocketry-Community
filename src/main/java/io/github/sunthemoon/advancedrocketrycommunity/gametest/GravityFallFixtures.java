@@ -18,6 +18,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -48,7 +49,15 @@ final class GravityFallFixtures {
     /** A stone block in this test's own column, high above the structures, with clear air above it; undo with clear. */
     static BlockPos landing(GameTestHelper helper, ServerLevel level) {
         BlockPos test = helper.absolutePos(new BlockPos(2, 2, 2));
-        level.getChunkAt(test); // Explicit fixture setup, not production fall loading.
+        // Explicit fixture setup, not production fall loading. ServerPlayer.doCheckFallDamage returns before any fall
+        // check while the player's box, inflated by one block, touches an unloaded chunk (W37G), so the neighbouring
+        // chunks are loaded too. Otherwise the result depends on where the batch runner places this test.
+        ChunkPos centre = new ChunkPos(test);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                level.getChunk(centre.x + dx, centre.z + dz);
+            }
+        }
         // Generated terrain can reach this high, so take the lowest open column in a bounded range.
         for (int y = LANDING_Y; y <= HIGHEST_LANDING_Y; y++) {
             BlockPos pos = new BlockPos(test.getX(), y, test.getZ());
