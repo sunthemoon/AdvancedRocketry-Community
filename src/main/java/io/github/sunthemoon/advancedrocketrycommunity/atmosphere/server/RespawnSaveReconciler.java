@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.level.Level;
 
 /** Server-thread, session-owned copies across an unadopted respawn; not a persistent recovery record. */
@@ -28,7 +29,7 @@ final class RespawnSaveReconciler {
         }
     }
 
-    private record Copy(ServerPlayer replacement, Tuple tuple) { }
+    private record Copy(ServerPlayer replacement, ServerGamePacketListenerImpl connection, Tuple tuple) { }
 
     /** First copy needs a pending backup and the exact clear; later copies need this service's exact previous copy. */
     boolean reconcile(ServerPlayer replacement, boolean pending) {
@@ -36,6 +37,7 @@ final class RespawnSaveReconciler {
         if (!unadopted(old, replacement)) { return false; }
         Copy previous = copies.get(old);
         boolean owned = previous != null && previous.replacement() == replacement
+                && previous.connection() == replacement.connection
                 && previous.tuple().equals(Tuple.read(old));
         if (!owned && !(pending && cleared(old))) {
             copies.remove(old); // A foreign old tuple is never overwritten or adopted as our own copy.
@@ -44,13 +46,14 @@ final class RespawnSaveReconciler {
         if (cleared(replacement)) { return false; }
         Tuple latest = Tuple.read(replacement);
         latest.write(old);
-        copies.put(old, new Copy(replacement, latest));
+        copies.put(old, new Copy(replacement, replacement.connection, latest));
         return true;
     }
 
     void prune(MinecraftServer server) {
         copies.entrySet().removeIf(entry -> entry.getKey().server != server
                 || !unadopted(entry.getKey(), entry.getValue().replacement())
+                || entry.getValue().connection() != entry.getKey().connection
                 || !Objects.equals(entry.getValue().tuple(), Tuple.read(entry.getKey())));
     }
 
