@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""W44 native pre-start (V) rows: world-first migrations and refusals on a dedicated server, each with two starts.
+"""W44 native pre-start (V) rows: world-first migrations and refusals, an initial start plus two restarts each.
 
 The fixtures are the exact production encodings written by FirstEventNativeFixturesTest into
 build/w44i-native-fixtures/<ID>/. Every case gets its own world in one disposable server session. A MIGRATE row
 must report one migrated root with a byte-exact backup, a current root 5 or root 3 with an EMPTY outbox and its
-other fields kept, and a second start that migrates nothing. A REFUSE row must be refused before world startup at
-both starts, with the raw file byte-identical and no backup. Server copies are deleted afterwards.
+other fields kept, and two subsequent restarts that migrate nothing. A REFUSE row must be refused before world startup
+at all three starts, with the raw file byte-identical and no backup. Server copies are deleted afterwards.
 """
 from __future__ import annotations
 
@@ -17,13 +17,20 @@ import re
 import shutil
 import uuid
 
-import run_dedicated_server_smoke as smoke
-from inspect_celestial_saved_data import NbtReader
-from run_v060_flight_server_smoke import _server_command
+if __package__:
+    from . import run_dedicated_server_smoke as smoke
+    from .inspect_celestial_saved_data import NbtReader
+    from .run_v060_flight_server_smoke import _server_command
+else:
+    import run_dedicated_server_smoke as smoke
+    from inspect_celestial_saved_data import NbtReader
+    from run_v060_flight_server_smoke import _server_command
 
 STATIONS = "advancedrocketrycommunity_stations.dat"
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 PROGRESSION = "advancedrocketrycommunity_classic_progression.dat"
+NATIVE_TEMP = Path("D:/GitHub/ARCE-Task-Evidence/Temp")
+START_PLAN = ("initial", "restart-1", "restart-2")
 # Case: (root file, expected outcome, expected current schema, expected current epoch, outbox key).
 CASES = {
     "FM11a": (JOURNAL, "MIGRATE", 3, "v1.8.0-first-moon-landing", "classic_first_moon_landing"),
@@ -65,7 +72,7 @@ def check_migrated(case: str, before: dict, after: dict) -> None:
 
 def run(args) -> dict:
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
-    intended = Path("D:/GitHub/ARCE-Task-Evidence/Temp").resolve()
+    intended = NATIVE_TEMP.resolve()
     if session.parent != intended or session.exists() or smoke.is_link_or_junction(session):
         raise smoke.SmokeError("Unsafe or occupied disposable native directory")
     if evidence.exists() or evidence == session or session in evidence.parents:
@@ -83,7 +90,7 @@ def run(args) -> dict:
     marker = session / ".arce-w44i-cuts-owned"
     marker.write_text(token, encoding="ascii")
     report = dict(status="IN_PROGRESS", source_commit=args.source_commit, jar_sha256=smoke.digest_file(args.jar),
-                  scope="W44 V rows: pre-start migration or refusal, two starts each, no in-game seam", cases=[])
+                  scope="W44 V rows: pre-start migration or refusal, initial start plus two restarts, no in-game seam", cases=[])
     process = None
     try:
         shutil.copytree(libraries, session / "libraries")
@@ -109,11 +116,11 @@ def run(args) -> dict:
                                                        encoding="ascii")
             row = dict(case=case, outcome=outcome, fixture_sha256=original, starts=[])
             report["in_progress"] = row
-            for start in range(2):
+            for start, role in enumerate(START_PLAN):
                 command = _server_command(args.java)
                 log = evidence / f"{case}-start-{start}.log"
                 process = smoke.CapturedProcess(command, session, log)
-                entry = dict(start=start, log=log.name)
+                entry = dict(start=start, role=role, log=log.name)
                 if outcome == "MIGRATE":
                     if start == 0:
                         index = process.wait_for(MIGRATED, args.startup_timeout)
@@ -127,11 +134,13 @@ def run(args) -> dict:
                     process.wait_for(smoke.READY_MARKER, args.startup_timeout)
                     process.command("stop")
                     entry["exit_code"] = process.finish()
+                    if entry["exit_code"] != 0:
+                        raise smoke.SmokeError(f"{case}: start {start} exited {entry['exit_code']}")
                     after = read_root(target)
                     check_migrated(case, before, after)
                     entry["root_sha256"] = smoke.digest_file(target)
-                    if start == 1 and len(list((world / "advancedrocketrycommunity-backups").iterdir())) != 1:
-                        raise smoke.SmokeError(f"{case}: a second start migrated again")
+                    if start > 0 and len(list((world / "advancedrocketrycommunity-backups").iterdir())) != 1:
+                        raise smoke.SmokeError(f"{case}: restart {start} migrated again")
                 else:
                     index = process.wait_for(BLOCKED, args.startup_timeout)
                     entry["diagnostic"] = BLOCKED.search(process.lines[index]).group(1)
@@ -151,7 +160,7 @@ def run(args) -> dict:
                 row["starts"].append(entry)
             row["status"] = "PASS"
             report["cases"].append(row)
-            print(f"{case}: PASS ({outcome}, two starts)", flush=True)
+            print(f"{case}: PASS ({outcome}, initial start plus two restarts)", flush=True)
         report.pop("in_progress", None)
         report["status"] = "PASS"
         return report
