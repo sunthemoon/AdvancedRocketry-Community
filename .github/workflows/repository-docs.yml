@@ -2,9 +2,13 @@ name: Repository governance
 
 on:
   pull_request:
+  workflow_dispatch:
   push:
     branches:
       - main
+      # The v1.8 shared branch also runs the full Python suite and the repository validators,
+      # which the v1.8 development regression does not (W50, 2026-10-14).
+      - codex/v1.8.0-classic-content
 
 permissions:
   contents: read

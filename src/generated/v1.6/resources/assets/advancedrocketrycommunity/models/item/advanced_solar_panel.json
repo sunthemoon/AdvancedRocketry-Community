@@ -1,3 +1,6 @@
 {
-  "parent": "minecraft:item/light_blue_stained_glass_pane"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "advancedrocketrycommunity:item/advanced_solar_panel"
+  }
 }

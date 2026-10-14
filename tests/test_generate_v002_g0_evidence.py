@@ -178,6 +178,24 @@ class G0EvidenceTests(unittest.TestCase):
         self.assertEqual(self.mods_toml, (first / "mods.toml").read_bytes())
         self.assertEqual([], verify_evidence(first, first_evidence))
 
+    def test_scan_lists_stray_notices_but_not_code_named_after_them(self) -> None:
+        notice_class = (
+            "io/github/sunthemoon/advancedrocketrycommunity/station/notice/StationNotice.class"
+        )
+        stray_license = "META-INF/licenses/UNREVIEWED-LICENSE.txt"
+        self._write_binary({notice_class: b"class", stray_license: b"license"})
+
+        evidence = build_evidence(self.binary, self.sources)
+
+        scan = json.loads(evidence["license-notice-scan.json"])
+        binary_paths = {
+            entry["path"] for entry in scan["artifacts"][0]["license_notice_entries"]
+        }
+        self.assertEqual(set(PACKAGED_SOURCE_FILES) | {stray_license}, binary_paths)
+        self.assertTrue(
+            any(path.endswith("/StationNotice.java") for path in build_expected_sources_files())
+        )
+
     def test_verify_rejects_tampered_evidence(self) -> None:
         evidence_dir = self.root / "evidence"
         expected = self._generate(evidence_dir)
