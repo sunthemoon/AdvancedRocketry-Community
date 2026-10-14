@@ -33,6 +33,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayer;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -215,18 +216,29 @@ public final class ForceFieldPlacementGameTests {
             var area = new AABB(f.pos).inflate(6);
             Explosion explosion = new Explosion(f.level, null, f.pos.getX() + 0.5, f.pos.getY() + 0.5, f.pos.getZ() + 0.5,
                     4.0F, false, Explosion.BlockInteraction.DESTROY);
+            // Count drops as they join the Level: this far, freshly loaded Moon chunk need not expose its entity
+            // section to getEntitiesOfClass in the same tick.
+            List<ItemEntity> spawned = new ArrayList<>();
+            Consumer<EntityJoinLevelEvent> capture = event -> {
+                if (event.getLevel() == f.level && event.getEntity() instanceof ItemEntity item && area.contains(item.position())) {
+                    spawned.add(item);
+                }
+            };
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, EntityJoinLevelEvent.class, capture);
             try {
                 explosion.explode();
                 helper.assertTrue(explosion.getToBlow().contains(f.pos), "The allowed explosion did not reach the projector");
                 explosion.finalizeExplosion(true);
-                int dropped = f.level.getEntitiesOfClass(ItemEntity.class, area,
-                        item -> item.getItem().is(ModItems.FORCE_FIELD_PROJECTOR.get())).stream()
+                int dropped = spawned.stream().filter(item -> item.getItem().is(ModItems.FORCE_FIELD_PROJECTOR.get()))
                         .mapToInt(item -> item.getItem().getCount()).sum();
                 var entry = data.view().get(key);
-                helper.assertTrue(f.level.getBlockState(f.pos).isAir() && f.level.getBlockEntity(f.pos) == null && dropped == 1
-                        && (entry == null || entry.orphan()), "Allowed explosion dropped " + dropped
-                        + " projectors or kept a live reservation");
+                helper.assertTrue(f.level.getBlockState(f.pos).isAir() && f.level.getBlockEntity(f.pos) == null,
+                        "Allowed explosion kept the projector: " + f.level.getBlockState(f.pos));
+                helper.assertTrue(dropped == 1, "Allowed explosion dropped " + dropped + " projectors");
+                helper.assertTrue(entry == null || entry.orphan(), "Allowed explosion kept a live reservation: " + entry);
             } finally {
+                MinecraftForge.EVENT_BUS.unregister(capture);
+                spawned.forEach(ItemEntity::discard);
                 f.level.getEntitiesOfClass(ItemEntity.class, area).forEach(ItemEntity::discard);
                 data.forget(key);
             }
