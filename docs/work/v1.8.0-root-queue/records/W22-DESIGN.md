@@ -26,7 +26,9 @@ A cancel is an abort with the code `WARP_CANCELLED`. The cost class is a transla
 `station.advancedrocketrycommunity.warp_class.<class>` key. Bodies and numbers are
 literal text. No notice carries a player name, a UUID or a coordinate; the actor and every
 detail stay in the existing `ARCE_STATION_WARP` audit lines. A countdown that a server
-stop discards has no outcome, as today.
+stop discards has no outcome, as today. (Correction, W55 on 2026-10-15, after W22 review
+F9: no argument role is a player name, but the station-name argument can contain one,
+because a default station name is the creator's player name followed by " Station".)
 
 ## Who is told
 
