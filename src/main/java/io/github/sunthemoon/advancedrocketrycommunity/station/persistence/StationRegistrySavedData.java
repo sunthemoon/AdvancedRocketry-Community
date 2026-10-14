@@ -735,12 +735,17 @@ public final class StationRegistrySavedData extends SavedData {
     }
 
     /**
-     * Vanilla's in-place ordinary save (W44 section 3.6): an unreadable root writes nothing, and the first ordinary
-     * save of a proven-absent root re-checks that no entry has appeared.
+     * The ordinary save (W44 section 3.6): an unreadable root writes nothing. Until the first known commit of a
+     * proven-absent root it re-checks absence and is staged and atomically moved (W44K); then it writes in place.
      */
     @Override
     public void save(java.io.File file) {
         StationOrdinaryWriter.save(this, root, file);
+    }
+
+    /** Test seam: the ordinary save with the first write's atomic move replaced. */
+    void save(java.io.File file, CheckedSavedDataFile.Committer firstMove) {
+        StationOrdinaryWriter.save(this, root, file, firstMove);
     }
 
     /** One root with optional substitutions; the live registry is never mutated (see {@link StationRegistryPayload}). */

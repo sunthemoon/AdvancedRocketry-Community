@@ -8,8 +8,9 @@ import java.util.Objects;
 
 /**
  * W44 section 3.6 for the station registry: how the root was first obtained, and the re-check before the first write
- * of a proven-absent root, both for checked writes (inside the writer, before the move) and for vanilla's in-place
- * ordinary save. Only a demonstrably successful write makes the file the session's own.
+ * of a proven-absent root, both for checked writes and for the staged first ordinary save (inside the writer, before
+ * the move; the ordinary save also checks before staging). Only a demonstrably successful write makes the file the
+ * session's own.
  */
 final class StationRootPresence {
     private ManagedRootPresence presence;
@@ -45,7 +46,7 @@ final class StationRootPresence {
         return false;
     }
 
-    /** Before vanilla's in-place ordinary save: false when the save must write nothing. */
+    /** Before an ordinary save: false when the save must write nothing. */
     boolean admitsOrdinarySave(Path file) {
         if (unreadable()) {
             return false;
@@ -59,7 +60,8 @@ final class StationRootPresence {
         return true;
     }
 
-    private boolean mustRecheck() {
+    /** Before the session's first known commit of a proven-absent root; such a save is staged (W44K). */
+    boolean mustRecheck() {
         return presence == ManagedRootPresence.PROVEN_ABSENT && !sessionWritten;
     }
 
