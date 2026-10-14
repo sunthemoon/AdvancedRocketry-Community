@@ -710,7 +710,7 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ### C19 矩阵、审核与交付 `[ ]`
 
-> **当前状态（2026-10-13，Root 对账）**：内容台账已对账（`065c0c36`：146 个单位交付，40 个仍为 PLANNED，`--require-accepted` 通过）。未完成：合并验证器链（`82f82b1f`、`d605be33`）、完整 Python 套件与严格验证器资格、证据引用修复、`PORTING_MATRIX`、ADR-068/070/071 决定、R32-03、台账 `--closure`、154 个 REVIEW 资产的逐项结案，以及最终统一活动中的 S1、V1、V2。见 [W30 第 1 节](../work/v1.8.0-root-queue/records/W30-STATUS-PROPOSAL.md) 第 5 节。
+> **当前状态（2026-10-15，Root）**：内容台账 20 个单位仍为 PLANNED（`--require-accepted` 通过；逐批次数见 `CURRENT_VERSION.md`）。完整 Python 套件已在共享分支的治理工作流中运行（W49F 合入前为红）。未完成：合并验证器链（`82f82b1f`、`d605be33`）、严格验证器资格、证据引用修复、`PORTING_MATRIX`、ADR-068/070/071 决定、R32-03、台账 `--closure`、154 个 REVIEW 资产的逐项结案，以及最终统一活动中的 S1、V1、V2。见 [W30 第 1 节](../work/v1.8.0-root-queue/records/W30-STATUS-PROPOSAL.md) 第 5 节。
 
 - [x] [C19-INVENTORY-TEST-11](../work/v1.8.0-c19-strict-validator/INVENTORY-TEST-TASK-11.md)
   的限定测试源码：一文件修正已提交、独立审核、集成并推送至 Main `ffadaca3`。
@@ -965,7 +965,7 @@ C17b candidate03 的独立审核已解决旧版 Medium
 及后继观察规范仅作为历史输入，不是原因确认、修复或已接受的实施契约。
 其审核、提交和清理记录保留在实施日志与原始证据中；此处不再重复旧检查点数字。
 
-台账剩余 **186 PLANNED /154 REVIEW**。内容可达性、来源资产复核、代表科技流程、
+台账剩余 **20 PLANNED /154 REVIEW**（2026-10-15）。内容可达性、来源资产复核、代表科技流程、
 整包专服/客户端/性能及 G0–G9 均未结束。
 
 ### 后续执行与已取回的 Claude 输入 `[ ]`

@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 3b560eb66387d7c6880acc59f00e930ccdf9b1e4
-latest_hosted_regression: run 38595339769 at 85d27e6017557cf6b9ca053123d6dd00159f94eb, passed
-ledger_planned_units: 22
+latest_code_commit: 90d0714dc5da7c7dc66801083b3f60543fa4d2e5
+latest_hosted_regression: run 38603920684 at cc36612c24e8a5c24c1433d9c284edfd01e64236, passed
+ledger_planned_units: 20
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-14
+last_updated: 2026-10-15
 ```
 
 ## Current state
@@ -57,7 +57,7 @@ branch. Each merge records its hosted run and independent review in
 - C17a propulsion is complete. Complete in C17b: the station controls, pads, force field and
   notices. Complete in C17c: the solar array and the beacon.
 - Complete in C18: most C18a devices, all C18b equipment including the laser gun, the C18c
-  observatory and processor with 15 of 17 advancements, and the C18d HUD, sounds and client
+  observatory and processor with all 17 advancements, and the C18d HUD, sounds and client
   settings.
 - The D3-A escrow core is merged with admission disabled. Its rocket integration (W11b2) is
   in progress.
@@ -78,15 +78,20 @@ It does not run:
 
 What is still open:
 
-- **Ledger.** 29 units are still PLANNED. They are listed with their ADR sections in
-  `docs/work/v1.8.0-root-queue/records/W30-STATUS-PROPOSAL.md`, section 2.3. The backlog is in
-  QUEUE.md.
+- **Ledger.** 20 units are still PLANNED: C16d 1 (`makeMaterialsForOtherMods`), C17a 6 and C17c 1
+  (the monitoring station, the five loader variants and the linker, which wait for the escrow
+  chain and the bay), C18a 1 (the oxygen charger, owner decision D4) and C18d 11 (the ten sounds,
+  which wait for the owner's listen, and `modelBakeEvent`, which waits for an OBJ import). The
+  backlog is in QUEUE.md.
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
-- **S1.** No slice has dedicated-server or native-restart evidence.
+- **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
+  No S1 campaign has run.
 - **S2.** The D3-A crash cuts wait for W11b2 and W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
-- **C19.** The full Python suite and the strict validator are not qualified.
-- **Owner decisions.** The gas charge pad (ADR-066 D4) needs one.
-- **Risks.** R-021 and the risks the W slices added (R-028 to R-033) stay open.
+- **C19.** The governance workflow now runs the full Python suite on the shared branch. It is red
+  until W49F restores the historical models that W49 changed; the v0.8.0 evidence test fails
+  until then. The strict validator chain and the evidence references are not started.
+- **Owner decisions.** Nine are pending; QUEUE.md lists them with what each one blocks.
+- **Risks.** R-021 and the risks the W slices added (R-028 to R-037) stay open.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
