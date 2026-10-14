@@ -97,7 +97,7 @@ class ArcCuttingDataTest {
             nullCells.addAll(List.of(new PatternPosition(i, 4, 0), new PatternPosition(i, 4, 4), new PatternPosition(0, 4, i), new PatternPosition(4, 4, i)));
         }
         nullCells.addAll(List.of(new PatternPosition(0, 3, 0), new PatternPosition(4, 3, 0), new PatternPosition(0, 3, 4), new PatternPosition(4, 3, 4)));
-        var clearance = new PatternMatcher.BlockTag(V180ArcCuttingData.CLEARANCE_TAG);
+        var clearance = new PatternMatcher.OptionalCell(new PatternMatcher.BlockTag(V180ArcCuttingData.CLEARANCE_TAG));
         assertEquals(20, nullCells.size());
         assertEquals(nullCells, Set.copyOf(arc.cells().entrySet().stream().filter(cell -> cell.getValue().equals(clearance)).map(Map.Entry::getKey).toList()));
         assertEquals(3, arc.cells().values().stream().filter(matcher -> matcher.equals(new PatternMatcher.BlockTag("advancedrocketrycommunity:coils"))).count());
@@ -144,6 +144,13 @@ class ArcCuttingDataTest {
         assertEquals(PatternValidationStatus.FORMED, validateWith(pattern, rim, snow).status());
         assertEquals(PatternValidationStatus.MISMATCH, validateWith(pattern, rim, stone).status());
         assertEquals(PatternValidationStatus.MISMATCH, validateWith(pattern, chamber, snow).status());
+        // W01G review L2: another mod's air-like block (isAir(), untagged) on the rim, as under the earlier air
+        // matcher; another mod's cable is neither air nor tagged and still refuses.
+        var moddedAir = new PatternBlock("examplemod:light_air", Set.of(), true, false, Optional.empty());
+        var moddedCable = new PatternBlock("examplemod:cable", Set.of(), false, false, Optional.empty());
+        assertEquals(PatternValidationStatus.FORMED, validateWith(pattern, rim, moddedAir).status());
+        assertEquals(PatternValidationStatus.FORMED, validateWith(pattern, chamber, moddedAir).status());
+        assertEquals(PatternValidationStatus.MISMATCH, validateWith(pattern, rim, moddedCable).status());
         var tag = V180ArcCuttingData.serverFiles().get("data/advancedrocketrycommunity/tags/blocks/machine_clearance.json");
         assertFalse(tag.get("replace").getAsBoolean());
         var values = new java.util.ArrayList<String>(); tag.getAsJsonArray("values").forEach(value -> values.add(value.getAsString()));
@@ -167,6 +174,7 @@ class ArcCuttingDataTest {
     }
     private static MultiblockPatternDefinition pattern(JsonObject json) { return MultiblockPatternJsonCodec.decode(json.toString().getBytes(StandardCharsets.UTF_8)); }
     private static PatternBlock block(PatternMatcher matcher) {
+        if (matcher instanceof PatternMatcher.OptionalCell) { return block(new PatternMatcher.Air()); }
         String id = matcher instanceof PatternMatcher.ExactBlock exact ? exact.blockId() : "minecraft:air";
         var tags = matcher instanceof PatternMatcher.BlockTag tag ? Set.of(tag.tagId()) : Set.<String>of();
         var port = matcher instanceof PatternMatcher.Port value ? Optional.of(value.channel()) : Optional.<String>empty();
