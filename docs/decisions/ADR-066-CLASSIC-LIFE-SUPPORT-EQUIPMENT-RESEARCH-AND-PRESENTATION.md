@@ -496,6 +496,44 @@ D1 outcome 3 is implemented by `BedRespawnPreserver`, scoped to the operation an
 
 Records: `records/W37B.md`; Root review SHA-256 `1d58efc2…`.
 
+### W44 implementation note: world-first sources (2026-10-15)
+
+This note implements owner decision D3 (world-first semantics with recorded winning participants)
+and records two technical clarifications of section 6.2's freeze that Root approved with the
+frozen design `records/W44-DESIGN.md` (three review rounds: `bf8a200e…`, `35030212…`, Root's N1
+re-check) and the implementation reviews (`1fa55c36…` BLOCK, closed by W44J; `ebe02455…`, closed
+by W44K). D3 itself is unchanged.
+
+- **Clarification 1: the station migration.** Root 5 already existed in pre-release v1.8 worlds,
+  so "join the 4-to-5 migration once" is replaced by a one-time migration of the unreleased
+  pre-W44 root 5 to the epoch `v1.8.0-station-first-warp`, before start and with a backup.
+- **Clarification 2: the journal.** "Until durable reload" is read for the journal as a later exact
+  writer confirmation in the same session. One ordered journal writer may persist monotonic RAM
+  authority. Effects still need exact proof, and no second writer exists.
+- **Station source.** A required `classic_first_warp` outbox joins `checkedRelocation`'s single
+  candidate, and the election is decided inside that call. A root-only ELECTED-to-DELIVERED write
+  shares the station writer.
+- **Moon source.** Journal root schema 3 carries a `classic_first_moon_landing` outbox; the record
+  schema stays 2. A winning descent completion is elected in journal RAM through the W11b2 writer.
+  LANDED and its notifications run only after the exact confirmation.
+- **Progression.** A new managed schema-1 receipt root. Delivery is the source event, then the
+  durable receipt, then the award, then DELIVERED. Login grants, including bounded deferred ones,
+  use only the receipt's immutable participants.
+- **Absent versus unreadable.** Only a stat that reports no file, made when a root is first
+  obtained and repeated before its first write, proves a root absent. First-write ownership begins
+  only at a known commit.
+  - The first station save of a proven-absent registry is staged and moved atomically (W44K), so a
+    failed attempt never leaves a torn target.
+  - A present file whose runtime read fails is never written and holds its kinds until a plain
+    restart.
+- **Recovery.** Correcting a receipt against existing validated authority is separate from restoring
+  old authority. A restore or downgrade needs one consistent complete world snapshot; managed
+  migration backups are not enough. No receipt-only revocation is supported.
+
+The scope, durations, logs and recovery are R-037. Native evidence: the A1 batch, the V rows and the
+Moon H rows delivered so far; the remaining H rows are W44L, and the real-client rows are for the
+final campaign. This is a development implementation note, not owner acceptance or a Gate result.
+
 ## 4. Gas charging and finite player resources
 
 `gas_charge_pad` stores one oxygen or hydrogen bank up to 16,000 mB, accepts

@@ -5,11 +5,11 @@ advancement:crystalline,IMPLEMENTED,v1.8.0,advancement classic/crystallizer,ADR-
 advancement:dilithium,IMPLEMENTED,v1.8.0,advancement classic/dilithium,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:electrifying,IMPLEMENTED,v1.8.0,advancement classic/electrolysis,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:feeltheheat,IMPLEMENTED,v1.8.0,advancement classic/arc_furnace,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
-advancement:flightofpheonix,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers,
+advancement:flightofpheonix,REDESIGNED,v1.8.0,classic/first_station_warp advancement,ADR-062 ADR-066,"world-first station warp from a durable receipt (D3, R-037)",docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:givingitallshesgot,IMPLEMENTED,v1.8.0,advancement classic/station_warp,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:holographic,REDESIGNED,v1.8.0,advancement classic/formed_multiblock,ADR-062 ADR-066,new trigger: first formed classic multiblock,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:moonlanding,IMPLEMENTED,v1.8.0,advancement classic/moon_landing,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
-advancement:onesmallstep,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers,
+advancement:onesmallstep,REDESIGNED,v1.8.0,classic/one_small_step advancement,ADR-062 ADR-066,"world-first Moon landing from a durable receipt (D3, R-037)",docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:rollin,IMPLEMENTED,v1.8.0,advancement classic/rolling,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:root,IMPLEMENTED,v1.8.0,advancement classic/root,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:spindoctor,IMPLEMENTED,v1.8.0,advancement classic/lathe,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
