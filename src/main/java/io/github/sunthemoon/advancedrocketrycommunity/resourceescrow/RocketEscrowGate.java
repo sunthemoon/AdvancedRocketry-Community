@@ -27,6 +27,11 @@ public final class RocketEscrowGate {
         if (logical != null && data.bind(level.getServer()).logicalLocked(logical)) { return false; }
         if (ledger.records().stream().anyMatch(record -> rocket.getUUID().equals(record.source().identity())
                 || rocket.getUUID().equals(record.destination().identity()))) { return false; }
+        if (logical == null) { return false; }
+        // An unrelated ledger/receipt must not require a legacy rocket to have a native fuel vector.
+        if (!EscrowSettlementTombstones.history(ledger, logical)) { return true; }
+        if (rocket.flightData().isEmpty() || rocket.snapshot().isEmpty()
+                || rocket.flightData().orElseThrow().fuel().propulsion().isEmpty()) { return false; }
         String signature = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.hash("arce-escrow-rocket-1:" + logical + ":"
                 + rocket.snapshot().orElseThrow().contentHash() + ":" + rocket.flightData().orElseThrow().fuel().resourceSignature());
         return !EscrowSettlementTombstones.stateLocked(ledger, logical, rocket.getUUID(), section, signature,

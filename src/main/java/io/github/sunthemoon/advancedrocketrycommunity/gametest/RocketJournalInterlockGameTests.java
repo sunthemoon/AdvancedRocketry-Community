@@ -61,6 +61,7 @@ public final class RocketJournalInterlockGameTests {
     @GameTest(template = "rocket_test", batch = "journal_blocked_interlocks", timeoutTicks = 40)
     public static void blockedJournalRefusesLaunchAndFuelButNotMountOrDismount(GameTestHelper helper) {
         var server = helper.getLevel().getServer();
+        ResourceEscrowSavedData.forTests(server); // An unrelated escrow root must not disable scalar gameplay.
         var original = RocketTransferSavedData.get(server);
         var future = original.save(new CompoundTag()); future.putInt("schema_version", Integer.MAX_VALUE);
         var blocked = RocketTransferSavedData.load(future);
