@@ -9,6 +9,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.*;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.model.SatelliteState;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.SpikeCost;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +24,8 @@ import org.junit.jupiter.api.Test;
 /**
  * W21b review F1: per-tick ground changes cost O(touched records); only START and account creation encode and
  * read back the whole root. Budgets: one advance on the review's 2,001-instance, 701-job registry stays below
- * 1 ms, and START on a root near the 16 MiB bound stays within the 500 ms single-spike budget (docs/17).
+ * 1 ms, and START on a root near the 16 MiB bound stays within the 500 ms single-spike budget (docs/17), measured
+ * as its server-thread cost ({@link SpikeCost}).
  */
 final class GroundSurveyScaleTest {
     private static final long ADVANCE_BUDGET_NANOS = 1_000_000L;
@@ -172,19 +174,17 @@ final class GroundSurveyScaleTest {
         int rootBytes = SatelliteNbtSize.uncompressedBytes(SatelliteRegistryPayload.encodeCurrent(registry, new CompoundTag()));
         assertTrue(rootBytes > SatelliteLimits.MAX_REGISTRY_NBT_BYTES - 64 * 1024, "root " + rootBytes);
 
-        long[] samples = new long[5];
-        for (int run = 0; run < samples.length; run++) {
-            long begin = System.nanoTime();
-            var result = registry.groundSurveys().start(start(run, 20, 2), 0);
-            samples[run] = System.nanoTime() - begin;
-            assertEquals(GroundSurveys.Code.SUCCESS, result.code());
-        }
+        // W55: two warm-up STARTs, then the median server-thread cost of seven (SpikeCost); each START adds about
+        // 1 KiB, well inside the 32 KiB left below the bound.
+        var samples = SpikeCost.measure(2, 7, run -> assertEquals(GroundSurveys.Code.SUCCESS,
+                registry.groundSurveys().start(start(run, 20, 2), 0).code()));
         int afterBytes = SatelliteNbtSize.uncompressedBytes(SatelliteRegistryPayload.encodeCurrent(registry, new CompoundTag()));
         assertTrue(afterBytes <= SatelliteLimits.MAX_REGISTRY_NBT_BYTES);
-        Arrays.sort(samples);
-        System.out.printf("ARCE_W21BF_START missions=%d root_bytes=%d median_ms=%.1f max_ms=%.1f%n", count, rootBytes,
-                samples[2] / 1e6, samples[4] / 1e6);
-        assertTrue(samples[2] < SPIKE_BUDGET_NANOS, "START median " + samples[2] / 1e6 + " ms at " + rootBytes + " bytes");
+        System.out.printf("ARCE_W21BF_START missions=%d root_bytes=%d median_ms=%.1f max_ms=%.1f cost_median_ms=%.1f"
+                + " cost_max_ms=%.1f%n", count, rootBytes, samples.medianWall() / 1e6, samples.maxWall() / 1e6,
+                samples.medianCost() / 1e6, samples.maxCost() / 1e6);
+        assertTrue(samples.medianCost() < SPIKE_BUDGET_NANOS,
+                "START median cost " + samples.medianCost() / 1e6 + " ms at " + rootBytes + " bytes");
     }
 
     private static long median(java.util.function.IntConsumer advance) {
