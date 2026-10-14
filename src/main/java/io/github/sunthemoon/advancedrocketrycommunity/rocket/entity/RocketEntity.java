@@ -14,6 +14,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.menu.RocketFlightMe
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotDecodeResult;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketSnapshotNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowSection;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import java.util.Objects;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +50,9 @@ import net.minecraftforge.network.NetworkHooks;
 public final class RocketEntity extends Entity implements MenuProvider {
     private static final String DATA_KEY = "RocketEntityData";
     private static final String FLIGHT_DATA_KEY = "flight_data";
-    private static final int ENTITY_SCHEMA_VERSION = 2;
+    private static final int ENTITY_SCHEMA_VERSION = 3;
+    private static final String ESCROW_DATA_KEY = "resource_escrow";
+    private static final int ENTITY_ENVELOPE_BYTES = 2_048;
     private static final EntityDataAccessor<String> DISPLAYED_FLIGHT_STATE =
             SynchedEntityData.defineId(RocketEntity.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Long> DISPLAYED_FUEL_AMOUNT =
@@ -65,6 +69,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
     private UUID ownerId;
     private RocketFlightData flightData;
     private CompoundTag preservedBlockedData;
+    private RocketEscrowSection escrowSection = RocketEscrowSection.neutral();
     private boolean activeStateLogged;
 
     public RocketEntity(EntityType<? extends RocketEntity> entityType, Level level) {
@@ -156,6 +161,8 @@ public final class RocketEntity extends Entity implements MenuProvider {
         return Optional.ofNullable(flightData);
     }
 
+    public RocketEscrowSection escrowSection() { return escrowSection; }
+
     public RocketFlightState displayedFlightState() {
         try {
             return RocketFlightState.valueOf(entityData.get(DISPLAYED_FLIGHT_STATE));
@@ -173,6 +180,10 @@ public final class RocketEntity extends Entity implements MenuProvider {
             throw new IllegalStateException("Only the server may update rocket flight data");
         }
         RocketFlightData previous = flightData;
+        if (previous != null && !previous.fuel().sameResources(updatedFlightData.fuel())
+                && !RocketEscrowGate.idle(this)) {
+            throw new IllegalStateException("Rocket resources are protected by escrow");
+        }
         flightData = normalizeFlightData(Objects.requireNonNull(updatedFlightData, "updatedFlightData"));
         try {
             validateBindings();
@@ -209,7 +220,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
                 ? Optional.empty()
                 : Optional.of(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
                         .preserve(preservedBlockedData, io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES
-                                + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + 1_024));
+                                + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + ENTITY_ENVELOPE_BYTES));
     }
 
     @Override
@@ -222,6 +233,12 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     protected void readAdditionalSaveData(CompoundTag parent) {
+        boolean live = isAddedToWorld();
+        RocketEscrowSection retained = escrowSection;
+        if (live) { io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this); }
+        // Vanilla has already applied base fields (including Pos). This protects the mod payload,
+        // not command success or relocation; the coordinator must separately detect relocation.
+        if (live && !RocketEscrowGate.idle(this)) { return; }
         clearDecodedState();
         if (!parent.contains(DATA_KEY, Tag.TAG_COMPOUND)) {
             preservedBlockedData = invalidSentinel("missing entity payload");
@@ -230,7 +247,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
         CompoundTag data = parent.getCompound(DATA_KEY);
         if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.bounded(data,
                 io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES
-                        + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + 1_024)) {
+                        + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + ENTITY_ENVELOPE_BYTES)) {
             preservedBlockedData = data;
             return;
         }
@@ -240,12 +257,13 @@ public final class RocketEntity extends Entity implements MenuProvider {
         }
         int schema = data.getInt("schema_version");
         var keys = schema == 1 ? java.util.Set.of("schema_version", "assembly_transaction_id", "owner_id", "snapshot")
-                : java.util.Set.of("schema_version", "assembly_transaction_id", "owner_id", "snapshot", FLIGHT_DATA_KEY);
+                : schema == 2 ? java.util.Set.of("schema_version", "assembly_transaction_id", "owner_id", "snapshot", FLIGHT_DATA_KEY)
+                : java.util.Set.of("schema_version", "assembly_transaction_id", "owner_id", "snapshot", FLIGHT_DATA_KEY, ESCROW_DATA_KEY);
         if (!data.getAllKeys().equals(keys)) {
             preservedBlockedData = data.copy();
             return;
         }
-        if ((schema != 1 && schema != ENTITY_SCHEMA_VERSION)
+        if ((schema < 1 || schema > ENTITY_SCHEMA_VERSION)
                 || !data.hasUUID("assembly_transaction_id")
                 || !data.hasUUID("owner_id")
                 || !data.contains("snapshot", Tag.TAG_COMPOUND)) {
@@ -305,6 +323,14 @@ public final class RocketEntity extends Entity implements MenuProvider {
         ownerId = data.getUUID("owner_id");
         flightData = candidateFlightData;
         try {
+            if (live) {
+                escrowSection = retained;
+            } else if (schema == ENTITY_SCHEMA_VERSION) {
+                if (!data.contains(ESCROW_DATA_KEY, Tag.TAG_COMPOUND)) {
+                    throw new IllegalArgumentException("Missing rocket escrow section");
+                }
+                escrowSection = RocketEscrowSection.decode(data.getCompound(ESCROW_DATA_KEY));
+            }
             validateBindings();
         } catch (RuntimeException exception) {
             clearDecodedState();
@@ -316,10 +342,11 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     protected void addAdditionalSaveData(CompoundTag parent) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         if (preservedBlockedData != null) {
             parent.put(DATA_KEY, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
                     .preserve(preservedBlockedData, io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits.MAX_TOTAL_NBT_BYTES
-                            + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + 1_024));
+                            + RocketFlightLimits.MAX_FLIGHT_DATA_NBT_BYTES + ENTITY_ENVELOPE_BYTES));
             return;
         }
         if (!operational()) {
@@ -332,12 +359,14 @@ public final class RocketEntity extends Entity implements MenuProvider {
         data.putUUID("owner_id", ownerId);
         data.put("snapshot", RocketSnapshotNbtCodec.encode(snapshot));
         data.put(FLIGHT_DATA_KEY, RocketFlightNbtCodec.encode(flightData));
+        data.put(ESCROW_DATA_KEY, escrowSection.encode());
         parent.put(DATA_KEY, data);
     }
 
     @Override
     public void tick() {
         super.tick();
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         setNoGravity(true);
         setDeltaMovement(Vec3.ZERO);
         if (!level().isClientSide && !activeStateLogged) {
@@ -444,6 +473,11 @@ public final class RocketEntity extends Entity implements MenuProvider {
     }
 
     @Override
+    public void kill() {
+        if (level().isClientSide || RocketEscrowGate.idle(this)) { super.kill(); }
+    }
+
+    @Override
     public Packet<ClientGamePacketListener> getAddEntityPacket() {
         return NetworkHooks.getEntitySpawningPacket(this);
     }
@@ -513,6 +547,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
         ownerId = null;
         flightData = null;
         preservedBlockedData = null;
+        escrowSection = RocketEscrowSection.neutral();
         refreshSyncedData();
     }
 

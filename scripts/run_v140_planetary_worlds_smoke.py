@@ -163,7 +163,8 @@ def capture_rocket(root: Path, output: Path, report: dict, baseline: dict | None
             "Native physical identity/passengers differ")
     data, expected = entity["RocketEntityData"], report
     snapshot, state = data["snapshot"], data["flight_data"]
-    require(data["schema_version"] == state["schema_version"] == 2
+    require(data["schema_version"] == 3 and state["schema_version"] == 2
+            and data.get("resource_escrow") == {"schema_version": 1, "resource_epoch": 0, "markers": []}
             and support.uuid_from_nbt(data["assembly_transaction_id"]) == expected["logical"]
             and support.uuid_from_nbt(data["owner_id"]) == native.OWNER, "Rocket schema/owner/logical identity differs")
     require(snapshot["source_dimension"] == state["current_dimension"] == expected["dimension"]

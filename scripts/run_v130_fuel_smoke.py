@@ -84,7 +84,9 @@ def validate_disk(state: dict, phase: str, receipts: list, previous: dict | None
         require(len(found) == 1, "Stale entity receipt")
         data = found[0]["RocketEntityData"]
         snapshot, fuel = data["snapshot"], data["flight_data"]["fuel"]
-        require(data.get("schema_version") == 2 and data.get("owner_id") == OWNER
+        require(data.get("schema_version") == 3
+                and data.get("resource_escrow") == {"schema_version": 1, "resource_epoch": 0, "markers": []}
+                and data.get("owner_id") == OWNER
                 and snapshot.get("content_hash") == receipt[0] and snapshot.get("source_origin") == list(ORIGINS[index])
                 and snapshot.get("mass_inputs") == components.expected_stats(False), "Captured rocket identity/stats differ")
         require(data["flight_data"].get("schema_version") == 2 and data["flight_data"].get("state") == "FUELED"

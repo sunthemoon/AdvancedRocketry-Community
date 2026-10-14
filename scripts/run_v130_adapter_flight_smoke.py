@@ -273,7 +273,9 @@ def validate_disk(state: dict, reports: list[dict], legs: list[dict], restored: 
     require(uuid_from_nbt(entity.get("UUID")) == final["entity"] and entity.get("Pos") == [x + .5, float(y), z + .5]
             and not entity.get("Passengers", []), "Persisted physical rocket identity/position differs")
     data = entity["RocketEntityData"]
-    require(data.get("schema_version") == 2 and uuid_from_nbt(data.get("owner_id")) == OWNER
+    require(data.get("schema_version") == 3
+            and data.get("resource_escrow") == {"schema_version": 1, "resource_epoch": 0, "markers": []}
+            and uuid_from_nbt(data.get("owner_id")) == OWNER
             and uuid_from_nbt(data.get("assembly_transaction_id")) == final["logical"], "Rocket owner/logical identity differs")
     validate_snapshot(data["snapshot"], final)
     current = data["flight_data"]

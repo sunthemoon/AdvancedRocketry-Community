@@ -140,7 +140,15 @@ final class RocketFlightGameTestFixtures {
     static void awaitFlightState(GameTestHelper helper, GameTestTickDriver driver, ServerLevel destination, UUID logical,
             RocketFlightState state,
             int ticks, Runnable assertions) {
-        awaitPaced(helper, driver, helper.getTick() + ticks, () -> hasFlightState(destination, logical, state), assertions);
+        awaitPaced(helper, driver, helper.getTick() + ticks, () -> hasFlightState(destination, logical, state)
+                && RocketTransferSavedData.get(destination.getServer()).acknowledgedCurrent(), assertions);
+    }
+
+    static void assertPendingLaunch(GameTestHelper helper,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestResult result,
+            RocketEntity rocket) {
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
+                .assertPendingLaunch(helper, result, rocket);
     }
 
     static boolean hasFlightState(ServerLevel level, UUID logical, RocketFlightState state) {

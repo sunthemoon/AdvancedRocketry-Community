@@ -61,6 +61,19 @@ final class RocketTransferEntities {
     }
 
     static RocketEntity rebuildDestination(MinecraftServer server, RocketTransferRecord record) {
+        RocketEntity destination = createDestination(server, record);
+        return destination != null && ((ServerLevel) destination.level()).addFreshEntity(destination) ? destination : null;
+    }
+
+    /** Recovery can acknowledge the new UUID before exposing its materialized entity. */
+    static RocketFlightData currentArrival(RocketTransferRecord record, long gameTime) {
+        return record.sourceFlightData().arriveAtDestination(record.destinationFlightData().fuel(),
+                record.destinationFlightData().currentBody(), record.destinationFlightData().currentDimension(),
+                record.destinationSnapshot().sourceOrigin(), gameTime);
+    }
+
+    /** Recovery can acknowledge the new UUID before exposing its materialized entity. */
+    static RocketEntity createDestination(MinecraftServer server, RocketTransferRecord record) {
         ServerLevel level = level(server, record.destinationSnapshot().sourceDimension());
         if (level == null) {
             return null;
@@ -77,7 +90,7 @@ final class RocketTransferEntities {
                 record.destinationFlightData()
         );
         positionAtAltitude(destination, record.destinationSnapshot().sourceOrigin());
-        return level.addFreshEntity(destination) ? destination : null;
+        return destination;
     }
 
     static RocketEntity authorityEntity(MinecraftServer server, RocketTransferRecord record) {
@@ -120,6 +133,13 @@ final class RocketTransferEntities {
             RocketTransferRecord record,
             boolean destination
     ) {
+        ServerLevel level = level(server, (destination ? record.destinationSnapshot() : record.sourceSnapshot()).sourceDimension());
+        if (level != null) { loadOrigin(level, destination ? record.destinationSnapshot() : record.sourceSnapshot()); }
+        return loadedMatches(server, record, destination);
+    }
+
+    /** Reads the visible entity index only; never acquires a ticket or invokes a chunk getter. */
+    static List<RocketEntity> loadedMatches(MinecraftServer server, RocketTransferRecord record, boolean destination) {
         RocketStructureSnapshot snapshot = destination
                 ? record.destinationSnapshot()
                 : record.sourceSnapshot();
@@ -127,7 +147,6 @@ final class RocketTransferEntities {
         if (level == null) {
             return List.of();
         }
-        loadOrigin(level, snapshot);
         RocketRegion region = RocketRegion.fromSnapshot(snapshot);
         AABB box = new AABB(
                 region.minimum().x() - 1.0D,
@@ -169,6 +188,35 @@ final class RocketTransferEntities {
         }
         matches.sort(Comparator.comparing(Entity::getUUID, RocketTransferAuthorityOrder.preferred(expectedId)));
         return List.copyOf(matches);
+    }
+
+    /** Both election regions, including the query margin, must be loaded and entity-ticking. */
+    static boolean recoveryEndsAlreadyLoaded(MinecraftServer server, RocketTransferRecord record) {
+        return endAlreadyLoaded(server, record.sourceSnapshot()) && endAlreadyLoaded(server, record.destinationSnapshot());
+    }
+
+    private static boolean endAlreadyLoaded(MinecraftServer server, RocketStructureSnapshot snapshot) {
+        ServerLevel level = level(server, snapshot.sourceDimension());
+        if (level == null) { return false; }
+        var region = RocketRegion.fromSnapshot(snapshot);
+        int minX = (region.minimum().x() - 1) >> 4, maxX = (region.maximum().x() + 2) >> 4;
+        int minZ = (region.minimum().z() - 1) >> 4, maxZ = (region.maximum().z() + 2) >> 4;
+        return columnsAlreadyLoaded(minX, maxX, minZ, maxZ, (x, z) -> level.areEntitiesLoaded(ChunkPos.asLong(x, z))
+                && level.isPositionEntityTicking(new BlockPos(x << 4, snapshot.sourceOrigin().y(), z << 4)));
+    }
+
+    /** Skinny snapshots can have a large footprint despite the block bound. Never scan it here. */
+    static boolean columnsAlreadyLoaded(int minX, int maxX, int minZ, int maxZ,
+                                        java.util.function.BiPredicate<Integer, Integer> loaded) {
+        long width = (long) maxX - minX + 1, depth = (long) maxZ - minZ + 1;
+        if (width <= 0 || depth <= 0 || width > RocketFlightLimits.MAX_LANDING_CHUNKS
+                || depth > RocketFlightLimits.MAX_LANDING_CHUNKS || width * depth > RocketFlightLimits.MAX_LANDING_CHUNKS) { return false; }
+        for (int x = 0; x < width; x++) {
+            for (int z = 0; z < depth; z++) {
+                if (!loaded.test(minX + x, minZ + z)) { return false; }
+            }
+        }
+        return true;
     }
 
     static RocketEntity loadedSettledAuthority(MinecraftServer server, RocketTransferRecord record) {

@@ -133,12 +133,17 @@ public final class RocketPassengerContinuedUseGameTests {
             var manager = new RocketManager();
             var retained = RocketTransferSavedData.get(helper.getLevel().getServer())
                     .findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElseThrow();
-            helper.assertTrue(manager.recoverTransfer(helper.getLevel().getServer(), retained.transferId()).status()
+            helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
+                    .recoverFixture(helper, () -> manager.recoverTransfer(helper.getLevel().getServer(), retained.transferId())).status()
                     == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport.Status.RECOVERED,
                     "Fresh disassembly manager did not reconcile arrival authority");
             manager.requestDisassembly(player, rocket);
             helper.assertTrue(rocket.isAlive() && rocket.flightData().orElseThrow().fuel().amount() == 1000,
                     "Implicit fueled teardown changed arrival authority");
+            helper.assertTrue(RocketDisassemblyGameTests.confirmCommand(manager, player) == 0 && rocket.isAlive(),
+                    "Unacknowledged retirement consumed arrival authority");
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            manager.requestDisassembly(player, rocket);
             helper.assertTrue(RocketDisassemblyGameTests.confirmCommand(manager, player) == 1
                     && player.discarded == 1000, "Explicit arrival disposal did not report its exact amount");
             helper.assertTrue(rocket.isRemoved(), "Refueled arrival did not disassemble");
@@ -201,7 +206,7 @@ public final class RocketPassengerContinuedUseGameTests {
                 .withPassengers(initial.passengers().assign(owner).orElseThrow()));
         var transfer = UUID.randomUUID();
         var launched = RocketRuntime.requestAdminFlight(source, RocketDestination.MOON, transfer);
-        helper.assertTrue(launched.success(), "Fixture launch failed: " + launched.code());
+        RocketFlightGameTestFixtures.assertPendingLaunch(helper, launched, source);
         RocketFlightGameTestFixtures.awaitFlightState(helper, driver, moon, source.assemblyTransactionId().orElseThrow(),
                 RocketFlightState.LANDED, 270, () -> {
             var journal = RocketTransferSavedData.get(earth.getServer());

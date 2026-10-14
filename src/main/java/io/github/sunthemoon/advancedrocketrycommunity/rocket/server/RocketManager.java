@@ -242,6 +242,9 @@ public final class RocketManager implements RocketOperationService {
         }
     }
 
+    void onRocketJoined(RocketEntity rocket) { flights.onRocketJoined(rocket); }
+    void installBayRecoveryGate(RocketTransferBayRecoveryGate gate) { flights.installBayRecoveryGate(gate); }
+
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             flights.onPlayerLoggedOut(player.getUUID());

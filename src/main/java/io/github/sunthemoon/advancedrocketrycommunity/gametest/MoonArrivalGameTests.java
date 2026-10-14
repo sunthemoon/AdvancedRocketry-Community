@@ -101,7 +101,7 @@ public final class MoonArrivalGameTests {
                 UUID logical = rocket.assemblyTransactionId().orElseThrow();
                 RocketFlightRequestResult result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON,
                         UUID.randomUUID());
-                helper.assertTrue(result.success(), "Earth-to-Moon launch failed: " + result.code());
+                RocketFlightGameTestFixtures.assertPendingLaunch(helper, result, rocket);
                 RocketFlightGameTestFixtures.awaitFlightState(helper, driver, moon, logical, RocketFlightState.LANDED, 270, () -> {
                     RocketEntity landed = findLogicalRocket(moon, logical);
                     helper.assertTrue(landed != null, "The rocket did not arrive on the Moon");
