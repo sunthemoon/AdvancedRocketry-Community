@@ -73,7 +73,7 @@ public final class ElevatorGameTests {
     private static final String AUTOMATION = "endgame_elevator_automation";
     private static final String REDIRECT = "endgame_elevator_redirect";
     private static final String PLACEMENT = "endgame_elevator_placement";
-    private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_gametest_elevator",
+    static final TicketType<UUID> FIXTURE_TICKET = TicketType.create("arce_gametest_elevator",
             Comparator.comparing(UUID::toString));
     private static final String ARRIVAL_TICKET = "advancedrocketrycommunity:elevator_arrival";
 
@@ -100,7 +100,7 @@ public final class ElevatorGameTests {
     }
 
     /** A bound anchor and terminal of one owner, with the station's chunk loaded and ticking. */
-    private static final class Fixture {
+    static final class Fixture {
         final MinecraftServer server;
         final ServerLevel level;
         final ServerLevel space;

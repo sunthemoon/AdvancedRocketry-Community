@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.sunthemoon.advancedrocketrycommunity.client.elevator.ElevatorCapsuleClient;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorEndpointBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorRules;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -23,6 +24,7 @@ public final class TetherRenderer<T extends ElevatorEndpointBlockEntity> impleme
     @Override
     public void render(T endpoint, float partialTick, PoseStack pose, MultiBufferSource buffers, int light,
                        int overlay) {
+        ElevatorCapsuleClient.offer(endpoint);
         if (endpoint.getLevel() == null || !endpoint.tetherForRender()) {
             return;
         }
