@@ -6,10 +6,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 
 /**
- * The ten classic sound events of ADR-066 section 7.1. Registry IDs use the mod namespace. Their definitions live in
- * the v1.8 resource namespace's {@code sounds.json} (like the v1.8 language files), because the historical v0.1
- * {@code sounds.json} in the mod namespace is an immutable DataGen output; each event's sound location therefore
- * names that namespace. Every audio file is NEW code-synthesized work.
+ * The ten classic sound events of ADR-066 section 7.1. Registry IDs use the mod namespace, and each event's sound
+ * location equals its registry ID: the one current mod-namespace {@code sounds.json}, written by the v1.8 DataGen,
+ * defines these ten events and the v0.1 {@code ui_select}, and the build no longer packages the immutable v0.1 copy.
+ * Every audio file is NEW code-synthesized work.
  */
 public enum ClassicSound {
     AIR_HISS_LOOP(true, SoundSource.BLOCKS, 32),
@@ -22,9 +22,6 @@ public enum ClassicSound {
     MACHINE_LARGE(true, SoundSource.BLOCKS, 32),
     RAILGUN_BANG(false, SoundSource.BLOCKS, 32),
     ROLLING_MACHINE(true, SoundSource.BLOCKS, 32);
-
-    /** The resource namespace of the v1.8 sound definitions. */
-    public static final String DEFINITION_NAMESPACE = ModIdentity.MOD_ID + "_v180";
 
     private final boolean loop;
     private final SoundSource source;
@@ -42,7 +39,8 @@ public enum ClassicSound {
     /** The fixed audible range in blocks. */
     public int range() { return range; }
     public ResourceLocation registryId() { return ModIdentity.id(id()); }
-    public ResourceLocation location() { return new ResourceLocation(DEFINITION_NAMESPACE, id()); }
+    /** The sound location that {@code sounds.json} defines; it equals the registry ID. */
+    public ResourceLocation location() { return registryId(); }
     /** The NEW audio file, in the mod namespace's sounds directory. */
     public ResourceLocation file() { return ModIdentity.id(id()); }
     public String subtitle() { return "subtitle." + ModIdentity.MOD_ID + "." + id(); }

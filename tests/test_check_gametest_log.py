@@ -364,8 +364,12 @@ class ManifestValidationTests(unittest.TestCase):
         # W21cF adds one forced research debit shortfall (w21cf-research-debit-shortfall).
         # W33 adds one oversized unlit torch root chunk-save refusal (w33-unlit-torch-chunk-save-refused).
         # W44I adds one refused A1 first-warp replacement (w44-a1-refused-first-warp-replacement).
+        # W37F adds one deliberate earlier respawn-listener interruption.
+        # W37I adds two more, one per interrupted-window logout test (w37i-respawn-listener-interruption-logout).
+        # W37J adds seven deliberate interruption windows (w37j-respawn-save-listener-interruptions).
+        # W37B adds five earlier time-check interruptions: four command-window cases and one next-START save.
         self.assertEqual(
-            83, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            98, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_legacy_scalar_recovery_warning_has_one_separate_batch_count(self) -> None:

@@ -16,15 +16,23 @@ import org.junit.jupiter.api.Test;
 class SkyResourcesTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void oldDimensionTypesChangeExactlyEffectsAndNoOtherWorldSetting() throws Exception {
+    @Test void historicalTypesChangeOnlyEffectsAndCurrentTypesAlsoChangeNatural() throws Exception {
         for (String type : List.of("moon", "space")) {
             String path = "data/advancedrocketrycommunity/dimension_type/" + type + ".json";
             var old = JsonParser.parseString(Files.readString(Path.of("src/generated/v0.3/resources/" + path))).getAsJsonObject();
             var actual = resource(path);
+            var historical = JsonParser.parseString(Files.readString(Path.of("src/generated/v1.4/resources/" + path)))
+                    .getAsJsonObject();
             assertEquals((type.equals("space") ? SkyProfiles.SPACE_EFFECTS : SkyProfiles.SURFACE_EFFECTS).toString(),
                     actual.get("effects").getAsString());
             old.remove("effects");
             actual.remove("effects");
+            assertEquals((type.equals("space") ? SkyProfiles.SPACE_EFFECTS : SkyProfiles.SURFACE_EFFECTS).toString(),
+                    historical.remove("effects").getAsString());
+            assertEquals(old, historical, "The immutable v1.4 type must still change only effects");
+            assertFalse(old.get("natural").getAsBoolean());
+            assertTrue(actual.get("natural").getAsBoolean());
+            old.addProperty("natural", true); // W37B: the current type additionally permits native bed rules.
             assertEquals(old, actual);
         }
         for (String type : List.of("mars", "venus")) {

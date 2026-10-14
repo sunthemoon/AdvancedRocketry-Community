@@ -37,7 +37,7 @@ class V180PresentationProvenanceTest {
         try (Stream<Path> sounds = Files.list(ASSETS.resolve("advancedrocketrycommunity").resolve("sounds"))) {
             sounds.forEach(path -> assets.add(relative(path)));
         }
-        assets.add(relative(ASSETS.resolve(ClassicSound.DEFINITION_NAMESPACE).resolve("sounds.json")));
+        assets.add(relative(ASSETS.resolve("advancedrocketrycommunity").resolve("sounds.json")));
         assets.add(relative(ASSETS.resolve("advancedrocketrycommunity").resolve("textures").resolve("entity")
                 .resolve("suit_components.png")));
         for (ClassicSound sound : ClassicSound.values()) {
@@ -58,7 +58,7 @@ class V180PresentationProvenanceTest {
     void everyRecordedLanguageKeyIsInBothCommittedFiles() throws IOException {
         Map<String, JsonObject> entries = entries();
         for (String locale : new String[] {"en_us", "zh_cn"}) {
-            Path file = ASSETS.resolve(ClassicSound.DEFINITION_NAMESPACE).resolve("lang").resolve(locale + ".json");
+            Path file = ASSETS.resolve("advancedrocketrycommunity_v180").resolve("lang").resolve(locale + ".json");
             JsonObject entry = entries.get(relative(file));
             assertTrue(entry != null, "no provenance entry for " + file);
             JsonObject language = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8))

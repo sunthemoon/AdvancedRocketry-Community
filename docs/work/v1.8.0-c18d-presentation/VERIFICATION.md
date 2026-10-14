@@ -130,3 +130,17 @@ Twenty-two rows, all REDESIGNED; none names a modern registry ID. Twelve C18d ro
 
 No Gate is approved. This file supports the ledger delivery marks only. S1, V1, V2, the manual
 listen and the art and provenance reviews remain open, as listed above.
+
+## Addendum (Root, 2026-10-14): W46 elevator capsule
+
+| Merge on `codex/v1.8.0-classic-content` | Slice | Tested HEAD | Hosted run | Review |
+|---|---|---|---|---|
+| `b46d9f6a` | W46 (ADR-066 section 7.1): the elevator capsule effect and its S2C carrier | `3e047546` | 38519226277 (success) | Root review MERGE, SHA-256 `a43ce360e9b067164307588df3d59dbb438304149a3950b2f3ef996b596c0780` |
+
+The record is `records/W46.md`; the review is kept in `D:/GitHub/ARCE-Task-Evidence/root-queue/W46-review/`.
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `entity:ARSpaceElevatorCapsule` | REDESIGNED | A client-only `elevator_capsule` effect replaces the legacy capsule entity. The departure endpoint's update tag projects at most eight pending rides (entity network ID and remaining countdown), sent on ride request and release only; the client counts down with a 300-tick lease and clears on removal, unload and a null packet. Ride rules, timing and the teleport stay server-side and unchanged |
+
+This addendum is development evidence only. It approves no Required Gate, candidate, version or release. V1 and V2 remain for the final campaign.
