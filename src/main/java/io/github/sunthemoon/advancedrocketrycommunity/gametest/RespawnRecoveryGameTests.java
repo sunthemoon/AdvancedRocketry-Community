@@ -110,19 +110,21 @@ public final class RespawnRecoveryGameTests {
     @GameTest(template = "atmosphere_test", batch = "respawn_recovery", timeoutTicks = 40)
     public static void anUnknownOutcomeTokenIsRestoredWithTheGenericMessage(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
-        ServerPlayer player = join(helper, UUID.randomUUID(), "W37HUnknownToken");
+        // The joined fixture player records its messages as tokens instead of sending chat packets.
+        List<String> tokens = new ArrayList<>();
+        ServerPlayer player = ConnectedTestPlayers.join(server, UUID.randomUUID(), "W37HUnknownToken", helper.getLevel(),
+                helper.absolutePos(new BlockPos(1, 1, 1)), new ArrayList<>(), false, tokens);
         CompoundTag root = RespawnPointBackup.encode(new RespawnPointBackup.Backup(
                 new RespawnPointBackup.Point(CelestialIds.MOON_LEVEL, FAR, -72.25F, true), RespawnOutcome.UNLOADED));
         root.putString("outcome", "a_later_reason");
         CompoundTag persisted = new CompoundTag();
         persisted.put(RespawnPointBackup.KEY, root);
         player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
-        SleepRespawnGameTests.chat(player); // Discard the join messages.
+        tokens.clear();
         DeathRespawnGameTests.afterEachEnd(helper, () -> server.getPlayerList().remove(player), () -> {
             assertRestored(helper, player);
-            List<String> chat = SleepRespawnGameTests.chat(player);
-            helper.assertTrue(chat.contains(SleepRespawnService.genericRespawnKey()),
-                    "The restore of an unknown outcome did not send the generic message: " + chat);
+            helper.assertTrue(tokens.contains(SleepRespawnService.genericRespawnKey()),
+                    "The restore of an unknown outcome did not send the generic message: " + tokens);
         });
     }
 
