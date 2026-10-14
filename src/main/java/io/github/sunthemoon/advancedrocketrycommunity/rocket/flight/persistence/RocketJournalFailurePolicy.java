@@ -18,6 +18,19 @@ final class RocketJournalFailurePolicy {
 
     static CheckedSavedDataPolicy checked(MinecraftServer server) {
         String mode = System.getProperty(PROPERTY, "");
+        if (server != null && Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("SR_")) {
+            EscrowTestEndpoints.requireEnabled(server);
+            var runtime = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server);
+            return new CheckedSavedDataPolicy(TYPE, (staged, target) -> {
+                var previous = CheckedSavedDataFile.readPayload(target, TYPE).orElse(null);
+                var candidate = CheckedSavedDataFile.readPayload(staged, TYPE).orElseThrow();
+                if (previous != null && !previous.getList("transfers", 10).isEmpty() && candidate.getList("transfers", 10).isEmpty()) {
+                    runtime.checkpoint("O3J_BEFORE");
+                }
+                CheckedSavedDataFile.atomicMove(staged, target);
+            });
+        }
         if (server == null || mode.isEmpty() || !Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) {
             return CheckedSavedDataPolicy.atomic(TYPE);
         }

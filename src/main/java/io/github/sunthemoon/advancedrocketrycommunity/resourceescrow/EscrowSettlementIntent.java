@@ -127,7 +127,9 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         }
         var frozen = new EscrowLedger(root.id(), root.issuedThrough(), root.writerGeneration(),
                 root.records().stream().map(op -> ids().contains(op.id()) ? op.settle(this) : op).toList(), root.floors(), root.tombstones());
-        reserve(frozen); EscrowCodec.encode(frozen); return frozen;
+        reserve(frozen); EscrowCodec.encode(frozen);
+        frozen.records().stream().filter(op -> ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, this));
+        return frozen;
     }
     public EscrowOperation floorOperation(long sequence, long tick) {
         requireConfirmed(); EscrowTags.require(choice == Choice.TRANSFER_FLOOR_RETIRE, "Not a floor intent");
@@ -177,7 +179,9 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         for (var op : root.records()) {
             if (op.settlement().isEmpty()) { continue; }
             var intent = decode(op.settlement());
-            if (digests.add(intent.digest())) { count += intent.members().size(); }
+            if (digests.add(intent.digest())) {
+                count += (int) intent.ids().stream().filter(id -> root.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(id))).count();
+            }
         }
         EscrowTags.require(count <= EscrowLimits.TOMBSTONES, "Settlement tombstone capacity exhausted");
         if (digests.isEmpty()) { return; }

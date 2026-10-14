@@ -33,7 +33,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public boolean productionAdmissionEnabled() { return false; }
     public EscrowLedger ledger() { return data.ledger(); }
-    public long nextSequence() { owner(); return Math.addExact(issued, 1); }
+    public long nextSequence() { owner(); return Math.addExact(Math.max(issued, data.ledger().issuedThrough()), 1); }
     public EscrowAdmissionAuthority admissionAuthority() { owner(); return admission; }
     /** Caller must already be in an explicitly gated test fixture. No block/item/command invokes this. */
     void prepareTest(EscrowOperation op, Consumer<Boolean> completion) {
@@ -68,6 +68,7 @@ public final class EscrowCoordinator implements AutoCloseable {
             candidate = data.ledger().append(List.of(intent.floorOperation(nextSequence(), tick)));
         } else { candidate = intent.freeze(data.ledger()); }
         EscrowFloors.preflight(candidate);
+        candidate.records().stream().filter(op -> intent.ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, intent));
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
             var op = candidate.records().stream().filter(record -> intent.ids().contains(record.id())).findFirst().orElseThrow();
@@ -89,6 +90,34 @@ public final class EscrowCoordinator implements AutoCloseable {
         owner(); if (closed || !data.isDirty() || tick - lastStart < 10) { return; }
         // Only acknowledged records are included. Queued preparations are never implicit autosave admissions.
         if (writer.request(() -> snapshot(false, null), this::acknowledge)) { lastStart = tick; }
+    }
+    /** O3/O4 use the frozen decision, never the ordinary prefix-retirement path. */
+    boolean settlementWrite(EscrowSettlementIntent intent, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs,
+                            boolean release, java.util.function.BooleanSupplier journalLease, Consumer<Boolean> callback) {
+        owner();
+        if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
+                || tick - lastStart < 10) { return false; }
+        var keys = intent.observations().stream().map(observation -> observation.endpoint().key()).collect(java.util.stream.Collectors.toSet());
+        var frozenProofs = Map.copyOf(proofs);
+        EscrowTags.require(frozenProofs.keySet().equals(keys) && frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid),
+                "Settlement lacks jointly retained survivor/absence proofs");
+        for (var observation : intent.observations()) {
+            var expected = observation.missing() ? new EscrowPrefix.State(intent.ledger(), 0,
+                    EscrowSettlementTombstones.observationDigest(observation), List.of()) : observation.state();
+            EscrowTags.require(expected.equals(frozenProofs.get(observation.endpoint().key()).frontier()), "Settlement proof does not cover the frozen decision");
+        }
+        EscrowTags.require(data.ledger().records().stream().filter(op -> intent.ids().contains(op.id())).count() == intent.ids().size()
+                && data.ledger().records().stream().filter(op -> intent.ids().contains(op.id())).allMatch(op -> op.settlement().equals(intent.encode())),
+                "Settlement decision is not acknowledged");
+        EscrowLedger candidate = release ? EscrowSettlementTombstones.release(data.ledger(), intent)
+                : EscrowSettlementTombstones.install(data.ledger(), intent);
+        var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
+        boolean accepted = writer.request(() -> EscrowLedgerWriter.Snapshot.of(frozen, Set.of()), result -> {
+            acknowledge(result);
+            if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
+            if (!closed) { callback.accept(result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED); }
+        }, () -> frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) && journalLease.getAsBoolean());
+        if (accepted) { lastStart = tick; } return accepted;
     }
     void persistTransitions() { owner(); if (!transitions.isEmpty()) { autosave(); } }
     private EscrowLedgerWriter.Snapshot snapshot(boolean admissions, Set<UUID> retire) {
@@ -236,7 +265,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                 .anyMatch(op -> logical.equals(op.guard().rocket()));
     }
     public boolean locked(EscrowEndpoint.Key endpoint) {
-        return frontiers.containsKey(endpoint) || unresolved()
+        return frontiers.containsKey(endpoint) || EscrowSettlementTombstones.endpointLocked(data.ledger(), endpoint) || unresolved()
                 .anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
     }
     private java.util.stream.Stream<EscrowOperation> unresolved() {

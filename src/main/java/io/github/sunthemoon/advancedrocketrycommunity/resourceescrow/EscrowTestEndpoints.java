@@ -101,7 +101,7 @@ public final class EscrowTestEndpoints {
         }
         return new EscrowPrefix.State(ledger, EscrowTags.number(section, "resource_epoch"), signature(identity, amount), markers);
     }
-    private static void putState(CompoundTag persistent, EscrowPrefix.State state, boolean entity) {
+    static void putState(CompoundTag persistent, EscrowPrefix.State state, boolean entity) {
         CompoundTag section = new CompoundTag(); section.putInt("schema_version", 1); section.putUUID("ledger_id", state.ledger());
         section.putLong("resource_epoch", state.epoch()); ListTag markers = new ListTag();
         for (EscrowPrefix.Marker marker : state.markers()) {

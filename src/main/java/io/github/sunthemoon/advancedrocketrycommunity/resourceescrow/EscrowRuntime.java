@@ -40,8 +40,11 @@ public final class EscrowRuntime {
     private EscrowBenchmarkProbe benchmark;
     private EscrowRocketAuditProbe rocketAuditProbe;
     private EscrowSettlementProbe settlementProbe;
+    private EscrowSettlementCompletionProbe settlementCompletionProbe;
     private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
+    private final EscrowSettlementRecovery settlements = new EscrowSettlementRecovery();
     EscrowSettlementOperator settlement() { return settlement; }
+    String settlementPhase() { return settlements.phase(); }
     EscrowTimingSink timings() { return benchmark == null ? EscrowTimingSink.NONE : benchmark; }
     private EscrowReconciliationScheduler scheduler;
     private EscrowTestReconciliation reconciliation;
@@ -57,6 +60,7 @@ public final class EscrowRuntime {
         if (probe != null) { probe.checkpoint(cut); }
         if (rocketAuditProbe != null) { rocketAuditProbe.checkpoint(cut); }
         if (settlementProbe != null) { settlementProbe.checkpoint(cut); }
+        if (settlementCompletionProbe != null) { settlementCompletionProbe.checkpoint(cut); }
     }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
@@ -110,6 +114,11 @@ public final class EscrowRuntime {
     @SubscribeEvent public static void tick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) { return; }
         var runtime = of(event.getServer()); if (runtime.stopping) { return; }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("SR_")) {
+            if (runtime.settlementCompletionProbe == null) { runtime.settlementCompletionProbe = new EscrowSettlementCompletionProbe(event.getServer()); }
+            runtime.settlementCompletionProbe.tick();
+        }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) {
             var coordinator = data.bind(event.getServer());
@@ -127,10 +136,13 @@ public final class EscrowRuntime {
         if (runtime.scheduler != null && data != null) {
             runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).persistTransitions();
         }
+        if (data != null) { runtime.settlements.tick(event.getServer(), data.bind(event.getServer()), runtime); }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("SO_")) {
+            if (testCase.startsWith("SR_")) {
+                // This probe runs before settlement recovery so its deliberate veto precedes every O2 attempt.
+            } else if (testCase.startsWith("SO_")) {
                 if (runtime.settlementProbe == null) { runtime.settlementProbe = new EscrowSettlementProbe(event.getServer()); }
                 runtime.settlementProbe.tick();
             } else if (testCase.startsWith("RA_")) {
@@ -167,6 +179,7 @@ public final class EscrowRuntime {
         if (runtime.barrier != null) { runtime.barrier.quiesce(); }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) { data.stop(); }
+        runtime.settlements.close();
         if (runtime.barrier != null) { runtime.barrier.close(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
@@ -190,6 +203,7 @@ public final class EscrowRuntime {
         if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server);
         if (data != null) { data.abort(); }
+        runtime.settlements.close();
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {

@@ -22,6 +22,17 @@ class RocketJournalCheckpointTest {
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.ROCKET_TRANSFERS;
     private Path target() { return directory.resolve(TYPE.fileName()); }
     private static CompoundTag empty() { return new RocketTransferSavedData().save(new CompoundTag()); }
+    @Test void acknowledgedLeaseIsNotRamAbsenceAndIsRevokedByEveryAuthorityMutation() {
+        var data = new RocketTransferSavedData(); assertFalse(data.acknowledgedLease().getAsBoolean());
+        data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE)); var baseline = data.acknowledgedLease(); assertTrue(baseline.getAsBoolean());
+        var record = RocketTransferSavedDataTest.record(); data.put(record);
+        assertFalse(baseline.getAsBoolean()); assertFalse(data.acknowledgedLease().getAsBoolean());
+        data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE)); var named = data.acknowledgedLease(); assertTrue(named.getAsBoolean());
+        data.remove(record.transferId()); assertFalse(named.getAsBoolean()); assertFalse(data.acknowledgedLease().getAsBoolean());
+        assertTrue(data.find(record.transferId()).isEmpty());
+        data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE)); assertTrue(data.acknowledgedLease().getAsBoolean());
+        assertFalse(baseline.getAsBoolean()); assertFalse(named.getAsBoolean());
+    }
     @Test void checkedEmptyBaselineAndRepeatedSaveExposeExactAcknowledgement() {
         var data = new RocketTransferSavedData();
         assertFalse(data.acknowledgedCurrent());

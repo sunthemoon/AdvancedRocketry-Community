@@ -10,7 +10,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-/** Permission-2 diagnostics and explicit O1-only intents; no resource admission or release. */
+/** Permission-2 diagnostics and audited decisions. Production resource admission stays disabled. */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class EscrowCommands {
     private EscrowCommands() { }
@@ -25,7 +25,8 @@ public final class EscrowCommands {
                             + " tombstones=" + (data == null ? 0 : data.ledger().tombstones().size()) + "/" + EscrowLimits.TOMBSTONES), false);
                     return 1;
                 })).then(intent("accept-current", EscrowSettlementIntent.Choice.ACCEPT_CURRENT))
-                .then(intent("abandon", EscrowSettlementIntent.Choice.ABANDON))));
+                .then(intent("abandon", EscrowSettlementIntent.Choice.ABANDON))
+                .then(intent("settle-floor", EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE))));
     }
     private static LiteralArgumentBuilder<CommandSourceStack> intent(String name, EscrowSettlementIntent.Choice choice) {
         return Commands.literal(name).then(Commands.argument("operation", net.minecraft.commands.arguments.UuidArgument.uuid())
@@ -42,14 +43,14 @@ public final class EscrowCommands {
                     : source.getEntity().getUUID();
             if (digest == null) {
                 var preview = operator.preview(server, selected, choice, actor, source.getTextName());
-                source.sendSuccess(() -> Component.literal("Settlement decision preview; endpoint checkpointing and release are unavailable in this build. choice=" + choice
+                source.sendSuccess(() -> Component.literal("Settlement decision preview; release requires durable endpoint checkpoints, tombstones and matching journal removal. choice=" + choice
                         + " operations=" + preview.ids() + " digest=" + preview.digest()
                         + " quantities=" + preview.observations().stream().map(EscrowSettlementIntent.Observation::quantity).toList()), false);
                 return 1;
             }
             boolean queued = operator.confirm(server, selected, choice, actor, digest, committed -> {
                 if (committed) {
-                    source.sendSuccess(() -> Component.literal("Decision acknowledged; affected resources remain locked. Endpoint checkpointing and settlement release are unavailable."), true);
+                    source.sendSuccess(() -> Component.literal("Decision acknowledged; affected resources remain locked until settlement checkpoints and release are acknowledged."), true);
                 } else { source.sendFailure(Component.literal("Decision was not acknowledged; no settlement or release occurred.")); }
             });
             if (!queued) { source.sendFailure(Component.literal("Ledger is busy or unavailable; no intent was acknowledged.")); return 0; }

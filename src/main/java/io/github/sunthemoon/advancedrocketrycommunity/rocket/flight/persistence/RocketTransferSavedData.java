@@ -31,7 +31,7 @@ public final class RocketTransferSavedData extends SavedData {
     private final Map<UUID, RocketTransferRecord> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
     private final RocketJournalCheckpoint checkpoint = new RocketJournalCheckpoint();
-    private long mutationSequence = 1;
+    private volatile long mutationSequence = 1;
     private MinecraftServer ownerServer;
     private boolean saveFailureReported;
     private long lastAttemptTick;
@@ -260,6 +260,13 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     public long mutationSequence() { return mutationSequence; }
+
+    /** Owner-thread acquisition; the returned lease reads only a volatile sequence off-thread. */
+    public java.util.function.BooleanSupplier acknowledgedLease() {
+        if (ownerServer != null && !ownerServer.isSameThread()) { throw new IllegalStateException("Journal lease requires the owner thread"); }
+        if (!acknowledgedCurrent()) { return () -> false; }
+        long captured = mutationSequence; return () -> mutationSequence == captured;
+    }
 
     /** Current and last acknowledged authority protect removal failures without locking new identities. */
     public boolean resourceMutationUnproved(UUID logical) {

@@ -27,16 +27,7 @@ public final class RocketEscrowGate {
         var ledger = data.ledger();
         if (section.ledger() != null && !section.ledger().equals(ledger.id())) { return false; }
         if (data.bind(level.getServer()).logicalLocked(logical)) { return false; }
-        return ledger.tombstones().stream().noneMatch(tombstone -> {
-            for (var raw : EscrowTags.list(tombstone, "missing", 2)) {
-                var endpoint = EscrowCodec.endpoint((net.minecraft.nbt.CompoundTag) raw);
-                if (rocket.getUUID().equals(endpoint.identity()) || logical.equals(endpoint.logicalRocket())) { return true; }
-            }
-            for (var raw : EscrowTags.list(tombstone, "guards", 64)) {
-                if (logical.equals(EscrowCodec.guard((net.minecraft.nbt.CompoundTag) raw).rocket())) { return true; }
-            }
-            return false;
-        });
+        return !EscrowSettlementTombstones.identityLocked(ledger, logical, rocket.getUUID());
     }
 
     public static boolean logicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
@@ -46,14 +37,6 @@ public final class RocketEscrowGate {
     public static boolean escrowLogicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return false; }
-        return data.bind(server).logicalLocked(logical) || data.ledger().tombstones().stream().anyMatch(tombstone -> {
-            for (var raw : EscrowTags.list(tombstone, "guards", 64)) {
-                if (logical.equals(EscrowCodec.guard((net.minecraft.nbt.CompoundTag) raw).rocket())) { return true; }
-            }
-            for (var raw : EscrowTags.list(tombstone, "missing", 2)) {
-                if (logical.equals(EscrowCodec.endpoint((net.minecraft.nbt.CompoundTag) raw).logicalRocket())) { return true; }
-            }
-            return false;
-        });
+        return data.bind(server).logicalLocked(logical) || EscrowSettlementTombstones.logicalLocked(data.ledger(), logical);
     }
 }

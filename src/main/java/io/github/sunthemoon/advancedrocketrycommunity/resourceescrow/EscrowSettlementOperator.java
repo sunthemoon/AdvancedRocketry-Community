@@ -7,7 +7,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.server.MinecraftServer;
 
-/** Server-lifetime preview cache and O1 publication. O2-O4 are unavailable and records stay locked. */
+/** Server-lifetime preview cache and O1 publication; the recovery service checkpoints and releases. */
 final class EscrowSettlementOperator {
     static final int PREVIEWS = 64;
     static final int PREVIEW_TICKS = 1_200;
@@ -17,8 +17,15 @@ final class EscrowSettlementOperator {
     EscrowSettlementIntent preview(MinecraftServer server, UUID selected, EscrowSettlementIntent.Choice choice, UUID actor, String name) {
         var data = existing(server); long tick = server.getTickCount();
         previews.requireCapacity(actor, tick);
-        EscrowTags.require(choice != EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE,
-                "Floor preview adapter is not yet implemented; no intent or record was created");
+        if (choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
+            var floor = data.ledger().floors().stream().filter(tag -> tag.hasUUID("transfer_id") && selected.equals(tag.getUUID("transfer_id")))
+                    .findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown transfer floor"));
+            var observed = EscrowSettlementObserver.floor(server, floor, data.ledger().id());
+            var intent = EscrowSettlementIntent.floorPreview(data.ledger(), UUID.randomUUID(), floor, actor, name, tick, observed);
+            var confirmed = intent.confirm(actor, intent.digest(), tick + 200, observed);
+            EscrowFloors.preflight(data.ledger().append(List.of(confirmed.floorOperation(data.bind(server).nextSequence(), tick))));
+            previews.put(intent, tick); return intent;
+        }
         var observed = EscrowSettlementObserver.component(server, data.ledger(), selected);
         var intent = EscrowSettlementIntent.preview(data.ledger(), selected, choice, actor, name, tick, observed);
         // Validate operation envelopes and reserve capacity before offering a confirm digest.
@@ -30,14 +37,17 @@ final class EscrowSettlementOperator {
     boolean confirm(MinecraftServer server, UUID selected, EscrowSettlementIntent.Choice choice, UUID actor,
                     String digest, Consumer<Boolean> completion) {
         var data = existing(server); long tick = server.getTickCount(); var preview = previews.get(actor, tick);
-        EscrowTags.require(preview != null && preview.ids().contains(selected) && preview.choice() == choice
+        EscrowTags.require(preview != null && (choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE
+                ? selected.equals(preview.floor().getUUID("transfer_id")) : preview.ids().contains(selected)) && preview.choice() == choice
                 && tick - preview.previewTick() <= PREVIEW_TICKS, "Preview is absent, expired or describes another choice/component");
-        List<EscrowSettlementIntent.Observation> observed = EscrowSettlementObserver.component(server, data.ledger(), selected);
+        List<EscrowSettlementIntent.Observation> observed = choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE
+                ? EscrowSettlementObserver.floor(server, preview.floor(), data.ledger().id())
+                : EscrowSettlementObserver.component(server, data.ledger(), selected);
         var intent = preview.confirm(actor, digest, tick, observed);
         boolean queued = data.bind(server).beginSettlement(intent, committed -> {
             if (committed) {
                 previews.remove(actor, preview);
-                LOGGER.info("ARCE_ESCROW_O1 actor={} choice={} operations={} digest={} quantities={} release=unavailable",
+                LOGGER.info("ARCE_ESCROW_O1 actor={} choice={} operations={} digest={} quantities={} release=awaiting-checkpoints",
                         intent.actor(), intent.choice(), intent.ids(), intent.digest(), intent.observations().stream().map(EscrowSettlementIntent.Observation::quantity).toList());
             }
             completion.accept(committed);

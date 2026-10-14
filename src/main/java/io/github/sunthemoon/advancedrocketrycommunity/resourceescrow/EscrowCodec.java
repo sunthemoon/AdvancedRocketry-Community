@@ -86,6 +86,9 @@ public final class EscrowCodec {
     }
     static void validateSection(CompoundTag tag, boolean tombstone) {
         EscrowTags.bound(tag, tombstone ? 2_048 : 1_024, 16, 128);
+        if (tombstone && EscrowTags.integer(tag, "schema_version") == 2) {
+            validateSettlementTombstone(tag); return;
+        }
         if (!tombstone) {
             EscrowTags.fields(tag, "schema_version", "rocket_id", "transfer_id", "journal_generation", "journal_digest", "entity_id", "resource_epoch", "signature", "highest_seq");
             CompoundTag journal = new CompoundTag();
@@ -107,6 +110,37 @@ public final class EscrowCodec {
             }
         }
         EscrowTags.require(EscrowTags.integer(tag, "schema_version") == 1, "Invalid escrow section schema");
+    }
+    private static void validateSettlementTombstone(CompoundTag tag) {
+        EscrowTags.fields(tag, "schema_version", "op_id", "retired", "missing", "guards", "survivors", "amount", "payload_hash", "audited_loss",
+                "loss_known", "decision_digest", "actor", "actor_name", "choice", "confirmed_tick", "released");
+        EscrowTags.uuid(tag, "op_id"); EscrowTags.uuid(tag, "actor"); EscrowTags.digest(EscrowTags.string(tag, "payload_hash"));
+        EscrowTags.digest(EscrowTags.string(tag, "decision_digest")); EscrowTags.enumeration(EscrowSettlementIntent.Choice.class, tag, "choice");
+        String name = EscrowTags.string(tag, "actor_name");
+        EscrowTags.require(!name.isBlank() && name.getBytes(java.nio.charset.StandardCharsets.UTF_8).length <= 128
+                && EscrowTags.number(tag, "confirmed_tick") >= 0 && EscrowTags.integer(tag, "amount") >= 0
+                && tag.getInt("amount") <= 1_000 && EscrowTags.number(tag, "audited_loss") >= 0, "Invalid settlement accounting");
+        for (String flag : List.of("released", "loss_known")) {
+            EscrowTags.require(tag.contains(flag, net.minecraft.nbt.Tag.TAG_BYTE) && (tag.getByte(flag) == 0 || tag.getByte(flag) == 1), "Invalid audit flag");
+        }
+        var retired = EscrowTags.list(tag, "retired", 1); var guards = EscrowTags.list(tag, "guards", 1);
+        EscrowTags.require(retired.size() == 1 && guards.size() == 1, "Receipt needs one retired operation and guard");
+        var entry = (CompoundTag) retired.get(0); EscrowTags.fields(entry, "op_id");
+        EscrowTags.require(tag.getUUID("op_id").equals(EscrowTags.uuid(entry, "op_id")), "Receipt operation mismatch");
+        guard((CompoundTag) guards.get(0));
+        var identities = new java.util.HashSet<EscrowEndpoint.Key>();
+        for (var raw : EscrowTags.list(tag, "missing", 2)) {
+            EscrowTags.require(identities.add(endpoint((CompoundTag) raw).key()), "Duplicate receipt endpoint");
+        }
+        for (var raw : EscrowTags.list(tag, "survivors", 2)) {
+            var survivor = (CompoundTag) raw; EscrowTags.fields(survivor, "endpoint", "digest", "epoch", "signature", "quantity", "bound");
+            EscrowTags.require(identities.add(endpoint(EscrowTags.compound(survivor, "endpoint")).key())
+                    && EscrowTags.number(survivor, "epoch") >= 0 && EscrowTags.number(survivor, "quantity") >= 0
+                    && survivor.contains("bound", net.minecraft.nbt.Tag.TAG_BYTE) && (survivor.getByte("bound") == 0 || survivor.getByte("bound") == 1),
+                    "Invalid chosen survivor");
+            EscrowTags.digest(EscrowTags.string(survivor, "digest")); EscrowTags.digest(EscrowTags.string(survivor, "signature"));
+        }
+        EscrowTags.require(!identities.isEmpty(), "Empty settlement receipt");
     }
     private static ListTag list(List<CompoundTag> values) { var list = new ListTag(); values.forEach(list::add); return list; }
     private static List<CompoundTag> sections(CompoundTag tag, String key, int max) {

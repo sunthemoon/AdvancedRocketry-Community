@@ -23,6 +23,28 @@ import net.minecraft.world.phys.AABB;
 final class EscrowSettlementObserver {
     static final int ENTITIES_PER_SLOT = 1_024;
     private EscrowSettlementObserver() { }
+    static List<EscrowSettlementIntent.Observation> floor(MinecraftServer server, net.minecraft.nbt.CompoundTag floor, UUID ledger) {
+        var journal = RocketTransferSavedData.get(server);
+        EscrowTags.require(journal.retryChecked(server), "Checked journal acknowledgement is unavailable");
+        var guard = EscrowCodec.floorGuard(floor);
+        EscrowTags.require(RocketEscrowAudit.journal(guard, journal.acknowledgedGuard(guard.rocket()).orElse(null)) == EscrowReason.NONE,
+                "Floor journal guard changed");
+        var record = journal.find(guard.transfer()).orElseThrow(() -> new IllegalArgumentException("Floor has no matching journal record"));
+        EscrowTags.require(record.phase() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.COMMITTED
+                && record.destinationEntityId().filter(floor.getUUID("entity_id")::equals).isPresent(), "Floor needs its committed protected destination");
+        var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
+        for (var snapshot : List.of(record.sourceSnapshot(), record.destinationSnapshot())) {
+            var position = snapshot.sourceOrigin();
+            var endpoint = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, snapshot.sourceDimension().toString(), floor.getUUID("entity_id"),
+                    guard.rocket(), io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("rocket").toString(),
+                    position.x() >> 4, 0, position.z() >> 4, EscrowEndpoint.Unit.PRIMARY,
+                    floor.getLong("resource_epoch"), floor.getString("signature"), floor.getString("signature"));
+            references.putIfAbsent(endpoint.key(), endpoint);
+        }
+        var observations = observe(server, ledger, List.copyOf(references.values()));
+        EscrowTags.require(observations.stream().allMatch(EscrowSettlementIntent.Observation::missing), "Protected floor identity is not missing at both ends");
+        return observations;
+    }
     static List<EscrowSettlementIntent.Observation> component(MinecraftServer server, EscrowLedger root, UUID selected) {
         var records = EscrowSettlementIntent.component(root.records(), selected);
         var journal = RocketTransferSavedData.get(server);
