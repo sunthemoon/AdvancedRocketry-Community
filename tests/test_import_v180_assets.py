@@ -500,6 +500,11 @@ class ImportV180AssetsTests(unittest.TestCase):
         _write(self.root / "src/generated/v1.8/resources/assets/advancedrocketrycommunity/lang/de_de.json", "{}")
         self.assert_fails("same resource exists in src/generated/v1.8/resources", MODULE.ImportFailure)
 
+    def test_target_recorded_by_another_batch_fails(self) -> None:
+        _write(self.root / "docs/provenance/v1.8.0-other.json", json.dumps({"schema_version": 2, "entries": [
+            {"target_path": TARGET + "textures/item/gadget.png", "target_sha256": "0" * 64}]}))
+        self.assert_fails("already recorded by v1.8.0-other.json", MODULE.ImportFailure)
+
     # Verify
 
     def test_verify_finds_tampered_targets_and_records(self) -> None:

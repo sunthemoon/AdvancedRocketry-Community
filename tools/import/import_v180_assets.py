@@ -417,13 +417,27 @@ def _other_roots(root: Path) -> list[Path]:
         root / "src/generated/resources"]
 
 
-def check_targets(root: Path, rendered: dict[str, bytes]) -> list[str]:
-    """A target must not also exist in a DataGen root, where it would be a second copy of the resource."""
+def check_targets(root: Path, rendered: dict[str, bytes], record_path: Path) -> list[str]:
+    """A target must not also exist in a DataGen root, where it would be a second copy of the resource, nor be
+    named by another provenance record."""
+    owners: dict[str, str] = {}
+    for path in sorted((root / "docs/provenance").glob("*.json")):
+        if path.resolve() == record_path.resolve():
+            continue
+        try:
+            entries = json.loads(path.read_text(encoding="utf-8")).get("entries", [])
+        except (AttributeError, UnicodeError, json.JSONDecodeError):
+            continue
+        for entry in entries if isinstance(entries, list) else []:
+            if isinstance(entry, dict) and isinstance(entry.get("target_path"), str):
+                owners.setdefault(entry["target_path"], path.name)
     errors = []
     for target in sorted(rendered):
         for other in _other_roots(root):
             if (other / target[len(RESOURCE_ROOT):]).exists():
                 errors.append(f"{target}: the same resource exists in {other.relative_to(root).as_posix()}")
+        if target in owners:
+            errors.append(f"{target}: already recorded by {owners[target]}")
     return errors
 
 
@@ -465,7 +479,7 @@ def generate(root: Path, upstream: Path, plan_path: Path, record_path: Path, van
     if isinstance(previous, dict) and isinstance(previous.get("entries"), list):
         recorded = {item.get("target_path"): item.get("target_sha256") for item in previous["entries"]
                     if isinstance(item, dict)}
-    errors = check_targets(root, rendered)
+    errors = check_targets(root, rendered, record_path)
     for target, data in sorted(rendered.items()):
         path = root / target
         if path.is_symlink() or (path.exists() and not path.is_file()):
@@ -484,7 +498,7 @@ def generate(root: Path, upstream: Path, plan_path: Path, record_path: Path, van
 
 def verify(root: Path, upstream: Path, plan_path: Path, record_path: Path, vanilla_specs: list[str]) -> list[str]:
     core, rendered = build(root, upstream, plan_path, vanilla_specs)
-    errors = check_targets(root, rendered)
+    errors = check_targets(root, rendered, record_path)
     recorded = checks.read_input(record_path, MAX_PLAN_BYTES)
     if recorded != v010.pretty_json(v010.record_for(core, json.loads(recorded))):
         errors.append("provenance record does not reproduce byte for byte from the plan, upstream and targets")
