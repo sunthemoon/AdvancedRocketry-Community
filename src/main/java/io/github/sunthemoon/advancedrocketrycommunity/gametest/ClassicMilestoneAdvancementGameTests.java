@@ -282,7 +282,7 @@ public final class ClassicMilestoneAdvancementGameTests {
                     .withPassengers(initial.passengers().assign(passenger.getUUID()).orElseThrow()));
             helper.assertTrue(passenger.startRiding(source, true), "The passenger could not board");
             var launched = RocketRuntime.requestAdminFlight(source, RocketDestination.MOON, transfer);
-            helper.assertTrue(launched.success(), "Launch failed: " + launched.code());
+            RocketFlightGameTestFixtures.assertPendingLaunch(helper, launched, source);
             helper.assertTrue(!done(passenger, Milestone.MOON_LANDING), "The launch fired the landing event");
         } catch (RuntimeException failure) {
             cleanup.run();

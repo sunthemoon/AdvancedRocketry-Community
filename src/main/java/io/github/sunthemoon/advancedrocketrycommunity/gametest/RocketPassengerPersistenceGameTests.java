@@ -92,7 +92,7 @@ public final class RocketPassengerPersistenceGameTests {
                 .withPassengers(flight.passengers().assign(owner).orElseThrow()));
         var transfer = UUID.randomUUID();
         var launch = RocketRuntime.requestAdminFlight(source, RocketDestination.MOON, transfer);
-        helper.assertTrue(launch.success(), "Fixture launch failed: " + launch.code());
+        RocketFlightGameTestFixtures.assertPendingLaunch(helper, launch, source);
         RocketFlightGameTestFixtures.awaitFlightState(helper, driver, moon, source.assemblyTransactionId().orElseThrow(),
                 RocketFlightState.LANDED, 270, () -> {
             var journal = RocketTransferSavedData.get(earth.getServer());

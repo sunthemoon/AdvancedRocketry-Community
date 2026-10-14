@@ -61,7 +61,9 @@ def validate_disk(state: dict, phase: str, receipt: tuple, previous: dict | None
     require(recovery.uuid_from_nbt(entity["UUID"]) == receipt[1], "Native entity UUID differs from assembly receipt")
     data = entity["RocketEntityData"]
     snapshot, flight_data = data["snapshot"], data["flight_data"]
-    require(data.get("schema_version") == 2 and snapshot.get("schema_version") == 1
+    require(data.get("schema_version") == 3
+            and data.get("resource_escrow") == {"schema_version": 1, "resource_epoch": 0, "markers": []}
+            and snapshot.get("schema_version") == 1
             and snapshot.get("source_dimension") == "minecraft:overworld"
             and snapshot.get("source_origin") == list(ORIGIN)
             and snapshot.get("bounding_box") == [-1, 0, 0, 1, 2, 0]

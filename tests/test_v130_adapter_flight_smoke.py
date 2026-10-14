@@ -63,7 +63,8 @@ def fixture(count=1, restored=False):
              "fuel_after": 628 - i * 372} for i in range(count)]
     source, final = observations[-2:]
     ledger = [leg["transfer"] for leg in legs]
-    entity_data = {"schema_version": 2, "assembly_transaction_id": nbt_uuid(final["logical"]),
+    entity_data = {"schema_version": 3, "resource_escrow": {"schema_version": 1, "resource_epoch": 0, "markers": []},
+                   "assembly_transaction_id": nbt_uuid(final["logical"]),
                    "owner_id": nbt_uuid(runner.OWNER), "snapshot": snapshot(final, count),
                    "flight_data": flight_data(final, "LANDED", ledger)}
     entry = {"schema_version": 2, "phase": "COMMITTED", "transfer_id": nbt_uuid(ledger[-1]),

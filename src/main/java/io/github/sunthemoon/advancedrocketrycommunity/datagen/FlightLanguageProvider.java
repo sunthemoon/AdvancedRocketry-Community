@@ -116,6 +116,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
     private static String requestEnglish(RocketFlightRequestCode code) {
         return switch (code) {
             case SUCCESS -> "Flight request accepted; required fuel %s";
+            case JOURNAL_PENDING -> "Waiting for durable transfer confirmation; required fuel %s";
             case ENTITY_UNAVAILABLE -> "Rocket is unavailable";
             case OUT_OF_RANGE -> "Rocket is outside interaction range";
             case UNAUTHORIZED -> "Only the owner or an operator may control this rocket";
@@ -144,6 +145,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
     private static String requestChinese(RocketFlightRequestCode code) {
         return switch (code) {
             case SUCCESS -> "飞行请求已接受；需要燃料 %s";
+            case JOURNAL_PENDING -> "等待转移日志持久化确认；需要燃料 %s";
             case ENTITY_UNAVAILABLE -> "火箭不可用";
             case OUT_OF_RANGE -> "火箭超出交互距离";
             case UNAUTHORIZED -> "只有所有者或管理员可以控制这枚火箭";

@@ -84,6 +84,15 @@ public final class RocketFuelState {
         if (propulsion == null) { throw new IllegalStateException("Legacy fuel has no native vector"); }
         return propulsion.resourceSignature();
     }
+    /** Scalar saves have no native signature; a representation change is never equivalent. */
+    public boolean sameResources(RocketFuelState other) {
+        Objects.requireNonNull(other, "other");
+        if (propulsion == null || other.propulsion == null) {
+            return propulsion == null && other.propulsion == null && capacity == other.capacity
+                    && amount == other.amount && committedDebits.equals(other.committedDebits);
+        }
+        return resourceSignature().equals(other.resourceSignature());
+    }
     public RocketFuelState withFluidBank(boolean oxidizer, ResourceLocation id, CompoundTag tag, long amount) {
         if (propulsion == null || propulsion.descriptor().mode() == RocketPropulsion.Mode.ABSTRACT
                 || oxidizer && propulsion.descriptor().mode() != RocketPropulsion.Mode.BIPROPELLANT

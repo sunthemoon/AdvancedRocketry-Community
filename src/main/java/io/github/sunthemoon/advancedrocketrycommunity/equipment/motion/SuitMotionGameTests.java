@@ -7,6 +7,13 @@ import io.github.sunthemoon.advancedrocketrycommunity.config.SwitchOverrides;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.motion.SuitMotionService.Reply;
 import io.github.sunthemoon.advancedrocketrycommunity.equipment.motion.SuitMotionService.Result;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlock;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.stats.RocketStats;
+import java.util.Map;
 import java.util.UUID;
 import java.util.List;
 import net.minecraft.gametest.framework.GameTest;
@@ -238,6 +245,15 @@ public final class SuitMotionGameTests {
             helper.assertTrue(gliding == Result.ELYTRA && f.hydrogen() == 20 && f.sent.isEmpty(), "Thrust during elytra flight: " + gliding);
             var rocket = ModEntities.ROCKET.get().create(f.level);
             helper.assertTrue(rocket != null, "Rocket type unavailable");
+            var origin = new RocketPosition(f.player.blockPosition().getX(), f.player.blockPosition().getY(), f.player.blockPosition().getZ());
+            var anchor = new RocketPosition(0, 0, 0);
+            var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), f.level.dimension().location(), origin,
+                    List.of(new RocketBlock(anchor, new RocketBlockState(ModBlocks.ROCKET_SEAT.getId(), Map.of()))),
+                    List.of(anchor), new RocketStats(1, 1, 0, 0, 0, 1, 0, 0), f.level.getGameTime());
+            rocket.initialize(snapshot, UUID.randomUUID(), f.player.getUUID());
+            helper.assertTrue(rocket.operational()
+                    && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket),
+                    "Seat fixture must be an initialized, unprotected rocket");
             // Dismounting goes beside the rocket, so keep it at the fixture rather than at the world origin.
             rocket.moveTo(f.player.getX(), f.player.getY(), f.player.getZ());
             helper.assertTrue(f.player.startRiding(rocket, true), "Fixture could not take a rocket seat");

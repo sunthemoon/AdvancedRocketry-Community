@@ -71,7 +71,7 @@ public final class RocketFlightGameTests {
                         station.stationId(),
                         UUID.randomUUID()
                 );
-                helper.assertTrue(outward.success(), "Earth-to-station launch failed: " + outward.code());
+                assertPendingLaunch(helper, outward, outbound);
 
                 awaitFlightState(helper, driver, space, logical, RocketFlightState.LANDED, 270, () -> {
                     RocketEntity landedSpace = findLogicalRocket(space, logical);
@@ -111,8 +111,7 @@ public final class RocketFlightGameTests {
                             RocketDestination.EARTH,
                             UUID.randomUUID()
                     );
-                    helper.assertTrue(returning.success(),
-                            "Station-to-Earth launch failed: " + returning.code());
+                    assertPendingLaunch(helper, returning, landedSpace);
 
                     awaitFlightState(helper, driver, earth, logical, RocketFlightState.LANDED, 270, () -> {
                         RocketEntity landedEarth = findLogicalRocket(earth, logical);
@@ -206,8 +205,8 @@ public final class RocketFlightGameTests {
                             RocketDestination.MOON,
                             secondTransfer
                     );
-                    helper.assertTrue(firstLaunch.success(), "First concurrent launch failed: " + firstLaunch.code());
-                    helper.assertTrue(secondLaunch.success(), "Second concurrent launch failed: " + secondLaunch.code());
+                    assertPendingLaunch(helper, firstLaunch, first);
+                    assertPendingLaunch(helper, secondLaunch, second);
                     RocketTransferSavedData journal = RocketTransferSavedData.get(earth.getServer());
                     var firstRecord = journal.find(firstTransfer).orElseThrow();
                     var secondRecord = journal.find(secondTransfer).orElseThrow();
@@ -272,7 +271,7 @@ public final class RocketFlightGameTests {
                     RocketDestination.MOON,
                     outwardId
             );
-            helper.assertTrue(outward.success(), "Earth-to-Moon launch failed: " + outward.code());
+            assertPendingLaunch(helper, outward, outbound);
 
             awaitFlightState(helper, driver, moon, logical, RocketFlightState.LANDED, 270, () -> {
                 RocketEntity landedMoon = findLogicalRocket(moon, logical);
@@ -305,7 +304,7 @@ public final class RocketFlightGameTests {
                         RocketDestination.EARTH,
                         returnId
                 );
-                helper.assertTrue(returning.success(), "Moon-to-Earth launch failed: " + returning.code());
+                assertPendingLaunch(helper, returning, landedMoon);
 
                 awaitFlightState(helper, driver, earth, logical, RocketFlightState.LANDED, 270, () -> {
                     RocketEntity landedEarth = findLogicalRocket(earth, logical);
@@ -359,7 +358,7 @@ public final class RocketFlightGameTests {
                     RocketDestination.MOON,
                     transferId
             );
-            helper.assertTrue(launch.success(), "Blocked-pad setup launch failed: " + launch.code());
+            assertPendingLaunch(helper, launch, source);
             var record = RocketTransferSavedData.get(earth.getServer()).find(transferId).orElseThrow();
             var firstBlock = record.destinationSnapshot().blocks().get(0);
             RocketPosition blocked = record.destinationSnapshot().sourceOrigin().add(firstBlock.position());

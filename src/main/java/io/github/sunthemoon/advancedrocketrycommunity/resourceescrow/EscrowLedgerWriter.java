@@ -204,6 +204,10 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         active = null; successor = null; captured = null;
     }
     public boolean containsCaptured(UUID admission) { owner(); return captured != null && captured.admissions().contains(admission); }
+    /** Includes the exact unknown candidate until resolution; successor admissions remain in the coordinator queue. */
+    java.util.List<EscrowOperation> capturedOperations() {
+        owner(); return captured == null ? java.util.List.of() : captured.ledger().records();
+    }
     public boolean unavailable() { owner(); return failures >= 3; }
     public boolean idle() { owner(); return active == null; }
     public long lastGeneration() { owner(); return lastGeneration; }

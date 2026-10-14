@@ -3,6 +3,33 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "legacy-scalar-keep-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"legacy_scalar_recovery": 1},
+      "test": "RocketLegacyFuelGameTests.decodedLegacyRocketRecoversKeepSource",
+      "reason": "The decoded schema-1 scalar-fuel source is deliberately recovered from PREPARED and must restore its unconsumed stationary resources."
+    },
+    {
+      "id": "bay-hook-ordinary-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"bay_transfer_hook": 1},
+      "test": "RocketTransferBayGameTests.endedUnconsumedClaimUsesOrdinaryStationaryRecovery",
+      "reason": "The unconsumed stub claim ends before source authority is established, so exact ordinary source recovery restores and acknowledges the stationary source."
+    },
+    {
+      "id": "escrow-transfer-fence-loaded-only",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=(FLOOR_PROOF_REQUIRED|ENDPOINT_JOIN_PROOF_REQUIRED|WAITING_UNLOADED) repair=offline-whole-world",
+      "counts": {"escrow_transfer_fence": 5},
+      "test": "RocketTransferFenceGameTests.startupJoinAndOperatorRetriesNeverTicketUnloadedOrUnavailableEnds",
+      "reason": "Two startup fences, one endpoint join and two loaded-only observations emit one warning per reason transition; repeated attempts emit none."
+    },
+    {
       "id": "beacon-index-unavailable",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

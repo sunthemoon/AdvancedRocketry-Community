@@ -29,6 +29,8 @@ public final class V180LanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        add("flight.advancedrocketrycommunity.request.journal_pending", chinese
+                ? "等待转移日志持久化确认；需要燃料 %s" : "Waiting for durable transfer confirmation; required fuel %s");
         V180ResearchLanguage.entries(chinese).forEach(this::add);
         V180LandingPadData.language(chinese).forEach(this::add);
         V180PumpLanguage.translations(chinese).forEach(this::add);

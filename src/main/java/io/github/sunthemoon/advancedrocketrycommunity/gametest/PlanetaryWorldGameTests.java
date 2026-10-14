@@ -121,7 +121,7 @@ public final class PlanetaryWorldGameTests {
             // Each leg starts with the same tank contents left by the previous one.
             var destination = route.get(index);
             var result = RocketRuntime.requestAdminFlight(rocket, new TravelTarget.BodySurface(destination), UUID.randomUUID());
-            helper.assertTrue(result.success(), "Planetary launch failed: " + result.code() + " to " + destination);
+            RocketFlightGameTestFixtures.assertPendingLaunch(helper, result, rocket);
             helper.assertTrue(result.requiredFuel() > 0, "Planetary flight omitted its fuel debit");
             // Successful native preparation has already initialized this server's journal.
             var journal = RocketTransferSavedData.get(server);
