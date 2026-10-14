@@ -73,6 +73,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationMan
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationRocketAuthority;
 import io.github.sunthemoon.advancedrocketrycommunity.station.notice.StationNoticeService;
+import io.github.sunthemoon.advancedrocketrycommunity.station.safety.SafetyReturnTransactions;
+import io.github.sunthemoon.advancedrocketrycommunity.station.safety.SpaceSafetyReturnService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.warp.StationWarpService;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationRuntime;
@@ -191,6 +193,17 @@ public final class AdvancedRocketryCommunity {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.LOW, stationNotices::onServerStarted);
         // ADR-065 §5.2.1: the station orbital clock advances once per logical-server END tick.
         MinecraftForge.EVENT_BUS.addListener(stationManager::onServerTick);
+        // ADR-066 §3.3: the space safety return; a rocket transfer or an elevator ride holds a player.
+        SpaceSafetyReturnService safetyReturn = new SpaceSafetyReturnService(celestialCatalogs, (server, player) ->
+                SafetyReturnTransactions.inRocketTransfer(server, player)
+                        || io.github.sunthemoon.advancedrocketrycommunity.endgame.service.EndgameRuntime.devices()
+                        .map(devices -> devices.elevatorRides().pending(player).isPresent()).orElse(false));
+        MinecraftForge.EVENT_BUS.addListener(safetyReturn::onServerAboutToStart);
+        MinecraftForge.EVENT_BUS.addListener(safetyReturn::onServerStopped);
+        MinecraftForge.EVENT_BUS.addListener(safetyReturn::onPlayerTick);
+        MinecraftForge.EVENT_BUS.addListener(safetyReturn::onServerTick);
+        MinecraftForge.EVENT_BUS.addListener(safetyReturn::onPlayerLoggedOut);
+        MinecraftForge.EVENT_BUS.addListener(safetyReturn::onPlayerChangedDimension);
         MinecraftForge.EVENT_BUS.addListener(this::onSolarServerStarted);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onSolarServerStopping);
         MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, this::onSolarServerStopped);

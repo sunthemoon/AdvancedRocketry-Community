@@ -59,6 +59,33 @@
       "reason": "W37H F5: a dead player has a string PlayerPersisted parent; it is not overwritten, and the skipped refusal is reported once per player per server session."
     },
     {
+      "id": "legacy-scalar-keep-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"legacy_scalar_recovery": 1},
+      "test": "RocketLegacyFuelGameTests.decodedLegacyRocketRecoversKeepSource",
+      "reason": "The decoded schema-1 scalar-fuel source is deliberately recovered from PREPARED and must restore its unconsumed stationary resources."
+    },
+    {
+      "id": "bay-hook-ordinary-source-recovery",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED",
+      "counts": {"bay_transfer_hook": 1},
+      "test": "RocketTransferBayGameTests.endedUnconsumedClaimUsesOrdinaryStationaryRecovery",
+      "reason": "The unconsumed stub claim ends before source authority is established, so exact ordinary source recovery restores and acknowledges the stationary source."
+    },
+    {
+      "id": "escrow-transfer-fence-loaded-only",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_FENCED transfer=[0-9a-f-]{36} reason=(FLOOR_PROOF_REQUIRED|ENDPOINT_JOIN_PROOF_REQUIRED|WAITING_UNLOADED) repair=offline-whole-world",
+      "counts": {"escrow_transfer_fence": 5},
+      "test": "RocketTransferFenceGameTests.startupJoinAndOperatorRetriesNeverTicketUnloadedOrUnavailableEnds",
+      "reason": "Two startup fences, one endpoint join and two loaded-only observations emit one warning per reason transition; repeated attempts emit none."
+    },
+    {
       "id": "beacon-index-unavailable",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
@@ -929,6 +956,24 @@
       "max": 5,
       "test": "environment: host speed",
       "reason": "Recognizes at most five vanilla host-lag notices; complete retained runs logged one each. This count is a diagnostic ceiling, not a duration, tick-performance or reliability qualification. All existing performance budgets and native test outcomes remain independent."
+    },
+    {
+      "id": "vanilla-worldgen-dummy-block-entity",
+      "level": "WARN",
+      "logger": "net.minecraft.world.level.chunk.LevelChunk/",
+      "message": "Tried to load a DUMMY block entity @ MutableBlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\} but found not block entity block Block\\{minecraft:air\\} at location",
+      "max": 4,
+      "test": "environment: vanilla generation of a newly loaded chunk",
+      "reason": "Vanilla world generation (WorldGenRegion.setBlock, offsets 154-164 in Forge 47.4.10) stores a DUMMY block-entity tag when it places a block-entity block in a generating chunk; a later generation step can replace that block with air without removing the tag. LevelChunk logs this pair when the new chunk is loaded. ARCE code never writes DUMMY. Whether a test layout reaches such a chunk depends on batch positions, so it is admitted in any batch, for air only, at most four times. First seen in hosted run 38498876649 (batch force_field, chunk 3,21)."
+    },
+    {
+      "id": "vanilla-worldgen-dummy-block-entity-failed",
+      "level": "WARN",
+      "logger": "net.minecraft.world.level.chunk.LevelChunk/",
+      "message": "Tried to load a block entity for block Block\\{minecraft:air\\} but failed at location MutableBlockPos\\{x=-?\\d+, y=-?\\d+, z=-?\\d+\\}",
+      "max": 4,
+      "test": "environment: vanilla generation of a newly loaded chunk",
+      "reason": "The second line of the same vanilla pair; see vanilla-worldgen-dummy-block-entity."
     }
   ]
 }

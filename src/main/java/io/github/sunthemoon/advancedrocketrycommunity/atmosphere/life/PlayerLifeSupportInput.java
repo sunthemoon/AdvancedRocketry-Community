@@ -8,10 +8,17 @@ public record PlayerLifeSupportInput(
         BreathabilityState volumeState,
         int equippedSuitPieces,
         int oxygenUnits,
-        int vacuumPhase
+        int vacuumPhase,
+        boolean underwaterOxygenRequired
 ) {
     public static final int COMPLETE_SUIT_PIECES = 4;
     public static final int TICKS_PER_OXYGEN_OR_DAMAGE = 20;
+
+    /** Existing dry-land callers retain their original atmosphere-only behavior. */
+    public PlayerLifeSupportInput(boolean baseAtmosphereBreathable, BreathabilityState volumeState,
+                                  int equippedSuitPieces, int oxygenUnits, int vacuumPhase) {
+        this(baseAtmosphereBreathable, volumeState, equippedSuitPieces, oxygenUnits, vacuumPhase, false);
+    }
 
     public PlayerLifeSupportInput {
         Objects.requireNonNull(volumeState, "volumeState");

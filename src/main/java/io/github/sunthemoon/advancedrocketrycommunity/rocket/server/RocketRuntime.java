@@ -35,6 +35,18 @@ public final class RocketRuntime {
         service = null;
     }
 
+    public static void onRocketJoined(RocketEntity rocket) {
+        if (service instanceof RocketManager manager) { manager.onRocketJoined(rocket); }
+    }
+
+    /** Internal coordinator registration; the installed manager owns the gate for this server session. */
+    public static void installBayRecoveryGate(MinecraftServer server, RocketTransferBayRecoveryGate gate) {
+        if (!server.isSameThread() || !(service instanceof RocketManager manager)) {
+            throw new IllegalStateException("Bay gate needs the installed server-thread rocket manager");
+        }
+        manager.installBayRecoveryGate(gate);
+    }
+
     public static RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,
             io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, UUID requestId) {
         return service instanceof RocketManager manager ? manager.requestAdminPadFlight(rocket, stationId, pad, requestId)

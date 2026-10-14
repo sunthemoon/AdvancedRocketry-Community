@@ -121,11 +121,11 @@ class RocketTransferSavedDataTest {
         assertEquals(returning, data.find(returning.transferId()).orElseThrow());
     }
 
-    private static RocketTransferRecord record() {
+    static RocketTransferRecord record() {
         return record(TRANSFER, LOGICAL, SOURCE_ENTITY);
     }
 
-    private static RocketTransferRecord committed(RocketTransferRecord prepared) {
+    static RocketTransferRecord committed(RocketTransferRecord prepared) {
         return prepared.destinationSpawned(DESTINATION_ENTITY)
                 .advance(RocketTransferPhase.PASSENGERS_TRANSFERRED)
                 .advance(RocketTransferPhase.SOURCE_REMOVED)

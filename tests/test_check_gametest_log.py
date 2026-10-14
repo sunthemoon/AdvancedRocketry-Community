@@ -369,6 +369,15 @@ class ManifestValidationTests(unittest.TestCase):
             85, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
+    def test_legacy_scalar_recovery_warning_has_one_separate_batch_count(self) -> None:
+        rule = next(item for item in load_manifest(DEFAULT_MANIFEST)
+                    if item.id == "legacy-scalar-keep-source-recovery")
+        self.assertEqual("WARN", rule.level)
+        self.assertEqual({"legacy_scalar_recovery": 1}, rule.counts)
+        self.assertTrue(rule.allows_batch("legacy_scalar_recovery"))
+        self.assertFalse(rule.allows_batch("flight_recovery"))
+        self.assertFalse(rule.allows_batch("bay_transfer_hook"))
+
     def test_recipe_and_recovery_cases_have_independent_counts(self) -> None:
         expectations = load_manifest(DEFAULT_MANIFEST)
         recipes = [item for item in expectations if item.id.endswith("recipe-disabled-unbound-tag")]

@@ -13,6 +13,22 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class RocketFuelStateTest {
+    @Test void scalarComparisonIncludesCapacityAmountAndDebitsWithoutANativeSignature() {
+        var scalar = RocketFuelState.restore(1_000, 500, List.of());
+        assertTrue(scalar.sameResources(RocketFuelState.restore(1_000, 500, List.of())));
+        assertFalse(scalar.sameResources(RocketFuelState.restore(2_000, 500, List.of())));
+        assertFalse(scalar.sameResources(RocketFuelState.restore(1_000, 501, List.of())));
+        assertFalse(scalar.sameResources(RocketFuelState.restore(1_000, 500, List.of(UUID.randomUUID()))));
+        var descriptor = new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion(
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Mode.ABSTRACT,
+                1_000, 0, 1, 1,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings.DEFAULTS);
+        var nativeFuel = RocketFuelState.empty(descriptor).fill(500).state();
+        assertFalse(scalar.sameResources(nativeFuel));
+        assertFalse(nativeFuel.sameResources(scalar));
+        assertTrue(nativeFuel.sameResources(nativeFuel));
+        assertFalse(nativeFuel.sameResources(nativeFuel.fill(1).state()));
+    }
     @Test
     void fillIsBoundedAndReportsTheExactAcceptedAmount() {
         RocketFuelState empty = RocketFuelState.empty(1_000L);

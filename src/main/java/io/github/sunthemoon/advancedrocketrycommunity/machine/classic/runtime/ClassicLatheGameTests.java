@@ -291,6 +291,14 @@ public final class ClassicLatheGameTests {
             this(helper, facing, fluids, crossChunk, false);
         }
         Fixture(GameTestHelper helper, Direction facing, boolean fluids, boolean crossChunk, boolean remotePower) {
+            this(helper, facing, fluids, crossChunk, remotePower, MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState());
+            helper.assertTrue(controller.formed(), "Fixture did not form: " + controller.reason());
+        }
+        /** Places {@code motorState} in the motor cell; the caller checks whether it formed. */
+        Fixture(GameTestHelper helper, Direction facing, BlockState motorState) {
+            this(helper, facing, false, false, false, motorState);
+        }
+        private Fixture(GameTestHelper helper, Direction facing, boolean fluids, boolean crossChunk, boolean remotePower, BlockState motorState) {
             this.helper = helper;
             BlockPos base = helper.absolutePos(new BlockPos(4, 4, 4));
             origin = crossChunk ? new BlockPos((base.getX() >> 4) * 16 + 14, base.getY(), (base.getZ() >> 4) * 16 + 8) : base;
@@ -325,7 +333,7 @@ public final class ClassicLatheGameTests {
             for (var entry : pattern.cells().entrySet()) {
                 BlockState state; var matcher = entry.getValue();
                 if (matcher instanceof PatternMatcher.Controller) { state = ModBlocks.LATHE.get().defaultBlockState().setValue(ClassicControllerBlock.FACING, facing); }
-                else if (matcher instanceof PatternMatcher.BlockTag) { state = MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState(); }
+                else if (matcher instanceof PatternMatcher.BlockTag) { state = motorState; }
                 else if (matcher instanceof PatternMatcher.ExactBlock) { state = ModBlocks.MACHINE_CASING.get().defaultBlockState(); }
                 else if (matcher instanceof PatternMatcher.Port port) {
                     state = switch (port.channel()) {
@@ -345,7 +353,6 @@ public final class ClassicLatheGameTests {
                 manager = new ClassicMachineManager(helper.getLevel(), patterns);
             } else { manager = ClassicRuntime.manager(helper.getLevel()); }
             manager.observe(controller); manager.tick();
-            helper.assertTrue(controller.formed(), "Fixture did not form: " + controller.reason());
         }
         IItemHandler input() { return ((ClassicHatchBlockEntity) helper.getLevel().getBlockEntity(inputPosition)).getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(() -> new IllegalStateException("Item input facade")); }
         IItemHandler output() { return ((ClassicHatchBlockEntity) helper.getLevel().getBlockEntity(outputPosition)).getCapability(ForgeCapabilities.ITEM_HANDLER).orElseThrow(() -> new IllegalStateException("Item output facade")); }

@@ -320,6 +320,7 @@ public final class RocketGameTests {
         CompoundTag legacyData = legacySave.getCompound("RocketEntityData");
         legacyData.putInt("schema_version", 1);
         legacyData.remove("flight_data");
+        legacyData.remove("resource_escrow");
         var legacySnapshot = RocketStructureSnapshot.create(snapshot.snapshotId(), snapshot.sourceDimension(), snapshot.sourceOrigin(),
                 snapshot.blocks(), snapshot.passengerAnchors(), snapshot.stats(), snapshot.createdAtGameTime());
         legacyData.put("snapshot", RocketSnapshotNbtCodec.encode(legacySnapshot));
@@ -335,7 +336,7 @@ public final class RocketGameTests {
         );
         helper.assertTrue(
                 migrated.saveWithoutId(new CompoundTag()).getCompound("RocketEntityData")
-                        .getInt("schema_version") == 2,
+                        .getInt("schema_version") == 3,
                 "Schema-1 entity was not upgraded on save"
         );
 
@@ -375,8 +376,7 @@ public final class RocketGameTests {
 
         CompoundTag futureSave = saved.copy();
         CompoundTag futureData = futureSave.getCompound("RocketEntityData");
-        futureData.putInt("schema_version", 3);
-        futureData.putString("future_marker", "preserve-exactly");
+        futureData.putInt("schema_version", 4);
         RocketEntity future = ModEntities.ROCKET.get().create(helper.getLevel());
         helper.assertTrue(future != null, "Rocket entity type did not create future-schema target");
         future.load(futureSave);

@@ -29,6 +29,8 @@ public final class V180LanguageProvider extends LanguageProvider {
 
     @Override
     protected void addTranslations() {
+        add("flight.advancedrocketrycommunity.request.journal_pending", chinese
+                ? "等待转移日志持久化确认；需要燃料 %s" : "Waiting for durable transfer confirmation; required fuel %s");
         V180ResearchLanguage.entries(chinese).forEach(this::add);
         V180LandingPadData.language(chinese).forEach(this::add);
         V180PumpLanguage.translations(chinese).forEach(this::add);
@@ -64,6 +66,7 @@ public final class V180LanguageProvider extends LanguageProvider {
         V180AirlockData.language(chinese).forEach(this::add);
         V180PropulsionLanguage.entries(chinese).forEach(this::add);
         V180PresentationLanguage.translations(chinese).forEach(this::add);
+        V180SafetyReturnLanguage.translations(chinese).forEach(this::add);
 
         add("block." + NS + ".force_field_projector", chinese ? "力场投影器" : "Force Field Projector");
         add("block." + NS + ".force_field", chinese ? "力场" : "Force Field");

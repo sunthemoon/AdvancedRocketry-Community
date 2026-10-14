@@ -127,7 +127,7 @@ public final class LandingPadGameTests {
             RocketEntity source = addSource(helper, snapshot, f.station.ownerId());
             UUID logical = source.assemblyTransactionId().orElseThrow(); UUID transfer = UUID.randomUUID();
             var result = RocketRuntime.requestAdminPadFlight(source, f.station.stationId(), entry.reference(), transfer);
-            helper.assertTrue(result.success(), "Named flight refused: " + result.code() + ":" + result.detailKey());
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.assertPendingLaunch(helper, result, source);
             helper.assertTrue(transfer.equals(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim()), "Prepared claim missing");
             await(helper, driver, helper.getTick() + 270, () -> {
                 var journal = RocketTransferSavedData.get(f.space.getServer()); var record = journal.find(transfer).orElse(null);
@@ -161,8 +161,12 @@ public final class LandingPadGameTests {
             var source = addSource(helper, snapshot, f.station.ownerId()); var transfer = UUID.randomUUID();
             var countdown = countdown(source, f.station, entry, transfer);
             var service = new RocketTransferService();
-            helper.assertTrue(service.prepareLaunch(source, countdown).success(), "Cancel fixture prepare failed");
-            helper.assertTrue(service.cancelCountdown(source).success(), "Countdown cancellation failed");
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.assertPendingLaunch(helper,
+                    service.prepareLaunch(source, countdown), source);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            helper.assertTrue(service.cancelCountdown(source).code() == RocketFlightRequestCode.JOURNAL_PENDING,
+                    "Cancellation did not await its removal acknowledgement");
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             helper.assertTrue(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim() == null, "Cancel claim retained");
             helper.assertTrue(RocketTransferSavedData.get(f.space.getServer()).find(transfer).isEmpty(), "Cancelled transfer retained");
             source.discard(); cleanup(helper, f); helper.succeed();
@@ -200,6 +204,7 @@ public final class LandingPadGameTests {
                     if ((presence & 1) == 0) { source.discard(); }
                     if ((presence & 2) != 0) { helper.assertTrue(f.space.addFreshEntity(destination), "Recovery destination spawn failed"); }
                     var journal = RocketTransferSavedData.get(f.space.getServer()); journal.put(record); journal.flush(f.space.getServer());
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
                     // Real native SavedData files + BE serializer, then fresh Java lifecycle owners.
                     var storage = f.space.getServer().overworld().getDataStorage(); storage.save();
                     var padBe = LandingPadService.loadedPad(f.space, f.pad); var padTag = padBe.saveWithFullMetadata();
@@ -209,9 +214,12 @@ public final class LandingPadGameTests {
                         var root = NbtIo.readCompressed(folder.resolve(LandingPadIndex.DATA_NAME + ".dat").toFile()).getCompound("data");
                         storage.set(LandingPadIndex.DATA_NAME, LandingPadIndex.load(root));
                         var transferRoot = NbtIo.readCompressed(folder.resolve(RocketTransferSavedData.DATA_NAME + ".dat").toFile()).getCompound("data");
+                        journal.stop();
                         storage.set(RocketTransferSavedData.DATA_NAME, RocketTransferSavedData.load(transferRoot));
                     } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
-                    var report = new RocketTransferService().recover(f.space.getServer(), transfer);
+                    var recovery = new RocketTransferService();
+                    var report = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
+                            .recoverFixture(helper, () -> recovery.recover(f.space.getServer(), transfer));
                     helper.assertTrue(report.status() == RocketTransferRecoveryReport.Status.RECOVERED, "Recovery cut " + phase + "/" + presence + " failed: " + report.status());
                     helper.assertTrue(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim() == null, "Recovery cut retained claim: " + phase + "/" + presence);
                     var restoredRecord = RocketTransferSavedData.get(f.space.getServer()).find(transfer).orElse(null);

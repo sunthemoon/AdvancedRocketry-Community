@@ -11,13 +11,15 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyGeomet
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkyMath;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.visual.SkySelection.Selection;
 import java.util.List;
+import java.util.function.Consumer;
 import net.minecraft.client.renderer.GameRenderer;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL14;
 
 /**
- * Five fixed GPU meshes; no profile-dependent geometry, textures or per-frame uploads. The orbited body
- * of a station (ADR-047) reuses the sun disc mesh, turned toward the nadir and tinted.
+ * Six fixed GPU meshes; no profile-dependent geometry, textures or per-frame uploads. The orbited body
+ * of a station (ADR-047) reuses the sun disc mesh, turned toward the nadir and tinted; a singularity
+ * (ADR-066 section 7.1) uses its own dark disc and ring mesh in the same place, uploaded when first shown.
  */
 final class PlanetarySkyRenderer implements AutoCloseable {
     private VertexBuffer sphere;
@@ -25,14 +27,16 @@ final class PlanetarySkyRenderer implements AutoCloseable {
     private VertexBuffer stars;
     private VertexBuffer sun;
     private VertexBuffer halo;
+    private VertexBuffer singularity;
     private boolean failed;
 
     /**
      * {@code attitude} is the ADR-065 station attitude from {@link SkyMath#stationAttitude} or {@code null}
-     * outside a station context; {@code distance} sets the orbited body's apparent size.
+     * outside a station context; {@code distance} sets the orbited body's apparent size. {@code singular}
+     * draws the orbited body as the black-hole sky instead of a tinted disc.
      */
     boolean render(Selection selection, PoseStack poses, Matrix4f projection, float angle, double flash,
-                   double[] attitude, int distance) {
+                   double[] attitude, int distance, boolean singular) {
         RenderSystem.assertOnRenderThread();
         if (failed) {
             return false;
@@ -78,8 +82,17 @@ final class PlanetarySkyRenderer implements AutoCloseable {
                 var body = new Matrix4f(celestial)
                         .rotateZ((float) Math.toRadians(SkyMath.ORBITED_BODY_ELEVATION_DEGREES - 90))
                         .scale(radius, 1, radius);
-                tint(selection.orbit().orElseThrow().color(), 1, 1);
-                draw(sun, body, projection);
+                if (singular) {
+                    // ADR-066 section 7.1: the mesh carries its own colours; an untinted draw keeps the disc opaque.
+                    if (singularity == null) {
+                        singularity = uploadSingularity(SingularitySkyGeometry.mesh(SingularitySkyGeometry.SEGMENTS));
+                    }
+                    tint(0xFFFFFF, 1, 1);
+                    draw(singularity, body, projection);
+                } else {
+                    tint(selection.orbit().orElseThrow().color(), 1, 1);
+                    draw(sun, body, projection);
+                }
             }
             double radius = 100 * Math.tan(Math.toRadians(SkyMath.sunRadius(profile, selection.solarIntensity())));
             rotating.scale((float) radius, 1, (float) radius);
@@ -106,13 +119,31 @@ final class PlanetarySkyRenderer implements AutoCloseable {
         if (vertices.size() > SkyGeometry.MAX_VERTICES) {
             throw new IllegalArgumentException("Sky mesh exceeds vertex budget");
         }
-        var builder = new BufferBuilder(vertices.size() * 16);
-        var buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-        try {
-            builder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        return upload(vertices.size(), builder -> {
             for (var vertex : vertices) {
                 builder.vertex(vertex.x(), vertex.y(), vertex.z()).color(1F, 1F, 1F, vertex.alpha()).endVertex();
             }
+        });
+    }
+
+    private static VertexBuffer uploadSingularity(List<SingularitySkyGeometry.Vertex> vertices) {
+        if (vertices.size() > SingularitySkyGeometry.MAX_VERTICES) {
+            throw new IllegalArgumentException("Singularity sky mesh exceeds vertex budget");
+        }
+        return upload(vertices.size(), builder -> {
+            for (var vertex : vertices) {
+                builder.vertex(vertex.x(), vertex.y(), vertex.z())
+                        .color(vertex.red(), vertex.green(), vertex.blue(), vertex.alpha()).endVertex();
+            }
+        });
+    }
+
+    private static VertexBuffer upload(int count, Consumer<BufferBuilder> vertices) {
+        var builder = new BufferBuilder(count * 16);
+        var buffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
+        try {
+            builder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+            vertices.accept(builder);
             buffer.bind();
             buffer.upload(builder.end());
             return buffer;
@@ -151,5 +182,6 @@ final class PlanetarySkyRenderer implements AutoCloseable {
         if (stars != null) { stars.close(); stars = null; }
         if (sun != null) { sun.close(); sun = null; }
         if (halo != null) { halo.close(); halo = null; }
+        if (singularity != null) { singularity.close(); singularity = null; }
     }
 }

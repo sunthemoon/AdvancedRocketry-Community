@@ -21,6 +21,8 @@ public final class StationRegistryModel {
     private final Map<UUID, StationReservation> reservations = new LinkedHashMap<>();
     private final Map<StationGridCell, UUID> occupiedCells = new LinkedHashMap<>();
     private final Map<UUID, Integer> warpEnergy = new LinkedHashMap<>();
+    /** ADR-066 section 3.3: kept in step with every committed create, team and remove change below. */
+    private final StationAccessIndex accessIndex = new StationAccessIndex();
 
     public synchronized StationReservation reserve(
             UUID stationId,
@@ -66,6 +68,7 @@ public final class StationRegistryModel {
             reservations.put(stationId, reservation);
             throw new IllegalStateException("Station UUID changed authority during commit");
         }
+        accessIndex.add(state);
         return state;
     }
 
@@ -82,6 +85,7 @@ public final class StationRegistryModel {
         StationState removed = stations.remove(Objects.requireNonNull(stationId, "stationId"));
         if (removed != null) {
             occupiedCells.remove(removed.cell(), stationId);
+            accessIndex.remove(stationId);
             // The balance belongs to the station, never to its cell or a carried core.
             warpEnergy.remove(stationId);
         }
@@ -151,6 +155,7 @@ public final class StationRegistryModel {
             throw new IllegalStateException("Station or balance changed before the warp was published");
         }
         stations.put(replacement.stationId(), replacement);
+        accessIndex.update(replacement);
         putBalance(replacement.stationId(), expectedBalance - cost);
         return replacement;
     }
@@ -267,6 +272,30 @@ public final class StationRegistryModel {
         }
         restoreIdentity(state.stationId(), state.cell());
         stations.put(state.stationId(), state);
+        accessIndex.add(state);
+    }
+
+    /** The access index generation; it rises on every committed create, team or remove change. */
+    public synchronized long accessGeneration() {
+        return accessIndex.generation();
+    }
+
+    /**
+     * The next station a player may consider after {@code after} (the first when null), in UUID order: every
+     * committed station for an operator, otherwise those the player owns or belongs to (ADR-066 section 3.3).
+     */
+    public synchronized Optional<UUID> nextAccessCandidate(UUID playerId, boolean operator, UUID after) {
+        return accessIndex.next(playerId, operator, after);
+    }
+
+    /** The number of stations in one player's candidate set. */
+    public synchronized int accessCandidates(UUID playerId, boolean operator) {
+        return accessIndex.candidates(playerId, operator);
+    }
+
+    /** Owner and member links in the access index. */
+    public synchronized int accessLinks() {
+        return accessIndex.links();
     }
 
     public synchronized void restoreReservation(StationReservation reservation) {
@@ -288,6 +317,7 @@ public final class StationRegistryModel {
 
     private StationState update(StationState state) {
         stations.put(state.stationId(), state);
+        accessIndex.update(state);
         return state;
     }
 
