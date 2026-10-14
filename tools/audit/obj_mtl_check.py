@@ -19,6 +19,10 @@ wrongly or silently:
 Budgets (ADR-066 section 7.1): at most 65,536 vertices per baked object (one OBJ file: the larger of its
 positions and its baked quad corners, four per face) and 262,144 vertices or 16 MiB per cached model set. Every
 file is size-checked before it is parsed, and counting stops at the first statement over a budget.
+
+``check_model_set`` applies all of this to a set of files, such as one import plan: every material library,
+material and texture must resolve to a file of the set, and every material a face uses needs a ``map_Kd``
+texture (without one Forge shows the missing texture).
 """
 
 from __future__ import annotations
@@ -308,3 +312,59 @@ def rewrite(data: bytes, kind: str, mapping: dict[str, dict[str, str]], label: s
         if stale:
             raise FormatError(f"{label}: the plan maps {group} {stale} that the source does not use")
     return bytes(output)
+
+
+def check_model_set(rendered: dict[str, bytes], asset_root: str) -> tuple[dict[str, dict], dict[str, int], list[str]]:
+    """ADR-066 section 7.3 over a whole set of files (path to bytes, every path under ``asset_root``, the mod's
+    ``assets/<namespace>/`` directory): parse every OBJ and MTL, resolve every library, material and texture inside
+    the set and hold the section 7.1 budgets. Returns the per-file summaries, the set totals and the errors."""
+    locations = {f"{MOD_ID}:{target[len(asset_root):]}": target for target in rendered}
+    summaries: dict[str, dict] = {}
+    errors: list[str] = []
+    for target, data in sorted(rendered.items()):
+        try:
+            if target.endswith(".obj"):
+                summaries[target] = parse_obj(data, target)
+            elif target.endswith(".mtl"):
+                summaries[target] = parse_mtl(data, target)
+        except FormatError as error:
+            errors.append(str(error))
+    vertices = 0
+    model_files: set[str] = set()
+    for target, summary in sorted(summaries.items()):
+        if summary["format"] == "mtl":
+            model_files.add(target)
+            for texture in summary["textures"]:
+                image = locations.get(resolve_texture(texture))
+                if image is None or not image.endswith(".png"):
+                    errors.append(f"{target}: texture {texture!r} does not resolve to a PNG in the plan")
+                else:
+                    model_files.add(image)
+            continue
+        model_files.add(target)
+        vertices += max(summary["positions"], summary["baked_vertices"])
+        if not summary["faces"]:
+            errors.append(f"{target}: has no faces")
+            continue
+        location = f"{MOD_ID}:{target[len(asset_root):]}"
+        library = locations.get(resolve_library(location, summary["material_library"]))
+        if library is None or library not in summaries or summaries[library]["format"] != "mtl":
+            errors.append(f"{target}: material library {summary['material_library']!r} does not resolve to an MTL "
+                          f"in the plan")
+            continue
+        defined = summaries[library]["materials"]
+        for material in summary["materials"]:
+            if material not in defined:
+                errors.append(f"{target}: material {material!r} is not defined in {library} (dangling material)")
+            elif "map_Kd" not in defined[material]:
+                errors.append(f"{target}: material {material!r} has no map_Kd texture (Forge shows the missing "
+                              f"texture)")
+    total = sum(len(rendered[path]) for path in model_files)
+    if vertices > MAX_MODEL_SET_VERTICES:
+        errors.append(f"the model set has {vertices} vertices, over the {MAX_MODEL_SET_VERTICES} budget")
+    if total > MAX_MODEL_SET_BYTES:
+        errors.append(f"the model set has {total} bytes, over the {MAX_MODEL_SET_BYTES}-byte budget")
+    for summary in summaries.values():
+        if summary["format"] == "mtl":
+            summary["materials"] = sorted(summary["materials"])
+    return summaries, {"vertices": vertices, "bytes": total}, errors
