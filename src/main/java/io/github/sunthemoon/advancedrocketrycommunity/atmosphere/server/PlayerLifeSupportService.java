@@ -17,6 +17,8 @@ import java.util.UUID;
 import java.util.function.DoubleSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModDamageTypes;
@@ -98,12 +100,20 @@ public final class PlayerLifeSupportService {
                             breathability,
                             suitPieces,
                             oxygen,
-                            state.vacuumPhase
+                            state.vacuumPhase,
+                            CommonConfig.classicEquipmentEnabled() && player.isEyeInFluid(FluidTags.WATER)
+                                    && !player.canBreatheUnderwater()
+                                    && !player.hasEffect(MobEffects.WATER_BREATHING)
+                                    && !player.hasEffect(MobEffects.CONDUIT_POWER)
                     )
             );
             // An external debit failure may disable its provider during the operation.
             suitPieces = equipment.countPieces(player);
             state.vacuumPhase = decision.vacuumPhase();
+            // Only the committed debit grants air; the vanilla breathing/drowning tick stays intact.
+            if (decision.restoreUnderwaterAir()) {
+                player.setAirSupply(player.getMaxAirSupply());
+            }
             float damage = PlayerLifeSupportEngine.vacuumDamage(decision, vacuumDamage.getAsDouble());
             if (damage > 0.0F) {
                 suffocationAttempt = true;

@@ -166,3 +166,18 @@ The review reports are kept in `D:/GitHub/ARCE-Task-Evidence/root-queue/W33-revi
 | `event:PlanetEventHandler.fallEvent(LivingFallEvent)` | REDESIGNED | One `LivingFallEvent` listener scales a landing once by the applied gravity multiplier. The horse family stays native (ADR-066 W38 note) |
 
 This addendum is development evidence only. It approves no Required Gate, candidate, version or release.
+
+## Addendum (Root, 2026-10-14): W39 underwater breathing and W40 space safety return
+
+| Merge on `codex/v1.8.0-classic-content` | Slice | Tested HEAD | Hosted run | Review |
+|---|---|---|---|---|
+| `fd3c406f` | W39 (ADR-066 section 3.3): suit underwater breathing | `eb91f79f` | 38490922953 (success) | Root review |
+| `4548cf2a` | W40 (ADR-066 section 3.3): space safety return | `2a6ea6bc` | 38494140652 (success) | Root review |
+
+The records are `records/W39.md` and `records/W40.md`.
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `event:PlanetEventHandler.playerTick(LivingUpdateEvent)` | REDESIGNED | Two server player-tick services replace the legacy handler. W39: a sealed, oxygenated suit restores air under water once per 20 ticks, only after its oxygen debit commits; vanilla drowning stays native. W40: a connected player adrift outside every committed station region of the Space Level for 100 ticks returns to the nearest station it may VISIT whose arrival is loaded and safe, or to the Overworld after a complete pass finds none. The query is fair, resumable and budgeted; it loads no chunk. The legacy farthest-station rule is not kept. The Moon advancement is C18c |
+
+This addendum is development evidence only. It approves no Required Gate, candidate, version or release.
