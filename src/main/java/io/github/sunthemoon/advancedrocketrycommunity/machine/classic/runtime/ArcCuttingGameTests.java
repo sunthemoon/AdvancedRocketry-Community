@@ -204,7 +204,7 @@ public final class ArcCuttingGameTests {
         }
         helper.succeed();
     }
-    private static final class Fixture implements AutoCloseable {
+    static final class Fixture implements AutoCloseable {
         final GameTestHelper helper;
         final ClassicMachineManager manager;
         final ClassicControllerBlockEntity controller;
@@ -215,6 +215,11 @@ public final class ArcCuttingGameTests {
         final List<BlockPos> positions = new ArrayList<>(); final List<ChunkPos> tickets = new ArrayList<>();
         int energyLeft, injected;
         Fixture(GameTestHelper helper, boolean arc, Direction facing) {
+            this(helper, arc, facing, MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState());
+            helper.assertTrue(controller.formed(), "W05 fixture did not form: " + controller.reason());
+        }
+        /** Places {@code motor} in every motor cell; the caller checks whether it formed. */
+        Fixture(GameTestHelper helper, boolean arc, Direction facing, BlockState motor) {
             this.helper = helper; origin = helper.absolutePos(new BlockPos(4, 4, 4));
             pattern = MultiblockPatternJsonCodec.decode((arc ? V180ArcCuttingData.arcPattern() : V180ArcCuttingData.cuttingPattern()).toString().getBytes(StandardCharsets.UTF_8));
             transform = new PatternTransform(switch (facing) {
@@ -235,7 +240,7 @@ public final class ArcCuttingGameTests {
                 else if (matcher instanceof PatternMatcher.BlockTag tag) {
                     state = tag.tagId().equals(V180ArcCuttingData.CLEARANCE_TAG) ? Blocks.AIR.defaultBlockState()
                             : tag.tagId().endsWith(":coils") ? MaterialContent.block("copper_coil").defaultBlockState()
-                            : tag.tagId().endsWith(":motors") ? MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState() : ModBlocks.BLAST_BRICK.get().defaultBlockState();
+                            : tag.tagId().endsWith(":motors") ? motor : ModBlocks.BLAST_BRICK.get().defaultBlockState();
                 } else if (matcher instanceof PatternMatcher.Port port) {
                     state = switch (port.channel()) {
                         case "item_input" -> ModBlocks.ITEM_INPUT_HATCH.get().defaultBlockState(); case "item_output" -> ModBlocks.ITEM_OUTPUT_HATCH.get().defaultBlockState();
@@ -249,7 +254,6 @@ public final class ArcCuttingGameTests {
             controller = (ClassicControllerBlockEntity) helper.getLevel().getBlockEntity(origin);
             power = (ClassicHatchBlockEntity) helper.getLevel().getBlockEntity(world(arc ? new PatternPosition(1, 4, 1) : new PatternPosition(2, 0, 1)));
             manager = ClassicRuntime.manager(helper.getLevel()); manager.observe(controller); manager.tick();
-            helper.assertTrue(controller.formed(), "W05 fixture did not form: " + controller.reason());
         }
         BlockPos world(PatternPosition local) {
             var position = transform.localToWorld(local, pattern.controllerAnchor(), new PatternPosition(origin.getX(), origin.getY(), origin.getZ()));
