@@ -9,7 +9,7 @@ import java.util.Objects;
 /**
  * W44 section 3.6 for the station registry: how the root was first obtained, and the re-check before the first write
  * of a proven-absent root, both for checked writes (inside the writer, before the move) and for vanilla's in-place
- * ordinary save. After the session's first write the file is the session's own and the check stops.
+ * ordinary save. Only a demonstrably successful write makes the file the session's own.
  */
 final class StationRootPresence {
     private ManagedRootPresence presence;
@@ -55,7 +55,6 @@ final class StationRootPresence {
                 becomeUnreadable();
                 return false;
             }
-            sessionWritten = true;
         }
         return true;
     }

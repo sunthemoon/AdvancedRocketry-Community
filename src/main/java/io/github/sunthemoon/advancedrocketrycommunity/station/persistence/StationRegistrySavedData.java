@@ -740,11 +740,7 @@ public final class StationRegistrySavedData extends SavedData {
      */
     @Override
     public void save(java.io.File file) {
-        if (isDirty() && root.admitsOrdinarySave(file.toPath())) {
-            super.save(file);
-        } else if (root.unreadable()) {
-            setDirty(false);
-        }
+        StationOrdinaryWriter.save(this, root, file);
     }
 
     /** One root with optional substitutions; the live registry is never mutated (see {@link StationRegistryPayload}). */
