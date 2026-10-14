@@ -1,8 +1,9 @@
 # W44 design note: the two world-first advancements
 
-Date: 2026-10-14. Status: round 2 design awaiting a fresh independent read-only review (AGENTS.md
-section 13). It is not an implementation, accepted freeze or Gate evidence. Round 1 was authored by
-a headless Claude session at `25f5ff4a`; this Codex revision starts from `a744aed4`.
+Date: 2026-10-14. Status: round 3 design awaiting Root's targeted re-check of N1 (AGENTS.md section
+13). It is not an implementation, accepted freeze or Gate evidence. Round 1 was authored by a
+headless Claude session at `25f5ff4a`; the round 2 Codex revision started from `a744aed4`; the
+round 3 revision, by a headless Claude session, starts from `823c4d95`.
 
 ## Round 2 changes
 
@@ -19,6 +20,27 @@ The following replaces the round 1 contracts; none of it claims runtime verifica
 | F5 | 2.6, 6 | Every native/client variant is enumerated with thread, gate/barrier, fixture, award oracle and two-restart result. FM9 waits under inherited F3; UUID-only headless cases claim no player award; client cuts use an external debugger, not the empty-server hook. |
 | F6 | 2.2, 3.5, 7-8 | Receipt repair against an existing validated source is distinct from authority restoration/downgrade, which requires a consistent complete world snapshot. Managed-root migration backups are insufficient. Receipt-only revocation is removed. |
 | Other review comments | 1.4-1.5, 2.2-2.4, 3.2, 5, 6, 9-10 | Exact epoch whitelist precedes CURRENT classification; near-limit migration refuses intact. Journal migration has an explicit type branch. Receipt durability is per kind. Eligibility access and bounded counting are explicit. R1-R6 and all deviations are answered; Moon negative coverage and private publication guards are preserved. |
+
+## Round 3 changes
+
+Review: `D:/GitHub/ARCE-Task-Evidence/root-queue/W44R-review/REVIEW.md`, SHA-256
+`3503021258e82fccbb5b2a4c2b68d27f94aaf645277ea0bb513d9f8ab89ed5c5`, verdict APPROVE-WITH-CHANGES
+(N1 Medium, N2 to N6 Low). The changes are narrow; everything not listed here is unchanged from
+round 2. Line numbers refer to this revision.
+
+| Finding | Changed lines | Change |
+|---|---|---|
+| N1 (Medium) | 75; 125-127; 366-378; 455-458; 495-506; 519-520, 526, 536, 556-557, 566; 645-730 (new 3.6); 743-744; 824, 828-831; 894-895, 897-899; 920-923; 933-936, 947, 953-969, 980-982; 1044, 1049-1052; 1150-1153 | New section 3.6: only a `NoSuchFileException` at construction proves a root absent, and the first write re-checks it. A present but unreadable station, journal or progression root is non-operational, never written, holds its kinds until a plain restart and keeps the file byte for byte. The second option (carrying the pre-start result) is not used. "Validated absent" is defined once and used by 1.2, 2.4, 3.1-3.3. New cases FP9 (unreadable progression root with one event pending), FP10 (journal) and FP11 (station); FP7 now uses that production path. A0 cases and risk text added. |
+| N2 | 202-222; 466-481; 558, 563-567; 970-979; 1151, 1153 (items e, f) | The automatic station acknowledgement retry and the progression receipt-barrier retry log one stack trace per failure streak, then only count, then one recovery INFO. Their server-thread cost is stated; the station acknowledgement retry backs off from 200 to at most 6,000 ticks. Both are in the risk text. |
+| N3 | 416-418; 823, 826; 856-857; 920-923 | New FM12a (release) and FM12b (return-flight supersede): the record is gone before the receipt exists; restart inserts R(E) from the retained root event, then DELIVERED with the same E. |
+| N4 | 76; 769, 773; 799-831 (seam table); 843; 918; 1150-1151, 1153 (items d, g) | New injection-point table in 6.1 names the gated seam each H row uses, including the station readback reader, the directory-force seam, the progression committer and the load fault. M, FM5 and FX-Dw are reworded. |
+| N5 | 171-172; 1046-1048; 1129-1144 (section 9, item 6); 1154 (changed test) | Section 9, item 6 lists the journal "until durable reload" reinterpretation. Section 10 plans the ADR-backed change of `StationWarpRelocationTest.publishFailureAfterReplacementQuarantinesWithAConsistentPairOnBothSides`. |
+| N6 | 331-334; 1152 | `tickDestination` and `cleanupLandedIfComplete` (`RocketTransferService.java:632-704`) move into a new `RocketDestinationCompletion`; the service shrinks by about 70 lines. |
+
+The inventory is now 63 variants: 49 headless/validation and 14 real-client, with 126 restart
+attempts. The execution record is `records/W44S.md`.
+
+## Specification and terms
 
 Specification: ADR-066 section 6.2, from "World-first flags need versioned world state" to the end of
 the section, with owner decision D3 (world-first semantics with recorded winning participants). D3 is
@@ -50,6 +72,8 @@ These are static reads of the current tree, not native results.
 | Every managed root is decoded semantically before start. A future or invalid root refuses world startup. | `WorldDataMigrationService.java:104-133`; `ManagedSavedDataPayloadValidator.java:16-44` | The progression root joins this rule. |
 | Station root 5 (the orbital clock) exists in v1.8 development builds with epoch `v1.8.0-station-orbital-controls`. No release contains it; the last release evidence is v1.7.0 (root 4). | `ManagedSavedDataType.java:131-133`; `StationLimits.java:13`; `docs/releases/` | "Join 4 → 5 once" can no longer be done literally (section 9.1). |
 | `AtomicSavedData` performs a synchronous checked replace, but it neither reads the target back nor forces the parent directory. | `AtomicSavedData.java:42-50`; `CheckedSavedDataFile.java:33-74` | Progression adds a directory force (section 3.2). |
+| Vanilla `DimensionDataStorage.readSavedData` catches any exception while reading an existing file, including one thrown by the mod's `load` function, logs `Error loading saved data` and returns null. `computeIfAbsent` then calls the supplier, which today is the bare empty constructor. | `RocketTransferSavedData.java:68-77`; `StationRegistrySavedData.java:62-69`; Forge 47.4.23 mapped jar (round 2 review, N1) | A present but unreadable root reaches the supplier exactly like an absent one. W44 must tell them apart (section 3.6). |
+| The station resolver's readback (`CheckedSavedDataFile.readPayload`) and the directory force (`CheckedSavedDataPolicy.forceDirectory`, a no-op on Windows) are static calls. `AtomicSavedData.flush(Path, Committer)` is package-private. | `StationRegistrySavedData.java:572`; `CheckedSavedDataPolicy.java:22-29`; `AtomicSavedData.java:42` | The native cuts need named, gated seams for them (section 6.1). |
 | The `station_warp` recipients are the players in the Space Level inside the region who hold live VISIT access, filtered by `eligible`. | `StationWarpService.java:458-461,616-626`; `ClassicAdvancementEvents.java:63-95` | First-warp participants use the same predicate. |
 | Nine GameTest call sites use `checkedRelocation(server, …)` directly as a fixture (solar, research, black hole, laser drill, planetary admission, railgun, elevator and sky tests). | `grep checkedRelocation(` | That overload must never elect (section 1.2). |
 | `RocketTransferService` has 793 lines, `StationRegistrySavedData` 723 and `RocketTransferSavedData` 474. | `wc -l` | The new logic goes into new classes (section 10). |
@@ -98,7 +122,9 @@ Inside `checked(...)` (`:491-566`), on the server thread and in one call:
    clock and the balance.
 2. A DEFER request returns a visible temporary `WARP_FIRST_EVENT_UNAVAILABLE` refusal before any
    write, FE debit or cooldown. Elect only for a non-NONE ALLOW request, a known EMPTY source, an
-   EMPTY RAM slot and a validated absent progression receipt. No later warp can win while the slot
+   EMPTY RAM slot and a validated absent progression receipt (section 3.6: proven absent, never
+   merely unread). An UNREADABLE station root is non-operational and returns `UNAVAILABLE` before
+   this step. No later warp can win while the slot
    is `ELECTED` or `DELIVERED`; NOT_FIRST preserves the slot and follows the ordinary warp path.
 3. If electing:
    - check n ≤ 4,096;
@@ -142,6 +168,8 @@ the committed candidate as `committedOverride`:
 - the durable outbox accessor decodes the validated override, never stale EMPTY RAM. Other public
   registry reads that could authorize mutation report unavailable; they must not authorize from
   the half-published registry. Save and status can read the immutable committed candidate;
+- the call still returns `OUTCOME_UNKNOWN`, as today, so the caller fires no `station_warp` or
+  other effect; the delivery service reads E through the durable outbox accessor;
 - the existing ERROR is logged once.
 
 ### 1.3 Receipt acknowledgement write
@@ -171,8 +199,27 @@ encoding and requires a named station transition.
   winning station before delivery changes the current registry snapshot but not the retained root
   event: acknowledgement validates that post-deletion snapshot, with no station recreation or FE
   change. FW11 explicitly exercises this.
-- **Write budget.** It is charged to `StationWriteBudget`.
-- **WRITE_FAILED** leaves `ELECTED`. The delivery service retries at most once per 200 ticks.
+- **Write budget.** It is charged to `StationWriteBudget` and waits until the budget is ready.
+- **WRITE_FAILED** leaves `ELECTED`. The delivery service retries 200 ticks after the first
+  failure and doubles the interval after each further consecutive failure, up to 6,000 ticks (200,
+  400, 800, 1,600, 3,200, then 6,000). A known COMMITTED acknowledgement or a server stop ends the
+  streak. The backoff delays only DELIVERED: awards and login grants already run while the source is
+  ELECTED (3.3, 3.5).
+- **Retry diagnostics (N2).** The extracted writer takes the operation's log policy. Named station
+  operations keep today's ERROR with a stack trace per failure (`:536-540`, `:589-592`); each is a
+  player action spaced by `StationWriteBudget`. The automatic acknowledgement logs once per failure
+  streak: the first failure is one ERROR `ARCE_FIRST_EVENT_ACK_WRITE_FAILED kind=first_station_warp
+  event=<id>` with its stack trace; later failures in the streak only increment a counter, which
+  `/arce progression status` shows; the first COMMITTED after failures logs one INFO
+  `ARCE_FIRST_EVENT_ACK_RECOVERED kind=first_station_warp failures=<n>`.
+- **Retry cost (N2).** Each attempt is one whole-registry checked write on the server thread:
+  encode, validate, stage, force, read back and decode. `StationWriteBudget.java:7-9` puts that at
+  about 176 ms at 4,096 stations, a stall of three to four ticks. Under a persistent failure the
+  first five retries fall within 6,200 ticks; after that there is one attempt per 6,000 ticks, about
+  176 ms every five minutes (under 0.1 % of server-thread time). Each attempt also starts the
+  `StationWriteBudget` spacing, so a player's checked station write can wait up to 122 ticks (about
+  6 s at the default setting and 4,096 stations) after an attempt. A fixed 200-tick retry would
+  instead cost a 176-ms stall every 10 s (about 1.8 %) for as long as the failure lasts.
 - **OUTCOME_UNKNOWN** uses the existing quarantine until restart. RAM keeps `ELECTED`, and ordinary
   saves reassert it, which can regress a `DELIVERED` file to `ELECTED`. That is harmless, because the
   event is kept and delivery is idempotent.
@@ -281,9 +328,10 @@ Code changes:
 
 ### 2.3 Checked landing-completion authority
 
-The block at `RocketTransferService.java:651-658` becomes one call to a new
+The block at `RocketTransferService.java:651-658` moves with `tickDestination` into the new
+`RocketDestinationCompletion` (section 10, N6) and there becomes one call to a new
 `MoonLandingCompletion.complete(server, journal, record, destination)`. It returns LANDED_NOW, WAIT
-or ORDINARY. The class is new so that `RocketTransferService` stays under 800 lines. The steps:
+or ORDINARY. Both classes are new so that `RocketTransferService` stays under 800 lines. The steps:
 
 | # | Check or action | On failure |
 |---|---|---|
@@ -315,12 +363,19 @@ world.
   full validated immutable outbox read from the written payload, not just its ID. The tagged query
   `journal.durableFirstMoonLanding()` reads it. Missing acknowledgement is SOURCE_UNCONFIRMED,
   never EMPTY. Delivery and projection use this proof, never an unconfirmed RAM event.
-- **Initialization independent of transfers.** Every valid journal load (also a new absent-file
-  EMPTY root) starts SOURCE_UNCONFIRMED and schedules one baseline capture through the same writer
-  at the first END tick, before the existing `isDirty() || !entries().isEmpty()` dispatch predicate.
+- **Initialization independent of transfers.** Every valid journal load, and a new EMPTY root whose
+  file is proven absent (section 3.6), starts SOURCE_UNCONFIRMED and schedules one baseline capture
+  through the same writer at the first END tick, before the existing
+  `isDirty() || !entries().isEmpty()` dispatch predicate.
   In particular loaded ELECTED **and** DELIVERED outboxes request it with `transfers=[]`, regardless
   of dirty state, players or new flights. This is a checked write/confirmation, not seeding the
   checkpoint from loaded or in-session RAM. The root event is retained while awaiting it.
+  A proven-absent root's baseline is its first write, so its committer re-checks absence (3.6).
+- **No baseline over an unreadable or blocked file (N1).** A journal whose file exists but could not
+  be read (UNREADABLE), or whose decode failed (the existing `preservedBlockedData` root), schedules
+  no baseline and is never written. Its Moon view is SOURCE_UNAVAILABLE with reason
+  `ROOT_UNREADABLE` or `ROOT_BLOCKED` until a plain restart; the transfer service already does
+  nothing while the journal is not operational (`RocketTransferService.java:231-233`).
 - **Retry.** One active write and one coalesced successor remain the bound. On no confirmation or
   UNKNOWN, retain SOURCE_UNCONFIRMED and schedule at most one retry per 200 ticks, independent of
   transfer count; the first baseline request is immediate. A subsequent exact COMMITTED result
@@ -358,6 +413,9 @@ Supersede and prune. After LANDED, the existing release, disassembly and return-
 remove the record. The outbox is root-level, so it stays. ADR-066 forbids discarding the only
 completion authority before reconciliation. This design meets that because removal already requires
 a LANDED stationary entity (`isReplaceableLandedAuthority`), and the outbox is never removed.
+If the receipt barrier is still failing when the record is released or superseded, the root holds
+ELECTED(E) with no matching record and no receipt; the zero-record baseline then confirms E and the
+receipt is inserted from it. FM12a and FM12b exercise both removals (N3).
 
 ### 2.6 What a failed or unknown write leaves behind
 
@@ -394,8 +452,10 @@ v1.8.0, no legacy schema), shaped like ENDGAME and RESOURCE_ESCROW. Its required
 
 The whole root is limited to 256 KiB, depth 16 and 16,384 nodes; a receipt holds at most 4,096
 participants. The managed-type IO quota is raised to `RocketLimits.MAX_TOTAL_NBT_BYTES` by the
-existing constructor, and the 256-KiB bound is enforced by the codec. The root is created lazily by
-the first receipt. An absent file means that no receipt exists.
+existing constructor, and the 256-KiB bound is enforced by the codec. The delivery service obtains
+the instance at initialization (3.3, step 2); the file is first written by the first receipt. Only
+a file proven absent at that point (section 3.6) means that no receipt exists. A present file that
+cannot be read is PROGRESSION_UNAVAILABLE for both kinds, never absent.
 
 ### 3.2 Checked write and reload
 
@@ -404,8 +464,21 @@ the first receipt. An absent file means that no receipt exists.
   world, not a bound of two physical writes: failures, confirmation retries and ordinary dirty saves
   can write again. There is no second writer or override of final `AtomicSavedData.flush`.
 - **A receipt is durable** only when `flush(server)` returned and
-  `CheckedSavedDataPolicy.forceDirectory(dataDir)` succeeded. A force failure calls `setDirty()`, and
-  the receipt stays not durable until a retry, at most once per 200 ticks.
+  `CheckedSavedDataPolicy.forceDirectory(dataDir)` succeeded (called through the coordinator's
+  directory-force seam, 6.1). A force failure calls `setDirty()`, and the receipt stays not durable
+  until a retry, at most once per 200 ticks.
+- **Barrier retry diagnostics and cost (N2).** `flush(server)` throws without logging
+  (`AtomicSavedData.java:34-50`), so the coordinator logs, once per failure streak of the root: the
+  first failed flush or force is one ERROR `ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED kinds=<pending
+  kinds> stage=<flush|force>` with its stack trace; later failures in the streak only increment a
+  counter, which `/arce progression status` shows; the first confirmed barrier after failures logs
+  one INFO `ARCE_PROGRESSION_RECEIPT_BARRIER_RECOVERED failures=<n>`. Ordinary autosave failures keep
+  `AtomicSavedData`'s existing once-per-streak ERROR. One attempt is a synchronous encode, stage,
+  force, staged readback and atomic move of a root of at most 256 KiB (one sixteenth of the station
+  registry bound), plus one directory force, on the server thread. There is at most one attempt per
+  200 ticks while a kind is pending, so the worst case is one such write every 10 s for as long as
+  the failure lasts. There is no backoff, because awards wait for this barrier. No measurement
+  exists yet; an A0 benchmark records the time at the maximum root.
 - **Per-kind proof.** Keep two session-local confirmed-receipt values, each either absent or the exact
   immutable event that passed the barrier. New RAM insertion is RECEIPT_PENDING; a matching RAM
   value after a failed flush/force is still pending, not an R(E) durable row. The coordinator captures
@@ -421,12 +494,16 @@ the first receipt. An absent file means that no receipt exists.
   harmless: the retry writes the same deterministic content.
 - **Reload.** At start, the pre-start validator decodes the root strictly
   (`ManagedSavedDataPayloadValidator`). A future or invalid root refuses world startup and keeps its
-  raw bytes, as for every managed root. A loaded receipt is durable.
-- **No in-session quarantine.** No in-session path quarantines this root. If a bug made it
-  non-operational, delivery holds PROGRESSION_UNAVAILABLE and elections fail closed. The service
-  rechecks at most once per 200 ticks; it may resume only after operational, strictly validated
-  authority is restored, never by constructing an EMPTY fallback. Malformed persisted data still
-  follows startup refusal/offline repair. No receipt is synthesized while unavailable.
+  raw bytes, as for every managed root; so does a file the validator cannot read
+  (`BoundedSavedDataIo.read` reports `INVALID_SCHEMA`). A loaded receipt is durable.
+- **Unavailable progression root (N1).** The production path to an unavailable root is a present
+  file that cannot be read at load after the pre-start validation passed (UNREADABLE, section 3.6),
+  or a load whose decode fails (blocked with its preserved bytes, as for every managed root). Either
+  holds both kinds as PROGRESSION_UNAVAILABLE and denies election, receipt writes, awards and
+  DELIVERED. The instance is never re-read or replaced within the session: the service's recheck at
+  most once per 200 ticks sees the same instance, and recovery is a plain restart, never an EMPTY
+  fallback. No other in-session path quarantines this root. Malformed persisted data still follows
+  startup refusal/offline repair. No receipt is synthesized while unavailable.
 - **Monotonic RAM.** A receipt only goes from occurred 0 to 1, and is never edited or removed online.
 
 ### 3.3 Delivery state machine
@@ -438,13 +515,15 @@ It runs at most one step per kind on the server END tick, reading each source's 
 1. The pre-start migration/semantic validators either accept all managed roots or refuse startup.
 2. Before login handlers or travel admission can elect, initialize the server-lifetime service,
    both sources and the progression store. Loaded valid progression receipts are confirmed;
-   healthy loaded station authority is known; journal authority begins SOURCE_UNCONFIRMED.
+   healthy loaded station authority is known; journal authority begins SOURCE_UNCONFIRMED. Each
+   root's presence is classified when it is first obtained here (3.6): only a proven-absent root
+   counts as EMPTY or as absent receipts; an UNREADABLE or blocked root is unavailable.
 3. Schedule the journal baseline even with zero entries (2.4). Before its confirmation, queue eligible
    login reconciliation and deny Moon election; do not compare an absent acknowledgement to a receipt
    as though it were EMPTY. Station election can proceed only with its own known source and validated
    progression state; it does not depend on an unrelated Moon baseline.
 4. Refresh availability and permanent holds before each election attempt, not only in a later END
-   tick. ALLOW requires known EMPTY source, EMPTY RAM and a validated absent receipt. Known occurred
+   tick. ALLOW requires known EMPTY source, EMPTY RAM and a validated absent receipt (3.6). Known occurred
    source or a permanent hold gives NOT_FIRST (ordinary later travel, no election). A possibly EMPTY
    source without proof or an unavailable progression store gives DEFER (Moon WAIT; station visible
    pre-debit refusal). An unavailable progression store **never** yields ALLOW, even if RAM is EMPTY.
@@ -454,7 +533,7 @@ It runs at most one step per kind on the server END tick, reading each source's 
 | Source durable view | Receipt | Action |
 |---|---|---|
 | SOURCE_UNCONFIRMED (no acknowledgement, startup or UNKNOWN) | Any | Temporary wait: no award, receipt insertion, DELIVERED or election; bounded writer retries. Not corruption. |
-| SOURCE_UNAVAILABLE (for example station UNKNOWN quarantine) | Any | No award, DELIVERED or election. Existing station quarantine clears on validated restart, not offline repair by default. |
+| SOURCE_UNAVAILABLE (station UNKNOWN quarantine, or an UNREADABLE or blocked station or journal root, 3.6) | Any | No award, receipt insertion, DELIVERED or election, and no write to that root. Existing station quarantine and an UNREADABLE root clear on validated restart, not offline repair by default. |
 | Any | PROGRESSION_UNAVAILABLE | Temporary fail-closed wait; no award, receipt write, DELIVERED or election. Bounded availability recheck. |
 | KNOWN EMPTY | validated absent | Nothing; election may be ALLOW only after the full gates above. |
 | KNOWN EMPTY | validated occurred | HOLD SOURCE_ROLLBACK. Only this proven comparison establishes rollback; travel may proceed as not first. |
@@ -474,14 +553,18 @@ Rules that apply to every row:
   one active operation per source and the journal's single coalesced successor. Log one WARN per
   kind/reason/start and one INFO on recovery, not every tick. Retry cadence bounds work, not lifetime:
   there is no expiry that discards authority or requires offline repair after N attempts. Station
-  UNKNOWN uses its existing restart-only quarantine. Pending player eligibility is not corruption.
+  UNKNOWN uses its existing restart-only quarantine. An UNREADABLE root is restart-only too
+  (reason `ROOT_UNREADABLE`, 3.6). Pending player eligibility is not corruption. The acknowledgement
+  and receipt-barrier retries log once per failure streak (1.3, 3.2).
 - **No second authority.** Progression never chooses a winner. It can only refuse an election
   (or defer it while unavailable), so a rolled-back/unavailable store cannot produce a second winner.
 - **R3 is replaced:** every progression-unavailable path denies election. Operational-only refusal
   was fail-open and is not retained.
 - **Diagnostics.** The read-only command `/arce progression status` (permission 2) shows, for each
-  kind, the tagged source state, per-kind receipt proof, hold reason, retry deadline, deferred online
-  count and participant count. It must not print unconfirmed RAM as durable EMPTY.
+  kind, the tagged source state, per-kind receipt proof, hold reason, retry deadline, the failure
+  count of the current retry streak, deferred online count and participant count, and for each of
+  the three roots its presence (LOADED, PROVEN_ABSENT, UNREADABLE or BLOCKED). It must not print
+  unconfirmed RAM as durable EMPTY.
 
 ### 3.4 Order of source, receipt and award
 
@@ -559,6 +642,93 @@ not designed here.** Editing only the receipt changes its immutable event/finger
 whole kind for mismatch; editing both authorities would require a separate audited product/recovery
 procedure, not a receipt-only edit instruction.
 
+### 3.6 Absent is not unreadable (all three roots)
+
+Vanilla gives the supplier of `computeIfAbsent` no way to tell an absent file from a present one
+whose read threw (section 0). Without a check, W44 would treat a transient read failure, for
+example a Windows sharing violation caused by a backup agent or an antivirus scanner, as an absent
+root:
+- the journal baseline would replace an intact journal with `transfers=[]`;
+- a station registry would look KNOWN EMPTY;
+- a receipt insertion would replace an intact progression root and erase the other kind's receipt.
+
+These are review N1's scenarios A and B.
+
+**Mechanism: an absence proof when the root is constructed, re-checked immediately before its
+first write.** This is the first of the review's two acceptable forms. The second, carrying the
+pre-start validator's result into the session, is not used. `WorldDataMigrationService.migrate`
+reports only counts, so that form would need a new server-lifetime holder of per-type presence and
+hashes, and it would still need a load-time check for a file that becomes unreadable after the
+pre-start read.
+
+1. **Supplier.**
+   - `StationRegistrySavedData.get`, `RocketTransferSavedData.get` and the new
+     `ClassicProgressionSavedData.get` pass `computeIfAbsent` a supplier that classifies the exact
+     data file, instead of the bare constructor.
+   - The supplier stats the file with `NOFOLLOW_LINKS` through one shared helper,
+     `CheckedSavedDataFile.presence(Path)`, built on the existing private `stat`
+     (`CheckedSavedDataFile.java:100-103`). Only `NoSuchFileException` proves absence. It never uses
+     `Files.exists` or `File.exists`, which report "cannot be determined" as absent.
+   - Absence proven: the ordinary empty root, tagged `PROVEN_ABSENT`.
+   - Any existing entry (a regular file or anything else), or any other `IOException` from the
+     stat: an `UNREADABLE` root.
+   - The supplier runs at most once per server lifetime per type, because vanilla caches the
+     instance it returns.
+2. **An UNREADABLE root.**
+   - It is not operational. The existing gates that test `operational()` already make reads report
+     unavailable and mutations refuse. Every new W44 entry (baseline, election, receipt insertion,
+     barrier, DELIVERED) checks it before `setDirty()` or any write.
+   - It is never dirty and never written. The journal's `save(File)` already returns for a root
+     that is not operational (`RocketTransferSavedData.java:385-387`). The station registry gains a
+     `save(File)` override that returns at once for it. `AtomicSavedData` gains a protected
+     `writable()` check, true by default, which `save(File)` and `flush` consult before staging; the
+     unreadable progression root returns false.
+   - It holds no payload in RAM. The file on disk is the only copy and stays byte for byte as it
+     was.
+   - It is not re-read within the session. A plain restart reads the file again. If the file is
+     readable and valid, the root loads normally. If the pre-start validator cannot read it, startup
+     is refused and the file is kept (3.2, Reload). If only the runtime read fails again, the same
+     hold repeats.
+   - It logs one ERROR `ARCE_MANAGED_ROOT_UNREADABLE type=<data name> file=<path>` per root per
+     start, without a stack trace, because vanilla has already logged the exception with its stack
+     once. Each held kind logs one WARN `ARCE_FIRST_EVENT_HELD kind=<kind> reason=ROOT_UNREADABLE`
+     per start.
+   - The existing GameTests that install a blocked station registry or journal
+     (`StationProtectionGameTests`, `RocketJournalInterlockGameTests`) already cover how gameplay
+     behaves while such a root is not operational.
+3. **First write of a PROVEN_ABSENT root.**
+   - The target is stat'ed again immediately before the first write: by the committer just before
+     the atomic move for checked writes (all journal and progression writes, and station checked
+     updates), and by the station registry's new `save(File)` override just before vanilla's
+     in-place ordinary save.
+   - If an entry now exists, nothing is written. A checked write fails before replacement (station
+     WRITE_FAILED, progression barrier failure, journal NOT_COMMITTED or UNKNOWN); an ordinary
+     station save returns without writing. The server thread switches the root to UNREADABLE when
+     it handles that result. Nothing was overwritten, and the restart-only rule above applies.
+   - After the session's first known commit of that root, the file is the session's own and the
+     check stops.
+4. **Classification per kind.**
+
+| Root at load | Station warp kind | Moon kind | Progression (both kinds) |
+|---|---|---|---|
+| Loaded and valid | Known station authority (1.2) | SOURCE_UNCONFIRMED until the baseline (2.4) | Loaded receipts are confirmed; `occurred` 0 is validated absent. |
+| PROVEN_ABSENT | KNOWN EMPTY. No station exists until the first station write, which re-checks absence. | SOURCE_UNCONFIRMED until the baseline, which re-checks absence. | Both receipts are validated absent. |
+| Blocked (decode failed; preserved bytes) | SOURCE_UNAVAILABLE, `ROOT_BLOCKED` | SOURCE_UNAVAILABLE, `ROOT_BLOCKED`; no baseline | PROGRESSION_UNAVAILABLE, `ROOT_BLOCKED` |
+| UNREADABLE | SOURCE_UNAVAILABLE, `ROOT_UNREADABLE`; all station gameplay is unavailable for the session | SOURCE_UNAVAILABLE, `ROOT_UNREADABLE`; no baseline; all transfers are unavailable for the session | PROGRESSION_UNAVAILABLE, `ROOT_UNREADABLE` |
+
+**Validated absent** means exactly this in the note: the progression root is PROVEN_ABSENT, or it
+loaded valid and that kind has `occurred` 0. Nothing else counts as absent.
+
+5. **The review scenarios.**
+   - Scenario A (journal): the fresh root is UNREADABLE. No baseline replaces the file, so the two
+     landed reservations and DELIVERED(E) stay on disk. No SOURCE_ROLLBACK is derived from a
+     fabricated EMPTY, and no landing can elect while the journal is not operational. A plain
+     restart re-reads the file (FP10).
+   - Scenario B (progression): the root is UNREADABLE. No receipt is inserted for E_M, so R_W stays
+     on disk, and neither RECEIPT_MISSING nor an election follows from the unread root. A plain
+     restart after the read condition has cleared recovers both kinds (FP9).
+   - The station registry behaves the same way (FP11).
+
 ## 4. Ordinary saves
 
 | Store | What an ordinary save writes | Why it cannot overwrite a checked first-event commit with stale memory |
@@ -570,7 +740,8 @@ procedure, not a receipt-only edit instruction.
 | Player advancements (vanilla) | The player's criteria. | They are never authority. Immediate or deferred login grant repairs lag, including a login before baseline or while dead/spectating. |
 
 `setDirty()`, `ChunkDataEvent.Save` and `ItemStack.save` are never used as barriers. Awards and
-DELIVERED depend only on writer confirmations and on receipt durability.
+DELIVERED depend only on writer confirmations and on receipt durability. An ordinary save never
+writes an UNREADABLE root of any of the three types (3.6).
 
 ## 5. Participants
 
@@ -595,11 +766,11 @@ restriction. The identifiers below are the complete variant inventory, not short
 
 | Code | Executable meaning |
 |---|---|
-| H | Headless cut gate: `arce.releaseTest.firstEventCut=<ID>`, existing `advancedrocketrycommunity.releaseTestHooks`, dedicated server, and **zero connected players** via the existing endpoint check. Inject fixed sorted UUIDs only after this gate. Never weaken it for client runs. |
+| H | Headless cut gate: `arce.releaseTest.firstEventCut=<ID>`, existing `advancedrocketrycommunity.releaseTestHooks`, dedicated server, and **zero connected players** via the existing endpoint check. Inject fixed sorted UUIDs only after this gate. Never weaken it for client runs. Each H row's injection point is named in the seam table below. |
 | X | Real-client controlled debugger/external stop, **no H cut property**. On an isolated server process owned by the harness, a breakpoint at the named source/receipt/grant line emits ID, event UUID, thread and sequence/progress; suspend only that thread for delay cases. Stop that owned PID externally at the recorded boundary. Do not call the empty-server endpoint or add a production client halt bypass. |
 | V | Pre-start semantic validation fixture. No in-game halt is needed; record the validator rejection/success boundary and process exit. Two restart attempts still apply. |
 | W / S / P | Journal writer thread / server thread / pre-start migration thread respectively. Station and progression barriers are synchronous S; never issue `save-all` from a blocked W thread. |
-| M | Complete isolated Moon world with one COMMITTED record, loaded safe terminal DESCENT destination and a fixed 2-UUID participant list via H. One is the synthetic winner and one later observer is outside that list. No connected players. |
+| M | Complete isolated Moon world with one COMMITTED record and a loaded safe terminal DESCENT destination. The H participant seam returns the fixed sorted list [P1, P2]; both are participants of the synthetic winning landing. A third fixed UUID, O, stands for a later observer: it is not in the list, and the oracle checks that the event and the receipt hold exactly [P1, P2] and never O. No connected players. |
 | WARP | Complete isolated station world with two stations, known FE/orbit/clock/reservations and fixed eligible-region participant UUIDs via H. A1/client runs separately prove real eligibility. |
 | T0 | Complete isolated real-client fixture: actual recorded Moon event/receipt with participant A and nonparticipant B, winner legitimately disassembled, `transfers=[]`. Preserve/hashes all world files. FM10a-d explicitly seed the retained root as ELECTED or DELIVERED with the identical immutable E/R(E); this state fixture is not claimed as a newly executed landing. An absent advancement file means no file; stale means valid player JSON missing this criterion. No new flight is allowed. |
 | C-M / C-W | Two actual eligible clients: A aboard the unique Moon rocket, B watching without a seat; or A authorized/present at the winning station, B outside its region/without VISIT. Use actual completion, not injected UUIDs or `/advancement grant`, to produce the event. Initial player files lack the first-event criterion. |
@@ -625,6 +796,40 @@ is not suspended in these S cut cases. Unflushed variants stop immediately witho
 Player save ordering is tested only by X/A rows; headless a/b rows exercise root/entity ordering,
 not invented recipients. Fixture-only debugger invocation is not a new production hook.
 
+**Injection points (N4).** Every seam below is test-only, and none is a production behaviour.
+- **Selection.** The gated `firstEventCut` ID selects the seam. The seams live in one new
+  `FirstEventCutSeams` class. With the property absent, or `advancedrocketrycommunity.releaseTestHooks`
+  false, every seam returns its production value.
+- **Gate.** With the ID set and hooks enabled, each seam first calls
+  `EscrowTestEndpoints.requireEnabled(server)`: server thread, dedicated server and zero connected
+  players. That is the same check `RocketJournalFailurePolicy.checked(server)` uses
+  (`RocketJournalFailurePolicy.java:19-24`), so a connected player makes the seam fail closed.
+  An unknown ID fails at startup.
+- **Writer-thread seams.** They are resolved on S when their policy is built and handed to W, as the
+  journal failure policy is today.
+- **Halt.** Every halt logs `ARCE_RELEASE_TEST first_event_cut id=<ID> boundary=<name> event=<uuid>
+  thread=<name>` and calls `Runtime.getRuntime().halt(ReleaseTestCommands.HALT_STATUS)`, the
+  existing release-test halt (`ReleaseTestCommands.java:62,301`).
+- **V and X rows use no seam.** V rows use only prepared fixture files and observe the validator
+  and the process exit. X rows use only the external debugger and never set the cut property.
+
+| Seam (where the implementation takes it) | Production value | Cut behaviour | Rows |
+|---|---|---|---|
+| Boundary halt `FirstEventCutSeams.boundary(server, name)`, called at named S points in `ClassicFirstEventDelivery`, the station checked writer and `MoonLandingCompletion` | No-op | Optionally runs the normal save routine first (the "save-all completed" rows), then halts | FM3, FM4a, FM4b, FM5, FM6a, FM6b, FM7, FM8a, FM8b, FM9, FM12a, FM12b, FW3, FW4a, FW4b, FW5, FW6a, FW6b, FW7, FW8a, FW8b, FW9, FW11, FP2, FP3, FP4, FP5, FP6, FP7a, FP7b, FP8, FP9, FP10, FP11 |
+| Journal committer: the existing `RocketJournalFailurePolicy.checked(server)`, extended with cut-ID modes | `CheckedSavedDataFile::atomicMove` | Halt on W before the move (FM1). Refuse before the move while the ID is set (FM7). Throw `java.lang.Error` before the move, which `RocketJournalWriter.java:78-81` classifies UNKNOWN (FM6b). Move, then throw (FM6a; FP6 for one unrelated generation only). Wait on a gated latch for at most 1,200 ticks before the move (FM9, FP5). | FM1, FM6a, FM6b, FM7, FM9, FP5, FP6 |
+| Readback reader: a new `reader` component of `CheckedSavedDataPolicy`, used by `policy.read(file)` in `RocketJournalCheckpoint.write` and by the extracted `StationCheckedWriter` resolver instead of the static call | `CheckedSavedDataFile::readPayload` | Throw `UncheckedIOException` for the cut's target, so a valid candidate on disk reads back as unreadable | FM6a, FP6 (journal); FW6a, FW6b, FW7 (station) |
+| Directory force: `CheckedSavedDataPolicy.DirectoryForce` (today `RocketJournalCheckpoint.DirectoryForce`, moved and made public), taken by the journal checkpoint, the extracted `StationCheckedWriter` and the progression coordinator | `CheckedSavedDataPolicy::forceDirectory` | Force, then halt on W (FM2a, FM2b). Throw `IOException` (FM8b). The seam replaces the Windows no-op, so the failure branch also runs on the Windows harness. | FM2a, FM2b, FM8b |
+| Station committer: the `Committer` that the extracted `StationCheckedWriter` takes, as `checkedRelocation` does today | `CheckedSavedDataFile::atomicMove` | Halt before the move (FW1). Move, then halt before publish (FW2). Move, then throw (FW6a, FW6b, FW7). Move, then add a fixed member to the live winning station through the ordinary mutator, so that the publish check fails exactly as in `StationWarpRelocationTest:185-201` (FP8). | FW1, FW2, FW6a, FW6b, FW7, FP8 |
+| Progression committer: `AtomicSavedData.flush(Path, Committer)`, changed from package-private to `protected final` | `CheckedSavedDataFile::atomicMove` | Refuse before the move: in every run while the ID is set (FM8a); in the initial run only (FM12a, FM12b) | FM8a, FM12a, FM12b |
+| Load fault `FirstEventCutSeams.beforeLoad(server, type)`, called by the load function that `get` passes to `computeIfAbsent` (a wrapper around the static `load`). The static `load` stays unchanged, because the pre-start validator also calls it (`ManagedSavedDataPayloadValidator.java:22-23`). | No-op | Throw inside vanilla's `readSavedData`, which logs `Error loading saved data` and returns null, exactly as for an IO failure. The supplier then builds the UNREADABLE root (3.6). The pre-start validation of the same bytes still passes. | FP7a, FP7b, FP9 (progression); FP10 (journal); FP11 (station) |
+| Participant seam `FirstEventCutSeams.participants(kind)` and the warp visitor count | The real capture (`aboard` plus `eligible`; region plus VISIT plus `eligible`) | The fixed sorted M and WARP lists; a saturated count of 4,097 (FW8b) | Every M and WARP row; FW8b |
+| Gated fixture actions through the normal APIs | Unreachable | Start the second rocket or the second warp (FM9, FW9); release the landed reservation or launch the return flight (FM12a, FM12b); delete the winning station (FW11); attempt a station creation and a warp on the unreadable registry (FP11) | FM9, FM12a, FM12b, FW9, FW11, FP11 |
+
+The load-fault rows (FP7a, FP7b, FP9, FP10 and FP11) keep the fault through both restarts. They
+then recover through a plain start without the seam, because an UNREADABLE root is restart-only.
+That recovery start comes in addition to the two restarts and is followed by one more start, which
+must be idempotent. No data is edited at any point.
+
 ### 6.2 Moon variants
 
 | ID | Cut thread, barrier and gate | Fixture | Award oracle | Expected at restart 1 and restart 2 |
@@ -635,7 +840,7 @@ not invented recipients. Fixture-only debugger invocation is not a new productio
 | FM3 | S, after receipt flush+force, before recipient dispatch, H | M | N | Same E/R(E), then DELIVERED on both starts. No login/award claim. |
 | FM4a | S, after zero-recipient dispatch, before DELIVERED request; save-all completed, H | M, entity/root flush variant | N | Same E/R(E), reconcile acknowledgement once; stable second start. No player was awarded. |
 | FM4b | S, same dispatch boundary, no save-all, H | M | N | Same E/R(E), lagging entity projected if necessary; stable second start. Actual award-before-save is FX-Mb. |
-| FM5 | W, DELIVERED move+force confirmed on S, H | M | N | Same DELIVERED E/R(E); each startup baseline confirms it, no new receipt/winner. |
+| FM5 | S, immediately after S publishes the COMMITTED completion of the DELIVERED generation (W has already done the move and the directory force), before the next tick; H | M | N | Same DELIVERED E/R(E); each startup baseline confirms it, no new receipt/winner. |
 | FM6a | S, after W reports UNKNOWN, before retry, H | M, election move happened then throw/unreadable readback | N | Disk ELECTED E recovers unchanged. Before restart no award/LANDED; second start same E. |
 | FM6b | S, after W reports UNKNOWN, before retry, H | M, injected failure before move but outcome unreadable | N | Disk EMPTY, no candidate UUID survives. Next checked completion elects new E; second start retains it. |
 | FM7 | W, NOT_COMMITTED before election move, H | M, failure remains through both restarts | N | Both stay pending, no LANDED/receipt. Removing injection confirms a completion online; no offline repair. |
@@ -648,6 +853,8 @@ not invented recipients. Fixture-only debugger invocation is not a new productio
 | FM10d | X on W, same unacknowledged baseline cut | T0, DELIVERED E, stale A advancement file | A | Same as FM10c; actual advancement repaired, not merely unchanged outbox/receipt. |
 | FM11a | P, migration commit/startup boundary, V | Historical journal root 1 with no trusted marker | N | Root 3/EMPTY, records preserved, managed backup made; second start CURRENT/no second migration. Old jar refuses on a disposable copy. |
 | FM11b | P, same migration boundary, V | Historical root 2 with COMMITTED Moon reservation | N | Root 3/EMPTY, no fabricated landing; checksum-first record recovery preserved. Second migration is a no-op; old jar refuses copy. |
+| FM12a | S, after the journal generation that removes the winning record is confirmed, H. Initial run: progression committer refuses every receipt move (FM8a style). | M; E elected and LANDED confirmed; then the gated fixture releases the landed reservation through the normal API, leaving ELECTED(E), `transfers=[]` and no receipt | N | Fault removed for both restarts. Restart 1: the zero-record baseline confirms E, R(E) is inserted from the root event (same E, participants and fingerprint), the barrier confirms it, then DELIVERED(E). Restart 2: same E/R(E)/DELIVERED, no new event or receipt. |
+| FM12b | S, same boundary after the superseding generation is confirmed, H. Initial run: the same receipt fault. | M; E elected and LANDED confirmed; then the gated fixture launches the return flight, whose `replace` supersedes the winning record, leaving ELECTED(E), only the new transfer record and no receipt | N | Same as FM12a: R(E) from the retained event, then DELIVERED(E) on restart 1; restart 2 stable. The return transfer follows its existing recovery path; its destination is not the Moon, so it cannot elect. |
 
 ### 6.3 Station variants
 
@@ -684,9 +891,12 @@ not invented recipients. Fixture-only debugger invocation is not a new productio
 | FP4 | S, known-EMPTY/occurred comparison after source validation, H | Isolated station rollback fixture, validated old EMPTY root with R(E) | N | SOURCE_ROLLBACK only after comparison. New warp NOT_FIRST, no new event, both starts hold. |
 | FP5 | W, first baseline blocked before acknowledgement, H; release before final S cut | Current Moon ELECTED E/R(E), clean root, zero transfers | N | While blocked SOURCE_UNCONFIRMED, not rollback, no award/ack/election. Confirmation self-recovers to same E/DELIVERED on both starts without offline repair. |
 | FP6 | S, unrelated journal write reports UNKNOWN after DELIVERED, H; retry restored before cut | Moon DELIVERED E/R(E), unrelated transfer mutation | N | Proof temporarily unavailable, no rollback verdict/grant/ack. Bounded retry restores exact E; both starts retain it and unrelated authority. |
-| FP7a | S, unavailable progression election attempt before write, H | Known EMPTY sources/absent receipts, runtime availability fault (not malformed disk) | N | Both deny ALLOW and defer potential first travel before resources. Remove fault after second inspection: first actual completion elects once without offline repair. |
-| FP7b | S, unavailable progression delivery attempt, H | Known ELECTED E/durable R(E), runtime availability fault | N | Both wait, no award/DELIVERED/new election. Remove fault: same E delivers online. |
+| FP7a | S, election attempt while the progression root is UNREADABLE, before any write; H, load fault | Station DELIVERED E_W with durable R_W; Moon source known EMPTY, Moon receipt `occurred` 0; the valid progression root is made unreadable at runtime load by the load fault (the production path of 3.6, not malformed disk) | N | Both restarts keep the fault: Moon completion WAITs, no election, resources untouched, progression file byte-identical. Then a plain start without the fault: R_W loads, and the first actual completion elects once without offline repair. |
+| FP7b | S, delivery attempt while the progression root is UNREADABLE; H, load fault | Moon ELECTED E_M with durable R_M (DELIVERED pending) and station DELIVERED E_W with durable R_W; load fault on the progression root | N | Both restarts keep the fault: no award, receipt write, DELIVERED or new election; both receipts byte-identical on disk. Then a plain start without the fault: same E_M delivers, R_W unchanged. |
 | FP8 | S, committed station candidate publish failure; ordinary override save before halt, H | WARP, failed RAM publication, durable Moon receipt already confirmed | N | Override never exposes stale EMPTY. Every mutation/credit/clock gate refuses; save reasserts committed E. Reload yields E and normal acknowledgement. A0 separately checks other-kind confirmed proof while a new receipt force fails. |
+| FP9 | S, first delivery step after startup while the progression root is UNREADABLE; H, load fault | Station DELIVERED E_W with durable R_W; Moon ELECTED E_M with no receipt yet (one event pending). The valid progression root holds R_W and Moon `occurred` 0 and is made unreadable at runtime load (review N1, scenario B). | N | Both restarts keep the fault: PROGRESSION_UNAVAILABLE (`ROOT_UNREADABLE`) for both kinds; no receipt insertion for E_M, no RECEIPT_MISSING for E_W, no award, DELIVERED or election; the progression file is byte-identical and no `.arce-pending` file exists. Then a plain start without the fault (the read condition repaired, the file never edited): R_W loads confirmed, R(E_M) is inserted beside it, the barrier confirms both, then Moon DELIVERED(E_M). Neither receipt is erased. |
+| FP10 | S, first END tick after startup while the journal is UNREADABLE; H, load fault | Journal with two COMMITTED landed Moon reservations and DELIVERED(E), with durable R(E) (review N1, scenario A) | N | Both restarts keep the fault: no baseline or other journal write, journal file byte-identical; Moon kind SOURCE_UNAVAILABLE (`ROOT_UNREADABLE`), not SOURCE_ROLLBACK, and R(E) untouched; the transfer service stays idle, so nothing lands or elects. Then a plain start without the fault: both reservations and DELIVERED(E) load and the baseline confirms them; no hold. |
+| FP11 | S, first delivery step after startup while the station registry is UNREADABLE; H, load fault | WARP world with station DELIVERED E_W and durable R_W, known stations, FE, orbits and reservations | N | Both restarts keep the fault: warp kind SOURCE_UNAVAILABLE (`ROOT_UNREADABLE`), not SOURCE_ROLLBACK; a gated station creation and a gated warp through the normal APIs are refused as `UNAVAILABLE`; no station write, registry file byte-identical. Then a plain start without the fault: stations, FE, orbits, reservations and DELIVERED(E_W) load unchanged. |
 
 ### 6.5 Real-player grant variants
 
@@ -705,35 +915,71 @@ All rows also verify B and a later joiner remain unawarded. FM10a-d are addition
 | FX-Sm | X on S, spectator-login deferral checkpoint with DELIVERED Moon E/R(E), external stop | C-M retained world, A spectator at login | A | Spectator negative, transition to survival grants in same session within bound. Second start complete. |
 | FX-Sw | X on S, same spectator-login deferral checkpoint, external stop | C-W retained world | A | Same deferred eligibility result for station criterion. |
 | FX-Dm | X on W, baseline held through A login then A disconnect, stop before release | C-M retained world, stale A criterion | A | Pending entry removed on disconnect; no offline award/file mutation. On restart 1 reconnect and confirm baseline, A grants; restart 2 stable. |
-| FX-Dw | X external stop after spectator A's deferred login/disconnect, before eligibility returns | C-W retained world, stale A criterion | A | Disconnect removes entry, no grant offline. Restart 1 survival reconnect grants; restart 2 stable. |
+| FX-Dw | X on S: breakpoint on S after A, who logged in as a spectator so that the grant was deferred, has disconnected and S has removed A's queue entry; before any eligibility change; external stop | C-W retained world, stale A criterion | A | Disconnect removes entry, no grant offline. Restart 1 survival reconnect grants; restart 2 stable. |
 
-The inventory contains **58 individually named variants: 44 headless/validation and 14 real-client**,
-with **116 subsequent restart attempts** (including intentional startup refusals). The old "26
-cases/27 runs" denominator and implicit a/b expansions are removed. A0 rows/state-table checks and
-A1 eligibility checks are additional, not included in this native/client denominator. X tests need
-actual two-client logs/advancement files and recorded GPU/environment details for V2 evidence; H
-tests never substitute for V1/V2. No row has been executed by W44 or W44R.
+The inventory contains **63 individually named variants: 49 headless/validation and 14 real-client**,
+with **126 subsequent restart attempts** (including intentional startup refusals). Round 3 added
+FM12a, FM12b, FP9, FP10 and FP11. The recovery starts of persistent-failure and load-fault rows are
+additional to that count. The old "26 cases/27 runs" denominator and implicit a/b expansions are
+removed. A0 rows/state-table checks and A1 eligibility checks are additional, not included in this
+native/client denominator. X tests need actual two-client logs/advancement files and recorded
+GPU/environment details for V2 evidence; H tests never substitute for V1/V2. No row has been
+executed by W44, W44R or W44S.
 
 ## 7. Proposed risk entry and ADR-066 note (Root edits both)
 
 **Risk entry (new ID): world-first sources and the classic progression receipt store.**
 
 - **Scope.** The station registry (root 5 with the new epoch), the transfer journal (root 3), the new
-  progression root, and the `one_small_step` and `first_station_warp` advancements.
+  progression root, and the `one_small_step` and `first_station_warp` advancements. While one of the
+  three roots is unreadable at load, the scope is that root for the rest of the session: all station
+  gameplay, all rocket transfers, or both progression kinds.
 - **Startup refusal.** A future or invalid progression root, or a malformed outbox in either source
   root, refuses whole-world startup and keeps the raw bytes. This follows the existing managed-root
   rule, with one bounded migration diagnostic per start. It lasts until offline repair.
 - **Permanent data holds.** A validated absent receipt against DELIVERED, an exact-event mismatch or
   a validated known-EMPTY source against an occurred receipt holds that kind: no award, receipt
   insertion, DELIVERED or election. One WARN per kind/reason/start. Offline repair is required;
-  ordinary missing writer confirmation is never a rollback diagnosis.
+  ordinary missing writer confirmation is never a rollback diagnosis. A permanent hold can last
+  indefinitely when no consistent snapshot or validated authority exists. It affects only that
+  advancement kind and refuses no gameplay and no save.
 - **Temporary waits.** SOURCE_UNCONFIRMED and PROGRESSION_UNAVAILABLE deny election, awards and
-  DELIVERED but retain all authority. Every load schedules the zero-transfer-independent baseline;
+  DELIVERED but retain all authority. Every valid or proven-absent load schedules the baseline;
   each source/progression retry is bounded to once per 200 ticks, with one active write and one
   journal successor. One WARN per kind/reason/start and one recovery INFO. Recovery resumes online
   after proof/availability returns; no retry limit converts a temporary wait into offline repair.
   Potentially first travel waits/refuses before resources; ordinary non-first travel can proceed
   only after source availability permits its existing adapter gates.
+- **Unreadable root (N1).** A station, journal or progression file that exists but cannot be read
+  when the root is first obtained, although the pre-start validation read it, is never treated as
+  absent (3.6).
+  - Effect: the root is not operational and is never written. Its file stays byte for byte as it
+    was. Its kinds hold as SOURCE_UNAVAILABLE or PROGRESSION_UNAVAILABLE with reason
+    `ROOT_UNREADABLE`.
+  - Scope: one root. That means all station gameplay, all rocket transfers, or both progression
+    kinds. Before W44, the same failure silently gave an empty root, which the first ordinary
+    mutation could write over the intact file.
+  - Duration: until a plain restart. If the file is still unreadable then, the pre-start validator
+    refuses startup and keeps it.
+  - Logs: vanilla's single `Error loading saved data` with its stack, plus one ERROR
+    `ARCE_MANAGED_ROOT_UNREADABLE` per root per start and one WARN per held kind per start.
+  - Recovery: remove the read condition (lock, permission or failing storage) and restart. No data
+    repair is needed.
+  - Appearing file: if a file appears before the first write of a root proven absent, that write
+    is not made, and the root becomes unreadable in the same way.
+- **Retry diagnostics and cost (N2).** The automatic station acknowledgement retry and the
+  progression receipt-barrier retry each log one ERROR with a stack trace per failure streak, then
+  only count failures (shown by `/arce progression status`), then log one INFO on recovery.
+  - Station acknowledgement retry: each attempt is a whole-registry checked write on the server
+    thread, about 176 ms at 4,096 stations. Its interval backs off from 200 to 6,000 ticks, so a
+    persistent failure costs about 176 ms every five minutes. Each attempt also delays players'
+    checked station writes by up to 122 ticks through `StationWriteBudget`.
+  - Progression barrier retry: one synchronous write of a root of at most 256 KiB plus a directory
+    force, at most once per 200 ticks while a receipt is pending.
+  - Neither retry has an expiry, and neither changes authority.
+- **Journal baseline on every start.** Every start writes one journal baseline, also in worlds
+  without rockets; the first start creates the file. R-035's wording "the first start rewrites an
+  existing journal once" must be updated to match.
 - **Deferred grants.** A login before confirmation or while dead/spectating retains at most two
   entries per connected participant and 4,112 total, checked at most 16 per tick and once per entry
   per 20 ticks. Receipt readiness uses at most two one-time bounded cursors. No
@@ -745,7 +991,9 @@ tests never substitute for V1/V2. No row has been executed by W44 or W44R.
   a validated restart permits recovery. Inherited F3 can pause all live flights during the
   unconfirmed whole-journal write; this design does not secretly remove that global pause.
 - **Warp refusal.** A first-event warp over budget is refused visibly (`WARP_FIRST_EVENT_OVER_BUDGET`),
-  with no FE or orbit change.
+  with no FE or orbit change. A legacy registry above the new growth limit and within a few hundred
+  bytes of 4 MiB cannot fit even a minimal outbox. While nothing is elected, every warp is then
+  potentially first and is refused this way, until stations are deleted to free room.
 - **Station quarantine.** An unknown DELIVERED write quarantines the station registry until restart.
   These are the existing semantics, applied to one more write per world.
 - **Publish-failure hold.** In the unreachable publish-failure branch, registry mutations are refused
@@ -793,8 +1041,15 @@ tests never substitute for V1/V2. No row has been executed by W44 or W44R.
 >   failure saves the committed override and denies all mutation, never reasserts stale EMPTY.
 > - **Journal.** The transfer journal gains root schema 3 with a `classic_first_moon_landing` outbox.
 >   The per-record schema stays 2; roots 1/2 use an explicit migration branch, not the generic Beta
->   stamp. Every load confirms one baseline independent of transfer count. Until confirmation,
->   SOURCE_UNCONFIRMED is a temporary fail-closed state, not known EMPTY or corruption.
+>   stamp. Every valid or proven-absent load confirms one baseline, whatever the transfer count.
+>   Until confirmation, SOURCE_UNCONFIRMED is a temporary fail-closed state, not known EMPTY or
+>   corruption. After an unknown journal outcome, a later exact writer confirmation in the same
+>   session restores the known view; this is how "until durable reload" is read for the journal
+>   (section 9, item 6).
+> - **Absent versus unreadable.** Only a stat that reports no file, made when a root is first
+>   obtained and repeated before its first write, proves a station, journal or progression root
+>   absent. A present file whose runtime read fails is not operational, is never written and holds
+>   its kinds until a plain restart.
 > - **Moon completion.** A Moon descent completion that is eligible to win is elected in journal RAM
 >   and written by the existing W11b2 writer. LANDED and its notifications run only after the exact
 >   confirmation. A lagging entity is projected from the journal.
@@ -819,9 +1074,9 @@ tests never substitute for V1/V2. No row has been executed by W44 or W44R.
 
 ## 8. Owner questions
 
-No new owner product decision is requested, and D3 is not reopened. Independent round 2 review and
-Root's technical ADR/risk updates still block runtime implementation. Root should expose these
-three player-visible consequences:
+No new owner product decision is requested, and D3 is not reopened. Root's targeted re-check of the
+round 3 N1 text and Root's technical ADR/risk updates still block runtime implementation. Root
+should expose these three player-visible consequences:
 1. **No retroactive award.** Worlds that already warped or landed on the Moon before upgrading award
    only the next real event, because no old root records a trustworthy marker. ADR-066 already
    decides this; it is listed for awareness.
@@ -871,15 +1126,32 @@ three player-visible consequences:
    Keep that single writer and monotonic event snapshots; exact confirmations still guard effects.
    Root must clarify the phrase to prohibit stale overwrite rather than require a second
    acknowledged-only encoder. This changes technical wording, not D3 or its participant semantics.
+6. **"Journal outcome unknown similarly blocks conflicting completion/election until durable
+   reload"** (ADR-066 section 6.2, the sentence after "Station checked write
+   failure/outcome-unknown semantics remain unchanged").
+   - *What changes:* the design does not wait for a reload. After a journal UNKNOWN the Moon view
+     is SOURCE_UNCONFIRMED, and a later exact COMMITTED generation in the same session restores the
+     known view (2.4, Retry). The station side keeps its restart-only quarantine, so "similarly"
+     no longer means the same recovery on both sides.
+   - *Why it is safe:* the RAM slot never moves backwards, so every later generation carries the
+     same or a later slot. Meanwhile no conflicting election can happen: election needs a KNOWN
+     EMPTY source and an EMPTY RAM slot, and SOURCE_UNCONFIRMED gives only DEFER or NOT_FIRST. The
+     view is restored only by the writer's exact acknowledgement of a whole generation. After a
+     reload, the view is likewise known only once the baseline write is acknowledged (2.4), so the
+     in-session path uses the same proof.
+   - *Smallest change:* Root amends the phrase together with item 5 to "journal outcome unknown
+     blocks conflicting completion/election until a later exact confirmation or a durable reload".
+     D3 is unchanged.
 
 ## 10. Implementation shape and dependencies
 
 | Area | New or changed |
 |---|---|
-| Shared | New package `progression/classic/firstevent`: `FirstEvent` with codec/fingerprint, `FirstEventOutbox`, tagged source proof, `ClassicProgressionSavedData` with per-kind confirmation, `ClassicFirstEventDelivery`, a separate bounded deferred-grant queue and status command. Expose the single existing eligibility predicate deliberately. `ClassicEvent` gains two events; the two milestones change PENDING to EVENT. Implementation runs `runData`; W44R adds no JSON/code. |
-| Station | Before adding root-only delivery, extract candidate expectation/validation into `StationCheckedCandidate` and the existing replacement/readback/outcome resolver into `StationCheckedWriter`, both using the same adapter-owned authority and writer policy. No second writer/file/thread. Give the resolver an operation diagnostic context (root acknowledgement can name event ID without a live station). `StationRegistrySavedData` delegates named and root-only operations, publishes authority and owns the override. Update budget/payload/migration, warp capture/preflight and both refusal translations. Keep each class <= 800 lines; inspect any class > 500 for mixed responsibilities. No size exception is requested. |
-| Journal | Extend `RocketTransferSavedData`, snapshot/checkpoint and encoder for outbox, tagged proof and unconditional startup/retry baseline. Add `rocket/server/MoonLandingCompletion`; keep the service below 800 by moving completion logic, not relying on an arbitrary five-line net change. Supply narrow callbacks/access to the existing private `flightAllowed` guard and audit operation. Recheck authoritative record/entity and current escrow/bay fence immediately before final LANDED publication; discard/defer stale continuations under the existing W11b2 guards. |
-| A0 tests | Codecs/max encodings/fingerprints, exact migration whitelist and near-limit intact refusal, current-root no-op, checksum-first record recovery, every 3.3 row, zero-record baseline, unrelated UNKNOWN, all unavailable election gates, per-kind RAM-pending/flush/force/ordinary-save proof, bounded deferred queue fairness/disconnect, root-only unchanged sets/clock/substitution/station deletion, override gates/accessors and unchanged named-transition refusal coverage. Pin source caller and root schema/epoch validators without weakening assertions. |
+| Shared | New package `progression/classic/firstevent`: `FirstEvent` with codec/fingerprint, `FirstEventOutbox`, tagged source proof, `ClassicProgressionSavedData` with per-kind confirmation, `ClassicFirstEventDelivery`, a separate bounded deferred-grant queue and status command. Expose the single existing eligibility predicate deliberately. `ClassicEvent` gains two events; the two milestones change PENDING to EVENT. Implementation runs `runData`; W44R adds no JSON/code. Persistence (3.6, 6.1): `CheckedSavedDataFile.presence(Path)`; one root-presence supplier used by the three `get` methods; `AtomicSavedData` gains protected `writable()` and makes `flush(Path, Committer)` `protected final`; `CheckedSavedDataPolicy` gains a `reader` component (its two-argument constructor and `atomic` keep `readPayload`) and the public `DirectoryForce` moved from `RocketJournalCheckpoint`. Test-only `FirstEventCutSeams` holds every gated seam of 6.1. |
+| Station | Before adding root-only delivery, extract candidate expectation/validation into `StationCheckedCandidate` and the existing replacement/readback/outcome resolver into `StationCheckedWriter`, both using the same adapter-owned authority and writer policy. No second writer/file/thread. Give the resolver an operation diagnostic context (root acknowledgement can name event ID without a live station). `StationRegistrySavedData` delegates named and root-only operations, publishes authority and owns the override. Update budget/payload/migration, warp capture/preflight and both refusal translations. Keep each class <= 800 lines; inspect any class > 500 for mixed responsibilities. No size exception is requested. `StationCheckedWriter` takes a `CheckedSavedDataPolicy` (committer and readback reader) and a `DirectoryForce`, so the 6.1 seams reach it, and a log policy: per failure for named operations, per streak for the automatic acknowledgement (1.3). `StationRegistrySavedData.get` uses the root-presence supplier, and a `save(File)` override writes nothing for an UNREADABLE root and re-checks absence before the first ordinary save of a PROVEN_ABSENT root (3.6). |
+| Journal | Extend `RocketTransferSavedData`, snapshot/checkpoint and encoder for outbox, tagged proof and the startup/retry baseline, which runs for every valid or proven-absent load but never for an UNREADABLE or blocked one (2.4, 3.6). `RocketTransferSavedData.get` uses the root-presence supplier, and its load function calls the load-fault seam. **Size (N6):** `RocketTransferService` has 793 lines. Move `tickDestination` and `cleanupLandedIfComplete`, including the schema-1 migration branch (`RocketTransferService.java:632-704`, 73 lines), into a new package-private `rocket/server/RocketDestinationCompletion`. That class calls `MoonLandingCompletion.complete` at the descent-complete step (2.3). The moved code needs no callbacks: `auditPhase` is already the static `RocketTransferAudit.auditPhase`; `flightAllowed` is `RocketTransferEscrowRules.flightAllowed(server, journal, record, bays, action)` with the service's `recovery.bays()` passed in; the two transfer-ID sets are passed by reference, as `RocketTransferRecoveryService` already receives `settledTransfers` (`:49-52`); and the three-line `elapsed` helper is copied. The service keeps the one `tickLive` call (`:475`) and gains one final field of about three lines, a net change of about -70 lines (to about 723). The implementation record reports the final `wc -l`. Recheck authoritative record/entity and current escrow/bay fence immediately before final LANDED publication; discard/defer stale continuations under the existing W11b2 guards. |
+| A0 tests | Codecs/max encodings/fingerprints, exact migration whitelist and near-limit intact refusal, current-root no-op, checksum-first record recovery, every 3.3 row, zero-record baseline, unrelated UNKNOWN, all unavailable election gates, per-kind RAM-pending/flush/force/ordinary-save proof, bounded deferred queue fairness/disconnect, root-only unchanged sets/clock/substitution/station deletion, override gates/accessors and unchanged named-transition refusal coverage. Pin source caller and root schema/epoch validators without weakening assertions. Round 3 additions: (a) for each of the three types, a real `DimensionDataStorage` over a temporary directory with a present file whose load function throws, and one whose stat fails, yields an UNREADABLE root: not operational, never dirty, every mutator and writer entry refuses, `storage.save()` leaves the file byte-identical, and no `.arce-pending` file appears; a missing file yields PROVEN_ABSENT; (b) a file that appears before the first write of a PROVEN_ABSENT root, whether a checked write or the station's ordinary save, is not replaced, and the root becomes UNREADABLE; (c) the 3.6 classification table, including that UNREADABLE and blocked roots never give ALLOW, never schedule a baseline and never insert a receipt; (d) a station OUTCOME_UNKNOWN with a valid candidate on disk and a throwing readback reader, whose reload yields the candidate (FW6b's expectation); (e) streak logging for the station acknowledgement and the receipt barrier: one ERROR with a stack trace, counted repeats, one recovery INFO, and the 200-to-6,000-tick backoff; (f) a benchmark of one receipt barrier at the maximum 256-KiB progression root; (g) with the cut property absent or hooks disabled, every `FirstEventCutSeams` seam returns its production value, and with connected players it fails closed. |
+| Changed existing test (N5) | `StationWarpRelocationTest.publishFailureAfterReplacementQuarantinesWithAConsistentPairOnBothSides` (`src/test/java/.../station/persistence/StationWarpRelocationTest.java:185-201`) asserts what `committedOverride` (1.2) reverses: after a known commit whose publish failed, it expects `data.find(...)` to show the old orbit and balance and expects `data.save(...)` to produce the old, unwarped pair. It is changed in the same commit as `committedOverride`, only after Root has accepted the section 9, item 3 amendment, and its comment cites that ADR-066 note. It is renamed `publishFailureAfterReplacementKeepsTheCommittedCandidateUntilRestart`. It keeps OUTCOME_UNKNOWN, `updatesQuarantined()`, the warped and debited candidate on disk, and the consistent-pair check on both sides. It reverses two expectations: `data.save(...)` must now equal the on-disk candidate exactly (`assertConsistentPair(..., true)` plus tag equality with `readPayload`); and `find` and `warpEnergy`, which could authorize a mutation, must report unavailable instead of the stale EARTH orbit and old balance (1.2). It adds that `checkedRelocation` of the neighbour and `checkedExpand` return UNAVAILABLE, that `foldWarpCredits` and `addMember` throw as they do for a registry that is not operational (`requireOperational`), that the clock does not advance, and that `load(data.save(...))` yields the warped station with the debited balance and the candidate's outbox. This is not a weakened assertion. The old expectation encoded ADR-041's reassertion for a write whose outcome was unknown. Here the replacement returned normally, so the outcome is a known commit, and reasserting old RAM would overwrite it with stale memory, which ADR-066 forbids. The consistent-pair property is still checked on both sides, for the committed pair, and every reversed assertion is replaced by a stronger one. |
 | A1 tests | Isolated first-event fixture batch, with detached source/progression files so shared GameTest elections cannot steal another test's slot. Preserve negative precommit/cancelled/ineligible/watcher/later-joiner coverage, and actual passenger/authorized-region positives after proof. Existing negatives `!done(ONE_SMALL_STEP)` at `ClassicMilestoneAdvancementGameTests.java:311`, and `!done(FIRST_STATION_WARP)` there at `:363` and `ClassicCrystallizerAdvancementGameTests.java:60`, must be relocated/reframed with explicit EMPTY/non-electing or not-yet-confirmed fixture state; retain their behavioural negatives plus new positive world-first assertions. Do not simply remove them because PENDING changes. S1/S2 and real-client grant inventory: section 6. |
 | Depends on | The W11b2 part-1 writer and continuations (merged). The open F3 applies to the election generation. There is no dependency on escrow admission, W11b3 or the bay. |
 
