@@ -335,6 +335,7 @@
   "message.advancedrocketrycommunity.pad.unavailable": "Pad unavailable, unloaded, or interaction rate exceeded.",
   "message.advancedrocketrycommunity.pad.unloaded": "unloaded or stale",
   "message.advancedrocketrycommunity.planet_respawn.disabled": "Your off-world respawn point was not used (planetary respawn is disabled on this server), so you respawned in the Overworld. The respawn point is kept.",
+  "message.advancedrocketrycommunity.planet_respawn.generic": "Your off-world respawn point was not used, so you respawned in the Overworld. The respawn point is kept.",
   "message.advancedrocketrycommunity.planet_respawn.hazard": "Your off-world respawn point was not used (your respawn point is blocked by a solid block or a liquid), so you respawned in the Overworld. The respawn point is kept.",
   "message.advancedrocketrycommunity.planet_respawn.missing_body": "Your off-world respawn point was not used (the world of your respawn point is no longer available), so you respawned in the Overworld. The respawn point is kept.",
   "message.advancedrocketrycommunity.planet_respawn.no_spawn_block": "Your off-world respawn point was not used (your respawn point has no bed or usable respawn anchor), so you respawned in the Overworld. The respawn point is kept.",

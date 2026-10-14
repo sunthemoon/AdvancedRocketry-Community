@@ -133,6 +133,11 @@ public final class SleepRespawnService {
         return RESPAWN_PREFIX + outcome.key();
     }
 
+    /** For a kept point whose stored reason this version does not know. */
+    public static String genericRespawnKey() {
+        return RESPAWN_PREFIX + "generic";
+    }
+
     public void register(IEventBus bus) {
         bus.addListener(this::onSleepInBed);
         bus.addListener(this::onLeaveLevel);
@@ -360,7 +365,8 @@ public final class SleepRespawnService {
                 release(player);
             }
             if (notify && !alreadyRestored) {
-                player.sendSystemMessage(Component.translatable(respawnKey(backup.outcome())));
+                player.sendSystemMessage(Component.translatable(backup.outcome() == null
+                        ? genericRespawnKey() : respawnKey(backup.outcome())));
             }
         }
     }

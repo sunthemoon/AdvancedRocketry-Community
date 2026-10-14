@@ -41,7 +41,9 @@ class V180SleepLanguageTest {
             assertEquals(!outcome.accepted(), english.containsKey(SleepRespawnService.respawnKey(outcome)),
                     outcome.name());
         }
-        assertEquals(SleepRefusal.values().length - 1 + RespawnOutcome.values().length - 1, english.size());
+        // W37H F6: one generic fallback message for a kept point whose stored reason this version does not know.
+        assertTrue(english.containsKey(SleepRespawnService.genericRespawnKey()));
+        assertEquals(SleepRefusal.values().length - 1 + RespawnOutcome.values().length - 1 + 1, english.size());
         english.forEach((key, value) -> {
             assertTrue(key.startsWith("message.advancedrocketrycommunity."), key);
             assertFalse(value.isBlank() || value.contains("%"), key);

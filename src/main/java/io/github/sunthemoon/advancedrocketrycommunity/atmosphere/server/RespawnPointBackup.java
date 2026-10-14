@@ -34,15 +34,42 @@ public final class RespawnPointBackup {
         }
     }
 
-    public record Backup(Point point, RespawnOutcome outcome) {
+    /**
+     * A refused point and why. A null outcome is a stored token this version does not know: the outcome only selects
+     * a chat message, so the point is kept and the restore shows a generic one.
+     */
+    public record Backup(Point point, @Nullable RespawnOutcome outcome) {
         public Backup {
-            if (point == null || outcome == null || outcome.accepted()) {
+            if (point == null || outcome != null && outcome.accepted()) {
                 throw new IllegalArgumentException("Backup requires a refused point");
             }
         }
     }
 
+    /**
+     * The persisted outcome token, pinned here rather than derived from the enum name. Never rename or reuse a token;
+     * a new refused outcome needs a new one (the exhaustive switch makes that a compile error).
+     */
+    public static String token(RespawnOutcome outcome) {
+        return switch (outcome) {
+            case DISABLED -> "disabled";
+            case MISSING_BODY -> "missing_body";
+            case UNLOADED -> "unloaded";
+            case NO_SPAWN_BLOCK -> "no_spawn_block";
+            case OBSTRUCTED -> "obstructed";
+            case HAZARD -> "hazard";
+            case STATION_UNAVAILABLE -> "station_unavailable";
+            case STATION_DENIED -> "station_denied";
+            case PENDING -> "pending";
+            case UNBREATHABLE -> "unbreathable";
+            case ACCEPT -> throw new IllegalArgumentException("An accepted point is never set aside");
+        };
+    }
+
     public static CompoundTag encode(Backup backup) {
+        if (backup.outcome() == null) {
+            throw new IllegalArgumentException("An unknown outcome token is replaced by the next decision, not re-encoded");
+        }
         CompoundTag tag = new CompoundTag();
         Point point = backup.point();
         tag.putInt("schema", 1);
@@ -53,7 +80,7 @@ public final class RespawnPointBackup {
         // FloatTag.valueOf normalizes -0.0 to +0.0; raw bits keep the exact native field value.
         tag.putInt("angle_bits", Float.floatToRawIntBits(point.angle()));
         tag.putBoolean("forced", point.forced());
-        tag.putString("outcome", backup.outcome().key());
+        tag.putString("outcome", token(backup.outcome()));
         return tag;
     }
 
@@ -78,11 +105,10 @@ public final class RespawnPointBackup {
         }
         ResourceLocation id = ResourceLocation.tryParse(tag.getString("dimension"));
         if (id == null) { return Optional.empty(); }
-        RespawnOutcome outcome = null;
+        RespawnOutcome outcome = null; // An unknown string token keeps the point (generic message).
         for (RespawnOutcome candidate : RespawnOutcome.values()) {
-            if (!candidate.accepted() && candidate.key().equals(tag.getString("outcome"))) { outcome = candidate; }
+            if (!candidate.accepted() && token(candidate).equals(tag.getString("outcome"))) { outcome = candidate; }
         }
-        if (outcome == null) { return Optional.empty(); }
         try {
             return Optional.of(new Backup(new Point(ResourceKey.create(Registries.DIMENSION, id),
                     new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z")), Float.intBitsToFloat(tag.getInt("angle_bits")),

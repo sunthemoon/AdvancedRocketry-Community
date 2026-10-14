@@ -335,6 +335,7 @@
   "message.advancedrocketrycommunity.pad.unavailable": "平台不可用、未加载或操作过于频繁。",
   "message.advancedrocketrycommunity.pad.unloaded": "未加载或身份过期",
   "message.advancedrocketrycommunity.planet_respawn.disabled": "未使用你在其他星球的重生点（此服务器未启用星球重生），已在主世界重生；重生点仍保留。",
+  "message.advancedrocketrycommunity.planet_respawn.generic": "未使用你在其他星球的重生点，已在主世界重生；重生点仍保留。",
   "message.advancedrocketrycommunity.planet_respawn.hazard": "未使用你在其他星球的重生点（重生点被方块或液体阻挡），已在主世界重生；重生点仍保留。",
   "message.advancedrocketrycommunity.planet_respawn.missing_body": "未使用你在其他星球的重生点（重生点所在的世界已不存在），已在主世界重生；重生点仍保留。",
   "message.advancedrocketrycommunity.planet_respawn.no_spawn_block": "未使用你在其他星球的重生点（重生点没有床或可用的重生锚），已在主世界重生；重生点仍保留。",

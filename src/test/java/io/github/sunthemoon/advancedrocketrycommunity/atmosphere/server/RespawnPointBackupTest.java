@@ -8,6 +8,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.RespawnP
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -31,13 +32,14 @@ class RespawnPointBackupTest {
         assertEquals(Float.floatToRawIntBits(-0.0F), Float.floatToRawIntBits(decoded.point().angle()));
     }
 
-    @Test void rejectsTypesSchemaUnknownKeysBooleansAndOutcomesWithoutMutation() {
+    @Test void rejectsTypesSchemaUnknownKeysBooleansAndOutcomeTypesWithoutMutation() {
+        // W37H F6: an unknown outcome string ("accept", "future") is no longer rejected; see the generic-message test.
         List<Consumer<CompoundTag>> corruptions = List.of(
                 tag -> tag.putInt("schema", 2), tag -> tag.putInt("schema", 0),
                 tag -> tag.putString("schema", "1"), tag -> tag.remove("dimension"),
                 tag -> tag.putString("dimension", "bad dimension!"), tag -> tag.putLong("x", 1),
                 tag -> tag.putDouble("angle_bits", 1), tag -> tag.putByte("forced", (byte) 2),
-                tag -> tag.putString("outcome", "accept"), tag -> tag.putString("outcome", "future"),
+                tag -> tag.putInt("outcome", 3), tag -> tag.remove("outcome"),
                 tag -> tag.putInt("extra", 1));
         for (Consumer<CompoundTag> corrupt : corruptions) {
             CompoundTag raw = RespawnPointBackup.encode(backup());
@@ -48,6 +50,45 @@ class RespawnPointBackupTest {
         }
         assertTrue(RespawnPointBackup.decode(StringTag.valueOf("opaque")).isEmpty());
         assertTrue(RespawnPointBackup.decode(null).isEmpty());
+    }
+
+    @Test void persistedOutcomeTokensArePinned() {
+        Map<RespawnOutcome, String> pinned = Map.of(
+                RespawnOutcome.DISABLED, "disabled", RespawnOutcome.MISSING_BODY, "missing_body",
+                RespawnOutcome.UNLOADED, "unloaded", RespawnOutcome.NO_SPAWN_BLOCK, "no_spawn_block",
+                RespawnOutcome.OBSTRUCTED, "obstructed", RespawnOutcome.HAZARD, "hazard",
+                RespawnOutcome.STATION_UNAVAILABLE, "station_unavailable",
+                RespawnOutcome.STATION_DENIED, "station_denied", RespawnOutcome.PENDING, "pending",
+                RespawnOutcome.UNBREATHABLE, "unbreathable");
+        for (RespawnOutcome outcome : RespawnOutcome.values()) {
+            if (outcome.accepted()) {
+                assertThrows(IllegalArgumentException.class, () -> RespawnPointBackup.token(outcome));
+                continue;
+            }
+            Backup backup = new Backup(backup().point(), outcome);
+            CompoundTag encoded = RespawnPointBackup.encode(backup);
+            assertEquals(pinned.get(outcome), encoded.getString("outcome"), outcome.name());
+            assertEquals(backup, RespawnPointBackup.decode(encoded).orElseThrow());
+        }
+        assertEquals(RespawnOutcome.values().length - 1, pinned.size());
+    }
+
+    @Test void anUnknownOutcomeTokenKeepsThePointWithAGenericMessage() {
+        for (String unknown : List.of("a_later_reason", "accept", "")) {
+            CompoundTag raw = RespawnPointBackup.encode(backup());
+            raw.putString("outcome", unknown);
+            CompoundTag before = raw.copy();
+            Backup decoded = RespawnPointBackup.decode(raw).orElseThrow();
+            assertEquals(backup().point(), decoded.point());
+            assertNull(decoded.outcome(), unknown);
+            assertEquals(before, raw);
+            assertThrows(IllegalArgumentException.class, () -> RespawnPointBackup.encode(decoded));
+            CompoundTag persisted = new CompoundTag();
+            persisted.put(RespawnPointBackup.KEY, raw);
+            RespawnPointBackup.store(persisted, backup()); // The next refusal replaces the unknown token.
+            assertEquals(backup(), RespawnPointBackup.decode(persisted.get(RespawnPointBackup.KEY)).orElseThrow());
+            assertFalse(persisted.getCompound(RespawnPointBackup.KEY).contains(RespawnPointBackup.RETAINED));
+        }
     }
 
     @Test void boundsRejectOversizedIdsCoordinatesAndNonfiniteAngles() {

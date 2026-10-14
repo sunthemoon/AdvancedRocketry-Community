@@ -22,6 +22,9 @@ public final class V180SleepLanguage {
                 entries.put(SleepRespawnService.respawnKey(outcome), respawn(outcome, chinese));
             }
         }
+        entries.put(SleepRespawnService.genericRespawnKey(), chinese
+                ? "未使用你在其他星球的重生点，已在主世界重生；重生点仍保留。"
+                : "Your off-world respawn point was not used, so you respawned in the Overworld. The respawn point is kept.");
         return entries;
     }
 

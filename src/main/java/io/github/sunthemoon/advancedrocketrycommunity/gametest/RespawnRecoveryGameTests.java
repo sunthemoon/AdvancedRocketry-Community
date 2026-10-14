@@ -1,14 +1,18 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SleepRespawnRules.RespawnOutcome;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.RespawnPointBackup;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.SleepRespawnService;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -100,6 +104,26 @@ public final class RespawnRecoveryGameTests {
             server.getPlayerList().remove(reconnected);
         }
         helper.succeed();
+    }
+
+    /** W37H F6: a schema 1 backup whose outcome token this version does not know keeps its point. */
+    @GameTest(template = "atmosphere_test", batch = "respawn_recovery", timeoutTicks = 40)
+    public static void anUnknownOutcomeTokenIsRestoredWithTheGenericMessage(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerPlayer player = join(helper, UUID.randomUUID(), "W37HUnknownToken");
+        CompoundTag root = RespawnPointBackup.encode(new RespawnPointBackup.Backup(
+                new RespawnPointBackup.Point(CelestialIds.MOON_LEVEL, FAR, -72.25F, true), RespawnOutcome.UNLOADED));
+        root.putString("outcome", "a_later_reason");
+        CompoundTag persisted = new CompoundTag();
+        persisted.put(RespawnPointBackup.KEY, root);
+        player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+        SleepRespawnGameTests.chat(player); // Discard the join messages.
+        DeathRespawnGameTests.afterEachEnd(helper, () -> server.getPlayerList().remove(player), () -> {
+            assertRestored(helper, player);
+            List<String> chat = SleepRespawnGameTests.chat(player);
+            helper.assertTrue(chat.contains(SleepRespawnService.genericRespawnKey()),
+                    "The restore of an unknown outcome did not send the generic message: " + chat);
+        });
     }
 
     private static ServerPlayer join(GameTestHelper helper, UUID id, String name) {
