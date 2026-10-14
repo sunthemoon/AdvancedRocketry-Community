@@ -33,6 +33,7 @@ import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.chunk.LevelChunk;
 
 /** Per-loaded-Level authority for bounded scan scheduling and provider election. */
 public final class AtmosphereLevelService {
@@ -466,10 +467,11 @@ public final class AtmosphereLevelService {
     }
 
     private OxygenVentBlockEntity loadedVent(BlockPos position) {
-        if (!level.hasChunkAt(position)) {
+        LevelChunk chunk = level.getChunkSource().getChunkNow(position.getX() >> 4, position.getZ() >> 4);
+        if (level.isOutsideBuildHeight(position) || chunk == null) {
             return null;
         }
-        BlockEntity blockEntity = level.getBlockEntity(position);
+        BlockEntity blockEntity = chunk.getBlockEntity(position);
         return blockEntity instanceof OxygenVentBlockEntity vent && !vent.isRemoved()
                 ? vent
                 : null;

@@ -375,7 +375,7 @@ public final class AtmosphereGameTests {
         }
     }
 
-    private static void buildShell(ServerLevel level, BlockPos minimum, BlockPos maximum) {
+    static void buildShell(ServerLevel level, BlockPos minimum, BlockPos maximum) {
         for (int x = minimum.getX(); x <= maximum.getX(); x++) {
             for (int y = minimum.getY(); y <= maximum.getY(); y++) {
                 for (int z = minimum.getZ(); z <= maximum.getZ(); z++) {
@@ -411,7 +411,7 @@ public final class AtmosphereGameTests {
         return vent;
     }
 
-    private static OxygenVentBlockEntity placePreparedVent(ServerLevel level, BlockPos position) {
+    static OxygenVentBlockEntity placePreparedVent(ServerLevel level, BlockPos position) {
         level.setBlock(position, ModBlocks.OXYGEN_VENT.get().defaultBlockState(), Block.UPDATE_ALL);
         OxygenVentBlockEntity vent = (OxygenVentBlockEntity) level.getBlockEntity(position);
         if (vent == null) {

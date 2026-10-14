@@ -71,7 +71,35 @@ class CommonConfigTest {
         assertFalse(CommonConfig.dropExtinguishedTorches());
         // W34 adds the consumed ADR-066 section 3.3 vacuum damage value.
         assertSame(CommonConfig.VACUUM_DAMAGE, CommonConfig.SPEC.getValues().get("OXYGEN.vacuumDamage"));
-        assertEquals(95, countValues(CommonConfig.SPEC.getValues()));
+        // W37 adds the two consumed ADR-066 section 3.3 planet-respawn options.
+        assertSame(CommonConfig.ALLOW_PLANET_RESPAWN, CommonConfig.SPEC.getValues().get("PLANET.allowPlanetRespawn"));
+        assertSame(CommonConfig.FORCE_PLANET_RESPAWN, CommonConfig.SPEC.getValues().get("PLANET.forcePlanetRespawn"));
+        assertEquals(97, countValues(CommonConfig.SPEC.getValues()));
+    }
+
+    @Test
+    void planetRespawnOptionsDefaultOffAndAreOverridableServerSwitches() {
+        for (String path : List.of("PLANET.allowPlanetRespawn", "PLANET.forcePlanetRespawn")) {
+            ForgeConfigSpec.ValueSpec option = assertInstanceOf(ForgeConfigSpec.ValueSpec.class,
+                    CommonConfig.SPEC.getSpec().get(path));
+            assertTrue(option.test(true));
+            assertTrue(option.test(false));
+            assertFalse(option.test(1));
+        }
+        assertFalse(CommonConfig.ALLOW_PLANET_RESPAWN.getDefault());
+        assertFalse(CommonConfig.FORCE_PLANET_RESPAWN.getDefault());
+        assertFalse(CommonConfig.allowPlanetRespawn());
+        assertFalse(CommonConfig.forcePlanetRespawn());
+        assertTrue(CommonConfig.serverSwitch(CommonConfig.ALLOW_PLANET_RESPAWN));
+        assertTrue(CommonConfig.serverSwitch(CommonConfig.FORCE_PLANET_RESPAWN));
+        SwitchOverrides.set(CommonConfig.FORCE_PLANET_RESPAWN, true);
+        try {
+            assertTrue(CommonConfig.forcePlanetRespawn());
+            assertFalse(CommonConfig.allowPlanetRespawn());
+        } finally {
+            SwitchOverrides.clear(CommonConfig.FORCE_PLANET_RESPAWN);
+        }
+        assertFalse(CommonConfig.forcePlanetRespawn());
     }
 
     @Test
