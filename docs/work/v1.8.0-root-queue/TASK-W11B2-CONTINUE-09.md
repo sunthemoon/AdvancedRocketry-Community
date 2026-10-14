@@ -61,3 +61,35 @@ proof, a hold, or the replay exclusion needs Root first: stop and report.
 
 - Production admission, W11b3, the bay slices, W27f reconstruction, and signed per-fluid accounting.
 - ADRs, the risk register, status files and the ledger (Root).
+
+## Root decision (2026-10-15): native prefix identity across fuel banks
+
+This answers the clarification in `records/W11B2.md`, "Continuation 09" (reproducer `a135d140`).
+
+1. **The rule.** An endpoint's prefix identity follows the epoch scope of its escrow section.
+   - A rocket section (`RocketEscrowSection`) has **one** epoch and **one** contiguous marker suffix
+     for the whole physical rocket. Design 2 section 5.1 signs the whole `FUEL_VECTOR_V1` vector
+     across both banks.
+   - So the prefix identity of a rocket endpoint is the **physical rocket**, shared by PRIMARY and
+     OXIDIZER.
+   - `Unit` stays on each link as the operation's exact bank selector. It is no longer part of the
+     rocket chain's identity.
+2. **What follows for rocket endpoints:**
+   - one contiguous chain over the rocket's epochs, whichever bank each link debits or fills;
+   - classification compares the whole native-vector signature at each epoch;
+   - frozen frontiers are per rocket;
+   - partial retirement follows epoch order across banks;
+   - settlement observations are deduplicated per rocket.
+3. **Other endpoint kinds** whose sections keep a separate epoch per unit keep `Unit` in their
+   identity. Before you change the equality:
+   - list every endpoint kind and its section's epoch scope, with file and line;
+   - scope the change to rocket endpoints, without changing `EscrowEndpoint` equality globally;
+   - add a test that a block-entity endpoint with several units behaves exactly as before.
+4. **Tests.** Your reproducer's two mixed-bank assertions (PRIMARY then OXIDIZER, and PRIMARY,
+   OXIDIZER, PRIMARY) must pass, and its controls stay green.
+   - Add a mixed-bank partial-retirement case.
+   - Add a mixed-bank settlement-observation case.
+   - Encode no ledger record differently, except where the M2 in-place schema rule already allows it.
+     Say exactly what changes on disk, if anything.
+
+Then continue the whole task in its order.
