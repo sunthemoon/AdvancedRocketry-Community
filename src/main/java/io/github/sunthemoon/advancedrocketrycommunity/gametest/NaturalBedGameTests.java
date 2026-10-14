@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTest;
@@ -66,13 +67,17 @@ public final class NaturalBedGameTests {
 
     @GameTest(template = TEMPLATE, batch = "natural_beds_matrix", timeoutTicks = 60)
     public static void sixNativeHostsSleepKeepAbsenceAndTuplesAndRefuseLate(GameTestHelper helper) {
-        withRooms(helper, "W37BMatrix", fixture -> {
+        int[] state = {0, 0}; // Host and phase; occupancy changes must be rescanned before the next bed call.
+        Tuple[] expected = {null};
+        Zombie[] monsters = {null};
+        withRoomSteps(helper, "W37BMatrix", fixture -> {
             ServerPlayer player = fixture.player;
-            for (Room room : fixture.rooms) {
-                player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
-                ServerLevel level = room.level;
-                runtimeType(helper, level);
-                enter(player, room);
+            Room room = fixture.rooms.get(state[0]);
+            player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+            ServerLevel level = room.level;
+            runtimeType(helper, level);
+            enter(player, room);
+            if (state[1] == 0) {
                 // Even a non-default absent tuple is kept bit-for-bit, not normalized to vanilla defaults.
                 player.respawnDimension = CelestialIds.MOON_LEVEL;
                 player.respawnPosition = null;
@@ -83,14 +88,22 @@ public final class NaturalBedGameTests {
                         "A supplied, permitted bed did not sleep in " + level.dimension().location());
                 absent.assertSame(helper, player);
                 player.stopSleepInBed(true, true);
-
+                state[1] = 1;
+                return false;
+            }
+            if (state[1] == 1) {
                 BlockPos home = helper.absolutePos(new BlockPos(2, 1, 2));
                 player.setRespawnPosition(Level.OVERWORLD, home, -72.25F, true, false);
                 Tuple saved = Tuple.read(player);
                 helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Second sleep failed");
                 saved.assertSame(helper, player);
                 player.stopSleepInBed(true, true);
-
+                expected[0] = saved;
+                state[1] = 2;
+                return false;
+            }
+            Tuple saved = expected[0];
+            if (state[1] == 2) {
                 ServerPlayer sleeper = player;
                 Consumer<SleepingTimeCheckEvent> day = event -> {
                     if (event.getEntity() == sleeper) { event.setResult(Event.Result.DENY); }
@@ -108,106 +121,125 @@ public final class NaturalBedGameTests {
                 monster.setNoAi(true);
                 monster.moveTo(room.head().getX() + 0.5D, room.head().getY(), room.head().getZ() + 1.5D, 0, 0);
                 level.addFreshEntity(monster);
-                try {
-                    helper.assertTrue(player.startSleepInBed(room.head()).left().orElse(null)
-                                    == Player.BedSleepingProblem.NOT_SAFE,
-                            "The survival monster path did not refuse in " + level.dimension().location());
-                    saved.assertSame(helper, player);
-                } finally { monster.discard(); }
-
-                // Native command, not a directly fabricated forced event.
-                fixture.server.getCommands().performPrefixedCommand(fixture.server.createCommandSourceStack(),
-                        "execute in " + level.dimension().location() + " run spawnpoint " + player.getGameProfile().getName()
-                                + " " + room.head().getX() + " " + room.head().getY() + " " + room.head().getZ() + " 37.5");
-                helper.assertTrue(player.isRespawnForced() && player.getRespawnDimension().equals(level.dimension())
-                                && room.head().equals(player.getRespawnPosition()) && player.getRespawnAngle() == 37.5F,
-                        "The admin spawnpoint was intercepted");
-                player.setRespawnPosition(level.dimension(), room.head(), -0.0F, false, false);
-                helper.assertTrue(!player.isRespawnForced() && room.head().equals(player.getRespawnPosition())
-                                && Float.floatToRawIntBits(player.getRespawnAngle()) == 0x80000000,
-                        "An unrelated same-tuple mod setter after return was intercepted");
-                player.setRespawnPosition(Level.NETHER, null, 13.0F, true, false);
-                helper.assertTrue(player.getRespawnPosition() == null && player.getRespawnDimension() == Level.OVERWORLD
-                                && player.getRespawnAngle() == 0 && !player.isRespawnForced(),
-                        "An unrelated null setter did not retain vanilla's clearing semantics");
-
-                // A valid pending R-036 backup survives sleep; native W37 replacement restore still works.
-                BlockPos oldPoint = new BlockPos(25_000_000, 80, 25_000_000);
-                player.setRespawnPosition(CelestialIds.MOON_LEVEL, oldPoint, -72.25F, true, false);
-                CompoundTag persisted = new CompoundTag();
-                RespawnPointBackup.store(persisted, new RespawnPointBackup.Backup(
-                        new RespawnPointBackup.Point(CelestialIds.MOON_LEVEL, oldPoint, -72.25F, true),
-                        RespawnOutcome.DISABLED));
-                player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
-                CompoundTag before = persisted.copy();
-                Tuple prior = Tuple.read(player);
-                helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Backup sleep failed");
-                prior.assertSame(helper, player);
-                helper.assertTrue(before.equals(player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG)),
-                        "Sleep modified the persisted R-036 backup");
-                player.stopSleepInBed(true, true);
-                player = fixture.server.getPlayerList().respawn(player, false);
-                fixture.player = player;
-                prior.assertSame(helper, player);
-                helper.assertTrue(player.level().dimension().equals(Level.OVERWORLD), "W37 fallback did not run");
+                monsters[0] = monster;
+                fixture.cleanup.add(monster::discard);
+                state[1] = 3;
+                return false;
             }
+            Zombie monster = monsters[0];
+            try {
+                helper.assertTrue(player.startSleepInBed(room.head()).left().orElse(null)
+                                == Player.BedSleepingProblem.NOT_SAFE,
+                        "The survival monster path did not refuse in " + level.dimension().location());
+                saved.assertSame(helper, player);
+            } finally { monster.discard(); }
+
+            // Native command, not a directly fabricated forced event.
+            fixture.server.getCommands().performPrefixedCommand(fixture.server.createCommandSourceStack(),
+                    "execute in " + level.dimension().location() + " run spawnpoint " + player.getGameProfile().getName()
+                            + " " + room.head().getX() + " " + room.head().getY() + " " + room.head().getZ() + " 37.5");
+            helper.assertTrue(player.isRespawnForced() && player.getRespawnDimension().equals(level.dimension())
+                            && room.head().equals(player.getRespawnPosition()) && player.getRespawnAngle() == 37.5F,
+                    "The admin spawnpoint was intercepted");
+            player.setRespawnPosition(level.dimension(), room.head(), -0.0F, false, false);
+            helper.assertTrue(!player.isRespawnForced() && room.head().equals(player.getRespawnPosition())
+                            && Float.floatToRawIntBits(player.getRespawnAngle()) == 0x80000000,
+                    "An unrelated same-tuple mod setter after return was intercepted");
+            player.setRespawnPosition(Level.NETHER, null, 13.0F, true, false);
+            helper.assertTrue(player.getRespawnPosition() == null && player.getRespawnDimension() == Level.OVERWORLD
+                            && player.getRespawnAngle() == 0 && !player.isRespawnForced(),
+                    "An unrelated null setter did not retain vanilla's clearing semantics");
+
+            // A valid pending R-036 backup survives sleep; native W37 replacement restore still works.
+            BlockPos oldPoint = new BlockPos(25_000_000, 80, 25_000_000);
+            player.setRespawnPosition(CelestialIds.MOON_LEVEL, oldPoint, -72.25F, true, false);
+            CompoundTag persisted = new CompoundTag();
+            RespawnPointBackup.store(persisted, new RespawnPointBackup.Backup(
+                    new RespawnPointBackup.Point(CelestialIds.MOON_LEVEL, oldPoint, -72.25F, true),
+                    RespawnOutcome.DISABLED));
+            player.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+            CompoundTag before = persisted.copy();
+            Tuple prior = Tuple.read(player);
+            helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Backup sleep failed");
+            prior.assertSame(helper, player);
+            helper.assertTrue(before.equals(player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG)),
+                    "Sleep modified the persisted R-036 backup");
+            player.stopSleepInBed(true, true);
+            fixture.player = fixture.server.getPlayerList().respawn(player, false);
+            prior.assertSame(helper, fixture.player);
+            helper.assertTrue(fixture.player.level().dimension().equals(Level.OVERWORLD), "W37 fallback did not run");
+            state[0]++;
+            state[1] = 0;
+            return state[0] == fixture.rooms.size();
         });
     }
 
     @GameTest(template = TEMPLATE, batch = "natural_beds_nested", timeoutTicks = 60)
     public static void earlyReturnsNestedSleepAndForeignSameTupleSettersKeepWorking(GameTestHelper helper) {
-        withRooms(helper, "W37BNested", fixture -> {
+        int[] phase = {0};
+        Tuple[] original = {null};
+        withRoomSteps(helper, "W37BNested", fixture -> {
             ServerPlayer player = fixture.player;
             Room room = fixture.rooms.get(0);
             enter(player, room);
             BlockPos home = helper.absolutePos(new BlockPos(2, 1, 2));
-            player.setRespawnPosition(Level.OVERWORLD, home, 11.25F, true, false);
-            player.teleportTo(room.level, room.vent.getX() + 20.5D, room.vent.getY() + 1, room.vent.getZ() + 0.5D, 0, 0);
-            helper.assertTrue(player.startSleepInBed(room.head()).left().orElse(null)
-                    == Player.BedSleepingProblem.TOO_FAR_AWAY, "The early range refusal was not reached");
-            player.setRespawnPosition(room.level.dimension(), room.head(), 22.5F, false, false);
-            Tuple unrelated = Tuple.read(player);
-            // A synthetic time check must not consume an early-return snapshot as a completed native bed write.
-            MinecraftForge.EVENT_BUS.post(new SleepingTimeCheckEvent(player, Optional.of(room.head())));
-            unrelated.assertSame(helper, player);
-            enter(player, room);
-            boolean[] reposted = {false};
-            Consumer<PlayerSleepInBedEvent> synthetic = event -> {
-                if (event.getEntity() == player && !reposted[0]) {
-                    reposted[0] = true;
-                    MinecraftForge.EVENT_BUS.post(new PlayerSleepInBedEvent(player, Optional.of(room.head().west())));
-                }
-            };
-            MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, PlayerSleepInBedEvent.class, synthetic);
-            try {
-                helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Reposted-admission sleep failed");
+            if (phase[0] == 0) {
+                player.setRespawnPosition(Level.OVERWORLD, home, 11.25F, true, false);
+                player.teleportTo(room.level, room.vent.getX() + 20.5D, room.vent.getY() + 1, room.vent.getZ() + 0.5D, 0, 0);
+                helper.assertTrue(player.startSleepInBed(room.head()).left().orElse(null)
+                        == Player.BedSleepingProblem.TOO_FAR_AWAY, "The early range refusal was not reached");
+                player.setRespawnPosition(room.level.dimension(), room.head(), 22.5F, false, false);
+                Tuple unrelated = Tuple.read(player);
+                // A synthetic time check must not consume an early-return snapshot as a completed native bed write.
+                MinecraftForge.EVENT_BUS.post(new SleepingTimeCheckEvent(player, Optional.of(room.head())));
                 unrelated.assertSame(helper, player);
-                player.stopSleepInBed(true, true);
-            } finally { MinecraftForge.EVENT_BUS.unregister(synthetic); }
-            boolean[] nested = {false};
-            Consumer<PlayerSetSpawnEvent> nest = event -> {
-                if (event.getEntity() == player && !nested[0]) {
-                    nested[0] = true;
-                    MinecraftForge.EVENT_BUS.post(new SleepingTimeCheckEvent(player, Optional.of(room.head())));
-                    helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Nested sleep failed");
+                enter(player, room);
+                boolean[] reposted = {false};
+                Consumer<PlayerSleepInBedEvent> synthetic = event -> {
+                    if (event.getEntity() == player && !reposted[0]) {
+                        reposted[0] = true;
+                        MinecraftForge.EVENT_BUS.post(new PlayerSleepInBedEvent(player, Optional.of(room.head().west())));
+                    }
+                };
+                MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, PlayerSleepInBedEvent.class, synthetic);
+                try {
+                    helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Reposted-admission sleep failed");
                     unrelated.assertSame(helper, player);
                     player.stopSleepInBed(true, true);
-                    // A same-arguments foreign setter while the outer native setter is on the stack must work.
-                    player.setRespawnPosition(room.level.dimension(), room.head(), 81.25F, false, false);
-                    helper.assertTrue(player.getRespawnAngle() == 81.25F, "The nested foreign setter was intercepted");
-                    fixture.server.getCommands().performPrefixedCommand(fixture.server.createCommandSourceStack(),
-                            "spawnpoint " + player.getGameProfile().getName() + " " + home.getX() + " " + home.getY()
-                                    + " " + home.getZ() + " 37.5");
-                }
-            };
-            MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerSetSpawnEvent.class, nest);
-            try {
-                helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Outer sleep failed");
-                helper.assertTrue(nested[0] && player.getRespawnAngle() == 37.5F && player.isRespawnForced()
-                                && home.equals(player.getRespawnPosition()) && player.getRespawnDimension() == Level.OVERWORLD,
-                        "An enclosing snapshot overwrote the nested admin setter");
-                player.stopSleepInBed(true, true);
-            } finally { MinecraftForge.EVENT_BUS.unregister(nest); }
+                } finally { MinecraftForge.EVENT_BUS.unregister(synthetic); }
+                original[0] = unrelated;
+                phase[0] = 1;
+                return false;
+            }
+            if (phase[0] == 1) {
+                Tuple unrelated = original[0];
+                boolean[] nested = {false};
+                Consumer<PlayerSetSpawnEvent> nest = event -> {
+                    if (event.getEntity() == player && !nested[0]) {
+                        nested[0] = true;
+                        MinecraftForge.EVENT_BUS.post(new SleepingTimeCheckEvent(player, Optional.of(room.head())));
+                        helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Nested sleep failed");
+                        unrelated.assertSame(helper, player);
+                        player.stopSleepInBed(true, true);
+                        // A same-arguments foreign setter while the outer native setter is on the stack must work.
+                        player.setRespawnPosition(room.level.dimension(), room.head(), 81.25F, false, false);
+                        helper.assertTrue(player.getRespawnAngle() == 81.25F, "The nested foreign setter was intercepted");
+                        fixture.server.getCommands().performPrefixedCommand(fixture.server.createCommandSourceStack(),
+                                "spawnpoint " + player.getGameProfile().getName() + " " + home.getX() + " " + home.getY()
+                                        + " " + home.getZ() + " 37.5");
+                    }
+                };
+                MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerSetSpawnEvent.class, nest);
+                try {
+                    helper.assertTrue(player.startSleepInBed(room.head()).right().isPresent(), "Outer sleep failed");
+                    helper.assertTrue(nested[0] && player.getRespawnAngle() == 37.5F && player.isRespawnForced()
+                                    && home.equals(player.getRespawnPosition()) && player.getRespawnDimension() == Level.OVERWORLD,
+                            "An enclosing snapshot overwrote the nested admin setter");
+                    player.stopSleepInBed(true, true);
+                } finally { MinecraftForge.EVENT_BUS.unregister(nest); }
+                phase[0] = 2;
+                return false;
+            }
             boolean[] canceled = {false};
             Consumer<PlayerSetSpawnEvent> cancelAndSet = event -> {
                 if (event.getEntity() == player && !canceled[0]) {
@@ -224,6 +256,7 @@ public final class NaturalBedGameTests {
                         "The canceled native setter's candidate caused a foreign same-tuple setter to be undone");
                 player.stopSleepInBed(true, true);
             } finally { MinecraftForge.EVENT_BUS.unregister(cancelAndSet); }
+            return true;
         });
     }
 
@@ -318,7 +351,7 @@ public final class NaturalBedGameTests {
             try {
                 pacer.pace();
                 if (!fixture.ready()) {
-                    helper.assertTrue(helper.getTick() < 50, "The fallback room did not seal");
+                    helper.assertTrue(helper.getTick() < 50, "The fallback rooms did not become breathable: " + fixture.status());
                     return;
                 }
                 if (!interrupted[0]) {
@@ -416,6 +449,10 @@ public final class NaturalBedGameTests {
     }
 
     private static void withRooms(GameTestHelper helper, String name, Consumer<Fixture> checks) {
+        withRoomSteps(helper, name, fixture -> { checks.accept(fixture); return true; });
+    }
+
+    private static void withRoomSteps(GameTestHelper helper, String name, Predicate<Fixture> checks) {
         Fixture fixture = new Fixture(helper, name, HOSTS);
         boolean[] done = {false};
         GameTestTickPacer pacer = new GameTestTickPacer(fixture.server);
@@ -424,10 +461,10 @@ public final class NaturalBedGameTests {
             try {
                 pacer.pace();
                 if (!fixture.ready()) {
-                    helper.assertTrue(helper.getTick() < 50, "The six supplied rooms did not seal");
+                    helper.assertTrue(helper.getTick() < 50, "The six bed fixtures did not become breathable: " + fixture.status());
                     return;
                 }
-                checks.accept(fixture);
+                if (!checks.test(fixture)) { return; }
                 done[0] = true;
                 fixture.close();
                 helper.succeed();

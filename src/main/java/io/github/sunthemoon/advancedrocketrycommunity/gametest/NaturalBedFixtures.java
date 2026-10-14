@@ -1,6 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.celestial.exoplanet.ExoplanetContent;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
+import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.AtmosphereRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -66,7 +69,24 @@ final class NaturalBedFixtures {
         }
 
         boolean ready() {
-            return rooms.stream().allMatch(room -> SleepRespawnGameTests.suppliedBed(room.level, room.vent));
+            return rooms.stream().allMatch(room -> {
+                if (room.level.dimension().equals(ExoplanetContent.TAU_CETI_F_LEVEL)) {
+                    // The production authority idles vents in comfortable, breathable ambient air. There is no
+                    // supplied volume to wait for on f; both native bed cells must still report breathable air.
+                    return AtmosphereRuntime.breathabilityAt(room.level, room.head()).orElse(null)
+                            == BreathabilityState.BREATHABLE
+                            && AtmosphereRuntime.breathabilityAt(room.level, room.head().west()).orElse(null)
+                            == BreathabilityState.BREATHABLE;
+                }
+                return SleepRespawnGameTests.suppliedBed(room.level, room.vent);
+            });
+        }
+
+        String status() {
+            return rooms.stream().map(room -> room.level.dimension().location() + ":air="
+                    + AtmosphereRuntime.breathabilityAt(room.level, room.head()) + ",supplied="
+                    + SleepRespawnGameTests.suppliedBed(room.level, room.vent) + ",metrics="
+                    + AtmosphereRuntime.metrics(room.level)).toList().toString();
         }
 
         @Override
