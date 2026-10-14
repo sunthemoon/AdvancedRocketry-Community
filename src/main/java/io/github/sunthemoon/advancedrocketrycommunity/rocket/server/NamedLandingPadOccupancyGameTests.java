@@ -75,10 +75,13 @@ public final class NamedLandingPadOccupancyGameTests {
             helper.assertTrue(source.flightData().orElseThrow().equals(before), "Refusal changed source authority/fuel");
 
             UUID clearTransfer = UUID.randomUUID();
+            int loadedBefore = f.space.getChunkSource().getLoadedChunksCount();
             var accepted = new NamedLandingPadStaging().select(f.space, source.snapshot().orElseThrow(),
                     clearTransfer, f.station, f.clearEntry.reference(), List.of(), f.space.getGameTime());
             helper.assertTrue(accepted.success(), "Non-overlapping named pad refused: " + accepted.detail());
-            helper.assertTrue(accepted.chunksLoaded() == 0, "Occupancy discovery loaded chunks");
+            // W13F review N2: the selection's own count is always 0, so also compare the Level's loaded chunks.
+            helper.assertTrue(accepted.chunksLoaded() == 0 && f.space.getChunkSource().getLoadedChunksCount() == loadedBefore,
+                    "Occupancy discovery reported or caused chunk loading");
             LandingPadIndex.get(f.space.getServer()).release(f.station.stationId(), f.clearEntry.reference(), clearTransfer);
             f.close(); helper.succeed();
         });
@@ -110,7 +113,11 @@ public final class NamedLandingPadOccupancyGameTests {
             helper.assertTrue(!source.isRemoved() && source.flightData().orElseThrow().state() == RocketFlightState.FUELED
                     && source.flightData().orElseThrow().fuel().equals(record.sourceFlightData().fuel()),
                     "Occupied destination did not retain undebited source authority");
-            helper.assertTrue(record.destinationEntityId().isEmpty(), "Pre-spawn refusal created a destination identity");
+            // W13F review N2: the captured record is immutable, so look for the destination itself.
+            helper.assertTrue(f.spaceRockets().stream().noneMatch(rocket -> rocket.assemblyTransactionId()
+                            .filter(record.logicalRocketId()::equals).isPresent() || rocket.snapshot().filter(snapshot ->
+                            snapshot.snapshotId().equals(record.destinationSnapshot().snapshotId())).isPresent()),
+                    "Pre-spawn refusal created a destination rocket");
             f.close(); helper.succeed();
         });
     }
@@ -135,11 +142,13 @@ public final class NamedLandingPadOccupancyGameTests {
             LandingPadIndex.get(f.space.getServer()).release(f.station.stationId(), f.entry.reference(), acceptedTransfer);
             f.addRocket(f.space, parkedSnapshot);
             UUID refusedTransfer = UUID.randomUUID();
+            int loadedBefore = f.space.getChunkSource().getLoadedChunksCount();
             var refused = staging.select(f.space, snapshot, refusedTransfer, f.station, f.entry.reference(),
                     List.of(), f.space.getGameTime());
             helper.assertTrue(!refused.success() && refused.detail().endsWith("entity_budget"),
                     "Discovery overflow was silently accepted/truncated");
-            helper.assertTrue(refused.chunksLoaded() == 0 && f.currentEntry().claim() == null
+            helper.assertTrue(refused.chunksLoaded() == 0 && f.space.getChunkSource().getLoadedChunksCount() == loadedBefore
+                    && f.currentEntry().claim() == null
                     && RocketTransferSavedData.get(f.space.getServer()).find(refusedTransfer).isEmpty(),
                     "Discovery overflow loaded chunks or created a claim/journal");
             helper.assertTrue(f.space.getChunkSource().getChunkNow(coldX, coldZ) == null, "Discovery forced a cold chunk");
