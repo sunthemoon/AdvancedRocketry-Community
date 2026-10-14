@@ -134,6 +134,33 @@ public final class ClassicRootRecoveryGameTests {
         helper.succeed();
     }
 
+    /**
+     * W01G review L3: a quarantined controller exposes no Item or Fluid hatch, but its power plug still receives FE,
+     * which stays in the plug unspent. This pins the behaviour that the ADR-064 and R-021 texts describe.
+     */
+    @GameTest(template = "empty", batch = "w55_quarantined_plug", timeoutTicks = 30)
+    public static void quarantinedControllerPlugStillReceivesFeAndSpendsNone(GameTestHelper helper) {
+        try (var fixture = new ClassicLatheGameTests.Fixture(helper, Direction.NORTH, false)) {
+            fixture.seed(2, 0);
+            var original = fixture.controller.saveWithFullMetadata();
+            var partial = original.copy(); partial.remove(ClassicCheckpointCodec.ROOT);
+            try {
+                fixture.controller.load(partial); fixture.manager.observe(fixture.controller); fixture.tick(5);
+                helper.assertTrue(fixture.controller.repairRequired() && fixture.controller.reason() == ClassicWait.REPAIR,
+                        "Partial controller root was not quarantined");
+                int accepted = fixture.power.getCapability(ForgeCapabilities.ENERGY)
+                        .map(storage -> storage.receiveEnergy(4_000, false)).orElse(0);
+                fixture.tick(20);
+                helper.assertTrue(accepted == 4_000 && fixture.power.energyStored() == 4_000
+                        && !fixture.inputHatch.getCapability(ForgeCapabilities.ITEM_HANDLER).isPresent(),
+                        "Quarantined plug accepted " + accepted + " FE and holds " + fixture.power.energyStored());
+            } finally {
+                fixture.controller.load(original); fixture.manager.observe(fixture.controller); fixture.manager.tick();
+            }
+        }
+        helper.succeed();
+    }
+
     /** Loads {@code partial}, proves it is quarantined verbatim without a save denial, then restores {@code original}. */
     private static void quarantine(GameTestHelper helper, ClassicLatheGameTests.Fixture fixture, CompoundTag original,
                                    CompoundTag partial, String present, String missing) {
