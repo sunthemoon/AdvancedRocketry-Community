@@ -219,6 +219,8 @@ final class PopulatedWorldDataPreservationTest {
             payload.putInt("schema_version", 1);
             payload.remove("format_epoch");
         });
+        // W44 section 2.2: a legacy journal root carries no Moon landing outbox.
+        payloads.get(ManagedSavedDataType.ROCKET_TRANSFERS).remove("classic_first_moon_landing");
         payloads.get(ManagedSavedDataType.STATIONS).remove("warp_energy");
         // ADR-065: a legacy root has no orbital clock and its records no orbital controls.
         payloads.get(ManagedSavedDataType.STATIONS).remove("orbital_clock");

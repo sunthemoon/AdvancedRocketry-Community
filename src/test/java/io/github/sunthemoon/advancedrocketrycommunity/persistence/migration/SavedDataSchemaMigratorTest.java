@@ -116,8 +116,14 @@ final class SavedDataSchemaMigratorTest {
                 CelestialSavedData.CURRENT_SCHEMA_VERSION);
         assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,
                 RocketTransactionSavedData.SCHEMA_VERSION);
-        assertEquals(SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION,
+        // W44 section 2.2: the transfer journal has its own root 3; each record keeps its schema 2.
+        assertEquals(3, RocketTransferSavedData.ROOT_SCHEMA_VERSION);
+        assertEquals(ManagedSavedDataType.ROCKET_TRANSFERS.currentSchemaVersion(),
                 RocketTransferSavedData.ROOT_SCHEMA_VERSION);
+        assertEquals(2, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits
+                .TRANSFER_JOURNAL_SCHEMA_VERSION);
+        assertEquals("v1.8.0-first-moon-landing", ManagedSavedDataType.ROCKET_TRANSFERS.formatEpoch());
+        assertEquals(SavedDataSchemaMigrator.FORMAT_EPOCH, ManagedSavedDataType.ROCKET_TRANSFERS.formatEpoch(2));
         // ADR-065 section 5.2.1: root 5 adds the orbital clock beside root 4's warp balances.
         assertEquals(5, StationLimits.REGISTRY_SCHEMA_VERSION);
         assertEquals(4, StationLimits.WARP_REGISTRY_SCHEMA_VERSION);

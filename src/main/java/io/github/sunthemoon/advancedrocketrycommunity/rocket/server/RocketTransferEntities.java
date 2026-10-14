@@ -249,7 +249,7 @@ final class RocketTransferEntities {
         return state.acceptsFuel();
     }
 
-    private static boolean isCommittedAuthority(RocketEntity rocket, RocketTransferRecord record) {
+    static boolean isCommittedAuthority(RocketEntity rocket, RocketTransferRecord record) {
         return record.phase() == RocketTransferPhase.COMMITTED
                 && record.destinationEntityId().filter(rocket.getUUID()::equals).isPresent()
                 && rocket.operational()

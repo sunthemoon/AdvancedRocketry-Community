@@ -72,6 +72,10 @@ public final class SavedDataSchemaMigrator {
             }
         }
 
+        if (type == ManagedSavedDataType.ROCKET_TRANSFERS) {
+            return migrateTransferJournal(type, source, schema);
+        }
+
         if (type == ManagedSavedDataType.SATELLITE_MISSIONS) {
             try {
                 SatelliteRegistryPayload.Upgrade upgrade = SatelliteRegistryPayload.upgradeWithSnapshot(source, schema);
@@ -95,6 +99,33 @@ public final class SavedDataSchemaMigrator {
         migrated.putString(EPOCH_KEY, FORMAT_EPOCH);
         migrated.putInt(MIGRATED_FROM_KEY, LEGACY_SCHEMA_VERSION);
         return new MigrationResult(MigrationStatus.MIGRATED, schema, migrated);
+    }
+
+    /**
+     * W44 section 2.2: journal roots 1 and 2 become root 3. Every record and unrelated field is preserved, the EMPTY
+     * Moon landing outbox is added (no old root carries a trustworthy landing marker), the root is stamped 3 with its
+     * epoch, and the result must decode under the existing checksum-first record rules before staging. Root 1 keeps
+     * {@code migrated_from_schema = 1} as before; COMMITTED schema-1 records still migrate at runtime.
+     */
+    private static MigrationResult migrateTransferJournal(ManagedSavedDataType type, CompoundTag source, int schema) {
+        try {
+            CompoundTag migrated = source.copy();
+            migrated.put(ManagedSavedDataType.FIRST_MOON_LANDING_KEY, io.github.sunthemoon.advancedrocketrycommunity
+                    .progression.classic.firstevent.FirstEventOutbox.empty().encode(io.github.sunthemoon
+                            .advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind.FIRST_MOON_LANDING));
+            stampCurrent(type, migrated);
+            if (schema == LEGACY_SCHEMA_VERSION) {
+                migrated.putInt(MIGRATED_FROM_KEY, LEGACY_SCHEMA_VERSION);
+            }
+            if (!io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
+                    .load(migrated).operational()) {
+                throw new IllegalArgumentException("Migrated transfer journal failed validation");
+            }
+            return new MigrationResult(MigrationStatus.MIGRATED, schema, migrated);
+        } catch (RuntimeException exception) {
+            throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                    type.dataName() + " has invalid legacy transfer journal data", exception);
+        }
     }
 
     public static void stampCurrent(ManagedSavedDataType type, CompoundTag target) {

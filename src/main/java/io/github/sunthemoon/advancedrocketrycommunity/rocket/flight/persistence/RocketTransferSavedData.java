@@ -2,9 +2,17 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
 
 import static io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferJournalCodec.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootPresence;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventCutSeams;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventSourceView;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
@@ -26,7 +34,10 @@ import net.minecraft.world.level.saveddata.SavedData;
 /** Overworld-owned, strict versioned Earth/Moon transfer journal. */
 public final class RocketTransferSavedData extends SavedData {
     public static final String DATA_NAME = "advancedrocketrycommunity_rocket_transfers";
-    public static final int ROOT_SCHEMA_VERSION = 2;
+    /** W44 section 2.2: root 3 carries the Moon landing outbox; each record keeps its own schema 2. */
+    public static final int ROOT_SCHEMA_VERSION = ManagedSavedDataType.FIRST_MOON_LANDING_JOURNAL_SCHEMA;
+    public static final String FIRST_MOON_LANDING = ManagedSavedDataType.FIRST_MOON_LANDING_KEY;
+    private static final ManagedSavedDataType TYPE = ManagedSavedDataType.ROCKET_TRANSFERS;
 
     private final Map<UUID, RocketTransferRecord> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
@@ -41,6 +52,14 @@ public final class RocketTransferSavedData extends SavedData {
     private RocketJournalWriter writer;
     private java.nio.file.Path writerFile;
     private boolean stopping;
+    /** W44 section 2.1: the monotonic RAM slot; authority is only the latest writer confirmation. */
+    private FirstEventOutbox firstMoonLanding = FirstEventOutbox.empty();
+    /** W44 section 3.6: how this root was first obtained; a detached root behaves as loaded. */
+    private ManagedRootPresence presence = ManagedRootPresence.LOADED;
+    /** Set on the writer thread when an entry appeared before the first write of a proven-absent root. */
+    private final java.util.concurrent.atomic.AtomicBoolean appeared = new java.util.concurrent.atomic.AtomicBoolean();
+    /** Set on the writer thread once the first write of a proven-absent root re-checked the target. */
+    private final java.util.concurrent.atomic.AtomicBoolean absenceChecked = new java.util.concurrent.atomic.AtomicBoolean();
     private static final class Effect {
         final UUID logical;
         final RocketTransferRecord expected;
@@ -67,12 +86,29 @@ public final class RocketTransferSavedData extends SavedData {
 
     public static RocketTransferSavedData get(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
-        RocketTransferSavedData data = server.overworld().getDataStorage().computeIfAbsent(
-                RocketTransferSavedData::load,
-                RocketTransferSavedData::new,
-                DATA_NAME
-        );
+        RocketTransferSavedData data = ManagedRootSupplier.obtain(server, TYPE, storageLoad(server),
+                RocketTransferSavedData::created);
         data.ownerServer = server;
+        return data;
+    }
+
+    /** The cached root, or null; reads through the same load function so the load-fault seam applies. */
+    public static RocketTransferSavedData existing(MinecraftServer server) {
+        return server.overworld() == null ? null : server.overworld().getDataStorage().get(storageLoad(server), DATA_NAME);
+    }
+
+    /** The load function given to vanilla's storage; the static {@link #load} stays the validator's decoder. */
+    private static java.util.function.Function<CompoundTag, RocketTransferSavedData> storageLoad(MinecraftServer server) {
+        return tag -> {
+            FirstEventCutSeams.beforeLoad(server, TYPE);
+            return load(tag);
+        };
+    }
+
+    /** The root-presence supplier's root: PROVEN_ABSENT or UNREADABLE (W44 section 3.6). */
+    static RocketTransferSavedData created(ManagedRootPresence presence) {
+        RocketTransferSavedData data = new RocketTransferSavedData();
+        data.presence = presence;
         return data;
     }
 
@@ -101,19 +137,82 @@ public final class RocketTransferSavedData extends SavedData {
                 RocketTransferRecord record = decodeRecord((CompoundTag) raw);
                 data.insertValidated(record);
             }
+            data.firstMoonLanding = FirstEventOutbox.decode(payload.get(FIRST_MOON_LANDING),
+                    FirstEventKind.FIRST_MOON_LANDING);
             if (migration.changed()) {
                 data.mutationSequence++;
                 data.setDirty();
             }
         } catch (RuntimeException exception) {
             data.entries.clear();
+            data.firstMoonLanding = FirstEventOutbox.empty();
             data.preservedBlockedData = preserved;
         }
         return data;
     }
 
+    /** Not blocked and not unreadable: an unreadable root is never written and holds every transfer (W44 3.6). */
     public boolean operational() {
-        return preservedBlockedData == null;
+        return preservedBlockedData == null && presence != ManagedRootPresence.UNREADABLE;
+    }
+
+    public ManagedRootPresence presence() {
+        return preservedBlockedData != null ? ManagedRootPresence.BLOCKED : presence;
+    }
+
+    /** The RAM slot; never proof. */
+    public FirstEventOutbox firstMoonLandingRam() {
+        return firstMoonLanding;
+    }
+
+    /**
+     * W44 section 2.4: the tagged durable view. Authority is the outbox read back from the latest exact writer
+     * confirmation; a missing acknowledgement is SOURCE_UNCONFIRMED, never EMPTY.
+     */
+    public FirstEventSourceView durableFirstMoonLanding() {
+        if (presence == ManagedRootPresence.UNREADABLE) {
+            return FirstEventSourceView.unavailable(FirstEventSourceView.Reason.ROOT_UNREADABLE);
+        }
+        if (preservedBlockedData != null) {
+            return FirstEventSourceView.unavailable(FirstEventSourceView.Reason.ROOT_BLOCKED);
+        }
+        return checkpoint.acknowledged().map(value -> FirstEventSourceView.known(value.firstMoonLanding()))
+                .orElseGet(FirstEventSourceView::unconfirmed);
+    }
+
+    /**
+     * W44 section 2.3, step 6: EMPTY to ELECTED in RAM only; the existing writer persists it and dependent effects wait
+     * for its exact confirmation. The slot never moves backwards, so a second election is refused.
+     */
+    public boolean electFirstMoonLanding(FirstEvent.MoonLanding event) {
+        Objects.requireNonNull(event, "event");
+        if (!operational() || stopping || !firstMoonLanding.isEmpty()) { return false; }
+        firstMoonLanding = FirstEventOutbox.elected(event);
+        mutationSequence++;
+        setDirty();
+        return true;
+    }
+
+    /** W44 section 3.3: ELECTED(E) to DELIVERED(E) in RAM, after the receipt is durable; idempotent for DELIVERED(E). */
+    public boolean deliverFirstMoonLanding(FirstEvent event) {
+        Objects.requireNonNull(event, "event");
+        if (!operational() || stopping || !event.equals(firstMoonLanding.event())) { return false; }
+        if (firstMoonLanding.state() == FirstEventOutbox.State.DELIVERED) { return true; }
+        firstMoonLanding = firstMoonLanding.delivered();
+        mutationSequence++;
+        setDirty();
+        return true;
+    }
+
+    /**
+     * W44 section 2.4: every valid or proven-absent load requests one baseline capture through the same writer at the
+     * first END tick, whatever the transfer count, and again after an unknown outcome. The first request is
+     * immediate; later attempts follow the existing 200-tick failure spacing. An unreadable or blocked root never
+     * requests one.
+     */
+    public void tickBaseline(MinecraftServer server) {
+        if (!operational() || stopping || checkpoint.acknowledged().isPresent()) { return; }
+        retryChecked(server);
     }
 
     public Optional<CompoundTag> preservedBlockedData() {
@@ -348,6 +447,7 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     private void publish(RocketJournalWriter.Completion completion) {
+        if (appeared.get() && presence == ManagedRootPresence.PROVEN_ABSENT) { becomeUnreadable(); }
         checkpoint.publish(completion); lastWriterNanos = completion.writerNanos();
         Effect effect = effects.get(completion.sequence());
         if (effect != null && completion.outcome() == RocketJournalCheckpoint.Outcome.COMMITTED) { effect.committed = true; }
@@ -358,6 +458,16 @@ public final class RocketTransferSavedData extends SavedData {
             com.mojang.logging.LogUtils.getLogger().error("ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked");
             saveFailureReported = true;
         } else if (!failedWrite) { saveFailureReported = false; }
+    }
+
+    /** Nothing was overwritten; the root holds every transfer until a plain restart re-reads the file. */
+    private void becomeUnreadable() {
+        presence = ManagedRootPresence.UNREADABLE;
+        entries.clear();
+        firstMoonLanding = FirstEventOutbox.empty();
+        discardEffects();
+        AdvancedRocketryCommunity.LOGGER.error("ARCE_MANAGED_ROOT_UNREADABLE type={} file={} stage=first_write",
+                DATA_NAME, writerFile);
     }
 
     public void stop() {
@@ -410,9 +520,28 @@ public final class RocketTransferSavedData extends SavedData {
         java.nio.file.Path normalized = file.toAbsolutePath().normalize();
         if (writer == null) { writerFile = normalized; writer = new RocketJournalWriter(normalized); }
         if (!writerFile.equals(normalized)) { throw new IllegalArgumentException("Journal writer cannot rebind its target"); }
-        return writer.request(capture(), policy);
+        return writer.request(capture(), presence == ManagedRootPresence.PROVEN_ABSENT ? firstWriteChecked(policy) : policy);
     }
-    RocketJournalWriter.Snapshot capture() { return new RocketJournalWriter.Snapshot(mutationSequence, entries()); }
+
+    /**
+     * W44 section 3.6: the first write of a proven-absent root re-checks the target on the writer thread just before
+     * the atomic move. An entry that appeared is never replaced; the owner switches the root to UNREADABLE.
+     */
+    private CheckedSavedDataPolicy firstWriteChecked(CheckedSavedDataPolicy policy) {
+        return policy.withCommitter((staged, target) -> {
+            if (!absenceChecked.get()) {
+                if (!ManagedRootSupplier.stillAbsent(target)) {
+                    appeared.set(true);
+                    throw new java.io.IOException("A transfer journal file appeared before this session's first write");
+                }
+                absenceChecked.set(true);
+            }
+            policy.committer().commit(staged, target);
+        });
+    }
+    RocketJournalWriter.Snapshot capture() {
+        return new RocketJournalWriter.Snapshot(mutationSequence, entries(), firstMoonLanding);
+    }
     long lastWriterNanos() { return lastWriterNanos; }
     void drainForTests() { if (writer != null) { writer.drain(this::publish); } }
     @Override
@@ -420,10 +549,14 @@ public final class RocketTransferSavedData extends SavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        return encode(entries(), target);
+        if (presence == ManagedRootPresence.UNREADABLE) {
+            throw new IllegalStateException("An unreadable transfer journal is never encoded");
+        }
+        return encode(entries(), firstMoonLanding, target);
     }
 
-    static CompoundTag encode(List<RocketTransferRecord> records, CompoundTag target) {
+    static CompoundTag encode(List<RocketTransferRecord> records, FirstEventOutbox firstMoonLanding,
+                              CompoundTag target) {
         SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.ROCKET_TRANSFERS, target);
         ListTag transfers = new ListTag();
         records.stream().sorted(Comparator.comparing(RocketTransferRecord::transferId)).forEach(record -> {
@@ -434,6 +567,7 @@ public final class RocketTransferSavedData extends SavedData {
             transfers.add(encoded);
         });
         target.put("transfers", transfers);
+        target.put(FIRST_MOON_LANDING, firstMoonLanding.encode(FirstEventKind.FIRST_MOON_LANDING));
         if (RocketNbtSize.uncompressedBytes(target) > RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES) {
             throw new IllegalStateException("Encoded transfer journal exceeds the fixed NBT limit");
         }

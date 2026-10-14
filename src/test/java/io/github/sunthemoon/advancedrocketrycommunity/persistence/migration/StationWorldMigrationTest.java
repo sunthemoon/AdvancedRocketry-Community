@@ -80,8 +80,10 @@ final class StationWorldMigrationTest {
                 boolean endgame = name.equals(ManagedSavedDataType.ENDGAME.fileName())
                         || name.equals(ManagedSavedDataType.RESOURCE_ESCROW.fileName())
                         || name.equals(ManagedSavedDataType.CLASSIC_PROGRESSION.fileName());
-                assertEquals(endgame ? 1 : satellites ? 4 : 2, row.get("sourceSchema").getAsInt());
-                assertEquals(name.equals(STATIONS.fileName()) ? 5 : satellites ? 4 : endgame ? 1 : 2,
+                // W44 section 2.2: the current journal is root 3.
+                boolean transfers = name.equals(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
+                assertEquals(endgame ? 1 : satellites ? 4 : transfers ? 3 : 2, row.get("sourceSchema").getAsInt());
+                assertEquals(name.equals(STATIONS.fileName()) ? 5 : satellites ? 4 : endgame ? 1 : transfers ? 3 : 2,
                         row.get("targetSchema").getAsInt());
             }
         }

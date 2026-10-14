@@ -28,10 +28,13 @@ final class RocketJournalCheckpoint {
                     record.hasUUID("destination_entity_id") ? record.getUUID("destination_entity_id") : null);
         }
     }
+    /** W44 section 2.4: {@code firstMoonLanding} is the full validated outbox read from the written payload. */
     record Acknowledgement(long sequence, String digest, Map<UUID, String> records, Set<UUID> logicalRockets,
-                           Map<UUID, RecordVersion> versions) {
+                           Map<UUID, RecordVersion> versions,
+                           io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox firstMoonLanding) {
         Acknowledgement {
             records = Map.copyOf(records); logicalRockets = Set.copyOf(logicalRockets); versions = Map.copyOf(versions);
+            java.util.Objects.requireNonNull(firstMoonLanding, "firstMoonLanding");
         }
     }
 
@@ -57,7 +60,10 @@ final class RocketJournalCheckpoint {
                         .collect(java.util.stream.Collectors.toSet()),
                 payload.getList("transfers", net.minecraft.nbt.Tag.TAG_COMPOUND).stream()
                         .map(raw -> (CompoundTag) raw).collect(java.util.stream.Collectors.toMap(
-                                raw -> raw.getUUID("logical_rocket_id"), RecordVersion::of)));
+                                raw -> raw.getUUID("logical_rocket_id"), RecordVersion::of)),
+                io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox.decode(
+                        payload.get(RocketTransferSavedData.FIRST_MOON_LANDING), io.github.sunthemoon
+                                .advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind.FIRST_MOON_LANDING));
         boolean[] attempted = {false};
         try {
             var checked = policy.withCommitter((staged, target) -> {

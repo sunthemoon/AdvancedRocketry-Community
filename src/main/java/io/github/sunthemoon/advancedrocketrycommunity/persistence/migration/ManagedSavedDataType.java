@@ -82,6 +82,10 @@ public enum ManagedSavedDataType {
     private static final String ORBITAL_CLOCK_KEY = "orbital_clock";
     private static final String SATELLITE_INSTANCES_KEY = "instances";
     private static final String SATELLITE_SAVE_EPOCH_KEY = "save_epoch";
+    /** W44 section 2.1: the Moon landing outbox of journal root 3. */
+    public static final String FIRST_MOON_LANDING_KEY = "classic_first_moon_landing";
+    /** W44 section 2.2: transfer journal root 3, independent of the per-record schema 2. */
+    public static final int FIRST_MOON_LANDING_JOURNAL_SCHEMA = 3;
 
     private final String introducedIn;
     private final String dataName;
@@ -118,6 +122,7 @@ public enum ManagedSavedDataType {
             case SATELLITE_MISSIONS -> SatelliteLimits.REGISTRY_SCHEMA_VERSION;
             case ENDGAME -> EndgameLimits.ROOT_SCHEMA_VERSION;
             case RESOURCE_ESCROW, CLASSIC_PROGRESSION -> 1;
+            case ROCKET_TRANSFERS -> FIRST_MOON_LANDING_JOURNAL_SCHEMA;
             default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
         };
     }
@@ -145,6 +150,9 @@ public enum ManagedSavedDataType {
             if (schema == SatelliteLimits.GROUND_REGISTRY_SCHEMA_VERSION) {
                 return "v1.8.0-ground-surveys";
             }
+        }
+        if (this == ROCKET_TRANSFERS && schema == FIRST_MOON_LANDING_JOURNAL_SCHEMA) {
+            return "v1.8.0-first-moon-landing";
         }
         if (this == ENDGAME) {
             return EndgameLimits.ROOT_FORMAT_EPOCH;
@@ -225,6 +233,18 @@ public enum ManagedSavedDataType {
                         MigrationDiagnosticId.INVALID_SCHEMA,
                         dataName + " schema " + schema + (clockRoot ? " is missing required " : " cannot carry ")
                                 + ORBITAL_CLOCK_KEY
+                );
+            }
+        }
+        if (this == ROCKET_TRANSFERS) {
+            // W44 section 2.2: root 3 requires the Moon landing outbox; older roots must not carry one.
+            boolean outboxRoot = schema >= FIRST_MOON_LANDING_JOURNAL_SCHEMA;
+            if (outboxRoot ? !payload.contains(FIRST_MOON_LANDING_KEY, Tag.TAG_COMPOUND)
+                    : payload.contains(FIRST_MOON_LANDING_KEY)) {
+                throw new SavedDataMigrationException(
+                        MigrationDiagnosticId.INVALID_SCHEMA,
+                        dataName + " schema " + schema + (outboxRoot ? " is missing required " : " cannot carry ")
+                                + FIRST_MOON_LANDING_KEY
                 );
             }
         }

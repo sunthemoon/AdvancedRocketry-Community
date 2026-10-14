@@ -4,7 +4,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import net.minecraft.server.MinecraftServer;
 
 /**
@@ -74,6 +76,19 @@ public final class FirstEventCutSeams {
         Optional<Cut> cut = configured();
         cut.ifPresent(ignored -> EscrowTestEndpoints.requireEnabled(server));
         return cut;
+    }
+
+    /** The fixed sorted participants of the synthetic M and WARP fixtures, and the later observer who is never one. */
+    public static final UUID P1 = UUID.fromString("00000000-0000-4000-8000-0000000000a1");
+    public static final UUID P2 = UUID.fromString("00000000-0000-4000-8000-0000000000a2");
+    public static final UUID OBSERVER = UUID.fromString("00000000-0000-4000-8000-0000000000f0");
+
+    /**
+     * Participant seam: the real capture in production; the fixed sorted [P1, P2] after the gate in a cut run, which
+     * has zero connected players (W44 section 6.1, rows M and WARP).
+     */
+    public static Optional<List<UUID>> participants(MinecraftServer server, FirstEventKind kind) {
+        return active(server).map(cut -> List.of(P1, P2));
     }
 
     /**
