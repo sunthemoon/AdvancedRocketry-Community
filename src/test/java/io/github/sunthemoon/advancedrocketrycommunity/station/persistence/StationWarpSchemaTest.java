@@ -37,16 +37,20 @@ final class StationWarpSchemaTest {
         var result = SavedDataSchemaMigrator.migrate(TYPE, source);
         CompoundTag expected = source.copy();
         expected.putInt("schema_version", 5);
-        expected.putString("format_epoch", "v1.8.0-station-orbital-controls");
+        expected.putString("format_epoch", "v1.8.0-station-first-warp");
         expected.put("warp_energy", new ListTag());
         expected.put("orbital_clock", clock(0L));
+        // W44 section 1.4: the EMPTY first-warp outbox joins the same one-time upgrade.
+        expected.put("classic_first_warp", io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox.empty()
+                .encode(io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind
+                        .FIRST_STATION_WARP));
         CompoundTag record = expected.getList("stations", Tag.TAG_COMPOUND).getCompound(0);
         record.putInt("schema_version", 3);
         record.put("orbital_controls", initialControls(90_000));
         assertEquals(SavedDataSchemaMigrator.MigrationStatus.MIGRATED, result.status());
         assertEquals(3, result.sourceSchema());
         assertEquals(expected, result.payload(),
-                "Only the versions, epoch, an empty list, the clock and the initial controls change");
+                "Only the versions, epoch, an empty list, the clock, the initial controls and the EMPTY outbox change");
         assertEquals(original, source);
         assertEquals(1, result.payload().getInt("migrated_from_schema"), "Existing lineage is retained");
         var again = SavedDataSchemaMigrator.migrate(TYPE, result.payload());

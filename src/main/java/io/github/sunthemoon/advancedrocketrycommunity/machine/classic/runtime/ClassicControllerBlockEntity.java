@@ -38,6 +38,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 /** Forge lifetime adapter. Immutable controller checkpoints own every Item/Fluid and active job. */
 public class ClassicControllerBlockEntity extends BlockEntity implements MenuProvider, ProcessingSoundSource {
@@ -51,6 +52,8 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     private boolean ineligibleCandidate;
     private boolean debitShortfall;
     private boolean processingActive;
+    /** Server: the formed flag last projected to clients. Client: the flag received. Never saved. */
+    private boolean modelFormed;
     private final Set<ChunkPos> unavailable = new HashSet<>();
     private ClassicWait reason = ClassicWait.UNFORMED;
     private PatternDiagnostic firstDiagnostic;
@@ -90,11 +93,31 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
             server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
-    @Override public CompoundTag getUpdateTag() {
-        return MachineSoundProfile.loop(definition.kind().getPath(), true) == null
-                ? new CompoundTag() : ProcessingFlagCodec.encode(processingActive);
+    /** ADR-066 section 7.1: a catalogued client model follows the formed flag, sent only when it changes. */
+    private void updateModelProjection() {
+        if (!ClassicModelProjection.projects(definition.kind()) || modelFormed == formed()) { return; }
+        modelFormed = formed();
+        if (level instanceof ServerLevel server && !isRemoved()) {
+            server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
     }
-    @Override public void handleUpdateTag(CompoundTag tag) { processingActive = ProcessingFlagCodec.decode(tag); }
+    public boolean modelFormed() { return modelFormed; }
+    @Override public CompoundTag getUpdateTag() {
+        CompoundTag tag = MachineSoundProfile.loop(definition.kind().getPath(), true) == null
+                ? new CompoundTag() : ProcessingFlagCodec.encode(processingActive);
+        if (ClassicModelProjection.projects(definition.kind())) { ClassicModelProjection.encode(tag, formed()); }
+        return tag;
+    }
+    @Override public void handleUpdateTag(CompoundTag tag) {
+        processingActive = ProcessingFlagCodec.decode(tag);
+        modelFormed = ClassicModelProjection.projects(definition.kind()) && ClassicModelProjection.decode(tag);
+    }
+    @Override public AABB getRenderBoundingBox() {
+        return ClassicModelProjection.footprint(definition.kind())
+                .filter(footprint -> getBlockState().hasProperty(ClassicControllerBlock.FACING))
+                .map(footprint -> ClassicModelProjection.bounds(footprint, transform(getBlockState()), worldPosition))
+                .orElseGet(super::getRenderBoundingBox);
+    }
     @Override public ClientboundBlockEntityDataPacket getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
     @Override public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
         handleUpdateTag(packet.getTag());
@@ -145,6 +168,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
         updateProcessingState(false);
         ready = false; lookupNeeded = true;
         checkpoint.claimedParts().forEach(position -> { var hatch = loadedHatch(position); if (hatch != null) { hatch.refreshFacades(); } });
+        updateModelProjection();
     }
     void chunkUnavailable(ChunkPos chunk) {
         unavailable.add(chunk); invalidate(); reason = ClassicWait.UNLOADED;
@@ -156,6 +180,9 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     void chunkAvailable(ChunkPos chunk) { unavailable.remove(chunk); }
 
     void revalidate(ServerLevel server, MultiblockPatternDefinition pattern) {
+        try { revalidatePattern(server, pattern); } finally { updateModelProjection(); }
+    }
+    private void revalidatePattern(ServerLevel server, MultiblockPatternDefinition pattern) {
         if (repair || transaction || !unavailable.isEmpty()) { return; }
         ready = false;
         var roles = new PatternRoleResolver() {
@@ -499,7 +526,7 @@ public class ClassicControllerBlockEntity extends BlockEntity implements MenuPro
     }
     @Override public Component getDisplayName() { return Component.translatable("block." + definition.kind().getNamespace() + "." + definition.kind().getPath()); }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new ClassicControllerMenu(id, this); }
-    private static PatternTransform transform(BlockState state) {
+    static PatternTransform transform(BlockState state) {
         Direction facing = state.getValue(ClassicControllerBlock.FACING);
         return new PatternTransform(switch (facing) {
             case NORTH -> PatternRotation.ZERO; case EAST -> PatternRotation.CLOCKWISE_90;

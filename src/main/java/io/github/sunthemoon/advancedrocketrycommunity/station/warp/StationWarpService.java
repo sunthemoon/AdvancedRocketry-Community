@@ -8,6 +8,12 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.persistence.Cele
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.CelestialCatalogManager;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.StarSystemKnowledge;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.ClassicAdvancementEvents;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.ClassicFirstEventDelivery;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventCutSeams;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventDisposition;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind;
+import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.FirstWarpRequest;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.elevator.ElevatorStationGuard;
@@ -140,6 +146,11 @@ public final class StationWarpService {
 
     public WarpSettings settings() {
         return settings.get();
+    }
+
+    /** The server-wide checked-write spacing; the first-warp acknowledgement is charged to it (W44 section 1.3). */
+    public StationWriteBudget writeBudget() {
+        return writeBudget;
     }
 
     /**
@@ -456,8 +467,13 @@ public final class StationWarpService {
             writeBudget.record(server.getTickCount());
         }
         if (code == StationManagementCode.WARP_COMMITTED) {
-            result.station().ifPresent(station -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic
-                    .ClassicAdvancementEvents.stationWarped(presentVisitors(server, station)));
+            result.station().ifPresent(station -> ClassicAdvancementEvents.stationWarped(presentVisitors(server, station)));
+            ClassicFirstEventDelivery.sourceChanged(server, FirstEventKind.FIRST_STATION_WARP);
+        } else if (code == StationManagementCode.OUTCOME_UNKNOWN || code == StationManagementCode.WARP_FIRST_EVENT_OVER_BUDGET) {
+            FirstEventCutSeams.boundary(server, code == StationManagementCode.OUTCOME_UNKNOWN
+                    ? FirstEventCutSeams.RELOCATION_UNKNOWN : FirstEventCutSeams.WARP_REFUSED,
+                    FirstEventKind.FIRST_STATION_WARP, StationRegistrySavedData.get(server).durableFirstWarp().knownEvent()
+                            .orElse(null));
         }
         // W22 review F7: the notices follow the checked write, so a failure in them is logged once and never escapes
         // the tick, skips the audit line below or changes the outcome.
@@ -503,9 +519,19 @@ public final class StationWarpService {
             return StationWarpResult.quoted(StationManagementCode.WARP_QUOTE_CHANGED, current.quote(),
                     current.balance());
         }
+        // W44 section 1.2: the participants are captured in this commit tick with the same bounded builder as the
+        // quote, and the checked call decides the election; the four-argument fixture overload never elects.
+        FirstEventDisposition first = firstWarpDisposition(server, data);
+        java.util.List<UUID> participants = first == FirstEventDisposition.ALLOW
+                ? eligibleVisitors(server, station) : java.util.List.of();
+        if (participants.size() > FirstEventKind.FIRST_STATION_WARP.maxParticipants()) {
+            return StationWarpResult.of(StationManagementCode.WARP_FIRST_EVENT_OVER_BUDGET, station);
+        }
+        FirstWarpRequest request = new FirstWarpRequest(confirmed.actorId(), participants, first,
+                () -> firstWarpDisposition(server, data));
         StationRegistrySavedData.CheckedUpdate written;
         try {
-            written = data.checkedRelocation(server, station, confirmed.target(), confirmed.cost());
+            written = data.checkedRelocation(server, station, confirmed.target(), confirmed.cost(), request);
         } catch (RuntimeException exception) {
             AdvancedRocketryCommunity.LOGGER.error(
                     "ARCE_STATION_WARP_WRITE_FAILED station={} stage=candidate", station.stationId(), exception);
@@ -519,6 +545,8 @@ public final class StationWarpService {
             case INSUFFICIENT_ENERGY -> StationManagementCode.WARP_INSUFFICIENT_ENERGY;
             case WRITE_FAILED -> StationManagementCode.WRITE_FAILED;
             case OUTCOME_UNKNOWN -> StationManagementCode.OUTCOME_UNKNOWN;
+            case FIRST_EVENT_OVER_BUDGET -> StationManagementCode.WARP_FIRST_EVENT_OVER_BUDGET;
+            case FIRST_EVENT_UNAVAILABLE -> StationManagementCode.WARP_FIRST_EVENT_UNAVAILABLE;
         };
         return new StationWarpResult(code, data.find(station.stationId()), Optional.of(confirmed),
                 data.warpEnergy(station.stationId()));
@@ -577,7 +605,75 @@ public final class StationWarpService {
         if (rocketAuthority.inMotion(server, station)) {
             return new Quoted(StationManagementCode.WARP_ROCKETS_IN_MOTION, quote, balance);
         }
+        // W44 section 5: a potentially first warp waits while the authority is unavailable, and is refused over
+        // budget after a saturating count of eligible visitors, before any list is retained or anything is debited.
+        FirstEventDisposition first = firstWarpDisposition(server, data);
+        if (first == FirstEventDisposition.DEFER) {
+            return new Quoted(StationManagementCode.WARP_FIRST_EVENT_UNAVAILABLE, quote, balance);
+        }
+        if (first == FirstEventDisposition.ALLOW) {
+            int visitors = FirstEventCutSeams.warpVisitorCount(server).orElseGet(() -> countEligibleVisitors(server,
+                    station, FirstEventKind.FIRST_STATION_WARP.maxParticipants() + 1));
+            if (visitors > FirstEventKind.FIRST_STATION_WARP.maxParticipants() || !data.admitsFirstWarp(visitors)) {
+                return new Quoted(StationManagementCode.WARP_FIRST_EVENT_OVER_BUDGET, quote, balance);
+            }
+        }
         return new Quoted(null, quote, balance);
+    }
+
+    /** Refreshed on the server thread before each potentially first step (W44 section 3.3, step 4). */
+    private static FirstEventDisposition firstWarpDisposition(MinecraftServer server, StationRegistrySavedData data) {
+        return ClassicFirstEventDelivery.disposition(server, FirstEventKind.FIRST_STATION_WARP, data.durableFirstWarp(),
+                data.firstWarpRam());
+    }
+
+    /** The eligible station visitors, counted with saturation at {@code limit}; no list is retained. */
+    private int countEligibleVisitors(MinecraftServer server, StationState station, int limit) {
+        int count = 0;
+        for (ServerPlayer player : visitorCandidates(server)) {
+            if (count >= limit) {
+                break;
+            }
+            if (eligibleVisitor(player, station)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * W44 section 5: the first-warp participants, sorted; the same predicate as {@code station_warp} plus the one
+     * shared eligibility predicate. The builder stops one past the bound, so an excess is refused, never truncated.
+     * Read-only; the A1 GameTests use it to prove the real capture.
+     */
+    public java.util.List<UUID> eligibleVisitors(MinecraftServer server, StationState station) {
+        java.util.Optional<java.util.List<UUID>> fixed = FirstEventCutSeams.participants(server,
+                FirstEventKind.FIRST_STATION_WARP);
+        if (fixed.isPresent()) {
+            return fixed.orElseThrow();
+        }
+        int limit = FirstEventKind.FIRST_STATION_WARP.maxParticipants() + 1;
+        java.util.List<UUID> result = new java.util.ArrayList<>();
+        for (ServerPlayer player : visitorCandidates(server)) {
+            if (result.size() >= limit) {
+                break;
+            }
+            if (eligibleVisitor(player, station)) {
+                result.add(player.getUUID());
+            }
+        }
+        return result.stream().sorted().toList();
+    }
+
+    private static java.util.List<ServerPlayer> visitorCandidates(MinecraftServer server) {
+        ServerLevel space = server.getLevel(CelestialIds.SPACE_LEVEL);
+        return space == null ? java.util.List.of() : java.util.List.copyOf(space.players());
+    }
+
+    private boolean eligibleVisitor(ServerPlayer player, StationState station) {
+        return station.region().contains(player.getBlockX(), player.getBlockZ())
+                && access.allowed(station, player.getUUID(), player.hasPermissions(2), StationAccessAction.VISIT)
+                && ClassicAdvancementEvents.eligible(player);
     }
 
     /**

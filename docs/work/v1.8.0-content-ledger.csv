@@ -5,11 +5,11 @@ advancement:crystalline,IMPLEMENTED,v1.8.0,advancement classic/crystallizer,ADR-
 advancement:dilithium,IMPLEMENTED,v1.8.0,advancement classic/dilithium,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:electrifying,IMPLEMENTED,v1.8.0,advancement classic/electrolysis,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:feeltheheat,IMPLEMENTED,v1.8.0,advancement classic/arc_furnace,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
-advancement:flightofpheonix,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers,
+advancement:flightofpheonix,REDESIGNED,v1.8.0,classic/first_station_warp advancement,ADR-062 ADR-066,"world-first station warp from a durable receipt (D3, R-037)",docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:givingitallshesgot,IMPLEMENTED,v1.8.0,advancement classic/station_warp,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:holographic,REDESIGNED,v1.8.0,advancement classic/formed_multiblock,ADR-062 ADR-066,new trigger: first formed classic multiblock,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:moonlanding,IMPLEMENTED,v1.8.0,advancement classic/moon_landing,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
-advancement:onesmallstep,PLANNED,C18c,advancement,ADR-062,rebuilt with modern triggers,
+advancement:onesmallstep,REDESIGNED,v1.8.0,classic/one_small_step advancement,ADR-062 ADR-066,"world-first Moon landing from a durable receipt (D3, R-037)",docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:rollin,IMPLEMENTED,v1.8.0,advancement classic/rolling,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:root,IMPLEMENTED,v1.8.0,advancement classic/root,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
 advancement:spindoctor,IMPLEMENTED,v1.8.0,advancement classic/lathe,ADR-062 ADR-066,rebuilt with modern triggers,docs/work/v1.8.0-c18c-research/VERIFICATION.md
@@ -390,7 +390,7 @@ config_file:PrecisionAssembler.xml,REDESIGNED,v1.2.0,data pack recipes,ADR-016,,
 config_file:PrecisionLaserEtcher.xml,REDESIGNED,v1.8.0,laser_etching recipe type (data pack recipes),ADR-062 ADR-064,,docs/work/v1.8.0-c16c-machines/VERIFICATION.md
 config_file:RollingMachine.xml,REDESIGNED,v1.2.0,data pack recipes,ADR-016,,
 config_file:SmallPlatePress.xml,REDESIGNED,v1.8.0,small_plate_press recipe type (data pack recipes),ADR-063,,docs/work/v1.8.0-c15a-materials/VERIFICATION.md
-enchantment:spacebreathing,PLANNED,C18b,space breathing enchantment,ADR-025 ADR-062,sealed armor through the suit provider API,
+enchantment:spacebreathing,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:space_breathing,ADR-025 ADR-062 ADR-064 ADR-066,level 1 only from the chemical reactor; seals correctly worn armor; only the chest holds finite oxygen,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 entity:ARAbductedItem,REDESIGNED,v1.7.0,client railgun effect,ADR-056,no entity,
 entity:ARHoverCraft,DEFERRED,post-2.0,-,ADR-062,with the hovercraft item,
 entity:ARPlanetUIButton,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity,
@@ -465,7 +465,7 @@ item:atmAnalyser,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:atmosphere_analyze
 item:basicLaserGun,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:basic_laser_gun,ADR-062 ADR-066,ranged mining through break events and protection,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 item:beaconFinder,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:beacon_finder,ADR-062 ADR-065,points to owned beacons; installs in the helmet,docs/work/v1.8.0-c17c-solar-beacon/VERIFICATION.md
 item:biomeChanger,DEFERRED,post-2.0,-,ADR-062,terraforming family,
-item:carbonScrubberCartridge,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:carbon_scrubber_cartridge,ADR-062 ADR-066,CO2 scrubber consumable; the lossless chemical refresh is still open,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
+item:carbonScrubberCartridge,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:carbon_scrubber_cartridge,ADR-062 ADR-066,CO2 scrubber consumable; the chemical reactor refreshes a fully spent cartridge (W32 merge 58ca2269),docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 item:dataUnit,MERGED,-,item_variant:dataUnit/0,ADR-062,,
 item:elevatorChip,REJECTED,-,-,ADR-059 ADR-062,endpoint records replace the unbounded chip,
 item:hoverCraft,DEFERRED,post-2.0,-,ADR-062,"vehicle entity, rendering and control packets",
@@ -540,7 +540,7 @@ libvulpes:java/blockAdvStructureBlock,IMPLEMENTED,v1.8.0,advancedrocketrycommuni
 libvulpes:java/blockCreativeInputPlug,REJECTED,-,-,ADR-062,creative-only infinite energy source,
 libvulpes:java/blockEliteMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier,
 libvulpes:java/blockEnhancedMotor,MERGED,-,libvulpes:java/blockMotor,ADR-062,motor tier,
-libvulpes:java/blockMotor,PLANNED,C16a,motor component tiers,ADR-064,four tiers and both tags and recipes verified; all-tier family formation remains open,
+libvulpes:java/blockMotor,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:motor advancedrocketrycommunity:advanced_motor advancedrocketrycommunity:enhanced_motor advancedrocketrycommunity:elite_motor,ADR-062 ADR-064,four tiers in the block and item motors tags; any tier forms every motor-cell machine,docs/work/v1.8.0-c16a-motors/VERIFICATION-ADDENDUM-W41.md
 libvulpes:java/blockStructureBlock,REDESIGNED,v0.1.0,advancedrocketrycommunity:machine_casing,V0.1.0 ADR-062,machine structure block,
 libvulpes:java/itemBattery,REDESIGNED,v1.6.0,advancedrocketrycommunity:satellite_battery advancedrocketrycommunity:large_satellite_battery,ADR-049,satellite power storage,
 libvulpes:java/itemHoloProjector,REDESIGNED,v1.2.0,multiblock pattern diagnostics,ADR-016,the validator reports each mismatched cell,

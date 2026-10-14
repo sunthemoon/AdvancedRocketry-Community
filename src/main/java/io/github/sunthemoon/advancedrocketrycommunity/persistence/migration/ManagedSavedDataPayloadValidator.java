@@ -23,6 +23,8 @@ final class ManagedSavedDataPayloadValidator {
                 case STATIONS -> StationRegistrySavedData.load(payload).operational();
                 case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload).operational();
                 case ENDGAME -> EndgameSavedData.load(payload).operational();
+                case CLASSIC_PROGRESSION -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
+                        .ClassicProgressionSavedData.load(payload).operational();
                 case RESOURCE_ESCROW -> {
                     io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowCodec.decode(payload);
                     yield true;

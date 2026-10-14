@@ -127,3 +127,24 @@ cannot obtain it (ADR-066 section 5.1; records/W03.md).
 
 No Gate is approved. This file supports the ledger delivery marks only. S1, S2, V1, V2 and the
 art and provenance reviews remain open, as listed above.
+
+## Addendum (Root, 2026-10-15): W32 delivers the space breathing enchantment
+
+W32 merged after W31 wrote this file. It adds the chemical reactor recipe that the last follow-up above names, so survival players can now obtain `enchantment:spacebreathing`. This addendum delivers the row and closes that follow-up.
+
+| Merge on `codex/v1.8.0-classic-content` | Slice | Tested HEAD | Hosted run | Review |
+|---|---|---|---|---|
+| `1e36af58` | W03 (ADR-066 section 5.1): registers the enchantment (`e0e378c1`, `736ae94c`). Correctly worn level-1 native armor seals, and only an enchanted chest holds oxygen (`e0e378c1`, with the fixes `e58e5cd8` and `0b2d1cfe`) | `6132f9ca` | 38155101250 (success) | W03-review, SHA-256 `4b74bf77…` (above), which covers the enchanted native armor rules |
+| `58ca2269` | W32 (ADR-064 section 9 item 2, ADR-066 sections 3.1 and 5.1): the chemical reactor's special recipes | `5f880382` | 38390433422 (success) | Root review |
+
+The records are `records/W03.md` and `records/W32.md`. Run 38603920684 (v1.8 development regression) passed at `cc36612c`, which contains both merges.
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `enchantment:spacebreathing` | IMPLEMENTED | `advancedrocketrycommunity:space_breathing`, level 1 only. Four chemical reactor recipes, one per armor slot, apply it to an eligible native armor piece with the legacy inputs (one pipe seal and four titanium aluminide sheets; the chest also takes an empty super high pressure tank), 100 ticks at 10 FE/t. Enchanting tables, books, trades and loot refuse it. Correctly worn enchanted armor seals, and only the chest holds oxygen, at most 2,000 units |
+
+Tests: the unit classes `SpaceBreathingApplicationTest`, `ClassicSpecialRecipeTest` and `ChemicalSpecialDataTest`, and `RegisteredItemReachabilityTest.everyRegisteredEnchantmentHasASurvivalRoute`; the GameTests `ChemicalSpecialGameTests` and `SuitWorkstationGameTests.enchantedNativeArmorSealsOnlyWhenWornAndHasFiniteOxygen`.
+
+ADR-066 section 5.1 asks for the native armor eligibility rule to be reviewed as an additive revision of ADR-025. The W03 review covered the rule, and Root recorded it in ADR-025 as the implementation note "Additive revision note: enchanted native armor (v1.8.0)". S1, V1 and V2 stay open as listed above.
+
+This addendum is development evidence only. It approves no Required Gate, candidate, version or release.

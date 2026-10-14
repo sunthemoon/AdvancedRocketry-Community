@@ -29,6 +29,38 @@ public final class RocketJournalGameTestSupport {
         }
         return report;
     }
+    /**
+     * W44 A1: one synchronous writer generation of a detached journal bound to its own fixture file, then its
+     * continuations; never the world's journal.
+     */
+    public static void confirmDetached(GameTestHelper helper, RocketTransferSavedData journal, java.nio.file.Path file) {
+        helper.assertTrue(helper.getLevel().getServer() instanceof GameTestServer, "Not a GameTest fixture");
+        journal.saveChecked(file, io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy
+                .atomic(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.ROCKET_TRANSFERS));
+        journal.pollWriter(helper.getLevel().getServer().getTickCount());
+        helper.assertTrue(journal.acknowledgedCurrent(), "Detached fixture generation was not acknowledged");
+    }
+
+    /**
+     * W44 (design section 10): an explicit non-electing state for a shared-world landing test. When the world's Moon
+     * slot is still EMPTY, a fixture event with no participants takes it, so the landing under test is not the first.
+     */
+    public static void occupyFirstMoonLanding(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        if (!(server instanceof GameTestServer) || !server.isSameThread()) {
+            throw new IllegalStateException("The shared Moon slot fixture requires a GameTestServer");
+        }
+        var journal = RocketTransferSavedData.get(server);
+        if (journal.firstMoonLandingRam().isEmpty()) {
+            helper.assertTrue(journal.electFirstMoonLanding(io.github.sunthemoon.advancedrocketrycommunity.progression
+                    .classic.firstevent.FirstEvent.MoonLanding.create(java.util.UUID.randomUUID(),
+                            java.util.UUID.randomUUID(), java.util.UUID.randomUUID(), java.util.UUID.randomUUID(),
+                            java.util.UUID.randomUUID(), "0".repeat(64), 0, 0, 0, 0L, java.util.List.of())),
+                    "The shared Moon slot fixture was refused");
+        }
+        acknowledgeFixture(helper);
+    }
+
     public static void acknowledgeFixture(GameTestHelper helper) {
         var server = helper.getLevel().getServer();
         if (!(server instanceof GameTestServer) || !server.isSameThread()) {

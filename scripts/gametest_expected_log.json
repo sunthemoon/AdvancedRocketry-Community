@@ -1003,6 +1003,26 @@
       "max": 4,
       "test": "environment: vanilla generation of a newly loaded chunk",
       "reason": "The second line of the same vanilla pair; see vanilla-worldgen-dummy-block-entity."
+    },
+    {
+      "id": "w44-first-moon-landing-startup-baseline",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED",
+      "max": 1,
+      "test": "environment: the world-first delivery service's first END tick",
+      "reason": "W44 section 3.3: the journal's startup baseline is not confirmed at the delivery service's first END tick, so the Moon kind logs its one temporary-hold WARN for this start; the baseline then confirms and the hold clears with an INFO. Timing decides whether it lands in the startup or the first batch, so the bound is at most one."
+    },
+    {
+      "id": "w44-a1-refused-first-warp-replacement",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_STATION_UPDATE_WRITE_FAILED station=[0-9a-f-]{36} stage=replace file_present=true",
+      "counts": {
+        "classic_first_event": 1
+      },
+      "test": "ClassicFirstEventGameTests.theFirstWarpAwardsOnlyPresentAuthorizedParticipantsAfterTheDurableReceipt",
+      "reason": "W44 A1: the fixture refuses the detached registry's replacement after the staged candidate, so the named station operation logs its existing ERROR once, nothing is debited and no event is elected."
     }
   ]
 }

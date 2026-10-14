@@ -116,10 +116,11 @@ class ClassicAdvancementTreeTest {
             assertEquals("[[\"" + milestone.criterion() + "\"]]", json.getAsJsonArray("requirements").toString());
             assertEquals(0, json.getAsJsonObject("rewards").size(), "Advancements grant no rewards or recipes");
         }
+        // W44 (design section 10): the two world-first milestones change from PENDING to EVENT; no PENDING remains.
         assertEquals(Map.of(Kind.INVENTORY, Set.of("arc_furnace", "lathe", "crystallizer", "dilithium"),
-                Kind.EVENT, Set.of("formed_multiblock", "seat_on_tnt", "moon_landing", "station_warp"),
-                Kind.ARRIVAL, Set.of("moon_surface_visit"),
-                Kind.PENDING, Set.of("one_small_step", "first_station_warp")), byKind);
+                Kind.EVENT, Set.of("formed_multiblock", "seat_on_tnt", "moon_landing", "station_warp",
+                        "one_small_step", "first_station_warp"),
+                Kind.ARRIVAL, Set.of("moon_surface_visit")), byKind);
         // Each custom event backs exactly one advancement.
         assertEquals(EnumSet.allOf(ClassicEvent.class), Arrays.stream(Milestone.values())
                 .filter(milestone -> milestone.kind() == Kind.EVENT)

@@ -29,7 +29,9 @@ class ClassicEventTriggerTest {
     @Test
     void stableIdAndEveryEventDecodes() {
         assertEquals("advancedrocketrycommunity:classic_event", TRIGGER.getId().toString());
-        assertEquals(List.of("formed_multiblock", "seat_on_tnt", "moon_landing", "station_warp"),
+        // W44 (design section 10): the two world-first events follow the four existing ones.
+        assertEquals(List.of("formed_multiblock", "seat_on_tnt", "moon_landing", "station_warp", "first_moon_landing",
+                        "first_station_warp"),
                 java.util.Arrays.stream(ClassicEvent.values()).map(ClassicEvent::serializedName).toList());
         for (ClassicEvent event : ClassicEvent.values()) {
             ClassicEventTrigger.Instance instance = decode("{\"event\":\"" + event.serializedName() + "\"}");

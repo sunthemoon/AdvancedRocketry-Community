@@ -182,8 +182,15 @@ final class StationWarpRelocationTest {
         assertThrows(RuntimeException.class, () -> CheckedSavedDataFile.readPayload(file, TYPE));
     }
 
+    /**
+     * W44 N5, the design's planned change (W44 design section 10; ADR-066 implementation note "W44: world-first
+     * sources", design section 9 item 3). The old expectation encoded ADR-041's reassertion for a write whose outcome
+     * was unknown. Here the replacement returned normally, so the candidate is a known commit, and reasserting old
+     * RAM would overwrite it with stale memory, which ADR-066 forbids. The consistent pair is still checked on both
+     * sides, for the committed pair, and each reversed expectation is replaced by a stronger one.
+     */
     @Test
-    void publishFailureAfterReplacementQuarantinesWithAConsistentPairOnBothSides() {
+    void publishFailureAfterReplacementKeepsTheCommittedCandidateUntilRestart() {
         UUID lateMember = UUID.randomUUID();
         assertEquals(CheckedUpdate.OUTCOME_UNKNOWN, data.checkedRelocation(file, station, MOON, COST, (from, to) -> {
             CheckedSavedDataFile.atomicMove(from, to);
@@ -192,12 +199,32 @@ final class StationWarpRelocationTest {
         }));
         assertTrue(data.updatesQuarantined());
         // On disk: the warped and debited candidate (the state a crash before the next save would keep).
-        assertConsistentPair(CheckedSavedDataFile.readPayload(file, TYPE).orElseThrow(), true);
-        // In memory: old orbit and old balance; the next ordinary save re-establishes that pair.
-        assertEquals(EARTH, data.find(station.stationId()).orElseThrow().orbitBody());
-        assertEquals(BALANCE, data.warpEnergy(station.stationId()));
+        CompoundTag onDisk = CheckedSavedDataFile.readPayload(file, TYPE).orElseThrow();
+        assertConsistentPair(onDisk, true);
+        // The next ordinary save writes exactly that committed candidate, never the stale unwarped pair.
         assertTrue(data.isDirty());
-        assertConsistentPair(data.save(new CompoundTag()), false);
+        CompoundTag saved = data.save(new CompoundTag());
+        assertConsistentPair(saved, true);
+        assertEquals(onDisk, saved);
+        // Reads that could authorize a mutation report unavailable, not the stale EARTH orbit and old balance.
+        assertTrue(data.find(station.stationId()).isEmpty());
+        assertEquals(0, data.warpEnergy(station.stationId()));
+        // Every mutation refuses until restart, as for a registry that is not operational.
+        assertEquals(CheckedUpdate.UNAVAILABLE, data.checkedRelocation(file, neighbor, MOON, 1,
+                CheckedSavedDataFile::atomicMove));
+        assertEquals(CheckedUpdate.UNAVAILABLE, data.checkedExpand(file, station, CheckedSavedDataFile::atomicMove));
+        assertThrows(IllegalStateException.class, () -> data.addMember(neighbor.stationId(), UUID.randomUUID()));
+        assertEquals(new StationRegistrySavedData.WarpCreditFold(0L, 5L),
+                data.foldWarpCredits(Map.of(neighbor.stationId(), 5)), "a fold credits nothing");
+        long tick = data.orbitalTick();
+        data.advanceOrbitalClock();
+        assertEquals(tick, data.orbitalTick(), "the clock does not advance");
+        assertEquals(onDisk, data.save(new CompoundTag()));
+        // A restart reads the warped station, the debited balance and the candidate's outbox.
+        StationRegistrySavedData restarted = StationRegistrySavedData.load(data.save(new CompoundTag()));
+        assertEquals(MOON, restarted.find(station.stationId()).orElseThrow().orbitBody());
+        assertEquals(BALANCE - COST, restarted.warpEnergy(station.stationId()));
+        assertEquals(data.durableFirstWarp().outbox(), restarted.firstWarpRam());
     }
 
     @Test

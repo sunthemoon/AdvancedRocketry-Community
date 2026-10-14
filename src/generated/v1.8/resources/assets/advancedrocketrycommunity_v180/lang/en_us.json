@@ -560,6 +560,8 @@
   "station.advancedrocketrycommunity.code.warp_cooldown": "The station changed moments ago; wait 5 seconds.",
   "station.advancedrocketrycommunity.code.warp_countdown_active": "A warp countdown is already running for this station.",
   "station.advancedrocketrycommunity.code.warp_disabled": "Station warp is disabled on this server.",
+  "station.advancedrocketrycommunity.code.warp_first_event_over_budget": "Too many players or too little station storage to record the first warp.",
+  "station.advancedrocketrycommunity.code.warp_first_event_unavailable": "The world-first record is temporarily unavailable; try the warp again shortly.",
   "station.advancedrocketrycommunity.code.warp_insufficient_energy": "The station's warp energy does not cover the cost.",
   "station.advancedrocketrycommunity.code.warp_issued": "Warp confirmation issued.",
   "station.advancedrocketrycommunity.code.warp_no_confirmation": "No warp confirmation is pending; run /arce station warp <body> first.",

@@ -137,7 +137,7 @@ public final class StationOrbitalControlService {
             case COMMITTED -> kind.set;
             case UNCHANGED -> kind.unchanged;
             case STALE -> StationManagementCode.STATION_CHANGED;
-            case UNAVAILABLE, INSUFFICIENT_ENERGY -> StationManagementCode.AUTHORITY_UNAVAILABLE;
+            case UNAVAILABLE, INSUFFICIENT_ENERGY, FIRST_EVENT_OVER_BUDGET, FIRST_EVENT_UNAVAILABLE -> StationManagementCode.AUTHORITY_UNAVAILABLE;
             case WRITE_FAILED -> StationManagementCode.WRITE_FAILED;
             case OUTCOME_UNKNOWN -> StationManagementCode.OUTCOME_UNKNOWN;
         };

@@ -1,8 +1,11 @@
 {
   "parent": "advancedrocketrycommunity:classic/moon_landing",
   "criteria": {
-    "pending": {
-      "trigger": "minecraft:impossible"
+    "event": {
+      "conditions": {
+        "event": "first_moon_landing"
+      },
+      "trigger": "advancedrocketrycommunity:classic_event"
     }
   },
   "display": {
@@ -22,7 +25,7 @@
   },
   "requirements": [
     [
-      "pending"
+      "event"
     ]
   ],
   "rewards": {}

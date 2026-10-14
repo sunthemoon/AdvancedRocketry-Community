@@ -58,7 +58,11 @@ public enum StationManagementCode {
     ORIENTATION_ROTATING(false, "stop the rotation before choosing a fixed orientation"),
     CONTROLLER_OUT_OF_REACH(false, "stand within 8 blocks of the loaded controller, inside its station"),
     NO_WARP_CORE_NEAR_CONTROLLER(false, "place a loaded warp core of this station within 5 blocks of the controller"),
-    CONTROL_RATE_LIMITED(false, "one control change every half second; try again");
+    CONTROL_RATE_LIMITED(false, "one control change every half second; try again"),
+    /** W44 section 1.2: a potentially first warp while the world-first authority is temporarily unavailable. */
+    WARP_FIRST_EVENT_UNAVAILABLE(false, "the world-first record is temporarily unavailable; try the warp again shortly"),
+    /** W44 section 5: a potentially first warp whose record would exceed its participant or storage bound. */
+    WARP_FIRST_EVENT_OVER_BUDGET(false, "too many players or too little station storage to record the first warp");
 
     private final boolean success;
     private final String description;

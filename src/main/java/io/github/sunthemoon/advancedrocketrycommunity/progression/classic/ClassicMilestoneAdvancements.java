@@ -54,16 +54,16 @@ public final class ClassicMilestoneAdvancements {
                 "advancedrocketrycommunity:rocket_seat", Kind.EVENT, "seat_on_tnt"),
         MOON_LANDING("moonlanding", "moon_landing", "moon_surface_visit", Frame.GOAL,
                 "advancedrocketrycommunity:rocket_motor", Kind.EVENT, "moon_landing"),
-        /** TODO(D3 source outbox): the world-first Moon landing receipt; blocked, see the W12 record. */
+        /** W44: a participant of the world-first Moon landing, awarded from the durable receipt. */
         ONE_SMALL_STEP("onesmallstep", "one_small_step", "moon_landing", Frame.CHALLENGE,
-                "advancedrocketrycommunity:space_suit_boots", Kind.PENDING, null),
+                "advancedrocketrycommunity:space_suit_boots", Kind.EVENT, "first_moon_landing"),
         MOON_SURFACE_VISIT("wenttothemoon", "moon_surface_visit", "suited_up", Frame.TASK,
                 "advancedrocketrycommunity:moon_turf", Kind.ARRIVAL, "advancedrocketrycommunity:moon"),
         STATION_WARP("givingitallshesgot", "station_warp", "warp_core", Frame.GOAL,
                 "advancedrocketrycommunity:station_deployment_kit", Kind.EVENT, "station_warp"),
-        /** TODO(D3 source outbox): the world-first station warp receipt; blocked, see the W12 record. */
+        /** W44: a participant of the world-first station warp, awarded from the durable receipt. */
         FIRST_STATION_WARP("flightofpheonix", "first_station_warp", "station_warp", Frame.CHALLENGE,
-                "minecraft:fire_charge", Kind.PENDING, null);
+                "minecraft:fire_charge", Kind.EVENT, "first_station_warp");
 
         private final String legacyName;
         private final String suffix;

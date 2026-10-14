@@ -113,8 +113,8 @@ public final class StationExpansionService {
             case COMMITTED -> StationManagementCode.EXPANDED;
             case UNCHANGED -> StationManagementCode.ALREADY_EXPANDED;
             case STALE -> StationManagementCode.STATION_CHANGED;
-            // INSUFFICIENT_ENERGY belongs to relocation only and cannot be returned here.
-            case UNAVAILABLE, INSUFFICIENT_ENERGY -> StationManagementCode.AUTHORITY_UNAVAILABLE;
+            // INSUFFICIENT_ENERGY and the two FIRST_EVENT codes belong to relocation only and cannot be returned here.
+            case UNAVAILABLE, INSUFFICIENT_ENERGY, FIRST_EVENT_OVER_BUDGET, FIRST_EVENT_UNAVAILABLE -> StationManagementCode.AUTHORITY_UNAVAILABLE;
             case WRITE_FAILED -> StationManagementCode.WRITE_FAILED;
             case OUTCOME_UNKNOWN -> StationManagementCode.OUTCOME_UNKNOWN;
         };

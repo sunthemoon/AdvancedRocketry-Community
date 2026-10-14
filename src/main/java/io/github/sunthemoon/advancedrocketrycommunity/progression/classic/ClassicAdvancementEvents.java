@@ -86,8 +86,11 @@ public final class ClassicAdvancementEvents {
         TRIGGER.trigger(player, ClassicEvent.SEAT_ON_TNT);
     }
 
-    /** A real, connected, living, non-spectator player that the server's player list currently owns. */
-    static boolean eligible(ServerPlayer player) {
+    /**
+     * A real, connected, living, non-spectator player that the server's player list currently owns. W44 section 5:
+     * the one shared predicate for world-first capture and deferred grants, so it is deliberately public.
+     */
+    public static boolean eligible(ServerPlayer player) {
         MinecraftServer server = player.getServer();
         return !(player instanceof FakePlayer) && server != null && !player.hasDisconnected()
                 && player.isAlive() && !player.isSpectator()

@@ -56,3 +56,22 @@ CLEAR.
 
 - The OBJ batches (K1 to K5), NEW art, exclusions and ADR-062 revisions.
 - The ledger and status files (Root). Root marks the rows terminal after review.
+
+## Amendment (Root, 2026-10-14, after the model-publication blocker in `records/W52.md`)
+
+Root committed `843f92c8`. It excludes the six historical item models from `processResources` and
+`sourcesJar`:
+- `data_satellite_package` and `satellite_control_chip` (v0.8);
+- `satellite_package`, `solar_transmitter_module` and `survey_scanner_module` (v1.6);
+- `laser_lens` (v1.7).
+
+Now:
+1. **Revert your edits to the historical providers.** `SatelliteItemModelProvider`,
+   `V160SatelliteProviders` and `V170EndgameProviders` are historical inputs.
+2. **Write the six models from a v1.8 provider** registered in `BootstrapDataGenerators`, so
+   `runData` writes them under `src/generated/v1.8/resources`, each bound to its imported icon.
+3. **Check the jar.** Run `build` under the lock and check that the packaged jar holds exactly one
+   copy of each model, the v1.8 one. Your six model-binding tests must then pass unchanged.
+4. **The ledger validator** still reports the six sources as not handled as IMPORTED. Root updates
+   the asset plan at merge. Leave it and state it in the record.
+5. Finish the commands and the record.
