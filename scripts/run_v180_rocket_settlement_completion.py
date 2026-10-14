@@ -24,6 +24,15 @@ CASES = tuple("SR_" + choice + "__" + boundary for choice in CHOICES for boundar
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 
 
+def require_lock(owner: str | None) -> str | None:
+    if owner is None:
+        return None
+    current = Path("D:/GitHub/ARCE-Task-Evidence/locks/heavy-jvm/owner.txt").read_text(encoding="utf-8-sig").strip()
+    if current != owner:
+        raise smoke.SmokeError("Heavy-JVM lock ownership changed; refusing continuation")
+    return current
+
+
 def slot_present(path: Path, slot: int) -> bool:
     if not path.is_file():
         return False
@@ -103,7 +112,8 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
     expected_sources = 0 if floor else count - int(choice.endswith("ABANDON") and not veto)
     amount = 5000 if veto else 4000
     if len(sources) != expected_sources or any(entry["ForgeData"]["arce_escrow_fixture"]["amount"] != amount for entry in sources):
-        raise smoke.SmokeError("Source checkpoint mutated quantities or lost an unproved returning source")
+        observed = [(entry.get("x"), entry.get("y"), entry.get("z"), entry["ForgeData"]["arce_escrow_fixture"]["amount"]) for entry in sources]
+        raise smoke.SmokeError(f"Source checkpoint mutated quantities or lost an unproved returning source: expected {expected_sources} x {amount}, observed {observed}")
     return dict(ledger=root, journal=transfers, wrapper=wrapper, source_count=len(sources),
                 raw_total=sum(entry["ForgeData"]["arce_escrow_fixture"]["amount"] for entry in sources) + (0 if floor else count * 1000),
                 entity_slot_present=bool(entity_slot_present),
@@ -133,6 +143,7 @@ def run(args) -> dict:
             (session / "server.properties").write_text("".join(f"{key}={value}\n" for key, value in sorted(properties.items())), encoding="ascii")
             row = dict(cut=cut, restarts=[]); report["in_progress"] = row
             for restart in range(3):
+                lock_owner = require_lock(args.lock_owner)
                 free = {str(drive): shutil.disk_usage(drive).free for drive in (Path("C:/"), Path("D:/"))}
                 if min(free.values()) < 10 * 1024**3:
                     raise smoke.SmokeError("Native start refused below 10 GiB free")
@@ -140,10 +151,11 @@ def run(args) -> dict:
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"))
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowCase=" + cut)
                 process = smoke.CapturedProcess(command, session, evidence / f"{cut}-restart-{restart}.log")
-                row.setdefault("starts", []).append(dict(command=command, free_bytes=free, restart=restart))
+                row.setdefault("starts", []).append(dict(command=command, free_bytes=free, restart=restart, lock_owner=lock_owner))
                 if restart == 0:
                     process.wait_for(re.compile(r"ARCE_RELEASE_SETTLEMENT_COMPLETION_PAUSED cut=" + cut), args.startup_timeout)
                     process.process.kill(); process.abort(); process = None
+                    require_lock(args.lock_owner)
                     row["cut_disk"] = inspect(session / ("world-" + cut), cut)
                 else:
                     state = "HELD" if cut.endswith("__VETO") else "RELEASED"
@@ -154,7 +166,7 @@ def run(args) -> dict:
                         process.command("stop"); code = process.finish()
                         if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                             raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")
-                    process = None; disk = inspect(session / ("world-" + cut), cut, restarted=True)
+                    process = None; require_lock(args.lock_owner); disk = inspect(session / ("world-" + cut), cut, restarted=True)
                     row["restarts"].append(dict(restart=restart, exit_code=code, disk=disk))
             row["status"] = "PASS"; report["cases"].append(row); report.pop("in_progress", None)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -174,6 +186,7 @@ def main() -> int:
     for key in ("jar", "session-dir", "evidence-dir"):
         parser.add_argument("--" + key, type=Path, required=True)
     parser.add_argument("--source-commit", required=True); parser.add_argument("--java", required=True)
+    parser.add_argument("--lock-owner", help="Require this machine-wide lock owner before each JVM start")
     parser.add_argument("--case", action="append", choices=CASES); parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
     try: run(args); return 0

@@ -110,6 +110,8 @@ final class EscrowSettlementCompletionProbe {
             case 1 -> { if (coordinator.commitPreparations()) { step = 2; } }
             case 2 -> {
                 if (!coordinator.writerIdle() || data.ledger().records().size() != (chain ? 2 : 1)) { return; }
+                // Refuse vanilla's intervening saves as well as the later O2 own-store attempt.
+                if (veto && !vetoInstalled) { installVeto(); }
                 for (int i = 0; i < sources.size(); i++) { sources.get(i).applySource(data.ledger().records().get(i)); }
                 coordinator.transition(selected, EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
             }

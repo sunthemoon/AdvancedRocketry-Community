@@ -9,6 +9,16 @@ import run_v180_rocket_settlement_completion as native
 
 
 class SettlementCompletionOracleTest(unittest.TestCase):
+    def test_native_start_and_acceptance_require_the_same_machine_lock_owner(self):
+        self.assertIsNone(native.require_lock(None))
+        with patch.object(Path, "read_text", return_value="owner\n"):
+            self.assertEqual("owner", native.require_lock("owner"))
+            with self.assertRaises(native.smoke.SmokeError):
+                native.require_lock("different owner")
+        with patch.object(Path, "read_text", side_effect=FileNotFoundError):
+            with self.assertRaises(FileNotFoundError):
+                native.require_lock("owner")
+
     def setUp(self):
         endpoint = dict(kind="ENTITY", identity=[1, 2, 3, 4])
         self.root = dict(ledger_id=[10, 11, 12, 13], records=[], floors=[], tombstones=[
