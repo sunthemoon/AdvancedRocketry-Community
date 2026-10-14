@@ -36,6 +36,10 @@ final class ResearchFixture implements AutoCloseable {
     final MultiblockPatternDefinition pattern;
     int injected;
     ResearchFixture(ServerLevel level, BlockPos origin, boolean processor, Direction facing, UUID owner) {
+        this(level, origin, processor, facing, owner, MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState());
+    }
+    /** Places {@code motor} in every motor cell. */
+    ResearchFixture(ServerLevel level, BlockPos origin, boolean processor, Direction facing, UUID owner, BlockState motor) {
         this.level = level; this.origin = origin; pattern = ResearchPatterns.definition(processor);
         transform = new PatternTransform(switch (facing) {
             case NORTH -> PatternRotation.ZERO; case EAST -> PatternRotation.CLOCKWISE_90;
@@ -53,7 +57,7 @@ final class ResearchFixture implements AutoCloseable {
             else if (matcher instanceof PatternMatcher.ExactBlock block) { state = BuiltInRegistries.BLOCK.get(ResourceLocation.tryParse(block.blockId())).defaultBlockState(); }
             else if (matcher instanceof PatternMatcher.Port) { state = ModBlocks.POWER_INPUT_PLUG.get().defaultBlockState(); }
             else if (matcher instanceof PatternMatcher.BlockTag tag) {
-                state = tag.tagId().endsWith("motors") ? MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState()
+                state = tag.tagId().endsWith("motors") ? motor
                         : tag.tagId().equals("minecraft:slabs") ? Blocks.STONE_SLAB.defaultBlockState()
                         : tag.tagId().endsWith("observatory_shell_parts") ? ModBlocks.MACHINE_CASING.get().defaultBlockState()
                         : Blocks.AIR.defaultBlockState();

@@ -19,6 +19,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -224,11 +225,17 @@ public final class ResearchGameTests {
         helper.succeed();
     }
     static ResearchFixture fixture(GameTestHelper helper, boolean processor, Direction facing, UUID owner, int x) {
+        return new ResearchFixture(helper.getLevel(), origin(helper, x), processor, facing, owner);
+    }
+    /** As above, with {@code motor} in every motor cell. */
+    static ResearchFixture fixture(GameTestHelper helper, boolean processor, Direction facing, UUID owner, int x, BlockState motor) {
+        return new ResearchFixture(helper.getLevel(), origin(helper, x), processor, facing, owner, motor);
+    }
+    private static BlockPos origin(GameTestHelper helper, int x) {
         var anchor = helper.absolutePos(new BlockPos(5 + x, 6, 5));
         // GameTest runs in a normal generated world. Keep observation fixtures above its terrain;
         // an unintended hillside/earlier structure is not the deliberately tested sky obstruction.
-        var origin = new BlockPos(anchor.getX(), helper.getLevel().getMaxBuildHeight() - 12, anchor.getZ());
-        return new ResearchFixture(helper.getLevel(), origin, processor, facing, owner);
+        return new BlockPos(anchor.getX(), helper.getLevel().getMaxBuildHeight() - 12, anchor.getZ());
     }
     static void night(ResearchFixture fixture) {
         fixture.level.setWeatherParameters(100_000, 0, false, false); fixture.level.setRainLevel(0); fixture.level.setThunderLevel(0);
