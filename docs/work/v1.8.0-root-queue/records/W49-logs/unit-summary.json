@@ -1,0 +1,10 @@
+{
+  "classes": 546,
+  "counts": {
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "tests": 3123
+  },
+  "tested_commit": "a20700ef54221987faa953a8f4fd0034d0d62cc6"
+}

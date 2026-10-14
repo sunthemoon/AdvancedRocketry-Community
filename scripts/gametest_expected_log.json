@@ -3,6 +3,16 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "w37b-earlier-time-check-interruption",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: W37B injected earlier time-check listener interruption",
+      "stack_contains": "NaturalBedGameTests.interrupted",
+      "counts": {"natural_beds_command": 4, "natural_beds_start": 1},
+      "test": "NaturalBedGameTests.earlierTimeCheckFailureIsRestoredBeforeImmediateSaveAll, NaturalBedGameTests.earlierTimeCheckFailureIsRestoredBeforeNextTickSave",
+      "reason": "Scoped throwing foreign listeners precede the primary HIGHEST callback. The command fixture verifies exact-match restoration, different/identical-tuple foreign setters and a subsequent bed call in the same window; the START fixture verifies next-tick restoration. All five interruptions are caught; command/START saves have native player-file readback."
+    },
+    {
       "id": "w37j-respawn-save-listener-interruptions",
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",

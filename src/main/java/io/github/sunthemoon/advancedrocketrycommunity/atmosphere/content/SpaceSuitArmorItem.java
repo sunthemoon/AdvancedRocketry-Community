@@ -1,10 +1,12 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.content;
 
+import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.AtmosphereLimits;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
@@ -15,6 +17,13 @@ import net.minecraft.world.level.Level;
 public final class SpaceSuitArmorItem extends ArmorItem {
     public SpaceSuitArmorItem(ArmorMaterial material, Type type, Properties properties) {
         super(material, type, properties);
+    }
+
+    @Override
+    public String getArmorTexture(ItemStack stack, Entity entity, EquipmentSlot slot, String type) {
+        // Fixed overlays are part of the NEW base; this suit has never been dyeable.
+        int layer = slot == EquipmentSlot.LEGS ? 2 : 1;
+        return ModIdentity.MOD_ID + ":textures/models/armor/space_suit_layer_" + layer + ".png";
     }
 
     public static int countEquippedPieces(LivingEntity entity) {

@@ -65,7 +65,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * <ul>
  *   <li>Sleep is refused at an unloaded, unpermitted, PENDING or unbreathable bed cell. Owner decision 05: in Space a
  *       supplied room outside committed stations qualifies; inside one, live VISIT permission is required.</li>
- *   <li>The operation-scoped bed spawn setter boundary (D1 outcome 3) is deferred to W37b.</li>
+ *   <li>Admitted off-world beds preserve the native spawn tuple through {@link BedRespawnPreserver}.</li>
  *   <li>Death respawn and the End exit: the server tick's END decides for each dead player in the player list, even
  *       after KILLED corpse removal and without any player tick, and for each player watching the End credits.
  *       DISCARDED removal remains the final check for immediate respawn and a mod's living-player respawn call.
@@ -74,9 +74,9 @@ import net.minecraftforge.eventbus.api.IEventBus;
  *       whoever wrote it. It never overwrites any other tuple.</li>
  * </ul>
  *
- * A set-aside tuple is owned by the player's persisted Forge data, not a tick-local map. No transient state decides
- * which point governs. Transient state limits diagnostics and tracks this service's own copies into an unadopted
- * connection player; it never authorizes replacing an unrelated tuple and is lost on an abnormal stop.
+ * A set-aside tuple is owned by the player's persisted Forge data, not a tick-local map. No transient recovery state
+ * decides which point governs. Recovery maps limit diagnostics and track copies into an unadopted connection player.
+ * The separate bed preserver owns only a temporary native-call snapshot; neither service replaces an unrelated tuple.
  */
 public final class SleepRespawnService {
     /** The vanilla bed and anchor stand-up searches read blocks at most this far from the saved block. */
@@ -142,6 +142,7 @@ public final class SleepRespawnService {
 
     public void register(IEventBus bus) {
         bus.addListener(this::onSleepInBed);
+        new BedRespawnPreserver(this::offWorldHost).register(bus);
         bus.addListener(this::onLeaveLevel);
         bus.addListener(EventPriority.LOWEST, this::onClone);
         bus.addListener(this::onRespawn);

@@ -198,3 +198,17 @@ The records are `records/W37.md` and `W37F.md` to `W37J.md`; the reviews are kep
 `event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent)` stays PLANNED: W37's sleep refusal is implemented, but with the off-world types still `natural=false` vanilla refuses those beds first, so the row is delivered with W37b.
 
 This addendum is development evidence only. It approves no Required Gate, candidate, version or release.
+
+## Addendum (Root, 2026-10-14): W37b natural off-world types and the bed preserver
+
+| Merge on `codex/v1.8.0-classic-content` | Slice | Tested HEAD | Hosted run | Review |
+|---|---|---|---|---|
+| `0e6b8984` | W37b (ADR-066 section 3.3; D1 outcomes 1 and 3) | `45742f13` | 38582942365 (success) | Root review MERGE, SHA-256 `1d58efc266087251000b1225ba56008d247df4244bfcc465bbb67ac1fcc0c1da` |
+
+The record is `records/W37B.md`.
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `event:PlanetEventHandler.sleepEvent(PlayerSleepInBedEvent)` | REDESIGNED | With the six off-world types natural, W37's admission refuses an off-world bed on unbreathable, PENDING or incomplete cells and without station VISIT; an admitted bed keeps the player's existing saved point (D1 outcome 3, R-036) |
+
+This addendum is development evidence only. It approves no Required Gate, candidate, version or release. Real-client and packaged-restart D1-V rows remain for the final campaign.
