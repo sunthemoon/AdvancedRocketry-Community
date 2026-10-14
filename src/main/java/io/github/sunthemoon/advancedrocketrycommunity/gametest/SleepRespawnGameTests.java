@@ -497,7 +497,7 @@ public final class SleepRespawnGameTests {
     }
 
     /** The chat tokens sent to this player's embedded connection since the last call, which are then discarded. */
-    private static List<String> chat(ServerPlayer player) {
+    static List<String> chat(ServerPlayer player) {
         List<String> tokens = new ArrayList<>();
         if (player.connection.connection.channel() instanceof EmbeddedChannel channel) {
             for (Object message : channel.outboundMessages()) {

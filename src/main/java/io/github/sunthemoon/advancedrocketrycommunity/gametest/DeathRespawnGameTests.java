@@ -279,17 +279,21 @@ public final class DeathRespawnGameTests {
         return () -> added.forEach(chunk -> level.setChunkForced(chunk.x, chunk.z, false));
     }
 
-    private static ServerPlayer join(GameTestHelper helper, String name) {
-        return ConnectedTestPlayers.join(helper.getLevel().getServer(), UUID.randomUUID(), name, helper.getLevel(),
+    static ServerPlayer join(GameTestHelper helper, String name) {
+        return join(helper, UUID.randomUUID(), name);
+    }
+
+    static ServerPlayer join(GameTestHelper helper, UUID id, String name) {
+        return ConnectedTestPlayers.join(helper.getLevel().getServer(), id, name, helper.getLevel(),
                 helper.absolutePos(new BlockPos(1, 1, 1)), new ArrayList<>());
     }
 
-    private static void remove(MinecraftServer server, UUID id) {
+    static void remove(MinecraftServer server, UUID id) {
         ServerPlayer current = server.getPlayerList().getPlayer(id);
         if (current != null) { server.getPlayerList().remove(current); }
     }
 
-    private static boolean pending(ServerPlayer player) {
+    static boolean pending(ServerPlayer player) {
         return player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).contains(RespawnPointBackup.KEY);
     }
 }

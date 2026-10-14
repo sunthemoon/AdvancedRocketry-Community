@@ -11,6 +11,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 
 /** Bounded schema-1 tuple; decoding never changes, copies or discards unsupported input. */
 public final class RespawnPointBackup {
@@ -102,7 +103,25 @@ public final class RespawnPointBackup {
         persisted.put(KEY, encoded);
     }
 
-    /** Called only after verifying the exact restored tuple. Opaque data returns to its original key. */
+    /**
+     * F1: whether a pending backup still governs the native tuple. It does for its own (restored) tuple, and for the
+     * exact clear this mod writes (Overworld, no position, raw angle 0.0F, not forced) unless another party set the
+     * point since that clear. Any other tuple is newer than the backup.
+     */
+    public static boolean governs(Point backup, ResourceKey<Level> dimension, @Nullable BlockPos position, float angle,
+                                  boolean forced, boolean foreignSetterSinceClear) {
+        int angleBits = Float.floatToRawIntBits(angle);
+        if (position == null) {
+            return !foreignSetterSinceClear && Level.OVERWORLD.equals(dimension) && angleBits == 0 && !forced;
+        }
+        return backup.dimension().equals(dimension) && backup.position().equals(position)
+                && Float.floatToRawIntBits(backup.angle()) == angleBits && backup.forced() == forced;
+    }
+
+    /**
+     * Called only after verifying the exact restored tuple, or once a newer tuple superseded the backup. Opaque data
+     * returns to its original key.
+     */
     public static void complete(CompoundTag persisted) {
         Tag current = persisted.get(KEY);
         if (decode(current).isEmpty()) { return; }

@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.world.level.Level;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -80,6 +81,24 @@ class RespawnPointBackupTest {
             RespawnPointBackup.complete(persisted);
             assertSame(raw, persisted.get(RespawnPointBackup.KEY));
         }
+    }
+
+    @Test void aBackupGovernsOnlyItsOwnTupleOrTheExactClearedTupleWithoutAForeignSetter() {
+        Point point = backup().point(); // Moon, angle -0.0F, forced.
+        BlockPos at = point.position();
+        for (boolean foreign : new boolean[] {false, true}) {
+            assertTrue(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at, -0.0F, true, foreign));
+        }
+        assertTrue(RespawnPointBackup.governs(point, Level.OVERWORLD, null, 0.0F, false, false));
+        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, null, 0.0F, false, true)); // Another party's clear.
+        // Every other tuple is newer.
+        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, null, -0.0F, false, false));
+        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, null, 0.0F, true, false));
+        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, null, 0.0F, false, false));
+        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, at, -0.0F, true, false));
+        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at.east(), -0.0F, true, false));
+        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at, 0.0F, true, false));
+        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at, -0.0F, false, false));
     }
 
     @Test void aNewNativeTupleCanBeProtectedWithoutLosingAnOpaqueOldBackup() {
