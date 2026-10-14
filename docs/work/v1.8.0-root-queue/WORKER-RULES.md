@@ -35,6 +35,10 @@ any other agent.
   the language providers, and the data-generator entry `datagen/BootstrapDataGenerators.java`.
   Do not edit `docs/status/*`, the content ledger, `build.gradle`, `gradle.properties`,
   `.github/`, `AGENTS.md`, or another task's files.
+- Historical outputs are immutable. Never edit a file under an older `src/generated/v*` root (anything
+  but `src/generated/v1.8`), and never edit a sealed provenance or release-evidence record. To change
+  a historical model or resource, write a v1.8 copy from a v1.8 provider and ask Root for the
+  `build.gradle` exclusion of the old copy, as W52 did (W49F, 2026-10-14).
 - ADRs: never change a decision. The one exception is when AGENTS.md section 3.3
   requires you to document a protection that refuses saves. Then add a clearly labelled
   implementation note to the ADR and a risk-register entry. Put every other

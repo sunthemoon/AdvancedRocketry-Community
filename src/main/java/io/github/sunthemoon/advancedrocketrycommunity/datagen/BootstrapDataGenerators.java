@@ -27,6 +27,7 @@ public final class BootstrapDataGenerators {
 
         // Earlier outputs remain resource inputs; W49 rebinds only its 13 audited model targets in place.
         ExistingFileHelper existingFiles = event.getExistingFileHelper();
+        generator.addProvider(event.includeClient(), new V180ItemIconModelProvider(output, existingFiles));
         generator.addProvider(event.includeClient(), new V180MaterialArt(output));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180LifeSupportData(output, event.includeClient(), event.includeServer()));

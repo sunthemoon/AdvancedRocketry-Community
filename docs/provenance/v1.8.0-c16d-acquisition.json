@@ -52,6 +52,24 @@
       ]
     },
     {
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "correction_record": "docs/provenance/v1.8.0-w53-art-redraw.json",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w53-art-screen",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180CraftingComponentData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d4a84a2ba07bfe9e11c63d4908942b0d5bb11143aa0773e642781236c05c92",
+      "status": "NEW",
+      "supersedes_target_sha256": "2891ed4284903c9da5e5d328a0016c414f59cd03ab25c58af9c169198c3fce2f",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/carbon_brick.png",
+      "target_sha256": "dc2732659aa32814a61c81ad7fc9ddd7891d055b1e8bec45b9556ddc92d54a3c",
+      "transformation": [
+        "W53 redraw: the first drawing screened SUSPECT against 1.20.1 item/heart_of_the_sea.png (rank 0.7674 over an outline IoU of 0.9211). Draw an original 16x16 pressed-bar grid with V180MaterialArt.png, tint 0x747D88; no bitmap input."
+      ]
+    },
+    {
       "authoring_commit": "851ac7fd0745b558c90af81dedfc283ea2f5df77",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "license": "MIT",
@@ -212,7 +230,7 @@
   ],
   "license": "MIT",
   "review": {
-    "content_digest": "670128ecb3220758ac16703a7af44c6d7deb3f18b76dcca01c30ea52340bfcb7",
+    "content_digest": "6908e5740d8512d636b33e97b54e7742ac4bd3245333906de39b1183ac1e79be",
     "findings": [],
     "reviewed_at": null,
     "reviewer": null,

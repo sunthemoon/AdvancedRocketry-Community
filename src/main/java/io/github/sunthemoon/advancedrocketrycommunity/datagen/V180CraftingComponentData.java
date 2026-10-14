@@ -97,13 +97,16 @@ public final class V180CraftingComponentData implements DataProvider {
                 "item.advancedrocketrycommunity.user_interface", "User Interface");
     }
 
-    /** Newly drawn compact compressed block, with a stepped top and irregular dark face facets. */
+    /**
+     * Newly drawn pressed bar: a lit top face over a darker grained front, shaded to the lower right. W53 redraw:
+     * the first drawing, a rounded block, screened SUSPECT by outline and luminance rank.
+     */
     public static String[] carbonGrid() {
         return new String[] {
-                "................", "......4444......", "....44555544....", "..44565555443...",
-                "..456554454432..", "..355443344322..", "..344334443222..", "..344433332222..",
-                "..333443222112..", "..322333221112..", "..322223211112..", "..222332211112..",
-                "..22122211112...", "...211111112....", ".....11112......", "................"
+                "................", "................", "................", "....666666666...",
+                "..6667777777766.", ".66777787777665.", ".44666666666543.", ".44454444445332.",
+                ".43344344543322.", ".43333353333222.", ".33223322322211.", ".32252222222111.",
+                "..111111111111..", "................", "................", "................"
         };
     }
 
