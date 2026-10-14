@@ -98,9 +98,18 @@ public final class V180SolarArrayData implements DataProvider {
                  "requirements":[["has_ingredient","has_the_recipe"]],"rewards":{"recipes":["advancedrocketrycommunity:%s"]}}
                 """.formatted(ingredient, id, id));
     }
+    /** Casing with a junction box and a clamped conduit that runs on across neighbouring faces (W53 redraw). */
+    private static String[] sideGrid() {
+        return new String[]{
+                "8888888888888888", "8533333333333358", "8355555555555538", "8355555555555538",
+                "8355555511115538", "8355555517715538", "8355555511115538", "8355555555555538",
+                "8355335555533538", "2222332222233222", "9999339999933999", "7777337777733777",
+                "1111331111133111", "8355555555555538", "8533333333333358", "8888888888888888"};
+    }
     public static Map<String, String[]> grids() {
         Map<String, String[]> grids = new LinkedHashMap<>();
         for (String name : List.of("solar_array_front", "solar_array_top", "solar_array_side", "solar_array_panel", "power_output_plug")) {
+            if (name.equals("solar_array_side")) { grids.put(name, sideGrid()); continue; }
             String[] rows = new String[16];
             for (int y = 0; y < 16; y++) {
                 StringBuilder row = new StringBuilder(16);
@@ -111,7 +120,7 @@ public final class V180SolarArrayData implements DataProvider {
                             case "solar_array_panel", "solar_array_top" -> x % 4 == 1 || y % 4 == 1 ? '7' : (char) ('2' + (x + y) % 3);
                             case "solar_array_front" -> y < 8 ? (x % 3 == 0 ? '9' : '1') : (y == 11 && x > 4 && x < 11 ? '8' : '4');
                             case "power_output_plug" -> x >= 5 && x <= 10 && y >= 4 && y <= 11 ? '9' : (x == y || x + y == 15 ? '6' : '1');
-                            default -> y % 4 == 0 ? '1' : '5';
+                            default -> throw new IllegalStateException("Unknown solar array texture " + name);
                         };
                     }
                     row.append(shade);
