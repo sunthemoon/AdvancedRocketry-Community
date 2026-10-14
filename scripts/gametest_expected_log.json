@@ -13,6 +13,33 @@
       "reason": "A HIGHEST respawn listener throws after native replacement insertion; the test catches the deliberate exception and verifies the persisted tuple is restored on a later tick."
     },
     {
+      "id": "w37h-planet-respawn-unencodable-tuple",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_PLANET_RESPAWN_DIAGNOSTIC player=[0-9a-f-]{36} case=unencodable_tuple: the saved respawn tuple is outside the backup bounds, so its refusal is skipped and vanilla reads it; recovery: set a valid respawn point, for example with /spawnpoint \\(ADR-066 planet respawn backup note\\)",
+      "counts": {"death_respawn": 1},
+      "test": "DeathRespawnGameTests.anUnencodableNativeTupleDoesNotFailADeadTickOrEraseAnUnreadableBackup",
+      "reason": "W37H F5: one dead player gets a NaN angle and then an out-of-bounds x on later ticks; the skipped refusal is reported once per player per server session."
+    },
+    {
+      "id": "w37h-planet-respawn-unreadable-backup",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_PLANET_RESPAWN_DIAGNOSTIC player=[0-9a-f-]{36} case=unreadable_backup: ForgeData\\.PlayerPersisted\\.arce_planet_respawn_backup is unreadable or from a later version and is kept verbatim, so the player respawns without it; recovery: with the player offline, back up the player file and copy its tuple to the Spawn fields \\(ADR-066 planet respawn backup note\\)",
+      "counts": {"death_respawn": 1},
+      "test": "DeathRespawnGameTests.anUnencodableNativeTupleDoesNotFailADeadTickOrEraseAnUnreadableBackup",
+      "reason": "W37H F5: the same player carries a schema 99 backup root, which is kept verbatim and reported once per player per server session."
+    },
+    {
+      "id": "w37h-planet-respawn-foreign-parent",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_PLANET_RESPAWN_DIAGNOSTIC player=[0-9a-f-]{36} case=foreign_persisted_parent: ForgeData\\.PlayerPersisted is not a compound, so a refused point cannot be set aside and vanilla reads it; recovery: with the player offline, back up the player file and make ForgeData\\.PlayerPersisted a compound \\(ADR-066 planet respawn backup note\\)",
+      "counts": {"death_respawn": 1},
+      "test": "DeathRespawnGameTests.aForeignPersistedParentIsKeptAndItsRefusalSkipped",
+      "reason": "W37H F5: a dead player has a string PlayerPersisted parent; it is not overwritten, and the skipped refusal is reported once per player per server session."
+    },
+    {
       "id": "beacon-index-unavailable",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",

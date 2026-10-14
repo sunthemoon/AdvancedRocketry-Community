@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -120,6 +121,22 @@ public final class DeathRespawnGameTests {
                     player.setRespawnPosition(CelestialIds.MOON_LEVEL, outOfBounds, -12.25F, true, false);
                 },
                 () -> unchanged.accept(outOfBounds, -12.25F));
+    }
+
+    /** F5: another mod's non-compound PlayerPersisted parent is never overwritten; its refusal is skipped (fail-open). */
+    @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
+    public static void aForeignPersistedParentIsKeptAndItsRefusalSkipped(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerPlayer player = join(helper, "W37HForeignRoot");
+        StringTag foreign = StringTag.valueOf("another mod's data");
+        player.getPersistentData().put(Player.PERSISTED_NBT_TAG, foreign);
+        player.setRespawnPosition(CelestialIds.MOON_LEVEL, FAR, 77.25F, true, false);
+        player.kill();
+        Runnable unchanged = () -> helper.assertTrue(player.getPersistentData().get(Player.PERSISTED_NBT_TAG) == foreign
+                        && CelestialIds.MOON_LEVEL.equals(player.getRespawnDimension()) && FAR.equals(player.getRespawnPosition())
+                        && player.getRespawnAngle() == 77.25F && player.isRespawnForced(),
+                "A foreign PlayerPersisted parent was overwritten, or the point was changed");
+        afterEachEnd(helper, () -> remove(server, player.getUUID()), unchanged, unchanged);
     }
 
     /** F4: doTick skips Player.tick for a spectator touching unloaded chunks; the END decision needs no player tick. */

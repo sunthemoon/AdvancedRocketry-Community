@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.BreathabilityState;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.life.SleepRespawnRules;
@@ -17,8 +18,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.Statio
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessAction;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.StationAccessService;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -81,11 +84,35 @@ public final class SleepRespawnService {
     private static final String RESPAWN_PREFIX = "message." + ModIdentity.MOD_ID + ".planet_respawn.";
     private static final StationAccessService ACCESS = new StationAccessService();
 
+    /** F5: the fail-open and kept-verbatim cases, each logged once per player in a server session. */
+    private enum Diagnostic {
+        UNENCODABLE_TUPLE("unencodable_tuple", "the saved respawn tuple is outside the backup bounds, so its refusal is"
+                + " skipped and vanilla reads it", "set a valid respawn point, for example with /spawnpoint"),
+        FOREIGN_PARENT("foreign_persisted_parent", "ForgeData.PlayerPersisted is not a compound, so a refused point"
+                + " cannot be set aside and vanilla reads it", "with the player offline, back up the player file and"
+                + " make ForgeData.PlayerPersisted a compound"),
+        UNREADABLE_BACKUP("unreadable_backup", "ForgeData.PlayerPersisted." + RespawnPointBackup.KEY + " is unreadable"
+                + " or from a later version and is kept verbatim, so the player respawns without it",
+                "with the player offline, back up the player file and copy its tuple to the Spawn fields");
+
+        private final String token;
+        private final String effect;
+        private final String recovery;
+
+        Diagnostic(String token, String effect, String recovery) {
+            this.token = token;
+            this.effect = effect;
+            this.recovery = recovery;
+        }
+    }
+
     private final AtmosphereManager atmosphere;
     private final CelestialCatalogManager catalogs;
     private final Supplier<Options> options;
     /** Players with a pending backup whose point another party set since this service's clear (server thread). */
     private final Set<UUID> foreignSetters = new HashSet<>();
+    /** Players already reported per diagnostic in this server session (server thread). */
+    private final Map<Diagnostic, Set<UUID>> reported = new EnumMap<>(Diagnostic.class);
 
     public SleepRespawnService(AtmosphereManager atmosphere, CelestialCatalogManager catalogs, Supplier<Options> options) {
         this.atmosphere = Objects.requireNonNull(atmosphere, "atmosphere");
@@ -180,6 +207,7 @@ public final class SleepRespawnService {
             } catch (IllegalArgumentException unencodableNativePoint) {
                 // A foreign/native tuple outside our codec's bounds cannot safely be set aside. Keep it and any
                 // unreadable backup untouched rather than failing the server tick or silently truncating data.
+                report(player, Diagnostic.UNENCODABLE_TUPLE);
                 return;
             }
         }
@@ -192,7 +220,10 @@ public final class SleepRespawnService {
             return;
         }
         CompoundTag persisted = persisted(player, true);
-        if (persisted == null) { return; } // A foreign malformed Forge parent is not overwritten.
+        if (persisted == null) { // A foreign malformed Forge parent is not overwritten.
+            report(player, Diagnostic.FOREIGN_PARENT);
+            return;
+        }
         RespawnPointBackup.store(persisted, new Backup(saved, outcome));
         clear(player);
     }
@@ -229,6 +260,7 @@ public final class SleepRespawnService {
 
     public void onServerStopped(ServerStoppedEvent event) {
         foreignSetters.clear();
+        reported.clear();
     }
 
     /**
@@ -249,9 +281,21 @@ public final class SleepRespawnService {
         }
     }
 
-    private static Optional<Backup> backup(ServerPlayer player) {
+    private Optional<Backup> backup(ServerPlayer player) {
         CompoundTag persisted = persisted(player, false);
-        return persisted == null ? Optional.empty() : RespawnPointBackup.decode(persisted.get(RespawnPointBackup.KEY));
+        Tag root = persisted == null ? null : persisted.get(RespawnPointBackup.KEY);
+        Optional<Backup> decoded = RespawnPointBackup.decode(root);
+        if (root != null && decoded.isEmpty()) { report(player, Diagnostic.UNREADABLE_BACKUP); }
+        return decoded;
+    }
+
+    /** Fail-open stays as designed; the WARN only lets an operator find the player. Bounded: once per player. */
+    private void report(ServerPlayer player, Diagnostic diagnostic) {
+        if (reported.computeIfAbsent(diagnostic, unused -> new HashSet<>()).add(player.getUUID())) {
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_PLANET_RESPAWN_DIAGNOSTIC player={} case={}: {}; recovery: {}"
+                    + " (ADR-066 planet respawn backup note)", player.getUUID(), diagnostic.token, diagnostic.effect,
+                    diagnostic.recovery);
+        }
     }
 
     /**
