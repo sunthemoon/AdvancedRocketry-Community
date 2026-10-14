@@ -191,6 +191,18 @@ def supersededK6ItemModels = [
                 'assets/advancedrocketrycommunity/models/item/laser_lens.json'
         ] as Set
 ]
+// ADR-066 section 7.3 (W49F, closure batches N2 and N3): the v1.8 models bind W49's NEW art and supersede these
+// historical copies, which stay byte-identical with their sealed provenance records.
+def supersededW49Models = [
+        'src/generated/v0.2/resources': ['assets/advancedrocketrycommunity/models/block/electrolyzer.json', 'assets/advancedrocketrycommunity/models/block/electrolyzer_active.json'] as Set,
+        'src/generated/v0.4/resources': ['assets/advancedrocketrycommunity/models/item/space_suit_boots.json', 'assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json',
+                                         'assets/advancedrocketrycommunity/models/item/space_suit_helmet.json', 'assets/advancedrocketrycommunity/models/item/space_suit_leggings.json'] as Set,
+        'src/generated/v0.8/resources': ['assets/advancedrocketrycommunity/models/item/satellite_solar_module.json'] as Set,
+        'src/generated/v1.2/resources': ['assets/advancedrocketrycommunity/models/block/precision_assembler.json'] as Set,
+        'src/generated/v1.5/resources': ['assets/advancedrocketrycommunity/models/block/warp_core.json'] as Set,
+        'src/generated/v1.6/resources': ['assets/advancedrocketrycommunity/models/block/satellite_builder.json', 'assets/advancedrocketrycommunity/models/item/advanced_solar_panel.json'] as Set,
+        'src/generated/v1.7/resources': ['assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json', 'assets/advancedrocketrycommunity/models/block/railgun.json'] as Set
+]
 // ADR-066 section 3.3 and D1 outcome 1 (W37b): the v1.8 copies of the four v1.4 dimension types (natural=true) supersede
 // the v1.4 copies; v1.8 becomes the one writer of all six off-world types.
 def supersededV140Types = [
@@ -259,6 +271,11 @@ tasks.named('processResources') {
                 details.exclude()
             }
         }
+        supersededW49Models.each { root, paths ->
+            if (details.file.toPath().startsWith(file(root).toPath()) && paths.contains(details.path)) {
+                details.exclude()
+            }
+        }
         if (details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath())
                 && supersededV140Types.contains(details.path)) {
             details.exclude()
@@ -319,6 +336,11 @@ tasks.named('sourcesJar') {
             details.exclude()
         }
         supersededK6ItemModels.each { root, paths ->
+            if (details.file.toPath().startsWith(file(root).toPath()) && paths.contains(details.path)) {
+                details.exclude()
+            }
+        }
+        supersededW49Models.each { root, paths ->
             if (details.file.toPath().startsWith(file(root).toPath()) && paths.contains(details.path)) {
                 details.exclude()
             }

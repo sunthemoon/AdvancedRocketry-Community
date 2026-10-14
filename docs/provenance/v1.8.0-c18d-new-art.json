@@ -324,224 +324,224 @@
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/block/electrolyzer.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electrolyzer.json",
       "target_sha256": "69e12b7279c521eabfcdf5317ef71ebe9da41eb93b1e4c8a4b97655d1b093900",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
       "target_sha256": "7ec170112a3627a4265127670deec198c937915e0319dc4eda680f1615281764",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_boots.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/space_suit_boots.json",
       "target_sha256": "b94cafb820ee2531c2282917a245044f4a5e6721dce23d4cbb12d8ff063b3a53",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json",
       "target_sha256": "a2ae9cd1cc24f16b08e0586b3f0ad7da5c8cc33e3e8ac759b2be59457e7f09c8",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_helmet.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/space_suit_helmet.json",
       "target_sha256": "33dd84b565fe6a6a219d77359a3d13bbf7f959c307b859a7c3e6113e6f65448a",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_leggings.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/space_suit_leggings.json",
       "target_sha256": "52ffd94f6b5943291eaa646acf9e3fc9ec87cf10054665ab4e939b0c1383f262",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v0.8/resources/assets/advancedrocketrycommunity/models/item/satellite_solar_module.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/satellite_solar_module.json",
       "target_sha256": "e3e5508dc5221b41e54c037a02a61c91627eb0f50758e337297075c8d7c710ba",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v1.2/resources/assets/advancedrocketrycommunity/models/block/precision_assembler.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/precision_assembler.json",
       "target_sha256": "239a1923badde065243065c628bb4861740ce096aa11c8060a4da8136c6ddd1f",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v1.5/resources/assets/advancedrocketrycommunity/models/block/warp_core.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/warp_core.json",
       "target_sha256": "ededba79e929b3944f74bf6548b6dfaf3708efdd4a9e677863c3ab4bdd82480e",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/block/satellite_builder.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/satellite_builder.json",
       "target_sha256": "88990b4c8c58de5dde7b443226a20fc7d8605a7ad20f76f42c6eb026265c9f4c",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v1.6/resources/assets/advancedrocketrycommunity/models/item/advanced_solar_panel.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/advanced_solar_panel.json",
       "target_sha256": "4500a329379d500f6eeeea8022727fd611a6be4964e3ce4a2d6e841e870a03c8",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/orbital_laser_drill.json",
       "target_sha256": "6002537f1c8cdbb4a8505ec8ee59565a2f7ce6a4b55ca487f8207a247d3b40e2",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     },
     {
-      "authoring_commit": "714a480cb47a5e439c67d78fb460d0cb5e9577f6",
+      "authoring_commit": "c946522460a8a0753e796624f223928776678cce",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ClosureModels",
       "license": "MIT",
-      "source_branch": "codex/v1.8.0-w49-new-art",
-      "source_commit": "5e60a66455b45b1ab78ecfda9dc15e1ddc095bf5",
+      "source_branch": "codex/v1.8.0-w49f-v18-bindings",
+      "source_commit": "453f1fd5538110e13e3e1f646525ab409fb501be",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ClosureModels.java",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_sha256": "ab8fff6d3ebd8c57e891e12a1e64e9ddb03081ca4b3b615d26be2f3b51923e96",
+      "source_sha256": "3c2e162c5c471d51a1d798258faec613a49781946a312f9e3b9b4ea5d3b2850f",
       "status": "NEW",
-      "target_path": "src/generated/v1.7/resources/assets/advancedrocketrycommunity/models/block/railgun.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/railgun.json",
       "target_sha256": "fa905d48edc254bfb8b48d1ac46e05e8fccae78a019cb2aca240c0b874bf4f0e",
       "transformation": [
-        "Generate an audited in-place model binding to NEW textures; retain model/item IDs and legal resource-location references; no copied legacy JSON."
+        "Generate the W49 NEW texture binding as a v1.8 copy in the provider output; retain the asset-relative model/item ID and identical JSON bytes. Historical generated resources and their sealed provenance remain immutable; Root excludes superseded copies from packaged resources. No copied legacy JSON."
       ]
     }
   ],
@@ -695,7 +695,7 @@
     }
   ],
   "review": {
-    "content_digest": "3396a0fc6cb9b726ff5c31cf19d0b28eba05d96e385080053c040c7ca962d83c",
+    "content_digest": "06c921235e2af86cd73c733e5dcf3751c9c4704654789855a5f30d5b5be04083",
     "findings": [],
     "reviewed_at": null,
     "reviewer": null,
