@@ -42,11 +42,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 
 /**
@@ -57,9 +59,10 @@ import net.minecraftforge.eventbus.api.IEventBus;
  *   <li>Sleep is refused at an unloaded, unpermitted, PENDING or unbreathable bed cell. Owner decision 05: in Space a
  *       supplied room outside committed stations qualifies; inside one, live VISIT permission is required.</li>
  *   <li>The operation-scoped bed spawn setter boundary (D1 outcome 3) is deferred to W37b.</li>
- *   <li>Death respawn: each connected dead player's END tick decides, even after KILLED corpse removal.
- *       DISCARDED removal remains the final check for immediate respawn and a mod's living-player respawn call.
- *       A refused point is durably set aside so vanilla uses the Overworld, then restored to the replacement.</li>
+ *   <li>Death respawn: the server tick's END decides for each dead player in the player list, even after KILLED
+ *       corpse removal and without any player tick. DISCARDED removal remains the final check for immediate respawn
+ *       and a mod's living-player respawn call. A refused point is durably set aside so vanilla uses the Overworld,
+ *       then restored to the replacement.</li>
  * </ul>
  *
  * A set-aside tuple is owned by the player's persisted Forge data, not a tick-local map.
@@ -98,9 +101,9 @@ public final class SleepRespawnService {
         bus.addListener(this::onSleepInBed);
         bus.addListener(this::onLeaveLevel);
         bus.addListener(this::onRespawn);
-        bus.addListener(this::onPlayerTick);
         bus.addListener(this::onLogin);
-        bus.addListener(this::onServerTick);
+        // After every Level and connection tick, and after the other END listeners (the atmosphere authority's too).
+        bus.addListener(EventPriority.LOWEST, this::onServerTick);
         bus.addListener(this::onSpawnSetter);
     }
 
@@ -205,20 +208,19 @@ public final class SleepRespawnService {
         }
     }
 
-    public void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        if (event.phase == TickEvent.Phase.END && event.side.isServer() && event.player instanceof ServerPlayer player
-                && player.server.isSameThread() && player.server.getPlayerList().getPlayer(player.getUUID()) == player) {
-            // Connection ticks still call Player.tick after KILLED removal. See W37F's javap ordering evidence.
-            // Native End credits return is a non-death CHANGED_DIMENSION path, explicitly outside this policy.
-            if (player.isDeadOrDying()) { beforeRespawn(player.server, player); } else { restore(player, true); }
-        }
-    }
-
-    /** An interrupted native respawn may leave the connection pointing at the old player until repaired. */
+    /**
+     * The per-tick decision, run last in the server tick: a dead player is decided, and any other player's pending
+     * recovery is retried (an interrupted respawn can leave the connection on the old player). Until the respawn
+     * packet's native read, only the inter-tick task queue (packets, commands, /reload completion) and the config
+     * watcher can change what it read. Native End credits return is a non-death CHANGED_DIMENSION path, explicitly
+     * outside this policy.
+     */
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
-            for (ServerPlayer player : event.getServer().getPlayerList().getPlayers()) {
-                if (!player.isDeadOrDying()) { restore(player, true); }
+            MinecraftServer server = event.getServer();
+            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+                if (player instanceof FakePlayer) { continue; }
+                if (player.isDeadOrDying()) { beforeRespawn(server, player); } else { restore(player, true); }
             }
         }
     }
