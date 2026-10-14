@@ -56,10 +56,7 @@ public final class RocketTransferSavedData extends SavedData {
     private FirstEventOutbox firstMoonLanding = FirstEventOutbox.empty();
     /** W44 section 3.6: how this root was first obtained; a detached root behaves as loaded. */
     private ManagedRootPresence presence = ManagedRootPresence.LOADED;
-    /** Set on the writer thread when an entry appeared before the first write of a proven-absent root. */
-    private final java.util.concurrent.atomic.AtomicBoolean appeared = new java.util.concurrent.atomic.AtomicBoolean();
-    /** Set on the writer thread once the first write of a proven-absent root re-checked the target. */
-    private final java.util.concurrent.atomic.AtomicBoolean absenceChecked = new java.util.concurrent.atomic.AtomicBoolean();
+    private final RocketJournalFirstWrite firstWrite = new RocketJournalFirstWrite();
     private static final class Effect {
         final UUID logical;
         final RocketTransferRecord expected;
@@ -447,7 +444,8 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     private void publish(RocketJournalWriter.Completion completion) {
-        if (appeared.get() && presence == ManagedRootPresence.PROVEN_ABSENT) { becomeUnreadable(); }
+        firstWrite.completed(completion.outcome());
+        if (firstWrite.appeared() && presence == ManagedRootPresence.PROVEN_ABSENT) { becomeUnreadable(); }
         checkpoint.publish(completion); lastWriterNanos = completion.writerNanos();
         Effect effect = effects.get(completion.sequence());
         if (effect != null && completion.outcome() == RocketJournalCheckpoint.Outcome.COMMITTED) { effect.committed = true; }
@@ -537,13 +535,7 @@ public final class RocketTransferSavedData extends SavedData {
      */
     private CheckedSavedDataPolicy firstWriteChecked(CheckedSavedDataPolicy policy) {
         return policy.withCommitter((staged, target) -> {
-            if (!absenceChecked.get()) {
-                if (!ManagedRootSupplier.stillAbsent(target)) {
-                    appeared.set(true);
-                    throw new java.io.IOException("A transfer journal file appeared before this session's first write");
-                }
-                absenceChecked.set(true);
-            }
+            firstWrite.beforeMove(staged, target, policy);
             policy.committer().commit(staged, target);
         });
     }
