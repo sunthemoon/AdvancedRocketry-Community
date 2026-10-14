@@ -125,3 +125,28 @@ list, and the tests, including:
 - a throwing `SleepingTimeCheckEvent` listener before ours, followed by the next tick's
   autosave-equivalent save;
 - `/save-all` run right after the bed use.
+
+## Amendment 2 (Root, 2026-10-14, after counterexamples A and B in `records/W37B.md`)
+
+Root accepts both remaining native save paths as documented residuals. No Mixin.
+- **A, the integrated-server pause save.** `IntegratedServer.tickServer` 53 can save before any
+  START.
+- **B, crash cleanup.** `runServer` 417, then `stopServer` 525 and 647, saves without
+  `ServerStoppingEvent`.
+
+**Why.** Each needs a compound failure: another mod's listener must throw in the time-check dispatch
+before ours (or an `Error` must escape the bed task), and then a single-player pause or a crash must
+follow in the same inter-tick window. The consequence is bounded. The off-world bed tuple becomes the
+saved point, and W37's respawn validation (R-036) still judges it at respawn: with the default
+options, the Overworld fallback applies and the point is kept. That is a narrow violation of D1
+outcome 3, not a loss of the player's data.
+
+**What to do.**
+- Implement amendment 1 as written.
+- `ServerStoppingEvent` stays as the orderly-shutdown fallback.
+- Additionally, register the primary restore so it runs before any foreign `SleepingTimeCheckEvent`
+  listener can throw, as far as Forge allows. Say how far that is.
+- State residuals A and B exactly, with their offsets and their bounded consequence, in the record
+  and in the proposed risk text. Root adds them to R-036 and the ADR-066 note.
+- Then finish the task: the six natural types, the jar check, the `natural()` effect list, the tests
+  and the commands.
