@@ -82,3 +82,46 @@ report**; a new Mixin needs its own ADR and the owner's confirmation (ADR-073).
 
 - The owner-open sleep planet point.
 - Status files, the ledger, ADRs and the risk register (Root).
+
+## Amendment (Root, 2026-10-14, after the boundary report in `records/W37B.md`)
+
+Your report shows there is no post-write Forge callback inside `setRespawnPosition`, and that both
+END-only and logout-only restoration are too late. The boundary is therefore built from Forge events
+that run **before every save** that can follow the bed operation. No Mixin.
+
+**Facts to verify with `javap` first.**
+- Packet handlers run as server tasks between ticks, through `PacketUtils.ensureRunningOnSameThread`
+  and the task queue that `waitUntilNextTick` drains. So the bed use happens between ticks.
+- In the next tick, `ServerTickEvent` START is posted before `tickChildren` and before the autosave
+  at 96.
+
+If either is false, stop and report.
+
+1. **Snapshot.** Take it at the admitted off-world bed operation (`PlayerSleepInBedEvent`, after
+   W37's admission): the exact native tuple, keyed by the player, in transient lifecycle state.
+2. **Attribution.** A `PlayerSetSpawnEvent` belongs to the operation only when it matches vanilla's
+   bed setter exactly: the player's current Level, the bed position, not forced, and arriving while
+   that operation's snapshot is pending.
+3. **Primary restore.** At Forge's `SleepingTimeCheckEvent` at `EventPriority.HIGHEST`, posted after
+   the setter (127) and before both late refusals and a successful sleep, write the snapshot back by
+   direct field writes. Only do this if the native tuple still equals exactly the bed tuple that
+   operation wrote. Then clear the pending entry.
+4. **Fallback restores.** Apply the same exact-match restore for any entry still pending, before
+   each save that can follow within the same inter-tick window:
+   - `ServerTickEvent` START, before the autosave;
+   - `PlayerLoggedOutEvent`, which `PlayerList.remove` posts before its save;
+   - `ServerStoppingEvent`; verify that `stopServer` posts it before `saveAll` at 68;
+   - Forge's `CommandEvent`, before any command, including `/save-all`, executes.
+
+   These cover a throwing listener earlier in the time-check dispatch.
+5. **The residual, stated in the record and the proposed risk text.** A third-party task that saves
+   players in the same inter-tick window, between the bed packet and the next fallback, could
+   persist the bed tuple. A crash cannot persist it, because no save happens before a restore.
+6. **R-036.** A pending planet-respawn backup is never touched. A snapshot restore never writes over
+   a tuple other than the exact bed tuple.
+
+Then carry out the rest of the task: the six natural types, the jar check, the `natural()` effect
+list, and the tests, including:
+- a throwing `SleepingTimeCheckEvent` listener before ours, followed by the next tick's
+  autosave-equivalent save;
+- `/save-all` run right after the bed use.
