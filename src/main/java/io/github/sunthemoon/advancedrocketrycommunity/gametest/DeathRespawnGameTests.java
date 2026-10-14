@@ -13,11 +13,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -137,6 +139,31 @@ public final class DeathRespawnGameTests {
                         && player.getRespawnAngle() == 77.25F && player.isRespawnForced(),
                 "A foreign PlayerPersisted parent was overwritten, or the point was changed");
         afterEachEnd(helper, () -> remove(server, player.getUUID()), unchanged, unchanged);
+    }
+
+    /** F7: an unchanged refusal neither re-encodes nor rewrites the backup on later dead ticks; a changed one does. */
+    @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
+    public static void anUnchangedRefusalDoesNotRewriteTheBackup(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerPlayer player = join(helper, "W37HNoRewrite");
+        player.setRespawnPosition(CelestialIds.MOON_LEVEL, FAR, 77.25F, true, false);
+        player.kill();
+        Supplier<Tag> root = () -> player.getPersistentData().getCompound(Player.PERSISTED_NBT_TAG).get(RespawnPointBackup.KEY);
+        Tag[] stored = {null};
+        afterEachEnd(helper, () -> remove(server, player.getUUID()),
+                () -> {
+                    stored[0] = root.get();
+                    helper.assertTrue(stored[0] instanceof CompoundTag tag && "disabled".equals(tag.getString("outcome")),
+                            "The refusal was not set aside");
+                },
+                () -> {
+                    helper.assertTrue(root.get() == stored[0] && "disabled".equals(((CompoundTag) stored[0]).getString("outcome")),
+                            "An unchanged refusal rewrote the backup");
+                    ((CompoundTag) stored[0]).putString("outcome", "a_later_reason"); // An outcome this version does not know.
+                },
+                () -> helper.assertTrue(root.get() != stored[0] && root.get() instanceof CompoundTag tag
+                                && "disabled".equals(tag.getString("outcome")) && player.getRespawnPosition() == null,
+                        "A changed outcome was not rewritten"));
     }
 
     /** F4: doTick skips Player.tick for a spectator touching unloaded chunks; the END decision needs no player tick. */

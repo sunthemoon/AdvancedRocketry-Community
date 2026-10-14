@@ -229,7 +229,10 @@ public final class SleepRespawnService {
             report(player, Diagnostic.FOREIGN_PARENT);
             return;
         }
-        RespawnPointBackup.store(persisted, new Backup(saved, outcome));
+        Backup backup = new Backup(saved, outcome);
+        if (!pending.map(backup::equals).orElse(false)) { // F7: an unchanged refusal is not re-encoded each tick.
+            RespawnPointBackup.store(persisted, backup);
+        }
         clear(player);
     }
 
@@ -326,10 +329,13 @@ public final class SleepRespawnService {
 
     /** This service's own clear; the setter is a cancellable gameplay operation, not a preservation boundary. */
     private void clear(ServerPlayer player) {
-        player.respawnDimension = Level.OVERWORLD;
-        player.respawnPosition = null;
-        player.respawnAngle = 0.0F;
-        player.respawnForced = false;
+        if (player.respawnPosition != null || !Level.OVERWORLD.equals(player.respawnDimension)
+                || Float.floatToRawIntBits(player.respawnAngle) != 0 || player.respawnForced) {
+            player.respawnDimension = Level.OVERWORLD;
+            player.respawnPosition = null;
+            player.respawnAngle = 0.0F;
+            player.respawnForced = false;
+        }
         foreignSetters.remove(player.getUUID()); // Earlier setters are older than this clear.
     }
 
