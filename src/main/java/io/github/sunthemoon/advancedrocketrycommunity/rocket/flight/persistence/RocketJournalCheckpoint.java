@@ -12,10 +12,11 @@ import net.minecraft.nbt.CompoundTag;
 
 /** Session-local acknowledgement. RAM phase, dirty state and a successful ordinary save are not proof. */
 final class RocketJournalCheckpoint {
-    @FunctionalInterface interface DirectoryForce { void force(Path directory) throws IOException; }
-    private final DirectoryForce directoryForce;
-    RocketJournalCheckpoint() { this(CheckedSavedDataPolicy::forceDirectory); }
-    RocketJournalCheckpoint(DirectoryForce directoryForce) { this.directoryForce = java.util.Objects.requireNonNull(directoryForce); }
+    private final CheckedSavedDataPolicy.DirectoryForce directoryForce;
+    RocketJournalCheckpoint() { this(CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
+    RocketJournalCheckpoint(CheckedSavedDataPolicy.DirectoryForce directoryForce) {
+        this.directoryForce = java.util.Objects.requireNonNull(directoryForce);
+    }
     enum Outcome { UNACKNOWLEDGED, COMMITTED, NOT_COMMITTED, UNKNOWN }
     /** Checksum covers the immutable authority; phase and destination identity are its mutable envelope. */
     record RecordVersion(String checksum, String phase, UUID destination) {
@@ -59,7 +60,7 @@ final class RocketJournalCheckpoint {
                                 raw -> raw.getUUID("logical_rocket_id"), RecordVersion::of)));
         boolean[] attempted = {false};
         try {
-            var checked = new CheckedSavedDataPolicy(policy.type(), (staged, target) -> {
+            var checked = policy.withCommitter((staged, target) -> {
                 attempted[0] = true;
                 policy.committer().commit(staged, target);
             });

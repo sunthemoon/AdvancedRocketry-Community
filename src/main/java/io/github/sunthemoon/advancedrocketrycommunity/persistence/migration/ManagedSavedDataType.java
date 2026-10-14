@@ -69,6 +69,12 @@ public enum ManagedSavedDataType {
             List.of(new RequiredTag("records", Tag.TAG_LIST), new RequiredTag("floors", Tag.TAG_LIST),
                     new RequiredTag("tombstones", Tag.TAG_LIST), new RequiredTag("ledger_id", Tag.TAG_INT_ARRAY),
                     new RequiredTag("issued_through", Tag.TAG_LONG), new RequiredTag("writer_generation", Tag.TAG_LONG))
+    ),
+    /** W44 section 3.1: the world-first receipt store, schema 1 from introduction, so there is no legacy migration. */
+    CLASSIC_PROGRESSION(
+            "v1.8.0", "advancedrocketrycommunity_classic_progression", 256L * 1_024L,
+            List.of(new RequiredTag("first_moon_landing", Tag.TAG_COMPOUND),
+                    new RequiredTag("first_station_warp", Tag.TAG_COMPOUND))
     );
 
     private static final long FILE_OVERHEAD_BYTES = 64L * 1024L;
@@ -111,7 +117,7 @@ public enum ManagedSavedDataType {
             case STATIONS -> StationLimits.REGISTRY_SCHEMA_VERSION;
             case SATELLITE_MISSIONS -> SatelliteLimits.REGISTRY_SCHEMA_VERSION;
             case ENDGAME -> EndgameLimits.ROOT_SCHEMA_VERSION;
-            case RESOURCE_ESCROW -> 1;
+            case RESOURCE_ESCROW, CLASSIC_PROGRESSION -> 1;
             default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
         };
     }
@@ -146,6 +152,9 @@ public enum ManagedSavedDataType {
         if (this == RESOURCE_ESCROW) {
             return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLimits.EPOCH;
         }
+        if (this == CLASSIC_PROGRESSION) {
+            return "v1.8.0-classic-progression";
+        }
         return SavedDataSchemaMigrator.FORMAT_EPOCH;
     }
 
@@ -159,7 +168,7 @@ public enum ManagedSavedDataType {
 
     /** Whether older roots of this type exist; the endgame root was introduced at its current schema. */
     public boolean hasLegacySchema() {
-        return this != ENDGAME && this != RESOURCE_ESCROW;
+        return this != ENDGAME && this != RESOURCE_ESCROW && this != CLASSIC_PROGRESSION;
     }
 
     /**
