@@ -308,7 +308,7 @@ final class RocketFlightService {
         }
         RocketFlightData countdown = docked.withPlan(pad == null ? planned.plan() : planned.plan().withLandingPad(pad))
                 .startCountdown(rocket.level().getGameTime());
-        return transfers.prepareLaunch(rocket, countdown, () -> {
+        return transfers.prepareLaunch(rocket, countdown, new RocketRequestCompletion(() -> {
             if (requests.outcome(requestId) != RocketOperationLedger.Outcome.ACTIVE) { return; }
             requests.finish(requestId, true);
             var player = ((ServerLevel) rocket.level()).getServer().getPlayerList().getPlayer(actorId);
@@ -318,7 +318,7 @@ final class RocketFlightService {
                 report(player, rocket, RocketFlightAction.LAUNCH, destination, requestId,
                         new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, planned.requiredFuel()));
             }
-        });
+        }, () -> requests.finish(requestId, false)));
     }
 
     RocketFlightRequestResult requestAdminPadFlight(RocketEntity rocket, UUID stationId,
@@ -381,11 +381,11 @@ final class RocketFlightService {
                 || !flight.plan().orElseThrow().destinationTarget().equals(destination)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
-        return transfers.cancelCountdown(rocket, () -> {
+        return transfers.cancelCountdown(rocket, new RocketRequestCompletion(() -> {
             requests.finish(requestId, true);
             report(player, rocket, RocketFlightAction.CANCEL, destination, requestId,
                     new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, flight.plan().orElseThrow().requiredFuel()));
-        });
+        }, () -> requests.finish(requestId, false)));
     }
 
     private RocketFlightPlanResult plan(

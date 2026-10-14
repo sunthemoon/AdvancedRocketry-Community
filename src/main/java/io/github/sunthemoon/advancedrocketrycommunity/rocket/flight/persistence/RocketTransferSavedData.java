@@ -44,10 +44,16 @@ public final class RocketTransferSavedData extends SavedData {
     private static final class Effect {
         final UUID logical;
         final RocketTransferRecord expected;
-        final Runnable action;
+        final java.util.function.BooleanSupplier action;
+        final Runnable discarded;
         boolean committed;
-        Effect(UUID logical, RocketTransferRecord expected, Runnable action) {
-            this.logical = logical; this.expected = expected; this.action = action;
+        Effect(UUID logical, RocketTransferRecord expected, java.util.function.BooleanSupplier action, Runnable discarded) {
+            this.logical = logical; this.expected = expected; this.action = action; this.discarded = discarded;
+        }
+        void run() {
+            boolean accepted = false;
+            try { accepted = action.getAsBoolean(); }
+            finally { if (!accepted) { discarded.run(); } }
         }
     }
     private final Map<Long, Effect> effects = new LinkedHashMap<>();
@@ -292,17 +298,27 @@ public final class RocketTransferSavedData extends SavedData {
 
     /** At most one dependent continuation per captured generation, and at most two generations. */
     public boolean afterAcknowledged(MinecraftServer server, UUID logical, Runnable effect) {
+        return afterAcknowledged(server, logical, () -> { effect.run(); return true; }, () -> { });
+    }
+
+    public boolean afterAcknowledged(MinecraftServer server, UUID logical,
+            java.util.function.BooleanSupplier effect, Runnable discarded) {
         if (!server.isSameThread() || !operational() || stopping) { return false; }
-        if (!queueEffect(logical, effect)) { return false; }
+        if (!queueEffect(logical, effect, discarded)) { return false; }
         flushChecked(server); return true;
     }
 
     boolean queueEffect(UUID logical, Runnable effect) {
+        return queueEffect(logical, () -> { effect.run(); return true; }, () -> { });
+    }
+
+    boolean queueEffect(UUID logical, java.util.function.BooleanSupplier effect, Runnable discarded) {
         if (!operational() || stopping) { return false; }
-        if (acknowledgedCurrent()) { effect.run(); return true; }
+        var continuation = new Effect(logical, findByLogicalRocket(logical).orElse(null),
+                Objects.requireNonNull(effect), Objects.requireNonNull(discarded));
+        if (acknowledgedCurrent()) { continuation.run(); return true; }
         if (effects.containsKey(mutationSequence) || effects.size() == 2) { return false; }
-        effects.put(mutationSequence, new Effect(logical, findByLogicalRocket(logical).orElse(null),
-                Objects.requireNonNull(effect))); return true;
+        effects.put(mutationSequence, continuation); return true;
     }
 
     public boolean canQueueEffect() { return !stopping && !failedWrite && effects.size() < 2; }
@@ -316,17 +332,17 @@ public final class RocketTransferSavedData extends SavedData {
                 if (!acknowledgedCurrent()) { break; }
                 Effect effect = entry.getValue();
                 if (!effect.committed) {
-                    if (entry.getKey() < mutationSequence) { effects.remove(entry.getKey()); }
+                    if (entry.getKey() < mutationSequence) { effects.remove(entry.getKey()); effect.discarded.run(); }
                     continue;
                 }
                 effects.remove(entry.getKey());
                 if (findByLogicalRocket(effect.logical).orElse(null) == effect.expected) {
-                    try { effect.action.run(); }
+                    try { effect.run(); }
                     catch (RuntimeException failure) {
                         com.mojang.logging.LogUtils.getLogger().error("ARCE_TRANSFER_EFFECT_FAILED logical={} generation={}; retain journal authority for recovery",
                                 effect.logical, entry.getKey(), failure);
                     }
-                }
+                } else { effect.discarded.run(); }
             }
         }
     }
@@ -350,7 +366,7 @@ public final class RocketTransferSavedData extends SavedData {
                     .resolve("data").resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()),
                     RocketJournalFailurePolicy.checked(ownerServer));
         }
-        stopping = true; effects.clear();
+        stopping = true; discardEffects();
         if (writer != null) {
             writer.drain(this::publish);
             if (operational() && isDirty() && !failedWrite) {
@@ -359,7 +375,11 @@ public final class RocketTransferSavedData extends SavedData {
             writer.close(this::publish);
         }
     }
-    public void abort() { stopping = true; effects.clear(); if (writer != null) { writer.abort(); } }
+    private void discardEffects() {
+        var pending = List.copyOf(effects.values()); effects.clear();
+        pending.forEach(effect -> effect.discarded.run());
+    }
+    public void abort() { stopping = true; discardEffects(); if (writer != null) { writer.abort(); } }
 
     @Override
     public void save(java.io.File file) {
