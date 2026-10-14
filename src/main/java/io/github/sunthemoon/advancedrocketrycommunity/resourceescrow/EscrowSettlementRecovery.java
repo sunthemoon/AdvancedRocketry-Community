@@ -25,15 +25,18 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         void clear() { proofs.values().forEach(EscrowBarrier.Proof::release); proofs.clear(); }
     }
     private final Map<String, Work> work = new HashMap<>();
+    private final EscrowSettlementPruning.Cursor pruning = new EscrowSettlementPruning.Cursor();
     private int cursor;
     private boolean closed;
     void tick(MinecraftServer server, EscrowCoordinator coordinator, EscrowRuntime runtime) {
         if (closed || runtime.stopping()) { return; }
+        // Released groups progress independently of unrelated permanently held O1 decisions.
+        pruning.tick(server, coordinator);
         var intents = coordinator.ledger().records().stream().filter(op -> !op.settlement().isEmpty())
                 .map(op -> EscrowSettlementIntent.decode(op.settlement())).distinct().toList();
         var live = intents.stream().map(EscrowSettlementIntent::digest).collect(java.util.stream.Collectors.toSet());
         work.entrySet().removeIf(entry -> { if (live.contains(entry.getKey())) { return false; } entry.getValue().clear(); return true; });
-        if (intents.isEmpty()) { EscrowSettlementPruning.tick(server, coordinator.ledger(), cursor++); return; }
+        if (intents.isEmpty()) { return; }
         var intent = intents.get(Math.floorMod(cursor++, intents.size()));
         var state = work.computeIfAbsent(intent.digest(), ignored -> new Work());
         long tick = server.getTickCount();
@@ -95,11 +98,11 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             runtime.checkpoint("O3J_AFTER");
             state.phase = "O4"; state.writing = true;
             runtime.checkpoint("O4_CAPTURE");
-            if (!coordinator.settlementWrite(intent, state.proofs, true, journal.acknowledgedLease(), committed -> {
+            if (!coordinator.settlementWriteExact(intent, state.proofs, true, journal.acknowledgedLease(), acknowledgement -> {
                 state.writing = false;
-                if (committed) {
+                if (acknowledgement.committed()) {
                     runtime.checkpoint("O4_AFTER"); state.clear();
-                    EscrowSettlementPruning.tick(server, coordinator.ledger(), 0);
+                    pruning.enqueue(coordinator.ledger(), acknowledgement);
                     com.mojang.logging.LogUtils.getLogger().info("ARCE_ESCROW_O4 actor={} choice={} digest={} operations={} released=acknowledged",
                             intent.actor(), intent.choice(), intent.digest(), intent.ids());
                 } else { stalled(runtime, intent, state, "O4_WRITE_UNACKNOWLEDGED", server.getTickCount()); }

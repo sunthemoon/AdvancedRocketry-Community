@@ -94,6 +94,12 @@ public final class EscrowCoordinator implements AutoCloseable {
     /** O3/O4 use the frozen decision, never the ordinary prefix-retirement path. */
     boolean settlementWrite(EscrowSettlementIntent intent, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs,
                             boolean release, java.util.function.BooleanSupplier journalLease, Consumer<Boolean> callback) {
+        return settlementWriteExact(intent, proofs, release, journalLease, acknowledgement -> callback.accept(acknowledgement.committed()));
+    }
+    record SettlementAcknowledgement(UUID ledger, String digest, Set<UUID> members, long generation, boolean committed) { }
+    boolean settlementWriteExact(EscrowSettlementIntent intent, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs,
+                                 boolean release, java.util.function.BooleanSupplier journalLease,
+                                 Consumer<SettlementAcknowledgement> callback) {
         owner();
         if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
                 || tick - lastStart < 10) { return false; }
@@ -115,7 +121,8 @@ public final class EscrowCoordinator implements AutoCloseable {
         boolean accepted = writer.request(() -> EscrowLedgerWriter.Snapshot.of(frozen, Set.of()), result -> {
             acknowledge(result);
             if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
-            if (!closed) { callback.accept(result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED); }
+            if (!closed) { callback.accept(new SettlementAcknowledgement(intent.ledger(), intent.digest(), intent.ids(),
+                    result.generation(), result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED)); }
         }, () -> frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) && journalLease.getAsBoolean());
         if (accepted) { lastStart = tick; } return accepted;
     }
@@ -271,6 +278,9 @@ public final class EscrowCoordinator implements AutoCloseable {
     private java.util.stream.Stream<EscrowOperation> unresolved() {
         return java.util.stream.Stream.of(data.ledger().records().stream(), queued.values().stream(), writer.capturedOperations().stream())
                 .flatMap(java.util.function.Function.identity());
+    }
+    Set<UUID> unresolvedIds() {
+        owner(); return unresolved().map(EscrowOperation::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
     @Override public void close() { owner(); if (!closed) { closed = true; writer.close(); frontiers.clear(); } }
     /** Crash path, where ServerStoppingEvent never ran: no drain or callbacks, but the writer is joined. */

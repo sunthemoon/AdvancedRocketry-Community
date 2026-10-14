@@ -1,0 +1,81 @@
+package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
+
+import static org.junit.jupiter.api.Assertions.*;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+class EscrowSettlementPruningTest {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+
+    @Test void exactCEnqueueAndIndependentVisitsDoNotDependOnPermanentlyHeldB() {
+        var a = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE);
+        var b = EscrowTestFixtures.operation(2).withReason(EscrowReason.OTHER_STATE);
+        var c = EscrowTestFixtures.operation(3).withReason(EscrowReason.OTHER_STATE);
+        var ra = released(a); var rc = released(c);
+        var root = new EscrowLedger(ra.id(), 3, 7, List.of(b), List.of(),
+                List.of(ra.tombstones().get(0), rc.tombstones().get(0)));
+        var cursor = new EscrowSettlementPruning.Cursor();
+        String digest = rc.tombstones().get(0).getString("decision_digest");
+        cursor.enqueue(root, new EscrowCoordinator.SettlementAcknowledgement(root.id(), digest, Set.of(c.id()), 7, true));
+        assertEquals(Set.of(c.id()), cursor.next(root, Set.of(b.id())).group().members());
+        var visited = new java.util.HashSet<java.util.UUID>();
+        for (int i = 0; i < 8; i++) { visited.addAll(cursor.next(root, Set.of(b.id())).group().members()); }
+        assertEquals(Set.of(a.id(), c.id()), visited);
+        assertEquals(List.of(b), root.records());
+        // A restart rebuilds the same work even when the O4 callback never ran.
+        var restart = new EscrowSettlementPruning.Cursor();
+        assertNotNull(restart.next(EscrowCodec.decode(EscrowCodec.encode(root)), Set.of(b.id())));
+        assertThrows(IllegalArgumentException.class, () -> cursor.enqueue(root,
+                new EscrowCoordinator.SettlementAcknowledgement(root.id(), digest, Set.of(a.id()), 7, true)));
+        assertThrows(IllegalArgumentException.class, () -> cursor.enqueue(root,
+                new EscrowCoordinator.SettlementAcknowledgement(root.id(), digest, Set.of(c.id()), 6, true)));
+        assertThrows(IllegalArgumentException.class, () -> cursor.enqueue(root,
+                new EscrowCoordinator.SettlementAcknowledgement(root.id(), digest, Set.of(c.id()), 7, false)));
+    }
+
+    @Test void laterGroupWaitsForEarlierGroupAndLiveOrUnknownMarkersArePreserved() {
+        var a = new EscrowPrefix.Marker(EscrowTestFixtures.id(1), 1, "DESTINATION", 1);
+        var c = new EscrowPrefix.Marker(EscrowTestFixtures.id(3), 3, "DESTINATION", 2);
+        var live = new EscrowPrefix.Marker(EscrowTestFixtures.id(4), 4, "DESTINATION", 3);
+        var before = List.of(a, c, live);
+        assertEquals(before, EscrowSettlementPruning.prune(before, Set.of(c.operation()), Set.of()));
+        var afterA = EscrowSettlementPruning.prune(before, Set.of(a.operation()), Set.of());
+        assertEquals(List.of(c, live), afterA);
+        assertDoesNotThrow(() -> new RocketEscrowSection(EscrowTestFixtures.id(500), 3, afterA));
+        var afterC = EscrowSettlementPruning.prune(afterA, Set.of(c.operation()), Set.of());
+        assertEquals(List.of(live), afterC);
+        assertDoesNotThrow(() -> new RocketEscrowSection(EscrowTestFixtures.id(500), 3, afterC));
+        assertEquals(afterA, EscrowSettlementPruning.prune(afterA, Set.of(c.operation()), Set.of(c.operation())));
+        assertEquals(before, EscrowSettlementPruning.prune(before, Set.of(a.operation(), live.operation()), Set.of()));
+    }
+
+    @Test void aBusyGroupDoesNotPreventTheCursorFromVisitingAnotherGroup() {
+        var a = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE);
+        var c = EscrowTestFixtures.operation(3).withReason(EscrowReason.OTHER_STATE);
+        var ra = released(a); var rc = released(c);
+        var root = new EscrowLedger(ra.id(), 3, 0, List.of(), List.of(),
+                List.of(ra.tombstones().get(0), rc.tombstones().get(0)));
+        var cursor = new EscrowSettlementPruning.Cursor();
+        assertNull(cursor.next(root, Set.of(a.id())));
+        assertEquals(Set.of(c.id()), cursor.next(root, Set.of(a.id())).group().members());
+        // A skipped/unloaded endpoint advances its endpoint cursor, not its authority.
+        var first = cursor.next(root, Set.of());
+        cursor.next(root, Set.of());
+        var later = cursor.next(root, Set.of());
+        assertEquals(first.group(), later.group());
+        assertNotEquals(first.endpoint().reference().key(), later.endpoint().reference().key());
+    }
+
+    private static EscrowLedger released(EscrowOperation op) {
+        var root = EscrowTestFixtures.ledger(op);
+        var observations = EscrowSettlementIntentTest.observations(root, false);
+        var actor = EscrowTestFixtures.id(800);
+        var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                actor, "operator", 10, observations);
+        var intent = preview.confirm(actor, preview.digest(), 11, observations);
+        return EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent);
+    }
+}

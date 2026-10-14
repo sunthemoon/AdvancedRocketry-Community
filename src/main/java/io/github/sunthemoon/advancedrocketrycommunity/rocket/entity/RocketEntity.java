@@ -166,6 +166,9 @@ public final class RocketEntity extends Entity implements MenuProvider {
     public void pruneSettledEscrow() {
         escrowSection = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementPruning.rocket(this, escrowSection);
     }
+    public void pruneSettledEscrow(String digest, java.util.Set<UUID> members) {
+        escrowSection = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementPruning.rocket(this, escrowSection, digest, members);
+    }
 
     public RocketFlightState displayedFlightState() {
         try {
