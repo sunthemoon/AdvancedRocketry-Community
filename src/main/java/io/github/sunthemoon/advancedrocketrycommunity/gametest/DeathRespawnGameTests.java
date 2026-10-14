@@ -32,6 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
@@ -173,7 +174,7 @@ public final class DeathRespawnGameTests {
         ServerPlayer player = join(helper, "W37HNoPlayerTick");
         int[] playerTicks = {0};
         Consumer<TickEvent.PlayerTickEvent> count = event -> { if (event.player == player) { playerTicks[0]++; } };
-        MinecraftForge.EVENT_BUS.addListener(count);
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TickEvent.PlayerTickEvent.class, count);
         player.setRespawnPosition(CelestialIds.MOON_LEVEL, FAR, 77.25F, true, false);
         player.kill();
         afterEachEnd(helper, () -> {
