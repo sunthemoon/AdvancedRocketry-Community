@@ -41,6 +41,9 @@ public final class SavedDataSchemaMigrator {
                     type.dataName() + " has unsupported schema " + schema
             );
         }
+        if (preReleaseStationRoot(type, source, schema)) {
+            return migratePreReleaseStations(type, source, schema);
+        }
         type.validateRootShape(source, schema);
 
         if (schema >= type.firstEpochSchema()) {
@@ -99,6 +102,38 @@ public final class SavedDataSchemaMigrator {
         migrated.putString(EPOCH_KEY, FORMAT_EPOCH);
         migrated.putInt(MIGRATED_FROM_KEY, LEGACY_SCHEMA_VERSION);
         return new MigrationResult(MigrationStatus.MIGRATED, schema, migrated);
+    }
+
+    /**
+     * W44 section 1.4: the exact whitelist that precedes generic epoch validation and CURRENT classification:
+     * station schema 5, the exact pre-release epoch, and no outbox key at all. Anything else takes the generic path,
+     * which refuses a new epoch without an outbox, an old epoch with one and every unknown epoch.
+     */
+    private static boolean preReleaseStationRoot(ManagedSavedDataType type, CompoundTag source, int schema) {
+        return type == ManagedSavedDataType.STATIONS
+                && schema == io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits
+                .CONTROLS_REGISTRY_SCHEMA_VERSION
+                && source.contains(EPOCH_KEY, Tag.TAG_STRING)
+                && ManagedSavedDataType.STATION_PRE_RELEASE_EPOCH.equals(source.getString(EPOCH_KEY))
+                && !source.contains(ManagedSavedDataType.FIRST_STATION_WARP_KEY);
+    }
+
+    /**
+     * W44 section 1.4: the unreleased pre-W44 root 5 is validated completely under its old contract, including its
+     * clock; every unrelated field is copied, the EMPTY outbox added and the new epoch stamped; the result is then
+     * validated and must fit the unchanged 4 MiB root bound, or the migration refuses intact.
+     */
+    private static MigrationResult migratePreReleaseStations(ManagedSavedDataType type, CompoundTag source, int schema) {
+        try {
+            type.validateRootShape(source, schema);
+            CompoundTag migrated = StationRegistryPayload.upgradePreReleaseRoot(source);
+            stampCurrent(type, migrated);
+            StationRegistryPayload.decodeCurrent(migrated);
+            return new MigrationResult(MigrationStatus.MIGRATED, schema, migrated);
+        } catch (RuntimeException exception) {
+            throw new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA,
+                    type.dataName() + " pre-release root 5 cannot take the first-warp outbox", exception);
+        }
     }
 
     /**

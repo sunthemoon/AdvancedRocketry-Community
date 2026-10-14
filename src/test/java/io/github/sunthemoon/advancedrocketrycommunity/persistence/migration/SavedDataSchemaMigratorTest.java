@@ -129,7 +129,10 @@ final class SavedDataSchemaMigratorTest {
         assertEquals(4, StationLimits.WARP_REGISTRY_SCHEMA_VERSION);
         assertEquals(3, StationLimits.ORBITAL_REGISTRY_SCHEMA_VERSION);
         assertEquals(3, StationLimits.STATE_SCHEMA_VERSION);
-        assertEquals("v1.8.0-station-orbital-controls", ManagedSavedDataType.STATIONS.formatEpoch());
+        // W44 section 1.4: root 5 keeps its number; the outbox-bearing root has the new epoch, and the unreleased
+        // pre-W44 epoch is only the exact migration whitelist.
+        assertEquals("v1.8.0-station-first-warp", ManagedSavedDataType.STATIONS.formatEpoch());
+        assertEquals("v1.8.0-station-orbital-controls", ManagedSavedDataType.STATION_PRE_RELEASE_EPOCH);
         assertEquals(StationLimits.REGISTRY_SCHEMA_VERSION, ManagedSavedDataType.STATIONS.currentSchemaVersion());
         assertEquals(2, SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION);
         // ADR-050 §10: the satellite registry evolves independently, like stations.

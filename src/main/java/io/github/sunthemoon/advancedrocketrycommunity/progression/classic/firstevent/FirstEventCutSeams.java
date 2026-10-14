@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import java.util.Arrays;
@@ -78,6 +79,19 @@ public final class FirstEventCutSeams {
         return cut;
     }
 
+    /**
+     * Station committer and readback reader of the extracted station writer (rows FW1, FW2, FW6a, FW6b, FW7, FP8):
+     * the atomic policy in production.
+     */
+    public static CheckedSavedDataPolicy stationPolicy(MinecraftServer server) {
+        return CheckedSavedDataPolicy.atomic(ManagedSavedDataType.STATIONS);
+    }
+
+    /** Directory force of the journal checkpoint, the station writer and the progression barrier (FM2a, FM2b, FM8b). */
+    public static CheckedSavedDataPolicy.DirectoryForce directoryForce(MinecraftServer server) {
+        return CheckedSavedDataPolicy.DirectoryForce.PLATFORM;
+    }
+
     /** The fixed sorted participants of the synthetic M and WARP fixtures, and the later observer who is never one. */
     public static final UUID P1 = UUID.fromString("00000000-0000-4000-8000-0000000000a1");
     public static final UUID P2 = UUID.fromString("00000000-0000-4000-8000-0000000000a2");
@@ -89,6 +103,11 @@ public final class FirstEventCutSeams {
      */
     public static Optional<List<UUID>> participants(MinecraftServer server, FirstEventKind kind) {
         return active(server).map(cut -> List.of(P1, P2));
+    }
+
+    /** Warp visitor count seam: the real saturating count in production; 4,097 for FW8b. */
+    public static Optional<Integer> warpVisitorCount(MinecraftServer server) {
+        return active(server).filter(cut -> cut == Cut.FW8B).map(cut -> FirstEventKind.FIRST_STATION_WARP.maxParticipants() + 1);
     }
 
     /**

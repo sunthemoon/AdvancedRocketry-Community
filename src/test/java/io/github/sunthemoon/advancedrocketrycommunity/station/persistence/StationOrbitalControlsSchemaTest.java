@@ -328,6 +328,9 @@ final class StationOrbitalControlsSchemaTest {
         source.put("reservations", new ListTag());
         source.put("warp_energy", new ListTag());
         source.put("orbital_clock", StationRegistryPayload.encodeClock(logicalTick));
+        source.put("classic_first_warp", io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox.empty()
+                .encode(io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind
+                        .FIRST_STATION_WARP));
         return source;
     }
 
@@ -337,6 +340,7 @@ final class StationOrbitalControlsSchemaTest {
         rootFour.putInt("schema_version", 4);
         rootFour.putString("format_epoch", "v1.5.0-station-warp");
         rootFour.remove("orbital_clock");
+        rootFour.remove("classic_first_warp");
         rootFour.getList("stations", Tag.TAG_COMPOUND).forEach(raw -> {
             ((CompoundTag) raw).putInt("schema_version", 2);
             ((CompoundTag) raw).remove("orbital_controls");

@@ -82,6 +82,12 @@ public enum ManagedSavedDataType {
     private static final String ORBITAL_CLOCK_KEY = "orbital_clock";
     private static final String SATELLITE_INSTANCES_KEY = "instances";
     private static final String SATELLITE_SAVE_EPOCH_KEY = "save_epoch";
+    /** W44 section 1.1: the first-warp outbox of station root 5 with the new epoch. */
+    public static final String FIRST_STATION_WARP_KEY = "classic_first_warp";
+    /** W44 section 1.4: the current station root 5 epoch, which requires the outbox. */
+    public static final String STATION_FIRST_WARP_EPOCH = "v1.8.0-station-first-warp";
+    /** W44 section 9.1: the unreleased pre-W44 root 5 epoch, migrated once by the exact whitelist. */
+    public static final String STATION_PRE_RELEASE_EPOCH = "v1.8.0-station-orbital-controls";
     /** W44 section 2.1: the Moon landing outbox of journal root 3. */
     public static final String FIRST_MOON_LANDING_KEY = "classic_first_moon_landing";
     /** W44 section 2.2: transfer journal root 3, independent of the per-record schema 2. */
@@ -140,7 +146,7 @@ public enum ManagedSavedDataType {
             return "v1.5.0-station-warp";
         }
         if (this == STATIONS && schema == StationLimits.CONTROLS_REGISTRY_SCHEMA_VERSION) {
-            return "v1.8.0-station-orbital-controls";
+            return STATION_FIRST_WARP_EPOCH;
         }
         if (this == SATELLITE_MISSIONS) {
             // Historical epochs are literals; a later root changes the current constant, never these.
@@ -233,6 +239,16 @@ public enum ManagedSavedDataType {
                         MigrationDiagnosticId.INVALID_SCHEMA,
                         dataName + " schema " + schema + (clockRoot ? " is missing required " : " cannot carry ")
                                 + ORBITAL_CLOCK_KEY
+                );
+            }
+            // W44 section 1.4: the outbox is required exactly when root 5 carries the new epoch.
+            boolean outboxRoot = clockRoot && STATION_FIRST_WARP_EPOCH.equals(payload.getString("format_epoch"));
+            if (outboxRoot ? !payload.contains(FIRST_STATION_WARP_KEY, Tag.TAG_COMPOUND)
+                    : payload.contains(FIRST_STATION_WARP_KEY)) {
+                throw new SavedDataMigrationException(
+                        MigrationDiagnosticId.INVALID_SCHEMA,
+                        dataName + " schema " + schema + (outboxRoot ? " is missing required " : " cannot carry ")
+                                + FIRST_STATION_WARP_KEY
                 );
             }
         }

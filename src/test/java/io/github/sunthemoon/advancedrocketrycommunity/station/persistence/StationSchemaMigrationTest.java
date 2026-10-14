@@ -26,9 +26,13 @@ final class StationSchemaMigrationTest {
         var result = SavedDataSchemaMigrator.migrate(TYPE, source);
         CompoundTag expected = source.copy();
         expected.putInt("schema_version", 5);
-        expected.putString("format_epoch", "v1.8.0-station-orbital-controls");
+        expected.putString("format_epoch", "v1.8.0-station-first-warp");
         expected.put("warp_energy", new ListTag());
         expected.put("orbital_clock", StationWarpSchemaTest.clock(0L));
+        // W44 section 1.4: no old root records a warp, so the first-warp outbox starts EMPTY.
+        expected.put("classic_first_warp", io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox.empty()
+                .encode(io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind
+                        .FIRST_STATION_WARP));
         station(expected).putInt("schema_version", 3);
         // ADR-065: the EAST phase reproduces the stored 359,999 milli-degree sun angle exactly.
         station(expected).put("orbital_controls", StationWarpSchemaTest.initialControls(359_999));
