@@ -52,7 +52,6 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerSetSpawnEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -70,12 +69,12 @@ import net.minecraftforge.eventbus.api.IEventBus;
  *       after KILLED corpse removal and without any player tick, and for each player watching the End credits.
  *       DISCARDED removal remains the final check for immediate respawn and a mod's living-player respawn call.
  *       A refused point is durably set aside so vanilla uses the Overworld, then restored to the replacement.</li>
- *   <li>A newer point always wins: a set-aside point governs only its own restored tuple or this service's exact
- *       clear, and only until another party sets the point. It never overwrites a newer record.</li>
+ *   <li>A newer point always wins: a set-aside point governs only its own restored tuple or the exact cleared tuple,
+ *       whoever wrote it. It never overwrites any other tuple.</li>
  * </ul>
  *
- * A set-aside tuple is owned by the player's persisted Forge data, not a tick-local map. The only transient state is
- * which players had a foreign setter since this service's clear; it ends at logout and at server stop.
+ * A set-aside tuple is owned by the player's persisted Forge data, not a tick-local map. No transient state decides
+ * which point governs; the only transient state is the once-per-session diagnostic sets.
  */
 public final class SleepRespawnService {
     /** The vanilla bed and anchor stand-up searches read blocks at most this far from the saved block. */
@@ -109,8 +108,6 @@ public final class SleepRespawnService {
     private final AtmosphereManager atmosphere;
     private final CelestialCatalogManager catalogs;
     private final Supplier<Options> options;
-    /** Players with a pending backup whose point another party set since this service's clear (server thread). */
-    private final Set<UUID> foreignSetters = new HashSet<>();
     /** Players already reported per diagnostic in this server session (server thread). */
     private final Map<Diagnostic, Set<UUID>> reported = new EnumMap<>(Diagnostic.class);
 
@@ -146,8 +143,6 @@ public final class SleepRespawnService {
         bus.addListener(this::onLogout);
         // After every Level and connection tick, and after the other END listeners (the atmosphere authority's too).
         bus.addListener(EventPriority.LOWEST, this::onServerTick);
-        // Last, and only for setters that were not cancelled: an observer, never a veto.
-        bus.addListener(EventPriority.LOWEST, this::onSpawnSetter);
         bus.addListener(this::onServerStopped);
     }
 
@@ -241,33 +236,19 @@ public final class SleepRespawnService {
     }
 
     public void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()) {
-            foreignSetters.remove(player.getUUID()); // At login the tuple check alone decides.
-            if (!player.isDeadOrDying()) { restore(player, true); }
+        if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread() && !player.isDeadOrDying()) {
+            restore(player, true);
         }
     }
 
-    /** PlayerList.remove posts this before the native save: a foreign setter since the clear still counts, once. */
+    /** PlayerList.remove posts this before the native save, so a superseded backup is not saved. */
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()) {
             governing(player);
-            foreignSetters.remove(player.getUUID());
-        }
-    }
-
-    /**
-     * F1: notes another party's setter while a backup is pending, whichever player the connection owns. This service
-     * writes the four fields directly and posts no event, so every setter seen here is foreign. Never a veto.
-     */
-    public void onSpawnSetter(PlayerSetSpawnEvent event) {
-        if (!event.isCanceled() && event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()
-                && backup(player).isPresent()) {
-            foreignSetters.add(player.getUUID());
         }
     }
 
     public void onServerStopped(ServerStoppedEvent event) {
-        foreignSetters.clear();
         reported.clear();
     }
 
@@ -307,14 +288,13 @@ public final class SleepRespawnService {
     }
 
     /**
-     * F1: the pending backup that still governs this player's point. Any other native tuple, or another party's clear
-     * since this service's own, is newer: the backup is removed without writing a field.
+     * F1, W37I: the pending backup that still governs this player's point. Only a changed native tuple is newer: the
+     * backup is then removed without writing a field. The exact cleared tuple governs, whoever wrote it.
      */
     private Optional<Backup> governing(ServerPlayer player) {
         Optional<Backup> pending = backup(player);
         if (pending.isPresent() && !RespawnPointBackup.governs(pending.orElseThrow().point(), player.getRespawnDimension(),
-                player.getRespawnPosition(), player.getRespawnAngle(), player.isRespawnForced(),
-                foreignSetters.contains(player.getUUID()))) {
+                player.getRespawnPosition(), player.getRespawnAngle(), player.isRespawnForced())) {
             release(player);
             return Optional.empty();
         }
@@ -322,13 +302,12 @@ public final class SleepRespawnService {
     }
 
     /** Removes the pending backup; an opaque retained root returns to its key. */
-    private void release(ServerPlayer player) {
+    private static void release(ServerPlayer player) {
         RespawnPointBackup.complete(persisted(player, false));
-        foreignSetters.remove(player.getUUID());
     }
 
     /** This service's own clear; the setter is a cancellable gameplay operation, not a preservation boundary. */
-    private void clear(ServerPlayer player) {
+    private static void clear(ServerPlayer player) {
         if (player.respawnPosition != null || !Level.OVERWORLD.equals(player.respawnDimension)
                 || Float.floatToRawIntBits(player.respawnAngle) != 0 || player.respawnForced) {
             player.respawnDimension = Level.OVERWORLD;
@@ -336,7 +315,6 @@ public final class SleepRespawnService {
             player.respawnAngle = 0.0F;
             player.respawnForced = false;
         }
-        foreignSetters.remove(player.getUUID()); // Earlier setters are older than this clear.
     }
 
     private static CompoundTag persisted(ServerPlayer player, boolean create) {

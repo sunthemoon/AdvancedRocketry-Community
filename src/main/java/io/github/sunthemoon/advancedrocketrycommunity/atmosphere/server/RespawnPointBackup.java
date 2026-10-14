@@ -130,15 +130,15 @@ public final class RespawnPointBackup {
     }
 
     /**
-     * F1: whether a pending backup still governs the native tuple. It does for its own (restored) tuple, and for the
-     * exact clear this mod writes (Overworld, no position, raw angle 0.0F, not forced) unless another party set the
-     * point since that clear. Any other tuple is newer than the backup.
+     * F1, W37I: whether a pending backup still governs the native tuple. It does for its own (restored) tuple, and for
+     * the exact clear this mod writes (Overworld, no position, raw angle 0.0F, not forced), whoever wrote it. Only a
+     * changed tuple is newer than the backup.
      */
     public static boolean governs(Point backup, ResourceKey<Level> dimension, @Nullable BlockPos position, float angle,
-                                  boolean forced, boolean foreignSetterSinceClear) {
+                                  boolean forced) {
         int angleBits = Float.floatToRawIntBits(angle);
         if (position == null) {
-            return !foreignSetterSinceClear && Level.OVERWORLD.equals(dimension) && angleBits == 0 && !forced;
+            return Level.OVERWORLD.equals(dimension) && angleBits == 0 && !forced;
         }
         return backup.dimension().equals(dimension) && backup.position().equals(position)
                 && Float.floatToRawIntBits(backup.angle()) == angleBits && backup.forced() == forced;

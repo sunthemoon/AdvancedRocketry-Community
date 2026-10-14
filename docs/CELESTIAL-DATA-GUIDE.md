@@ -219,7 +219,8 @@ and keeps the saved point for later. The check never loads a chunk. This policy
 covers death respawns, including delayed death-screen requests, and the return
 from the End after the credits, which is judged the same way. A point set while
 an earlier one is kept aside, by a command, a bed or another mod, is newer: it
-replaces the kept point.
+replaces the kept point. Clearing the point is not a newer point: while a point
+is kept aside, an empty point means the kept one comes back.
 
 ## Using the flight star map
 

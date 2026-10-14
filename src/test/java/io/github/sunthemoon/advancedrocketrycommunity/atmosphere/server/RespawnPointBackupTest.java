@@ -124,22 +124,20 @@ class RespawnPointBackupTest {
         }
     }
 
-    @Test void aBackupGovernsOnlyItsOwnTupleOrTheExactClearedTupleWithoutAForeignSetter() {
+    @Test void aBackupGovernsOnlyItsOwnTupleOrTheExactClearedTuple() {
         Point point = backup().point(); // Moon, angle -0.0F, forced.
         BlockPos at = point.position();
-        for (boolean foreign : new boolean[] {false, true}) {
-            assertTrue(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at, -0.0F, true, foreign));
-        }
-        assertTrue(RespawnPointBackup.governs(point, Level.OVERWORLD, null, 0.0F, false, false));
-        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, null, 0.0F, false, true)); // Another party's clear.
+        assertTrue(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at, -0.0F, true));
+        // W37I: the exact cleared tuple governs whoever wrote it, this mod's clear or another party's.
+        assertTrue(RespawnPointBackup.governs(point, Level.OVERWORLD, null, 0.0F, false));
         // Every other tuple is newer.
-        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, null, -0.0F, false, false));
-        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, null, 0.0F, true, false));
-        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, null, 0.0F, false, false));
-        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, at, -0.0F, true, false));
-        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at.east(), -0.0F, true, false));
-        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at, 0.0F, true, false));
-        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at, -0.0F, false, false));
+        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, null, -0.0F, false));
+        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, null, 0.0F, true));
+        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, null, 0.0F, false));
+        assertFalse(RespawnPointBackup.governs(point, Level.OVERWORLD, at, -0.0F, true));
+        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at.east(), -0.0F, true));
+        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at, 0.0F, true));
+        assertFalse(RespawnPointBackup.governs(point, CelestialIds.MOON_LEVEL, at, -0.0F, false));
     }
 
     @Test void aNewNativeTupleCanBeProtectedWithoutLosingAnOpaqueOldBackup() {

@@ -25,8 +25,9 @@ import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
- * W37F review F1: a point set while an older one is set aside is newer and wins. Native connected players, the real
- * command dispatcher, the respawn packet and the production server-tick END decision, with the default options.
+ * W37F review F1: a point set while an older one is set aside is newer and wins. W37I: the exact cleared tuple is not
+ * newer, whoever writes it. Native connected players, the real command dispatcher, the respawn packet and the
+ * production server-tick END decision, with the default options.
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -135,51 +136,86 @@ public final class RespawnSupersessionGameTests {
                                 + reborn[0].getRespawnDimension().location() + " " + reborn[0].getRespawnPosition()));
     }
 
-    /** A native null setter from another mod looks like this mod's clear; the observed event marks it as newer. */
+    /**
+     * W37I (Root's decision; W37H expected the opposite): another mod's null setter writes the exact cleared tuple,
+     * which is not a newer point. The backup governs and the point is restored.
+     */
     @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
-    public static void aForeignClearWhileABackupIsPendingIsNotUndone(GameTestHelper helper) {
+    public static void aForeignClearWhileABackupIsPendingIsRestored(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
-        ServerPlayer player = dying(helper, "W37HForeignClear");
+        ServerPlayer player = dying(helper, "W37IForeignClear");
+        ServerPlayer[] reborn = {null};
         DeathRespawnGameTests.afterEachEnd(helper, () -> DeathRespawnGameTests.remove(server, player.getUUID()),
                 () -> {
                     assertSetAside(helper, player, FAR);
                     player.setRespawnPosition(Level.OVERWORLD, null, 0.0F, false, false);
-                    helper.assertTrue(DeathRespawnGameTests.pending(player), "The clear itself removed the backup");
                 },
                 () -> {
-                    helper.assertTrue(!DeathRespawnGameTests.pending(player) && player.getRespawnPosition() == null,
-                            "The next decision did not treat the foreign clear as newer");
-                    ServerPlayer reborn = DeathRespawnGameTests.packet(player);
-                    helper.assertTrue(reborn.getRespawnPosition() == null && !DeathRespawnGameTests.pending(reborn),
-                            "The older point came back after another party's clear");
-                    assertNoKeptMessage(helper, reborn);
-                });
+                    assertSetAside(helper, player, FAR); // The next decision kept the backup.
+                    reborn[0] = DeathRespawnGameTests.packet(player);
+                    assertRestored(helper, reborn[0]);
+                },
+                () -> assertCompleted(helper, reborn[0]));
     }
 
-    /** The transient flag is applied at logout, before the native save, so a reconnect does not undo the clear. */
+    /** W37I: nothing transient decides, so the clear, the logout save and a reconnect still leave the backup governing. */
     @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
-    public static void aForeignClearIsAppliedBeforeTheLogoutSave(GameTestHelper helper) {
+    public static void aForeignClearKeepsTheBackupAcrossTheLogoutSave(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         UUID id = UUID.randomUUID();
-        ServerPlayer player = DeathRespawnGameTests.join(helper, id, "W37HClearLogout");
+        ServerPlayer player = DeathRespawnGameTests.join(helper, id, "W37IClearLogout");
         player.setRespawnPosition(CelestialIds.MOON_LEVEL, FAR, 77.25F, true, false);
         player.kill();
+        ServerPlayer[] reborn = {null};
         DeathRespawnGameTests.afterEachEnd(helper, () -> DeathRespawnGameTests.remove(server, id),
                 () -> {
                     assertSetAside(helper, player, FAR);
                     player.setRespawnPosition(Level.OVERWORLD, null, 0.0F, false, false);
                     server.getPlayerList().remove(player); // The native player-file save.
-                    ServerPlayer reconnected = DeathRespawnGameTests.join(helper, id, "W37HClearLogout");
-                    helper.assertTrue(!DeathRespawnGameTests.pending(reconnected)
-                                    && reconnected.getRespawnPosition() == null,
-                            "The saved file kept a backup that another party's clear had superseded");
+                    ServerPlayer reconnected = DeathRespawnGameTests.join(helper, id, "W37IClearLogout");
+                    helper.assertTrue(reconnected.isDeadOrDying(), "The reconnected fixture is not on the death screen");
+                    assertSetAside(helper, reconnected, FAR);
                 },
                 () -> {
                     ServerPlayer current = server.getPlayerList().getPlayer(id);
-                    helper.assertTrue(current != null && !DeathRespawnGameTests.pending(current)
-                                    && current.getRespawnPosition() == null,
-                            "A later decision brought the superseded point back");
-                });
+                    helper.assertTrue(current != null, "The reconnected player left the player list");
+                    assertSetAside(helper, current, FAR); // The reconnected dead player's decision kept it.
+                    reborn[0] = DeathRespawnGameTests.packet(current);
+                    assertRestored(helper, reborn[0]);
+                },
+                () -> assertCompleted(helper, reborn[0]));
+    }
+
+    /**
+     * W37I: another mod's Clone listener copies the old player's tuple, which is this mod's clear, onto the replacement
+     * through the real setter. That is not a newer point, so the refused point is restored.
+     */
+    @GameTest(template = "atmosphere_test", batch = "death_respawn", timeoutTicks = 40)
+    public static void aCloneListenerCopyingTheClearedTupleKeepsThePoint(GameTestHelper helper) {
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerPlayer player = dying(helper, "W37ICloneCopy");
+        boolean[] copied = {false};
+        Consumer<PlayerEvent.Clone> copy = event -> {
+            if (event.getEntity() instanceof ServerPlayer replacement && event.getOriginal() instanceof ServerPlayer original
+                    && replacement.getUUID().equals(player.getUUID())) {
+                copied[0] = original.getRespawnPosition() == null;
+                replacement.setRespawnPosition(original.getRespawnDimension(), original.getRespawnPosition(),
+                        original.getRespawnAngle(), original.isRespawnForced(), false);
+            }
+        };
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerEvent.Clone.class, copy);
+        ServerPlayer[] reborn = {null};
+        DeathRespawnGameTests.afterEachEnd(helper, () -> {
+                    MinecraftForge.EVENT_BUS.unregister(copy);
+                    DeathRespawnGameTests.remove(server, player.getUUID());
+                },
+                () -> {
+                    assertSetAside(helper, player, FAR);
+                    reborn[0] = DeathRespawnGameTests.packet(player);
+                    helper.assertTrue(copied[0], "The Clone listener did not copy the cleared tuple");
+                    assertRestored(helper, reborn[0]);
+                },
+                () -> assertCompleted(helper, reborn[0]));
     }
 
     /** A connected player with a Moon point (the default options refuse it) who has just died. */
@@ -210,6 +246,19 @@ public final class RespawnSupersessionGameTests {
         helper.assertTrue(player.getRespawnPosition() == null && RespawnPointBackup.decode(root)
                         .map(backup -> backup.point().position().equals(point)).orElse(false),
                 "The refused point " + point + " was not set aside");
+    }
+
+    /** The refused Moon point did not place the replacement, and is back on it with its reason. */
+    private static void assertRestored(GameTestHelper helper, ServerPlayer reborn) {
+        SleepRespawnGameTests.assertOverworldFallback(helper, reborn, CelestialIds.MOON_LEVEL, FAR, true,
+                RespawnOutcome.DISABLED);
+        helper.assertTrue(reborn.getRespawnAngle() == 77.25F, "The restored point lost its angle");
+    }
+
+    private static void assertCompleted(GameTestHelper helper, ServerPlayer reborn) {
+        helper.assertTrue(!DeathRespawnGameTests.pending(reborn) && CelestialIds.MOON_LEVEL.equals(reborn.getRespawnDimension())
+                        && FAR.equals(reborn.getRespawnPosition()) && reborn.getRespawnAngle() == 77.25F,
+                "The restored point's recovery was not completed: " + reborn.getRespawnPosition());
     }
 
     private static void assertNativeRespawnAt(GameTestHelper helper, MinecraftServer server, ServerPlayer reborn,
