@@ -1,0 +1,32 @@
+{
+  "type": "advancedrocketrycommunity:precision_assembling",
+  "energy_per_tick": 50,
+  "inputs": [
+    {
+      "count": 1,
+      "ingredient": {
+        "tag": "forge:dusts/redstone"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "minecraft:ender_eye"
+      }
+    },
+    {
+      "count": 1,
+      "ingredient": {
+        "item": "advancedrocketrycommunity:basic_circuit_plate"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "count": 1,
+      "item": "advancedrocketrycommunity:tracking_circuit"
+    }
+  ],
+  "processing_time": 900,
+  "schema_version": 1
+}

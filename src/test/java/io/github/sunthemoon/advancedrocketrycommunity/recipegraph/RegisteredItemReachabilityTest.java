@@ -48,6 +48,8 @@ class RegisteredItemReachabilityTest {
         report.append("\n## Optional cross-mod inputs (TASK-W19-ROOT-DECISION-01)\n\n");
         new TreeSet<>(PackagedRecipeGraph.OPTIONAL_CROSS_MOD_INPUTS).forEach(node ->
                 report.append("- ").append(node).append('\n'));
+        report.append("\n## First acquisition witnesses\n\n");
+        appendWitnesses(report, baseline);
         Files.createDirectories(Path.of("build/reports"));
         Files.writeString(Path.of("build/reports/registered-item-acquisition.md"), report);
     }
@@ -79,6 +81,43 @@ class RegisteredItemReachabilityTest {
         Set<String> required = new TreeSet<>(supplied.available().keySet());
         required.removeAll(PackagedRecipeGraph.OPTIONAL_CROSS_MOD_INPUTS);
         assertEquals(required, forbidden.available().keySet());
+    }
+
+    @Test
+    void withoutTauCetiLevelsOnlyTheExactExoplanetItemsAndOptionalDustsAreUnreachable() throws IOException {
+        Success disabled = evaluate(graph.roots, graph.withoutInputs(PackagedRecipeGraph.TAU_CETI_LEVELS));
+        Set<String> missing = new TreeSet<>(items);
+        missing.removeAll(disabled.available().keySet());
+        Set<String> expected = new TreeSet<>(PackagedRecipeGraph.TAU_CETI_ITEMS);
+        items.stream().filter(PackagedRecipeGraph.OPTIONAL_CROSS_MOD_INPUTS::contains).forEach(expected::add);
+        StringBuilder report = new StringBuilder("# Registered item acquisition without Tau Ceti Levels\n\n");
+        report.append("Removed access: tau_ceti_f, tau_ceti_g. Discovery and orbital access remain modelled.\n\n")
+                .append("## Unreachable registered items\n\n");
+        missing.forEach(item -> report.append("- ").append(item).append('\n'));
+        report.append("\n## Unavailable graph nodes\n\n");
+        disabled.unavailable().forEach(node -> report.append("- ").append(node).append('\n'));
+        report.append("\n## First acquisition witnesses\n\n");
+        appendWitnesses(report, disabled);
+        Files.writeString(Path.of("build/reports/registered-item-acquisition-without-tau-ceti.md"), report);
+        assertEquals(expected, missing, "Only the eleven C15c items and five optional dusts may be unreachable");
+        assertTrue(java.util.Collections.disjoint(disabled.available().keySet(), PackagedRecipeGraph.TAU_CETI_LEVELS));
+        for (String id : enchantments) {
+            assertTrue(disabled.available().containsKey("enchantment:" + id), "Sealing requires Tau Ceti: " + id);
+        }
+        assertTrue(disabled.available().containsKey(PackagedRecipeGraph.id("tracking_circuit")));
+    }
+
+    private static void appendWitnesses(StringBuilder report, Success result) {
+        for (String item : items) {
+            var witness = result.available().get(item);
+            report.append("- ").append(item);
+            if (witness == null) { report.append(" (unreachable)\n"); }
+            else {
+                report.append(" <- ").append(witness.producer() == null ? "root" : witness.producer())
+                        .append(" (round ").append(witness.round()).append("); prerequisites: ")
+                        .append(witness.slotMembers()).append('\n');
+            }
+        }
     }
 
     /** Discover the providers from the real central register method; a newly wired registry cannot be skipped. */

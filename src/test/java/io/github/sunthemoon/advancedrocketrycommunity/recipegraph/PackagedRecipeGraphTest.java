@@ -116,6 +116,34 @@ class PackagedRecipeGraphTest {
         assertTrue(result.available().containsKey(id("basic_circuit_plate")));
     }
 
+    @Test
+    void trackingCircuitRequiresItsRealMachineEnergyAndEveryClassicInput() {
+        Producer producer = graph.producers.get("recipe:" + id("precision_tracking_circuit"));
+        assertNotNull(producer);
+        assertEquals(Set.of(List.of("machine:" + id("precision_assembler")), List.of(ENERGY),
+                List.of("#forge:dusts/redstone"), List.of("minecraft:ender_eye"), List.of(id("basic_circuit_plate"))),
+                new HashSet<>(producer.slots()));
+        assertEquals(List.of(id("tracking_circuit")), producer.outputs());
+        Set<String> roots = producer.slots().stream().flatMap(List::stream).collect(Collectors.toSet());
+        assertTrue(evaluate(producer, roots).available().containsKey(id("tracking_circuit")));
+        for (List<String> slot : producer.slots()) {
+            Set<String> missing = new HashSet<>(roots); missing.removeAll(slot);
+            assertTrue(evaluate(producer, missing).unavailable().contains(id("tracking_circuit")), "Missing " + slot);
+        }
+    }
+
+    @Test
+    void precisionStandInsRequireTheRebalancedClassicComponentsButAreNotTheOnlyCircuitRoute() {
+        Producer circuit = graph.producers.get("recipe:" + id("precision_control_circuit"));
+        Producer guidance = graph.producers.get("recipe:" + id("precision_guidance_module"));
+        assertTrue(circuit.slots().contains(List.of(id("control_board"))));
+        assertTrue(guidance.slots().containsAll(List.of(List.of(id("control_board")), List.of(id("tracking_circuit")))));
+        Success withoutStandIns = assertInstanceOf(Success.class, RecipeGraphReachability.evaluate(graph.nodes, graph.roots,
+                graph.producerList().stream().filter(producer -> !Set.of(circuit.id(), guidance.id()).contains(producer.id())).toList(),
+                RecipeGraphReachability.DEFAULT_LIMITS));
+        assertEquals(PackagedRecipeGraph.OPTIONAL_CROSS_MOD_INPUTS, withoutStandIns.unavailable());
+    }
+
     @ParameterizedTest
     @CsvSource({"helmet, #forge:armors/helmets", "chestplate, #forge:armors/chestplates",
             "leggings, #forge:armors/leggings", "boots, #forge:armors/boots"})

@@ -18,7 +18,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 
-/** First community-authored two-output process recipe for the registered machine. */
+/** Stable precision process IDs, rebalanced onto classic components by ADR-064 section 10.3. */
 public final class PrecisionAssemblerRecipeProvider {
     private PrecisionAssemblerRecipeProvider() {
     }
@@ -36,7 +36,7 @@ public final class PrecisionAssemblerRecipeProvider {
             json.addProperty("schema_version", ProcessDefinition.SCHEMA_VERSION);
             JsonArray inputs = new JsonArray();
             inputs.add(input(Tags.Items.INGOTS_IRON, 2));
-            inputs.add(input(Tags.Items.DUSTS_REDSTONE, 2));
+            inputs.add(input(ModItems.CONTROL_BOARD.get(), 2));
             json.add("inputs", inputs);
             JsonArray outputs = new JsonArray();
             outputs.add(result(ModItems.ADVANCED_CIRCUIT.get(), 1));
@@ -77,8 +77,8 @@ public final class PrecisionAssemblerRecipeProvider {
             json.addProperty("schema_version", ProcessDefinition.SCHEMA_VERSION);
             JsonArray inputs = new JsonArray();
             inputs.add(input(Tags.Items.INGOTS_IRON, 2));
-            inputs.add(input(Tags.Items.DUSTS_REDSTONE, 2));
-            inputs.add(input(Tags.Items.INGOTS_GOLD, 1));
+            inputs.add(input(ModItems.CONTROL_BOARD.get(), 2));
+            inputs.add(input(ModItems.TRACKING_CIRCUIT.get(), 1));
             inputs.add(input(Tags.Items.GEMS_QUARTZ, 1));
             inputs.add(input(Tags.Items.INGOTS_COPPER, 1));
             json.add("inputs", inputs);
@@ -113,6 +113,13 @@ public final class PrecisionAssemblerRecipeProvider {
     }
 
     private static JsonObject input(TagKey<Item> item, int count) {
+        JsonObject input = new JsonObject();
+        input.add("ingredient", Ingredient.of(item).toJson());
+        input.addProperty("count", count);
+        return input;
+    }
+
+    private static JsonObject input(Item item, int count) {
         JsonObject input = new JsonObject();
         input.add("ingredient", Ingredient.of(item).toJson());
         input.addProperty("count", count);

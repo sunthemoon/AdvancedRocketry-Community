@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.lifecyc
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessJournalPersistence;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.process.persistence.ProcessStatePersistence;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,12 +51,12 @@ final class PrecisionAssemblerTransactionTestFixture {
 
     void feed(int batches) {
         var iron = ports.inputs().get(0).getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
-        var redstone = ports.inputs().get(1).getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
+        var boards = ports.inputs().get(1).getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
         helper.assertTrue(iron.insertItem(0, new ItemStack(Items.IRON_INGOT, 2 * batches), false).isEmpty()
-                        && redstone.insertItem(0, new ItemStack(Items.REDSTONE, 2 * batches), false).isEmpty(),
+                        && boards.insertItem(0, new ItemStack(ModItems.CONTROL_BOARD.get(), 2 * batches), false).isEmpty(),
                 "Transaction fixture inputs were rejected");
         if (recipe.inputs().size() == 5) {
-            var additions = List.of(Items.GOLD_INGOT, Items.QUARTZ, Items.COPPER_INGOT);
+            var additions = List.of(ModItems.TRACKING_CIRCUIT.get(), Items.QUARTZ, Items.COPPER_INGOT);
             for (int slot = 2; slot < 5; slot++) {
                 var input = ports.inputs().get(slot).getCapability(ForgeCapabilities.ITEM_HANDLER)
                         .resolve().orElseThrow();

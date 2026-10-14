@@ -38,15 +38,19 @@ public final class EscrowCoreGameTests {
         var op1 = first.operation(1); first.apply(op1);
         var second = EscrowTestEndpoints.chainSource(first, position.offset(4, 0, 0));
         var op2 = second.operation(2); second.apply(op2);
-        // Precondition: the freshly generated and modified fixture chunk is saved once before the proof,
-        // so vanilla's eager save of a dirty chunk cannot supersede this single-attempt barrier.
-        level.getChunkSource().save(false);
+        // Precondition (W36): vanilla's eager save stores the modified fixture chunk once before this single-attempt
+        // barrier, which puts the chunk on that path's 10-second cooldown for the barrier's window. Vanilla cannot
+        // save the chunk until the generation around it finishes, and that generation's lighting and the chunk's
+        // post-processing dirty it again after the barrier's capture, so the barrier waits for the save.
+        var saves = ChunkSaveWatcher.start(helper, position);
         var runtime = EscrowRuntime.of(level.getServer()); var barrier = new EscrowBarrier(); var started = new AtomicBoolean();
         // Pace the asynchronous chunk, entity and IO waits to real server ticks (WORKER-RULES).
         var pacer = new GameTestTickPacer(helper.getLevel().getServer());
         helper.onEachTick(() -> {
             pacer.pace();
             barrier.tick(level.getServer().getTickCount()); if (started.get()) { return; }
+            if (!saves.any(position) && !VanillaChunkSave.saveIfNeeded(level, chunk)) { return; }
+            saves.stop();
             started.set(barrier.beginJoint(runtime.store(level), List.of(
                     new EscrowBarrier.Target(op1.source(), first.sourceState(), EscrowTestEndpoints.validator(op1.source(), first.sourceState())),
                     new EscrowBarrier.Target(op2.source(), second.sourceState(), EscrowTestEndpoints.validator(op2.source(), second.sourceState()))),
@@ -74,12 +78,19 @@ public final class EscrowCoreGameTests {
         var fixture = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
         var op = fixture.operation(1); fixture.apply(op); var monitor = EscrowRuntime.of(level.getServer()).monitor();
         var store = EscrowRuntime.of(level.getServer()).store(level); var barrier = new EscrowBarrier();
-        AtomicInteger phase = new AtomicInteger(); AtomicBoolean pending = new AtomicBoolean();
+        AtomicInteger phase = new AtomicInteger(); AtomicBoolean pending = new AtomicBoolean(); AtomicBoolean saved = new AtomicBoolean();
+        // Precondition (W36, as in the joint test): vanilla's eager save stores the freshly generated, modified fixture
+        // chunk once before the first barrier, so its 10-second cooldown covers both single-attempt barrier windows.
+        var saves = ChunkSaveWatcher.start(helper, position);
         // Pace the asynchronous chunk, entity and IO waits to real server ticks (WORKER-RULES).
         var pacer = new GameTestTickPacer(helper.getLevel().getServer());
         helper.onEachTick(() -> {
             pacer.pace();
             barrier.tick(level.getServer().getTickCount()); if (pending.get() || !level.areEntitiesLoaded(fixture.bank().chunkPosition().toLong())) { return; }
+            if (!saved.get()) {
+                if (!saves.any(position) && !VanillaChunkSave.saveIfNeeded(level, chunk)) { return; }
+                saves.stop(); saved.set(true);
+            }
             int index = phase.get(); if (index >= 2) {
                 helper.assertTrue(EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
                         && EscrowTestEndpoints.amount(fixture.bank().getPersistentData()) == 1_000, "Native conservation failed");

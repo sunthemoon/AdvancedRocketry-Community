@@ -48,7 +48,7 @@ public final class V180MaterialRecipes extends RecipeProvider {
 
     @Override
     protected void buildRecipes(Consumer<FinishedRecipe> output) {
-        // ADR-064 section 2.4: same IDs and accounting, current tag selectors; v1.2 inputs stay immutable.
+        // ADR-064 sections 2.4/10.3: stable IDs/accounting with current selectors and classic components.
         RollingMachineRecipeProvider.addProcessRecipes(output);
         // ADR-063 revision 7: restore the unpowered piston-and-iron acquisition route.
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, MaterialContent.SMALL_PLATE_PRESS_ITEM.get())
