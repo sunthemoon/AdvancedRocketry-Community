@@ -361,6 +361,8 @@ def run(args) -> dict:
                 raise smoke.SmokeError(f"{case}: the restarts disagree on E")
             if done[-1]["rocket"]["entity"] != done[-2]["rocket"]["entity"]:
                 raise smoke.SmokeError(f"{case}: the second recovered start loaded another Moon rocket")
+            if case == "FM2a" and done[0]["rocket"]["entity"] != ints_uuid(row["starts"][0]["disk"]["event"]["terminal_rocket_id"]):
+                raise smoke.SmokeError("FM2a: the saved DESCENT destination was missing and had to be rebuilt")
             row["event"] = event_id
             row["status"] = "PASS"
             report["cases"].append(row)
@@ -370,6 +372,16 @@ def run(args) -> dict:
         return report
     except Exception as failure:
         report.update(status="FAILED", error=str(failure))
+        if process is not None:
+            process.abort()
+            process = None
+        if "entry" in locals():
+            report["failed_start"] = entry
+            try:
+                if "roots" not in entry:
+                    entry["roots"] = snapshot(world, evidence, case, start)
+            except Exception as snapshot_failure:
+                report["snapshot_error"] = str(snapshot_failure)
         raise
     finally:
         if process is not None:
