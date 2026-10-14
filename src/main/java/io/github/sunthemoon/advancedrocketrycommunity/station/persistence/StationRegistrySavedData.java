@@ -233,6 +233,20 @@ public final class StationRegistrySavedData extends SavedData {
         return operational() ? registry.ownedBy(ownerId) : Long.MAX_VALUE;
     }
 
+    /** ADR-066 section 3.3: the access index generation; empty while the registry is blocked. */
+    public java.util.OptionalLong accessGeneration() {
+        return operational() ? java.util.OptionalLong.of(registry.accessGeneration()) : java.util.OptionalLong.empty();
+    }
+
+    /**
+     * The next station after {@code after} (the first when null) that a player owns or belongs to, or any committed
+     * station for an operator, in UUID order. Empty at the end and while the registry is blocked, so a caller checks
+     * {@link #operational()} first: a blocked registry is not an empty candidate set.
+     */
+    public Optional<UUID> nextAccessCandidate(UUID playerId, boolean operator, UUID after) {
+        return operational() ? registry.nextAccessCandidate(playerId, operator, after) : Optional.empty();
+    }
+
     /** Stored warp energy of a station (ADR-044); 0 when absent or while the registry is blocked. */
     public int warpEnergy(UUID stationId) {
         return operational() ? registry.warpEnergy(stationId) : 0;
