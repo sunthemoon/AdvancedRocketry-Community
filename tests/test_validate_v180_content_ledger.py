@@ -242,6 +242,11 @@ class V180ContentLedgerTests(unittest.TestCase):
 
     def test_owning_units_are_not_delivered_after_the_asset(self) -> None:
         # This check governs legacy imports; the shipped tank now uses NEW art.
+        # The fixture restores the capsule's pre-W46 PLANNED row, so a delivery cannot void the check.
+        self._edit_ledger("entity:ARSpaceElevatorCapsule", disposition="PLANNED", plan="C18d",
+                          target="client capsule ride effect", decision="ADR-059 ADR-062",
+                          notes="visual only; rides stay server-side", evidence="")
+        self.assertEqual([], self._errors())
         self._set_rule("textures/blocks/liquidtank.png", handling="IMPORT", units="entity:ARSpaceElevatorCapsule")
         self.assertTrue(any(error.endswith("owning unit entity:ARSpaceElevatorCapsule is delivered in C18d, after the "
                                            "rule's batch C16a") for error in self._errors()))
