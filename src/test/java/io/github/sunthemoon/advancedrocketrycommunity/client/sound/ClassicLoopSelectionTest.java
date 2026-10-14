@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.sunthemoon.advancedrocketrycommunity.client.sound.ClassicLoopSelection.Candidate;
 import io.github.sunthemoon.advancedrocketrycommunity.client.sound.ClassicLoopSelection.Key;
 import io.github.sunthemoon.advancedrocketrycommunity.sound.ClassicSound;
+import io.github.sunthemoon.advancedrocketrycommunity.sound.MachineSoundProfile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -95,6 +96,42 @@ class ClassicLoopSelectionTest {
             } else {
                 assertThrows(IllegalArgumentException.class, () -> new Candidate(Key.entity(1), sound, 1.0, false));
             }
+        }
+    }
+
+    @Test
+    void machineLoopsFollowPinnedMappingsAndInactiveMachinesOfferNothing() {
+        for (String machine : List.of("lathe", "precision_laser_etcher", "rolling_machine", "chemical_reactor")) {
+            ClassicSound expected = machine.equals("lathe") || machine.equals("precision_laser_etcher")
+                    ? ClassicSound.LATHE : ClassicSound.ROLLING_MACHINE;
+            assertEquals(expected, MachineSoundProfile.loop(machine, true));
+            assertEquals(null, MachineSoundProfile.loop(machine, false));
+            assertEquals(expected, ClassicLoopSelection.select(List.of(
+                    new Candidate(Key.block(1), MachineSoundProfile.loop(machine, true), 1, false))).get(0).sound());
+        }
+        for (String silent : List.of("arc_furnace", "cutting_machine", "crystallizer", "electrolyzer",
+                "centrifuge", "precision_assembler", "observatory", "astrobody_data_processor", "unknown")) {
+            assertEquals(null, MachineSoundProfile.loop(silent, true));
+        }
+    }
+
+    @Test
+    void processingMachinesShareExistingCapNearestOrderingAndHysteresis() {
+        List<Candidate> candidates = new ArrayList<>();
+        List<String> machines = List.of("lathe", "rolling_machine", "precision_laser_etcher", "chemical_reactor");
+        for (int i = 0; i < 64; i++) {
+            candidates.add(new Candidate(Key.block(i), MachineSoundProfile.loop(machines.get(i % 4), true), i, false));
+        }
+        candidates.add(new Candidate(Key.block(100), ClassicSound.GRAVITY_CONTROLLER, 0, false));
+        List<Candidate> selected = ClassicLoopSelection.select(candidates);
+        assertEquals(32, selected.size());
+        assertEquals(Key.block(100), selected.get(0).key());
+        assertEquals(Key.block(30), selected.get(31).key());
+        for (String machine : machines) {
+            ClassicSound sound = MachineSoundProfile.loop(machine, true);
+            assertEquals(0, ClassicLoopSelection.select(List.of(new Candidate(Key.block(1), sound, 31 * 31, false))).size());
+            assertEquals(1, ClassicLoopSelection.select(List.of(new Candidate(Key.block(1), sound, 32 * 32, true))).size());
+            assertEquals(0, ClassicLoopSelection.select(List.of(new Candidate(Key.block(1), sound, 32 * 32 + 1, true))).size());
         }
     }
 }
