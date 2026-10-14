@@ -315,12 +315,17 @@ final class StationFirstWarpTest {
         assertEquals(ManagedRootPresence.UNREADABLE, checkedFirst.presence());
     }
 
-    /** Section 1.2: StationWarpService is the only production caller of the electing relocation. */
+    /**
+     * Section 1.2: StationWarpService is the only production caller of the electing relocation. The isolated A1
+     * GameTest fixtures (classes named *GameTests or *GameTestSupport) build their own requests over detached roots.
+     */
     @Test void onlyTheWarpServiceBuildsAnElectingRequest() throws Exception {
         Path main = Path.of("src/main/java");
         List<String> builders;
         try (Stream<Path> files = Files.walk(main)) {
-            builders = files.filter(path -> path.toString().endsWith(".java")).filter(path -> {
+            builders = files.filter(path -> path.toString().endsWith(".java"))
+                    .filter(path -> !path.getFileName().toString().endsWith("GameTests.java")
+                            && !path.getFileName().toString().endsWith("GameTestSupport.java")).filter(path -> {
                 try { return Files.readString(path).contains("new FirstWarpRequest("); }
                 catch (IOException unreadable) { throw new java.io.UncheckedIOException(unreadable); }
             }).map(path -> path.getFileName().toString()).sorted().toList();

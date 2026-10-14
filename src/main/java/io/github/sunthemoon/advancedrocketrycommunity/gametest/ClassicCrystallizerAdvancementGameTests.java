@@ -58,7 +58,7 @@ public final class ClassicCrystallizerAdvancementGameTests {
                     .getAdvancement(ResourceLocation.tryParse(Milestone.ONE_SMALL_STEP.id()))).isDone()
                     && !player.getAdvancements().getOrStartProgress(server.getAdvancements()
                     .getAdvancement(ResourceLocation.tryParse(Milestone.FIRST_STATION_WARP.id()))).isDone(),
-                    "Inventory acquisition earned a pending world-first milestone");
+                    "Inventory acquisition earned a world-first milestone without a world-first event");
         } finally {
             server.getPlayerList().remove(player);
         }

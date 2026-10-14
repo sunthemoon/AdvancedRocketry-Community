@@ -68,8 +68,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
 /**
  * ADR-066 §6.2 on the real server: each custom trigger fires at its completion point and not at the steps before
- * it; the world-first milestones cannot fire yet. Connected mock players earn through production paths only, never
- * through grants or direct trigger calls.
+ * it; a world-first milestone needs the world's first event (W44), whose isolated coverage is the A1 batch.
+ * Connected mock players earn through production paths only, never through grants or direct trigger calls.
  */
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -248,6 +248,9 @@ public final class ClassicMilestoneAdvancementGameTests {
         ServerLevel moon = earth.getServer().getLevel(CelestialIds.MOON_LEVEL);
         helper.assertTrue(moon != null, "Moon unavailable");
         RocketFlightGameTestFixtures.clearTransferJournal(earth);
+        // W44: an explicit non-electing state; the world-first positives are the isolated A1 batch.
+        io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport
+                .occupyFirstMoonLanding(helper);
         RocketFlightGameTestFixtures.primePadChunks(moon);
         RocketFlightGameTestFixtures.clearPadRockets(moon);
         List<ServerPlayer> joined = new ArrayList<>();
@@ -308,8 +311,9 @@ public final class ClassicMilestoneAdvancementGameTests {
                     helper.assertTrue(done(passenger, Milestone.MOON_LANDING), "The landed passenger missed the event");
                     helper.assertTrue(!done(moonWatcher, Milestone.MOON_LANDING)
                             && !done(earthWatcher, Milestone.MOON_LANDING), "A player not aboard earned the landing");
-                    helper.assertTrue(!done(passenger, Milestone.ONE_SMALL_STEP),
-                            "The world-first milestone fired before its durable source exists");
+                    helper.assertTrue(!done(passenger, Milestone.ONE_SMALL_STEP)
+                                    && !done(moonWatcher, Milestone.ONE_SMALL_STEP),
+                            "A landing that is not the world's first earned the world-first milestone");
                 } finally {
                     cleanup.run();
                 }
@@ -345,10 +349,15 @@ public final class ClassicMilestoneAdvancementGameTests {
             ServerPlayer outsider = player(fixture.server, outsiderId);
             ServerPlayer remote = player(fixture.server, remoteId);
             fixture.look(fixture.ownerId, fixture.pad.east(2));
+            // W44: the world's single first-warp slot is shared by every GameTest warp, so this test checks the state it
+            // observes explicitly; the isolated positives and negatives are the A1 batch.
+            boolean slotOpen = fixture.data.firstWarpRam().isEmpty();
             fixture.run(fixture.ownerId, "arce station warp " + StationWarpGameTests.MOON);
             fixture.run(fixture.ownerId, "arce station warp confirm " + fixture.id());
             helper.assertTrue(!done(owner, Milestone.STATION_WARP) && !done(member, Milestone.STATION_WARP),
                     "The request or confirmation fired the warp event");
+            helper.assertTrue(!done(owner, Milestone.FIRST_STATION_WARP) && !done(member, Milestone.FIRST_STATION_WARP),
+                    "The request or confirmation fired the world-first milestone");
             scheduled = true;
             helper.runAfterDelay(StationWarpGameTests.COMMIT_DELAY, () -> {
                 try {
@@ -360,8 +369,17 @@ public final class ClassicMilestoneAdvancementGameTests {
                             "A player without VISIT access earned the warp");
                     helper.assertTrue(!done(remote, Milestone.STATION_WARP),
                             "A member outside the station region earned the warp");
-                    helper.assertTrue(!done(owner, Milestone.FIRST_STATION_WARP),
-                            "The world-first warp fired before its durable source exists");
+                    var slot = fixture.data.firstWarpRam().event();
+                    boolean elected = slotOpen && slot instanceof io.github.sunthemoon.advancedrocketrycommunity
+                            .progression.classic.firstevent.FirstEvent.StationWarp warp
+                            && warp.stationId().equals(fixture.id());
+                    helper.assertTrue(!done(outsider, Milestone.FIRST_STATION_WARP)
+                                    && !done(remote, Milestone.FIRST_STATION_WARP),
+                            "A player without VISIT access or outside the region earned the world-first");
+                    helper.assertTrue(elected == (done(owner, Milestone.FIRST_STATION_WARP)
+                                    && done(member, Milestone.FIRST_STATION_WARP)),
+                            elected ? "The present participants of the world-first warp were not awarded"
+                                    : "A warp that is not the world's first earned the world-first milestone");
                 } finally {
                     extra.forEach(fixture.server.getPlayerList()::remove);
                     fixture.warp.installRocketAuthority(previous);
