@@ -119,6 +119,7 @@ Root cannot make these; each blocks only the work named.
 
 | Task | Scope | Dispatch when |
 |---|---|---|
+| [W59](TASK-W59-FIELD-RESERVATION-LOAD.md) | Parallel bug W04 N5: release the stray UNBOUND force-field reservation after an in-place NBT load; design note first, independent review before merge | When an implementer slot frees |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
