@@ -17,6 +17,7 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.MenuProvider;
@@ -230,6 +231,16 @@ public abstract class ElevatorEndpointBlockEntity extends CargoEndpointBlockEnti
     public void handleUpdateTag(CompoundTag tag) {
         tether = tag.getBoolean("tether");
         capsules.update(ElevatorCapsuleCodec.decode(tag), capsuleTicks);
+    }
+
+    @Override
+    public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet) {
+        if (packet.getTag() == null) {
+            // The original tether handler ignored null tags. Only the new projection is cleared here.
+            capsules.clear();
+        } else {
+            handleUpdateTag(packet.getTag());
+        }
     }
 
     @Nullable

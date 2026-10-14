@@ -133,6 +133,11 @@ public final class ElevatorCapsuleGameTests {
             helper.assertTrue(replica.capsulesForRender().equals(List.of(
                     new ElevatorCapsuleCodec.Entry(rider.getId(), ElevatorRules.RIDE_COUNTDOWN_TICKS - 1))),
                     "The client ticker did not advance its local countdown");
+            replica.onDataPacket(observer.connection.connection,
+                    ClientboundBlockEntityDataPacket.create(replica, ignored -> new CompoundTag()));
+            helper.assertTrue(replica.capsulesForRender().isEmpty() && replica.tetherForRender(),
+                    "A null/missing packet retained a capsule or changed the existing tether behavior");
+            replica.handleUpdateTag(update);
             replica.onChunkUnloaded();
             helper.assertTrue(replica.capsulesForRender().isEmpty(), "Unload kept the capsule lease");
             replica.handleUpdateTag(update);
