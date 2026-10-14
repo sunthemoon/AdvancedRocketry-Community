@@ -33,6 +33,8 @@ public final class RocketTransactionRecoveryService {
 
     private final RocketBlockEntityAdapters adapters;
     private UUID lastAttempted;
+    private final java.util.Set<UUID> fencedTransactions = new java.util.HashSet<>();
+    private final java.util.Map<UUID, Long> fenceAttempts = new java.util.HashMap<>();
 
     public RocketTransactionRecoveryService(RocketBlockEntityAdapters adapters) {
         this.adapters = Objects.requireNonNull(adapters, "adapters");
@@ -47,6 +49,8 @@ public final class RocketTransactionRecoveryService {
             return Outcome.NO_WORK;
         }
         List<RocketPersistedTransaction> entries = data.entries();
+        var present = entries.stream().map(entry -> entry.record().transactionId()).collect(java.util.stream.Collectors.toSet());
+        fencedTransactions.retainAll(present); fenceAttempts.keySet().retainAll(present);
         if (entries.isEmpty()) {
             lastAttempted = null;
             return Outcome.NO_WORK;
@@ -59,8 +63,25 @@ public final class RocketTransactionRecoveryService {
             }
         }
         boolean sawUnloaded = false;
+        int fencedRetries = 0;
         for (int offset = 0; offset < entries.size(); offset++) {
             RocketPersistedTransaction entry = entries.get((start + offset) % entries.size());
+            UUID transaction = entry.record().transactionId();
+            long now = server.getTickCount();
+            if (fencedTransactions.contains(transaction)
+                    && now - fenceAttempts.getOrDefault(transaction, now) < RocketTransferFences.RETRY_TICKS) { continue; }
+            if (fencedTransactions.contains(transaction)) {
+                if (fencedRetries++ >= 1) { continue; }
+                fenceAttempts.put(transaction, now);
+            }
+            var escrow = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.existing(server);
+            var ledger = escrow == null ? null : escrow.ledger();
+            boolean knownPending = ledger != null && ledger.records().stream().anyMatch(op ->
+                    op.guard().rocket().equals(transaction)
+                    || entry.record().rocketEntityIdOptional().filter(op.destination().identity()::equals).isPresent());
+            if (knownPending || io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.logicalLocked(server, transaction)) {
+                fence(transaction, now); continue;
+            }
             ServerLevel level = levelFor(server, entry);
             if (level == null) {
                 sawUnloaded = true;
@@ -78,7 +99,20 @@ public final class RocketTransactionRecoveryService {
             }
             lastAttempted = entry.record().transactionId();
             try {
-                return recoverLoaded(data, world, entry) ? Outcome.RECOVERED : Outcome.CONFLICT;
+                List<UUID> matches = matchingRockets(world, entry);
+                var candidates = matches.stream().map(level::getEntity)
+                        .filter(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity.class::isInstance)
+                        .map(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity.class::cast).toList();
+                boolean assembly = entry.record().type() == RocketTransactionType.ASSEMBLY;
+                boolean protectedCandidate = candidates.stream().anyMatch(rocket ->
+                        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.logicalLocked(server,
+                                rocket.assemblyTransactionId().orElse(transaction))
+                        || io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRecoveryFence.transaction(ledger,
+                                rocket.assemblyTransactionId().orElse(transaction), assembly, List.of(RocketTransferFences.state(rocket))));
+                if (protectedCandidate || io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRecoveryFence.transaction(
+                        ledger, transaction, assembly, List.of())) { fence(transaction, now); continue; }
+                fencedTransactions.remove(transaction); fenceAttempts.remove(transaction);
+                return recoverLoaded(data, world, entry, matches) ? Outcome.RECOVERED : Outcome.CONFLICT;
             } catch (RuntimeException exception) {
                 // Keep the full journal snapshot and allow other entries next tick.
                 return Outcome.CONFLICT;
@@ -89,6 +123,15 @@ public final class RocketTransactionRecoveryService {
 
     public void clear() {
         lastAttempted = null;
+        fencedTransactions.clear(); fenceAttempts.clear();
+    }
+
+    private void fence(UUID transaction, long tick) {
+        fenceAttempts.put(transaction, tick);
+        if (fencedTransactions.add(transaction)) {
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.warn(
+                    "ARCE_ROCKET_RECOVERY_FENCED transaction={} repair=offline-whole-world", transaction);
+        }
     }
 
     static boolean readyForRecovery(
@@ -106,12 +149,12 @@ public final class RocketTransactionRecoveryService {
     private boolean recoverLoaded(
             RocketTransactionSavedData data,
             ServerLevelRocketTransactionWorld world,
-            RocketPersistedTransaction entry
+            RocketPersistedTransaction entry,
+            List<UUID> matchingRockets
     ) {
         if (!world.canRestoreSnapshot(entry.snapshot())) {
             return false;
         }
-        List<UUID> matchingRockets = matchingRockets(world, entry);
         RocketRecoveryDecision.Authority authority = RocketRecoveryDecision.authority(
                 entry.record().type(),
                 entry.record().phase(),

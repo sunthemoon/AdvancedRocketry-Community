@@ -278,7 +278,8 @@ public final class RocketCommands {
         }
         long fuelBefore = rocket.flightData().orElseThrow().fuel().amount();
         RocketFlightRequestResult result = rockets.requestAdminFlight(rocket, destination, requestId);
-        if (!result.success() && checkpoint != null) {
+        if (!result.success() && result.code() != io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightRequestCode.JOURNAL_PENDING
+                && checkpoint != null) {
             rockets.cancelFlightCheckpointForReleaseTest(requestId);
         }
         AdvancedRocketryCommunity.LOGGER.info(

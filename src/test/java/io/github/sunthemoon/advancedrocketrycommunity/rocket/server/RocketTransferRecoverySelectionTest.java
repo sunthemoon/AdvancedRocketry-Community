@@ -20,6 +20,22 @@ import org.junit.jupiter.api.Test;
  */
 final class RocketTransferRecoverySelectionTest {
     @Test
+    void asynchronousCompletionReportsAreBoundedConsumedOnceAndClearedWithTheService() {
+        var service = new RocketTransferRecoveryService(new java.util.HashSet<>(), new java.util.HashSet<>());
+        var ids = new java.util.ArrayList<UUID>();
+        int limit = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_ACTIVE_TRANSFERS;
+        for (int i = 0; i <= limit; i++) {
+            UUID id = UUID.randomUUID(); ids.add(id);
+            service.completed(RocketTransferRecoveryService.Result.notFound(id));
+        }
+        assertNull(service.takeCompleted(ids.get(0)), "The oldest transient report is evicted at the fixed bound");
+        assertEquals(ids.get(1), service.takeCompleted(ids.get(1)).transferId());
+        assertNull(service.takeCompleted(ids.get(1)), "A completion is observed only once");
+        service.clear();
+        assertNull(service.takeCompleted(ids.get(limit)), "Stop clears transient reports, not durable authority");
+    }
+
+    @Test
     void aStuckRecordDoesNotStarveTheRecordBehindItAndEachCallChecksOneRecord() {
         RocketTransferRecord stuck = RocketStationMotionRuleTest.record(new RocketPosition(72, 80, 8));
         RocketTransferRecord ready = RocketStationMotionRuleTest.record(new RocketPosition(92, 80, 8));

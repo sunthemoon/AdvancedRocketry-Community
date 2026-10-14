@@ -90,8 +90,9 @@ public final class NamedLandingPadOccupancyGameTests {
         f.awaitReady(() -> {
             var source = f.source(); UUID transfer = UUID.randomUUID();
             var service = new RocketTransferService();
-            helper.assertTrue(service.prepareLaunch(source, f.countdown(source, transfer)).success(),
-                    "Empty named pad preparation failed");
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.assertPendingLaunch(helper,
+                    service.prepareLaunch(source, f.countdown(source, transfer)), source);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             var journal = RocketTransferSavedData.get(f.space.getServer());
             var record = journal.find(transfer).orElseThrow();
             var parked = f.parkWideRocket();
@@ -104,6 +105,7 @@ public final class NamedLandingPadOccupancyGameTests {
             helper.assertTrue(transfer.equals(f.currentEntry().claim()), "Recheck created/replaced the prepared claim");
             source.updateFlightData(record.sourceFlightData());
             service.spawnDestination(f.space.getServer(), journal, record, source);
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             f.assertNoClaimOrDestination(transfer);
             helper.assertTrue(!source.isRemoved() && source.flightData().orElseThrow().state() == RocketFlightState.FUELED
                     && source.flightData().orElseThrow().fuel().equals(record.sourceFlightData().fuel()),

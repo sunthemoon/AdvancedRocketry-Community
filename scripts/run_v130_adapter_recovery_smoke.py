@@ -231,7 +231,9 @@ def validate_entity(entity: dict, receipt: tuple) -> dict:
     data = entity.get("RocketEntityData", {})
     snapshot = data.get("snapshot", {})
     blocks, palette = snapshot.get("relative_blocks", []), snapshot.get("block_palette", [])
-    if (data.get("schema_version") != 2 or snapshot.get("schema_version") != 1
+    if (data.get("schema_version") != 3
+            or data.get("resource_escrow") != {"schema_version": 1, "resource_epoch": 0, "markers": []}
+            or snapshot.get("schema_version") != 1
             or snapshot.get("content_hash") != snapshot_hash or len(blocks) != 4
             or snapshot.get("source_origin") != list(ORIGIN)
             or snapshot.get("source_dimension") != "minecraft:overworld"):

@@ -17,7 +17,8 @@ class FuelSmokeTests(unittest.TestCase):
         for index in range(count):
             snapshot = {"content_hash": str(index + 1) * 64, "source_origin": list(runner.ORIGINS[index]),
                         "mass_inputs": runner.components.expected_stats(False)}
-            data = {"schema_version": 2, "owner_id": runner.OWNER.copy(), "snapshot": snapshot,
+            data = {"schema_version": 3, "resource_escrow": {"schema_version": 1, "resource_epoch": 0, "markers": []},
+                    "owner_id": runner.OWNER.copy(), "snapshot": snapshot,
                     "assembly_transaction_id": [0, 0, 1, index], "flight_data": {"schema_version": 2,
                     "logical_rocket_id": [0, 0, 1, index], "state": "FUELED", "fuel": {
                     "capacity": 1500, "amount": 1500 if index == 0 else 198 if phase == "skipped" else 499, "committed_debits": []}}}
