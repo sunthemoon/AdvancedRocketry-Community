@@ -366,8 +366,9 @@ class ManifestValidationTests(unittest.TestCase):
         # W37F adds one deliberate earlier respawn-listener interruption.
         # W37I adds two more, one per interrupted-window logout test (w37i-respawn-listener-interruption-logout).
         # W37J adds seven deliberate interruption windows (w37j-respawn-save-listener-interruptions).
+        # W37B adds three earlier time-check interruptions: two command saves and one next-START save.
         self.assertEqual(
-            92, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            95, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_legacy_scalar_recovery_warning_has_one_separate_batch_count(self) -> None:
