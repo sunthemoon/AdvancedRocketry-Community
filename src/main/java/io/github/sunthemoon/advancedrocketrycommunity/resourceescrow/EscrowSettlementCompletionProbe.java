@@ -153,6 +153,11 @@ final class EscrowSettlementCompletionProbe {
     private boolean createFloor(RocketTransferSavedData journal) {
         BlockPos target = POSITION.offset(16, 0, 0);
         if (!level.areEntitiesLoaded(new ChunkPos(target).toLong()) || !level.isPositionEntityTicking(target)) { return false; }
+        // Keep concrete absence slots available for inspection after vanilla's ordinary empty-slot suppression.
+        for (var position : List.of(POSITION, target)) {
+            var anchor = new net.minecraft.world.entity.decoration.ArmorStand(level, position.getX() + 1.5, 100, position.getZ() + 1.5);
+            anchor.setNoGravity(true); EscrowTags.require(level.addFreshEntity(anchor), "Floor absence anchor was not added");
+        }
         UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID(), identity = UUID.randomUUID(); selected = transfer;
         var propulsion = new RocketPropulsion(RocketPropulsion.Mode.ABSTRACT, 1_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS);
         var blocks = List.of(new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(net.minecraft.resources.ResourceLocation.tryParse("minecraft:iron_block"), java.util.Map.of())),
@@ -209,6 +214,16 @@ final class EscrowSettlementCompletionProbe {
                         && RocketEscrowGate.idle(survivor), "Chosen survivor did not unlock intact");
                 var unproved = EscrowRocketAuditProbe.createRocket(level, endpoint.logicalRocket(), true);
                 EscrowTags.require(!RocketEscrowGate.idle(unproved), "Unproved returning physical identity unlocked");
+                unproved.setUUID(survivor.getUUID());
+                EscrowTags.require(!RocketEscrowGate.idle(unproved), "Stale same-UUID identity unlocked");
+                var currentCopy = EscrowRocketAuditProbe.createRocket(level, endpoint.logicalRocket(), true);
+                currentCopy.load(survivor.saveWithoutId(new CompoundTag()));
+                EscrowTags.require(currentCopy.operational() && RocketEscrowGate.idle(currentCopy), "Exact chosen state copy is invalid");
+                var previous = currentCopy.flightData().orElseThrow();
+                var changed = previous.fuel().withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, (chain ? 2_000 : 1_000) - 100);
+                currentCopy.updateFlightData(previous.withFuel(changed, level.getGameTime()));
+                EscrowTags.require(currentCopy.escrowSection().epoch() == survivor.escrowSection().epoch() + 1 && RocketEscrowGate.idle(currentCopy),
+                        "Approved native resource mutation did not advance the chosen epoch");
             }
             for (var raw : EscrowTags.list(tag, "missing", 2)) {
                 var endpoint = EscrowCodec.endpoint((CompoundTag) raw);

@@ -107,6 +107,26 @@ final class EscrowSettlementTombstones {
         return root.tombstones().stream().flatMap(tag -> EscrowTags.list(tag, "guards", 64).stream())
                 .map(raw -> EscrowCodec.guard((CompoundTag) raw)).anyMatch(guard -> logical.equals(guard.rocket()) && transfer.equals(guard.transfer()));
     }
+    static long minimumEpoch(EscrowLedger root, UUID logical, UUID identity) {
+        return chosen(root, logical, identity).stream().mapToLong(tag -> tag.getLong("epoch")).max().orElse(0);
+    }
+    static boolean stateLocked(EscrowLedger root, UUID logical, UUID identity, RocketEscrowSection section, String signature, long quantity) {
+        if (identityLocked(root, logical, identity) || section.ledger() != null && !root.id().equals(section.ledger())) { return true; }
+        for (var survivor : chosen(root, logical, identity)) {
+            long floor = survivor.getLong("epoch");
+            if (section.epoch() < floor || survivor.getBoolean("bound") && !root.id().equals(section.ledger())) { return true; }
+            if (section.epoch() == floor && (survivor.getBoolean("bound") != (section.ledger() != null)
+                    || !signature.equals(survivor.getString("signature")) || quantity != survivor.getLong("quantity"))) { return true; }
+        }
+        return false;
+    }
+    private static List<CompoundTag> chosen(EscrowLedger root, UUID logical, UUID identity) {
+        return root.tombstones().stream().filter(tag -> tag.getInt("schema_version") == 2 && tag.getBoolean("released"))
+                .flatMap(tag -> EscrowTags.list(tag, "survivors", 2).stream()).map(raw -> (CompoundTag) raw).filter(survivor -> {
+                    var endpoint = EscrowCodec.endpoint(survivor.getCompound("endpoint"));
+                    return endpoint.kind() == EscrowEndpoint.Kind.ENTITY && logical.equals(endpoint.logicalRocket()) && identity.equals(endpoint.identity());
+                }).toList();
+    }
     static boolean endpointLocked(EscrowLedger root, EscrowEndpoint.Key endpoint) {
         if (endpoint.kind() == EscrowEndpoint.Kind.ENTITY) { return identityLocked(root, endpoint.logicalRocket(), endpoint.identity()); }
         for (var tag : root.tombstones()) {

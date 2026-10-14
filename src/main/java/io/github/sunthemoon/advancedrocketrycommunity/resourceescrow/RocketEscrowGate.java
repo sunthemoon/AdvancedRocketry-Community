@@ -27,7 +27,10 @@ public final class RocketEscrowGate {
         var ledger = data.ledger();
         if (section.ledger() != null && !section.ledger().equals(ledger.id())) { return false; }
         if (data.bind(level.getServer()).logicalLocked(logical)) { return false; }
-        return !EscrowSettlementTombstones.identityLocked(ledger, logical, rocket.getUUID());
+        String signature = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.hash("arce-escrow-rocket-1:" + logical + ":"
+                + rocket.snapshot().orElseThrow().contentHash() + ":" + rocket.flightData().orElseThrow().fuel().resourceSignature());
+        return !EscrowSettlementTombstones.stateLocked(ledger, logical, rocket.getUUID(), section, signature,
+                rocket.flightData().orElseThrow().fuel().totalAmount());
     }
 
     public static boolean logicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {

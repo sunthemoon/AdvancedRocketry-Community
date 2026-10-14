@@ -27,6 +27,12 @@ public record RocketEscrowSection(UUID ledger, long epoch, List<EscrowPrefix.Mar
 
     public static RocketEscrowSection neutral() { return new RocketEscrowSection(null, 0, List.of()); }
 
+    /** A permitted native resource change must not make an older chosen identity current again. */
+    public RocketEscrowSection afterNativeResourceMutation() {
+        EscrowTags.require(markers.isEmpty(), "Marked rocket resources cannot advance outside escrow");
+        return ledger == null ? this : new RocketEscrowSection(ledger, Math.addExact(epoch, 1), List.of());
+    }
+
     /** Binding is part of first acknowledged L1 registration; it does not create a ledger. */
     public RocketEscrowSection bind(UUID actualLedger) {
         java.util.Objects.requireNonNull(actualLedger);

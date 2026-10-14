@@ -34,7 +34,8 @@ public final class EscrowRecoveryFence {
         if (ledger != null && ledger.records().stream().anyMatch(op -> op.guard().rocket().equals(logical))) { return "ESCROW_PENDING"; }
         if (ledger != null && (tombstoned(ledger, logical) || EscrowSettlementTombstones.retiredTransfer(ledger, logical, transfer)
                 || java.util.stream.Stream.concat(sources.stream(), destinations.stream())
-                .anyMatch(rocket -> EscrowSettlementTombstones.identityLocked(ledger, logical, rocket.identity())))) { return "TOMBSTONE"; }
+                .anyMatch(rocket -> EscrowSettlementTombstones.identityLocked(ledger, logical, rocket.identity())
+                        || rocket.epoch() < EscrowSettlementTombstones.minimumEpoch(ledger, logical, rocket.identity())))) { return "TOMBSTONE"; }
         if (java.util.stream.Stream.concat(sources.stream(), destinations.stream()).anyMatch(rocket -> !rocket.valid())) { return "INVALID_ENDPOINT"; }
         if (java.util.stream.Stream.concat(sources.stream(), destinations.stream()).anyMatch(Rocket::marked)) { return "ESCROW_MARKER"; }
         boolean destinationAuthority = switch (action) {
@@ -61,7 +62,8 @@ public final class EscrowRecoveryFence {
     /** Assembly credit is not expendable; idle credited DISASSEMBLY still has its normal D1 authority. */
     public static boolean transaction(EscrowLedger ledger, UUID logical, boolean assembly, List<Rocket> candidates) {
         return ledger != null && (ledger.records().stream().anyMatch(op -> op.guard().rocket().equals(logical))
-                || tombstoned(ledger, logical) || candidates.stream().anyMatch(rocket -> EscrowSettlementTombstones.identityLocked(ledger, logical, rocket.identity()))
+                || tombstoned(ledger, logical) || candidates.stream().anyMatch(rocket -> EscrowSettlementTombstones.identityLocked(ledger, logical, rocket.identity())
+                        || rocket.epoch() < EscrowSettlementTombstones.minimumEpoch(ledger, logical, rocket.identity()))
                 || assembly && ledger.tombstones().stream().flatMap(tag -> EscrowTags.list(tag, "guards", 64).stream())
                 .anyMatch(raw -> logical.equals(EscrowCodec.guard((net.minecraft.nbt.CompoundTag) raw).rocket()))
                 || assembly && ledger.floors().stream().anyMatch(floor -> logical.equals(floor.getUUID("rocket_id"))))

@@ -56,6 +56,26 @@ class EscrowSettlementCompletionTest {
             assertEquals(frozen, coordinator.ledger());
         }
     }
+    @Test void chosenUuidStillRejectsResourceRollbackAndConflictingSameEpochState() {
+        var root = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1, 99, 1).withReason(EscrowReason.OTHER_STATE));
+        var intent = intent(root, false); var frozen = intent.freeze(root);
+        var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(frozen, intent), intent);
+        var observed = intent.observations().stream().filter(value -> value.endpoint().kind() == EscrowEndpoint.Kind.ENTITY).findFirst().orElseThrow();
+        var endpoint = observed.endpoint(); var current = new RocketEscrowSection(root.id(), observed.state().epoch(), List.of());
+        assertEquals(1, current.epoch()); assertEquals(1, EscrowSettlementTombstones.minimumEpoch(released, endpoint.logicalRocket(), endpoint.identity()));
+        assertFalse(EscrowSettlementTombstones.stateLocked(released, endpoint.logicalRocket(), endpoint.identity(), current, observed.state().signature(), observed.quantity()));
+        for (var stale : List.of(RocketEscrowSection.neutral(), new RocketEscrowSection(root.id(), 0, List.of()))) {
+            assertTrue(EscrowSettlementTombstones.stateLocked(released, endpoint.logicalRocket(), endpoint.identity(), stale, observed.state().signature(), observed.quantity()));
+        }
+        assertTrue(EscrowSettlementTombstones.stateLocked(released, endpoint.logicalRocket(), endpoint.identity(), current, EscrowTestFixtures.hash(991), observed.quantity()));
+        assertTrue(EscrowSettlementTombstones.stateLocked(released, endpoint.logicalRocket(), endpoint.identity(), current, observed.state().signature(), observed.quantity() + 1));
+        assertFalse(EscrowSettlementTombstones.stateLocked(released, endpoint.logicalRocket(), endpoint.identity(), current.afterNativeResourceMutation(),
+                EscrowTestFixtures.hash(991), observed.quantity() + 1));
+        var stale = new EscrowRecoveryFence.Rocket(endpoint.identity(), 0, false, true);
+        assertEquals("TOMBSTONE", EscrowRecoveryFence.reason(released, endpoint.logicalRocket(), EscrowTestFixtures.id(992),
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction.KEEP_DESTINATION, List.of(), List.of(stale)));
+        assertTrue(EscrowRecoveryFence.transaction(released, endpoint.logicalRocket(), false, List.of(stale)));
+    }
     @Test void invalidatedJointProofOrJournalLeaseBeforeReplacementRetainsTheCompleteIntent() throws Exception {
         var root = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1, 99, 0).withReason(EscrowReason.OTHER_STATE), EscrowTestFixtures.operation(2, 99, 1));
         var intent = intent(root, false); var frozen = intent.freeze(root).generation(1);
