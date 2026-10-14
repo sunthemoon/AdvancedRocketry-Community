@@ -10,50 +10,45 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 
-/** Rebind only AUDIT-01's existing model targets, avoiding duplicate packaged model IDs. */
+/** Publish v1.8 copies of AUDIT-01's model bindings without changing historical resource inputs. */
 public final class V180ClosureModels implements DataProvider {
-    private static final String ASSETS = "/resources/assets/" + ModIdentity.MOD_ID + "/models/";
-    private final Path generatedRoot;
+    private static final String MODELS = "assets/" + ModIdentity.MOD_ID + "/models/";
+    private final Path outputRoot;
 
     public V180ClosureModels(PackOutput output) {
-        // runData's output is src/generated/v1.8/resources; the fixed bindings name sibling version roots.
-        Path root = output.getOutputFolder().toAbsolutePath().normalize();
-        if (!root.endsWith(Path.of("generated", "v1.8", "resources"))) {
-            throw new IllegalArgumentException("Audited in-place bindings require generated/v1.8/resources output");
-        }
-        this.generatedRoot = root.getParent().getParent();
+        this.outputRoot = output.getOutputFolder();
     }
 
-    /** Paths relative to src/generated. These are the complete and only in-place W49 model edits. */
+    /** Asset-relative paths for the complete set of thirteen W49 bindings in this provider's output. */
     public static Map<String, JsonObject> bindings() {
         Map<String, JsonObject> files = new LinkedHashMap<>();
-        files.put("v0.2" + ASSETS + "block/electrolyzer.json", orientable("electrolyzer_front", null));
-        files.put("v0.2" + ASSETS + "block/electrolyzer_active.json", orientable("electrolyzer_front_active", null));
-        files.put("v1.2" + ASSETS + "block/precision_assembler.json", orientable("precision_assembler_front", null));
+        files.put(MODELS + "block/electrolyzer.json", orientable("electrolyzer_front", null));
+        files.put(MODELS + "block/electrolyzer_active.json", orientable("electrolyzer_front_active", null));
+        files.put(MODELS + "block/precision_assembler.json", orientable("precision_assembler_front", null));
         JsonObject drill = orientable("orbital_laser_front", "orbital_laser_bottom");
         drill.getAsJsonObject("textures").addProperty("top", "minecraft:block/obsidian");
-        files.put("v1.7" + ASSETS + "block/orbital_laser_drill.json", drill);
+        files.put(MODELS + "block/orbital_laser_drill.json", drill);
         JsonObject railgun = orientable("railgun_front", null);
         railgun.addProperty("parent", "minecraft:block/orientable");
         railgun.getAsJsonObject("textures").remove("bottom");
         railgun.getAsJsonObject("textures").addProperty("top", "minecraft:block/iron_block");
-        files.put("v1.7" + ASSETS + "block/railgun.json", railgun);
+        files.put(MODELS + "block/railgun.json", railgun);
         JsonObject builder = orientable("satellite_builder_front", null);
         builder.addProperty("parent", "minecraft:block/orientable");
         builder.getAsJsonObject("textures").remove("bottom");
         builder.getAsJsonObject("textures").addProperty("top", "minecraft:block/smithing_table_top");
-        files.put("v1.6" + ASSETS + "block/satellite_builder.json", builder);
+        files.put(MODELS + "block/satellite_builder.json", builder);
         JsonObject core = model("minecraft:block/cube_bottom_top");
         JsonObject sides = new JsonObject();
         sides.addProperty("bottom", texture("block/machine_casing_top"));
         sides.addProperty("side", texture("block/warp_core_side"));
         sides.addProperty("top", "minecraft:block/crying_obsidian");
         core.add("textures", sides);
-        files.put("v1.5" + ASSETS + "block/warp_core.json", core);
-        files.put("v0.8" + ASSETS + "item/satellite_solar_module.json", item("satellite_solar_module"));
-        files.put("v1.6" + ASSETS + "item/advanced_solar_panel.json", item("advanced_solar_panel"));
+        files.put(MODELS + "block/warp_core.json", core);
+        files.put(MODELS + "item/satellite_solar_module.json", item("satellite_solar_module"));
+        files.put(MODELS + "item/advanced_solar_panel.json", item("advanced_solar_panel"));
         for (String part : new String[] {"helmet", "chestplate", "leggings", "boots"}) {
-            files.put("v0.4" + ASSETS + "item/space_suit_" + part + ".json", item("space_suit_" + part));
+            files.put(MODELS + "item/space_suit_" + part + ".json", item("space_suit_" + part));
         }
         return Map.copyOf(files);
     }
@@ -87,7 +82,7 @@ public final class V180ClosureModels implements DataProvider {
 
     @Override public CompletableFuture<?> run(CachedOutput cache) {
         return CompletableFuture.allOf(bindings().entrySet().stream().map(entry ->
-                DataProvider.saveStable(cache, entry.getValue(), generatedRoot.resolve(entry.getKey())))
+                DataProvider.saveStable(cache, entry.getValue(), outputRoot.resolve(entry.getKey())))
                 .toArray(CompletableFuture[]::new));
     }
 
