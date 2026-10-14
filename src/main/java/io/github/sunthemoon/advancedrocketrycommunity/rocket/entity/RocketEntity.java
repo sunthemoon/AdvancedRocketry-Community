@@ -180,7 +180,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
             throw new IllegalStateException("Only the server may update rocket flight data");
         }
         RocketFlightData previous = flightData;
-        if (previous != null && !previous.fuel().resourceSignature().equals(updatedFlightData.fuel().resourceSignature())
+        if (previous != null && !previous.fuel().sameResources(updatedFlightData.fuel())
                 && !RocketEscrowGate.idle(this)) {
             throw new IllegalStateException("Rocket resources are protected by escrow");
         }
