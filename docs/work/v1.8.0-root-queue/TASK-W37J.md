@@ -102,3 +102,20 @@ If either correction cannot be made without a Mixin, stop and say why in the rec
    old player instead, stop and report.
 4. **F2 (the `Clone` original) and the native tests are unchanged.** The logout tests check the
    saved file and its readback after reconnect.
+
+## Amendment 2 (Root, 2026-10-14, after the shutdown trace in `records/W37J.md`)
+
+Item 3 of the first amendment is replaced. Its trace shows that server stop saves the old player too:
+`stopServer` runs `saveAll` (75), then `removeAll`, then the shared listener's `onDisconnect`, then
+`PlayerList.remove(O)`. That is the same old-object logout path, and `PlayerList.remove` posts the
+logout event (1) before it saves `O` (18).
+
+- **Shutdown.** Treat the shutdown disconnect as another old-object logout. The `PlayerLoggedOutEvent`
+  reconciliation covers it with the same rules and restriction.
+- **The order of saves.** The replacement's earlier `saveAll` write and the old object's later write
+  then carry the same latest tuple.
+- **Native tests.** Add one case where a newer point is set on the replacement in the unadopted
+  window and the server stops before any END reconciliation. Use the GameTest seam that drives the
+  logout and save the same way the shutdown path does, if a real server stop cannot be run inside a
+  GameTest, and say so. Check the saved file and its readback.
+- **Then implement F1 and F2** with the remaining tests, as the task and the first amendment say.
