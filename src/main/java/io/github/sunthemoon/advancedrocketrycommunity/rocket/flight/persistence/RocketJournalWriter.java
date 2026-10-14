@@ -40,7 +40,7 @@ final class RocketJournalWriter implements AutoCloseable {
     static final int DRAIN_UNKNOWN_ATTEMPTS = 3;
     private final Thread owner = Thread.currentThread();
     private final Path file;
-    private final RocketJournalCheckpoint disk = new RocketJournalCheckpoint();
+    private final RocketJournalCheckpoint disk;
     private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
         var thread = new Thread(r, "ARCE-rocket-journal"); thread.setDaemon(true); return thread;
     });
@@ -50,7 +50,12 @@ final class RocketJournalWriter implements AutoCloseable {
     private long tick, retryAt, lastSequence;
     private int drainUnknown;
 
-    RocketJournalWriter(Path file) { this.file = file.toAbsolutePath().normalize(); }
+    RocketJournalWriter(Path file) { this(file, CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
+    /** The directory force is resolved on the owner thread; a gated release-test cut may replace it (W44 6.1). */
+    RocketJournalWriter(Path file, CheckedSavedDataPolicy.DirectoryForce force) {
+        this.file = file.toAbsolutePath().normalize();
+        this.disk = new RocketJournalCheckpoint(force);
+    }
     boolean request(Snapshot snapshot, CheckedSavedDataPolicy policy) {
         owner();
         if (closed || draining) { return false; }

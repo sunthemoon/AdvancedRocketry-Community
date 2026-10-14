@@ -506,8 +506,10 @@ public final class StationRegistrySavedData extends SavedData {
      */
     public CheckedUpdate checkedRelocation(MinecraftServer server, StationState observed, ResourceLocation target,
                                            int cost, FirstWarpRequest request) {
-        return relocation(stationFile(server), observed, target, cost, FirstEventCutSeams.stationPolicy(server),
-                FirstEventCutSeams.directoryForce(server), request);
+        // FP8's gated committer changes the live winning station after the move, so the publish check fails.
+        return relocation(stationFile(server), observed, target, cost, FirstEventCutSeams.stationPolicy(server,
+                () -> addMember(observed.stationId(), FirstEventCutSeams.OBSERVER)), FirstEventCutSeams.directoryForce(server),
+                request);
     }
 
     CheckedUpdate checkedRelocation(Path file, StationState observed, ResourceLocation target, int cost,
@@ -539,8 +541,8 @@ public final class StationRegistrySavedData extends SavedData {
         if (!server.isSameThread()) {
             return CheckedUpdate.UNAVAILABLE;
         }
-        return checkedDeliverFirstWarp(stationFile(server), expected, receipt, FirstEventCutSeams.stationPolicy(server),
-                FirstEventCutSeams.directoryForce(server), log);
+        return checkedDeliverFirstWarp(stationFile(server), expected, receipt,
+                FirstEventCutSeams.stationPolicy(server, () -> { }), FirstEventCutSeams.directoryForce(server), log);
     }
 
     CheckedUpdate checkedDeliverFirstWarp(Path file, FirstEvent expected, FirstEvent receipt,

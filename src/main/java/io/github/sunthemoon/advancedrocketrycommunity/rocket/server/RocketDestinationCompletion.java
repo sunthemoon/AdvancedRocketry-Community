@@ -5,6 +5,7 @@ import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.Rocke
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.ClassicFirstEventDelivery;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventDispositionSource;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
@@ -28,11 +29,19 @@ final class RocketDestinationCompletion {
     private final Set<UUID> liveTransfers;
     private final Set<UUID> settledTransfers;
     private final RocketTransferBayDispatch bays;
+    private final FirstEventDispositionSource dispositions;
 
     RocketDestinationCompletion(Set<UUID> liveTransfers, Set<UUID> settledTransfers, RocketTransferBayDispatch bays) {
+        this(liveTransfers, settledTransfers, bays, FirstEventDispositionSource.WORLD);
+    }
+
+    /** With a detached delivery's dispositions, for the isolated A1 GameTests only. */
+    RocketDestinationCompletion(Set<UUID> liveTransfers, Set<UUID> settledTransfers, RocketTransferBayDispatch bays,
+                                FirstEventDispositionSource dispositions) {
         this.liveTransfers = liveTransfers;
         this.settledTransfers = settledTransfers;
         this.bays = bays;
+        this.dispositions = dispositions;
     }
 
     void tickDestination(
@@ -57,7 +66,7 @@ final class RocketDestinationCompletion {
             if (elapsed >= RocketFlightLimits.DESCENT_TICKS) {
                 UUID destinationId = destination.getUUID();
                 var completion = MoonLandingCompletion.complete(server, journal, record, destination, bays,
-                        () -> publishLanding(server, journal, record, destinationId));
+                        () -> publishLanding(server, journal, record, destinationId), dispositions);
                 if (completion == MoonLandingCompletion.Result.ORDINARY) {
                     land(record, destination);
                 } else if (destination.flightData().orElseThrow().state() == RocketFlightState.DESCENT) {

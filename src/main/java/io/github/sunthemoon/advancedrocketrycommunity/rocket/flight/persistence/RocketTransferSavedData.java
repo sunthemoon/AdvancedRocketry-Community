@@ -453,6 +453,11 @@ public final class RocketTransferSavedData extends SavedData {
         if (effect != null && completion.outcome() == RocketJournalCheckpoint.Outcome.COMMITTED) { effect.committed = true; }
         writeOutcome = WriteOutcome.valueOf(completion.outcome().name());
         failedWrite = completion.outcome() != RocketJournalCheckpoint.Outcome.COMMITTED;
+        if (writeOutcome == WriteOutcome.UNKNOWN && ownerServer != null
+                && firstMoonLanding.state() == FirstEventOutbox.State.ELECTED) {
+            FirstEventCutSeams.boundary(ownerServer, FirstEventCutSeams.JOURNAL_UNKNOWN, FirstEventKind.FIRST_MOON_LANDING,
+                    firstMoonLanding.event());
+        }
         setDirty(!checkpoint.current(mutationSequence) || failedWrite);
         if (failedWrite && !saveFailureReported) {
             com.mojang.logging.LogUtils.getLogger().error("ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked");
@@ -518,7 +523,10 @@ public final class RocketTransferSavedData extends SavedData {
     boolean requestWrite(java.nio.file.Path file, CheckedSavedDataPolicy policy) {
         if (!operational() || stopping) { return false; }
         java.nio.file.Path normalized = file.toAbsolutePath().normalize();
-        if (writer == null) { writerFile = normalized; writer = new RocketJournalWriter(normalized); }
+        if (writer == null) {
+            writerFile = normalized;
+            writer = new RocketJournalWriter(normalized, FirstEventCutSeams.journalDirectoryForce(ownerServer));
+        }
         if (!writerFile.equals(normalized)) { throw new IllegalArgumentException("Journal writer cannot rebind its target"); }
         return writer.request(capture(), presence == ManagedRootPresence.PROVEN_ABSENT ? firstWriteChecked(policy) : policy);
     }

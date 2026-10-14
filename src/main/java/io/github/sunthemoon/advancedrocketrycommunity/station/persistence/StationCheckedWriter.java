@@ -17,7 +17,7 @@ import net.minecraft.nbt.CompoundTag;
  * try block. A failure after the move was attempted reads the file back: the exact candidate is COMMITTED (R1: the
  * directory force is not retried then), an unreadable file is OUTCOME_UNKNOWN, anything else is a failed write.
  */
-final class StationCheckedWriter {
+public final class StationCheckedWriter {
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.STATIONS;
 
     /** The resolved outcome; the registry quarantines on UNKNOWN and reasserts RAM after a failed replacement. */
@@ -32,7 +32,7 @@ final class StationCheckedWriter {
     }
 
     /** Per-operation diagnostics: named operations log every failure, the automatic acknowledgement once per streak. */
-    interface Diagnostics {
+    public interface Diagnostics {
         void beforeReplace(Throwable failure);
 
         void unknown(Path file, Throwable failure);

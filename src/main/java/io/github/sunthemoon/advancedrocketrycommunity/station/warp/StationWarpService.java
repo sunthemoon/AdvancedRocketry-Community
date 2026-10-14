@@ -469,6 +469,11 @@ public final class StationWarpService {
         if (code == StationManagementCode.WARP_COMMITTED) {
             result.station().ifPresent(station -> ClassicAdvancementEvents.stationWarped(presentVisitors(server, station)));
             ClassicFirstEventDelivery.sourceChanged(server, FirstEventKind.FIRST_STATION_WARP);
+        } else if (code == StationManagementCode.OUTCOME_UNKNOWN || code == StationManagementCode.WARP_FIRST_EVENT_OVER_BUDGET) {
+            FirstEventCutSeams.boundary(server, code == StationManagementCode.OUTCOME_UNKNOWN
+                    ? FirstEventCutSeams.RELOCATION_UNKNOWN : FirstEventCutSeams.WARP_REFUSED,
+                    FirstEventKind.FIRST_STATION_WARP, StationRegistrySavedData.get(server).durableFirstWarp().knownEvent()
+                            .orElse(null));
         }
         // W22 review F7: the notices follow the checked write, so a failure in them is logged once and never escapes
         // the tick, skips the audit line below or changes the outcome.
@@ -639,8 +644,9 @@ public final class StationWarpService {
     /**
      * W44 section 5: the first-warp participants, sorted; the same predicate as {@code station_warp} plus the one
      * shared eligibility predicate. The builder stops one past the bound, so an excess is refused, never truncated.
+     * Read-only; the A1 GameTests use it to prove the real capture.
      */
-    private java.util.List<UUID> eligibleVisitors(MinecraftServer server, StationState station) {
+    public java.util.List<UUID> eligibleVisitors(MinecraftServer server, StationState station) {
         java.util.Optional<java.util.List<UUID>> fixed = FirstEventCutSeams.participants(server,
                 FirstEventKind.FIRST_STATION_WARP);
         if (fixed.isPresent()) {

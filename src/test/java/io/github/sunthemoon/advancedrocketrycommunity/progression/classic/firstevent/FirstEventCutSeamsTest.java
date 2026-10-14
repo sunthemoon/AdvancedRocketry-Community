@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.progression.classic.first
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import java.util.Arrays;
@@ -18,20 +19,33 @@ class FirstEventCutSeamsTest {
     }
 
     @Test void absentPropertyOrDisabledHooksKeepEverySeamAtItsProductionValue() {
-        assertTrue(FirstEventCutSeams.configured().isEmpty());
-        // A null server proves the production path never consults the server gate.
-        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
-            assertDoesNotThrow(() -> FirstEventCutSeams.beforeLoad(null, type));
-        }
+        assertProduction();
+        System.setProperty(FirstEventCutSeams.PROPERTY, "FW1");
+        assertProduction(); // hooks disabled: the cut property alone changes nothing
         System.setProperty(FirstEventCutSeams.PROPERTY, "FP9");
         assertTrue(FirstEventCutSeams.configured().isEmpty(), "hooks disabled");
-        assertDoesNotThrow(() -> FirstEventCutSeams.beforeLoad(null, ManagedSavedDataType.CLASSIC_PROGRESSION));
         System.setProperty(EscrowTestEndpoints.HOOKS, "true");
         assertEquals(FirstEventCutSeams.Cut.FP9, FirstEventCutSeams.configured().orElseThrow());
         // An unrelated root is unaffected by the load-fault cut.
         assertDoesNotThrow(() -> FirstEventCutSeams.beforeLoad(null, ManagedSavedDataType.STATIONS));
         System.setProperty(FirstEventCutSeams.PROPERTY, "FX-Ma");
         assertThrows(IllegalStateException.class, FirstEventCutSeams::configured, "an unknown ID fails at startup");
+    }
+
+    /** A null server proves the production path never consults the empty-server gate. */
+    private static void assertProduction() {
+        for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
+            assertDoesNotThrow(() -> FirstEventCutSeams.beforeLoad(null, type));
+        }
+        assertTrue(FirstEventCutSeams.participants(null, FirstEventKind.FIRST_MOON_LANDING).isEmpty());
+        assertTrue(FirstEventCutSeams.warpVisitorCount(null).isEmpty());
+        assertTrue(FirstEventCutSeams.journalPolicy(null).isEmpty());
+        assertSame(CheckedSavedDataPolicy.DirectoryForce.PLATFORM, FirstEventCutSeams.directoryForce(null));
+        assertSame(CheckedSavedDataPolicy.DirectoryForce.PLATFORM, FirstEventCutSeams.journalDirectoryForce(null));
+        assertEquals(CheckedSavedDataPolicy.atomic(ManagedSavedDataType.STATIONS).type(),
+                FirstEventCutSeams.stationPolicy(null, () -> fail("the production policy never runs the hook")).type());
+        assertDoesNotThrow(() -> FirstEventCutSeams.boundary(null, FirstEventCutSeams.RECEIPT_CONFIRMED,
+                FirstEventKind.FIRST_STATION_WARP, null));
     }
 
     @Test void theInventoryNamesExactlyTheThirtyNineHeadlessRows() {

@@ -5,10 +5,10 @@ import static io.github.sunthemoon.advancedrocketrycommunity.rocket.server.Rocke
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.ClassicAdvancementEvents;
-import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.ClassicFirstEventDelivery;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventCutSeams;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventDisposition;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventDispositionSource;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
@@ -36,7 +36,8 @@ final class MoonLandingCompletion {
     }
 
     static Result complete(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
-                           RocketEntity destination, RocketTransferBayDispatch bays, BooleanSupplier publish) {
+                           RocketEntity destination, RocketTransferBayDispatch bays, BooleanSupplier publish,
+                           FirstEventDispositionSource dispositions) {
         // 1. Only a Moon destination counts; the source Level does not matter (choice R2).
         if (!destination.level().dimension().equals(CelestialIds.MOON_LEVEL)) {
             return Result.ORDINARY;
@@ -51,8 +52,8 @@ final class MoonLandingCompletion {
             journal.afterAcknowledged(server, record.logicalRocketId(), publish, () -> { });
             return Result.LANDED_NOW;
         }
-        FirstEventDisposition disposition = ClassicFirstEventDelivery.disposition(server,
-                FirstEventKind.FIRST_MOON_LANDING, journal.durableFirstMoonLanding(), ram);
+        FirstEventDisposition disposition = dispositions.disposition(server, FirstEventKind.FIRST_MOON_LANDING,
+                journal.durableFirstMoonLanding(), ram);
         if (disposition == FirstEventDisposition.NOT_FIRST) {
             return Result.ORDINARY;
         }
