@@ -117,11 +117,11 @@ def command(java: str, cut: str | None) -> list[str]:
 
 def halted(case: str, process: smoke.CapturedProcess, timeout: float) -> dict:
     code = process.finish(timeout=timeout)
-    marks = [HALT.search(line) for line in process.lines]
-    marks = [mark for mark in marks if mark is not None]
+    # The halt is logged and also printed raw before Runtime.halt, so the same marker appears twice.
+    marks = {tuple(part.strip() for part in mark.groups()) for mark in map(HALT.search, process.lines) if mark}
     if code != 75 or len(marks) != 1:
-        raise smoke.SmokeError(f"{case}: expected one release-test halt with status 75, got {code} and {len(marks)}")
-    cut, boundary, event, thread = marks[0].groups()
+        raise smoke.SmokeError(f"{case}: expected one release-test halt with status 75, got {code} and {marks}")
+    cut, boundary, event, thread = next(iter(marks))
     if cut != case or boundary != CASES[case][0] or thread.strip() != "Server thread":
         raise smoke.SmokeError(f"{case}: halted at {cut} {boundary} on {thread}")
     return dict(exit_code=code, boundary=boundary, event=event, thread=thread.strip())
