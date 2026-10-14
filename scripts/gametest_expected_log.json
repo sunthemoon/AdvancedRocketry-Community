@@ -3,6 +3,25 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "w37j-respawn-save-listener-interruptions",
+      "level": "ERROR",
+      "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
+      "message": "Exception caught during firing event: W37J injected respawn listener interruption",
+      "stack_contains": "RespawnSaveReconciliationGameTests.openWindow",
+      "counts": {"respawn_save_reconciliation": 7},
+      "test": "RespawnSaveReconciliationGameTests.openWindow (seven native save regressions)",
+      "reason": "Each fixture deliberately aborts native respawn dispatch before adoption, catches that exception, and checks the old-object file before reconnect or cleanup."
+    },
+    {
+      "id": "w37j-unadopted-save-reconnect-duplicate-uuid",
+      "level": "WARN",
+      "logger": "net.minecraft.server.level.ServerLevel/",
+      "message": "Force-added player with duplicate UUID [0-9a-f-]{36}",
+      "counts": {"respawn_save_reconciliation": 7},
+      "test": "RespawnSaveReconciliationGameTests.assertFileAndReconnect (seven regressions)",
+      "reason": "The native old-object disconnect leaves the unadopted replacement in its Level. Reconnect discards it without a replacement save masking the file under test."
+    },
+    {
       "id": "w37f-respawn-listener-interruption",
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
@@ -45,9 +64,9 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_PLANET_RESPAWN_DIAGNOSTIC player=[0-9a-f-]{36} case=unreadable_backup: ForgeData\\.PlayerPersisted\\.arce_planet_respawn_backup is unreadable or from a later version and is kept verbatim, so the player respawns without it; recovery: with the player offline, back up the player file and copy its tuple to the Spawn fields \\(ADR-066 planet respawn backup note\\)",
-      "counts": {"death_respawn": 1},
-      "test": "DeathRespawnGameTests.anUnencodableNativeTupleDoesNotFailADeadTickOrEraseAnUnreadableBackup",
-      "reason": "W37H F5: the same player carries a schema 99 backup root, which is kept verbatim and reported once per player per server session."
+      "counts": {"death_respawn": 1, "respawn_save_reconciliation": 1},
+      "test": "DeathRespawnGameTests.anUnencodableNativeTupleDoesNotFailADeadTickOrEraseAnUnreadableBackup, RespawnSaveReconciliationGameTests.logoutReconciliationReturnsTheRetainedOpaqueRoot",
+      "reason": "W37H F5: a schema 99 backup root is kept verbatim. W37J also returns a retained schema 99 root after reconciliation; reconnect reports it once, while the valid native point remains intact."
     },
     {
       "id": "w37h-planet-respawn-foreign-parent",

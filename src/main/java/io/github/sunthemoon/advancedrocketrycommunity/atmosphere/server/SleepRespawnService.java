@@ -74,7 +74,8 @@ import net.minecraftforge.eventbus.api.IEventBus;
  * </ul>
  *
  * A set-aside tuple is owned by the player's persisted Forge data, not a tick-local map. No transient state decides
- * which point governs; the only transient state is the once-per-session diagnostic sets.
+ * which point governs. Transient state limits diagnostics and tracks this service's own copies into an unadopted
+ * connection player; it never authorizes replacing an unrelated tuple and is lost on an abnormal stop.
  */
 public final class SleepRespawnService {
     /** The vanilla bed and anchor stand-up searches read blocks at most this far from the saved block. */
@@ -110,6 +111,7 @@ public final class SleepRespawnService {
     private final Supplier<Options> options;
     /** Players already reported per diagnostic in this server session (server thread). */
     private final Map<Diagnostic, Set<UUID>> reported = new EnumMap<>(Diagnostic.class);
+    private final RespawnSaveReconciler saveCopies = new RespawnSaveReconciler();
 
     public SleepRespawnService(AtmosphereManager atmosphere, CelestialCatalogManager catalogs, Supplier<Options> options) {
         this.atmosphere = Objects.requireNonNull(atmosphere, "atmosphere");
@@ -140,7 +142,7 @@ public final class SleepRespawnService {
         bus.addListener(this::onLeaveLevel);
         bus.addListener(this::onRespawn);
         bus.addListener(this::onLogin);
-        bus.addListener(this::onLogout);
+        bus.addListener(EventPriority.LOWEST, this::onLogout);
         // After every Level and connection tick, and after the other END listeners (the atmosphere authority's too).
         bus.addListener(EventPriority.LOWEST, this::onServerTick);
         bus.addListener(this::onServerStopped);
@@ -244,12 +246,18 @@ public final class SleepRespawnService {
     /** PlayerList.remove posts this before the native save, so a superseded backup is not saved. */
     public void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()) {
-            governing(player);
+            ServerPlayer replacement = player.server.getPlayerList().getPlayer(player.getUUID());
+            boolean pending = backup(player).isPresent();
+            if (replacement != null && replacement != player && saveCopies.reconcile(replacement, pending)) {
+                if (pending) { release(player); }
+            } else { governing(player); }
+            saveCopies.forget(player);
         }
     }
 
     public void onServerStopped(ServerStoppedEvent event) {
         reported.clear();
+        saveCopies.clear();
     }
 
     /**
@@ -263,8 +271,10 @@ public final class SleepRespawnService {
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             MinecraftServer server = event.getServer();
+            saveCopies.prune(server);
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 if (player instanceof FakePlayer) { continue; }
+                saveCopies.reconcile(player, false); // Follow later changes even after the original backup was released.
                 if (player.isDeadOrDying() || player.wonGame) { beforeRespawn(server, player); } else { restore(player, true); }
             }
         }
@@ -295,26 +305,11 @@ public final class SleepRespawnService {
         Optional<Backup> pending = backup(player);
         if (pending.isPresent() && !RespawnPointBackup.governs(pending.orElseThrow().point(), player.getRespawnDimension(),
                 player.getRespawnPosition(), player.getRespawnAngle(), player.isRespawnForced())) {
-            carryToSavedPlayer(player);
+            saveCopies.reconcile(player, true);
             release(player);
             return Optional.empty();
         }
         return pending;
-    }
-
-    /**
-     * W37I: until the connection adopts a replacement, its logout save writes the connection's player, the old one,
-     * whose tuple is this service's clear. In W37F's interrupted-listener window it never adopts it. A newer tuple that
-     * supersedes the backup on the replacement is therefore copied there too. This writes only into the cleared tuple.
-     */
-    private static void carryToSavedPlayer(ServerPlayer replacement) {
-        ServerPlayer saved = replacement.connection == null ? null : replacement.connection.player;
-        if (saved != null && saved != replacement && saved.getUUID().equals(replacement.getUUID()) && cleared(saved)) {
-            saved.respawnDimension = replacement.getRespawnDimension();
-            saved.respawnPosition = replacement.getRespawnPosition();
-            saved.respawnAngle = replacement.getRespawnAngle();
-            saved.respawnForced = replacement.isRespawnForced();
-        }
     }
 
     /** Removes the pending backup; an opaque retained root returns to its key. */

@@ -365,8 +365,9 @@ class ManifestValidationTests(unittest.TestCase):
         # W33 adds one oversized unlit torch root chunk-save refusal (w33-unlit-torch-chunk-save-refused).
         # W37F adds one deliberate earlier respawn-listener interruption.
         # W37I adds two more, one per interrupted-window logout test (w37i-respawn-listener-interruption-logout).
+        # W37J adds seven deliberate interruption windows (w37j-respawn-save-listener-interruptions).
         self.assertEqual(
-            85, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
+            92, sum(sum(item.counts.values()) for item in expectations if item.level == "ERROR")
         )
 
     def test_legacy_scalar_recovery_warning_has_one_separate_batch_count(self) -> None:
