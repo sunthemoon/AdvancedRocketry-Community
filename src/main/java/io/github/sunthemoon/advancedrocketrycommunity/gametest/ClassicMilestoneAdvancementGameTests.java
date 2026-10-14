@@ -376,10 +376,12 @@ public final class ClassicMilestoneAdvancementGameTests {
                     helper.assertTrue(!done(outsider, Milestone.FIRST_STATION_WARP)
                                     && !done(remote, Milestone.FIRST_STATION_WARP),
                             "A player without VISIT access or outside the region earned the world-first");
-                    helper.assertTrue(elected == (done(owner, Milestone.FIRST_STATION_WARP)
-                                    && done(member, Milestone.FIRST_STATION_WARP)),
-                            elected ? "The present participants of the world-first warp were not awarded"
-                                    : "A warp that is not the world's first earned the world-first milestone");
+                    boolean ownerDone = done(owner, Milestone.FIRST_STATION_WARP);
+                    boolean memberDone = done(member, Milestone.FIRST_STATION_WARP);
+                    helper.assertTrue(ownerDone == elected,
+                            "The owner's world-first award did not match this warp's election");
+                    helper.assertTrue(memberDone == elected,
+                            "The member's world-first award did not match this warp's election");
                 } finally {
                     extra.forEach(fixture.server.getPlayerList()::remove);
                     fixture.warp.installRocketAuthority(previous);
