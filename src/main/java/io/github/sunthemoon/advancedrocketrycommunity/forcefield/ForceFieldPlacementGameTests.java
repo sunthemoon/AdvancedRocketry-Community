@@ -13,13 +13,17 @@ import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.MinecraftForge;
@@ -126,6 +130,88 @@ public final class ForceFieldPlacementGameTests {
             } finally {
                 MinecraftForge.EVENT_BUS.unregister(vetoPlace); MinecraftForge.EVENT_BUS.unregister(vetoBreak);
             }
+        }
+        helper.succeed();
+    }
+    /** A connected placer beside the target, so native placement binds the projector to it (W04F review N6). */
+    private static ServerPlayer connectedPlacer(GameTestHelper helper, Placement f) {
+        ServerPlayer placer = helper.makeMockServerPlayerInLevel();
+        placer.teleportTo(f.level, f.pos.getX() + 0.5, f.pos.getY(), f.pos.getZ() + 6.5, 0.0F, 0.0F);
+        placer.setItemInHand(InteractionHand.MAIN_HAND, f.stack);
+        return placer;
+    }
+    private static InteractionResult place(Placement f, ServerPlayer placer) {
+        return f.stack.useOn(new UseOnContext(placer, InteractionHand.MAIN_HAND,
+                new BlockHitResult(Vec3.atCenterOf(f.pos.below()), Direction.UP, f.pos.below(), false)));
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void cancelledConnectedPlacementRollsBackItsBoundReservationDespiteBreakRefusal(GameTestHelper helper) {
+        ServerPlayer placer = null;
+        try (var f = new Placement(helper)) {
+            placer = connectedPlacer(helper, f);
+            UUID placerId = placer.getUUID();
+            var data = FieldCleanupSavedData.get(f.level.getServer());
+            var before = data.save(new net.minecraft.nbt.CompoundTag());
+            AtomicInteger placements = new AtomicInteger();
+            Consumer<BlockEvent.EntityPlaceEvent> vetoPlace = event -> {
+                if (event.getLevel() == f.level && event.getPos().equals(f.pos)) {
+                    helper.assertTrue(f.level.getBlockEntity(f.pos) instanceof ForceFieldProjectorBlockEntity projector
+                            && projector.state().owner().filter(placerId::equals).isPresent() && projector.hasReservation(),
+                            "Connected placement did not hold a reservation bound to its placer");
+                    placements.incrementAndGet(); event.setCanceled(true);
+                }
+            };
+            Consumer<BlockEvent.BreakEvent> vetoBreak = event -> {
+                if (event.getLevel() == f.level && event.getPos().equals(f.pos)
+                        && event.getPlayer() != null && placerId.equals(event.getPlayer().getUUID())) { event.setCanceled(true); }
+            };
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, false, BlockEvent.EntityPlaceEvent.class, vetoPlace);
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, false, BlockEvent.BreakEvent.class, vetoBreak);
+            try {
+                helper.assertTrue(place(f, placer) == InteractionResult.FAIL && placements.get() == 1,
+                        "Connected placement did not reach the cancelled Forge transaction");
+                helper.assertTrue(f.level.getBlockState(f.pos).is(Blocks.AIR) && f.level.getBlockEntity(f.pos) == null
+                        && data.save(new net.minecraft.nbt.CompoundTag()).equals(before),
+                        "Cancelled connected placement left a projector or its bound reservation");
+            } finally {
+                MinecraftForge.EVENT_BUS.unregister(vetoPlace); MinecraftForge.EVENT_BUS.unregister(vetoBreak);
+            }
+        } finally {
+            if (placer != null) { placer.getServer().getPlayerList().remove(placer); }
+        }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void allowedNativeExplosionDropsTheProjectorExactlyOnce(GameTestHelper helper) {
+        ServerPlayer placer = null;
+        try (var f = new Placement(helper)) {
+            placer = connectedPlacer(helper, f);
+            helper.assertTrue(place(f, placer).consumesAction()
+                    && f.level.getBlockEntity(f.pos) instanceof ForceFieldProjectorBlockEntity placed
+                    && placed.state().owner().filter(placer.getUUID()::equals).isPresent() && placed.hasReservation(),
+                    "Connected placement did not bind its projector");
+            var key = ((ForceFieldProjectorBlockEntity) f.level.getBlockEntity(f.pos)).reservationIdentity().key();
+            var data = FieldCleanupSavedData.get(f.level.getServer());
+            var area = new AABB(f.pos).inflate(6);
+            Explosion explosion = new Explosion(f.level, null, f.pos.getX() + 0.5, f.pos.getY() + 0.5, f.pos.getZ() + 0.5,
+                    4.0F, false, Explosion.BlockInteraction.DESTROY);
+            try {
+                explosion.explode();
+                helper.assertTrue(explosion.getToBlow().contains(f.pos), "The allowed explosion did not reach the projector");
+                explosion.finalizeExplosion(true);
+                int dropped = f.level.getEntitiesOfClass(ItemEntity.class, area,
+                        item -> item.getItem().is(ModItems.FORCE_FIELD_PROJECTOR.get())).stream()
+                        .mapToInt(item -> item.getItem().getCount()).sum();
+                var entry = data.view().get(key);
+                helper.assertTrue(f.level.getBlockState(f.pos).isAir() && f.level.getBlockEntity(f.pos) == null && dropped == 1
+                        && (entry == null || entry.orphan()), "Allowed explosion dropped " + dropped
+                        + " projectors or kept a live reservation");
+            } finally {
+                f.level.getEntitiesOfClass(ItemEntity.class, area).forEach(ItemEntity::discard);
+                data.forget(key);
+            }
+        } finally {
+            if (placer != null) { placer.getServer().getPlayerList().remove(placer); }
         }
         helper.succeed();
     }
