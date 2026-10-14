@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 4f9e6597d6594bcded8dedde487807fbd1d8bc17
-latest_hosted_regression: run 38533627057 at 44b17e3b7e65dae881f2a2f1e39481a05916d255, passed
+latest_hosted_regression: run 38533807522 at 66d6b94a2e09266cfe4e5f62cf1ed41ff74712ec, passed
 ledger_planned_units: 25
 asset_review_items: 154
 required_gates_approved: none
