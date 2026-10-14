@@ -14,26 +14,26 @@ public final class RocketEscrowGate {
 
     /** Bay-scoped permits may bypass only the bay hold, never these existing escrow protections. */
     public static boolean escrowIdle(RocketEntity rocket) {
-        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()) {
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) {
             return false;
         }
         var section = rocket.escrowSection();
-        UUID logical = rocket.assemblyTransactionId().orElseThrow();
-        if (io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
-                .get(level.getServer()).resourceMutationUnproved(logical)) { return false; }
+        UUID logical = rocket.assemblyTransactionId().orElse(null);
         if (!section.markers().isEmpty()) { return false; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null) { return section.ledger() == null; }
         var ledger = data.ledger();
-        if (section.ledger() != null && !section.ledger().equals(ledger.id())) { return false; }
-        if (data.bind(level.getServer()).logicalLocked(logical)) { return false; }
+        if (section.ledger() != null) { return false; }
+        if (logical != null && data.bind(level.getServer()).logicalLocked(logical)) { return false; }
+        if (data.ledger().records().stream().anyMatch(record -> rocket.getUUID().equals(record.source().identity())
+                || rocket.getUUID().equals(record.destination().identity()))) { return false; }
         return ledger.tombstones().stream().noneMatch(tombstone -> {
             for (var raw : EscrowTags.list(tombstone, "missing", 2)) {
                 var endpoint = EscrowCodec.endpoint((net.minecraft.nbt.CompoundTag) raw);
-                if (rocket.getUUID().equals(endpoint.identity()) || logical.equals(endpoint.logicalRocket())) { return true; }
+                if (rocket.getUUID().equals(endpoint.identity()) || logical != null && logical.equals(endpoint.logicalRocket())) { return true; }
             }
             for (var raw : EscrowTags.list(tombstone, "guards", 64)) {
-                if (logical.equals(EscrowCodec.guard((net.minecraft.nbt.CompoundTag) raw).rocket())) { return true; }
+                if (logical != null && logical.equals(EscrowCodec.guard((net.minecraft.nbt.CompoundTag) raw).rocket())) { return true; }
             }
             return false;
         });

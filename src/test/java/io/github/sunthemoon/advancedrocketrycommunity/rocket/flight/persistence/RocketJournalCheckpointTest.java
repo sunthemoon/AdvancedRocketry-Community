@@ -17,6 +17,23 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class RocketJournalCheckpointTest {
+    @Test void unrelatedWritesDoNotInvalidateAnUnchangedAcknowledgedRecord() {
+        var data = new RocketTransferSavedData(); var record = RocketTransferSavedDataTest.record();
+        try {
+            data.put(record); data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE));
+            data.setDirty();
+            assertFalse(data.acknowledgedCurrent());
+            assertFalse(data.resourceMutationUnproved(record.logicalRocketId()));
+            data.put(record.destinationSpawned(UUID.randomUUID()));
+            assertTrue(data.resourceMutationUnproved(record.logicalRocketId()));
+            data.saveChecked(target(), CheckedSavedDataPolicy.atomic(TYPE));
+            assertFalse(data.resourceMutationUnproved(record.logicalRocketId()));
+            var authoritative = data.find(record.transferId()).orElseThrow();
+            var respawn = authoritative.rebindDestination(UUID.randomUUID());
+            data.put(respawn);
+            assertTrue(data.resourceMutationUnproved(record.logicalRocketId()));
+        } finally { data.stop(); }
+    }
     @TempDir Path directory;
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.ROCKET_TRANSFERS;

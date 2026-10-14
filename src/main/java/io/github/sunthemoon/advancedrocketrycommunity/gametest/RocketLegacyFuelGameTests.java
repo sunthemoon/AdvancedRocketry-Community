@@ -103,8 +103,10 @@ public final class RocketLegacyFuelGameTests {
             long before = rocket.flightData().orElseThrow().fuel().amount();
             UUID transfer = UUID.randomUUID();
             assertPendingLaunch(helper, RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, transfer), rocket);
+            level.getServer().saveEverything(false, true, true);
+            var recoveryManager = new RocketManager();
             var report = RocketJournalGameTestSupport.recoverFixture(helper,
-                    () -> new RocketManager().recoverTransfer(level.getServer(), transfer));
+                    () -> recoveryManager.recoverTransfer(level.getServer(), transfer));
             helper.assertTrue(report.action().orElse(null) == RocketTransferRecoveryAction.KEEP_SOURCE,
                     "Legacy source recovery did not KEEP_SOURCE: " + report);
             helper.assertTrue(rocket.isAlive() && rocket.flightData().orElseThrow().state() == RocketFlightState.FUELED
@@ -137,7 +139,8 @@ public final class RocketLegacyFuelGameTests {
     }
 
     static FakePlayer owner(GameTestHelper helper, RocketEntity rocket) {
-        var player = new FakePlayer(helper.getLevel(), new GameProfile(rocket.ownerId().orElseThrow(), "LegacyFuel"));
+        var player = new FakePlayer((net.minecraft.server.level.ServerLevel) rocket.level(),
+                new GameProfile(rocket.ownerId().orElseThrow(), "LegacyFuel"));
         player.setPos(rocket.position()); return player;
     }
 
@@ -146,7 +149,11 @@ public final class RocketLegacyFuelGameTests {
     }
 
     static void refuel(GameTestHelper helper, RocketEntity rocket) {
-        var loader = FuelLoaderGameTests.loader(helper); loader.assignOwner(rocket.ownerId().orElseThrow());
+        var pos = rocket.blockPosition().offset(4, 0, 0);
+        var level = (net.minecraft.server.level.ServerLevel) rocket.level();
+        level.setBlockAndUpdate(pos, io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks.FUEL_LOADER.get().defaultBlockState());
+        var loader = (io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlockEntity) level.getBlockEntity(pos);
+        loader.assignOwner(rocket.ownerId().orElseThrow());
         helper.assertTrue(loader.itemHandler().insertItem(0, new ItemStack(ModItems.ROCKET_FUEL_CELL.get()), false).isEmpty(), "Loader rejected input");
         helper.assertTrue(loader.saveWithoutMetadata().getCompound(
                 io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderStorage.DATA_KEY).getInt("slot_role")
@@ -156,5 +163,25 @@ public final class RocketLegacyFuelGameTests {
         FuelLoaderGameTests.tick(loader);
         helper.assertTrue(rocket.flightData().orElseThrow().fuel().amount() > before
                 && rocket.flightData().orElseThrow().fuel().propulsion().isEmpty(), "Loader failed scalar fill");
+        level.removeBlock(pos, false);
+    }
+
+    static void afterLanding(GameTestHelper helper, java.util.function.Consumer<RocketEntity> check) {
+        var driver = new GameTestTickDriver(helper); var level = helper.getLevel();
+        var moon = level.getServer().getLevel(CelestialIds.MOON_LEVEL);
+        helper.assertTrue(moon != null, "Moon missing"); clearTransferJournal(level); primePadChunks(moon);
+        driver.after(40, () -> {
+            var rocket = decodedRocket(helper); var fuel = rocket.flightData().orElseThrow().fuel();
+            rocket.updateFlightData(rocket.flightData().orElseThrow().withFuel(fuel.fill(fuel.capacity()).state(), level.getGameTime()));
+            UUID logical = rocket.assemblyTransactionId().orElseThrow();
+            assertPendingLaunch(helper, RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, UUID.randomUUID()), rocket);
+            awaitFlightState(helper, driver, moon, logical, RocketFlightState.LANDED, 350, () -> {
+                var landed = findLogicalRocket(moon, logical);
+                helper.assertTrue(landed != null, "No landed scalar fixture");
+                try { check.accept(landed); }
+                finally { landed.discard(); clearTransferJournal(level); }
+                helper.succeed();
+            });
+        });
     }
 }

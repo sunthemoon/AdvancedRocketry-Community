@@ -402,7 +402,7 @@ final class RocketTransferService {
             return false;
         }
         var journal = RocketTransferSavedData.get(level.getServer());
-        if (!journal.canQueueEffect() || journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow())) { return false; }
+        if (journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow())) { return false; }
         var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
         return resourceMutationAllowed(journal.operational(), record == null ? null : record.phase(),
                 record != null && settledTransfers.contains(record.transferId()) && !liveTransfers.contains(record.transferId()),

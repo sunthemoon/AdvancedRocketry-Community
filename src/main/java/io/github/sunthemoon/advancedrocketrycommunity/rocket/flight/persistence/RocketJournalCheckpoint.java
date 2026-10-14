@@ -12,8 +12,21 @@ import net.minecraft.nbt.CompoundTag;
 /** Session-local acknowledgement. RAM phase, dirty state and a successful ordinary save are not proof. */
 final class RocketJournalCheckpoint {
     enum Outcome { UNACKNOWLEDGED, COMMITTED, NOT_COMMITTED, UNKNOWN }
-    record Acknowledgement(long sequence, String digest, Map<UUID, String> records, Set<UUID> logicalRockets) {
-        Acknowledgement { records = Map.copyOf(records); logicalRockets = Set.copyOf(logicalRockets); }
+    /** Checksum covers the immutable authority; phase and destination identity are its mutable envelope. */
+    record RecordVersion(String checksum, String phase, UUID destination) {
+        static RecordVersion of(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record) {
+            return new RecordVersion(record.checksum(), record.phase().name(), record.destinationEntityId().orElse(null));
+        }
+        static RecordVersion of(CompoundTag record) {
+            return new RecordVersion(record.getString("checksum"), record.getString("phase"),
+                    record.hasUUID("destination_entity_id") ? record.getUUID("destination_entity_id") : null);
+        }
+    }
+    record Acknowledgement(long sequence, String digest, Map<UUID, String> records, Set<UUID> logicalRockets,
+                           Map<UUID, RecordVersion> versions) {
+        Acknowledgement {
+            records = Map.copyOf(records); logicalRockets = Set.copyOf(logicalRockets); versions = Map.copyOf(versions);
+        }
     }
 
     private Acknowledgement acknowledged;
@@ -34,7 +47,10 @@ final class RocketJournalCheckpoint {
                 RocketJournalDigest.of(payload, RocketFlightLimits.MAX_TRANSFER_JOURNAL_NBT_BYTES), records,
                 payload.getList("transfers", net.minecraft.nbt.Tag.TAG_COMPOUND).stream()
                         .map(raw -> ((CompoundTag) raw).getUUID("logical_rocket_id"))
-                        .collect(java.util.stream.Collectors.toSet()));
+                        .collect(java.util.stream.Collectors.toSet()),
+                payload.getList("transfers", net.minecraft.nbt.Tag.TAG_COMPOUND).stream()
+                        .map(raw -> (CompoundTag) raw).collect(java.util.stream.Collectors.toMap(
+                                raw -> raw.getUUID("logical_rocket_id"), RecordVersion::of)));
         boolean[] attempted = {false};
         try {
             var checked = new CheckedSavedDataPolicy(policy.type(), (staged, target) -> {

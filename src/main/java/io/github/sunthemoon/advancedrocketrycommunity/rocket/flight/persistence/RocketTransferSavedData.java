@@ -264,12 +264,13 @@ public final class RocketTransferSavedData extends SavedData {
     /** Current and last acknowledged authority protect removal failures without locking new identities. */
     public boolean resourceMutationUnproved(UUID logical) {
         if (!operational()) { return true; }
-        if (!isDirty()) { return findByLogicalRocket(logical).isPresent() && !acknowledgedCurrent(); }
         var acknowledged = checkpoint.acknowledged();
         // No retained disk generation after an observed failure means the affected identities are unknown.
         if (failedWrite && acknowledged.isEmpty()) { return true; }
-        return findByLogicalRocket(logical).isPresent()
-                || acknowledged.map(value -> value.logicalRockets().contains(logical)).orElse(false);
+        var record = findByLogicalRocket(logical).orElse(null);
+        if (record == null) { return acknowledged.map(value -> value.logicalRockets().contains(logical)).orElse(false); }
+        return acknowledged.map(value -> !RocketJournalCheckpoint.RecordVersion.of(record)
+                .equals(value.versions().get(logical))).orElse(true);
     }
 
     public CheckedWriteResult checkedWriteResult() {

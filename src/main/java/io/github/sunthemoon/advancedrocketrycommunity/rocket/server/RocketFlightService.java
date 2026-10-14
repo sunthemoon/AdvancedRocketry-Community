@@ -452,7 +452,7 @@ final class RocketFlightService {
     }
 
     private RocketFlightRequestResult board(ServerPlayer player, RocketEntity rocket) {
-        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) {
+        if (!passengerMutationAllowed(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         RocketFlightData flight = rocket.flightData().orElseThrow();
@@ -476,7 +476,7 @@ final class RocketFlightService {
     }
 
     private RocketFlightRequestResult leave(ServerPlayer player, RocketEntity rocket) {
-        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) {
+        if (!passengerMutationAllowed(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         RocketFlightData flight = rocket.flightData().orElseThrow();
@@ -489,6 +489,13 @@ final class RocketFlightService {
         player.stopRiding();
         rocket.updateFlightData(flight.withPassengers(flight.passengers().remove(player.getUUID())));
         return new RocketFlightRequestResult(RocketFlightRequestCode.SUCCESS, 0L);
+    }
+
+    private static boolean passengerMutationAllowed(RocketEntity rocket) {
+        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) { return false; }
+        var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
+                .get(((ServerLevel) rocket.level()).getServer());
+        return !journal.operational() || !journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow());
     }
 
     private static Access access(ServerPlayer player, int rocketEntityId) {
