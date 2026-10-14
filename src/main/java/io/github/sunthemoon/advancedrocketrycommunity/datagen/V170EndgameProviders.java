@@ -28,7 +28,7 @@ import net.minecraftforge.common.data.ExistingFileHelper;
 
 /**
  * ADR-054 section 16 v1.7 DataGen for the shared endgame content. Models reference existing project textures and
- * vanilla models (no texture bytes are copied); the recipes follow the contract's ingredient lists.
+ * provenance-bound K6 icons and vanilla models; the recipes follow the contract's ingredient lists.
  */
 public final class V170EndgameProviders {
     private V170EndgameProviders() {
@@ -73,7 +73,8 @@ public final class V170EndgameProviders {
                     modLoc("block/machine_casing_top"), mcLoc("block/iron_block"));
             simpleBlock(ModBlocks.ELEVATOR_TERMINAL.get(), terminal);
             simpleBlockItem(ModBlocks.ELEVATOR_TERMINAL.get(), terminal);
-            itemModels().withExistingParent("laser_lens", mcLoc("item/amethyst_shard"));
+            itemModels().withExistingParent("laser_lens", mcLoc("item/generated"))
+                    .texture("layer0", modLoc("item/laser_lens"));
         }
     }
 

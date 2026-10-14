@@ -45,7 +45,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * ADR-049 v1.6 DataGen: the Satellite Builder, the generic package and the component items. Models
- * reference existing project textures and vanilla models (no texture bytes are copied); the component
+ * reference existing project textures, provenance-bound K6 icons and vanilla models; the component
  * and kind data reuse the legacy numbers recorded in ADR-049 section 2, and every generated file is
  * decoded by the strict runtime decoder before it is written.
  */
@@ -76,19 +76,24 @@ public final class V160SatelliteProviders {
             );
             simpleBlock(ModBlocks.MICROWAVE_RECEIVER.get(), receiver);
             simpleBlockItem(ModBlocks.MICROWAVE_RECEIVER.get(), receiver);
-            item("satellite_package", "item/conduit");
+            icon("satellite_package");
             item("advanced_solar_panel", "item/light_blue_stained_glass_pane");
             item("satellite_battery", "item/redstone_block");
             item("large_satellite_battery", "item/respawn_anchor");
             item("satellite_cargo_hold", "item/barrel");
-            item("survey_scanner_module", "item/spyglass");
-            item("solar_transmitter_module", "item/lightning_rod");
+            icon("survey_scanner_module");
+            icon("solar_transmitter_module");
             item("asteroid_drill_module", "item/iron_pickaxe");
             item("gas_intake_module", "item/hopper");
         }
 
         private void item(String name, String vanillaParent) {
             itemModels().withExistingParent(name, mcLoc(vanillaParent));
+        }
+
+        private void icon(String name) {
+            itemModels().withExistingParent(name, mcLoc("item/generated"))
+                    .texture("layer0", modLoc("item/" + name));
         }
     }
 
