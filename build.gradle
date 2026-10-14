@@ -162,6 +162,9 @@ def currentSupersededV030Types = [
         'data/advancedrocketrycommunity/dimension_type/space.json'
 ] as Set
 
+// ADR-066 section 7.1 (W45): the v1.8 sounds.json in the mod namespace folds the v0.1 ui_select definition into
+// one current file, so the immutable v0.1 copy is not packaged.
+def supersededV010Sounds = 'assets/advancedrocketrycommunity/sounds.json'
 def currentSatelliteDefinition = 'data/advancedrocketrycommunity/satellite_definitions/data_satellite.json'
 def currentGasTable = 'data/advancedrocketrycommunity/gas_harvest/gas_giant.json'
 
@@ -227,6 +230,10 @@ tasks.named('processResources') {
                 && currentSupersededV030Types.contains(details.path)) {
             details.exclude()
         }
+        if (details.file.toPath().startsWith(file('src/generated/resources').toPath())
+                && details.path == supersededV010Sounds) {
+            details.exclude()
+        }
         if ((details.file.toPath().startsWith(file('src/generated/v0.3/resources').toPath())
                 && supersededV030Planets.contains(details.path))
                 || (details.file.toPath().startsWith(file('src/generated/v1.4/resources').toPath())
@@ -276,6 +283,10 @@ tasks.named('sourcesJar') {
         }
         if (details.file.toPath().startsWith(file('src/generated/v0.3/resources').toPath())
                 && currentSupersededV030Types.contains(details.path)) {
+            details.exclude()
+        }
+        if (details.file.toPath().startsWith(file('src/generated/resources').toPath())
+                && details.path == supersededV010Sounds) {
             details.exclude()
         }
         if ((details.file.toPath().startsWith(file('src/generated/v0.3/resources').toPath())
