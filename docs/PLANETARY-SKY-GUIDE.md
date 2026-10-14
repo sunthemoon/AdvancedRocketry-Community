@@ -24,6 +24,13 @@ body the station orbits (ADR-047), and the sky adds that body as a large disc be
 the horizon; the sun follows its solar intensity. Packaged bodies have fixed orbital
 colours; a data-pack body uses its profile's day colour if that is bright enough,
 otherwise a neutral colour.
+When the server marks the orbited body as a singularity (a body with a black-hole
+generator profile, such as Cygnus X-1), the disc is drawn dark instead, with a thin
+bright rim and a tilted glowing ring, in the same place and at the same size. A
+few faint motes drift toward it while you can see the sky, unless
+`effects.advancedVisuals` is off or particles are set to Minimal. This is a
+stylized, code-drawn picture, not the original mod's black-hole texture, and it
+pulls nothing. `sky.stationOverride=false` shows the dimension fallback instead.
 Earth retains its normal renderer. Gas-giant definitions have no surface sky.
 The four built-in profile IDs are `advancedrocketrycommunity:moon`, `:space`,
 `:mars` and `:venus` (each abbreviated ID uses the same namespace).
