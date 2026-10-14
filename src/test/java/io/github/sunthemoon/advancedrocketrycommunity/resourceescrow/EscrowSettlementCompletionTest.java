@@ -56,6 +56,22 @@ class EscrowSettlementCompletionTest {
             assertEquals(frozen, coordinator.ledger());
         }
     }
+    @Test void releasedNoTransferReceiptCannotAuthorizeAnEmptyHistoricalElection() {
+        var root = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1, 99, 1).withReason(EscrowReason.OTHER_STATE));
+        var intent = intent(root, false); var frozen = intent.freeze(root);
+        var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(frozen, intent), intent);
+        var op = root.records().get(0); var logical = op.guard().rocket(); var returned = EscrowTestFixtures.id(994);
+        assertNull(op.guard().transfer()); assertFalse(EscrowSettlementTombstones.logicalLocked(released, logical));
+        assertTrue(EscrowRecoveryFence.known(released, logical, returned));
+        assertEquals("TOMBSTONE", EscrowRecoveryFence.reason(released, logical, returned,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction.REBUILD_DESTINATION, List.of(), List.of()));
+        assertTrue(EscrowRecoveryFence.transaction(released, logical, false, List.of()));
+        var chosen = new EscrowRecoveryFence.Rocket(op.destination().identity(), 1, false, true);
+        assertNull(EscrowRecoveryFence.reason(released, logical, returned,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction.KEEP_DESTINATION, List.of(), List.of(chosen)));
+        assertFalse(EscrowRecoveryFence.transaction(released, logical, false, List.of(chosen)));
+        assertFalse(EscrowRecoveryFence.known(released, EscrowTestFixtures.id(995), returned));
+    }
     @Test void chosenUuidStillRejectsResourceRollbackAndConflictingSameEpochState() {
         var root = EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1, 99, 1).withReason(EscrowReason.OTHER_STATE));
         var intent = intent(root, false); var frozen = intent.freeze(root);

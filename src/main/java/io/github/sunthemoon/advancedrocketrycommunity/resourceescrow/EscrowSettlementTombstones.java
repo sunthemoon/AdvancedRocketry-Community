@@ -88,6 +88,9 @@ final class EscrowSettlementTombstones {
                     .anyMatch(endpoint -> logical.equals(endpoint.logicalRocket()));
         });
     }
+    static boolean history(EscrowLedger root, UUID logical) {
+        return root.tombstones().stream().anyMatch(tag -> guarded(tag, logical));
+    }
     private static boolean guarded(CompoundTag tag, UUID logical) {
         return EscrowTags.list(tag, "guards", 64).stream().anyMatch(raw -> logical.equals(EscrowCodec.guard((CompoundTag) raw).rocket()))
                 || EscrowTags.list(tag, "missing", 2).stream().anyMatch(raw -> logical.equals(EscrowCodec.endpoint((CompoundTag) raw).logicalRocket()));

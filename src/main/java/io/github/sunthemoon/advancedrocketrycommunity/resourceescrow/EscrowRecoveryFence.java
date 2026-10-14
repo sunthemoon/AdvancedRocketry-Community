@@ -19,7 +19,7 @@ public final class EscrowRecoveryFence {
     /** Ledger-only classification, before inspecting endpoint readiness or acquiring tickets. */
     public static boolean known(EscrowLedger ledger, UUID logical, UUID transfer) {
         return ledger.records().stream().anyMatch(op -> op.guard().rocket().equals(logical))
-                || tombstoned(ledger, logical) || EscrowSettlementTombstones.retiredTransfer(ledger, logical, transfer)
+                || EscrowSettlementTombstones.history(ledger, logical) || EscrowSettlementTombstones.retiredTransfer(ledger, logical, transfer)
                 || ledger.floors().stream().anyMatch(floor -> logical.equals(floor.getUUID("rocket_id"))
                         && floor.hasUUID("transfer_id") && transfer.equals(floor.getUUID("transfer_id")));
     }
@@ -44,6 +44,7 @@ public final class EscrowRecoveryFence {
         };
         List<Rocket> keptSide = destinationAuthority ? destinations : sources;
         List<Rocket> discardedSide = destinationAuthority ? sources : destinations;
+        if (ledger != null && keptSide.isEmpty() && EscrowSettlementTombstones.history(ledger, logical)) { return "TOMBSTONE"; }
         if (discardedSide.stream().anyMatch(Rocket::protectedResources)
                 || keptSide.stream().skip(1).anyMatch(Rocket::protectedResources)) { return "FLOOR_CONFLICT"; }
         // Source recovery replaces flight/resources from the pre-flight record, unlike destination KEEP.
@@ -64,8 +65,7 @@ public final class EscrowRecoveryFence {
         return ledger != null && (ledger.records().stream().anyMatch(op -> op.guard().rocket().equals(logical))
                 || tombstoned(ledger, logical) || candidates.stream().anyMatch(rocket -> EscrowSettlementTombstones.identityLocked(ledger, logical, rocket.identity())
                         || rocket.epoch() < EscrowSettlementTombstones.minimumEpoch(ledger, logical, rocket.identity()))
-                || assembly && ledger.tombstones().stream().flatMap(tag -> EscrowTags.list(tag, "guards", 64).stream())
-                .anyMatch(raw -> logical.equals(EscrowCodec.guard((net.minecraft.nbt.CompoundTag) raw).rocket()))
+                || (assembly || candidates.isEmpty()) && EscrowSettlementTombstones.history(ledger, logical)
                 || assembly && ledger.floors().stream().anyMatch(floor -> logical.equals(floor.getUUID("rocket_id"))))
                 || candidates.stream().anyMatch(rocket -> !rocket.valid() || rocket.marked() || assembly && rocket.epoch() != 0);
     }

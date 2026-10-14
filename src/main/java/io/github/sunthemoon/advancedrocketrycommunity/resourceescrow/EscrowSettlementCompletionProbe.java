@@ -218,6 +218,9 @@ final class EscrowSettlementCompletionProbe {
                 EscrowTags.require(!RocketEscrowGate.idle(unproved), "Unproved returning physical identity unlocked");
                 unproved.setUUID(survivor.getUUID());
                 EscrowTags.require(!RocketEscrowGate.idle(unproved), "Stale same-UUID identity unlocked");
+                EscrowTags.require(EscrowRecoveryFence.known(data.ledger(), endpoint.logicalRocket(), UUID.randomUUID())
+                        && "TOMBSTONE".equals(EscrowRecoveryFence.reason(data.ledger(), endpoint.logicalRocket(), UUID.randomUUID(),
+                                RocketTransferRecoveryAction.REBUILD_DESTINATION, List.of(), List.of())), "Empty returned journal election was allowed");
                 var currentCopy = EscrowRocketAuditProbe.createRocket(level, endpoint.logicalRocket(), true);
                 currentCopy.load(survivor.saveWithoutId(new CompoundTag()));
                 EscrowTags.require(currentCopy.operational() && RocketEscrowGate.idle(currentCopy), "Exact chosen state copy is invalid");
