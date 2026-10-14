@@ -1,0 +1,2 @@
+{"classes": 542, "tests": 3106, "failures": 0, "errors": 0, "skipped": 0}
+[('io.github.sunthemoon.advancedrocketrycommunity.client.elevator.ElevatorCapsuleClientStateTest', '6'), ('io.github.sunthemoon.advancedrocketrycommunity.endgame.elevator.ElevatorCapsuleCodecTest', '10')]

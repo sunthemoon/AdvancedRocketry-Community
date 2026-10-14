@@ -180,19 +180,21 @@
       ]
     },
     {
-      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/sounds.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/sounds.json",
       "status": "NEW",
       "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
-      "source_branch": "codex/v1.8.0-w16-presentation",
-      "source_commit": "fc5b57f60d0b555f195ce9653fa5ad1f3406a355",
+      "source_branch": "codex/v1.8.0-w45-sound-fold",
+      "source_commit": "dc8ccf703f6c0185a2294d68ab58e277d46f9352",
       "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SoundDefinitions.java",
-      "source_sha256": "92b94a5e8492bee9caa51ff32aa000f9771c73f47fa78bbdda77e8faaafa741c",
-      "authoring_commit": "c09a1e3450fdf11e0066f1269f7d086ee6db97b6",
-      "target_sha256": "b305363d2c6cc38fb85a3e96aae9204af51ac64a331de1f7b344ff862f792e53",
+      "source_sha256": "e5dc7f29a9c16ba7dd7186b8ea82489b5c0ccafd99ae91ef04b2d325a0e3a4f4",
+      "authoring_commit": "dc8ccf703f6c0185a2294d68ab58e277d46f9352",
+      "target_sha256": "f7e6f6756263006a2d0ef12ee3681e43fcef9fb31e0454509dc4df87afe1c95b",
       "license": "MIT",
       "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
       "transformation": [
-        "Define the ten classic events in the v1.8 namespace, each naming its NEW file, subtitle and range; the historical v0.1 sounds.json is unchanged."
+        "Define the ten classic events, each naming its NEW file, subtitle and range.",
+        "Fold in the v0.1 ui_select definition unchanged (the same sound file, default volume, pitch and stream flag, and subtitle) from src/generated/resources/assets/advancedrocketrycommunity/sounds.json, which stays unchanged on disk and is excluded from the packaged jar (W45, ADR-066 section 7.1).",
+        "One current sounds.json in the mod namespace, so every sound location equals its registry ID; the earlier v1.8 file in the advancedrocketrycommunity_v180 namespace is removed."
       ]
     },
     {
@@ -294,7 +296,7 @@
   ],
   "review": {
     "status": "PENDING_HUMAN_REVIEW",
-    "content_digest": "284caa09ceb061bfda7a91c911a40ad57e17db95b5c46907e7427d21c8077195",
+    "content_digest": "b5208bfcbaab58116d83d8d232fdc3743e1190f282cb5fe827f9795a46fe9ff3",
     "reviewer": null,
     "reviewed_at": null,
     "findings": [

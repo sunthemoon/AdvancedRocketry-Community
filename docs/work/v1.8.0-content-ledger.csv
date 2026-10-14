@@ -395,7 +395,7 @@ entity:ARAbductedItem,REDESIGNED,v1.7.0,client railgun effect,ADR-056,no entity,
 entity:ARHoverCraft,DEFERRED,post-2.0,-,ADR-062,with the hovercraft item,
 entity:ARPlanetUIButton,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity,
 entity:ARPlanetUIItem,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity,
-entity:ARSpaceElevatorCapsule,PLANNED,C18d,client capsule ride effect,ADR-059 ADR-062,visual only; rides stay server-side,
+entity:ARSpaceElevatorCapsule,REDESIGNED,v1.8.0,client elevator_capsule effect,ADR-059 ADR-062 ADR-066,visual only; bounded update-tag projection; rides stay server-side,docs/work/v1.8.0-c18d-presentation/VERIFICATION.md
 entity:ARStarUIButton,REDESIGNED,v1.4.0,flight star map screen,ADR-035 ADR-062,UI entity,
 entity:deployedRocket,REJECTED,-,-,ADR-051 ADR-062,station-deployed mining rockets,
 entity:laserNode,REJECTED,-,-,ADR-055 ADR-062,laser node with off-thread world edits,
