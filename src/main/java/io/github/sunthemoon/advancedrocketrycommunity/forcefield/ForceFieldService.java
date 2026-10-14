@@ -70,7 +70,7 @@ public final class ForceFieldService {
         if (!powered) { release(data, entry, projector, offset); return; }
         // Empty AIR means the canonical air block, no fluid and no BlockEntity.
         if (field != null || !cells.getBlockState(target).is(Blocks.AIR) || !cells.getFluidState(target).isEmpty()) { return; }
-        if (!ForceFieldProtection.placement(level, identity, target)
+        if (!ForceFieldProtection.placement(level, identity, target, cells.getBlockState(identity.source()))
                 || !loaded(level, identity.source()) || loadedEntity(level, identity.source()) != projector
                 || !matches(projector, identity) || !loaded(level, target) || loadedEntity(level, target) != null
                 || !projector.state().equals(observedSource) || !entry.equals(data.view().get(identity.key()))
