@@ -1,0 +1,248 @@
+{
+  "counts": {
+    "CLEAR": 16
+  },
+  "files": {
+    "assets/advancedrocketrycommunity/textures/block/electrolyzer_front.png": {
+      "best": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.5273,
+        "reference": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/electrolyzer_front_active.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/iron_block.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.5507,
+        "reference": "1.20.1:assets/minecraft/textures/block/iron_block.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/orbital_laser_bottom.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/cherry_log_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 5,
+        "overlap": 0.0,
+        "rank": 0.5137,
+        "reference": "1.20.1:assets/minecraft/textures/block/cherry_log_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/orbital_laser_front.png": {
+      "best": "1.20.1:assets/minecraft/textures/painting/plant.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 6,
+        "overlap": 0.0,
+        "rank": 0.4799,
+        "reference": "1.20.1:assets/minecraft/textures/painting/plant.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/precision_assembler_front.png": {
+      "best": "1.12.2:assets/minecraft/textures/blocks/observer_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.4875,
+        "reference": "1.12.2:assets/minecraft/textures/blocks/observer_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/railgun_front.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/smoker_top.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.5476,
+        "reference": "1.20.1:assets/minecraft/textures/block/smoker_top.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/satellite_builder_front.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/observer_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 1,
+        "overlap": 0.0,
+        "rank": 0.4535,
+        "reference": "1.20.1:assets/minecraft/textures/block/observer_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/block/warp_core_side.png": {
+      "best": "1.20.1:assets/minecraft/textures/block/jukebox_side.png",
+      "record": {
+        "colours": 0,
+        "iou": 1.0,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.5546,
+        "reference": "1.20.1:assets/minecraft/textures/block/jukebox_side.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/advanced_solar_panel.png": {
+      "best": "1.12.2:assets/minecraft/textures/entity/cow/cow.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          43,
+          -5
+        ],
+        "orientation": 4,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/entity/cow/cow.png",
+        "reference_scale": 1,
+        "region": 134,
+        "votes": 1
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/satellite_solar_module.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.3125,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/space_suit_boots.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.375,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/space_suit_chestplate.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/ender_eye.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.8504,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.3427,
+        "reference": "1.20.1:assets/minecraft/textures/item/ender_eye.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/space_suit_helmet.png": {
+      "best": "1.20.1:assets/minecraft/textures/item/cauldron.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.9,
+        "method": "same",
+        "orientation": 7,
+        "overlap": 0.0,
+        "rank": 0.3829,
+        "reference": "1.20.1:assets/minecraft/textures/item/cauldron.png"
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/item/space_suit_leggings.png": {
+      "best": "1.12.2:assets/minecraft/textures/effect/dither.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.3125,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.12.2:assets/minecraft/textures/effect/dither.png",
+        "scale": 4
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/models/armor/space_suit_layer_1.png": {
+      "best": "1.12.2:assets/minecraft/textures/gui/container/beacon.png",
+      "record": {
+        "candidate_scale": 1,
+        "classes": 6,
+        "colours": 0,
+        "exact": 0.0,
+        "mapped": 0.5461,
+        "method": "region",
+        "near": 0.0,
+        "near_colours": 0,
+        "offset": [
+          24,
+          83
+        ],
+        "orientation": 2,
+        "phase": 0,
+        "reference": "1.12.2:assets/minecraft/textures/gui/container/beacon.png",
+        "reference_scale": 2,
+        "region": 1926,
+        "votes": 2
+      },
+      "verdict": "CLEAR"
+    },
+    "assets/advancedrocketrycommunity/textures/models/armor/space_suit_layer_2.png": {
+      "best": "1.20.1:assets/minecraft/textures/entity/conduit/base.png",
+      "record": {
+        "colours": 0,
+        "iou": 0.1231,
+        "method": "scaled",
+        "overlap": 0.0,
+        "rank": 0.0,
+        "reference": "1.20.1:assets/minecraft/textures/entity/conduit/base.png",
+        "scale": 2
+      },
+      "verdict": "CLEAR"
+    }
+  },
+  "schema_version": 1,
+  "vanilla": {
+    "1.12.2": {
+      "bytes": 10180113,
+      "sha256": "8ada07da5ee77dad3527bd7278fbd05ee1fc8a597813b216a871a2d7d64cc64f"
+    },
+    "1.20.1": {
+      "bytes": 23028853,
+      "sha256": "56b71336d2b4fdffd197f56595b0da93e32a946f78f382a299b8f4b92758bb0f"
+    }
+  }
+}
