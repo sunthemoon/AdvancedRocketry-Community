@@ -5,6 +5,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
+import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -12,6 +15,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -133,12 +138,27 @@ public final class ForceFieldPlacementGameTests {
         }
         helper.succeed();
     }
-    /** A connected placer beside the target, so native placement binds the projector to it (W04F review N6). */
-    private static ServerPlayer connectedPlacer(GameTestHelper helper, Placement f) {
-        ServerPlayer placer = helper.makeMockServerPlayerInLevel();
+    /**
+     * A connected creative placer beside the target, so native placement binds the projector to it (W04F review N6).
+     * It joins over an embedded channel, as {@code ConnectedTestPlayers} does, because the Moon teleport sends packets;
+     * it is in {@code joined} before the teleport, so the caller always removes it.
+     */
+    private static ServerPlayer connectedPlacer(Placement f, List<ServerPlayer> joined) {
+        var server = f.level.getServer();
+        ServerPlayer placer = new ServerPlayer(server, server.overworld(), new GameProfile(UUID.randomUUID(), "FieldPlacer")) {
+            @Override public boolean isSpectator() { return false; }
+            @Override public boolean isCreative() { return true; }
+        };
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        server.getPlayerList().placeNewPlayer(connection, placer);
+        joined.add(placer);
         placer.teleportTo(f.level, f.pos.getX() + 0.5, f.pos.getY(), f.pos.getZ() + 6.5, 0.0F, 0.0F);
         placer.setItemInHand(InteractionHand.MAIN_HAND, f.stack);
         return placer;
+    }
+    private static void leave(List<ServerPlayer> joined) {
+        joined.forEach(player -> player.getServer().getPlayerList().remove(player));
     }
     private static InteractionResult place(Placement f, ServerPlayer placer) {
         return f.stack.useOn(new UseOnContext(placer, InteractionHand.MAIN_HAND,
@@ -146,9 +166,9 @@ public final class ForceFieldPlacementGameTests {
     }
     @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
     public static void cancelledConnectedPlacementRollsBackItsBoundReservationDespiteBreakRefusal(GameTestHelper helper) {
-        ServerPlayer placer = null;
+        List<ServerPlayer> joined = new ArrayList<>();
         try (var f = new Placement(helper)) {
-            placer = connectedPlacer(helper, f);
+            ServerPlayer placer = connectedPlacer(f, joined);
             UUID placerId = placer.getUUID();
             var data = FieldCleanupSavedData.get(f.level.getServer());
             var before = data.save(new net.minecraft.nbt.CompoundTag());
@@ -177,15 +197,15 @@ public final class ForceFieldPlacementGameTests {
                 MinecraftForge.EVENT_BUS.unregister(vetoPlace); MinecraftForge.EVENT_BUS.unregister(vetoBreak);
             }
         } finally {
-            if (placer != null) { placer.getServer().getPlayerList().remove(placer); }
+            leave(joined);
         }
         helper.succeed();
     }
     @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
     public static void allowedNativeExplosionDropsTheProjectorExactlyOnce(GameTestHelper helper) {
-        ServerPlayer placer = null;
+        List<ServerPlayer> joined = new ArrayList<>();
         try (var f = new Placement(helper)) {
-            placer = connectedPlacer(helper, f);
+            ServerPlayer placer = connectedPlacer(f, joined);
             helper.assertTrue(place(f, placer).consumesAction()
                     && f.level.getBlockEntity(f.pos) instanceof ForceFieldProjectorBlockEntity placed
                     && placed.state().owner().filter(placer.getUUID()::equals).isPresent() && placed.hasReservation(),
@@ -211,7 +231,7 @@ public final class ForceFieldPlacementGameTests {
                 data.forget(key);
             }
         } finally {
-            if (placer != null) { placer.getServer().getPlayerList().remove(placer); }
+            leave(joined);
         }
         helper.succeed();
     }
