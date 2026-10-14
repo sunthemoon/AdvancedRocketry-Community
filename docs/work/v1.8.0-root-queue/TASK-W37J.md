@@ -74,3 +74,31 @@ If either correction cannot be made without a Mixin, stop and say why in the rec
 ## Not in this task
 
 - W37b, status files, the ledger, ADRs and the risk register (Root).
+
+## Amendment (Root, 2026-10-14, after the `SaveToFile` blocker in `records/W37J.md`)
+
+`SaveToFile` fires after the `.dat` replacement, so decision 1's hook is replaced.
+
+1. **The boundary is `PlayerEvent.PlayerLoggedOutEvent`.**
+   - `PlayerList.remove` posts it before it saves. The round-3 review cites the offsets as 1 and 18;
+     verify them with `javap` and record them.
+   - On that event, reconcile the departing player object when all of these hold:
+     - it is the unadopted old player;
+     - a backup is pending;
+     - the PlayerList's current player for the UUID is a different object holding a non-cleared
+       tuple.
+   - The reconciliation copies the replacement's latest tuple into the departing player, then removes
+     the backup and puts back any retained opaque root.
+   - Keep the restriction: copy only when the departing player holds the exact cleared tuple, or the
+     tuple this service itself copied into it earlier in this session (transient, lifecycle-owned).
+2. **The END-tick copy follows later changes** under the same restriction. This covers two newer
+   setters before logout.
+3. **Prove that the other saves are already correct.** With `javap`, check which player object each
+   save path writes during the unadopted window:
+   - periodic `PlayerList.saveAll`;
+   - server stop through `PlayerList.removeAll`.
+
+   They should write the PlayerList's replacement, which holds the latest tuple. If one writes the
+   old player instead, stop and report.
+4. **F2 (the `Clone` original) and the native tests are unchanged.** The logout tests check the
+   saved file and its readback after reconnect.
