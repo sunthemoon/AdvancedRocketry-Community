@@ -78,13 +78,13 @@ public final class RespawnRecoveryGameTests {
      */
     @GameTest(template = "atmosphere_test", batch = "respawn_recovery", timeoutTicks = 40)
     public static void aNewerPointOnAnUnadoptedReplacementSurvivesTheLogoutSave(GameTestHelper helper) {
-        interruptedLogout(helper, true, "W37INewerUnadopted");
+        interruptedLogout(helper, true, "W37INewerWindow"); // A selector name has at most 16 characters.
     }
 
     /** W37I: with no newer point, the old player's logout save keeps the backup and the reconnect restores it. */
     @GameTest(template = "atmosphere_test", batch = "respawn_recovery", timeoutTicks = 40)
     public static void aRestoredPointOnAnUnadoptedReplacementSurvivesTheLogoutSave(GameTestHelper helper) {
-        interruptedLogout(helper, false, "W37IRestoredUnadopted");
+        interruptedLogout(helper, false, "W37IKeptWindow");
     }
 
     private static void interruptedLogout(GameTestHelper helper, boolean newer, String name) {

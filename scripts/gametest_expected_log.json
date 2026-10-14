@@ -23,6 +23,15 @@
       "reason": "W37I: each test enters W37F's interrupted-listener window with the same deliberate HIGHEST respawn listener exception, catches it, and checks the old connection player's logout save and the reconnect."
     },
     {
+      "id": "w37i-unadopted-replacement-duplicate-uuid",
+      "level": "WARN",
+      "logger": "net.minecraft.server.level.ServerLevel/",
+      "message": "Force-added player with duplicate UUID [0-9a-f-]{36}",
+      "counts": {"respawn_recovery": 2},
+      "test": "RespawnRecoveryGameTests.aNewerPointOnAnUnadoptedReplacementSurvivesTheLogoutSave, RespawnRecoveryGameTests.aRestoredPointOnAnUnadoptedReplacementSurvivesTheLogoutSave",
+      "reason": "W37I: after the old connection player's logout save, vanilla leaves the unadopted replacement in its Level, so each test's reconnect force-adds the new player and discards the replacement, as vanilla does for a real reconnect after that window."
+    },
+    {
       "id": "w37h-planet-respawn-unencodable-tuple",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
