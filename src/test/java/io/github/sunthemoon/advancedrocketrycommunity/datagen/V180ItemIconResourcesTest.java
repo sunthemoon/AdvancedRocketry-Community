@@ -34,12 +34,12 @@ class V180ItemIconResourcesTest {
     private static final Path PLAN = Path.of("tools/import/v180-k6-plan.json");
     private static final Path RECORD = Path.of("docs/provenance/v1.8.0-c18d-k6.json");
     private static final Map<String, String> MODEL_VERSIONS = Map.of(
-            "laser_lens", "v1.7",
-            "solar_transmitter_module", "v1.6",
-            "data_satellite_package", "v0.8",
-            "survey_scanner_module", "v1.6",
-            "satellite_package", "v1.6",
-            "satellite_control_chip", "v0.8");
+            "laser_lens", "v1.8",
+            "solar_transmitter_module", "v1.8",
+            "data_satellite_package", "v1.8",
+            "survey_scanner_module", "v1.8",
+            "satellite_package", "v1.8",
+            "satellite_control_chip", "v1.8");
     private static final Map<String, String> SOURCES = Map.of(
             "laser_lens", "basiclens",
             "solar_transmitter_module", "microwavetransmitter",
@@ -135,6 +135,8 @@ class V180ItemIconResourcesTest {
     }
 
     private static void assertJarBytes(JarFile jar, String name, Path source) throws IOException {
+        assertEquals(1, jar.stream().filter(entry -> entry.getName().equals(name)).count(),
+                "duplicate or missing JAR resource: " + name);
         var entry = jar.getJarEntry(name);
         assertNotNull(entry, "missing JAR resource: " + name);
         try (var input = jar.getInputStream(entry)) {
