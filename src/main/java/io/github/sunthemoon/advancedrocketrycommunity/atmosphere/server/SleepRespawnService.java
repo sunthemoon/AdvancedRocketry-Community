@@ -274,7 +274,8 @@ public final class SleepRespawnService {
         if (event.getEntity() instanceof ServerPlayer player && player.server.isSameThread()) {
             ServerPlayer replacement = player.server.getPlayerList().getPlayer(player.getUUID());
             boolean pending = backup(player).isPresent();
-            if (replacement != null && replacement != player && saveCopies.reconcile(replacement, pending)) {
+            if (replacement != null && replacement != player && replacement.connection != null
+                    && replacement.connection.player == player && saveCopies.reconcile(replacement, pending)) {
                 if (pending) { release(player); }
             } else { governing(player); }
             saveCopies.forget(player);

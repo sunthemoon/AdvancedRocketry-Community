@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
+import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.server.RespawnPointBackup;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
@@ -80,6 +81,13 @@ public final class RespawnSaveReconciliationGameTests {
                 persisted(window.old()).getCompound(RespawnPointBackup.KEY).put(RespawnPointBackup.RETAINED, opaque);
             }
             if (!beforeThrow) { setter(window, window.first(), 12.5F); }
+            if (!beforeThrow && !shutdown && !retained) {
+                // A same-UUID event for an unrelated object cannot authorize copying into the connection's old player.
+                ServerPlayer unrelated = new ServerPlayer(window.server(), helper.getLevel(),
+                        new GameProfile(window.old().getUUID(), window.name()));
+                unrelated.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted(window.old()));
+                MinecraftForge.EVENT_BUS.post(new PlayerEvent.PlayerLoggedOutEvent(unrelated));
+            }
             helper.assertTrue(window.old().getRespawnPosition() == null && pending(window.old()),
                     "An END copy ran before the immediate save cut");
             if (shutdown) {
