@@ -272,6 +272,15 @@ public final class AtmosphereLevelService {
         return index.find(fromBlockPos(position));
     }
 
+    /** Read-only: the indexed volumes an elected vent supplied in the last tick, by identity. */
+    public Map<VolumeId, AtmosphereVolume> suppliedVolumes() {
+        Map<VolumeId, AtmosphereVolume> supplied = new HashMap<>();
+        for (VolumeId id : breathableProviders.keySet()) {
+            index.find(id).ifPresent(volume -> supplied.put(id, volume));
+        }
+        return supplied;
+    }
+
     public void clear() {
         vents.clear();
         dirtyQueue.clear();

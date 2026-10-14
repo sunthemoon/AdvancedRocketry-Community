@@ -191,7 +191,7 @@ public final class PrecisionAssemblerUnloadGameTests {
             var input = views().input().resolve().orElseThrow();
             var second = ports.inputs().get(1).getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().orElseThrow();
             helper.assertTrue(input.insertItem(0, new ItemStack(Items.IRON_INGOT, 2), false).isEmpty()
-                            && second.insertItem(0, new ItemStack(Items.REDSTONE, 2), false).isEmpty()
+                            && second.insertItem(0, new ItemStack(ModItems.CONTROL_BOARD.get(), 2), false).isEmpty()
                             && views().energy().resolve().orElseThrow().receiveEnergy(1_000, false) == 1_000,
                     "Unload fixture resources were rejected");
         }

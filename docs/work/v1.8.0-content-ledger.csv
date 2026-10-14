@@ -142,7 +142,7 @@ block:structureTower,REDESIGNED,v0.5.0,advancedrocketrycommunity:rocket_assemble
 block:suitWorkStation,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:suit_workstation,ADR-062 ADR-066,installs suit upgrades and tanks,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 block:terraformer,DEFERRED,post-2.0,-,ADR-062,terraforming family,
 block:thermiteTorch,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:thermite_torch,ADR-062 ADR-066,light that works in vacuum,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
-block:unlitTorch,PLANNED,C18a,extinguished torch,ADR-062,torches go out without oxygen,
+block:unlitTorch,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:unlit_torch,ADR-062 ADR-066,with unlit_wall_torch; bounded root keeps the source pair; quarantine per R-034,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 block:vacuumLaser,REDESIGNED,v1.7.0,advancedrocketrycommunity:endgame_casing advancedrocketrycommunity:laser_lens,ADR-055,laser drill structure is casing plus lens,
 block:vitrifiedSand,REJECTED,-,-,ADR-062,"no recipe, generation or producer in the legacy build",
 block:warpCore,IMPLEMENTED,v1.5.0,advancedrocketrycommunity:warp_core,ADR-044,,
@@ -230,7 +230,7 @@ command:planet/list,REDESIGNED,v1.4.0,/arce celestial inspection,ADR-031,,
 command:planet/reset,REJECTED,-,-,ADR-031 ADR-062,no runtime planet regeneration,
 command:planet/set,REJECTED,-,-,ADR-031 ADR-062,body properties come from data packs,
 command:root/addsolidblockoverride,REDESIGNED,v0.4.0,atmosphere sealing tags,ADR-024,,
-command:root/addtorch,PLANNED,C18a,torch block tag,ADR-062,a data pack tag replaces the command,
+command:root/addtorch,REDESIGNED,v1.8.0,torch_pairs data catalog,ADR-062 ADR-066,with the combustion_torches block tag,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 command:root/begintest,REJECTED,-,-,ADR-062,legacy in-game test harness; GameTests replace it,
 command:root/dumpbiomes,REJECTED,-,-,ADR-062,debug dump,
 command:root/fetch,REDESIGNED,v0.3.0,vanilla teleport commands,V0.3.0 ADR-062,,
@@ -294,9 +294,9 @@ config:MISSION.gasMissionMultiplier,REDESIGNED,v1.6.0,mission tables,ADR-052,,
 config:MISSION.harvestableGasses,REDESIGNED,v1.6.0,gas tables,ADR-052,,
 config:MISSION.miningMissionTmeMultiplier,REDESIGNED,v1.6.0,mission tables,ADR-052,,
 config:MISSION.spawnableGasses,REDESIGNED,v1.6.0,gas tables,ADR-052,,
-config:OXYGEN.dropExtinguishedTorches,PLANNED,C18a,torch rules,ADR-062,,
+config:OXYGEN.dropExtinguishedTorches,IMPLEMENTED,v1.8.0,COMMON OXYGEN.dropExtinguishedTorches,ADR-062 ADR-066,default false,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:OXYGEN.EnableAtmosphericEffects,REDESIGNED,v1.4.0,per-body environment_effects and atmosphere data,ADR-034,no global switch,
-config:OXYGEN.entityAtmBypass,PLANNED,C18a,atmosphere bypass entity tag,ADR-062,with atmosphere effects on non-player entities,
+config:OXYGEN.entityAtmBypass,REDESIGNED,v1.8.0,atmosphere_bypass entity type tag,ADR-062 ADR-066,exempts atmospheric effects only; generated empty for modpacks,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:OXYGEN.OverrideGCAir,REJECTED,-,-,ADR-062,Galacticraft compatibility is a product non-goal,
 config:OXYGEN.oxygenVentConsumptionMultiplier,REDESIGNED,v0.4.0,vent consumption limits,ADR-024,,
 config:OXYGEN.OxygenVentPowerMultiplier,REDESIGNED,v0.4.0,vent consumption limits,ADR-024,,
@@ -305,8 +305,8 @@ config:OXYGEN.sealableBlockBlackList,REDESIGNED,v0.4.0,atmosphere sealing tags,A
 config:OXYGEN.sealableBlockWhiteList,REDESIGNED,v0.4.0,atmosphere sealing tags,ADR-024,,
 config:OXYGEN.spaceSuitO2Buffer,REDESIGNED,v1.8.0,COMMON OXYGEN.spaceSuitO2Buffer,ADR-025 ADR-062 ADR-066,finite built-in reserve under D1,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 config:OXYGEN.suitTankCapacity,REDESIGNED,v1.8.0,COMMON OXYGEN.suitTankCapacity,ADR-025 ADR-062 ADR-066,tank creation multiplier under D1,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
-config:OXYGEN.torchBlocks,PLANNED,C18a,torch rules,ADR-062,,
-config:OXYGEN.vacuumDamage,PLANNED,C18a,vacuum damage setting,ADR-062,modern vacuum damage is fixed,
+config:OXYGEN.torchBlocks,REDESIGNED,v1.8.0,torch_pairs data catalog,ADR-062 ADR-066,with the combustion_torches block tag,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
+config:OXYGEN.vacuumDamage,IMPLEMENTED,v1.8.0,COMMON OXYGEN.vacuumDamage,ADR-062 ADR-066,"0 to 20 per scheduled second, default 2.0; zero stops damage only",docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 config:PERFORMANCE.atmosphereCalculationMethod,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,,
 config:PERFORMANCE.oxygenVentSize,REDESIGNED,v0.4.0,budgeted atmosphere scan,ADR-024,,
 config:PLANET.allowPlanetRespawn,PLANNED,C18a,respawn rules on other bodies,ADR-062,,
@@ -411,12 +411,12 @@ event:CapabilityProtectiveArmor.attachCapabilities(AttachCapabilitiesEvent),REDE
 event:ClientProxy.modelBakeEvent(ModelBakeEvent),PLANNED,C18d,OBJ model loading,ADR-062,,
 event:KeyBindings.onKeyInput(KeyInputEvent),MERGED,-,keybinding:toggleJetpack,ADR-062,key handler,
 event:MapGenLander.populateChunkPostEvent(Post),MERGED,-,worldgen:MapGenLander,ADR-062,lander placement,
-event:PlanetEventHandler.blockPlacedEvent(PlaceEvent),PLANNED,C18a,torch rules without combustion air,ADR-062,torches turn unlit; listed torch blocks refuse placement,
-event:PlanetEventHandler.blockRightClicked(RightClickBlock),PLANNED,C18a,no fire starters without combustion air,ADR-062,"flint and steel, fire charges, blaze powder and blaze rods; the beer advancement is C18c",
-event:PlanetEventHandler.CheckSpawn(CheckSpawn),PLANNED,C18a,mob spawning follows the atmosphere,ADR-062,,
+event:PlanetEventHandler.blockPlacedEvent(PlaceEvent),REDESIGNED,v1.8.0,torch conversion queue,ADR-062 ADR-066,torches turn unlit without combustion air; unsupported tagged torches refuse placement,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
+event:PlanetEventHandler.blockRightClicked(RightClickBlock),REDESIGNED,v1.8.0,fire starter suppression,ADR-062 ADR-066,combustion_fire_starters tag; relight only in combustion air,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
+event:PlanetEventHandler.CheckSpawn(CheckSpawn),REDESIGNED,v1.8.0,MobSpawnEvent.PositionCheck spawn admission,ADR-062 ADR-066,"denies spawns in unavailable, PENDING or unbreathable air; command and spawn-egg exceptions",docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 event:PlanetEventHandler.chunkLoadEvent(Post),DEFERRED,post-2.0,-,ADR-062,terraforming family,
 event:PlanetEventHandler.disconnected(ClientDisconnectionFromServerEvent),REDESIGNED,v1.4.0,client celestial cache reset,ADR-035,,
-event:PlanetEventHandler.fallEvent(LivingFallEvent),PLANNED,C18a,fall damage scales with gravity,ADR-062,,
+event:PlanetEventHandler.fallEvent(LivingFallEvent),REDESIGNED,v1.8.0,LivingFallEvent gravity scaling,ADR-062 ADR-066,once per landing; the horse family stays native,docs/work/v1.8.0-c18a-life-support/VERIFICATION.md
 event:PlanetEventHandler.fogColor(FogColors),REDESIGNED,v1.4.0,sky profile fog colour,ADR-036,,
 event:PlanetEventHandler.fogColor(RenderFogEvent),REDESIGNED,v1.8.0,atmosphere-density fog and the anti-fog visor,ADR-062 ADR-066,,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
 event:PlanetEventHandler.onCrafting(ItemCraftedEvent),REJECTED,-,-,ADR-062,the handler body is commented out in the legacy build,
@@ -497,7 +497,7 @@ item:thermite,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:thermite,ADR-062 ADR-
 item:wafer,MERGED,-,item_variant:wafer/0,ADR-062,,
 item_variant:dataUnit/0,IMPLEMENTED,v0.8.0,advancedrocketrycommunity:data_storage_unit,V0.8.0,,
 item_variant:ic/0,IMPLEMENTED,v0.1.0,advancedrocketrycommunity:basic_circuit,V0.1.0,,
-item_variant:ic/1,PLANNED,C16d,tracking circuit,ADR-062,component,
+item_variant:ic/1,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:tracking_circuit,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
 item_variant:ic/2,IMPLEMENTED,v0.1.0,advancedrocketrycommunity:advanced_circuit,V0.1.0,,
 item_variant:ic/3,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:control_board,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md
 item_variant:ic/4,IMPLEMENTED,v1.8.0,advancedrocketrycommunity:item_io_board,ADR-062 ADR-064,component,docs/work/v1.8.0-c16d-components-graph/VERIFICATION.md

@@ -33,14 +33,14 @@ EXPECTED_VERSION = "1.20.1-1.1.1-dev"
 POSITION = "143 80 143"
 POSITION_COMPACT = "143,80,143"
 EMPTY = "minecraft:air:0"
-INPUTS_SEEDED = ("minecraft:iron_ingot:2", "minecraft:redstone:2", EMPTY, EMPTY, EMPTY)
+INPUTS_SEEDED = ("minecraft:iron_ingot:2", "advancedrocketrycommunity:control_board:2", EMPTY, EMPTY, EMPTY)
 INPUTS_EMPTY = (EMPTY,) * 5
 OUTPUTS_EMPTY = (EMPTY,) * 2
 OUTPUTS_COMPLETE = ("advancedrocketrycommunity:advanced_circuit:1", "minecraft:redstone_torch:2")
 SEEDED_REVISION = 4
 COMPLETED_REVISION = 5
 PREPARE_MARKER = f"ARCE_RELEASE_TEST_PRECISION_PREPARE controller={POSITION_COMPACT} cells=36"
-SEED_MARKER = f"ARCE_RELEASE_TEST_PRECISION_SEED controller={POSITION_COMPACT} iron=2 redstone=2 energy=1600"
+SEED_MARKER = f"ARCE_RELEASE_TEST_PRECISION_SEED controller={POSITION_COMPACT} iron=2 control_board=2 energy=1600"
 PAUSE_MARKER = f"ARCE_RELEASE_TEST_PRECISION_POWER controller={POSITION_COMPACT} paused=true"
 RESUME_MARKER = f"ARCE_RELEASE_TEST_PRECISION_POWER controller={POSITION_COMPACT} paused=false"
 REPORT_LOG = re.compile(

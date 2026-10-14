@@ -340,7 +340,9 @@ public final class SuitMotionGameTests {
                     helper.assertTrue(Math.abs(PaddedBoots.gravityMultiplier(player) - 0.166) < 1.0E-9, "Applied multiplier not read");
                     helper.assertTrue(!player.causeFallDamage(8, 1, falls) && player.getHealth() == 20, "lowGravityBoots did not cancel a low-gravity fall");
                     SwitchOverrides.set(CommonConfig.CLASSIC_EQUIPMENT_ENABLED, false);
-                    helper.assertTrue(player.causeFallDamage(8, 1, falls) && player.getHealth() < 20, "Disabled equipment still cancelled the fall");
+                    // W38: the fall is now scaled by this 0.166 factor, and 8 blocks become 1.33, below vanilla's 3-block
+                    // threshold. 20 blocks become 3.32, so an uncancelled fall still hurts.
+                    helper.assertTrue(player.causeFallDamage(20, 1, falls) && player.getHealth() < 20, "Disabled equipment still cancelled the fall");
                 } finally {
                     SwitchOverrides.clear(CommonConfig.CLASSIC_EQUIPMENT_ENABLED);
                     SwitchOverrides.clear(CommonConfig.LOW_GRAVITY_BOOTS);
