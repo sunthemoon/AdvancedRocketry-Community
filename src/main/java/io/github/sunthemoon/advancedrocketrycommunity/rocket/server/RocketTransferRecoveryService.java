@@ -219,6 +219,7 @@ final class RocketTransferRecoveryService {
             return false;
         }
         for (RocketTransferRecord record : journal.entries()) {
+            if (record.nativeTransfer().isPresent()) { continue; }
             // A fenced assignment is intentionally finished for this login; it remains durably assigned.
             if (fences.ids().contains(record.transferId())) { continue; }
             if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECONNECT)

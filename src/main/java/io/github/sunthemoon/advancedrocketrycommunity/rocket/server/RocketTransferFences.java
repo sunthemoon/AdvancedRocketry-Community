@@ -54,6 +54,11 @@ final class RocketTransferFences {
             if (record.nativeTransfer().isPresent()) {
                 var route = server == null ? new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, "GOVERNED_ACTION_REQUIRED")
                         : EscrowRuntime.of(server).governedFlights().classify(server, journal, record);
+                if (route.route() == EscrowGovernedDispatch.Route.ACTIVE
+                        && record.phase() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.PREPARED) {
+                    // Membership records routing/motion only. The F3 executor repeats all final action checks.
+                    drop(record.transferId()); settled.remove(record.transferId()); live.add(record.transferId()); continue;
+                }
                 // Positive routing never enters legacy recovery. The executor still needs its
                 // native action permit; terminal entries can only enter checked F8 cleanup.
                 String reason = switch (route.route()) {
@@ -137,6 +142,8 @@ final class RocketTransferFences {
         if (server != null) { EscrowRuntime.of(server).governedFlights().invalidated(logical); }
         for (var record : journal.entries()) {
             if (logical.equals(record.logicalRocketId()) && bays != null && bays.endpointChanged(server, journal, record)) { continue; }
+            // Record-3 joins invalidate their checked authority above; the governed executor rechecks the entire census.
+            if (server != null && record.nativeTransfer().isPresent()) { continue; }
             if (logical.equals(record.logicalRocketId()) && (protectedJoin || approved.containsKey(record.transferId()) || reasons.containsKey(record.transferId()))) {
                 approved.remove(record.transferId());
                 fence(record, "ENDPOINT_JOIN_PROOF_REQUIRED", live, settled);

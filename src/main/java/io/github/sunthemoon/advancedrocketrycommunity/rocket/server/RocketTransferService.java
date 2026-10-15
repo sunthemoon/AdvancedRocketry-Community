@@ -43,6 +43,7 @@ final class RocketTransferService {
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.NamedLandingPadStaging();
     private final Set<UUID> liveTransfers = new HashSet<>();
     private final Set<UUID> settledTransfers = new HashSet<>();
+    private final RocketGovernedSourceDispatcher governedSources = new RocketGovernedSourceDispatcher();
     // BEGIN transfer service diagnostics
     private final TransferFailureDiagnostics diagnostics = new TransferFailureDiagnostics();
     // END transfer service diagnostics
@@ -267,6 +268,7 @@ final class RocketTransferService {
         if ((journal.isDirty() || !journal.entries().isEmpty()) && !journal.retryChecked(server)) { return; }
         recovery.recoverNext(server, journal);
         recovery.tickReconnects(server, journal);
+        governedSources.tick(server, journal, recovery.bays());
         List<UUID> active = liveTransfers.stream().sorted().toList();
         for (UUID transferId : active) {
             RocketTransferRecord record = journal.find(transferId).orElse(null);
@@ -274,6 +276,7 @@ final class RocketTransferService {
                 liveTransfers.remove(transferId);
                 continue;
             }
+            if (record.nativeTransfer().isPresent()) { continue; }
             try {
                 // BEGIN transfer service diagnostics
                 diagnostics.dispatch(transferId);
@@ -477,6 +480,7 @@ final class RocketTransferService {
         liveTransfers.clear();
         settledTransfers.clear();
         recovery.clear();
+        governedSources.clear();
         // BEGIN transfer service diagnostics
         diagnostics.clear();
         // END transfer service diagnostics

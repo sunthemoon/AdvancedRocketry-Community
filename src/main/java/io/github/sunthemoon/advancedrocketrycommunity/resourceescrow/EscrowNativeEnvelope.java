@@ -25,19 +25,27 @@ public final class EscrowNativeEnvelope {
     }
     public static CompoundTag rocket(RocketEntity rocket, RocketFlightData flight, RocketEscrowSection wrapper) {
         EscrowTags.require(rocket.operational() && !rocket.level().isClientSide && rocket.getServer().isSameThread(), "Native capture requires server owner thread");
+        var t = frame(rocket);
+        var snapshot = rocket.snapshot().orElseThrow();
+        t.put("snapshot", RocketSnapshotNbtCodec.encode(snapshot)); t.put("flight", RocketFlightNbtCodec.encode(flight)); t.put("wrapper", wrapper.encode());
+        EscrowTags.bound(t, MAX_BYTES, 24, 131_072); return t;
+    }
+    /** Small mutable projection for a previously validated immutable snapshot/flight/wrapper binding. */
+    static CompoundTag frame(RocketEntity rocket) {
         var t = new CompoundTag(); t.putInt("schema_version", 1); t.putUUID("physical", rocket.getUUID());
         t.putString("type", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(rocket.getType()).toString());
         t.putUUID("logical", rocket.assemblyTransactionId().orElseThrow()); t.putUUID("owner", rocket.ownerId().orElseThrow());
         t.putString("level", rocket.level().dimension().location().toString()); t.putIntArray("chunk", new int[] {rocket.chunkPosition().x, rocket.chunkPosition().z});
         t.put("pos", vector(rocket.getX(), rocket.getY(), rocket.getZ()));
         var snapshot = rocket.snapshot().orElseThrow(); t.putUUID("assembly_snapshot", snapshot.snapshotId()); t.putString("content_hash", snapshot.contentHash());
-        t.put("snapshot", RocketSnapshotNbtCodec.encode(snapshot)); t.put("flight", RocketFlightNbtCodec.encode(flight)); t.put("wrapper", wrapper.encode());
         t.put("motion", vector(rocket.getDeltaMovement().x, rocket.getDeltaMovement().y, rocket.getDeltaMovement().z));
         t.putBoolean("no_gravity", rocket.isNoGravity()); t.putBoolean("no_physics", rocket.noPhysics); t.putBoolean("on_ground", rocket.onGround());
         t.putBoolean("invulnerable", rocket.isInvulnerable()); t.putFloat("yaw", rocket.getYRot()); t.putFloat("pitch", rocket.getXRot());
         var passengers = new ListTag();
+        EscrowTags.require(rocket.getPassengers().size() <= io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_PASSENGERS,
+                "Native passenger projection exceeds its bound");
         for (var passenger : rocket.getPassengers()) { var p = new CompoundTag(); p.putUUID("physical", passenger.getUUID()); passengers.add(p); }
-        t.put("passengers", passengers); EscrowTags.bound(t, MAX_BYTES, 24, 131_072); return t;
+        t.put("passengers", passengers); return t;
     }
     public static String digest(CompoundTag envelope) { return CanonicalNbtDigest.of(envelope, MAX_BYTES, 24); }
     private static ListTag vector(double x, double y, double z) {

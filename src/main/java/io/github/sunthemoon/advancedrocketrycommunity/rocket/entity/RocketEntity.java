@@ -71,6 +71,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
     private CompoundTag preservedBlockedData;
     private RocketEscrowSection escrowSection = RocketEscrowSection.neutral();
     private boolean activeStateLogged;
+    private long governedObservation;
 
     public RocketEntity(EntityType<? extends RocketEntity> entityType, Level level) {
         super(entityType, level);
@@ -162,6 +163,12 @@ public final class RocketEntity extends Entity implements MenuProvider {
     }
 
     public RocketEscrowSection escrowSection() { return escrowSection; }
+    public long governedObservation() { return governedObservation; }
+
+    public void moveGovernedSource(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedSourceFlight.MotionPermit permit) {
+        var position = Objects.requireNonNull(permit).consume(this);
+        setPos(position.x, position.y, position.z);
+    }
 
     public void pruneSettledEscrow() {
         escrowSection = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementPruning.rocket(this, escrowSection);
@@ -270,6 +277,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     protected void readAdditionalSaveData(CompoundTag parent) {
+        governedObservation++;
         boolean live = isAddedToWorld();
         RocketEscrowSection retained = escrowSection;
         if (live) { io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this); }
@@ -379,6 +387,7 @@ public final class RocketEntity extends Entity implements MenuProvider {
 
     @Override
     protected void addAdditionalSaveData(CompoundTag parent) {
+        governedObservation++;
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         if (preservedBlockedData != null) {
             parent.put(DATA_KEY, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources
