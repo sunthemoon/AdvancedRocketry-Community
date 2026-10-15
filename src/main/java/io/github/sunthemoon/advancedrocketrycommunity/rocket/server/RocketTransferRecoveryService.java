@@ -342,11 +342,16 @@ final class RocketTransferRecoveryService {
                 if (destination == null) {
                     return result(Status.RETRY_LATER, record, action, sources, destinations);
                 }
+                // A rejected spawn must retry the already acknowledged identity, including after restart.
+                if (destinations.isEmpty()) {
+                    record.destinationEntityId().ifPresent(destination::setUUID);
+                }
                 RocketTransferRecord resumed = record.phase() == RocketTransferPhase.PREPARED
                         ? record.destinationSpawned(destination.getUUID())
-                        : record.rebindDestination(destination.getUUID());
+                        : record.destinationEntityId().filter(destination.getUUID()::equals).isPresent()
+                                ? record : record.rebindDestination(destination.getUUID());
                 if (!bays.allowed(server, journal, record, RocketTransferBayRecoveryGate.Action.RECOVER_AUTO)) { return retryLater(record); }
-                journal.put(resumed);
+                if (resumed != record) { journal.put(resumed); }
                 journal.afterAcknowledged(server, resumed.logicalRocketId(), () -> {
                   if (!bays.allowed(server, journal, resumed, RocketTransferBayRecoveryGate.Action.RECOVER_AUTO)) { return; }
                   var currentSources = RocketTransferEntities.loadedMatches(server, resumed, false);
