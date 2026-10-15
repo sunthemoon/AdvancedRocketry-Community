@@ -94,7 +94,7 @@ What is still open:
   end to end at `0e368a10` for the first time on this branch (the full Python suite, the upstream
   and vanilla checks, the art screen and the strict validator). The ledger closure, the final
   `PORTING_MATRIX` and the release evidence remain.
-- **Owner decisions.** Ten are pending; QUEUE.md lists them with what each one blocks.
+- **Owner decisions.** Eleven are pending; QUEUE.md lists them with what each one blocks.
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-037) stay open.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
