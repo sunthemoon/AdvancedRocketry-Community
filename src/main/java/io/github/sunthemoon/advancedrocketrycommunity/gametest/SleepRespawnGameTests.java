@@ -181,8 +181,13 @@ public final class SleepRespawnGameTests {
         }
         GameTestTickPacer pacer = new GameTestTickPacer(server);
         long start = helper.getTick();
+        int builtTick = server.getTickCount();
+        List<NaturalBedFixtures.Room> rooms = List.of(new NaturalBedFixtures.Room(moon, moonVent),
+                new NaturalBedFixtures.Room(space, spaceVent), new NaturalBedFixtures.Room(moon, pendingVent));
         boolean[] finished = {false};
         boolean[] pendingPlaced = {false};
+        int[] pendingServerTick = {-1};
+        long[] pendingServiceTick = {-1L};
         // One callback for the whole wait; cross-Level heightmaps settle at the end of the setup tick.
         helper.onEachTick(() -> {
             if (finished[0]) {
@@ -193,11 +198,29 @@ public final class SleepRespawnGameTests {
                 if (helper.getTick() <= start) {
                     return;
                 }
-                if (!(suppliedBed(moon, moonVent) && suppliedBed(space, spaceVent))) {
-                    helper.assertTrue(helper.getTick() < 50, "The supplied rooms did not seal: moon="
-                            + vents[0].status() + " space=" + vents[1].status() + " metrics="
-                            + AtmosphereRuntime.metrics(moon) + " / " + AtmosphereRuntime.metrics(space));
-                    return;
+                if (!pendingPlaced[0]) {
+                    // placePreparedVent observes once by hand. Only later atmosphere state and live chunks prove
+                    // that the small vents tick on their own; the large room's chunk must also be ready first.
+                    if (server.getTickCount() <= builtTick + 1 || !rooms.stream().allMatch(NaturalBedFixtures.Room::live)
+                            || !(suppliedBed(moon, moonVent) && suppliedBed(space, spaceVent))) {
+                        helper.assertTrue(helper.getTick() < 50, "The supplied rooms did not become live and seal: moon="
+                                + vents[0].status() + " space=" + vents[1].status() + " live="
+                                + rooms.stream().map(NaturalBedFixtures.Room::live).toList() + " metrics="
+                                + AtmosphereRuntime.metrics(moon) + " / " + AtmosphereRuntime.metrics(space));
+                        return;
+                    }
+                } else {
+                    // Never wait on the small rooms again: that would let the large scan advance past this sample.
+                    long serviceTick = AtmosphereRuntime.metrics(moon).orElseThrow().completedServiceTicks();
+                    helper.assertTrue(server.getTickCount() == pendingServerTick[0] + 1
+                                    && serviceTick == pendingServiceTick[0] + 1,
+                            "The pending-room sample did not follow exactly one server and atmosphere tick: server="
+                                    + pendingServerTick[0] + " -> " + server.getTickCount() + " atmosphere="
+                                    + pendingServiceTick[0] + " -> " + serviceTick);
+                    helper.assertTrue(rooms.stream().allMatch(NaturalBedFixtures.Room::live)
+                                    && suppliedBed(moon, moonVent) && suppliedBed(space, spaceVent),
+                            "The live supplied rooms lost readiness during the pending-room scan: "
+                                    + AtmosphereRuntime.metrics(moon) + " / " + AtmosphereRuntime.metrics(space));
                 }
                 for (OxygenVentBlockEntity vent : List.of(vents[0], vents[1])) {
                     ServerLevel level = (ServerLevel) vent.getLevel();
@@ -222,6 +245,8 @@ public final class SleepRespawnGameTests {
                     // 343 traversable cells exceed one task's unchanged 256-observation budget.
                     vents[2] = roomWithBed(moon, pendingVent, 4, 8);
                     pendingPlaced[0] = true;
+                    pendingServerTick[0] = server.getTickCount();
+                    pendingServiceTick[0] = AtmosphereRuntime.metrics(moon).orElseThrow().completedServiceTicks();
                     return;
                 }
                 BlockPos pendingHead = bedHead(pendingVent);
