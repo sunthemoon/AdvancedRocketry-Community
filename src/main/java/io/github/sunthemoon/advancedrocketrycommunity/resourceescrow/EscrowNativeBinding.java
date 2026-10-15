@@ -55,19 +55,22 @@ public record EscrowNativeBinding(EscrowSignatureKind kind, UUID physical, UUID 
                 d, EscrowInvariant.reference(destination), s, d, d, d, destination.beforeSignature(), destination.afterSignature(),
                 source.beforeSignature(), source.afterSignature(), destination.beforeSignature(), destination.afterSignature(), false);
     }
-    static EscrowOperation captureTest(EscrowOperation op, io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket,
+    record Admission(EscrowOperation operation, RocketEscrowSection before) {
+        Admission {
+            EscrowTags.require(EscrowNativeEnvelope.digest(before.encode()).equals(operation.nativeBinding().beforeWrapper()),
+                    "Admission capture has a different marker section");
+        }
+    }
+    static Admission captureTest(EscrowOperation op, io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket,
             net.minecraft.world.level.block.entity.BlockEntity source,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState beforeFuel,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState afterFuel, EscrowLedger root) {
         EscrowTestEndpoints.requireEnabled(rocket.getServer());
         EscrowTags.require(op.owner().equals(rocket.ownerId().orElseThrow()) && beforeFuel.resourceSignature().equals(op.destination().beforeSignature())
                 && afterFuel.resourceSignature().equals(op.destination().afterSignature()), "Capture changed native frontiers");
-        var prior = root.records().stream().filter(member -> member.destination().key().equals(op.destination().key())
-                && member.destination().afterEpoch() <= op.destination().beforeEpoch()).sorted(java.util.Comparator.comparingLong(member -> member.destination().afterEpoch()))
-                .map(member -> new EscrowPrefix.Marker(member.id(), member.sequence(), "DESTINATION", member.destination().afterEpoch())).toList();
-        var beforeWrapper = op.destination().beforeEpoch() == 0 && rocket.escrowSection().ledger() == null ? RocketEscrowSection.neutral()
-                : new RocketEscrowSection(root.id(), op.destination().beforeEpoch(), prior);
-        var markers = new java.util.ArrayList<>(prior); markers.add(new EscrowPrefix.Marker(op.id(), op.sequence(), "DESTINATION", op.destination().afterEpoch()));
+        var beforeWrapper = captureSection(op, rocket.escrowSection(), root);
+        var markers = new java.util.ArrayList<>(beforeWrapper.markers());
+        markers.add(new EscrowPrefix.Marker(op.id(), op.sequence(), "DESTINATION", op.destination().afterEpoch()));
         var afterWrapper = new RocketEscrowSection(root.id(), op.destination().afterEpoch(), markers);
         var current = rocket.flightData().orElseThrow();
         var before = EscrowNativeEnvelope.rocket(rocket, EscrowNativeEnvelope.fuelOnly(current, beforeFuel), beforeWrapper);
@@ -84,7 +87,24 @@ public record EscrowNativeBinding(EscrowSignatureKind kind, UUID physical, UUID 
                 EscrowNativeEnvelope.digest(beforeWrapper.encode()), EscrowNativeEnvelope.digest(afterWrapper.encode()),
                 beforeFuel.resourceSignature(), afterFuel.resourceSignature(), EscrowNativeEnvelope.digest(sourceBefore), EscrowNativeEnvelope.digest(sourceAfter),
                 EscrowNativeEnvelope.digest(before), EscrowNativeEnvelope.digest(after), true);
-        return new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
-                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding);
+        return new Admission(new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
+                op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding), beforeWrapper);
+    }
+    /** Test-only future-chain projection starts with the captured native suffix, including retired markers. */
+    static RocketEscrowSection captureSection(EscrowOperation op, RocketEscrowSection observed, EscrowLedger root) {
+        EscrowTags.require((observed.ledger() == null || observed.ledger().equals(root.id()))
+                && observed.epoch() <= op.destination().beforeEpoch(), "Native capture has a foreign or later wrapper");
+        if (observed.epoch() == op.destination().beforeEpoch()) { return observed; }
+        var markers = new java.util.ArrayList<>(observed.markers()); long epoch = observed.epoch();
+        var pending = root.records().stream().filter(member -> member.destination().key().equals(op.destination().key())
+                && member.destination().afterEpoch() > observed.epoch() && member.destination().afterEpoch() <= op.destination().beforeEpoch())
+                .sorted(java.util.Comparator.comparingLong(member -> member.destination().afterEpoch())).toList();
+        for (var member : pending) {
+            EscrowTags.require(member.destination().beforeEpoch() == epoch, "Native capture has a gap before the modeled fill");
+            markers.add(new EscrowPrefix.Marker(member.id(), member.sequence(), "DESTINATION", member.destination().afterEpoch()));
+            epoch = member.destination().afterEpoch();
+        }
+        EscrowTags.require(epoch == op.destination().beforeEpoch(), "Native capture lacks the modeled prefix");
+        return new RocketEscrowSection(root.id(), epoch, markers);
     }
 }

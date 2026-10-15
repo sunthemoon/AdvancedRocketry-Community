@@ -87,11 +87,12 @@ final class EscrowSettlementCompletionProbe {
                 source = EscrowTestEndpoints.create(level, POSITION, data.ledger().id());
                 sources.add(source);
                 rocket = EscrowRocketAuditProbe.createRocket(level, source.logical(), true); source.bank().discard();
-                var operations = new ArrayList<EscrowOperation>(); operations.add(operation(source, coordinator.nextSequence(), 0));
+                var captures = new ArrayList<EscrowNativeBinding.Admission>(); captures.add(operation(source, coordinator.nextSequence(), 0));
                 if (chain) {
                     var second = EscrowTestEndpoints.chainSource(source, POSITION.offset(1, 0, 0)); sources.add(second);
-                    operations.add(operation(second, coordinator.nextSequence() + 1, 1, data.ledger().append(operations)));
+                    captures.add(operation(second, coordinator.nextSequence() + 1, 1, data.ledger().append(List.of(captures.get(0).operation()))));
                 }
+                var operations = captures.stream().map(EscrowNativeBinding.Admission::operation).toList();
                 var parent = rocket.saveWithoutId(new CompoundTag()); var wrapper = parent.getCompound("RocketEntityData");
                 var fuel = rocket.flightData().orElseThrow().fuel();
                 for (int epoch = 1; epoch <= operations.size(); epoch++) {
@@ -104,7 +105,8 @@ final class EscrowSettlementCompletionProbe {
                 if (!normalization) { rocket.load(parent); }
                 EscrowTags.require(rocket.operational(), "Marked credited fixture is invalid");
                 selected = operations.get(0).id();
-                for (var op : operations) { coordinator.prepareTest(op, rocket.escrowSection(), committed -> EscrowTags.require(committed, "Completion fixture L1 failed")); }
+                for (var capture : captures) { coordinator.prepareTest(capture.operation(), capture.before(),
+                        committed -> EscrowTags.require(committed, "Completion fixture L1 failed")); }
                 EscrowTags.require(level.addFreshEntity(rocket), "Completion fixture rocket failed to publish");
                 if (veto) {
                     EscrowTags.require(server.saveEverything(false, true, true), "Veto baseline save refused");
@@ -147,10 +149,10 @@ final class EscrowSettlementCompletionProbe {
         return floor ? EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE
                 : abandon ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT;
     }
-    private EscrowOperation operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch) {
+    private EscrowNativeBinding.Admission operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch) {
         return operation(fixture, sequence, epoch, data.ledger());
     }
-    private EscrowOperation operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch, EscrowLedger bindingRoot) {
+    private EscrowNativeBinding.Admission operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch, EscrowLedger bindingRoot) {
         var sample = fixture.operation(sequence); var fuel = rocket.flightData().orElseThrow().fuel();
         var before = epoch == 0 ? fuel : fuel.withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, 1_000);
         var after = before.withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, (epoch + 1) * 1_000);

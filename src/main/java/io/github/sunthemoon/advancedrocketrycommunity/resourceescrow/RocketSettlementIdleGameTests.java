@@ -159,13 +159,14 @@ public final class RocketSettlementIdleGameTests {
             operation = new EscrowOperation(sample.id(), sample.sequence(), rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(),
                     payload, RocketNativeResources.signature(payload), sample.source(), destination,
                     new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-            operation = EscrowNativeBinding.captureTest(operation, rocket, source.source(), before.fuel(), fuel, data.ledger());
+            var capture = EscrowNativeBinding.captureTest(operation, rocket, source.source(), before.fuel(), fuel, data.ledger());
+            operation = capture.operation();
             var parent = rocket.saveWithoutId(new CompoundTag()); var wrapper = parent.getCompound("RocketEntityData");
             wrapper.put("flight_data", RocketFlightNbtCodec.encode(before.withFuel(fuel, level.getGameTime())));
             wrapper.put("resource_escrow", new RocketEscrowSection(data.ledger().id(), 1,
                     List.of(new EscrowPrefix.Marker(operation.id(), operation.sequence(), "DESTINATION", 1))).encode());
             rocket.load(parent); helper.assertTrue(rocket.operational() && level.addFreshEntity(rocket), "Credited rocket fixture failed");
-            coordinator.prepareTest(operation, rocket.escrowSection(), committed -> helper.assertTrue(committed, "L1 was not acknowledged")); step = 1;
+            coordinator.prepareTest(operation, capture.before(), committed -> helper.assertTrue(committed, "L1 was not acknowledged")); step = 1;
         }
         private void exerciseMountAndRefuel() {
             var owner = new FakePlayer(level, new GameProfile(rocket.ownerId().orElseThrow(), "N1Board")); owner.setPos(rocket.position());

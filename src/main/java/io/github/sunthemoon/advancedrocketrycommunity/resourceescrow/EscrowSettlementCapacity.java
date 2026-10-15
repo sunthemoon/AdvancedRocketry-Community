@@ -102,6 +102,8 @@ final class EscrowSettlementCapacity {
         if (candidate.nativeBinding().kind() == EscrowSignatureKind.FUEL_VECTOR_V1) {
             EscrowTags.require(observed != null && (observed.ledger() == null || prospective.id().equals(observed.ledger())),
                     "Native admission needs the current endpoint marker section");
+            EscrowTags.require(EscrowNativeEnvelope.digest(observed.encode()).equals(candidate.nativeBinding().beforeWrapper()),
+                    "Native admission marker section differs from the captured before wrapper");
             observed.markers().stream().map(EscrowPrefix.Marker::operation).forEach(markers::add);
         }
         EscrowTags.require(markers.size() <= ADMISSION_PER_ROCKET, "Rocket settlement admission limit exceeded");

@@ -25,9 +25,13 @@ final class EscrowTestFixtures {
     }
     /** Explicit synthetic envelope hashes for codec/prefix tests, never a live native permit. */
     static EscrowOperation nativeModel(EscrowOperation op) {
+        return nativeModel(op, null);
+    }
+    static EscrowOperation nativeModel(EscrowOperation op, RocketEscrowSection observed) {
         var b = op.nativeBinding();
         var binding = new EscrowNativeBinding(b.kind(), b.physical(), b.logical(), b.owner(), id(900), hash(900), b.invariant(),
-                b.sourceReference(), b.destinationReference(), b.beforeWrapper(), b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(),
+                b.sourceReference(), b.destinationReference(), observed == null ? b.beforeWrapper() : EscrowNativeEnvelope.digest(observed.encode()),
+                b.afterWrapper(), b.beforeFrontier(), b.afterFrontier(),
                 b.sourceBefore(), b.sourceAfter(), b.destinationBefore(), b.destinationAfter(), true);
         return new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(), op.payload(), op.payloadHash(),
                 op.source(), op.destination(), op.guard(), op.kind(), op.settlement(), binding);

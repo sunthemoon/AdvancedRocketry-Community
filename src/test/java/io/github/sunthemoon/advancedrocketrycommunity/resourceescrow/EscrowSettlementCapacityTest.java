@@ -32,9 +32,9 @@ class EscrowSettlementCapacityTest {
         for (int retired = 0; retired <= 5; retired++) {
             var markers = new ArrayList<EscrowPrefix.Marker>();
             for (int i = 1; i <= retired; i++) { markers.add(new EscrowPrefix.Marker(EscrowTestFixtures.id(5_000 + i), i, "DESTINATION", i)); }
-            var op = operation(100, 99, retired, true);
             var root = new EscrowLedger(EscrowTestFixtures.id(500), 99, 0, List.of(), List.of(), List.of());
             var observed = new RocketEscrowSection(root.id(), retired, markers);
+            var op = EscrowTestFixtures.nativeModel(operation(100, 99, retired, true), observed);
             var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
             try (var writer = new EscrowLedgerWriter(directory.resolve("retired-" + retired), 0);
                     var coordinator = new EscrowCoordinator(data, writer)) {
@@ -44,8 +44,9 @@ class EscrowSettlementCapacityTest {
                     assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root.append(List.of(op))));
                     var applied = new ArrayList<>(markers); applied.add(new EscrowPrefix.Link(op, op.destination(), "DESTINATION").marker());
                     // A live marker already in the observed wrapper is not charged twice.
-                    assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(op)), op,
-                            new RocketEscrowSection(root.id(), observed.epoch() + 1, applied)));
+                    var appliedSection = new RocketEscrowSection(root.id(), observed.epoch() + 1, applied);
+                    var appliedCapture = EscrowTestFixtures.nativeModel(op, appliedSection);
+                    assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root.append(List.of(appliedCapture)), appliedCapture, appliedSection));
                     var held = root.append(List.of(op.withReason(EscrowReason.OTHER_STATE)));
                     var observations = List.of(new EscrowSettlementIntent.Observation(op.source(),
                                     new EscrowPrefix.State(root.id(), 1, op.source().afterSignature(),
@@ -87,7 +88,7 @@ class EscrowSettlementCapacityTest {
         var endpoint = new EscrowEndpoint(old.kind(), old.level(), old.identity(), old.logicalRocket(), "advancedrocketrycommunity:rocket",
                 old.x(), old.y(), old.z(), old.unit(), old.beforeEpoch(), old.beforeSignature(), old.afterSignature());
         return EscrowTestFixtures.nativeModel(new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
-                op.payload(), op.payloadHash(), op.source(), endpoint, op.guard()));
+                op.payload(), op.payloadHash(), op.source(), endpoint, op.guard()), RocketEscrowSection.neutral());
     }
     @Test void unrelatedOfflineRepairDoesNotPreventAdmissionAndItsGrowthRemainsReserved() {
         for (var reason : List.of(EscrowReason.RELOCATED_ENDPOINT, EscrowReason.FLOOR_CONFLICT)) {

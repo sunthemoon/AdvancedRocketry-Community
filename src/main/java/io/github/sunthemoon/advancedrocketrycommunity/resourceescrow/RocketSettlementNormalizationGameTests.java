@@ -47,9 +47,10 @@ public final class RocketSettlementNormalizationGameTests {
                     var guard = journal.acknowledgedGuard(fixture.logical()).orElseThrow();
                     var model = new EscrowOperation(sample.id(), sample.sequence(), owner, sample.createdTick(), sample.phase(), sample.reason(), payload,
                             RocketNativeResources.signature(payload), sample.source(), endpoint, new EscrowGuard(fixture.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-                    operation = EscrowNativeBinding.captureTest(model, rocket, fixture.source(), fuel, after, data.ledger());
+                    var capture = EscrowNativeBinding.captureTest(model, rocket, fixture.source(), fuel, after, data.ledger());
+                    operation = capture.operation();
                     helper.assertTrue(level.addFreshEntity(rocket), "Neutral survivor publication failed");
-                    coordinator.prepareTest(operation, rocket.escrowSection(), acknowledged -> helper.assertTrue(acknowledged, "Native L1 failed")); step = 1;
+                    coordinator.prepareTest(operation, capture.before(), acknowledged -> helper.assertTrue(acknowledged, "Native L1 failed")); step = 1;
                 } else if (step == 1) { if (coordinator.commitPreparations()) { step = 2; } }
                 else if (step == 2) {
                     if (!coordinator.writerIdle()) { return; }

@@ -63,9 +63,12 @@ final class EscrowSettlementProbe {
                 source = EscrowTestEndpoints.create(level, POSITION, data.ledger().id());
                 rocket = EscrowRocketAuditProbe.createRocket(level, source.logical(), true);
                 EscrowTags.require(level.addFreshEntity(rocket), "Rocket publication failed"); source.bank().discard();
-                var operations = new ArrayList<EscrowOperation>(); operations.add(operation(source, coordinator.nextSequence(), 0));
-                if (chain) { operations.add(operation(EscrowTestEndpoints.chainSource(source, POSITION.offset(1, 0, 0)), coordinator.nextSequence() + 1, 1)); }
-                for (var op : operations) { coordinator.prepareTest(op, rocket.escrowSection(), committed -> EscrowTags.require(committed, "Settlement fixture L1 failed")); }
+                var captures = new ArrayList<EscrowNativeBinding.Admission>();
+                captures.add(operation(source, coordinator.nextSequence(), 0, data.ledger()));
+                if (chain) { captures.add(operation(EscrowTestEndpoints.chainSource(source, POSITION.offset(1, 0, 0)),
+                        coordinator.nextSequence() + 1, 1, data.ledger().append(List.of(captures.get(0).operation())))); }
+                for (var capture : captures) { coordinator.prepareTest(capture.operation(), capture.before(),
+                        committed -> EscrowTags.require(committed, "Settlement fixture L1 failed")); }
                 step = 1;
             }
             case 1 -> { if (coordinator.commitPreparations()) { step = 2; } }
@@ -95,7 +98,7 @@ final class EscrowSettlementProbe {
             default -> throw new IllegalStateException("Unknown settlement fixture stage");
         }
     }
-    private EscrowOperation operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch) {
+    private EscrowNativeBinding.Admission operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch, EscrowLedger bindingRoot) {
         var sample = fixture.operation(sequence); var fuel = rocket.flightData().orElseThrow().fuel();
         var before = epoch == 0 ? fuel : fuel.withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1_000);
         var after = fuel.withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, (epoch + 1) * 1_000);
@@ -104,7 +107,7 @@ final class EscrowSettlementProbe {
         var guard = RocketTransferSavedData.get(server).acknowledgedGuard(source.logical()).orElseThrow();
         var op = new EscrowOperation(sample.id(), sequence, rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(), sample.payload(), sample.payloadHash(),
                 sample.source(), destination, new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-        return EscrowNativeBinding.captureTest(op, rocket, fixture.source(), before, after, data.ledger());
+        return EscrowNativeBinding.captureTest(op, rocket, fixture.source(), before, after, bindingRoot);
     }
     private void recovered() {
         EscrowTags.require(data.ledger().records().size() == (chain ? 2 : 1), "Settlement lost connected records");
