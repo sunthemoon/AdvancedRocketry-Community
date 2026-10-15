@@ -74,9 +74,11 @@ public final class EscrowCoordinator implements AutoCloseable {
                     && data.ledger().floors().stream().anyMatch(intent.floor()::equals)
                     && data.ledger().records().stream().noneMatch(op -> op.guard().rocket().equals(intent.floor().getUUID("rocket_id"))),
                     "Floor changed since preview");
-            candidate = data.ledger().append(List.of(intent.floorOperation(nextSequence(), tick)));
-        } else { candidate = intent.freeze(data.ledger()); }
-        EscrowSettlementCapacity.preflight(candidate);
+            candidate = EscrowSettlementCapacity.floorRetirement(data.ledger(), intent, nextSequence(), tick);
+        } else {
+            candidate = intent.freeze(data.ledger());
+            EscrowSettlementCapacity.preflight(candidate);
+        }
         candidate.records().stream().filter(op -> intent.ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, intent));
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {

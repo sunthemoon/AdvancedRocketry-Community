@@ -9,6 +9,9 @@ import java.util.UUID;
 final class EscrowSettlementCapacity {
     // Admission only. Persisted sections/chains retain the eight-marker decode bound.
     static final int ADMISSION_PER_ROCKET = 5;
+    // One new floor-retirement operation, its receipt and the named-floor top-up.
+    static final long FLOOR_RETIREMENT_BYTES = EscrowLimits.OP_BYTES + 2_048L + 1_024L;
+    static final String FLOOR_FULL = "Escrow is full; retry floor retirement after other settlements or pruning.";
     private EscrowSettlementCapacity() { }
     static void preflight(EscrowLedger prospective) {
         preflight(prospective, null);
@@ -43,10 +46,32 @@ final class EscrowSettlementCapacity {
             var fixed = fixed(prospective, component);
             reservedBytes += fixed.bytes(); reservedReceipts += fixed.receipts();
         }
-        // All components, both full tables, and terminal cleanup entries remain charged together.
-        EscrowTags.require(reservedReceipts <= 64 && reservedBytes + (64 - prospective.armedFlights().size()) * 1_024L
-                + (64 - prospective.rocketAuthorities().size()) * 1_024L <= EscrowLimits.ROOT_BYTES,
-                "Settlement/flight root reservation exhausted");
+        // Fill admission always leaves room for one new retirement, even with no retained floor.
+        // Ordinary writes may consume that headroom; it is not an autosave/load restriction.
+        int headroom = candidate == null ? 0 : 1;
+        if (prospective.records().size() + headroom > EscrowLimits.OPERATIONS
+                || reservedReceipts + headroom > EscrowLimits.TOMBSTONES
+                || reservedBytes + headroom * FLOOR_RETIREMENT_BYTES
+                + (64 - prospective.armedFlights().size()) * 1_024L
+                + (64 - prospective.rocketAuthorities().size()) * 1_024L > EscrowLimits.ROOT_BYTES) {
+            throw new ReservationFull("Settlement/flight root reservation exhausted");
+        }
+    }
+    /** Shared by operator preview and O1; all checks precede admission/writer mutation. */
+    static EscrowLedger floorRetirement(EscrowLedger root, EscrowSettlementIntent intent, long sequence, long tick) {
+        var tombstones = root.tombstones();
+        long receipts = tombstones.size() + root.records().stream().filter(op -> tombstones.stream()
+                .noneMatch(tag -> tag.getUUID("op_id").equals(op.id()))).count();
+        if (root.records().size() >= EscrowLimits.OPERATIONS || receipts >= EscrowLimits.TOMBSTONES) {
+            throw new ReservationFull(FLOOR_FULL);
+        }
+        var candidate = root.append(List.of(intent.floorOperation(sequence, tick)));
+        try { preflight(candidate); }
+        catch (ReservationFull full) { throw new ReservationFull(FLOOR_FULL); }
+        return candidate;
+    }
+    private static final class ReservationFull extends IllegalArgumentException {
+        private ReservationFull(String message) { super(message); }
     }
     private static void preview(EscrowLedger prospective, List<EscrowOperation> component, UUID selected, boolean admission) {
         var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();

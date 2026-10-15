@@ -23,25 +23,27 @@ class EscrowReservationTransitionTest {
 
     @Test void admissionPinsEffectiveRootCapacityAndRefusesOneMoreWithoutMutation() {
         assertEquals(64, EscrowLimits.OPERATIONS, "The saved-operation decode bound is unchanged");
-        for (boolean guarded : List.of(false, true)) {
-            int capacity = guarded ? 59 : 63;
-            var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowTestFixtures.ledger()));
-            var initial = data.ledger();
-            try (var writer = new EscrowLedgerWriter(directory.resolve("capacity-" + guarded), 0);
-                    var coordinator = new EscrowCoordinator(data, writer)) {
-                for (int i = 1; i <= capacity; i++) {
-                    coordinator.prepareTest(operation(i, guarded), ignored -> { });
+        for (int floors : List.of(0, 29)) {
+            for (boolean guarded : List.of(false, true)) {
+                int capacity = floors == 0 ? (guarded ? 58 : 62) : (guarded ? 57 : 61);
+                var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowCombinedReservationTest.retainedFloors(floors)));
+                var initial = data.ledger();
+                try (var writer = new EscrowLedgerWriter(directory.resolve("capacity-" + floors + "-" + guarded), 0);
+                        var coordinator = new EscrowCoordinator(data, writer)) {
+                    for (int i = 1; i <= capacity; i++) {
+                        coordinator.prepareTest(operation(floors + i, guarded), ignored -> { });
+                    }
+                    assertEquals(capacity, coordinator.admissionAuthority().pendingCount());
+                    assertEquals(floors + capacity + 1, coordinator.nextSequence());
+                    var refused = assertThrows(IllegalArgumentException.class,
+                            () -> coordinator.prepareTest(operation(floors + capacity + 1, guarded), ignored -> fail()));
+                    assertEquals("Settlement/flight root reservation exhausted", refused.getMessage());
+                    assertEquals(capacity, coordinator.admissionAuthority().pendingCount());
+                    assertEquals(floors + capacity + 1, coordinator.nextSequence());
+                    assertEquals(initial, coordinator.ledger()); assertTrue(writer.idle());
+                    assertTrue(writer.capturedOperations().isEmpty());
+                    System.out.println("reservation capacity floors=" + floors + " guarded=" + guarded + " admitted=" + capacity + " refused=" + (capacity + 1));
                 }
-                assertEquals(capacity, coordinator.admissionAuthority().pendingCount());
-                assertEquals(capacity + 1, coordinator.nextSequence());
-                var refused = assertThrows(IllegalArgumentException.class,
-                        () -> coordinator.prepareTest(operation(capacity + 1, guarded), ignored -> fail()));
-                assertEquals("Settlement/flight root reservation exhausted", refused.getMessage());
-                assertEquals(capacity, coordinator.admissionAuthority().pendingCount());
-                assertEquals(capacity + 1, coordinator.nextSequence());
-                assertEquals(initial, coordinator.ledger()); assertTrue(writer.idle());
-                assertTrue(writer.capturedOperations().isEmpty());
-                System.out.println("reservation capacity guarded=" + guarded + " admitted=" + capacity + " refused=" + (capacity + 1));
             }
         }
     }
@@ -53,15 +55,15 @@ class EscrowReservationTransitionTest {
         try (var writer = io.writer(file, 0, CheckedSavedDataFile::atomicMove);
                 var coordinator = new EscrowCoordinator(data, writer)) {
             var acknowledgements = new AtomicInteger();
-            for (int i = 1; i <= 63; i++) {
+            for (int i = 1; i <= 62; i++) {
                 coordinator.prepareTest(operation(i, false), accepted -> {
                     assertTrue(accepted); acknowledgements.incrementAndGet();
                 });
             }
-            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(operation(64, false), ignored -> fail()));
+            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(operation(63, false), ignored -> fail()));
             assertTrue(coordinator.commitPreparations());
             acknowledge(io, coordinator, 1, 1);
-            assertEquals(63, acknowledgements.get());
+            assertEquals(62, acknowledgements.get());
             var admitted = coordinator.ledger();
             var longest = Arrays.stream(EscrowReason.values()).filter(EscrowReason::manual)
                     .max(Comparator.comparingInt(reason -> reason.name().length())).orElseThrow();
