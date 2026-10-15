@@ -151,13 +151,31 @@ class G4ApplicabilityTests(unittest.TestCase):
     def test_parser_recursion_in_either_record_is_a_validation_error(self) -> None:
         metadata, acceptance = self.pending_records()
         deep_record = '{"nested":' + '[' * 3000 + '0' + ']' * 3000 + '}'
+        real_loads = json.loads
+
+        def recursing_loads(payload: str, *args: object, **kwargs: object) -> object:
+            # Whether 3,000 levels exhaust the parser's recursion limit depends on the Python build
+            # (Windows 3.13 raises RecursionError, hosted Linux 3.12 parses it), so force the error.
+            if payload == deep_record:
+                raise RecursionError("maximum recursion depth exceeded")
+            return real_loads(payload, *args, **kwargs)
+
         for position in (0, 1):
-            with self.subTest(position=position):
-                payloads = [json.dumps(metadata), json.dumps(acceptance)]
-                payloads[position] = deep_record
-                text = '\n'.join(f'```json\n{payload}\n```' for payload in payloads)
-                errors, details = MODULE.validate_adr_text(text)
+            payloads = [json.dumps(metadata), json.dumps(acceptance)]
+            payloads[position] = deep_record
+            text = '\n'.join(f'```json\n{payload}\n```' for payload in payloads)
+            with self.subTest(position=position, parser="recursion"):
+                with patch.object(MODULE.json, "loads", recursing_loads):
+                    errors, details = MODULE.validate_adr_text(text)
                 self.assertTrue(any(item.startswith("invalid ADR ") for item in errors), errors)
+                self.assertEqual({}, details)
+            with self.subTest(position=position, parser="native"):
+                # Without the patch the record is refused either by the parser or by the depth bound.
+                errors, details = MODULE.validate_adr_text(text)
+                self.assertTrue(
+                    any(item.startswith("invalid ADR ") or "exceeds JSON depth 32" in item for item in errors),
+                    errors,
+                )
                 self.assertEqual({}, details)
 
     def test_pending_decision_rejects_reviewer_metadata(self) -> None:
