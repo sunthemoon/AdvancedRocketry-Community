@@ -11,15 +11,18 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.locks.LockSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.eventbus.api.IEventListener;
@@ -83,19 +86,42 @@ final class NaturalBedFixtures {
         Room(ServerLevel level, BlockPos vent) { this.level = level; this.vent = vent; }
 
         BlockPos head() { return SleepRespawnGameTests.bedHead(vent); }
+
+        /**
+         * The vent's own block entity ticks. Vanilla ticks it only in a block-ticking chunk whose entity sections have
+         * loaded, and a newly forced chunk loads them asynchronously. Until then the atmosphere service has seen only
+         * the fixture's one manual vent tick; its next tick drops the unobserved vent and the room returns to vacuum.
+         */
+        boolean live() {
+            LevelChunk chunk = level.getChunkSource().getChunkNow(vent.getX() >> 4, vent.getZ() >> 4);
+            return chunk != null && chunk.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING)
+                    && level.areEntitiesLoaded(ChunkPos.asLong(vent));
+        }
+
+        /** The vent's chunk has finished its block-ticking promotion: every neighbour is a full chunk. */
+        boolean blockTicking() {
+            return level.getChunkSource().isPositionTicking(ChunkPos.asLong(vent));
+        }
     }
 
     static final class Fixture implements AutoCloseable {
+        /** Well inside the server watchdog's 60 s tick limit. */
+        private static final long SETUP_LIMIT_NANOS = 30_000_000_000L;
+        private static final long IDLE_PARK_NANOS = 500_000L;
+
         final MinecraftServer server;
         final List<Room> rooms = new ArrayList<>();
         final List<Runnable> cleanup = new ArrayList<>();
         ServerPlayer player;
         final long originalTime;
         final DiscoveryScope discovery;
+        /** The server tick that built the rooms and ticked each new vent once by hand. */
+        private final int builtTick;
         private boolean closed;
 
         Fixture(GameTestHelper helper, String name, List<ResourceKey<Level>> hosts) {
             server = helper.getLevel().getServer();
+            builtTick = server.getTickCount();
             originalTime = server.overworld().getDayTime();
             discovery = new DiscoveryScope(server);
             try {
@@ -121,25 +147,58 @@ final class NaturalBedFixtures {
                     SleepRespawnGameTests.roomWithBed(level, center, 2, 3);
                     rooms.add(new Room(level, center));
                 }
+                awaitBlockTicking();
             } catch (RuntimeException failure) { close(); throw failure; }
         }
 
-        boolean ready() {
-            return rooms.stream().allMatch(room -> {
-                if (room.level.dimension().equals(ExoplanetContent.TAU_CETI_F_LEVEL)) {
-                    // The production authority idles vents in comfortable, breathable ambient air. There is no
-                    // supplied volume to wait for on f; both native bed cells must still report breathable air.
-                    return AtmosphereRuntime.breathabilityAt(room.level, room.head()).orElse(null)
-                            == BreathabilityState.BREATHABLE
-                            && AtmosphereRuntime.breathabilityAt(room.level, room.head().west()).orElse(null)
-                            == BreathabilityState.BREATHABLE;
+        /**
+         * Fixture setup, like the synchronous {@code getChunk} in {@code force}: each room chunk finishes its
+         * block-ticking promotion before the first test tick. That needs the neighbouring terrain generated, which
+         * in five noise Levels is seconds of worker time on a slow host; as a paced-tick wait it took most of the
+         * 60 ticks (W74). Meanwhile the Levels' main-thread chunk tasks run, as they do during a synchronous chunk
+         * load. The vents' entity sections finish loading in the next ticks, and readiness still waits for them.
+         */
+        private void awaitBlockTicking() {
+            long deadline = System.nanoTime() + SETUP_LIMIT_NANOS;
+            while (!rooms.stream().allMatch(Room::blockTicking)) {
+                if (System.nanoTime() - deadline > 0) {
+                    throw new IllegalStateException("The bed rooms' chunks did not become block-ticking: " + status());
                 }
-                return SleepRespawnGameTests.suppliedBed(room.level, room.vent);
-            });
+                boolean ran = false;
+                for (Room room : rooms) {
+                    ran |= room.level.getChunkSource().pollTask();
+                }
+                if (!ran) {
+                    LockSupport.parkNanos(IDLE_PARK_NANOS);
+                }
+            }
+        }
+
+        boolean ready() {
+            return rooms.stream().allMatch(this::ready);
+        }
+
+        /** The room is live and its bed cells are breathable, so a bed call now meets the running authority. */
+        boolean ready(Room room) {
+            // A test tick reads the atmosphere state of the previous server tick. The state after the build tick
+            // still carries the manual vent ticks, so only a later tick's state shows a vent that ticks by itself.
+            if (server.getTickCount() <= builtTick + 1 || !room.live()) {
+                return false;
+            }
+            if (room.level.dimension().equals(ExoplanetContent.TAU_CETI_F_LEVEL)) {
+                // The production authority idles vents in comfortable, breathable ambient air. There is no
+                // supplied volume to wait for on f; both native bed cells must still report breathable air.
+                return AtmosphereRuntime.breathabilityAt(room.level, room.head()).orElse(null)
+                        == BreathabilityState.BREATHABLE
+                        && AtmosphereRuntime.breathabilityAt(room.level, room.head().west()).orElse(null)
+                        == BreathabilityState.BREATHABLE;
+            }
+            return SleepRespawnGameTests.suppliedBed(room.level, room.vent);
         }
 
         String status() {
-            return rooms.stream().map(room -> room.level.dimension().location() + ":air="
+            return rooms.stream().map(room -> room.level.dimension().location() + ":ticking=" + room.blockTicking()
+                    + ",live=" + room.live() + ",air="
                     + AtmosphereRuntime.breathabilityAt(room.level, room.head()) + ",supplied="
                     + SleepRespawnGameTests.suppliedBed(room.level, room.vent) + ",metrics="
                     + AtmosphereRuntime.metrics(room.level)).toList().toString();

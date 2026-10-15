@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: b451e436 (the W77 merge)
-latest_hosted_regression: run 38730366442 at cf289a48, passed on the rerun of its failed job (the first attempt failed three intermittent GameTests)
+latest_code_commit: 52dba619 (the W81 merge)
+latest_hosted_regression: run 38789533774 at 166dd0d6 (after the W78 merge), passed
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
@@ -96,9 +96,8 @@ What is still open:
   `PORTING_MATRIX` and the release evidence remain.
 - **Owner decisions.** Eleven are pending; QUEUE.md lists them with what each one blocks.
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-037) stay open.
-- **Intermittent GameTests.** Each failed once and passed on rerun:
-  - the six-host natural-beds test and the sealed sleep-room test (W74);
-  - the first-Moon-landing fixture and the spawn-egg vacuum test (W76, queued).
-  The landing-pad cancellation test was fixed by W73.
+- **Intermittent GameTests.** None is open. W73 fixed the landing-pad cancellation test, W74 the
+  six-host natural-beds test, W76 the first-Moon-landing and spawn-egg tests, and W78 the sealed
+  sleep-room test. Hosted runs confirm each fix as they accumulate.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
