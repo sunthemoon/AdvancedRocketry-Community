@@ -1,7 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -34,12 +32,10 @@ import net.minecraft.world.phys.AABB;
  * same static hopper ticker and dropper block tick that the server calls, so one game tick can run several transfers.
  */
 final class AutomationRig implements AutoCloseable {
-    private static final TicketType<ChunkPos> TICKET = TicketType.create("arce_gametest_w68_automation",
-            Comparator.comparingLong(ChunkPos::toLong), 60);
     final GameTestHelper helper;
     final ServerLevel level;
     private final Map<BlockPos, Boolean> placed = new LinkedHashMap<>();
-    private final Set<ChunkPos> tickets = new LinkedHashSet<>();
+    private final Set<ChunkPos> checked = new LinkedHashSet<>();
     private final List<HopperBlockEntity> hoppers = new ArrayList<>();
     private final List<Runnable> beforeClose = new ArrayList<>();
     private final List<AABB> rooms = new ArrayList<>();
@@ -48,10 +44,16 @@ final class AutomationRig implements AutoCloseable {
 
     AutomationRig(GameTestHelper helper) { this.helper = helper; level = helper.getLevel(); }
 
-    /** Keeps the chunk of {@code position} loaded and ticking until close; it is already loaded around a test. */
+    /**
+     * Requires the chunk of {@code position} to be loaded already. A W68 fixture stays within one chunk of its template,
+     * and GameTest force-loads the chunks around every test, so the rig needs no ticket of its own (a timed region
+     * ticket would also have expired long before the slower scenarios closed).
+     */
     void hold(BlockPos position) {
         ChunkPos chunk = new ChunkPos(position);
-        if (tickets.add(chunk)) { level.getChunkSource().addRegionTicket(TICKET, chunk, 2, chunk); level.getChunk(chunk.x, chunk.z); }
+        if (checked.add(chunk) && level.getChunkSource().getChunkNow(chunk.x, chunk.z) == null) {
+            throw new IllegalStateException("W68 fixture chunk " + chunk + " is not loaded");
+        }
     }
     /**
      * GameTests run deep underground; vanilla clears only a small box around a template. This opens an air room over
@@ -183,7 +185,6 @@ final class AutomationRig implements AutoCloseable {
         for (AABB box : rooms) { level.getEntitiesOfClass(ItemEntity.class, box).forEach(ItemEntity::discard); }
         terrain.forEach((position, state) -> level.setBlock(position,
                 state.hasBlockEntity() ? Blocks.AIR.defaultBlockState() : state, Block.UPDATE_CLIENTS));
-        tickets.forEach(chunk -> level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, chunk));
         if (failed != null) { throw failed; }
     }
 }
