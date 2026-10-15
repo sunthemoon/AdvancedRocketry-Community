@@ -11,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.locks.LockSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -96,9 +97,18 @@ final class NaturalBedFixtures {
             return chunk != null && chunk.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING)
                     && level.areEntitiesLoaded(ChunkPos.asLong(vent));
         }
+
+        /** The vent's chunk has finished its block-ticking promotion: every neighbour is a full chunk. */
+        boolean blockTicking() {
+            return level.getChunkSource().isPositionTicking(ChunkPos.asLong(vent));
+        }
     }
 
     static final class Fixture implements AutoCloseable {
+        /** Well inside the server watchdog's 60 s tick limit. */
+        private static final long SETUP_LIMIT_NANOS = 30_000_000_000L;
+        private static final long IDLE_PARK_NANOS = 500_000L;
+
         final MinecraftServer server;
         final List<Room> rooms = new ArrayList<>();
         final List<Runnable> cleanup = new ArrayList<>();
@@ -134,7 +144,31 @@ final class NaturalBedFixtures {
                     SleepRespawnGameTests.roomWithBed(level, center, 2, 3);
                     rooms.add(new Room(level, center));
                 }
+                awaitBlockTicking();
             } catch (RuntimeException failure) { close(); throw failure; }
+        }
+
+        /**
+         * Fixture setup, like the synchronous {@code getChunk} in {@code force}: each room chunk finishes its
+         * block-ticking promotion before the first test tick. That needs the neighbouring terrain generated, which
+         * in five noise Levels is seconds of worker time on a slow host; as a paced-tick wait it took most of the
+         * 60 ticks (W74). Meanwhile the Levels' main-thread chunk tasks run, as they do during a synchronous chunk
+         * load. The vents' entity sections finish loading in the next ticks, and readiness still waits for them.
+         */
+        private void awaitBlockTicking() {
+            long deadline = System.nanoTime() + SETUP_LIMIT_NANOS;
+            while (!rooms.stream().allMatch(Room::blockTicking)) {
+                if (System.nanoTime() - deadline > 0) {
+                    throw new IllegalStateException("The bed rooms' chunks did not become block-ticking: " + status());
+                }
+                boolean ran = false;
+                for (Room room : rooms) {
+                    ran |= room.level.getChunkSource().pollTask();
+                }
+                if (!ran) {
+                    LockSupport.parkNanos(IDLE_PARK_NANOS);
+                }
+            }
         }
 
         boolean ready() {
@@ -158,7 +192,8 @@ final class NaturalBedFixtures {
         }
 
         String status() {
-            return rooms.stream().map(room -> room.level.dimension().location() + ":live=" + room.live() + ",air="
+            return rooms.stream().map(room -> room.level.dimension().location() + ":ticking=" + room.blockTicking()
+                    + ",live=" + room.live() + ",air="
                     + AtmosphereRuntime.breathabilityAt(room.level, room.head()) + ",supplied="
                     + SleepRespawnGameTests.suppliedBed(room.level, room.vent) + ",metrics="
                     + AtmosphereRuntime.metrics(room.level)).toList().toString();
