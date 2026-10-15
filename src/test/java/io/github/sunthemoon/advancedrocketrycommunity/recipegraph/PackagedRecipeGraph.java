@@ -374,6 +374,9 @@ final class PackagedRecipeGraph {
                     if (!blocks.contains("minecraft:air")) {
                         slots.add(List.copyOf(blocks));
                     }
+                } else if (matcher.has("optional")) {
+                    // An optional cell also matches air, so a formed machine needs no block there (as above, for a
+                    // tag that contains air).
                 } else if (!matcher.has("air")) {
                     throw new IllegalStateException("Unmodelled pattern matcher in " + machine + ": " + matcher);
                 }

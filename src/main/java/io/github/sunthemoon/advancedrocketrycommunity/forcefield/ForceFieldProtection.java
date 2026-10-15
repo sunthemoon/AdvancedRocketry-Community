@@ -76,12 +76,16 @@ public final class ForceFieldProtection {
         return safeEvent(() -> MinecraftForge.EVENT_BUS.post(new EndgameEffectEvent(ModIdentity.id("force_field_projector"),
                 effect, owner, actor, level.dimension(), pos, pos)));
     }
-    static boolean placement(ServerLevel level, FieldIdentity identity, BlockPos pos) {
+    /**
+     * {@code against} is the projector's state from the visit's snapshot: the field grows out of it, and a world read
+     * of another cell here would escape the visit's charged budget (W04F review N4).
+     */
+    static boolean placement(ServerLevel level, FieldIdentity identity, BlockPos pos, BlockState against) {
         if (!region(level, identity.owner(), pos) || !api(level, identity.owner(), pos, EndgameEffect.FIELD_PROJECTION,
                 Optional.empty())) { return false; }
         var snapshot = BlockSnapshot.create(level.dimension(), level, pos);
         return safeEvent(() -> MinecraftForge.EVENT_BUS.post(new PlacePreflight(snapshot,
-                level.getBlockState(pos.below()), new OwnerActor(level, identity.owner()))))
+                against, new OwnerActor(level, identity.owner()))))
                 && region(level, identity.owner(), pos);
     }
     static boolean removal(ServerLevel level, UUID owner, BlockPos pos, BlockState state, Optional<UUID> actor) {

@@ -10,10 +10,10 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimit
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationState;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData.CheckedUpdate;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.SpikeCost;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
@@ -24,10 +24,13 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * ORBIT-04 bounded measurement, not a load campaign: a checked gravity write (encode, validate,
  * stage, force, read back, atomic replace, publish) at 10, 100 and the 4,096-station limit, against
- * the 500 ms single-spike budget (docs/17), and constant-time region lookup at the limit.
+ * the 500 ms single-spike budget (docs/17), and constant-time region lookup at the limit. Each spike is the median
+ * server-thread cost ({@link SpikeCost}) of five calls after two warm-up calls (W55).
  */
 final class StationCheckedUpdateScaleTest {
     private static final long SPIKE_BUDGET_NANOS = 500_000_000L;
+    private static final int WARMUPS = 2;
+    private static final int SAMPLES = 5;
     @TempDir Path root;
 
     @BeforeAll
@@ -43,21 +46,16 @@ final class StationCheckedUpdateScaleTest {
             StationRegistrySavedData data = registry(count);
             CheckedSavedDataFile.replace(file, ManagedSavedDataType.STATIONS, () -> data.save(new CompoundTag()));
             StationState target = data.stations().get(count / 2);
-            long[] samples = new long[3];
-            for (int run = 0; run < samples.length; run++) {
-                StationState observed = data.find(target.stationId()).orElseThrow();
-                long start = System.nanoTime();
-                CheckedUpdate result = data.checkedSetGravity(file, observed, 100 + run * 100,
-                        CheckedSavedDataFile::atomicMove);
-                samples[run] = System.nanoTime() - start;
-                assertEquals(CheckedUpdate.COMMITTED, result);
-            }
-            Arrays.sort(samples);
-            long median = samples[1];
-            System.out.printf("ARCE_ORBIT04_CHECKED_WRITE stations=%d file_bytes=%d median_ms=%.1f max_ms=%.1f%n",
-                    count, Files.size(file), median / 1e6, samples[2] / 1e6);
-            assertTrue(median < SPIKE_BUDGET_NANOS, count + " stations: median checked write " + median / 1e6 + " ms");
-            assertEquals(300, data.find(target.stationId()).orElseThrow().environment().gravityMilli());
+            var samples = SpikeCost.measure(WARMUPS, SAMPLES, run -> assertEquals(CheckedUpdate.COMMITTED,
+                    data.checkedSetGravity(file, data.find(target.stationId()).orElseThrow(), 100 + run * 100,
+                            CheckedSavedDataFile::atomicMove)));
+            System.out.printf("ARCE_ORBIT04_CHECKED_WRITE stations=%d file_bytes=%d median_ms=%.1f max_ms=%.1f"
+                            + " cost_median_ms=%.1f cost_max_ms=%.1f%n", count, Files.size(file),
+                    samples.medianWall() / 1e6, samples.maxWall() / 1e6, samples.medianCost() / 1e6, samples.maxCost() / 1e6);
+            assertTrue(samples.medianCost() < SPIKE_BUDGET_NANOS,
+                    count + " stations: median checked write cost " + samples.medianCost() / 1e6 + " ms");
+            assertEquals(100 + (WARMUPS + SAMPLES - 1) * 100,
+                    data.find(target.stationId()).orElseThrow().environment().gravityMilli());
         }
     }
 
@@ -74,28 +72,25 @@ final class StationCheckedUpdateScaleTest {
             java.util.Map<UUID, Integer> credits = new java.util.LinkedHashMap<>();
             data.stations().forEach(station -> credits.put(station.stationId(), StationLimits.MAX_WARP_ENERGY));
             assertEquals((long) count * StationLimits.MAX_WARP_ENERGY, data.foldWarpCredits(credits).credited());
-            long saveStart = System.nanoTime();
-            CompoundTag saved = data.save(new CompoundTag());
-            long saveNanos = System.nanoTime() - saveStart;
-            CheckedSavedDataFile.replace(file, ManagedSavedDataType.STATIONS, () -> saved);
+            CompoundTag[] saved = new CompoundTag[1];
+            var saves = SpikeCost.measure(WARMUPS, SAMPLES, run -> saved[0] = data.save(new CompoundTag()));
+            CheckedSavedDataFile.replace(file, ManagedSavedDataType.STATIONS, () -> saved[0]);
             StationState target = data.stations().get(count / 2);
-            long[] samples = new long[3];
-            String[] bodies = {"moon", "earth", "moon"};
-            for (int run = 0; run < samples.length; run++) {
-                StationState observed = data.find(target.stationId()).orElseThrow();
-                long start = System.nanoTime();
-                CheckedUpdate result = data.checkedRelocation(file, observed, ModIdentity.id(bodies[run]), 100_000,
-                        CheckedSavedDataFile::atomicMove);
-                samples[run] = System.nanoTime() - start;
-                assertEquals(CheckedUpdate.COMMITTED, result);
-            }
-            Arrays.sort(samples);
+            // Alternate away from the starting Earth orbit, so the last of the odd number of commits ends at the Moon.
+            var samples = SpikeCost.measure(WARMUPS, SAMPLES, run -> assertEquals(CheckedUpdate.COMMITTED,
+                    data.checkedRelocation(file, data.find(target.stationId()).orElseThrow(),
+                            ModIdentity.id(run % 2 == 0 ? "moon" : "earth"), 100_000, CheckedSavedDataFile::atomicMove)));
             System.out.printf("ARCE_WARP05_SCALE stations=%d balances=%d file_bytes=%d save_ms=%.1f"
-                            + " commit_median_ms=%.1f commit_max_ms=%.1f%n", count, data.warpEnergyBalances().size(),
-                    Files.size(file), saveNanos / 1e6, samples[1] / 1e6, samples[2] / 1e6);
-            assertTrue(samples[1] < SPIKE_BUDGET_NANOS, count + " stations: median warp commit " + samples[1] / 1e6 + " ms");
-            assertTrue(saveNanos < SPIKE_BUDGET_NANOS, count + " stations: ordinary save " + saveNanos / 1e6 + " ms");
-            assertEquals(StationLimits.MAX_WARP_ENERGY - 300_000, data.warpEnergy(target.stationId()));
+                            + " commit_median_ms=%.1f commit_max_ms=%.1f save_cost_median_ms=%.1f"
+                            + " commit_cost_median_ms=%.1f commit_cost_max_ms=%.1f%n", count,
+                    data.warpEnergyBalances().size(), Files.size(file), saves.medianWall() / 1e6,
+                    samples.medianWall() / 1e6, samples.maxWall() / 1e6, saves.medianCost() / 1e6,
+                    samples.medianCost() / 1e6, samples.maxCost() / 1e6);
+            assertTrue(samples.medianCost() < SPIKE_BUDGET_NANOS,
+                    count + " stations: median warp commit cost " + samples.medianCost() / 1e6 + " ms");
+            assertTrue(saves.medianCost() < SPIKE_BUDGET_NANOS,
+                    count + " stations: median ordinary save cost " + saves.medianCost() / 1e6 + " ms");
+            assertEquals(StationLimits.MAX_WARP_ENERGY - (WARMUPS + SAMPLES) * 100_000L, data.warpEnergy(target.stationId()));
             assertEquals(ModIdentity.id("moon"), data.find(target.stationId()).orElseThrow().orbitBody());
         }
     }

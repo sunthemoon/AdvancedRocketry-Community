@@ -47,6 +47,16 @@ final class ConnectedTestPlayers {
     /** Native survival bed/monster rules need a non-creative connected player; existing fixtures stay creative. */
     static ServerPlayer join(MinecraftServer server, UUID id, String name, ServerLevel level, BlockPos position,
                              List<String> replies, boolean serverPermissions, List<String> tokens, boolean creative) {
+        return join(server, id, name, level, position, replies, serverPermissions, tokens, creative, new ArrayList<>());
+    }
+
+    /**
+     * As {@link #join}; every message is also recorded in {@code serialized} as its full JSON form, which keeps the
+     * hover and click events that {@link #token} and {@link Component#getString} leave out.
+     */
+    static ServerPlayer join(MinecraftServer server, UUID id, String name, ServerLevel level, BlockPos position,
+                             List<String> replies, boolean serverPermissions, List<String> tokens, boolean creative,
+                             List<String> serialized) {
         ServerPlayer player = new ServerPlayer(server, level, new GameProfile(id, name)) {
             @Override
             public boolean isSpectator() {
@@ -67,6 +77,7 @@ final class ConnectedTestPlayers {
             public void sendSystemMessage(Component message) {
                 replies.add(message.getString());
                 tokens.add(token(message));
+                serialized.add(Component.Serializer.toJson(message));
             }
 
             /** Chat and action-bar messages ({@code displayClientMessage}); the action bar is marked. */
@@ -74,6 +85,7 @@ final class ConnectedTestPlayers {
             public void sendSystemMessage(Component message, boolean overlay) {
                 replies.add(overlay ? ACTION_BAR + message.getString() : message.getString());
                 tokens.add(overlay ? ACTION_BAR + token(message) : token(message));
+                serialized.add(Component.Serializer.toJson(message));
             }
         };
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
