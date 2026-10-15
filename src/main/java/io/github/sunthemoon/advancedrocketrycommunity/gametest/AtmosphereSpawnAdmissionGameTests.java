@@ -119,6 +119,13 @@ public final class AtmosphereSpawnAdmissionGameTests {
 
     @GameTest(template = TEMPLATE, timeoutTicks = 40)
     public static void spawnEggAndCommandAreExplicitExceptionsNotNaturalAdmission(GameTestHelper helper) {
+        // Structure blocks can be ready while entity sections are still inaccessible to spatial queries.
+        // Keep both spawns and their exact observations in one tick, after both fixture cells are ready.
+        EntitySections.whenLoaded(helper, () -> assertSpawnEggAndCommandExceptions(helper),
+                new GameTestTickPacer(helper.getLevel().getServer()), new BlockPos(3, 1, 3), new BlockPos(9, 1, 3));
+    }
+
+    private static void assertSpawnEggAndCommandExceptions(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         MinecraftServer server = level.getServer();
         // The registered listener denies a natural check in a production vacuum Level, with no chunk loaded for it.
@@ -167,7 +174,6 @@ public final class AtmosphereSpawnAdmissionGameTests {
             MinecraftForge.EVENT_BUS.unregister(probe);
             level.getEntitiesOfClass(Mob.class, area).forEach(Entity::discard);
         }
-        helper.succeed();
     }
 
     private static Event.Result check(NonPlayerAtmosphereService service, EntityType<? extends Mob> type,
