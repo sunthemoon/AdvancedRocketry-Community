@@ -19,6 +19,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     private final Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers = new HashMap<>();
     private final Map<UUID, EscrowReason> transitions = new HashMap<>();
     private final EscrowAdmissionAuthority admission = new EscrowAdmissionAuthority();
+    private final EscrowFlightWrites flightWrites = new EscrowFlightWrites();
     private long issued;
     private long tick;
     private long lastStart = -10;
@@ -42,6 +43,8 @@ public final class EscrowCoordinator implements AutoCloseable {
         EscrowTags.require(op.sequence() == nextSequence() && !queued.containsKey(op.id())
                 && !requests.containsKey(op.id()), "Duplicate or stale admission");
         EscrowTags.require(!frontiers.containsKey(op.source().key()) && !frontiers.containsKey(op.destination().key()), "Frozen endpoint frontier");
+        EscrowTags.require(!flightWrites.locked(op.guard().rocket()) && data.ledger().armedFlights().stream()
+                .noneMatch(arm -> arm.logical().equals(op.guard().rocket())), "Flight authority holds the endpoint");
         var candidate = new ArrayList<>(queued.values()); candidate.add(op);
         EscrowTags.require(op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || op.nativeBinding().complete(), "Native L1 needs a complete envelope binding");
         EscrowSettlementCapacity.preflight(data.ledger().append(candidate));
@@ -90,6 +93,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public void autosave() {
         owner(); if (closed || !data.isDirty() || tick - lastStart < 10) { return; }
+        if (flightWrites.pending() && transitions.isEmpty()) { return; }
         // Only acknowledged records are included. Queued preparations are never implicit autosave admissions.
         if (writer.request(() -> snapshot(false, null), this::acknowledge)) { lastStart = tick; }
     }
@@ -238,7 +242,17 @@ public final class EscrowCoordinator implements AutoCloseable {
             }
         }
     }
-    public void tick(long now) { owner(); tick = now; writer.tick(now); }
+    /** Package-private until the F1/F6 server adapter supplies complete retained proofs and leases. */
+    boolean flightWrite(UUID logical, java.util.function.BiFunction<EscrowLedger, Long, EscrowLedger> change,
+                        java.util.function.BooleanSupplier proofAndJournalLease, Consumer<Boolean> callback) {
+        owner(); if (closed || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()) { return false; }
+        return flightWrites.request(logical, change, proofAndJournalLease, callback);
+    }
+    public void tick(long now) {
+        owner(); tick = now; writer.tick(now);
+        if (!closed && queued.isEmpty() && transitions.isEmpty() && tick - lastStart >= 10
+                && flightWrites.start(data::ledger, writer, this::acknowledge)) { lastStart = tick; }
+    }
     public void transition(UUID id, EscrowReason reason) {
         owner();
         EscrowOperation op = data.ledger().records().stream().filter(record -> record.id().equals(id)).findFirst().orElse(null);
@@ -269,7 +283,8 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public boolean logicalLocked(UUID logical) {
         owner();
-        return frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
+        return flightWrites.locked(logical) || data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))
+                || frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
                 || unresolved()
                 .anyMatch(op -> logical.equals(op.guard().rocket()));
     }
@@ -284,8 +299,8 @@ public final class EscrowCoordinator implements AutoCloseable {
     Set<UUID> unresolvedIds() {
         owner(); return unresolved().map(EscrowOperation::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
-    @Override public void close() { owner(); if (!closed) { closed = true; writer.close(); frontiers.clear(); } }
+    @Override public void close() { owner(); if (!closed) { closed = true; flightWrites.close(); writer.close(); frontiers.clear(); } }
     /** Crash path, where ServerStoppingEvent never ran: no drain or callbacks, but the writer is joined. */
-    public void abort() { owner(); if (!closed) { closed = true; writer.abort(); frontiers.clear(); } }
+    public void abort() { owner(); if (!closed) { closed = true; flightWrites.close(); writer.abort(); frontiers.clear(); } }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Escrow coordinator requires its owner thread"); }
 }

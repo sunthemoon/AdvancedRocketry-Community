@@ -223,6 +223,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     }
     public boolean unavailable() { owner(); return failures >= 3; }
     public boolean idle() { owner(); return active == null; }
+    boolean unknown() { owner(); return uncertain; }
     public long lastGeneration() { owner(); return lastGeneration; }
     long lastIoStart() { owner(); return lastIoStart; }
     public void drain() {
