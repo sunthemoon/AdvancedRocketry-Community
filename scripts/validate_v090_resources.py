@@ -44,6 +44,7 @@ ACCESSIBILITY_CONTRACTS = {
 def _resource_roots(repository_root: Path) -> list[Path]:
     roots = [repository_root / "src/main/resources", repository_root / "src/generated/resources"]
     roots.extend(sorted((repository_root / "src/generated").glob("v*/resources")))
+    roots.extend(sorted((repository_root / "src/imported").glob("v*/resources")))
     return [path for path in roots if path.is_dir()]
 
 

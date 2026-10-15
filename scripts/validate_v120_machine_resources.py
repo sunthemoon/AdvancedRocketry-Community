@@ -46,6 +46,7 @@ def validate(root: Path) -> list[str]:
     generated = root / "src/generated/v1.2/resources"
     resource_roots = [root / "src/main/resources", root / "src/generated/resources"]
     resource_roots.extend(sorted((root / "src/generated").glob("v*/resources")))
+    resource_roots.extend(sorted((root / "src/imported").glob("v*/resources")))
 
     def load(relative: str) -> dict:
         path = generated / relative
