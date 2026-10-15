@@ -17,7 +17,7 @@ still needs:
 - the combined reservation on every root-growing write.
 
 **Root's triage of continuation 14's GameTest failure.**
-`AtmosphereSleepGameTests.sealedBreathableRoomsAdmitSleepButAPendingRoomDoesNot` ("The large room was
+`SleepRespawnGameTests.sealedBreathableRoomsAdmitSleepButAPendingRoomDoesNot` ("The large room was
 not pending after one production scan tick") is an intermittent failure that is not yours. It also
 failed once in continuation 09's run, and it touches nothing in escrow.
 - Root is tracking it with the six-host bed test (W74).
