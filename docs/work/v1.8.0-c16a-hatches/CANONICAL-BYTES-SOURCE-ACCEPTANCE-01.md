@@ -4,9 +4,9 @@ Date: 2026-10-04. Status: SOURCE_ACCEPTED for the private computation scope.
 The completed automatic integration is recorded below; no Gate is admitted.
 
 Root adopts exactly the two new private computation/test files reviewed in
-[author source01](canonical-bytes-k2-source-01.zip),SHA256
+author source01 (`canonical-bytes-k2-source-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)),SHA256
 `3442f9b7c3fc06ff694c08f385a8cdfc8fc8b0a527a225b305e7cc7213788ace`,
-and [different-agent source review01](reviews/canonical-bytes-k2-independent-01.zip),
+and different-agent source review01 (`reviews/canonical-bytes-k2-independent-01.zip`),
 SHA256 `e4b46ec2657b66e88e8cf90c188bad5a7fe7c9f0a9f78c62906aa705bb0427e4`.
 Root archive51/53 independently verifies each CRC,length,SHA and safe unique
 path. Reviewer report SHA256

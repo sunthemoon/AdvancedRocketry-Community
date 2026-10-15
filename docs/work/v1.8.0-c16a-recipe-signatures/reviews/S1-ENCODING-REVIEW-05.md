@@ -2,11 +2,11 @@
 
 Date:2026-10-04. Scope:two Python fixture files,not production save semantics.
 
-The [independent source review](signature-stopped-encoding-independent-05.zip)
+The independent source review (`signature-stopped-encoding-independent-05.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md))
 has zero unresolved Critical/High/Medium/Low. Its original patch applicability
-Low remains recorded; the distinct [LF delivery02 supplement](../signature-stopped-encoding-patch-delivery-02.zip)
+Low remains recorded; the distinct LF delivery02 supplement (`../signature-stopped-encoding-patch-delivery-02.zip`)
 passes fresh check/apply and yields the same two proposed postimages. Neither
-the original rejected patch nor [failed native16](../SIGNATURE-NATIVE-16-01-FAIL.zip)
+the original rejected patch nor failed native16 (`../SIGNATURE-NATIVE-16-01-FAIL.zip`)
 is overwritten or relabelled.
 
 Review archive SHA-256: `10c2ee592ed771132571760795c2cea556a9295660b8506261895aa83553674e`,
@@ -29,12 +29,12 @@ Source17 has2,974 inputs; manifest
 `d962518afda1803ed2b02a5d29d95ff1ec16445ae27e74f23c332d3f3ce2c664`.
 Only these two files and the separately adopted ADR-064 revision5 differ from
 source16;2,971 other inputs remain exact. Java/generated/API still belong to
-[candidate15](../../v1.8.0-c16a-integration/ROOT-INTEGRATION-15.zip),not a new Java build.
+candidate15 (`../../v1.8.0-c16a-integration/ROOT-INTEGRATION-15.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)),not a new Java build.
 Root focused Python82/0F/E,strict ledger,common/client import,explicit-version
 artifact and `git diff --check` all exit0. Ledger closure and dirty-tree
 `git diff --exit-code` both remain1,not waived passes.
 
-Fresh [native17](../SIGNATURE-NATIVE-17-01.zip) executes six clean phases for
+Fresh native17 (`../SIGNATURE-NATIVE-17-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) executes six clean phases for
 each of Rolling/Precision/Electrolyzer,outer exit0 and18 receipts. Both stopped
 cuts per adapter are explicitly injected,not naturally captured crashes.
 Original source world135 files remain exact. Result audit is a separate pending

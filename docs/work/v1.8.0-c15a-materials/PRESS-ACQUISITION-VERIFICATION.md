@@ -18,12 +18,12 @@ generated prefixes (769 v1.8) and28 existing API source files stay byte-exact.
 No upstream JSON/asset is imported; pinned MIT recipe facts and transformation
 are recorded in [development provenance](../../provenance/v1.8.0-development-metadata.md).
 
-[Frozen source01](press-acquisition-source-01.zip):4,733,110 bytes/2,969 entries,
+Frozen source01 (`press-acquisition-source-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):4,733,110 bytes/2,969 entries,
 SHA256 `ac830b9db0ad340943e6b87f6849e15f96eb7de888c87550e5d1742d76a87928`;
 manifest `e636d20b89156d7ab58bb1d4277a8f5073cfea5ad00e342aa4dd851dad0afdab`.
 The original generated-diff artifact has a reproduced Low:unterminated JSON joins
 the following diff header. Original bytes/check128 remain immutable. Separately
-versioned [patch02](press-source-patch-02.zip) uses Git's no-newline marker:
+versioned patch02 (`press-source-patch-02.zip`) uses Git's no-newline marker:
 15,432 bytes/35 entries,SHA256
 `1f5f4d75ef1baba75348ad8df19b75890f104947029707d76ea0112106de284f`;
 manifest `2b51733fc36a65ad63942f097b6dda8f14d41a748528cd9f94b2a3d372601033`.
@@ -59,7 +59,7 @@ does not change source,XML,test assertions,timing or any budget.
 
 ## Evidence and remaining version work
 
-[Frozen Root candidate12](../v1.8.0-c16a-integration/ROOT-INTEGRATION-12.zip):
+Frozen Root candidate12 (`../v1.8.0-c16a-integration/ROOT-INTEGRATION-12.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):
 23,673,654 bytes/6,310 entries,SHA256
 `928c8fa585c00fdf7b38ad77058fdf2ee3f78ba825faea1d716e64c32e1df2b5`;
 manifest `75a75aa900ff5ee51f3b3975ef4333ad197bffcd060dd7a4f1c5d456cf44055a`.

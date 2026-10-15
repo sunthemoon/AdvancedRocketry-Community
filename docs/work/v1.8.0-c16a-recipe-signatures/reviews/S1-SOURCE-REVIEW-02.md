@@ -3,14 +3,14 @@
 Date:2026-10-04. Status:SOURCE_REVIEWED for the four-file test fixture and
 opt-in listener only; native S1,menus and version Gates remain open.
 
-The [independent review01](signature-s1-independent-01.zip) records0 Critical,
+The independent review01 (`signature-s1-independent-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) records0 Critical,
 0 High,1 Medium,0 Low:the completion oracle used the wrong Electrolyzer slots.
-The [separate author revision02](../signature-s1-native-proposal-revision-02.zip)
+The separate author revision02 (`../signature-s1-native-proposal-revision-02.zip`)
 changes that one expected-slot line and adds two focused Python tests. All26
 original tests,2,940 underlying candidate11 inputs,two Java files and central
 listener proposal remain unchanged. No production output layout was changed.
 
-The [independent review02](signature-s1-independent-02.zip) has0 unresolved
+The independent review02 (`signature-s1-independent-02.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) has0 unresolved
 C/H/M/L in that corrective source scope. Its exact-diff/patch replay passes;
 28 Python tests and the original,byte-identical reviewer boundary probe pass.
 It does not replay Java,GameTest or native servers and does not close S1.

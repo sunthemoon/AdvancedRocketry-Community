@@ -3,7 +3,7 @@
 This page is a repository wrapper, not the original reviewed proposal. The
 [byte-exact raw proposal](PROPOSED-ADR-064-R3.raw.txt) retains SHA256
 `78995a706ca71c3c54af7eab67cc1f953e28f2cd3718c0e7f63e7aaa376b8097`.
-The unchanged [round-03 evidence archive](reviews/round-03-evidence.zip)
+The unchanged round-03 evidence archive (`reviews/round-03-evidence.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md))
 contains that same original at
 `inputs/docs/work/v1.8.0-c16a-hatches/PROPOSED-ADR-064-R3.md`.
 No contract text, numeric bound, historical status or review verdict is revised.

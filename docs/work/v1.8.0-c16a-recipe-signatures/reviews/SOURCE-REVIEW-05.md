@@ -11,13 +11,13 @@ The six-file r4-to-r5 and cumulative thirteen-file r3-to-r5 patches check/apply0
 and reproduce the exact46 owned postimages. Earlier compile failures/stale XML,
 unit reds, author429/1 and Root456/12 remain preserved, not retroactively passed.
 
-[Independent packet](source-independent-05.zip): SHA256
+Independent packet (`source-independent-05.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)): SHA256
 `e17f176626f5bde216e88e1895d7c5da978feecc903f0fc12d8ee88639b7368e`,
 77,296,802 bytes /6,202 entries; evidence manifest
 `fe351d197c0628160cd8e9653706fa3b2e0247197fcc95ab2740529471aa4c0e`.
 Raw report `4300babd4e8fc2e9318231b264721ac7bb7b10e94140576eb36f6e466b02d443`.
 
-[Author packet](source-author-05.zip): SHA256
+Author packet (`source-author-05.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)): SHA256
 `87cb9375b3281591ba168df5d8ec2f724aaf42d66e35c88dcce8dfe4a9d6ad9a`,
 36,108,524 bytes /3,047 entries; manifest
 `1b601bcbb8e0f43e3ed9fd93101c937436dbe5d8af412eac66fc3a44a2903d1b`.

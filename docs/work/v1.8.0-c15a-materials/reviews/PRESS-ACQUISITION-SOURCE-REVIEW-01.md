@@ -18,7 +18,7 @@ Independent Java17 scoped replay passes4 JUnit/1 suite,0 failure/error/skip
 postimage in Root candidate12 JARs;this is not an independently rebuilt artifact.
 Corrected Git patch check/apply pass with all five exact postimages.
 
-[Frozen report/raw evidence](press-acquisition-source-independent-01.zip):
+Frozen report/raw evidence (`press-acquisition-source-independent-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):
 5,462,302 bytes/3,047 entries,SHA256
 `5420e0f6ecb695651b8ffef79afe3271240ee8cc5a51745834124da3fd777e9d`;
 manifest `b6dfe44b6b3c747df52ea4be12e26be0169735c809e5d1b75cb1943d8f21783c`.

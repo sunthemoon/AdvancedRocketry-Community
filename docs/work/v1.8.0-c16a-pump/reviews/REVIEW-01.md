@@ -6,7 +6,7 @@ bound than the frozen shared codec, and oversized-test fixture interference.
 Two actual registered probes failed. Author revision 2 is separate and does
 not replace these original sources or logs.
 
-[Immutable evidence](round-01-evidence.zip), SHA-256
+Immutable evidence (`round-01-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)), SHA-256
 `e710ae9a84b65d602f6e0d763ff7cf85494e55be5c7e2e6ebf1ef46add42eb74`:
 2,900 ZIP entries, 2,899 manifest-pinned files verified individually; CRC clear.
 The raw report is `REVIEW-01.md` inside the archive, SHA-256

@@ -40,7 +40,7 @@ grammar are preserved; charged-FE removal remains owner-pending. The qualified
 Bank API,22 persisted forms, old kernel/port behavior and budgets remain unchanged.
 No physical adapter/lathe writer or API/runtime admission follows from this packet.
 
-[Frozen proposal02](adapter-contract-proposal-02.zip):7,196,008 bytes/507 entries,
+Frozen proposal02 (`adapter-contract-proposal-02.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):7,196,008 bytes/507 entries,
 SHA256 `6e5a3c11c732132dbc98f6a86471501b01339fd99e419ad34f61981484c54f22`;
 manifest `905dd5f4f8057e428546c45734fdf4b0b7e17a972d098e9daa6756af09f4f0a5`.
 HANDOFF SHA `b2a17910ebd4c9f54e54adebbb51d5280498b4fb0a29a18f13c15c2ff11dcf63`;
@@ -50,7 +50,7 @@ revision drift and first CRLF patch-byte failure remain preserved. Root verifies
 CRC, safe unique names and every entry hash/size before copying. No Java/native
 or version Gate result is inferred from these static checks.
 
-[Frozen proposal packet](adapter-contract-proposal-01.zip): SHA256
+Frozen proposal packet (`adapter-contract-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)): SHA256
 `82aa445e185a30744f35899889ab5a2ef8a77499a65dd197b494176cdf69491e`,
 352,610 bytes /101 entries; manifest
 `c1b32857c8b9fec52fbee41d1c64f1daf5a7607d70ca76f175700a902129cc7e`.

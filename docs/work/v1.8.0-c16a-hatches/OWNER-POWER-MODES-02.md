@@ -17,7 +17,7 @@ state. Unknown/future/malformed or unresolved pending state is protected,not
 read as zero;save protection,loaded-chunk and ordinary permission checks remain.
 
 This decision resolves the earlier pending product rows,not runtime feasibility.
-The immutable [inventory proposal](guard-inventory-proposal-01.zip) records its
+The immutable inventory proposal (`guard-inventory-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) records its
 earlier excluded/pending state;it is not edited or automatically accepted.
 Independent review must separately state any exact inventory/preflight/native
 test amendment needed before dependent implementation. No callback/charged-cut,

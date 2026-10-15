@@ -3,13 +3,13 @@
 Date:2026-10-04. Status:FAILED; correction and fresh native run required.
 No source/native/API/leaf/version Gate admission.
 
-The [immutable native14-02 failure](../SIGNATURE-NATIVE-14-02-FAIL.zip) records
+The immutable native14-02 failure (`../SIGNATURE-NATIVE-14-02-FAIL.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) records
 two clean historical Rolling hosts and one current upgrade abort. Current jobs
 were not seeded;current stopped bytes,restarts,tag reload/completion and the
 other two adapters were not observed. The earlier wrong CLI enum exit2 occurred
 before world/Java and remains separate. Three actual hosts are not18 planned.
 
-The [independent audit](signature-native14-02-independent-01.zip) has0 Critical,
+The independent audit (`signature-native14-02-independent-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) has0 Critical,
 0 High,1 Medium,0 Low. Its unchanged captured-console probe reproduces the
 original oracle failure:load sets `signature_migration_pending`,but normal
 ticks settle into `RECOVERY_DIVERGED` / `signature_migration_unproven`.
@@ -32,7 +32,7 @@ Audit ZIP SHA256
 Report `de8e4bc278937f6e69a03b79c7ad281f38ba89c85fce0f3804587f10336be958`.
 Root verifies CRC,safe unique names,every entry hash/size and copies byte-exact.
 
-[Author fixture revision03](../signature-s1-runtime-fixture-revision-03.zip)
+Author fixture revision03 (`../signature-s1-runtime-fixture-revision-03.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md))
 is separately proposed and independently reviewed before application. Its
 Python result is not a native result. Native durable typed-empty preservation,
 menus,physical hatches,real clients,performance and all Gates remain open.

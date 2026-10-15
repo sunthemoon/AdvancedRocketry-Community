@@ -7,13 +7,13 @@ The reviewed ADR SHA-256 is
 
 The [original report](REVIEW-03.raw.txt) is byte-exact, SHA-256
 `adaa377d24507bff861d08cf260fbc63a19e7198c76cb7f65ab0319b8162241a`.
-The [original manifest](original-file-hashes.json) retains author filenames;
+The original manifest (`original-file-hashes.json`) (see the [external evidence manifest](../../../v1.8.0-external-evidence/MANIFEST.md)) retains author filenames;
 `REVIEW-03.md` there identifies the raw report, and `TASK.md` identifies
 `TASK.raw.txt`. This receipt is not that original report.
 
 The [independent probe](probe.py) exited 0, with
 [static evidence](static-evidence.json), [actual diff](independent.diff),
-[packaging evidence](packaging-evidence.json) and [raw log](probe.log).
+[packaging evidence](packaging-evidence.json) and raw log (`probe.log`) (see the [external evidence manifest](../../../v1.8.0-external-evidence/MANIFEST.md)).
 D2/D3 match the selected independent ground jobs and world-first participants.
 All 104 units, 155 asset mappings and 34 approved source hashes match;
 four companion files are byte-identical to revision 2. D4, writer/migration/S2

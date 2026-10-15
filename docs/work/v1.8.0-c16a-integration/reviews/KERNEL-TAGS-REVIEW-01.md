@@ -12,14 +12,14 @@ with no content/input changes (a fresh cache writes769 identical files).
 Scoped replay passes12 JUnit /2 suites. Root's second cached DataGen pass and
 complete integration/GameTest remain separate requirements.
 
-[Independent packet](kernel-tags-independent-01.zip):
+Independent packet (`kernel-tags-independent-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):
 SHA256 `c09f33cf7a2b095a110429bd85ed35d8881c7741878bb3a7f80dc1932945bc6b`,
 22,781,490 bytes /51 entries; manifest
 `153c07bdc5ebea07e5ccb887bc03997fab24ba1a22b105938242018e0e4fb6ce`.
 Raw report hash `1dfd6f174c712fe67daf4879d4b29174ebbb3c2fdbbc52f690e6ae5e31929721`.
 Root verifies all CRC/entry hashes before copying.
 
-[Final candidate11](kernel-tags-candidate-11.zip):
+Final candidate11 (`kernel-tags-candidate-11.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):
 SHA256 `6b5cfe74879687c469f8ffa81c89d337da92d1d7bc3c6c7712f2118421b35598`,
 4,640,661 bytes /2,980 entries; eight-source manifest
 `4478c0289dcea8addcddd4394a6d7ff537d460f5a1e07e2e23376db71ba8949c`.

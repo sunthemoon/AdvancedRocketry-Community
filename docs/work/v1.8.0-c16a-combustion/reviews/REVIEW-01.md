@@ -6,7 +6,7 @@ SHA256 `a0d17fbc78a1875ca6589287ce79bc419e84c2456bc4f46b40b56465c30d70f6`.
 Its findings, dispositions, scoped conclusions and historical source references
 are unchanged; this wrapper is not a new review or Gate approval.
 
-The unchanged [round-01 evidence archive](round-01-evidence.zip) contains the
+The unchanged round-01 evidence archive (`round-01-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) contains the
 same report as `REVIEW-FINAL.md`, alongside the frozen source identity manifest
 and execution evidence. Use that archive for historical code identities, not mutable present
 checkout files. The original report's Windows-local hyperlinks are retained

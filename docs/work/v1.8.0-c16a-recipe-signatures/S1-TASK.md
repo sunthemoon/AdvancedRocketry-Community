@@ -63,7 +63,7 @@ admission; the original refusal evidence remains immutable. This does not alter
 owner semantics or prove any runtime result.
 
 - [x] Exact phase/mutation/source/old-codec matrix and bounded hooks proposed
-  ([frozen proposal01](signature-s1-native-proposal-01.zip),not source admission).
+  (frozen proposal01 (`signature-s1-native-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)),not source admission).
 - [x] Independent actual-diff review and unchanged negative-probe replay
   ([review02](reviews/S1-SOURCE-REVIEW-02.md),source/oracle scope only).
 - [x] Root reviewed revision02 source integration and complete automated regression:
@@ -111,7 +111,7 @@ all six phases;Precision completes old-bootstrap/old-partials/upgrade-current,
 then the stopped current-cut record8,216 exceeds its unchanged8,192-byte
 allocation and is refused before writing.No Precision current restart or
 Electrolyzer host occurs.Source2,974 inputs and historical source world135 files
-remain exact.The [frozen failed packet](SIGNATURE-NATIVE-16-01-FAIL.zip) and
+remain exact.The frozen failed packet (`SIGNATURE-NATIVE-16-01-FAIL.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) and
 separate independent result audit preserve this partial outcome;not all-S1 pass.
 The [encoding refinement05](S1-ENCODING-TASK.md) is a separate Root Temp proposal,
 not applied source/native admission,with unchanged allocation/resource budgets.
@@ -119,7 +119,7 @@ not applied source/native admission,with unchanged allocation/resource budgets.
 
 The [encoding review05](reviews/S1-ENCODING-REVIEW-05.md) independently qualifies
 the two fixture postimages;Root integrates them exactly and passes82 focused
-Python tests.No new Java build is claimed.Fresh [native17](SIGNATURE-NATIVE-17-01.zip)
+Python tests.No new Java build is claimed.Fresh native17 (`SIGNATURE-NATIVE-17-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md))
 executes18 clean host phases,six per adapter,with outer exit0 and original
 world135/135 unchanged.Independent result/byte audit remains pending;menu,
 actual players,unsafe native tags and full-version Gates remain open.
