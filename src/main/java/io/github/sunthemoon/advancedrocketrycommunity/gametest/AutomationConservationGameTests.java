@@ -73,5 +73,22 @@ public final class AutomationConservationGameTests {
         GeneratorAutomationRuns.solarArray(helper, CLASSIC_TIMEOUT);
     }
 
+    @GameTest(template = "empty", batch = "w68_pump", timeoutTicks = 300)
+    public static void pumpTwentyPaidDrainsConserveWaterAndGeneratorFe(GameTestHelper helper) {
+        DeviceAutomationRuns.pump(helper, 300);
+    }
+    @GameTest(template = "empty", batch = "w68_pressurized_tank", timeoutTicks = CLASSIC_TIMEOUT)
+    public static void stackedTanksTwentyThousandMbConserveWater(GameTestHelper helper) {
+        DeviceAutomationRuns.tank(helper, CLASSIC_TIMEOUT);
+    }
+    @GameTest(template = "empty", batch = "w68_small_plate_press", timeoutTicks = 20)
+    public static void smallPlatePressTwentyEdgesConserveBlocksAndPlates(GameTestHelper helper) {
+        DeviceAutomationRuns.smallPlatePress(helper);
+    }
+    @GameTest(template = "empty", batch = "w68_pipe_seal", timeoutTicks = CLASSIC_TIMEOUT)
+    public static void pipeSealsForwardItemsWaterAndFeWithoutKeepingAny(GameTestHelper helper) {
+        DeviceAutomationRuns.pipeSeal(helper, CLASSIC_TIMEOUT);
+    }
+
     private AutomationConservationGameTests() { }
 }
