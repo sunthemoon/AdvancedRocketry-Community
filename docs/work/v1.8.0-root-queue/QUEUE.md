@@ -85,7 +85,7 @@ give their SHA-256 values.
 | [W52](TASK-W52-ITEM-ICONS.md) | Asset closure batch K6: import the six class B item icons through the W48 importer and point their models at them; the `satellite*.png` plan rule is not split (an ADR-062 change) | Delivered `2c4cf4ca` (Codex): six imports CLEAR; models published from a new v1.8 provider after Root's exclusion of the six historical copies (`843f92c8`); both jars hold one copy each; 1,050 GameTests. Root merged shared (`5bed982f`, both Root build exclusions kept) and marked the six sources IMPORTED in the asset plan (exact rows for `satellite.png` and `satelliteidchip.png` ahead of the unchanged wildcard); validator passes. **Merged** `1fa44462` (hosted run 38587782134 at `5bed982f`). Three escrow unit tests failed in W52's loaded runs and pass on a lighter machine: W54 |
 | [W53](TASK-W53-ART-SCREEN-HITS.md) | Parallel bug found by the first governance run on shared (38556570618): the v1.8 art screen flags `station_light` (HIT, `glow_item_frame`) and four SUSPECT textures; redraw them until the whole root screens CLEAR, with no tool or threshold change | **Merged** `1c3d7c84` (Claude, hosted run 38588985967 at `2df02245`): the five textures redrawn in code; the whole v1.8 root screens CLEAR (187) with no tool or threshold change; old provenance entries kept, new ones added |
 | [W54](TASK-W54-ESCROW-TEST-TIMING.md) | Parallel bug: three escrow writer tests poll an off-thread writer against a five-second wall-clock deadline and fail under machine load; make them deterministic without extending timeouts | Delivered `d75ebe78` (Claude): a package-private test-controlled IO thread (public constructors unchanged) and owner-tick driving; with a 2 s injected write delay the original tests fail at W52's lines and the new ones pass; 3,146 unit tests, 1,057 GameTests. Root review passed. **Merged** (hosted run 38600185649 at `e6b2a9d0`) |
-| [W55](TASK-W55-FOLLOWUP-SWEEP.md) | Parallel bugs: sweep the open small review follow-ups (W01 L1-L3, W04 N4-N6, W10-R1, W13 N1-N3, W18 F8, W21b F9, W21c M1, W22 F8-F10, the GroundSurvey timing test): classify against current shared, fix the small ones each in its own commit | Delivered `dc215299` (Claude): 11 of 17 rows fixed, each in its own commit with a test; the two timing tests measure server-thread cost (CPU plus GC pauses) with the 500 ms budget unchanged; 3,146 unit tests, 1,063 GameTests, log checker PASS with no new expectation. Four rows need a design or a Root decision (W04 N5, W13 N1, W21c M1, W22 F8). Root review in progress; branch CI 38615499442 |
+| [W55](TASK-W55-FOLLOWUP-SWEEP.md) | Parallel bugs: sweep the open small review follow-ups (W01 L1-L3, W04 N4-N6, W10-R1, W13 N1-N3, W18 F8, W21b F9, W21c M1, W22 F8-F10, the GroundSurvey timing test): classify against current shared, fix the small ones each in its own commit | Delivered `dc215299` (Claude): 11 of 17 rows fixed, each in its own commit with a test; the two timing tests measure server-thread cost (CPU plus GC pauses) with the 500 ms budget unchanged; 3,146 unit tests, 1,063 GameTests, log checker PASS with no new expectation. Four rows need a design or a Root decision (W04 N5, W13 N1, W21c M1, W22 F8). Root review passed. **Merged** `5e59f5c0` (hosted run 38615499442). Root decisions: the timing tests' change of measured quantity is accepted, because the docs/17 budget is for the server thread's own spike on the reference node and wall time on this shared machine also counts other processes; the budget is unchanged and wall times are still printed. W22 F8 is accepted as section 5.3's rule; W13 N1 is recorded as a known limitation in ADR-065's W13 note, with the fixes reconsidered with W11b3; W21c M1 is deferred after v1.8 (only a legacy root above its budgets reaches it); W04 N5 needs a design note and a review. ADR-064's W01F note and R-021 now say the quarantined controller's power plugs still receive FE |
 | [W56](TASK-W56-LEDGER-CANDIDATES.md) | Ledger audit: verify whether `makeMaterialsForOtherMods`, `spacebreathing` and `blockMotor` (still PLANNED) are delivered by merged slices, and propose rows for Root | Delivered `c9759af5` (Claude, audit only). Root applied two rows (`d2e482d3`): `enchantment:spacebreathing` and `libvulpes:java/blockMotor` are IMPLEMENTED (the motor addendum is its own file, because the motor `VERIFICATION.md` matches its folder's `checksums.txt`), and ADR-025 has an additive revision note for the enchanted native armor rule. The ledger has 20 PLANNED rows. `makeMaterialsForOtherMods` stays PLANNED: the owner-required disclosure is missing and the CHANGELOG says kernel recipes refuse tags (W57) |
 | [W57](TASK-W57-MATERIALS-FOR-OTHER-MODS.md) | Close `makeMaterialsForOtherMods` (W56 row 1): correct the CHANGELOG's tag rule, add the owner-required disclosure of the legacy gap, a whole-catalog test that every material-form machine ingredient uses its common tag, a C16d evidence file and a ledger proposal | Implementer (Claude) since 02:24 |
 | [W58](TASK-W58-C19-AUDIT.md) | C19 audit (audit only): classify every open C19 candidate as still needed, superseded or record only against shared and the hosted governance run; list the C19 exit criteria; propose at most six slices | Auditor (Claude) since 02:29 |
@@ -126,68 +126,42 @@ Hosted CI runs on each implementer branch after Root pushes it (workflow change
 
 ## Next candidates
 
-Source: W30's verified reconciliation, `records/W30-STATUS-PROPOSAL.md` on branch
-`codex/v1.8.0-w30-status` (`2bc87cee`), section 5. Dispatch order: progress first, then the
-parallel bugs.
+Updated 2026-10-15. Dispatch order: progress first, then the parallel bugs.
 
-- **Escrow chain:**
+- **Escrow chain** (the remaining C17a and C17c ledger rows):
+  - W11b2 continuation 09 (active), then its independent review;
   - W11b3: `fluid_fuel_loader` and the linker's rocket-binding half, with packaged S2 evidence
     (also W02 F3's refill);
-  - W11c: cargo Fluid loaders and unloaders;
+  - W11c: cargo fluid loaders and unloaders;
   - W11d: item cargo loaders and unloaders;
   - W11e: the full linker and the monitoring station;
-  - the satellite bay, after W27a's review (ADR-065 sections 4.2, 4.3 and 8).
-- **C16d** (ADR-064 section 10):
-  - the tracking circuit;
-  - the graph run with the Tau Ceti Levels removed;
-  - the rebalance and its CHANGELOG entries.
-- **C16a-07b:** one formation GameTest per motor tier (ADR-064 section 4.1).
-- **Chemical reactor special recipes:**
-  - the `space_breathing` enchantment application (ADR-066 section 5.1);
-  - the lossless carbon-cartridge refresh (section 3.1).
-- **C18a environment rules** (ADR-066 sections 3.2 and 3.3), in three or four tasks:
-  - torches and fire starters;
-  - non-player atmosphere effects, `atmosphere_bypass` and spawn admission;
-  - `vacuumDamage`;
-  - sleep and the two respawn options;
-  - underwater breathing;
-  - the space safety return;
-  - gravity-scaled fall damage, after its M1.
-- **The gas charge pad** (ADR-066 sections 4 and 9, D4). Needs the **owner's decision** first:
-  prove the player-file save ordering, or approve an alternative interaction.
-- **World-first advancements** `one_small_step` and `first_station_warp` (ADR-066 section 6.2,
-  D3), after W11b2.
-- **C18d** (ADR-066 section 7.1):
-  - client rendering of the black-hole sky;
-  - the elevator capsule effect, which needs an S2C carrier;
-  - producers for the `lathe`, `rolling_machine` and `machine_large` sounds;
-  - the sound-namespace fold;
-  - the manual listen;
-  - OBJ loading, once the assets are imported.
-- **Per-asset closure** of the 154 REVIEW assets (ADR-066 section 7.3).
-- **C19:**
-  - merge the validator chain (`82f82b1f`, `d605be33`);
-  - the full Python suite and the strict validator;
-  - the evidence references;
-  - `PORTING_MATRIX`;
-  - the ADR-068, ADR-070 and ADR-071 decisions;
-  - R32-03;
-  - the ledger closure.
+  - the satellite bay slices W27b to W27e (W27e needs the owner's decisions).
+- **World-first:** the remaining H rows and the migration refusal checks (W44L, active).
+- **C16d:** `makeMaterialsForOtherMods` (W57, active).
+- **The gas charge pad** (ADR-066 D4): needs the owner's decision first.
+- **C18d:** the manual listen (owner), the OBJ imports K1 to K5 (the owner's origin findings) and
+  then `modelBakeEvent`.
+- **Per-asset closure** of the 154 REVIEW assets: batches X1 and X2 need the owner; N1 waits for
+  the listen.
+- **C19:** the W58 audit (active), then the slices it proposes.
 - **S1, V1 and V2** for every merged slice, plus W08 R02. These are for the final campaign.
-- **Parallel bugs** (open follow-ups):
-  - W01 L1 to L3;
+- **Parallel bugs and follow-ups:**
   - W02F (native restart; the locked rocket);
-  - W04 N4 to N6;
-  - W10-R1;
-  - W13 N1 to N3;
-  - W18 F8;
-  - W21b F9;
-  - W21c M1;
-  - W22 F8 to F10;
+  - W04 N5: a stray UNBOUND force-field reservation after an in-place NBT load (persistence: a
+    design note and a review first);
+  - W13 N1's fixes, reconsidered with W11b3 (ADR-065 W13 note);
+  - extending W01 L2's `optional` clearance cells to the C16c and beacon patterns (the research
+    patterns are frozen by W21a);
+  - a player-facing line for the W13 N1 limitation, after W57's CHANGELOG change merges;
   - the intermittent `cancellationreleasesexactlyonetransferclaim` GameTest ("Pad fixture/flight did not
     become ready"; hosted run 38400162712 failed once at `01e6b457` and passed on rerun);
   - the 5 ms atmosphere-boundary budget, which needs an ADR (it recurred on 2026-10-13);
-  - the HotSpot C2 crash, if it recurs.
+  - the HotSpot C2 crash, if it recurs;
+  - the horse-family fall follow-up, which needs a Mixin ADR;
+  - the slow-falling Moon hover;
+  - W55 measured the first, cold ground-survey START at 505 to 523 ms of wall time on this machine
+    without induced load; the reference-node performance campaign should measure it;
+  - W21c M1 (pause paid research while the reservations exceed the bound): deferred after v1.8.
 
 ## Parked
 
