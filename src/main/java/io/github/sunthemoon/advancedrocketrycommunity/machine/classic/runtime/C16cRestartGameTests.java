@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +93,7 @@ public final class C16cRestartGameTests {
         fixture.rebind();
     }
 
-    @GameTest(template = "empty", batch = "w64_etcher_unload", timeoutTicks = 600)
+    @GameTest(template = "empty", batch = "w64_etcher_unload", timeoutTicks = 900)
     public static void etcherJobCrossesARealChunkUnloadAndReloadWithExactAccounting(GameTestHelper helper) {
         var driver = new GameTestTickDriver(helper); var level = helper.getLevel();
         BlockPos base = helper.absolutePos(BlockPos.ZERO);
@@ -117,7 +118,7 @@ public final class C16cRestartGameTests {
             var recipe = fixture.recipe("laser_etching_basic_circuit_plate"); fixture.seed(recipe);
             ItemStack lens = markLens(fixture, recipe);
             // Native server ticks run the job on the seeded FE (two full plugs) until it pauses for energy mid-batch.
-            await(driver, 120, "the etcher to pause for energy", () -> fixture.controller.reason() == ClassicWait.ENERGY, () -> {
+            await(driver, 120, "the etcher to pause for energy", () -> fixture.controller.reason() == ClassicWait.ENERGY, null, () -> {
                 var original = fixture.controller; var job = original.checkpoint().job().orElseThrow();
                 int progress = original.progressTicks(), stored = original.storedEnergy(); long consumed = original.consumedEnergy();
                 CompoundTag resources = fixture.resources();
@@ -130,8 +131,10 @@ public final class C16cRestartGameTests {
                     }
                 }
                 fixture.releaseChunks();
-                // Never touch the chunk while waiting: a block entity lookup would load it again.
-                await(driver, 300, "the fixture chunk to unload", () -> unloaded.get() && !level.hasChunkAt(origin) && original.isRemoved(), () -> {
+                // Never touch the chunk while waiting: a block entity lookup would load it again. The unload waits on
+                // worldgen and saves that run in wall-clock time, so each waiting tick gets a server tick's length.
+                var pacer = new GameTestTickPacer(level.getServer());
+                await(driver, 600, "the fixture chunk to unload", () -> unloaded.get() && !level.hasChunkAt(origin) && original.isRemoved(), pacer, () -> {
                     helper.assertTrue(parts.values().stream().allMatch(BlockEntity::isRemoved), "A hatch outlived its chunk");
                     fixture.retainChunks();
                     fixture.rebind();
@@ -148,7 +151,7 @@ public final class C16cRestartGameTests {
                                 "A hatch did not reload exactly at " + position.toShortString());
                     });
                     // onLoad runs on the next Level tick; the production manager then re-forms the reloaded controller.
-                    await(driver, 40, "the reloaded etcher to re-form", reloaded::formed, () -> {
+                    await(driver, 40, "the reloaded etcher to re-form", reloaded::formed, null, () -> {
                         try {
                             helper.assertTrue(reloaded.progressTicks() == progress && reloaded.storedEnergy() == stored
                                     && resources.equals(fixture.resources()), "Re-formation changed the unpowered job");
@@ -163,18 +166,22 @@ public final class C16cRestartGameTests {
             cleanup.run(); throw failure;
         }
     }
-    /** One continuation per tick on the test-owned driver; it never schedules vanilla work inside a callback. */
-    private static void await(GameTestTickDriver driver, int attempts, String what, BooleanSupplier ready, Runnable next, Runnable cleanup) {
+    /**
+     * One continuation per tick on the test-owned driver; it never schedules vanilla work inside a callback. A non-null
+     * {@code pacer} holds each unchanged tick to a server tick's length.
+     */
+    private static void await(GameTestTickDriver driver, int attempts, String what, BooleanSupplier ready, GameTestTickPacer pacer,
+            Runnable next, Runnable cleanup) {
         driver.after(1, () -> {
             boolean done;
             try {
                 done = ready.getAsBoolean();
                 if (!done && attempts <= 1) { throw new GameTestAssertException("Timed out waiting for " + what); }
-                if (done) { next.run(); }
+                if (done) { next.run(); } else if (pacer != null) { pacer.pace(); }
             } catch (RuntimeException | Error failure) {
                 cleanup.run(); throw failure;
             }
-            if (!done) { await(driver, attempts - 1, what, ready, next, cleanup); }
+            if (!done) { await(driver, attempts - 1, what, ready, pacer, next, cleanup); }
         });
     }
     private C16cRestartGameTests() { }
