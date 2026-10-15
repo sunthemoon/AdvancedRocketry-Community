@@ -38,7 +38,7 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 52dba619 (the W81 merge)
+latest_code_commit: 8e8473f7 (the W82 merge)
 latest_hosted_regression: run 38789533774 at 166dd0d6 (after the W78 merge), passed
 ledger_planned_units: 19
 asset_review_items: 154
