@@ -41,6 +41,15 @@ public final class RocketJournalGameTestSupport {
         helper.assertTrue(journal.acknowledgedCurrent(), "Detached fixture generation was not acknowledged");
     }
 
+    /** Observe all completed IO attempts without requesting a fresh generation on an already clean fixture. */
+    public static long drainDetachedWriteCount(GameTestHelper helper, RocketTransferSavedData journal) {
+        helper.assertTrue(helper.getLevel().getServer() instanceof GameTestServer, "Not a GameTest fixture");
+        journal.flushChecked(helper.getLevel().getServer());
+        journal.drainForTests();
+        journal.pollWriter(helper.getLevel().getServer().getTickCount());
+        return journal.completedWriteCount();
+    }
+
     /**
      * W44 (design section 10): an explicit non-electing state for a shared-world landing test. When the world's Moon
      * slot is still EMPTY, a fixture event with no participants takes it, so the landing under test is not the first.

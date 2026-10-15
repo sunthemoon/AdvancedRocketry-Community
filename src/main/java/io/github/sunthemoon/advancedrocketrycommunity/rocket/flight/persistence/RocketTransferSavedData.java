@@ -79,6 +79,7 @@ public final class RocketTransferSavedData extends SavedData {
     }
     private final Map<Long, Effect> effects = new LinkedHashMap<>();
     private long lastWriterNanos;
+    private long completedWriteCount;
 
     public enum WriteOutcome { UNACKNOWLEDGED, COMMITTED, NOT_COMMITTED, UNKNOWN }
 
@@ -450,6 +451,7 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     private void publish(RocketJournalWriter.Completion completion) {
+        completedWriteCount++;
         firstWrite.completed(completion.outcome());
         if (firstWrite.appeared() && presence == ManagedRootPresence.PROVEN_ABSENT) {
             becomeUnreadable();
@@ -556,6 +558,7 @@ public final class RocketTransferSavedData extends SavedData {
         return new RocketJournalWriter.Snapshot(mutationSequence, entries(), firstMoonLanding);
     }
     long lastWriterNanos() { return lastWriterNanos; }
+    long completedWriteCount() { return completedWriteCount; }
     void drainForTests() { if (writer != null) { writer.drain(this::publish); } }
     @Override
     public CompoundTag save(CompoundTag target) {
