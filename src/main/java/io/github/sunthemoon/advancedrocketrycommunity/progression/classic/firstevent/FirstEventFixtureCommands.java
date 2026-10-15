@@ -29,6 +29,18 @@ public final class FirstEventFixtureCommands {
         if (!Boolean.getBoolean(EscrowTestEndpoints.HOOKS) || FirstEventCutSeams.configured().isEmpty()) { return; }
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("progression")
                 .then(Commands.literal("release-test").requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("journal-proof").executes(context -> {
+                            var server = context.getSource().getServer();
+                            EscrowTestEndpoints.requireEnabled(server);
+                            if (FirstEventCutSeams.configured().orElseThrow() != FirstEventCutSeams.Cut.FP6) {
+                                throw new IllegalStateException("FP6 is not armed");
+                            }
+                            var result = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence
+                                    .RocketTransferSavedData.get(server).checkedWriteResult();
+                            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                                    "ARCE_RELEASE_TEST first_event_fixture journal_proof result={}", result);
+                            return 1;
+                        }))
                         .then(Commands.literal("export-cases").executes(context -> {
                             FirstEventCaseExports.write(context.getSource().getServer());
                             return 1;

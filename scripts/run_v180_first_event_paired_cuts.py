@@ -224,7 +224,10 @@ def run(args):
                         if case == "FP6" and start == 0:
                             process.command(f"execute in {moon.MOON} run forceload add 416 320"); time.sleep(2)
                             process.command("arce progression release-test moon-extra")
-                            process.wait_for(re.compile("journal.*UNKNOWN|outcome=UNKNOWN", re.I), 30)
+                            process.wait_for(re.compile("ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED"), 30)
+                            process.command("arce progression release-test journal-proof")
+                            proof = process.wait_for(re.compile("first_event_fixture journal_proof result=.*outcome=UNKNOWN"), 20)
+                            entry["unknown_proof"] = process.lines[proof].rstrip()
                             entry["unconfirmed_status"] = statuses(process)
                             if "SOURCE_UNCONFIRMED" not in entry["unconfirmed_status"][0] or "SOURCE_ROLLBACK" in entry["unconfirmed_status"][0]:
                                 raise smoke.SmokeError("FP6: UNKNOWN was not a temporary proof loss")
@@ -269,7 +272,10 @@ def run(args):
                     raise smoke.SmokeError(f"{case}: unexpected new Moon election")
                 errors = [line.rstrip() for line in process.lines if "/ERROR]" in line or "/FATAL]" in line]
                 allowed = (["Error loading saved data: " + FAULTS[case][:-4], "ARCE_MANAGED_ROOT_UNREADABLE type=" + FAULTS[case][:-4]]
-                           if cut and case in FAULTS else ["ARCE_STATION_UPDATE_OUTCOME_UNKNOWN"] if case == "FP8" and start == 0 else [])
+                           if cut and case in FAULTS else ["ARCE_STATION_UPDATE_OUTCOME_UNKNOWN"] if case == "FP8" and start == 0
+                           else ["ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED"] if case == "FP6" and start == 0 else [])
+                if case == "FP6" and start == 0 and len(errors) != 1:
+                    raise smoke.SmokeError("FP6: expected exactly the one injected journal failure")
                 if any(not any(marker in line for marker in allowed) for line in errors): raise smoke.SmokeError(f"{case}: unexpected errors: {errors}")
                 entry["errors"] = errors; entry["roots"] = moon.snapshot(world, evidence, case, start)
                 process = None; row["starts"].append(entry)

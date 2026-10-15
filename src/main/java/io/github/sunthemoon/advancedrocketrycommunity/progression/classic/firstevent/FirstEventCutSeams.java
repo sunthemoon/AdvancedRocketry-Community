@@ -400,10 +400,21 @@ public final class FirstEventCutSeams {
                 CheckedSavedDataFile.atomicMove(staged, target);
             }));
             case FM6A -> Optional.of(unreadableAfterMove(type, FirstEventCutSeams::electionGeneration));
-            case FP6 -> Optional.of(unreadableAfterMove(type, (staged, target) -> outboxState(staged).equals("DELIVERED")
-                    && outboxState(target).equals("DELIVERED") && UNRELATED_FAILED.compareAndSet(false, true)));
+            case FP6 -> Optional.of(unreadableAfterMove(type, (staged, target) -> {
+                var candidate = CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
+                var current = CheckedSavedDataFile.readPayload(target, type).orElseThrow();
+                return unrelatedGeneration(candidate, current) && UNRELATED_FAILED.compareAndSet(false, true);
+            }));
             default -> Optional.empty();
         };
+    }
+
+    /** FP6 selects an actual unrelated record change, not the identical first-session baseline capture. */
+    static boolean unrelatedGeneration(net.minecraft.nbt.CompoundTag candidate, net.minecraft.nbt.CompoundTag current) {
+        String key = ManagedSavedDataType.FIRST_MOON_LANDING_KEY;
+        return candidate.getCompound(key).getString("state").equals("DELIVERED")
+                && candidate.getCompound(key).equals(current.getCompound(key))
+                && !candidate.getList("transfers", 10).equals(current.getList("transfers", 10));
     }
 
     /** The generation a cut selects, from the staged candidate and the current target. */
