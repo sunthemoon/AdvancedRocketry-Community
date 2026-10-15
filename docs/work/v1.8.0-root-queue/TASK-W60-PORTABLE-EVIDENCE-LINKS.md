@@ -22,7 +22,7 @@ Root: Claude. Date: 2026-10-15. Read [WORKER-RULES](WORKER-RULES.md) first. You 
 ## Root's rule (AGENTS.md section 9: external artifacts are recorded with location and SHA-256)
 
 1. **An absolute link** becomes plain text: keep the link text and put the path in a code span,
-   for example ``[review](D:/x/REVIEW.md)`` becomes ``review (`D:/x/REVIEW.md`)``. Do not add or
+   for example `[review](D:/x/REVIEW.md)` becomes ``review (`D:/x/REVIEW.md`)``. Do not add or
    remove any other word.
 2. **A link to an uncommitted file inside the repository** (the ZIPs):
    - write a committed manifest `docs/work/v1.8.0-external-evidence/MANIFEST.md`. One row per
