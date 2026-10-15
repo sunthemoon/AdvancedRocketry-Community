@@ -20,10 +20,10 @@ User-owned AGENTS is unchanged and excluded; both indexes are empty.
 The private completed LOAD token, acquisition-only ticket phase, attach-once
 observer selection and fresh one-hatch LIFECYCLE entry follow the limited
 [implementation disposition](EMPTY-REMOVAL-GUARD-IMPLEMENTATION-01.md).
-The [initial actual-source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-removal-guard-source-review-20261007/REVIEW-01.md)
+The initial actual-source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-removal-guard-source-review-20261007/REVIEW-01.md`)
 finds a Medium missing actual block-state identity after provider callbacks.
 The one-clause correction is inspected independently in the
-[successor review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-removal-guard-source-successor-review-20261007/REVIEW-02.md),
+successor review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-removal-guard-source-successor-review-20261007/REVIEW-02.md`),
 SHA-256 `51d288aa5502f69c10584f26ac2d7d305c02e8ed1b1ccf0958e53b36d146f070`.
 No actionable finding remains in that corrected source scope. This resolves the
 static admission predicate finding only, not an installed/native regression.
@@ -55,7 +55,7 @@ Genuine installed admission and callback-state regression, birth/cancellation/
 removal metadata, generated/disk Proto observation, pre-serialization protection,
 native resource/drop conservation, final save/restart and physical registration
 remain open. The separate
-[save-design investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-save-design-20261007/REPORT-01.md)
+save-design investigation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-save-design-20261007/REPORT-01.md`)
 identifies two necessary save consumers but no accepted whole-operation native
 bridge; it is not implementation authority. No resource facade/save writer is
 opened, no ledger disposition changes, and no Required Gate is marked passed.

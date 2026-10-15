@@ -1,0 +1,20 @@
+# Reviewed references from common or server bytecode to client-bound classes, read by
+# scripts/check_client_bytecode.py. One entry per line: the source class, the referenced
+# class and the reason, separated by whitespace. A class name may end in /* (the classes of
+# that package) or /** (the package and its subpackages). An allowlisted reference does not
+# make its source client-bound. An entry that matches no reference in the JAR fails the check.
+
+# DistExecutor sites (W62 section 5). The client class is named only inside a nested
+# DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> ...) lambda, a synthetic method that a
+# dedicated server never runs.
+io/github/sunthemoon/advancedrocketrycommunity/endgame/railgun/RailgunBlockEntity io/github/sunthemoon/advancedrocketrycommunity/client/sound/ClassicSoundClient triggerEvent plays the launch bang through DistExecutor.unsafeRunWhenOn(Dist.CLIENT), inside its level.isClientSide branch.
+io/github/sunthemoon/advancedrocketrycommunity/equipment/motion/EquipmentEnabledPacket io/github/sunthemoon/advancedrocketrycommunity/client/equipment/SuitVisorClient handle authorizes the visor through DistExecutor.unsafeRunWhenOn(Dist.CLIENT); MotionNetwork registers the packet PLAY_TO_CLIENT.
+io/github/sunthemoon/advancedrocketrycommunity/equipment/motion/JetpackImpulsePacket io/github/sunthemoon/advancedrocketrycommunity/client/equipment/JetpackClient handle applies the impulse through DistExecutor.unsafeRunWhenOn(Dist.CLIENT); MotionNetwork registers the packet PLAY_TO_CLIENT.
+io/github/sunthemoon/advancedrocketrycommunity/rocket/network/RocketFlightPlanPacket io/github/sunthemoon/advancedrocketrycommunity/client/RocketFlightPlanHandler handle shows the flight plan through DistExecutor.unsafeRunWhenOn(Dist.CLIENT); RocketFlightNetwork registers the packet PLAY_TO_CLIENT.
+
+# Client hooks that Forge itself calls only on the client.
+io/github/sunthemoon/advancedrocketrycommunity/fluid/ClassicFluidType$1 net/minecraftforge/client/extensions/common/IClientFluidTypeExtensions The anonymous texture extension is created only in initializeClient, which Forge 47.4.10's FluidType.initClient calls only when FMLEnvironment.dist is CLIENT outside data generation.
+
+# Data generation. Forge posts GatherDataEvent only from DatagenModLoader.begin, which only the
+# data launch calls, so the providers never load on a dedicated server.
+io/github/sunthemoon/advancedrocketrycommunity/datagen/* net/minecraftforge/client/model/generators/* Model and blockstate providers extend Forge's model generators; BootstrapDataGenerators creates them only in its GatherDataEvent handler.

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "advancedrocketrycommunity:block/rocket_satellite_bay_bottom",
+    "side": "advancedrocketrycommunity:block/rocket_satellite_bay_side",
+    "top": "advancedrocketrycommunity:block/rocket_satellite_bay_top"
+  }
+}

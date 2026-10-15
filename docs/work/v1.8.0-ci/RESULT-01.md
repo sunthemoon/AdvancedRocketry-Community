@@ -45,11 +45,11 @@ compressed bytes. Its API digest and actual in-memory archive digest agree:
 The bounded collector checks cohort, digest, CRC, member limits and canonical
 paths before retention. No token or signed redirect URL is written into evidence.
 
-[Complete fresh retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-516317-attempt1-20261005-02/RETRIEVAL-01.json)
+Complete fresh retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-516317-attempt1-20261005-02/RETRIEVAL-01.json`)
 records original member names, content hashes/bytes and explicit flat
 `retained_path` mappings. Consumers must use those mappings. Root independently
 checks all retained bytes/hashes with zero mismatches and parses all JUnit XML.
-The [different-agent raw-result audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-result-review-20261005-30a8e2/REVIEW-01.md),
+The different-agent raw-result audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-result-review-20261005-30a8e2/REVIEW-01.md`),
 SHA-256 `3daffd81231ed617e40bbef5a02ccb3b8ffef12f45901c283049a00c83c35b87`,
 independently verifies 363 retained files /7,322,979 bytes and derives the same
 XML and failed GameTest results. It does not recompute the unretained ZIP or
@@ -58,7 +58,7 @@ Excluded HTML/class/archive content is not reproduced as another source/build tr
 The complete GameTest console is 1,510,357 bytes, SHA-256
 `8ee0b925490ea79d6b475db767c085d51edae92a0e068d356ac68a6b330083c1`.
 
-[Public run/job observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-root-20261005-01/RUN-OBSERVATION-06.json)
+Public run/job observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-root-20261005-01/RUN-OBSERVATION-06.json`)
 records step outcomes. The build-side audit reports main JAR SHA-256
 `64ab06d4b3a5bb103baed2d54a19b7735213a2c7791589023ba2d45d5f5c0c73`.
 No actual JAR bytes were retrieved because its upload was skipped. Thus this is
@@ -73,7 +73,7 @@ context and failure-upload repair is published at the tested commit above.
 Original tooling/independent-control failures remain in their separate leaves.
 
 The first authenticated retrieval exited 1 after retaining only some files:
-[partial receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-516317-attempt1-20261005-01/RETRIEVAL-01.json)
+partial receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-516317-attempt1-20261005-01/RETRIEVAL-01.json`)
 records FAILED/FileNotFoundError. Its XML is not used for full counts. Deep paths
 were a working hypothesis, not a demonstrated OS cause. A separately reviewed
 flat-storage-only correction preserves validation/authentication rules and

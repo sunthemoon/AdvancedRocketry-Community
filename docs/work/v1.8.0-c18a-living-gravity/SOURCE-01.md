@@ -8,7 +8,7 @@ This is not a delivery receipt or a version/Gate decision.
 ## Assignment and identity
 
 The delegated worker implemented only living-tick leaf A of the integrator's
-committed [TASK-01.md](D:/GitHub/arce-v180-living-gravity-20261007/docs/work/v1.8.0-c18a-living-gravity/TASK-01.md),
+committed TASK-01.md (`D:/GitHub/arce-v180-living-gravity-20261007/docs/work/v1.8.0-c18a-living-gravity/TASK-01.md`),
 adopted after independent REVIEW-03. Worktree:
 `D:/GitHub/arce-v180-living-gravity-20261007`; branch:
 `codex/v1.8.0-living-gravity-20261007`; unchanged base/HEAD:
@@ -27,9 +27,9 @@ scope; all other existing work remains untouched.
 
 | File | Bytes / lines | SHA256 |
 | --- | --- | --- |
-| [CelestialGravityController.java](D:/GitHub/arce-v180-living-gravity-20261007/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialGravityController.java) | 5682 / 125 | `35ac0c92f3517c2456732abc76e9226ceacc9d9de65542a959231332eb089ff0` |
-| [CelestialGravityControllerTest.java](D:/GitHub/arce-v180-living-gravity-20261007/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialGravityControllerTest.java) | 10042 / 193 | `e667fa8590efe1d2ebf6b3ab4a8ed5360f3440420827ecc916ea55dd7193942f` |
-| [LivingGravityGameTests.java](D:/GitHub/arce-v180-living-gravity-20261007/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/LivingGravityGameTests.java) | 29896 / 506 | `07f13a0ccaf2068a493429174cdeb7dc8054e9983fd80b71ca3b59722d9991b1` |
+| CelestialGravityController.java (`D:/GitHub/arce-v180-living-gravity-20261007/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialGravityController.java`) | 5682 / 125 | `35ac0c92f3517c2456732abc76e9226ceacc9d9de65542a959231332eb089ff0` |
+| CelestialGravityControllerTest.java (`D:/GitHub/arce-v180-living-gravity-20261007/src/test/java/io/github/sunthemoon/advancedrocketrycommunity/celestial/service/CelestialGravityControllerTest.java`) | 10042 / 193 | `e667fa8590efe1d2ebf6b3ab4a8ed5360f3440420827ecc916ea55dd7193942f` |
+| LivingGravityGameTests.java (`D:/GitHub/arce-v180-living-gravity-20261007/src/main/java/io/github/sunthemoon/advancedrocketrycommunity/gametest/LivingGravityGameTests.java`) | 29896 / 506 | `07f13a0ccaf2068a493429174cdeb7dc8054e9983fd80b71ca3b59722d9991b1` |
 
 These are uncommitted development identities, not accepted/tested source SHAs.
 The integrator must associate subsequent evidence with its actual committed
@@ -57,7 +57,7 @@ rewrite, client dependency or saved root. Native slow-falling, no-gravity and
 hurt handling are not replaced.
 
 The AttributeInstance/AttributeMap APIs and serialization facts were supplied
-by the separately completed [primary native inspection](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-gravity-attribute-native-facts-20261007/REPORT-01.md).
+by the separately completed primary native inspection (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-gravity-attribute-native-facts-20261007/REPORT-01.md`).
 That report pins Forge 1.20.1-47.4.10 mapped archive SHA256
 `95eecc5985233d83a6571299f89f02de034267646da171f7b36a5be2d394d71e`.
 This source assignment did not open an archive or execute Java.
@@ -105,8 +105,8 @@ or timeout was relaxed.
 
 ## Independent source review and narrow correction
 
-The actual focused [GAME-TEST-REVIEW-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/GAME-TEST-REVIEW-01.md)
-and full [WORKER-REVIEW-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/WORKER-REVIEW-01.md)
+The actual focused GAME-TEST-REVIEW-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/GAME-TEST-REVIEW-01.md`)
+and full WORKER-REVIEW-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/WORKER-REVIEW-01.md`)
 identified Low F1/L1: the missing-getter fixture's forced-null postcondition
 could not observe hidden native AttributeMap changes. They identified no
 additional scoped Critical/High/Medium finding; neither executed Java/native

@@ -17,8 +17,7 @@ import net.minecraftforge.fml.common.Mod;
 public final class RocketJournalLifecycle {
     private RocketJournalLifecycle() { }
     private static RocketTransferSavedData existing(MinecraftServer server) {
-        return server.overworld() == null ? null : server.overworld().getDataStorage()
-                .get(RocketTransferSavedData::load, RocketTransferSavedData.DATA_NAME);
+        return RocketTransferSavedData.existing(server);
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void tick(TickEvent.ServerTickEvent event) {

@@ -63,7 +63,9 @@ class EscrowJointProofTest {
         var a = EscrowTestFixtures.operation(1, 99, 0); var b = EscrowTestFixtures.operation(2, 99, 1);
         var ledger = EscrowTestFixtures.ledger(a, b).generation(1);
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(ledger));
-        var writer = new EscrowLedgerWriter(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 1);
+        var ledgerIo = new AwaitedLedgerIo();
+        var writer = ledgerIo.writer(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 1,
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::atomicMove);
         try (var coordinator = new EscrowCoordinator(data, writer)) {
             var proofs = new HashMap<EscrowEndpoint.Key, EscrowBarrier.Proof>();
             for (var chain : EscrowPrefix.chains(ledger.records()).values()) {
@@ -76,7 +78,7 @@ class EscrowJointProofTest {
             }
             var bank = proofs.get(a.destination().key()); var outcomes = new ArrayList<Boolean>();
             assertThrows(IllegalArgumentException.class, () -> coordinator.retire(Set.of(b.id()), proofs, outcomes::add));
-            assertTrue(coordinator.retire(Set.of(a.id()), proofs, outcomes::add)); EscrowLedgerWriterTest.poll(writer, writer::idle);
+            assertTrue(coordinator.retire(Set.of(a.id()), proofs, outcomes::add)); EscrowLedgerWriterTest.poll(ledgerIo, writer, writer::idle);
             assertEquals(List.of(true), outcomes); assertEquals(List.of(b), coordinator.ledger().records());
             assertTrue(coordinator.locked(b.destination().key())); assertFalse(coordinator.locked(a.source().key()));
             assertFalse(bank.valid()); assertFalse(coordinator.frozen(b.destination().key()));
@@ -93,7 +95,9 @@ class EscrowJointProofTest {
         var op0 = EscrowTestFixtures.operation(1, 99, 0); var op1 = EscrowTestFixtures.operation(2, 99, 1);
         var ledger = EscrowTestFixtures.ledger(op0).generation(1);
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(ledger)); var replies = new ArrayList<Boolean>();
-        var writer = new EscrowLedgerWriter(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 1);
+        var ledgerIo = new AwaitedLedgerIo();
+        var writer = ledgerIo.writer(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 1,
+                io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile::atomicMove);
         try (var coordinator = new EscrowCoordinator(data, writer)) {
             coordinator.prepareTest(op1, replies::add);
             var bank = op0.destination().key(); var staleBank = prefix(List.of(op0), bank, 1);
@@ -101,7 +105,7 @@ class EscrowJointProofTest {
             assertTrue(coordinator.admitting(bank));
             assertThrows(IllegalArgumentException.class, () -> coordinator.freeze(bank, staleBank));
             assertFalse(coordinator.frozen(bank));
-            coordinator.tick(10); assertTrue(coordinator.commitPreparations()); EscrowLedgerWriterTest.poll(writer, () -> !replies.isEmpty());
+            coordinator.tick(10); assertTrue(coordinator.commitPreparations()); EscrowLedgerWriterTest.poll(ledgerIo, writer, () -> !replies.isEmpty());
             assertEquals(List.of(true), replies); assertEquals(List.of(op0, op1), coordinator.ledger().records()); assertFalse(coordinator.admitting(bank));
             assertThrows(IllegalArgumentException.class, () -> coordinator.freeze(bank, staleBank));
             // Defense in depth: even a frozen stale bank frontier cannot cover op1.
@@ -116,7 +120,7 @@ class EscrowJointProofTest {
             // The complete AFTER bank frontier proves both operations and retires them together.
             frontiers.put(bank, prefix(records, bank, 2)); proofs.put(bank, proof(frontiers.get(bank)));
             frontiers.forEach(coordinator::freeze); var outcomes = new ArrayList<Boolean>();
-            coordinator.tick(20); assertTrue(coordinator.retire(both, proofs, outcomes::add)); EscrowLedgerWriterTest.poll(writer, writer::idle);
+            coordinator.tick(20); assertTrue(coordinator.retire(both, proofs, outcomes::add)); EscrowLedgerWriterTest.poll(ledgerIo, writer, writer::idle);
             assertEquals(List.of(true), outcomes); assertTrue(coordinator.ledger().records().isEmpty());
         }
     }

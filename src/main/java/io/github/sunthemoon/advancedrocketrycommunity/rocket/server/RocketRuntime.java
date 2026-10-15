@@ -58,6 +58,12 @@ public final class RocketRuntime {
         return service instanceof RocketManager manager && manager.resourceMutationAllowed(rocket);
     }
 
+    /** Empty-server-only fixture; the manager delegates to the normal reservation-release service. */
+    public static boolean releaseLandedReservationForFirstEventTest(RocketEntity rocket) {
+        if (!(service instanceof RocketManager manager)) { throw new IllegalStateException("No rocket manager"); }
+        return manager.releaseLandedReservationForFirstEventTest(rocket);
+    }
+
     /** Server-only operator/test recovery through the installed lifecycle owner. */
     public static io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport recoverTransfer(
             MinecraftServer server, UUID transferId) {

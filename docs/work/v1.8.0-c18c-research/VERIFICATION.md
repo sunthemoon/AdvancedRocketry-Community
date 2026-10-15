@@ -127,3 +127,26 @@ unregistered modern ID (W30 section 2.1). Two C18c rows stay PLANNED:
 
 No Gate is approved. This file supports the ledger delivery marks only. S1, S2, V1, V2 and the
 art and provenance reviews remain open, as listed above.
+
+## Addendum (Root, 2026-10-15): W44 world-first advancements
+
+| Merge on `codex/v1.8.0-classic-content` | Slice | Tested HEAD | Hosted run | Reviews |
+|---|---|---|---|---|
+| `90d0714d` | W44I, W44J, W44K (ADR-066 section 6.2, owner decision D3) | `21d8dfcd` | 38610691744 (success) | design `bf8a200e…`, `35030212…`; implementation `1fa55c36…` (BLOCK, closed by W44J), `ebe02455…` (closed by W44K) |
+
+The design is `records/W44-DESIGN.md`; the records are `records/W44I.md` (with its W44J and W44K sections) and `records/W44R.md`, `W44S.md`. Native evidence is in `D:/GitHub/ARCE-Task-Evidence/root-queue/W44I/`.
+
+| Unit | Disposition | Delivery |
+|---|---|---|
+| `advancement:onesmallstep` | REDESIGNED | `classic/one_small_step`: the participants of the first committed world Moon rocket landing, elected in the transfer journal's outbox and granted from a durable receipt (R-037) |
+| `advancement:flightofpheonix` | REDESIGNED | `classic/first_station_warp`: the participants of the first committed world station warp, elected inside the checked relocation and granted from a durable receipt (R-037) |
+
+This addendum is development evidence only. It approves no Required Gate, candidate, version or release. The remaining H rows (W44L) and the real-client rows remain open.
+
+## Addendum (Root, 2026-10-15): W44L closes the world-first H rows
+
+| Merge on `codex/v1.8.0-classic-content` | Slice | Tested HEAD | Hosted run | Review |
+|---|---|---|---|---|
+| `8e123530` | W44L: the remaining 31 H rows (104 starts, each row with at least two restarts) and the pre-W44 jar's refusal of the four migrated roots (12 starts) | `8c769fcd` | 38686287927 (success) | Root review |
+
+The record is `records/W44L.md`; the packets, pinned to committed sources and jars, are in `D:/GitHub/ARCE-Task-Evidence/root-queue/W44L/`. The real-client rows remain for the final campaign. This addendum is development evidence only. It approves no Required Gate, candidate, version or release.

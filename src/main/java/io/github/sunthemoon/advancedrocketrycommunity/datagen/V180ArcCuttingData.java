@@ -160,8 +160,11 @@ public final class V180ArcCuttingData implements DataProvider {
                         case 'I' -> object("port", "item_input"); case 'O' -> object("port", "item_output");
                         case 'P' -> object("port", "energy_input");
                         // ADR-016's closed matcher set has no ignored cell: legacy null cells ('.') take the
-                        // clearance tag, so snow, torches or cables on the rim do not unform it; legacy air stays air.
-                        case 'C' -> flag("controller"); case 'A' -> flag("air"); case '.' -> object("tag", CLEARANCE_TAG);
+                        // clearance tag, so snow, torches or redstone wire on the rim do not unform it. The optional
+                        // wrapper also keeps the earlier air matcher's acceptance of any block that reports isAir()
+                        // (W01G review L2). Other mods' cables usually have a block entity and still unform it, as do
+                        // solid blocks; legacy air stays air.
+                        case 'C' -> flag("controller"); case 'A' -> flag("air"); case '.' -> clearance();
                         default -> throw new IllegalArgumentException("Unknown layout cell");
                     };
                     cell.add("matcher", matcher); cells.add(cell);
@@ -195,6 +198,7 @@ public final class V180ArcCuttingData implements DataProvider {
     }
     private static JsonObject position(int x, int y, int z) { var root = new JsonObject(); root.addProperty("x", x); root.addProperty("y", y); root.addProperty("z", z); return root; }
     private static JsonObject flag(String key) { var root = new JsonObject(); root.addProperty(key, true); return root; }
+    static JsonObject clearance() { var root = new JsonObject(); root.add("optional", object("tag", CLEARANCE_TAG)); return root; }
     private static JsonObject object(String key, String value) { var root = new JsonObject(); root.addProperty(key, value); return root; }
     private static JsonArray strings(String... values) { var root = new JsonArray(); for (String value : values) { root.add(value); } return root; }
     private static String asset(String path) { return "assets/" + NS + "/" + path + ".json"; }

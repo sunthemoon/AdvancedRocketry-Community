@@ -104,5 +104,33 @@ class AtomicSavedDataTest {
         assertFalse(Files.exists(pending()));
     }
 
+    /** W72: the persistence package owns the ordinary committer hook; its default is the normal atomic move. */
+    @Test void anInstalledSelectorChoosesTheOrdinaryCommitterAndNullRestoresTheNormalOne() throws Exception {
+        assertSame(AtomicSavedData.NORMAL_COMMITTER, AtomicSavedData.committerSelector);
+        var data = CelestialSavedData.create();
+        Path file = root.resolve(TYPE.fileName()); data.flush(file);
+        byte[] original = Files.readAllBytes(file);
+        var seen = new java.util.ArrayList<ManagedSavedDataType>();
+        try {
+            AtomicSavedData.installCommitterSelector((type, normal) -> {
+                seen.add(type);
+                assertNotNull(normal);
+                return (from, to) -> { throw new java.io.IOException("selected refusal"); };
+            });
+            data.discover(ModIdentity.id("mars"), 29);
+            assertThrows(UncheckedIOException.class, () -> data.flush(file));
+            assertDoesNotThrow(() -> data.save(file.toFile())); // an ordinary save takes the same selector
+            assertEquals(java.util.List.of(TYPE, TYPE), seen);
+            assertArrayEquals(original, Files.readAllBytes(file));
+            assertTrue(data.isDirty());
+        } finally {
+            AtomicSavedData.installCommitterSelector(null);
+        }
+        assertSame(AtomicSavedData.NORMAL_COMMITTER, AtomicSavedData.committerSelector);
+        data.save(file.toFile());
+        assertFalse(data.isDirty());
+        assertEquals(data.save(new CompoundTag()), BoundedSavedDataIo.read(file, TYPE).getCompound("data"));
+    }
+
     private Path pending() { return root.resolve(TYPE.fileName() + ".arce-pending"); }
 }

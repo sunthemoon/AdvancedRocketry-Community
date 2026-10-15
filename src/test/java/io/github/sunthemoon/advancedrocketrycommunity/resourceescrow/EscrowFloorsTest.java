@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalTestAccess;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.nio.file.Path;
@@ -92,7 +93,7 @@ final class EscrowFloorsTest {
                 assertFalse(data.isDirty()); assertEquals(1, coordinator.floorUsage().used());
                 journal.setDirty(); journal.save(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.ROCKET_TRANSFERS.fileName()).toFile());
                 assertFalse(journal.acknowledgedCurrent(), "Autosave must not wait for the journal writer");
-                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalTestAccess.awaitWriter(journal);
+                RocketJournalTestAccess.awaitWriter(journal);
                 assertTrue(journal.acknowledgedCurrent()); coordinator.collectFloors(journal);
                 assertEquals(1, coordinator.floorUsage().used(), "Queued collection is not retirement");
                 long tick = 1;

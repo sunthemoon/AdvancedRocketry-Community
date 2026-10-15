@@ -60,9 +60,9 @@ hashes do not restore the overwritten historical seal/patch/failure bytes.
 
 | Revision 02 | Independent result | Report |
 | --- | --- | --- |
-| Graph, 10 units | CHANGES_REQUESTED: 1 High /3 Medium /1 Low | [REPORT-02](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-02/REPORT-02.md), SHA 88456d146e2d92bda65bdfa8b3b765d5dff9bb4bfc6d4fea40f32fff48491771 |
-| Equipment, 20 units | CHANGES_REQUESTED: 2 Medium /1 Low | [REVIEW-02](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-02/REVIEW-02.md), SHA b1f8b0e1614d473a08c820eb8b6e82228490d0c4a80c3feba680fed7de4e1b13 |
-| Audio, 10 units | CHANGES_REQUESTED: 6 Medium /4 Low; fresh Codex supplement complete | [REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-codex-independent-20261008-02/REPORT-01.md), SHA aa94db207feee010d5add810166ca7b060a305506909118d27778809b6950771 |
+| Graph, 10 units | CHANGES_REQUESTED: 1 High /3 Medium /1 Low | REPORT-02 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-02/REPORT-02.md`), SHA 88456d146e2d92bda65bdfa8b3b765d5dff9bb4bfc6d4fea40f32fff48491771 |
+| Equipment, 20 units | CHANGES_REQUESTED: 2 Medium /1 Low | REVIEW-02 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-02/REVIEW-02.md`), SHA b1f8b0e1614d473a08c820eb8b6e82228490d0c4a80c3feba680fed7de4e1b13 |
+| Audio, 10 units | CHANGES_REQUESTED: 6 Medium /4 Low; fresh Codex supplement complete | REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-codex-independent-20261008-02/REPORT-01.md`), SHA aa94db207feee010d5add810166ca7b060a305506909118d27778809b6950771 |
 
 Graph: remote station existence is not physical boarding; pure Orbit quotes
 do not establish survival flight admission. Catalog raw/depth bounds, complete
@@ -73,13 +73,13 @@ fresh landing-position query. Missing planned cases are retained obligations.
 Audio's completed supplement establishes lost rediscovery/overflow state,
 movement-starved discovery, the 30-versus-16-tick validation contradiction,
 wrong W01/O03/S10 planned oracles and lost coverage. The earlier
-[partial CLI review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-coordination-root-20261008-01/AUDIO-REVIEW-02.md)
+partial CLI review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-coordination-root-20261008-01/AUDIO-REVIEW-02.md`)
 has SHA d4a8ec2267fab8c08c32b8a551788710be512e420c64eacf27443ee79a0f3e65.
 Its unverified platform-ordering premise is not promoted to a reproduced Forge
 fact. The fresh supplement completes governing reads and preserves that limit.
 No whole contract is frozen.
 
-The separate [metadata review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-metadata-independent-20261008-01/REPORT-01.md)
+The separate metadata review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-metadata-independent-20261008-01/REPORT-01.md`)
 has SHA dab7bccc48b7572fa5de5f9a2ed4ee50b27fa7d2c670cc9d77fc32f57a7096af.
 It reports one Low cost-accounting finding, corrected above; no introduced
 Critical/High/Medium metadata finding. Its initial historical-link and GBK
@@ -99,7 +99,7 @@ not permissions to enable physical machines or accept R-021.
 
 A separate fresh test-only author session a7fbdb19-8d2e-4496-bc0c-bb089cae36cd
 returned under the prospectively registered
-[CL18D-SKY-BINDING-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-claude-author-20261008-01/TASK-01.md).
+CL18D-SKY-BINDING-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-claude-author-20261008-01/TASK-01.md`).
 Its clean Root-created worktree is D:/GitHub/arce-v180-claude-sky-binding-20261008,
 base 2e397a49, with only new SkyEffectsRegistrationTest.java and BINDING-HANDOFF-01.md
 allowed. It tests the actual existing bootstrap map, not a new production helper.
@@ -109,7 +109,7 @@ committed/non-force pushed only the two new files at candidate
 493df4909458eb519aa1a281a1e4c66ba018288b on its isolated author branch.
 That candidate is not integrated into main by this document checkpoint.
 Under a separate prospective
-[independent execution task](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-codex-independent-20261008-01/TASK-01.md),
+independent execution task (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-codex-independent-20261008-01/TASK-01.md`),
 one targeted Gradle invocation exits 0 at 493df490. Copied raw XML contains
 20 actual cases (5 registration, 7 adapter, 8 config), zero failures/errors/skips.
 Root independently recounted those XML elements. The harvest's 21 passing

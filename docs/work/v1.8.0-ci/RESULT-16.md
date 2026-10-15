@@ -37,13 +37,13 @@ native readiness nor a unique asynchronous-storage cause; no repair is claimed.
 
 ## Evidence and independent recount
 
-Root's fresh [raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-diagnostics-ca217-raw-audit-20261007-01/AUDIT-01.json),
+Root's fresh raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-diagnostics-ca217-raw-audit-20261007-01/AUDIT-01.json`),
 SHA `a3709c4a647a000acd56fb927b3c4d914f0404d5567c9ee60846b69601da47c8`,
 actually exits0 (tool `cf62a0`). It independently rehashes **398 raw/receipt
 inputs**, binds source/run/attempt, recounts actual XML children and reads the
 canonical failure log; before/after identities match. No Java/network is rerun.
 
-The [collector report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-ci-collection-20261007-a04c6e/REPORT-01.md),
+The collector report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-ci-collection-20261007-a04c6e/REPORT-01.md`),
 SHA `fc30e29d15d74ad12510bdeb005a835ebbabc2013de78019ce2e6f5e940d5ba7`,
 is **diagnostic-author-side** raw collection, not independent source/cause review.
 Exact GET-only regression-artifact and attempt-log retrievals exit0 under the
@@ -56,7 +56,7 @@ Root verifies retained raw identities, not a repeated outer-archive CRC check.
 Raw receipts/members stay external under `D:/GitHub/ARCE-Task-Evidence/v1.8.0/`:
 `transfer-diagnostics-ca217-artifact-20261007-a04c6e` and
 `transfer-diagnostics-ca217-logs-20261007-a04c6e`. The
-[canonical log](D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-ca217-artifact-20261007-a04c6e/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log)
+canonical log (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-ca217-artifact-20261007-a04c6e/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`)
 is 1,573,448 B /SHA
 `b9e6ee77d6dafc55bb2b77e6da4ed5abb5260be56c2d0ed7bfdcb6a3fd270ecf`.
 Original prefix-selection and file-only sealing errors are preserved; successor

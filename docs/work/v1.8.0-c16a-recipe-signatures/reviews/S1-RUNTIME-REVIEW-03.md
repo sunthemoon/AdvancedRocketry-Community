@@ -2,7 +2,7 @@
 
 Date:2026-10-04. Status:CHANGES_REQUESTED; source/Python scope only.
 
-[Independent actual-diff review03](signature-s1-runtime-independent-03.zip)
+Independent actual-diff review03 (`signature-s1-runtime-independent-03.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md))
 has0 Critical/0 High/1 Medium/0 Low. Revision03 fixes the original observed
 upgrade-stage reason mismatch,but its `restart-2-finish` still powers the
 current row and immediately demands settled legacy reasons. FULL/power

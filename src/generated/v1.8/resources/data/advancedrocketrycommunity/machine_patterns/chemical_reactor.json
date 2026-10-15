@@ -9,7 +9,9 @@
   "cells": [
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 0,
       "y": 1,
@@ -25,7 +27,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 2,
       "y": 1,

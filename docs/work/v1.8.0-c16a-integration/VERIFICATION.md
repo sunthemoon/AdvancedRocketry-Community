@@ -6,7 +6,7 @@ and scopes are recorded in the paired task packets.
 
 ## Portable root evidence
 
-[ROOT-INTEGRATION-07.zip](ROOT-INTEGRATION-07.zip) is packaging revision07 of
+`ROOT-INTEGRATION-07.zip` (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) is packaging revision07 of
 the unchanged candidate06 evidence, not a new runtime candidate. SHA256
 `7ba0db38ff5ba814a5496d100ceadfbff05c32d20332af4549d69f4be833ab4f`,
 54,317,074 bytes /7,439 entries; manifest
@@ -49,7 +49,7 @@ root GT/native, otherwise at most two bounded scoped jobs.
 
 ## Review history and remaining work
 
-[Portable index](reviews/portable-archive-index-05.zip), SHA256
+Portable index (`reviews/portable-archive-index-05.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)), SHA256
 `6524c3fb2b8adce1e5f82762093b8d359099ce3c165be317c03295b36ff000c5`,
 binds11 immutable author/reviewer archives. Its original first link-check
 failure remains; a separate Signature wrapper supplies proven companion
@@ -151,7 +151,7 @@ sources `0bb22470dd3ddf7fe95ea0d648489ea751b3265370b2df6cac7d48c61a6b8904`;
 API `7484de1d50ffca610328200a838ff47cc8480ea72b37e964e772178325c749da`.
 The API matches candidate10, not the older candidate06 API.
 
-[Frozen Root source/result packet11](ROOT-INTEGRATION-11.zip):37,553,082 bytes,
+Frozen Root source/result packet11 (`ROOT-INTEGRATION-11.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):37,553,082 bytes,
 7,160 entries, SHA256
 `404d44c1df772e6a318a1d4c45ddd054a5df11dd32d8345953982867811bae65`;
 manifest `e59990b63e69f6301b1a19190ff633c7d438d3dc0163608086c19b57a5c9432e`.
@@ -205,7 +205,7 @@ All2,944 source inputs still match after build,GT,freeze and subsequent contract
 documentation updates. Root's briefly inserted ADR-064 cross-reference is
 removed;the accepted r4 source identity remains unchanged.
 
-[Frozen source/build/GT/package packet12](ROOT-INTEGRATION-12.zip):23,673,654
+Frozen source/build/GT/package packet12 (`ROOT-INTEGRATION-12.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):23,673,654
 bytes/6,310 entries,SHA256
 `928c8fa585c00fdf7b38ad77058fdf2ee3f78ba825faea1d716e64c32e1df2b5`;
 manifest `75a75aa900ff5ee51f3b3975ef4333ad197bffcd060dd7a4f1c5d456cf44055a`.
@@ -224,7 +224,7 @@ scope;it does not replay Java/native or admit the auditor's later model code.
 
 The separately reviewed Signature S1 revision02 adds four exact source/test
 files and the Root-owned listener registration. Candidate13 passes1,652 JUnit/
-315 suites and DataGen written0;its [build-only packet](ROOT-BUILD-13.zip) is
+315 suites and DataGen written0;its build-only packet (`ROOT-BUILD-13.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) is
 SHA90fb263e… . No GT/native13 result is claimed. The subsequent two-file
 [non-mutating NBT admission correction](../v1.8.0-c16a-save-guard/BOUNDED-NBT-VERIFICATION-01.md)
 preserves the original failed probe and independently passes46/7/0FES. It does
@@ -245,7 +245,7 @@ expanded Markdown646 files/2,956 links has0 errors. Ledger closure/diff-exit
 remain1,not passes;the excluded Git-untracked foreign documentation tree is
 neither traversed nor altered. Stock assertions remain unchanged.
 
-[Frozen packet14](ROOT-INTEGRATION-14.zip) is12,141,439 bytes/3,345 entries,
+Frozen packet14 (`ROOT-INTEGRATION-14.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) is12,141,439 bytes/3,345 entries,
 SHA `de2a59a294a5acd93add5eea170130252191a9b5c22cdc43bb259f9fdf74b652`,
 manifest `27df93a614969d02e2992ab885809ddb013edfac8f435e251c43974befa47953`.
 CRC,safe unique paths,every manifest hash/size are verified. It includes exact
@@ -287,7 +287,7 @@ All771 generated resources match both non-API JARs. Scoped15 strict ledger,
 common/client,69 focused Python,explicit-version artifact and diff-check exit0;
 closure/diff-exit remain1. Full stock/provenance last observed14 is not relabelled15.
 
-[Frozen packet15](ROOT-INTEGRATION-15.zip) is12,211,462 bytes/3,354 entries,
+Frozen packet15 (`ROOT-INTEGRATION-15.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) is12,211,462 bytes/3,354 entries,
 SHA `10b0c3a19cc443a18b85725c041f8b1a40e050a9f97782f854ab39c883ccb693`,
 manifest `939f617a4f6f20187ac262005229db12f38837b6f5e5b9e540b60a31ab5338d7`;
 all CRC/entry identities are verified before later fixture changes. Archive helper26
@@ -312,7 +312,7 @@ in310.839s,45 pass/0 pending/warnings/failures. Approved provenance exits0 in
 links has0 errors. These actual15 results supplement,not rewrite,packet15's
 earlier last-observed14 statement. No Java/native or version Gate is added.
 
-[Static supplement15-01](ROOT-STATIC-15-01.zip) is199,512 bytes/26 entries,
+Static supplement15-01 (`ROOT-STATIC-15-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) is199,512 bytes/26 entries,
 SHA `642a3ab34327da8572edaff39f8b3183e6b15d9535138fc9e04ae9cdd5f1e2aa`,
 manifest `4aee358758a6dcb53b3e44629270145cb946960772c891dcbeea06a87b24d727`.
 CRC,unique paths,all hashes and unchanged input identities are verified. Source
@@ -340,7 +340,7 @@ Source2,974 inputs and historical sourceworld135→135 files remain exact.
 All known v1.8 Java processes have ended;unowned historical v1.5 processes are
 left untouched.No empty-host/performance or all-adapter/S1 result is inferred.
 
-[Failure packet16-01](../v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-16-01-FAIL.zip):
+Failure packet16-01 (`../v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-16-01-FAIL.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):
 90,634,828 bytes/353 entries,SHA
 `5d064201ae9447269bbf7d55f27f512375c1f829f616a42cd496fc57eeba1910`;
 manifest `b28ab25f0b4d03a3c12efc42dfb9ccf74e408d20ad8389c56853769db48014ad`.
@@ -371,7 +371,7 @@ artifact15 and diff-check exit0;closure1 and dirty diff1 remain failures.
 `python -B run_signature_native17_01.py` with fixed original phase/bounds and
 fresh copied worlds exits0:Rolling130.092724s,Precision124.648396s,
 Electrolyzer129.104404s,six clean hosts each.Source world135/135 exact.
-[Frozen native17](../v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-17-01.zip):
+Frozen native17 (`../v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-17-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):
 168,634,745 bytes/459 entries,SHA
 `87d2955ef623a2e82edfb137cd6e194e9c35b1d315191b2be85d698c7b9ad251`,
 manifest `7bce4bc472b866ab6d7889056e7a7a4f2beafbb038c3b3e69550721cb84daa1f`.
@@ -398,7 +398,7 @@ retained,not a clean-log claim. Plain-JUnit registration32/1F remains failed.
 Scoped18 strict ledger/imports/Python82/artifact/diff-check exit0;closure1 and
 dirty-tree diff1 remain failed. Full stock/provenance last actual run remains15.
 
-[Root18 packet](ROOT-INTEGRATION-18.zip):12,419,585 bytes/3,375 entries,SHA
+Root18 packet (`ROOT-INTEGRATION-18.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):12,419,585 bytes/3,375 entries,SHA
 `e001ff7f8990300839c66927dd5d3976c80226cda905f938f41f9ca0e6e4c82f`,
 manifest `a0743db889293757d9a6dff9a081ff7e4a0bb5e7bf22bd37801729640706e8b5`.
 Root verifies every CRC/hash/input/artifact/XML. Actual peers/client menus/V1/V2,
@@ -427,11 +427,11 @@ uses the older boundary15 wrapper and hits its existing receipt assertion;
 both its command and raw failure remain. All checker/assertion/budget bytes stay
 unchanged. Provenance/planning/machine-resource checks exit0;this is not all
 static/Gate pass. A separate one-file fallback source repair is under review.
-[Failed-static Root19](ROOT-INTEGRATION-19-STATIC-FAIL.zip):12,315,352 bytes/
+Failed-static Root19 (`ROOT-INTEGRATION-19-STATIC-FAIL.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):12,315,352 bytes/
 3,398 entries,SHA`199fbb9ec179ef5078b231994753f486c7e75a2ad73b0d5b9f1c5d61d512146a`,
 manifest `0c57b9d87881575c72b243ada232be12fe8e9683fa16c7f2a2f7d08c62542e61`.
 
-Fresh [native19](../v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-19-01.zip)
+Fresh native19 (`../v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-19-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md))
 uses actual JAR19/Python19:three machines/six phases each,outer0,18 clean stop
 receipts,source world135 files unchanged. Rolling/Precision have live original
 reports before installation and exact new alternatives after reload;
@@ -459,10 +459,10 @@ Main5,433,734 bytes/3,302 entries,
 sources2,617,913 bytes/2,660 entries,
 `3e6447ae9e6232fd6a93b5989750866e4dc11c5e101de20ccd2ac15b131054f0`.
 API exact15;both non-API artifacts match all771 v1.8 generated resources.
-[Root20](ROOT-INTEGRATION-20.zip):12,310,298 bytes/3,403 entries,SHA
+Root20 (`ROOT-INTEGRATION-20.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):12,310,298 bytes/3,403 entries,SHA
 `3b6176f549d8bde523df1245fe7c4902e4633f093c40c6bce87db78fbf364bd2`,
 manifest `3e949645da7787df3e5b708d8b465dfc3217db0640028463c0bb934f5847f363`.
-Its [independent actual-evidence audit20](reviews/root20-evidence-audit-01.zip)
+Its independent actual-evidence audit20 (`reviews/root20-evidence-audit-01.zip`)
 is complete,SHA
 `a0f8d55ba9fced009c37c6e90a961ef7540b5db892ccc73ac9385174e8033b5f`,
 25,533,017 bytes/6,864 entries,manifest
@@ -475,7 +475,7 @@ execution.61 ERROR lines retain measured contexts:recipe-save24,channel16,
 Precision-save/readback13,satellite4,unbound serializers3,combustion1. These
 are finite negative-fixture observations,not whole-log waiver/Gate inference.
 
-Fresh [native20](../v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-20-01.zip) uses
+Fresh native20 (`../v1.8.0-c16a-recipe-signatures/SIGNATURE-NATIVE-20-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) uses
 actual JAR20/Python20,outer0/18 clean phases/sourceworld135→135 exact.
 Rolling145.870554s,Precision152.221089s,Electrolyzer138.497599s;all original
 limits/allocation kept,two stopped injected cuts per adapter. Live tag additions
@@ -483,7 +483,7 @@ only Rolling/Precision;Electrolyzer literal control. Packet168,889,947 bytes/436
 entries,SHA`a1502f575fa7bc487197b9068eabafbf39bef9b046ef8b9362fb1977d574d77f`,
 manifest `f68e971d196a0dcc99b11adce6881a41cd8ae17e400cd2c795f584c13937025c`.
 Root CRC/SHA verification is distinct from the completed
-[different-agent native20 actual-result audit](../v1.8.0-c16a-recipe-signatures/reviews/signature-native20-independent-01.zip),
+different-agent native20 actual-result audit (`../v1.8.0-c16a-recipe-signatures/reviews/signature-native20-independent-01.zip`),
 SHA `b32b4b561d4d3bda5a244c24ef88b1fa73bfbabbb8eb6f75cffe4cf81ec01504`,
 181,699,734 bytes/3,868 entries,manifest
 `39f5ddc5f60f68becc26e0485a3d483c77e426f9dd8bda13f8254e261d26d955`.

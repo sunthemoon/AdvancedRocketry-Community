@@ -20,7 +20,7 @@ grammar stays intact: the built-in Item/Power pattern has no Fluid availability;
 bounded same-ID datapack roles/pattern compatibility must be explicit, not
 silently narrowed or added to the built-in.
 
-[Frozen independent packet](adapter-contract-independent-01.zip):757,169 bytes,
+Frozen independent packet (`adapter-contract-independent-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):757,169 bytes,
 226 entries, SHA256
 `6aa566d40e9a6f045c9ba82ffc911957be78eb6e6b0091c45271ae854b5363c0`;
 manifest `6daf45ba308935644cf28545f081048424b509b484a5c45758cc4cc3a55a7ec2`.

@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
@@ -16,7 +18,7 @@ import org.junit.jupiter.api.Test;
 class EscrowTransferEnvelopeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void recordThreeRoundTripsCompleteEnvelopesWithoutBumpingJournalOrFlightSchema() {
+    @Test void recordThreeRoundTripsCompleteEnvelopesWithIndependentJournalAndFlightSchemas() {
         var fixture = GovernedTransferFixture.create(); var record = fixture.record();
         var metadata = record.nativeTransfer().orElseThrow();
         assertEquals(3, record.schemaVersion()); assertEquals(2, record.sourceFlightData().schemaVersion());
@@ -33,7 +35,16 @@ class EscrowTransferEnvelopeTest {
         for (RocketTransferPhase phase : RocketTransferPhase.values()) {
             if (phase == RocketTransferPhase.DESTINATION_SPAWNED) { record = record.destinationSpawned(metadata.armed().destination()); }
             else if (phase != RocketTransferPhase.PREPARED) { record = record.advance(phase); }
-            var root = root(record); assertEquals(2, root.getInt("schema_version"));
+            // W44 owns the root-3 outbox; W11b2's record schema remains independent of it.
+            var root = root(record); assertEquals(3, root.getInt("schema_version"));
+            assertEquals(new RocketTransferSavedData().save(new CompoundTag()).getInt("schema_version"), root.getInt("schema_version"));
+            var historical = root.copy(); historical.putInt("schema_version", 2);
+            historical.putString("format_epoch", SavedDataSchemaMigrator.FORMAT_EPOCH);
+            historical.remove(ManagedSavedDataType.FIRST_MOON_LANDING_KEY);
+            assertEquals(2, historical.getInt("schema_version"));
+            var migrated = RocketTransferSavedData.load(historical);
+            assertTrue(migrated.operational()); assertEquals(root, migrated.save(new CompoundTag()));
+            assertEquals(record.checksum(), migrated.entries().get(0).checksum());
             var loaded = RocketTransferSavedData.load(root); assertTrue(loaded.operational());
             var restored = loaded.entries().get(0);
             assertEquals(record.checksum(), restored.checksum()); assertEquals(phase, restored.phase());
@@ -87,7 +98,7 @@ class EscrowTransferEnvelopeTest {
             var root = root(fixture.record()); wire(root).putInt("schema_version", schema); assertRejected(root);
         }
         var absent = root(fixture.record()); wire(absent).remove("native_transfer"); assertRejected(absent);
-        var future = root(fixture.record()); future.putInt("schema_version", 3); assertRejected(future);
+        var future = root(fixture.record()); future.putInt("schema_version", RocketTransferSavedData.ROOT_SCHEMA_VERSION + 1); assertRejected(future);
     }
 
     @Test void nativeProjectionCopiesInputsAndOutputsAndRetainsPriorIdlePlan() {

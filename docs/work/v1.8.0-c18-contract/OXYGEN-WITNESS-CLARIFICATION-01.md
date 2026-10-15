@@ -14,7 +14,7 @@ revalidation. It retains zero operation-owned publication on refusal and forbids
 rollback over newer captured data. It makes no promise to detect unrelated
 foreign effects or intermediate mutations restored before the final comparison.
 
-The [independent literal-delta review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-witness-clarification-independent-review-20261007/REVIEW-01.md)
+The independent literal-delta review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-witness-clarification-independent-review-20261007/REVIEW-01.md`)
 is SHA-256 `b0e43c7631e079dd0a344b07912a42e2c8f8bbbf49f9c84cfa66632b1dc2bac2`.
 It reports no introduced Critical/High/Medium/Low, 53 finite controls passing,
 39 unchanged inputs, exact forward/inverse replacement and unchanged surrounding

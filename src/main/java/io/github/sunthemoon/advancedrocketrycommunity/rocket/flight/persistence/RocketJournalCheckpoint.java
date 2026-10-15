@@ -12,10 +12,11 @@ import net.minecraft.nbt.CompoundTag;
 
 /** Session-local acknowledgement. RAM phase, dirty state and a successful ordinary save are not proof. */
 final class RocketJournalCheckpoint {
-    @FunctionalInterface interface DirectoryForce { void force(Path directory) throws IOException; }
-    private final DirectoryForce directoryForce;
-    RocketJournalCheckpoint() { this(CheckedSavedDataPolicy::forceDirectory); }
-    RocketJournalCheckpoint(DirectoryForce directoryForce) { this.directoryForce = java.util.Objects.requireNonNull(directoryForce); }
+    private final CheckedSavedDataPolicy.DirectoryForce directoryForce;
+    RocketJournalCheckpoint() { this(CheckedSavedDataPolicy.DirectoryForce.PLATFORM); }
+    RocketJournalCheckpoint(CheckedSavedDataPolicy.DirectoryForce directoryForce) {
+        this.directoryForce = java.util.Objects.requireNonNull(directoryForce);
+    }
     enum Outcome { UNACKNOWLEDGED, COMMITTED, NOT_COMMITTED, UNKNOWN }
     /** Checksum covers the immutable authority; phase and destination identity are its mutable envelope. */
     record RecordVersion(String checksum, String phase, UUID destination) {
@@ -27,10 +28,13 @@ final class RocketJournalCheckpoint {
                     record.hasUUID("destination_entity_id") ? record.getUUID("destination_entity_id") : null);
         }
     }
+    /** W44 section 2.4: {@code firstMoonLanding} is the full validated outbox read from the written payload. */
     record Acknowledgement(long sequence, String digest, Map<UUID, String> records, Set<UUID> logicalRockets,
-                           Map<UUID, RecordVersion> versions) {
+                           Map<UUID, RecordVersion> versions,
+                           io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox firstMoonLanding) {
         Acknowledgement {
             records = Map.copyOf(records); logicalRockets = Set.copyOf(logicalRockets); versions = Map.copyOf(versions);
+            java.util.Objects.requireNonNull(firstMoonLanding, "firstMoonLanding");
         }
     }
 
@@ -56,10 +60,13 @@ final class RocketJournalCheckpoint {
                         .collect(java.util.stream.Collectors.toSet()),
                 payload.getList("transfers", net.minecraft.nbt.Tag.TAG_COMPOUND).stream()
                         .map(raw -> (CompoundTag) raw).collect(java.util.stream.Collectors.toMap(
-                                raw -> raw.getUUID("logical_rocket_id"), RecordVersion::of)));
+                                raw -> raw.getUUID("logical_rocket_id"), RecordVersion::of)),
+                io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox.decode(
+                        payload.get(RocketTransferSavedData.FIRST_MOON_LANDING), io.github.sunthemoon
+                                .advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind.FIRST_MOON_LANDING));
         boolean[] attempted = {false};
         try {
-            var checked = new CheckedSavedDataPolicy(policy.type(), (staged, target) -> {
+            var checked = policy.withCommitter((staged, target) -> {
                 attempted[0] = true;
                 policy.committer().commit(staged, target);
             });

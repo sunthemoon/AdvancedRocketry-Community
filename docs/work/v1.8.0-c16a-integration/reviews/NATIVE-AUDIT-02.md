@@ -4,7 +4,7 @@ No new Critical/High/Medium/Low findings in the bounded actual-result scope.
 This is independent extraction/audit, not an independent Minecraft replay or
 a replacement for the earlier source-author reviews.
 
-[Portable audit](native-pump02-tank04-independent.zip), SHA256
+Portable audit (`native-pump02-tank04-independent.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)), SHA256
 `81c97da3e5d0265fde4d053c402230df00ede2a2b963d3fcc8a8cada3341e35a`,
 18,366,161 bytes /216 entries; manifest
 `ec615665998dc963a563caec79e1911378eb134470dbf7eeb9ebfebd2a114d92`.

@@ -5,7 +5,7 @@ f535a130c536be95d0e46d5c9ccfea81d1b0ef31. Status: READY_FOR_REVIEW candidate
 only. The new code was not compiled or run. This supersedes
 ACQUISITION-HANDOFF-10.md, which stays unchanged, for fixture lifetime and for
 the API attributions below. Input: the sealed independent
-[REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-acquisition10-independent-20261008-01/reviewer-01/REPORT-01.md)
+REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-acquisition10-independent-20261008-01/reviewer-01/REPORT-01.md`)
 (SHA-256 c0a3e47929e5a7beb2b7ef176874fd01bb01d727c536664ca4d981e6df9a70cb),
 Low 1 and Low 2, and its API-LIFECYCLE-01.md.
 

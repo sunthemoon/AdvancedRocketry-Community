@@ -125,7 +125,7 @@ class RocketJournalCheckpointTest {
         assertTrue(checkpoint.current(2));
     }
     @Test void futureJournalIsNeverRewrittenByItsCheckedAdapter() throws Exception {
-        var payload = empty(); payload.putInt("schema_version", 3);
+        var payload = empty(); payload.putInt("schema_version", RocketTransferSavedData.ROOT_SCHEMA_VERSION + 1);
         CheckedSavedDataFile.replace(target(), TYPE, () -> payload);
         byte[] before = Files.readAllBytes(target());
         var blocked = RocketTransferSavedData.load(payload); blocked.setDirty(); blocked.save(target().toFile());

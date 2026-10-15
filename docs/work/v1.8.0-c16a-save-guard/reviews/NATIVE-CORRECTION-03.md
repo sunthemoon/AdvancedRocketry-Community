@@ -14,7 +14,7 @@ input-world inventory and JAR identities are independently rechecked. The old
 failed disk chunk and both earlier incident reports remain unchanged. Earlier
 audit preparation/packaging failures are retained and are not native failures.
 
-[Portable evidence](native-correction-03-evidence.zip), SHA-256
+Portable evidence (`native-correction-03-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)), SHA-256
 `212fdeb9a28ff426599f62ca2d44a32feea9737b1d6e5bb8fd3b2f5246e2fd77`,
 814,338 bytes /406 entries. All 405 manifest entries and ZIP CRC verify.
 Raw `REVIEW-NATIVE03.md` SHA-256:

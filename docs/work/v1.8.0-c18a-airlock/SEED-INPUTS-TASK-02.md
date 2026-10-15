@@ -10,8 +10,8 @@ The source-bound failed replay and independent audit in
 [RESULT-40](../v1.8.0-ci/RESULT-40.md) leave three required native failures open.
 The current airlock snapshot classifies the seed OPEN but does not capture its
 block identity or native sky/height operands. Root reads the separate
-[source investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-initial-supply-source-investigation-20261007-01/REPORT-01.md)
-and [bounded amendment proposal](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-current-seed-diagnostic-amendment-20261007-01/REPORT-01.md).
+source investigation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-initial-supply-source-investigation-20261007-01/REPORT-01.md`)
+and bounded amendment proposal (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-current-seed-diagnostic-amendment-20261007-01/REPORT-01.md`).
 Their SHA-256 values are respectively
 `3d70cb8c9d89444562696857a7ae998f95dd451c2108724555c58a9fa5908bb8` and
 `5fa103b27f611479d76a42aabde74d9964fe9f19b38cfc0733f038cd94ee08ce`.

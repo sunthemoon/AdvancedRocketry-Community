@@ -35,6 +35,15 @@ any other agent.
   the language providers, and the data-generator entry `datagen/BootstrapDataGenerators.java`.
   Do not edit `docs/status/*`, the content ledger, `build.gradle`, `gradle.properties`,
   `.github/`, `AGENTS.md`, or another task's files.
+- Historical outputs are immutable. Never edit a file under an older `src/generated/v*` root (anything
+  but `src/generated/v1.8`), and never edit a sealed provenance or release-evidence record. To change
+  a historical model or resource, write a v1.8 copy from a v1.8 provider and ask Root for the
+  `build.gradle` exclusion of the old copy, as W52 did (W49F, 2026-10-14).
+- Links in Markdown: link only to files committed in this repository, with relative paths. Write
+  anything else (`D:/GitHub/ARCE-Task-Evidence/...`, a file you do not commit, a ZIP you keep
+  outside Git) as a code span, and give an artifact's SHA-256 next to it. The strict validator
+  rejects absolute and missing link targets (W58, 2026-10-15). Imported upstream assets go
+  under `src/imported/v1.8/resources`, never `src/main/resources` (W52F).
 - ADRs: never change a decision. The one exception is when AGENTS.md section 3.3
   requires you to document a protection that refuses saves. Then add a clearly labelled
   implementation note to the ADR and a risk-register entry. Put every other

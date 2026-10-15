@@ -61,14 +61,14 @@ final class RocketEscrowAuditTest {
             var data = ResourceEscrowSavedData.load(EscrowCodec.encode(initial));
             Path directory = java.nio.file.Files.createDirectory(temp.resolve(reason.name()));
             Path file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
-            try (var writer = new EscrowLedgerWriter(file, 0); var coordinator = new EscrowCoordinator(data, writer)) {
+            var ledgerIo = new AwaitedLedgerIo();
+            try (var writer = ledgerIo.writer(file, 0, CheckedSavedDataFile::atomicMove); var coordinator = new EscrowCoordinator(data, writer)) {
                 coordinator.transition(initial.records().get(0).id(), reason); coordinator.persistTransitions();
                 assertTrue(coordinator.logicalLocked(initial.records().get(0).guard().rocket()));
                 assertFalse(coordinator.retire(java.util.Set.of(initial.records().get(0).id()), java.util.Map.of(),
                         result -> fail("Manual repair cannot use ordinary L2")));
                 assertThrows(IllegalArgumentException.class, () -> coordinator.transition(initial.records().get(0).id(), EscrowReason.NONE));
-                long deadline = System.nanoTime() + 5_000_000_000L; int tick = 1;
-                while (!writer.idle() && System.nanoTime() < deadline) { coordinator.tick(tick++); Thread.sleep(5); }
+                ledgerIo.tickUntil(coordinator::tick, 1, writer::idle);
                 assertTrue(writer.idle()); assertFalse(data.isDirty());
                 for (int restart = 0; restart < 2; restart++) {
                     var restored = ResourceEscrowSavedData.load(CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow());

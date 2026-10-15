@@ -64,13 +64,16 @@ public final class V180StationLightData implements DataProvider {
                         """));
     }
 
-    /** Original inset light panel and stepped metal frame; every pixel is opaque. */
+    /**
+     * Original panel of three lit tubes with capped ends, in dark recesses between screwed metal slats; every pixel
+     * is opaque. W53 redraw: the first drawing, an evenly brightening nested frame, screened HIT by luminance rank.
+     */
     public static String[] grid() {
         return new String[] {
-                "5555555555555555", "5766666666666675", "5677777777777765", "5678888888888765",
-                "5678999999998765", "5678999999998765", "5678999999998765", "5678999999998765",
-                "5678999999998765", "5678999999998765", "5678999999998765", "5678999999998765",
-                "5678888888888765", "5677777777777765", "5766666666666675", "5555555555555555"
+                "5555555555555555", "5333333333333335", "5368888888888635", "5369999999999635",
+                "5333333333333335", "5676666666666765", "5333333333333335", "5368888888888635",
+                "5369999999999635", "5333333333333335", "5676666666666765", "5333333333333335",
+                "5368888888888635", "5369999999999635", "5333333333333335", "5555555555555555"
         };
     }
 

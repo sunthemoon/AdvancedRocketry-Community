@@ -154,3 +154,25 @@ faults using OptionalInt, clarified disabled armor mappings and wearable-item
 responsibility, and required bounds before mutated-input equality. Those changes
 are included before runtime implementation. This freezes the API contract only,
 not release acceptance or any Required Gate.
+
+## Additive revision note: enchanted native armor (v1.8.0)
+
+ADR-066 section 5.1 (owner decision D1) extends host eligibility and asks for the extension to be
+reviewed as an additive revision of this ADR. This note records it; it changes no status, public
+signature or external bound of this ADR.
+
+- **Rule.** The host also counts an otherwise unclaimed native `ArmorItem` when the stack is safe
+  (unstackable, count 1, bounded NBT), worn in its own slot, and enchanted with
+  `advancedrocketrycommunity:space_breathing` at exactly level 1. Eligibility is checked for each live
+  worn stack (`EnchantedSuitOxygen.eligible`); no item-to-slot mapping is registered.
+- **Precedence.** A registered external provider always wins; the enchantment never claims or aliases
+  an owned provider root, and no provider is registered per enchantment.
+- **Payload.** Only the enchanted chest owns `arce_enchanted_suit_oxygen`: strict schema 1, oxygen
+  0..2,000, with this ADR's detached commit, debit and refill checks. Unsupported or corrupt data is
+  unusable and preserved. Other item NBT and the built-in oxygen root are untouched.
+- **Review.** The W03 review (`D:/GitHub/ARCE-Task-Evidence/root-queue/W03-review/REVIEW.md`, SHA-256
+  `4b74bf776c585444e8332a89a410baa612030ceb41e6861f6ba06c102b64f73f`) covered the rule; its findings
+  M1 and L1 were fixed by W06. Delivery and tests are in
+  `docs/work/v1.8.0-c18b-equipment/VERIFICATION.md`.
+
+This is a development implementation note. It approves no Required Gate, version or release.

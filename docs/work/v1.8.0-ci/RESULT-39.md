@@ -9,21 +9,21 @@ observation, not the terminal. This full regression is **FAILED**.
 
 The same monitor ends normally (`d31062`, session 55164 closed), observing
 completed failure at 2026-10-07T12:19:44.271439+00:00.
-[MONITOR-08](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-20261007-01/MONITOR-08.json)
+MONITOR-08 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-20261007-01/MONITOR-08.json`)
 SHA-256 `4c5c59b57379fc53d1412c395d6bd2b276eced998f166bc22185fee730ac2e85`.
 No restart, replacement run or changed source is used. After re-reading and
 hashing the existing bounded retrieval helper, Root runs it against artifact
 11482000627 (`c71ec3`, exit 0). Archive is 1,824,223 B /SHA-256
 `2edd1f28c55e36c36206f2dd1720fe3a74708dbb34ccf2c129233319d19e8770`,
 matching API digest; source/run/attempt/name/CRC/member bounds are checked.
-The [retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-raw-20261007-01/RETRIEVAL-01.json)
+The retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-raw-20261007-01/RETRIEVAL-01.json`)
 SHA-256 `3ebe8ee9e9d8424299bc4e02ef541816c4acaa704251a4d3bdffe06d4f7b5c2f`
 retains 397 compact raw members, not binary/source/HTML trees.
 
 Root's new `python -B audit01.py` (`d3961e`, exit 0) hashes every retained
 member twice, parses actual XML child counts, reads raw step logs/manifests,
 and compares the committed airlock source. Its
-[RAW-AUDIT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-20261007-01/RAW-AUDIT-01.json)
+RAW-AUDIT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-20261007-01/RAW-AUDIT-01.json`)
 SHA-256 `29e03abba8cb02f80d796a47036660453d419b10cab53c8fa8493109cb1b9d8b`
 records zero input drift. This is raw derivation, not native replay or independent
 binary parsing. An earlier PowerShell preview (`29566b`) wrongly used reserved

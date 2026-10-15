@@ -2,8 +2,17 @@ package io.github.sunthemoon.advancedrocketrycommunity.station.persistence;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootPresence;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedRootSupplier;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.SavedDataSchemaMigrator;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEvent;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventCutSeams;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventDisposition;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventOutbox;
+import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventSourceView;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationOrbitalClock;
 import io.github.sunthemoon.advancedrocketrycommunity.station.model.StationOrbitalControls;
@@ -34,6 +43,7 @@ import net.minecraft.world.level.storage.LevelResource;
  */
 public final class StationRegistrySavedData extends SavedData {
     public static final String DATA_NAME = "advancedrocketrycommunity_stations";
+    private static final ManagedSavedDataType TYPE = ManagedSavedDataType.STATIONS;
 
     private final StationRegistryModel registry;
     private CompoundTag preservedBlockedData;
@@ -48,6 +58,12 @@ public final class StationRegistrySavedData extends SavedData {
      * Every live epoch is at or before it, and a quarantined ordinary save reasserts it.
      */
     private long clockFloor;
+    /** W44 section 1.1: the first-warp slot; healthy RAM is the known committed authority. */
+    private FirstEventOutbox firstWarp = FirstEventOutbox.empty();
+    /** W44 section 3.6: how this root was first obtained; a detached root behaves as loaded. */
+    private StationRootPresence root = new StationRootPresence(ManagedRootPresence.LOADED);
+    /** W44 section 1.2: a known-committed candidate whose publish failed; saved and read instead of stale RAM. */
+    private CompoundTag committedOverride;
 
     public StationRegistrySavedData() {
         this(new StationRegistryModel(), 0L);
@@ -61,11 +77,17 @@ public final class StationRegistrySavedData extends SavedData {
 
     public static StationRegistrySavedData get(MinecraftServer server) {
         Objects.requireNonNull(server, "server");
-        return server.overworld().getDataStorage().computeIfAbsent(
-                StationRegistrySavedData::load,
-                StationRegistrySavedData::new,
-                DATA_NAME
-        );
+        return ManagedRootSupplier.obtain(server, TYPE, tag -> {
+            FirstEventCutSeams.beforeLoad(server, TYPE);
+            return load(tag);
+        }, StationRegistrySavedData::created);
+    }
+
+    /** The root-presence supplier's root: PROVEN_ABSENT or UNREADABLE (W44 section 3.6). */
+    static StationRegistrySavedData created(ManagedRootPresence presence) {
+        StationRegistrySavedData data = new StationRegistrySavedData();
+        data.root = new StationRootPresence(presence);
+        return data;
     }
 
     public static StationRegistrySavedData load(CompoundTag source) {
@@ -83,7 +105,9 @@ public final class StationRegistrySavedData extends SavedData {
                 throw new IllegalArgumentException("Station registry requires supported pre-start migration");
             }
             StationRegistryPayload.Decoded decoded = StationRegistryPayload.decodeCurrentRoot(migration.payload());
-            return new StationRegistrySavedData(decoded.registry(), decoded.logicalTick());
+            StationRegistrySavedData data = new StationRegistrySavedData(decoded.registry(), decoded.logicalTick());
+            data.firstWarp = decoded.firstWarp();
+            return data;
         } catch (RuntimeException exception) {
             StationRegistrySavedData data = new StationRegistrySavedData();
             data.preservedBlockedData = preserved;
@@ -91,8 +115,41 @@ public final class StationRegistrySavedData extends SavedData {
         }
     }
 
+    /** Not blocked and not unreadable; an unreadable root is never written and holds all station gameplay. */
     public boolean operational() {
-        return preservedBlockedData == null;
+        return preservedBlockedData == null && !root.unreadable();
+    }
+
+    public ManagedRootPresence presence() {
+        return preservedBlockedData != null ? ManagedRootPresence.BLOCKED : root.presence();
+    }
+
+    /** Reads that could authorize a mutation report unavailable under a committed override (W44 section 1.2). */
+    private boolean readable() {
+        return operational() && committedOverride == null;
+    }
+
+    /** The RAM slot; equal to the durable view while the registry is healthy. */
+    public FirstEventOutbox firstWarpRam() {
+        return firstWarp;
+    }
+
+    /**
+     * W44 terms: the durable view. Healthy RAM is known committed authority, a publish-failure override supplies its
+     * committed candidate, and a quarantined unknown update, an unreadable or a blocked root is unavailable.
+     */
+    public FirstEventSourceView durableFirstWarp() {
+        if (root.unreadable()) {
+            return FirstEventSourceView.unavailable(FirstEventSourceView.Reason.ROOT_UNREADABLE);
+        }
+        if (preservedBlockedData != null) {
+            return FirstEventSourceView.unavailable(FirstEventSourceView.Reason.ROOT_BLOCKED);
+        }
+        if (committedOverride != null) {
+            return FirstEventSourceView.known(StationRegistryPayload.decodeCurrentRoot(committedOverride).firstWarp());
+        }
+        return updatesQuarantined ? FirstEventSourceView.unavailable(FirstEventSourceView.Reason.QUARANTINED)
+                : FirstEventSourceView.known(firstWarp);
     }
 
     public Optional<CompoundTag> preservedBlockedData() {
@@ -108,7 +165,7 @@ public final class StationRegistrySavedData extends SavedData {
             ResourceLocation orbitBody,
             long createdAtGameTime
     ) {
-        requireOperational();
+        requireMutable();
         requireStorageRoom(StationLimits.MAX_STATION_RECORD_NBT_BYTES);
         StationReservation result = registry.reserve(
                 stationId, ownerId, name, orbitBody, createdAtGameTime
@@ -119,7 +176,7 @@ public final class StationRegistrySavedData extends SavedData {
     }
 
     public StationState commit(UUID stationId) {
-        requireOperational();
+        requireMutable();
         requireStorageRoom(StationLimits.MAX_STATION_RECORD_NBT_BYTES);
         StationState result = registry.commit(stationId);
         budget.grew(StationLimits.MAX_STATION_RECORD_NBT_BYTES);
@@ -129,7 +186,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     /** Operational and not quarantined: checked updates are possible (ADR-041/044/045 rule 1). */
     public boolean updatesAvailable() {
-        return operational() && !updatesQuarantined;
+        return readable() && !updatesQuarantined;
     }
 
     /**
@@ -141,7 +198,7 @@ public final class StationRegistrySavedData extends SavedData {
     }
 
     public boolean release(UUID stationId) {
-        requireOperational();
+        requireMutable();
         boolean changed = registry.release(stationId);
         if (changed) {
             setDirty();
@@ -150,7 +207,7 @@ public final class StationRegistrySavedData extends SavedData {
     }
 
     public Optional<StationState> delete(UUID stationId) {
-        requireOperational();
+        requireMutable();
         int balance = registry.warpEnergy(stationId);
         Optional<StationState> result = registry.delete(stationId);
         if (result.isPresent()) {
@@ -164,7 +221,7 @@ public final class StationRegistrySavedData extends SavedData {
     }
 
     public StationState addMember(UUID stationId, UUID memberId) {
-        requireOperational();
+        requireMutable();
         requireStorageRoom(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
         StationState result = registry.addMember(stationId, memberId);
         budget.grew(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
@@ -173,14 +230,14 @@ public final class StationRegistrySavedData extends SavedData {
     }
 
     public StationState removeMember(UUID stationId, UUID memberId) {
-        requireOperational();
+        requireMutable();
         StationState result = registry.removeMember(stationId, memberId);
         setDirty();
         return result;
     }
 
     public StationState invite(UUID stationId, UUID playerId) {
-        requireOperational();
+        requireMutable();
         requireStorageRoom(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
         StationState result = registry.invite(stationId, playerId);
         budget.grew(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
@@ -189,7 +246,7 @@ public final class StationRegistrySavedData extends SavedData {
     }
 
     public StationState acceptInvitation(UUID stationId, UUID playerId) {
-        requireOperational();
+        requireMutable();
         requireStorageRoom(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
         StationState result = registry.acceptInvitation(stationId, playerId);
         budget.grew(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
@@ -198,14 +255,14 @@ public final class StationRegistrySavedData extends SavedData {
     }
 
     public StationState declineInvitation(UUID stationId, UUID playerId) {
-        requireOperational();
+        requireMutable();
         StationState result = registry.declineInvitation(stationId, playerId);
         setDirty();
         return result;
     }
 
     public StationState transferOwnership(UUID stationId, UUID ownerId) {
-        requireOperational();
+        requireMutable();
         requireStorageRoom(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
         StationState result = registry.transferOwnership(stationId, ownerId);
         budget.grew(StationLimits.MAX_TEAM_ENTRY_GROWTH_NBT_BYTES);
@@ -214,28 +271,28 @@ public final class StationRegistrySavedData extends SavedData {
     }
 
     public Optional<StationState> find(UUID stationId) {
-        return operational() ? registry.find(stationId) : Optional.empty();
+        return readable() ? registry.find(stationId) : Optional.empty();
     }
 
     public Optional<StationState> findAt(int x, int z) {
-        return operational() ? registry.findAt(x, z) : Optional.empty();
+        return readable() ? registry.findAt(x, z) : Optional.empty();
     }
 
     public List<StationState> stations() {
-        return operational() ? registry.stations() : List.of();
+        return readable() ? registry.stations() : List.of();
     }
 
     public List<StationReservation> reservations() {
-        return operational() ? registry.reservations() : List.of();
+        return readable() ? registry.reservations() : List.of();
     }
 
     public long ownedBy(UUID ownerId) {
-        return operational() ? registry.ownedBy(ownerId) : Long.MAX_VALUE;
+        return readable() ? registry.ownedBy(ownerId) : Long.MAX_VALUE;
     }
 
     /** ADR-066 section 3.3: the access index generation; empty while the registry is blocked. */
     public java.util.OptionalLong accessGeneration() {
-        return operational() ? java.util.OptionalLong.of(registry.accessGeneration()) : java.util.OptionalLong.empty();
+        return readable() ? java.util.OptionalLong.of(registry.accessGeneration()) : java.util.OptionalLong.empty();
     }
 
     /**
@@ -244,16 +301,16 @@ public final class StationRegistrySavedData extends SavedData {
      * {@link #operational()} first: a blocked registry is not an empty candidate set.
      */
     public Optional<UUID> nextAccessCandidate(UUID playerId, boolean operator, UUID after) {
-        return operational() ? registry.nextAccessCandidate(playerId, operator, after) : Optional.empty();
+        return readable() ? registry.nextAccessCandidate(playerId, operator, after) : Optional.empty();
     }
 
     /** Stored warp energy of a station (ADR-044); 0 when absent or while the registry is blocked. */
     public int warpEnergy(UUID stationId) {
-        return operational() ? registry.warpEnergy(stationId) : 0;
+        return readable() ? registry.warpEnergy(stationId) : 0;
     }
 
     public SortedMap<UUID, Integer> warpEnergyBalances() {
-        return operational() ? registry.warpEnergyBalances() : new TreeMap<>();
+        return readable() ? registry.warpEnergyBalances() : new TreeMap<>();
     }
 
     /**
@@ -274,34 +331,14 @@ public final class StationRegistrySavedData extends SavedData {
             }
         });
         long offered = credits.values().stream().mapToLong(Integer::longValue).sum();
-        if (!operational()) {
+        // A committed override refuses every mutation, as a registry that is not operational does (W44 section 1.2).
+        if (!readable()) {
             return new WarpCreditFold(0L, offered);
         }
-        long credited = 0L;
-        // After one refusal the rest of this fold is refused too, so a full registry is encoded once.
-        boolean entryRoom = true;
-        for (Map.Entry<UUID, Integer> credit : new TreeMap<>(credits).entrySet()) {
-            boolean newEntry = registry.needsWarpEnergyEntry(credit.getKey());
-            if (newEntry) {
-                entryRoom = entryRoom && budget.admitsBalanceEntry(recordCount(),
-                        registry.warpEnergyBalances().size(), this::encodedBytes);
-                if (!entryRoom) {
-                    continue;
-                }
-            }
-            int accepted = registry.creditWarpEnergy(credit.getKey(), credit.getValue());
-            credited += accepted;
-            if (newEntry && accepted > 0) {
-                budget.grew(StationLimits.MAX_WARP_ENERGY_ENTRY_NBT_BYTES);
-            }
-        }
+        long credited = StationWarpEnergyFold.apply(registry, budget, credits, this::recordCount, this::encodedBytes,
+                offered);
         if (credited > 0L) {
             setDirty();
-        }
-        if (credited < offered) {
-            AdvancedRocketryCommunity.LOGGER.warn(
-                    "ARCE_STATION_WARP_CREDIT_REFUSED offered={} credited={} entry_room={}",
-                    offered, credited, entryRoom);
         }
         return new WarpCreditFold(credited, offered - credited);
     }
@@ -318,6 +355,15 @@ public final class StationRegistrySavedData extends SavedData {
         }
     }
 
+    /**
+     * W44 section 5 preflight of a potentially first warp: an elected outbox of {@code participants} fits the unchanged
+     * 4 MiB root bound (an upper estimate; the checked call encodes the exact candidate).
+     */
+    public boolean admitsFirstWarp(int participants) {
+        return readable() && budget.admitsOutbox(recordCount(), registry.warpEnergyBalances().size(),
+                this::encodedBytes, 1_024L + 16L * participants);
+    }
+
     /** Committed stations plus pending reservations (0 while blocked). */
     public int recordCount() {
         return registry.stations().size() + registry.reservations().size();
@@ -325,7 +371,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     private long encodedBytes() {
         try {
-            return StationNbtSize.uncompressedBytes(encode(new CompoundTag(), null, null, clock.current()));
+            return StationNbtSize.uncompressedBytes(encode(new CompoundTag(), null, null, clock.current(), firstWarp));
         } catch (IllegalStateException oversized) {
             return StationLimits.MAX_REGISTRY_NBT_BYTES + 1L;
         }
@@ -334,7 +380,7 @@ public final class StationRegistrySavedData extends SavedData {
     /** Validates persisted orbit references without deleting recoverable station state. */
     public OrbitBodyValidation validateOrbitBodies(Predicate<ResourceLocation> bodyExists) {
         Objects.requireNonNull(bodyExists, "bodyExists");
-        if (!operational()) {
+        if (!readable()) {
             return new OrbitBodyValidation(false, List.of(), List.of());
         }
         List<UUID> invalidStations = registry.stations().stream()
@@ -391,7 +437,7 @@ public final class StationRegistrySavedData extends SavedData {
 
     CheckedUpdate checkedExpand(Path file, StationState observed, CheckedSavedDataFile.Committer committer) {
         Objects.requireNonNull(observed, "observed");
-        return checked(file, observed, observed.withExpandedRegion(), 0, StationState.Transition.GROWTH,
+        return named(file, observed, observed.withExpandedRegion(), StationState.Transition.GROWTH,
                 clock.current(), committer);
     }
 
@@ -403,7 +449,7 @@ public final class StationRegistrySavedData extends SavedData {
     CheckedUpdate checkedSetGravity(Path file, StationState observed, int gravityMilli,
                                     CheckedSavedDataFile.Committer committer) {
         Objects.requireNonNull(observed, "observed");
-        return checked(file, observed, observed.withGravityMilli(gravityMilli), 0,
+        return named(file, observed, observed.withGravityMilli(gravityMilli),
                 StationState.Transition.GRAVITY_ONLY, clock.current(), committer);
     }
 
@@ -415,8 +461,8 @@ public final class StationRegistrySavedData extends SavedData {
     CheckedUpdate checkedSetAltitude(Path file, StationState observed, int distance,
                                      CheckedSavedDataFile.Committer committer) {
         Objects.requireNonNull(observed, "observed");
-        return checked(file, observed, observed.withOrbitalControls(observed.orbitalControls().withDistance(distance)),
-                0, StationState.Transition.ALTITUDE_ONLY, clock.current(), committer);
+        return named(file, observed, observed.withOrbitalControls(observed.orbitalControls().withDistance(distance)),
+                StationState.Transition.ALTITUDE_ONLY, clock.current(), committer);
     }
 
     /**
@@ -436,7 +482,7 @@ public final class StationRegistrySavedData extends SavedData {
         if (controls.epoch() != sample) {
             throw new IllegalArgumentException("Orientation controls must be sampled at the candidate clock");
         }
-        return checked(file, observed, observed.withOrbitalControls(controls), 0,
+        return named(file, observed, observed.withOrbitalControls(controls),
                 StationState.Transition.ORIENTATION_ONLY, sample, committer);
     }
 
@@ -451,17 +497,81 @@ public final class StationRegistrySavedData extends SavedData {
      */
     public CheckedUpdate checkedRelocation(MinecraftServer server, StationState observed, ResourceLocation target,
                                            int cost) {
-        return checkedRelocation(stationFile(server), observed, target, cost, CheckedSavedDataFile::atomicMove);
+        return checkedRelocation(server, observed, target, cost, FirstWarpRequest.NONE);
+    }
+
+    /**
+     * W44 section 1.2: the electing relocation; {@code StationWarpService} is its only production caller. The
+     * election is decided inside the one checked call and joins the relocation candidate.
+     */
+    public CheckedUpdate checkedRelocation(MinecraftServer server, StationState observed, ResourceLocation target,
+                                           int cost, FirstWarpRequest request) {
+        // FP8's gated committer changes the live winning station after the move, so the publish check fails.
+        return relocation(stationFile(server), observed, target, cost, FirstEventCutSeams.stationPolicy(server,
+                () -> addMember(observed.stationId(), FirstEventCutSeams.OBSERVER)), FirstEventCutSeams.directoryForce(server),
+                request);
     }
 
     CheckedUpdate checkedRelocation(Path file, StationState observed, ResourceLocation target, int cost,
                                     CheckedSavedDataFile.Committer committer) {
+        return relocation(file, observed, target, cost, new CheckedSavedDataPolicy(TYPE, committer),
+                CheckedSavedDataPolicy.DirectoryForce.PLATFORM, FirstWarpRequest.NONE);
+    }
+
+    CheckedUpdate relocation(Path file, StationState observed, ResourceLocation target, int cost,
+                             CheckedSavedDataPolicy policy, CheckedSavedDataPolicy.DirectoryForce force,
+                             FirstWarpRequest request) {
         Objects.requireNonNull(observed, "observed");
         Objects.requireNonNull(target, "target");
+        Objects.requireNonNull(request, "request");
         if (cost <= 0 || cost > StationLimits.MAX_WARP_ENERGY) {
             throw new IllegalArgumentException("Warp cost is outside its bound");
         }
-        return checked(file, observed, observed.withOrbitBody(target), cost, null, clock.current(), committer);
+        return checked(file, observed, observed.withOrbitBody(target), cost, null, clock.current(), policy, force,
+                request);
+    }
+
+    /**
+     * W44 section 1.3: the root-only checked acknowledgement ELECTED(E) to DELIVERED(E). No station lookup: the whole
+     * current registry is kept exactly, with only the outbox and the root clock sample substituted, through the same
+     * writer as every named update. The caller has proven {@code receipt} durable and charges the write budget.
+     */
+    public CheckedUpdate checkedDeliverFirstWarp(MinecraftServer server, FirstEvent expected, FirstEvent receipt,
+                                                 StationCheckedWriter.Diagnostics log) {
+        if (!server.isSameThread()) {
+            return CheckedUpdate.UNAVAILABLE;
+        }
+        return checkedDeliverFirstWarp(stationFile(server), expected, receipt,
+                FirstEventCutSeams.stationPolicy(server, () -> { }), FirstEventCutSeams.directoryForce(server), log);
+    }
+
+    CheckedUpdate checkedDeliverFirstWarp(Path file, FirstEvent expected, FirstEvent receipt,
+                                          CheckedSavedDataPolicy policy, CheckedSavedDataPolicy.DirectoryForce force,
+                                          StationCheckedWriter.Diagnostics log) {
+        Objects.requireNonNull(expected, "expected");
+        if (!updatesAvailable()) {
+            return CheckedUpdate.UNAVAILABLE;
+        }
+        if (firstWarp.state() == FirstEventOutbox.State.DELIVERED && expected.equals(firstWarp.event())) {
+            return CheckedUpdate.UNCHANGED;
+        }
+        if (!expected.equals(receipt) || firstWarp.state() != FirstEventOutbox.State.ELECTED
+                || !expected.equals(firstWarp.event())) {
+            return CheckedUpdate.STALE;
+        }
+        long sample = clock.current();
+        FirstEventOutbox delivered = firstWarp.delivered();
+        CompoundTag candidate = candidateTransform.apply(encode(new CompoundTag(), null, null, sample, delivered));
+        new StationCheckedCandidate(registry.stations(), registry.reservations(), registry.warpEnergyBalances(),
+                delivered, sample).require(candidate);
+        CheckedUpdate failed = written(StationCheckedWriter.write(file, candidate, policy, force, root.guard(), log));
+        if (failed != CheckedUpdate.COMMITTED) {
+            return failed;
+        }
+        // Only the outbox and the clock floor change, together, after the known commit.
+        firstWarp = delivered;
+        clockFloor = sample;
+        return CheckedUpdate.COMMITTED;
     }
 
     private static Path stationFile(MinecraftServer server) {
@@ -476,8 +586,16 @@ public final class StationRegistrySavedData extends SavedData {
      */
     CheckedUpdate checkedReplace(Path file, StationState observed, StationState replacement,
                                          CheckedSavedDataFile.Committer committer) {
-        return checked(file, observed, replacement, 0,
-                replacement.checkedTransitionFrom(observed).orElse(null), clock.current(), committer);
+        return named(file, observed, replacement, replacement.checkedTransitionFrom(observed).orElse(null),
+                clock.current(), committer);
+    }
+
+    private CheckedUpdate named(Path file, StationState observed, StationState replacement,
+                                StationState.Transition transition, long sample,
+                                CheckedSavedDataFile.Committer committer) {
+        Objects.requireNonNull(committer, "committer");
+        return checked(file, observed, replacement, 0, transition, sample, new CheckedSavedDataPolicy(TYPE, committer),
+                CheckedSavedDataPolicy.DirectoryForce.PLATFORM, FirstWarpRequest.NONE);
     }
 
     /**
@@ -489,11 +607,10 @@ public final class StationRegistrySavedData extends SavedData {
      * publishes the record and raises the acknowledged clock to that sample together.
      */
     private CheckedUpdate checked(Path file, StationState observed, StationState replacement, int cost,
-                                  StationState.Transition transition, long sample,
-                                  CheckedSavedDataFile.Committer committer) {
+                                  StationState.Transition transition, long sample, CheckedSavedDataPolicy policy,
+                                  CheckedSavedDataPolicy.DirectoryForce force, FirstWarpRequest request) {
         Objects.requireNonNull(file, "file");
-        Objects.requireNonNull(committer, "committer");
-        if (!operational() || updatesQuarantined) {
+        if (!updatesAvailable()) {
             return CheckedUpdate.UNAVAILABLE;
         }
         if (!registry.find(observed.stationId()).filter(observed::equals).isPresent()) {
@@ -518,31 +635,39 @@ public final class StationRegistrySavedData extends SavedData {
         if (relocation && balance < cost) {
             return CheckedUpdate.INSUFFICIENT_ENERGY;
         }
+        // W44 section 1.2, step 2: a DEFER refuses before any write, debit or cooldown; ALLOW is rechecked here.
+        FirstEventDisposition first = relocation ? request.current() : FirstEventDisposition.NOT_FIRST;
+        if (first == FirstEventDisposition.DEFER) {
+            return CheckedUpdate.FIRST_EVENT_UNAVAILABLE;
+        }
         long growth = relocation ? Math.max(0, replacement.orbitBody().toString().length()
                 - observed.orbitBody().toString().length()) : 0L;
         if (relocation) {
             requireStorageRoom(growth);
         }
         Integer debited = relocation ? balance - cost : null;
-        CompoundTag candidate = candidateTransform.apply(encode(new CompoundTag(), replacement, debited, sample));
-        requireValidCandidate(candidate, replacement, debited, sample);
-        boolean[] replacementAttempted = {false};
-        try {
-            CheckedSavedDataFile.replace(file, ManagedSavedDataType.STATIONS, candidate::copy, (staged, target) -> {
-                replacementAttempted[0] = true;
-                committer.commit(staged, target);
-            });
-        } catch (RuntimeException failure) {
-            if (!replacementAttempted[0]) {
-                AdvancedRocketryCommunity.LOGGER.error(
-                        "ARCE_STATION_UPDATE_WRITE_FAILED station={} stage=before_replace",
-                        observed.stationId(), failure);
-                return CheckedUpdate.WRITE_FAILED;
+        FirstEventOutbox outbox = firstWarp;
+        CompoundTag encoded;
+        if (first == FirstEventDisposition.ALLOW && firstWarp.isEmpty()) {
+            // Step 3: at most 4,096 participants and the exact candidate within the unchanged 4 MiB root bound.
+            try {
+                outbox = FirstEventOutbox.elected(FirstEvent.StationWarp.create(UUID.randomUUID(), observed.stationId(),
+                        request.actor(), observed.orbitBody(), replacement.orbitBody(), cost, sample,
+                        request.participants()));
+                encoded = encode(new CompoundTag(), replacement, debited, sample, outbox);
+            } catch (IllegalArgumentException | IllegalStateException overBudget) {
+                return CheckedUpdate.FIRST_EVENT_OVER_BUDGET;
             }
-            CheckedUpdate resolved = resolveReplacement(file, candidate, observed, failure);
-            if (resolved != CheckedUpdate.COMMITTED) {
-                return resolved;
-            }
+        } else {
+            encoded = encode(new CompoundTag(), replacement, debited, sample, outbox);
+        }
+        CompoundTag candidate = candidateTransform.apply(encoded);
+        StationCheckedCandidate.named(registry.stations(), registry.reservations(), registry.warpEnergyBalances(),
+                replacement, debited, outbox, sample).require(candidate);
+        CheckedUpdate failed = written(StationCheckedWriter.write(file, candidate, policy, force, root.guard(),
+                StationCheckedWriter.named(observed.stationId())));
+        if (failed != CheckedUpdate.COMMITTED) {
+            return failed;
         }
         try {
             if (relocation) {
@@ -552,7 +677,9 @@ public final class StationRegistrySavedData extends SavedData {
                 registry.replaceChecked(observed, replacement);
             }
         } catch (RuntimeException publishFailure) {
-            // Unreachable on the owning server thread; never report a written update as a clean failure.
+            // Unreachable on the owning server thread. The candidate is a known commit: keep it, never reassert stale
+            // RAM over it, and refuse every mutation until restart (W44 section 1.2, ADR-066 note).
+            committedOverride = candidate.copy();
             updatesQuarantined = true;
             setDirty();
             AdvancedRocketryCommunity.LOGGER.error(
@@ -560,68 +687,24 @@ public final class StationRegistrySavedData extends SavedData {
                     observed.stationId(), publishFailure);
             return CheckedUpdate.OUTCOME_UNKNOWN;
         }
-        // The record and its durable clock are published together.
+        // The record, its durable clock and the outbox are published together.
+        firstWarp = outbox;
         clockFloor = sample;
         return CheckedUpdate.COMMITTED;
     }
 
-    private CheckedUpdate resolveReplacement(Path file, CompoundTag candidate, StationState observed,
-                                             RuntimeException failure) {
-        Optional<CompoundTag> onDisk;
-        try {
-            onDisk = CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.STATIONS);
-        } catch (RuntimeException unreadable) {
-            failure.addSuppressed(unreadable);
-            updatesQuarantined = true;
-            // The acknowledged authority excludes the update; let ordinary saves reassert it.
-            setDirty();
-            AdvancedRocketryCommunity.LOGGER.error(
-                    "ARCE_STATION_UPDATE_OUTCOME_UNKNOWN station={} file={}; updates disabled until restart",
-                    observed.stationId(), file, failure);
-            return CheckedUpdate.OUTCOME_UNKNOWN;
-        }
-        if (onDisk.filter(candidate::equals).isPresent()) {
-            AdvancedRocketryCommunity.LOGGER.warn(
-                    "ARCE_STATION_UPDATE_REPLACED_DESPITE_ERROR station={}", observed.stationId(), failure);
+    /** Applies a writer outcome: quarantine on UNKNOWN, reassert RAM after a failed replacement (ADR-041). */
+    private CheckedUpdate written(StationCheckedWriter.Outcome outcome) {
+        if (outcome == StationCheckedWriter.Outcome.COMMITTED) {
+            root.committed();
             return CheckedUpdate.COMMITTED;
         }
-        // Not the candidate; ordinary saves rewrite the acknowledged authority in case the file is stale.
-        setDirty();
-        AdvancedRocketryCommunity.LOGGER.error(
-                "ARCE_STATION_UPDATE_WRITE_FAILED station={} stage=replace file_present={}",
-                observed.stationId(), onDisk.isPresent(), failure);
-        return CheckedUpdate.WRITE_FAILED;
-    }
-
-    /**
-     * The candidate must decode to the live registry with exactly the replacement state and, for a
-     * relocation, exactly the debited balance substituted: every other state, reservation and balance
-     * is unchanged, and its orbital clock is exactly the sample.
-     */
-    private void requireValidCandidate(CompoundTag candidate, StationState replacement, Integer debited,
-                                       long sample) {
-        UUID stationId = replacement.stationId();
-        List<StationState> expectedStations = registry.stations().stream()
-                .map(state -> state.stationId().equals(stationId) ? replacement : state)
-                .toList();
-        SortedMap<UUID, Integer> expectedBalances = registry.warpEnergyBalances();
-        if (debited != null && debited > 0) {
-            expectedBalances.put(stationId, debited);
-        } else if (debited != null) {
-            expectedBalances.remove(stationId);
+        if (outcome != StationCheckedWriter.Outcome.WRITE_FAILED || root.afterFailedWrite()) {
+            updatesQuarantined |= outcome == StationCheckedWriter.Outcome.OUTCOME_UNKNOWN;
+            setDirty(!root.unreadable());
         }
-        SavedDataSchemaMigrator.MigrationResult migration = SavedDataSchemaMigrator.migrate(
-                ManagedSavedDataType.STATIONS, candidate.copy());
-        if (migration.status() != SavedDataSchemaMigrator.MigrationStatus.CURRENT) {
-            throw new IllegalStateException("Candidate station registry failed validation");
-        }
-        StationRegistryPayload.Decoded decoded = StationRegistryPayload.decodeCurrentRoot(migration.payload());
-        if (!decoded.registry().stations().equals(expectedStations)
-                || !decoded.registry().reservations().equals(registry.reservations())
-                || !decoded.registry().warpEnergyBalances().equals(expectedBalances)
-                || decoded.logicalTick() != sample) {
-            throw new IllegalStateException("Candidate station registry failed validation");
-        }
+        return outcome == StationCheckedWriter.Outcome.OUTCOME_UNKNOWN ? CheckedUpdate.OUTCOME_UNKNOWN
+                : CheckedUpdate.WRITE_FAILED;
     }
 
     public void flush(MinecraftServer server) {
@@ -642,51 +725,39 @@ public final class StationRegistrySavedData extends SavedData {
         if (preservedBlockedData != null) {
             return preservedBlockedData.copy();
         }
-        return encode(target, null, null, updatesQuarantined ? clockFloor : clock.current());
+        if (committedOverride != null) {
+            return committedOverride.copy();
+        }
+        if (root.unreadable()) {
+            throw new IllegalStateException("An unreadable station registry is never encoded");
+        }
+        return encode(target, null, null, updatesQuarantined ? clockFloor : clock.current(), firstWarp);
     }
 
     /**
-     * Encodes the registry with {@code logicalTick} as its orbital clock, optionally substituting one
-     * station by UUID and, for a relocation, that station's balance, without mutating the live registry.
-     * Every encoded epoch must be at or before that clock.
+     * The ordinary save (W44 section 3.6): an unreadable root writes nothing. Until the first known commit of a
+     * proven-absent root it re-checks absence and is staged and atomically moved (W44K); then it writes in place.
      */
-    private CompoundTag encode(CompoundTag target, StationState substitute, Integer substituteBalance,
-                               long logicalTick) {
-        SavedDataSchemaMigrator.stampCurrent(ManagedSavedDataType.STATIONS, target);
-        ListTag stations = new ListTag();
-        registry.stations().forEach(state -> {
-            StationState encoded = substitute != null && substitute.stationId().equals(state.stationId())
-                    ? substitute : state;
-            if (encoded.orbitalControls().epoch() > logicalTick) {
-                throw new IllegalStateException("A station orbital epoch is ahead of the encoded clock");
-            }
-            stations.add(StationNbtCodec.encodeState(encoded));
-        });
-        target.put("stations", stations);
-        ListTag reservations = new ListTag();
-        registry.reservations().forEach(
-                reservation -> reservations.add(StationNbtCodec.encodeReservation(reservation))
-        );
-        target.put("reservations", reservations);
-        SortedMap<UUID, Integer> balances = registry.warpEnergyBalances();
-        if (substitute != null && substituteBalance != null) {
-            balances.remove(substitute.stationId());
-            if (substituteBalance > 0) {
-                balances.put(substitute.stationId(), substituteBalance);
-            }
-        }
-        ListTag warpEnergy = new ListTag();
-        balances.forEach((stationId, energy) -> warpEnergy.add(StationNbtCodec.encodeWarpEnergy(stationId, energy)));
-        target.put(StationRegistryPayload.WARP_ENERGY, warpEnergy);
-        target.put(StationRegistryPayload.ORBITAL_CLOCK, StationRegistryPayload.encodeClock(logicalTick));
-        if (StationNbtSize.uncompressedBytes(target) > StationLimits.MAX_REGISTRY_NBT_BYTES) {
-            throw new IllegalStateException("Encoded station registry exceeds the fixed NBT bound");
-        }
-        return target;
+    @Override
+    public void save(java.io.File file) {
+        StationOrdinaryWriter.save(this, root, file);
     }
 
-    private void requireOperational() {
-        if (!operational()) {
+    /** Test seam: the ordinary save with the first write's atomic move replaced. */
+    void save(java.io.File file, CheckedSavedDataFile.Committer firstMove) {
+        StationOrdinaryWriter.save(this, root, file, firstMove);
+    }
+
+    /** One root with optional substitutions; the live registry is never mutated (see {@link StationRegistryPayload}). */
+    private CompoundTag encode(CompoundTag target, StationState substitute, Integer substituteBalance,
+                               long logicalTick, FirstEventOutbox outbox) {
+        return StationRegistryPayload.encodeRoot(target, registry.stations(), registry.reservations(),
+                registry.warpEnergyBalances(), substitute, substituteBalance, logicalTick, outbox);
+    }
+
+    /** Ordinary mutators also refuse under a committed override, not only while not operational. */
+    private void requireMutable() {
+        if (!readable()) {
             throw new IllegalStateException("Station registry is blocked by invalid or future data");
         }
     }
@@ -699,7 +770,11 @@ public final class StationRegistrySavedData extends SavedData {
         WRITE_FAILED,
         OUTCOME_UNKNOWN,
         /** Relocation only: the live balance does not cover the cost; nothing was written. */
-        INSUFFICIENT_ENERGY
+        INSUFFICIENT_ENERGY,
+        /** W44 section 1.2: a potentially first warp whose election would exceed a bound; nothing written or debited. */
+        FIRST_EVENT_OVER_BUDGET,
+        /** W44 section 1.2: a potentially first warp while the world-first authority is unavailable; nothing written. */
+        FIRST_EVENT_UNAVAILABLE
     }
 
     /** Result of one fold: energy added to balances, and energy refused (lost from the pending credits). */

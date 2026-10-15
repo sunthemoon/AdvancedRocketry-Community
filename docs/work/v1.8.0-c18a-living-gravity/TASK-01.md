@@ -98,7 +98,7 @@ Additional shared fixture changes require allocation before writes.
 
 ## Leaf B: retained requirements and open finding
 
-The independent review [REVIEW-01.md](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-contract-independent-review-20261007/REVIEW-01.md)
+The independent review REVIEW-01.md (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-contract-independent-review-20261007/REVIEW-01.md`)
 found M1: mounted/passenger propagation is unspecified. The native vehicle
 branch recursively invokes passengers' fall handling, and the living Forge
 event precedes its inherited call. This proves a propagation boundary, not a
@@ -120,8 +120,8 @@ are deferred, not waived. The fall ledger unit remains PLANNED.
 
 ## Evidence and authority
 
-The [read-only task proposal](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-readiness-20261007/TASK-PROPOSAL-01.md)
-and [primary inspection report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-readiness-20261007/REPORT-01.md)
+The read-only task proposal (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-readiness-20261007/TASK-PROPOSAL-01.md`)
+and primary inspection report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-readiness-20261007/REPORT-01.md`)
 bind source `7d7b474eb74a73d6cfb3ffa7271bc22f2f94b678`. Two permitted mapped-Forge
 class reads establish gravity-attribute use and the cancellable fall event before
 native damage; they do not prove transient serialization or runtime tests.
@@ -136,7 +136,7 @@ no implementation or Gate authority is inferred from this draft alone.
 
 Root adopts only leaf A under the user's conditional authorization:
 “授权无未解决 Critical/High/Medium 的审核定稿继续实现；重大语义调整仍另行确认”.
-The [narrow final review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-contract-independent-review-20261007/REVIEW-03.md)
+The narrow final review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-contract-independent-review-20261007/REVIEW-03.md`)
 checks task generation `ea12f008...` and its three related progress records;
 it establishes no new scoped Critical/High/Medium/Low. L2 is addressed in the
 requirements, not claimed fixed in unimplemented source. Earlier reports stay

@@ -1,0 +1,146 @@
+{
+  "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+  "batch_id": "v1.8.0-w53-art-redraw",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "entries": [
+    {
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180ForceFieldData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w53-art-screen",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180ForceFieldData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "5cc35346a9199aea4be30d41d956a9126b4bfc564b8905729f35bdecd6339976",
+      "status": "NEW",
+      "supersedes": {
+        "closest_vanilla": "1.12.2:assets/minecraft/textures/particle/footprint.png",
+        "measure": "rank 0.8043 at half scale",
+        "record": "docs/provenance/v1.8.0-c17b-force-field-new-resources.md",
+        "screen_verdict": "SUSPECT",
+        "target_sha256": "bda31a9d7d9362768d2a44f6822c31bc217402adbd10100d3e3ac695345ac6aa"
+      },
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/force_field_projector_side.png",
+      "target_sha256": "67af6d03c2cc6141f34a91826a73a9087bf1767ebb40c5da3bdd99db1dfd3a62",
+      "transformation": [
+        "Redraw as an original 16x16 grid of two wound field coils beside a central conduit over a vent strip; V180MaterialArt.png, tint 0x8A9DA8; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarArrayData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w53-art-screen",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarArrayData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "efcbeeb32fa6ce657284a3bf1d73fa0ac439318a299a5dec9b6488ec4920cb27",
+      "status": "NEW",
+      "supersedes": {
+        "closest_vanilla": "1.20.1:assets/minecraft/textures/block/barrel_bottom.png",
+        "measure": "rank 0.7793, rotated",
+        "record": "docs/provenance/v1.8.0-c17c-solar-array-new-resources.md",
+        "screen_verdict": "SUSPECT",
+        "target_sha256": "79fe126fdbcfb67e99eafaa12454e1cd5221571e0a61c70ed6401c789ac95efa"
+      },
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/solar_array_side.png",
+      "target_sha256": "25b2ec9f2a164664b659d9e03f05673e5d9adc36b30ed69ff9aad0d641e982f7",
+      "transformation": [
+        "Redraw as an original fixed 16x16 grid of a casing with a junction box and a clamped edge-to-edge conduit; V180MaterialArt.png, tint 0xA5B6C2; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w53-art-screen",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180SolarData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "678bb9f8186793bea863f4d56f4c78ac72b37fb5e9bb4f366615d196aad84fdc",
+      "status": "NEW",
+      "supersedes": {
+        "closest_vanilla": "1.20.1:assets/minecraft/textures/block/respawn_anchor_top_off.png",
+        "measure": "rank 0.7761",
+        "record": "docs/provenance/v1.8.0-c17c-solar-new-resources.md",
+        "screen_verdict": "SUSPECT",
+        "target_sha256": "dde24fae2f0bdf8fcde04e919c373c425203b0ad6023e74f22c58c9e426b44cc"
+      },
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/solar_generator_side.png",
+      "target_sha256": "4a52fb22bbbaa6490a7cb1dc4dfefca6b4f92904f1fe92cd7d393fb913ad65c8",
+      "transformation": [
+        "Redraw as an original 16x16 grid of a charge gauge with level bars beside a slotted vent; V180MaterialArt.png, tint 0xAFBAC4; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "1035fabfc926cba98fcf65b0292c0862cb4da97d",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180StationLightData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w53-art-screen",
+      "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180StationLightData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "56e9a6fd5b21237070e2d956343a98b1129716e6522c54a001441a9149df067d",
+      "status": "NEW",
+      "supersedes": {
+        "closest_vanilla": "1.20.1:assets/minecraft/textures/block/glow_item_frame.png",
+        "measure": "rank 0.9402",
+        "record": "docs/provenance/v1.8.0-c17b-station-light-new-resources.md",
+        "screen_verdict": "HIT",
+        "target_sha256": "b0bcfe326ce7192703cebffb095ead73f0212c62263e0af500ef97f7525ec251"
+      },
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/station_light.png",
+      "target_sha256": "6d9d79868198574ea8e99df47acce477cc55af03e7ca82767dd06fc619cd01db",
+      "transformation": [
+        "Redraw as an original 16x16 grid of three lit tubes with capped ends between screwed slats; V180MaterialArt.png, tint 0xE8EDF2; no bitmap input."
+      ]
+    }
+  ],
+  "human_visual_and_originality_gate": "OPEN",
+  "license": "MIT",
+  "preauthoring_record": "docs/provenance/v1.8.0-w53-art-redraw-preauthoring.md",
+  "related_entries": [
+    {
+      "record": "docs/provenance/v1.8.0-c16d-acquisition.json",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/carbon_brick.png",
+      "target_sha256": "dc2732659aa32814a61c81ad7fc9ddd7891d055b1e8bec45b9556ddc92d54a3c"
+    }
+  ],
+  "review": {
+    "content_digest": "fadff6607f3ca1b95a23df99ea580fa025747089cc4a9434ee1c8d19a3d6d0e6",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "screening": {
+    "command": "python tools/audit/screen_generated_art.py --root src/generated/v1.8/resources --vanilla 1.12.2=<client-1.12.2.jar> --vanilla 1.20.1=<client-1.20.1.jar> --output docs/work/v1.8.0-root-queue/records/W53-logs/generated-art-screen.json",
+    "derivation_tool_path": "tools/audit/vanilla_derivation.py",
+    "derivation_tool_sha256": "19ce7221e0f1ec1446fd21238e2398f4fe235dff71719d8b4dbfaf74cce1416d",
+    "earlier_report_path": "docs/work/v1.8.0-root-queue/records/W53-logs/generated-art-screen-before.json",
+    "earlier_report_sha256": "4c134f378b5cb7cd1330f36a5c54e6160438e80c42f99e956bd22ff0b4d2c6f0",
+    "report_path": "docs/work/v1.8.0-root-queue/records/W53-logs/generated-art-screen.json",
+    "report_sha256": "4a32acd1a625afa2e49557da0ad5337186633f3edbe1becbbf061fceca090bc8",
+    "root": "src/generated/v1.8/resources",
+    "screened_files": 187,
+    "screened_targets": {
+      "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/force_field_projector_side.png": "67af6d03c2cc6141f34a91826a73a9087bf1767ebb40c5da3bdd99db1dfd3a62",
+      "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/solar_array_side.png": "25b2ec9f2a164664b659d9e03f05673e5d9adc36b30ed69ff9aad0d641e982f7",
+      "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/solar_generator_side.png": "4a52fb22bbbaa6490a7cb1dc4dfefca6b4f92904f1fe92cd7d393fb913ad65c8",
+      "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/station_light.png": "6d9d79868198574ea8e99df47acce477cc55af03e7ca82767dd06fc619cd01db",
+      "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/carbon_brick.png": "dc2732659aa32814a61c81ad7fc9ddd7891d055b1e8bec45b9556ddc92d54a3c"
+    },
+    "thresholds": "Unchanged ADR-061 section 4.8 tool constants; non-CLEAR is failure.",
+    "tool_path": "tools/audit/screen_generated_art.py",
+    "tool_sha256": "bb9935fbf7fcc62818084b68ef4784208fb15304adc62db666f5462374c04516"
+  },
+  "source_branch": "codex/v1.8.0-w53-art-screen",
+  "source_commit": "0c1475a323c27d1f05eecfb4d5fb6ca03eb82676",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "target_version": "v1.8.0"
+}

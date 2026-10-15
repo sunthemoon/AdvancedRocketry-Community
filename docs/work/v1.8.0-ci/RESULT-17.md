@@ -24,7 +24,7 @@ attempt 1 / job 112512823966. Overall **FAILED** at the required GameTest step.
 
 ## Raw association and independent recount
 
-The [collector report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-8d521-ci-collection-20261007/REPORT-01.md),
+The collector report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-8d521-ci-collection-20261007/REPORT-01.md`),
 SHA256 `c0a9102a58fd1f5d415ead87249390a92153c319819f01421d942b3263ff7cd3`,
 records one bounded regression-artifact and one attempt-log retrieval, each exit
 0. Artifact 11445932693 is 1,753,351 bytes / SHA256
@@ -32,7 +32,7 @@ records one bounded regression-artifact and one attempt-log retrieval, each exit
 matching its API digest. Only the output-root layout is adapted; download,
 member, path, digest, CRC and credential bounds remain unchanged.
 
-Root's separate [raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-resource-8d521-raw-audit-20261007-01/AUDIT-01.json),
+Root's separate raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-resource-8d521-raw-audit-20261007-01/AUDIT-01.json`),
 SHA256 `1cf90ed56a2abbbbcae96fbc0a1c00776b37f63559d6898dc2e33b33c47e2639`,
 completes at tool `0b1256`, exit 0. It rehashes 397 raw members plus two receipts
 before/after without drift, recounts actual XML children and suite attributes,
@@ -44,8 +44,8 @@ bytes are complete. No Java/network or original ZIP/JAR-byte replay occurs.
 The new suite XML is 2,165 bytes / SHA256
 `9efefa9d47a4bbb2e6d76418239ddcdd2bdb2fa7d4af7d6ebecd13998420ecd0`;
 all seven literal XML/path/hash bindings are in
-[FOCUSED-FACTS-02.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-8d521-ci-collection-20261007/FOCUSED-FACTS-02.json).
-The [canonical GameTest log](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-8d521-ci-collection-20261007/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log)
+FOCUSED-FACTS-02.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-8d521-ci-collection-20261007/FOCUSED-FACTS-02.json`).
+The canonical GameTest log (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-8d521-ci-collection-20261007/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`)
 is 1,568,967 bytes / SHA256
 `b37ad3ddd77f588060119e50db6fafb851c35ba237db997cd362543c079965a4`.
 

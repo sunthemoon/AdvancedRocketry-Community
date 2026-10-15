@@ -143,7 +143,8 @@ public final class V180StationControlData implements DataProvider {
                 "空间站已在使用该轨道距离。", "空间站姿态已设定。", "空间站已在使用该姿态。",
                 "空间站的重力或轨道刚刚更改；请等待 5 秒。", "空间站轨道时钟已耗尽；只能停止旋转。",
                 "请先停止旋转再选择固定姿态。", "请站在控制器 8 格内并位于其所属空间站内。",
-                "请在控制器 5 格内放置本空间站已加载的跃迁核心。", "每半秒只能进行一次控制更改；请重试。"};
+                "请在控制器 5 格内放置本空间站已加载的跃迁核心。", "每半秒只能进行一次控制更改；请重试。",
+                "世界首次记录暂时不可用；请稍后再尝试跃迁。", "玩家过多或空间站存储空间不足，无法记录首次跃迁。"};
         StationManagementCode[] all = StationManagementCode.values();
         if (values.length != all.length) {
             throw new IllegalStateException("Every station management code needs a Chinese string");

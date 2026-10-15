@@ -704,10 +704,13 @@ outcome and the audit line are kept.
   refuses later ones, with one WARN (`ARCE_STATION_NOTICE_NOT_KEPT`) per refusal. It cannot be
   reached in practice.
 
-**Open follow-ups from the review:**
-- a new member is shown the latest outcome from before they joined (F8);
-- default station names contain the creator's player name (F9);
-- two tests could be tightened (F10).
+**Follow-ups from the review (closed 2026-10-15):**
+- F8, a new member is shown the latest outcome from before they joined: Root accepted it as
+  section 5.3's rule. An unacknowledged member sees the latest outcome once, and a new member is
+  unacknowledged. The summary names no member.
+- F9, default station names contain the creator's player name: W55 corrected the records
+  (`deed8855`).
+- F10, two tests could be tightened: W55 tightened them (`d2a846f1`).
 
 ## 6. Landing pads, light and force fields (C17b)
 
@@ -846,6 +849,20 @@ affects only that cleanup file, not other SavedData files. Recovery requires the
 same backup/offline repair procedure. Native stop/restart and human risk acceptance
 remain separate evidence and are not granted by this implementation note.
 
+### W59 implementation note: empty reservations of unowned projectors
+
+This note documents reservation mechanics, not a changed decision. Since W04F every readable
+projector in a loaded Level reserves one cleanup-root entry, unowned ones included. An unowned
+projector's entry uses the all-zero owner UUID as an internal sentinel and has zero claims; it grants
+no ownership or effect, and binding by a connected player replaces it in place without another slot.
+When NBT replaces a live projector's identity (an operator's item `BlockEntityTag`, a structure
+template placed into a live Level, `/setblock` or `/data`), the projector releases its previous entry
+only if that entry is exactly its own non-orphan, zero-claim sentinel entry, and then reserves the
+loaded identity under the ordinary admission rules. A refused root, a full root without that entry,
+and a loaded identity whose key holds another entry or a tombstone refuse as before. A bound, claimed
+or foreign entry is never released. Chunk loads from disk are unchanged. No save refusal is added
+(W59; W04F review N5).
+
 ### W13 implementation note: landing-pad save protection
 
 This implementation note does not change a decision or accept risk R-023.
@@ -866,6 +883,15 @@ corresponding BE identities offline on a copy, then verify a clean save and two
 restarts. Restart alone cannot repair either root; resource/flight journals must
 not be reset to clear a pad. Native forced-stop and operator acceptance remain
 separate verification, not supplied by an in-memory round trip.
+
+**Known limitation (W13F review N1, Root decision 2026-10-15).** The station-wide occupancy
+search visits only loaded, accessible entity sections and never loads a chunk. A rocket parked
+where the entities are unloaded or still loading is not found, so an arrival can be placed over
+it. v1.8 records this limitation. Two fixes are reconsidered with W11b3's preparation contract:
+requiring loaded entities in every arrival chunk (at most 16, without loading), and a bounded
+index of parked rocket regions (new persisted state, which needs a design note and a review).
+A refusal now logs one INFO line, `ARCE_PAD_OCCUPANCY_REFUSED`, naming the blocking rocket
+(W13F review N3, W55).
 
 ## 7. Beacon and finder (C17c)
 
@@ -1027,6 +1053,26 @@ acknowledgment and receipt retirement. Include register -> decommission -> sourc
 save/crash/replay with both live and missing satellites. Legacy registry raw-root
 preservation and live quotas remain unchanged. Exactly-once is conditional on the
 accepted D3-A proof, never inferred from two clean restarts.
+
+### W27b implementation note: the bay block (deployment disabled)
+
+This note documents mechanics, not a changed decision; the design is `records/W27A-DESIGN.md` section 6,
+and the risk is R-038. W27b (merge `c2aa5319`) adds `advancedrocketrycommunity:rocket_satellite_bay`: a
+one-slot block whose menu and item capability share one handler, a schema-1 root (owner, then at most
+one of `package` or `consumed_op`; the package bounded at 4,096 bytes, depth 16, 256 nodes, `Count` 1),
+the package identity decoder, and the host rocket adapter `satellite_bay_v1` inside the existing
+128-payload budget. Deployment, receipts and admission are absent until W27c1 to W27e.
+
+A valid bay drops its package exactly once and an empty bay on a normal break or explosion; there is
+no `BlockEntityTag` carrier and no owner restoration on placement. A raw, unknown, future or quarantined
+root, or an unavailable package, is guarded: it refuses player break, leaves the explosion list, drops
+nothing, and is saved verbatim. A bounded native preflight decides the save (review finding W27B-R1):
+a root the terrain writer and reader keep losslessly, or one too large to examine within the work
+budget, is saved verbatim without any denial; only an observed incompatibility (over the native depth,
+a string too long for modified UTF-8, a list of mixed or end tags, a non-canonical NaN) uses the
+existing `GuardedChunkSaves` denial. Each load into a guarded state and each refused live replacement
+writes one audit WARN. The independent review is `D:/GitHub/ARCE-Task-Evidence/root-queue/W27B-review/REVIEW.md`
+(SHA-256 `8ea41a4c29a117f9095acbad62e3e743dbadf31b4b99341e645f6b9d43da1e53`).
 
 ## 9. Solar generator and array (C17c)
 

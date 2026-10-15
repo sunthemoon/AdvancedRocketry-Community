@@ -20,7 +20,7 @@ cancellation, removal, emission or restart. The
 [physical lifecycle task](../work/v1.8.0-c16a-hatches/EMPTY-LIFECYCLE-TASK-01.md)
 still requires complete native and persistence witnesses.
 
-The [fixed native investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-native-outer-hook-feasibility-20261007/REPORT-01.md)
+The fixed native investigation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-native-outer-hook-feasibility-20261007/REPORT-01.md`)
 examines mapped Forge 1.20.1-47.4.10. Placement approval is inside the native
 operation, before later notification/stat callbacks; creative source restoration
 is after item use. Break approval precedes tool mutation, removal and drops.
@@ -56,7 +56,7 @@ Java `try/finally`:
 The `tick` invocation completes delayed ordinary mining; intercepting only
 `destroyAndAck` would omit that route. Exact JVM descriptors, bytecode/line facts
 and archive/member hashes are retained in the linked investigation and
-[authored proposal](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-native-outer-hook-adr-proposal-20261007/PROPOSED-ADR-068-01.md).
+authored proposal (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-native-outer-hook-adr-proposal-20261007/PROPOSED-ADR-068-01.md`).
 
 Do not overwrite native methods, repost events, recurse into game-mode dispatch,
 replace permission checks or substitute a source stack. Unrelated operations
@@ -86,8 +86,8 @@ result/throwable. Cleanup must not mask a native exception. A separately adopted
 protective disposition must be established before release if an outcome remains
 uncertain; indefinitely retaining a busy operation is not recovery.
 
-The [save-design investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-save-design-20261007/REPORT-01.md)
-and [pre-serialization facts](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-hatch-pre-serialization-native-followup-20261007/REPORT-01.md)
+The save-design investigation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-save-design-20261007/REPORT-01.md`)
+and pre-serialization facts (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-hatch-pre-serialization-native-followup-20261007/REPORT-01.md`)
 require both consumers of the same qualified held operation:
 
 1. Before owner EMIT/inherited serialization, prevent incomplete emission only

@@ -20,8 +20,8 @@ Actual child exit 0: **200 tests /0 failures, errors or skips**. Module counts a
 35 stages +40 terminals +52 JSON +39 phase01 +34 properties. Unittest time is
 2.962 seconds, child elapsed is 3.171840 seconds and the full replay helper takes
 6.632004 seconds. Raw suite stdout/stderr are command 26 in the
-[command ledger](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/STAGES-FIXED-REPLAY-COMMANDS-01.json).
-The [replay receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/STAGES-FIXED-REPLAY-01.json)
+command ledger (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/STAGES-FIXED-REPLAY-COMMANDS-01.json`).
+The replay receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/STAGES-FIXED-REPLAY-01.json`)
 binds the exact argv, environment, source SHA and 24 selected Git/live inputs
 before/after. There is zero named-input drift; this is not a whole-source snapshot.
 

@@ -39,7 +39,7 @@ final class PopulatedWorldDataPreservationTest {
         for (int restart = 0; restart < 3; restart++) {
             WorldDataMigrationService.MigrationReport report = new WorldDataMigrationService().migrate(world);
             assertEquals(MigrationDiagnosticId.DATA_CURRENT, report.diagnosticId());
-            assertEquals(7, report.managedFileCount());
+            assertEquals(8, report.managedFileCount());
             assertEquals(0, report.migratedFileCount());
             assertTrue(report.backupDirectory().isEmpty());
             assertFilesEqual(world, originals);
@@ -80,7 +80,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW"}, mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW", "CLASSIC_PROGRESSION"}, mode = EnumSource.Mode.EXCLUDE)
     void everyPartialCommitFailureRestoresAllPopulatedAuthorities(ManagedSavedDataType failedType) throws Exception {
         Path world = writeWorld(legacyPayloads());
         Map<ManagedSavedDataType, byte[]> originals = capture(world);
@@ -104,7 +104,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW"}, mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW", "CLASSIC_PROGRESSION"}, mode = EnumSource.Mode.EXCLUDE)
     void oneFutureRootBlocksTheWholePopulatedUpgradeBeforeAnyWrite(ManagedSavedDataType futureType) throws Exception {
         Map<ManagedSavedDataType, CompoundTag> payloads = legacyPayloads();
         payloads.get(futureType).putInt("schema_version", futureType.currentSchemaVersion() + 1);
@@ -112,7 +112,7 @@ final class PopulatedWorldDataPreservationTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW"}, mode = EnumSource.Mode.EXCLUDE)
+    @EnumSource(value = ManagedSavedDataType.class, names = {"ENDGAME", "RESOURCE_ESCROW", "CLASSIC_PROGRESSION"}, mode = EnumSource.Mode.EXCLUDE)
     void malformedAuthorityElementCannotBeReplacedWithAnEmptyCollection(ManagedSavedDataType type) throws Exception {
         Map<ManagedSavedDataType, CompoundTag> payloads = legacyPayloads();
         String field = switch (type) {
@@ -121,7 +121,7 @@ final class PopulatedWorldDataPreservationTest {
             case ROCKET_TRANSFERS -> "transfers";
             case STATIONS -> "stations";
             case SATELLITE_MISSIONS -> "missions";
-            case ENDGAME, RESOURCE_ESCROW -> throw new AssertionError("no legacy schema for this root");
+            case ENDGAME, RESOURCE_ESCROW, CLASSIC_PROGRESSION -> throw new AssertionError("no legacy schema for this root");
         };
         ListTag malformed = new ListTag();
         malformed.add(IntTag.valueOf(7));
@@ -209,16 +209,21 @@ final class PopulatedWorldDataPreservationTest {
         return representable;
     }
 
-    /** Legacy worlds predate v1.7, so they carry no endgame root. */
+    /** Legacy worlds predate v1.7, so they carry no endgame, escrow or classic progression root. */
     private static Map<ManagedSavedDataType, CompoundTag> legacyPayloads() {
         Map<ManagedSavedDataType, CompoundTag> payloads = PopulatedManagedDataFixture.currentPayloads();
         payloads.remove(ManagedSavedDataType.ENDGAME);
         payloads.remove(ManagedSavedDataType.RESOURCE_ESCROW);
+        payloads.remove(ManagedSavedDataType.CLASSIC_PROGRESSION);
         payloads.values().forEach(payload -> {
             payload.putInt("schema_version", 1);
             payload.remove("format_epoch");
         });
+        // W44 section 2.2: a legacy journal root carries no Moon landing outbox.
+        payloads.get(ManagedSavedDataType.ROCKET_TRANSFERS).remove("classic_first_moon_landing");
         payloads.get(ManagedSavedDataType.STATIONS).remove("warp_energy");
+        // W44 section 1.4: a legacy station root carries no first-warp outbox.
+        payloads.get(ManagedSavedDataType.STATIONS).remove("classic_first_warp");
         // ADR-065: a legacy root has no orbital clock and its records no orbital controls.
         payloads.get(ManagedSavedDataType.STATIONS).remove("orbital_clock");
         payloads.get(ManagedSavedDataType.STATIONS).getList("stations", CompoundTag.TAG_COMPOUND)

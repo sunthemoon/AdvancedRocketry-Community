@@ -71,6 +71,12 @@ public enum ManagedSavedDataType {
                     new RequiredTag("issued_through", Tag.TAG_LONG), new RequiredTag("writer_generation", Tag.TAG_LONG),
                     new RequiredTag("issued_launch_serial", Tag.TAG_LONG), new RequiredTag("rocket_authorities", Tag.TAG_LIST),
                     new RequiredTag("armed_flights", Tag.TAG_LIST))
+    ),
+    /** W44 section 3.1: the world-first receipt store, schema 1 from introduction, so there is no legacy migration. */
+    CLASSIC_PROGRESSION(
+            "v1.8.0", "advancedrocketrycommunity_classic_progression", 256L * 1_024L,
+            List.of(new RequiredTag("first_moon_landing", Tag.TAG_COMPOUND),
+                    new RequiredTag("first_station_warp", Tag.TAG_COMPOUND))
     );
 
     private static final long FILE_OVERHEAD_BYTES = 64L * 1024L;
@@ -78,6 +84,16 @@ public enum ManagedSavedDataType {
     private static final String ORBITAL_CLOCK_KEY = "orbital_clock";
     private static final String SATELLITE_INSTANCES_KEY = "instances";
     private static final String SATELLITE_SAVE_EPOCH_KEY = "save_epoch";
+    /** W44 section 1.1: the first-warp outbox of station root 5 with the new epoch. */
+    public static final String FIRST_STATION_WARP_KEY = "classic_first_warp";
+    /** W44 section 1.4: the current station root 5 epoch, which requires the outbox. */
+    public static final String STATION_FIRST_WARP_EPOCH = "v1.8.0-station-first-warp";
+    /** W44 section 9.1: the unreleased pre-W44 root 5 epoch, migrated once by the exact whitelist. */
+    public static final String STATION_PRE_RELEASE_EPOCH = "v1.8.0-station-orbital-controls";
+    /** W44 section 2.1: the Moon landing outbox of journal root 3. */
+    public static final String FIRST_MOON_LANDING_KEY = "classic_first_moon_landing";
+    /** W44 section 2.2: transfer journal root 3, independent of the per-record schema 2. */
+    public static final int FIRST_MOON_LANDING_JOURNAL_SCHEMA = 3;
 
     private final String introducedIn;
     private final String dataName;
@@ -114,6 +130,8 @@ public enum ManagedSavedDataType {
             case SATELLITE_MISSIONS -> SatelliteLimits.REGISTRY_SCHEMA_VERSION;
             case ENDGAME -> EndgameLimits.ROOT_SCHEMA_VERSION;
             case RESOURCE_ESCROW -> 2;
+            case CLASSIC_PROGRESSION -> 1;
+            case ROCKET_TRANSFERS -> FIRST_MOON_LANDING_JOURNAL_SCHEMA;
             default -> SavedDataSchemaMigrator.CURRENT_SCHEMA_VERSION;
         };
     }
@@ -131,7 +149,7 @@ public enum ManagedSavedDataType {
             return "v1.5.0-station-warp";
         }
         if (this == STATIONS && schema == StationLimits.CONTROLS_REGISTRY_SCHEMA_VERSION) {
-            return "v1.8.0-station-orbital-controls";
+            return STATION_FIRST_WARP_EPOCH;
         }
         if (this == SATELLITE_MISSIONS) {
             // Historical epochs are literals; a later root changes the current constant, never these.
@@ -142,11 +160,17 @@ public enum ManagedSavedDataType {
                 return "v1.8.0-ground-surveys";
             }
         }
+        if (this == ROCKET_TRANSFERS && schema == FIRST_MOON_LANDING_JOURNAL_SCHEMA) {
+            return "v1.8.0-first-moon-landing";
+        }
         if (this == ENDGAME) {
             return EndgameLimits.ROOT_FORMAT_EPOCH;
         }
         if (this == RESOURCE_ESCROW) {
             return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLimits.EPOCH;
+        }
+        if (this == CLASSIC_PROGRESSION) {
+            return "v1.8.0-classic-progression";
         }
         return SavedDataSchemaMigrator.FORMAT_EPOCH;
     }
@@ -161,7 +185,7 @@ public enum ManagedSavedDataType {
 
     /** Whether older roots of this type exist; the endgame root was introduced at its current schema. */
     public boolean hasLegacySchema() {
-        return this != ENDGAME && this != RESOURCE_ESCROW;
+        return this != ENDGAME && this != RESOURCE_ESCROW && this != CLASSIC_PROGRESSION;
     }
 
     /**
@@ -218,6 +242,28 @@ public enum ManagedSavedDataType {
                         MigrationDiagnosticId.INVALID_SCHEMA,
                         dataName + " schema " + schema + (clockRoot ? " is missing required " : " cannot carry ")
                                 + ORBITAL_CLOCK_KEY
+                );
+            }
+            // W44 section 1.4: the outbox is required exactly when root 5 carries the new epoch.
+            boolean outboxRoot = clockRoot && STATION_FIRST_WARP_EPOCH.equals(payload.getString("format_epoch"));
+            if (outboxRoot ? !payload.contains(FIRST_STATION_WARP_KEY, Tag.TAG_COMPOUND)
+                    : payload.contains(FIRST_STATION_WARP_KEY)) {
+                throw new SavedDataMigrationException(
+                        MigrationDiagnosticId.INVALID_SCHEMA,
+                        dataName + " schema " + schema + (outboxRoot ? " is missing required " : " cannot carry ")
+                                + FIRST_STATION_WARP_KEY
+                );
+            }
+        }
+        if (this == ROCKET_TRANSFERS) {
+            // W44 section 2.2: root 3 requires the Moon landing outbox; older roots must not carry one.
+            boolean outboxRoot = schema >= FIRST_MOON_LANDING_JOURNAL_SCHEMA;
+            if (outboxRoot ? !payload.contains(FIRST_MOON_LANDING_KEY, Tag.TAG_COMPOUND)
+                    : payload.contains(FIRST_MOON_LANDING_KEY)) {
+                throw new SavedDataMigrationException(
+                        MigrationDiagnosticId.INVALID_SCHEMA,
+                        dataName + " schema " + schema + (outboxRoot ? " is missing required " : " cannot carry ")
+                                + FIRST_MOON_LANDING_KEY
                 );
             }
         }

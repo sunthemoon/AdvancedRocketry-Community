@@ -117,11 +117,16 @@ public final class StationNoticeGameTests {
                                 "A player outside the region was told: " + alpha.notices(untold));
                     }
                     // Hidden-region privacy: the visitor's exact notices above carry no ID, and nothing at all
-                    // the visitor received names a member, the owner or either station.
+                    // the visitor received names a member, the owner or either station. Tokens leave out hover and
+                    // click events, so the full JSON of every message is checked too (W22 review F10).
                     List<String> everything = alpha.tokens.get(visitorId);
+                    List<String> serialized = alpha.serialized.get(visitorId);
+                    helper.assertTrue(serialized.size() == everything.size() && !serialized.isEmpty(),
+                            "The visitor's full messages were not captured: " + serialized);
                     for (UUID hidden : List.of(memberId, alpha.ownerId, alpha.id(), beta.id(), beta.ownerId)) {
-                        helper.assertTrue(everything.stream().noneMatch(token -> token.contains(hidden.toString())),
-                                "The visitor learned " + hidden + ": " + everything);
+                        helper.assertTrue(everything.stream().noneMatch(token -> token.contains(hidden.toString()))
+                                        && serialized.stream().noneMatch(json -> json.contains(hidden.toString())),
+                                "The visitor learned " + hidden + ": " + serialized);
                     }
                     // Nothing the visitor received carries the cost, the balance or the cost class.
                     helper.assertTrue(everything.stream().noneMatch(token -> token.contains("2000000")

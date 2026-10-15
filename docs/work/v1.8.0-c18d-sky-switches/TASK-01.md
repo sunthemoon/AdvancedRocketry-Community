@@ -57,7 +57,7 @@ ClientSkyEvents.java, PlanetarySkyClient.java, matching client/sky/PlanetaryEffe
 and a new SOURCE-01.md in this task directory, in that isolated worktree.
 All other files, especially central registry/config/status, are forbidden.
 
-Primary API investigation is [the bounded facts report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-primary-api-facts-20261007-01/REPORT-01.md),
+Primary API investigation is the bounded facts report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-primary-api-facts-20261007-01/REPORT-01.md`),
 SHA-256 `f29fbe9969f368f20a0aeaabf69a0b35fa2fcd5710011ea67a9f3c1521507978`.
 Root reads and hashes it (`bf4422`, exit 0). It checks a non-final cloud getter,
 four Forge boolean hooks/caller consumption and viewport fog consumption.

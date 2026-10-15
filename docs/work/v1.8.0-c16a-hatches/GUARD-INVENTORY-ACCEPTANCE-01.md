@@ -4,8 +4,8 @@ Date:2026-10-04.Status:TECHNICAL_INVENTORY_ACCEPTED_FOR_ORDINARY_CUT_ONLY.
 
 Under the owner's conditional no-unresolved-Critical/High/Medium authority,
 Root adopts the exact ordinary-removal/consuming-placement inventory delta in
-[proposal01](guard-inventory-proposal-01.zip),after different-agent
-[review01](reviews/guard-inventory-independent-01.zip). This is a technical
+proposal01 (`guard-inventory-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)),after different-agent
+review01 (`reviews/guard-inventory-independent-01.zip`). This is a technical
 dependency freeze,not public API,source,callback,writer or runtime acceptance.
 
 Proposal SHA `77cb3f909cd645828f08c4ba60d4db89939b8cabd533d98278f31c30cda0ef9e`;
@@ -26,7 +26,7 @@ managed BE IDs,registration descriptors and private power scope acquire only
 the exact qualified technical definition,not a fabricated live guard or
 provider/conservation/native proof.
 
-[Context addendum01](reviews/guard-inventory-context-addendum-01.zip)
+Context addendum01 (`reviews/guard-inventory-context-addendum-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md))
 `fa7dcfda417284dfd35772ece014c66cd3122452587ac486bc439f7046372684`
 binds the later additive owner note separately;original report remains exact.
 The historical excluded/pending mode rows are not current mode admission.

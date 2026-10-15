@@ -10,7 +10,7 @@ production StackWalker adoption or runtime/Gate approval.
 Fixed source base: b9bec789978de0df67c93e976239d6d36e41532b. Assigned branch
 codex/v1.8.0-sleep-boundary-observation; isolated worktree
 D:/GitHub/arce-v180-sleep-observation-20261009. Canonical executable task:
-[source task 05](D:/GitHub/ARCE-Task-Evidence/v1.8.0/SLEEP-OBSERVATION-SOURCE-TASK-05.md).
+source task 05 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/SLEEP-OBSERVATION-SOURCE-TASK-05.md`).
 Worker source writes are exclusively the new adapterTest classes
 SleepBoundaryObservationFixture.java and SleepBoundaryTrace.java; external
 records stay in sleep-observation-source-20261009-05. Root retains all central

@@ -30,7 +30,7 @@ own tests. Neither chronology limitation is erased by this integration.
 
 ## Root actual commands and results
 
-Root65 evidence is [the external task leaf](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sleep-json-functional-main-integration-20261009-65).
+Root65 evidence is the external task leaf (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sleep-json-functional-main-integration-20261009-65`).
 Each command receipt retains argv/cwd/UTC/exit/raw hashes, before/after Main/index/
 src/user-AGENTS state; 180-second child deadline, 262144 bytes per stream and
 4194304-byte whole evidence leaf. The capture is not a resource/platform helper.

@@ -5,7 +5,7 @@ Date: 2026-10-07. Exact committed and normally published source:
 [Run 37608847289](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37608847289),
 attempt 1 /job 112750895284. Status: RUNNING; metadata only.
 
-Root's [observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-ci-20261007-01/MONITOR-01.json),
+Root's observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-ci-20261007-01/MONITOR-01.json`),
 SHA-256 `d7c41581c59e8e78fed58ddb44399ce78f7fc4d94607268536b6b85eb0dfc932`,
 at **2026-10-07T10:40:21.797971Z** matches exact source/run/attempt/job
 (`567c35`, `003e8a`). Actual clean build/fresh unit step is in progress.

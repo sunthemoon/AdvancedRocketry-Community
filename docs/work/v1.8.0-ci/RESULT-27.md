@@ -5,7 +5,7 @@ Date: 2026-10-07. Exact committed source:
 [Run 37595775604](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37595775604),
 attempt 1 /job 112707924073. Status: RUNNING; metadata only.
 
-Root's [observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-fixture-ci-regression-20261007-01/MONITOR-01.json)
+Root's observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-fixture-ci-regression-20261007-01/MONITOR-01.json`)
 at **2026-10-07T08:44:49.917687Z** records the matching source/run/attempt/job.
 No-cache clean build/fresh unit tests are running. No terminal XML count,
 GameTest result, ERROR count, DataGen qualification or artifact identity is yet

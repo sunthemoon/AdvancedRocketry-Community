@@ -4,7 +4,7 @@ Date: 2026-10-07. Status: implemented-unverified. Scope is the
 [single-message diagnostic](FUEL-DROP-DIAGNOSTIC-TASK-01.md), not a repair.
 
 Root reads/hashes the complete independent
-[review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-source-review-20261007-c16-29ac41/REVIEW-01.md)
+review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-source-review-20261007-c16-29ac41/REVIEW-01.md`)
 (`7f70cc`, exit 0), 4,768 bytes /SHA-256
 `3c0903b2d838b11ab21f7c4efe14a56ae3c1b4170ed999f664e3d89bfc004fa7`.
 Twelve own independent static controls pass, without an introduced scoped
@@ -17,7 +17,7 @@ Root commits only the frozen Java and [source record](FUEL-DROP-DIAGNOSTIC-SOURC
 in the worker at `f0b4a522f07db69d3c4806be140224f148ef5b5e`, then byte-identically
 cherry-picks and normally pushes main source
 `10eb561a5112ee6226e2c52fef1c1cc358c5ef3f` (`01618a`, exit 0).
-[SOURCE-INTEGRATION-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-root-integration-20261007-01/SOURCE-INTEGRATION-01.json)
+SOURCE-INTEGRATION-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-root-integration-20261007-01/SOURCE-INTEGRATION-01.json`)
 has SHA-256 `54e3d0902bf5acaf794a9269c25b91ecb543a2819583758f7ec70ee4eba26add`.
 It checks exact two-path stage/committed blob scope, remote equality, unchanged
 AGENTS and all unrelated state. The Java/record pins are
@@ -27,7 +27,7 @@ AGENTS and all unrelated state. The Java/record pins are
 After all author/reviewer reads are released, Root verifies clean status,
 retained exact blobs/remote and cherry patch-equivalence, then normally removes
 only its ended worktree without force (`003e8a`, exit 0), retaining the branch.
-[WORKTREE-CLEANUP-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-root-integration-20261007-01/WORKTREE-CLEANUP-01.json)
+WORKTREE-CLEANUP-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-root-integration-20261007-01/WORKTREE-CLEANUP-01.json`)
 has SHA-256 `7c4ba8aaacc7d896859003f48114e98c71272748534f6a94188890cafb1ec181`.
 No other worktree, source world or inherited evidence is cleaned.
 

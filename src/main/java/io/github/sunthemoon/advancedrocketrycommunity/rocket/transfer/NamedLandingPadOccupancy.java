@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.RocketLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
@@ -31,6 +32,7 @@ final class NamedLandingPadOccupancy {
         AABB discovery = discoveryBox(arrival, station, level.getMinBuildHeight(), level.getMaxBuildHeight());
         int[] inspected = {0};
         String[] refusal = {null};
+        RocketEntity[] blocker = {null};
         // This index visits only accessible, already-loaded entity sections. It never requests chunks.
         level.getEntities().get(EntityTypeTest.forClass(RocketEntity.class), discovery, rocket -> {
             if (inspected[0] == NamedLandingPadStaging.MAX_OCCUPANCY_ENTITY_INSPECTIONS) {
@@ -45,10 +47,20 @@ final class NamedLandingPadOccupancy {
             // An unreadable nearby rocket cannot establish a safe landing footprint.
             if (snapshot == null || arrival.overlaps(RocketRegion.fromSnapshot(snapshot))) {
                 refusal[0] = OCCUPIED;
+                blocker[0] = rocket;
                 return Continuation.ABORT;
             }
             return Continuation.CONTINUE;
         });
+        if (refusal[0] != null) {
+            // The search spans the whole station, so name what refused it for operators (W13F review N3).
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_PAD_OCCUPANCY_REFUSED reason={} level={} arrival={},{},{} rocket={}"
+                            + " rocket_pos={} snapshot={} inspected={}", refusal[0] == OCCUPIED ? "occupied" : "entity_budget",
+                    level.dimension().location(), arrival.minimum().x(), arrival.minimum().y(), arrival.minimum().z(),
+                    blocker[0] == null ? "none" : blocker[0].getUUID(),
+                    blocker[0] == null ? "none" : blocker[0].blockPosition().toShortString(),
+                    blocker[0] == null ? "none" : blocker[0].snapshot().isPresent() ? "readable" : "unreadable", inspected[0]);
+        }
         return refusal[0];
     }
 

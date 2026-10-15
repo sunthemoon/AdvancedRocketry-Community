@@ -342,6 +342,16 @@ MAX_MARKDOWN_LINKS = 10_000
 MAX_MARKDOWN_ERRORS = 256
 MAX_MARKDOWN_LINK_TARGET_BYTES = 4096
 MAX_MARKDOWN_LINES_PER_FILE = 100_000
+# A sealed Markdown file F may keep a broken link when a committed
+# "<F's stem>-CORRECTION-<id>.md" next to it names the link's line in its single
+# "| Line | Corrected text |" table (W61, after W60's six correction files).
+MARKDOWN_CORRECTION_SUFFIX = re.compile(r"-CORRECTION-[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*\.md")
+MARKDOWN_CORRECTION_HEADER = ["Line", "Corrected text"]
+MARKDOWN_CORRECTION_DELIMITER = re.compile(r"\|\s*:?-{3,}:?\s*\|\s*:?-{3,}:?\s*\|")
+MARKDOWN_CORRECTION_ROW = re.compile(r"\|\s*([^|]*?)\s*\|(.*)\|")
+MAX_MARKDOWN_CORRECTION_FILES = 256
+# Keeps the ls-tree command line well under the Windows limit of 32,767 characters.
+MAX_MARKDOWN_CORRECTION_QUERY_BYTES = 16 * 1024
 MAX_REPOSITORY_INVENTORY_BYTES = 4 * 1024 * 1024
 MAX_REPOSITORY_FILES = 32768
 MAX_REPOSITORY_PATH_BYTES = 4096
@@ -827,8 +837,8 @@ def _git_inventory_command(
     return command
 
 
-def tracked_markdown_files(repository_root: Path = ROOT) -> list[Path]:
-    """Return the bounded, Git-indexed Markdown inventory for validation."""
+def tracked_files(repository_root: Path = ROOT) -> list[str]:
+    """Return the bounded Git index inventory as repository-relative POSIX names."""
 
     repository_root = repository_root.resolve()
     command = [
@@ -847,7 +857,7 @@ def tracked_markdown_files(repository_root: Path = ROOT) -> list[Path]:
     if len(raw_names) > MAX_REPOSITORY_FILES:
         raise ValueError("tracked file inventory exceeds the file-count limit")
 
-    paths: list[Path] = []
+    names: list[str] = []
     for raw_name in raw_names:
         if len(raw_name) > MAX_TRACKED_MARKDOWN_PATH_BYTES:
             raise ValueError("tracked Markdown inventory contains an oversized path")
@@ -864,29 +874,94 @@ def tracked_markdown_files(repository_root: Path = ROOT) -> list[Path]:
             or any(part in {"", ".", ".."} for part in relative.parts)
         ):
             raise ValueError(f"tracked Markdown inventory contains an unsafe path: {name}")
-        path = repository_root.joinpath(*relative.parts)
-        if path.suffix.lower() == ".md":
-            paths.append(path)
+        names.append(name)
+    return names
+
+
+def _tracked_markdown_paths(repository_root: Path, names: list[str]) -> list[Path]:
+    paths = [
+        repository_root.joinpath(*PurePosixPath(name).parts)
+        for name in names
+        if PurePosixPath(name).suffix.lower() == ".md"
+    ]
     if len(paths) > MAX_TRACKED_MARKDOWN_FILES:
         raise ValueError("tracked Markdown inventory exceeds the file-count limit")
     return paths
 
 
-def markdown_link_errors(
-    repository_root: Path, paths: list[Path]
-) -> tuple[list[str], int]:
+def tracked_markdown_files(repository_root: Path = ROOT) -> list[Path]:
+    """Return the bounded, Git-indexed Markdown inventory for validation."""
+
     repository_root = repository_root.resolve()
-    broken: list[str] = []
+    return _tracked_markdown_paths(repository_root, tracked_files(repository_root))
+
+
+@dataclass(frozen=True)
+class TrackedTargets:
+    """The files Git tracks and their directories: the only valid link targets (W72).
+
+    A link to an untracked or ignored file therefore fails in a dirty checkout
+    exactly as it does in a clean clone and on hosted CI.
+    """
+
+    files: frozenset[str]
+    directories: frozenset[str]
+
+    @classmethod
+    def of(cls, names: list[str]) -> "TrackedTargets":
+        directories: set[str] = set()
+        for name in names:
+            parent = PurePosixPath(name).parent
+            while parent.parts and parent.as_posix() not in directories:
+                directories.add(parent.as_posix())
+                parent = parent.parent
+        return cls(frozenset(names), frozenset(directories))
+
+    def holds(self, source: PurePosixPath, target: str) -> bool:
+        """Whether a relative link in tracked file ``source`` names a tracked file or directory."""
+
+        parts = list(source.parent.parts)
+        for part in PurePosixPath(target).parts:
+            if part == "..":
+                if not parts:
+                    return False  # The target leaves the repository.
+                parts.pop()
+            elif part != ".":
+                parts.append(part)
+        name = "/".join(parts)
+        return not name or name in self.files or name in self.directories
+
+
+@dataclass(frozen=True)
+class MarkdownLinkReport:
+    errors: list[str]
+    checked: int
+    excused: int
+    # Correction file (repository-relative POSIX path) -> links it excused.
+    corrections: dict[str, int]
+
+
+def _scan_markdown_links(
+    repository_root: Path, paths: list[Path], tracked: TrackedTargets
+) -> tuple[list[tuple[str, tuple[str, int] | None]], int, set[str]]:
+    """Return raw errors, the link count and the files scanned to the end.
+
+    A broken link's error carries its (file, line) key; file-level and limit
+    errors carry None. Every raw error counts toward MAX_MARKDOWN_ERRORS.
+    """
+
+    broken: list[tuple[str, tuple[str, int] | None]] = []
     checked = 0
     total_bytes = 0
+    completed: set[str] = set()
 
-    def add_error(message: str) -> bool:
+    def add_error(message: str, link: tuple[str, int] | None = None) -> bool:
         if len(broken) >= MAX_MARKDOWN_ERRORS:
             broken.append(
-                f"Markdown validation stopped after {MAX_MARKDOWN_ERRORS} errors"
+                (f"Markdown validation stopped after {MAX_MARKDOWN_ERRORS} errors", None)
             )
             return False
-        broken.append(message)
+        broken.append((message, link))
         return True
 
     for path in sorted(paths):
@@ -901,7 +976,7 @@ def markdown_link_errors(
             )
         except ValueError as exc:
             if not add_error(f"{path}: cannot read tracked Markdown file: {exc}"):
-                return broken, checked
+                return broken, checked, completed
             continue
         total_bytes += len(payload)
         if total_bytes > MAX_MARKDOWN_TOTAL_BYTES:
@@ -909,14 +984,14 @@ def markdown_link_errors(
                 "Tracked Markdown files exceed the aggregate byte limit of "
                 f"{MAX_MARKDOWN_TOTAL_BYTES}"
             )
-            return broken, checked
+            return broken, checked, completed
         try:
             text = payload.decode("utf-8")
         except UnicodeError as exc:
             if not add_error(
                 f"{relative.as_posix()}: cannot decode tracked Markdown as UTF-8: {exc}"
             ):
-                return broken, checked
+                return broken, checked, completed
             continue
 
         in_fence = False
@@ -926,7 +1001,7 @@ def markdown_link_errors(
                     f"{relative.as_posix()}: tracked Markdown exceeds the line-count "
                     f"limit of {MAX_MARKDOWN_LINES_PER_FILE}"
                 )
-                return broken, checked
+                return broken, checked, completed
             source_line = source_line.rstrip("\r\n")
             stripped = source_line.lstrip()
             if stripped.startswith("```") or stripped.startswith("~~~"):
@@ -949,7 +1024,7 @@ def markdown_link_errors(
                         "Markdown validation stopped after the link-count limit of "
                         f"{MAX_MARKDOWN_LINKS}"
                     )
-                    return broken, checked
+                    return broken, checked, completed
                 checked += 1
                 try:
                     target_size = len(target.encode("utf-8", errors="strict"))
@@ -965,33 +1040,271 @@ def markdown_link_errors(
                     or "\\" in target
                 ):
                     if not add_error(
-                        f"{relative.as_posix()}:{line_number} -> unsafe or oversized target"
+                        f"{relative.as_posix()}:{line_number} -> unsafe or oversized target",
+                        (relative.as_posix(), line_number),
                     ):
-                        return broken, checked
+                        return broken, checked, completed
                     continue
-                try:
-                    candidate = (resolved.parent / target).resolve()
-                    valid = candidate.is_relative_to(repository_root) and candidate.exists()
-                except (OSError, RuntimeError, ValueError):
-                    valid = False
+                # W72: the Git index, not the disk, decides whether a target exists.
+                valid = tracked.holds(PurePosixPath(relative.as_posix()), target)
                 if not valid and not add_error(
-                    f"{relative.as_posix()}:{line_number} -> {target}"
+                    f"{relative.as_posix()}:{line_number} -> {target}",
+                    (relative.as_posix(), line_number),
                 ):
-                    return broken, checked
-    return broken, checked
+                    return broken, checked, completed
+        completed.add(relative.as_posix())
+    return broken, checked, completed
+
+
+def markdown_correction_lines(text: str) -> frozenset[int] | None:
+    """Return the lines a correction file names, or None unless exactly parseable.
+
+    The file must hold exactly one "| Line | Corrected text |" table outside
+    code fences. Every row must name a distinct positive line number and give
+    nonempty corrected text.
+    """
+
+    lines = text.splitlines()
+    in_fence = False
+    headers: list[int] = []
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("```") or stripped.startswith("~~~"):
+            in_fence = not in_fence
+            continue
+        if (
+            not in_fence
+            and stripped.startswith("|")
+            and stripped.endswith("|")
+            and [cell.strip() for cell in stripped[1:-1].split("|")]
+            == MARKDOWN_CORRECTION_HEADER
+        ):
+            headers.append(index)
+    if len(headers) != 1 or headers[0] + 1 >= len(lines):
+        return None
+    if MARKDOWN_CORRECTION_DELIMITER.fullmatch(lines[headers[0] + 1].strip()) is None:
+        return None
+    named: set[int] = set()
+    for line in lines[headers[0] + 2 :]:
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            break
+        row = MARKDOWN_CORRECTION_ROW.fullmatch(stripped)
+        if (
+            row is None
+            or re.fullmatch(r"[1-9][0-9]{0,5}", row.group(1)) is None
+            or not row.group(2).strip()
+        ):
+            return None
+        number = int(row.group(1))
+        if number > MAX_MARKDOWN_LINES_PER_FILE or number in named:
+            return None
+        named.add(number)
+    return frozenset(named) if named else None
+
+
+def _committed_markdown_blobs(
+    repository_root: Path, relatives: list[str]
+) -> dict[str, str]:
+    """Return the HEAD blob object ID of each listed path that HEAD holds as a file."""
+
+    payload = _bounded_git_stdout(
+        [
+            *_git_inventory_command(repository_root),
+            "ls-tree",
+            "-z",
+            "--full-tree",
+            "HEAD",
+            "--",
+            *relatives,
+        ],
+        max_bytes=MAX_REPOSITORY_INVENTORY_BYTES,
+        description="committed Markdown correction query",
+    )
+    blobs: dict[str, str] = {}
+    for entry in payload.split(b"\0"):
+        if not entry:
+            continue
+        header, separator, raw_name = entry.partition(b"\t")
+        fields = header.split(b" ")
+        if not separator or len(fields) != 3:
+            raise ValueError("committed Markdown correction query returned a malformed entry")
+        mode, kind, object_id = (field.decode("ascii") for field in fields)
+        if kind == "blob" and mode in {"100644", "100755"}:
+            blobs[raw_name.decode("utf-8")] = object_id
+    return blobs
+
+
+def _git_blob_id(payload: bytes, object_id: str) -> str | None:
+    algorithm = {40: "sha1", 64: "sha256"}.get(len(object_id))
+    if algorithm is None:
+        return None
+    return hashlib.new(algorithm, b"blob %d\0" % len(payload) + payload).hexdigest()
+
+
+def _markdown_corrections(
+    repository_root: Path,
+    paths: list[Path],
+    broken_lines: dict[str, set[int]],
+    completed: set[str],
+) -> tuple[dict[tuple[str, int], str], list[str]]:
+    """Map excused (file, line) pairs to their correction file, plus diagnostics."""
+
+    inventory: dict[str, Path] = {}
+    for path in paths:
+        try:
+            inventory[path.absolute().relative_to(repository_root).as_posix()] = path
+        except ValueError:
+            continue
+    by_directory: dict[PurePosixPath, list[str]] = {}
+    for relative in sorted(inventory):
+        by_directory.setdefault(PurePosixPath(relative).parent, []).append(relative)
+
+    candidates: dict[str, list[str]] = {}
+    for relative in sorted(broken_lines):
+        sealed = PurePosixPath(relative)
+        prefix = sealed.stem
+        matches = [
+            name
+            for name in by_directory.get(sealed.parent, [])
+            if PurePosixPath(name).name.startswith(prefix)
+            and MARKDOWN_CORRECTION_SUFFIX.fullmatch(PurePosixPath(name).name[len(prefix) :])
+        ]
+        if matches:
+            candidates[relative] = matches
+    if not candidates:
+        return {}, []
+    correction_names = sorted({name for names in candidates.values() for name in names})
+    if len(correction_names) > MAX_MARKDOWN_CORRECTION_FILES:
+        return {}, [
+            "Markdown correction files exceed the limit of "
+            f"{MAX_MARKDOWN_CORRECTION_FILES}"
+        ]
+    if sum(len(name.encode("utf-8")) + 1 for name in correction_names) > (
+        MAX_MARKDOWN_CORRECTION_QUERY_BYTES
+    ):
+        return {}, [
+            "Markdown correction file paths exceed the query limit of "
+            f"{MAX_MARKDOWN_CORRECTION_QUERY_BYTES} bytes"
+        ]
+    try:
+        committed = _committed_markdown_blobs(repository_root, correction_names)
+    except (UnicodeError, ValueError) as exc:
+        return {}, [f"Cannot confirm committed Markdown correction files: {exc}"]
+
+    named_lines: dict[str, frozenset[int]] = {}
+    rejected: dict[str, str] = {}
+    for name in correction_names:
+        if name in broken_lines:
+            rejected[name] = "it has broken links of its own"
+            continue
+        if name not in completed:
+            rejected[name] = "it was not fully checked"
+            continue
+        object_id = committed.get(name)
+        if object_id is None:
+            rejected[name] = "it is not committed at HEAD"
+            continue
+        try:
+            payload = read_bounded_bytes(
+                inventory[name],
+                MAX_MARKDOWN_FILE_BYTES,
+                f"Markdown correction file {name}",
+                trusted_root=repository_root,
+            )
+        except ValueError as exc:
+            rejected[name] = f"it cannot be read: {exc}"
+            continue
+        if _git_blob_id(payload, object_id) != object_id:
+            rejected[name] = "it differs from its committed blob"
+            continue
+        try:
+            lines = markdown_correction_lines(payload.decode("utf-8"))
+        except UnicodeError:
+            lines = None
+        if lines is None:
+            rejected[name] = (
+                "it names no line in a single '| Line | Corrected text |' table"
+            )
+            continue
+        named_lines[name] = lines
+
+    excused: dict[tuple[str, int], str] = {}
+    diagnostics: list[str] = []
+    for relative, names in candidates.items():
+        for line_number in sorted(broken_lines[relative]):
+            for name in names:
+                if line_number in named_lines.get(name, frozenset()):
+                    excused[(relative, line_number)] = name
+                    break
+        if any((relative, line_number) not in excused for line_number in broken_lines[relative]):
+            diagnostics.extend(
+                f"{name}: correction file for {relative} not used: {rejected[name]}"
+                for name in names
+                if name in rejected
+            )
+    return excused, diagnostics
+
+
+def markdown_link_report(
+    repository_root: Path, paths: list[Path], tracked: TrackedTargets | None = None
+) -> MarkdownLinkReport:
+    """Check tracked Markdown links, excusing those that committed correction files name.
+
+    A link resolves only to a file or directory in ``tracked``, which defaults to
+    the repository's Git index inventory.
+    """
+
+    repository_root = repository_root.resolve()
+    if tracked is None:
+        tracked = TrackedTargets.of(tracked_files(repository_root))
+    raw, checked, completed = _scan_markdown_links(repository_root, paths, tracked)
+    broken_lines: dict[str, set[int]] = {}
+    for _, link in raw:
+        if link is not None:
+            broken_lines.setdefault(link[0], set()).add(link[1])
+    excusable, diagnostics = _markdown_corrections(
+        repository_root, paths, broken_lines, completed
+    )
+    errors: list[str] = []
+    corrections: dict[str, int] = {}
+    for message, link in raw:
+        correction = excusable.get(link) if link is not None else None
+        if correction is None:
+            errors.append(message)
+        else:
+            corrections[correction] = corrections.get(correction, 0) + 1
+    errors.extend(diagnostics)
+    return MarkdownLinkReport(
+        errors=errors,
+        checked=checked,
+        excused=sum(corrections.values()),
+        corrections=corrections,
+    )
+
+
+def markdown_link_errors(
+    repository_root: Path, paths: list[Path], tracked: TrackedTargets | None = None
+) -> tuple[list[str], int]:
+    report = markdown_link_report(repository_root, paths, tracked)
+    return report.errors, report.checked
 
 
 def check_markdown_links(results: Results) -> None:
     try:
-        paths = tracked_markdown_files(ROOT)
+        names = tracked_files(ROOT)
+        paths = _tracked_markdown_paths(ROOT.resolve(), names)
     except ValueError as exc:
         results.fail(f"Cannot enumerate authoritative Markdown files: {exc}")
         return
-    broken, checked = markdown_link_errors(ROOT, paths)
-    if broken:
-        results.fail("Broken Markdown links: " + "; ".join(broken))
+    report = markdown_link_report(ROOT, paths, TrackedTargets.of(names))
+    if report.errors:
+        results.fail("Broken Markdown links: " + "; ".join(report.errors))
     else:
-        results.passed(f"Markdown relative links resolve ({checked} checked)")
+        results.passed(
+            f"Markdown relative links resolve ({report.checked} checked, "
+            f"{report.excused} excused by correction files)"
+        )
 
 
 def repository_files(repository_root: Path = ROOT) -> list[Path]:

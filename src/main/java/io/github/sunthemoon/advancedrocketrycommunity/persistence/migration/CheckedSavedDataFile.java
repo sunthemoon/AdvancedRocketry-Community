@@ -90,6 +90,24 @@ public final class CheckedSavedDataFile {
         return Optional.of(BoundedSavedDataIo.read(file, type).getCompound("data"));
     }
 
+    /**
+     * W44 section 3.6: only a {@link NoSuchFileException} from a no-follow stat proves a root absent. Any entry,
+     * whatever its type, is PRESENT; any other stat failure is UNKNOWN. {@code Files.exists} is never used, because
+     * it reports "cannot be determined" as absent.
+     */
+    public static Presence presence(Path supplied) {
+        return presence(supplied, CheckedSavedDataFile::stat);
+    }
+
+    /** Test seam for a failing stat; production passes the private no-follow stat. */
+    static Presence presence(Path supplied, Stat stat) {
+        try {
+            return stat.read(supplied.toAbsolutePath().normalize()) == null ? Presence.ABSENT : Presence.PRESENT;
+        } catch (IOException | RuntimeException failure) {
+            return Presence.UNKNOWN;
+        }
+    }
+
     private static void requireFileOrAbsent(Path file) throws IOException {
         var attributes = stat(file);
         if (attributes != null && !attributes.isRegularFile()) {
@@ -100,6 +118,15 @@ public final class CheckedSavedDataFile {
     private static BasicFileAttributes stat(Path path) throws IOException {
         try { return Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS); }
         catch (NoSuchFileException absent) { return null; }
+    }
+
+    /** ABSENT is proven; PRESENT and UNKNOWN never count as absent. */
+    public enum Presence { ABSENT, PRESENT, UNKNOWN }
+
+    /** A no-follow stat that returns null only for a proven-absent path. */
+    @FunctionalInterface
+    interface Stat {
+        BasicFileAttributes read(Path path) throws IOException;
     }
 
     @FunctionalInterface

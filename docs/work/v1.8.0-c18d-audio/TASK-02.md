@@ -23,7 +23,7 @@ tests, assets/OGG, registration/config/network/save/build, ADR/provenance
 approvals/ledger/status/CSV/AGENTS or Git state. No audio creation/import.
 
 Read live Root governance, original drafts and
-[REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-independent-20261008-01/REPORT-01.md),
+REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-independent-20261008-01/REPORT-01.md`),
 SHA-256 `762c1b5e523cee672cdfb4363e1f5462237448a8a64d91ef936b096bb674eb92`.
 The seven Medium findings concern draft lifecycle/budget/test/evidence rules,
 not executed playback. All ten OGGs remain REVIEW. Reusable producer fields

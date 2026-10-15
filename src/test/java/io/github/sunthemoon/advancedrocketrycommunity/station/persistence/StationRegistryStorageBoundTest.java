@@ -29,8 +29,9 @@ import org.junit.jupiter.api.io.TempDir;
  * fail on size), balances use the reserved headroom, and a fold is validated as a whole.
  */
 final class StationRegistryStorageBoundTest {
-    private static final long GROWTH_LIMIT =
-            (long) StationLimits.MAX_REGISTRY_NBT_BYTES - StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES;
+    /** W44 section 1.5: the balance headroom and the 128-KiB first-warp outbox reserve. */
+    private static final long GROWTH_LIMIT = (long) StationLimits.MAX_REGISTRY_NBT_BYTES
+            - StationLimits.WARP_ENERGY_HEADROOM_NBT_BYTES - 128 * 1_024;
     private static final String BOUND = "Station registry is at its storage bound";
 
     @BeforeAll
@@ -78,8 +79,9 @@ final class StationRegistryStorageBoundTest {
         var fold = full.foldWarpCredits(credits);
         assertEquals(1_000L * (stations.size() - 1), fold.credited());
         long withBalances = StationNbtSize.uncompressedBytes(full.save(new CompoundTag()));
-        assertTrue(withBalances > GROWTH_LIMIT && withBalances <= StationLimits.MAX_REGISTRY_NBT_BYTES,
-                "Balances must fit inside the headroom: " + withBalances);
+        assertTrue(withBalances > GROWTH_LIMIT
+                        && withBalances <= StationLimits.MAX_REGISTRY_NBT_BYTES - 128 * 1_024,
+                "Balances must fit inside the headroom, outside the first-warp reserve: " + withBalances);
         UUID last = stations.get(stations.size() - 1);
         assertEquals(new StationRegistrySavedData.WarpCreditFold(30L, 0L),
                 full.foldWarpCredits(Map.of(stations.get(0), 10, last, 20)),

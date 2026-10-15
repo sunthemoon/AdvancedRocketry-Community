@@ -30,13 +30,13 @@ public null-backed byte/int/long array NPEs. Original positive22 and negative6
 records remain immutable. Source author c18 adds the focused repair; different
 reviewer c17 independently reviews actual committed451b, not its own source.
 
-[Correction review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-nc1-m1-review-20261005-c40391/REVIEW-02.md)
+Correction review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-nc1-m1-review-20261005-c40391/REVIEW-02.md`)
 is11,208 B /SHA `bc9b9f74aca42403433194c8056ae3dc0d6d17c3be179ae9db60df885466cca6`.
 It has no unresolved C/H/M/L in the exact correction; M1 is resolved only for
 these three malformed-array refusals, not native persistence or whole-version
 resource safety. Root reads it completely and fresh intake exits0, verifying
 68 payloads/286,077 B/69 sums in
-[SOURCE-REVIEW-INTAKE-02.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-nc1-root-replay-20261005-01/SOURCE-REVIEW-INTAKE-02.json).
+SOURCE-REVIEW-INTAKE-02.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-nc1-root-replay-20261005-01/SOURCE-REVIEW-INTAKE-02.json`).
 
 | Actual cohort | Compile / JVM / outer | Observations |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ resource safety. Root reads it completely and fresh intake exits0, verifying
 The six-observation control is not six extra Jupiter tests. Its source remains
 3,031 B /b2c700e4..., identical to the original negative control. Both entrypoints
 now produce their exact bounded refusals without normalization. Root's
-[fixed-commit replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-nc1-root-replay-20261005-01/ROOT-REPLAY-RESULT-01.md)
+fixed-commit replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-nc1-root-replay-20261005-01/ROOT-REPLAY-RESULT-01.md`)
 independently binds Git helper/test/limits bytes before actual execution. No
 development result is relabeled COMMITTED; no failed assertion or budget changes.
 

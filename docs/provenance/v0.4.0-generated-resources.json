@@ -61,24 +61,24 @@
       "sha256": "ad7fa603ce0dc4ac0dd5b9ca83967fc36baf323303d9f3df46beffe41fc165ef"
     },
     {
-      "bytes": 127,
+      "bytes": 43,
       "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_boots.json",
-      "sha256": "b94cafb820ee2531c2282917a245044f4a5e6721dce23d4cbb12d8ff063b3a53"
+      "sha256": "82650205eba67373d9be037681b1de0685d72e53e6e16efe903550c342fa16c8"
     },
     {
-      "bytes": 132,
+      "bytes": 48,
       "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_chestplate.json",
-      "sha256": "a2ae9cd1cc24f16b08e0586b3f0ad7da5c8cc33e3e8ac759b2be59457e7f09c8"
+      "sha256": "d903c52c95f88457d0bee6b49fbefb601ac28e717affeeb902df6257f436acdf"
     },
     {
-      "bytes": 128,
+      "bytes": 44,
       "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_helmet.json",
-      "sha256": "33dd84b565fe6a6a219d77359a3d13bbf7f959c307b859a7c3e6113e6f65448a"
+      "sha256": "2afc2d34c5645f06d2cc2be3550fd682c162c5b2406eceb726c281bdaed927ea"
     },
     {
-      "bytes": 130,
+      "bytes": 46,
       "path": "src/generated/v0.4/resources/assets/advancedrocketrycommunity/models/item/space_suit_leggings.json",
-      "sha256": "52ffd94f6b5943291eaa646acf9e3fc9ec87cf10054665ab4e939b0c1383f262"
+      "sha256": "d8d944ba1e62a8adccb43f895330a28fb929111da12874edc9a5e96198e3b7e7"
     },
     {
       "bytes": 3155,

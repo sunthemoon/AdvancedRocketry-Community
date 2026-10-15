@@ -29,27 +29,27 @@ cohort from the original config-inventory failure in [RESULT-23](RESULT-23.md).
 
 ## Evidence and audit boundary
 
-The [terminal capture](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/SUCCESSOR-OBSERVATION-03.json)
+The terminal capture (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/SUCCESSOR-OBSERVATION-03.json`)
 at **06:23:59.433389Z**, SHA-256
 `1e58a73a80a9fbe2b772af4c0f462cd8228853f9901a87a1b087d6dfff1bbb24`,
 binds completed failure and step outcomes to the exact source/run/attempt/job.
 The two previous dated running captures remain unchanged.
 
 Bounded retrieval `ad18d7` exits 0:
-[receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-fixture-ci-regression-20261007-01/RETRIEVAL-01.json),
+receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-fixture-ci-regression-20261007-01/RETRIEVAL-01.json`),
 artifact 11464533038, 1,808,038 archive bytes, SHA-256
 `7d69ba98c844e4ecad354bc8ca7706516f83d06440e02cd006d67a1059666dc3`.
 API digest agrees. Only XML/log/JSON/text is retained, not archives, source/class
 trees, a server copy or JAR. Credentials/signed redirects are not persisted.
 
-Root's [raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/SUCCESSOR-AUDIT-01.json),
+Root's raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/SUCCESSOR-AUDIT-01.json`),
 SHA-256 `c0c2e185f6e189204b2ed2e777d22e896a41fa2dc211299c0e7400d5f7e55efa`,
 executes at `f098c3`, exit 0: 394 retained files rehashed before/after, actual
 XML children/attributes, fixed selected declarations, generation/clean outputs,
 canonical batch/terminal and error counts agree with zero drift.
 Earlier `3d323b` prints excessive general exception contexts; `21704b` rereads
 the relevant bounded contexts, rather than relying on truncated output.
-The [different-agent retained-stream audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-fixture-ci-independent-audit-20261007-01/REPORT-01.md),
+The different-agent retained-stream audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-fixture-ci-independent-audit-20261007-01/REPORT-01.md`),
 SHA-256 `2ce5021e2f660e4c17cea4efbe2462609370e8cf3883ed80074767e66909a12f`,
 independently agrees on counts, fixed subjects, generation, batch/terminal and
 canonical errors with zero input drift. All five output checksums verify. It

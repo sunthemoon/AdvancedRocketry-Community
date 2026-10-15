@@ -14,7 +14,7 @@ the broader physical lifecycle proposal, save-risk acceptance or release Gates.
 Root adopts [EMPTY-REMOVAL-GUARD-AMENDMENT-01](EMPTY-REMOVAL-GUARD-AMENDMENT-01.md)
 for implementation, exact reviewed SHA-256
 `01edb2acb70c0aa2e444aa48aa9cf629b4a8717d6422aec011b2fbc8588b1384`.
-The [different-agent final review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-removal-guard-amendment-independent-review-20261007/REVIEW-01.md),
+The different-agent final review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-removal-guard-amendment-independent-review-20261007/REVIEW-01.md`),
 SHA-256 `dae568d42ac7e569603c34d9f5ca5bc1f4624b190077965fe3bb7bd862baa6ed`,
 reports no unresolved Critical/High/Medium/Low in this isolated specification.
 The original draft's Low acquisition-versus-joined validation ambiguity is

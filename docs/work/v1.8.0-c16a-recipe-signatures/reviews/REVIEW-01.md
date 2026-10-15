@@ -13,7 +13,7 @@ Actual independent checks: 99 JUnit tests in 30 suites and two observation
 probes passed. This does not negate either finding. No tag-reload third finding
 is inferred without a supported update sequence. GameTest/native were not run.
 
-[Immutable evidence](round-01-evidence.zip), 352,510 bytes, SHA-256
+Immutable evidence (`round-01-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)), 352,510 bytes, SHA-256
 `5ac9e458ff855262b7e579f415a0e7f8b4fcc1b6111f3fbcaf497450e3fae8f5`.
 Raw report SHA-256
 `2638e4a6352f501652a8ab3dc5044a1198adf5588c1e23330b04bf0948bef588`.

@@ -102,6 +102,13 @@ final class PopulatedManagedDataFixture {
         payloads.put(ManagedSavedDataType.ENDGAME, endgame.save(new CompoundTag()));
         payloads.put(ManagedSavedDataType.RESOURCE_ESCROW,
                 io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.create().save(new CompoundTag()));
+        // W44 section 3.1: one occurred station-warp receipt and an absent Moon receipt.
+        var progression = io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
+                .ClassicProgressionSavedData.provenAbsent();
+        progression.insert(io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEvent
+                .StationWarp.create(id(50), id(51), OWNER, ModIdentity.id("earth"), ModIdentity.id("moon"), 100_000, 40L,
+                        List.of(OWNER, id(52))));
+        payloads.put(ManagedSavedDataType.CLASSIC_PROGRESSION, progression.save(new CompoundTag()));
         return payloads;
     }
 
@@ -114,6 +121,8 @@ final class PopulatedManagedDataFixture {
             case SATELLITE_MISSIONS -> SatelliteMissionSavedData.load(payload);
             case ENDGAME -> EndgameSavedData.load(payload);
             case RESOURCE_ESCROW -> io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData.load(payload);
+            case CLASSIC_PROGRESSION -> io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent
+                    .ClassicProgressionSavedData.load(payload);
         };
     }
 

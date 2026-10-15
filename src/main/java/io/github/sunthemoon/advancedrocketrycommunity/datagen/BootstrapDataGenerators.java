@@ -25,8 +25,9 @@ public final class BootstrapDataGenerators {
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180LandingPadData(output, event.includeClient(), event.includeServer()));
 
-        // Earlier outputs remain resource inputs; W49 rebinds only its 13 audited model targets in place.
+        // Earlier outputs remain immutable inputs; v1.8 providers publish their replacement models here.
         ExistingFileHelper existingFiles = event.getExistingFileHelper();
+        generator.addProvider(event.includeClient(), new V180ItemIconModelProvider(output, existingFiles));
         generator.addProvider(event.includeClient(), new V180MaterialArt(output));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180LifeSupportData(output, event.includeClient(), event.includeServer()));
@@ -86,6 +87,8 @@ public final class BootstrapDataGenerators {
                 new V180StationControlData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180BeaconData(output, event.includeClient(), event.includeServer()));
+        generator.addProvider(event.includeClient() || event.includeServer(),
+                new V180SatelliteBayData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),
                 new V180ThermiteData(output, event.includeClient(), event.includeServer()));
         generator.addProvider(event.includeClient() || event.includeServer(),

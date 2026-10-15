@@ -21,7 +21,7 @@ on this record's date. Root's selected ordinary-light properties/recipe are new
 modern choices, not literal owner choices or legacy parity. No pending typed,
 orbital, equipment, first-event or save-refusal policy is accepted here.
 
-The [different-agent contract review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-station-light-review-20261005-2b74f1/REVIEW-01.md), SHA-256
+The different-agent contract review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-station-light-review-20261005-2b74f1/REVIEW-01.md`), SHA-256
 `889f915496375602f3a6247e9d3567ed24dc0ea00a02cbed3fed2e385a6e565a`,
 finds no introduced C/H/M/L in this exact leaf. Its final 14 static controls and
 74 unchanged inputs are contract evidence, not executed lamp tests. Original

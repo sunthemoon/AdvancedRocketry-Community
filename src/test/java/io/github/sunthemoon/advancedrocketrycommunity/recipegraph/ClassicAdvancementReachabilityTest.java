@@ -34,12 +34,11 @@ import org.junit.jupiter.api.Test;
  * {@code build/reports/classic-advancement-reachability.md}.
  */
 class ClassicAdvancementReachabilityTest {
-    /** Advancements that cannot be reached in this tree yet, each with the missing content that blocks it. */
-    static final Map<String, String> AWAITING = Map.of(
-            "one_small_step", "the D3 world-first Moon landing source outbox must join the journal-3 migration;"
-                    + " the criterion is minecraft:impossible",
-            "first_station_warp", "the D3 world-first warp source outbox must join W07's station registry 5"
-                    + " migration; the criterion is minecraft:impossible");
+    /**
+     * Advancements that cannot be reached in this tree yet, each with the missing content that blocks it. W44 gave
+     * both world-first criteria their source outboxes, so none remains.
+     */
+    static final Map<String, String> AWAITING = Map.of();
 
     private static PackagedRecipeGraph graph;
     private static Success result;
@@ -75,6 +74,9 @@ class ClassicAdvancementReachabilityTest {
         graph.produce("event", List.of(List.of("access:moon")), List.of("event:moon_landing"));
         graph.produce("event", List.of(List.of("access:space"), List.of(id("station_deployment_kit")),
                 List.of(id("warp_core")), List.of(ENERGY)), List.of("event:station_warp"));
+        // W44: a world-first is the same completion, recorded once per world with its participants.
+        graph.produce("event", List.of(List.of("event:moon_landing")), List.of("event:first_moon_landing"));
+        graph.produce("event", List.of(List.of("event:station_warp")), List.of("event:first_station_warp"));
         for (Milestone milestone : Milestone.values()) {
             goals.put(milestone.suffix(), switch (milestone.kind()) {
                 case INVENTORY -> milestone.target();
@@ -103,7 +105,8 @@ class ClassicAdvancementReachabilityTest {
     void awaitingEntriesAreExactlyThePendingCriteriaAndTheirMissingContent() {
         Set<String> pending = java.util.Arrays.stream(Milestone.values()).filter(m -> m.kind() == Kind.PENDING)
                 .map(Milestone::suffix).collect(Collectors.toSet());
-        assertEquals(Set.of("one_small_step", "first_station_warp"), pending);
+        // W44 (design section 10): the world-first criteria are events now; no criterion is pending.
+        assertEquals(Set.of(), pending);
         assertEquals(pending, AWAITING.keySet(), "Only pending world-first criteria may lack a route");
     }
 

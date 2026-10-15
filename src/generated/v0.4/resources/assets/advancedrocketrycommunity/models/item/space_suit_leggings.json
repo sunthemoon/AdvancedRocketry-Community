@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "advancedrocketrycommunity:item/space_suit_leggings"
-  }
+  "parent": "minecraft:item/iron_leggings"
 }

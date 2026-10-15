@@ -1,0 +1,5 @@
+{"CLEAR": 187}
+
+real	2m28.770s
+user	0m0.060s
+sys	0m0.198s

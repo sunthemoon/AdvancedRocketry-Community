@@ -27,7 +27,7 @@ attempt 1 /job 112576587243. Overall **FAILED** at the required GameTest step.
 
 ## Raw association and recount
 
-The [fresh terminal observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-wait-ci-terminal-20261007-01/OBSERVATION-01.json)
+The fresh terminal observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-wait-ci-terminal-20261007-01/OBSERVATION-01.json`)
 at 2026-10-07T01:04:33Z binds exact source/run/attempt/job and completed failure.
 It supersedes the current pending status, without changing the separate earlier
 00:52:58Z running capture or the dated source checkpoint's original observation.
@@ -39,11 +39,11 @@ never persisted or sent to signed storage. Artifact 11454530500 is 1,763,017 byt
 matching its API digest. Cohort/member/path/collision/size/ZIP CRC checks precede
 compact raw retention; no container/source/class/world copy remains.
 
-The [Root raw recount](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-wait-ci-terminal-20261007-01/AUDIT-01.json),
+The Root raw recount (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-wait-ci-terminal-20261007-01/AUDIT-01.json`),
 SHA256 `21072b9114faab2b92ec9f912dd4f3ede27e7cf695c1ce03c243ff85a73528aa`,
 and terminal projection exit 0 at `4d2904`. All 403 named inputs rehash unchanged;
 actual XML children/attributes and exact method identities are checked.
-The [Root report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-wait-ci-terminal-20261007-01/REPORT-01.md)
+The Root report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-wait-ci-terminal-20261007-01/REPORT-01.md`)
 has SHA256 `4b37b19f8f5fce70728816688be08b1ca4de5fe8d70a8f3f1175cb5b3b364e94`.
 Its leaf is sealed: 419 payloads /13,750,012 bytes, manifest SHA256
 `c3ca9ffbfd9fc9c018dc25f55955305d3db26873eaf54b33d9938e7bd0919b63`,
@@ -53,7 +53,7 @@ Independent raw/factual review is separate; no verdict or Gate is prefilled here
 
 ## Observations and remaining work
 
-The [canonical GameTest log](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-wait-ci-terminal-20261007-01/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log)
+The canonical GameTest log (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-wait-ci-terminal-20261007-01/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`)
 is 1,565,665 bytes /SHA256
 `32684188894e2c6e8b144c557b2e08142213aa51d0f69c8c5ac3ef143bc7587d`.
 Both Tau samples, lines 2712-2713, retain test tick 743 /game time 14951,

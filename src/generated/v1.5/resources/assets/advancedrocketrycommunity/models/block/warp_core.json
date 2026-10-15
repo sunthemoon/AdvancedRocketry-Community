@@ -2,7 +2,7 @@
   "parent": "minecraft:block/cube_bottom_top",
   "textures": {
     "bottom": "advancedrocketrycommunity:block/machine_casing_top",
-    "side": "advancedrocketrycommunity:block/warp_core_side",
+    "side": "advancedrocketrycommunity:block/machine_casing_front",
     "top": "minecraft:block/crying_obsidian"
   }
 }

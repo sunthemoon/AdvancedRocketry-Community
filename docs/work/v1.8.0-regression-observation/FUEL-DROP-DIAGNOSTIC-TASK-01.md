@@ -31,7 +31,7 @@ Root freezes only the two assigned files. Source/record SHA-256 values are
 Actual `python -B check01.py` (`6affa3`, exit 0) verifies nine static controls,
 including whole-file exact single-message replacement, original predicate/query,
 six identical annotations/deadlines, empty index and owned scope. The
-[static receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-author-20261007-01/CHECKS-01.json)
+static receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-author-20261007-01/CHECKS-01.json`)
 has SHA-256 `2e045f155277164f96edfdaf10712be8d096e259714a41886a6259b462b8bd1e`.
 Independent exact-diff review is complete. The [publication record](FUEL-DROP-DIAGNOSTIC-INTEGRATION-01.md)
 binds the unchanged two-file source to `10eb561a`. Its

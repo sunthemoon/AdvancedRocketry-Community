@@ -98,7 +98,7 @@ def _parse_json_block(payload: str, label: str) -> dict[str, Any]:
                 ValueError(f"non-finite JSON value: {item}")
             ),
         )
-    except (json.JSONDecodeError, DuplicateJsonKeyError, ValueError) as exc:
+    except (json.JSONDecodeError, DuplicateJsonKeyError, ValueError, RecursionError) as exc:
         raise ValueError(f"invalid {label}: {exc}") from exc
     if not isinstance(value, dict):
         raise ValueError(f"{label} must be a JSON object")
@@ -109,6 +109,23 @@ def _parse_json_block(payload: str, label: str) -> dict[str, Any]:
 def _is_reparse(path: Path, status: os.stat_result | None = None) -> bool:
     observed = status if status is not None else path.lstat()
     return bool(getattr(observed, "st_file_attributes", 0) & FILE_ATTRIBUTE_REPARSE_POINT)
+
+
+def _reject_linked_components(root: Path, relative: Path, label: str) -> None:
+    """Reject a symlink or reparse point at any component of ``relative`` below ``root``."""
+
+    current = root
+    for part in relative.parts:
+        current /= part
+        try:
+            observed = current.lstat()
+        except FileNotFoundError:
+            # The read that follows reports the missing component.
+            return
+        if stat.S_ISLNK(observed.st_mode) or _is_reparse(current, observed):
+            raise ValueError(
+                f"{label} path must not contain a symlink, junction, or reparse point"
+            )
 
 
 def _read_stable_file(path: Path, maximum: int, label: str) -> bytes:
@@ -199,7 +216,7 @@ def validate_adr_text(text: str) -> tuple[list[str], dict[str, Any]]:
     )
 
     status = metadata.get("status")
-    if status not in ADR_STATUSES:
+    if not isinstance(status, str) or status not in ADR_STATUSES:
         errors.append(f"ADR metadata status is invalid: {status}")
     if not _valid_date(metadata.get("date")):
         errors.append("ADR metadata date must be YYYY-MM-DD")
@@ -247,7 +264,7 @@ def validate_adr_text(text: str) -> tuple[list[str], dict[str, Any]]:
         decision = item.get("decision")
         reviewer = item.get("reviewed_by")
         reviewed_at = item.get("reviewed_at")
-        if decision not in CASE_DECISIONS:
+        if not isinstance(decision, str) or decision not in CASE_DECISIONS:
             errors.append(f"ADR acceptance {case_id} decision is invalid")
         if not isinstance(reviewer, str) or not isinstance(reviewed_at, str):
             errors.append(
@@ -350,6 +367,7 @@ def validate_v002_g4_applicability(
     root = repository_root.resolve()
     errors: list[str] = []
     try:
+        _reject_linked_components(root, ADR_PATH, "ADR-005")
         payload = _read_stable_file(root / ADR_PATH, MAX_ADR_BYTES, "ADR-005")
         text = payload.decode("utf-8", errors="strict")
     except (OSError, UnicodeError, ValueError) as exc:

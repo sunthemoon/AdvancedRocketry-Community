@@ -1,6 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorContent;
+import io.github.sunthemoon.advancedrocketrycommunity.classiccomponent.MotorDefinition;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.classic.resource.ClassicResourcesCodec;
 import java.util.ArrayList;
 import net.minecraft.core.Direction;
@@ -34,6 +36,37 @@ public final class ClassicGenerationRecoveryGameTests {
     @GameTest(template = "empty", batch = "w01g_controller_two_ahead", timeoutTicks = 30)
     public static void controllerTwoGenerationsAheadOfItsPartSnapshotsRebindsThem(GameTestHelper helper) {
         mixedSnapshots(helper, true, 2); helper.succeed();
+    }
+    /** W01G review L1: a controller saved before its first formation, with parts saved two generations later. */
+    @GameTest(template = "empty", batch = "w55_never_formed_controller", timeoutTicks = 30)
+    public static void neverFormedControllerSnapshotRebindsPartsTwoGenerationsAhead(GameTestHelper helper) {
+        var motorState = MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState();
+        try (var fixture = new ClassicLatheGameTests.Fixture(helper, Direction.NORTH, Blocks.AIR.defaultBlockState())) {
+            helper.assertTrue(!fixture.controller.formed() && fixture.controller.controllerState().generation() == 0,
+                    "The fixture formed without its motor");
+            var ownerId = fixture.controller.controllerState().machineInstanceId();
+            var neverFormed = fixture.controller.saveWithFullMetadata();
+            helper.getLevel().setBlock(fixture.motor, motorState, Block.UPDATE_ALL);
+            fixture.manager.changed(fixture.motor); fixture.manager.tick();
+            helper.getLevel().setBlock(fixture.motor, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            fixture.manager.changed(fixture.motor); fixture.manager.tick();
+            helper.getLevel().setBlock(fixture.motor, motorState, Block.UPDATE_ALL);
+            fixture.manager.changed(fixture.motor); fixture.manager.tick();
+            var parts = fixture.hatches();
+            helper.assertTrue(fixture.controller.formed() && fixture.controller.controllerState().generation() == 2 && !parts.isEmpty()
+                    && parts.stream().allMatch(hatch -> hatch.multiblockBinding().orElseThrow().generation() == 2),
+                    "The fixture did not bind its parts at generation 2");
+            fixture.controller.load(neverFormed);
+            fixture.manager.observe(fixture.controller); fixture.manager.tick();
+            helper.assertTrue(fixture.controller.formed() && fixture.controller.controllerState().generation() == 1
+                    && ownerId.equals(fixture.controller.controllerState().machineInstanceId()),
+                    "A never-formed controller snapshot stayed in " + fixture.controller.reason());
+            for (var hatch : parts) {
+                helper.assertTrue(hatch.multiblockBinding().orElseThrow().generation() == 1
+                        && hatch.ownerClaim().orElseThrow().machineInstanceId().equals(ownerId), "Recovered binding is not exact");
+            }
+        }
+        helper.succeed();
     }
     /** Re-forms the machine {@code steps} times between the older and newer snapshots, then reloads one of each. */
     private static void mixedSnapshots(GameTestHelper helper, boolean controllerSavedFirst, int steps) {

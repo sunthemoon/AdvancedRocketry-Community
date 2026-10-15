@@ -17,6 +17,12 @@ final class RocketJournalFailurePolicy {
     private RocketJournalFailurePolicy() { }
 
     static CheckedSavedDataPolicy checked(MinecraftServer server) {
+        // W44 section 6.1: the world-first cut modes extend this gated policy; production never sets them.
+        var cut = io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventCutSeams
+                .journalPolicy(server);
+        if (cut.isPresent()) {
+            return cut.orElseThrow();
+        }
         String mode = System.getProperty(PROPERTY, "");
         if (server != null && Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("SR_")) {
