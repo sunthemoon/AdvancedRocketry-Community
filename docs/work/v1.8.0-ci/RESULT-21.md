@@ -28,7 +28,7 @@ run does not prove deterministic Tau readiness or close its earlier failures.
 
 ## Exact raw association
 
-The separate [terminal public capture](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-observation-20261007-02/OBSERVATION-01.json)
+The separate terminal public capture (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-observation-20261007-02/OBSERVATION-01.json`)
 at 2026-10-07T02:17:33Z reports completed success, updated 02:14:48Z. It
 supersedes live pending status without rewriting the earlier dated 02:06 capture
 or the [source-integration record](../v1.8.0-c16a-hatches/GUARDED-SAVE-SOURCE-INTEGRATION-01.md).
@@ -43,11 +43,11 @@ checks precede compact raw retention; no archive, HTML, source, class or
 world copy is retained. Regression artifact 11456866726 is 1,796,717 bytes,
 SHA256 `a03124097eaa66ba8be7d19a79783e5088bb1d76d02a03f338a0f1ab5a7dcb77`.
 
-[Root raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-terminal-20261007-01/AUDIT-01.json),
+Root raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-terminal-20261007-01/AUDIT-01.json`),
 SHA256 `1290ede00dab57e46d30f482f4d3bc3d08ca777bb0878e579448238296017479`,
 exits 0 at `5de70c`: 417 input pins remain unchanged, actual XML children,
 container events, attributes, changed source subjects and native terminals agree.
-The [Root report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-terminal-20261007-01/REPORT-01.md)
+The Root report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-terminal-20261007-01/REPORT-01.md`)
 has SHA256 `7bb138e95e1383f96824d0bfc7424b0f995a5ef649f64cda77783d7a0c0c8803`.
 Its seal `010558` covers 442 payloads /13,714,825 bytes; manifest SHA256
 `cb353af12868d5b16138385620d40c1ff810cf7ba3fa3f7f17138ce63103b79f`,
@@ -55,7 +55,7 @@ Its seal `010558` covers 442 payloads /13,714,825 bytes; manifest SHA256
 `00c4db7b460ff8fa7de4c638defebb22172521e54458cb33c4f195bd66659b70`.
 Different-agent raw review is separate; its conclusions are not prefilled here.
 
-The subsequent [independent terminal raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-save-tau-ci-terminal-independent-audit-20261007/REVIEW-01.md),
+The subsequent independent terminal raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-save-tau-ci-terminal-independent-audit-20261007/REVIEW-01.md`),
 SHA256 `db5eaf5f9903d3162323e8290aaad1effa5f7f50f0856e6414d84ecfe111cbe3`,
 finds no factual discrepancy in the exact retained result/report/seal. Its actual
 recount exits 0, with 39 finite controls and 453 unchanged final pins; these
@@ -78,7 +78,7 @@ reparsing**; no local JAR is retained. Both outer digests match API metadata.
 
 ## Remaining work
 
-The [canonical raw stream](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-terminal-20261007-01/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log)
+The canonical raw stream (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-terminal-20261007-01/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`)
 is 1,559,818 bytes, SHA256
 `91bdc4a004f0d5af404e4acbffeeed4377b916a8ff91187de4690a1ccb7210da`.
 New machine source remains unregistered/inactive: passing these tests is not

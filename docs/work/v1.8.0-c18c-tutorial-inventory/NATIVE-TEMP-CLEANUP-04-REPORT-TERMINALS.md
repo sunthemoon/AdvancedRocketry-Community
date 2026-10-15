@@ -10,7 +10,7 @@ or changed by cleanup. Result/current records are published at
 The first author-copy cleanup returns native exit 1 before any deletion:
 an ordered-dictionary statistics expression raises PSArgumentException.
 This is not a tool-policy refusal. Delete calls and removed files are both zero.
-The original sealed [report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-copy-cleanup-20261005-7ba842c190/REPORT-01.md)
+The original sealed report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-copy-cleanup-20261005-7ba842c190/REPORT-01.md`)
 has SHA-256 `6a241548e476cb2d38918d70660ad097f480735d7a0c9d7868613c67e10109b8`.
 No original helper or result is overwritten or reclassified.
 
@@ -24,7 +24,7 @@ target/ancestor checks see no reparse point. Readonly postcheck exits 0: author
 HEAD/branch unchanged, tracked/index clean and no untracked files; Root fixed
 Git/live and sealed postimages remain exact. No source world or C file is removed.
 
-The corrected [report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-copy-cleanup02-20261005-e6418d097b/REPORT-01.md)
+The corrected report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-copy-cleanup02-20261005-e6418d097b/REPORT-01.md`)
 has SHA-256 `c5eec86789ae5e2029d8983ea6d588772744c2c28229c91570456aa3338332e4`.
 Root verifies original 20 payloads/21 sums, corrected 26 payloads/27 sums and
 the separate one-payload/two-sum argv spelling correction: **47 payloads /

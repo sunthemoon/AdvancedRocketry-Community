@@ -12,7 +12,7 @@ Root commits the independently reviewed one-file postimage as
 pushes `e0c601e4d58cb906d79f744070316c0a2d810c06`. The main and source worktree
 postimage, and both fixed Git objects, have identical 36,145-byte source / SHA
 `e188d1cde57fb8d64c33e717333f5cc72609ff2fd23fca58ac25bb5de5d8e484`.
-The [publication receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-surface-publication-20261006-01/PUBLICATION-01.json)
+The publication receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-surface-publication-20261006-01/PUBLICATION-01.json`)
 records commit/merge/push exits, fixed-source identities and verified remote SHA.
 
 The only changed source is
@@ -33,7 +33,7 @@ There is no added ticket/loading, lighting drain/seed or heightmap substitute.
 
 ## Actual independent review and remaining verification
 
-The [different-agent actual-source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-surface-source-review-20261006-5c7261/REVIEW-01.md),
+The different-agent actual-source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-surface-source-review-20261006-5c7261/REVIEW-01.md`),
 SHA `0bd3fd8b2432d7c13329aeaf441c3a16642d13edf645973bda8b6e5bca336d4a`,
 finds no introduced Critical/High/Medium/Low in these exact postimages before
 their subsequent commit. Seven fresh static controls pass. Eight cleanup-order
@@ -49,14 +49,14 @@ tool-only failure is retained separately. The actual compiler executes once,
 not a retry. Its 24 class outputs /208,871 logical bytes and home/sourcepath
 directories remain retained; no cleanup or physical-space claim is made here.
 Root normally retires only its clean merged sparse source worktree after reader
-release. The [retirement receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-surface-publication-20261006-01/WORKTREE-RETIREMENT-01.json)
+release. The retirement receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-surface-publication-20261006-01/WORKTREE-RETIREMENT-01.json`)
 records exit 0 and verified absence, retaining the source branch/history.
 This does not remove compiler outputs, sealed evidence or old refused targets;
 physical reclaimed space is unmeasured.
 
 The unchanged unfiltered [hosted workflow](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37484998908)
 binds source `e0c601e4d58cb906d79f744070316c0a2d810c06`, attempt 1,
-job `112342646260`. The dated [metadata observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-surface-hosted-observer-20261006-01/OBSERVATION-01.json)
+job `112342646260`. The dated metadata observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-surface-hosted-observer-20261006-01/OBSERVATION-01.json`)
 records IN_PROGRESS, clean build running; later steps have no result yet.
 This is not a completed build/GameTest result or evidence of native restoration.
 No workflow, assertion, timeout, budget or test selection was changed.

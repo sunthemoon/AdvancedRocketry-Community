@@ -14,13 +14,13 @@ and one blank separator restores all six old files exactly (146 added lines,
 zero deleted). Timings, oracles, readiness, resource rules, persistence and
 protocol remain unchanged. Samples do not prove continuous readiness or cause.
 
-Different-agent [actual-source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-source-review-20261007-c18-972da1/REVIEW-01.md),
+Different-agent actual-source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-source-review-20261007-c18-972da1/REVIEW-01.md`),
 SHA `54706c33921f19be15d2e9dab1f5775f1a14a50898f5f6abdc74082582f83cc0`,
 establishes no scoped C/H/M/L. Independent javac/Jupiter exits 0: **19/19**,
 zero failures/aborts/skips/container failures; 79 finite controls pass and 63
 inputs have no drift. That execution is uncommitted development, not delivery.
 
-The separate [fixed-commit replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-fixed-replay-20261007-bf4e72/REPORT-01.md)
+The separate fixed-commit replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-fixed-replay-20261007-bf4e72/REPORT-01.md`)
 actually runs committed `ca217afa`: javac/Jupiter/outer exit 0, **19/19**,
 zero failures/aborts/skips/container failures. All nine Git/live postimages and
 25 execution inputs remain unchanged. Its result SHA is
@@ -30,7 +30,7 @@ Java17, 256 MiB/two CPUs/120 s, fresh D output, empty sourcepath and `-proc:none
 The executor authored the slice; this is a fixed execution receipt, not another
 independent source verdict or compilation of the six production/GT adapters.
 
-The executor's separately authorized [cleanup addendum](D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-output-cleanup-20261007-8f62bc/ADDENDUM-01.md),
+The executor's separately authorized cleanup addendum (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/transfer-diagnostics-output-cleanup-20261007-8f62bc/ADDENDUM-01.md`),
 SHA `58d1787cf19c195a7ddfab07a50e91fbf745ec136df02110852863606b96eafc`,
 records actual successful removal of only two ended own output cohorts:
 16 class files /52,952 logical B and 20 empty directories. All eight exact
@@ -40,7 +40,7 @@ outputs and all older refused targets remain untouched.
 
 Root applies exact released postimages and stages only nine paths. Normal
 commit/push/remote equality succeeds (tool `965074`, exit 0).
-[Publication receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-diagnostics-integration-20261007-01/PUBLICATION-01.json),
+Publication receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-diagnostics-integration-20261007-01/PUBLICATION-01.json`),
 SHA `a9ceb8d650b984a099033aed6925ad0049266ba95b1684f15fc0305cf3c23591`,
 retains actual Git commands. User AGENTS/unrelated files are unchanged/unstaged.
 An initial apply_patch is atomically refused after shell encoding corrupts a
@@ -49,7 +49,7 @@ Unicode context character; the ASCII-JSON successor matches all nine hashes.
 [Exact-source workflow](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37525478437),
 attempt 1 /job 112481271928, is observed IN_PROGRESS at
 2026-10-06T20:22:01Z, in clean build. Root's GET-only
-[observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-diagnostics-ci-observation-20261007-01/OBSERVATION-01.json),
+observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-transfer-diagnostics-ci-observation-20261007-01/OBSERVATION-01.json`),
 SHA `9a97a278ae3ff6361d38673142cd1e479edb5f4c802a1ef47a1c8f774a0b15ed`,
 exits 0 (tool `bd049c`). This immutable dated observation is superseded by
 [RESULT-16](../v1.8.0-ci/RESULT-16.md): fresh build and 1,946 actual JUnit cases

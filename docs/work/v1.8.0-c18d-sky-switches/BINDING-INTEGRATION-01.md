@@ -11,7 +11,7 @@ candidate 493df4909458eb519aa1a281a1e4c66ba018288b, parent 2e397a49.
 The original [author handoff](BINDING-HANDOFF-01.md) keeps its historical
 unrun statements; it is not overwritten with later execution results.
 
-The fresh [independent source report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-codex-independent-20261008-01/REPORT-01.md)
+The fresh independent source report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-codex-independent-20261008-01/REPORT-01.md`)
 has SHA-256 caf78e0aafdf1b75fd2b9ba3de2a4b0382b286ee5617a8e7c26cb5fc14ce04b8.
 It finds no introduced Critical/High/Medium/Low within the two-file diff,
 executes the separately authorized targeted command and releases all interests.
@@ -63,7 +63,7 @@ controls pass; none are additional JUnit cases.
 Independent evidence is in c18d-sky-binding-codex-independent-20261008-01.
 The author packet is sealed separately in c18d-sky-binding-claude-author-20261008-01.
 Root's own task, exact seal/XML/source checks and merge/stage/push logs are in
-[root integration evidence](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-root-integration-20261008-01/TASK-01.md).
+root integration evidence (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-root-integration-20261008-01/TASK-01.md`).
 Original evidence/author bytes and user-owned AGENTS stay unchanged.
 
 Still open: real Forge mod-bus dispatch, TOML reload, packed dimension_type

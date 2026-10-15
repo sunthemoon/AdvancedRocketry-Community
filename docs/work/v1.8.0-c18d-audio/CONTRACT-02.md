@@ -12,7 +12,7 @@ This draft replaces [CONTRACT-01](CONTRACT-01.md) as the proposal under review; 
 unchanged. It registers nothing, creates or imports no audio, approves no asset and freezes no new
 server carrier, rate allowance, placeholder sound or registration. **OPEN** items stay with the
 named owner. The review input is
-[REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-independent-20261008-01/REPORT-01.md),
+REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-independent-20261008-01/REPORT-01.md`),
 SHA-256 `762c1b5e523cee672cdfb4363e1f5462237448a8a64d91ef936b096bb674eb92` (seven Medium findings).
 
 ## 1. Disposition of the review findings

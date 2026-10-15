@@ -9,7 +9,7 @@ and proportional nuclear working-fluid consumption (support5/7, Q700 gives143
 rather than200), preserving basic/external and old captured values. The owner
 reply is, verbatim: “采用建议规则：binary64 舍入＋按支持比例节省（推荐）”.
 The reply has no separate timestamp; this record is dated above. Root's
-[received-reply transcription](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-nc1-development-a0-20261005-01/NUMERIC-OWNER-REPLY-01.json)
+received-reply transcription (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-nc1-development-a0-20261005-01/NUMERIC-OWNER-REPLY-01.json`)
 contains the literal question, answer and conversation item. It is not an
 independently captured raw UI export.
 

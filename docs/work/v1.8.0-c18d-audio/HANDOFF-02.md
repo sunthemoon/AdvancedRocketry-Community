@@ -9,7 +9,7 @@
   `65dd821180f6c0304340fc51d8d1d11df6d29347`; 3,493 bytes, SHA-256
   `2ea0d7b85b701c5c3f60edafd2b64afe7717ad716eaf0e44b0ebc5d5a743f92f`, Git blob
   `e93502f2ce94e11e8f2ccb8d4381ba1cd6e59032`, working copy equal to the committed blob.
-- Review input: [REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-independent-20261008-01/REPORT-01.md),
+- Review input: REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-independent-20261008-01/REPORT-01.md`),
   SHA-256 `762c1b5e523cee672cdfb4363e1f5462237448a8a64d91ef936b096bb674eb92` (matches the TASK).
 - Checkout: worktree `D:/GitHub/arce-v180-claude-audio-contract-20261007`, branch
   `codex/v1.8.0-claude-audio-contract-20261007`, HEAD `a65dcbf68143ce63af3b2205b0c36af02eaae0e8`;

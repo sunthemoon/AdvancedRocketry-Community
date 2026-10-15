@@ -7,7 +7,7 @@ Source: `7ab1b0879527f4d8d3e88f09f9360015175b911a`.
 ## Scope
 
 Specify the missing completed two-LOAD to fresh one-hatch LIFECYCLE join identified
-as F2 in the [independent proposal review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-hatch-transition-independent-review-20261007/REVIEW-01.md),
+as F2 in the independent proposal review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-hatch-transition-independent-review-20261007/REVIEW-01.md`),
 SHA-256 `edd9c2eddfda9f850c1b821ce4c2c33679d4aa9e50dc17b4d9d3036c6f6b708b`.
 This amendment can qualify admission separately; it does not qualify a native
 removal, resource/drop mutation, placement or outgoing metadata retirement.

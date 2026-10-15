@@ -18,9 +18,9 @@ Inputs added since draft 01:
 
 | Input | Identity |
 | --- | --- |
-| Independent review of draft 01 (F1-F6) | [REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/REPORT-01.md), SHA-256 `7764c25717d1b2c4b23aec09dcc64de90b86cf9af9d25613be5013530c59bc44` |
+| Independent review of draft 01 (F1-F6) | REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/REPORT-01.md`), SHA-256 `7764c25717d1b2c4b23aec09dcc64de90b86cf9af9d25613be5013530c59bc44` |
 | Owner decisions on G-OPEN-4 and G-OPEN-5 | [OWNER-DECISIONS-02](OWNER-DECISIONS-02.md), SHA-256 `bd53cea6350009b3db1c8aa143554605a471a6e473f864b7c43f9ef97802d717` |
-| Twenty legacy recipe bodies, read-only behaviour references | [Root retrieval leaf](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-legacy-recipe-inputs-root-20261008-01/REPORT-01.md); provenance SHA-256 `378b95fa8c8eb76652ca46d604a7f25497149944f071a021c68777403df2f2be`; MIT LICENSE SHA-256 `1f9978a442976337a86ea9ea5a0c97ae6b1bdab56d9661d05938f163b8e55be3`; upstream commit `c5cd5af62fc07cd4e0d24f06a16033f181c47c04` |
+| Twenty legacy recipe bodies, read-only behaviour references | Root retrieval leaf (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-legacy-recipe-inputs-root-20261008-01/REPORT-01.md`); provenance SHA-256 `378b95fa8c8eb76652ca46d604a7f25497149944f071a021c68777403df2f2be`; MIT LICENSE SHA-256 `1f9978a442976337a86ea9ea5a0c97ae6b1bdab56d9661d05938f163b8e55be3`; upstream commit `c5cd5af62fc07cd4e0d24f06a16033f181c47c04` |
 
 The bodies were read from that leaf only. No archive, cache, unpacked Temp tree or other upstream
 file was opened for this draft.

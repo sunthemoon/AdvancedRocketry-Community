@@ -33,7 +33,7 @@ model reasoning or asserting a terminal verdict before its receipt.
 
 Dispatch/process records exist in each named author leaf under
 D:/GitHub/ARCE-Task-Evidence/v1.8.0. Runner/monitor evidence is
-[RUNNER-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-dispatch03-root-20261008-01/RUNNER-01.md).
+RUNNER-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-dispatch03-root-20261008-01/RUNNER-01.md`).
 All three calls have now closed exit 0 /is_error false /no cap termination.
 Root's eight I/O controls pass per call: task/owner pin, HEAD/index, exact
 three new files, <=24 KiB file bounds, public write/tool scope and session ID.

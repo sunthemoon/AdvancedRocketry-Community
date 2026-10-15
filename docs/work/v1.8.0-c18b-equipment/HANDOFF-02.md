@@ -9,7 +9,7 @@
   `65dd821180f6c0304340fc51d8d1d11df6d29347`; 4,095 bytes, SHA-256
   `4864c6aea82a3e5c42ade6d5d7553a3739622e3344dcd27fa24e15f0be48a21b`, Git blob
   `3fb7c5043d8aa937bfd4a6fe49a6626832d10b36`, working copy equal to the committed blob.
-- Review input: [REVIEW-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-01/REVIEW-01.md),
+- Review input: REVIEW-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-01/REVIEW-01.md`),
   SHA-256 `4d5b33f36d83b85eae58081f3573a4434715215198a042c822d0bc327400f4db` (matches the TASK).
 - Checkout: worktree `D:/GitHub/arce-v180-claude-equipment-contract-20261007`, branch
   `codex/v1.8.0-claude-equipment-contract-20261007`, HEAD `a65dcbf68143ce63af3b2205b0c36af02eaae0e8`;

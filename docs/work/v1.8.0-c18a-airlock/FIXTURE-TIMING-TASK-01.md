@@ -17,7 +17,7 @@ callback invalidation, no-republication and recovery assertions.
 
 The preceding [terminal result](../v1.8.0-ci/RESULT-28.md) stops at the first
 initial-supply assertion. Root fully reads and hashes the separate
-[investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-initial-supply-investigation-20261007-c16-6f71d2/REPORT-01.md),
+investigation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-initial-supply-investigation-20261007-c16-6f71d2/REPORT-01.md`),
 SHA-256 `f5fe9f9bdcdbf002fd6b4ed278cb4b0c4a2a9eafaa167a3d01573c28d2162c45`
 (`2ef31d`, exit 0). Adjacent atmosphere fixtures supply a setup-separation
 precedent; no actual opening, sky lifecycle cause or production defect is

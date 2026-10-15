@@ -23,16 +23,16 @@ The separate [preservation candidate](CAPTURED-TEXT-PRESERVATION-01.md) retains
 captured bytes and proposes only an exact-path Git attribute correction.
 It does not waive cleanliness or alter historical results.
 
-The [collector report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-86a819-observation-20261006-c18-52bc71/REPORT-01.md)
+The collector report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-86a819-observation-20261006-c18-52bc71/REPORT-01.md`)
 is 7,268 bytes, SHA-256
 `13c9359f2f10a04d31a0a537a88cf1aefb814bde486a1a0e2636273592368dc0`.
 Regression artifact 11363098234 is 1,372,294 compressed bytes, API/archive SHA
 `914f4288ff64ea54b780d4b2a4e1dfc7c6925953593b47e9cf2ff78622b7f47e`.
 The unchanged bounded collector checks source/run/attempt/digest/CRC and maps
 359 retained streams /2,301,621 bytes; all independent stream rehashes match.
-Its [artifact receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-86a819-attempt1-20261006-c18-01/RETRIEVAL-01.json)
+Its artifact receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-86a819-attempt1-20261006-c18-01/RETRIEVAL-01.json`)
 has SHA `84d408d4d11b4fd76c28171d889d9cb6c22d9a70773c6bdb0dea232350238801`.
-The [original-step receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-86a819-joblogs-20261006-c18-01/RETRIEVAL-01.json)
+The original-step receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-86a819-joblogs-20261006-c18-01/RETRIEVAL-01.json`)
 has SHA `0c2d3c118e840a66053e9a95434cab253e49cef5daa78e274db207539dc7616e`;
 17 retained step streams /1,524,699 bytes also rehash without mismatch.
 The original failed XML-prefix parser and imprecise initial delimiter description

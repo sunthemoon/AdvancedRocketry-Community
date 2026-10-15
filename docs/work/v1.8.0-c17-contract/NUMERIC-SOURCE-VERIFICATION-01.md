@@ -33,7 +33,7 @@ Root reads both complete source files and the sealed author handoff, then verifi
 are not Java results. Root's development cohort runs23/23 but remains
 DEVELOPMENT_UNCOMMITTED at task/base d810; it is not relabelled committed evidence.
 
-The different-agent [actual-source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-source-review-20261005-b9310a/REVIEW-01.md),
+The different-agent actual-source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-source-review-20261005-b9310a/REVIEW-01.md`),
 10,965 bytes / SHA-256 `98e6932a626cb896ccd4807ed34ec5845f08a4ef363a9b4c11958cdf158b0077`,
 finds no unresolved C/H/M/L within this exact private computation scope.
 Independent committed9b Java17 javac/JVM/outer each exit0;23 ordinary Jupiter
@@ -43,7 +43,7 @@ Root reads the full report and fresh intake exit0 verifies40 review payloads
 /164,077 bytes /41 checksums plus the separate raw A0's16 /40,732 bytes /17.
 
 After actual reviewer Java-slot release, Root's independently bound
-[fixed-commit replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-root-replay-20261005-01/ROOT-REPLAY-RESULT-01.md)
+fixed-commit replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-root-replay-20261005-01/ROOT-REPLAY-RESULT-01.md`)
 also runs23/23, javac/JVM/outer0, zero failures/aborts/skips/container failures.
 Both committed cohorts have complete error-free capture and17 inputs/config
 unchanged. Fresh preparation verifies exact committed source blobs, not only a

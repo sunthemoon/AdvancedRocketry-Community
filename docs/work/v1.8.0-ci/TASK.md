@@ -45,7 +45,7 @@ and all G0–G9 remain separate. This task does not declare v1.8 complete.
 
 ## Source-review correction
 
-The [original independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-review-20261005-64ec13/REVIEW-01.md)
+The original independent review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-review-20261005-64ec13/REVIEW-01.md`)
 finds two Medium issues (fresh-test cache reuse and unbound process temporary
 directories) and one Low (an annotated tag object described as a commit pin).
 Its original 12 tests/eight independent controls and findings remain unchanged.
@@ -56,7 +56,7 @@ context check before changing files; the separate corrected patch is retained
 as a later operation. Corrected independent review and actual hosted execution
 remain pending, not inferred from these changes.
 
-[Root tag observations](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-root-20261005-01/ACTION-TAG-OBSERVATIONS-02.json)
+Root tag observations (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-root-20261005-01/ACTION-TAG-OBSERVATIONS-02.json`)
 record all five primary repository API refs and the Gradle annotated-tag chain.
 The initial lightweight-only tag check failed; the bounded fresh dereference
 resolved v6 to commit `3f5f9adaf7d9fecd50b5935e54106014257a94e6`.
@@ -86,7 +86,7 @@ step-env parser omitted the YAML `run: |` block marker. That attempt is retained
 as `host-tests04-green.*` despite the prematurely chosen filename; the later
 parser correction and actual result use a new numbered receipt.
 
-The [independent context-fix review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-context-review-20261005-7c029e/REVIEW-01.md)
+The independent context-fix review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-context-review-20261005-7c029e/REVIEW-01.md`)
 finds a Medium failure path: checkout or preflight refusal skips `GITHUB_ENV`
 export, so the unconditional upload's missing `env.EVIDENCE_DIR` expands its
 first path to `/`. Its 15 focused tests pass, while two of eight independent

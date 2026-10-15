@@ -12,7 +12,7 @@
   `d08ca5c80af200bf25ca38adc09c3e57fb0b4c56`.
 - Owner decisions: [OWNER-DECISIONS-02](OWNER-DECISIONS-02.md), SHA-256
   `bd53cea6350009b3db1c8aa143554605a471a6e473f864b7c43f9ef97802d717`.
-- Review input: [REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/REPORT-01.md),
+- Review input: REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/REPORT-01.md`),
   SHA-256 `7764c25717d1b2c4b23aec09dcc64de90b86cf9af9d25613be5013530c59bc44` (matches the TASK),
   and its later ADDENDUM-01 in the same leaf.
 - Checkout: worktree `D:/GitHub/arce-v180-claude-graph-contract-20261007`, branch

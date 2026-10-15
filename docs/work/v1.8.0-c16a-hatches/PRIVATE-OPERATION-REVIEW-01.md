@@ -5,7 +5,7 @@ Fixed review source: `cbbb78e1fdc8dd88128162d43d88125c7aee9b60`.
 This supplements [the research checkpoint](PRIVATE-OPERATION-RESEARCH-01.md).
 
 Root reads/hashes the complete different-agent
-[review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-private-operation-save-contract-review-20261007-c16-702e41/REVIEW-01.md)
+review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-private-operation-save-contract-review-20261007-c16-702e41/REVIEW-01.md`)
 (`62d837`, exit 0), 11,979 bytes /SHA-256
 `65845a562356107450ed1f645e4cbfa4809bad768adfa4536533c6c267fbfec9`.
 It identifies two Medium **assignment-readiness** gaps, not demonstrated

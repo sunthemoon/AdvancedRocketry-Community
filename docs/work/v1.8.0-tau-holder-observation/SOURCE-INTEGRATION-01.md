@@ -20,7 +20,7 @@ The stdlib formatter bounds holder text at 160 printable ASCII characters and
 the complete payload at 512 bytes; maximum field composition is 504 bytes.
 Null/empty, controls, malformed UTF-16, identifiers, signed extremes and oversized
 text are handled without walking an unbounded remainder.
-[Independent actual-source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-holder-observation-independent-review-20261007/REVIEW-01.md)
+Independent actual-source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-holder-observation-independent-review-20261007/REVIEW-01.md`)
 has SHA256 `256db02b29952ab48a003e9408880abf14c05e7e132ae78afb1cf32898deeb65`.
 It establishes no actionable source defect. A Low author total-control typo is
 corrected separately: seventeen controls, sixteen passed and one failed; the
@@ -36,9 +36,9 @@ Root's fixed-commit cached javac/Jupiter `e2c8dd` exits **0 /0**:
 declarations exactly match raw terminals and all eighteen inputs remain unchanged.
 Only formatter/test/unchanged A0Harness sources and six named existing JUnit JARs
 are used. The native Tau fixture is pinned but **not compiled or run** here.
-[RESULT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-tau-holder-fixed-check-20261007-01/RESULT-01.json)
+RESULT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-tau-holder-fixed-check-20261007-01/RESULT-01.json`)
 has SHA256 `b9b5f29657e51d1b281a35691fe086ee76863d52dd44ce7caa08599354c3a3af`.
-[Different-agent raw result audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-holder-fixed-result-independent-audit-20261007/REVIEW-01.md)
+Different-agent raw result audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-holder-fixed-result-independent-audit-20261007/REVIEW-01.md`)
 has SHA256 `6d9ea85805cd357e1661392ed4d923b719877a5c0430c136c3038ad76ef1bc12`;
 it independently checks nine successful methods/two containers, seven class
 hashes, exact fixed source, inputs, actual commands and bounded complete streams.
@@ -54,7 +54,7 @@ original cleanup receipt remains. Nothing on C: or belonging to a peer is remove
 [Run 37560119538](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37560119538)
 binds exact main `7ab1b087`, attempt 1 /job 112595248301. Public observation
 `e49a4d` at 2026-10-07T02:06:03Z is IN_PROGRESS, clean build running, later steps
-pending. The [raw capture](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-observation-20261007-01/OBSERVATION-01.json)
+pending. The raw capture (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-save-tau-ci-observation-20261007-01/OBSERVATION-01.json`)
 is metadata only. No completed new full-regression result or JAR is claimed.
 The preceding required Tau failure stays open in [RESULT-20](../v1.8.0-ci/RESULT-20.md).
 

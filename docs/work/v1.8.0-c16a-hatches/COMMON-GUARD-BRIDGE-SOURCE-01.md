@@ -18,11 +18,11 @@ is introduced. Five NEW/MIT GameTests cover observation, first-wins, nonsticky
 deferral, permanent priority and bounded reasons; each resets only its disposable
 fixture coordinate. No synthetic stop closes the shared GameTest Level.
 
-[Original independent source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-common-bridge-source-review-20261007-482a19/REVIEW-01.md),
+Original independent source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-common-bridge-source-review-20261007-482a19/REVIEW-01.md`),
 SHA `911c80febe71f72fb469c30e01067cf3f18420ab3b3185a0cdcafa13c70b06e4`,
 finds two qualified Lows: optional terminal state was silently skipped and the
 task signature section was incorrect. The separately
-[reviewed exact correction](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-common-bridge-correction-review-20261007-f7425a/REVIEW-01.md),
+reviewed exact correction (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-common-bridge-correction-review-20261007-f7425a/REVIEW-01.md`),
 SHA `8a6c3df0c9d9faa6aba1cdc38a6b6c77d73bfb0f5b1d1ed6c43a1d394cbc7f02`,
 addresses both with no unresolved introduced C/H/M/L in its narrow static scope;
 11 finite controls pass. Original review/inspection failures remain preserved.
@@ -30,7 +30,7 @@ The different-agent native-declaration analysis does not substitute for executio
 
 ## Actual development verification
 
-[One admitted offline execution](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-common-bridge-offline-execution-20261007-c18-5e71af/REPORT-01.md),
+One admitted offline execution (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-common-bridge-offline-execution-20261007-c18-5e71af/REPORT-01.md`),
 SHA `cf9542893b887cf144391b6aa261cbd43a1d854b7d9be395196ff68cb5bab271`,
 compiles five actual project sources plus the unchanged Jupiter harness with
 Java17 and 26 pinned cached JARs: javac exits 0. The subsequent pure-domain
@@ -43,7 +43,7 @@ The static preparation's missing-Dist failure remains historical.
 This is a frozen **uncommitted development observation**, not a fixed-commit
 delivery test. Root publishes the exact reviewed/compiled postimages afterward;
 it does not relabel that earlier execution as a committed full build.
-[Root raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-c16-common-bridge-result-audit-20261007-01/AUDIT-02.json),
+Root raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-c16-common-bridge-result-audit-20261007-01/AUDIT-02.json`),
 SHA `3c525f443ea8282fbf9c27acf29bee4122957f0f9f2bc36f18e47b8741737675`,
 exits 0, checking source/task pins, raw child streams and individual subjects,
 and rehashing all thirteen class files /37,960 bytes. Original audit01 exits 1
@@ -73,7 +73,7 @@ packaged restart remain unverified. The helper does not enforce a family's
 actually-held coherent operation; no family caller is introduced. GuardTicket,
 full frame/hash/native codec, physical hatches, controller/lathe, conservation,
 content ledger and all G0-G9 remain open. R-021 is not accepted or closed.
-The separate [class-output cleanup addendum](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-common-bridge-output-cleanup-20261007-c18-4d8270/ADDENDUM-01.md),
+The separate class-output cleanup addendum (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-common-bridge-output-cleanup-20261007-c18-4d8270/ADDENDUM-01.md`),
 SHA `a303533480808ee0bf6a370f5c2fe8a4ff684e6a827e47385d101c010fef05b7`,
 records one deletion request rejected by tool policy before OS execution.
 All thirteen class files /37,960 logical bytes remain hash-matched; no retry,

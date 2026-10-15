@@ -13,9 +13,9 @@ No public/schema/resource rule, R-021 acceptance or major product decision chang
 
 | Private branch checkpoint | Actual source scope | Independent static source review |
 | --- | --- | --- |
-| `codex/v1.8.0-classic-central-20261007`, `5e8787786b19c8abca79e252cceb4c6ffe6ee959` | Four service/event/observation/save Java files, metadata source/test and own task | The two new observation/save bodies: [review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-chunk-observation-source-review-20261007/REVIEW-01.md), SHA256 `27cfbb943baeb5fe59f77b788309c6265a82a93381a5e80168d1c4b45f2ae389`; 85 finite controls |
-| `codex/v1.8.0-checkpoint-compare-20261007`, `cde841d0807d2a0647ddd3f1ce4c7b0a221deaf0` | RootBundle private comparison methods, exact bounded native helper, 22-test declaration file and own task | [Comparator review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/checkpoint-comparison-and-intake-independent-review-20261007/REVIEW-01.md), SHA256 `0c7e30aef22ad943806f64924d217018d4d1e0f04f11fb74f1729cbbd48e1d3f`; 59 source/document/arithmetic controls |
-| `codex/v1.8.0-guarded-owners-20261007`, `4ce6b228fa7b0f23b03f7203aba7ec5be86fb21e` | Exact generation40 owner postimages plus five unchanged published resource prerequisites | [Seven-postimage LOAD delta review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/owner-load-join-source-independent-review-20261007/REVIEW-01.md), SHA256 `c3f2da6153f3a4e2738847f9ffe2c45979a5e926ae3ca98e9a93b5814cd0cc4e`; 111 finite controls |
+| `codex/v1.8.0-classic-central-20261007`, `5e8787786b19c8abca79e252cceb4c6ffe6ee959` | Four service/event/observation/save Java files, metadata source/test and own task | The two new observation/save bodies: review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-chunk-observation-source-review-20261007/REVIEW-01.md`), SHA256 `27cfbb943baeb5fe59f77b788309c6265a82a93381a5e80168d1c4b45f2ae389`; 85 finite controls |
+| `codex/v1.8.0-checkpoint-compare-20261007`, `cde841d0807d2a0647ddd3f1ce4c7b0a221deaf0` | RootBundle private comparison methods, exact bounded native helper, 22-test declaration file and own task | Comparator review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/checkpoint-comparison-and-intake-independent-review-20261007/REVIEW-01.md`), SHA256 `0c7e30aef22ad943806f64924d217018d4d1e0f04f11fb74f1729cbbd48e1d3f`; 59 source/document/arithmetic controls |
+| `codex/v1.8.0-guarded-owners-20261007`, `4ce6b228fa7b0f23b03f7203aba7ec5be86fb21e` | Exact generation40 owner postimages plus five unchanged published resource prerequisites | Seven-postimage LOAD delta review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/owner-load-join-source-independent-review-20261007/REVIEW-01.md`), SHA256 `c3f2da6153f3a4e2738847f9ffe2c45979a5e926ae3ca98e9a93b5814cd0cc4e`; 111 finite controls |
 
 Each listed review establishes no introduced Critical/High/Medium/Low within its
 own scope. The central review is not a new review of every service/event body;
@@ -43,13 +43,13 @@ indexes/clean private worktrees. AGENTS.md remains unchanged and excluded.
 
 - Central publication and its original pre-Git syntax failure are recorded in
   [CENTRAL-SOURCE-CHECKPOINT-01](CENTRAL-SOURCE-CHECKPOINT-01.md).
-- Comparator publisher `18ff2a` exits 0; its [receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/comparator-private-publication-20261007/PUBLICATION-01.json)
+- Comparator publisher `18ff2a` exits 0; its receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/comparator-private-publication-20261007/PUBLICATION-01.json`)
   binds exactly four paths. Its RootBundle includes the unchanged successor02
   prerequisite prefix; that prefix is not new comparison work.
 - Owner publisher `1273e4` exits 1 before staging: the helper's `strip()` removed
   the first porcelain status line's leading space. The original helper and
   step records remain. Separate correction `e901bf` exits 0; its
-  [receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/owner-private-publication-20261007/attempt02/PUBLICATION-01.json)
+  receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/owner-private-publication-20261007/attempt02/PUBLICATION-01.json`)
   binds all 45 paths. The five replayed resource files are byte-identical to
   published `8d5214061c98fce0cf549a231eae7aaf312b3ba2`, not new owner work.
 - The six previously reviewed factual intake records are normally published on

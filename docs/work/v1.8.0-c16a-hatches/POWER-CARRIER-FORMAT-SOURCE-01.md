@@ -7,7 +7,7 @@ full regression and native conservation remain unfinished.
 Root commits and normally pushes the exact three reviewed postimages at
 `7a10f5200bab9b3d7b52edb53100ffa6e19bbf6e`, then integrates them unchanged at
 `257e7b3adb54dc693d815434394f311d28e800cc`. The private source checkout is clean.
-The [integration receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-main-integration-20261007/INTEGRATION-01.json)
+The integration receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-main-integration-20261007/INTEGRATION-01.json`)
 records 15 actual steps, normal remote equality and an empty index; user-owned
 AGENTS.md is unchanged and excluded. These are original NEW/MIT files.
 
@@ -36,7 +36,7 @@ removal, charged-item conservation and creative interception remain unfinished.
 
 ## Actual review and tests
 
-The [independent source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-source-independent-review-20261007/REVIEW-01.md),
+The independent source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-source-independent-review-20261007/REVIEW-01.md`),
 SHA256 `7e3d65cb0fedcfe696c12db5d0da75d79aa13a6829f259306a2b6c4cbdabb1ea`,
 finds no C/H/M/L in the internal stable-root format scope. Its 119 finite controls
 and 62 file /two member pins are unchanged. The reviewer independently compiles
@@ -45,9 +45,9 @@ aborts, skips or container failures. All source/worktree read holds are released
 Residual coverage limits remain: oversized/cyclic extra-key fixtures do not
 isolate every budget guard; direct invalid record-constructor cases are untested.
 
-Root's initial [development replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-check-20261007/RESULT-01.json)
+Root's initial development replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-check-20261007/RESULT-01.json`)
 has javac/Jupiter exits 0/0, 13 passed and 48 named inputs unchanged. Its
-subsequent [published-commit replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-fixed-check-20261007/RESULT-01.json),
+subsequent published-commit replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-fixed-check-20261007/RESULT-01.json`),
 SHA256 `c21c6f54c2001b06499ad30207074f4c2669b477fe5784b2d7edea67f7acdd34`,
 checks the three exact Git objects at `7a10f520`, then independently creates
 fresh classes and passes 13/13 with 49 named inputs unchanged. Compiler/test
@@ -59,10 +59,10 @@ test, unchanged harness and cached JARs. Each child has 256 MiB/two CPUs, a
 task leaf. No Bootstrap, registry/world, installation, Gradle or native server
 starts. These are not full-build, Item, save/restart or Required Gate evidence.
 
-Root [cleans only its two ended, unsealed scratch outputs](D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-owned-cleanup-20261007/CLEANUP-01.json)
+Root cleans only its two ended, unsealed scratch outputs (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-owned-cleanup-20261007/CLEANUP-01.json`)
 after verifying all input pins and every class size/hash, checking literal resolved
 targets and absence of aliases/running children. Thirty-two class files and
-24 directories are removed. A [separate statistical correction](D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-owned-cleanup-20261007/CORRECTION-01.json)
+24 directories are removed. A separate statistical correction (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-owned-cleanup-20261007/CORRECTION-01.json`)
 records 85,618 logical class bytes: the original PowerShell receipt counted array
 length instead of summing member lengths. Original scripts/results remain;
 no second deletion, physical reclaim, peer sealed-output or C: cleanup is claimed.
@@ -71,7 +71,7 @@ no second deletion, physical reclaim, peer sealed-output or C: cleanup is claime
 
 The [exact-source hosted run](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37551957636)
 binds `257e7b3a`, attempt 1 /job 112569285797. Root's
-[00:31:22Z observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-ci-observation-20261007-01/OBSERVATION-01.json)
+00:31:22Z observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/power-carrier-format-ci-observation-20261007-01/OBSERVATION-01.json`)
 is historical **IN_PROGRESS / metadata only**, retained unchanged. The later
 [exact-source complete raw result](../v1.8.0-ci/RESULT-19.md) is FAILED:
 clean build and 356 XML /1,977 actual cases /0FES succeed, including these 13

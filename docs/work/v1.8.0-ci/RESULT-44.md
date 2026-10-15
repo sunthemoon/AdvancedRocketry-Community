@@ -5,7 +5,7 @@ Date: 2026-10-08. Tested source
 This source was committed/non-force pushed before execution. Later document
 commits do not become the tested source. Full regression remains **FAILED**.
 
-The closed [MONITOR-12.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-12.json),
+The closed MONITOR-12.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-12.json`),
 SHA `4487aae21af0bbebdfca7d333b9d1f71b5c2af43c6e857df3b38c9b482b1f25e`,
 observes completed/failure at 2026-10-07T16:47:12.324458Z. Job 112901600129
 is monitor provenance, not an independent raw-receipt field. Earlier running
@@ -14,7 +14,7 @@ observations remain dated history in SOURCE-INTEGRATION-03 and the monitor.
 Root bounded retrieval exits 0: artifact **11498455692**, compressed 1,832,499 B,
 outer SHA `ea44cc4cfb1e77a2abc2d2df0d1f5e1b9897292a5ec88e5f08168ebb482dcf26`.
 Exact source/run/attempt/name/digest match the
-[retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-raw-20261008-01/RETRIEVAL-01.json),
+retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-raw-20261008-01/RETRIEVAL-01.json`),
 SHA `5d0332875aadf97d0aecfb15ea0a1557f5350a81be1278ff830f3f69cfbc8756`.
 897 archive members are inventoried; **399 thin raw members /7,758,528 B**
 retained. This raw packet stores no archive, JAR, runtime or reproducible source copy.
@@ -23,7 +23,7 @@ runtime-registration sentinel, not an archive member or product-test input.
 Its seal SHA is `e8c6d3dc18e3439e6ba7b776fc676a5823af506e713156a6b7e3d8539938c7a8`.
 
 Root explicit `python.exe -B audit01.py` exits 0, deriving
-[RAW-AUDIT-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/RAW-AUDIT-01.json),
+RAW-AUDIT-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/RAW-AUDIT-01.json`),
 SHA `1357dfc9837b89d2198cb5f3e296e113fdf8255d42b91d0a330d6ccaeb165c03`.
 All retained hashes/sizes match before/after and receipt bytes are unchanged.
 This is Root derivation; [RESULT-45](RESULT-45.md) records a different agent's

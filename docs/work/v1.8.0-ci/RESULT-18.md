@@ -23,7 +23,7 @@ attempt 1 / job 112535778550. Overall **FAILED** at the required GameTest step.
 
 ## Raw association and Root recount
 
-Root's [fresh observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-ci-20261007-01/OBSERVATION-01.json)
+Root's fresh observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-ci-20261007-01/OBSERVATION-01.json`)
 at 2026-10-06T23:00:03Z uses bounded public GET requests (tool `736d12`, exit 0).
 It binds the exact source/run/attempt/job and completed failure. Earlier
 22:37 metadata remains immutable in its separate original evidence directory.
@@ -37,7 +37,7 @@ is 1,757,354 bytes / SHA256
 `a1f8779d6d043b06441f5f9523cfa06570e8517f6187446eae270b9d61bc7cb4`,
 matching its API digest. Only compact raw log/XML/JSON/text members are retained.
 
-Root's [raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-ci-20261007-01/AUDIT-01.json),
+Root's raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-ci-20261007-01/AUDIT-01.json`),
 SHA256 `0b1d900a7cdd21147f5c7d194dad5e479dce021a64fb0acfb85644f0a34e3264`,
 exits 0 at tool `257f67`: 402 named inputs rehash without drift, actual XML
 children and suite attributes are checked, and the new subjects match the exact
@@ -45,13 +45,13 @@ committed test methods. Its initial console projection is truncated; retained
 audit and raw bytes are complete. Tools `04911d`, `80f98e` and `55febb` inspect
 the actual terminal summary, readiness samples and canonical severity counts.
 This Root recount is not an original-JAR replay.
-The [Root report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-ci-20261007-01/REPORT-01.md)
+The Root report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-ci-20261007-01/REPORT-01.md`)
 and raw leaf are sealed with 413 payloads /13,668,448 bytes; manifest SHA256
 `6ded3331279e3184608dd7838dd7ad24f00958998e7d4813b64f69f1bd6dc424`,
 414-entry sums SHA256
 `4232d206249eab1844ababa155ff051153ee9ad6dfef0f8ebde8ad8c336b2d6a`.
 
-The separate [independent raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/chunk-records-ci-independent-audit-20261007/REVIEW-01.md)
+The separate independent raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/chunk-records-ci-independent-audit-20261007/REVIEW-01.md`)
 is sealed at SHA256
 `95e72d39c364c02210e2d07372b25a2e75da9e268fbe4149309f3f6eef39c7fa`.
 Its independent recount confirms 398 retained raw files, 355 XML /1,964 actual
@@ -65,7 +65,7 @@ and 17-entry sums SHA256
 Overlapping main/latest/debug/job streams are not added as independent error
 totals. No new Java/network/native execution or JAR-byte verification occurs.
 
-The [canonical GameTest log](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-ci-20261007-01/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log)
+The canonical GameTest log (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-ci-20261007-01/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`)
 is 1,567,018 bytes / SHA256
 `0e297cfa9287030bc8476e74c04f7293ee049cdc532b20c1639db38a4fc84acb`.
 

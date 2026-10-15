@@ -36,7 +36,7 @@ The save event remains explicitly injected, not an outgoing native owner tag,
 writer, durable file or restart proof. Ordinary native saves are not stopped.
 Original source/failed receipts and schedule hypothesis remain separately retained.
 
-[Author05 REPORT](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-author-20261009-05/REPORT.md)
+Author05 REPORT (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-author-20261009-05/REPORT.md`)
 is source authoring only, not independent/runtime approval. Root reads the actual
 complete postimage and diff, report/static/command records and verifies all four
 manifest entries; five physical files total 28147 bytes. Author ran static
@@ -47,7 +47,7 @@ Neither lookup/display failure is a test result.
 
 ## Fresh execution and independent review
 
-Root exclusive [qualification leaf05](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-root-20261009-05)
+Root exclusive qualification leaf05 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-root-20261009-05`)
 records new source/config/helpers and pre-execution absent build/.gradle/run-data/
 generic src/generated/resources/.cache. That last locator does not cover the
 actual v1.8 cache; the additive correction06 below is explicit. Java17.0.7 and
@@ -70,7 +70,7 @@ Main central edit, HEAD movement or implicit production repair is permitted.
 
 ## Actual Root results and custody
 
-[Root05 REPORT](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-root-20261009-05/REPORT.md)
+Root05 REPORT (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-root-20261009-05/REPORT.md`)
 is sealed SHA-256 7de2a4997e97d48af65ef5bdcf0224c1e694e4b409de043daaa69ee028442c85;
 manifest fa5c35d836f8e7f0f160bfc29ae1d5f273938c6c6461956f8a7ecf4da24460d0
 covers 828 files /8516193 bytes. Exact retained arithmetic is independent of
@@ -107,7 +107,7 @@ user, peer, source checkout or global cache is deleted.
 
 ## Completed independent custody and additive output correction
 
-[Independent05 REPORT](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-independent-20261009-05/REPORT.md)
+Independent05 REPORT (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-independent-20261009-05/REPORT.md`)
 is 15992 bytes, SHA-256 d9d476a9bac0833acf94aa6b4ad46377286fcfebadba68bc2ee34b7bfbb6d397.
 Root fully reads it and acknowledges the exact hash before its sole seal;
 manifest 2ac5a63c6f7b0fb47ea855ed36383f6f221df7e44858519f88b91d927809328b
@@ -127,7 +127,7 @@ cache: 32 files /94517 bytes, total 998742. Copies/identities are retained separ
 Root does not delete these peer outputs or treat the passing cohort as closure
 of the earlier watcher/item issue.
 
-[Root correction06](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-root-output-addendum-20261009-06/REPORT.md)
+Root correction06 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-root-output-addendum-20261009-06/REPORT.md`)
 corrects the generic cache locator and incomplete Root04/05 output inventory.
 Ten available Root checkout log files are copied byte for byte; actual v1.8
 cache identities are cataloged. Four distinct first-removal targets are removed
@@ -137,7 +137,7 @@ peer outputs and the refused empty Root04 scratch are untouched. New 19-payload
 leaf, 1890305 bytes, is separately sealed and verified. This is output accounting,
 not a source/runtime/Gate amendment.
 
-[Completed diagnosis03](D:/GitHub/ARCE-Task-Evidence/v1.8.0/strict-validator-diagnosis-20261009-03/REPORT.md)
+Completed diagnosis03 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/strict-validator-diagnosis-20261009-03/REPORT.md`)
 establishes two source-level Mediums: terminal-only/buffered reporting and a
 nested release-checksum Git query lacking timeout/output bounds. Five payload
 hashes are verified; original timeout's executed phase/cause is not established.
