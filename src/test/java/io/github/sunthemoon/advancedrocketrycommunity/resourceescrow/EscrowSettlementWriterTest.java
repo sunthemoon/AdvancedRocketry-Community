@@ -40,17 +40,23 @@ final class EscrowSettlementWriterTest {
         var op = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE); var root = EscrowTestFixtures.ledger(op);
         var intent = confirmed(root); var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
         var fail = new AtomicBoolean(true); var called = new AtomicInteger();
-        try (var writer = new EscrowLedgerWriter(file(), 0, (staged, target) -> {
+        var ledgerIo = new AwaitedLedgerIo();
+        try (var writer = ledgerIo.writer(file(), 0, (staged, target) -> {
             if (fail.get()) { throw new java.io.IOException("Injected unknown O1 replacement"); }
             CheckedSavedDataFile.atomicMove(staged, target);
         }); var coordinator = new EscrowCoordinator(data, writer)) {
             coordinator.tick(10); assertTrue(coordinator.beginSettlement(intent, committed -> { assertTrue(committed); called.incrementAndGet(); }));
+            long tick = 11;
             try {
-                tickUntil(coordinator, writer::unavailable, 11);
+                tick = ledgerIo.tickUntil(coordinator::tick, tick, writer::unavailable);
+                assertTrue(writer.unavailable(), "Writer did not reach the checked boundary within the bounded owner ticks");
                 assertEquals(root, coordinator.ledger()); assertEquals(0, called.get());
                 assertTrue(coordinator.logicalLocked(op.guard().rocket()));
                 assertEquals(intent.encode(), writer.capturedOperations().get(0).settlement());
-            } finally { fail.set(false); tickUntil(coordinator, writer::idle, 211); }
+            } finally {
+                fail.set(false); ledgerIo.tickUntil(coordinator::tick, tick, writer::idle);
+                assertTrue(writer.idle(), "Writer did not reach the checked boundary within the bounded owner ticks");
+            }
             assertEquals(1, called.get()); assertEquals(1, coordinator.ledger().records().size());
         }
     }

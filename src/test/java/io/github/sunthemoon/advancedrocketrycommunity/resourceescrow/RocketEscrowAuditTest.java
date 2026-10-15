@@ -87,15 +87,16 @@ final class RocketEscrowAuditTest {
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(initial));
         Path file = temp.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         var failed = new java.util.concurrent.atomic.AtomicBoolean(true);
-        try (var writer = new EscrowLedgerWriter(file, 0, (staged, target) -> {
+        var ledgerIo = new AwaitedLedgerIo();
+        try (var writer = ledgerIo.writer(file, 0, (staged, target) -> {
             if (failed.get()) { throw new java.io.IOException("Injected repair write failure"); }
             CheckedSavedDataFile.atomicMove(staged, target);
         }); var coordinator = new EscrowCoordinator(data, writer)) {
             records.forEach(op -> coordinator.transition(op.id(), EscrowReason.RELOCATED_ENDPOINT));
             coordinator.persistTransitions();
-            long deadline = System.nanoTime() + 5_000_000_000L; int tick = 1;
+            long tick = 1;
             try {
-                while (!writer.unavailable() && System.nanoTime() < deadline) { coordinator.tick(tick++); Thread.sleep(5); }
+                tick = ledgerIo.tickUntil(coordinator::tick, tick, writer::unavailable);
                 assertTrue(writer.unavailable()); assertTrue(data.isDirty());
                 records.forEach(op -> {
                     assertEquals(EscrowReason.RELOCATED_ENDPOINT, coordinator.currentReason(op));
@@ -103,8 +104,8 @@ final class RocketEscrowAuditTest {
                 });
                 assertEquals(EscrowLimits.OPERATIONS, data.ledger().records().size());
             } finally {
-                failed.set(false); long retryDeadline = System.nanoTime() + 5_000_000_000L;
-                while (!writer.idle() && System.nanoTime() < retryDeadline) { coordinator.tick(tick++); Thread.sleep(5); }
+                failed.set(false);
+                ledgerIo.tickUntil(coordinator::tick, tick, writer::idle);
             }
             assertTrue(writer.idle());
             var disk = EscrowCodec.decode(CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow());

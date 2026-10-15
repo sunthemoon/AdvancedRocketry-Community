@@ -46,9 +46,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     private final Path file;
     private final CheckedSavedDataFile.Committer committer;
     private final java.util.function.Consumer<String> checkpoint;
-    private final ExecutorService io = Executors.newSingleThreadExecutor(r -> {
-        Thread thread = new Thread(r, "ARCE-escrow-ledger"); thread.setDaemon(true); return thread;
-    });
+    private final ExecutorService io;
     private final ArrayBlockingQueue<Completion> completions = new ArrayBlockingQueue<>(1);
     private Request active;
     private Request successor;
@@ -77,8 +75,15 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     }
     public EscrowLedgerWriter(Path file, long generation, CheckedSavedDataFile.Committer committer,
                               java.util.function.Consumer<String> checkpoint) {
+        this(file, generation, committer, checkpoint, Executors.newSingleThreadExecutor(r -> {
+            Thread thread = new Thread(r, "ARCE-escrow-ledger"); thread.setDaemon(true); return thread;
+        }));
+    }
+    /** Unit-test seam: every public constructor still uses the production IO thread above. */
+    EscrowLedgerWriter(Path file, long generation, CheckedSavedDataFile.Committer committer,
+                       java.util.function.Consumer<String> checkpoint, ExecutorService io) {
         this.file = file; this.lastGeneration = generation; this.durableGeneration = generation; this.committer = committer;
-        this.checkpoint = checkpoint;
+        this.checkpoint = checkpoint; this.io = io;
     }
     /** Checked startup target, not a staged candidate or an in-memory deserialization, supplies release authority. */
     boolean baseline(EscrowLedger loaded) {

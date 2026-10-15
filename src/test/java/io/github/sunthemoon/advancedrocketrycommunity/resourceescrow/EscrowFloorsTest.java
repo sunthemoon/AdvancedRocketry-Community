@@ -83,7 +83,8 @@ final class EscrowFloorsTest {
             var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
             var directory = java.nio.file.Files.createDirectory(temp.resolve("case-" + fail));
             var file = directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName());
-            try (var writer = new EscrowLedgerWriter(file, root.writerGeneration(), (staged, target) -> {
+            var ledgerIo = new AwaitedLedgerIo();
+            try (var writer = ledgerIo.writer(file, root.writerGeneration(), (staged, target) -> {
                 if (failing.get()) { throw new java.io.IOException("Injected floor collection failure"); }
                 io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.atomicMove(staged, target);
             }, ignored -> { }); var coordinator = new EscrowCoordinator(data, writer)) {
@@ -91,24 +92,18 @@ final class EscrowFloorsTest {
                 assertFalse(data.isDirty()); assertEquals(1, coordinator.floorUsage().used());
                 journal.setDirty(); journal.save(directory.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.ROCKET_TRANSFERS.fileName()).toFile());
                 assertFalse(journal.acknowledgedCurrent(), "Autosave must not wait for the journal writer");
-                long journalDeadline = System.nanoTime() + 5_000_000_000L;
-                int journalTick = 1;
-                while (!journal.acknowledgedCurrent() && System.nanoTime() < journalDeadline) {
-                    journal.pollWriter(journalTick++); Thread.sleep(5);
-                }
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalTestAccess.awaitWriter(journal);
                 assertTrue(journal.acknowledgedCurrent()); coordinator.collectFloors(journal);
                 assertEquals(1, coordinator.floorUsage().used(), "Queued collection is not retirement");
-                long deadline = System.nanoTime() + 5_000_000_000L;
-                int tick = 1;
+                long tick = 1;
                 try {
-                    while (!writer.idle() && !writer.unavailable() && System.nanoTime() < deadline) { coordinator.tick(tick++); Thread.sleep(5); }
+                    tick = ledgerIo.tickUntil(coordinator::tick, tick, () -> writer.idle() || writer.unavailable());
                     assertEquals(fail, writer.unavailable());
                     assertEquals(fail ? 1 : 0, coordinator.floorUsage().used());
                 } finally {
                     // Resolve injected ambiguous IO before closing the real writer; no test leaves a stuck drain.
                     failing.set(false);
-                    long recoveryDeadline = System.nanoTime() + 5_000_000_000L;
-                    while (!writer.idle() && System.nanoTime() < recoveryDeadline) { coordinator.tick(tick++); Thread.sleep(5); }
+                    ledgerIo.tickUntil(coordinator::tick, tick, writer::idle);
                 }
                 assertTrue(writer.idle()); assertEquals(0, coordinator.floorUsage().used());
             } finally { journal.stop(); }

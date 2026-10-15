@@ -95,7 +95,8 @@ final class EscrowAdmissionAuthorityTest {
         var uncertain = new java.util.concurrent.atomic.AtomicBoolean(true);
         var data = ResourceEscrowSavedData.create(); var bay = new ArrayList<Pending>();
         var file = temp.resolve(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.fileName());
-        try (var writer = new EscrowLedgerWriter(file, 0, (staged, target) -> {
+        var ledgerIo = new AwaitedLedgerIo();
+        try (var writer = ledgerIo.writer(file, 0, (staged, target) -> {
                     if (uncertain.get()) { throw new java.io.IOException("Injected ambiguous admission replacement"); }
                     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.atomicMove(staged, target);
                 }); var coordinator = new EscrowCoordinator(data, writer)) {
@@ -103,10 +104,9 @@ final class EscrowAdmissionAuthorityTest {
             var acknowledged = new java.util.concurrent.atomic.AtomicInteger();
             coordinator.prepareTest(EscrowTestFixtures.operation(1), committed -> { assertTrue(committed); acknowledged.incrementAndGet(); });
             assertTrue(coordinator.commitPreparations());
-            int tick = 1;
+            long tick = 1;
             try {
-                long deadline = System.nanoTime() + 5_000_000_000L;
-                while (!writer.unavailable() && System.nanoTime() < deadline) { coordinator.tick(tick++); Thread.sleep(2); }
+                tick = ledgerIo.tickUntil(coordinator::tick, tick, writer::unavailable);
                 assertTrue(writer.unavailable()); assertEquals(0, acknowledged.get());
                 assertTrue(coordinator.operational(), "Transient writer failure must keep the runtime ticking exact-candidate retries");
                 assertEquals(1, coordinator.admissionAuthority().pendingCount());
@@ -116,8 +116,7 @@ final class EscrowAdmissionAuthorityTest {
                 assertEquals(2, coordinator.nextSequence()); assertTrue(coordinator.ledger().records().isEmpty());
             } finally {
                 uncertain.set(false);
-                long deadline = System.nanoTime() + 5_000_000_000L;
-                while (!writer.idle() && System.nanoTime() < deadline) { coordinator.tick(tick++); Thread.sleep(2); }
+                ledgerIo.tickUntil(coordinator::tick, tick, writer::idle);
             }
             assertTrue(writer.idle()); assertEquals(1, acknowledged.get());
             assertEquals(1, coordinator.ledger().records().size());
