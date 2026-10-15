@@ -7,7 +7,7 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/models/centrifuge.obj",
       "source_sha256": "d466c1e96274cd05afbaa45a7f634a22e01641d8444c2b4ccb0c958b522e0031",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/models/centrifuge.obj",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/centrifuge.obj",
       "transformation": {
         "kind": "copy"
       },
@@ -20,7 +20,7 @@
       "source": "community",
       "source_path": "src/main/resources/assets/advancedrocketrycommunity/models/centrifuge.mtl",
       "source_sha256": "b2ba09f1d69734bc88def40f3b27e1a14776dfa441d1b1d05bc5aebae421f56e",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/models/centrifuge.mtl",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/models/centrifuge.mtl",
       "transformation": {
         "kind": "copy"
       },
@@ -33,7 +33,7 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/models/centrifuge.png",
       "source_sha256": "a817f3b557a0d0816b73a6465d538d0773f4ebff3825f597f90a1a59fc5c117f",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/models/centrifuge.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/models/centrifuge.png",
       "transformation": {
         "kind": "copy"
       },
