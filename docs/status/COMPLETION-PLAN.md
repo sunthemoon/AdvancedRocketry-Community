@@ -93,8 +93,8 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     owner 与比较器的双 LOAD 记录、EMIT 比较接入已独立审核并组合，
     相关测试已在终态托管回归实际执行；不替代已安装权限、完整 hatch、
     原生重新准入或失败处置验证。中央注册、物理接入和保存运行集成未完成，候选尚未交付。
-    出站比较/保留观察提案的[原审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md)
-    保留历史 Medium；LOAD 记录接口的另版补充已完成[独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)，
+    出站比较/保留观察提案的原审核 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md`)
+    保留历史 Medium；LOAD 记录接口的另版补充已完成独立复审 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md`)，
     提案文本补全记录接口和见证时序，无新增 C/H/M/L。
     [限定实施记录](../work/v1.8.0-c16a-hatches/LOAD-JOIN-IMPLEMENTATION-01.md)已按条件授权
     采纳私有技术补充；owner、精确根比较及真实区块观察器已在三个独立工作区写成，
@@ -564,8 +564,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   B 未分配摔落监听器；两项台账与整版 Gate 不变。
 
 - [~] C18 D1 辅助氧气储量：保留已接受的 API/HUD 2,000 工作缓冲。
-  [原独立提案审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md)
-  的两项 Medium 保留为历史；[后继独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-successor-independent-review-20261007/REVIEW-01.md)
+  原独立提案审核 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md`)
+  的两项 Medium 保留为历史；后继独立复审 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-successor-independent-review-20261007/REVIEW-01.md`)
   已在提案文本中补全元数据/空罐保真和拒绝充气路由规则，无 C/H/M，但有一项 Low：
   回调变化的拒绝承诺大于列明的可观察输入。另立的[可观察见证措辞修订](../work/v1.8.0-c18-contract/OXYGEN-WITNESS-CLARIFICATION-01.md)
   已完成独立复审，无新增 C/H/M/L，Root 仅采纳技术措辞；原 Low 和证据保留为历史。
