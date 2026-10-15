@@ -59,6 +59,7 @@ final class MoonLandingCompletion {
         }
         // 4. The writer needs a continuation slot and no failed write.
         if (disposition == FirstEventDisposition.DEFER || !journal.canQueueEffect()) {
+            FirstEventCutSeams.moonDeferred(server);
             return Result.WAIT;
         }
         // 5. Snapshot the event: the aboard, eligible players, sorted; never truncated.
@@ -72,6 +73,7 @@ final class MoonLandingCompletion {
         FirstEvent.MoonLanding event = FirstEvent.MoonLanding.create(UUID.randomUUID(), record.transferId(),
                 record.logicalRocketId(), record.ownerId(), destination.getUUID(), record.checksum(), origin.x(),
                 origin.y(), origin.z(), destination.level().getGameTime(), participants);
+        FirstEventCutSeams.beforeMoonElection(server, () -> server.saveEverything(false, true, true));
         // 6. EMPTY to ELECTED in RAM; 7. LANDED and the notifications wait for the exact confirmation.
         if (!journal.electFirstMoonLanding(event)) {
             return Result.WAIT;

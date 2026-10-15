@@ -148,6 +148,7 @@ def manifest_registrations(root: Path) -> dict[str, set[str]]:
 def resource_roots(root: Path) -> list[Path]:
     roots = [root / "src/main/resources", root / "src/generated/resources"]
     roots.extend(sorted((root / "src/generated").glob("v*/resources")))
+    roots.extend(sorted((root / "src/imported").glob("v*/resources")))
     return [path for path in roots if path.is_dir()]
 
 

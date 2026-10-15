@@ -111,6 +111,23 @@ def _is_reparse(path: Path, status: os.stat_result | None = None) -> bool:
     return bool(getattr(observed, "st_file_attributes", 0) & FILE_ATTRIBUTE_REPARSE_POINT)
 
 
+def _reject_linked_components(root: Path, relative: Path, label: str) -> None:
+    """Reject a symlink or reparse point at any component of ``relative`` below ``root``."""
+
+    current = root
+    for part in relative.parts:
+        current /= part
+        try:
+            observed = current.lstat()
+        except FileNotFoundError:
+            # The read that follows reports the missing component.
+            return
+        if stat.S_ISLNK(observed.st_mode) or _is_reparse(current, observed):
+            raise ValueError(
+                f"{label} path must not contain a symlink, junction, or reparse point"
+            )
+
+
 def _read_stable_file(path: Path, maximum: int, label: str) -> bytes:
     before = path.lstat()
     if not stat.S_ISREG(before.st_mode) or _is_reparse(path, before):
@@ -350,6 +367,7 @@ def validate_v002_g4_applicability(
     root = repository_root.resolve()
     errors: list[str] = []
     try:
+        _reject_linked_components(root, ADR_PATH, "ADR-005")
         payload = _read_stable_file(root / ADR_PATH, MAX_ADR_BYTES, "ADR-005")
         text = payload.decode("utf-8", errors="strict")
     except (OSError, UnicodeError, ValueError) as exc:

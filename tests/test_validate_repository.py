@@ -17,6 +17,7 @@ from scripts.validate_repository import (
     GRADLE_WRAPPER_PATH,
     ROOT,
     Results,
+    check_markdown_links,
     check_optional_v002_client_evidence,
     check_package_checksums,
     check_v002_final_g0_review,
@@ -25,7 +26,9 @@ from scripts.validate_repository import (
     is_audited_v001_evidence,
     is_approved_gradle_wrapper,
     is_approved_third_party_license,
+    markdown_correction_lines,
     markdown_link_errors,
+    markdown_link_report,
     normalize_link_target,
     parse_current_identity,
     read_bounded_bytes,
@@ -788,6 +791,368 @@ class MarkdownLinkInventoryTests(unittest.TestCase):
                 line_errors, checked = markdown_link_errors(root, [path])
             self.assertEqual(0, checked)
             self.assertIn("line-count limit", line_errors[0])
+
+
+class MarkdownCorrectionFileTests(unittest.TestCase):
+    """A sealed file's broken link is excused only by a valid correction file (W61)."""
+
+    SEALED = "docs/packet/REPORT.md"
+    CORRECTION = "docs/packet/REPORT-CORRECTION-W60.md"
+    SEALED_TEXT = (
+        "# Report\n"
+        "\n"
+        "See the [archive](archive.zip).\n"
+        "\n"
+        "Read the [outside record](D:/outside/record.md).\n"
+    )
+    SEALED_ERRORS = [
+        "docs/packet/REPORT.md:3 -> archive.zip",
+        "docs/packet/REPORT.md:5 -> unsafe or oversized target",
+    ]
+    TABLE = (
+        "| Line | Corrected text |\n"
+        "|---:|---|\n"
+        "| 3 | the archive (`archive.zip`) |\n"
+        "| 5 | the outside record (`D:/outside/record.md`) |\n"
+    )
+
+    def setUp(self) -> None:
+        self.fresh_repository()
+
+    def fresh_repository(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        self.git("init", "--quiet")
+        self.write(self.SEALED, self.SEALED_TEXT)
+
+    def git(self, *arguments: str) -> None:
+        subprocess.run(
+            [
+                "git",
+                "-c",
+                "core.autocrlf=false",
+                "-c",
+                "user.name=Correction Fixture",
+                "-c",
+                "user.email=correction@example.invalid",
+                *arguments,
+            ],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+        )
+
+    def write(self, relative: str, text: str) -> None:
+        path = self.root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        # Bytes keep LF line endings, so the working file equals the committed blob.
+        path.write_bytes(text.encode("utf-8"))
+
+    def correction_text(self, table: str | None = None) -> str:
+        return (
+            "# REPORT.md: link correction (W60)\n"
+            "\n"
+            "[REPORT.md](REPORT.md) is sealed, so the corrected links are here.\n"
+            "\n"
+            + (self.TABLE if table is None else table)
+        )
+
+    def commit(self, *relatives: str) -> None:
+        self.git("add", "--", *relatives)
+        self.git("commit", "--quiet", "-m", "fixture")
+
+    def report(self):
+        return markdown_link_report(self.root, tracked_markdown_files(self.root))
+
+    def assert_sealed_links_fail(self, report, *diagnostics: str) -> None:
+        self.assertEqual([*self.SEALED_ERRORS, *diagnostics], report.errors)
+        self.assertEqual(0, report.excused)
+        self.assertEqual({}, report.corrections)
+
+    def test_correction_file_excuses_the_lines_it_names(self) -> None:
+        self.write(self.CORRECTION, self.correction_text())
+        self.commit(self.SEALED, self.CORRECTION)
+
+        report = self.report()
+
+        self.assertEqual([], report.errors)
+        self.assertEqual(3, report.checked)
+        self.assertEqual(2, report.excused)
+        self.assertEqual({self.CORRECTION: 2}, report.corrections)
+        self.assertEqual(([], 3), markdown_link_errors(self.root, tracked_markdown_files(self.root)))
+        results = Results()
+        with patch("scripts.validate_repository.ROOT", self.root.resolve()):
+            check_markdown_links(results)
+        self.assertEqual([], results.failures)
+        self.assertEqual(
+            ["Markdown relative links resolve (3 checked, 2 excused by correction files)"],
+            results.passes,
+        )
+
+    def test_correction_file_must_have_the_sealed_file_stem_and_correction_form(self) -> None:
+        for name in (
+            "REPORT-CORRECTIONS-W60.md",
+            "report-CORRECTION-W60.md",
+            "REPORT-correction-W60.md",
+            "REPORT-CORRECTION-.md",
+            "REPORT-CORRECTION-W60.txt",
+            "REPORT-CORRECTION-W60.MD",
+            "REPORT-03-CORRECTION-W60.md",
+            "OTHER-CORRECTION-W60.md",
+            "REPORT.md-CORRECTION-W60.md",
+        ):
+            with self.subTest(name=name):
+                self.fresh_repository()
+                correction = f"docs/packet/{name}"
+                self.write(correction, self.correction_text())
+                self.commit(self.SEALED, correction)
+
+                self.assert_sealed_links_fail(self.report())
+
+    def test_correction_file_must_be_committed(self) -> None:
+        not_committed = (
+            f"{self.CORRECTION}: correction file for {self.SEALED} not used: "
+            "it is not committed at HEAD"
+        )
+        with self.subTest(state="untracked"):
+            self.write(self.CORRECTION, self.correction_text())
+            self.commit(self.SEALED)
+            # An untracked file is not in the authoritative inventory at all.
+            self.assert_sealed_links_fail(self.report())
+        with self.subTest(state="staged only"):
+            self.git("add", "--", self.CORRECTION)
+            self.assert_sealed_links_fail(self.report(), not_committed)
+        with self.subTest(state="changed after its commit"):
+            self.git("commit", "--quiet", "-m", "correction")
+            self.assertEqual([], self.report().errors)
+            self.write(self.CORRECTION, self.correction_text() + "\nLocal note.\n")
+            self.assert_sealed_links_fail(
+                self.report(),
+                f"{self.CORRECTION}: correction file for {self.SEALED} not used: "
+                "it differs from its committed blob",
+            )
+        with self.subTest(state="repository without a commit"):
+            self.fresh_repository()
+            self.write(self.CORRECTION, self.correction_text())
+            self.git("add", "--", self.SEALED, self.CORRECTION)
+            report = self.report()
+            self.assertEqual(self.SEALED_ERRORS, report.errors[:2])
+            self.assertEqual(3, len(report.errors))
+            self.assertTrue(
+                report.errors[2].startswith(
+                    "Cannot confirm committed Markdown correction files: "
+                ),
+                report.errors,
+            )
+            self.assertEqual(0, report.excused)
+
+    def test_correction_file_must_be_next_to_the_sealed_file(self) -> None:
+        for correction in (
+            "docs/REPORT-CORRECTION-W60.md",
+            "docs/packet/reviews/REPORT-CORRECTION-W60.md",
+            "docs/other/REPORT-CORRECTION-W60.md",
+        ):
+            with self.subTest(correction=correction):
+                self.fresh_repository()
+                self.write(correction, self.correction_text().replace(
+                    "[REPORT.md](REPORT.md)", "`REPORT.md`"
+                ))
+                self.commit(self.SEALED, correction)
+
+                self.assert_sealed_links_fail(self.report())
+
+    def test_correction_file_must_name_the_line_in_its_table(self) -> None:
+        no_line = (
+            f"{self.CORRECTION}: correction file for {self.SEALED} not used: "
+            "it names no line in a single '| Line | Corrected text |' table"
+        )
+        unparseable_tables = {
+            "no table": "Line 3 and line 5 are corrected as before.\n",
+            "other header": "| Row | Corrected text |\n|---:|---|\n| 3 | a |\n| 5 | b |\n",
+            "no delimiter": "| Line | Corrected text |\n| 3 | a |\n| 5 | b |\n",
+            "no rows": "| Line | Corrected text |\n|---:|---|\n",
+            "word line": "| Line | Corrected text |\n|---:|---|\n| three | a |\n| 5 | b |\n",
+            "line range": "| Line | Corrected text |\n|---:|---|\n| 3-5 | a |\n",
+            "zero line": "| Line | Corrected text |\n|---:|---|\n| 0 | a |\n| 3 | a |\n| 5 | b |\n",
+            "leading zero": "| Line | Corrected text |\n|---:|---|\n| 03 | a |\n| 5 | b |\n",
+            "empty text": "| Line | Corrected text |\n|---:|---|\n| 3 |  |\n| 5 | b |\n",
+            "duplicate line": "| Line | Corrected text |\n|---:|---|\n| 3 | a |\n| 3 | b |\n| 5 | c |\n",
+            "two tables": self.TABLE + "\n" + self.TABLE,
+            "fenced table": "```text\n" + self.TABLE + "```\n",
+        }
+        for label, table in unparseable_tables.items():
+            with self.subTest(table=label):
+                self.assertIsNone(markdown_correction_lines(self.correction_text(table)))
+                self.fresh_repository()
+                self.write(self.CORRECTION, self.correction_text(table))
+                self.commit(self.SEALED, self.CORRECTION)
+
+                self.assert_sealed_links_fail(self.report(), no_line)
+
+        with self.subTest(table="omits line 5"):
+            self.fresh_repository()
+            self.write(
+                self.CORRECTION,
+                self.correction_text(
+                    "| Line | Corrected text |\n|---:|---|\n| 3 | the archive (`archive.zip`) |\n"
+                ),
+            )
+            self.commit(self.SEALED, self.CORRECTION)
+
+            report = self.report()
+
+            self.assertEqual([self.SEALED_ERRORS[1]], report.errors)
+            self.assertEqual(1, report.excused)
+            self.assertEqual({self.CORRECTION: 1}, report.corrections)
+
+    def test_correction_file_with_a_broken_link_of_its_own_fails(self) -> None:
+        self.write(
+            self.CORRECTION,
+            self.correction_text().replace(
+                "is sealed,", "is sealed (see the [missing list](SHA256SUMS.txt)),"
+            ),
+        )
+        self.commit(self.SEALED, self.CORRECTION)
+
+        report = self.report()
+
+        self.assertEqual(
+            [
+                f"{self.CORRECTION}:3 -> SHA256SUMS.txt",
+                *self.SEALED_ERRORS,
+                f"{self.CORRECTION}: correction file for {self.SEALED} not used: "
+                "it has broken links of its own",
+            ],
+            report.errors,
+        )
+        self.assertEqual(0, report.excused)
+
+    def test_correction_file_queries_are_bounded(self) -> None:
+        self.write(self.CORRECTION, self.correction_text())
+        self.commit(self.SEALED, self.CORRECTION)
+        for constant, message in (
+            ("MAX_MARKDOWN_CORRECTION_FILES", "Markdown correction files exceed the limit of 0"),
+            (
+                "MAX_MARKDOWN_CORRECTION_QUERY_BYTES",
+                "Markdown correction file paths exceed the query limit of 0 bytes",
+            ),
+        ):
+            with self.subTest(constant=constant):
+                with patch(f"scripts.validate_repository.{constant}", 0):
+                    self.assert_sealed_links_fail(self.report(), message)
+
+    def export_head(self) -> Path:
+        """Return a temporary Git repository that holds exactly HEAD's paths.
+
+        Untracked files of this checkout (such as the ZIPs that
+        docs/work/v1.8.0-external-evidence/MANIFEST.md lists) are not copied, so they
+        cannot make a broken link resolve (W61F). Markdown files keep their committed
+        bytes. Every other file is empty, because the check only tests that a link
+        target exists; this avoids extracting about 580 MiB of evidence archives.
+        """
+
+        def git(directory: Path, *arguments: str, stdin: bytes | None = None) -> bytes:
+            return subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Correction Fixture",
+                    "-c",
+                    "user.email=correction@example.invalid",
+                    "-C",
+                    str(directory),
+                    *arguments,
+                ],
+                input=stdin,
+                check=True,
+                capture_output=True,
+            ).stdout
+
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        export = Path(temporary.name)
+        tree = git(ROOT, "rev-parse", "HEAD^{tree}").decode("ascii").strip()
+        listing = git(ROOT, "ls-tree", "-r", "-z", "--full-tree", tree)
+        created: set[Path] = set()
+        markdown: list[tuple[str, str]] = []
+        for entry in filter(None, listing.split(b"\0")):
+            header, _, raw_name = entry.partition(b"\t")
+            _, kind, object_id = header.decode("ascii").split(" ")
+            name = raw_name.decode("utf-8")
+            self.assertEqual("blob", kind, name)
+            path = export.joinpath(*name.split("/"))
+            if path.parent not in created:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                created.add(path.parent)
+            path.write_bytes(b"")
+            if name.lower().endswith(".md"):
+                markdown.append((object_id, name))
+        batch = git(
+            ROOT,
+            "cat-file",
+            "--batch",
+            stdin="".join(f"{object_id}\n" for object_id, _ in markdown).encode("ascii"),
+        )
+        offset = 0
+        for object_id, name in markdown:
+            end = batch.index(b"\n", offset)
+            reported_id, kind, size = batch[offset:end].decode("ascii").split(" ")
+            self.assertEqual((object_id, "blob"), (reported_id, kind))
+            start = end + 1
+            export.joinpath(*name.split("/")).write_bytes(batch[start : start + int(size)])
+            offset = start + int(size) + 1
+        self.assertEqual(len(batch), offset)
+
+        # The export borrows this checkout's objects read-only, so HEAD's tree is
+        # indexed and committed without hashing a file again.
+        objects = (ROOT / git(ROOT, "rev-parse", "--git-path", "objects").decode("utf-8").strip())
+        git(export, "init", "--quiet")
+        (export / ".git/objects/info/alternates").write_bytes(
+            objects.resolve().as_posix().encode("utf-8") + b"\n"
+        )
+        git(export, "read-tree", tree)
+        commit = git(export, "commit-tree", tree, "-m", "HEAD export").decode("ascii").strip()
+        git(export, "update-ref", "HEAD", commit)
+        self.assertEqual(tree, git(export, "rev-parse", "HEAD^{tree}").decode("ascii").strip())
+        return export
+
+    def test_repository_markdown_passes_with_the_six_w60_correction_files(self) -> None:
+        export = self.export_head()
+        reports = []
+
+        def recording_report(repository_root, paths):
+            reports.append(markdown_link_report(repository_root, paths))
+            return reports[-1]
+
+        results = Results()
+        with patch("scripts.validate_repository.ROOT", export.resolve()), patch(
+            "scripts.validate_repository.markdown_link_report",
+            side_effect=recording_report,
+        ):
+            check_markdown_links(results)
+
+        self.assertEqual([], results.failures)
+        self.assertEqual(1, len(reports))
+        report = reports[0]
+        self.assertEqual(
+            [
+                f"Markdown relative links resolve ({report.checked} checked, "
+                f"{report.excused} excused by correction files)"
+            ],
+            results.passes,
+        )
+        w60 = {
+            "docs/work/v1.8.0-c16a-fluids/VERIFICATION-CORRECTION-W60.md": 3,
+            "docs/work/v1.8.0-c16a-fluids/reviews/REVIEW-FINAL-CORRECTION-W60.md": 2,
+            "docs/work/v1.8.0-c16a-motors/VERIFICATION-CORRECTION-W60.md": 4,
+            "docs/work/v1.8.0-c16a-motors/reviews/REVIEW-FINAL-CORRECTION-W60.md": 1,
+            "docs/work/v1.8.0-c18-contract/proposals/revision-03/REPORT-03-CORRECTION-W60.md": 1,
+            "docs/work/v1.8.0-c18a-sleep/reviews/memory-window-69/REPORT-CORRECTION-W60.md": 21,
+        }
+        self.assertEqual(
+            w60, {name: report.corrections.get(name) for name in w60}
+        )
 
 
 class BoundedRepositoryInputTests(unittest.TestCase):

@@ -455,6 +455,28 @@ public final class StationWarpService {
         cooldown.clear();
     }
 
+    /** Gated headless fixture: the ordinary quote/commit pipeline, without inventing a connected local player. */
+    public StationWarpResult warpForFirstEventReleaseTest(MinecraftServer server, UUID stationId, ResourceLocation target) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.requireEnabled(server);
+        FirstEventCutSeams.configured().orElseThrow(() -> new IllegalStateException("No first-event cut is armed"));
+        StationRegistrySavedData data = StationRegistrySavedData.get(server);
+        if (!data.operational() || data.updatesQuarantined()) {
+            return StationWarpResult.of(StationManagementCode.AUTHORITY_UNAVAILABLE, null);
+        }
+        StationState station = data.find(stationId).orElseThrow();
+        var actor = new com.mojang.authlib.GameProfile(station.ownerId(), "firstEventFixture");
+        Quoted quoted = quote(server, data, station, target, actor);
+        if (quoted.code() != null) {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture warp_refused station={} code={}",
+                    stationId, quoted.code());
+            if (quoted.code() == StationManagementCode.WARP_FIRST_EVENT_OVER_BUDGET) {
+                FirstEventCutSeams.boundary(server, FirstEventCutSeams.WARP_REFUSED, FirstEventKind.FIRST_STATION_WARP, null);
+            }
+            return quoted.result(station);
+        }
+        return commit(server, quoted.quote());
+    }
+
     /** Package-private for GameTests through the command; production calls come from the tick. */
     StationWarpResult commit(MinecraftServer server, WarpQuote confirmed) {
         StationRegistrySavedData data = StationRegistrySavedData.get(server);

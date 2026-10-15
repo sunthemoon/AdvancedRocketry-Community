@@ -18,7 +18,7 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/basiclens.png",
       "source_sha256": "863dbbc076b4daa770dc6b862db599908f9103f6838e4013a799f2d33e5cf3f1",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/laser_lens.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/laser_lens.png",
       "transformation": {"kind": "rename"},
       "units": ["item_variant:lens/0"],
       "asset_coverage_row": 64
@@ -27,7 +27,7 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/microwavetransmitter.png",
       "source_sha256": "935869eebe9c61e4c5f6b635d24844b5df444f0c8a8994aeca6b4a8821a05b87",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/solar_transmitter_module.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/solar_transmitter_module.png",
       "transformation": {"kind": "rename"},
       "units": ["item_variant:satellitePrimaryFunction/3"],
       "asset_coverage_row": 68
@@ -36,7 +36,7 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/opticalsensor.png",
       "source_sha256": "8c5146f5694f28bc99e1e0acbc2993d694ddc0efc12737845373f3ecfafbda50",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/data_satellite_package.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/data_satellite_package.png",
       "transformation": {"kind": "rename"},
       "units": ["item_variant:satellitePrimaryFunction/0"],
       "asset_coverage_row": 69
@@ -45,7 +45,7 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/oremapper.png",
       "source_sha256": "23b9b5ddb27e95045162676e87ace3201bf140de62efff780a40ff395ff8aca4",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/survey_scanner_module.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/survey_scanner_module.png",
       "transformation": {"kind": "rename"},
       "units": ["item_variant:satellitePrimaryFunction/4"],
       "asset_coverage_row": 70
@@ -54,7 +54,7 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/satellite.png",
       "source_sha256": "8506ef216d7f62b7f949462ba0f85011b998cfbf89e27986fbccccea25692e47",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/satellite_package.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/satellite_package.png",
       "transformation": {"kind": "rename"},
       "units": [
         "item:satellite",
@@ -69,7 +69,7 @@
       "source": "ar",
       "source_path": "src/main/resources/assets/advancedrocketry/textures/items/satelliteidchip.png",
       "source_sha256": "db8baf7f5c71b90168f5e2e638368b90951e19821f8a4d11046fd95e3038c930",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/satellite_control_chip.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/satellite_control_chip.png",
       "transformation": {"kind": "rename"},
       "units": [
         "item:satellite",

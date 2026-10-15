@@ -265,6 +265,12 @@ must handle:
    - a record's target is missing or its hash differs.
    The JAR audit fails on any `QUARANTINED` or `REJECTED` target and on any
    packaged file with a legacy-manifest hash that has no record.
+   *Implementation note (Root, 2026-10-15, W52F):* v1.8 imports live in their own root,
+   `src/imported/v1.8/resources/`, packaged like the DataGen roots and listed in `runData`'s
+   `--existing` roots. `tools/import/import_v180_assets.py` writes only there and refuses a
+   target that also exists under `src/main/resources/`, which stays the v0.1.0 managed root
+   (`scripts/validate_v010_asset_baseline.py`). The first rule above applies to the import root
+   as it does to `src/main/resources/`.
 8. **Vanilla derivation check.** A file name says nothing about origin: the
    legacy Moon turf and ferric sand are recolours of the vanilla grass top
    with a different name. `tools/audit/vanilla_derivation.py` compares every

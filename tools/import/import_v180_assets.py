@@ -10,7 +10,8 @@
 
 Each plan entry names its source (the pinned upstream, or a repository-owned NEW file at its authoring commit),
 the source path and SHA-256, the target path, one transformation, the owning ledger units and its row in the C18d
-asset-coverage table. Transformations:
+asset-coverage table. Targets go to the v1.8 import root ``src/imported/v1.8/resources/``, which the build packages
+like the DataGen roots; ``src/main/resources/`` stays the v0.1.0 managed root (W52F). Transformations:
 
 * ``copy``: the bytes unchanged, at the same asset path in the mod namespace;
 * ``rename``: the bytes unchanged, at a new asset path;
@@ -50,13 +51,17 @@ v010 = importlib.import_module("tools.import.import_v010_assets")
 MOD_ID = models.MOD_ID
 TARGET_VERSION = "v1.8.0"
 GENERATOR = "tools/import/import_v180_assets.py"
-RESOURCE_ROOT = "src/main/resources/"
+RESOURCE_ROOT = "src/imported/v1.8/resources/"
 TARGET_ROOT = RESOURCE_ROOT + "assets/" + MOD_ID + "/"
+MAIN_RESOURCE_ROOT = "src/main/resources/"
+# A NEW source is read from its authoring commit, where it was written in the main resource tree (K1's material
+# library at b654e145); only targets moved to the import root.
+NEW_SOURCE_ROOT = MAIN_RESOURCE_ROOT + "assets/" + MOD_ID + "/"
 UPSTREAM = "UPSTREAM_AR_MIT"
 NEW = "NEW"
 UPSTREAM_NOTICE = "Copyright (c) 2017"
 NEW_REPOSITORY = "https://github.com/sunthemoon/AdvancedRocketry-Community"
-SOURCE_ROOTS = {UPSTREAM: checks.LEGACY_ASSET_ROOT, NEW: TARGET_ROOT}
+SOURCE_ROOTS = {UPSTREAM: checks.LEGACY_ASSET_ROOT, NEW: NEW_SOURCE_ROOT}
 SOURCE_KEYS = {"status", "source_repository", "source_branch", "source_commit", "license", "copyright_notice"}
 ENTRY_KEYS = {"source", "source_path", "source_sha256", "target_path", "transformation", "units", "asset_coverage_row"}
 # File types with a format check; OGG, JPEG and JSON have none here (ADR-066 section 7.3).
@@ -425,13 +430,14 @@ def build(root: Path, upstream: Path, plan_path: Path, vanilla_specs: list[str])
 
 
 def _other_roots(root: Path) -> list[Path]:
-    return sorted(path for path in (root / "src/generated").glob("*/resources") if path.is_dir()) + [
+    return [root / MAIN_RESOURCE_ROOT] + sorted(
+        path for path in (root / "src/generated").glob("*/resources") if path.is_dir()) + [
         root / "src/generated/resources"]
 
 
 def check_targets(root: Path, rendered: dict[str, bytes], record_path: Path) -> list[str]:
-    """A target must not also exist in a DataGen root, where it would be a second copy of the resource, nor be
-    named by another provenance record."""
+    """A target must not also exist in the main resources or a DataGen root, where it would be a second copy of the
+    resource, nor be named by another provenance record."""
     owners: dict[str, str] = {}
     for path in sorted((root / "docs/provenance").glob("*.json")):
         if path.resolve() == record_path.resolve():
