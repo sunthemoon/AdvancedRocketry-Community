@@ -52,6 +52,8 @@ public final class SatelliteBayBlockEntity extends BlockEntity implements MenuPr
     private boolean future;
     /** The held root cannot be written unchanged; the chunk-save guard refuses its terrain chunk. */
     private boolean unkeepable;
+    /** No recursive copy when native validation failed or exhausted its work budget. */
+    private boolean retainedByReference;
     /** Shared by the loot and removal callbacks, so one removal emits the package at most once. */
     private boolean extracted;
     private BayInventory inventory;
@@ -80,9 +82,9 @@ public final class SatelliteBayBlockEntity extends BlockEntity implements MenuPr
         return Optional.ofNullable(packageState);
     }
 
-    /** A detached copy of the held root, or empty when the bay has none. */
+    /** A detached copy when preflight permits one, otherwise the retained raw reference; empty for no root. */
     public Optional<Tag> heldRoot() {
-        return held == null ? Optional.empty() : Optional.of(unkeepable ? held : held.copy());
+        return held == null ? Optional.empty() : Optional.of(retainedByReference ? held : held.copy());
     }
 
     public boolean unkeepable() {
@@ -202,6 +204,7 @@ public final class SatelliteBayBlockEntity extends BlockEntity implements MenuPr
         packageState = next.pkg() == null ? null : SatelliteBayPackage.decode(next.pkg());
         future = false;
         unkeepable = false;
+        retainedByReference = false;
         extracted = false;
         setChanged();
     }
@@ -262,6 +265,7 @@ public final class SatelliteBayBlockEntity extends BlockEntity implements MenuPr
         packageState = contents.pkg() == null ? null : SatelliteBayPackage.decode(contents.pkg());
         future = false;
         unkeepable = false;
+        retainedByReference = false;
         extracted = false;
         setChanged();
         return true;
@@ -271,8 +275,8 @@ public final class SatelliteBayBlockEntity extends BlockEntity implements MenuPr
     protected void saveAdditional(CompoundTag outer) {
         super.saveAdditional(outer);
         if (held != null) {
-            // An unkeepable root is written by reference; the chunk-save guard refuses that chunk.
-            outer.put(SatelliteBayRoot.KEY, unkeepable ? held : held.copy());
+            // Unchecked roots stay verbatim too, but only an observed incompatibility denies the chunk save.
+            outer.put(SatelliteBayRoot.KEY, retainedByReference ? held : held.copy());
         }
     }
 
@@ -290,13 +294,16 @@ public final class SatelliteBayBlockEntity extends BlockEntity implements MenuPr
         packageState = null;
         future = false;
         unkeepable = false;
+        retainedByReference = false;
         extracted = false;
         Tag raw = outer.get(SatelliteBayRoot.KEY);
         if (raw == null) {
             return;
         }
-        unkeepable = !SatelliteBayRoot.nativelyKeepable(raw);
-        held = unkeepable ? raw : raw.copy();
+        SatelliteBayNativeCheck.Result nativeCheck = SatelliteBayNativeCheck.inspect(raw);
+        unkeepable = nativeCheck == SatelliteBayNativeCheck.Result.INCOMPATIBLE;
+        retainedByReference = nativeCheck != SatelliteBayNativeCheck.Result.LOSSLESS;
+        held = retainedByReference ? raw : raw.copy();
         SatelliteBayRoot.Decoded decoded = SatelliteBayRoot.decode(held);
         if (decoded.valid()) {
             contents = decoded.contents().orElseThrow();

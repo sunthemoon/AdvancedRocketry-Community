@@ -364,15 +364,34 @@ public final class SatelliteBayRootGameTests {
             CompoundTag keepable = SatelliteBayFixtures.root(UUID.randomUUID(), null);
             keepable.putString("unknown_field", "kept");
             keepable.putByteArray("oversized", new byte[8_192]);
-            SatelliteBayBlockEntity quarantined = SatelliteBayFixtures.place(helper, relative, keepable);
-            helper.assertTrue(quarantined.dataGuard() == SatelliteBayStatus.Guard.QUARANTINED && !quarantined.unkeepable(),
-                    "The serializable root was not a keepable quarantine");
-            CompoundTag outgoing = chunkData(quarantined);
-            GuardedChunkSaves.beforeSave(new ChunkDataEvent.Save(chunk, level, outgoing));
-            SatelliteBayProtection.chunkSave(new ChunkDataEvent.Save(chunk, level, outgoing));
-            helper.assertTrue(keepable.equals(outgoing.getList("block_entities", Tag.TAG_COMPOUND).getCompound(0)
-                    .get(SatelliteBayRoot.KEY)), "A serializable quarantined root was not written unchanged");
-            SatelliteBayFixtures.clear(level, at);
+            List<CompoundTag> keepableRoots = new ArrayList<>();
+            keepableRoots.add(keepable);
+            for (int schema : new int[] {1, 2}) {
+                CompoundTag oversized = SatelliteBayFixtures.root(new UUID(1, 2), null);
+                oversized.putInt("schema_version", schema);
+                oversized.putByteArray("future_payload", new byte[2_097_153]);
+                keepableRoots.add(oversized);
+            }
+            for (CompoundTag raw : keepableRoots) {
+                SatelliteBayBlockEntity quarantined = SatelliteBayFixtures.place(helper, relative, raw);
+                quarantined.onLoad();
+                SatelliteBayStatus.Guard expected = raw.getInt("schema_version") == 1
+                        ? SatelliteBayStatus.Guard.QUARANTINED : SatelliteBayStatus.Guard.UNSUPPORTED_ROOT;
+                helper.assertTrue(quarantined.dataGuard() == expected && !quarantined.unkeepable(),
+                        "The serializable root was not guarded without save denial");
+                helper.assertTrue(quarantined.contents().isEmpty() && quarantined.itemHandler().getStackInSlot(0).isEmpty(),
+                        "A guarded root exposed operational contents");
+                CompoundTag outgoing = chunkData(quarantined);
+                GuardedChunkSaves.beforeSave(new ChunkDataEvent.Save(chunk, level, outgoing));
+                SatelliteBayProtection.chunkSave(new ChunkDataEvent.Save(chunk, level, outgoing));
+                Tag saved = outgoing.getList("block_entities", Tag.TAG_COMPOUND).getCompound(0).get(SatelliteBayRoot.KEY);
+                helper.assertTrue(raw.equals(saved), "A serializable guarded root was not written unchanged");
+                if (raw.contains("future_payload")) {
+                    helper.assertTrue(raw == saved && raw == quarantined.heldRoot().orElseThrow(),
+                            "Work exhaustion must retain the raw reference instead of recursively copying it");
+                }
+                SatelliteBayFixtures.clear(level, at);
+            }
 
             CompoundTag deep = SatelliteBayFixtures.root(UUID.randomUUID(), null);
             CompoundTag cursor = new CompoundTag();

@@ -9,16 +9,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.function.Consumer;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import org.junit.jupiter.api.BeforeAll;
@@ -257,12 +261,84 @@ class SatelliteBayRootTest {
         text.putString("x", "a".repeat(65_536));
         assertFalse(SatelliteBayRoot.nativelyKeepable(text), "writeUTF replaces an overlong string");
 
+        nan.put("x", DoubleTag.valueOf(Double.longBitsToDouble(0x7ff8000000000001L)));
+        assertFalse(SatelliteBayRoot.nativelyKeepable(nan), "A non-canonical double NaN changes on write");
+        CompoundTag overlongKey = new CompoundTag();
+        overlongKey.putByte("a".repeat(65_536), (byte) 0);
+        assertFalse(SatelliteBayRoot.nativelyKeepable(overlongKey), "writeUTF cannot write an overlong key");
+        text.putString("x", "\u0800".repeat(21_845));
+        assertTrue(SatelliteBayRoot.nativelyKeepable(text), "The string bound counts modified UTF bytes");
+        text.putString("x", "\u0800".repeat(21_846));
+        assertFalse(SatelliteBayRoot.nativelyKeepable(text));
+        assertTrue(SatelliteBayRoot.nativelyKeepable(ByteTag.ZERO), "A wrong-typed root is kept when lossless");
+    }
+
+    @Test
+    void theValidationByteBudgetIsNotATerrainSerializationLimit() throws IOException {
         CompoundTag huge = new CompoundTag();
         huge.putByteArray("x", new byte[2_097_152 - 3 - 1 - 1 - 2 - 1 - 4]);
         assertEquals(2_097_152, bytes(huge));
+        assertEquals(SatelliteBayNativeCheck.Result.LOSSLESS, SatelliteBayNativeCheck.inspect(huge));
         assertTrue(SatelliteBayRoot.nativelyKeepable(huge));
+        assertTerrainRoundTrip(huge);
         huge.putByteArray("x", new byte[2_097_152 - 3 - 1 - 1 - 2 - 1 - 4 + 1]);
-        assertFalse(SatelliteBayRoot.nativelyKeepable(huge));
-        assertTrue(SatelliteBayRoot.nativelyKeepable(ByteTag.ZERO), "A wrong-typed root is kept when lossless");
+        assertEquals(2_097_153, bytes(huge));
+        assertEquals(SatelliteBayNativeCheck.Result.WORK_LIMIT, SatelliteBayNativeCheck.inspect(huge));
+        assertTrue(SatelliteBayRoot.nativelyKeepable(huge), "Work exhaustion is not evidence of native data loss");
+        assertTerrainRoundTrip(huge);
+    }
+
+    @Test
+    void reviewOversizedQuarantinedAndFutureRootsRoundTripWithoutSaveDenial() throws IOException {
+        for (int schema : new int[] {1, 2}) {
+            CompoundTag oversized = new CompoundTag();
+            oversized.putInt("schema_version", schema);
+            oversized.putUUID("owner", new UUID(1, 2));
+            oversized.putByteArray("future_payload", new byte[2_097_153]);
+            assertEquals(2_097_227, bytes(oversized), "W27B-R1 review fixture");
+            assertEquals(schema == 1 ? SatelliteBayRoot.Status.INVALID : SatelliteBayRoot.Status.FUTURE,
+                    status(oversized));
+            assertFalse(SatelliteBayRoot.bounded(oversized), "Operational limits remain unchanged");
+            assertEquals(SatelliteBayNativeCheck.Result.WORK_LIMIT, SatelliteBayNativeCheck.inspect(oversized));
+            assertTrue(SatelliteBayRoot.nativelyKeepable(oversized), "Keep the raw root without save denial");
+            assertTerrainRoundTrip(oversized);
+        }
+    }
+
+    @Test
+    void theValidationNodeBudgetKeepsUnexaminedRootsWithoutSaveDenial() throws IOException {
+        ListTag wide = new ListTag();
+        for (int index = 0; index < SatelliteBayNativeCheck.MAX_NODES; index++) {
+            wide.add(ByteTag.ZERO);
+        }
+        CompoundTag oversized = root(null);
+        oversized.put("wide", wide);
+        assertEquals(SatelliteBayNativeCheck.Result.WORK_LIMIT, SatelliteBayNativeCheck.inspect(oversized));
+        assertEquals(SatelliteBayRoot.Status.INVALID, status(oversized));
+        assertTrue(SatelliteBayRoot.nativelyKeepable(oversized));
+        assertTerrainRoundTrip(oversized);
+    }
+
+    private static void assertTerrainRoundTrip(CompoundTag root) throws IOException {
+        CompoundTag entity = new CompoundTag();
+        entity.putString("id", "advancedrocketrycommunity:rocket_satellite_bay");
+        entity.putInt("x", 0);
+        entity.putInt("y", 0);
+        entity.putInt("z", 0);
+        entity.put(SatelliteBayRoot.KEY, root);
+        ListTag entities = new ListTag();
+        entities.add(entity);
+        CompoundTag chunk = new CompoundTag();
+        chunk.put("block_entities", entities);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        NbtIo.write(chunk, new DataOutputStream(output));
+        // RegionFileStorage.read uses this overload, with NbtAccounter.UNLIMITED.
+        CompoundTag reloaded = NbtIo.read(new DataInputStream(new ByteArrayInputStream(output.toByteArray())));
+        assertEquals(chunk, reloaded);
+        assertEquals(root, reloaded.getList("block_entities", Tag.TAG_COMPOUND).getCompound(0)
+                .get(SatelliteBayRoot.KEY));
+        assertTrue(SatelliteBayRoot.nativelyKeepable(root));
+        assertTrue(SatelliteBayRoot.nativelyKeepable(reloaded.getList("block_entities", Tag.TAG_COMPOUND)
+                .getCompound(0).get(SatelliteBayRoot.KEY)));
     }
 }

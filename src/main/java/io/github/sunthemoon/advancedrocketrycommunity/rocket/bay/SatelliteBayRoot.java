@@ -24,14 +24,8 @@ public final class SatelliteBayRoot {
     public static final int PACKAGE_MAX_BYTES = 4_096;
     public static final int PACKAGE_MAX_DEPTH = 16;
     public static final int PACKAGE_MAX_NODES = 256;
-    /**
-     * What a retained raw root may hold and still be written unchanged: a lossless native write (no typed empty
-     * list, overlong string or non-canonical NaN), at most vanilla's 2 MiB NBT accounting quota, and nested so
-     * that the native chunk reader (depth 512 at the chunk root, the root itself at depth 3) can read it back.
-     */
-    public static final int NATIVE_MAX_BYTES = 2_097_152;
+    /** Native reader depth 512 at the chunk root, with the bay root itself at depth 3. */
     public static final int NATIVE_MAX_DEPTH = 510;
-    public static final int NATIVE_MAX_NODES = 2_097_152;
     public static final String SCHEMA = "schema_version";
     public static final String OWNER = "owner";
     public static final String PACKAGE = "package";
@@ -88,9 +82,12 @@ public final class SatelliteBayRoot {
         return BoundedNbt.fits(raw, MAX_BYTES, MAX_DEPTH, MAX_NODES);
     }
 
-    /** Whether native chunk serialization writes this raw tag unchanged and can read it back. */
+    /**
+     * Save admission, not proof of validity: only an observed native incompatibility refuses.
+     * Exhausting the bounded preflight leaves the root guarded and retained verbatim, without save denial.
+     */
     public static boolean nativelyKeepable(Tag raw) {
-        return BoundedNbt.fits(raw, NATIVE_MAX_BYTES, NATIVE_MAX_DEPTH, NATIVE_MAX_NODES);
+        return SatelliteBayNativeCheck.inspect(raw) != SatelliteBayNativeCheck.Result.INCOMPATIBLE;
     }
 
     /** The native item bound, one {@code id} string and {@code Count} exactly 1; other item keys stay raw. */

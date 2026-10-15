@@ -362,9 +362,9 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity/",
       "message": "ARCE_SATELLITE_BAY_GUARDED pos=-?\\d+, -?\\d+, -?\\d+ guard=(?:QUARANTINED|UNSUPPORTED_ROOT|UNSUPPORTED_DATA|PACKAGE_UNAVAILABLE|INVALID_PACKAGE) keepable=(?:true|false)",
-      "counts": {"satellite_bay": 9},
-      "test": "SatelliteBayRootGameTests.rawUnknownAndFutureRootsAreKeptGuardedAndDropNothing (5), assemblyAndDisassemblyKeepEveryBayRootByteForByte (2), onlyARootNativeSerializationCannotKeepRefusesItsChunkSave (2)",
-      "reason": "R-038: each load into a guarded state writes one audit line. The tests load five guarded roots, a raw future-identity bay and a quarantined bay for the rocket capture check, and a keepable and an unkeepable quarantined root for the save refusal."
+      "counts": {"satellite_bay": 11},
+      "test": "SatelliteBayRootGameTests.rawUnknownAndFutureRootsAreKeptGuardedAndDropNothing (5), assemblyAndDisassemblyKeepEveryBayRootByteForByte (2), onlyARootNativeSerializationCannotKeepRefusesItsChunkSave (4)",
+      "reason": "R-038: each load into a guarded state writes one audit line. The tests load five guarded roots, two capture fixtures, and four save-admission fixtures: the keepable quarantine, W27B-R1's oversized quarantined and future roots (both retained without denial), and the unkeepable deep root."
     },
     {
       "id": "w27b-satellite-bay-live-replacement-refused",
