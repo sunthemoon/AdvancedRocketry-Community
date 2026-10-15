@@ -60,5 +60,18 @@ public final class AutomationConservationGameTests {
         new ElectrolyzerAutomationRun(helper).start(CLASSIC_TIMEOUT);
     }
 
+    @GameTest(template = "empty", batch = "w68_combustion_generator", timeoutTicks = CLASSIC_TIMEOUT)
+    public static void combustionGeneratorTwentyFuelItemsConserveBurnFe(GameTestHelper helper) {
+        GeneratorAutomationRuns.combustion(helper, CLASSIC_TIMEOUT);
+    }
+    @GameTest(template = "empty", batch = "w68_solar_generator", timeoutTicks = CLASSIC_TIMEOUT)
+    public static void solarGeneratorTwentyRoundsConserveDaylightFe(GameTestHelper helper) {
+        GeneratorAutomationRuns.solarGenerator(helper, CLASSIC_TIMEOUT);
+    }
+    @GameTest(template = "solar_array_test", batch = "w68_solar_array", timeoutTicks = CLASSIC_TIMEOUT)
+    public static void solarArrayTwentyRoundsConserveDaylightFe(GameTestHelper helper) {
+        GeneratorAutomationRuns.solarArray(helper, CLASSIC_TIMEOUT);
+    }
+
     private AutomationConservationGameTests() { }
 }
