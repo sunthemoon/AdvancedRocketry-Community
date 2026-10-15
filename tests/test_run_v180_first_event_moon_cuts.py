@@ -62,7 +62,7 @@ class MoonRootOracleTest(unittest.TestCase):
             journal = {moon.OUTBOX: {"state": "ELECTED", "event": event}, "transfers": []}
             with patch.object(moon, "read_root", return_value=journal):
                 self.assertEqual(0, moon.inspect(world, "FM12a", str(event_id), "ELECTED", False)["transfers"])
-                journal["transfers"] = [{"transfer_id": [4, 3, 2, 1],
+                journal["transfers"] = [{"transfer_id": [4, 3, 2, 1], "phase": "PREPARED",
                                           "destination_snapshot": {"source_dimension": moon.EARTH}}]
                 self.assertEqual(1, moon.inspect(world, "FM12b", str(event_id), "ELECTED", False)["transfers"])
                 journal["transfers"][0]["destination_snapshot"]["source_dimension"] = moon.MOON

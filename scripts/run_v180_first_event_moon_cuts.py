@@ -113,9 +113,12 @@ def inspect(world: Path, case: str, event_id: str, source: str, durable_receipt:
             raise smoke.SmokeError(f"{case}: the winning reservation was not superseded or released")
         if case == "FM12a" and all_transfers:
             raise smoke.SmokeError("FM12a: transfers is not empty")
-        if case == "FM12b" and (len(all_transfers) != 1
-                                or all_transfers[0]["destination_snapshot"]["source_dimension"] != EARTH):
-            raise smoke.SmokeError("FM12b: the single superseding record is not a return to Earth")
+        if case == "FM12b":
+            if source == "ELECTED" and (len(all_transfers) != 1 or all_transfers[0]["phase"] != "PREPARED"
+                                        or all_transfers[0]["destination_snapshot"]["source_dimension"] != EARTH):
+                raise smoke.SmokeError("FM12b: the superseding PREPARED record is not a return to Earth")
+            if source == "DELIVERED" and all_transfers:
+                raise smoke.SmokeError("FM12b: KEEP_SOURCE recovery did not remove the passenger-free PREPARED record")
     elif len(transfers) != 1 or transfers[0]["phase"] != "COMMITTED":
         raise smoke.SmokeError(f"{case}: the winning landed reservation is not the one COMMITTED record")
     state = dict(outbox=outbox["state"], event=event, journal_sha256=smoke.digest_file(journal_path),
@@ -188,18 +191,14 @@ def delivered(case: str, process: smoke.CapturedProcess, event_id: str, timeout:
         time.sleep(2)
 
 
-def landed(case: str, process: smoke.CapturedProcess, timeout: float, dimension: str = MOON, world: Path | None = None) -> dict:
+def landed(case: str, process: smoke.CapturedProcess, timeout: float) -> dict:
     """The Moon rocket that recovery loaded (or rebuilt) reaches LANDED: a lagging entity is projected (FM4b)."""
     deadline = time.monotonic() + timeout
     while True:
         loaded = [match for match in map(ACTIVE.search, process.lines) if match]
-        entity = loaded[-1].group(1) if loaded else None
-        if dimension == EARTH:
-            records = read_root(world / "data" / JOURNAL)["transfers"]
-            entity = records[0].get("destination_entity_id") if records and records[0]["phase"] == "COMMITTED" else None
-            if entity is not None: entity = ints_uuid(entity)
-        if entity:
-            report = FlightHarness.report(process, dimension, entity)
+        if loaded:
+            entity = loaded[-1].group(1)
+            report = FlightHarness.report(process, MOON, entity)
             if report["state"] == "LANDED":
                 return dict(entity=entity, loaded_state=loaded[-1].group(2) if loaded else "unknown", state=report["state"],
                             landing_logged=any("event=landing_complete" in line for line in process.lines))
@@ -319,7 +318,7 @@ def run(args) -> dict:
                         process.command(f"arce progression release-test release-reservation {entity}")
                         process.wait_for(re.compile("event=landed_reservation_released"), 45)
                     else:
-                        harness.refuel(process, MOON, entity)
+                        entry["return_refuel"] = harness.refuel(process, MOON, entity)
                         begin = len(process.lines)
                         process.command(f"execute in {MOON} run arce rocket release-test launch {entity} earth")
                         index = process.wait_for(LAUNCH_LOG, 45, start_at=begin)
@@ -334,8 +333,12 @@ def run(args) -> dict:
                         state = STATUS.search(process.lines[index]).groups()
                         records = read_root(world / "data" / JOURNAL)["transfers"]
                         changed = not records if case == "FM12a" else len(records) == 1 and records[0]["transfer_id"] != elected["event"]["transfer_id"]
+                        if case == "FM12b" and changed:
+                            entry["after_action_rocket"] = FlightHarness.report(process, MOON, entity)
+                            changed = entry["after_action_rocket"]["state"] == "COUNTDOWN" and records[0]["phase"] == "PREPARED"
                         if state[0] == "KNOWN:ELECTED" and changed:
                             entry["after_action_status"] = process.lines[index].rstrip()
+                            if case == "FM12b": entry["replacement"] = records[0]
                             break
                         if time.monotonic() > deadline:
                             raise smoke.SmokeError(f"{case}: the action generation was not confirmed")
@@ -391,7 +394,19 @@ def run(args) -> dict:
                     entry["status"] = delivered(case, process, event_id, args.delivery_timeout)
                     if event_id is None:
                         event_id = STATUS.search(entry["status"]).group(2)
-                    entry["rocket"] = landed(case, process, args.delivery_timeout, EARTH if case == "FM12b" else MOON, world)
+                    if case == "FM12b":
+                        initial = row["starts"][0]
+                        transfer = ints_uuid(initial["replacement"]["transfer_id"])
+                        if start == 1:
+                            process.wait_for(re.compile(r"ARCE_TRANSFER_RECOVERY transfer=" + transfer
+                                             + r" phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=RECOVERED"), args.delivery_timeout)
+                        entity = initial["landed_before_action"]["entity"]
+                        entry["rocket"] = FlightHarness.report(process, MOON, entity)
+                        if (entry["rocket"]["state"] != "FUELED" or entry["rocket"]["fuel"] != initial["return_refuel"]["amount"]
+                                or entry["rocket"]["logical"] != initial["return_refuel"]["logical"]):
+                            raise smoke.SmokeError("FM12b: source recovery did not retain the fully fueled logical rocket")
+                    else:
+                        entry["rocket"] = landed(case, process, args.delivery_timeout)
                     save_start = len(process.lines)
                     process.command("save-all flush")
                     process.wait_for(smoke.SAVE_MARKER, 60, start_at=save_start)
