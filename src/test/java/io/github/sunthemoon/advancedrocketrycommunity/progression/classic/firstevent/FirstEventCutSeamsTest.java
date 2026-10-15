@@ -2,14 +2,19 @@ package io.github.sunthemoon.advancedrocketrycommunity.progression.classic.first
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** W44 A0 case g: every seam is its production value unless both the cut and the hooks property are set. */
 class FirstEventCutSeamsTest {
@@ -62,6 +67,34 @@ class FirstEventCutSeamsTest {
                 () -> FirstEventCutSeams.participants(null, FirstEventKind.FIRST_MOON_LANDING));
         assertTrue(FirstEventCutSeams.configured().isEmpty(), "participant-only recovery cannot arm an IO cut");
         assertDoesNotThrow(() -> FirstEventCutSeams.beforeMoonElection(null, () -> fail("no cut is armed")));
+    }
+
+    /**
+     * W72: production startup restores the persistence package's normal committer, and a configured cut installs its
+     * selector only after the empty-server gate, so a refused gate leaves ordinary saves on the normal committer.
+     */
+    @Test void startupInstallsTheOrdinaryCommitterSelectorOnlyForAGatedCut(@TempDir Path root) throws Exception {
+        MinecraftBootstrap.initialize();
+        try {
+            AtomicSavedData.installCommitterSelector((type, normal) -> fail("a stale selector was kept"));
+            FirstEventCutSeams.validateAtStartup(null);
+            assertProgressionFlushWrites(root.resolve("production"));
+            System.setProperty(EscrowTestEndpoints.HOOKS, "true");
+            System.setProperty(FirstEventCutSeams.PROPERTY, "FM12a");
+            AtomicSavedData.installCommitterSelector((type, normal) -> fail("a stale selector was kept"));
+            assertThrows(NullPointerException.class, () -> FirstEventCutSeams.validateAtStartup(null),
+                    "the empty-server gate refuses before the selector is installed");
+            assertProgressionFlushWrites(root.resolve("refused-gate"));
+        } finally {
+            AtomicSavedData.installCommitterSelector(null);
+        }
+    }
+
+    private static void assertProgressionFlushWrites(Path directory) throws Exception {
+        Files.createDirectories(directory);
+        Path file = directory.resolve(ManagedSavedDataType.CLASSIC_PROGRESSION.fileName());
+        ClassicProgressionSavedData.provenAbsent().flush(file);
+        assertTrue(Files.isRegularFile(file));
     }
 
     @Test void theInventoryNamesExactlyTheThirtyNineHeadlessRows() {
