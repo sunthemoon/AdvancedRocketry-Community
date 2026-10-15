@@ -710,7 +710,7 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ### C19 矩阵、审核与交付 `[ ]`
 
-> **当前状态（2026-10-15，Root）**：内容台账 20 个单位仍为 PLANNED（`--require-accepted` 通过；逐批次数见 `CURRENT_VERSION.md`）。完整 Python 套件已在共享分支的治理工作流中运行（W49F `48d81584` 修复了唯一失败，待下一次治理运行确认）。未完成：合并验证器链（`82f82b1f`、`d605be33`）、严格验证器资格、证据引用修复、`PORTING_MATRIX`、ADR-068/070/071 决定、R32-03、台账 `--closure`、154 个 REVIEW 资产的逐项结案，以及最终统一活动中的 S1、V1、V2。见 [W30 第 1 节](../work/v1.8.0-root-queue/records/W30-STATUS-PROPOSAL.md) 第 5 节。
+> **当前状态（2026-10-15，Root）**：内容台账 20 个单位仍为 PLANNED（`--require-accepted` 通过；逐批次数见 `CURRENT_VERSION.md`）。治理工作流的完整 Python 套件已通过（W49F 后的运行 38616170516）。W58 审计见 `records/W58.md`；验证器链与 `d605be33` 已合入（C19-A，`9677edb2`、`6bde40e0`），`a8dcd5f7`、`82f82b1f`、`7f8c9203`、`d7f4e69b` 作为被托管运行取代而不合入。未完成：v0.1.0 资产检查（W52F）、703 个失效 Markdown 链接（W60）、严格验证器资格、证据引用修复、`PORTING_MATRIX`、ADR-068/070/071 决定、R32-03、台账 `--closure`、154 个 REVIEW 资产的逐项结案，以及最终统一活动中的 S1、V1、V2。见 [W30 第 1 节](../work/v1.8.0-root-queue/records/W30-STATUS-PROPOSAL.md) 第 5 节。
 
 - [x] [C19-INVENTORY-TEST-11](../work/v1.8.0-c19-strict-validator/INVENTORY-TEST-TASK-11.md)
   的限定测试源码：一文件修正已提交、独立审核、集成并推送至 Main `ffadaca3`。

@@ -88,10 +88,12 @@ What is still open:
   No S1 campaign has run.
 - **S2.** The D3-A crash cuts wait for W11b2 and W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
-- **C19.** The governance workflow now runs the full Python suite on the shared branch. W49F
-  (`48d81584`) fixed its only failure, the v0.8.0 evidence test; the next governance run on the
-  shared branch confirms it. The W58 audit plans the rest of C19.
-- **Owner decisions.** Nine are pending; QUEUE.md lists them with what each one blocks.
+- **C19.** W58 audited it (`records/W58.md`); the validator chain and the G4 fix are merged
+  (C19-A). Hosted governance now passes the full Python suite (run 38616170516, after W49F) and
+  stops at the v0.1.0 asset check: W52's six K6 icons sit in the v0.1.0 root (W52F moves them).
+  The strict validator also fails on 703 broken Markdown links (W60). R32-03, the
+  `PORTING_MATRIX` refresh and the closure remain.
+- **Owner decisions.** Ten are pending; QUEUE.md lists them with what each one blocks.
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-037) stay open.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.
