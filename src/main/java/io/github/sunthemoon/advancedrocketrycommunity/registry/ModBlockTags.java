@@ -11,6 +11,8 @@ public final class ModBlockTags {
     public static final TagKey<Block> ROCKET_MOVABLE = create("rocket_movable");
     public static final TagKey<Block> ROCKET_PROPULSION = create("rocket_propulsion");
     public static final TagKey<Block> ROCKET_FORBIDDEN = create("rocket_forbidden");
+    /** W27b: satellite bays a rocket may carry, beside the immutable v0.5 {@code rocket_movable} list. */
+    public static final TagKey<Block> ROCKET_SATELLITE_BAYS = create("rocket_satellite_bays");
     public static final TagKey<Block> ROCKET_ENGINES = create("rocket_engines");
     public static final TagKey<Block> ROCKET_FUEL_TANKS = create("rocket_fuel_tanks");
     public static final TagKey<Block> ROCKET_SEATS = create("rocket_seats");

@@ -3,6 +3,24 @@
   "description": "Every ERROR and WARN entry that a complete runGameTestServer log is expected to contain. Each expectation records a deliberate refusal or failure path that a named GameTest drives, or a bounded environment warning. scripts/check_gametest_log.py fails on any FATAL entry, any entry not listed here and any count that differs.",
   "expectations": [
     {
+      "id": "transfer-spawn-retry-rebuild",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=(DESTINATION_SPAWNED|PASSENGERS_TRANSFERRED|SOURCE_REMOVED|COMMITTED) source_count=0 destination_count=0 action=REBUILD_DESTINATION status=RECOVERED",
+      "counts": {"transfer_spawn_retry": 4},
+      "test": "RocketRecoveryRetryGameTests.rejectedSpawnsReuseAcknowledgedIdentityAcrossReloads",
+      "reason": "Each destination-authoritative phase rejects ten real spawns across checked-file reload, then permits exactly one reconstruction. Rejected attempts emit no recovery warning."
+    },
+    {
+      "id": "transfer-spawn-retry-existing-destination",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=(PREPARED|DESTINATION_SPAWNED|PASSENGERS_TRANSFERRED|SOURCE_REMOVED|COMMITTED) source_count=0 destination_count=1 action=KEEP_DESTINATION status=RECOVERED",
+      "counts": {"transfer_spawn_retry": 6},
+      "test": "RocketRecoveryRetryGameTests.rejectedSpawnsReuseAcknowledgedIdentityAcrossReloads, RocketRecoveryRetryGameTests.changedBindingStillWaitsForCheckedAcknowledgement",
+      "reason": "Four checked-file/entity-NBT reloads elect the saved destination without another spawn or journal mutation; two adoption cases verify that a genuinely new binding still awaits its checked write."
+    },
+    {
       "id": "w37b-earlier-time-check-interruption",
       "level": "ERROR",
       "logger": "net.minecraftforge.eventbus.EventBus/EVENTBUS",
@@ -313,9 +331,9 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=WAITING_FOR_PASSENGERS",
-      "counts": {"resource_source_recovery": 6},
-      "test": "RocketResourceRecoveryGameTests.offlinePassengerRecoveryLocksBothBanksAcrossRepeatedReloads",
-      "reason": "Three native entity/player/journal round trips each recover through both the installed lifecycle owner and a fresh manager with an offline passenger, deliberately retaining PREPARED source authority and refusing resource mutations."
+      "counts": {"resource_source_recovery": 6, "resource_source_loader": 2},
+      "test": "RocketResourceRecoveryGameTests.offlinePassengerRecoveryLocksBothBanksAcrossRepeatedReloads, RocketResourceRecoveryGameTests.fuelLoaderNamesTheRecoveryLockOfAnOfflinePassengerSource",
+      "reason": "Three native entity/player/journal round trips each recover through both the installed lifecycle owner and a fresh manager with an offline passenger, deliberately retaining PREPARED source authority and refusing resource mutations. W72's loader test recovers the same source once through each owner and checks that the loader names the lock."
     },
     {
       "id": "recipe-chunk-save-refused",
@@ -356,6 +374,24 @@
       "counts": {"unlit_torch": 1},
       "test": "UnlitTorchGameTests.oversizedRetainedRootRefusesTheChunkSave",
       "reason": "A retained unlit torch root above 2 KiB must refuse the whole chunk save through the shared guard; the event bus logs the thrown refusal at ERROR."
+    },
+    {
+      "id": "w27b-satellite-bay-guarded-root",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity/",
+      "message": "ARCE_SATELLITE_BAY_GUARDED pos=-?\\d+, -?\\d+, -?\\d+ guard=(?:QUARANTINED|UNSUPPORTED_ROOT|UNSUPPORTED_DATA|PACKAGE_UNAVAILABLE|INVALID_PACKAGE) keepable=(?:true|false)",
+      "counts": {"satellite_bay": 11},
+      "test": "SatelliteBayRootGameTests.rawUnknownAndFutureRootsAreKeptGuardedAndDropNothing (5), assemblyAndDisassemblyKeepEveryBayRootByteForByte (2), onlyARootNativeSerializationCannotKeepRefusesItsChunkSave (4)",
+      "reason": "R-038: each load into a guarded state writes one audit line. The tests load five guarded roots, two capture fixtures, and four save-admission fixtures: the keepable quarantine, W27B-R1's oversized quarantined and future roots (both retained without denial), and the unkeepable deep root."
+    },
+    {
+      "id": "w27b-satellite-bay-live-replacement-refused",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity/",
+      "message": "ARCE_SATELLITE_BAY_LIVE_REPLACEMENT_REFUSED pos=-?\\d+, -?\\d+, -?\\d+ guard=(?:QUARANTINED|UNSUPPORTED_ROOT|UNSUPPORTED_DATA|PACKAGE_UNAVAILABLE|INVALID_PACKAGE)",
+      "counts": {"satellite_bay": 5},
+      "test": "SatelliteBayRootGameTests.rawUnknownAndFutureRootsAreKeptGuardedAndDropNothing",
+      "reason": "R-038: a live /data replacement keeps a held guarded root and writes one audit line; the test tries it once on each of the five guarded roots."
     },
     {
       "id": "w33-torch-queue-overloaded",

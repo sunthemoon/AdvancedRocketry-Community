@@ -77,6 +77,7 @@ public final class ServerLevelRocketTransactionWorld implements RocketTransactio
             Optional<BlockState> state = RocketBlockStateAdapter.restore(block.state());
             if (state.isEmpty() || !state.orElseThrow().is(ModBlockTags.ROCKET_MOVABLE)
                     && !state.orElseThrow().is(ModBlockTags.ROCKET_PROPULSION)
+                    && !state.orElseThrow().is(ModBlockTags.ROCKET_SATELLITE_BAYS)
                     || state.orElseThrow().is(ModBlockTags.ROCKET_FORBIDDEN)
                     || block.blockEntityPayload().filter(payload -> !adapters.supportsPayload(payload)).isPresent()) {
                 return false;
@@ -155,6 +156,7 @@ public final class ServerLevelRocketTransactionWorld implements RocketTransactio
         }
         BlockState state = restored.orElseThrow();
         if (!state.is(ModBlockTags.ROCKET_MOVABLE) && !state.is(ModBlockTags.ROCKET_PROPULSION)
+                && !state.is(ModBlockTags.ROCKET_SATELLITE_BAYS)
                 || state.is(ModBlockTags.ROCKET_FORBIDDEN)) {
             return false;
         }

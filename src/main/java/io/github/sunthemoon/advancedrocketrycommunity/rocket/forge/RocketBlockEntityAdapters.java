@@ -28,7 +28,7 @@ public final class RocketBlockEntityAdapters {
     }
 
     public static RocketBlockEntityAdapters defaults() {
-        return new RocketBlockEntityAdapters(List.of(new VanillaContainerRocketAdapter()));
+        return new RocketBlockEntityAdapters(List.of(new VanillaContainerRocketAdapter(), new SatelliteBayRocketAdapter()));
     }
 
     public CaptureResult capture(BlockEntity blockEntity) {

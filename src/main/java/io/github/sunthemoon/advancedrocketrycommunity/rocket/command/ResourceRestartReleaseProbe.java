@@ -217,11 +217,11 @@ public final class ResourceRestartReleaseProbe {
             require(before.equals(loader.saveWithoutMetadata()), "Pending loader changed stored resources");
             AdvancedRocketryCommunity.LOGGER.info("ARCE_W63_LOADER status={} item={} buffered={} target={}",
                     loader.status().diagnosticKey(), loader.itemHandler().getStackInSlot(0), loader.bufferedUnits(), loader.targetRocketId());
-            // TASK-W63 Root decision (2026-10-15): generic no-target feedback is
-            // accepted here; exclusion and resource conservation remain mandatory.
-            require(loader.status().diagnosticKey().equals("waiting_for_rocket")
+            // W72 (2026-10-15) replaces TASK-W63's accepted generic no-target feedback: the
+            // loader names the recovery lock. Exclusion and resource conservation remain mandatory.
+            require(loader.status().diagnosticKey().equals("recovery_pending")
                     && loader.targetRocketId().isEmpty() && loader.bufferedUnits() == 0,
-                    "Pending loader selected a target, buffered fuel, or changed its waiting status");
+                    "Pending loader selected a target, buffered fuel, or did not name the recovery lock");
         }
         var loader = (FuelLoaderBlockEntity) server.overworld().getBlockEntity(ORIGIN.east(3));
         require(loader != null && loader.targetRocketId().isEmpty() && loader.bufferedUnits() == 0
