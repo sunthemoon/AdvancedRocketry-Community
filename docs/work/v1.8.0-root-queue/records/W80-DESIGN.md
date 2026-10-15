@@ -1,273 +1,397 @@
 # W80: releasing a rocket held by offline passengers
 
-**Revision 1**, 2026-10-16. **Proposed design, not implementation, risk acceptance or Gate evidence.**
-Assignment: [W80](../TASK-W80-OFFLINE-PASSENGER-RECOVERY-DESIGN.md). Evidence of the hold: [W63](W63.md),
-case F2_TWO; the review that named the limitation: [W02F](W02F.md). Authority:
-[ADR-006](../../../decisions/ADR-006-ROCKET-CROSS-DIMENSION-TRANSFER.md),
-[ADR-044](../../../decisions/ADR-044-STATION-WARP-LOGICAL-RELOCATION.md),
-[ADR-065](../../../decisions/ADR-065-CLASSIC-PROPULSION-STATION-CONTROLS-AND-SOLAR.md) and R-035 in the
-[risk register](../../../11-RISK-REGISTER.md). Root owns approval, the ADRs and the register.
+**Revision 2**, 2026-10-16. **Proposed design; not implementation, risk acceptance or Gate evidence.**
+This replaces revision 1 (`cc30fcbd`). Assignment: [W80R](../TASK-W80R-OFFLINE-PASSENGER-REDESIGN.md).
+Root owns the ADRs, risk register and implementation authorization. A fresh independent review is required.
+Section 7 records a factual conflict with Root's command-policy decision 5; it is not silently resolved.
 
-**Baselines.** The shared branch is read at `58d90a3f`, this worktree's base. W11b2 is read through Git only,
-at `4b4fa530`, the head of `codex/v1.8.0-w11b2-rocket-integration` when this note was written (its last
-code commit is `8ed38aa5`). Forge facts come from the compiled classes of the build's Forge 47.4.10 mapped
-jar, read with `javap`; no game, Gradle or GameTest run took place.
+**Inputs.** The review is `D:/GitHub/ARCE-Task-Evidence/root-queue/W80-review/REVIEW.md`, SHA-256
+`8f03b9057e52fa2eb61e190145a45f21d15e83e472505dd4092539de465d8961`. Root's decisions are
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W80-review/ROOT-DECISIONS.md`, SHA-256
+`a987b12c2e56a209454b57ac23d2c64a047885766640b102872189dbebfb88b2`. Both hashes were checked.
+The local code baseline is `7cb8b048daafb0d4c66f284ca6d0852d29584c27`. W11b2 was read **only through Git**
+at `d7431669970596b29b35bfb8f54887a650161ac4`, not in its worktree. In code citations below, `J` means
+`src/main/java/io/github/sunthemoon/advancedrocketrycommunity`. Class/method names identify these pinned
+sources. Bytecode checks used Forge 47.4.10; the class inventory is in [the record](W80.md).
 
-**Notation.** `J` is `src/main/java/io/github/sunthemoon/advancedrocketrycommunity`; line numbers are at
-`58d90a3f` unless they name `4b4fa530`. T is the held transfer record, L its logical rocket, and A its
-**absent passengers**: the recorded seats whose players are offline when the operator acts. R(p, T) is the
-proposed **rejoin entry** for p in A. G1 to G3 are checked generations of the existing journal writer, E1
-and E2 their dependent effects, X1 to X7 the forced-stop cuts of section 3, and H1 and H2 the two holds.
+## 1. Scope and the two holds
 
-## 1. Where the hold comes from
+**H1** is the nonempty offline-passenger hold demonstrated by [W63, F2_TWO](W63.md).
+`J/rocket/server/RocketTransferRecoveryService.java`, `settleRecoveredSource` (398-419), and
+`finishSourceSettlementIfComplete` (441-467), require `allPassengersOnline` (469-472). This predicate uses
+**T's source manifest**. A recovered PREPARED transfer T remains settled in RAM but retained on disk until
+all its remaining riders overlap online. An empty manifest already passes; restarting does not end the
+nonempty offline hold. Resources, launch and disassembly remain locked, and a journal slot and destination
+region remain occupied (`RocketTransferService.resourceMutationAllowed`, `RocketDisassemblyService`, and
+`RocketTransferSavedData`). W63's separate reconnect sessions did not end that hold.
 
-**H1, the persistent hold (W63's F2_TWO).** A PREPARED record whose flight stopped before
-DESTINATION_SPAWNED is recovered to its source. `recover` keeps or rebuilds the source and makes it
-stationary from T (`J/rocket/server/RocketTransferRecoveryService.java:302-337`), then calls
-`settleRecoveredSource` (398-419). Line 406 removes T only `if (allPassengersOnline(server, record))`;
-otherwise lines 417-418 mark T settled and return `WAITING_FOR_PASSENGERS`. The reconnect path,
-`finishSourceSettlementIfComplete`, applies the same test at line 452. The predicate (469-472) requires
-**every** seat of `record.sourceFlightData().passengers()` to have an online `ServerPlayer` at the same
-moment, so a restart, with nobody online, never ends it. W63 observed this: each of two passengers
-reconnected in a distinct JVM while the other was absent, and T stayed PREPARED through six starts.
+**H2** is the live COMMITTED landed hold. `RocketDestinationCompletion.cleanupLandedIfComplete` (150-156)
+tests the **current landed entity's manifest**, not T's original manifest. Boarding and leaving change that
+manifest (`RocketFlightService.board/leave`, 454-498). Ordinary restart recovery settles a landed authority
+without the all-online check (`RocketTransferRecoveryService.recover`, 371-373). W80 must intercept restart
+recovery before it bypasses a pending release.
 
-While T exists the rocket is locked. `RocketTransferService.resourceMutationAllowed` (405-422) permits
-mutation only with no record or a settled COMMITTED stationary arrival, so hand exchange, the item loader,
-disassembly (`RocketDisassemblyService.java:115`) and launch (`RocketTransferService.java:73-81`) refuse.
-T also holds one of the 64 journal slots (`RocketFlightLimits.java:12`) and its destination region
-(`RocketTransferSavedData.java:608-621`). The destination pad was already released when recovery returned
-WAITING (`RocketTransferRecoveryService.java:389-390`), and warps proceed (ADR-044 lines 228-231).
+Both preserve the pointer required by [ADR-006](../../../decisions/ADR-006-ROCKET-CROSS-DIMENSION-TRANSFER.md):
+an offline rider must rejoin the authority or a safe pad without editing their file offline. Their saved
+position can be above the pad; the rocket deliberately does not serialize as their `RootVehicle`
+(`RocketEntity.hasExactlyOnePlayerPassenger`, `RocketPassengerPersistenceGameTests`). Removing T alone
+would strand them. A stale manifest is also unsafe: `RocketTransferService.transferPassengers` moves online
+UUIDs named by it, even if they did not board the new flight.
 
-**H2, a session-only hold.** After landing, `RocketDestinationCompletion.cleanupLandedIfComplete` settles a
-live COMMITTED record only when every seat of the landed entity's manifest is online
-(`J/rocket/server/RocketDestinationCompletion.java:150-156`); until then resources stay refused. A restart
-ends it, because restart recovery settles a landed authority without that test
-(`RocketTransferRecoveryService.java:371-373`).
+At the pinned W11b2 commit, legacy recovery still has these predicates. `RocketTransferFences.classify/permit`
+routes native records away from legacy recovery, and `RocketTransferEscrowRules.flightAllowed` refuses them.
+The governed F6 offline-assignment wait remains specified by `W11B2-DESIGN-2.md` section 5.4; that commit's
+`EscrowSettlementDisk.observe` also requires an empty disk manifest and no mounted passengers. These are not
+permission to release a governed assignment. W80 refuses native-envelope records and escrow/bay-fenced
+rockets. It adds no governed-flight acknowledgement step and does not implement F3, F8, N2 or W11b3.
 
-**W11b2 at `4b4fa530`.** The legacy lines are unchanged (`RocketTransferRecoveryService.java:407`, `:453`,
-`:470-472`; `RocketDestinationCompletion.java:150-152`). Governed records, schema 3 with a native envelope,
-never reach them: the recovery step filters them out (`RocketTransferRecoveryService.java:106`) and
-`RocketTransferEscrowRules.java:20` refuses legacy actions on them. Their passenger wait is designed but not
-yet coded. Design 2, section 5.4, row F6 (`records/W11B2-DESIGN-2.md:265` at `4b4fa530`) keeps the entry
-ARMED while "assigned-passenger authority, including an offline passenger" is unresolved, and line 355 keeps
-destination resources locked "indefinitely if an assigned passenger remains offline". Continuation 19 builds
-F0 to F8. The coded settlement proof already requires an empty manifest and no mounted passenger on the disk
-rocket (`J/resourceescrow/EscrowSettlementDisk.java:63-65` at `4b4fa530`).
+## 2. Storage choice, startup and compatibility (R5, R6)
 
-**Why the hold exists.** ADR-006 lines 73-76: seats live in the entity and the journal record, and
-"offline passengers rejoin at the authoritative rocket or its safe pad; the system never edits or deletes
-playerdata". The record is the only pointer a login follows, because `tryReconnect` scans journal records
-only (`RocketTransferRecoveryService.java:220-235`). A passenger's saved file holds the position where they
-rode, up to 48 blocks above the source pad during ascent and transit (`RocketTransferEntities.java:335-342`,
-`RocketFlightLimits.java:35`). It holds no rocket: `RocketEntity.hasExactlyOnePlayerPassenger` returns false
-(`J/rocket/entity/RocketEntity.java:430-434`, asserted at `RocketPassengerPersistenceGameTests.java:79`).
-Removing T while a passenger is offline would **leave them behind**, in mid-air or beside a pad the rocket
-has left. Keeping T also prevents **duplication**: recovery elects one authority (`keepOne`, `discardAll`)
-before any passenger moves, and a reconnecting passenger is moved once, to that authority only (249-279).
+**Choose the separate checked rejoin file.** Root's preferred option holds if the sidecar commits first,
+both files are classified before recovery/passenger actions, and an unfinished sidecar entry is never
+removed merely because T disappeared. Atomic replacement of both files together is unnecessary: the
+sidecar is a write-ahead obligation, not a duplicate resource authority. Section 3 defines the ordering.
 
-## 2. The operator action
+Proposed managed type `ROCKET_REJOINS` owns `data/arce_rocket_rejoins.dat`, schema 1, format epoch
+`v1.8.0-rocket-rejoins`. Creation is lazy on the first accepted command. Distinguish missing from unreadable
+or invalid presence, including a first-write existence recheck. Ordinary startup/inspection does not create
+an empty file. Keep the file after it becomes empty; its presence documents use. Reuse
+`CheckedSavedDataPolicy` and the journal's immutable-snapshot, one-active/one-successor, owner-thread
+acknowledgement pattern. `RocketJournalWriter` encodes transfer records and W44's outbox; it is not a
+multi-file writer. Give the sidecar a small dedicated writer/checkpoint over the same checked-file
+primitives. Never rebind the journal writer's fixed target or replace it with a new general framework.
 
-**Command.** `/arce rocket recover <transfer> release-absent`, beside the existing `recover`
-(`J/rocket/command/RocketCommands.java:76-78`, permission level 2 at line 63). An operator player or the
-server console, RCON included, may run it; command blocks and functions are refused, because it changes
-other players' state. Like `recover`, it answers at once and reports the outcome in the log.
+The transfer journal stays **root 3**, with its epoch and W44 introduction constant unchanged. Roots 1/2
+still migrate to 3 by adding EMPTY; a root-3 EMPTY, ELECTED or DELIVERED outbox is never reset. The sidecar
+is not copied into journal snapshots/migration payloads. Unrelated transfer checksums, native envelopes,
+outbox event identity and delivery state survive every W80 operation. The deliberately scrubbed legacy T
+in section 3 gets a recomputed checksum; no governed T is rewritten. W11b2's `EscrowTransferEnvelopeTest`
+root-3 assertion and historical root-2 fixture remain valid without weakening.
 
-**Refusals.** Each refusal changes nothing and sends one reply.
+**Bounds and identity.** There are at most 256 passenger obligations and 256 release batches, with four
+obligations per player. Each passenger entry is at most 512 encoded bytes; shared batch metadata is at
+most 2,048 bytes. The entire encoded root, including framing, is at most 1 MiB, checked before publication
+and after encoding. Reader limits are 1 MiB compressed/inflated, 8 MiB accounting, depth 32 and 16,384 tags;
+declared lengths must fit the remaining byte budget. This is a separate-file budget, not a larger journal.
+Unknown fields/states, duplicates, bad references and overflows reject the whole sidecar without truncation.
+Capacity includes completed entries awaiting their other obligation.
 
-| Code | Condition |
+A batch has an immutable release UUID, monotonic nonnegative sequence, T/L/authority UUIDs, H1/H2, authority
+dimension and pad/region, frozen before/after manifest digests, and before/scrubbed T versions. L is the
+logical rocket identity; a T version includes checksum, phase and destination identity. A passenger entry
+has key K = (release UUID, player UUID), frozen seat index, independent `placement = PENDING | VERIFIED`
+and `seat = PENDING | VERIFIED`, and an optional placement attempt. An attempt has a fresh generation UUID
+G, finite x/y/z and PAD or OVERWORLD_SPAWN target kind. The batch supplies the pad dimension. Dimension IDs
+are canonical ASCII ResourceLocations of at most 128 bytes. Coordinates obey existing rocket/Level limits;
+placement also checks build height and border. Validate UUIDs, sequence overflow, indices and references.
+The existing passenger maximum is 16. No original player-file position or resource payload is copied.
+
+**Whole-world startup refusal.** Register the type in installed migration discovery and validation.
+`WorldDataMigrationService.discoverSources` and `BetaWorldMigrationEvents` reject an existing future,
+malformed, oversized or unreadable root before world startup, preserving its bytes. This lasts until a
+compatible jar or validated whole-world repair is used. Emit one bounded startup diagnostic with its stack
+per failed attempt; repeated launches have no lifetime log cap. Runtime write failure instead retains
+obligations/dirty state and fences affected rockets. If runtime validity is lost, stop W80 mutations. Unknown
+affected identities require a global rocket-passenger admission hold and protected login refusal, not
+assuming absence. No exception is used as routine save control.
+
+**Downgrade after use is unsupported.** Older jars do not know this managed type and may ignore it rather
+than refuse startup. A used world must not run them, even with an empty sidecar. Restore a consistent
+pre-use whole-world snapshot or use a separately validated offline whole-world conversion. Never delete
+just the sidecar or restore one journal/player/entity file. Worlds that never use the command acquire no
+new file, marker or schema change. This avoids revision 1's unconditional root-4 startup failure; it does
+not claim an enforceable downgrade fence in an older binary.
+
+## 3. Release and independent seat revocation (R3, R4, R7)
+
+The command is `/arce rocket recover <transfer> release-absent`; authorization is discussed in section 7.
+Refuse without mutation for a missing/blocked journal or sidecar, wrong hold, native record, escrow/bay
+fence, nonunique authority, unavailable authority entity sections, busy release, empty absent set, full
+table, conflicting player obligation or unavailable writer capacity. No arbitrary chunk is loaded. Repeated
+submission of the same pending T reports its release status, rather than appending another batch.
+
+For **H1**, M is T's source manifest. For **H2**, M is the unique loaded landed authority's current manifest.
+A is exactly the seats in M whose players are offline at admission. Freeze M, A, T's version, authority
+identity, dimension, origin, region and resource vector on the server thread. Reserve capacity and establish
+a per-L release fence before accepting. Boarding/leaving, remounting, automatic settlement, transfer
+passenger movement, launch, disassembly and resource mutation of L consult it. An H2 former rider is not
+in A; a newly boarded absent rider is. An unexpected manifest/version change is a conflict, not permission
+to recompute A from T or remove every seat of L.
+
+| Stage | Required proof and action |
 |---|---|
-| `NOT_FOUND`, `JOURNAL_BLOCKED` | No record T, or the journal is not operational. |
-| `GOVERNED_RECORD` | `T.nativeTransfer()` is present (W11b2 schema 3); its F6 wait stays W11b2's (question 2). |
-| `NOT_WAITING` | T is neither H1 (PREPARED, settled and not live in this session, the state `settleRecoveredSource` leaves when it returns WAITING) nor H2 (live, COMMITTED, with a loaded replaceable landed authority). An unclassified record needs plain `recover` first. |
-| `RETRY_LATER` | The journal is not acknowledged current (`retryChecked`), or `canQueueEffect()` is false; T is fenced or `fences.permit` refuses; the bay gate refuses (`RECOVER_BY_ID`, or `bays.source(T)` is set); `RocketTransferEscrowRules.flightAllowed(..., SETTLE_SOURCE)` refuses; or the authority's end is not loaded (`recoveryEntityChunksLoaded`, which adds bounded tickets at recorded positions only). |
-| `AUTHORITY_NOT_UNIQUE` | Not exactly one loaded match on the authority side. |
-| `NOTHING_TO_RELEASE` | A is empty. |
-| `SAVE_FIRST` (H1 only) | No vanilla save of the authority's Level, observed by Forge's `LevelEvent.Save`, since this session made the authority stationary. The reply says to run `/save-all` (section 3, X4). |
-| `REJOIN_TABLE_FULL` | The table would exceed 256 entries, or one player would exceed 4. |
+| **S1** | Write the complete batch and both obligations to the sidecar; obtain its exact checked-generation acknowledgement. T and entity seats remain unchanged before acknowledgement. A login during the write is protected and bypasses ordinary reconnect. Online status changes do not change the accepted A. |
+| **E1** | Revalidate the frozen authority and M under the release fence, then remove exactly A from the entity manifest. The intended manifest is M minus A. Reconstruction/remount filters consult the durable batch before moving any player. Fuel, debits, snapshots, escrow and inventories remain unchanged. |
+| **B1** | Prove the scrubbed entity manifest through the native entity store, as described below. A Level save notification is not proof. Retain the fence and seat obligations while proof is unavailable. |
+| **J1** | With B1 valid and a fresh journal lease, perform narrow legacy settlement. H1 removes T only if every remaining unreleased seat is online; otherwise retain T with the scrubbed manifest. H2 keeps the landed reservation but rewrites its manifests from M minus A, not the obsolete source roster. Scrub both source/destination passenger fields consistently, recompute the checksum, and preserve all nonpassenger resource fields. Await the exact checked journal acknowledgement. |
+| **S2** | After installed J1 and entity proof agree, persist `seat = VERIFIED` for this batch's exact keys and acknowledge that sidecar generation. Only then remove the per-L fence and permit new explicit boarding. H1 with another rider now offline remains an ordinary wait on its scrubbed T; a later command may release remaining seats. H2 may settle normally. |
 
-**Data.** The journal root gains a bounded list `released_passengers`, so its schema moves from 3 to 4
-(always, as W44 did for root 3), with a migration that adds an empty list. An entry R(p, T) holds the
-player, the transfer, the logical rocket, the authority's dimension, snapshot origin and `RocketRegion`, the
-release's Overworld game time, and a state, PENDING or PLACED. An entry is at most 512 encoded bytes, and the
-list at most 256 entries with 4 per player, so the root bound grows by 131,072 bytes. Unknown keys,
-duplicates and oversize refuse the root, which keeps its bytes as today
-(`RocketTransferSavedData.java:131-133, 149-153`). An older jar sees a future root and holds every transfer;
-R-035 already requires a whole-world backup before a downgrade. The list shares the root because the writer
-has one fixed file (`RocketTransferSavedData.java:543`) and X2 below needs T and R in one generation.
+`RocketTransferSavedData.put` rejects a changed checksum for an existing T. J1 therefore needs a narrow,
+legacy-only compare-and-replace operation, bound to the acknowledged S1 release and the exact old T version.
+It must validate that only the specified passenger fields/checksum change, publish one journal generation,
+and retain the ordinary `put` invariant. Do not implement this as separately persisted remove/put calls or
+relax checksum checks for other callers. H1 removal uses the existing checked removal path under the fence.
 
-**What it does.** One server-thread action, with no refusal between mutation and queueing (P1-N2's lesson):
-1. Insert R(p, T) as PENDING for each p in A and call `journal.afterAcknowledged(server, L, effect)`. This is
-   G1, an ordinary generation of the checked writer; T is not changed.
-2. After G1's exact acknowledgement, effect E1 rechecks the gates and calls the existing settlement,
-   `settleRecoveredSource` for H1 or the landed cleanup for H2, changed in two ways only. It first removes
-   from the authority's manifest the seats whose entry for T is still PENDING. Its predicate becomes "every
-   seat is online **or** named by an R entry for T". When it holds, H1 removes T in the existing generation
-   G2, whose existing effect E2 clears the session sets, releases the pad and logs `ARCE_TRANSFER_RECOVERY
-   ... status=RECOVERED`; H2 settles T in RAM, where it stays as the normal landed reservation. For
-   `SAVE_FIRST`, the recovery service records each Level's save count when it leaves T waiting.
+B1 deliberately replaces revision 1's `SAVE_FIRST` approximation. Use W11b2's retained
+`EscrowChunkStore.captureAndStore`, own-worker force, stable slot readback and watch/invalidation mechanism
+in `EscrowBarrier`; this is **not** an escrow transfer or receipt. Add a narrow passenger-manifest predicate,
+not `EscrowSettlementDisk`'s empty-rocket predicate. No new injection is authorized. Capture already-loaded
+source/destination/authority entity slots (at most three distinct slots). Prove one authority with the exact
+scrubbed manifest and unchanged resources, and no stale logical copy in the other recorded slots. Missing
+authority, duplicates, unloaded slots, changed generations or an unknown moved copy retain the obligation.
+Do not force-save unrelated terrain. Use `EscrowRuntime.barrier()` and `store(level)` so the existing global
+capture budget is shared rather than multiplied. The binding needs review against merged W11b2 APIs, including cross-Level proof
+collection and proof lifetime across J1; this note does not claim that adapter already exists.
 
-`finishSourceSettlementIfComplete` gets the same two changes. `tryReconnect` skips T for a player with an R
-entry for T, and `remountOnlinePassengers` skips such players. A rocket joining the world queues removal of
-seats that have a PENDING entry for its logical rocket, at most 16 per tick, while the journal is
-acknowledged current. PLACED entries never remove a seat: a placed player may board again.
+Keep B1 watches through J1 and S2 acknowledgement. A superseding store invalidates the proof and requires
+bounded reverification before S2; an installed J1 is not rolled back. On restart, classify sidecar batches
+**before** ordinary T recovery, rocket activation or reconnect. Accept only the recorded before/scrubbed
+after versions, reacquire B1, and finish J1/S2 idempotently. An absent T after J1 is continuation work, not
+`NOT_FOUND`. H1 reconstruction from old T applies A before remount/save. H2 restart cannot bypass the fence.
+A service-owned cursor schedules unfinished batches independently of T and H1's `settledTransfers`, at most
+two per tick, with failed attempts at most every 200 ticks. Declined callbacks cannot silently strand work.
 
-**Effects.**
-- **Rocket and resources:** nothing moves; the fuel vector, debits and escrow section are untouched. After G2
-  (H1) or settling (H2), `resourceMutationAllowed` permits mutation by the existing rule.
-- **Transfer record:** H1 removes it through the existing settlement; H2 keeps it as the landed reservation.
-- **Absent passenger's riding state:** the player file holds no rocket, so a login never restores a ride.
-  The seat is removed, so `canAddPassenger` refuses them (`RocketEntity.java:436-441`) until they board again.
-- **Absent passenger's saved position:** never edited (ADR-006). At the next login, before `tryReconnect`
-  and while the journal is acknowledged current, a PENDING entry places the player:
-  - **Probe:** the cells next to the recorded region's horizontal bounds, at most 64 columns of three cells
-    (floor, feet, head), in loaded chunks only. An unloaded pad gets a ticket and retries through the
-    existing reconnect queue (4 attempts per tick, 200 ticks).
-  - **Placement:** `stopRiding`, then a teleport to the first safe cell, with zero motion and fall distance
-    and no mount. Restored blocks fail the probe, so nobody is left inside a disassembled rocket.
-  - **Fallback:** if no cell is found or the queue expires, the Overworld shared spawn at surface height, as
-    `SafeCelestialTravel.prepare` computes it for Earth, with no block writes.
-  - **Retirement:** only after Forge's `PlayerEvent.SaveToFile` for that player. `PlayerDataStorage.save`
-    fires it only after `Util.safeReplaceFile` succeeds (bytecode offsets 85 and 97); a failed save fires
-    nothing. `PlayerList.remove` saves after the logout event, so a player who leaves before an autosave is
-    still covered. G3 deletes the player's entries whose T is gone and marks the rest PLACED; PLACED entries
-    whose T has gone are later pruned in bulk, with no dependent effect.
+**Later boarding is distinct by ordering.** Until S2, later boarding is refused, so a pre-S2 manifest is
+only the frozen assignment or its exact scrubbed result. S2 proves both the entity and reconstructible
+journal copies clean before a new assignment is allowed. Once S2 is durable, this batch never filters seats
+again, even if placement remains pending. A later boarding of the same UUID into the same seat is therefore
+not revoked. This avoids changing every flight schema to add assignment tokens. Player save, a loaded
+entity, a Level event, or absence from one chunk cannot retire revocation. Foreign copies/whole-world
+rollback remain repair cases; proof covers protocol-recorded slots, not an invented global entity scan.
 
-**Logs and display.** The command logs one WARN when accepted (`ARCE_TRANSFER_PASSENGER_RELEASE_REQUESTED`,
-with the transfer, logical rocket, actor, H1 or H2, up to 16 absent UUIDs and the pad), one WARN at E1
-(`ARCE_TRANSFER_PASSENGERS_RELEASED`) and the existing recovery line at E2. Each released player adds one
-`ARCE_PASSENGER_REJOIN_PLACED` line, a WARN when the fallback is used, and one `ARCE_PASSENGER_REJOIN_RETIRED`
-line. A stale seat removed at join and a refused command each log one INFO line; nothing logs per tick. The
-placed player sees one translated chat line. `inspect` gains `absent=` and `released=` counts, and a
-read-only `/arce rocket rejoins [player]` lists at most 8 entries. `RocketTransferRecoveryService` already
-has 502 lines, so the planner, table, placement adapter and command go in new classes.
+## 4. Protected login and exact placement proof (R1, R2, R7)
 
-## 3. Crash safety
+**Waiting starts at admission.** A server-lifetime service indexes validated entries and admitted S1 work
+before login dispatch. Highest-priority server-player join/login handling installs a session guard before
+ordinary reconnect, including login before S1 acknowledges. `EntityJoinLevelEvent` covers earlier entity
+admission; `PlayerLoggedInEvent` repeats the check idempotently. Protection is independent of queue capacity
+and vanilla login invulnerability. Stop riding, pin the authoritative position with normal teleport
+synchronization, clear motion/fall distance at player tick boundaries, cancel damage through Forge living
+attack/hurt/damage hooks, and suppress ARCE environmental exposure and boarding/interaction actions.
+Do not persist invulnerability, game mode or no-gravity flags. Test low-health, void, fire, suffocation and
+atmosphere from the first callback. A supported damage route bypassing this guard blocks implementation;
+eventual relocation is not a substitute for protection.
 
-G1 adds the R entries, G2 is the existing settlement's removal of T, and G3 retires the entries. Each is
-captured whole, staged, forced, read back and atomically replaced by the existing writer, and its effect
-waits for the exact acknowledgement. The release adds no acknowledgement order to the journal, and none to
-W11b2's governed flights, which it refuses. Its one new dependency is that G3 waits for the vanilla player
-store, observed through `SaveToFile`; the save before G1 is a precondition, not an acknowledgement.
+The placement/readback queue has 128 slots and at most four owner-thread actions per tick. Guards use the
+admitted player/obligation index, not a queue slot (at most 256 affected players). A full queue leaves the
+player protected without repeated offers. Unknown journal/sidecar readiness or identity refuses ordinary
+reconnect. Unavailable dimensions, delayed writers, saturation and unsafe positions share a **200-tick
+per-login deadline**. At the bound, disconnect with an actionable message while still guarded; release
+transient work/tickets, not obligations. Never expose the player at the old seat. A new login retries;
+operators can restore a safe pad or repair the store. This bounds connected waiting, not the duration of
+a durable obligation. Unknown global runtime state refuses new logins under the same policy, without an
+unbounded backlog. An unindexed admission that cannot acquire a guard is disconnected immediately.
 
-| Cut | Disk state | What a restart finds |
-|---|---|---|
-| X1: before G1's move | T, no R. | The hold, unchanged. The operator saves and reruns. |
-| X2: after G1's move, before its callback | T and R. | Recovery rebuilds the stationary source from T and removes the PENDING seats. When every recorded seat was absent (F2_TWO), it queues G2 at once: **the release completes without the operator**. A passenger who was online at the command is not released, so T then waits only for that passenger's ordinary reconnect. |
-| X3: after E1, before G2's move | T and R. | As X2. The entity's disk state does not matter while T exists, because recovery re-derives it from T. |
-| X4: after G2's move, before E2 | R only. | The rocket is usable. Its entity on disk is the stationary copy that `SAVE_FIRST` made vanilla queue, still with the A seats, which the join filter removes. **Residual:** `ServerLevel.save` queues entity sections before posting `LevelEvent.Save` (offsets 60, 70 and 76), but the IOWorker write itself is unobservable (R-032). If it never landed, the entity keeps its pre-recovery flight state and active transfer T: an orphan that cannot fly, which ADR-044 lines 236-238 already accept. Diagnostic only, not a pass claim. |
-| X5: after placement, before the player save | R PENDING; old player file. | The next login places the player again. |
-| X6: after `SaveToFile`, before G3's move | R PENDING; player file at the pad. | The next login places the player at the pad once more; harmless. |
-| X7: after G3's move, before its callback | R retired or PLACED. | Done. |
+**Same safety checks for pad and fallback.** Probe at most 64 deterministic candidate columns per attempt:
+32 just outside the recorded footprint, then 32 around the Overworld shared spawn. Use bounded loaded
+heightmap lookups and a fixed ring/Y order. Require solid support, a collision-free player AABB, empty
+fluids, no fire/lava/cactus/magma or other supported damaging block, build-height/world-border compliance,
+and an environment survivable with the player's equipment. Collision/neighbour checks use at most a
+3-by-3-by-4 envelope and already-loaded chunks. Recheck before teleport and unguarding. Unknown hazards
+fail. `SafeCelestialTravel.prepare` supplies a height, not this proof. Never use beds/anchors, consume
+charges, write blocks or grant equipment. No safe candidate means protected waiting, then disconnect.
+At most two short-lived tickets per player and 16 globally may cover server-recorded pad/spawn chunks;
+all expire with the deadline. Saturation waits without loading elsewhere.
 
-For H2, G1 is the only generation. X1 is unchanged; after G1's move, restart recovery settles the landed
-authority anyway, and the join filter removes stale seats while R is PENDING.
+**Deterministic refusal, not an arbitrary winner.** Normally admit only one unresolved placement per UUID.
+Multiple PENDING entries, or a different active transfer naming that player, yield `REJOIN_CONFLICT`: do
+not choose by collection order/time/UUID, teleport, or retire any entry. The guard/deadline applies. The
+released T's own revoked assignment is not a conflict. Refuse new boarding/flight admission for a player
+until placement is VERIFIED, so old placement cannot override later travel. Multiple VERIFIED entries may
+coexist while seat proof finishes. No forget command or automatic conflict winner is proposed; inconsistent
+worlds need whole-world repair. New entries cannot piggyback on a previous save.
 
-Placement precedes the player save, and the save precedes retirement; either reverse order can lose the
-safe position. A stale seat survives only if a crash lands between E1 or G2 and the entity's next save
-**and** the player is placed and saved before that rocket next loads. Its effect is bounded. If the player
-is online at that rocket's next transfer, the transfer moves them as it moves any online seat holder
-(`RocketTransferService.java:602-624`); if offline, the next record waits and the operator releases again.
-The ordinary reconnect settlement has the same X4 window today (question 8).
+**Place with an exact marker.** After S2, choose a safe target and persist attempt (K, G, target kind,
+x/y/z) in checked sidecar generation **P1**. After acknowledgement, revalidate safety/session and place
+unmounted with zero motion/fall distance. Set the live player's `ForgeData.arce_passenger_rejoin` marker
+(schema 1, K and G, at most 160 encoded bytes) via `getPersistentData()`. Vanilla serializes it; W80 never
+writes playerdata. Keep the guard at this exact position until proof completes. A failed/changed target
+gets a new checked generation before another placement. This prevents a later moving-player save from
+being mistaken for the specified placement.
 
-## 4. Time-based release
+`PlayerEvent.SaveToFile` is **only a read trigger**. In Forge 47.4.10, `PlayerDataStorage.save` calls
+`Util.safeReplaceFile` then fires the event; `Util.safeReplaceOrMoveFile` can return normally after failed
+backup/replacement. Temporary-write failure can emit no event. Both retain the obligation. Retry on the
+next save or login; logout itself proves nothing. No new injection, reflective player-writer access or
+offline playerdata writer is proposed.
 
-**Recommendation: none in v1.8.** The hold costs one rocket's availability, never player data, and the
-operator command now ends it. A timer would release players without a human decision; game time stops
-while the server is down, and wall-clock time is part of no saved authority; and the timer would be a second
-automatic writer of the rejoin table.
+Read installed `playerdata/<uuid>.dat`, never `.dat_old`, a temporary file or only live NBT. Resolve the
+server-owned directory/UUID filename, refuse symlinks/nonregular files, and compare identity/size/timestamps
+around a bounded read. Require correct player UUID, exact marker K/G/schema, exact finite dimension/Pos
+matching P1, no RootVehicle, zero motion/fall distance and no dead-player state. Limits are 2 MiB
+compressed/inflated, 16 MiB accounting, depth 64 and 65,536 tags, including declared-length checks.
+Oversize is unverifiable, not deleted. Reuse the bounded SavedData reader's quota approach, not its `data`
+wrapper/schema or an unlimited `NbtIo.readCompressed` call. One background read can run with at most one
+coalesced pending request per queued player; results use the four-action owner-thread budget. Read errors
+or changing files retain the obligation.
 
-**Risk of this answer.** Without an operator, H1 stays indefinite for its one rocket, as R-035 already
-states, but now with a recovery path. The protections that refuse are `REJOIN_TABLE_FULL`, which refuses
-without mutation, and the future-root hold on downgrade; neither drops or isolates a player file. A timer,
-if Root chose one, would need its period, its clock, one log line per release and a rule that it never
-fires while a recorded passenger is online, all in R-035.
+Apply a result only to the exact still-current (K, G, attempt, session). A clean logout can finish its
+retained attempt offline; later login/death/clone invalidates the old session result and schedules fresh
+verification. Duplicate save events coalesce. Successful readback permits checked generation **P2** to
+change only that K/G's placement to VERIFIED. After its acknowledgement and a fresh safety check, unguard
+the online player. Delete an entry only when **both** placement and seat are VERIFIED. A crash after a
+matching installed save but before P2 allows guarded login verification without another teleport. Old
+callbacks, changed generations, missing markers and pre-placement saves prove nothing.
 
-## 5. Tests
+The deadline also applies while waiting for a vanilla save. W80 does not force `saveAll` or add access to
+protected `PlayerList.save`. Ordinary logout saving may finish proof after timeout; otherwise the next
+login retries. This availability cost is explicit: autosave is not assumed to occur within 200 ticks.
+Already-dead/respawning players retain their obligation; reclassify/place the cloned session rather than
+certifying the old body's save.
 
-**A0**, unit tests with `MinecraftBootstrap`, each new class also run alone:
-- the codec: round trip; 512 bytes, 256 entries, 4 per player, duplicate and unknown keys, dimension length;
-  the migration from root 3 to 4; a root 4 read as FUTURE and preserved;
-- the planner: every refusal of section 2 and the absent set;
-- the predicate: online, offline, released, and released while online;
-- the probe, over a fake world: order, the 64-column bound, footprint exclusion, fallback;
-- retirement only after a save event that follows placement, with PLACED kept while T exists.
+**Durability boundary.** Checked sidecar/journal writes and B1 use their existing force contract. Player
+readback proves the installed file for process-stop/restart tests, not fsync of vanilla playerdata.
+Power loss, filesystem rollback and partial backup restoration are not claimed safe by P2. Closing that
+separate gap needs owner approval and evidence; the save event cannot substitute for either.
 
-**GameTests**, one class of about nine tests:
-- two offline passengers: `SAVE_FIRST` first; after a Level save, the release removes T, records two entries,
-  empties the manifest, unlocks hand exchange and keeps the fuel vector exact;
-- one mounted online passenger and one absent: only the absent one is released;
-- every refusal, including a pre-filled table, a non-operator and a command block;
-- login through an embedded channel, as W02F's `85191c6c` does: placed and not riding; the entry kept until
-  `SaveToFile`, then retired; a second login does not move the player;
-- disassembly after the release, then login: placed outside the restored blocks, with no damage;
-- H2: the landed rocket settles, T is kept, and the released player is not moved into the rocket;
-- the unchanged reconnect of a passenger who was not released;
-- the join filter on a reloaded entity with a stale seat;
-- a refused G1 commit through the gated failure policy: no effect, T kept, then a retry.
+## 5. Crash cuts and retry oracles
 
-**Native restarts**, in W63's style. New cases go in `scripts/run_v180_resource_restarts.py` and new stages
-in `ResourceRestartReleaseProbe`. Gated writer-thread halts before and after the moves of G1, G2 and G3 join
-`RocketJournalFailurePolicy`; each generation is told apart by comparing staged and target payloads, as
-W11b2's `SR_` mode does at `4b4fa530`. Further gated halts follow placement and `SaveToFile`. After every
-stop the inspector reads the journal entries, the player files (position, dimension, no `RootVehicle`), the
-entity manifests and the fluid totals.
+Every restart loads/classifies the sidecar first and restores fences before journal/entity passenger
+recovery. Placement remains actionable without T. No cut transfers or refunds resources.
 
-| Case | Stages or cut | JVM starts |
-|---|---|---|
-| F2_RELEASE | seed, check, release (`/save-all`, then the command), check, rejoin-first, rejoin-second, final check | 7 |
-| F2_RELEASE_DISASSEMBLED | seed, check, release, owner disassembly, rejoin, check | 6 |
-| X1 to X7 | each cut, then two restarts | 21 |
-| H2-X1, H2-X2 | a live landing with one passenger offline, the release, the cut and two restarts | 6 |
-| X4-DIAG | X4 with the `SAVE_FIRST` gate bypassed; diagnostic only | 3 |
+| Cut | Installed state and required continuation |
+|---|---|
+| C1: before S1 replacement | T/seats are unchanged; no acknowledged release exists. Retry the command. Reconcile UNKNOWN first-write outcomes instead of assuming absence. |
+| C2: S1 replaced, before callback/E1 | Obligations and old T/seats exist. Resume the frozen release without another command; protect a joining member of A. |
+| C3: after E1, before B1 | Disk entity can be old or scrubbed. Reapply the exact frozen revocation and obtain native-store proof. A Level event retires nothing. |
+| C4: B1 obtained, before J1 | Sidecar and old T remain. Reacquire proof and scrub reconstruction before remount; admit no new seat/resource operation. |
+| C5: J1 replaced, before callback/S2 | T is absent (completed H1) or scrubbed (waiting H1/H2). Verify installed J1/entity state, then finish S2 independently of the ordinary settled set. |
+| C6: S2 replaced, before callback | Both persistent seat sources are clean. Never reapply revocation to later boarding. Placement remains independent. |
+| C7: P1 replaced, before placement | Attempt exists but player marker/position need not match. Recheck safety and place protected, or persist a new attempt. |
+| C8: placed, before verified save | Player file may still contain the unsafe seat. Retain PENDING and retry protected placement/readback at login. |
+| C9: save event after replacement failed | Old file/backup is not proof. Write no P2; retain protection/obligation until the next save/login. |
+| C10: matching readback, before P2 | Reverify exact K/G on login, without retiring another entry or choosing by collection order. |
+| C11: P2 replaced, before callback/deletion | Placement is VERIFIED; seat status decides whether the remaining entry stays. No repeated relocation is required. Cleanup is idempotent. |
 
-The 43 starts need about 0.75 lock hours on W11b3's cost basis: about 20 seconds per start plus 15 minutes
-of setup, times 1.5. One runData for the chat line and one GameTest run (15 to 18 minutes) add about 0.4
-hours under the heavy-JVM lock. The unit suite needs no lock.
+H2 uses S1/S2, J1 and P1/P2 too; it is not a single-generation case. Gate loss queues the same durable
+batch, not cancellation. A superseding journal generation, including W44 delivery, needs a fresh lease.
+Sidecar-only writes do not invalidate journal-root leases; J1 still does, so governed/W44 retries need tests.
 
-## 6. Proposed text for Root, and open questions
+## 6. Risks, logs and proposed ADR text
 
-**R-035, proposed addition** (Root writes it into the register):
+**No time-based release in v1.8.** A retry deadline disconnects safely; it never releases another absent
+rider. Without an operator, H1 remains indefinite. Unverifiable saves, unsafe destinations, conflicts and
+full storage can prevent availability indefinitely across attempts. Never prune obligations for capacity.
 
-> **Offline passengers (W80).** *Scope:* one legacy transfer record and its rocket. A PREPARED record
-> recovered to its source waits until every recorded passenger is online at once, through restarts; until
-> then the rocket's resources, launch and disassembly are refused, and one of 64 journal slots and the
-> destination region stay held. A landed wait ends at the next restart. Governed (schema 3) flights keep
-> W11b2's F6 wait. *Duration:* until the passengers overlap or an operator runs
-> `/arce rocket recover <transfer> release-absent`. That command moves no resources and edits no player
-> file. It records one rejoin entry per absent passenger in the checked journal (root 4; at most 256, and 4
-> per player; a full table refuses without mutation), removes their seats, and lets the existing settlement
-> remove the record. At next login the player is placed, unmounted, on a probed safe cell beside the
-> recorded pad, or at the Overworld spawn; the entry retires after vanilla has saved that player's file.
-> *Logs:* two WARN lines per release, two lines per released player, one per refused command, none per
-> tick. *Residuals:* the command needs a Level save first. A crash after the record's removal and before
-> vanilla's entity write lands can still leave an orphaned entity (as ADR-044 accepts) or stale seats,
-> which are filtered when the rocket loads while the entry is pending. *Recovery:* rerun after X1; a restart
-> completes X2 and X3; an orphan needs R-035's whole-world offline repair. A root-4 journal holds every
-> transfer on an older jar, so back up the whole world before a downgrade.
+**Proposed R-035 addition for Root:** A release fences one legacy rocket until checked sidecar creation,
+native seat proof and journal settlement agree. It can block that rocket and an affected player's login
+until repair; full storage refuses new releases without mutation. A malformed/future sidecar refuses the
+whole world's startup until compatible software or validated whole-world recovery is supplied. Runtime
+unknown identity can hold all rocket-passenger admission. Preserve bytes/obligations; never delete player
+files or restore an isolated store. Back up all Levels, entities, POI, journals, sidecar, playerdata and
+metadata consistently before use/downgrade/repair. Player readback covers process stops, not power failure.
+B1 replaces W80's unproved entity-save assumption; it does not repair unrelated orphan windows in ordinary
+recovery, failBackToSource or disassembly (R-032/R-035).
 
-**ADR-065, proposed implementation note:**
+**Log budget:** One accepted-release WARN and one seat-completion INFO per batch, plus at most one existing
+settlement audit. At most one placement, fallback and verified-placement line per attempt. One line per
+transition into conflict, I/O-wait, unsafe-wait or timeout, and one reply per refused command. Repeated
+same-state retries do not log. Runtime root failure logs once per transition; startup uses section 2's
+per-attempt diagnostic. Cap UUID lists at 16 and read-only `rejoins [player]` output at eight entries per
+response. No per-tick logging or four-line total is promised. Tell affected players why they are protected/
+disconnected and operators which proof stage remains unfinished.
 
-> W80 adds an operator release for a legacy transfer that waits for offline passengers.
-> `/arce rocket recover <transfer> release-absent` (operators and the console) records a bounded rejoin
-> entry per absent passenger in the checked transfer journal (root 4), removes their seats, and lets the
-> existing settlement remove the record. No resources move. ADR-006's rule is refined, not replaced: the
-> system still never edits or deletes playerdata. A released passenger rejoins unmounted at the released
-> rocket's safe pad, and the entry retires only after Forge reports that player's file saved. Governed
-> records are refused; their F6 wait stays with W11b2. There is no time-based release. R-035 records the
-> scope, duration, logs and recovery.
+**Proposed ADR-065 note:** A legacy-only operator release records bounded placement and seat-revocation
+obligations in a lazy checked managed sidecar, preserving journal root 3 and the governed protocol. Prove
+seat removal independently in the native entity store and reconstructible journal before later boarding.
+Players rejoin unmounted under bounded protection, at a probed pad or equally checked Overworld fallback.
+Retire placement only after exact installed-file marker/dimension/position readback and checked
+acknowledgement, never SaveToFile alone. No offline playerdata writer, new injection or automatic release
+timer is introduced. R-035 must cover local holds, whole-world startup refusal, downgrade after use, logs,
+repair and the player power-loss boundary before implementation is assigned.
 
-| # | Question | Recommended answer |
-|---|---|---|
-| 1 | Cover H2, which a restart already ends? | Yes: the same command, at small cost, with no restart. |
-| 2 | Governed records? | Refuse now. After the W11b2 merge, a follow-up feeds the release into design 2's checked passenger action (lines 69-71 at `4b4fa530`) at F6. Root decides it, because it changes a governed hold. |
-| 3 | Who may run it? | Level-2 operators and the console, RCON included; not command blocks or functions. |
-| 4 | Where does a released passenger rejoin? | Beside the released rocket's pad (ADR-006), not at their own saved position. |
-| 5 | Fallback position? | The Overworld shared spawn at surface height; never a bed or anchor, whose resolution consumes anchor charge and can fail. |
-| 6 | Capacity, and a `forget` command? | 256 entries and 4 per player, refused when full. No `forget` until a table actually fills. |
-| 7 | `SAVE_FIRST`, or W11b2's barrier? | The save event now. A joint own-store barrier after the W11b2 merge only if Root wants proof; it costs one barrier per release. |
-| 8 | The ordinary reconnect settlement has X4's window. | Record it under R-035; a separate small leaf may give `settleRecoveredSource` and `finishSourceSettlementIfComplete` the same save gate. |
-| 9 | Nearby gaps W80 leaves open. | `failBackToSource` removes T while passengers may be offline, up to 48 blocks above the pad (`RocketTransferService.java:637-667`). Disassembly ignores offline seat holders, whose saved seat lies inside the restored blocks. Reuse the rejoin table in the N2 and F8 leaves, each with its own crash table. |
-| 10 | When to implement? | After the W11b2 merge, whose tests assert journal root 3 and which edits `RocketTransferRecoveryService`. First this note's read-only review (AGENTS.md section 13); then one leaf for the model, codec and A0, and one for the command, adapters, GameTests and native matrix. |
+## 7. Root decisions and remaining authorization (R8)
 
-Time-based release is answered in section 4. W80 delivers this note and its record only. It changes no
-code, tests, ADR, register, ledger, status, build or workflow file, and it satisfies no Gate.
+Decisions 1-4 are reflected above: separate storage, exact readback, protected bounded waiting, distinct
+authoritative absent sets, independent seat proof and conflict refusal. The historical record's save-event,
+stale-seat and downgrade claims are superseded by revision 2.
+
+**Decision 5 needs correction before implementation.** Keep the requested `source.hasPermission(3)`
+threshold at the Brigadier leaf and execution entry, but do not claim it excludes every function.
+`FunctionCommand.runFunction` passes `withMaximumPermission(2)`; in the pinned jar that method returns the
+existing source when permission is already 3/4. It is a floor, not a cap. Tick/load/scheduled functions use
+`ServerFunctionManager.getGameLoopSender` at level 2; operator-/console-invoked functions can retain higher
+authority. `execute as` changes the entity, not the original permission. Level-2 command blocks therefore
+cannot acquire access by impersonating an operator, but operator-invoked functions are different.
+
+There is no public `ServerFunctionManager.isInFunction` in this baseline. Entity type is not provenance;
+neither is suppressed output: `withSuppressedOutput()` also returns the same object for sources with
+`alwaysAccepts()`. No new injection is authorized. Do not add reflection, stack inspection or command
+rewriting as an unreviewed workaround.
+
+**Recommendation to Root:** retain level 3 and explicitly allow inherited-authority functions if permission
+alone is the desired boundary. If all functions must remain forbidden, keep command implementation blocked
+until a separately reviewed origin mechanism is authorized. Pending that decision, this note authorizes
+neither a bypass nor an extra injection. Test the actual operator-function result rather than pre-labeling
+it refused. An asynchronous clarification was requested; the task record will identify any later response,
+not infer approval from silence.
+
+Other recommendations are to keep H2 in scope and governed records excluded; use native-store B1 instead
+of a Level save approximation; add no forget command; and accept protected disconnects only with the listed
+verification. Root must register the risks/ADR clarification and review the merged W11b2 barrier binding
+before assigning implementation.
+
+## Appendix A. Verification plan and cost (not executed)
+
+**A0:** Cover every codec bound, duplicate/reference/unknown-state rejection, first-write race, command
+refusal, distinct H1/H2 absent sets, before/after manifest witnesses and independent cleanup. Cover multiple
+PENDING entries, newer-transfer conflicts, stale K/G/session results, duplicate saves, logout/clone and
+callbacks declined then retried. Assert that the new legacy compare-and-replace refuses native records,
+stale versions and every nonpassenger change, while ordinary `put` still rejects checksum replacement.
+Fake worlds check support/collision/fluids/hazards/border/atmosphere and
+candidate/ticket/queue budgets. Separately test temporary-write failure, normally returning replacement/
+backup failure, and successful installed-file proof. A synthetic SaveToFile alone is never a success oracle.
+New Minecraft-dependent test classes bootstrap and run alone.
+
+**Migration/integration:** Check no-use startup without sidecar creation; journal roots 1/2 to 3; root-3
+EMPTY/ELECTED/DELIVERED round trips; independent sidecar schema-1 round trips; and installed startup refusal
+for malformed/future sidecars with unchanged bytes across repeated attempts. Interleave S1/S2/P1/P2 and J1
+with W44 election/delivery and governed journal writes. Assert unrelated checksums/envelopes, full outbox
+preservation and lease retry. Older-jar no-use fixtures remain compatible; used-world downgrade is explicitly
+unsupported, not claimed automatically blocked.
+
+**GameTests:** Plan about 18 focused tests plus parameterized cases: two absent riders; mixed online/offline;
+H2 departed original/new absent rider; login before S1 acknowledgement; E1/B1/J1 gate loss and retry; full
+queue; delayed writer/unloaded pad; low-health obstructed/void login; hazardous spawn/no-safe timeout;
+disassembly then login; player-first/entity-first load order; remaining rider logout; later same-UUID/seat
+boarding; multiple/newer-transfer conflict; repeated saves/logout-before-ack; real temporary-write and
+replacement failure; command provenance matrix; and unaffected ordinary reconnect. Command cases include
+level-2/3/4 players, console, RCON, command blocks, tick/load/scheduled/operator-invoked functions and nested
+execute for each. The operator-function policy awaits section 7's explicit decision.
+
+**Native restarts:** Extend W63's runner/probe only in later code tasks. Use gated checked-writer cuts
+distinguished by sidecar/journal payload/stage, plus existing native-store cuts. Inject real filesystem
+failures in disposable fixtures, not merely events. Inspect exact sidecar K/G/states, journal/outbox/
+checksums, entity rosters/copies, player dimension/Pos/marker/RootVehicle/health, unrelated players' positions
+and unchanged fuel vectors. Create prerequisites in the first counted JVM. H2 must reach landing and cut
+in that same session, so setup does not eliminate its hold by restarting.
+
+| Campaign | Counted starts |
+|---|---:|
+| Basic H1 two-rider release and disassembly/rejoin retain the original seven plus six stages. | 13 |
+| C1-C11 each use one seed-and-cut start plus two recovery starts. | 33 |
+| H2 C2/C3/C5/C6/C10 each use one live-landing/cut start plus two recovery starts. | 15 |
+| Temporary-write, backup/replacement failure and successful save each use three starts. | 9 |
+| Player-first/entity-first, later same-seat boarding, login-before-S1, multiple/newer conflict and queue/hazard timeout each use three starts. | 18 |
+| No-use old-jar, malformed-root repeated rejection, future-root repeated rejection and W44/governed interleaving each use three starts. | 12 |
+| **Total planning allowance.** | **100** |
+
+Using revision 1's unmeasured assumption of 20 seconds/start plus 15 minutes of setup, with 1.5 allowance,
+the estimate is `(100 * 20 + 900) * 1.5 / 3600 = 1.21` heavy-lock hours. Allow about 0.4 additional hours
+for one runData and one GameTest run; setup/review/failure diagnosis can increase this. The former 43-start
+estimate does not cover revision 2. Unit tests need no heavy lock. No game, Gradle or GameTest ran here.
+
+## Appendix B. Implementation leaves after review
+
+- **W80-storage (planned):** Add the sidecar model, bounded checked writer, lazy startup integration and
+  codecs. Depend on Root's risk/ADR registration and independent review. Verify A0, no-use migration and
+  malformed startup without enabling command admission.
+- **W80-release (planned):** Bind frozen H1/H2 planning, revocation fences, B1/J1/S2 and retry scheduling
+  against merged W11b2. Verify load-order/later-boarding cuts, resource conservation and W44/governed
+  interleavings before enabling release.
+- **W80-rejoin (planned; command policy unresolved):** Add protection, safe placement, installed-file proof,
+  exact retirement and command adapters. Depend on both prior leaves and section 7's decision; run the
+  combined unit/GameTest/native matrix and obtain two-real-client evidence later.
+
+These are v1.8 suggestions, not delegated tasks or completion claims. This revision changes only this note
+and [W80.md](W80.md); it edits no code, tests, ADR, risk register, status, ledger or build file.
