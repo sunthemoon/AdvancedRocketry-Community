@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader;
 
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
 import java.util.Objects;
 import java.util.UUID;
@@ -22,6 +23,13 @@ public final class LoaderTank {
     public static final int MAX_NODES = LoaderCarrier.MAX_NODES - 3;
     /** W11A section 1: the loader endpoint signature retains this prefix, the device UUID and the Fluid's native signature. */
     public static final String SIGNATURE_PREFIX = "arce-escrow-fluid-tank-1:";
+    /**
+     * The payload bound that {@code EscrowOperation} applies to a fill's native Fluid envelope. Inside an operation
+     * (12,288 bytes, depth 16, 512 nodes) its framing leaves at least this much, so this bound decides fit alone.
+     */
+    public static final int PAYLOAD_BYTES = EscrowLimits.FLUID_BYTES;
+    public static final int PAYLOAD_DEPTH = 12;
+    public static final int PAYLOAD_NODES = 384;
     /** Vanilla's empty Fluid, which no amount may name; a literal, so that pure construction needs no registry. */
     private static final ResourceLocation EMPTY_FLUID = ResourceLocation.tryBuild("minecraft", "empty");
     public static final LoaderTank EMPTY = new LoaderTank(null, null, 0);
@@ -65,6 +73,14 @@ public final class LoaderTank {
     }
 
     public boolean isEmpty() { return amount == 0; }
+
+    /**
+     * Whether an escrow operation could ever carry this Fluid. The amount is an int tag of fixed size, so the answer
+     * is the same for every amount; intake refuses a Fluid that fails it, while stored data still decodes.
+     */
+    public boolean escrowCarriable() {
+        return isEmpty() || LoaderNbt.bounded(encode(), PAYLOAD_BYTES, PAYLOAD_DEPTH, PAYLOAD_NODES);
+    }
 
     public ResourceLocation fluid() { return fluid; }
 

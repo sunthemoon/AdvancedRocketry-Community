@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "type": "advancedrocketrycommunity:empty_pressurized_tank"
+    },
+    {
+      "item": "advancedrocketrycommunity:liquid_io_board"
+    },
+    {
+      "item": "advancedrocketrycommunity:control_board"
+    },
+    {
+      "item": "advancedrocketrycommunity:machine_casing"
+    }
+  ],
+  "result": {
+    "item": "advancedrocketrycommunity:fluid_fuel_loader"
+  }
+}
