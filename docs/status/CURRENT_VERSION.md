@@ -91,8 +91,9 @@ What is still open:
 - **C19.** W58 audited it (`records/W58.md`); the validator chain and the G4 fix are merged
   (C19-A). Hosted governance now passes the full Python suite (run 38616170516, after W49F) and
   stops at the v0.1.0 asset check: W52's six K6 icons sit in the v0.1.0 root (W52F moves them).
-  The strict validator also fails on 703 broken Markdown links (W60). R32-03, the
-  `PORTING_MATRIX` refresh and the closure remain.
+  W60 and W61 fixed the Markdown links: the strict validator's Markdown phase passes, with
+  32 links in sealed files excused by correction files. R32-03 is done (W61), and the
+  `PORTING_MATRIX` has an interim refresh. The ledger closure and the release evidence remain.
 - **Owner decisions.** Ten are pending; QUEUE.md lists them with what each one blocks.
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-037) stay open.
 
