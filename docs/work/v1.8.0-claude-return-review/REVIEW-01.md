@@ -10,9 +10,9 @@ archived byte-identically; their original worktrees and seals remain untouched.
 
 | Draft | Findings | Independent report and SHA-256 |
 | --- | --- | --- |
-| Components/graph, 10 units | 2 High / 4 Medium | [REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/REPORT-01.md), `7764c25717d1b2c4b23aec09dcc64de90b86cf9af9d25613be5013530c59bc44` |
-| Audio, 10 units | 7 Medium | [REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-independent-20261008-01/REPORT-01.md), `762c1b5e523cee672cdfb4363e1f5462237448a8a64d91ef936b096bb674eb92` |
-| Equipment, 20 units | 7 Medium / 2 Low | [REVIEW-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-01/REVIEW-01.md), `4d5b33f36d83b85eae58081f3573a4434715215198a042c822d0bc327400f4db` |
+| Components/graph, 10 units | 2 High / 4 Medium | REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/REPORT-01.md`), `7764c25717d1b2c4b23aec09dcc64de90b86cf9af9d25613be5013530c59bc44` |
+| Audio, 10 units | 7 Medium | REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-independent-20261008-01/REPORT-01.md`), `762c1b5e523cee672cdfb4363e1f5462237448a8a64d91ef936b096bb674eb92` |
+| Equipment, 20 units | 7 Medium / 2 Low | REVIEW-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-01/REVIEW-01.md`), `4d5b33f36d83b85eae58081f3573a4434715215198a042c822d0bc327400f4db` |
 
 These are draft design/evidence findings, not reproduced production defects.
 No whole contract is freezeable as returned. Reviewers independently compare
@@ -51,7 +51,7 @@ verification before Nether materials; common-tag interoperability with extra
 materials' recipes supplied by data packs. They settle G-OPEN-4/5 choices only,
 not the graph findings or a new accepted ADR revision.
 The reviewer's separate immutable
-[ADDENDUM-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/ADDENDUM-01.md),
+ADDENDUM-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/ADDENDUM-01.md`),
 SHA `3e7cb5e1c0b53c6912656dbca9d4e096c1970625c71dae89964ea201b1d5cf57`,
 associates the later replies without editing its original report/manifest.
 
@@ -91,7 +91,7 @@ separate run, not qualification of these draft-only tasks. The original native
 failures/unwaived errors, actual file reload/Font/client/V1/V2 stay open until
 source-bound evidence closes them.
 
-The closed [MONITOR-12.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-12.json),
+The closed MONITOR-12.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-12.json`),
 SHA `4487aae21af0bbebdfca7d333b9d1f71b5c2af43c6e857df3b38c9b482b1f25e`,
 observes run 37653204825 /attempt 1 /source f9f2d9d2 completed/failure at
 2026-10-07T16:47:12Z, with the GameTests step failed. This terminal metadata

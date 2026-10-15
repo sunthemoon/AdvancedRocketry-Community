@@ -5,7 +5,7 @@ Date: 2026-10-07. Exact committed and normally published source:
 [Run 37600300782](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37600300782),
 attempt 1 /job 112722759189. Status: RUNNING; metadata only.
 
-Root's [observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-regression-20261007-01/MONITOR-01.json),
+Root's observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-regression-20261007-01/MONITOR-01.json`),
 SHA-256 `e26570cf16d3ca6fa459e6322fe5f6124961b148a39e75277bdf0bdaff98e14a`,
 at **2026-10-07T09:25:35.210970Z** matches source/run/attempt/job and records
 no-cache clean build/fresh unit tests running (`730950`, `fa5172`). No terminal

@@ -10,10 +10,10 @@ not activate hatches, accept new save protection, waive R-021 or change Gates.
 
 ## Actual research and limited use
 
-Different-agent [fixed-source report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-private-operation-save-contract-research-20261007-01/REPORT-01.md)
+Different-agent fixed-source report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-private-operation-save-contract-research-20261007-01/REPORT-01.md`)
 is 11,285 bytes, SHA-256
 `0f69586ba2dcaee2239881bb206f8f5d76708963ca31b3cc0d35e2c23b08a130`.
-Its separate [private proposal](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-private-operation-save-contract-research-20261007-01/PROPOSAL-01.md)
+Its separate private proposal (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-private-operation-save-contract-research-20261007-01/PROPOSAL-01.md`)
 is 23,134 bytes, SHA-256
 `1965c6b93bce59c3b67445a9551de7cd941ed71fa089b3213e8a7a34a46abe42`.
 Root reads/hashes the report (`069f0c`, exit 0) and reads the complete proposal

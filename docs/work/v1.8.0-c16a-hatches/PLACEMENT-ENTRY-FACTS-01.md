@@ -4,7 +4,7 @@ Date: 2026-10-07. Fixed source:
 `22f7d1cae0735a8b8c072165e7a3cf8089e3719c`. Status: factual research only.
 
 Root reads/hashes the complete independent
-[REPORT-01.md](D:/GitHub/ARCE-Task-Evidence/v1.8.0/placement-entry-primary-facts-20261007-r1-637dc2/REPORT-01.md)
+REPORT-01.md (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/placement-entry-primary-facts-20261007-r1-637dc2/REPORT-01.md`)
 (`31035f`, exit 0), 15,963 bytes /SHA-256
 `06ce09e1ebc72bee7b0d665a57a1d3761156778f764e328e700aeafa4fabf320`.
 The exact mapped Forge JAR is rehashed and only six declared <=512 KiB members

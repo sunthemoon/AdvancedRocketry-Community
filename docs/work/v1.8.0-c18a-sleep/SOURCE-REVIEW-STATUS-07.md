@@ -35,7 +35,7 @@ memory. Measurement fields cover a capture prefix rather than complete serialize
 capture. The author confirms these limitations; Root requires a correction rather
 than documentation-only acceptance or expanded caps.
 
-[Correction task 08](D:/GitHub/ARCE-Task-Evidence/v1.8.0/SLEEP-OBSERVATION-SOURCE-CORRECTION-TASK-08.md)
+Correction task 08 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/SLEEP-OBSERVATION-SOURCE-CORRECTION-TASK-08.md`)
 has SHA-256 7ae9af7b58679cd66101066bcb7b13848011bb9e8e453c9354b6e6afde8f66de.
 It preserves the same two-file boundary, native decisions, trace limits and
 compile-only permission. Fixes must be new commits with separate actual receipts;
@@ -47,7 +47,7 @@ source qualification are not prefilled here.
 Independent review additionally identifies a setup guard leak: INVOKING is set
 before trace/fixture construction, outside the responsible try/finally. An
 initialization failure can retain the server-thread marker and reject later
-invocations. [Addendum 10](D:/GitHub/ARCE-Task-Evidence/v1.8.0/SLEEP-OBSERVATION-SOURCE-CORRECTION-ADDENDUM-10.md)
+invocations. Addendum 10 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/SLEEP-OBSERVATION-SOURCE-CORRECTION-ADDENDUM-10.md`)
 requires exact release after every acquired-marker setup failure within the same
 scope. Both are Medium test-fixture findings; no failure injection was executed,
 and neither is claimed a proven production vulnerability. Final complete review
@@ -56,15 +56,15 @@ and additive candidate remain pending.
 ## Evidence and unfinished scope
 
 Unsealed development evidence is in
-[author leaf](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sleep-observation-source-20261009-05/PROGRESS.md),
-[independent leaf](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sleep-observation-source-independent-20261009-06/),
-and [Root review notes](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sleep-observation-root-review-20261009-07/PROGRESS.md).
+author leaf (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sleep-observation-source-20261009-05/PROGRESS.md`),
+independent leaf (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sleep-observation-source-independent-20261009-06/`),
+and Root review notes (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sleep-observation-root-review-20261009-07/PROGRESS.md`).
 They are intermediate records, not a sealed delivery evidence package.
 Task 06 additionally owns fixed read/disposable compilation outputs in
 D:/GitHub/arce-v180-sleep-observation-review-final-20261009 at 0c05cc27; the
 original e72b41 worktree HEAD was not moved.
 
-[Driver design task 09](D:/GitHub/ARCE-Task-Evidence/v1.8.0/SLEEP-OBSERVATION-DRIVER-DESIGN-TASK-09.md)
+Driver design task 09 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/SLEEP-OBSERVATION-DRIVER-DESIGN-TASK-09.md`)
 is read-only planning, SHA-256
 ff83fa693a4469dd7540cd074d1284b876d6f07d29f06c52065f3a225928435f.
 No executable parser/driver is frozen, and no tests/build/DataGen/GameTest,

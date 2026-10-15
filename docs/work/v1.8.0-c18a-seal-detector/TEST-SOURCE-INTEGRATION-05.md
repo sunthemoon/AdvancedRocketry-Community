@@ -42,7 +42,7 @@ unregistered command and intended-new-owner registration receipts; each native
 log retains 62 ERROR/0 FATAL and no native per-case XML. Injected save remains
 non-durable; no native outgoing owner, disk/root publication or restart proof.
 
-[Independent05 REPORT](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-independent-20261009-05/REPORT.md)
+Independent05 REPORT (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-fixture-independent-20261009-05/REPORT.md`)
 15992 bytes/SHA-256 d9d476a9bac0833acf94aa6b4ad46377286fcfebadba68bc2ee34b7bfbb6d397
 is fully read and exact-hash acknowledged before its sole seal. Manifest
 2ac5a63c6f7b0fb47ea855ed36383f6f221df7e44858519f88b91d927809328b covers
@@ -52,7 +52,7 @@ but overall qualification remains incomplete. Strict180 TIMEOUT/partial taskkill
 unwaived logs and retained own checkout logs/cache 998742 bytes remain disclosed.
 Root does not delete peer output or treat checksum custody as approval.
 
-Fresh [independent07 REPORT](D:/GitHub/ARCE-Task-Evidence/v1.8.0/test-source-integration-independent-20261009-07/REPORT.md)
+Fresh independent07 REPORT (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/test-source-integration-independent-20261009-07/REPORT.md`)
 completes read-only fixed-object/postimage and actual receipt/custody checks at
 Main 2f137f99. Root fully reads the report, commands and input record, parses
 CHECKS and verifies all four payload hashes: 74599 covered bytes, whole leaf
@@ -76,7 +76,7 @@ not newly built Main artifacts, packaged release or reproducibility certificatio
 
 ## Additive corrections and remaining boundary
 
-[Root output correction06](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-root-output-addendum-20261009-06/REPORT.md)
+Root output correction06 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-owner-root-output-addendum-20261009-06/REPORT.md`)
 clarifies the mistaken generic .cache locator in the sealed Root05 record.
 Actual v1.8 cache and checkout logs in two exclusive Root worktrees are separately
 cataloged; ten root log files copied byte for byte, then four distinct first-
@@ -86,7 +86,7 @@ Command exit 0 /1.600 s; 74 files /2033453 logical bytes. New leaf: 19 payload f
 Old Root04 refused empty scratch and sealed originals are untouched. Original
 cleanup records are not repaired in place; no peer/user/global-cache deletion.
 
-[Strict diagnosis03](D:/GitHub/ARCE-Task-Evidence/v1.8.0/strict-validator-diagnosis-20261009-03/REPORT.md)
+Strict diagnosis03 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/strict-validator-diagnosis-20261009-03/REPORT.md`)
 is fully read and all five payload hashes verified, whole leaf 49822 bytes.
 Report SHA-256 e79bfa6754b97c0c8786bb24cd7fe823927e4af034314076488c341983500137.
 Two source-level Mediums: terminal-only/buffered reporting and a nested release-

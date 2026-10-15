@@ -20,8 +20,8 @@ Actual exit 0: **165 tests /0 failures, errors or skips**, consisting of 40 new
 terminal methods plus unchanged 52 JSON /39 phase01 /34 properties methods.
 Unittest time is 0.603 seconds; outer suite-command time is 0.781709 seconds.
 Raw stdout/stderr and explicit command exit are retained in
-[FIXED-REPLAY-COMMANDS-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIXED-REPLAY-COMMANDS-01.json);
-the suite is command 20. [FIXED-REPLAY-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIXED-REPLAY-01.json)
+FIXED-REPLAY-COMMANDS-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIXED-REPLAY-COMMANDS-01.json`);
+the suite is command 20. FIXED-REPLAY-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIXED-REPLAY-01.json`)
 binds that actual command, environment, timings and 18 selected fixed-Git/live
 source/task pins before/after. HEAD remains the exact tested commit throughout.
 These are named inputs, not a whole repository snapshot.

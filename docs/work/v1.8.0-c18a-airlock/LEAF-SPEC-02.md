@@ -4,7 +4,7 @@ Date: 2026-10-07. Author/integrator: Root. Status: PROPOSED; no implementation
 or Gate acceptance. Base source: `a7a3cf03388165f900f4b3804420b003f6d3ec2e`.
 Parent: accepted ADR-066 revision 3, section 3.2. This successor replaces the
 first proposed leaf for review only; its original Medium M1/M2 findings remain
-in the [frozen review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-airlock-contract-independent-review-20261007-01/REVIEW-01.md),
+in the frozen review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-airlock-contract-independent-review-20261007-01/REVIEW-01.md`),
 SHA-256 `c04fe404bf62e7dd7a547e65b95b544df43e1e0cb164a2ac0f4fe06f8de305e5`.
 No successor review or acceptance is implied. The user's conditional
 authorization requires a different-agent review without unresolved

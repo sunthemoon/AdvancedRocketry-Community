@@ -7,7 +7,7 @@ compiler, JUnit, DataGen or GameTest outcomes.
 
 ## Reviewed implementation
 
-The [independent source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-station-light-source-review-20261005-37ad6b/REVIEW-01.md)
+The independent source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-station-light-source-review-20261005-37ad6b/REVIEW-01.md`)
 releases the four author sources, two author records and six Root central
 registration/DataGen diffs. Root imports the exact six author postimages via
 `apply_patch`; all hashes match the reviewed `OWN-FILES-01.json`.
@@ -25,7 +25,7 @@ Actual Python exit is 0: seven new outputs and three existing shared changes.
 The three shared preimages match fixed `5f1cbefc30d59a35eed80023697a1f4a0c4687fc`;
 only one bilingual key and one pickaxe entry are added.
 
-[RESOURCE-DRAFT-02.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-station-light-root-20261005-01/RESOURCE-DRAFT-02.json)
+RESOURCE-DRAFT-02.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-station-light-root-20261005-01/RESOURCE-DRAFT-02.json`)
 records every path, size/hash, preimage, grid, tint and Python zlib 1.3.1. Fresh
 `prepare-resources02.stdout`, `.stderr` and `.exit` retain the actual command
 result. Its status is explicitly `PROVISIONAL_NOT_FORGE_DATAGEN`. No Java,

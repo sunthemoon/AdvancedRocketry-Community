@@ -42,13 +42,13 @@ historical failures are not erased or declared uniquely explained.
 
 Artifact 11366509200: compressed 1,724,381 bytes, SHA-256
 `21d646042123eef5fe6b59e06fbf38d721b0c1fa5cbbc2ffbd59ac7313408aba`.
-The [retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-058cd6-attempt1-20261006-c18-01/RETRIEVAL-01.json),
+The retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-058cd6-attempt1-20261006-c18-01/RETRIEVAL-01.json`),
 SHA-256 `ef80c7bc31bbbb0da16db4092371827e234ba115316880733873a603b56594df`,
 binds exact source/run/attempt, digest/CRC controls, 840 members and
 371 retained streams /7,411,882 bytes. Collector rehash reports zero mismatch.
 Its original repeated-parameterized-display-name parser failure is retained;
 the separate successor counts actual XML occurrences, not unique display names.
-The [independent raw-result audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-hosted-058cd6-audit-20261006-63e4ab/REPORT-01.md),
+The independent raw-result audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-hosted-058cd6-audit-20261006-63e4ab/REPORT-01.md`),
 SHA-256 `77a15e5b8e38aba75189d5e188e51b20081fe85b466944417a991a78ed4654f0`,
 freshly verifies all 371 retained streams, XML/batch/failure identities and
 unchanged selected inputs. This is outcome evidence, not Solar source approval.

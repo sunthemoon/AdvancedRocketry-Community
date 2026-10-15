@@ -18,10 +18,10 @@ Actual source-only cherry-picks exit 0. Root verifies all four final byte hashes
 against [NC1 verification](NC1-SOURCE-VERIFICATION-02.md) and
 [arithmetic verification](NUMERIC-SOURCE-VERIFICATION-01.md); total 58,402 bytes /
 1,123 lines. No existing source, config, registry, schema or caller changes.
-[Root receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-root-20261005-01/SOURCE-INTRODUCTION-01.json)
+Root receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-root-20261005-01/SOURCE-INTRODUCTION-01.json`)
 records actual parent/source/introduction commits and four final file pins.
 
-The [different-agent eligibility review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-private-integration-review-20261005-e8247c/REVIEW-01.md),
+The different-agent eligibility review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-private-integration-review-20261005-e8247c/REVIEW-01.md`),
 SHA-256 `f046ab8ce4b88d5e189732ccacc947e32b70ff00e41c95a100fab858d38c1bcf`,
 finds no new path, dependency or admitted-private-contract conflict; 17 fresh
 read-only controls pass. It does not repeat the earlier source reviews or supply

@@ -20,7 +20,7 @@ private failure diagnostics for this existing native test family, not domain
 or production responsibilities. No generic tracing service is introduced.
 
 Root runs `python -B check01.py` in its own
-[external evidence leaf](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-root-20261007-01/CHECKS-01.json)
+external evidence leaf (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-root-20261007-01/CHECKS-01.json`)
 (`c52287`, exit 0). Fourteen static controls pass. Removing only the declared
 diagnostic/helper/import edits restores the exact normalized base source;
 all seven subjects, six sequencing cases, original remaining predicates,

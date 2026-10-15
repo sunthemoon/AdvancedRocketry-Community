@@ -50,7 +50,7 @@ GuardTicket/frame/hash/API/native admission remain separate tasks.
 - [x] Actual bounded Java checks and different-agent source review.
 - [x] Exact Root integration and complete automatic regression for the new source.
 
-[Feasibility01](canonical-framing-feasibility-01.zip) SHA
+Feasibility01 (`canonical-framing-feasibility-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) SHA
 `6278874b1c27327f3c6a4178ffad5a62c3809c2ab92bdd1f1495dbde139ce913`,
 557,808 bytes/123 entries,manifest
 `06f06169b8c1fe80f9e9127f33be03b6bb23f057a4ace77d20d5bba77638bb27`.

@@ -54,9 +54,9 @@ remain exclusively Root's adapter/config scope; no worker edits are authorized.
 ## Evidence received and independently checked by Root
 
 Author package:
-[REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-layout-claude-author-20261007-d39412/REPORT-01.md),
-[PATCH-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-layout-claude-author-20261007-d39412/PATCH-01.diff),
-[proposal](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-layout-claude-author-20261007-d39412/INTEGRATION-PROPOSAL-01.md).
+REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-layout-claude-author-20261007-d39412/REPORT-01.md`),
+PATCH-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-layout-claude-author-20261007-d39412/PATCH-01.diff`),
+proposal (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-layout-claude-author-20261007-d39412/INTEGRATION-PROPOSAL-01.md`).
 Their SHA-256 values are respectively
 `db49659663941ed70aacdfebaca98b68ab6d044a5e0dd7c9fa0d4d6559a6aa01`,
 `357ddb4e4cb07640a9c205e168fdd4d9b43be9fef4000e778f29133301e1a478`,
@@ -64,7 +64,7 @@ and `5d2d9bff2616f5f03f5a7149787c9402e497bec243c29bdab11170a1784769b5`.
 The original 25-member SHA256SUMS.txt is preserved unchanged, SHA-256
 `f7ef029d579dde0d3f3777c5748596eac275c2f868746c8c30f2c2853d9e34a7`.
 
-Root's [receipt checks](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-claim-root-20261007-01/INSPECTION-01.json)
+Root's receipt checks (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-claim-root-20261007-01/INSPECTION-01.json`)
 record 11 controls passing (`82de7e`, exit 0): all 25 sealed hashes verified,
 sizes measured (the original seal itself has no size fields),
 no unlisted payload, bounded paths/size, exact three new patch paths, unchanged

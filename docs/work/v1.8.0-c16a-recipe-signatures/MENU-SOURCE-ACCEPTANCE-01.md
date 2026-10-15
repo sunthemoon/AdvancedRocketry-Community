@@ -3,8 +3,8 @@
 Date:2026-10-04.Status:SOURCE_INTEGRATED,Root build/DataGen/GameTest observed.
 
 Root conditionally integrates the exact28-file
-[author proposal](menu-transport-implementation-01.zip) after actual-source
-[review01](reviews/menu-source-independent-01.zip) finds no introduced C/H/M/L.
+author proposal (`menu-transport-implementation-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) after actual-source
+review01 (`reviews/menu-source-independent-01.zip`) finds no introduced C/H/M/L.
 The separately Root-authored N1 one-file test is independently qualified in the
 same packet's distinct supplement;it has no execution evidence from that review.
 Author own-manifest `ab7961b02ceb5e8da7955304f22b23629b2ed7023164c529e1864dd749a5330d`.

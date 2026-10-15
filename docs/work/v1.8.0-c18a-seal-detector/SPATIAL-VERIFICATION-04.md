@@ -22,7 +22,7 @@ review regards that discriminator as source-addressing R04-01. Its own full
 commands and stable final report are now complete, with the distinct failures
 below; neither cohort qualifies the whole regression.
 
-Root evidence is the [external qualification leaf](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04).
+Root evidence is the external qualification leaf (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04`).
 Receipts bind fixed source/tree, ten build inputs, Java17, exact argv/cwd,
 UTC/exit/raw hashes, clean tracked/index observations and disk space. Commands
 use no-daemon/offline/no build-cache, with forced build/test/DataGen execution.
@@ -76,13 +76,13 @@ captures are retained; no earlier transport is reconstructed. Root's disposable
 output retirement is partial: cleanup-01 exits 0 and removes the owned source
 build/.gradle and ended scratch children. A later direct PowerShell launch for
 the remaining scratch is rejected by policy before child creation. The
-[incident](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04/CLEANUP-FINAL-SCRATCH-BLOCKED.md)
+incident (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04/CLEANUP-FINAL-SCRATCH-BLOCKED.md`)
 is retained; no final receipt or complete scratch deletion is claimed. Do not
 retry that refused target through another shell/helper or ancestor deletion.
 
 ## Completed independent cohort and separate open issues
 
-[Independent04 REPORT](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-independent-20261009-04/REPORT.md)
+Independent04 REPORT (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-independent-20261009-04/REPORT.md`)
 is fully read and hash-acknowledged by Root before its sole custody seal.
 Report SHA-256 is cdae4f596f7f0a3ebd00d23e3263626905b068e9c8d321b07dc7e07dcfdf749c;
 manifest f2b0c02e25ba8ef9cbb3efe52434096826e3d61769b4111b97c17b6bb72028dc.
@@ -103,7 +103,7 @@ Strict check remains 180-second TIMEOUT. Its sole owned taskkill attempt returns
 128 with unsupported child errors; a later read-only check finds all named PIDs
 absent, no retry. Own generated outputs are cleaned successfully and source fixed.
 
-[Diagnosis02](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-native-peer-failure-diagnosis-20261009-02/REPORT.md)
+Diagnosis02 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-native-peer-failure-diagnosis-20261009-02/REPORT.md`)
 is a separate read-only packet, SHA-256
 7444c5511952892a4294b88ba501b72d8b4b1e76cb4e545cd9f25971b9df86d2.
 Root fully reads it and verifies all six manifest entries /46395 whole-leaf bytes.
@@ -123,7 +123,7 @@ and all 597 required GameTests; both strict checks time out. Independent05 stabl
 final report/custody is complete and all 859 covered hashes verified. This does
 not change the failed parent cohorts or close the provenance/config/log issues.
 
-Root04's [completed custody report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04/REPORT.md)
+Root04's completed custody report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-spatial-boundary-root-20261009-04/REPORT.md`)
 is SHA-256 8c83e1bafee852481abc7afbfce863a0d9889eb0cecf1d3359596d49c96a661f,
 manifest eb1d194f68eafa193ec542b6a9d28f20a3a38ea4b34e7a497200f5012f193293:
 1223 covered /9876465 bytes, whole leaf 1225 /10118000 bytes. All hashes verified.

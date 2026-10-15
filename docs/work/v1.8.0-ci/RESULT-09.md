@@ -27,10 +27,10 @@ This does not establish a unique cause or authorize weakening the assertion.
 Nonrecurrence of the earlier planetary and cold Tau Ceti failure headers does
 not prove their causes fixed; their original cohorts remain failed.
 
-The [different-agent collector](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-35a146-attempt2-c18-20261006-b2d804/REPORT-01.md),
+The different-agent collector (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-35a146-attempt2-c18-20261006-b2d804/REPORT-01.md`),
 SHA `5237778bc8388f75bfe0b4d234639bb2ad82da5fb046b59836c2a5ef8805ab4b`,
 retains exact artifact/log metadata, commands, raw XML/logs and inspection errors.
-Root's independent [retained-byte audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-hosted-35a146-a2-audit-20261006-01/AUDIT-01.json),
+Root's independent retained-byte audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-hosted-35a146-a2-audit-20261006-01/AUDIT-01.json`),
 SHA `2015f2496b6385c29f987223191c577a95518ce1140a8b87bf75eac80e0275a4`,
 executes `python -B audit01.py`, exit 0. It rehashes all 373 retained members
 /10,038,072 bytes, independently parses all XML suites and actual testcase
@@ -43,13 +43,13 @@ result audit, not a second product execution, archive CRC replay or Gate pass.
 The separately published [four-file correction](../v1.8.0-c16a-hatches/RAW-FIDELITY-SOURCE-01.md)
 is included in `a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43`.
 [Run 37475746093, attempt 1](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37475746093),
-job `112310559331`, is **completed FAILED**. The [bounded API observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-ci-root-20261006-01/OBSERVATION-09.json),
+job `112310559331`, is **completed FAILED**. The bounded API observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-ci-root-20261006-01/OBSERVATION-09.json`),
 SHA `aa11229319184dd431ad7f24d4363c591eaf18360672b186e9e72fb47eec6da7`,
 records successful build/unit, artifact audit and DataGen steps, failed GameTest,
 successful raw upload and skipped JAR upload. Root then independently audits
-the [different-agent retained result](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-a34de0-review-20261006-c17-01/REVIEW-01.md),
+the different-agent retained result (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-a34de0-review-20261006-c17-01/REVIEW-01.md`),
 SHA `14951a9a5b8b5ceb9dfb39df8bc0cf874fab52be69d3c77582a34c6eec3f43a2`, and
-the new retained bytes in [AUDIT-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-hosted-a34de0-audit-20261006-01/AUDIT-01.json),
+the new retained bytes in AUDIT-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-hosted-a34de0-audit-20261006-01/AUDIT-01.json`),
 SHA `ca47aa1c54cb0082f100fd84e2f2b569c68f44f4b036145d4cae58f66f16c836`:
 `python -B audit01.py` exits 0; all 389 members /12,477,320 bytes match their
 receipts. Actual XML has **1,895 testcase occurrences /346 suites /0FES**,

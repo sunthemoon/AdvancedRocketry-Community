@@ -12,7 +12,7 @@ Source and task records are frozen for independent review; no commit or source a
 Eighteen new owned files: eight `machine/solar` classes, `SolarGeneratorScreen`,
 `V180SolarData`/`V180SolarLanguage`, four named unit classes, `SolarGeneratorGameTests`,
 and this handoff/[progress](PROGRESS-01.md). Exact paths/bytes/hashes are in
-[OWN-FILES-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-author-20261006-81dfea/OWN-FILES-01.json).
+OWN-FILES-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-author-20261006-81dfea/OWN-FILES-01.json`).
 No existing file or generated resource is modified. Root must add the agreed
 registry/config/lifecycle/client/DataGen/shared tags/languages and generate resources.
 

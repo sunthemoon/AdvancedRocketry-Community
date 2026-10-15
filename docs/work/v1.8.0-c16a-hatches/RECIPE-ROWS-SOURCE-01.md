@@ -29,7 +29,7 @@ serializer, network, asset or upstream import accompanies this slice.
 
 ## Actual verification
 
-Different-agent [source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-classic-recipe-rows-review-20261007-8b77a1/REVIEW-01.md),
+Different-agent source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16-classic-recipe-rows-review-20261007-8b77a1/REVIEW-01.md`),
 SHA `0b1311db4caa3d3a4a4f06b903897d6e4e3c12440862a11ac42038c150adbe2b`,
 establishes no introduced C/H/M/L in this five-file scope. Its own javac and
 actual Jupiter exit 0: nine original subjects plus four reviewer boundary
@@ -38,7 +38,7 @@ Forty-four selected inputs remain unchanged; 19 finite static controls pass.
 That review execution is an uncommitted development observation, not relabeled
 as the later delivery replay.
 
-Root's fresh [fixed-commit replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-recipe-rows-fixed-20261007-01/RESULT-01.json),
+Root's fresh fixed-commit replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-classic-recipe-rows-fixed-20261007-01/RESULT-01.json`),
 SHA `a7aaa9bc9c56d50eae71de3ac7f333df26b4e6b13ce08233535f5606fe5e904a`,
 actually exits 0 (tool `b56287`). Each selected project input matches the
 fixed Git object and the five new files match the released review pins.
@@ -63,7 +63,7 @@ substituted for the fixed committed replay.
 
 Root safely removes only its three ended row-run class/home/temp/empty-source
 trees, after checking exact ownership, containment, no reparse points and
-retained output hashes. [Cleanup receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-row-output-cleanup-20261007-01/RECEIPT-01.json),
+retained output hashes. Cleanup receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-row-output-cleanup-20261007-01/RECEIPT-01.json`),
 SHA `567b9d8575134daa514db144d2c3fe5f38cbda523f3c4d922f6df77888e8cdb0`,
 records 48 class files /162,843 logical bytes removed; physical allocation
 is not measured. Raw commands/results/streams remain. Old refused targets
@@ -80,6 +80,6 @@ full/native runs. All G0-G9 remain open.
 The [new source workflow](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37519061729)
 was observed at 2026-10-06T19:34:28Z as IN_PROGRESS, attempt 1 /job 112459397257.
 That dated observation is superseded by RESULT-15. Root's original GET-only
-[observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-row-ci-observation-20261007-01/OBSERVATION-01.json),
+observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-row-ci-observation-20261007-01/OBSERVATION-01.json`),
 SHA `98b11d8c3456fa81ec9c214fd6e948bf39ac470a9eeedc7906f3a5d5cc9f67be`,
 exits 0 (tool `6ff743`). No retry, workflow mutation or Gate result is inferred.

@@ -19,7 +19,7 @@ postimages. The initial overbroad descriptive-JSON equality probe fails and
 remains retained; corrected field-level inspection does not change the contract.
 These finite paper models are not Java/native callback or persistence proof.
 
-[Frozen independent report/evidence](adapter-contract-independent-02.zip):
+Frozen independent report/evidence (`adapter-contract-independent-02.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):
 15,324,275 bytes/1,282 entries,SHA256
 `4cd7b79bb12dc6d187f3f74973ab0d2368882893faf769c1bcea3c50f5dadd34`;
 manifest `a1714fbfe389af781f7e8076eb32c578b3c3cc94a8e1bf67cd18a7fc78d2a5ca`.

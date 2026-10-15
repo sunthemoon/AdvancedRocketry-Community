@@ -42,9 +42,9 @@ Artifact 11359323980: 1,712,370 compressed bytes, SHA-256
 Root's bounded collector exits zero, verifies API source/attempt, archive digest
 and CRC, and retains 367 mapped payloads /7,364,568 bytes. Root independently
 rehashes all retained payloads and parses all JUnit XML: zero mismatches.
-[Receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-cfdcd8-attempt1-20261006-01/RETRIEVAL-01.json).
+Receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-cfdcd8-attempt1-20261006-01/RETRIEVAL-01.json`).
 
-The [different-agent raw-result audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-cfd-result-review-20261006-e28af4/REVIEW-01.md),
+The different-agent raw-result audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-cfd-result-review-20261006-e28af4/REVIEW-01.md`),
 SHA-256 `44adbc4d25005766bef4397c95ce9d967dc4d541a4c1a15bcfe6880e38025810`,
 independently reconstructs those totals, all three failure sets and final
 481-positive/two-failed status bars, DataGen results and finite diagnostics.

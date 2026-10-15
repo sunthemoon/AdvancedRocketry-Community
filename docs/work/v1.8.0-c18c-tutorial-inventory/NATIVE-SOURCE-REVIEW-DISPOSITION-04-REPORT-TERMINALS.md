@@ -10,7 +10,7 @@ gameplay/persistent ID, file reader, writer, native hook or complete driver is a
 
 ## Independent actual-source review
 
-Report: [REVIEW-01.md](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-source-review-20261005-64de91/REVIEW-01.md),
+Report: REVIEW-01.md (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-source-review-20261005-64de91/REVIEW-01.md`),
 9,549 bytes, SHA-256
 `af07b95ef0117aadeaa04496b19badaedc10fb7a8d6072e2d09be409612f6d19`.
 The exact four-new-file delta has no introduced Critical/High/Medium/Low finding.
@@ -21,7 +21,7 @@ source verdict covers the new terminal delta, not all earlier dependencies.
 Root verifies all 24 review payloads /127,288 bytes and 25 checksum entries.
 Review manifest SHA-256:
 `805655c14d5a21559438cb14465b54c216eb8dd0f7d53ae7e3f8ec58b4e7ac61`.
-The author's [REPORT-01.md](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-author-597fa310b8/REPORT-01.md)
+The author's REPORT-01.md (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-author-597fa310b8/REPORT-01.md`)
 SHA-256 is `95477a06be30d573e8d29133c0e82db886352d838506fe4e1b348e02b190e3d9`;
 Root verifies its 51 payloads /500,181 bytes and 52 checksum entries.
 Original author 164-test/5-error and 165-test/1-failure runs remain preserved.

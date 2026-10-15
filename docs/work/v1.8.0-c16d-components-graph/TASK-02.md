@@ -27,7 +27,7 @@ source/tests/recipes/assets/registry/config/protocol/save/ADR/ledger/CSV/AGENTS
 and Git mutation are forbidden writes. Do not launch source implementation.
 
 Read mandatory live Root AGENTS/governance, original three drafts and the actual
-[independent report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/REPORT-01.md),
+independent report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-independent-20261008-01/REPORT-01.md`),
 SHA-256 `7764c25717d1b2c4b23aec09dcc64de90b86cf9af9d25613be5013530c59bc44`.
 It records two High and four Medium draft findings, not runtime test results.
 Use [OWNER-DECISIONS-02](OWNER-DECISIONS-02.md) and its exact verified 20-recipe

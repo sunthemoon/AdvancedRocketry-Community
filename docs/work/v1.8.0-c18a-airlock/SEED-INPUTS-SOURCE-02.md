@@ -39,7 +39,7 @@ failure evidence for this same native test family; no production/domain or
 generic tracing responsibility is introduced. The class remains below 800.
 
 Root's `python -B check01.py` (`3a9a61`, exit 0) writes
-[CHECKS-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-root-20261007-01/CHECKS-01.json).
+CHECKS-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-root-20261007-01/CHECKS-01.json`).
 Sixteen static controls pass, including exact normalized fixed-base restoration
 after removing only two imports, one append and the private helper. Planning,
 accepted-ledger and whitespace checks exit 0. These are source-level controls,

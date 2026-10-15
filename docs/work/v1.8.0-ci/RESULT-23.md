@@ -28,24 +28,24 @@ or success is claimed. Raw-evidence upload succeeds; build-artifact upload skips
 
 ## Exact raw evidence and independent audit
 
-Root's [terminal capture](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/TERMINAL-METADATA-01.json)
+Root's terminal capture (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/TERMINAL-METADATA-01.json`)
 at 06:05:15.641403Z records completed failure. The separate
-[public metadata monitor](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-ci-metadata-independent-20261007/REPORT-01.md)
+public metadata monitor (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-ci-metadata-independent-20261007/REPORT-01.md`)
 observes the same cohort/terminal and skipped steps, without inferring raw counts.
 
 The pinned bounded retrieval (`b8dd4d`, exit 0) retains only compact raw facts:
-[receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-ci-regression-20261007-01/RETRIEVAL-01.json),
+receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-ci-regression-20261007-01/RETRIEVAL-01.json`),
 artifact 11463329752, 1,191,472 archive bytes, SHA-256
 `aa9568416c274c410906c5d6cf071d21180303b2c9fccc61c2cb9a0c1ecedd25`.
 API digest agrees. Credentials and signed redirects remain in memory; no ZIP,
 source/class tree, server copy or JAR is retained.
 
 Root `b36842` and `6acd58` exit 0. Its
-[raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/FAILED-AUDIT-01.json),
+raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/FAILED-AUDIT-01.json`),
 SHA-256 `e24195cd1fad1346f442f57a0a835b6f3f9ba01c8a2ad3b1897d7d85b2c2f6dd`,
 rehashes 378 retained files before/after and recounts actual children, suite
 attributes, selected fixed subjects and literal build lines with zero drift.
-The [different-agent retained-stream audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-ci-independent-audit-20261007-01/REPORT-01.md),
+The different-agent retained-stream audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-ci-independent-audit-20261007-01/REPORT-01.md`),
 SHA-256 `e21faab15b63d9b9e426ac79702ed97144f0ad6890e85d949eaebc6eb9cbb153`,
 independently agrees; its three output checksums verify. Neither raw audit
 re-downloads the archive or executes Java/native code.
@@ -56,7 +56,7 @@ Root changes only the strict inventory fixture/comment/import: retains the
 obsolete-toggle ban and exact cardinality, adds an identity check for the actual
 registered new key, and accounts for exactly 73 values. All 15 methods, other
 assertions/helpers and budgets are preserved by an exact inverse check.
-[Independent correction review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-config-cardinality-review-20261007-01/REVIEW-01.md)
+Independent correction review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/living-gravity-config-cardinality-review-20261007-01/REVIEW-01.md`)
 finds no scoped issue; the revised test is not executed by that review.
 Correction **`8b3fdca990be3880ff04aae5a2354657d499b60f`** is committed and normally
 pushed (`54562e`, exit 0), not a waiver, original-result rewrite or runtime pass.

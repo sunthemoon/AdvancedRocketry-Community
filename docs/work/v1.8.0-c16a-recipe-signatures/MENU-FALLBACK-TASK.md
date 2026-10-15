@@ -7,9 +7,9 @@ the direct generic-status Component expression in ElectrolyzerScreen. Source19
 selects that same key inside a ternary instead. Its job additionally invoked
 boundary15 and hit an existing receipt assertion;the prepared19 wrapper was
 not used. Both original failures/raw commands remain preserved in
-[Root19 failed-static packet](../v1.8.0-c16a-integration/ROOT-INTEGRATION-19-STATIC-FAIL.zip).
+Root19 failed-static packet (`../v1.8.0-c16a-integration/ROOT-INTEGRATION-19-STATIC-FAIL.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)).
 
-The separate Root-authored [one-file proposal](menu-fallback-proposal-01.zip)
+The separate Root-authored one-file proposal (`menu-fallback-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md))
 factors the selected Component out of the drawing argument. It retains the
 branch,keys,menu reads,position,color and every other source input. No validator,
 old test,assertion,protocol,resource or gameplay authority is altered. Scope is
@@ -31,7 +31,7 @@ required. Original source19 native18-phase result is not new-source proof.
 - [ ] Fresh current-artifact build/DataGen/GT/full stock/native result audit.
 - [ ] Actual clients/V1/V2 and all version Gates,not supplied by this repair.
 
-[Independent packet](reviews/menu-fallback-independent-01.zip):9,808,696 bytes/
+Independent packet (`reviews/menu-fallback-independent-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):9,808,696 bytes/
 6,046 entries,SHA`0cb2c17a7e131c27b9796a74eea8f23ef4c299f3ba6d6a56c0dc2c2352ad8775`;
 manifest `437ae619c8f2189b1ee0a5fd0907bd8cc8dca30c7b9b3544b6c7270655a13fe2`.
 Root verifies all entries and applies exact source postimage

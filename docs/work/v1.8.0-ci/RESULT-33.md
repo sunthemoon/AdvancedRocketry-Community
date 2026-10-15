@@ -5,7 +5,7 @@ Date: 2026-10-07. Exact source
 /job 112738525112. Terminal: **FAILED**. This succeeds the dated
 [running observation](RESULT-32.md) without rewriting it.
 
-Root's [terminal metadata](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-regression-20261007-01/MONITOR-07.json)
+Root's terminal metadata (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-regression-20261007-01/MONITOR-07.json`)
 has SHA-256 `ecf12536bd58c8be752a5087993713d2bceadd39ff8120f6d1cf1181bcf69c37`,
 observed at **2026-10-07T10:16:53.933496Z**. The monitor exits normally
 (`a7d870`, exit 0); raw upload succeeds, external binary upload is skipped.
@@ -18,14 +18,14 @@ then retrieves artifact **11475311263** (`9cae2b`, exit 0), matching API/actual
 archive SHA-256
 `084dfd01f7a4f9cf754615ffa8f4ba17e999c7ea6bd404438bffc4f7b26fb66a`,
 1,820,441 bytes. The
-[retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-raw-20261007-01/RETRIEVAL-01.json)
+retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-raw-20261007-01/RETRIEVAL-01.json`)
 has SHA-256 `8173bee2ce9aefb399a83a900dcac8d61be4086c8af6fa2ff19c6cdcb6616f03`.
 Of 893 logical members, 397 raw logs/XML/metadata totaling 7,701,456 bytes are
 retained; HTML/source/binary copies are not retained. Retrieval remains bounded
 to 60 MB/4,096 members with path/CRC/digest checks and in-memory credentials.
 
 Fresh Root `python -B audit01.py` (`71cf45`, exit 0) derives
-[RAW-AUDIT-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-regression-20261007-01/RAW-AUDIT-01.json),
+RAW-AUDIT-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-regression-20261007-01/RAW-AUDIT-01.json`),
 SHA-256 `1c33c432638e1b6c388704d5287f5d3450cd11d593a8fddcc4ce882bbedc90c8`.
 All 397 inputs/receipt are checked before and after with zero drift. Selected
 source/raw/metadata reads are `eb906a`, `47fd53`, `bf1d00`, `7e799b`, `169be2`

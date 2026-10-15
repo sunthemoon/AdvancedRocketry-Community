@@ -10,23 +10,23 @@ Root commits the five frozen worker files at
 onto main at `b363c40350132eb56ccfaa0ea524120ebfff1da3`. The original
 [author source record](SOURCE-01.md) retains its dated uncommitted/unrun status;
 this successor record supplies the actual commit association. The
-[integration receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-root-integration-20261007-01/WORKER-INTEGRATION-01.json),
+integration receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-root-integration-20261007-01/WORKER-INTEGRATION-01.json`),
 SHA-256 `daf4856403e64a9df94a672d62821b106ef24d0a2e6d8ab2e4725f5725ab06fc`,
 checks all five frozen/committed/main blobs, exact stage/stat, empty worker
 status/index and preservation of main's unrelated dirt/bytes (`a4a06f`, exit 0).
 Root's three reviewed central bindings are committed with their scoped metadata
 at `cbbb78e1fdc8dd88128162d43d88125c7aee9b60` and normally pushed with the
-complete source. The [publication receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-root-integration-20261007-01/CENTRAL-PUBLICATION-01.json),
+complete source. The publication receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-root-integration-20261007-01/CENTRAL-PUBLICATION-01.json`),
 SHA-256 `f20a95c37a61c689377d601986265d44d4d474a82d15008545c5f0d99830dcd1`,
 checks exact eight owned stage paths/postimages, committed hashes, preserved
 unrelated status/user AGENTS and remote equality (`21eba1`, exit 0). The
 [fresh CI observation](../v1.8.0-ci/RESULT-29.md) binds that actual source, not
 an uncommitted or hypothetical delivery target.
 
-Different-agent [central review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-central-independent-review-20261007-01/REVIEW-01.md),
+Different-agent central review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-central-independent-review-20261007-01/REVIEW-01.md`),
 SHA-256 `2aa6b58434cc76e0b8229ffaf38b7116e69920b2d3aca7101cd753fe86f3ede7`,
 executes eleven static checks and reports no actionable scoped finding.
-Different-agent [worker/combined source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-source-independent-review-20261007-01/REVIEW-01.md),
+Different-agent worker/combined source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-source-independent-review-20261007-01/REVIEW-01.md`),
 SHA-256 `9e8372fabbfe56560577741f79f9da0ca2d85a2c8eb1eaf1315524699a6ea7d0`,
 independently inspects all eight postimages/linkage and executes 71 static
 checks, zero drift across 33 inputs and final 8/8 integrity checks. Both retain
@@ -91,7 +91,7 @@ Root alone stages, commits, integrates, normally pushes and retires owned ended
 worktrees. Source/metadata commits are separable from original CI failures.
 Root normally removes the clean, patch-equivalent sky worktree, verifies all
 five committed main/worker blobs, leaves the branch and unrelated state intact
-(`67b39d`, exit 0). The [cleanup receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-root-integration-20261007-01/SKY-WORKTREE-CLEANUP-01.json)
+(`67b39d`, exit 0). The cleanup receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-root-integration-20261007-01/SKY-WORKTREE-CLEANUP-01.json`)
 has SHA-256 `c0fdd38e6dac66dc1e85005494a772c90fba515bb670d2459f8d16e191db4376`.
 Removing this exact presentation diff restores the previous always-enabled
 adapters without rewriting server data or IDs. Already published stable keys

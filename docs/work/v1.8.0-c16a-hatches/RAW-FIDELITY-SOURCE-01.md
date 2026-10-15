@@ -10,7 +10,7 @@ Root commits the exact reviewed postimages as
 `070288b6b6d00801282b2d9209ac6a959f1c46da`, based on
 `35a146fbbe1f2de94160f82307d041d2cd26e472`. The normal merge and non-force push
 publish `a34de0ad5edb0a2b3efe6ad2bb76c17e40fafc43`; the remote SHA is verified
-in the [publication receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/raw-fidelity-root-publication-20261006-01/PUBLICATION-01.json).
+in the publication receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/raw-fidelity-root-publication-20261006-01/PUBLICATION-01.json`).
 
 `ClassicRootBundle` preflights every managed root and the aggregate projection
 with the unchanged structural budgets and native-lossless `BoundedNbt` check
@@ -32,9 +32,9 @@ Package prefix: `io/github/sunthemoon/advancedrocketrycommunity/`.
 
 ## Actual review and development tests
 
-The [author handoff](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16a-raw-fidelity-author-20261006-c18-4cd703/HANDOFF-03.md),
+The author handoff (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16a-raw-fidelity-author-20261006-c18-4cd703/HANDOFF-03.md`),
 SHA `9c739ea62488f5ddfeed76daee84da7d121ad05dff1d19ccd2feede5a7a0f2d0`,
-and [different-agent actual-source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16a-raw-fidelity-source-review-20261006-6b10ea/REVIEW-01.md),
+and different-agent actual-source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16a-raw-fidelity-source-review-20261006-6b10ea/REVIEW-01.md`),
 SHA `e826e44a2861473037feb09417c893052cdd89744e2cc88739199040b009d786`,
 bind these exact postimages before their subsequent commit. The reviewer finds
 no unresolved introduced Critical/High/Medium/Low in this four-file delta.
@@ -59,12 +59,12 @@ runtime delivery, the content ledger or any version Gate.
 ## Temporary output disposition
 
 Root normally retires only the clean merged sparse source worktree, preserving
-the branch/history. The [retirement receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/raw-fidelity-root-publication-20261006-01/WORKTREE-RETIREMENT-01.json),
+the branch/history. The retirement receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/raw-fidelity-root-publication-20261006-01/WORKTREE-RETIREMENT-01.json`),
 SHA `c91688c002e091db3fb60e8281004505fe4e49c66e95c859a766ef818196b73f`,
 records exit 0, verified absence and 2,904 regular files /10,768,401 logical bytes;
 physical reclaimed space is unmeasured. Author/reviewer compiled outputs and
 old policy-refused cleanup targets are not removed by that source retirement.
-The reviewer's separate [cleanup outcome](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16a-raw-fidelity-review-cleanup-20261006-b409a7/REPORT-02.md)
+The reviewer's separate cleanup outcome (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16a-raw-fidelity-review-cleanup-20261006-b409a7/REPORT-02.md`)
 records a tool-policy refusal before the native removal body, with no OS exit
 or deletion: 29 class files /131,810 logical bytes and 14 directories remain.
 There is no alternate mechanism or policy change to remove those refused targets.

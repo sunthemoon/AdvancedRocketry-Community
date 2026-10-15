@@ -2,7 +2,7 @@
 
 Date: 2026-10-06. Status: implemented-unverified, not verified delivery.
 
-The [independent source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-ceti-readiness-review-20261005-72a461/REVIEW-01.md)
+The independent source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-ceti-readiness-review-20261005-72a461/REVIEW-01.md`)
 finds no C/H/M in the two production diffs and new native test declaration. Root
 imports all five exact author postimages via `apply_patch`; their hashes match
 the source manifest before the documented handoff correction below.

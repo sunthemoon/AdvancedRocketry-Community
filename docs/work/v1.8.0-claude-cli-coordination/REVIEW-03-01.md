@@ -19,18 +19,18 @@ solely by an author's proposal or a Root integrity check.
 
 ## Independent reports and current-v1.8 follow-ups
 
-- [Graph report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-access-independent-20261008-03/reviewer-01/REPORT-03.md):
+- Graph report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-access-independent-20261008-03/reviewer-01/REPORT-03.md`):
   mixed historical contexts conflict with the one-owned-station limit;
   direct-edge rows omit multi-leg endpoint flights; the seatless-flight oracle
   disagrees with admission; one departure reference is wrong. The registered
   [access correction](../v1.8.0-c16d-components-graph/TASK-04.md) covers these
   proposed access/observation boundaries, not the entire graph.
-- [Audio report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-lifetime-independent-20261008-03/REPORT-01.md):
+- Audio report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-lifetime-independent-20261008-03/REPORT-01.md`):
   restart validity, discovery throughput premise, read accounting, moving-source
   oracle and stale field mappings need correction. The smaller registered
   [start/read proposal](../v1.8.0-c18d-audio/TASK-04.md) covers M1/M3 only;
   M2/M4/L1 remain separately open, not silently transferred to acceptance.
-- [Equipment report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-bounds-independent-20261008-03/reviewer-01/REVIEW-03.md):
+- Equipment report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-bounds-independent-20261008-03/reviewer-01/REVIEW-03.md`):
   callback/publication ordering, overstrong refusal equality, retained-input
   ownership and ambiguous withdrawal wording need correction. The registered
   [commit/preservation proposal](../v1.8.0-c18b-equipment/TASK-04.md) covers those
@@ -60,8 +60,8 @@ d2b4324f; independently reviewed binding/dispatch metadata is published at
 narrow evidence, not a new full regression or rendered-client result.
 
 Author/Root return evidence is sealed under the three named author leaves and
-[Root dispatch closure](D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-dispatch03-root-20261008-01/ROOT-CLOSURE-01.md).
-The [source closure](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-root-integration-20261008-01/ROOT-CLOSURE-01.md)
+Root dispatch closure (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-dispatch03-root-20261008-01/ROOT-CLOSURE-01.md`).
+The source closure (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-binding-root-integration-20261008-01/ROOT-CLOSURE-01.md`)
 preserves exact staged checks and normal push receipts. Existing failures and
 old sealed packets are unchanged. No new C temporary script or other-agent
 cleanup occurs. User-owned AGENTS is excluded from staging/commits.

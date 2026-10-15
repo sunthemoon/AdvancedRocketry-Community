@@ -5,7 +5,7 @@ Exact source `2a59cfac2e5c6713a5e6039149d0b4f2830ff8d7`,
 run 37618804027 /attempt 1 /artifact 11482000627.
 
 Root fully reads/hashes the independent
-[report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-independent-audit-20261007-01/REPORT-01.md)
+report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-independent-audit-20261007-01/REPORT-01.md`)
 (`a7cd43`, exit 0), 10,298 B /SHA-256
 `3eea98204d39a1f3d8bc73d8021e24cda6b3f85dc5b088fab2cef49737192751`.
 Independent `python -B audit01.py` (`962596`, exit 0) recounts exact raw evidence

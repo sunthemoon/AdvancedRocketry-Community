@@ -27,7 +27,7 @@ attempt 1 /job 112569285797. Overall **FAILED** at the required GameTest step.
 
 ## Raw association and Root recount
 
-The [fresh terminal observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-power-carrier-ci-20261007-01/OBSERVATION-01.json)
+The fresh terminal observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-power-carrier-ci-20261007-01/OBSERVATION-01.json`)
 at 2026-10-07T00:38:15Z binds the exact source/run/attempt/job and completed
 failure. The separate 00:31:22Z running capture remains unchanged.
 
@@ -39,13 +39,13 @@ Artifact 11453935259 is 1,758,487 bytes /SHA256
 matching its API digest. Cohort, member/path/collision, size and native ZIP CRC
 checks precede compact raw retention; no container/source/class/world copy is kept.
 
-The [Root raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-power-carrier-ci-20261007-01/AUDIT-01.json),
+The Root raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-power-carrier-ci-20261007-01/AUDIT-01.json`),
 SHA256 `528558be494b1c45f2345fd3fd168e48031de83c87a137203541cc69b8f42220`,
 exits 0 at `e5dafb`: 403 named raw/receipt/observation inputs unchanged, actual
 XML children and attributes counted, and exact new method identities checked.
 The initial console projection is truncated; retained audit/raw bytes are complete.
 Root's separate terminal/severity projection exits 0 at `386f5e`.
-The [Root report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-power-carrier-ci-20261007-01/REPORT-01.md)
+The Root report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-power-carrier-ci-20261007-01/REPORT-01.md`)
 and raw leaf are sealed: 416 payloads /13,649,692 bytes, manifest SHA256
 `4fc1f0fa23f2d7c3501de9931fc831997725732a62ff2b40c541c502250fbcc1`,
 417-entry sums SHA256
@@ -53,7 +53,7 @@ and raw leaf are sealed: 416 payloads /13,649,692 bytes, manifest SHA256
 Independent exact-raw review is recorded separately when completed; these Root
 observations do not prefill that verdict or qualify release acceptance.
 
-The [canonical GameTest log](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-power-carrier-ci-20261007-01/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log)
+The canonical GameTest log (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-power-carrier-ci-20261007-01/artifact01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`)
 is 1,562,001 bytes /SHA256
 `cc8216df8e1c1b5fba70a79d89c52cbc4f4910dee72f95f38aba1d781dcaa39d`.
 

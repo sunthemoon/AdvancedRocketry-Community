@@ -4,8 +4,8 @@ Date:2026-10-04. Status:K1_SOURCE_AND_ROOT_REGRESSION_VERIFIED;
 full native framing/hash remains incomplete.
 
 Under the owner's conditional no-unresolved-Critical/High/Medium authorization,
-Root accepts only the exact two-file [source proposal](native-key-order-implementation-01.zip)
-after its different-agent [actual-source review](reviews/native-key-order-independent-01.zip).
+Root accepts only the exact two-file source proposal (`native-key-order-implementation-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md))
+after its different-agent actual-source review (`reviews/native-key-order-independent-01.zip`).
 This implements the already accepted [key-order rule](HASH-ORDER-ACCEPTANCE-01.md),
 not whole native framing,hash publication,GuardTicket or physical API authority.
 
@@ -37,7 +37,7 @@ clean build/test/DataGen is running. No full hash or native framing admission.
 
 Subsequent Root20 actual regression passes1,730 JUnit/328 suites/0FES,
 DataGen written0,464 required GameTests and corrected full stock45/0.
-[Independent evidence audit20](../v1.8.0-c16a-integration/reviews/root20-evidence-audit-01.zip)
+Independent evidence audit20 (`../v1.8.0-c16a-integration/reviews/root20-evidence-audit-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md))
 checks exact2,988 inputs,only one Screen delta from19,all771 generated resources
 and actual XML/artifacts/logs;0C/H/M/L only in its evidence scope,not reviewer
 Java/GT/native replay. Main `90ab8ba5...`,API exact15.61 ERROR lines stay

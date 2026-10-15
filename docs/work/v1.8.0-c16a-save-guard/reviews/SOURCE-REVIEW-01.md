@@ -10,7 +10,7 @@ match the assigned snapshot.
 This review does not close the original native High or claim root GameTests,
 packaged registration, recovery, visual or Gate acceptance.
 
-[Portable evidence](source-review-01-evidence.zip), SHA-256
+Portable evidence (`source-review-01-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)), SHA-256
 `4f12063e1c43f755ba4ab644039cb6d535aea969169e9b8977b577a64662b4a8`,
 217,746 bytes /39 entries. All 38 manifest entries and ZIP CRC verify.
 Raw `REVIEW-01.md` SHA-256:

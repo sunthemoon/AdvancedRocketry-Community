@@ -162,7 +162,7 @@ Effective reviewed input: original CONTRACT-01 SHA-256
 `458363cdd714afeda9839964766db3362e18a777ee050968f80c2aecc8ea439a` plus
 Root ADDENDUM-02 SHA-256 `971d530ebddae3f2d2ae6c644c4a3fa5a44ead7ed1f2902905206bf2bf837e3d`.
 The original sealed review retains three Mediums; the distinct successor
-[REVIEW-02](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-hud-layout-successor-independent-review-20261007-r1-9a7c42/REVIEW-02.md)
+REVIEW-02 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-hud-layout-successor-independent-review-20261007-r1-9a7c42/REVIEW-02.md`)
 SHA-256 `46209af04c1d577b88e4a39af3537b106b88495fe87efb1f5a88acae6ef7abe7`
 reports no open C/H/M contract finding, with 18 static controls and named limits.
 Root fully reads/hashes that review (`1624f9`, exit 0). These are contract/model

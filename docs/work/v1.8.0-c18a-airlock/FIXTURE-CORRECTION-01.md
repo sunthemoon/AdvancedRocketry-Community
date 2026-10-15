@@ -15,10 +15,10 @@ attempt 1, job `112691678476`, reports two airlock failures in the canonical
 - Line 2796: `bothHalfCallbacksRevokeInstalledCachedInflightAndCompletedAirBeforeTick`
   fails with "Installed producer did not establish supplied chamber".
 
-The retained [log](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-source-ci-raw-20261007-01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log)
+The retained log (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-source-ci-raw-20261007-01/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`)
 was independently rehashed as
 `758cc8d6135c217d3f85b5aee468b9363a8a239821a8847cb249be9270099cfe`.
-Its [retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-source-ci-raw-20261007-01/RETRIEVAL-01.json)
+Its retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-source-ci-raw-20261007-01/RETRIEVAL-01.json`)
 binds that cohort and artifact. This follow-up does not recount or qualify the
 whole build, unit, DataGen or GameTest cohort. All original failures remain
 historical failed results, including the two unrelated required rocket failures.
@@ -62,7 +62,7 @@ configuration change or deadline/inspection-budget increase is introduced.
 Fresh static checks must bind both postimages and verify the exact inverse to
 the fixed original GameTest, unchanged method/annotation/assertion predicates,
 scope, finite seed/message bounds and whitespace. Results and pins are in the
-worker's [external report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-fixture-correction-author-20261007-c16-9d42a8/REPORT-01.md).
+worker's external report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-fixture-correction-author-20261007-c16-9d42a8/REPORT-01.md`).
 Read-command locator failures remain attributed tool observations, not new
 product failures or independently exported raw logs.
 
