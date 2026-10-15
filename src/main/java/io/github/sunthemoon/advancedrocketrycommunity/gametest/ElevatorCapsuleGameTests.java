@@ -242,11 +242,13 @@ public final class ElevatorCapsuleGameTests {
                             fixture.terminalChunk, 2, fixture.stationId);
                     fixture.space.getChunkSource().removeRegionTicket(ElevatorRides.ARRIVAL, fixture.terminalChunk,
                             0, test.rider.getUUID());
+                    logArrivalTickets(fixture, "released");
                 })
                 // Unloading runs asynchronously. Give the unchanged countdown its normal 20 TPS wall time,
                 // rather than relying on an earlier batch to have drained the chunk worker queues.
                 .thenExecuteFor(130, unloadPacer::pace)
                 .thenExecute(() -> {
+                    logArrivalTickets(test.fixture, "130_ticks");
                     helper.assertTrue(test.fixture.space.getChunkSource().getChunkNow(test.fixture.terminalChunk.x,
                             test.fixture.terminalChunk.z) == null, "The injected arrival did not unload");
                     test.ordinaryTicks();
@@ -288,5 +290,27 @@ public final class ElevatorCapsuleGameTests {
 
     private static ElevatorRides rides() {
         return EndgameRuntime.devices().orElseThrow().elevatorRides();
+    }
+
+    private static void logArrivalTickets(ElevatorGameTests.Fixture fixture, String stage) {
+        try {
+            var manager = fixture.space.getChunkSource().chunkMap.getDistanceManager();
+            var field = net.minecraft.server.level.DistanceManager.class.getDeclaredField("tickets");
+            field.setAccessible(true);
+            var tickets = (it.unimi.dsi.fastutil.longs.Long2ObjectMap<?>) field.get(manager);
+            List<String> nearby = new ArrayList<>();
+            for (int dx = -4; dx <= 4; dx++) {
+                for (int dz = -4; dz <= 4; dz++) {
+                    ChunkPos pos = new ChunkPos(fixture.terminalChunk.x + dx, fixture.terminalChunk.z + dz);
+                    Object held = tickets.get(pos.toLong());
+                    if (held != null) { nearby.add(pos + "=" + held); }
+                }
+            }
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_EXPIRY_FIXTURE stage={} chunk={} tickets={} players={}",
+                    stage, fixture.terminalChunk, nearby, fixture.space.players().stream()
+                            .map(player -> player.getScoreboardName() + "@" + player.blockPosition()).toList());
+        } catch (ReflectiveOperationException failure) {
+            throw new IllegalStateException("Could not inspect arrival tickets", failure);
+        }
     }
 }

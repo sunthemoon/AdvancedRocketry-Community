@@ -35,6 +35,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GameTestInfo;
+import net.minecraft.gametest.framework.GameTestListener;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
@@ -375,6 +377,7 @@ public final class OrbitalLaserDrillGameTests {
         final BlockPos controller;
         private final ChunkPos chunk;
         private final GameTestTickPacer readinessPacer;
+        private boolean ownsForcedChunk;
         private boolean closed;
 
         Fixture(GameTestHelper helper, ResourceLocation body) {
@@ -387,6 +390,9 @@ public final class OrbitalLaserDrillGameTests {
             controller = new BlockPos(station.landingPad().x() + 6, StationLimits.LANDING_Y + 6,
                     station.landingPad().z() + 6);
             chunk = new ChunkPos(controller);
+            // A region ticket alone does not prevent ServerLevel's 300-tick empty-Level sleep.
+            // Keep this fixture ticking even when no earlier test left a player in Space.
+            retainChunks(helper);
             space.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, stationId);
             space.getChunkAt(controller); // Test setup only; the drill never loads a chunk.
             BlockState casing = ModBlocks.ENDGAME_CASING.get().defaultBlockState();
@@ -421,6 +427,29 @@ public final class OrbitalLaserDrillGameTests {
                     "The drill fixture has not formed: " + drill().describe());
         }
 
+        private void retainChunks(GameTestHelper helper) {
+            try {
+                var field = GameTestHelper.class.getDeclaredField("testInfo");
+                field.setAccessible(true);
+                ((GameTestInfo) field.get(helper)).addListener(new GameTestListener() {
+                    @Override public void testStructureLoaded(GameTestInfo info) { }
+                    @Override public void testPassed(GameTestInfo info) { releaseChunks(); }
+                    @Override public void testFailed(GameTestInfo info) { releaseChunks(); }
+                });
+            } catch (ReflectiveOperationException failure) {
+                throw new IllegalStateException("Could not attach drill fixture ticket cleanup", failure);
+            }
+            ownsForcedChunk = space.setChunkForced(chunk.x, chunk.z, true);
+        }
+
+        private void releaseChunks() {
+            space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 2, stationId);
+            if (ownsForcedChunk) {
+                space.setChunkForced(chunk.x, chunk.z, false);
+                ownsForcedChunk = false;
+            }
+        }
+
         /** Starts through the owner's menu button, as a connected player next to the drill. */
         void startAsOwner(GameTestHelper helper) {
             ServerPlayer player = ConnectedTestPlayers.join(server, owner, "laserStarter", space,
@@ -450,7 +479,7 @@ public final class OrbitalLaserDrillGameTests {
                     }
                 }
             }
-            space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 2, stationId);
+            releaseChunks();
             stations.delete(stationId);
             stations.flush(server);
         }
