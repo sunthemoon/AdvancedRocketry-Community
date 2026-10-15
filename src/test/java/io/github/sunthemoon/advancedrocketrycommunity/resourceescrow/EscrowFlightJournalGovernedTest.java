@@ -1,0 +1,54 @@
+package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+class EscrowFlightJournalGovernedTest {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @TempDir Path directory;
+
+    @Test void noTransferScansGovernedSerialsAndStillRequiresTheExactCheckedBaseline() throws Exception {
+        var record = GovernedTransferFixture.create().record();
+        var logical = GovernedTransferFixture.id(800); var intent = GovernedTransferFixture.id(801);
+        var journal = new RocketTransferSavedData(); journal.put(record);
+        try {
+            assertFalse(EscrowFlightJournal.noTransfer(journal, logical, intent, 2).getAsBoolean());
+            EscrowArmedRestartBoundaryTest.acknowledge(journal, directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()));
+            assertFalse(EscrowFlightJournal.noTransfer(journal, logical, intent, 1).getAsBoolean(), "Another logical rocket names the same serial");
+            assertFalse(EscrowFlightJournal.noTransfer(journal, record.logicalRocketId(), intent, 2).getAsBoolean());
+            assertFalse(EscrowFlightJournal.noTransfer(journal, logical, record.transferId(), 2).getAsBoolean());
+            var lease = EscrowFlightJournal.noTransfer(journal, logical, intent, 2); assertTrue(lease.getAsBoolean());
+            journal.put(record.destinationSpawned(record.nativeTransfer().orElseThrow().armed().destination()));
+            assertFalse(lease.getAsBoolean(), "A superseding phase invalidates the captured absence lease");
+        } finally { journal.stop(); }
+    }
+
+    @Test void checkedRecordDigestBindsPhaseWhileImmutableChecksumIsStable() throws Exception {
+        var record = GovernedTransferFixture.create().record(); var journal = new RocketTransferSavedData();
+        var file = directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
+        try {
+            journal.put(record); EscrowArmedRestartBoundaryTest.acknowledge(journal, file);
+            var previous = journal.acknowledgedGuard(record.logicalRocketId()).orElseThrow();
+            String checksum = record.checksum();
+            for (var phase : RocketTransferPhase.values()) {
+                if (phase == RocketTransferPhase.PREPARED) { continue; }
+                record = phase == RocketTransferPhase.DESTINATION_SPAWNED
+                        ? record.destinationSpawned(record.nativeTransfer().orElseThrow().armed().destination()) : record.advance(phase);
+                journal.put(record); assertTrue(journal.acknowledgedGuard(record.logicalRocketId()).isEmpty());
+                EscrowArmedRestartBoundaryTest.acknowledge(journal, file);
+                var next = journal.acknowledgedGuard(record.logicalRocketId()).orElseThrow();
+                assertEquals(checksum, record.checksum()); assertNotEquals(previous.recordDigest(), next.recordDigest());
+                assertNotEquals(previous.rootDigest(), next.rootDigest()); assertTrue(next.sequence() > previous.sequence()); previous = next;
+            }
+        } finally { journal.stop(); }
+    }
+}

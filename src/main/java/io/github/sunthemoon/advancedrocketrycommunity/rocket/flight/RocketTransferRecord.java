@@ -1,12 +1,14 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.flight;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTransferEnvelope;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 /** Immutable, versioned authority record for one bounded inter-Level rocket transfer. */
 public final class RocketTransferRecord {
+    public static final int GOVERNED_SCHEMA_VERSION = 3;
     private final int schemaVersion;
     private final UUID transferId;
     private final RocketTransferPhase phase;
@@ -21,6 +23,7 @@ public final class RocketTransferRecord {
     private final long requiredFuel;
     private final long createdAtGameTime;
     private final String checksum;
+    private final EscrowTransferEnvelope nativeTransfer;
 
     private RocketTransferRecord(
             int schemaVersion,
@@ -36,12 +39,15 @@ public final class RocketTransferRecord {
             RocketFlightData destinationFlightData,
             long requiredFuel,
             long createdAtGameTime,
-            String checksum
+            String checksum,
+            EscrowTransferEnvelope nativeTransfer
     ) {
-        if (schemaVersion < 1 || schemaVersion > RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION) {
+        if (schemaVersion < 1 || schemaVersion > GOVERNED_SCHEMA_VERSION
+                || (schemaVersion == GOVERNED_SCHEMA_VERSION) != (nativeTransfer != null)) {
             throw new IllegalArgumentException("Unsupported rocket transfer record schema");
         }
         this.schemaVersion = schemaVersion;
+        this.nativeTransfer = nativeTransfer;
         this.transferId = Objects.requireNonNull(transferId, "transferId");
         this.phase = Objects.requireNonNull(phase, "phase");
         this.logicalRocketId = Objects.requireNonNull(logicalRocketId, "logicalRocketId");
@@ -52,9 +58,10 @@ public final class RocketTransferRecord {
         this.destinationSnapshot = Objects.requireNonNull(destinationSnapshot, "destinationSnapshot");
         this.sourceFlightData = Objects.requireNonNull(sourceFlightData, "sourceFlightData");
         this.destinationFlightData = Objects.requireNonNull(destinationFlightData, "destinationFlightData");
-        if (sourceFlightData.schemaVersion() != schemaVersion
-                || destinationFlightData.schemaVersion() != schemaVersion) {
-            throw new IllegalArgumentException("Transfer and flight data schemas must agree");
+        int flightSchema = schemaVersion == GOVERNED_SCHEMA_VERSION ? 2 : schemaVersion;
+        if (sourceFlightData.schemaVersion() != flightSchema
+                || destinationFlightData.schemaVersion() != flightSchema) {
+            throw new IllegalArgumentException("Unsupported flight schema for transfer record");
         }
         if (requiredFuel <= 0L || requiredFuel > RocketFlightLimits.MAX_TRAVEL_FUEL) {
             throw new IllegalArgumentException("Transfer fuel is outside the fixed limit");
@@ -65,6 +72,7 @@ public final class RocketTransferRecord {
         }
         this.createdAtGameTime = createdAtGameTime;
         validateAuthorityShape();
+        if (nativeTransfer != null) { nativeTransfer.validate(this); }
         String expected = RocketTransferChecksum.compute(
                 schemaVersion,
                 transferId,
@@ -78,6 +86,7 @@ public final class RocketTransferRecord {
                 requiredFuel,
                 createdAtGameTime
         );
+        if (nativeTransfer != null) { expected = RocketTransferChecksum.governed(expected, nativeTransfer.digest()); }
         if (!Objects.requireNonNull(checksum, "checksum").equals(expected)) {
             throw new IllegalArgumentException("Rocket transfer checksum does not match authority data");
         }
@@ -124,7 +133,8 @@ public final class RocketTransferRecord {
                 destinationFlightData,
                 requiredFuel,
                 createdAtGameTime,
-                checksum
+                checksum,
+                null
         );
     }
 
@@ -158,8 +168,35 @@ public final class RocketTransferRecord {
                 destinationFlightData,
                 requiredFuel,
                 createdAtGameTime,
-                checksum
+                checksum,
+                null
         );
+    }
+
+    /** Only the governed dispatcher may publish this value, after the exact ARMED acknowledgement. */
+    public static RocketTransferRecord createGoverned(
+            UUID transferId, UUID logicalRocketId, UUID ownerId, UUID sourceEntityId,
+            RocketStructureSnapshot sourceSnapshot, RocketStructureSnapshot destinationSnapshot,
+            RocketFlightData sourceFlightData, RocketFlightData destinationFlightData,
+            long requiredFuel, long createdAtGameTime, EscrowTransferEnvelope nativeTransfer) {
+        Objects.requireNonNull(nativeTransfer, "nativeTransfer");
+        String checksum = RocketTransferChecksum.governed(RocketTransferChecksum.compute(GOVERNED_SCHEMA_VERSION, transferId,
+                logicalRocketId, ownerId, sourceEntityId, sourceSnapshot, destinationSnapshot,
+                sourceFlightData, destinationFlightData, requiredFuel, createdAtGameTime), nativeTransfer.digest());
+        return restoreGoverned(transferId, RocketTransferPhase.PREPARED, logicalRocketId, ownerId,
+                sourceEntityId, null, sourceSnapshot, destinationSnapshot, sourceFlightData, destinationFlightData,
+                requiredFuel, createdAtGameTime, checksum, nativeTransfer);
+    }
+
+    public static RocketTransferRecord restoreGoverned(
+            UUID transferId, RocketTransferPhase phase, UUID logicalRocketId, UUID ownerId,
+            UUID sourceEntityId, UUID destinationEntityId,
+            RocketStructureSnapshot sourceSnapshot, RocketStructureSnapshot destinationSnapshot,
+            RocketFlightData sourceFlightData, RocketFlightData destinationFlightData,
+            long requiredFuel, long createdAtGameTime, String checksum, EscrowTransferEnvelope nativeTransfer) {
+        return new RocketTransferRecord(GOVERNED_SCHEMA_VERSION, transferId, phase, logicalRocketId, ownerId, sourceEntityId,
+                destinationEntityId, sourceSnapshot, destinationSnapshot, sourceFlightData, destinationFlightData,
+                requiredFuel, createdAtGameTime, checksum, Objects.requireNonNull(nativeTransfer, "nativeTransfer"));
     }
 
     public RocketTransferRecord destinationSpawned(UUID entityId) {
@@ -225,7 +262,8 @@ public final class RocketTransferRecord {
                 migratedDestination,
                 requiredFuel,
                 createdAtGameTime,
-                migratedChecksum
+                migratedChecksum,
+                null
         );
     }
 
@@ -244,7 +282,8 @@ public final class RocketTransferRecord {
                 destinationFlightData,
                 requiredFuel,
                 createdAtGameTime,
-                checksum
+                checksum,
+                nativeTransfer
         );
     }
 
@@ -345,4 +384,6 @@ public final class RocketTransferRecord {
     public String checksum() {
         return checksum;
     }
+
+    public Optional<EscrowTransferEnvelope> nativeTransfer() { return Optional.ofNullable(nativeTransfer); }
 }

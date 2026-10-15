@@ -16,6 +16,8 @@ final class RocketTransferEscrowRules {
             RocketTransferBayDispatch bays, RocketTransferBayRecoveryGate.Action action) {
         var boundary = bays.before(server, journal, record, action);
         if (boundary == null) { return false; }
+        // Record-3 data is never authority for a legacy callback, even when its ARMED entry is absent.
+        if (record.nativeTransfer().isPresent()) { return false; }
         boolean permitted = boundary.kind() == RocketTransferBayRecoveryGate.BoundaryKind.PERMIT;
         if (permitted ? RocketEscrowGate.escrowLogicalLocked(server, record.logicalRocketId())
                 : RocketEscrowGate.logicalLocked(server, record.logicalRocketId())) {

@@ -13,9 +13,9 @@ final class EscrowFlightJournal {
         if (serial <= 0 || guard == null || guard.transfer() != null || journal.find(transfer).isPresent()) {
             return () -> false;
         }
-        // Schema 1/2 cannot name a launch serial. Until the governed codec supplies a serial
-        // reader, any other record version holds rather than being mistaken for no-T.
-        if (journal.entries().stream().anyMatch(record -> record.schemaVersion() != 1 && record.schemaVersion() != 2)) {
+        // A different logical rocket may still name this root-wide serial; it is not no-T.
+        if (journal.entries().stream().anyMatch(record -> record.nativeTransfer()
+                .map(value -> value.armed().serial() == serial).orElse(record.schemaVersion() > 2))) {
             return () -> false;
         }
         return journal.acknowledgedLease();

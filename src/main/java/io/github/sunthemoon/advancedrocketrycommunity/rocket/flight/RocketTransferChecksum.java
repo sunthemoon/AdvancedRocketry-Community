@@ -16,6 +16,13 @@ final class RocketTransferChecksum {
     private RocketTransferChecksum() {
     }
 
+    /** Legacy bytes stay untouched; schema 3 additionally commits the complete native metadata. */
+    static String governed(String bodyChecksum, String envelopeDigest) {
+        var tag = new net.minecraft.nbt.CompoundTag(); tag.putInt("schema_version", 3);
+        tag.putString("body", bodyChecksum); tag.putString("native_transfer", envelopeDigest);
+        return io.github.sunthemoon.advancedrocketrycommunity.persistence.CanonicalNbtDigest.of(tag, 512, 4);
+    }
+
     static String compute(
             int schemaVersion,
             UUID transferId,

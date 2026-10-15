@@ -1,0 +1,154 @@
+package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
+import java.util.List;
+import java.util.function.Consumer;
+import net.minecraft.nbt.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+class EscrowTransferEnvelopeTest {
+    @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+
+    @Test void recordThreeRoundTripsCompleteEnvelopesWithoutBumpingJournalOrFlightSchema() {
+        var fixture = GovernedTransferFixture.create(); var record = fixture.record();
+        var metadata = record.nativeTransfer().orElseThrow();
+        assertEquals(3, record.schemaVersion()); assertEquals(2, record.sourceFlightData().schemaVersion());
+        assertEquals(fixture.source(), metadata.sourceEnvelope(record));
+        assertEquals(fixture.destination(), metadata.destinationEnvelope(record));
+        assertEquals(7, metadata.sourceEnvelope(record).getCompound("wrapper").getLong("resource_epoch"));
+        assertEquals(0, metadata.destinationEnvelope(record).getCompound("wrapper").getLong("resource_epoch"));
+        var compact = metadata.encode();
+        for (String side : List.of("source", "destination")) {
+            assertFalse(compact.getCompound(side).contains("snapshot"));
+            assertFalse(compact.getCompound(side).getCompound("flight_changes").contains("fuel"));
+            assertFalse(compact.getCompound(side).getCompound("flight_changes").contains("passengers"));
+        }
+        for (RocketTransferPhase phase : RocketTransferPhase.values()) {
+            if (phase == RocketTransferPhase.DESTINATION_SPAWNED) { record = record.destinationSpawned(metadata.armed().destination()); }
+            else if (phase != RocketTransferPhase.PREPARED) { record = record.advance(phase); }
+            var root = root(record); assertEquals(2, root.getInt("schema_version"));
+            var loaded = RocketTransferSavedData.load(root); assertTrue(loaded.operational());
+            var restored = loaded.entries().get(0);
+            assertEquals(record.checksum(), restored.checksum()); assertEquals(phase, restored.phase());
+            assertEquals(fixture.source(), restored.nativeTransfer().orElseThrow().sourceEnvelope(restored));
+            assertEquals(root, loaded.save(new CompoundTag()));
+            assertThrows(IllegalArgumentException.class, () -> RocketTransferRecord.restore(3,
+                    restored.transferId(), restored.phase(), restored.logicalRocketId(), restored.ownerId(), restored.sourceEntityId(),
+                    restored.destinationEntityId().orElse(null), restored.sourceSnapshot(), restored.destinationSnapshot(),
+                    restored.sourceFlightData(), restored.destinationFlightData(), restored.requiredFuel(), restored.createdAtGameTime(), restored.checksum()));
+        }
+        assertThrows(IllegalArgumentException.class, () -> fixture.record().destinationSpawned(GovernedTransferFixture.id(500)));
+        var spawned = fixture.record().destinationSpawned(metadata.armed().destination());
+        assertThrows(IllegalArgumentException.class, () -> spawned.rebindDestination(GovernedTransferFixture.id(500)));
+        assertEquals(spawned.checksum(), spawned.rebindDestination(metadata.armed().destination()).checksum());
+    }
+
+    @Test void metadataAndAllNestedAuthorityChangesPreserveTheRejectedRawJournal() {
+        var fixture = GovernedTransferFixture.create();
+        List<Consumer<CompoundTag>> changes = List.of(
+                t -> t.putInt("schema_version", 2), t -> t.putString("signature_kind", "ROCKET_COMPOSITE_V1"),
+                t -> t.getCompound("armed").putLong("serial", 9), t -> t.getCompound("armed").putLong("g", 11),
+                t -> t.getCompound("armed").putUUID("ledger", GovernedTransferFixture.id(9)),
+                t -> t.getCompound("armed").putUUID("d", GovernedTransferFixture.id(9)),
+                t -> t.getCompound("armed").putLong("epoch", 8), t -> t.getCompound("armed").putString("outcome", "CANCELLED"),
+                t -> t.getCompound("armed").putByteArray("binding", new byte[32]),
+                t -> t.getCompound("armed").getCompound("j").putByteArray("journal_digest", new byte[32]),
+                t -> t.getCompound("source").put("pos", GovernedTransferFixture.vector(9, 80, 8)),
+                t -> t.getCompound("source").put("motion", GovernedTransferFixture.vector(0, 1, 0)),
+                t -> t.getCompound("source").putBoolean("no_gravity", false),
+                t -> t.getCompound("source").putBoolean("no_physics", false),
+                t -> t.getCompound("source").putBoolean("invulnerable", true),
+                t -> t.getCompound("source").putFloat("yaw", 10), t -> t.getCompound("source").putFloat("pitch", Float.NaN),
+                t -> t.getCompound("source").put("passengers", new ListTag()),
+                t -> t.getCompound("source").getCompound("flight_changes").putLong("state_started_game_time", 9),
+                t -> t.getCompound("source").getCompound("flight_changes").put("fuel", new CompoundTag()),
+                t -> t.getCompound("destination").putBoolean("on_ground", true),
+                t -> t.getCompound("destination").getCompound("flight_changes").putString("state", "LANDED"),
+                t -> t.putInt("unknown", 1));
+        for (var change : changes) {
+            var root = root(fixture.record()); change.accept(wire(root).getCompound("native_transfer")); assertRejected(root);
+        }
+        for (String key : fixture.record().nativeTransfer().orElseThrow().encode().getAllKeys()) {
+            var root = root(fixture.record()); wire(root).getCompound("native_transfer").remove(key); assertRejected(root);
+        }
+        for (String side : List.of("source", "destination")) {
+            for (String key : fixture.record().nativeTransfer().orElseThrow().encode().getCompound(side).getAllKeys()) {
+                var root = root(fixture.record()); wire(root).getCompound("native_transfer").getCompound(side).remove(key); assertRejected(root);
+            }
+        }
+        for (int schema : List.of(0, 1, 2, 4)) {
+            var root = root(fixture.record()); wire(root).putInt("schema_version", schema); assertRejected(root);
+        }
+        var absent = root(fixture.record()); wire(absent).remove("native_transfer"); assertRejected(absent);
+        var future = root(fixture.record()); future.putInt("schema_version", 3); assertRejected(future);
+    }
+
+    @Test void nativeProjectionCopiesInputsAndOutputsAndRetainsPriorIdlePlan() {
+        var fixture = GovernedTransferFixture.create(1, 16, true); var record = fixture.record();
+        var metadata = record.nativeTransfer().orElseThrow();
+        assertEquals(fixture.source(), metadata.sourceEnvelope(record));
+        int size = RocketNbtSize.uncompressedBytes(metadata.encode());
+        assertTrue(size <= EscrowTransferEnvelope.MAX_BYTES);
+        System.out.println("governed_metadata_16_passengers_prior_plan_bytes=" + size);
+        var expected = metadata.encode(); fixture.source().putInt("external", 1);
+        var encoded = metadata.encode(); encoded.getCompound("source").putInt("external", 1);
+        metadata.sourceEnvelope(record).getCompound("flight").putInt("external", 1);
+        assertEquals(expected, metadata.encode()); assertTrue(RocketTransferSavedData.load(root(record)).operational());
+    }
+
+    @Test void metadataBytePreflightRejectsOneOverTheUnchangedFourKibBoundaryBeforeCopying() {
+        var metadata = GovernedTransferFixture.create().record().nativeTransfer().orElseThrow().encode();
+        metadata.putByteArray("padding", new byte[0]);
+        int padding = EscrowTransferEnvelope.MAX_BYTES - RocketNbtSize.uncompressedBytes(metadata);
+        assertTrue(padding > 0); metadata.putByteArray("padding", new byte[padding]);
+        assertEquals(EscrowTransferEnvelope.MAX_BYTES, RocketNbtSize.uncompressedBytes(metadata));
+        assertEquals("Unknown escrow field", assertThrows(IllegalArgumentException.class, () -> EscrowTransferEnvelope.decode(metadata)).getMessage());
+        metadata.putByteArray("padding", new byte[padding + 1]);
+        assertEquals("Escrow NBT envelope exceeded", assertThrows(IllegalArgumentException.class, () -> EscrowTransferEnvelope.decode(metadata)).getMessage());
+    }
+
+    @Test void maximalIdentifiersManifestPriorPlanAndReadyAnchorFitAndHaveMeasuredFieldCosts() {
+        var fixture = GovernedTransferFixture.maximal(); var record = fixture.record();
+        assertEquals(8_192, RocketNbtSize.uncompressedBytes(record.sourceFlightData().fuel().propulsion().orElseThrow().primary().fluidTag()));
+        assertEquals(8_192, RocketNbtSize.uncompressedBytes(record.sourceFlightData().fuel().propulsion().orElseThrow().oxidizer().fluidTag()));
+        assertEquals(63, record.sourceFlightData().fuel().committedDebits().size());
+        assertEquals(64, record.destinationFlightData().fuel().committedDebits().size());
+        var metadata = record.nativeTransfer().orElseThrow(); var encoded = metadata.encode();
+        var measured = io.github.sunthemoon.advancedrocketrycommunity.persistence.BoundedNbt.measure(encoded, 4096, 16, 512);
+        assertNotNull(measured); assertEquals(RocketNbtSize.uncompressedBytes(encoded), measured.bytes());
+        long sum = 4; // Named compound root header and TAG_End.
+        for (String key : encoded.getAllKeys().stream().sorted().toList()) {
+            var field = new CompoundTag(); field.put(key, encoded.get(key).copy());
+            int bytes = RocketNbtSize.uncompressedBytes(field) - 4; sum += bytes;
+            System.out.println("governed_field=" + key + " bytes=" + bytes);
+        }
+        assertEquals(measured.bytes(), sum);
+        System.out.println("governed_max_identifier_manifest_bytes=" + measured.bytes() + " nodes=" + measured.nodes());
+        assertEquals(fixture.source(), metadata.sourceEnvelope(record));
+        assertTrue(RocketTransferSavedData.load(root(record)).operational());
+    }
+
+    @Test void serialIsPartOfImmutableChecksumWhileNeutralRecordsKeepTheirOldWireShape() {
+        var a = GovernedTransferFixture.create(1, 1, false).record();
+        var b = GovernedTransferFixture.create(2, 1, false).record(); assertNotEquals(a.checksum(), b.checksum());
+        var legacy = RocketTransferRecord.create(a.transferId(), a.logicalRocketId(), a.ownerId(), a.sourceEntityId(),
+                a.sourceSnapshot(), a.destinationSnapshot(), a.sourceFlightData(), a.destinationFlightData(), a.requiredFuel(), a.createdAtGameTime());
+        assertEquals(2, legacy.schemaVersion()); assertTrue(legacy.nativeTransfer().isEmpty());
+        assertFalse(wire(root(legacy)).contains("native_transfer")); assertTrue(RocketTransferSavedData.load(root(legacy)).operational());
+    }
+
+    static CompoundTag root(RocketTransferRecord record) { var journal = new RocketTransferSavedData(); journal.put(record); return journal.save(new CompoundTag()); }
+    static CompoundTag wire(CompoundTag root) { return root.getList("transfers", Tag.TAG_COMPOUND).getCompound(0); }
+    private static void assertRejected(CompoundTag root) {
+        var original = root.copy(); var loaded = RocketTransferSavedData.load(root);
+        assertFalse(loaded.operational()); assertTrue(loaded.entries().isEmpty());
+        assertEquals(original, loaded.preservedBlockedData().orElseThrow()); assertEquals(original, loaded.save(new CompoundTag()));
+    }
+}

@@ -15,7 +15,21 @@ from run_v060_flight_server_smoke import _server_command
 from run_v180_escrow_forced_stop import digest, ledger, record, LEDGER
 from run_v180_rocket_settlement_completion import journal, require_lock, JOURNAL
 
-CASES = ("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK")
+CASES = ("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK", "PF_GOVERNED_T_ACK")
+
+
+def has_transfer(cut: str) -> bool:
+    return cut in ("PF_T_ACK", "PF_GOVERNED_T_ACK")
+
+
+def require_governed_record(transfer: dict, arm: dict) -> None:
+    native = transfer.get("native_transfer", {})
+    if (transfer.get("schema_version") != 3 or native.get("schema_version") != 1
+            or native.get("armed") != arm or native.get("signature_kind") != "FUEL_VECTOR_V1"
+            or transfer.get("phase") != "PREPARED" or "destination_entity_id" in transfer
+            or transfer.get("source_flight", {}).get("schema_version") != 2
+            or transfer.get("destination_flight", {}).get("schema_version") != 2):
+        raise smoke.SmokeError("Governed pre-F2 fixture changed its record versions or exact authority")
 
 
 def inspect(world: Path, cut: str, restarted: bool) -> dict:
@@ -28,7 +42,7 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
     source = rockets[0]
     data = source["RocketEntityData"]
     wrapper, flight = data["resource_escrow"], data["flight_data"]
-    before, has_t = cut == "PF_ARM_BEFORE", cut == "PF_T_ACK"
+    before, has_t = cut == "PF_ARM_BEFORE", has_transfer(cut)
     expected = "CANCELLED" if restarted and not has_t else "ARMED"
     arms = root["armed_flights"]
     if (root["records"] or root["floors"] or root["tombstones"] or root["rocket_authorities"]
@@ -46,6 +60,8 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
         raise smoke.SmokeError("F1 lost or changed its native source frontier")
     if transfers and transfers[0]["transfer_id"] != arms[0]["t"]:
         raise smoke.SmokeError("Negative case lost T")
+    if cut == "PF_GOVERNED_T_ACK":
+        require_governed_record(transfers[0], arms[0])
     # Excludes unrelated vanilla timers; includes every persisted field of the fixed source adapter.
     projection = {key: source.get(key) for key in ("UUID", "id", "RocketEntityData", "Pos", "Motion",
                                                   "Rotation", "NoGravity", "OnGround", "Invulnerable")}
@@ -103,7 +119,7 @@ def run(args) -> dict:
                     process.process.kill(); process.abort(); process = None
                     row["cut_disk"] = inspect(session / ("world-" + cut), cut, False)
                 else:
-                    outcome = "UNARMED" if cut == "PF_ARM_BEFORE" else "ARMED" if cut == "PF_T_ACK" else "CANCELLED"
+                    outcome = "UNARMED" if cut == "PF_ARM_BEFORE" else "ARMED" if has_transfer(cut) else "CANCELLED"
                     process.wait_for(re.compile(r"ARCE_RELEASE_PRE_F2_RESULT cut=" + cut + " outcome=" + outcome), args.startup_timeout)
                     process.command("stop"); code = process.finish()
                     if code or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):

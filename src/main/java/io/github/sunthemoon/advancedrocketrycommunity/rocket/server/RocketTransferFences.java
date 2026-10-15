@@ -49,6 +49,9 @@ final class RocketTransferFences {
         }
         for (var record : journal.entries()) {
             if (bays != null && !bays.classify(server, journal, record)) { continue; }
+            if (record.nativeTransfer().isPresent()) {
+                fence(record, "GOVERNED_ACTION_REQUIRED", live, settled); continue;
+            }
             var ledger = ledgerReader.apply(server);
             String reason = null;
             if (RocketEscrowGate.logicalLocked(server, record.logicalRocketId())) { reason = "ESCROW_PENDING_OR_TOMBSTONE"; }
@@ -88,6 +91,7 @@ final class RocketTransferFences {
     boolean permit(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record, Set<UUID> live, Set<UUID> settled) {
         if (bays != null && !bays.allowed(server, journal, record,
                 RocketTransferBayRecoveryGate.Action.RECOVER_AUTO)) { return false; }
+        if (record.nativeTransfer().isPresent()) { return false; }
         if (!reasons.containsKey(record.transferId())) { return true; }
         long now = server.getTickCount();
         boolean permitted = reevaluate(record.transferId(), now, () -> loadedReason(server, journal, record), live, settled);
@@ -133,6 +137,7 @@ final class RocketTransferFences {
         var boundary = bays == null ? RocketTransferBayRecoveryGate.Boundary.unclaimed()
                 : bays.before(server, journal, record, RocketTransferBayRecoveryGate.Action.ELECT_DUPLICATES);
         if (boundary == null) { return "BAY_HELD"; }
+        if (record.nativeTransfer().isPresent()) { return "GOVERNED_ACTION_REQUIRED"; }
         if (boundary.kind() == RocketTransferBayRecoveryGate.BoundaryKind.PERMIT
                 ? RocketEscrowGate.escrowLogicalLocked(server, record.logicalRocketId())
                 : RocketEscrowGate.logicalLocked(server, record.logicalRocketId())) {
@@ -192,6 +197,7 @@ final class RocketTransferFences {
         var boundary = bays == null ? RocketTransferBayRecoveryGate.Boundary.unclaimed()
                 : bays.before(server, journal, record, RocketTransferBayRecoveryGate.Action.ELECT_DUPLICATES);
         if (boundary == null) { return false; }
+        if (record.nativeTransfer().isPresent()) { return false; }
         var data = ResourceEscrowSavedData.existing(server);
         String reason = sources.size() >= io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES
                 || destinations.size() >= io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES ? "MATCH_LIMIT"

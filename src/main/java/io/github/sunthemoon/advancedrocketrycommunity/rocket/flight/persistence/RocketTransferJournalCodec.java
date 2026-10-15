@@ -33,6 +33,7 @@ final class RocketTransferJournalCodec {
         target.putLong("required_fuel", record.requiredFuel());
         target.putLong("created_at_game_time", record.createdAtGameTime());
         target.putString("checksum", record.checksum());
+        record.nativeTransfer().ifPresent(value -> target.put("native_transfer", value.encode()));
         return target;
     }
 
@@ -41,6 +42,16 @@ final class RocketTransferJournalCodec {
             throw new IllegalArgumentException("Transfer record exceeds the fixed NBT limit");
         }
         int schema = requireInt(source, "schema_version");
+        if (schema < 1 || schema > RocketTransferRecord.GOVERNED_SCHEMA_VERSION
+                || source.contains("native_transfer") != (schema == RocketTransferRecord.GOVERNED_SCHEMA_VERSION)) {
+            throw new IllegalArgumentException("Unsupported transfer record/envelope version");
+        }
+        if (schema == 3 && !java.util.Set.of("schema_version", "transfer_id", "phase", "logical_rocket_id",
+                "owner_id", "source_entity_id", "destination_entity_id", "source_snapshot", "destination_snapshot",
+                "source_flight", "destination_flight", "required_fuel", "created_at_game_time", "checksum", "native_transfer")
+                .containsAll(source.getAllKeys())) {
+            throw new IllegalArgumentException("Unknown governed transfer field");
+        }
         UUID transferId = requireUuid(source, "transfer_id");
         RocketTransferPhase phase = RocketTransferPhase.valueOf(requireString(source, "phase", 64));
         UUID logicalRocketId = requireUuid(source, "logical_rocket_id");
@@ -67,6 +78,13 @@ final class RocketTransferJournalCodec {
         String checksum = requireString(source, "checksum", 64);
         if (!checksum.matches("[0-9a-f]{64}")) {
             throw new IllegalArgumentException("Transfer checksum is malformed");
+        }
+        if (schema == 3) {
+            var envelope = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTransferEnvelope
+                    .decode(requireCompound(source, "native_transfer"));
+            return RocketTransferRecord.restoreGoverned(transferId, phase, logicalRocketId, ownerId, sourceEntityId,
+                    destinationEntityId, sourceSnapshot, destinationSnapshot, sourceFlight, destinationFlight,
+                    requiredFuel, createdAt, checksum, envelope);
         }
         return RocketTransferRecord.restore(
                 schema,

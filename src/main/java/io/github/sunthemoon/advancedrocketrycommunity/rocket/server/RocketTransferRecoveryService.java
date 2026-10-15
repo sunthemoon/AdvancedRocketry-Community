@@ -103,6 +103,7 @@ final class RocketTransferRecoveryService {
     static Step step(List<RocketTransferRecord> entries, Set<UUID> live, Set<UUID> settled, Set<UUID> fenced, int cursor,
                      java.util.function.Predicate<RocketTransferRecord> loaded) {
         List<RocketTransferRecord> unclassified = entries.stream()
+                .filter(candidate -> candidate.nativeTransfer().isEmpty())
                 .filter(candidate -> !live.contains(candidate.transferId()))
                 .filter(candidate -> !settled.contains(candidate.transferId()))
                 .filter(candidate -> !fenced.contains(candidate.transferId()))
