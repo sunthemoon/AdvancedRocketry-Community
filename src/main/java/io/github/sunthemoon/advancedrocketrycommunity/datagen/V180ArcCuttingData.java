@@ -198,7 +198,7 @@ public final class V180ArcCuttingData implements DataProvider {
     }
     private static JsonObject position(int x, int y, int z) { var root = new JsonObject(); root.addProperty("x", x); root.addProperty("y", y); root.addProperty("z", z); return root; }
     private static JsonObject flag(String key) { var root = new JsonObject(); root.addProperty(key, true); return root; }
-    private static JsonObject clearance() { var root = new JsonObject(); root.add("optional", object("tag", CLEARANCE_TAG)); return root; }
+    static JsonObject clearance() { var root = new JsonObject(); root.add("optional", object("tag", CLEARANCE_TAG)); return root; }
     private static JsonObject object(String key, String value) { var root = new JsonObject(); root.addProperty(key, value); return root; }
     private static JsonArray strings(String... values) { var root = new JsonArray(); for (String value : values) { root.add(value); } return root; }
     private static String asset(String path) { return "assets/" + NS + "/" + path + ".json"; }

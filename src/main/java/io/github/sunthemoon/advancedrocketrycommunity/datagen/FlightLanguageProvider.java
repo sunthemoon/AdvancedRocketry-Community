@@ -51,7 +51,8 @@ public final class FlightLanguageProvider extends LanguageProvider {
         add("screen.advancedrocketrycommunity.rocket.board", chinese ? "登乘" : "BOARD");
         add("screen.advancedrocketrycommunity.rocket.leave", chinese ? "离开座位" : "LEAVE SEAT");
         for (FuelLoaderStatus status : FuelLoaderStatus.values()) {
-            if (status == FuelLoaderStatus.UNSUPPORTED_FUEL) { continue; } // Added by the v1.3 provider.
+            // Added by the v1.3 and v1.8 providers; the v0.6 output root never changes.
+            if (status == FuelLoaderStatus.UNSUPPORTED_FUEL || status == FuelLoaderStatus.RECOVERY_PENDING) { continue; }
             add(
                     "status.advancedrocketrycommunity.fuel_loader." + status.diagnosticKey(),
                     chinese ? chinese(status) : english(status)
@@ -79,6 +80,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case UNSUPPORTED_DATA -> "unsupported saved data";
             case INVALID_DATA -> "invalid saved data";
             case UNSUPPORTED_FUEL -> "unregistered fuel";
+            case RECOVERY_PENDING -> throw new IllegalArgumentException("The v1.8 provider adds " + status);
         };
     }
 
@@ -92,6 +94,7 @@ public final class FlightLanguageProvider extends LanguageProvider {
             case UNSUPPORTED_DATA -> "不支持的存档数据";
             case INVALID_DATA -> "无效的存档数据";
             case UNSUPPORTED_FUEL -> "未注册的燃料";
+            case RECOVERY_PENDING -> throw new IllegalArgumentException("The v1.8 provider adds " + status);
         };
     }
 

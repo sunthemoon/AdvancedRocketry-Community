@@ -73,7 +73,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 2,
       "y": 3,

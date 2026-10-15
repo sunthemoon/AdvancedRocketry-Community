@@ -11,6 +11,10 @@ import net.minecraft.world.level.storage.LevelResource;
 
 /** Synchronous checked policy for existing roots. Escrow supplies its own asynchronous single writer. */
 public abstract class AtomicSavedData extends SavedData {
+    /** The ordinary committer of every root; only a configured release-test cut installs another (W72). */
+    static final CommitterSelector NORMAL_COMMITTER = (type, normal) -> normal;
+    static volatile CommitterSelector committerSelector = NORMAL_COMMITTER;
+
     private final ManagedSavedDataType type;
     private boolean saveFailureReported;
 
@@ -37,8 +41,21 @@ public abstract class AtomicSavedData extends SavedData {
     }
 
     public final void flush(Path file) {
-        flush(file, io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventCutSeams
-                .ordinaryCommitter(type, CheckedSavedDataFile::atomicMove));
+        flush(file, committerSelector.select(type, CheckedSavedDataFile::atomicMove));
+    }
+
+    /**
+     * Installs the ordinary-save committer selector of a release-test run (W44 section 6.1); {@code null} restores
+     * the normal committer. The owner of the cut calls it at server start, so production keeps the default.
+     */
+    public static void installCommitterSelector(CommitterSelector selector) {
+        committerSelector = selector == null ? NORMAL_COMMITTER : selector;
+    }
+
+    /** Chooses the committer of an ordinary save or explicit flush, given the type and the normal atomic move. */
+    @FunctionalInterface
+    public interface CommitterSelector {
+        CheckedSavedDataFile.Committer select(ManagedSavedDataType type, CheckedSavedDataFile.Committer normal);
     }
 
     /** The committer is a gated release-test seam for the progression root (W44 section 6.1). */

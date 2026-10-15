@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.AtomicSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
@@ -134,8 +135,11 @@ public final class FirstEventCutSeams {
         FirstEventAvailabilityCut.reset();
         if (latch != null) { latch.release(); }
         latch = null;
+        AtomicSavedData.installCommitterSelector(null);
         configured().ifPresent(cut -> {
             EscrowTestEndpoints.requireEnabled(server);
+            // W72: the progression root is obtained only after this, so its first ordinary save already sees the cut.
+            AtomicSavedData.installCommitterSelector(FirstEventCutSeams::ordinaryCommitter);
             if (cut == Cut.FM9 || cut == Cut.FP5) { latch = new FirstEventCutLatch(); }
             AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_cut id={} armed", cut.id());
         });
@@ -321,9 +325,12 @@ public final class FirstEventCutSeams {
         return CheckedSavedDataFile::atomicMove;
     }
 
-    /** FM12's refusal covers ordinary dirty saves too; other roots and ordinary production writes are unchanged. */
-    public static CheckedSavedDataFile.Committer ordinaryCommitter(ManagedSavedDataType type,
-                                                                  CheckedSavedDataFile.Committer normal) {
+    /**
+     * FM12's refusal covers ordinary dirty saves too; other roots and ordinary production writes are unchanged. The
+     * persistence package reaches it only through the selector that {@link #validateAtStartup} installs for a cut.
+     */
+    static CheckedSavedDataFile.Committer ordinaryCommitter(ManagedSavedDataType type,
+                                                           CheckedSavedDataFile.Committer normal) {
         if (type == ManagedSavedDataType.CLASSIC_PROGRESSION && configured()
                 .filter(cut -> cut == Cut.FM12A || cut == Cut.FM12B).isPresent()) {
             MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();

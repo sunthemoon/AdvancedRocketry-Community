@@ -117,7 +117,7 @@ public final class V180BeaconData implements DataProvider {
                         case 'C' -> matcher.addProperty("controller", true);
                         case 'B' -> matcher.addProperty("block", NS + ":machine_casing");
                         case 'R' -> matcher.addProperty("block", "minecraft:redstone_block");
-                        case '.' -> matcher.addProperty("tag", V180ArcCuttingData.CLEARANCE_TAG);
+                        case '.' -> matcher = V180ArcCuttingData.clearance();
                         default -> throw new IllegalStateException("Unknown beacon pattern cell");
                     }
                     cell.add("matcher", matcher);
