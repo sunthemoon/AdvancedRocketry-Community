@@ -71,6 +71,10 @@ jobs:
         run: |
           python tools/audit/screen_generated_art.py --root src/generated/v1.8/resources --vanilla 1.12.2="$RUNNER_TEMP/vanilla-clients/client-1.12.2.jar" --vanilla 1.20.1="$RUNNER_TEMP/vanilla-clients/client-1.20.1.jar"
 
+      - name: Verify the v1.8.0 K6 import batch byte for byte (ADR-061 section 4.4)
+        run: |
+          python tools/import/import_v180_assets.py verify --upstream build/upstream/AdvancedRocketry --plan tools/import/v180-k6-plan.json --record docs/provenance/v1.8.0-c18d-k6.json --vanilla 1.12.2="$RUNNER_TEMP/vanilla-clients/client-1.12.2.jar" --vanilla 1.20.1="$RUNNER_TEMP/vanilla-clients/client-1.20.1.jar"
+
       - name: Verify v0.2.0 authored DataGen inventory
         run: |
           python scripts/manage_v020_generated_manifest.py verify
