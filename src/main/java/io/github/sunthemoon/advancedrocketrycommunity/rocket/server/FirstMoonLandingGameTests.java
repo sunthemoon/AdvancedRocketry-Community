@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.DetachedFirstEventRoots;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickDriver;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.ClassicMilestoneAdvancements.Milestone;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEvent;
 import io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind;
@@ -61,6 +62,7 @@ public final class FirstMoonLandingGameTests {
         final GameTestHelper helper;
         final GameTestTickDriver driver;
         final MinecraftServer server;
+        final GameTestTickPacer pacer;
         final ServerLevel moon;
         final List<ServerPlayer> joined = new ArrayList<>();
         final RocketTransferRecoveryService recovery = new RocketTransferRecoveryService(new HashSet<>(), new HashSet<>());
@@ -78,6 +80,7 @@ public final class FirstMoonLandingGameTests {
             this.helper = helper;
             this.driver = new GameTestTickDriver(helper);
             this.server = helper.getLevel().getServer();
+            this.pacer = new GameTestTickPacer(server);
             this.moon = server.getLevel(CelestialIds.MOON_LEVEL);
         }
 
@@ -93,6 +96,8 @@ public final class FirstMoonLandingGameTests {
         void setup() {
             if (!moon.isPositionEntityTicking(origin)) {
                 if (++waited > 100) { throw new IllegalStateException("The fixture origin never became entity ticking"); }
+                // The ticket retains the chunk, but its asynchronous readiness needs real server-tick time.
+                pacer.pace();
                 driver.after(1, () -> guard(this::setup));
                 return;
             }
