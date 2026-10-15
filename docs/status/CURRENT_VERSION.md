@@ -88,12 +88,11 @@ What is still open:
   No S1 campaign has run.
 - **S2.** The D3-A crash cuts wait for W11b2 and W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
-- **C19.** W58 audited it (`records/W58.md`); the validator chain and the G4 fix are merged
-  (C19-A). Hosted governance now passes the full Python suite (run 38616170516, after W49F) and
-  stops at the v0.1.0 asset check: W52's six K6 icons sit in the v0.1.0 root (W52F moves them).
-  W60 and W61 fixed the Markdown links: the strict validator's Markdown phase passes, with
-  32 links in sealed files excused by correction files. R32-03 is done (W61), and the
-  `PORTING_MATRIX` has an interim refresh. The ledger closure and the release evidence remain.
+- **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
+  (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
+  R32-03 tests (W61), and the v1.8 import root (W52F). The strict validator passes locally at
+  `70d056a2` (45 passed, 0 failed); the next hosted governance run confirms it. The ledger
+  closure, the final `PORTING_MATRIX` and the release evidence remain.
 - **Owner decisions.** Ten are pending; QUEUE.md lists them with what each one blocks.
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-037) stay open.
 
