@@ -1,0 +1,9 @@
+# Exemptions for RegisteredContentResourcesTest (W62 slice S4, ADR-061 section 5.2).
+# One entry per line: <check> <registry ID> <reason>. Checks: blockstate, loot_table, item_model, item_name.
+# An item whose block or item overrides getDescriptionId names its key instead:
+# item_name_key <item ID> <translation key> <reason>.
+# The test fails on an entry that exempts nothing, so remove an entry once its resource exists.
+loot_table advancedrocketrycommunity:rocket_fuel A fluid block with noLootTable() (ClassicFluids.liquid); like vanilla lava it drops nothing, and the bucket is the item.
+loot_table advancedrocketrycommunity:enriched_lava A fluid block with noLootTable() (ClassicFluids.liquid); like vanilla lava it drops nothing, and the bucket is the item.
+loot_table advancedrocketrycommunity:force_field The projector's barrier, with noLootTable() and no item (ModBlocks.FORCE_FIELD); it must never drop.
+item_name_key advancedrocketrycommunity:endgame_casing block.advancedrocketrycommunity.advanced_machine_casing AdvancedMachineCasingBlock.DESCRIPTION_ID; MotorGameTests checks that the block and item use it.
