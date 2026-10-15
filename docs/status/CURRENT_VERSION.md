@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: f13536ae (the W74 merge)
-latest_hosted_regression: run 38763792101 at 37babcd5 (the W77 merge), passed
+latest_hosted_regression: run 38773155224 at 3cd6ba01 (after the W74 merge), passed
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
