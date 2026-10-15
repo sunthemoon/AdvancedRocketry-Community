@@ -6,6 +6,15 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_rocket_settlement_completion as native
+from inspect_escrow_receipt import FIELDS, decode_receipt
+
+
+def wire(**fields):
+    digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+    def key(name):
+        index = FIELDS.index(name)
+        return "f" + (digits[index] if index < 36 else digits[index // 36] + digits[index % 36])
+    return {key(name): value for name, value in fields.items()}
 
 
 class SettlementCompletionOracleTest(unittest.TestCase):
@@ -21,9 +30,12 @@ class SettlementCompletionOracleTest(unittest.TestCase):
 
     def setUp(self):
         endpoint = dict(kind="ENTITY", identity=[1, 2, 3, 4])
-        self.root = dict(ledger_id=[10, 11, 12, 13], records=[], floors=[], tombstones=[
-            dict(schema_version=3, released=1, actor=native.ACTOR, actor_name="Server", decision_digest="a" * 64,
-                 accounting_status="UNKNOWN", release_generation=1, survivors=[dict(endpoint=endpoint)])])
+        receipt_wire = wire(schema_version=3, released=1, actor=native.ACTOR, actor_name="Server",
+                            decision_digest=[0xaa] * 32, accounting_status="UNKNOWN", release_generation=1,
+                            before_choice=[wire(endpoint=wire(**endpoint), missing=0, bound=1, quantity=1000,
+                                                signature_kind="FUEL_VECTOR_V1", invariant_digest=[0xbb] * 32,
+                                                state=wire(epoch=1, signature=[0xcc] * 32))])
+        self.root = dict(ledger_id=[10, 11, 12, 13], records=[], floors=[], tombstones=[decode_receipt(receipt_wire)])
         self.wrapper = dict(schema_version=3, flight_data=dict(fuel=dict(amount=1000)),
                             resource_escrow=dict(resource_epoch=1, ledger_id=self.root["ledger_id"], markers=[]))
         self.rocket = dict(UUID=endpoint["identity"], Pos=[64.5, 100., 64.5], RocketEntityData=self.wrapper)
@@ -78,6 +90,8 @@ class SettlementCompletionOracleTest(unittest.TestCase):
             self.assertIn(f"SR_{choice}__VETO", native.CASES)
         self.assertIn("SR_FLOOR__O3J_BEFORE", native.CASES)
         self.assertIn("SR_FLOOR__O3J_AFTER", native.CASES)
+        self.assertIn("SR_NORMALIZE__O_BIND_BEFORE", native.CASES)
+        self.assertIn("SR_NORMALIZE__O_BIND_AFTER", native.CASES)
         self.assertEqual(len(native.CASES), len(set(native.CASES)))
 
 
