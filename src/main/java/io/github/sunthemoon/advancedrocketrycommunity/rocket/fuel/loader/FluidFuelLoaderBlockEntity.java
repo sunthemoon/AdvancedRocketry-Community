@@ -294,34 +294,37 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     }
 
     /**
-     * The offered Fluid as a tank of its own when it may enter {@code tank} at all, whatever the room: a registered
+     * One mB of the offered Fluid when it may enter {@code tank} at all, whatever the amount and the room: a registered
      * Fluid within the tank envelope, the same Fluid and native tag as any contents, and (Root's W82 decision) a
-     * native envelope that an escrow operation could carry. Null when intake refuses it.
+     * native envelope that an escrow operation could carry. The envelope's size does not depend on the amount, so an
+     * offer larger than the tank is judged by its identity alone. Null when intake refuses it.
      */
     @Nullable
     private static LoaderTank intake(LoaderTank tank, FluidStack offered) {
         if (offered == null || offered.isEmpty()) {
             return null;
         }
-        LoaderTank incoming;
+        LoaderTank unit;
         try {
-            incoming = LoaderTank.of(offered.copy());
+            FluidStack one = offered.copy();
+            one.setAmount(1);
+            unit = LoaderTank.of(one);
         } catch (IllegalArgumentException refused) {
             return null;
         }
-        if (!incoming.escrowCarriable()
-                || !tank.isEmpty() && (!tank.fluid().equals(incoming.fluid()) || !Objects.equals(tank.tag(), incoming.tag()))) {
+        if (!unit.escrowCarriable()
+                || !tank.isEmpty() && (!tank.fluid().equals(unit.fluid()) || !Objects.equals(tank.tag(), unit.tag()))) {
             return null;
         }
-        return incoming;
+        return unit;
     }
 
     /** The tank after accepting as much of {@code offered} as fits, or null when nothing is accepted. */
     @Nullable
     private static LoaderTank accepting(LoaderTank tank, FluidStack offered) {
-        LoaderTank incoming = intake(tank, offered);
-        int accepted = incoming == null ? 0 : Math.min(incoming.amount(), tank.room());
-        return accepted <= 0 ? null : incoming.withAmount(tank.amount() + accepted);
+        LoaderTank unit = intake(tank, offered);
+        int accepted = unit == null ? 0 : Math.min(offered.getAmount(), tank.room());
+        return accepted <= 0 ? null : unit.withAmount(tank.amount() + accepted);
     }
 
     int fill(FluidStack offered, IFluidHandler.FluidAction action) {
