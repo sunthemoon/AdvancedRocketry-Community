@@ -113,10 +113,17 @@ def compare_inventories(old: dict, new: dict, *, upgraded=True) -> list[str]:
         require(old_root["status"] == "loaded", "Historical root was refused")
         expected = migrate_expected(name, old_root["data"]) if upgraded else old_root["data"]
         errors.extend(compare_root(name, expected, new_root["data"]))
-    # New receipts are allowed only in their empty, non-electing form. Escrow must stay absent.
+    # New stores are allowed only in their documented empty forms. Escrow must stay absent.
     for name in new["roots"].keys() - old["roots"].keys():
         root = new["roots"][name]
-        if name != "classic_progression" or root["status"] != "loaded":
+        if name == "station_notices" and root["status"] == "loaded":
+            # ADR-065 section 5.3 / W22: startup creates revision-zero summaries for live stations.
+            stations = old["roots"].get("stations", {}).get("data", {}).get("stations", [])
+            expected = {"schema_version": 1, "stations": [
+                {"id": station["station_id"], "rev": 0, "acks": []} for station in stations]}
+            if root["data"] != expected:
+                errors.append("new station notice root differs from empty summaries of the retained stations")
+        elif name != "classic_progression" or root["status"] != "loaded":
             errors.append(f"unexpected new root {name}")
         else:
             data = root["data"]
@@ -212,13 +219,23 @@ def run(args, report: dict):
             report["source_world_unchanged"] = fixture.file_inventory(old_server / "world") == original_files
             raise
         observed = fixture.capture(new_server / "world", plan, evidence / name)
+        receipt["migration_log"] = check_log((evidence / f"{name}.log").read_text(encoding="utf-8"), first=cycle == 0)
+        backups = sorted((new_server / "world" / (fixture.NS + "-backups")).iterdir())
+        require(len(backups) == 1 and backups[0].is_dir(), "Missing/repeated migration backup")
+        for root_name in original["roots"]:
+            filename = fixture.NS + "_" + root_name + ".dat"
+            require((backups[0] / filename).read_bytes() == (old_server / "world/data" / filename).read_bytes(),
+                    "Migration backup changed original " + root_name)
+        if cycle == 0:
+            shutil.copytree(backups[0], evidence / "migration-backup")
+        report["source_world_unchanged"] = fixture.file_inventory(old_server / "world") == original_files
+        require(report["source_world_unchanged"], "Historical world changed during upgrade")
         receipt["comparison_errors"] = compare_inventories(original, observed)
         if previous is not None:
             receipt["comparison_errors"].extend(compare_inventories(previous, observed, upgraded=False))
         report["phases"].append(receipt)
         write(evidence / "summary.json", report)
         require(not receipt["comparison_errors"], "Upgrade changed content: " + "; ".join(receipt["comparison_errors"][:8]))
-        receipt["migration_log"] = check_log((evidence / f"{name}.log").read_text(encoding="utf-8"), first=cycle == 0)
         previous = observed
     require(fixture.file_inventory(old_server / "world") == original_files, "Historical source world changed")
     for artifact in (old, current):

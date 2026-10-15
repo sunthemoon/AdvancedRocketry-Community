@@ -90,6 +90,20 @@ class InventoryTests(unittest.TestCase):
         self.new["roots"]["classic_progression"]["data"]["first_moon_landing"]["occurred"] = 1
         self.assertTrue(upgrade.compare_inventories(self.old, self.new))
 
+    def test_notices_are_only_empty_summaries_for_retained_stations(self):
+        self.old["roots"]["stations"] = {"status": "loaded", "data": {"schema_version": 4,
+            "format_epoch": "v1.5.0-station-warp", "stations": [{"station_id": [1, 2, 3, 4],
+            "schema_version": 2, "environment": {"solar_angle_milli_degrees": 0}}]}}
+        self.new["roots"]["stations"] = {"status": "loaded", "data":
+            upgrade.migrate_expected("stations", self.old["roots"]["stations"]["data"])}
+        self.new["roots"]["station_notices"] = {"status": "loaded", "data": {"schema_version": 1,
+            "stations": [{"id": [1, 2, 3, 4], "rev": 0, "acks": []}]}}
+        self.assertEqual([], upgrade.compare_inventories(self.old, self.new))
+        for field, value in (("rev", 1), ("id", [2, 3, 4, 5]), ("acks", [{"id": [5, 6, 7, 8], "rev": 0}])):
+            bad = copy.deepcopy(self.new)
+            bad["roots"]["station_notices"]["data"]["stations"][0][field] = value
+            self.assertTrue(upgrade.compare_inventories(self.old, bad))
+
 
 class MigrationTests(unittest.TestCase):
     def test_exact_station_migration_preserves_old_fields(self):
