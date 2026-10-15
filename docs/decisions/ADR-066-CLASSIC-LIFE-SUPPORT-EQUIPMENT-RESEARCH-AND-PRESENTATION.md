@@ -531,7 +531,8 @@ by W44K). D3 itself is unchanged.
   migration backups are not enough. No receipt-only revocation is supported.
 
 The scope, durations, logs and recovery are R-037. Native evidence: the A1 batch, the V rows and the
-Moon H rows delivered so far; the remaining H rows are W44L, and the real-client rows are for the
+Moon H rows of W44I to W44K, and W44L's remaining 31 H rows (each with at least two restarts) and the
+pre-W44 jar's refusal of the four migrated roots (merge `8e123530`). The real-client rows are for the
 final campaign. This is a development implementation note, not owner acceptance or a Gate result.
 
 ## 4. Gas charging and finite player resources

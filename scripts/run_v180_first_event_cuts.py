@@ -71,6 +71,7 @@ def check_migrated(case: str, before: dict, after: dict) -> None:
 
 
 def run(args) -> dict:
+    contracts = getattr(args, "case_contracts", CASES)
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     intended = NATIVE_TEMP.resolve()
     if session.parent != intended or session.exists() or smoke.is_link_or_junction(session):
@@ -98,8 +99,8 @@ def run(args) -> dict:
         shutil.copy2(args.jar, session / "mods" / args.jar.name)
         port = smoke.allocate_port()
         smoke.write_server_configuration(session, port, True)
-        for case in args.case or list(CASES):
-            root_file, outcome, *_ = CASES[case]
+        for case in args.case or list(contracts):
+            root_file, outcome, *_ = contracts[case]
             source = fixtures / case / root_file
             if not source.is_file():
                 raise smoke.SmokeError(f"{case}: missing fixture {source}")
@@ -107,6 +108,9 @@ def run(args) -> dict:
             (world / "data").mkdir(parents=True)
             target = world / "data" / root_file
             shutil.copy2(source, target)
+            retained = evidence / "fixtures" / case
+            retained.mkdir(parents=True)
+            shutil.copy2(source, retained / root_file)
             original = smoke.digest_file(target)
             # A refused root is compared by its hash only; FW10c's near-4-MiB root exceeds the inspector's array bound.
             before = read_root(target) if outcome == "MIGRATE" else None

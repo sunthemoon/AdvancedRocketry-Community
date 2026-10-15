@@ -315,6 +315,16 @@ public final class RocketManager implements RocketOperationService {
         return disassembleForReleaseTest(rocket, -1L);
     }
 
+    /** Gated bridge to the existing landed-reservation operation, with its normal checked acknowledgement. */
+    public boolean releaseLandedReservationForFirstEventTest(RocketEntity rocket) {
+        io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints
+                .requireEnabled(((net.minecraft.server.level.ServerLevel) rocket.level()).getServer());
+        if (io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventCutSeams
+                .configured().orElseThrow() != io.github.sunthemoon.advancedrocketrycommunity.progression.classic
+                .firstevent.FirstEventCutSeams.Cut.FM12A) { throw new IllegalStateException("FM12a is not armed"); }
+        return flights.releaseLandedReservation(rocket);
+    }
+
     public RocketValidationCode disassembleForReleaseTest(RocketEntity rocket, long expectedDiscardFuel) {
         flightLifecycle.requireReleaseTestHooks();
         return disassembly.disassembleForReleaseTest(rocket, expectedDiscardFuel);
