@@ -2,6 +2,7 @@
 """The eleven remaining paired-authority H rows, from complete native worlds; cut, two restarts and bounded recovery."""
 from __future__ import annotations
 import argparse
+import copy
 import json
 from pathlib import Path
 import re
@@ -33,6 +34,14 @@ def roots(world):
         path = data / name
         result[name] = moon.read_root(path, max_tags=1_048_576 if name == station.STATIONS else 4096) if path.exists() else None
     return result
+
+
+def same_authority(actual, expected):
+    """The live root clock may advance; every other field, including event orbital ticks, stays exact."""
+    actual, expected = copy.deepcopy(actual), copy.deepcopy(expected)
+    now = actual[station.STATIONS]["orbital_clock"].pop("logical_tick")
+    before = expected[station.STATIONS]["orbital_clock"].pop("logical_tick")
+    return now >= before and actual == expected
 
 
 def save(process):
@@ -70,12 +79,14 @@ def check(case, world, expected, recovered=False):
     actual = roots(world)
     journal, registry, progression = actual[moon.JOURNAL], actual[station.STATIONS], actual[moon.PROGRESSION]
     old_journal, old_registry, old_progression = expected[moon.JOURNAL], expected[station.STATIONS], expected[moon.PROGRESSION]
+    if registry["orbital_clock"]["logical_tick"] < old_registry["orbital_clock"]["logical_tick"]:
+        raise smoke.SmokeError(f"{case}: the root orbital clock moved backwards")
     if case in FAULTS and not recovered:
-        if actual != expected: raise smoke.SmokeError(f"{case}: an unavailable-world root changed")
+        if not same_authority(actual, expected): raise smoke.SmokeError(f"{case}: an unavailable-world authority changed")
         if case in ("FP7a", "FP7b", "FP9") and (world / "data" / (moon.PROGRESSION + ".arce-pending")).exists():
             raise smoke.SmokeError(f"{case}: unavailable progression staged a receipt")
     elif case in ("FP2", "FP3"):
-        if actual != expected: raise smoke.SmokeError(f"{case}: held immutable roots changed")
+        if not same_authority(actual, expected): raise smoke.SmokeError(f"{case}: held immutable authority changed")
     elif case == "FP4":
         if journal != old_journal or progression != old_progression or registry[station.OUTBOX] != old_registry[station.OUTBOX]:
             raise smoke.SmokeError("FP4: the rollback hold replaced an event/receipt")
@@ -251,6 +262,13 @@ def run(args):
                     raise smoke.SmokeError("FP11: the gated normal operations were not refused")
                 if case == "FP8" and start == 0 and not any("frozen mutation_refused=true credited=0 altitude=UNAVAILABLE" in line for line in process.lines):
                     raise smoke.SmokeError("FP8: the committed override gates were not exercised")
+                if cut and case in HOLDS:
+                    found = []
+                    for pattern in (moon.STATUS, station.STATUS):
+                        matches = [pattern.search(line) for line in process.lines if pattern.search(line)]
+                        if not matches: raise smoke.SmokeError(f"{case}: missing actual cut status")
+                        found.append(matches[-1].group(4))
+                    if tuple(found) != HOLDS[case]: raise smoke.SmokeError(f"{case}: wrong cut holds: {found}")
                 if case in FAULTS and cut and smoke.digest_file(world / "data" / FAULTS[case]) != original_fault_bytes:
                     raise smoke.SmokeError(f"{case}: runtime load fault changed raw bytes")
                 entry["disk"] = check(case, world, expected, recovered=cut is None and case in FAULTS or case == "FP8" and start > 0)
@@ -266,7 +284,8 @@ def run(args):
                 if case == "FP8" and now[station.STATIONS][station.OUTBOX]["event"] != initial_cut[station.STATIONS][station.OUTBOX]["event"]:
                     raise smoke.SmokeError("FP8: restart changed the committed override's event")
                 if cut is None and case in FAULTS or case == "FP8" and start > 0:
-                    if first_recovery is not None and now != first_recovery: raise smoke.SmokeError(f"{case}: the idempotent recovery changed authority")
+                    if first_recovery is not None and not same_authority(now, first_recovery):
+                        raise smoke.SmokeError(f"{case}: the idempotent recovery changed authority")
                     first_recovery = now
                 if sum(moon.ELECTED in line for line in process.lines) != (1 if case == "FP7a" and start == 3 else 0):
                     raise smoke.SmokeError(f"{case}: unexpected new Moon election")

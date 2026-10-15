@@ -27,6 +27,21 @@ class PairedOracleTest(unittest.TestCase):
         with patch.object(cuts, "roots", return_value=actual):
             with self.assertRaises(cuts.smoke.SmokeError): cuts.check("FP10", Path("world"), expected)
 
+    def test_root_time_can_advance_but_event_time_or_authority_cannot_change(self):
+        expected = self.roots(); actual = copy.deepcopy(expected)
+        actual[cuts.station.STATIONS]["orbital_clock"]["logical_tick"] += 1
+        self.assertTrue(cuts.same_authority(actual, expected))
+        actual[cuts.station.STATIONS][cuts.station.OUTBOX]["event"]["orbital_tick"] = 2
+        self.assertFalse(cuts.same_authority(actual, expected))
+
+    def test_root_time_cannot_roll_back_and_other_clock_fields_remain_exact(self):
+        expected = self.roots(); actual = copy.deepcopy(expected)
+        actual[cuts.station.STATIONS]["orbital_clock"]["logical_tick"] = 0
+        self.assertFalse(cuts.same_authority(actual, expected))
+        actual = copy.deepcopy(expected)
+        actual[cuts.station.STATIONS]["orbital_clock"]["schema_version"] = 2
+        self.assertFalse(cuts.same_authority(actual, expected))
+
     def test_celestial_reader_default_budget_stays_unchanged_and_large_fixture_budget_is_bounded(self):
         payload = b"\x0a\0\0\0"
         self.assertEqual({}, NbtReader(payload).read_root())

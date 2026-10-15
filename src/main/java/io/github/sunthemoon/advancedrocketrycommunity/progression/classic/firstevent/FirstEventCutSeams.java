@@ -131,6 +131,7 @@ public final class FirstEventCutSeams {
         LATCH_USED.set(false);
         observedHolds.clear();
         moonWaitObserved = false;
+        FirstEventAvailabilityCut.reset();
         if (latch != null) { latch.release(); }
         latch = null;
         configured().ifPresent(cut -> {
@@ -187,6 +188,7 @@ public final class FirstEventCutSeams {
 
     /** Advances only the test latch's hard limit; no-op in production. */
     static void fixtureTick(MinecraftServer server) {
+        FirstEventAvailabilityCut.tick(server);
         if (latch != null) {
             active(server).orElseThrow();
             latch.tick(server.getTickCount());
@@ -203,7 +205,12 @@ public final class FirstEventCutSeams {
         if (!is(server, Cut.FP7A)) { return; }
         moonWaitObserved = true;
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture completion_wait");
-        if (observedHolds.size() == FirstEventKind.values().length) { halt(Cut.FP7A, FIRST_STEP, null); }
+        if (observedHolds.size() == FirstEventKind.values().length
+                && io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
+                        .get(server).acknowledgedCurrent()) {
+            FirstEventAvailabilityCut.status(server);
+            halt(Cut.FP7A, FIRST_STEP, null);
+        }
     }
 
     /** Warp visitor count seam: the real saturating count in production; 4,097 for FW8b. */
@@ -252,21 +259,18 @@ public final class FirstEventCutSeams {
         }
         Cut cut = configured.orElseThrow();
         EscrowTestEndpoints.requireEnabled(server);
+        if (cut == Cut.FP3 || cut == Cut.FP4 || cut == Cut.FP10 || cut == Cut.FP11) {
+            FirstEventAvailabilityCut.arm(server, cut);
+            return;
+        }
         if (cut == Cut.FP2 || cut == Cut.FP7A || cut == Cut.FP7B || cut == Cut.FP9) {
             observedHolds.add(kind);
             if (observedHolds.size() != FirstEventKind.values().length || cut == Cut.FP7A && !moonWaitObserved) { return; }
         }
-        if (cut == Cut.FP4) {
-            var station = UUID.fromString(System.getProperty(STATION_PROPERTY, ""));
-            io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures.warp(server, station);
-        }
-        if (cut == Cut.FP11) {
-            io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures.unreadable(server,
-                    UUID.fromString(System.getProperty(STATION_PROPERTY, "")));
-        }
         if (cut == Cut.FP8) {
             io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures.probeFrozen(server);
         }
+        if (cut.name().startsWith("FP")) { FirstEventAvailabilityCut.status(server); }
         if (cut.saveBeforeHalt()) {
             server.saveEverything(false, true, true);
         }
