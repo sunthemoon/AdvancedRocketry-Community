@@ -17,6 +17,7 @@ from scripts.validate_repository import (
     GRADLE_WRAPPER_PATH,
     ROOT,
     Results,
+    TrackedTargets,
     check_markdown_links,
     check_optional_v002_client_evidence,
     check_package_checksums,
@@ -728,6 +729,67 @@ class MarkdownLinkInventoryTests(unittest.TestCase):
             self.assertEqual(["docs/tracked.md:1 -> missing.md"], errors)
             self.assertEqual(1, checked)
 
+    def test_link_to_an_untracked_or_ignored_file_fails_even_when_it_is_on_disk(self) -> None:
+        """W72: a dirty checkout must not pass a link that a clean clone and CI cannot."""
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize_repository(root)
+            (root / ".gitignore").write_text("*.zip\n", encoding="utf-8")
+            (root / "evidence").mkdir()
+            (root / "evidence/untracked.txt").write_text("local\n", encoding="utf-8")
+            (root / "evidence/archive.zip").write_bytes(b"PK")
+            (root / "README.md").write_text(
+                "[untracked](evidence/untracked.txt)\n"
+                "[ignored](evidence/archive.zip)\n"
+                "A code span is not a link: `evidence/archive.zip`.\n",
+                encoding="utf-8",
+            )
+            self.add(root, ".gitignore", "README.md")
+
+            errors, checked = markdown_link_errors(root, tracked_markdown_files(root))
+
+            self.assertEqual(
+                ["README.md:1 -> evidence/untracked.txt", "README.md:2 -> evidence/archive.zip"],
+                errors,
+            )
+            self.assertEqual(2, checked)
+
+    def test_link_to_a_tracked_file_or_directory_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize_repository(root)
+            (root / "docs/work").mkdir(parents=True)
+            (root / "docs/work/record.md").write_text(
+                "[target](../target.txt)\n"
+                "[directory](../work/)\n"
+                "[root](../../)\n"
+                "[self](./record.md#top)\n",
+                encoding="utf-8",
+            )
+            (root / "docs/target.txt").write_text("tracked\n", encoding="utf-8")
+            self.add(root, "docs/work/record.md", "docs/target.txt")
+            # The index, not the disk, decides: a staged target that is deleted locally still resolves.
+            (root / "docs/target.txt").unlink()
+
+            errors, checked = markdown_link_errors(root, tracked_markdown_files(root))
+
+            self.assertEqual([], errors)
+            self.assertEqual(4, checked)
+
+    def test_link_target_case_and_escape_follow_the_index(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.initialize_repository(root)
+            (root / "target.md").write_text(
+                "[wrong case](TARGET.md)\n[outside](../target.md)\n", encoding="utf-8"
+            )
+            self.add(root, "target.md")
+
+            errors, checked = markdown_link_errors(root, tracked_markdown_files(root))
+
+            self.assertEqual(["target.md:1 -> TARGET.md", "target.md:2 -> ../target.md"], errors)
+            self.assertEqual(2, checked)
+
     def test_pathspec_environment_cannot_disable_markdown_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -763,15 +825,17 @@ class MarkdownLinkInventoryTests(unittest.TestCase):
             root = Path(temporary)
             path = root / "links.md"
             path.write_text("[x](missing)\n" * 10, encoding="utf-8")
+            # This directory is not a Git repository, so the test supplies the empty index.
+            nothing = TrackedTargets.of([])
 
             with patch("scripts.validate_repository.MAX_MARKDOWN_LINKS", 3):
-                link_errors, checked = markdown_link_errors(root, [path])
+                link_errors, checked = markdown_link_errors(root, [path], nothing)
             self.assertEqual(3, checked)
             self.assertEqual(4, len(link_errors))
             self.assertIn("link-count limit", link_errors[-1])
 
             with patch("scripts.validate_repository.MAX_MARKDOWN_ERRORS", 2):
-                bounded_errors, checked = markdown_link_errors(root, [path])
+                bounded_errors, checked = markdown_link_errors(root, [path], nothing)
             self.assertEqual(3, checked)
             self.assertEqual(3, len(bounded_errors))
             self.assertIn("stopped after 2 errors", bounded_errors[-1])
@@ -781,14 +845,15 @@ class MarkdownLinkInventoryTests(unittest.TestCase):
             root = Path(temporary)
             path = root / "prose.md"
             path.write_text("a\nb\nc\n", encoding="utf-8")
+            nothing = TrackedTargets.of([])
 
             with patch("scripts.validate_repository.MAX_MARKDOWN_TOTAL_BYTES", 4):
-                byte_errors, checked = markdown_link_errors(root, [path])
+                byte_errors, checked = markdown_link_errors(root, [path], nothing)
             self.assertEqual(0, checked)
             self.assertIn("aggregate byte limit", byte_errors[0])
 
             with patch("scripts.validate_repository.MAX_MARKDOWN_LINES_PER_FILE", 2):
-                line_errors, checked = markdown_link_errors(root, [path])
+                line_errors, checked = markdown_link_errors(root, [path], nothing)
             self.assertEqual(0, checked)
             self.assertIn("line-count limit", line_errors[0])
 
@@ -1121,8 +1186,8 @@ class MarkdownCorrectionFileTests(unittest.TestCase):
         export = self.export_head()
         reports = []
 
-        def recording_report(repository_root, paths):
-            reports.append(markdown_link_report(repository_root, paths))
+        def recording_report(repository_root, paths, tracked=None):
+            reports.append(markdown_link_report(repository_root, paths, tracked))
             return reports[-1]
 
         results = Results()

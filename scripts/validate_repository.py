@@ -837,8 +837,8 @@ def _git_inventory_command(
     return command
 
 
-def tracked_markdown_files(repository_root: Path = ROOT) -> list[Path]:
-    """Return the bounded, Git-indexed Markdown inventory for validation."""
+def tracked_files(repository_root: Path = ROOT) -> list[str]:
+    """Return the bounded Git index inventory as repository-relative POSIX names."""
 
     repository_root = repository_root.resolve()
     command = [
@@ -857,7 +857,7 @@ def tracked_markdown_files(repository_root: Path = ROOT) -> list[Path]:
     if len(raw_names) > MAX_REPOSITORY_FILES:
         raise ValueError("tracked file inventory exceeds the file-count limit")
 
-    paths: list[Path] = []
+    names: list[str] = []
     for raw_name in raw_names:
         if len(raw_name) > MAX_TRACKED_MARKDOWN_PATH_BYTES:
             raise ValueError("tracked Markdown inventory contains an oversized path")
@@ -874,12 +874,62 @@ def tracked_markdown_files(repository_root: Path = ROOT) -> list[Path]:
             or any(part in {"", ".", ".."} for part in relative.parts)
         ):
             raise ValueError(f"tracked Markdown inventory contains an unsafe path: {name}")
-        path = repository_root.joinpath(*relative.parts)
-        if path.suffix.lower() == ".md":
-            paths.append(path)
+        names.append(name)
+    return names
+
+
+def _tracked_markdown_paths(repository_root: Path, names: list[str]) -> list[Path]:
+    paths = [
+        repository_root.joinpath(*PurePosixPath(name).parts)
+        for name in names
+        if PurePosixPath(name).suffix.lower() == ".md"
+    ]
     if len(paths) > MAX_TRACKED_MARKDOWN_FILES:
         raise ValueError("tracked Markdown inventory exceeds the file-count limit")
     return paths
+
+
+def tracked_markdown_files(repository_root: Path = ROOT) -> list[Path]:
+    """Return the bounded, Git-indexed Markdown inventory for validation."""
+
+    repository_root = repository_root.resolve()
+    return _tracked_markdown_paths(repository_root, tracked_files(repository_root))
+
+
+@dataclass(frozen=True)
+class TrackedTargets:
+    """The files Git tracks and their directories: the only valid link targets (W72).
+
+    A link to an untracked or ignored file therefore fails in a dirty checkout
+    exactly as it does in a clean clone and on hosted CI.
+    """
+
+    files: frozenset[str]
+    directories: frozenset[str]
+
+    @classmethod
+    def of(cls, names: list[str]) -> "TrackedTargets":
+        directories: set[str] = set()
+        for name in names:
+            parent = PurePosixPath(name).parent
+            while parent.parts and parent.as_posix() not in directories:
+                directories.add(parent.as_posix())
+                parent = parent.parent
+        return cls(frozenset(names), frozenset(directories))
+
+    def holds(self, source: PurePosixPath, target: str) -> bool:
+        """Whether a relative link in tracked file ``source`` names a tracked file or directory."""
+
+        parts = list(source.parent.parts)
+        for part in PurePosixPath(target).parts:
+            if part == "..":
+                if not parts:
+                    return False  # The target leaves the repository.
+                parts.pop()
+            elif part != ".":
+                parts.append(part)
+        name = "/".join(parts)
+        return not name or name in self.files or name in self.directories
 
 
 @dataclass(frozen=True)
@@ -892,7 +942,7 @@ class MarkdownLinkReport:
 
 
 def _scan_markdown_links(
-    repository_root: Path, paths: list[Path]
+    repository_root: Path, paths: list[Path], tracked: TrackedTargets
 ) -> tuple[list[tuple[str, tuple[str, int] | None]], int, set[str]]:
     """Return raw errors, the link count and the files scanned to the end.
 
@@ -995,11 +1045,8 @@ def _scan_markdown_links(
                     ):
                         return broken, checked, completed
                     continue
-                try:
-                    candidate = (resolved.parent / target).resolve()
-                    valid = candidate.is_relative_to(repository_root) and candidate.exists()
-                except (OSError, RuntimeError, ValueError):
-                    valid = False
+                # W72: the Git index, not the disk, decides whether a target exists.
+                valid = tracked.holds(PurePosixPath(relative.as_posix()), target)
                 if not valid and not add_error(
                     f"{relative.as_posix()}:{line_number} -> {target}",
                     (relative.as_posix(), line_number),
@@ -1199,11 +1246,19 @@ def _markdown_corrections(
     return excused, diagnostics
 
 
-def markdown_link_report(repository_root: Path, paths: list[Path]) -> MarkdownLinkReport:
-    """Check tracked Markdown links, excusing those that committed correction files name."""
+def markdown_link_report(
+    repository_root: Path, paths: list[Path], tracked: TrackedTargets | None = None
+) -> MarkdownLinkReport:
+    """Check tracked Markdown links, excusing those that committed correction files name.
+
+    A link resolves only to a file or directory in ``tracked``, which defaults to
+    the repository's Git index inventory.
+    """
 
     repository_root = repository_root.resolve()
-    raw, checked, completed = _scan_markdown_links(repository_root, paths)
+    if tracked is None:
+        tracked = TrackedTargets.of(tracked_files(repository_root))
+    raw, checked, completed = _scan_markdown_links(repository_root, paths, tracked)
     broken_lines: dict[str, set[int]] = {}
     for _, link in raw:
         if link is not None:
@@ -1229,19 +1284,20 @@ def markdown_link_report(repository_root: Path, paths: list[Path]) -> MarkdownLi
 
 
 def markdown_link_errors(
-    repository_root: Path, paths: list[Path]
+    repository_root: Path, paths: list[Path], tracked: TrackedTargets | None = None
 ) -> tuple[list[str], int]:
-    report = markdown_link_report(repository_root, paths)
+    report = markdown_link_report(repository_root, paths, tracked)
     return report.errors, report.checked
 
 
 def check_markdown_links(results: Results) -> None:
     try:
-        paths = tracked_markdown_files(ROOT)
+        names = tracked_files(ROOT)
+        paths = _tracked_markdown_paths(ROOT.resolve(), names)
     except ValueError as exc:
         results.fail(f"Cannot enumerate authoritative Markdown files: {exc}")
         return
-    report = markdown_link_report(ROOT, paths)
+    report = markdown_link_report(ROOT, paths, TrackedTargets.of(names))
     if report.errors:
         results.fail("Broken Markdown links: " + "; ".join(report.errors))
     else:
