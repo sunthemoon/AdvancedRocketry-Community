@@ -4,9 +4,9 @@ Date: 2026-10-06. Integrator: Root. The owner's conversation authorization is:
 "授权无未解决 Critical/High/Medium 的审核定稿继续实现；重大语义调整仍另行确认".
 This adopts a GameTest diagnostic only, not production transfer semantics.
 
-Root reads the full original [independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-observation-contract-review-20261006-902ec7/REVIEW-01.md),
+Root reads the full original independent review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-observation-contract-review-20261006-902ec7/REVIEW-01.md`),
 SHA-256 `3954c7e522b618eb8d62d29cd5471430477c27e1fb3fc52ccc02d87cd32959dd`,
-and the [successor review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-observation-task-review02-20261006-4fb835/REVIEW-02.md),
+and the successor review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-observation-task-review02-20261006-4fb835/REVIEW-02.md`),
 SHA-256 `6784c030a877e4dc79db111a6cc015e34c72c99fde24adb5081cf51294b2f870`.
 The original Low singular-other-test wording is resolved only in the successor;
 the sealed original brief/reports remain unchanged. The successor review has

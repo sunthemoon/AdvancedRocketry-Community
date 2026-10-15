@@ -7,7 +7,7 @@ targets in REVIEW-01/02. Only those link targets were converted to portable
 repository-relative targets. Dated observations,source line references,review
 verdicts and all original evidence remain unchanged.
 
-[Raw originals,portable postimages,patches and both checker results](review-link-rehosting-01.zip)
+Raw originals,portable postimages,patches and both checker results (`review-link-rehosting-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md))
 are frozen:SHA256 `9cb247c8afa61e947fc7380fd3de1b2cb540b85f792a16b9e58a5912ac349b31`,
 94,417 bytes/16 entries;manifest
 `e29bd94ae92f9c01a9ee8c73dc4143123a8e860ecf616eca2dc124fda40ef71a`.

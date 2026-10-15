@@ -27,7 +27,7 @@ no-unresolved-C/H/M implementation authority does not waive these requirements.
 
 ## Verified legacy inputs for the successor
 
-[Root retrieval](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-legacy-recipe-inputs-root-20261008-01/)
+Root retrieval (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-legacy-recipe-inputs-root-20261008-01/`)
 contains the exact 11 requested component recipes, four machine recipes and
 five adjacent plate/circuit/wafer recipes. PROVENANCE-01.json was written before
 copies; SHA-256 `378b95fa8c8eb76652ca46d604a7f25497149944f071a021c68777403df2f2be`.

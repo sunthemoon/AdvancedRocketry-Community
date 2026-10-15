@@ -32,16 +32,16 @@ this record supplies the later commit association without rewriting that history
 ## Independent actual-source reviews
 
 All three initial source reviews inspect actual bytes, not author summaries:
-[central review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/CENTRAL-REVIEW-01.md),
-[worker review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/WORKER-REVIEW-01.md)
-and [GameTest review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/GAME-TEST-REVIEW-01.md).
+central review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/CENTRAL-REVIEW-01.md`),
+worker review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/WORKER-REVIEW-01.md`)
+and GameTest review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/GAME-TEST-REVIEW-01.md`).
 No scoped Critical/High/Medium is established. Two reviewers independently find
 the same Low: a forced-null getter cannot observe backing attribute changes.
 
 The narrow correction adds independent native map/instance, complete immutable
 modifier identity/count, base and serialized-map witnesses, for owned transient
 absence and presence. The
-[successor review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/GAME-TEST-REVIEW-02.md)
+successor review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-source-independent-review-20261007/GAME-TEST-REVIEW-02.md`)
 addresses that Low with no new scoped finding. Its SHA-256 is
 `8f1a7ad91c0abd08c2b87ba1c0c29cd03e881c33ef751052c693d7e773977942`.
 An exact in-memory inverse proves all unrelated tests/helpers/budgets unchanged.
@@ -74,7 +74,7 @@ is located. Neither is a Java failure or an erased successful check.
 
 No local JVM/Gradle/native run starts with C: below 10 GB. At capture, C: has
 7,467,044,864 free bytes. New evidence is under the D-local project parent.
-The [first API capture](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/OBSERVATION-01.json),
+The first API capture (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/OBSERVATION-01.json`),
 SHA-256 `10f30e7a9b9c25a64459fa9696ea2c7f2a6e571844c89d514794765a1dbd87df`,
 records **run 37578961754 /attempt 1 /job 112654063999**, exact complete source,
 at **2026-10-07T05:59:05.732123Z**. Clean build is in progress; artifact,
@@ -94,7 +94,7 @@ methods, adds exact registered-key identity, and retains exact cardinality at 73
 Its independent actual-diff review has no scoped finding. Root commits/pushes it
 at **`8b3fdca990be3880ff04aae5a2354657d499b60f`**, the successor source checkpoint;
 the original failed cohort remains failed. The
-[separate successor capture](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/SUCCESSOR-OBSERVATION-01.json),
+separate successor capture (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-root-integration-20261007/SUCCESSOR-OBSERVATION-01.json`),
 SHA-256 `771bf5bfa182150f8c1015ad33f3036856cb178d6777aadd03fb914b56bdda03`,
 at **06:13:47.247826Z** binds run **37580341390 /attempt 1 /job 112658310596**
 to this exact successor. Tooling is in progress, build/DataGen/GameTests pending;
@@ -114,7 +114,7 @@ individual native pass records.
 The earlier four-record documentation review has one Low concerning categorical
 non-execution wording. The log now says no result/count had been verified at the
 first capture, not that no hosted test had run. That original finding remains
-in its [review record](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-integration-record-review-20261007/REVIEW-01.md).
+in its review record (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-living-gravity-integration-record-review-20261007/REVIEW-01.md`).
 
 ## Cleanup and remaining work
 

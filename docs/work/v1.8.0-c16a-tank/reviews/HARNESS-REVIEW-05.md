@@ -10,9 +10,9 @@ Frozen evidence:
 
 | Revision | Archive | SHA-256 |
 |---|---|---|
-| 3 | [Evidence](harness-round-03-evidence.zip) | `351a620df73bb5fb6ab4795f01ba159a3452a0d672079fa5c5b81b252b70da6f` |
-| 4 | [Evidence](harness-round-04-evidence.zip) | `2aa8f86f0d259ce29addbbdc05c9ac6817fc085fa163d9eb39ef80503dea5ffb` |
-| 5 | [Evidence](harness-round-05-evidence.zip) | `2ca8bd9fd9677ee3bed8684e796d2ba4c523dab6ce96e6e0ce2faa1496701b39` |
+| 3 | Evidence (`harness-round-03-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) | `351a620df73bb5fb6ab4795f01ba159a3452a0d672079fa5c5b81b252b70da6f` |
+| 4 | Evidence (`harness-round-04-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) | `2aa8f86f0d259ce29addbbdc05c9ac6817fc085fa163d9eb39ef80503dea5ffb` |
+| 5 | Evidence (`harness-round-05-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) | `2ca8bd9fd9677ee3bed8684e796d2ba4c523dab6ce96e6e0ce2faa1496701b39` |
 
 All original reviewer manifests, complete root package manifests and ZIP CRC
 verify. Raw revision-5 `REVIEW-05.md` SHA-256:

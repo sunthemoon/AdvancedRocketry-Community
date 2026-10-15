@@ -20,8 +20,8 @@ Artifact 11355374064 has 1,707,355 compressed bytes and SHA-256
 `a4404c39a31714aa2eb06327e5ab6acacf0b2d60aadaeb13013abfa7495a0e82`.
 Root's bounded collector exits zero and checks its API cohort/digest and native
 archive bytes before retaining mapped logs/XML; the result remains
-RETRIEVED_NOT_VERIFIED. The [retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-47cdcb-attempt1-20261005-01/RETRIEVAL-01.json)
-and [independent actual-raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted47-result-review-20261005-90d2a7/REVIEW-01.md)
+RETRIEVED_NOT_VERIFIED. The retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-47cdcb-attempt1-20261005-01/RETRIEVAL-01.json`)
+and independent actual-raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted47-result-review-20261005-90d2a7/REVIEW-01.md`)
 bind 366 retained files /7,318,651 bytes with zero hash mismatches and independently
 derive the XML/DataGen/failed GameTest totals. Audit SHA-256:
 `abd034a4d2cf9d1aba2b3ad44f51240b12b8919bcd42de4d634a94493fc07cea`.

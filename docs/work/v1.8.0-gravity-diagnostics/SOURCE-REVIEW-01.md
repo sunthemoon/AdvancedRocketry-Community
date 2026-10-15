@@ -21,7 +21,7 @@ assertions, three GameTest annotations, nine wait oracles and three config
 mutations are byte-equivalent; delay arguments remain1,11,11,11,11,2. The five
 literal observation stages and final context clear are checked. Source SHA-256
 is `f1ad52c11c8c0d3cc01c303c4c3c2ddfc83af7810626f56cb3a7cc9263e6725d`.
-[Fresh independent check](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-native-fixture-corrections-20261006-01/gravity-independent-checks-02.json)
+Fresh independent check (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-native-fixture-corrections-20261006-01/gravity-independent-checks-02.json`)
 exits zero; scoped `git diff --check` passes.
 
 The first Root check incorrectly compares complete delayed callback bodies,

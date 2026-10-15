@@ -9,9 +9,9 @@ and accepted D2-A checked-transition/wire leaf. A new A0 task label or exclusion
 of writers does not satisfy that prerequisite. Root does not assign production
 StationOrbitalPhase or waive implementation ordering.
 
-Proposal: [PROPOSAL-01.md](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-model-next-leaf-20261005-7bf0a3/PROPOSAL-01.md),
+Proposal: PROPOSAL-01.md (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-model-next-leaf-20261005-7bf0a3/PROPOSAL-01.md`),
 SHA-256 `7d6462413c09d77bfc9fbb6c8c4f35788dfcc506c1fad07d63d1cf306287ee30`.
-Review: [REVIEW-01.md](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-phase-eligibility-review-8e6df1049a/REVIEW-01.md),
+Review: REVIEW-01.md (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-phase-eligibility-review-8e6df1049a/REVIEW-01.md`),
 SHA-256 `b838bc5df74324bf2fb4929955fc88443aa8e83283bcff52bafc53d2c50c5947`.
 Root verifies the two sealed bundles: 21 payloads and 23 checksum entries.
 Their original bytes and failed locator records remain unchanged.

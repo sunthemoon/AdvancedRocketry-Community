@@ -21,24 +21,24 @@ bay, physical hatches, full C17c and all ledger/Gate delivery remain outside.
 
 ## Reviews and actual bounded checks
 
-- [Different-agent source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-source-review-20261006-5ce291/REVIEW-01.md),
+- Different-agent source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-source-review-20261006-5ce291/REVIEW-01.md`),
   SHA-256 `04796164332141f74504f8bd614229a6d8b438b25f8915560163a6deadfb104a`,
   releases exact 18 source/task, 12 central and 20 resource postimages with no
   unresolved C/H/M/L. Original Screen finding and correction remain separate.
-- [Independent configuration replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-config-correction-review-20261006-c18-71f2c9/REVIEW-01.md)
-  executes 15/15; [independent Solar replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-unit-replay-20261006-71a8cf/REVIEW-01.md),
+- Independent configuration replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-config-correction-review-20261006-c18-71f2c9/REVIEW-01.md`)
+  executes 15/15; independent Solar replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-unit-replay-20261006-71a8cf/REVIEW-01.md`),
   SHA-256 `c98d00e6e43cc421a378af9d9c3a37a4e6a5e0f33d09cd6398ef26dca14eaf7b`,
   executes 21/21. These are cached-dependency development-postimage executions,
   not clean committed whole builds.
-- Root's fresh fixed `058cd67d` [commands](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-fixed-replay-20261006-02/COMMANDS-01.json)
-  and [result](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-fixed-replay-20261006-02/RESULT-01.json)
+- Root's fresh fixed `058cd67d` commands (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-fixed-replay-20261006-02/COMMANDS-01.json`)
+  and result (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-fixed-replay-20261006-02/RESULT-01.json`)
   report 31 explicit inputs including the harness, javac 0 /Jupiter 0,
   **36/36 /0 failed, aborted, skipped or container failures**. The 30 repository
   Java inputs, 18 source/task and 20 resource identities match fixed Git/live
   bytes; selected dependencies and cached-class aggregate are unchanged.
   RESULT SHA-256: `8778a5f31963b3dec26f5aa2a778bb85d1311c927ac24adf459a7fdf915a4337`.
   Cached dependencies do not prove clean Forge/native equivalence.
-  The [separate replay/cleanup audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-fixed-replay-review-20261006-a9821e/REVIEW-01.md),
+  The separate replay/cleanup audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-fixed-replay-review-20261006-a9821e/REVIEW-01.md`),
   SHA-256 `a9c548e6237d1e31e231cd888260d0f63da14631ce80199ba779a76abb038849`,
   independently matches fixed source/resource bytes, 36 method identities and
   retained cleanup inventories. Original cleanup/retirement precheck failures
@@ -55,7 +55,7 @@ bay, physical hatches, full C17c and all ledger/Gate delivery remain outside.
 ## Diagnostic correction and failed full regression
 
 The [literal-path correction](../v1.8.0-ci/CAPTURED-TEXT-PRESERVATION-01.md)
-is published after [independent revision-2 review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/captured-text-binary-review-20261006-c18-e4815d/REVIEW-01.md)
+is published after independent revision-2 review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/captured-text-binary-review-20261006-c18-e4815d/REVIEW-01.md`)
 and 65 finite controls. Historical raw capture/checksum bytes remain unchanged.
 Normal add initially retains the old cached blob and the Root four-path scope
 guard stops before commit. Only-path `git add --renormalize` re-indexes the
@@ -70,18 +70,18 @@ Clean build completes 1,883 JUnit /346 suites /0FES; first DataGen writes 804,
 repeat writes zero and tracked/untracked trees are clean. GameTest completes
 493, including a new Solar surface-producer publication failure within the
 original 40 ticks. No Solar pass/delivery is claimed. The
-[independent raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-hosted-058cd6-audit-20261006-63e4ab/REPORT-01.md)
+independent raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17-hosted-058cd6-audit-20261006-63e4ab/REPORT-01.md`)
 verifies retained outcomes/bytes, not source approval; cause remains pending.
 Prior RESULT-06 is not rewritten.
 
 ## Cleanup and unfinished verification
 
 After children/readers finish, Root removes 13 own output directories:
-158 files /989,700 logical bytes; [receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-cleanup-20261006-02/RESULT-01.json).
+158 files /989,700 logical bytes; receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-cleanup-20261006-02/RESULT-01.json`).
 The initial ancestor-parser precheck fails before deletion; its separate
 successor preserves containment/no-reparse/inventory/removal checks.
 Root normally retires the clean source checkout after 18 exact pins and
-published ancestry checks; [receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-worktree-retirement-20261006-02/RESULT-01.json).
+published ancestry checks; receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-solar-worktree-retirement-20261006-02/RESULT-01.json`).
 The copy contains 9,468 files /536,889,399 logical bytes of committed history,
 including historical archives, not a new evidence export. Its provisional-size
 precheck first stops without removal; the successor requires the exact observed
@@ -91,7 +91,7 @@ The peer's different original cleanup precheck leaves 27 classes /120,806
 logical bytes at that historical checkpoint. Root later authorizes correction
 of that ordinary helper error only; the owner removes its three literal output
 directories and independently postchecks unchanged original sealed payloads.
-The [new cleanup report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-unit-cleanup-correction-20261006-28bc9a/REPORT-01.md)
+The new cleanup report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-unit-cleanup-correction-20261006-28bc9a/REPORT-01.md`)
 and receipt retain the original failure, record actual exit 0 and present
 absence, and make no physical-space claim. No policy refusal is retried;
 older C/refused cleanup debt is untouched.

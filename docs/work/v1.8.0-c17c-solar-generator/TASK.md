@@ -10,13 +10,13 @@ Owner decision: [preservation scope](OWNER-DECISION-01.md), not whole R-021 acce
 
 Deliver one obtainable generator/panel under accepted ADR-065 sections 2 and 9.
 Root selects the exact single-leaf rules in the
-[original specification](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-leaf-20261006-e6d3a1/PROPOSAL-01.md)
+original specification (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-leaf-20261006-e6d3a1/PROPOSAL-01.md`)
 (20,614 bytes, SHA-256 `a02669f1a314b6fb63b4731b9d1d502a3c330362d566ecf4aca47d88fdbfb307`).
-The [original independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-leaf-contract-review-20261006-61af03/REVIEW-01.md)
+The original independent review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-leaf-contract-review-20261006-61af03/REVIEW-01.md`)
 has one Medium: exact Space exposure. The separate
-[exposure amendment](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-up-exposure-20261006-c2189b/UP-EXPOSURE-ADDENDUM-01.md)
+exposure amendment (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-up-exposure-20261006-c2189b/UP-EXPOSURE-ADDENDUM-01.md`)
 is 13,691 bytes, SHA-256 `8f983d3af119e1fd23b186e181e8a6a368bdf777c1d0f0eb15dac1c5cb14be73`.
-Its [independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-exposure-contract-review-20261006-f249d8/REVIEW-01.md)
+Its independent review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17c-solar-exposure-contract-review-20261006-f249d8/REVIEW-01.md`)
 (SHA-256 `a98298407aa715b2ca6094de670d1ee80d321fd4b76a68dcce0dd9d7f97e15da`)
 identifies no Critical/High/Medium and one Low: the installed-owner check needs
 the clarification below. Root adopts this bounded technical rule for source

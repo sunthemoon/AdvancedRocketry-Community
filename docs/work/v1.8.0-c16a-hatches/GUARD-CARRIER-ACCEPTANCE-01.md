@@ -4,8 +4,8 @@ Date:2026-10-04. Status:TECHNICAL_BOUNDARIES_ACCEPTED,not API/writer admission.
 
 Under the owner's no-unresolved-Critical/High/Medium conditional authorization,
 Root accepts the reviewed technical boundaries in
-[proposal01](guard-carrier-proposal-01.zip) and
-[independent review01](reviews/guard-carrier-independent-01.zip).
+proposal01 (`guard-carrier-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) and
+independent review01 (`reviews/guard-carrier-independent-01.zip`).
 The latter reports0 C/H/M/L only in its conditional specification scope.
 Root verifies archive CRC,safe unique names and every manifested identity.
 

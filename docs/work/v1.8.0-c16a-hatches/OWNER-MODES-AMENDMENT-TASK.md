@@ -6,8 +6,8 @@ Author:delegated c16a04_fluids;different-agent reviewer:c17_contract.
 
 Outcome:source-backed technical inventory/preflight disposition for the
 [confirmed mode decision02](OWNER-POWER-MODES-02.md),without changing the
-immutable [earlier inventory](guard-inventory-proposal-01.zip) or its
-[ordinary-cut review](reviews/guard-inventory-independent-01.zip).
+immutable earlier inventory (`guard-inventory-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) or its
+ordinary-cut review (`reviews/guard-inventory-independent-01.zip`).
 
 Scope:actual placement,clone and removal actor/mode/context boundaries;
 charged operation conservation,validated-zero vanilla branch,and protected
@@ -27,7 +27,7 @@ and compatibility accounting,executable specification checks with original
 failed attempts preserved;different-agent actual-delta review and explicit
 Root disposition. Native/callback/client proof remains a later dependency.
 
-- [x] Exact [proposal01](guard-inventory-owner-modes-amendment-01.zip) and
+- [x] Exact proposal01 (`guard-inventory-owner-modes-amendment-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) and
   bounded specification checks:34 controls and exact two-document replay pass.
 - [x] Independent actual-delta review and qualified
   [Root technical disposition](OWNER-MODES-INVENTORY-ACCEPTANCE-01.md):

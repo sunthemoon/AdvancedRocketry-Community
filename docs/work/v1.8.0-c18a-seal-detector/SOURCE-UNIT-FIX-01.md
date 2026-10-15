@@ -18,7 +18,7 @@ No product, registry, bootstrap, timeout or test selection changes. A tagged
 nonempty sentinel verifies that the tooltip ignores its argument; registered
 detector identity and native interaction remain separate runtime obligations.
 
-[Independent actual-delta review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-clean-build-investigation-20261007-81e4a9/REPORT-01.md),
+Independent actual-delta review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/seal-clean-build-investigation-20261007-81e4a9/REPORT-01.md`),
 SHA `9c214d9a8b5665cfd93a1e61c98f8fdbd6f5e7c3310783113f1a878b6f1580f2`,
 disposes the original Medium fixture issue without establishing an introduced
 C/H/M/L in the narrow static successor. Twenty-one controls pass, five named

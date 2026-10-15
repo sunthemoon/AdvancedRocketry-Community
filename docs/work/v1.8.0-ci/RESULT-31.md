@@ -5,10 +5,10 @@ Date: 2026-10-07. Exact source
 /job 112722759189. Terminal remains **FAILED**. This supplements the dated
 Root-only [RESULT-30](RESULT-30.md); it does not rewrite that observation.
 
-Different-agent [REPORT-01.md](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-independent-raw-audit-20261007-01/REPORT-01.md)
+Different-agent REPORT-01.md (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-independent-raw-audit-20261007-01/REPORT-01.md`)
 is 13,294 bytes, SHA-256
 `c9d35cc54000e3d36f29baae3339aa9d0c17c929de12869e3d9169cd800fabbc`.
-Its [RESULTS-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-independent-raw-audit-20261007-01/RESULTS-01.json)
+Its RESULTS-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-independent-raw-audit-20261007-01/RESULTS-01.json`)
 is 87,129 bytes, SHA-256
 `96a0f4278ae905a5704763fa38bbb7664cbb2db5842f0449cf7abeee17ba721d`.
 Root reads the complete report and rehashes both outputs (`e13dc7`, exit 0).

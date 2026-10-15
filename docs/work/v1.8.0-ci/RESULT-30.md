@@ -11,7 +11,7 @@ full feature qualification, real-client observation or a Gate decision.
 The dated [running observation](RESULT-29.md) stays historical. Root monitor
 ends normally (`180662`, exit 0), with terminal observation at
 **2026-10-07T09:31:47.326403Z** in
-[MONITOR-07.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-regression-20261007-01/MONITOR-07.json),
+MONITOR-07.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-regression-20261007-01/MONITOR-07.json`),
 SHA-256 `7cca9d55c02e05ff9fe88b7c6e1f7e7d006228327ae01cf92f660c4ca6260723`.
 Build, artifact audit and twice DataGen/clean steps succeed; GameTests fail.
 Failed-run raw upload succeeds; the separate external JAR upload is skipped.
@@ -25,10 +25,10 @@ bound and CRC are checked. Only 397 raw log/XML/JSON/text members totaling
 7,635,459 bytes are retained; no source/class/archive/runtime copy is saved.
 Credentials and signed storage URLs remain in memory, not reports.
 
-[RETRIEVAL-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-raw-20261007-01/RETRIEVAL-01.json)
+RETRIEVAL-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-raw-20261007-01/RETRIEVAL-01.json`)
 is 340,274 bytes, SHA-256
 `4115bd4d20eca53bb38b497a18c12c9663e39d534f99f166b83b58f5a7d26659`.
-Root's new [RAW-AUDIT-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-regression-20261007-01/RAW-AUDIT-01.json),
+Root's new RAW-AUDIT-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/sky-switches-ci-regression-20261007-01/RAW-AUDIT-01.json`),
 SHA-256 `57aef7577ab46d9dbb3137595537d7bb8bb15e5d8a3c15b2585963c4cc2cb5e8`,
 derives the following from actual retained input (`ee769f`, exit 0), with all
 397 before/after checks and receipt unchanged. No runtime is replayed.

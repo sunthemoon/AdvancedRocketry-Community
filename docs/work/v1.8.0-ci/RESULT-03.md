@@ -29,7 +29,7 @@ declared resolved because it is not among this run's failures.
 
 Artifact 11357637175: 1,710,036 compressed bytes, SHA-256
 `43d30333228e6fe6156066bd9bb661c00aadf0c5ad914be45652c235cfc5d422`.
-[Complete retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-7ae882-attempt1-20261006-01/RETRIEVAL-01.json).
+Complete retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-7ae882-attempt1-20261006-01/RETRIEVAL-01.json`).
 
 ## Destination-readiness source: 37ef84c2
 
@@ -42,7 +42,7 @@ skipped; the always-run raw upload succeeds. Conditional JAR upload is skipped.
 
 Artifact 11358002229: 9,002 compressed bytes, SHA-256
 `6bdab33cf28f7583ff00943dd55e1f77cc9ae4875f25614b74242c4b11cd6f2e`.
-[Complete retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-37ef84-attempt1-20261006-01/RETRIEVAL-01.json).
+Complete retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-37ef84-attempt1-20261006-01/RETRIEVAL-01.json`).
 
 ## Verification boundary and remaining work
 
@@ -51,7 +51,7 @@ API source/attempt and archive digest/CRC, and retains logs/XML via receipt
 mappings. Root rehashes all retained files with zero mismatch. Archive/JAR bytes
 are not retained for independent container replay. Recorded build-side audits
 must not be called independent JAR verification. The
-[different-agent actual-raw review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-cohort-review-20261006-afb832/REVIEW-RESULTS-01.md),
+different-agent actual-raw review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-cohort-review-20261006-afb832/REVIEW-RESULTS-01.md`),
 SHA-256 `1637aa41abdd5eee8fe47788857c88100ae0b12cc240060b9e3018d428ddc361`,
 independently verifies all 367 + 9 retained payloads, derives the XML/DataGen
 totals and compares three native log streams with the same three-failure set.

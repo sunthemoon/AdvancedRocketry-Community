@@ -21,7 +21,7 @@ new raw log names. All original methods remain unchanged. The first actual
 local run has 17 tests /1 error: the new method referred to nonexistent `ROOT`.
 Root corrects it to the existing `self.workflow`; the separate replay has
 17 tests /0 failures/errors/skips, exit 0. Both raw receipts remain in
-[the Root CI evidence leaf](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-root-20261005-01/),
+the Root CI evidence leaf (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-ci-root-20261005-01/`),
 as `host-tests08.*` and `host-tests09.*`. This is a test-harness correction,
 not an original production regression or an executed second DataGen run.
 

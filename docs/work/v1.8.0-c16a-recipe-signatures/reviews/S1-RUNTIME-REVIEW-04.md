@@ -2,7 +2,7 @@
 
 Date:2026-10-04. Scope:two-Python-file source/oracle correction only.
 
-The [independent frozen review](signature-s1-runtime-independent-04.zip) reports
+The independent frozen review (`signature-s1-runtime-independent-04.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) reports
 0 Critical/High/Medium/Low. The original revision03 Medium is resolved only at
 the source-sequencing boundary. Its unchanged synthetic witness records r3
 RAISED after1 report and r4 RETURNED after3;both probe tools exit0 because they
@@ -28,7 +28,7 @@ ceiling is changed. The seven states do not include oversized/typed-empty/NaN.
 Author ZIP:3,107,937 bytes/575 entries,SHA
 `772d3eb8047f3771397a04940d96c18c4f44a1c95ad3c3e520d868ce8a5824d0`;
 manifest `7d48066bef21c687c785c8ec92130ae705aa496cd00243721f7d1e2725719581`.
-[Reviewer ZIP](signature-s1-runtime-independent-04.zip):4,087,545 bytes/767 entries,
+Reviewer ZIP (`signature-s1-runtime-independent-04.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):4,087,545 bytes/767 entries,
 SHA `e0b6e507f37a4ee682385ebd2434c05bce0457f46a96dd29ac8b1888d22192e2`;
 manifest `abb8003951235ba0add7ae49a69f369ee4f987acc5a4d2877666067799a07419`;
 report `1186f7b92d1ed737d8f20bb9c19bd714afbcf498a4da9e096892c912b07fdeaf`.

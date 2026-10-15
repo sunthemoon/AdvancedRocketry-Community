@@ -9,9 +9,9 @@ later Java bank API, capabilities, formation, native recovery or version Gates.
 
 | Round | Archive | SHA-256 |
 |---|---|---|
-| 1 | [Evidence](round-01-evidence.zip) | `1ea637646c1c427e2bafdcd29e5e28a14eaf7863f5b26f9e17df9b60cc4eb6a1` |
-| 2 | [Evidence](round-02-evidence.zip) | `8b7c0638e6d894a94d8340a984be4d494dd009e9348d2cfe15bec78f6538f9f5` |
-| 3 | [Evidence](round-03-evidence.zip) | `c6183e6312b2e4025e686888bc414f031ccff41de78a9f546cf39df8d223e5b8` |
+| 1 | Evidence (`round-01-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) | `1ea637646c1c427e2bafdcd29e5e28a14eaf7863f5b26f9e17df9b60cc4eb6a1` |
+| 2 | Evidence (`round-02-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) | `8b7c0638e6d894a94d8340a984be4d494dd009e9348d2cfe15bec78f6538f9f5` |
+| 3 | Evidence (`round-03-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) | `c6183e6312b2e4025e686888bc414f031ccff41de78a9f546cf39df8d223e5b8` |
 
 All original manifests, complete package manifests and ZIP CRC verify.
 Raw round-3 report SHA-256:

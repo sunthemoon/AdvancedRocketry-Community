@@ -5,7 +5,7 @@ Date: 2026-10-07. Exact source/resource commit:
 [Run 37590839225](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37590839225),
 attempt 1 /job 112691678476. Status: RUNNING; metadata only.
 
-Root's [observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-source-ci-regression-20261007-01/OBSERVATION-01.json)
+Root's observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-source-ci-regression-20261007-01/OBSERVATION-01.json`)
 at **2026-10-07T08:02:17.115506Z**, SHA-256
 `2b23b5d053cc67e5f8bbacff8d1f2eefe14b4cf7640b111aa0fe9b0a72a8fd09`,
 binds the source/run/attempt/job and step metadata. Actual GitHub statuses:

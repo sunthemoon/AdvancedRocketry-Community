@@ -5,7 +5,7 @@ owner-mode amendment in progress,full inventory admission incomplete.
 
 [Technical boundary adoption](GUARD-CARRIER-ACCEPTANCE-01.md) does not freeze
 method/managed-BE-ID inventory or authorize the private power scope. The
-separate [inventory proposal01](guard-inventory-proposal-01.zip) provides exact
+separate inventory proposal01 (`guard-inventory-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) provides exact
 two-document deltas to adapter02,not an inherited no-finding verdict or code.
 Root alone decides an exact freeze after different-agent actual-delta review.
 

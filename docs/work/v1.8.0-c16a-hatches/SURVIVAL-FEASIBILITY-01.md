@@ -24,7 +24,7 @@ Combustion has an independent unpowered crafting route. Casing/circuit routes
 are conditional on actual tag suppliers and quartz/Level access. A placed native
 fixture is useful process evidence but does not establish new-world survival.
 
-[Frozen preparation](survival-feasibility-01.zip):560,763 bytes/441 entries,
+Frozen preparation (`survival-feasibility-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):560,763 bytes/441 entries,
 SHA256 `3fbd4f62282cf672949914446faa7f16dbe16db55501b789f075a4f777e08b39`;
 manifest `d9fdf0327853744c59b3734ac1b83bcd5019eef1b8f078ea61417bfa448c7cb0`.
 Report SHA `e2079989944aabe5b02135b46a96e01bb94c60205c053232823f6468ba9da473`.

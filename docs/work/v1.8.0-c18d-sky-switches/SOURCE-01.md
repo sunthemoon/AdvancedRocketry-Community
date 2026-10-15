@@ -66,7 +66,7 @@ Fresh author-side Python static controls and read-only Git checks bind actual
 postimages, exact allowed diff/inverses, retained old method bodies, live-supplier
 ordering, raw/ambience preservation, delegated arguments, scope and whitespace.
 Literal argv/exits and results are in the
-[external report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-switches-author-20261007-c16-4d7ab9/REPORT-01.md).
+external report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-sky-switches-author-20261007-c16-4d7ab9/REPORT-01.md`).
 The primary API association remains the task's report
 `f29fbe9969f368f20a0aeaabf69a0b35fa2fcd5710011ea67a9f3c1521507978`,
 not a binary/JVM check performed by this worker.

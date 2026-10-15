@@ -5,7 +5,7 @@ The Medium finding covers Fluid metadata aliasing across codec encode and
 decode; both independent probes actually failed. Author revision 2 is separate
 and does not overwrite this original evidence.
 
-[Immutable evidence](round-01-evidence.zip), SHA-256
+Immutable evidence (`round-01-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)), SHA-256
 `e8adea8d1b0ea55ff85472baa4ebedd2f63fcecc7c12c27a355e8cb48c2e2472`:
 96 ZIP entries, 95 manifest-pinned files verified individually; CRC check clear.
 The raw report is `REVIEW-01.md` inside the archive, SHA-256

@@ -39,8 +39,8 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 5e59f5c034a11fe39ec42497b6c96a69bfa7727d
-latest_hosted_regression: run 38616170433 at 779191599dff0c678f236120d5a3166f8e87a2df, passed
-ledger_planned_units: 20
+latest_hosted_regression: run 38661777051 at 6bd6e1eb636e3af3a8b77b0bbee9a65f7de2a729, passed
+ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
 last_updated: 2026-10-15
@@ -78,7 +78,7 @@ It does not run:
 
 What is still open:
 
-- **Ledger.** 20 units are still PLANNED: C16d 1 (`makeMaterialsForOtherMods`), C17a 6 and C17c 1
+- **Ledger.** 19 units are still PLANNED: C17a 6 and C17c 1
   (the monitoring station, the five loader variants and the linker, which wait for the escrow
   chain and the bay), C18a 1 (the oxygen charger, owner decision D4) and C18d 11 (the ten sounds,
   which wait for the owner's listen, and `modelBakeEvent`, which waits for an OBJ import). The
@@ -88,10 +88,12 @@ What is still open:
   No S1 campaign has run.
 - **S2.** The D3-A crash cuts wait for W11b2 and W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
-- **C19.** The governance workflow now runs the full Python suite on the shared branch. W49F
-  (`48d81584`) fixed its only failure, the v0.8.0 evidence test; the next governance run on the
-  shared branch confirms it. The W58 audit plans the rest of C19.
-- **Owner decisions.** Nine are pending; QUEUE.md lists them with what each one blocks.
+- **C19.** W58 audited it (`records/W58.md`); the validator chain and the G4 fix are merged
+  (C19-A). Hosted governance now passes the full Python suite (run 38616170516, after W49F) and
+  stops at the v0.1.0 asset check: W52's six K6 icons sit in the v0.1.0 root (W52F moves them).
+  The strict validator also fails on 703 broken Markdown links (W60). R32-03, the
+  `PORTING_MATRIX` refresh and the closure remain.
+- **Owner decisions.** Ten are pending; QUEUE.md lists them with what each one blocks.
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-037) stay open.
 
 No v1.8 Required Gate is approved. Only the owner marks a Gate or the version as passed.

@@ -4,7 +4,7 @@ Date: 2026-10-07. Exact source
 `b8136f0b8a41e64d51798f18e03127ebdd35693f`, run **37628727531 /attempt 1**.
 The live monitor session 60972 closes normally (`ce750b`, exit 0), recording
 completed **failure** at **2026-10-07T13:37:34.847671Z**. Its fixed
-[MONITOR-10.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-20261007-01/MONITOR-10.json)
+MONITOR-10.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-20261007-01/MONITOR-10.json`)
 has SHA-256 `a0c6e8f812ab915ec643bc4aa76f54fd96061d4fe91258fd5f83c302c577410c`.
 Job **112817138488** is monitor provenance, not a field independently supplied
 by the raw retrieval receipt. The earlier [RESULT-41](RESULT-41.md) remains a
@@ -13,14 +13,14 @@ dated running observation, not rewritten as terminal evidence.
 Bounded retrieval (`6bed36`, exit 0) obtains artifact **11485063909**, compressed
 1,823,085 B /SHA-256 `1821ec7b063af6d9fc6b69bf65d32523f3204c7185b9e7c369e4e5a08a9d4df4`.
 The exact source/run/attempt/artifact identity and outer digest match the
-[receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-raw-20261007-01/RETRIEVAL-01.json),
+receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-raw-20261007-01/RETRIEVAL-01.json`),
 SHA-256 `6b2efac38d454e17379a2043b81fdde76ec879205e1b0641669269cee6fafaea`.
 893 archive members are recorded; 397 raw members /7,703,633 B retained.
 No local JAR, archive, runtime or reproducible source copies are retained.
 
 Root `python -B audit01.py` (`65fded`, exit 0) independently derives this new
 cohort's raw metrics in
-[RAW-AUDIT-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-20261007-01/RAW-AUDIT-01.json),
+RAW-AUDIT-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-20261007-01/RAW-AUDIT-01.json`),
 SHA-256 `5c493c49c00987e1ee31bd05c114351b384794884d5ed9c87a0727e8cf91ac09`.
 All retained size/hash checks match before/after, receipt unchanged. This is
 Root derivation, not the pending different-agent raw audit or native replay.

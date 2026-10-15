@@ -5,7 +5,7 @@ Date: 2026-10-07. Exact committed and normally published source:
 [Run 37605098496](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37605098496),
 attempt 1 /job 112738525112. Status: RUNNING; metadata only.
 
-Root's [observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-regression-20261007-01/MONITOR-01.json),
+Root's observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-regression-20261007-01/MONITOR-01.json`),
 SHA-256 `086fdaa582828924ffaebbcb470a55b5bda6e5c5e61733e400d32f9a2efbfbed`,
 at **2026-10-07T10:10:42.431125Z** matches the exact source/run/attempt/job
 (`082f81`, `6461a1`). Metadata marks no-cache build and artifact/client audits

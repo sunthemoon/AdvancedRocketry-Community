@@ -14,7 +14,7 @@ it does not change this original seven-classification/two-half scope or tests.
 
 The exact code cohort `10eb561a5112ee6226e2c52fef1c1cc358c5ef3f`
 fails the installed-airlock subject at its second initial-supply assertion.
-The independent [investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-initial-supply-regression-review-20261007-r1-3d962a/REPORT-01.md)
+The independent investigation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-initial-supply-regression-review-20261007-r1-3d962a/REPORT-01.md`)
 has SHA-256 `f73eec41e1bdddab8100718a3121622bcafb740711462038c576e813e80e4422`.
 It distinguishes drained active-task lookup from retained terminal OPEN; it
 does not prove a production cause. Root admits a failure-only fixture snapshot

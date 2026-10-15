@@ -6,6 +6,7 @@ import importlib.util
 import io
 import json
 import os
+import shutil
 import struct
 import subprocess
 import sys
@@ -52,6 +53,15 @@ class GitFixture:
         self.temporary = tempfile.TemporaryDirectory()
         testcase.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
+        seed = getattr(type(testcase), "_final_review_repository_seed", None)
+        if seed is None:
+            self._build_repository()
+        else:
+            shutil.copytree(seed.root, self.root, dirs_exist_ok=True)
+            self.selected = seed.selected
+            self.selected_tree = seed.selected_tree
+
+    def _build_repository(self) -> None:
         self._git("init", "--quiet")
         self._git("config", "user.email", "final-g0@example.invalid")
         self._git("config", "user.name", "Final G0 Fixture")
@@ -285,6 +295,23 @@ class GitFixture:
             }
         )
         return path
+
+
+def install_repository_seed(case_classes, add_cleanup) -> None:
+    seed = GitFixture.__new__(GitFixture)
+    seed.temporary = tempfile.TemporaryDirectory()
+    add_cleanup(seed.temporary.cleanup)
+    seed.root = Path(seed.temporary.name)
+    seed._build_repository()
+
+    def clear_bindings() -> None:
+        for case_class in case_classes:
+            if case_class.__dict__.get("_final_review_repository_seed") is seed:
+                delattr(case_class, "_final_review_repository_seed")
+
+    add_cleanup(clear_bindings)
+    for case_class in case_classes:
+        case_class._final_review_repository_seed = seed
 
 
 def validate_exact(
@@ -877,6 +904,13 @@ class CliBoundaryTests(unittest.TestCase):
         self.assertIn("core.fsmonitor=false", joined)
         self.assertIn("core.untrackedCache=false", joined)
         self.assertIn("diff.external=", joined)
+
+
+def setUpModule() -> None:
+    install_repository_seed(
+        (PendingAndSchemaTests, BoundReviewTests, AncestryAndInvalidationTests, CliBoundaryTests),
+        unittest.addModuleCleanup,
+    )
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ Exact tested source `f9f2d9d2c5eb0de2c9f5d28160ab7804fc57eaef`, run
 37653204825 /attempt 1 /artifact 11498455692. Full regression remains **FAILED**.
 
 Root fully reads and hashes the separate
-[REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-independent-20261008-01/REPORT-01.md),
+REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-independent-20261008-01/REPORT-01.md`),
 SHA `304bf7ba8de576e505ff3d974f57b355e2fca01fa0a6f53b431c18e1b1c62ace`.
 Its sealed 28 internal payloads /4,151,811 B have manifest SHA
 `d59e6bde238f82cc0a30ce1a4451a23c583330fdb30495e82a0c3af0b09b18c3`.
@@ -37,7 +37,7 @@ manifest identity is not fresh bytecode/JAR verification. Auxiliary sentinel
 type/hash/seal membership is checked without interpreting or printing content.
 
 Separately, Root fully reads/hashes the independent committed-source
-[targeted execution report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-exec-independent-20261008-01/REPORT-01.md),
+targeted execution report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-exec-independent-20261008-01/REPORT-01.md`),
 SHA `d9962b908400b97e8300f1c5d3643ddba1d1abab5a8147759a0adc41b9fab549`.
 One clean detached f9 checkout executes Java17 Gradle/JUnit Platform filters:
 exit 0 in 49s, actual 3 suites /28 cases, zero failures/errors/skips, six hashes

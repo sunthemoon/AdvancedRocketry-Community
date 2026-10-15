@@ -42,6 +42,6 @@ general saving-policy extension. R-021 stays open and unaccepted as a whole.
 Root only synchronizes the R-021 row and this scoped record. Other risk rows,
 accepted ADR text, source behavior and owner-maintained AGENTS are unchanged.
 
-The [original independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-owner-record-review-20261006-8a6701/REVIEW-01.md)
+The original independent review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/solar-owner-record-review-20261006-8a6701/REVIEW-01.md`)
 identifies that trigger-wording Low. This clarification preserves the original
 review and decision, changes no save behavior, and requires separate recheck.

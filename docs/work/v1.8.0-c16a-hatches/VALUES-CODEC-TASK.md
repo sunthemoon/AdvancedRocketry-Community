@@ -53,7 +53,7 @@ actual-diff review precedes Root application and complete regression.
   distinct author/reviewer runs. Full model/codec/hash criterion remains open.
 - [x] Independent actual source/test replay and exact postimages for that subset.
 - [x] Root data-only integration/full regression:1,710 JUnit/321 suites/0FES,
-  all460 GameTests and DataGen written0 ([candidate15](../v1.8.0-c16a-integration/ROOT-INTEGRATION-15.zip));
+  all460 GameTests and DataGen written0 (candidate15 (`../v1.8.0-c16a-integration/ROOT-INTEGRATION-15.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)));
   not full codec,physical API/native admission.
 
 Remaining03b-02/03/04,real lathe,all motor-tier formation,acquisition/native/

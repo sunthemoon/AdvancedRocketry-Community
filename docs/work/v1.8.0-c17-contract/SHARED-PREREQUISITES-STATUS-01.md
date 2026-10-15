@@ -79,7 +79,7 @@ until verified reload/repair, with other actions retaining existing rules under
 confirmed coherence and with ADR synchronization and recovery verification.
 The owner answers through that same asynchronous conversation channel
 on 2026-10-05, verbatim: “保护首次记录，暂停不确定窗口的旧数据重写（推荐）”.
-Root's [reply receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIRST-EVENT-OWNER-REPLY-01.json),
+Root's reply receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIRST-EVENT-OWNER-REPLY-01.json`),
 SHA `0d676b9d3c55536fd48d773e1487d423c6fc9757ef9970615d4ee713c6fa911b`,
 records the received question, answer and conversation item. It is a Root
 transcription, not an independently captured raw conversation export.

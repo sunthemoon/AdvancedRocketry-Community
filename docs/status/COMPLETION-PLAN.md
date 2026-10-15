@@ -93,8 +93,8 @@ C15a 材料、小型压板机及其获取；C15b 地表、地物与行星矿石�
     owner 与比较器的双 LOAD 记录、EMIT 比较接入已独立审核并组合，
     相关测试已在终态托管回归实际执行；不替代已安装权限、完整 hatch、
     原生重新准入或失败处置验证。中央注册、物理接入和保存运行集成未完成，候选尚未交付。
-    出站比较/保留观察提案的[原审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md)
-    保留历史 Medium；LOAD 记录接口的另版补充已完成[独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md)，
+    出站比较/保留观察提案的原审核 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-seam-independent-review-20261007/REPORT-01.md`)
+    保留历史 Medium；LOAD 记录接口的另版补充已完成独立复审 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/observer-load-join-independent-review-20261007/REPORT-01.md`)，
     提案文本补全记录接口和见证时序，无新增 C/H/M/L。
     [限定实施记录](../work/v1.8.0-c16a-hatches/LOAD-JOIN-IMPLEMENTATION-01.md)已按条件授权
     采纳私有技术补充；owner、精确根比较及真实区块观察器已在三个独立工作区写成，
@@ -564,8 +564,8 @@ C17b candidate03 的独立审核已解决旧版 Medium
   B 未分配摔落监听器；两项台账与整版 Gate 不变。
 
 - [~] C18 D1 辅助氧气储量：保留已接受的 API/HUD 2,000 工作缓冲。
-  [原独立提案审核](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md)
-  的两项 Medium 保留为历史；[后继独立复审](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-successor-independent-review-20261007/REVIEW-01.md)
+  原独立提案审核 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-review-20261007/REVIEW-01.md`)
+  的两项 Medium 保留为历史；后继独立复审 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-successor-independent-review-20261007/REVIEW-01.md`)
   已在提案文本中补全元数据/空罐保真和拒绝充气路由规则，无 C/H/M，但有一项 Low：
   回调变化的拒绝承诺大于列明的可观察输入。另立的[可观察见证措辞修订](../work/v1.8.0-c18-contract/OXYGEN-WITNESS-CLARIFICATION-01.md)
   已完成独立复审，无新增 C/H/M/L，Root 仅采纳技术措辞；原 Low 和证据保留为历史。
@@ -710,18 +710,21 @@ C17b candidate03 的独立审核已解决旧版 Medium
 
 ### C19 矩阵、审核与交付 `[ ]`
 
-> **当前状态（2026-10-15，Root）**：内容台账 20 个单位仍为 PLANNED（`--require-accepted` 通过；逐批次数见 `CURRENT_VERSION.md`）。完整 Python 套件已在共享分支的治理工作流中运行（W49F `48d81584` 修复了唯一失败，待下一次治理运行确认）。未完成：合并验证器链（`82f82b1f`、`d605be33`）、严格验证器资格、证据引用修复、`PORTING_MATRIX`、ADR-068/070/071 决定、R32-03、台账 `--closure`、154 个 REVIEW 资产的逐项结案，以及最终统一活动中的 S1、V1、V2。见 [W30 第 1 节](../work/v1.8.0-root-queue/records/W30-STATUS-PROPOSAL.md) 第 5 节。
+> **当前状态（2026-10-15，Root）**：内容台账 19 个单位仍为 PLANNED（`--require-accepted` 通过；逐批次数见 `CURRENT_VERSION.md`）。治理工作流的完整 Python 套件已通过（W49F 后的运行 38616170516）。W58 审计见 `records/W58.md`；验证器链与 `d605be33` 已合入（C19-A，`9677edb2`、`6bde40e0`），`a8dcd5f7`、`82f82b1f`、`7f8c9203`、`d7f4e69b` 作为被托管运行取代而不合入。未完成：v0.1.0 资产检查（W52F）、703 个失效 Markdown 链接（W60）、严格验证器资格、证据引用修复、`PORTING_MATRIX`、ADR-068/070/071 决定、R32-03、台账 `--closure`、154 个 REVIEW 资产的逐项结案，以及最终统一活动中的 S1、V1、V2。见 [W30 第 1 节](../work/v1.8.0-root-queue/records/W30-STATUS-PROPOSAL.md) 第 5 节。
 
 - [x] [C19-INVENTORY-TEST-11](../work/v1.8.0-c19-strict-validator/INVENTORY-TEST-TASK-11.md)
   的限定测试源码：一文件修正已提交、独立审核、集成并推送至 Main `ffadaca3`。
   [检查点](../work/v1.8.0-c19-strict-validator/INVENTORY-CHECKPOINT-11.md)记录固定候选
   Root 17/148、独立 17/148/18 方法通过；保留历史非空输入及负向/分发断言。
   不改变生产白名单、来源判定或原 180 秒预算。完整 Python/strict 仍超时，C19 未完成。
-- [ ] R11-OPS01：独立清理 launcher 未启动，exit 125，零删除/重试；四份缓存
+- [x] R11-OPS01：独立清理 launcher 未启动，exit 125，零删除/重试；四份缓存
   535508 bytes 和十个自有临时目录保留。源码审核不等于操作任务全部接受，Root 不接管。
-- [ ] R14-OPS01（Medium）：Root12 清理只检查目标/后代及三个自有根至卷根，
+  2026-10-15 Root（C19-E，W58 归类 C）按操作历史关闭：无代码可合入，残留只在本机，不影响产品。
+- [x] R14-OPS01（Medium）：Root12 清理只检查目标/后代及三个自有根至卷根，
   未单独检查嵌套 .cache 的每级父目录；词法 GetFullPath/prefix 不等于物理解析。
   未观察到重定向或越界删除。另立更正记录，未来 helper 需补齐，旧清理/封存包不重试或修改。
+  2026-10-15 Root（C19-E，W58 归类 C）按操作历史关闭：本地验证改由托管运行承担，旧 helper 不再使用；
+  若将来新增清理 helper，须逐级检查父目录。
 - [~] [C19-CHECKSUM-INPUT-16](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-TASK-16.md)：
   status: in-progress。三文件源码 `0cefe86e` 的精确后像已集成、正常推送至 `a38f1dc9`；
   [检查点](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)
@@ -965,7 +968,7 @@ C17b candidate03 的独立审核已解决旧版 Medium
 及后继观察规范仅作为历史输入，不是原因确认、修复或已接受的实施契约。
 其审核、提交和清理记录保留在实施日志与原始证据中；此处不再重复旧检查点数字。
 
-台账剩余 **20 PLANNED /154 REVIEW**（2026-10-15）。内容可达性、来源资产复核、代表科技流程、
+台账剩余 **19 PLANNED /154 REVIEW**（2026-10-15）。内容可达性、来源资产复核、代表科技流程、
 整包专服/客户端/性能及 G0–G9 均未结束。
 
 ### 后续执行与已取回的 Claude 输入 `[ ]`
@@ -1065,6 +1068,7 @@ Root 构建/强制单测各执行 2192 项 JUnit/381 XML，全部 597 项必需 
 独立11清理未启动的 R11-OPS01 及四份缓存保留；源码、旧拒绝目录、独立05残留
 和继承债务不接管。历史诊断08/09与原 Low 更正保持封存，不能替代最新资格。
 独立固定对象14的历史审核及 R14-OPS01 Medium 操作证明缺口继续保留。
+（R11-OPS01 与 R14-OPS01 已于 2026-10-15 由 Root 按操作历史关闭，见 C19 节；本段保留当时状态。）
 checksum 的限定本地/Git 源码已有独立审核、正常推送和标准子集验证；
 最新封存包/源码别名已有独立复核；旧操作证明、委托归档资源和可移植引用仍开放。
 不能扩大白名单、删断言、盲目合并不同历史身份或延长预算。

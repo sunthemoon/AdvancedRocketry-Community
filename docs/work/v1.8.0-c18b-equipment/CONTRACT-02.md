@@ -17,9 +17,9 @@ save veto and no R-021 extension, and grants no source task.
 
 | Input | Identity | Use here |
 | --- | --- | --- |
-| Independent review of draft 01 | [REVIEW-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-01/REVIEW-01.md), SHA-256 `4d5b33f36d83b85eae58081f3573a4434715215198a042c822d0bc327400f4db` | seven Medium, two Low |
-| Oxygen-reserve leaf proposal (immutable) | [PROPOSAL-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-20261007/PROPOSAL-01.md), SHA-256 `95d6681bc338c915fe42dceb4b6727829ff703418124b5ea542fec6306f4fdc3` | §2 schema and bounds, §3.2 scheduled consumption, §3.3 workstation |
-| Its section 3.1 successor | [PROPOSAL-02](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-successor-20261007/PROPOSAL-02.md), SHA-256 `bfff23386d9b939b757733ad2a7b0763c39294f5a5242cac44ec67d526b0788f` | paired charge interaction (owner decision pending) and native-shape admission |
+| Independent review of draft 01 | REVIEW-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-01/REVIEW-01.md`), SHA-256 `4d5b33f36d83b85eae58081f3573a4434715215198a042c822d0bc327400f4db` | seven Medium, two Low |
+| Oxygen-reserve leaf proposal (immutable) | PROPOSAL-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-20261007/PROPOSAL-01.md`), SHA-256 `95d6681bc338c915fe42dceb4b6727829ff703418124b5ea542fec6306f4fdc3` | §2 schema and bounds, §3.2 scheduled consumption, §3.3 workstation |
+| Its section 3.1 successor | PROPOSAL-02 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-reserve-proposal-successor-20261007/PROPOSAL-02.md`), SHA-256 `bfff23386d9b939b757733ad2a7b0763c39294f5a5242cac44ec67d526b0788f` | paired charge interaction (owner decision pending) and native-shape admission |
 | Accepted technical wording | [OXYGEN-WITNESS-CLARIFICATION-01](../v1.8.0-c18-contract/OXYGEN-WITNESS-CLARIFICATION-01.md) | stale refusal limited to captured witnesses |
 | C18 owner receipt | [OWNER-DECISIONS](../v1.8.0-c18-contract/OWNER-DECISIONS.md) | D1 accepted; D4 still needs technical proof |
 | Current status | `docs/status/CURRENT_VERSION.md:489-498` at `65dd8211` | tier capacities/config and paired interaction await the owner; workstation save-veto extension unadmitted; API/HUD buffer 2,000 |
@@ -364,7 +364,7 @@ Each needs its own TASK after freeze and the listed dependencies; write scopes a
 
 | Leaf | Depends on | Write scope (new files unless noted) |
 | --- | --- | --- |
-| L-a pure reserve transition (as the [readiness report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-implementation-readiness-20261007/REPORT-01.md) suggests) | D1 only | `atmosphere/life/SuitReserveTransition.java` and its test |
+| L-a pure reserve transition (as the readiness report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-oxygen-implementation-readiness-20261007/REPORT-01.md`) suggests) | D1 only | `atmosphere/life/SuitReserveTransition.java` and its test |
 | L-b tank and armor root codecs | E2-OPEN-1, owner tiers | `equipment/model/` codec classes and tests |
 | L-c component admission helper | D-4 | `equipment/model/ComponentAdmission.java` and tests |
 | L-d workstation block, menu, persistence | D-2, D-3, L-b, L-c | `equipment/workstation/` package; Root registers block, item, menu |

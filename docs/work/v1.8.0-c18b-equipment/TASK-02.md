@@ -26,7 +26,7 @@ central status/ledger/CSV/AGENTS or Git changes. No source/refill/motion run.
 Read live Root AGENTS/mandatory governance, original drafts, the accepted D1
 reserve mechanism and unresolved D4 durability/interaction restrictions, plus
 ADR-025/065/066 boundaries, current implementations, and
-[REVIEW-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-01/REVIEW-01.md),
+REVIEW-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-independent-20261008-01/REVIEW-01.md`),
 SHA-256 `4d5b33f36d83b85eae58081f3573a4434715215198a042c822d0bc327400f4db`.
 It records seven Medium and two Low draft findings, not reproduced equipment
 defects. Existing API/HUD capacity and the reserve mechanism do not approve

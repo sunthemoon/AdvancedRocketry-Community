@@ -2,7 +2,7 @@
 
 Date:2026-10-04. Scope:fixed candidate15-JAR/source17 fixture cohort only.
 
-[Independent archive](signature-native17-independent-01.zip):
+Independent archive (`signature-native17-independent-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):
 `04c72bd161849aa9b100527d3dfa95fd3aaf33c073bf56b65e322abaf6bbf78c`,
 2,521,552 bytes/533 entries;manifest
 `6e916f1b20adbf74e13b7b71f7ee5529cc87814834fd4d18a28d77e60c620076`.

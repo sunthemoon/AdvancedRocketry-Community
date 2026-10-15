@@ -3,8 +3,8 @@
 Date:2026-10-04.Status:S1-L1_SCOPED_OBSERVATION_VERIFIED,not full S1/Gates.
 
 Root accepts and applies only two Python postimages from
-[proposal01](signature-live-tag-proposal-01.zip),after a different-agent
-[actual-source review01](reviews/signature-live-tag-independent-01.zip) reports
+proposal01 (`signature-live-tag-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)),after a different-agent
+actual-source review01 (`reviews/signature-live-tag-independent-01.zip`) reports
 0C/H/M/L in its source/oracle scope. No product,migration,Java or persistence
 authority changes. The owner's unproven-legacy pause/retain decision is unchanged.
 
@@ -42,9 +42,9 @@ Full S1,actual peers/client/V1/V2,unsafe native tags and all Gates remain open.
 Subsequent current20 result:the separately source-reviewed one-file fallback
 repair is integrated;1,730 JUnit/328 suites,464 GT,DataGen written0 and full
 stock45/0 pass on main `90ab8ba5...`. Fresh
-[native20](SIGNATURE-NATIVE-20-01.zip) observes18 clean phases and same-host
+native20 (`SIGNATURE-NATIVE-20-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) observes18 clean phases and same-host
 Rolling/Precision additions,literal Electro control;source world135 files
-unchanged. [Independent actual-result audit20](reviews/signature-native20-independent-01.zip)
+unchanged. Independent actual-result audit20 (`reviews/signature-native20-independent-01.zip`)
 `b32b4b561d4d3bda5a244c24ef88b1fa73bfbabbb8eb6f75cffe4cf81ec01504`,
 181,699,734 bytes/3,868 entries,manifest
 `39f5ddc5f60f68becc26e0485a3d483c77e426f9dd8bda13f8254e261d26d955`,

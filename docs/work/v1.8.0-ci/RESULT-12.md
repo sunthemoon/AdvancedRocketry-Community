@@ -30,15 +30,15 @@ rebound here. Raw regression upload succeeds.
 
 Artifact 11429734142 has 1,133,131 compressed bytes and verified API/container
 SHA `316c7072ab4de44380f365b5421493e3ec797234653b06f3ba9786e076a01c37`.
-[Artifact receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-9cd-artifact-20261007-c18-d28e64/RETRIEVAL-01.json)
+Artifact receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-9cd-artifact-20261007-c18-d28e64/RETRIEVAL-01.json`)
 SHA `4db6e49802c33c6670df4292c1f0c7b492a203b69805066d992baed0cb2819b1`;
-[attempt-log receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-9cd-attemptlogs-20261007-c18-d28e64/RETRIEVAL-01.json)
+attempt-log receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-9cd-attemptlogs-20261007-c18-d28e64/RETRIEVAL-01.json`)
 SHA `1b4517f685ec5ccddf0bee22037781bb93f42ca2a457658c6dd948bb6d7d5b10`.
 The admitted serial metadata/artifact/log collector exits 0; collection success
 does not mean build success. Its unchanged archive helper performs all-member
 path/size/CRC checks before retention. Archives are not retained or replayed.
 
-Root's independent [raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-detector-9cd-raw-audit-20261007-01/AUDIT-01.json),
+Root's independent raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-detector-9cd-raw-audit-20261007-01/AUDIT-01.json`),
 SHA `9030b3100c161009281cfb7eb635c37c9581e5cabf9d4e3cca986e296a87e325`,
 actually exits 0: all 375 retained files /1,336,536 bytes match their receipts.
 It parses every XML, verifies actual cases against suite attributes and binds
@@ -58,7 +58,7 @@ That correction has not yet earned a passing execution result in this record.
 
 Its [new run 37506268620](https://github.com/sunthemoon/AdvancedRocketry-Community/actions/runs/37506268620),
 attempt 1 /job 112415607085, is in clean build at the
-[dated metadata observation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-detector-fixed-hosted-observation-20261007-01/OBSERVATION-01.json)
+dated metadata observation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-detector-fixed-hosted-observation-20261007-01/OBSERVATION-01.json`)
 (`2026-10-06T17:48:12.118914+00:00`, SHA
 `c4ddafe192889064165f8b4ec49a9bb1f8f0f79d6277cb01efeaa1e98cf718b5`).
 No future result is inferred. Earlier Tau failure remains historical in

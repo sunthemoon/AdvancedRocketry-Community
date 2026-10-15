@@ -29,15 +29,15 @@ review. The independent source review found no Critical/High/Medium issue and
 one Low test-coverage gap. A separately reviewed test-only successor addresses
 the authored coverage; it does not establish passing execution.
 
-- [Proposal review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-guarded-resource-proposal-review-20261007-01/REVIEW-01.md):
+- Proposal review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-guarded-resource-proposal-review-20261007-01/REVIEW-01.md`):
   SHA256 `4f720643236ec47f2fb6e4ae3eb8fb2406fe87be99f259c60003a48db36edd94`.
-- [Source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-source-review-20261007-3e8b6c/REVIEW-01.md):
+- Source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-source-review-20261007-3e8b6c/REVIEW-01.md`):
   SHA256 `f846a82ff5d97d5a80b4917d9593eafc70040d96ee8cdedd9f37f329bac257f1`.
-- [Test successor review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-test-review-20261007-f96bd2/REVIEW-02.md):
+- Test successor review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-test-review-20261007-f96bd2/REVIEW-02.md`):
   SHA256 `ddcad36e8b7dc5e0bce669940f09455fb23a8d9122d4beac53759d1cc2f42af9`.
-- [Five-file handoff](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-checkpoint-handoff-20261007-709fde/HANDOFF-01.md):
+- Five-file handoff (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-checkpoint-handoff-20261007-709fde/HANDOFF-01.md`):
   SHA256 `c29c9a2639d3687f0e8fad3db31ddad70e1d6b11866ec019e045aa8f9c4edc63`.
-- [Exact postimage map](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-checkpoint-handoff-20261007-709fde/OWN-FILES-01.json):
+- Exact postimage map (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-checkpoint-handoff-20261007-709fde/OWN-FILES-01.json`):
   SHA256 `fbe618b42e93e54a3a40fe53378d3811b3547f41abc914ff0121fc051738a533`.
 
 Root's preflight verifies the three unchanged main preimages, two absent new
@@ -52,9 +52,9 @@ Three bounded local attempts failed and remain separately retained:
 
 | Attempt | javac / Jupiter / outer | Observed result |
 | --- | --- | --- |
-| [First](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-check-preparation-20261007-96e241/RESULT-01.json) | 1 / not launched / 1 | Two unchanged process-key sources were absent from the explicit compile list. |
-| [Second](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-check-successor-20261007-5c4a82/RESULT-01.json) | 0 / 1 / 1 | Missing Netty initialization dependency; three BankKey methods passed and six containers failed before their test bodies. |
-| [Third](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-check-successor03-20261007-62c118/RESULT-01.json) | 0 / 1 / 1 | Missing ModLauncher initialization dependency; three BankKey methods passed and six containers failed before their test bodies. |
+| First (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-check-preparation-20261007-96e241/RESULT-01.json`) | 1 / not launched / 1 | Two unchanged process-key sources were absent from the explicit compile list. |
+| Second (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-check-successor-20261007-5c4a82/RESULT-01.json`) | 0 / 1 / 1 | Missing Netty initialization dependency; three BankKey methods passed and six containers failed before their test bodies. |
+| Third (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-check-successor03-20261007-62c118/RESULT-01.json`) | 0 / 1 / 1 | Missing ModLauncher initialization dependency; three BankKey methods passed and six containers failed before their test bodies. |
 
 No new guarded-resource test body ran in those local attempts. There is no further local
 dependency retry, Bootstrap edit or test relaxation. C: has less than 10 GB
@@ -62,7 +62,7 @@ available; no local full Gradle, GameTest or native server is started. New
 temporary scripts and retained outputs use the external D: task-evidence tree.
 The author subsequently removes only its ended own output trees: 66 classes /
 331,644 logical bytes and 32 empty directories, with 48 original flat records
-unchanged. The [cleanup receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-output-cleanup-20261007-317c6a/REPORT-01.md)
+unchanged. The cleanup receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/guarded-resource-output-cleanup-20261007-317c6a/REPORT-01.md`)
 has SHA256 `79be553f0d626ff2d27dedb09ca0d377f3b67a2dcf136238ab4ff1b02b8785d9`.
 No sealed source/raw member, C: target or other-agent output is removed.
 
