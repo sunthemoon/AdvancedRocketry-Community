@@ -172,6 +172,7 @@ Updated 2026-10-15. Dispatch order: progress first, then the parallel bugs.
   - the intermittent `cancellationreleasesexactlyonetransferclaim` GameTest ("Pad fixture/flight did not
     become ready"; hosted run 38400162712 failed once at `01e6b457` and passed on rerun);
   - the 5 ms atmosphere-boundary budget, which needs an ADR (it recurred on 2026-10-13);
+  - `NaturalBedGameTests.sixNativeHostsSleepKeepAbsenceAndTuplesAndRefuseLate` (batch `natural_beds_matrix`) timed out once ("Didn't succeed or fail within 60 ticks") on W70's branch run 38718568565, a hosted run unrelated to beds; rerun requested. Six Levels' chunk loading inside 60 ticks is the likely cause (the 2026-10-10 tick-pacing pattern).
   - the HotSpot C2 crash, if it recurs;
   - the horse-family fall follow-up, which needs a Mixin ADR;
   - the slow-falling Moon hover;
