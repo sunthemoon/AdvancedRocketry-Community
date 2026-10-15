@@ -33,6 +33,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                         .flatMap(java.util.function.Function.identity()).map(EscrowAdmissionAuthority.Pending::of).toList()));
     }
     public boolean productionAdmissionEnabled() { return false; }
+    public boolean operational() { owner(); return !closed && !writer.unavailable(); }
     public EscrowLedger ledger() { return data.ledger(); }
     public long nextSequence() { owner(); return Math.addExact(Math.max(issued, data.ledger().issuedThrough()), 1); }
     public EscrowAdmissionAuthority admissionAuthority() { owner(); return admission; }
@@ -283,13 +284,13 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public boolean logicalLocked(UUID logical) {
         owner();
-        return flightWrites.locked(logical) || data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))
+        return !operational() || flightWrites.locked(logical) || data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))
                 || frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
                 || unresolved()
                 .anyMatch(op -> logical.equals(op.guard().rocket()));
     }
     public boolean locked(EscrowEndpoint.Key endpoint) {
-        return frontiers.containsKey(endpoint) || EscrowSettlementTombstones.endpointLocked(data.ledger(), endpoint) || unresolved()
+        return !operational() || frontiers.containsKey(endpoint) || EscrowSettlementTombstones.endpointLocked(data.ledger(), endpoint) || unresolved()
                 .anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
     }
     private java.util.stream.Stream<EscrowOperation> unresolved() {

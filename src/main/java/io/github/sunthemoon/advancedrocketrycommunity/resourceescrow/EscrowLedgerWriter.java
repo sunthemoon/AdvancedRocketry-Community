@@ -57,6 +57,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     private boolean closed;
     private boolean draining;
     private boolean uncertain;
+    private boolean baselineFailed;
     private int failures;
     private int drainUnknown;
     private long retryAt;
@@ -80,18 +81,16 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         this.checkpoint = checkpoint;
     }
     /** Checked startup target, not a staged candidate or an in-memory deserialization, supplies release authority. */
-    void baseline(EscrowLedger loaded) {
+    boolean baseline(EscrowLedger loaded) {
         owner(); EscrowTags.require(active == null && loaded.writerGeneration() == durableGeneration, "Invalid baseline generation");
+        if (baselineFailed) { return false; }
         try {
-            var expected = EscrowCodec.encode(loaded);
-            var first = CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW);
-            var second = CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW);
-            EscrowTags.require(first.equals(second) && (first.isPresent() ? first.get().equals(expected)
-                    : loaded.writerGeneration() == 0 && loaded.records().isEmpty() && loaded.floors().isEmpty()
-                    && loaded.tombstones().isEmpty() && loaded.armedFlights().isEmpty() && loaded.rocketAuthorities().isEmpty()
-                    && loaded.issuedLaunchSerial() == 0), "Escrow checked baseline differs from loaded authority");
-            durableDigest = first.isPresent() ? EscrowCodec.digest(expected) : null;
-        } catch (RuntimeException failure) { throw new IllegalStateException("Escrow checked startup baseline unavailable", failure); }
+            durableDigest = EscrowLedgerBaseline.require(file, loaded); return true;
+        } catch (RuntimeException failure) {
+            baselineFailed = true;
+            LOGGER.warn("ARCE_ESCROW_BASELINE_UNAVAILABLE generation={}; escrow actions refused until stopped-server whole-world repair", durableGeneration);
+            return false;
+        }
     }
     public boolean request(Supplier<Snapshot> capture, Consumer<Completion> callback) {
         return request(capture, callback, () -> true);
@@ -99,7 +98,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     /** Guard may read only immutable data and atomic proof tokens, never Minecraft objects. */
     public boolean request(Supplier<Snapshot> capture, Consumer<Completion> callback, BooleanSupplier beforeReplace) {
         owner();
-        if (closed || draining) { return false; }
+        if (closed || draining || baselineFailed) { return false; }
         Request request = new Request(capture, callback, beforeReplace);
         if (active == null) { active = request; captureAndStart(); return true; }
         if (successor != null) { return false; }
@@ -221,7 +220,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     java.util.List<EscrowOperation> capturedOperations() {
         owner(); return captured == null ? java.util.List.of() : captured.ledger().records();
     }
-    public boolean unavailable() { owner(); return failures >= 3; }
+    public boolean unavailable() { owner(); return baselineFailed || failures >= 3; }
     public boolean idle() { owner(); return active == null; }
     boolean unknown() { owner(); return uncertain; }
     public long lastGeneration() { owner(); return lastGeneration; }

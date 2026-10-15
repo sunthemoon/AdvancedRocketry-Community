@@ -120,7 +120,7 @@ public final class WorldDataMigrationService {
                         type.dataName() + " uses future schema " + migration.sourceSchema()
                 );
             }
-            ManagedSavedDataPayloadValidator.validate(type, migration.payload());
+            ManagedSavedDataPayloadValidator.validate(type, migration.payload(), source);
             sources.add(new SourceFile(
                     type,
                     source,

@@ -40,4 +40,19 @@ class EscrowStartupTest {
         }
     }
     private Path file() { return world.resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()); }
+    @Test void nonIdempotentButDecodableBaselineIsRefusedBeforeStartWithoutTouchingTheFile() throws Exception {
+        Files.createDirectories(world.resolve("data"));
+        var payload = EscrowCodec.encode(EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)));
+        payload.getList("records", 10).getCompound(0).put("settlement", new CompoundTag());
+        assertDoesNotThrow(() -> EscrowCodec.decode(payload));
+        var outer = new CompoundTag(); outer.put("data", payload); NbtIo.writeCompressed(outer, file().toFile());
+        byte[] before = Files.readAllBytes(file());
+        for (int i = 0; i < 2; i++) {
+            var failure = assertThrows(SavedDataMigrationException.class, () -> new WorldDataMigrationService().migrate(world));
+            assertTrue(failure.getMessage().contains("failed semantic validation"));
+            assertTrue(failure.getCause().getMessage().contains("baseline differs"));
+            assertArrayEquals(before, Files.readAllBytes(file()));
+            assertFalse(Files.exists(world.resolve("advancedrocketrycommunity-backups")));
+        }
+    }
 }

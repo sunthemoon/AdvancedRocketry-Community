@@ -33,6 +33,10 @@ public final class BetaWorldMigrationEvents {
                     report.backupDirectory().orElse("none")
             );
         } catch (SavedDataMigrationException exception) {
+            if (recoveryHint(worldRoot).equals(ESCROW_HINT)) {
+                logEscrowRefusal(exception.diagnosticId());
+                throw exception;
+            }
             AdvancedRocketryCommunity.LOGGER.error(
                     "[{}] Beta world data check blocked startup: {}. {}",
                     exception.diagnosticId().code(),
@@ -42,6 +46,11 @@ public final class BetaWorldMigrationEvents {
             );
             throw exception;
         }
+    }
+
+    static void logEscrowRefusal(MigrationDiagnosticId diagnostic) {
+        AdvancedRocketryCommunity.LOGGER.error("[{}] Beta world data check blocked startup; escrow authority unavailable. {}",
+                diagnostic.code(), ESCROW_HINT);
     }
 
     /** A world with an escrow ledger must never roll back managed files alone, whichever type refused startup. */

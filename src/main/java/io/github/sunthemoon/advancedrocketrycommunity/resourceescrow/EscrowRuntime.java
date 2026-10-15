@@ -122,6 +122,7 @@ public final class EscrowRuntime {
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) {
             var coordinator = data.bind(event.getServer());
+            if (!data.operational()) { return; }
             if (runtime.scheduler == null) {
                 runtime.scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition,
                         (op, records, completion) -> RocketEscrowAudit.attempt(coordinator, event.getServer(), op, records, completion));
