@@ -16,10 +16,12 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.CommandEvent;
 import net.minecraftforge.eventbus.api.IEventListener;
@@ -83,6 +85,17 @@ final class NaturalBedFixtures {
         Room(ServerLevel level, BlockPos vent) { this.level = level; this.vent = vent; }
 
         BlockPos head() { return SleepRespawnGameTests.bedHead(vent); }
+
+        /**
+         * The vent's own block entity ticks. Vanilla ticks it only in a block-ticking chunk whose entity sections have
+         * loaded, and a newly forced chunk loads them asynchronously. Until then the atmosphere service has seen only
+         * the fixture's one manual vent tick; its next tick drops the unobserved vent and the room returns to vacuum.
+         */
+        boolean live() {
+            LevelChunk chunk = level.getChunkSource().getChunkNow(vent.getX() >> 4, vent.getZ() >> 4);
+            return chunk != null && chunk.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING)
+                    && level.areEntitiesLoaded(ChunkPos.asLong(vent));
+        }
     }
 
     static final class Fixture implements AutoCloseable {
@@ -125,21 +138,27 @@ final class NaturalBedFixtures {
         }
 
         boolean ready() {
-            return rooms.stream().allMatch(room -> {
-                if (room.level.dimension().equals(ExoplanetContent.TAU_CETI_F_LEVEL)) {
-                    // The production authority idles vents in comfortable, breathable ambient air. There is no
-                    // supplied volume to wait for on f; both native bed cells must still report breathable air.
-                    return AtmosphereRuntime.breathabilityAt(room.level, room.head()).orElse(null)
-                            == BreathabilityState.BREATHABLE
-                            && AtmosphereRuntime.breathabilityAt(room.level, room.head().west()).orElse(null)
-                            == BreathabilityState.BREATHABLE;
-                }
-                return SleepRespawnGameTests.suppliedBed(room.level, room.vent);
-            });
+            return rooms.stream().allMatch(this::ready);
+        }
+
+        /** The room is live and its bed cells are breathable, so a bed call now meets the running authority. */
+        boolean ready(Room room) {
+            if (!room.live()) {
+                return false;
+            }
+            if (room.level.dimension().equals(ExoplanetContent.TAU_CETI_F_LEVEL)) {
+                // The production authority idles vents in comfortable, breathable ambient air. There is no
+                // supplied volume to wait for on f; both native bed cells must still report breathable air.
+                return AtmosphereRuntime.breathabilityAt(room.level, room.head()).orElse(null)
+                        == BreathabilityState.BREATHABLE
+                        && AtmosphereRuntime.breathabilityAt(room.level, room.head().west()).orElse(null)
+                        == BreathabilityState.BREATHABLE;
+            }
+            return SleepRespawnGameTests.suppliedBed(room.level, room.vent);
         }
 
         String status() {
-            return rooms.stream().map(room -> room.level.dimension().location() + ":air="
+            return rooms.stream().map(room -> room.level.dimension().location() + ":live=" + room.live() + ",air="
                     + AtmosphereRuntime.breathabilityAt(room.level, room.head()) + ",supplied="
                     + SleepRespawnGameTests.suppliedBed(room.level, room.vent) + ",metrics="
                     + AtmosphereRuntime.metrics(room.level)).toList().toString();
