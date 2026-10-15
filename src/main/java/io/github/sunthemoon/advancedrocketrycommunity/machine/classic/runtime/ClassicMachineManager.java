@@ -34,6 +34,20 @@ public final class ClassicMachineManager {
     private final Map<ClassicMachineRecipe, Optional<ProcessDefinition>> resolved = new HashMap<>();
     private long patternGeneration = -1;
     private boolean closed;
+    // Explicitly enabled by the dedicated GameTest only; no allocation/clock reads in ordinary play.
+    private WorkCounters testCounters;
+    static final class WorkCounters {
+        private final java.util.Set<BlockPos> positions;
+        long ticks, searches, candidates, revalidations, nanos;
+        private WorkCounters(java.util.Set<BlockPos> positions) { this.positions = java.util.Set.copyOf(positions); }
+    }
+    WorkCounters beginCountingForTest(java.util.Set<BlockPos> positions) {
+        if (!net.minecraftforge.gametest.ForgeGameTestHooks.isGametestServer() || testCounters != null) {
+            throw new IllegalStateException("Classic work counters require an exclusive GameTest");
+        }
+        testCounters = new WorkCounters(positions); return testCounters;
+    }
+    void endCountingForTest() { testCounters = null; }
     private io.github.sunthemoon.advancedrocketrycommunity.api.environment.EnvironmentQueries environments;
     void environments(io.github.sunthemoon.advancedrocketrycommunity.api.environment.EnvironmentQueries value) { environments = value; }
     boolean gravityAllows(BlockPos position) {
@@ -109,6 +123,7 @@ public final class ClassicMachineManager {
     }
     public void tick() {
         if (closed || !level.getServer().isSameThread()) { return; }
+        long started = testCounters == null ? 0 : System.nanoTime();
         boolean enabled = CommonConfig.sawmillVanillaWood();
         if (enabled != sawmillEnabled) { sawmillEnabled = enabled; reloadRecipes(); }
         long generation = patterns.status().generation();
@@ -129,6 +144,7 @@ public final class ClassicMachineManager {
             if (controller == null || !controller.physical()) { return; }
             var pattern = pattern(controller);
             if (pattern.isEmpty()) { controller.catalogUnavailable(); return; }
+            if (testCounters != null && testCounters.positions.contains(key.position())) { testCounters.revalidations++; }
             controller.revalidate(level, pattern.orElseThrow()); index(controller); wake(key.position());
         });
         var queued = processes.iterator(); var again = new ArrayList<BlockPos>(); int budget = 256;
@@ -139,6 +155,7 @@ public final class ClassicMachineManager {
             List<ClassicMachineRecipe> catalog = catalog(controller);
             if (catalog == null) { controller.catalogUnavailable(); continue; }
             if (controller.needsLookup() && !search.pending(position)) {
+                if (testCounters != null && testCounters.positions.contains(position)) { testCounters.searches++; }
                 if (search.enqueue(position, catalog)) { controller.lookupStarted(); }
                 else { controller.catalogUnavailable(); }
             }
@@ -152,12 +169,14 @@ public final class ClassicMachineManager {
         }
         processes.addAll(again);
         search.tick((position, recipe) -> {
+            if (testCounters != null && testCounters.positions.contains(position)) { testCounters.candidates++; }
             var controller = controllers.get(position); var definition = resolve(recipe);
             return controller != null && definition != null && controller.candidateMatches(recipe, definition);
         }, (position, recipe) -> {
             var controller = controllers.get(position);
             if (controller != null) { controller.lookupCompleted(recipe); wake(position); }
         });
+        if (testCounters != null) { testCounters.ticks++; testCounters.nanos += System.nanoTime() - started; }
     }
     private List<ClassicMachineRecipe> catalog(ClassicControllerBlockEntity controller) {
         var kind = controller.definition().kind();
@@ -185,6 +204,7 @@ public final class ClassicMachineManager {
         }).orElse(null);
     }
     public void close() {
+        testCounters = null;
         environments = null;
         closed = true; controllers.values().forEach(ClassicControllerBlockEntity::invalidate);
         controllers.clear(); footprints.clear(); dirty.clear(); retry.clear(); processes.clear(); search.clear(); catalogs.clear(); resolved.clear();
