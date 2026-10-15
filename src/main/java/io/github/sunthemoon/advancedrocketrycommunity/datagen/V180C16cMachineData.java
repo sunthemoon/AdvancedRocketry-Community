@@ -134,7 +134,7 @@ public final class V180C16cMachineData implements DataProvider {
                     var matcher = switch (layers[layer][row].charAt(col)) {
                         case 'Q' -> object("block", NS + ":quartz_crucible"); case 'B' -> object("block", NS + ":machine_casing");
                         case 'E' -> object("block", NS + ":endgame_casing"); case 'S' -> object("tag", "minecraft:slabs");
-                        case 'M' -> object("tag", NS + ":motors"); case '.' -> object("tag", V180ArcCuttingData.CLEARANCE_TAG);
+                        case 'M' -> object("tag", NS + ":motors"); case '.' -> V180ArcCuttingData.clearance();
                         case 'I' -> object("port", "item_input"); case 'O' -> object("port", "item_output");
                         case 'L' -> object("port", "fluid_input"); case 'l' -> object("port", "fluid_output"); case 'P' -> object("port", "energy_input");
                         case 'C' -> flag("controller"); case 'A' -> flag("air"); default -> throw new IllegalArgumentException();

@@ -21,6 +21,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.station.pad.*;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.service.*;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -28,9 +30,12 @@ import java.util.function.BooleanSupplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GameTestInfo;
+import net.minecraft.gametest.framework.GameTestListener;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -41,6 +46,9 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(AdvancedRocketryCommunity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class LandingPadGameTests {
+    private static final TicketType<UUID> FIXTURE_TICKET = TicketType.create(
+            "arce_gametest_landing_pad", Comparator.<UUID>naturalOrder(), 400);
+
     private LandingPadGameTests() { }
     private record Fixture(ServerLevel space, StationState station, BlockPos pad) { }
 
@@ -256,11 +264,41 @@ public final class LandingPadGameTests {
         var station = new StationCreationService(new StationPlatformGenerator(), id -> true).create(helper.getLevel().getServer(),
                 UUID.randomUUID(), "Pad Test", CelestialIds.EARTH_ID, false).station().orElseThrow();
         var pad = new BlockPos(station.landingPad().x() + 32, station.landingPad().y() - 1, station.landingPad().z());
+        retainPadChunks(helper, space, station.stationId(), pad);
         for (int x = -2; x <= 2; x++) { for (int z = -2; z <= 2; z++) {
             var pos = pad.offset(x, 0, z); space.getChunk(pos); space.setBlock(pos, Blocks.GRAY_CONCRETE.defaultBlockState(), Block.UPDATE_ALL);
         } }
         space.setBlock(pad, ModBlocks.LANDING_PAD.get().defaultBlockState(), Block.UPDATE_ALL);
         return new Fixture(space, station, pad);
+    }
+
+    private static void retainPadChunks(GameTestHelper helper, ServerLevel space, UUID ticket, BlockPos pad) {
+        var chunks = new ArrayList<ChunkPos>();
+        for (int x = (pad.getX() - 2) >> 4; x <= (pad.getX() + 2) >> 4; x++) {
+            for (int z = (pad.getZ() - 2) >> 4; z <= (pad.getZ() + 2) >> 4; z++) {
+                chunks.add(new ChunkPos(x, z));
+            }
+        }
+        helper.assertTrue(chunks.size() <= 4, "Pad fixture exceeded its four-chunk footprint");
+        // getChunk's UNKNOWN ticket lasts only one tick. If entity IO misses that window, the
+        // paced wait can observe an unloaded pad forever. Retain FULL, not ENTITY_TICKING: the
+        // production transfer still owns its destination ticking tickets and readiness checks.
+        // The terminal listener also releases these test-owned tickets after a failed assertion.
+        try {
+            var field = GameTestHelper.class.getDeclaredField("testInfo");
+            field.setAccessible(true);
+            ((GameTestInfo) field.get(helper)).addListener(new GameTestListener() {
+                private void release() {
+                    chunks.forEach(chunk -> space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 0, ticket));
+                }
+                @Override public void testStructureLoaded(GameTestInfo info) { }
+                @Override public void testPassed(GameTestInfo info) { release(); }
+                @Override public void testFailed(GameTestInfo info) { release(); }
+            });
+        } catch (ReflectiveOperationException failure) {
+            throw new IllegalStateException("Pad fixture terminal listener unavailable", failure);
+        }
+        chunks.forEach(chunk -> space.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 0, ticket));
     }
     private static RocketStructureSnapshot sourceSnapshot(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 2, 3); BlockPos origin = helper.absolutePos(relative);
