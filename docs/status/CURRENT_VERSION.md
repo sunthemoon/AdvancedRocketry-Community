@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 5e59f5c034a11fe39ec42497b6c96a69bfa7727d
-latest_hosted_regression: run 38661777051 at 6bd6e1eb636e3af3a8b77b0bbee9a65f7de2a729, passed
+latest_code_commit: c2aa531968bb63a13f86500e20b28a8797124340
+latest_hosted_regression: run 38700066595 at 86f681d0774e2fa6f9acf6957429ab7a6284ef49, passed
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
