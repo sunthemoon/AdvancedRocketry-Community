@@ -88,14 +88,15 @@ public final class EscrowGovernedDispatch implements AutoCloseable {
 
     static Authority acquire(Supplier<EscrowLedger> ledger, BooleanSupplier operational,
                              RocketTransferSavedData journal, RocketTransferRecord record) {
-        if (!operational.getAsBoolean() || !journal.acknowledgedCurrent()
+        if (!operational.getAsBoolean() || !journal.actionAuthorityAvailable()
                 || journal.find(record.transferId()).filter(record::equals).isEmpty()) { return null; }
         var guard = journal.acknowledgedGuard(record.logicalRocketId()).orElse(null);
         if (guard == null || !record.transferId().equals(guard.transfer())) { return null; }
         var root = ledger.get(); var lease = journal.acknowledgedLease();
         var decision = decide(root, record);
         return new Authority(root, record, decision, () -> operational.getAsBoolean()
-                && ledger.get() == root && lease.getAsBoolean());
+                && ledger.get() == root && lease.getAsBoolean() && journal.actionAuthorityAvailable()
+                && journal.find(record.transferId()).filter(record::equals).isPresent());
     }
 
     /** The caller supplies only the checked ledger baseline/current acknowledged root, never a candidate. */

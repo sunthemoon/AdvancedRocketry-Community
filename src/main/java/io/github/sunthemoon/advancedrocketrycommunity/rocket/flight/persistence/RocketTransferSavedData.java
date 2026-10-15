@@ -380,6 +380,11 @@ public final class RocketTransferSavedData extends SavedData {
         return operational() && !isDirty() && checkpoint.current(mutationSequence);
     }
 
+    /** Owner-thread effects need current authority and a live journal, not just an unchanged IO lease. */
+    public boolean actionAuthorityAvailable() {
+        return !stopping && !failedWrite && acknowledgedCurrent();
+    }
+
     public long mutationSequence() { return mutationSequence; }
 
     /** Owner-thread acquisition; the returned lease reads only a volatile sequence off-thread. */

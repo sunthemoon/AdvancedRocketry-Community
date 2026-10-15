@@ -29,6 +29,12 @@ public final class EscrowRecoveryFence {
         return EscrowSettlementTombstones.logicalLocked(ledger, logical);
     }
 
+    /** Checked, action-specific present-source authority; never a fresh flag or a KEEP_SOURCE exemption. */
+    static String reason(EscrowGovernedDispatch.Authority authority, EscrowGovernedSourceRecovery.Action action,
+                         EscrowGovernedSourceRecovery.Observation observation, long gameTime) {
+        return EscrowGovernedSourceRecovery.reason(authority, action, observation, gameTime);
+    }
+
     /** Inputs are an already-loaded, bounded observation in the election order used by recovery. */
     public static String reason(EscrowLedger ledger, UUID logical, UUID transfer,
                                 RocketTransferRecoveryAction action, List<Rocket> sources, List<Rocket> destinations) {

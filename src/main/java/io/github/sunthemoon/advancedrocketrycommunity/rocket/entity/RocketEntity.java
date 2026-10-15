@@ -183,6 +183,17 @@ public final class RocketEntity extends Entity implements MenuProvider {
         refreshSyncedData();
     }
 
+    /** Exact present-source resume/return. Outcome and resource release still require checked F6-F8. */
+    public void recoverGovernedSource(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedSourceRecovery.Permit permit) {
+        var change = Objects.requireNonNull(permit).consume(this);
+        RocketFlightData previous = flightData;
+        flightData = change.flight();
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previous; throw failure; }
+        setPos(change.position().x, change.position().y, change.position().z);
+        refreshSyncedData();
+    }
+
     public RocketFlightState displayedFlightState() {
         try {
             return RocketFlightState.valueOf(entityData.get(DISPLAYED_FLIGHT_STATE));
