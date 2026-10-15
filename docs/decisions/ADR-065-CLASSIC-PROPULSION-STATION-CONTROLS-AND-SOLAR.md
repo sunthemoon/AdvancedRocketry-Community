@@ -849,6 +849,20 @@ affects only that cleanup file, not other SavedData files. Recovery requires the
 same backup/offline repair procedure. Native stop/restart and human risk acceptance
 remain separate evidence and are not granted by this implementation note.
 
+### W59 implementation note: empty reservations of unowned projectors
+
+This note documents reservation mechanics, not a changed decision. Since W04F every readable
+projector in a loaded Level reserves one cleanup-root entry, unowned ones included. An unowned
+projector's entry uses the all-zero owner UUID as an internal sentinel and has zero claims; it grants
+no ownership or effect, and binding by a connected player replaces it in place without another slot.
+When NBT replaces a live projector's identity (an operator's item `BlockEntityTag`, a structure
+template placed into a live Level, `/setblock` or `/data`), the projector releases its previous entry
+only if that entry is exactly its own non-orphan, zero-claim sentinel entry, and then reserves the
+loaded identity under the ordinary admission rules. A refused root, a full root without that entry,
+and a loaded identity whose key holds another entry or a tombstone refuse as before. A bound, claimed
+or foreign entry is never released. Chunk loads from disk are unchanged. No save refusal is added
+(W59; W04F review N5).
+
 ### W13 implementation note: landing-pad save protection
 
 This implementation note does not change a decision or accept risk R-023.
