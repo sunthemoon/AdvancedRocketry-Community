@@ -94,6 +94,25 @@ public final class RocketTransactionSavedData extends SavedData {
                 .toList();
     }
 
+    /**
+     * Whether an assembly or disassembly record claims the position: its region contains it in that dimension. A
+     * blocked journal claims every position, since its records cannot be read. At most 256 records are checked.
+     */
+    public boolean claims(ResourceLocation dimension, RocketPosition position) {
+        Objects.requireNonNull(dimension, "dimension");
+        Objects.requireNonNull(position, "position");
+        if (preservedBlockedData != null) {
+            return true;
+        }
+        for (RocketPersistedTransaction entry : entries.values()) {
+            RocketRegion region = entry.record().region();
+            if (region.dimension().equals(dimension) && region.contains(position)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public RocketTransactionJournal journalFor(
             RocketStructureSnapshot snapshot,
             UUID ownerId
