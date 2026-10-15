@@ -717,11 +717,14 @@ C17b candidate03 的独立审核已解决旧版 Medium
   [检查点](../work/v1.8.0-c19-strict-validator/INVENTORY-CHECKPOINT-11.md)记录固定候选
   Root 17/148、独立 17/148/18 方法通过；保留历史非空输入及负向/分发断言。
   不改变生产白名单、来源判定或原 180 秒预算。完整 Python/strict 仍超时，C19 未完成。
-- [ ] R11-OPS01：独立清理 launcher 未启动，exit 125，零删除/重试；四份缓存
+- [x] R11-OPS01：独立清理 launcher 未启动，exit 125，零删除/重试；四份缓存
   535508 bytes 和十个自有临时目录保留。源码审核不等于操作任务全部接受，Root 不接管。
-- [ ] R14-OPS01（Medium）：Root12 清理只检查目标/后代及三个自有根至卷根，
+  2026-10-15 Root（C19-E，W58 归类 C）按操作历史关闭：无代码可合入，残留只在本机，不影响产品。
+- [x] R14-OPS01（Medium）：Root12 清理只检查目标/后代及三个自有根至卷根，
   未单独检查嵌套 .cache 的每级父目录；词法 GetFullPath/prefix 不等于物理解析。
   未观察到重定向或越界删除。另立更正记录，未来 helper 需补齐，旧清理/封存包不重试或修改。
+  2026-10-15 Root（C19-E，W58 归类 C）按操作历史关闭：本地验证改由托管运行承担，旧 helper 不再使用；
+  若将来新增清理 helper，须逐级检查父目录。
 - [~] [C19-CHECKSUM-INPUT-16](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-TASK-16.md)：
   status: in-progress。三文件源码 `0cefe86e` 的精确后像已集成、正常推送至 `a38f1dc9`；
   [检查点](../work/v1.8.0-c19-strict-validator/CHECKSUM-INPUT-CHECKPOINT-16.md)
@@ -1065,6 +1068,7 @@ Root 构建/强制单测各执行 2192 项 JUnit/381 XML，全部 597 项必需 
 独立11清理未启动的 R11-OPS01 及四份缓存保留；源码、旧拒绝目录、独立05残留
 和继承债务不接管。历史诊断08/09与原 Low 更正保持封存，不能替代最新资格。
 独立固定对象14的历史审核及 R14-OPS01 Medium 操作证明缺口继续保留。
+（R11-OPS01 与 R14-OPS01 已于 2026-10-15 由 Root 按操作历史关闭，见 C19 节；本段保留当时状态。）
 checksum 的限定本地/Git 源码已有独立审核、正常推送和标准子集验证；
 最新封存包/源码别名已有独立复核；旧操作证明、委托归档资源和可移植引用仍开放。
 不能扩大白名单、删断言、盲目合并不同历史身份或延长预算。
