@@ -34,7 +34,7 @@ public final class BetaWorldMigrationEvents {
             );
         } catch (SavedDataMigrationException exception) {
             if (recoveryHint(worldRoot).equals(ESCROW_HINT)) {
-                logEscrowRefusal(exception.diagnosticId());
+                logEscrowRefusal(exception);
                 throw exception;
             }
             AdvancedRocketryCommunity.LOGGER.error(
@@ -48,9 +48,20 @@ public final class BetaWorldMigrationEvents {
         }
     }
 
-    static void logEscrowRefusal(MigrationDiagnosticId diagnostic) {
-        AdvancedRocketryCommunity.LOGGER.error("[{}] Beta world data check blocked startup; escrow authority unavailable. {}",
-                diagnostic.code(), ESCROW_HINT);
+    static void logEscrowRefusal(SavedDataMigrationException exception) {
+        AdvancedRocketryCommunity.LOGGER.error("[{}] Beta world data check blocked startup; type={}; reason={}. {}",
+                exception.diagnosticId().code(), exception.dataType().map(Enum::name).orElse("WORLD"),
+                boundedReason(exception.getMessage()), ESCROW_HINT);
+    }
+    private static String boundedReason(String message) {
+        if (message == null) { return "No diagnostic message"; }
+        var line = new StringBuilder();
+        for (int i = 0; i < Math.min(160, message.length()); i++) {
+            char value = message.charAt(i);
+            line.append(Character.isISOControl(value) || Character.isWhitespace(value) || Character.isSpaceChar(value) ? ' ' : value);
+        }
+        if (message.length() > 160) { line.append("..."); }
+        return line.toString();
     }
 
     /** A world with an escrow ledger must never roll back managed files alone, whichever type refused startup. */
