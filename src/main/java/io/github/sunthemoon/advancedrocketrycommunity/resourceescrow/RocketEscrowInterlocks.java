@@ -28,13 +28,20 @@ public final class RocketEscrowInterlocks {
     public static void left(net.minecraftforge.event.entity.EntityLeaveLevelEvent event) {
         // Forge posts this on tracking loss as well as removal. A previously loaded proof is no longer current.
         if (!event.getLevel().isClientSide && event.getEntity() instanceof RocketEntity rocket) {
+            EscrowRuntime.of(rocket.getServer()).invalidateFlight(rocket);
             RocketEscrowAudit.observe(rocket);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.onRocketJoined(rocket);
         }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void mount(EntityMountEvent event) {
-        if (event.isDismounting()) { return; }
+        if (event.isDismounting()) {
+            if (event.getEntityBeingMounted() instanceof RocketEntity rocket && !rocket.level().isClientSide) {
+                // The event precedes passenger-list removal; invalidate before a writer replacement.
+                EscrowRuntime.of(rocket.getServer()).invalidateFlight(rocket);
+            }
+            return;
+        }
         if (protectedRocket(event.getEntityMounting()) || protectedRocket(event.getEntityBeingMounted())) { event.setCanceled(true); }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)

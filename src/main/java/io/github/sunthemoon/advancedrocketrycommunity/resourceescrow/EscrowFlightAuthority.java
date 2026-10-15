@@ -75,7 +75,7 @@ final class EscrowFlightAuthority {
         // Existing journal records are checked by the adapter, never inferred absent from this root.
     }
 
-    /** F7 only; exact F6 proof tokens and a current checked journal lease remain writer prerequisites. */
+    /** Terminal write; F6 joint proofs, or F1's exact source plus checked no-T, remain writer prerequisites. */
     static EscrowLedger finish(EscrowLedger root, EscrowFlightTables.Armed expected, EscrowFlightTables.Outcome outcome,
                               UUID physical, long epoch, String signature, String invariant) {
         EscrowTags.require(outcome == EscrowFlightTables.Outcome.HANDED_OFF || outcome == EscrowFlightTables.Outcome.CANCELLED,

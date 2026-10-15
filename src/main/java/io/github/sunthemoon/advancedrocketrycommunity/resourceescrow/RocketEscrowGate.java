@@ -12,6 +12,15 @@ public final class RocketEscrowGate {
         return escrowIdle(rocket);
     }
 
+    /** Frozen flight authority also protects non-resource state and the boarded manifest. */
+    public static boolean flightFrozen(RocketEntity rocket) {
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return true; }
+        if (rocket.assemblyTransactionId().filter(EscrowRuntime.of(level.getServer()).flightCheckpoint()::locked).isPresent()) { return true; }
+        var data = ResourceEscrowSavedData.existing(level.getServer());
+        return data != null && data.ledger().armedFlights().stream()
+                .anyMatch(arm -> rocket.assemblyTransactionId().filter(arm.logical()::equals).isPresent());
+    }
+
     /** Bay-scoped permits may bypass only the bay hold, never these existing escrow protections. */
     public static boolean escrowIdle(RocketEntity rocket) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) {
@@ -19,6 +28,7 @@ public final class RocketEscrowGate {
         }
         var section = rocket.escrowSection();
         UUID logical = rocket.assemblyTransactionId().orElse(null);
+        if (logical != null && EscrowRuntime.of(level.getServer()).flightCheckpoint().locked(logical)) { return false; }
         if (!section.markers().isEmpty()) { return false; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null) { return section.ledger() == null; }
@@ -47,6 +57,7 @@ public final class RocketEscrowGate {
     }
 
     public static boolean escrowLogicalLocked(net.minecraft.server.MinecraftServer server, UUID logical) {
+        if (EscrowRuntime.of(server).flightCheckpoint().locked(logical)) { return true; }
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return false; }
         return data.bind(server).logicalLocked(logical) || EscrowSettlementTombstones.logicalLocked(data.ledger(), logical);

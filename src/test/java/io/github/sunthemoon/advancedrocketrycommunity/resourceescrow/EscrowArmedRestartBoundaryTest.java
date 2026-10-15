@@ -123,7 +123,7 @@ class EscrowArmedRestartBoundaryTest {
         }
     }
 
-    private static void acknowledge(RocketTransferSavedData journal, Path file) throws InterruptedException {
+    static void acknowledge(RocketTransferSavedData journal, Path file) throws InterruptedException {
         journal.setDirty();
         journal.save(file.toFile());
         for (int tick = 0; tick < 1_000 && !journal.acknowledgedCurrent(); tick++) {

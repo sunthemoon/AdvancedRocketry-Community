@@ -41,8 +41,18 @@ public final class EscrowRuntime {
     private EscrowRocketAuditProbe rocketAuditProbe;
     private EscrowSettlementProbe settlementProbe;
     private EscrowSettlementCompletionProbe settlementCompletionProbe;
+    private EscrowPreF2Probe preF2Probe;
     private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
     private final EscrowSettlementRecovery settlements = new EscrowSettlementRecovery();
+    private final EscrowPreF2Cancellation preF2Cancellation = new EscrowPreF2Cancellation();
+    private final EscrowFlightCheckpoint flightCheckpoint = new EscrowFlightCheckpoint();
+    EscrowFlightCheckpoint flightCheckpoint() { return flightCheckpoint; }
+    void observeFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
+        flightCheckpoint.observe(rocket); preF2Cancellation.observe(rocket);
+    }
+    void invalidateFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
+        flightCheckpoint.invalidated(rocket); preF2Cancellation.invalidated(rocket);
+    }
     EscrowSettlementOperator settlement() { return settlement; }
     String settlementPhase() { return settlements.phase(); }
     EscrowTimingSink timings() { return benchmark == null ? EscrowTimingSink.NONE : benchmark; }
@@ -62,6 +72,7 @@ public final class EscrowRuntime {
         if (rocketAuditProbe != null) { rocketAuditProbe.checkpoint(cut); }
         if (settlementProbe != null) { settlementProbe.checkpoint(cut); }
         if (settlementCompletionProbe != null) { settlementCompletionProbe.checkpoint(cut); }
+        if (preF2Probe != null) { preF2Probe.checkpoint(cut); }
     }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
@@ -139,10 +150,14 @@ public final class EscrowRuntime {
             runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).persistTransitions();
         }
         if (data != null) { runtime.settlements.tick(event.getServer(), data.bind(event.getServer()), runtime); }
+        if (data != null) { runtime.preF2Cancellation.tick(event.getServer(), data.bind(event.getServer()), runtime); }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("SR_")) {
+            if (testCase.startsWith("PF_")) {
+                if (runtime.preF2Probe == null) { runtime.preF2Probe = new EscrowPreF2Probe(event.getServer()); }
+                runtime.preF2Probe.tick();
+            } else if (testCase.startsWith("SR_")) {
                 // This probe runs before settlement recovery so its deliberate veto precedes every O2 attempt.
             } else if (testCase.startsWith("SO_")) {
                 if (runtime.settlementProbe == null) { runtime.settlementProbe = new EscrowSettlementProbe(event.getServer()); }
@@ -182,6 +197,8 @@ public final class EscrowRuntime {
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) { data.stop(); }
         runtime.settlements.close();
+        runtime.preF2Cancellation.close();
+        runtime.flightCheckpoint.close();
         if (runtime.barrier != null) { runtime.barrier.close(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
@@ -206,6 +223,8 @@ public final class EscrowRuntime {
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server);
         if (data != null) { data.abort(); }
         runtime.settlements.close();
+        runtime.preF2Cancellation.close();
+        runtime.flightCheckpoint.close();
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {

@@ -51,6 +51,7 @@ public final class RocketEscrowAudit {
     /** Called at tracking, tick, live load and serialization boundaries, before any endpoint proof. */
     public static void observe(RocketEntity rocket) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return; }
+        EscrowRuntime.of(level.getServer()).observeFlight(rocket);
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null || rocket.assemblyTransactionId().isEmpty()) { return; }
         var coordinator = data.bind(level.getServer());
