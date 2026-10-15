@@ -68,14 +68,9 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                     : member.phase() == EscrowOperation.Phase.PREPARED || member.phase() == EscrowOperation.Phase.REPAIR
                     || member.phase() == EscrowOperation.Phase.STALLED, "Invalid original settlement member phase");
         }
-        var nativeLogicals = new HashSet<UUID>();
         for (Observation observation : observations) {
             EscrowTags.require(keys.add(observation.endpoint().key())
                     && (observation.missing() || ledger.equals(observation.state().ledger())), "Duplicate or foreign settlement observation");
-            if (!observation.missing() && observation.signatureKind() == EscrowSignatureKind.FUEL_VECTOR_V1) {
-                EscrowTags.require(nativeLogicals.add(observation.endpoint().logicalRocket()),
-                        "Settlement has multiple physical candidates for one logical rocket");
-            }
         }
         boolean missing = observations.stream().anyMatch(Observation::missing);
         EscrowTags.require(choice == Choice.ACCEPT_CURRENT ? !missing : missing, "Settlement choice does not match missing endpoints");
@@ -220,8 +215,19 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
     }
     private static EscrowSettlementIntent create(Choice choice, UUID ledger, UUID actor, String name, long preview, long confirmed,
                                                 List<Member> members, List<Observation> observations, CompoundTag floor) {
+        requireUniqueCandidates(observations);
         return new EscrowSettlementIntent(choice, ledger, actor, name, preview, confirmed, members, observations, floor,
                 hash(choice, ledger, actor, name, preview, members, observations, floor));
+    }
+    /** Decision-time check only: older duplicate-candidate intents must still decode and remain held. */
+    static void requireUniqueCandidates(List<Observation> observations) {
+        var nativeLogicals = new HashSet<UUID>();
+        for (var observation : observations) {
+            if (!observation.missing() && observation.signatureKind() == EscrowSignatureKind.FUEL_VECTOR_V1) {
+                EscrowTags.require(nativeLogicals.add(observation.endpoint().logicalRocket()),
+                        "Settlement has multiple physical candidates for one logical rocket");
+            }
+        }
     }
     private static String hash(Choice choice, UUID ledger, UUID actor, String name, long preview,
                                List<Member> members, List<Observation> observations, CompoundTag floor) {
