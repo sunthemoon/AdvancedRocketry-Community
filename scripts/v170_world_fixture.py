@@ -123,6 +123,7 @@ def file_inventory(directory: Path) -> list:
 
 def query(process, command: str, marker: str, timeout=60) -> str:
     start = len(process.lines)
+    process.w69_commands.append(command)
     process.command(command)
     index = process.wait_for(re.compile(marker), timeout, start_at=start)
     return process.lines[index].strip()
@@ -132,18 +133,20 @@ def launch(java: str, runtime: Path, evidence: Path, name: str, action=None) -> 
     evidence.mkdir(parents=True, exist_ok=True)
     args = "win_args.txt" if sys.platform == "win32" else "unix_args.txt"
     command = [java, "-Xms512M", "-Xmx2G", "-Dadvancedrocketrycommunity.releaseTestHooks=true",
-               "-Dforge.logging.markers=REGISTRYDUMP", "-Dforge.logging.console.level=info",
+               "-Dforge.logging.marker.registrydump=ACCEPT", "-Dforge.logging.console.level=info",
                f"@libraries/net/minecraftforge/forge/{FORGE}/{args}", "nogui"]
-    receipt = {"command": command, "cwd": str(runtime), "result": "FAIL"}
+    receipt = {"command": command, "cwd": str(runtime), "result": "FAIL", "console_commands": []}
     process = None
     try:
         process = server.CapturedProcess(command, runtime, evidence / f"{name}.log")
+        process.w69_commands = receipt["console_commands"]
         process.wait_for(server.READY_MARKER, 300)
         if action:
             action(process)
         receipt["operator_report"] = query(process, "arce beta data-report", r"ARCE-BETA-.*operational=")
         require("operational=true" in receipt["operator_report"], "Managed root refused at runtime")
         query(process, "save-all flush", server.SAVE_MARKER.pattern)
+        process.w69_commands.append("stop")
         process.command("stop")
         receipt["exit_code"] = process.finish()
         require(receipt["exit_code"] == 0, "Server did not stop normally")
@@ -193,10 +196,9 @@ def seed(process, plan: dict):
     line = query(process, "arce rocket assemble 384 100 384", r"ARCE_ROCKET_TRANSACTION operation=assembly code=SUCCESS")
     entity = re.search(r"entity=([a-f0-9-]{36})", line).group(1)
     query(process, f"arce rocket release-test refuel {entity}", r"Release-test rocket fuel=")
-    start = len(process.lines)
-    process.command(f"arce rocket release-test launch {entity} moon")
-    index = process.wait_for(re.compile(r"ARCE_TRANSFER_PHASE .*event=landing_complete"), 60, start_at=start)
-    destination = re.search(r"entity=([a-f0-9-]{36})", process.lines[index]).group(1)
+    landed = query(process, f"arce rocket release-test launch {entity} moon",
+                   r"ARCE_TRANSFER_PHASE .*event=landing_complete", 60)
+    destination = re.search(r"entity=([a-f0-9-]{36})", landed).group(1)
     query(process, f"execute in {NS}:moon run arce rocket release-test report {destination}", "ARCE_RELEASE_TEST_FLIGHT_REPORT")
 
 
@@ -236,7 +238,8 @@ def capture(world: Path, plan: dict, target: Path) -> dict:
         pos = row["pos"]
         be = entities(pos)
         require(len(be) <= 1, "Duplicate saved block entity")
-        result["blocks"].append({"pos": pos, "id": block_at(chunks[pos[0] >> 4, pos[2] >> 4], pos)["Name"],
+        state = block_at(chunks[pos[0] >> 4, pos[2] >> 4], pos)
+        result["blocks"].append({"pos": pos, "id": state["Name"], "state": state,
                                  "block_entity": be[0]["id"] if be else None})
     for pos in sorted({tuple(row["pos"]) for row in plan["items"]}):
         chests = entities(list(pos))

@@ -177,7 +177,8 @@ def run(args, report: dict):
     work.mkdir()
     (work / ".w69-owned").write_text("W69\n")
     evidence.mkdir(parents=True)
-    report.update(source_commit=args.source_commit, old_commit=fixture.OLD_COMMIT, phases=[], result="FAIL")
+    report.update(source_commit=args.source_commit, old_commit=fixture.OLD_COMMIT, phases=[], result="FAIL",
+                  evidence_created=True)
     archive = work / "v17.zip"
     git("archive", "--format=zip", f"--output={archive}", fixture.OLD_COMMIT)
     report["old_source_archive_sha256"] = fixture.server.digest_file(archive)
@@ -199,7 +200,17 @@ def run(args, report: dict):
     previous = None
     for cycle in range(3):
         name = ("upgrade", "restart-1", "restart-2")[cycle]
-        receipt = fixture.launch(args.java, new_server, evidence, name)
+        try:
+            receipt = fixture.launch(args.java, new_server, evidence, name)
+        except Exception:
+            # The process is stopped by launch before inspecting a refused/failed world.
+            # Preserve the native files even when no successful-start inventory can be claimed.
+            failed = evidence / (name + "-failed-roots")
+            failed.mkdir()
+            for path in sorted((new_server / "world/data").glob(fixture.NS + "_*.dat")):
+                shutil.copy2(path, failed / path.name)
+            report["source_world_unchanged"] = fixture.file_inventory(old_server / "world") == original_files
+            raise
         observed = fixture.capture(new_server / "world", plan, evidence / name)
         receipt["comparison_errors"] = compare_inventories(original, observed)
         if previous is not None:
@@ -233,16 +244,17 @@ def main():
     except Exception as error:
         report["failure"] = f"{type(error).__name__}: {error}"
     finally:
-        if args.evidence_dir.is_dir() and (args.work_dir / ".w69-owned").is_file():
+        if report.get("evidence_created"):
             write(args.evidence_dir / "summary.json", report)
+            total = sum(p.stat().st_size for p in args.evidence_dir.rglob("*") if p.is_file())
+            if total > 100 * 1024**2:
+                report.update(result="FAIL", failure="Evidence exceeds 100 MiB")
+                write(args.evidence_dir / "summary.json", report)
             files = [{"path": p.relative_to(args.evidence_dir).as_posix(), "bytes": p.stat().st_size,
                       "sha256": fixture.server.digest_file(p)} for p in sorted(args.evidence_dir.rglob("*"))
                      if p.is_file() and p.name != "evidence-inventory.json"]
             total = sum(p["bytes"] for p in files)
             write(args.evidence_dir / "evidence-inventory.json", {"files": files, "total_bytes": total})
-            if total > 100 * 1024**2:
-                report.update(result="FAIL", failure="Evidence exceeds 100 MiB")
-                write(args.evidence_dir / "summary.json", report)
     print(json.dumps(report, indent=2))
     return 0 if report["result"] == "PASS" else 1
 

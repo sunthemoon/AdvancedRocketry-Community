@@ -1,6 +1,10 @@
 """Small independent inventories exercise upgrade preservation and fail-closed checks."""
 import copy
+import io
+from pathlib import Path
+import tempfile
 import unittest
+from unittest.mock import patch
 
 from scripts import run_v180_world_upgrade as upgrade
 from scripts import v170_world_fixture as fixture
@@ -132,6 +136,18 @@ class MigrationTests(unittest.TestCase):
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_failed_preflight_cannot_overwrite_existing_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary)
+            (path / "summary.json").write_text("previous evidence")
+            (path / ".w69-owned").write_text("W69")
+            argv = ["runner", "--template", str(path), "--work-dir", str(path), "--evidence-dir", str(path),
+                    "--source-commit", "deadbeef", "--lock-owner", "test"]
+            with patch("sys.argv", argv), patch.object(upgrade, "run", side_effect=ValueError("preflight")), \
+                    patch("sys.stdout", new_callable=io.StringIO):
+                self.assertEqual(1, upgrade.main())
+            self.assertEqual("previous evidence", (path / "summary.json").read_text())
+
     def test_registry_dump_all_types(self):
         text = "\n".join(f"Registry Name: {kind}\n| 1 | advancedrocketrycommunity:test | object |\n"
                          for kind in fixture.REGISTRIES)
