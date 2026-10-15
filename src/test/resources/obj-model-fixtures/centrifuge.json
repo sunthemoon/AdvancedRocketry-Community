@@ -31,7 +31,7 @@
   },
   "unchanged": {
     "pattern": "advancedrocketrycommunity:centrifuge",
-    "pattern_canonical_sha256": "90bf4d6164e46dcdacf05707444ed44854baf28e995d41f6dc5d1da2ba201631",
+    "pattern_canonical_sha256": "1552dad9ac4f76b25233f6d0aa1ec0e9a168938da3828424231b7fa74c6b648e",
     "pattern_size": [3, 4, 3],
     "controller_anchor": [0, 1, 0],
     "controller_collision": "full_block"
