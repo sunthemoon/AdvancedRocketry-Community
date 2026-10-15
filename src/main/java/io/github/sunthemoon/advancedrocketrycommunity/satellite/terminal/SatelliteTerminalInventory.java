@@ -18,7 +18,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 
 /** Six-slot input policy and preflight before native item decoding. */
-final class SatelliteTerminalInventory extends ItemStackHandler {
+public final class SatelliteTerminalInventory extends ItemStackHandler {
     private final BooleanSupplier blocked;
     private final java.util.function.IntConsumer changed;
 
@@ -56,9 +56,9 @@ final class SatelliteTerminalInventory extends ItemStackHandler {
 
     /**
      * ADR-049 section 6: a data package holds a data identity and the generic package a non-data identity,
-     * so neither item can launch the other kind.
+     * so neither item can launch the other kind. The satellite bay applies the same rule (W27A-DESIGN section 6).
      */
-    static boolean validPackage(ItemStack stack) {
+    public static boolean validPackage(ItemStack stack) {
         boolean generic = stack.is(ModItems.SATELLITE_PACKAGE.get());
         if (!generic && !stack.is(ModItems.DATA_SATELLITE_PACKAGE.get())) {
             return false;

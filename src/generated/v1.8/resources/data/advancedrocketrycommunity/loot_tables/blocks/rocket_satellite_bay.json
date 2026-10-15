@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "advancedrocketrycommunity:rocket_satellite_bay"
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "entries": [
+        {
+          "type": "minecraft:dynamic",
+          "name": "advancedrocketrycommunity:rocket_satellite_bay_package"
+        }
+      ],
+      "rolls": 1
+    }
+  ]
+}

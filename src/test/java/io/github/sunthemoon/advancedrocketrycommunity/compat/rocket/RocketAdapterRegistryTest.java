@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RocketAdapterRegistrar;
 import io.github.sunthemoon.advancedrocketrycommunity.api.rocket.RocketBlockEntityAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.RocketBlockEntityAdapters;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.SatelliteBayRocketAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.forge.VanillaContainerRocketAdapter;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketBlockEntityPayload;
 import java.util.HashSet;
@@ -77,6 +78,29 @@ final class RocketAdapterRegistryTest {
                 () -> host.register(VanillaContainerRocketAdapter.ID,
                         Set.of(id("blocks:other")), 1, UNUSED_CALLBACKS));
         assertTrue(registry.freeze().supportsPayload(payload(ADAPTER, 1)));
+    }
+
+    @Test
+    void theBuiltInSatelliteBayAdapterIsFrozenBesideTheVanillaAdapterAndReserved() {
+        RocketAdapterRegistry registry = new RocketAdapterRegistry(type -> true);
+        RocketAdapterRegistrar host = registry.forOwner(SatelliteBayRocketAdapter.ID.getNamespace());
+        assertThrows(IllegalArgumentException.class,
+                () -> host.register(SatelliteBayRocketAdapter.ID, Set.of(id("blocks:bay")), 1, UNUSED_CALLBACKS));
+        RocketAdapterRegistrar registrar = registry.forOwner(OWNER);
+        assertThrows(IllegalArgumentException.class,
+                () -> registrar.register(ADAPTER, Set.of(SatelliteBayRocketAdapter.TYPE), 1, UNUSED_CALLBACKS));
+        RocketBlockEntityAdapters adapters = registry.freeze();
+        CompoundTag root = new CompoundTag();
+        root.putInt("schema_version", 1);
+        root.putUUID("owner", java.util.UUID.randomUUID());
+        assertTrue(adapters.supportsPayload(new RocketBlockEntityPayload(SatelliteBayRocketAdapter.ID, root)));
+        assertTrue(adapters.supportsPayload(new RocketBlockEntityPayload(SatelliteBayRocketAdapter.ID, new CompoundTag())));
+        // A quarantined root is never restored into a world bay.
+        CompoundTag unknown = root.copy();
+        unknown.putString("unknown", "kept");
+        assertFalse(adapters.supportsPayload(new RocketBlockEntityPayload(SatelliteBayRocketAdapter.ID, unknown)));
+        assertTrue(RocketBlockEntityAdapters.defaults().supportsPayload(
+                new RocketBlockEntityPayload(SatelliteBayRocketAdapter.ID, root)));
     }
 
     @Test

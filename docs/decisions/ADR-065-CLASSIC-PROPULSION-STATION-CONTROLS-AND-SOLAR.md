@@ -1054,6 +1054,26 @@ save/crash/replay with both live and missing satellites. Legacy registry raw-roo
 preservation and live quotas remain unchanged. Exactly-once is conditional on the
 accepted D3-A proof, never inferred from two clean restarts.
 
+### W27b implementation note: the bay block (deployment disabled)
+
+This note documents mechanics, not a changed decision; the design is `records/W27A-DESIGN.md` section 6,
+and the risk is R-038. W27b (merge `c2aa5319`) adds `advancedrocketrycommunity:rocket_satellite_bay`: a
+one-slot block whose menu and item capability share one handler, a schema-1 root (owner, then at most
+one of `package` or `consumed_op`; the package bounded at 4,096 bytes, depth 16, 256 nodes, `Count` 1),
+the package identity decoder, and the host rocket adapter `satellite_bay_v1` inside the existing
+128-payload budget. Deployment, receipts and admission are absent until W27c1 to W27e.
+
+A valid bay drops its package exactly once and an empty bay on a normal break or explosion; there is
+no `BlockEntityTag` carrier and no owner restoration on placement. A raw, unknown, future or quarantined
+root, or an unavailable package, is guarded: it refuses player break, leaves the explosion list, drops
+nothing, and is saved verbatim. A bounded native preflight decides the save (review finding W27B-R1):
+a root the terrain writer and reader keep losslessly, or one too large to examine within the work
+budget, is saved verbatim without any denial; only an observed incompatibility (over the native depth,
+a string too long for modified UTF-8, a list of mixed or end tags, a non-canonical NaN) uses the
+existing `GuardedChunkSaves` denial. Each load into a guarded state and each refused live replacement
+writes one audit WARN. The independent review is `D:/GitHub/ARCE-Task-Evidence/root-queue/W27B-review/REVIEW.md`
+(SHA-256 `8ea41a4c29a117f9095acbad62e3e743dbadf31b4b99341e645f6b9d43da1e53`).
+
 ## 9. Solar generator and array (C17c)
 
 Single `solar_generator`: 10,000 FE buffer, FE output-only on six sides, no item or

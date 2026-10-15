@@ -408,6 +408,11 @@ public final class ModBlocks {
                     .strength(3.0F, 6.0F)
                     .sound(SoundType.METAL)
                     .pushReaction(PushReaction.BLOCK)));
+    /** ADR-065 C17c (W27b): the one-slot rocket satellite bay; deployment arrives with W27d. */
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlock>
+            ROCKET_SATELLITE_BAY = BLOCKS.register("rocket_satellite_bay", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlock(
+                    metalProperties().pushReaction(PushReaction.BLOCK)));
 
     /** Passive ordinary lights: native support/placement, distinct registered loot tables. */
     public static final RegistryObject<TorchBlock> THERMITE_TORCH = BLOCKS.register("thermite_torch", () ->

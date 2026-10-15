@@ -81,3 +81,28 @@ transfer service: those are W27c1 to W27d.
   to W27f.
 - ADRs, the risk register, status files and the ledger (Root). If R-038's wording does not match what
   you build, stop and report.
+
+## Root decision (2026-10-15): fix the review's W27B-R1 before merge
+
+The independent review is at `D:/GitHub/ARCE-Task-Evidence/root-queue/W27B-review/REVIEW.md`, SHA-256
+`8ea41a4c29a117f9095acbad62e3e743dbadf31b4b99341e645f6b9d43da1e53`. Its verdict is FIX-FIRST, with one
+High finding: `nativelyKeepable` treats the 2 MiB validation ceiling as a native serialization failure.
+
+- **The defect.** A quarantined or future root just over 2 MiB writes and reads unchanged through the
+  terrain path. `RegionFileStorage.read` uses `NbtAccounter.UNLIMITED`. Yet that root denies its whole
+  chunk.
+- **The rule.** Keep R-038 and section 6 exactly as written: refuse a save only when native
+  serialization cannot keep the root.
+  - Separate three things: the operational schema limits, the bounded validation work, and real native
+    write or read incompatibility.
+  - A root that the terrain writer and reader keep losslessly is retained without any save denial.
+  - Keep the real lossy-write and depth protections.
+  - Do not remove the traversal bounds. If a guarded root is too large to validate within the work
+    bound, it stays guarded and unchanged. It is saved verbatim, not denied.
+- **Tests.**
+  - A regression that round-trips the reviewer's oversized fixture, a shallow byte array just over
+    2 MiB, through `NbtIo` in the real `block_entities` nesting. Check that its save-admission decision
+    is "keep, no denial".
+  - Keep the existing tests for roots that really cannot be kept.
+- **Rerun** the bay unit tests, the whole unit suite, and `runGameTestServer` under the lock on a
+  committed SHA, then the log checker. Add a short "W27B-R1" section to the record.

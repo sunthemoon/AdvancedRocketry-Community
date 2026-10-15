@@ -294,6 +294,10 @@ public final class ModBlockEntities {
             PLANETARY_BEACON = BLOCK_ENTITIES.register("planetary_beacon", () -> BlockEntityType.Builder.of(
             io.github.sunthemoon.advancedrocketrycommunity.beacon.PlanetaryBeaconBlockEntity::new,
             ModBlocks.PLANETARY_BEACON.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity>>
+            ROCKET_SATELLITE_BAY = BLOCK_ENTITIES.register("rocket_satellite_bay", () -> BlockEntityType.Builder.of(
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity::new,
+            ModBlocks.ROCKET_SATELLITE_BAY.get()).build(null));
 
     private ModBlockEntities() {
     }
