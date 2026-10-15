@@ -221,6 +221,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         owner(); return captured == null ? java.util.List.of() : captured.ledger().records();
     }
     public boolean unavailable() { owner(); return baselineFailed || failures >= 3; }
+    boolean baselineAvailable() { owner(); return !baselineFailed; }
     public boolean idle() { owner(); return active == null; }
     boolean unknown() { owner(); return uncertain; }
     public long lastGeneration() { owner(); return lastGeneration; }

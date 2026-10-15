@@ -33,7 +33,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                         .flatMap(java.util.function.Function.identity()).map(EscrowAdmissionAuthority.Pending::of).toList()));
     }
     public boolean productionAdmissionEnabled() { return false; }
-    public boolean operational() { owner(); return !closed && !writer.unavailable(); }
+    public boolean operational() { owner(); return !closed && writer.baselineAvailable(); }
     public EscrowLedger ledger() { return data.ledger(); }
     public long nextSequence() { owner(); return Math.addExact(Math.max(issued, data.ledger().issuedThrough()), 1); }
     public EscrowAdmissionAuthority admissionAuthority() { owner(); return admission; }
