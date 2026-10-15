@@ -9,7 +9,7 @@ final class EscrowInvariant {
     private EscrowInvariant() { }
     static String rocket(RocketEntity rocket) {
         var tag = new CompoundTag(); tag.putInt("schema_version", 1);
-        tag.putUUID("physical", rocket.getUUID()); tag.putString("type", "advancedrocketrycommunity:rocket");
+        tag.putUUID("physical", rocket.getUUID()); tag.putString("type", EscrowAdapterIds.ROCKET);
         tag.putUUID("logical", rocket.assemblyTransactionId().orElseThrow()); tag.putUUID("owner", rocket.ownerId().orElseThrow());
         tag.putUUID("snapshot", rocket.snapshot().orElseThrow().snapshotId());
         tag.putString("snapshot_hash", rocket.snapshot().orElseThrow().contentHash());

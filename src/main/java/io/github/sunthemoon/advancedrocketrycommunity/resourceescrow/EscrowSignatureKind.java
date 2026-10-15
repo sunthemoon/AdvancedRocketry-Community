@@ -4,7 +4,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 public enum EscrowSignatureKind {
     FUEL_VECTOR_V1, ROCKET_COMPOSITE_V1, FIXTURE_RESOURCE_V1;
     static EscrowSignatureKind endpoint(EscrowEndpoint endpoint) {
-        return endpoint.kind() == EscrowEndpoint.Kind.ENTITY && endpoint.type().equals("advancedrocketrycommunity:rocket")
+        return EscrowAdapterIds.nativeRocket(endpoint)
                 ? FUEL_VECTOR_V1 : FIXTURE_RESOURCE_V1;
     }
 }

@@ -22,6 +22,16 @@ class EscrowNativeBankPrefixTest {
     private static final ResourceLocation WATER = new ResourceLocation("minecraft", "water");
 
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+    @Test void oneStableAdapterIdentitySelectsTheWholeVectorPrefixAndProjection() {
+        assertEquals(io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("rocket").toString(), EscrowAdapterIds.ROCKET);
+        var old = EscrowTestFixtures.operation(1).destination();
+        var endpoint = new EscrowEndpoint(old.kind(), old.level(), old.identity(), old.logicalRocket(), EscrowAdapterIds.ROCKET,
+                old.x(), old.y(), old.z(), EscrowEndpoint.Unit.OXIDIZER, old.beforeEpoch(), old.beforeSignature(), old.afterSignature());
+        assertTrue(EscrowAdapterIds.nativeRocket(endpoint));
+        assertEquals(EscrowEndpoint.Unit.PRIMARY, endpoint.key().unit()); assertEquals(EscrowEndpoint.Unit.OXIDIZER, endpoint.unit());
+        assertEquals(EscrowSignatureKind.FUEL_VECTOR_V1, EscrowSignatureKind.endpoint(endpoint));
+        assertEquals(EscrowSignatureKind.FIXTURE_RESOURCE_V1, EscrowSignatureKind.endpoint(old));
+    }
 
     @Test void twoPrimaryFillsUseOneContiguousWholeRocketFrontier() {
         var before = emptyBipropellant();

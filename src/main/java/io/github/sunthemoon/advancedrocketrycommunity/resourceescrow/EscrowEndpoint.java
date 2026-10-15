@@ -22,7 +22,7 @@ public record EscrowEndpoint(Kind kind, String level, UUID identity, UUID logica
     public long afterEpoch() { return beforeEpoch + 1; }
     public Key key() {
         // Native rockets advance one whole-vector epoch. Unit still selects each link's bank.
-        Unit prefixUnit = kind == Kind.ENTITY && type.equals("advancedrocketrycommunity:rocket")
+        Unit prefixUnit = EscrowAdapterIds.nativeRocket(this)
                 ? Unit.PRIMARY : unit;
         return new Key(kind, level, identity, logicalRocket, type, x, y, z, prefixUnit);
     }
