@@ -270,7 +270,7 @@ class Server:
         self.process.abort()
 
 
-def audit(lines: list[str], allowed_chunks: set[tuple[int, int]], reasons: set[str],
+def audit(lines: list[str], allowed_chunks: set[tuple[int, int]] | None, reasons: set[str],
           guarded: dict[str, int]) -> dict:
     """Every ERROR is a paired refusal of an allowed chunk; the bay's audit lines are exactly the expected guards.
 
@@ -284,7 +284,7 @@ def audit(lines: list[str], allowed_chunks: set[tuple[int, int]], reasons: set[s
             events += 1
         elif (match := CHUNK_ERROR.search(finding)) is not None:
             chunk = (int(match["x1"] or match["x2"]), int(match["z1"] or match["z2"]))
-            require(chunk in allowed_chunks, f"Unexpected refused chunk {chunk}")
+            require(allowed_chunks is None or chunk in allowed_chunks, f"Unexpected refused chunk {chunk}")
             failures.append(chunk)
         elif GUARDED.search(finding) is None:
             raise smoke.SmokeError("Unexpected server log finding: " + finding.strip())
@@ -442,20 +442,17 @@ def world_refusal(args, session: Path, evidence: Path, report: dict) -> None:
     except BaseException:
         server.abort()
         raise
-    # After saturation every dirty Overworld chunk may be refused: the bays', the unrelated one, the other forced
-    # chunks and the spawn area. The refusal line names no dimension, so the Nether chunk sits where no
-    # Overworld chunk is loaded, and its disk record proves the other Level kept saving.
-    forced = {(x, z) for x in range(20, 37) for z in range(20, 36)} | {refused_chunk, control_chunk}
-    spawn = {(x, z) for x in range(-12, 13) for z in range(-12, 13)}
-    allowed = forced | spawn | {unrelated_chunk}
+    # After saturation every dirty Overworld chunk is refused, wherever the flat world put its spawn area, so any
+    # chunk may appear. The refusal line names no dimension; the Nether chunk's disk record proves that the other
+    # Level kept saving.
+    allowed = None
     required = set(SATURATION_CHUNKS) | {unrelated_chunk}
     guards = {f"{x}, {y}, {z}|QUARANTINED|false": 1 for x, y, z in bays}
     row = {"start": "refusal-2", "baseline_save": baseline_audit,
            "explicit_save": audit(saturated_save, allowed, {SAVE_REFUSAL, SATURATED}, {}),
            "log": audit(lines, allowed, {SAVE_REFUSAL, SATURATED}, guards), "commands_sent": len(server.commands)}
     refused = set(row["explicit_save"]["refused_chunks"])
-    require(required <= refused and nether_chunk not in refused,
-            "The saturated save did not refuse every bay chunk and the unrelated chunk")
+    require(required <= refused, "The saturated save did not refuse every bay chunk and the unrelated chunk")
     row["refused_beyond_required"] = sorted(refused - required)
     require(record(world, "", unrelated_chunk) == unrelated_before, "An unrelated chunk saved after saturation")
     nether_after = record(world, "DIM-1", nether_chunk)
