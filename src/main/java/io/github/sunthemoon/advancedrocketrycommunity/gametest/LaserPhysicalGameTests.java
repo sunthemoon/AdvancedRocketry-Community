@@ -496,8 +496,9 @@ public final class LaserPhysicalGameTests {
     /** Finish the connected owner's asynchronous view/simulation loads before measuring the drill's chunk delta. */
     private static void playerChunksReady(GameTestHelper helper, ServerPlayer player) {
         var players = player.server.getPlayerList();
-        int distance = Math.max(players.getViewDistance(), players.getSimulationDistance());
-        helper.assertTrue(distance >= 2 && distance <= 32, "Unexpected player chunk distance: " + distance);
+        // GameTest's PlayerList leaves both settings at zero; ChunkMap clamps view distance to at least two.
+        int distance = Math.max(2, Math.max(players.getViewDistance(), players.getSimulationDistance()));
+        helper.assertTrue(distance <= 32, "Unexpected player chunk distance: " + distance);
         // Player tickets are ENTITY_TICKING; their two-chunk outer ring is still FULL.
         int radius = distance + 2;
         ChunkPos center = player.chunkPosition();
