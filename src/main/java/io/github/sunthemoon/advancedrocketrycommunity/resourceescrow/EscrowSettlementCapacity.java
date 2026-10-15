@@ -18,20 +18,12 @@ final class EscrowSettlementCapacity {
     }
     static void preflight(EscrowLedger prospective, UUID candidate) {
         EscrowFloors.preflight(prospective);
-        long reservedBytes = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.encode(prospective));
-        reservedBytes += EscrowFloors.reservedGrowth(prospective);
-        int reservedReceipts = prospective.tombstones().size();
         var visited = new java.util.HashSet<UUID>();
         for (var selected : prospective.records()) {
             if (!visited.add(selected.id())) { continue; }
             var component = EscrowSettlementIntent.component(prospective.records(), selected.id());
             component.forEach(op -> visited.add(op.id()));
             if (component.stream().anyMatch(op -> !op.settlement().isEmpty())) {
-                for (var op : component) {
-                    if (prospective.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(op.id()))) {
-                        reservedReceipts++; reservedBytes += 2_048;
-                    }
-                }
                 continue;
             }
             if (candidate != null && component.stream().anyMatch(op -> op.id().equals(candidate))) {
@@ -41,19 +33,14 @@ final class EscrowSettlementCapacity {
                 // Retain the existing non-admission codec checks when a preview is eligible.
                 preview(prospective, component, selected.id(), false);
             }
-            // A later sticky repair reason must not increase the charge. Preview is an
-            // admission eligibility check, never a discount on this component's ceiling.
-            var fixed = fixed(prospective, component);
-            reservedBytes += fixed.bytes(); reservedReceipts += fixed.receipts();
         }
+        var reservation = reservation(prospective);
         // Fill admission always leaves room for one new retirement, even with no retained floor.
-        // Ordinary writes may consume that headroom; it is not an autosave/load restriction.
+        // Only new work consumes that headroom; this is not an autosave/load restriction.
         int headroom = candidate == null ? 0 : 1;
         if (prospective.records().size() + headroom > EscrowLimits.OPERATIONS
-                || reservedReceipts + headroom > EscrowLimits.TOMBSTONES
-                || reservedBytes + headroom * FLOOR_RETIREMENT_BYTES
-                + (64 - prospective.armedFlights().size()) * 1_024L
-                + (64 - prospective.rocketAuthorities().size()) * 1_024L > EscrowLimits.ROOT_BYTES) {
+                || reservation.receipts() + headroom > EscrowLimits.TOMBSTONES
+                || reservation.bytes() + headroom * FLOOR_RETIREMENT_BYTES > EscrowLimits.ROOT_BYTES) {
             throw new ReservationFull("Settlement/flight root reservation exhausted");
         }
     }
@@ -131,15 +118,27 @@ final class EscrowSettlementCapacity {
         EscrowTags.require(markers.size() <= ADMISSION_PER_ROCKET, "Rocket settlement admission limit exceeded");
     }
     private record Reservation(long bytes, int receipts) { }
-    private static Reservation fixed(EscrowLedger root, List<EscrowOperation> component) {
-        long growth = 0; int receipts = 0;
-        for (var op : component) {
-            growth += EscrowLimits.OP_BYTES - bytes(EscrowCodec.operation(op));
-            if (root.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(op.id()))) {
-                receipts++; growth += 2_048;
-            }
+    static long reservedBytes(EscrowLedger root) { return reservation(root).bytes(); }
+    private static Reservation reservation(EscrowLedger root) {
+        long total = bytes(EscrowCodec.encode(root)) + EscrowFloors.reservedGrowth(root);
+        var receipts = root.tombstones();
+        var receiptIds = receipts.stream().map(tag -> tag.getUUID("op_id")).collect(java.util.stream.Collectors.toSet());
+        for (var receipt : receipts) { total += 2_048L - listBytes(EscrowReceiptCodec.encode(receipt)); }
+        for (var op : root.records()) {
+            // O1 freezes the complete operation permanently; until then reserve its ceiling.
+            if (op.settlement().isEmpty()) { total += EscrowLimits.OP_BYTES - listBytes(EscrowCodec.operation(op)); }
+            if (receiptIds.add(op.id())) { total += 2_048; }
         }
-        return new Reservation(growth, receipts);
+        // Occupied bytes are included in, not added to, each pre-reserved table slot.
+        total += 128 * 1_024L;
+        for (var arm : root.armedFlights()) { total -= listBytes(arm.encode()); }
+        for (var head : root.rocketAuthorities()) { total -= listBytes(head.encode()); }
+        return new Reservation(total, receiptIds.size());
+    }
+    private static int listBytes(net.minecraft.nbt.CompoundTag tag) {
+        // NbtIo's standalone compound adds a type byte and an empty UTF name;
+        // a compound inside a list has neither. Keep the root/list framing once.
+        return bytes(tag) - 3;
     }
     private static boolean contains(List<EscrowPrefix.Marker> markers, UUID id) {
         return markers.stream().anyMatch(marker -> marker.operation().equals(id));

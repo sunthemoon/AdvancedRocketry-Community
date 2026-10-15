@@ -25,7 +25,7 @@ class EscrowReservationTransitionTest {
         assertEquals(64, EscrowLimits.OPERATIONS, "The saved-operation decode bound is unchanged");
         for (int floors : List.of(0, 29)) {
             for (boolean guarded : List.of(false, true)) {
-                int capacity = floors == 0 ? (guarded ? 58 : 62) : (guarded ? 57 : 61);
+                int capacity = floors == 0 ? (guarded ? 58 : 62) : (guarded ? 56 : 60);
                 var data = ResourceEscrowSavedData.load(EscrowCodec.encode(EscrowCombinedReservationTest.retainedFloors(floors)));
                 var initial = data.ledger();
                 try (var writer = new EscrowLedgerWriter(directory.resolve("capacity-" + floors + "-" + guarded), 0);
@@ -123,15 +123,17 @@ class EscrowReservationTransitionTest {
             assertTrue(coordinator.flightWrite(launch.logical(), (root, generation) -> EscrowFlightAuthority.arm(root, launch, generation),
                     () -> true, results::add));
             coordinator.tick(10);
-            assertTrue(results.isEmpty()); assertEquals(repaired, coordinator.ledger());
-            // A concrete ARMED entry replaces its larger unused-table reservation. This
-            // old fixture can fit again without settlement; report this R4 boundary to Root.
-            acknowledge(io, coordinator, 2, 11);
-            assertEquals(List.of(true), results); assertTrue(writer.idle());
-            assertEquals(repaired.records(), coordinator.ledger().records());
-            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(coordinator.ledger()));
+            // R8 removes R7's occupied-slot discount: ARMED now leaves the total equal,
+            // so this old over-capacity fixture still cannot fit the existing preflight.
+            assertEquals(List.of(false), results); assertEquals(repaired, coordinator.ledger());
+            assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
+            assertEquals(1, coordinator.ledger().writerGeneration()); assertEquals(65, coordinator.nextSequence());
+            assertFalse(data.isDirty()); assertEquals(64, coordinator.admissionAuthority().pendingCount());
+            assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(coordinator.ledger()));
             assertPersisted(file, coordinator.ledger());
-            System.out.println("old-fixture operations=64 repaired_preflight=REFUSED armed_preflight=ACCEPTED");
+            assertEquals(EscrowSettlementCapacity.reservedBytes(repaired), EscrowSettlementCapacity.reservedBytes(
+                    EscrowFlightAuthority.arm(repaired, launch, 2)));
+            System.out.println("old-fixture operations=64 repaired_preflight=REFUSED armed_preflight=REFUSED without mutation");
         }
     }
 

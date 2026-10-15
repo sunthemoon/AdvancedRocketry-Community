@@ -45,7 +45,7 @@ class EscrowCombinedReservationTest {
 
     private void assertRetirementHeadroom(boolean settleFills) throws Exception {
         var base = retainedFloors(29);
-        int capacity = settleFills ? 63 : 61;
+        int capacity = settleFills ? 63 : 60;
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base));
         var file = directory.resolve("settled-" + settleFills).resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         java.nio.file.Files.createDirectories(file.getParent());
@@ -146,16 +146,7 @@ class EscrowCombinedReservationTest {
 
     /** Diagnostic arithmetic for this receipt-free fixture, using actual encoded operation/root sizes. */
     private static long reservationBytes(EscrowLedger root) {
-        long bytes = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.encode(root))
-                + EscrowFloors.reservedGrowth(root) + 128 * 1_024L;
-        for (var op : root.records()) {
-            bytes += 2_048;
-            if (op.settlement().isEmpty()) {
-                bytes += EscrowLimits.OP_BYTES
-                        - io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.operation(op));
-            }
-        }
-        return bytes;
+        return EscrowSettlementCapacity.reservedBytes(root);
     }
 
     @Test void floorO1CannotConsumeOtherComponentsReceiptOrFlightReservations() {

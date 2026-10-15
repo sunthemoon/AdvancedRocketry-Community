@@ -48,6 +48,9 @@ public final class EscrowFloors {
     static long reservedGrowth(EscrowLedger candidate) {
         Map<Key, CompoundTag> existing = new HashMap<>(); candidate.floors().forEach(floor -> existing.put(key(floor), floor));
         Set<Key> named = new HashSet<>();
+        // A retained named floor keeps its ceiling even after its operation retires.
+        // Otherwise a later floor intent would reclaim an occupied-size discount.
+        existing.keySet().stream().filter(java.util.Objects::nonNull).forEach(named::add);
         candidate.records().stream().map(op -> key(op.guard())).filter(java.util.Objects::nonNull).forEach(named::add);
         long bytes = 0;
         for (Key key : named) {

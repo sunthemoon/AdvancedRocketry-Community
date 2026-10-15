@@ -13,12 +13,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** R1 audit counterexample for Root, not a claim that retirement headroom survives every transition. */
+/** R8/R9: occupied table slots cannot lend retirement headroom to new admissions. */
 class EscrowFlightTableReservationTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path directory;
 
-    @Test void terminalCleanupCanConsumeRetirementHeadroomAfterNewAdmission() throws Exception {
+    @Test void terminalCleanupPreservesAcknowledgedFloorRetirementAtCapacity() throws Exception {
         var base = EscrowCombinedReservationTest.retainedFloors(29);
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base));
         var file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
@@ -44,15 +44,16 @@ class EscrowFlightTableReservationTest {
             committed(results, 64); results.clear();
             assertTrue(coordinator.ledger().armedFlights().stream().allMatch(arm -> arm.outcome() == EscrowFlightTables.Outcome.CANCELLED));
 
-            for (int i = 30; i <= 92; i++) { coordinator.prepareTest(EscrowTestFixtures.operation(i), results::add); }
+            for (int i = 30; i <= 89; i++) { coordinator.prepareTest(EscrowTestFixtures.operation(i), results::add); }
             assertThrows(IllegalArgumentException.class,
-                    () -> coordinator.prepareTest(EscrowTestFixtures.operation(93), ignored -> fail()));
+                    () -> coordinator.prepareTest(EscrowTestFixtures.operation(90), ignored -> fail()));
             coordinator.tick(20); assertTrue(coordinator.commitPreparations());
-            acknowledge(io, coordinator, file, 3, 21); committed(results, 63); results.clear();
+            acknowledge(io, coordinator, file, 3, 21); committed(results, 60); results.clear();
             var before = coordinator.ledger(); var intent = floorIntent(before);
-            assertEquals(63, before.records().size()); assertEquals(64, before.armedFlights().size());
+            assertEquals(60, before.records().size()); assertEquals(64, before.armedFlights().size());
             var retirementBefore = assertDoesNotThrow(() -> EscrowSettlementCapacity.floorRetirement(before, intent, coordinator.nextSequence(), 220));
-            assertEquals(1_017_397, reserved(before)); assertEquals(1_024_066, reserved(retirementBefore));
+            // An independently assembled all-ceiling total includes root framing once.
+            assertEquals(bytes(EscrowTestFixtures.ledger()) + 128 * 1_024L + 29 * 1_024L + 60 * 14_336L, reserved(before));
 
             for (var arm : before.armedFlights()) {
                 assertTrue(coordinator.flightWrite(arm.logical(), (root, generation) -> EscrowFlightAuthority.prune(root, arm),
@@ -66,18 +67,22 @@ class EscrowFlightTableReservationTest {
             assertEquals(before.tombstones(), after.tombstones()); assertTrue(after.armedFlights().isEmpty());
             assertEquals(before.issuedLaunchSerial(), after.issuedLaunchSerial());
             assertTrue(bytes(after) < bytes(before), "Cleanup shrinks the actual encoded root");
-            assertEquals(1_048_245, reserved(after)); assertEquals(30_848, reserved(after) - reserved(before));
+            assertEquals(reserved(before), reserved(after));
             var retirementAfter = after.append(List.of(intent.floorOperation(coordinator.nextSequence(), 220)));
-            assertEquals(1_054_914, reserved(retirementAfter));
-            assertTrue(reserved(retirementAfter) > EscrowLimits.ROOT_BYTES);
+            assertEquals(reserved(retirementBefore), reserved(retirementAfter));
+            assertTrue(reserved(retirementAfter) <= EscrowLimits.ROOT_BYTES);
 
-            coordinator.tick(220); long next = coordinator.nextSequence();
-            var refused = assertThrows(IllegalArgumentException.class, () -> coordinator.beginSettlement(intent, ignored -> fail()));
-            assertEquals(EscrowSettlementCapacity.FLOOR_FULL, refused.getMessage());
-            assertEquals(after, coordinator.ledger()); assertEquals(next, coordinator.nextSequence());
-            assertFalse(data.isDirty()); assertEquals(63, coordinator.admissionAuthority().pendingCount());
+            coordinator.tick(220);
+            assertTrue(coordinator.beginSettlement(intent, results::add));
+            assertTrue(results.isEmpty()); assertEquals(after, coordinator.ledger());
+            acknowledge(io, coordinator, file, 5, 221); committed(results, 1);
+            assertEquals(retirementAfter.records(), coordinator.ledger().records());
+            assertEquals(after.floors(), coordinator.ledger().floors());
+            assertEquals(after.tombstones(), coordinator.ledger().tombstones());
+            assertEquals(after.issuedLaunchSerial(), coordinator.ledger().issuedLaunchSerial());
+            assertFalse(data.isDirty()); assertEquals(61, coordinator.admissionAuthority().pendingCount());
             assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
-            System.out.println("table-cleanup reservation fills=63 floors=29 terminal_entries=64 before=" + reserved(before)
+            System.out.println("table-cleanup reservation fills=60 floors=29 terminal_entries=64 before=" + reserved(before)
                     + " retirement_before=" + reserved(retirementBefore) + " after=" + reserved(after)
                     + " retirement_after=" + reserved(retirementAfter) + " increase=" + (reserved(after) - reserved(before)));
         }
@@ -99,15 +104,6 @@ class EscrowFlightTableReservationTest {
                 EscrowTestFixtures.id(700), "operator", 20, observations);
         return preview.confirm(preview.actor(), preview.digest(), 220, observations);
     }
-    /** Exact arithmetic for these receipt-free roots, including the occupied-table discount. */
-    private static long reserved(EscrowLedger root) {
-        long bytes = bytes(root) + EscrowFloors.reservedGrowth(root)
-                + (128 - root.armedFlights().size() - root.rocketAuthorities().size()) * 1_024L;
-        for (var op : root.records()) {
-            bytes += 2_048;
-            if (op.settlement().isEmpty()) { bytes += EscrowLimits.OP_BYTES - RocketNbtSize.uncompressedBytes(EscrowCodec.operation(op)); }
-        }
-        return bytes;
-    }
+    private static long reserved(EscrowLedger root) { return EscrowSettlementCapacity.reservedBytes(root); }
     private static int bytes(EscrowLedger root) { return RocketNbtSize.uncompressedBytes(EscrowCodec.encode(root)); }
 }
