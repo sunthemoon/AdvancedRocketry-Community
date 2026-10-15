@@ -36,6 +36,10 @@ public final class EscrowSettlementPruning {
                     && root.writerGeneration() == ack.generation(), "Pruning needs the exact O4 acknowledgement");
             var group = released(root).stream().filter(value -> value.digest().equals(ack.digest())).findFirst().orElseThrow();
             EscrowTags.require(group.members().equals(ack.members()), "O4 pruning group changed");
+            var receipts = root.tombstones().stream().filter(tag -> ack.members().contains(tag.getUUID("op_id"))).toList();
+            EscrowTags.require(receipts.size() == ack.members().size()
+                    && receipts.stream().allMatch(tag -> tag.getBoolean("released") && tag.getLong("release_generation") == ack.generation()),
+                    "O4 pruning release generation changed");
             priority.remove(ack.digest());
             EscrowTags.require(priority.size() < EscrowLimits.TOMBSTONES, "Pruning queue exceeded");
             priority.addLast(ack.digest());

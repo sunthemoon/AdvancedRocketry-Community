@@ -15,8 +15,9 @@ class EscrowSettlementPruningTest {
         var b = EscrowTestFixtures.operation(2).withReason(EscrowReason.OTHER_STATE);
         var c = EscrowTestFixtures.operation(3).withReason(EscrowReason.OTHER_STATE);
         var ra = released(a); var rc = released(c);
+        var cReceipt = rc.tombstones().get(0); cReceipt.putLong("release_generation", 7);
         var root = new EscrowLedger(ra.id(), 3, 7, List.of(b), List.of(),
-                List.of(ra.tombstones().get(0), rc.tombstones().get(0)));
+                List.of(ra.tombstones().get(0), cReceipt));
         var cursor = new EscrowSettlementPruning.Cursor();
         String digest = rc.tombstones().get(0).getString("decision_digest");
         cursor.enqueue(root, new EscrowCoordinator.SettlementAcknowledgement(root.id(), digest, Set.of(c.id()), 7, true));
@@ -77,6 +78,17 @@ class EscrowSettlementPruningTest {
                 actor, "operator", 10, observations);
         var intent = preview.confirm(actor, preview.digest(), 11, observations);
         return EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent);
+    }
+    @Test void exactWriterGenerationCannotAcknowledgeAReceiptReleasedInAnotherGeneration() {
+        var op = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE); var root = released(op).generation(7);
+        var receipt = root.tombstones().get(0); var cursor = new EscrowSettlementPruning.Cursor();
+        assertEquals(1, receipt.getLong("release_generation"));
+        var ack = new EscrowCoordinator.SettlementAcknowledgement(root.id(), receipt.getString("decision_digest"), Set.of(op.id()), 7, true);
+        assertThrows(IllegalArgumentException.class, () -> cursor.enqueue(root, ack));
+        receipt.putLong("release_generation", 7);
+        var exact = root.replace(root.records(), root.floors(), List.of(receipt));
+        assertDoesNotThrow(() -> cursor.enqueue(exact, ack));
+        assertNotNull(cursor.next(exact, Set.of()));
     }
     @Test void emptyMarkersReturnBeforeRuntimeAccessAndReleasedGroupsAreCachedPerAcknowledgedRoot() {
         var empty = RocketEscrowSection.neutral();
