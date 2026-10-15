@@ -39,6 +39,11 @@ public final class RocketTransferSavedData extends SavedData {
     public static final String FIRST_MOON_LANDING = ManagedSavedDataType.FIRST_MOON_LANDING_KEY;
     private static final ManagedSavedDataType TYPE = ManagedSavedDataType.ROCKET_TRANSFERS;
 
+    /** W44 section 2.2: the EMPTY Moon landing outbox that the root 1 and 2 to root 3 migration adds. */
+    public static CompoundTag emptyFirstMoonLanding() {
+        return FirstEventOutbox.empty().encode(FirstEventKind.FIRST_MOON_LANDING);
+    }
+
     private final Map<UUID, RocketTransferRecord> entries = new LinkedHashMap<>();
     private CompoundTag preservedBlockedData;
     private final RocketJournalCheckpoint checkpoint = new RocketJournalCheckpoint();

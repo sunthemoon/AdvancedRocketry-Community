@@ -146,8 +146,7 @@ public final class SavedDataSchemaMigrator {
         try {
             CompoundTag migrated = source.copy();
             migrated.put(ManagedSavedDataType.FIRST_MOON_LANDING_KEY, io.github.sunthemoon.advancedrocketrycommunity
-                    .progression.classic.firstevent.FirstEventOutbox.empty().encode(io.github.sunthemoon
-                            .advancedrocketrycommunity.progression.classic.firstevent.FirstEventKind.FIRST_MOON_LANDING));
+                    .rocket.flight.persistence.RocketTransferSavedData.emptyFirstMoonLanding());
             stampCurrent(type, migrated);
             if (schema == LEGACY_SCHEMA_VERSION) {
                 migrated.putInt(MIGRATED_FROM_KEY, LEGACY_SCHEMA_VERSION);
