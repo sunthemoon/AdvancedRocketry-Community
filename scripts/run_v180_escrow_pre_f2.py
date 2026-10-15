@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import gzip
 import json
 from pathlib import Path
 import re
@@ -13,9 +14,23 @@ import uuid
 import run_dedicated_server_smoke as smoke
 from run_v060_flight_server_smoke import _server_command
 from run_v180_escrow_forced_stop import digest, ledger, record, LEDGER
-from run_v180_rocket_settlement_completion import journal, require_lock, JOURNAL
+from run_v180_rocket_settlement_completion import require_lock, JOURNAL
+from inspect_celestial_saved_data import NbtReader
 
 CASES = ("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK", "PF_GOVERNED_T_ACK")
+
+
+def journal(world: Path) -> dict:
+    """These pre-landing cuts require W44's root 3 and its still-empty outbox."""
+    with gzip.open(world / "data" / JOURNAL, "rb") as stream:
+        payload = stream.read(16 * 1024 * 1024 + 1)
+    if len(payload) > 16 * 1024 * 1024:
+        raise smoke.SmokeError("Checked pre-F2 journal exceeds its bound")
+    data = NbtReader(payload).read_root()["data"]
+    if (data.get("schema_version") != 3 or not isinstance(data.get("transfers"), list)
+            or data.get("classic_first_moon_landing") != {"schema_version": 1, "state": "EMPTY"}):
+        raise smoke.SmokeError("Wrong checked pre-F2 journal root or nonempty landing outbox")
+    return data
 
 
 def has_transfer(cut: str) -> bool:
