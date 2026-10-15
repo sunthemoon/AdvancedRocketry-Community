@@ -9,6 +9,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -123,6 +126,8 @@ public final class EscrowGovernedSourceRecoveryGameTests {
             rocket.load(parent); helper.assertTrue(level.addFreshEntity(rocket), "Native source fixture was not added");
             var file = level.getServer().getWorldPath(LevelResource.ROOT).resolve("governed-source-adapter").resolve(rocket.getUUID().toString())
                     .resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
+            try { Files.createDirectories(file.getParent()); }
+            catch (IOException failure) { throw new UncheckedIOException(failure); }
             RocketJournalGameTestSupport.confirmDetached(helper, journal, file);
             var transfer = UUID.randomUUID(); var from = rocket.snapshot().orElseThrow();
             var to = from.relocated(UUID.randomUUID(), from.sourceDimension(),
