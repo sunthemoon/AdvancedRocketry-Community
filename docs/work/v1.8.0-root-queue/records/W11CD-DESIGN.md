@@ -1,8 +1,13 @@
 # W11c and W11d: rocket cargo loaders and unloaders
 
-**Revision 1**, 2026-10-16. **Proposed design, not admission approval or runtime evidence.**
-Assignment: [W79](../TASK-W79-CARGO-LOADERS-DESIGN.md); execution record: [W79](W79.md). AGENTS.md section 13
-requires a read-only review of this note before any code.
+**Revision 2**, 2026-10-16. **Proposed design, not admission approval or runtime evidence.**
+Assignments: [W79](../TASK-W79-CARGO-LOADERS-DESIGN.md) and
+[W79R](../TASK-W79R-CARGO-DESIGN-REVISION.md); execution record: [W79](W79.md#revision-2).
+This revision applies Root's seven review decisions. Root must re-check H1 and M1 to M4 before freezing it.
+The review is `D:/GitHub/ARCE-Task-Evidence/root-queue/W79-review/REVIEW.md`, SHA-256
+`fcf3d7eccddcd9e392066d1d2dedd515ea955994bb3f9957ae37627e8829aafa`; the decisions are
+`D:/GitHub/ARCE-Task-Evidence/root-queue/W79-review/ROOT-DECISIONS.md`, SHA-256
+`1e0265016e277a1706966f6cf8ae37eacc40d730b7568edcae9633a3d7547e17`, dated 2026-10-16.
 
 **Baselines.**
 - The shared branch is read at `c11fbaa8`, which holds the frozen [W11B3-DESIGN](W11B3-DESIGN.md) revision 2.
@@ -75,8 +80,6 @@ ADRs, the risk register, status files and the ledger.
 only after W11b3 section 1's part-1 closures (P1-F3, P1-F8, P1-N1 and P1-N2) and this note's evidence. Leaf
 C-I (section 2.5) follows P1-F8 and P1-N2 because it edits the same transfer and disassembly code.
 
-<div style="page-break-after: always;"></div>
-
 ## 2. What cargo is
 
 ### 2.1 Where cargo lives at `646bf9ee`
@@ -86,9 +89,13 @@ C-I (section 2.5) follows P1-F8 and P1-N2 because it edits the same transfer and
   payloads (`J/rocket/RocketLimits.java:8`), each at most 262,144 bytes and 1,048,576 bytes in aggregate.
 - The default payload hosts are `vanilla_container_v1` (a chest or barrel: `Items`, or `LootTable` and its
   seed, plus `CustomName` and `Lock`) and the satellite bay adapter (`J/rocket/forge/RocketBlockEntityAdapters.java:31`,
-  `J/compat/rocket/RocketAdapterRegistry.java:82`). Any other block entity rejects assembly
-  (`J/rocket/forge/ServerLevelRocketScanWorld.java:80`). **A rocket that contains a `pressurized_tank` cannot be
-  assembled today, so no rocket carries Fluid cargo.**
+  `J/compat/rocket/RocketAdapterRegistry.java:82`). The scan checks tags before payload adapters
+  (`J/rocket/forge/ServerLevelRocketScanWorld.java:70-84`). The production `rocket_movable` tag includes chest
+  and barrel, but neither `pressurized_tank` nor trapped chest (`J/datagen/RocketBlockTagsProvider.java:24-35`).
+  An adjacent untagged tank is BOUNDARY and is not captured; a boundary at the scan origin instead fails
+  BLOCK_NOT_MOVABLE (`J/rocket/scan/RocketStructureScanTask.java:128-140`). If a data pack makes the tank
+  movable, its missing adapter rejects assembly. **There is no built-in tank cargo support; both the tag and
+  the adapter are required.** This corrects revision 1's unconditional assembly-rejection explanation.
 - The content hash covers every payload (`J/rocket/model/RocketStructureSnapshot.java:141`). Propulsion amounts
   live in `RocketFuelState` in the flight data, not in the snapshot, so a fuel fill keeps the content hash.
   Design 2 section 5.1 says so and adds: "a future snapshot-changing action needs its own explicit binding
@@ -98,7 +105,8 @@ C-I (section 2.5) follows P1-F8 and P1-N2 because it edits the same transfer and
 
 ### 2.2 The cargo projection
 
-A cargo operation changes one payload and therefore the content hash. Its rocket endpoint uses the existing
+A cargo operation changes one payload and therefore the content hash. Here `L` is the logical rocket UUID.
+Its rocket endpoint uses the existing
 named projection of design 2 section 5.1, `ROCKET_COMPOSITE_V1 = hash("arce-escrow-rocket-1:" + L + ":" +
 contentHash + ":" + FUEL_VECTOR_V1)`. The kind is reserved (`J/resourceescrow/EscrowSignatureKind.java:5`) and
 refused today by the native binding (`EscrowNativeBinding.java:16`), the floor codec (`EscrowCodec.java:122`)
@@ -133,7 +141,8 @@ the position `p` relative to the snapshot origin, and the adapter ID `a`.
   (positions sorted by the snapshot constructor) and take the first payload whose adapter matches the device
   and that is eligible. The fluid loader takes the first tank holding the same Fluid with room, otherwise the
   first empty tank; the fluid unloader takes the first nonempty tank whose Fluid the device accepts; item rules
-  are in section 5.3. This keeps the legacy iteration order but moves into one target per operation.
+  are in section 5.3. This preserves deterministic selection, not the exact legacy slot priority: the old
+  loader iterates target slots before buffer slots, while section 5.3 selects the first buffer stack first.
 - **Stability.** Every cargo mutation keeps the snapshot ID (ADR-065 section 4.1). Relocation issues a new one
   (`relocated`, `RocketStructureSnapshot.java:215`), as does reassembly, and geometry never changes under one
   ID. A pending operation locks the rocket against flight, transfer and disassembly. The cursor is therefore
@@ -146,6 +155,17 @@ the position `p` relative to the snapshot origin, and the adapter ID `a`.
   (`EscrowOperation.java:34`). A Fluid whose canonical stack and cursor exceed that bound is not movable as
   cargo (`CARGO_TOO_LARGE`) and stays where it is. No device persists a cursor; the menu shows the cursor of its
   own pending operation, or of the next selection, as scalar data.
+
+**Effective eligibility.** One side-effect-free predicate, shared by selection and admission, validates the
+native stack or Fluid, cursor, framed cargo payload, complete operation including its worst-case O1 settlement
+reservation, and complete before/after device and snapshot envelopes. It checks every byte, depth and node
+limit, the native round trips, the whole encoded snapshot's 1 MiB ceiling and the combined reservation before
+sequence allocation, queueing, reservation or mutation. It repeats on final capture if an input changed.
+An inner object passing its own limit does not imply cargo eligibility: a 4 KiB item at depth 16 or 512 nodes
+can exceed the framed payload's depth 12 or 384 nodes, and an 8 KiB Fluid leaves no framing space. A refusal
+preserves both endpoints and reports `CARGO_TOO_LARGE` (or `INVALID_DATA` for malformed data), without
+truncation or a new save refusal. C-K/C-P and D-K/D-P test inner-passes-outer-fails byte, depth and node
+boundaries, including O1 and full device/snapshot overhead; no bound is enlarged to fit local maxima.
 
 **The preparation cursor (transient)** is ADR-065 section 4.1.1's bounded resumable preparation. It holds the
 rocket UUID, snapshot ID, before content hash, block index and the bytes and visits charged so far, in RAM
@@ -166,8 +186,16 @@ conservative bound for one reconstruction exceeds a tick's budget: one reconstru
   in `RocketBlockEntityAdapters.restore`.
 - It joins `defaults()` and `freeze()`, and its type is reserved against external registration, like chest,
   barrel and bay.
-- Rockets that contain tanks become assemblable. That is a visible change; S1 checks that existing snapshots
-  are unchanged.
+- C-P also generates a current-version `rocket_movable` tag extension for `pressurized_tank` under
+  `src/generated/v1.8/resources`, with `replace: false` and preauthoring plus generated-hash provenance.
+  It does not edit the sealed v0.5 provider/output. Root owns any build-resource selection needed to include
+  the extension without losing earlier values. C-P's assembly test uses the real production tag set, not a
+  fixture tag, and proves tank capture and unchanged chest/barrel inclusion; the packaged tag is checked too.
+- Trapped chest joins that extension only if C-P proves capture/restore equality with the unchanged
+  `VanillaContainerRocketAdapter` on an actual vanilla trapped chest. Its `instanceof ChestBlockEntity`
+  support (`:30`) is static evidence, not that test. Otherwise trapped chest remains data-pack-only and the
+  generated extension omits it; no adapter broadening is authorized. Existing captured supported payloads
+  remain restorable in either case. Tank assembly is a visible change; C-D's S1 checks old snapshots unchanged.
 
 **The cargo mutation** (proposed pure `RocketCargoMutation`) builds the after snapshot from the before snapshot,
 the cursor and the frozen delta. It keeps the snapshot ID, dimension, origin, creation time, anchors, stats,
@@ -186,7 +214,7 @@ way (`:419`). That record remains after landing until disassembly releases it (`
 called only from `RocketDisassemblyService.java:136,164`). After one cargo operation on a landed rocket:
 - `resourceMutationAllowed` (`RocketTransferService.java:405`) refuses, because the record names a rocket that
   no longer matches, so no further fuel or cargo can move;
-- disassembly leaves the record in place;
+- disassembly is refused by the mutation gate, leaving the record in place;
 - recovery then sees the destination as missing and stops at FLOOR_CONFLICT: safe, but stuck until an offline
   repair.
 
@@ -195,9 +223,9 @@ Fuel never meets this, because fuel keeps the content hash. The proposed rule:
   over the schema, dimension, origin, bounds, each block's position, state and payload adapter ID (not payload
   data), the anchors, stats and propulsion signature. It is cached in the immutable snapshot, never persisted,
   and its one pass is charged to the reconstruction budget;
-- `isCommittedAuthority` and recovery's `matches` accept a rocket whose snapshot ID is equal and whose content
-  hash is equal (today's rule), **or** whose structure digest is equal while its escrow section is bound to the
-  current ledger with an epoch above 0.
+- Inside the existing owner, logical/physical identity, placement and state checks, `isCommittedAuthority`
+  and recovery's `matches` use `sameSnapshotId && (sameContentHash || (sameStructureDigest &&
+  currentLedgerBinding && epoch > 0))`. Equal snapshot ID is mandatory for both alternatives.
 
 Content can differ from the journal's snapshot only through an acknowledged escrow operation, which binds the
 section and advances the epoch. Every election, discard and rebuild consults `EscrowRecoveryFence` first: a
@@ -209,7 +237,17 @@ The rule does not cover the bay's package consumption (step D5 of [W27A](W27A-DE
 which rewrites its PREPARED transfer record and which W27d and W27f specify. The rule changes recovery
 identity, so the read-only review of this note must cover it.
 
-<div style="page-break-after: always;"></div>
+**Recognition, not reconstruction authority (I1).** Pending operations and markers still fence actions.
+A protected discarded candidate or protected non-first keeper vetoes duplicate removal; a stale exact-hash
+copy preferred by election cannot silently displace a changed protected copy. Source recovery cannot
+overwrite a credited source, and a named floor rejects a missing, wrong or behind keeper. Governed native
+records remain routed and held before legacy recovery, including missing or terminal ARMED authority;
+`permit` and `actionAllowed` enforce this independently of `matches`. Structure equality, ledger binding
+and a nonzero epoch never prove a new ARMED serial, release acknowledgement or permission to rebuild a
+missing identity. Design 2's replay exclusion and missing-source hold remain unchanged.
+Passenger reconnect keeps the existing settled-authority lookup and the current manifest, not the stale
+arrival manifest. C-E tests a previously disembarked passenger reconnecting after cargo mutation without
+reboarding or recreating an old snapshot. C-I uses fixtures locally; section 6 assigns the real transaction.
 
 ## 3. Admission, escrow and settlement
 
@@ -247,7 +285,8 @@ identity, so the read-only review of this note must cover it.
    holding earlier links' after snapshots in memory. W11b3's fill admission gains the mirror refusal while a
    cargo operation names the rocket, reported as its `ROCKET_BUSY`. A device refused with
    `OTHER_TRANSFER_PENDING` receives the rocket's next turn through a RAM token, so a fuel loader and a cargo
-   device cannot starve each other. See Q4.
+   device cannot starve each other. Tokens are bounded by registered loaded work, discarded on unload or
+   lifecycle end, and never override a hold or become durable authority. See Q4.
 3. **Entry point.** The proposed `EscrowCoordinator.prepareTransfer` generalizes W11b3's `prepareFill` to accept
    a fill capture or a cargo capture: the same pure check, then the same owner-thread admission. `prepareFill`
    becomes a call to it, and W11b3's tests stay unchanged. A load mirrors a fill: a SOURCE marker on the device
@@ -280,45 +319,68 @@ identity, so the read-only review of this note must cover it.
 the rocket is BEFORE and rolls it forward once; a mixed state rolls the BEFORE side forward; AFTER on both sides
 goes to the barrier. The device side is W11b3's.
 
-**Operator settlement (O1 to O4)** needs extension, because today:
-- `EscrowSettlementIntent` refuses a component with a member that is not a fill (`EscrowSettlementIntent.java:98`);
-- the receipt amount counts fills only (`EscrowSettlementTombstones.java:26`);
-- survivor observation, normalization, pruning, head creation and receipt projection accept only
-  `FUEL_VECTOR_V1` (`EscrowSettlementIntent.java:50`, `EscrowSettlementTombstones.java:81`,
-  `EscrowSettlementPruning.java:161`, `EscrowReceiptCodec.java:43`).
+**Operator settlement (O1 to O4).** Root decision 1 retains Design 2's settlement representation. C-K admits
+cargo members where `EscrowSettlementIntent.java:98` currently accepts fills only; it does not change native
+rocket settlement observations to composite. Ordinary cargo prefix classification remains composite.
 
-New: cargo members are allowed. The receipt's `payload_amount` holds mB or an item count, and a new wire field
-`payload_kind` joins the closed receipt dictionary; fuel receipts omit it, so existing receipts are unchanged.
-Root accepted that dictionary under decision L2, so this addition needs Root, and
-`scripts/inspect_escrow_receipt.py` and its test change in step. Composite survivors are observed with the
-composite signature and invariant. At O4, a composite survivor's READY head is written in the
-`FUEL_VECTOR_V1` projection (the fuel signature at that epoch and the live invariant), because heads accept no
-other kind; the rocket is then receipt-backed, and cargo refuses it (section 2.2). Abandon records the frozen
-payload amount, hash and loss, and a returning abandoned identity stays frozen, as today.
+| Boundary | Frozen rule for cargo settlement |
+|---|---|
+| O1 observation | A native rocket observation keeps `FUEL_VECTOR_V1`, its fuel-vector signature, wrapper epoch/markers and the invariant-envelope digest containing the current snapshot UUID and content hash. Its `quantity` remains the observed propulsion total, never cargo mB or mixed item counts. The endpoint reference retains the operation's composite before/after signatures; those are distinct from the observation's settlement state. A fluid-device observation keeps its native tank signature and quantity; an item-device observation signs the entire typed 4-slot buffer and uses quantity 0 as an unused diagnostic, not an empty-buffer or zero-loss assertion. |
+| Neutral survivor | O1 freezes the observed unbound wrapper and the prescribed `(ledger_id, epoch=0, markers=[])` wrapper. Only after acknowledged O1 may normalization bind it; resources, snapshot, owner and identity stay unchanged. Restart accepts exactly the old or prescribed wrapper and repeats binding idempotently. O2 proves only the normalized form. A veto or any other difference retains the hold. |
+| O2 | One complete bounded native endpoint decode supplies both projections: recompute the cargo composite for prefix classification and the fuel-vector plus invariant for the frozen settlement observation. Never compare their digest strings as the same kind or invert a composite hash. ACCEPT_CURRENT can preserve an O1-chosen OTHER state; it must equal the frozen choice, not be forced into the original operation's AFTER state. Prove both survivors for unload (rocket source and device destination), or the exact surviving/absent endpoints for ABANDON. Typed item-NBT, identity, wrapper, position, occupancy and invariant checks stay mandatory. |
+| O3 and O3J | Retain jointly valid own-store/force/readback proofs, the exact intent and the checked journal lease. Proof frontiers equal `intent.checkpointed()` in the settlement projection, as `EscrowCoordinator.java:112-139` requires. O3 installs the immutable unreleased receipts; O3J checks the required journal removal before O4. Neither a cargo kind nor C-I bypasses a proof or changes this order. |
+| Restart after O3 replacement before callback | Checked startup readback/baseline acknowledgement recovers the durable root, intent and receipts. Reacquire O2 proofs from durable native stores against that same frozen choice and re-establish O3J's checked lease; do not take a new live choice or trust a lost callback. A missing, changed or unprovable endpoint remains held. O4 is then the same pure derivation from acknowledged root plus intent, not live fuel or snapshot re-observation. |
+| O4 READY | For each chosen native survivor, use the direction-independent rocket-side member accessor, not today's destination-only lookup (`EscrowSettlementTombstones.java:88`). Derive logical ID and physical ID from the checkpointed endpoint, owner from that frozen member, anchor from the smallest member operation UUID, release generation from the exact O4 write, epoch from the checkpointed state, kind `FUEL_VECTOR_V1`, signature from that state's fuel signature and invariant from that observation. Carry forward the prior head's issued/completed serials, or 0/0 if absent; outcome is READY. These are exactly `EscrowFlightTables.Head`'s fields. A missing rocket produces no successor head; its negative protection remains. |
+| Pruning and launch | Only the acknowledged released group `(ledger, decision digest, member IDs, O4 generation)` authorizes pruning. Rebuild bounded group work from released receipts on restart; remove only that group's retired prefix, preserving epoch, resources and later/live markers. Check the same fuel signature plus cargo-sensitive invariant and exact survivor identity; item-device pruning checks the whole buffer signature. A stop before wrapper saving simply repeats pruning. The rocket is now receipt-backed and refuses new cargo; its later launch still needs F1's complete pruned checkpoint, ARMED and the exact governed PREPARED acknowledgement. |
+
+**Receipts and accounting.** Keep intent schema 2, receipt schema 3 and the closed positional receipt
+dictionary. `payload_amount` is the frozen fuel-fill liability only for `FLUID_PROPULSION_FILL`; it remains
+0 for cargo and floor retirement, not a cargo quantity or an assertion of no loss. `payload_hash` commits to
+the exact cargo delta and cursor. Receipt `before_choice` holds O1 observations; `survivors` and `missing`
+are derived from their checkpointed forms, including normalization, exactly as `EscrowReceiptCodec` does
+today. No separate mutable projection is introduced. `accounting_status` stays UNKNOWN for ACCEPT_CURRENT,
+ABANDON and floor retirement; no scalar fuel field is relabelled as cargo accounting. A returning abandoned
+identity stays frozen. Signed per-resource accounting is outside v1.8. `payload_kind` is unnecessary under
+this representation and is not added (Q10); any future need reopens Root's closed-dictionary decision.
+C-K pins existing fuel and floor-retire receipt bytes and inspector output; D-K verifies that nonempty item
+buffers with diagnostic quantity 0 cannot be mistaken for missing or empty survivors.
 
 **Reservations.** W11c and W11d follow the decisions in force when W11b2 merges; at the time of writing those
 are Root-R1 to Root-R9. Cargo adds no region type and changes no bound: its regions are an operation and, when
-guarded, a named floor. Root-R6's headroom applies to every cargo admission, so the capacities W11b2 pins hold
-for any mix of fuel and cargo. C-K repeats the R6 and R8 requirement tests with cargo candidates.
+guarded, a named floor. Root-R6's headroom applies to every cargo admission. Five live-plus-retired markers
+remain the upper admission allowance, not proof that every cargo candidate fits. The unchanged settlement
+layout adds no second rocket signature or receipt field, but the framed payload, endpoint names and embedded
+O1 can still exceed the complete 12 KiB operation, 2 KiB receipt, 1 KiB head or 1 MiB root ceilings.
 
-<div style="page-break-after: always;"></div>
+**Size measurement prerequisite.** C-K and D-K must remeasure both directions with the real encoders, before
+their dependent integration leaf: 0 to 4 retained markers plus the candidate, the longest permitted endpoint
+names and sticky reason, the worst modified-UTF actor name, maximal admitted payload, neutral normalization,
+ACCEPT_CURRENT and each ABANDON survivor, then O3, O4, pruning and governed launch. Report intent and complete
+operation/receipt byte, depth and node maxima, both full flight tables, and Root-R6/R8/R9 transitions; pin old
+fuel receipt bytes. Confirm whether a five-marker cargo case actually fits and refuse a sixth before any
+side effect. C-K repeats R6/R8 tests with cargo and the direction-independent preview. The real-encoder
+remeasurement is **NOT_RUN in this no-JVM design task**; five-marker usability and effective cargo capacity
+are not yet established. If a candidate fails, eligibility refuses it without raising bounds; an allowance
+or format change returns to Root. Fuel-only measured capacities are not cargo evidence.
 
 ## 4. Disassembly and launch: the latest cargo, exactly once
 
-Cargo is always in exactly one place, the device store or the addressed payload of the rocket's current
-snapshot, and it moves only through one acknowledged operation. Each cargo operation advances the rocket's
-whole epoch, which is never reset (W11A section 3, K10).
+There is one spendable authority; mixed durable prefixes are locked until reconciled. Raw native files can
+temporarily contain two apparent copies or a deficit. For a 1,000 mB load from a 5,000 mB device, destination-only
+storage is 5,000 + 1,000 mB and source-only storage is 4,000 + 0 mB; neither is spendable while pending.
+Reconciliation reaches 4,000 + 1,000 mB exactly once. Each operation advances the rocket's whole epoch, which
+is never reset (W11A section 3, K10). Tests distinguish pre-recovery raw totals from post-recovery conservation.
 
 | Stop point (both directions) | Durable state | After restart |
 |---|---|---|
 | Before L1, including during preparation | Old ledger; both sides BEFORE | Nothing durable; the preparation is discarded; device and payload unchanged. |
 | L1 replaced, before or after its callback | PREPARED record with the cursor and the frozen after digests | Reconciliation recomputes the after snapshot and rolls each BEFORE side forward once. |
 | Apply published but unsaved | Same as above | Same as above. |
-| One side stored | That side AFTER: epoch plus one, marker, after signature | The other side rolls forward from L1; there are never two copies. |
+| One side stored | That side AFTER: epoch plus one, marker, after signature; raw totals may disagree. | Both endpoints stay locked; the other side rolls forward from L1 once, restoring conservation before release. |
 | Both stored, before L2 | AFTER on both sides | Barrier proof, then L2. |
 | L2 replaced, callback or release | Records retired | Stale markers are dropped. |
 
-A duplicate cannot arise: the rocket's classification compares the composite signature, which includes the
+A second spendable credit cannot arise: the rocket's classification compares the composite signature, which includes the
 content hash of the whole snapshot, so an AFTER rocket is never classified BEFORE; the device compares its own
 tank or buffer signature.
 
@@ -338,17 +400,18 @@ device bound to the rocket shows `STALE_BINDING` afterwards.
    transfer-guarded and its retirement writes a floor at the after epoch (`EscrowFloors.retire`), so
    REBUILD_DESTINATION and a stale kept copy are refused (`EscrowRecoveryFence.java:61`). Composite floors need
    C-K, because the floor codec refuses them today.
-3. With C-I, the landed rocket stays its record's authority, so ordinary play never routes into those
-   recoveries.
+3. With C-I, an otherwise valid landed rocket remains recognizable as its record's authority. This changes
+   recognition only; it grants no rebuild, cancellation or source-overwrite permission. Governed records
+   never fall through to legacy recovery, even when their ARMED authority is missing or terminal.
 4. Rolling back one entity file remains outside the claim (R-031, R-032).
 
 **Launch** requires idle. The new transfer record freezes the latest snapshot (ADR-065 section 4.1), and an
 escrow-bound rocket launches through ARMED with a bound, pruned wrapper (`EscrowFlightAuthority.java:35`), as
 after a fill. Relocation issues a new snapshot ID, so no operation or cursor spans a flight. The transfer
-record holds two maximum-size snapshots (`RocketFlightLimits.java:22`), and cargo admission refuses an after
-snapshot beyond `RocketLimits`, so a successful load can never make a rocket unlaunchable.
-
-<div style="page-break-after: always;"></div>
+record holds two maximum-size snapshots (`RocketFlightLimits.java:22`), and cargo admission validates the
+whole encoded after snapshot against `RocketLimits`. This prevents a snapshot-size overflow in the transfer
+record; it is not a guarantee of launch availability. Entity external-record barriers (section 7), capacity,
+IO, missing authority and the other launch checks can still hold the rocket.
 
 ## 5. The devices
 
@@ -385,7 +448,8 @@ containers, players or pipes is ordinary native storage, outside D3-A.
 - **Bounds.** A registered item ID of at most 128 ASCII characters, not air; a count from 1 to
   `min(64, getMaxStackSize())`; `ItemStack.save` output of at most 4,096 bytes, depth 16 and 512 nodes, without
   a `ForgeCaps` key; and a lossless round trip (`ItemStack.of(tag).save` equal to `tag`). A stack that fails
-  stays where it is (`CARGO_TOO_LARGE` or `INVALID_DATA`).
+  stays where it is (`CARGO_TOO_LARGE` or `INVALID_DATA`). These are local maxima; every transfer also passes
+  section 2.3's single eligibility predicate for all enclosing operation, device and snapshot bounds.
 - **Comparison and signing.** Two stacks merge only when they are the same registered item with equal tags
   (`ItemStack.isSameItemSameTags`) and equal canonical NBT digests; display names never decide. The payload
   hash is the existing canonical `RocketNativeResources.signature`; the device signature is section 2.2's.
@@ -395,6 +459,8 @@ containers, players or pipes is ordinary native storage, outside D3-A.
   alone cannot prove their slot count (Q9). A payload with a `LootTable` refuses with `UNRESOLVED_LOOT`
   (ADR-065 section 4.1). `CustomName` and `Lock` are preserved; `Lock` is not enforced, as for vanilla hoppers.
   The after `Items` list is re-sorted by slot, as the adapter's whitelist does.
+  Normal trapped-chest assembly is conditional on C-P's unchanged-adapter test and production tag extension
+  (section 2.4); otherwise only already captured data-pack-enabled trapped chests are eligible.
 - **Partial transfer.** A load takes the first nonempty buffer slot (0 to 3). Its target is the first container
   slot, in slot order, that holds the same item and tag with room, otherwise the first empty slot; it moves
   `n = min(buffer count, getMaxStackSize() - target count)`. An unload takes the first nonempty container slot
@@ -441,8 +507,6 @@ moved after L1.
   nothing may be imported; a later substitution needs its own UPSTREAM_AR_MIT row and belongs under
   `src/imported/v1.8/resources`.
 
-<div style="page-break-after: always;"></div>
-
 ## 6. Verification and implementation leaves
 
 All entries are **planned**; this note produces no evidence. The cost basis is W11b3's: about 20 seconds per
@@ -450,54 +514,84 @@ JVM start, a forced-stop cut costs three starts, a full GameTest run takes 15 to
 (starts x 20 s + 15 minutes + any GameTest run) x 1.5. The unit suite needs no lock. Each implementation leaf
 runs each new test class alone, then the whole unit suite.
 
-**W11c leaves** (after B3-E; enabling also needs the P1 closures):
+**W11c leaves.** Every C-* leaf requires merged B3-U/B3-M/B3-A/B3-E and Root's revision-2 freeze;
+the table lists its additional direct prerequisites, whose dependencies are transitive. Root records the
+section 7 protection scope before C-P/C-A or D-A implements it. Production admission remains disabled.
+P1-F3, P1-F8, P1-N1 and P1-N2 are required for C-E and every real transaction/flight/disassembly evidence
+leaf, not for a pure fixture claim. Root's build-resource integration for C-P's tag must precede its packaged
+tag check. Leaf-local fixtures never stand in for the later production transaction.
 
 | Leaf / dependency | Builds | Acceptance (A0 is pure Java, A1 is GameTest) | JVM starts, lock hours |
 |---|---|---|---|
-| C-I / P1-F8, P1-N2 | `structureDigest()`; the identity rule in `isCommittedAuthority` and `matches`. | A0: the digest is equal across cargo mutations and changes with geometry, state, adapter or propulsion. A1: a landed rocket stays its record's authority after a gated cargo mutation; a neutral rocket with a different content hash is not; a stale duplicate meets FLOOR_CONFLICT before any discard; disassembly then releases the landed record. | 1 GameTest run; 0.5 h. |
-| C-K / B3-E | The cargo kinds, the cargo payload and cursor codecs, the rocket-side accessor, `ROCKET_COMPOSITE_V1` in binding, floors and settlement, the receipt field and script, exclusivity, `prepareTransfer`. | A0: codec bounds, future and unknown versions and fields; direction checks; composite accepted for cargo kinds only; composite floors; settlement accept and abandon with a cargo member, receipt amount and kind, the head written in the fuel projection; exclusivity and the turn token; same-capture markers for composite; the five-marker preview; **Root-R6 and Root-R8 requirement tests with cargo candidates, failing without headroom or with preview-only charging**; the receipt-dictionary Python test. | 1 GameTest regression run; 0.5 h. |
-| C-P / C-K | `pressurized_tank_v1`; `RocketCargoMutation`; selection; the preparation budget, cursor and lock; the permit-gated snapshot publication. | A0: adapter round trip and bounds; 1, 749 and 1,000 mB; over-capacity, incompatible and unknown Fluid; payload and aggregate bound refusals; propulsion unchanged; same snapshot ID and new hash; deterministic recompute; selection order; budget accounting. A1: assembly with tanks; disassembly restores once; a cargo tank and a propulsion bank holding the same Fluid, where only the tank moves. | 1 GameTest run; 0.5 h. |
-| C-A / C-P | The two fluid devices, menus, screen, drop carrier, linker roles, registrations and loot; admission not wired. | A1 as B3-A, for both devices: capability simulation, stale and reentrant handles, owner, range and unload refusals, menu replay, the carrier owner rule, protected removal by player, explosion and command, non-operator NBT, cut-G2's A1 part. | runData once, 1 GameTest run; 0.5 h. |
-| C-E / C-A, C-I | The shared fair queue, captures, apply permits, proof validators, production and restart reconciliation for cargo kinds, behind the cargo gate. | A1: two devices on one rocket serialize; fuel and cargo alternate; the first cargo operation creates the ledger; every refusal compares both envelopes and the queue and counts; real production recovery recomputes the after snapshot. | 1 GameTest run; 0.5 h. |
-| C-D / C-A | `V180RocketCargoArt` and `V180RocketCargoData`, recipes, text, both provenance files for W11c. | runData twice with a clean diff; references, recipe graph, loot, registry IDs, provenance hashes, a CLEAR screen. S1: packaged dedicated-server sidedness; an old world with chest rockets unchanged; a tank rocket restarted twice; future and malformed device roots and tank payloads preserved; cut-G2's S1 part. | runData twice, 1 GameTest run, about 6 S1 starts; 1 h. |
-| C-S1 to C-S5 / C-E, C-D, the P1 leaves | Nothing: S2 evidence, below. | Below. | 222 starts; 3.75 h. |
-| C-V / C-D | Nothing. | V1 on a real GPU: labels, Fluid and status display, cursor display, scales, resource reload, the rocket visual after a cargo operation. V2 with two real clients: ownership, two devices on one rocket, `PREPARING` and pending synchronization, the passenger case, disconnect. | Shared with D-V in one native session; 2 to 3 h. |
-| C-B / C-E | A benchmark harness only. | The budgets below, with native reference-load results kept apart from microbenchmarks, and the cycle time per device. | About 3 h; the docs/17 soak is shared with B3-B (Q12). |
+| C-I / P1-F8, P1-N2 | It adds `structureDigest()` and the grouped recognition predicate. | A0/A1 use explicit before/after snapshot fixtures, not cargo devices. They check stable structure versus changed geometry/state/adapter/propulsion, mandatory snapshot ID, neutral mismatch, protected duplicate veto and governed routing. Real mutation, reconnect and crash-safe disassembly belong to C-E/C-S5. | It needs 1 GameTest run, about 0.5 h. |
+| C-K / No additional leaf. | It adds fluid cargo kinds/cursors, the rocket-side accessor, composite bindings/floors, exclusivity and `prepareTransfer`; settlement retains section 3.3's representation. | A0 covers codecs, direction, typed projections, frozen O4 derivation without live inputs, normalization/pruning, ACCEPT_CURRENT and both ABANDON survivors, unchanged receipt bytes/dictionary, turn-token lifetime and same-capture markers. It produces section 3.3's real-encoder size report and five-marker verdict. R6/R8 tests fail without headroom or with preview-only charging; R9 still permits reserved retirement. | It needs 1 GameTest regression run, about 0.5 h. |
+| C-P / C-K and Root's pre-implementation risk entry. | It adds the tank host, mutation, selection, bounded preparation and permit-gated publication, plus the v1.8 production tag extension and its provenance from section 2.4. | A0 covers 1/749/1,000 mB, over-capacity/incompatible/unknown Fluid, every nested bound, unchanged propulsion/geometry/ID, new hash, deterministic recomputation and budget accounting. A1 uses mutation/adapter fixtures to capture and restore the after payload and distinguish cargo from same-Fluid propulsion. Real production-tag assembly and the conditional trapped-chest round trip are tested here; these are not crash-safe transaction/disassembly evidence. | It needs runData twice, 1 GameTest run and the packaged tag check, about 0.75 h. |
+| C-A / C-P and the recorded device-protection scope. | It adds both fluid devices, menus/screen, carrier, linker roles, registration and loot, with admission unwired. | A1 tests local capabilities, simulation/stale/reentrant calls, ownership/range/unload, menu replay, carrier ownership, protected removal, non-operator NBT and cut-G2. It also tests raw preservation, work-budget oversize, observed native veto and Level saturation under section 7; command replacement remains a residual, not prevented salvage. | It needs runData once and 1 GameTest run, about 0.5 h. |
+| C-E / C-A, C-I, C-K's size report and all four P1 closures. | It integrates the fair queue, capture/apply permits, typed proofs, production and restart reconciliation behind the per-kind gate. | A1 tests real load/unload and O1-O4, both unload survivor proofs, neutral normalization/veto, typed readback and pruning, serialization/fairness, first-ledger creation and refusal side effects. It runs C-I's real stale PREPARED/both-entity, reconnect and governed missing/terminal-authority cases; exactly-once latest-cargo disassembly requires P1-F8. It covers cancellation and two successive ordinary cargo-mutated flights, including successor mutation. | It needs 1 GameTest run, about 0.5 h. |
+| C-D / C-A, C-P's tag/provenance and B3-D's empty-tank ingredient. | It adds W11c art, data, recipes, text and final provenance, preserving C-P's tag entries. | It runs runData twice with a clean diff, reference/recipe/loot/registry/provenance/art checks. S1 checks packaged sidedness and production tags, unchanged old chest rockets, two restarts of a tank snapshot fixture, protected roots and cut-G2. Actual cargo transaction restarts belong to C-S*. | It needs runData twice, 1 GameTest run and about 6 S1 starts, about 1 h. |
+| C-S1 to C-S5 / C-E, C-D and the integrated prerequisites in the mapping below. | They produce S2 evidence only. | They run the enumerated cuts below. | They need 270 starts, about 4.2 h. |
+| C-V / C-E, C-D and D-E/D-D for the joint session. | It produces client evidence only. | V1 checks labels, Fluid/status/cursor display, scales, reload and cargo visual refresh. V2 checks ownership, competing devices, preparation/pending synchronization, passengers and disconnect. | It shares one native session with D-V, about 2 to 3 h. |
+| C-B / C-E, C-D and D-E/D-D for the mixed cargo run; B3-B for the joint soak. | It adds a benchmark harness only. | It measures the budgets below, native reference load separately from microbenchmarks and each device's cycle time. | It needs about 3 h excluding the shared docs/17 soak. |
 
 **W11d leaves** reuse W11c's escrow path:
 
 | Leaf / dependency | Builds | Acceptance | JVM starts, lock hours |
 |---|---|---|---|
-| D-K / C-K | The item kinds, `CONTAINER`, the stack codec and the item-buffer signature. | A0: stack bounds, `ForgeCaps` refusal, round trip, comparison, the signature pin, item settlement receipts. | None. |
-| D-P / D-K, C-P | The container mutation, slot selection and partial moves. | A0: 27-slot scope, `LootTable` refusal, `CustomName` and `Lock` kept, partial counts, canonical re-sort, bounds. A1: a chest rocket loads and unloads; disassembly restores once. | 1 GameTest run; 0.5 h. |
-| D-A / D-P | The two item devices, menus, screen, spill drops, linker roles. | A1 as C-A, plus spill-once on break and an oversized-NBT stack that stays in the buffer. | runData once, 1 GameTest run; 0.5 h. |
-| D-E / D-A, C-E | Item entries in the shared queue and reconciliation. | A1: competing devices, a partial move across restart, refusal comparisons. | 1 GameTest run; 0.5 h. |
-| D-D / D-A | Data, art, text and both provenance files for W11d. | As C-D. | runData twice, 1 GameTest run, about 6 S1 starts; 1 h. |
-| D-S1, D-S2 / D-E, D-D | Nothing: S2, below. | Below. | 57 starts; 1.25 h. |
-| D-V, D-B | Nothing. | In C-V's session and C-B's harness. | About 1 h on top of C-B. |
+| D-K / C-K. | It adds item kinds, `CONTAINER`, the stack codec and buffer signature. | A0 covers local/nested limits, ForgeCaps refusal, round trip, equality and signature pins, item settlement/UNKNOWN semantics and the real-encoder size report of section 3.3. | It needs no native start. |
+| D-P / D-K, C-P. | It adds container mutation, slot selection and partial moves. | A0 covers 27 slots, LootTable refusal, preserved names/locks, partial counts, canonical order and nested bounds. A1 uses explicit load/unload after-snapshot fixtures and adapter restoration; it makes no real-transaction or crash-safe disassembly claim. | It needs 1 GameTest run, about 0.5 h. |
+| D-A / D-P and Root's recorded item-protection scope. | It adds both item devices, menus/screen, spill drops and linker roles, with admission unwired. | A1 repeats C-A's local security/protection checks, spill-once and unchanged oversized-NBT buffers. | It needs runData once and 1 GameTest run, about 0.5 h. |
+| D-E / D-A, C-E and D-K's size report. | It adds real item transactions to the shared queue and reconciliation. | A1 checks competing devices, typed item-NBT O2/readback, both directions, partial moves/restart, normalization/veto, O3J/O4/pruning, both ABANDON survivors and refusal comparisons. Real latest-cargo exactly-once disassembly inherits C-E's explicit P1-F8 prerequisite. | It needs 1 GameTest run, about 0.5 h. |
+| D-D / D-A, C-D. | It adds item data/art/text and provenance. | It repeats C-D's resource/S1 checks with item snapshot/device fixtures, not a claim about an unwired transaction. | It needs runData twice, 1 GameTest run and about 6 S1 starts, about 1 h. |
+| D-S1, D-S2 / D-E, D-D and the integrated prerequisite mapping. | They produce S2 evidence only. | They run the enumerated item cuts below. | They need 90 starts, about 1.5 h. |
+| D-V / D-E, D-D, C-V. | It produces client evidence only. | It checks item tags/counts, partial moves, ownership and synchronized state in C-V's joint session. | The joint-session estimate includes it. |
+| D-B / D-E, D-D, C-B and B3-B for the joint soak. | It extends C-B's harness with item fixtures. | It measures admitted versus rejected NBT fixtures and mixed-load costs on the integrated build. | It adds about 1 h to C-B, excluding the shared soak. |
 
-**S2 cut families that apply.** Each cut stops on both sides of its durable acknowledgement, including after
-replacement and before the callback, and restarts twice. The control totals follow W11A section 7: a
+**S2 cut families that apply.** One enumerated cut is one forced stop followed by two restarts (three JVM
+starts). A stated before/after pair counts as two cuts; an after-write cut means replacement before callback,
+not a graceful stop. A single representative does not imply both sides were tested. The control totals follow W11A section 7: a
 5,000 mB device and an empty 64,000 mB cargo tank, moving 1,000 mB; for unloads, the reverse. Every leaf pins
 the source commit, the JAR and the hooks, and compares raw native quantities, markers and epochs.
 
 | Leaf | Cuts | Required outcome | Estimate |
 |---|---|---|---|
-| C-S1, normal | cut-K0 to cut-K10 for a load and for an unload, 14 cuts per direction as B3-S2 counts them, with the cut-K0 stop taken during preparation. | One copy of the cargo at every cut; the rocket-as-source path is new in W11c, so both directions run in full. | 28 cuts, 84 starts; 1.1 h. |
+| C-S1, normal | cut-K0 to cut-K10 for a load and for an unload, 14 cuts per direction as B3-S2 counts them, with the cut-K0 stop taken during preparation. | Raw mixed-save totals are recorded while both endpoints are locked; after reconciliation, exactly one transfer is spendable and the total is conserved. Both directions run in full. | 28 cuts, 84 starts; 1.1 h. |
 | C-S2, reconciliation and storage | D2-C2, D2-C5, D2-C6 and D2-C7 per direction; cut-E1 (own store); cut-E2 (a newer save, and a rocket record near the inline-sector limit); cut-E4 (definite L1, UNKNOWN L1 and UNKNOWN L2); one cut-E3 and one cut-E5 representative. | Recomputed roll-forward; observable failures block retirement; unobservable ones stay diagnostic residuals. | 16 cuts, 48 starts; 0.8 h. |
-| C-S3, recovery and roots | cut-R1 with a composite floor at 255 and 256; cut-R2 with a cargo-mutated rocket and a stale duplicate; cut-R3 with a missing cursor, an OTHER payload and a relocated device; cut-G1 for a future device root and an invalid tank payload; cut-G3 with cargo L1 in flight and L2 UNKNOWN. | FLOOR_CONFLICT or REPAIR without overwrite; no historical fallback; roots preserved. | 9 cuts, 27 starts; 0.6 h. |
-| C-S4, settlement | Both sides of cut-O1 to cut-O4 for ACCEPT_CURRENT on an unload; two ABANDON cuts; O-veto. | Composite survivors checkpointed; head in the fuel projection; never 6,000 mB from the 5,000 mB fixture. | 11 cuts, 33 starts; 0.65 h. |
-| C-S5, creation, flight and disassembly | cut-N1 with a first cargo operation; D2-F1, D2-F6 and D2-F8 after a cargo operation; P1-F8's three windows (before restoration, before record removal, before release) with a cargo-mutated rocket; after an unload, transfer recoveries that would materialize an older snapshot (REBUILD_DESTINATION, KEEP_SOURCE and REBUILD_SOURCE). | The latest cargo restored exactly once; no recreation. | 10 cuts, 30 starts; 0.6 h. |
+| C-S3, recovery and roots | cut-R1 with a composite floor at 255 and 256 (2); cut-R2 with a cargo-mutated rocket and a stale duplicate (1); cut-R3 with a missing cursor, an OTHER payload and a relocated device (3); cut-G1 for a future device root and an invalid tank payload (2); cut-G3 with cargo L1 in flight and L2 UNKNOWN (2). | FLOOR_CONFLICT or REPAIR occurs without overwrite or historical fallback; roots are preserved. | 10 cuts, 30 starts; 0.65 h. |
+| C-S4, settlement | For unload ACCEPT_CURRENT: O1 before/after (2), neutral normalization before/after publication (2), O2 before/after each of the rocket-source and device-destination proofs (4), O3 before/after (2), O3J before/after (2), O4 before/after (2), pruning before/after wrapper store (2). ABANDON separately omits each endpoint (2). O-veto with destination saved and a normalization veto add 2. | O3-after specifically restarts from durable data only, reacquires exact O2/O3J proofs, completes O4 and pruning, and performs a governed launch. Every variant retains fuel-vector plus invariant settlement authority, cargo-sensitive equality and UNKNOWN loss; 6,000 mB must never become available from 5,000 mB. | 20 cuts, 60 starts; 0.9 h. |
+| C-S5, creation, flight and disassembly | cut-N1 (1); D2-F1/F6/F8 after cargo (3); P1-F8 before restoration/record removal/release (3); unload followed by REBUILD_DESTINATION/KEEP_SOURCE/REBUILD_SOURCE attempts (3); stale PREPARED with both physical entities (1); disembarked-passenger reconnect (1); governed record with missing and terminal authority (2); successor cargo mutation and checkpoint between two completed ordinary cargo-mutated flights (1); exact-source cancellation after cargo (1). | Latest cargo materializes once; protected stale copies cannot win or be discarded unchecked. Governed records never enter legacy recovery. Both flights complete with fresh governed authority, and cancellation retains the current cargo without historical reconstruction. | 16 cuts, 48 starts; 0.8 h. |
 | D-S1, items | cut-K2, cut-K3, cut-K4, cut-K5 and cut-K9 per direction; a partial move stopped after apply and after one side is stored. | Exactly `n` items move; the remainder is intact. | 12 cuts, 36 starts; 0.7 h. |
-| D-S2, items | cut-R3 for a changed container and a `LootTable` payload; cut-O1 and cut-O3; one disassembly and one rebuild case; cut-G1 for item roots. | As C-S3 to C-S5. | 7 cuts, 21 starts; 0.55 h. |
+| D-S2, items | cut-R3 for changed container and LootTable (2); O1 after (1); O2 before/after each typed item-device and rocket proof on unload (4); O3 after (1); O3J after (1); O4 after (1); pruning after wrapper store (1); neutral normalization after publication and its veto (2); each ABANDON survivor (2); one P1-F8 disassembly, one rebuild refusal and cut-G1 item root (3). | Typed NBT/counts/remainders are identical to the frozen choice through readback, durable restart, release and pruning. O3-after continues through O4 and a governed launch with no live replacement choice. Quantity 0 is not interpreted as empty cargo or known zero loss. | 18 cuts, 54 starts; 0.85 h. |
 
-cut-C1 and cut-C2 do not apply, because cargo never chains; A1 covers the refusal. cut-N0, cut-N2 and cut-N3 are
-B3-S1's shared creation code, and only cut-N1 is repeated. cut-G2 is A1 and S1 coverage.
+**Changed-boundary and reuse mapping.** A reuse claim must name the integrated source SHA, JAR hash, test/cut
+ID and evidence path before admission. No such integrated cargo evidence exists in this design task; the
+following reuse prerequisites remain NOT_RUN until Root pins them, or the indicated tests are rerun.
+
+| Boundary | Local and integrated coverage, or exact required reuse |
+|---|---|
+| Ordinary prefix/apply, both save orders and L1/L2 | C-P/D-P supply mutation fixtures only. C-E/D-E run real D2-C0 through D2-C8 A1 cases. C-S1 covers both-direction K boundaries; C-S2 repeats D2-C2/C5/C6/C7 with recomputation; D-S1 repeats the item-changing boundaries. The other item boundaries use the same writer/barrier implementation as C-S1/C-S2 only after the integrated build proves the typed adapter in D-E. |
+| Composite binding/floor, direction and capacity | C-K/D-K real-encoder measurements and refusal tests cover R6/R8/R9, before/after invariants and unload's rocket-side accessor. C-S3 covers composite saturation and missing/OTHER/stale identities. B3-S5's unchanged ledger missing/replaced/behind and distinct/coalesced floor cases must be pinned on the integrated build. |
+| Neutral survivor normalization and veto | C-E/D-E cover old versus normalized wrapper and mismatches in A1. C-S4 cuts both sides of publication and O2; D-S2 repeats item normalization and veto. Neither is replaced by fuel-only evidence. |
+| O2 survivor/absence, O3, O3J, O4 and pruning | C-S4 explicitly covers both unload survivor proofs and both sides of O3/O3J/O4/pruning. D-S2 covers typed item-NBT readback, both survivor proofs and every after-write boundary; D-E covers their before-write refusal cases and the load-role counterpart. Both S2 O3-after cases run restart-to-O4/pruning/launch from durable data. ABANDON proves each absence separately. |
+| C-I recognition, reconnect, replay and cancellation | C-I is fixture-only. C-E integrates real cargo with stale PREPARED/both entities, protected non-first keeper, changed snapshot ID, disembarked reconnect and missing/terminal governed authority. C-S5 repeats the named native cuts, exact-source cancellation and successor mutation across two cargo-mutated flights. B3-S6's remaining D2-F0 through D2-F8 acknowledgements and P1-N2/P1-F9 cases require exact integrated evidence; the governed dispatcher and proof order are unchanged. |
+| Latest-cargo disassembly | C-E/D-E require P1-F8 and real devices; C-S5 repeats its three windows and D-S2 the item representative. No C-P/D-P restore fixture is evidence for this crash-safe claim. |
+| Ledger creation and unchanged infrastructure | C-S5 repeats cut-N1 with cargo. Reuse B3-S1's exact cut-N0/N2/N3 results for the unchanged creation writer/baseline. C-S2 repeats E3/E5 representatives; remaining shared storage failure/shutdown cases require B3-S4/B3-S6 integrated results, with no change to own-store/force/readback or UNKNOWN handling. |
+| Protected roots and native save scope | C-A/D-A exercise preservation, work-budget excess, observed incompatibility and 256-coordinate saturation in A1; C-D/D-D cover S1 and cut-G2. C-S3/D-S2 repeat cargo root recovery. Reuse B3-S6 cut-G1/G3 native veto/saturation/failed-close evidence only for the unchanged GuardedChunkSaves/store lifecycle, not the new cargo codecs. |
+| Non-applicable chains | cut-C1/cut-C2 do not apply because cargo never chains; C-K/C-E/D-E prove chain, mixed-kind and opposite-direction refusal. Existing fuel chains remain covered by B3-S3 and are not removed. |
+
+The enumerated matrix is **90 fluid cuts plus 30 item cuts: 120 cuts and 360 JVM starts**, rather than
+revision 1's 279 starts. It costs about 5.6 S2 lock hours using the stated formula across seven leaves,
+excluding prerequisite reruns. Separately plan 12 S1 starts, 10 GameTest runs and 8 runData invocations
+(two now belong to C-P); Gradle daemon reuse is not an extra fixed JVM count. The joint V1/V2 session,
+benchmarks and docs/17 soak are additional sessions, not hidden inside 360. None of these estimates is
+runtime evidence or permission to shorten a test.
 
 **Benchmarks and budgets.** ADR-065 section 4.1.1 and W11A section 6 apply unchanged: one whole-snapshot
 reconstruction per tick at 16 MiB and 16,384 visits, at most 64 commits per tick, 16 MiB of detached memory and
-at most 8 reconciliations per tick. Exercise 2,048 blocks, 128 payloads, 1 MiB of NBT, 8 KiB Fluid tags and
-4 KiB item tags; capture, recompute at apply, off-thread readback hashing; visual republication after each
+at most 8 reconciliations per tick. Exercise 2,048 blocks, 128 payloads and a 1 MiB aggregate-NBT boundary fixture, distinguishing
+the largest admitted fixture from oversized rejection fixtures. An 8 KiB Fluid representation or a 4 KiB
+item is not automatically admitted once framing/depth/nodes and the whole snapshot codec are counted;
+report the effective maximum under section 2.3 and measure refusal with no mutation. Measure capture,
+recompute at apply, off-thread readback hashing and visual republication after each
 operation; a mixed fuel and cargo queue with a maximum-size rocket among small requests; 64 synthetic competing
 records. [docs/17](../../../17-V1PLUS-QUALITY-BUDGETS.md) applies: Xmx at most 4 GiB, RSS at most 5.5 GiB, mean
 MSPT at most 25 ms, P95 at most 50 ms and P99 at most 100 ms, and no watchdog, OOM or forced load. If a budget
@@ -508,12 +602,13 @@ runData, GameTest, S1, S2, the native server and benchmarks take `D:/GitHub/ARCE
 after checking 10 GiB free on C: and D:. Run the unchanged GameTest log checker. Missing native or client
 evidence stays NOT_RUN.
 
-<div style="page-break-after: always;"></div>
-
 ## 7. Proposed merge text and decisions requiring Root
 
-**Proposals only.** Root records the scope before the implementation merges and adds commit and evidence
-references once verified. This note accepts no risk and closes no finding.
+**Proposals only.** Root records this protection scope in `docs/11-RISK-REGISTER.md` and the ADR before the
+protection is implemented, not merely before merge. C-P triggers that prerequisite for unsupported tank
+payload/quarantine integration; C-A triggers it for fluid-device roots and D-A for item-device roots.
+Pure codec work does not authorize a new runtime protection. Root adds commit/evidence references after
+verification. This note accepts no risk and closes no implementation finding.
 
 ### R-035 proposed additions
 
@@ -531,14 +626,39 @@ references once verified. This note accepts no risk and closes no finding.
 > canonical form exceeds the cargo payload bound, a container with an unresolved loot table, and modded chest
 > subclasses are not movable as cargo and stay in place.
 >
-> **Save refusal.** An unsupported device root (invalid, future, or naming an unregistered Fluid or item) is
-> protected as R-038 protects a bay: player removal refuses, explosions skip it, it drops nothing. The scope is
-> that one device, until its cause goes. An unsupported tank payload inside a snapshot follows the existing
-> rocket quarantine. A rocket entity record that grows past vanilla's inline sector limit after cargo loads
-> stalls the barrier (cut-E2), and the resources stay locked until repair; observable failures block
-> retirement.
+> **Preservation and device protection.** Inherit R-038 and W11b3 revision 2 without narrowing their scope.
+> An invalid, future, quarantined or unregistered-Fluid/item device root stays verbatim and disables that
+> device. Player removal refuses before loot, explosions skip it, extraction refuses and it drops nothing.
+> This device-local protection lasts until the cause is resolved: restoring a missing mod allows validation
+> on the next load; future/invalid data needs a supporting jar or offline repair. Restart alone does not
+> clear it. Escrow locks separately last until proved reconciliation or operator settlement releases them.
 >
-> **Recovery.** As the row states: whole-world offline repair on a copy, never one store.
+> **Native terrain-save veto.** A raw root that writes and reads back losslessly, or exceeds the bounded
+> native-check work budget, is saved verbatim; operational oversize alone never denies saving. Only observed
+> native incompatibility invokes GuardedChunkSaves and vetoes the entire terrain chunk. At the inherited
+> 256-denied-coordinate saturation boundary, subsequent terrain saves for that ServerLevel are vetoed until
+> the Level closes. Entity, player and global stores still save separately; this is not an atomic world
+> pause. Closing the Level clears the veto lifecycle, not the incompatible data, which can trigger it again
+> on reload. No routine save exception, omission, normalization, empty-root replacement or dirty clearing is
+> permitted. `/setblock`, `/fill` and raw third-party replacements remain detectable repair residuals.
+>
+> **Entity record and barrier availability.** An unsupported tank/container payload follows the existing
+> rocket-entity quarantine/preservation rules, independently of terrain-chunk veto. Cargo can enlarge one
+> rocket's native entity record beyond the supported inline-sector reader limit; cut-E2 must then leave its
+> operation/endpoints locked and refuse retirement until a valid proof or offline repair is possible.
+> Observable own-store/readback failures do the same; unobservable native failures remain the existing
+> diagnostic residual, not a new safety guarantee. No new Level-wide entity-save veto is introduced.
+> Retryable IO may recover online; other authority/capacity conflicts remain held. Existing shared journal
+> writer stalls retain their separate R-035 transfer-availability scope rather than being called device-only.
+>
+> **Logs.** Emit one bounded audit line per state, reason or backoff transition, never one per tick. Repeated
+> transitions and inherited native/Forge save errors have no lifetime log cap.
+>
+> **Recovery.** Stop the server and preserve the originals and hashes of every Level's terrain, entity and
+> POI files, global journals, ledger/data, player data and metadata. Repair only a whole-world copy, verify
+> conservation and fresh proofs with two saves and restarts, then replace the whole world. Never restore one
+> store, substitute a cleaned root or treat restart as repair. R-031/R-032, per-file rollback, OS/power loss
+> and UNKNOWN settlement loss remain unaccepted.
 
 ### ADR-065 proposed implementation note
 
@@ -558,18 +678,18 @@ references once verified. This note accepts no risk and closes no finding.
 
 | # | Question | Recommended answer |
 |---|---|---|
-| Q1 | Adopt the identity rule (section 2.5), and when? | **Yes**, as leaf C-I after P1-F8 and P1-N2, reviewed with this note. Without it, the first unload at a destination strands the rocket in FLOOR_CONFLICT. The alternative, rewriting the COMMITTED record's snapshot with every cargo operation as W27A's D5 rewrites a PREPARED record, makes each operation a three-store transaction with another checked journal write and cut set, all queued on the journal writer that P1-F3 is still fixing. |
-| Q2 | Receipt-backed rockets: refuse cargo, or let a cargo L2 advance the READY head? | **Refuse** in v1.8. A head-advance write is new authority over heads and the launch check; disassembly and reassembly clear the history. |
+| Q1 | Adopt the identity rule (section 2.5), and when? | **Yes, conditional on the grouped predicate and I1's unchanged fences/routing**, as C-I after P1-F8/P1-N2. C-I proves recognition with fixtures; C-E/C-S5 prove the real transaction and negative/reconnect cases. It grants no reconstruction authority and avoids adding a third checked store to every cargo operation. |
+| Q2 | Receipt-backed rockets: refuse cargo, or let a cargo L2 advance the READY head? | **Refuse** in v1.8. A head-advance write is new authority over heads and the launch check. Disassembly/reassembly creates a new logical rocket; it never erases the old identity's receipts or negative protections. |
 | Q3 | Legacy scalar-fuel rockets: refuse, or add a scalar composite projection? | **Refuse.** Disassembly already restores their chests; a scalar projection is new authority for little gain. |
 | Q4 | One live cargo operation per rocket, with no chains? | **Yes.** It bounds memory and removes the chain cuts. Chains can be a later, separately reviewed change. |
-| Q5 | Deterministic payload selection or a player choice? | **Deterministic**, as legacy; a choice would need a packet and a protocol change. |
+| Q5 | Deterministic payload selection or a player choice? | **Deterministic**, with the deliberate buffer-first priority difference in section 2.3; a player choice would need a packet and protocol change. |
 | Q6 | The rocket visual republishes after every cargo operation (ADR-065 section 11.1 keys it by content hash). | **Keep it** and measure in C-B. If budgets fail, lower the cadence first; keying the visual by the structure digest would need its own ADR note. |
 | Q7 | Item devices: spill drops or a drop carrier? | **Spill**, as vanilla containers; there is no custom item NBT to police, and the owner is the placer. |
 | Q8 | Automation direction | **Directional**, as legacy: loaders only accept input and unloaders only give output; the owner's menu works both ways. |
 | Q9 | Modded `ChestBlockEntity` subclasses | **Refuse**: a payload cannot prove their slot count. A later adapter may add them. |
-| Q10 | The receipt wire field `payload_kind` (decision L2's closed dictionary) | **Accept** it; fuel receipts omit it, so existing receipts are byte-identical. |
+| Q10 | Is `payload_kind` still needed? | **No for this revision.** Section 3.3 keeps fuel-only liability semantics, cargo payload hashes and UNKNOWN accounting, with no cargo scalar. Keep the closed dictionary and pin old bytes. A future need for the field is an open decision for Root, not permission to add or reindex wire names. |
 | Q11 | One admission switch for fuel and cargo, or one per kind? | **One per kind**: fuel can be enabled after W11b3's evidence without waiting for cargo. |
-| Q12 | Benchmark soak | **Share** one docs/17 soak for fuel and cargo after W11d, if B3-B has not yet run it. |
+| Q12 | Benchmark soak | **Share** one docs/17 soak on the integrated fuel-plus-fluid-and-item-cargo build after W11d. A prior fuel-only run is not cargo evidence. Until that run and the other prerequisites are recorded, cargo admission stays disabled. |
 
 W79 delivers only this design and its record. It changes no code, tests, assets, ADR, risk register, ledger,
 status, build or workflow files, and it satisfies no runtime Gate.
