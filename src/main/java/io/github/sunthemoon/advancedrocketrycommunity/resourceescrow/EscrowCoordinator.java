@@ -269,6 +269,10 @@ public final class EscrowCoordinator implements AutoCloseable {
         if (previous != reason) { transitions.put(id, reason); data.setDirty(); }
     }
     public boolean frozen(EscrowEndpoint.Key endpoint) { owner(); return frontiers.containsKey(endpoint); }
+    boolean pruningBusy(EscrowEndpoint.Key endpoint) {
+        owner(); return !operational() || EscrowSettlementPruning.busy(endpoint, data.ledger().records(), queued.values(),
+                writer.capturedOperations(), frontiers.keySet());
+    }
     public boolean admitting(EscrowEndpoint.Key endpoint) {
         owner(); return queued.values().stream().anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
     }

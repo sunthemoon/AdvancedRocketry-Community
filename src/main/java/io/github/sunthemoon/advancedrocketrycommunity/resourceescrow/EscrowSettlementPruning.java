@@ -41,6 +41,9 @@ public final class EscrowSettlementPruning {
             priority.addLast(ack.digest());
         }
         Visit next(EscrowLedger root, Set<UUID> unresolved) {
+            return next(root, unresolved, ignored -> false);
+        }
+        Visit next(EscrowLedger root, Set<UUID> unresolved, java.util.function.Predicate<EscrowEndpoint.Key> busy) {
             if (cached != root) {
                 groups = groups(root); cached = root;
                 var live = groups.stream().map(Group::digest).collect(java.util.stream.Collectors.toSet());
@@ -53,11 +56,12 @@ public final class EscrowSettlementPruning {
             if (group == null || group.endpoints().isEmpty() || group.members().stream().anyMatch(unresolved::contains)) { return null; }
             int index = endpoints.getOrDefault(group.digest(), 0);
             endpoints.put(group.digest(), (index + 1) % group.endpoints().size());
-            return new Visit(group, group.endpoints().get(index));
+            var endpoint = group.endpoints().get(index);
+            return busy.test(endpoint.reference().key()) ? null : new Visit(group, endpoint);
         }
         void tick(MinecraftServer server, EscrowCoordinator coordinator) {
             var root = coordinator.ledger(); var unresolved = coordinator.unresolvedIds();
-            var visit = next(root, unresolved);
+            var visit = next(root, unresolved, coordinator::pruningBusy);
             if (visit != null) {
                 try { apply(server, root, visit, unresolved); }
                 catch (IllegalArgumentException | java.util.NoSuchElementException unavailable) {
@@ -65,6 +69,18 @@ public final class EscrowSettlementPruning {
                 }
             }
         }
+    }
+
+    static boolean busy(EscrowEndpoint.Key endpoint, List<EscrowOperation> durable,
+            java.util.Collection<EscrowOperation> queued, java.util.Collection<EscrowOperation> captured,
+            Set<EscrowEndpoint.Key> frozen) {
+        return frozen.contains(endpoint) || durable.stream().filter(op -> !op.settlement().isEmpty()).anyMatch(op -> names(op, endpoint))
+                || java.util.stream.Stream.concat(queued.stream(), captured.stream()).anyMatch(op -> names(op, endpoint));
+    }
+    private static boolean names(EscrowOperation op, EscrowEndpoint.Key endpoint) {
+        // A floor intent names both snapshot slots of L; it is safe to skip every physical slot of that L.
+        return op.source().key().equals(endpoint) || op.destination().key().equals(endpoint)
+                || endpoint.kind() == EscrowEndpoint.Kind.ENTITY && op.guard().rocket().equals(endpoint.logicalRocket());
     }
 
     static List<Group> groups(EscrowLedger root) {
@@ -115,13 +131,14 @@ public final class EscrowSettlementPruning {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()) { return section; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null || !data.ledger().id().equals(section.ledger())) { return section; }
-        var root = data.ledger(); var unresolved = data.bind(level.getServer()).unresolvedIds();
+        var coordinator = data.bind(level.getServer());
+        var root = data.ledger(); var unresolved = coordinator.unresolvedIds();
         for (var group : groups(root)) {
             if (!group.digest().equals(digest) || !group.members().equals(members)) { continue; }
             for (var chosen : group.endpoints()) {
                 var reference = chosen.reference();
                 if (reference.kind() != EscrowEndpoint.Kind.ENTITY || !reference.identity().equals(rocket.getUUID())
-                        || RocketEscrowAudit.placement(reference, rocket) != EscrowReason.NONE) { continue; }
+                        || RocketEscrowAudit.placement(reference, rocket) != EscrowReason.NONE || coordinator.pruningBusy(reference.key())) { continue; }
                 var fuel = rocket.flightData().orElseThrow().fuel();
                 if (!chosen.survivor().getString("signature_kind").equals(EscrowSignatureKind.FUEL_VECTOR_V1.name())
                         || !chosen.survivor().getString("invariant_digest").equals(EscrowInvariant.rocket(rocket))) { continue; }
