@@ -97,6 +97,20 @@ def statuses(process):
     return [process.lines[a].rstrip(), process.lines[b].rstrip()]
 
 
+def await_holds(process, expected, timeout):
+    deadline = time.monotonic() + timeout
+    while True:
+        lines = statuses(process)
+        parsed = [pattern.search(line).groups() for pattern, line in zip((moon.STATUS, station.STATUS), lines)]
+        if all(values[3] == hold and (hold != "none" or values[0] == "KNOWN:DELIVERED"
+                                     and values[2] == "CONFIRMED") for values, hold in zip(parsed, expected)):
+            return lines
+        if any(values[3] not in (hold, "none", "SOURCE_UNCONFIRMED") for values, hold in zip(parsed, expected)):
+            raise smoke.SmokeError(f"A paired restart acquired an unexpected hold: {lines}")
+        if time.monotonic() > deadline: raise smoke.SmokeError(f"Paired restart holds did not settle: {lines}")
+        time.sleep(1)
+
+
 def check(case, world, expected, recovered=False):
     actual = roots(world)
     journal, registry, progression = actual[moon.JOURNAL], actual[station.STATIONS], actual[moon.PROGRESSION]
@@ -271,9 +285,7 @@ def run(args):
                             if "SOURCE_UNCONFIRMED" not in entry["unconfirmed_status"][0] or "SOURCE_ROLLBACK" in entry["unconfirmed_status"][0]:
                                 raise smoke.SmokeError("FP6: UNKNOWN was not a temporary proof loss")
                         if case in HOLDS and case not in FAULTS:
-                            entry["status"] = statuses(process)
-                            for line, hold in zip(entry["status"], HOLDS[case]):
-                                if "hold=" + hold not in line: raise smoke.SmokeError(f"{case}: wrong hold: {line}")
+                            entry["status"] = await_holds(process, HOLDS[case], args.delivery_timeout)
                         elif case != "FW8a":
                             moon.delivered(case, process, None, args.delivery_timeout)
                             station.delivered(process, None, args.delivery_timeout, empty=False)

@@ -81,5 +81,15 @@ class PairedOracleTest(unittest.TestCase):
             record["phase"] = "PREPARED"
             with self.assertRaises(cuts.smoke.SmokeError): cuts.ready_to_warp("fixture", process, Path("world"), 120)
 
+    def test_restart_holds_are_observed_after_startup_proof_and_the_service_step(self):
+        def line(kind, source, receipt, hold):
+            return f"kind={kind} source={source} event=none receipt={receipt} hold={hold}"
+        temporary = [line("first_moon_landing", "SOURCE_UNCONFIRMED:UNCONFIRMED", "ABSENT", "none"),
+                     line("first_station_warp", "KNOWN:DELIVERED", "ABSENT", "RECEIPT_MISSING")]
+        settled = [line(kind, "KNOWN:DELIVERED", "ABSENT", "RECEIPT_MISSING")
+                   for kind in ("first_moon_landing", "first_station_warp")]
+        with patch.object(cuts, "statuses", side_effect=[temporary, settled]), patch.object(cuts.time, "sleep"):
+            self.assertEqual(settled, cuts.await_holds(Mock(), ("RECEIPT_MISSING", "RECEIPT_MISSING"), 120))
+
 
 if __name__ == "__main__": unittest.main()
