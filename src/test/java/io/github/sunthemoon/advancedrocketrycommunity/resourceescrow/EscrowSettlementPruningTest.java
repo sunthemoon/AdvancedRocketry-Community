@@ -78,6 +78,21 @@ class EscrowSettlementPruningTest {
         var intent = preview.confirm(actor, preview.digest(), 11, observations);
         return EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent);
     }
+    @Test void emptyMarkersReturnBeforeRuntimeAccessAndReleasedGroupsAreCachedPerAcknowledgedRoot() {
+        var empty = RocketEscrowSection.neutral();
+        assertSame(empty, EscrowSettlementPruning.rocket(null, empty));
+        assertSame(empty, EscrowSettlementPruning.rocket(null, empty, "unused", Set.of()));
+        var root = released(EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE));
+        var cursor = new EscrowSettlementPruning.Cursor(); var groups = cursor.released(root);
+        for (int i = 0; i < 100; i++) {
+            assertSame(groups, cursor.released(root)); assertNotNull(cursor.next(root, Set.of()));
+        }
+        assertNotSame(groups, cursor.released(root.generation(1)));
+        var endpoint = groups.get(0).endpoints().get(0); var survivor = endpoint.survivor();
+        var current = new EscrowPrefix.State(root.id(), survivor.getLong("epoch"), survivor.getString("signature"), List.of());
+        assertTrue(EscrowSettlementPruning.frontier(root, groups, endpoint.reference(), current, survivor.getLong("quantity"), current.signature(), Set.of()));
+        assertFalse(EscrowSettlementPruning.frontier(root, List.of(), endpoint.reference(), current, survivor.getLong("quantity"), current.signature(), Set.of()));
+    }
     @Test void sameFloorPruningNeedsTheFrozenMarkerSuffixNotOnlyMatchingFuel() {
         var op = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE); var root = EscrowTestFixtures.ledger(op);
         var marker = new EscrowPrefix.Marker(op.id(), op.sequence(), "DESTINATION", 1);

@@ -46,6 +46,7 @@ public final class EscrowRuntime {
     EscrowSettlementOperator settlement() { return settlement; }
     String settlementPhase() { return settlements.phase(); }
     EscrowTimingSink timings() { return benchmark == null ? EscrowTimingSink.NONE : benchmark; }
+    java.util.List<EscrowSettlementPruning.Group> settlementGroups(EscrowLedger root) { return settlements.pruningGroups(root); }
     private EscrowReconciliationScheduler scheduler;
     private EscrowTestReconciliation reconciliation;
     boolean stopping() { return stopping; }

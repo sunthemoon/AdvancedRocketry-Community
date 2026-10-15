@@ -34,7 +34,7 @@ public final class EscrowSettlementPruning {
         void enqueue(EscrowLedger root, EscrowCoordinator.SettlementAcknowledgement ack) {
             EscrowTags.require(ack.committed() && root.id().equals(ack.ledger())
                     && root.writerGeneration() == ack.generation(), "Pruning needs the exact O4 acknowledgement");
-            var group = groups(root).stream().filter(value -> value.digest().equals(ack.digest())).findFirst().orElseThrow();
+            var group = released(root).stream().filter(value -> value.digest().equals(ack.digest())).findFirst().orElseThrow();
             EscrowTags.require(group.members().equals(ack.members()), "O4 pruning group changed");
             priority.remove(ack.digest());
             EscrowTags.require(priority.size() < EscrowLimits.TOMBSTONES, "Pruning queue exceeded");
@@ -44,11 +44,7 @@ public final class EscrowSettlementPruning {
             return next(root, unresolved, ignored -> false);
         }
         Visit next(EscrowLedger root, Set<UUID> unresolved, java.util.function.Predicate<EscrowEndpoint.Key> busy) {
-            if (cached != root) {
-                groups = groups(root); cached = root;
-                var live = groups.stream().map(Group::digest).collect(java.util.stream.Collectors.toSet());
-                endpoints.keySet().retainAll(live); priority.removeIf(digest -> !live.contains(digest));
-            }
+            released(root);
             if (groups.isEmpty()) { return null; }
             String first = priority.pollFirst();
             Group group = first == null ? groups.get(Math.floorMod(cursor++, groups.size()))
@@ -59,11 +55,19 @@ public final class EscrowSettlementPruning {
             var endpoint = group.endpoints().get(index);
             return busy.test(endpoint.reference().key()) ? null : new Visit(group, endpoint);
         }
+        List<Group> released(EscrowLedger root) {
+            if (cached != root) {
+                groups = EscrowSettlementPruning.groups(root); cached = root;
+                var live = groups.stream().map(Group::digest).collect(java.util.stream.Collectors.toSet());
+                endpoints.keySet().retainAll(live); priority.removeIf(digest -> !live.contains(digest));
+            }
+            return groups;
+        }
         void tick(MinecraftServer server, EscrowCoordinator coordinator) {
             var root = coordinator.ledger(); var unresolved = coordinator.unresolvedIds();
             var visit = next(root, unresolved, coordinator::pruningBusy);
             if (visit != null) {
-                try { apply(server, root, visit, unresolved); }
+                try { apply(server, root, visit, unresolved, groups); }
                 catch (IllegalArgumentException | java.util.NoSuchElementException unavailable) {
                     // A malformed/unloaded survivor cannot starve another released group.
                 }
@@ -118,22 +122,31 @@ public final class EscrowSettlementPruning {
     }
 
     public static RocketEscrowSection rocket(RocketEntity rocket, RocketEscrowSection section) {
+        if (section.markers().isEmpty()) { return section; }
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()) { return section; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null || section.markers().isEmpty() || !data.ledger().id().equals(section.ledger())) { return section; }
         UUID first = section.markers().get(0).operation();
-        for (var group : groups(data.ledger())) {
-            if (group.members().contains(first)) { return rocket(rocket, section, group.digest(), group.members()); }
+        var root = data.ledger(); var coordinator = data.bind(level.getServer());
+        var groups = EscrowRuntime.of(level.getServer()).settlementGroups(root);
+        for (var group : groups) {
+            if (group.members().contains(first)) { return rocket(rocket, section, group.digest(), group.members(), root, groups, coordinator); }
         }
         return section;
     }
     public static RocketEscrowSection rocket(RocketEntity rocket, RocketEscrowSection section, String digest, Set<UUID> members) {
+        if (section.markers().isEmpty()) { return section; }
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()) { return section; }
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null || !data.ledger().id().equals(section.ledger())) { return section; }
         var coordinator = data.bind(level.getServer());
-        var root = data.ledger(); var unresolved = coordinator.unresolvedIds();
-        for (var group : groups(root)) {
+        var root = data.ledger();
+        return rocket(rocket, section, digest, members, root, EscrowRuntime.of(level.getServer()).settlementGroups(root), coordinator);
+    }
+    private static RocketEscrowSection rocket(RocketEntity rocket, RocketEscrowSection section, String digest, Set<UUID> members,
+            EscrowLedger root, List<Group> groups, EscrowCoordinator coordinator) {
+        var unresolved = coordinator.unresolvedIds();
+        for (var group : groups) {
             if (!group.digest().equals(digest) || !group.members().equals(members)) { continue; }
             for (var chosen : group.endpoints()) {
                 var reference = chosen.reference();
@@ -143,7 +156,7 @@ public final class EscrowSettlementPruning {
                 if (!chosen.survivor().getString("signature_kind").equals(EscrowSignatureKind.FUEL_VECTOR_V1.name())
                         || !chosen.survivor().getString("invariant_digest").equals(EscrowInvariant.rocket(rocket))) { continue; }
                 var state = new EscrowPrefix.State(root.id(), section.epoch(), fuel.resourceSignature(), section.markers());
-                if (frontier(root, reference, state, fuel.totalAmount(), fuel.resourceSignature(), unresolved)) {
+                if (frontier(root, groups, reference, state, fuel.totalAmount(), fuel.resourceSignature(), unresolved)) {
                     return new RocketEscrowSection(section.ledger(), section.epoch(), prune(section.markers(), members, unresolved));
                 }
             }
@@ -153,9 +166,13 @@ public final class EscrowSettlementPruning {
 
     static boolean frontier(EscrowLedger root, EscrowEndpoint endpoint, EscrowPrefix.State current,
             long quantity, String nativeSignature, Set<UUID> unresolved) {
+        return frontier(root, groups(root), endpoint, current, quantity, nativeSignature, unresolved);
+    }
+    static boolean frontier(EscrowLedger root, List<Group> groups, EscrowEndpoint endpoint, EscrowPrefix.State current,
+            long quantity, String nativeSignature, Set<UUID> unresolved) {
         CompoundTag latest = null; long generation = -1; var trusted = new java.util.HashSet<UUID>();
         var auditedMarkers = new java.util.HashSet<EscrowPrefix.Marker>();
-        for (var group : groups(root)) {
+        for (var group : groups) {
             for (var chosen : group.endpoints()) {
                 if (!chosen.reference().key().equals(endpoint.key()) || !chosen.survivor().getBoolean("bound")) { continue; }
                 trusted.addAll(group.members());
@@ -187,7 +204,7 @@ public final class EscrowSettlementPruning {
         }).toList();
     }
 
-    private static void apply(MinecraftServer server, EscrowLedger root, Visit visit, Set<UUID> unresolved) {
+    private static void apply(MinecraftServer server, EscrowLedger root, Visit visit, Set<UUID> unresolved, List<Group> groups) {
         var endpoint = visit.endpoint().reference();
         var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
         if (level == null) { return; }
@@ -203,7 +220,7 @@ public final class EscrowSettlementPruning {
             if (source == null || !endpoint.identity().equals(source.getPersistentData().getCompound("arce_escrow_fixture").getUUID("identity"))
                     || !endpoint.type().equals(net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(source.getType()).toString())) { return; }
             var state = EscrowTestEndpoints.state(source.getPersistentData(), root.id(), false);
-            if (!frontier(root, endpoint, state, EscrowTestEndpoints.amount(source.getPersistentData()), state.signature(), unresolved)) { return; }
+            if (state.markers().isEmpty() || !frontier(root, groups, endpoint, state, EscrowTestEndpoints.amount(source.getPersistentData()), state.signature(), unresolved)) { return; }
             var markers = prune(state.markers(), visit.group().members(), unresolved);
             if (markers.equals(state.markers())) { return; }
             EscrowTestEndpoints.putState(source.getPersistentData(), new EscrowPrefix.State(root.id(), state.epoch(), state.signature(), markers), false);

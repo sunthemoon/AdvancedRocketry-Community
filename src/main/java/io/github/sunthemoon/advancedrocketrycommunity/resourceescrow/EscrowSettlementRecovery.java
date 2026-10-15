@@ -30,10 +30,13 @@ final class EscrowSettlementRecovery implements AutoCloseable {
     private List<EscrowSettlementIntent> decodedIntents = List.of();
     private int cursor;
     private boolean closed;
+    List<EscrowSettlementPruning.Group> pruningGroups(EscrowLedger root) { return pruning.released(root); }
     void tick(MinecraftServer server, EscrowCoordinator coordinator, EscrowRuntime runtime) {
         if (closed || runtime.stopping()) { return; }
         // Released groups progress independently of unrelated permanently held O1 decisions.
+        long pruningStart = System.nanoTime();
         pruning.tick(server, coordinator);
+        runtime.timings().sample("settlement_pruning_main", System.nanoTime() - pruningStart);
         var intents = intents(coordinator.ledger());
         var live = intents.stream().map(EscrowSettlementIntent::digest).collect(java.util.stream.Collectors.toSet());
         work.entrySet().removeIf(entry -> { if (live.contains(entry.getKey())) { return false; } entry.getValue().clear(); return true; });
