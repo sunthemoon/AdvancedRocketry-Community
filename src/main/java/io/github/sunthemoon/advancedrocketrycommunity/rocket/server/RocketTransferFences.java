@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRecoveryFence;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDispatch;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -50,7 +52,16 @@ final class RocketTransferFences {
         for (var record : journal.entries()) {
             if (bays != null && !bays.classify(server, journal, record)) { continue; }
             if (record.nativeTransfer().isPresent()) {
-                fence(record, "GOVERNED_ACTION_REQUIRED", live, settled); continue;
+                var route = server == null ? new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, "GOVERNED_ACTION_REQUIRED")
+                        : EscrowRuntime.of(server).governedFlights().classify(server, journal, record);
+                // Positive routing never enters legacy recovery. The executor still needs its
+                // native action permit; terminal entries can only enter checked F8 cleanup.
+                String reason = switch (route.route()) {
+                    case HOLD -> route.reason();
+                    case ACTIVE -> "GOVERNED_ACTION_REQUIRED";
+                    case CLEANUP -> "GOVERNED_CLEANUP_REQUIRED";
+                };
+                fence(record, reason, live, settled); continue;
             }
             var ledger = ledgerReader.apply(server);
             String reason = null;
@@ -123,6 +134,7 @@ final class RocketTransferFences {
     }
 
     void joined(MinecraftServer server, UUID logical, boolean protectedJoin, RocketTransferSavedData journal, Set<UUID> live, Set<UUID> settled) {
+        if (server != null) { EscrowRuntime.of(server).governedFlights().invalidated(logical); }
         for (var record : journal.entries()) {
             if (logical.equals(record.logicalRocketId()) && bays != null && bays.endpointChanged(server, journal, record)) { continue; }
             if (logical.equals(record.logicalRocketId()) && (protectedJoin || approved.containsKey(record.transferId()) || reasons.containsKey(record.transferId()))) {

@@ -278,6 +278,14 @@ public final class EscrowCoordinator implements AutoCloseable {
         owner(); return queued.values().stream().anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
     }
     public boolean writerIdle() { return writer.idle(); }
+    /** ARMED is consulted by the governed dispatcher, not treated as ordinary idle authority. */
+    boolean governedAvailable(UUID logical) {
+        owner();
+        return operational() && !writer.unavailable() && !flightWrites.locked(logical)
+                && frontiers.keySet().stream().noneMatch(key -> logical.equals(key.logicalRocket()))
+                && unresolved().noneMatch(op -> logical.equals(op.guard().rocket())
+                        || logical.equals(op.source().logicalRocket()) || logical.equals(op.destination().logicalRocket()));
+    }
     EscrowReason currentReason(EscrowOperation op) { owner(); return transitions.getOrDefault(op.id(), op.reason()); }
     private boolean ordinaryRetirementAllowed(Set<UUID> ids) {
         owner();

@@ -46,12 +46,15 @@ public final class EscrowRuntime {
     private final EscrowSettlementRecovery settlements = new EscrowSettlementRecovery();
     private final EscrowPreF2Cancellation preF2Cancellation = new EscrowPreF2Cancellation();
     private final EscrowFlightCheckpoint flightCheckpoint = new EscrowFlightCheckpoint();
+    private final EscrowGovernedDispatch governedFlights = new EscrowGovernedDispatch();
+    public EscrowGovernedDispatch governedFlights() { return governedFlights; }
     EscrowFlightCheckpoint flightCheckpoint() { return flightCheckpoint; }
     void observeFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
         flightCheckpoint.observe(rocket); preF2Cancellation.observe(rocket);
     }
     void invalidateFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
         flightCheckpoint.invalidated(rocket); preF2Cancellation.invalidated(rocket);
+        rocket.assemblyTransactionId().ifPresent(governedFlights::invalidated);
     }
     EscrowSettlementOperator settlement() { return settlement; }
     String settlementPhase() { return settlements.phase(); }
@@ -199,6 +202,7 @@ public final class EscrowRuntime {
         runtime.settlements.close();
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
+        runtime.governedFlights.close();
         if (runtime.barrier != null) { runtime.barrier.close(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
@@ -225,12 +229,13 @@ public final class EscrowRuntime {
         runtime.settlements.close();
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
+        runtime.governedFlights.close();
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {
         private final EscrowRuntime runtime = new EscrowRuntime();
         private final LazyOptional<EscrowRuntime> value = LazyOptional.of(() -> runtime);
-        private void invalidate() { runtime.stopping = true; runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
+        private void invalidate() { runtime.stopping = true; runtime.governedFlights.close(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
         @Override @NotNull public <T> LazyOptional<T> getCapability(@NotNull Capability<T> requested, @Nullable Direction side) {
             return CAPABILITY.orEmpty(requested, value);
         }

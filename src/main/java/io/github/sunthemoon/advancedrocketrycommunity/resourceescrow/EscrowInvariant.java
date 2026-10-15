@@ -17,9 +17,13 @@ final class EscrowInvariant {
     }
     static String rocket(EscrowEndpoint endpoint, java.util.UUID owner,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot) {
+        return rocket(endpoint.identity(), endpoint.logicalRocket(), owner, endpoint.type(), snapshot);
+    }
+    static String rocket(java.util.UUID physical, java.util.UUID logical, java.util.UUID owner, String type,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot) {
         var tag = new CompoundTag(); tag.putInt("schema_version", 1);
-        tag.putUUID("physical", endpoint.identity()); tag.putString("type", endpoint.type());
-        tag.putUUID("logical", endpoint.logicalRocket()); tag.putUUID("owner", owner);
+        tag.putUUID("physical", physical); tag.putString("type", type);
+        tag.putUUID("logical", logical); tag.putUUID("owner", owner);
         tag.putUUID("snapshot", snapshot.snapshotId()); tag.putString("snapshot_hash", snapshot.contentHash());
         return RocketNativeResources.signature(tag);
     }

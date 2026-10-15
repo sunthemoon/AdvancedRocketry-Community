@@ -173,6 +173,16 @@ public final class RocketEntity extends Entity implements MenuProvider {
         escrowSection = Objects.requireNonNull(permit).consume(this);
     }
 
+    /** A governed source transition retains its native fuel and exact escrow wrapper. */
+    public void advanceGovernedSource(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedSourceAction.Permit permit) {
+        RocketFlightData candidate = Objects.requireNonNull(permit).consume(this);
+        RocketFlightData previous = flightData;
+        flightData = candidate;
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previous; throw failure; }
+        refreshSyncedData();
+    }
+
     public RocketFlightState displayedFlightState() {
         try {
             return RocketFlightState.valueOf(entityData.get(DISPLAYED_FLIGHT_STATE));
