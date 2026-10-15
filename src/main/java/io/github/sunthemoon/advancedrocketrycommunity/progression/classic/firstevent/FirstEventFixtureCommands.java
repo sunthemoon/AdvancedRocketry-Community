@@ -29,6 +29,15 @@ public final class FirstEventFixtureCommands {
         if (!Boolean.getBoolean(EscrowTestEndpoints.HOOKS) || FirstEventCutSeams.configured().isEmpty()) { return; }
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("progression")
                 .then(Commands.literal("release-test").requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("export-cases").executes(context -> {
+                            FirstEventCaseExports.write(context.getSource().getServer());
+                            return 1;
+                        }))
+                        .then(Commands.literal("moon-extra").executes(context -> {
+                            io.github.sunthemoon.advancedrocketrycommunity.rocket.server.FirstEventRocketFixtures
+                                    .additionalDescent(context.getSource().getServer());
+                            return 1;
+                        }))
                         .then(Commands.literal("release-reservation").then(Commands.argument("entity", UuidArgument.uuid())
                                 .executes(context -> {
                                     var server = context.getSource().getServer();

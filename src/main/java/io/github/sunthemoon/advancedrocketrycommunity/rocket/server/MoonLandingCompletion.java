@@ -59,6 +59,7 @@ final class MoonLandingCompletion {
         }
         // 4. The writer needs a continuation slot and no failed write.
         if (disposition == FirstEventDisposition.DEFER || !journal.canQueueEffect()) {
+            FirstEventCutSeams.moonDeferred(server);
             return Result.WAIT;
         }
         // 5. Snapshot the event: the aboard, eligible players, sorted; never truncated.

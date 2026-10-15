@@ -19,7 +19,7 @@ public final class FirstEventStationFixtures {
     private static void gate(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);
         var cut = FirstEventCutSeams.configured().orElseThrow();
-        if (!cut.name().startsWith("FW") && !cut.name().startsWith("FP")) {
+        if (!cut.name().startsWith("FW") && !cut.name().startsWith("FP") && cut != FirstEventCutSeams.Cut.FM9) {
             throw new IllegalStateException("No station first-event row is armed");
         }
     }
@@ -52,5 +52,38 @@ public final class FirstEventStationFixtures {
         var result = StationWarpRuntime.service().orElseThrow().warpForFirstEventReleaseTest(server, station, ModIdentity.id("moon"));
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture warp_result station={} code={} balance={}",
                 station, result.code(), result.balance());
+    }
+
+    public static void unreadable(MinecraftServer server, UUID station) {
+        gate(server);
+        if (FirstEventCutSeams.configured().orElseThrow() != FirstEventCutSeams.Cut.FP11) { throw new IllegalStateException("FP11 is not armed"); }
+        var creation = new StationCreationService(new StationPlatformGenerator(), id -> true)
+                .create(server, FirstEventCutSeams.P1, "Unavailable fixture", ModIdentity.id("earth"), false);
+        var warp = StationWarpRuntime.service().orElseThrow().warpForFirstEventReleaseTest(server, station, ModIdentity.id("earth"));
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture unavailable creation={} warp={}", creation.code(), warp.code());
+        if (creation.code() != io.github.sunthemoon.advancedrocketrycommunity.station.service.StationCreationCode.REGISTRY_BLOCKED
+                || warp.code() != io.github.sunthemoon.advancedrocketrycommunity.station.service.StationManagementCode.AUTHORITY_UNAVAILABLE) {
+            throw new IllegalStateException("An unreadable registry accepted a fixture operation");
+        }
+    }
+
+    public static void probeFrozen(MinecraftServer server) {
+        gate(server);
+        var data = StationRegistrySavedData.get(server);
+        var event = (io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEvent.StationWarp)
+                data.durableFirstWarp().knownEvent().orElseThrow();
+        var before = data.save(new net.minecraft.nbt.CompoundTag());
+        boolean refused = false;
+        try { data.addMember(event.stationId(), FirstEventCutSeams.P2); }
+        catch (IllegalStateException expected) { refused = true; }
+        var credits = data.foldWarpCredits(Map.of(event.stationId(), 1));
+        var committed = StationRegistrySavedData.load(before.copy()).find(event.stationId()).orElseThrow();
+        var altitude = data.checkedSetAltitude(server, committed, 5);
+        if (!refused || credits.credited() != 0 || altitude != StationRegistrySavedData.CheckedUpdate.UNAVAILABLE
+                || !before.equals(data.save(new net.minecraft.nbt.CompoundTag()))) {
+            throw new IllegalStateException("A frozen registry accepted a fixture mutation");
+        }
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture frozen mutation_refused={} credited={} altitude={}",
+                refused, credits.credited(), altitude);
     }
 }

@@ -73,12 +73,12 @@ def ints_uuid(values: list[int]) -> str:
     return str(uuid.UUID(bytes=b"".join(value.to_bytes(4, "big", signed=True) for value in values)))
 
 
-def read_root(path: Path) -> dict:
+def read_root(path: Path, *, max_tags: int = 4096) -> dict:
     with gzip.open(path, "rb") as stream:
         raw = stream.read(8 * 1024 * 1024 + 1)
     if len(raw) > 8 * 1024 * 1024:
         raise smoke.SmokeError(f"Oversized root {path.name}")
-    return NbtReader(raw).read_root()["data"]
+    return NbtReader(raw, max_tags=max_tags).read_root()["data"]
 
 
 def inspect(world: Path, case: str, event_id: str, source: str, durable_receipt: bool) -> dict:

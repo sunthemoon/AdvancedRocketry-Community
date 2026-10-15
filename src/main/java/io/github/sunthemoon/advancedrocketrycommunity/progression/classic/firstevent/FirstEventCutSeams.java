@@ -27,6 +27,7 @@ public final class FirstEventCutSeams {
     public static final String PROPERTY = "arce.releaseTest.firstEventCut";
     /** Participant-only recovery fixture; never enables a halt or IO failure. */
     public static final String PARTICIPANTS_PROPERTY = "arce.releaseTest.firstEventParticipants";
+    public static final String STATION_PROPERTY = "arce.releaseTest.firstEventStation";
     /** The release-test halt status of {@code ReleaseTestCommands}. */
     public static final int HALT_STATUS = 75;
     /** The fixed sorted participants of the synthetic M and WARP fixtures, and the later observer who is never one. */
@@ -52,6 +53,8 @@ public final class FirstEventCutSeams {
     private static final AtomicBoolean RELEASED = new AtomicBoolean();
     private static final AtomicBoolean LATCH_USED = new AtomicBoolean();
     private static FirstEventCutLatch latch;
+    private static final java.util.EnumSet<FirstEventKind> observedHolds = java.util.EnumSet.noneOf(FirstEventKind.class);
+    private static boolean moonWaitObserved;
 
     private FirstEventCutSeams() {
     }
@@ -126,6 +129,8 @@ public final class FirstEventCutSeams {
         UNRELATED_FAILED.set(false);
         RELEASED.set(false);
         LATCH_USED.set(false);
+        observedHolds.clear();
+        moonWaitObserved = false;
         if (latch != null) { latch.release(); }
         latch = null;
         configured().ifPresent(cut -> {
@@ -193,6 +198,14 @@ public final class FirstEventCutSeams {
         if (latch != null) { latch.release(); }
     }
 
+    /** FP7a observes the real completion's WAIT, rather than merely observing an unreadable root at startup. */
+    public static void moonDeferred(MinecraftServer server) {
+        if (!is(server, Cut.FP7A)) { return; }
+        moonWaitObserved = true;
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture completion_wait");
+        if (observedHolds.size() == FirstEventKind.values().length) { halt(Cut.FP7A, FIRST_STEP, null); }
+    }
+
     /** Warp visitor count seam: the real saturating count in production; 4,097 for FW8b. */
     public static Optional<Integer> warpVisitorCount(MinecraftServer server) {
         return is(server, Cut.FW8B) ? Optional.of(FirstEventKind.FIRST_STATION_WARP.maxParticipants() + 1)
@@ -239,6 +252,21 @@ public final class FirstEventCutSeams {
         }
         Cut cut = configured.orElseThrow();
         EscrowTestEndpoints.requireEnabled(server);
+        if (cut == Cut.FP2 || cut == Cut.FP7A || cut == Cut.FP7B || cut == Cut.FP9) {
+            observedHolds.add(kind);
+            if (observedHolds.size() != FirstEventKind.values().length || cut == Cut.FP7A && !moonWaitObserved) { return; }
+        }
+        if (cut == Cut.FP4) {
+            var station = UUID.fromString(System.getProperty(STATION_PROPERTY, ""));
+            io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures.warp(server, station);
+        }
+        if (cut == Cut.FP11) {
+            io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures.unreadable(server,
+                    UUID.fromString(System.getProperty(STATION_PROPERTY, "")));
+        }
+        if (cut == Cut.FP8) {
+            io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures.probeFrozen(server);
+        }
         if (cut.saveBeforeHalt()) {
             server.saveEverything(false, true, true);
         }

@@ -39,7 +39,22 @@ public final class FirstEventRocketFixtures {
         if (!journal.entries().isEmpty() || !journal.firstMoonLandingRam().isEmpty()) {
             throw new IllegalStateException("FM9 requires a fresh empty journal");
         }
-        for (int index = 0; index < 2; index++) {
+        append(server, 0, 2);
+    }
+
+    public static void additionalDescent(MinecraftServer server) {
+        EscrowTestEndpoints.requireEnabled(server);
+        var cut = FirstEventCutSeams.configured().orElseThrow();
+        if (cut != FirstEventCutSeams.Cut.FW9 && cut != FirstEventCutSeams.Cut.FP6) {
+            throw new IllegalStateException("No additional-descent fixture is armed");
+        }
+        append(server, cut == FirstEventCutSeams.Cut.FW9 ? 2 : 3, 1);
+    }
+
+    private static void append(MinecraftServer server, int first, int count) {
+        var moon = java.util.Objects.requireNonNull(server.getLevel(CelestialIds.MOON_LEVEL));
+        var journal = RocketTransferSavedData.get(server);
+        for (int index = first; index < first + count; index++) {
             BlockPos origin = new BlockPos(320 + 32 * index, 100, 320);
             if (!moon.isPositionEntityTicking(origin)) { throw new IllegalStateException("Fixture chunk is not ticking"); }
             long now = moon.getGameTime();
