@@ -15,6 +15,10 @@ public final class V180PropulsionLanguage {
         entries.put("message.advancedrocketrycommunity.propulsion.recovery_pending", chinese
                 ? "火箭转移恢复尚未完成，暂时不能更改资源。请等待乘客重新连接并完成恢复。"
                 : "Rocket transfer recovery is pending. Resources cannot change until recovery and passenger reconnect finish.");
+        // W72: the loader's status when recovery admission refuses the owner's nearby rocket.
+        entries.put("status.advancedrocketrycommunity.fuel_loader.recovery_pending", chinese
+                ? "附近火箭的转移恢复尚未完成，暂不能加注"
+                : "nearby rocket locked until its transfer recovery finishes");
         entries.put("message.advancedrocketrycommunity.propulsion.exchange_refused", chinese
                 ? "无法交换整容器流体：检查模式、容量、库存空间及手动加注设置。抽象燃料不能卸为流体。"
                 : "Cannot exchange a whole Fluid container: check mode, capacity, inventory space and hand-fueling settings. Abstract fuel cannot be unloaded as Fluid.");

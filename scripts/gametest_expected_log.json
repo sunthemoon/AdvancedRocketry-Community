@@ -313,9 +313,9 @@
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
       "message": "ARCE_TRANSFER_RECOVERY transfer=[0-9a-f-]{36} phase=PREPARED source_count=1 destination_count=0 action=KEEP_SOURCE status=WAITING_FOR_PASSENGERS",
-      "counts": {"resource_source_recovery": 6},
-      "test": "RocketResourceRecoveryGameTests.offlinePassengerRecoveryLocksBothBanksAcrossRepeatedReloads",
-      "reason": "Three native entity/player/journal round trips each recover through both the installed lifecycle owner and a fresh manager with an offline passenger, deliberately retaining PREPARED source authority and refusing resource mutations."
+      "counts": {"resource_source_recovery": 6, "resource_source_loader": 2},
+      "test": "RocketResourceRecoveryGameTests.offlinePassengerRecoveryLocksBothBanksAcrossRepeatedReloads, RocketResourceRecoveryGameTests.fuelLoaderNamesTheRecoveryLockOfAnOfflinePassengerSource",
+      "reason": "Three native entity/player/journal round trips each recover through both the installed lifecycle owner and a fresh manager with an offline passenger, deliberately retaining PREPARED source authority and refusing resource mutations. W72's loader test recovers the same source once through each owner and checks that the loader names the lock."
     },
     {
       "id": "recipe-chunk-save-refused",
