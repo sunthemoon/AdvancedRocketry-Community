@@ -34,12 +34,8 @@ final class EscrowSettlementCapacity {
             if (candidate != null ? component.stream().noneMatch(op -> op.id().equals(candidate))
                     : component.stream().anyMatch(op -> op.reason() == EscrowReason.RELOCATED_ENDPOINT || op.reason() == EscrowReason.FLOOR_CONFLICT)) {
                 // Other components may need offline repair. Charge their full possible growth without previewing them.
-                for (var op : component) {
-                    reservedBytes += EscrowLimits.OP_BYTES - bytes(EscrowCodec.operation(op));
-                    if (prospective.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(op.id()))) {
-                        reservedReceipts++; reservedBytes += 2_048;
-                    }
-                }
+                var fixed = fixed(prospective, component);
+                reservedBytes += fixed.bytes(); reservedReceipts += fixed.receipts();
                 continue;
             }
             var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
@@ -71,8 +67,18 @@ final class EscrowSettlementCapacity {
             // NUL uses two modified-UTF bytes per one UTF-8 byte: the worst allowed actor-name encoding.
             var hypothetical = prospective.replace(prospective.records().stream().map(op -> component.contains(op)
                     && !op.reason().manual() ? op.withReason(EscrowReason.OTHER_STATE) : op).toList(), prospective.floors(), prospective.tombstones());
-            var preview = EscrowSettlementIntent.preview(hypothetical, selected.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                    new UUID(0, 1), "\0".repeat(128), 0, observations);
+            EscrowSettlementIntent preview;
+            try {
+                preview = EscrowSettlementIntent.preview(hypothetical, selected.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                        new UUID(0, 1), "\0".repeat(128), 0, observations);
+            } catch (IllegalArgumentException ineligible) {
+                // Admission still proves its own component. A previously admitted, now ineligible
+                // component must not stop unrelated O1/O3/O4 or flight writes: charge its maximum.
+                if (candidate != null) { throw ineligible; }
+                var fixed = fixed(prospective, component);
+                reservedBytes += fixed.bytes(); reservedReceipts += fixed.receipts();
+                continue;
+            }
             var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
             for (var member : hypothetical.records().stream().filter(op -> intent.ids().contains(op.id())).toList()) {
                 var encoded = EscrowCodec.operation(member.settle(intent));
@@ -99,6 +105,17 @@ final class EscrowSettlementCapacity {
             observed.markers().stream().map(EscrowPrefix.Marker::operation).forEach(markers::add);
         }
         EscrowTags.require(markers.size() <= ADMISSION_PER_ROCKET, "Rocket settlement admission limit exceeded");
+    }
+    private record Reservation(long bytes, int receipts) { }
+    private static Reservation fixed(EscrowLedger root, List<EscrowOperation> component) {
+        long growth = 0; int receipts = 0;
+        for (var op : component) {
+            growth += EscrowLimits.OP_BYTES - bytes(EscrowCodec.operation(op));
+            if (root.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(op.id()))) {
+                receipts++; growth += 2_048;
+            }
+        }
+        return new Reservation(growth, receipts);
     }
     private static boolean contains(List<EscrowPrefix.Marker> markers, UUID id) {
         return markers.stream().anyMatch(marker -> marker.operation().equals(id));

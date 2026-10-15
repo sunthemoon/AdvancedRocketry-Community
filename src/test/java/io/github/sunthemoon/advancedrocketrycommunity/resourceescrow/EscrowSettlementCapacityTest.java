@@ -22,8 +22,8 @@ class EscrowSettlementCapacityTest {
                 var root = EscrowTestFixtures.ledger(operations.toArray(EscrowOperation[]::new));
                 // Decode remains valid at eight; sizing uses real O1 and receipt encoders, not the admission constant.
                 assertEquals(root, EscrowCodec.decode(EscrowCodec.encode(root)));
-                if (n <= 5) { assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root)); }
-                else { assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root)); }
+                if (n <= 5) { assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root, operations.get(0).id())); }
+                else { assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root, operations.get(0).id())); }
                 System.out.println("settlement measurement native=" + nativeRocket + " markers=" + n + " fits=" + (n <= 5));
             }
         }
@@ -104,6 +104,28 @@ class EscrowSettlementCapacityTest {
         for (int i = 1; i <= 64; i++) { repairs.add(operation(i, i, 0, false).withReason(EscrowReason.RELOCATED_ENDPOINT)); }
         var full = EscrowTestFixtures.ledger(repairs.toArray(EscrowOperation[]::new));
         // Sixty-four individually decodable repairs still consume a worst-case reservation, never zero bytes.
+        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(full));
+    }
+    @Test void previewIneligibleOldComponentKeepsItsFixedReservationWithoutBlockingOtherWrites() {
+        var root = EscrowSettlementCompatibilityTest.duplicateCandidates();
+        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root, root.records().get(0).id()));
+        assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root));
+        var unrelated = operation(3, 3, 0, false).withReason(EscrowReason.OTHER_STATE);
+        var whole = root.append(List.of(unrelated));
+        var local = EscrowTestFixtures.ledger(unrelated);
+        var observations = EscrowSettlementIntentTest.observations(local, false);
+        var preview = EscrowSettlementIntent.preview(whole, unrelated.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                EscrowTestFixtures.id(700), "operator", 10, observations);
+        var intent = preview.confirm(preview.actor(), preview.digest(), 11, observations);
+        var o1 = assertDoesNotThrow(() -> intent.freeze(whole));
+        var o3 = EscrowSettlementTombstones.install(o1, intent);
+        assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(o3));
+        var o4 = EscrowSettlementTombstones.release(o3, intent);
+        assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(o4));
+        assertEquals(root.records(), o4.records());
+        var many = new ArrayList<>(root.records());
+        for (int i = 3; i <= 64; i++) { many.add(operation(i, i, 0, false).withReason(EscrowReason.RELOCATED_ENDPOINT)); }
+        var full = EscrowTestFixtures.ledger(many.toArray(EscrowOperation[]::new));
         assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(full));
     }
 }
