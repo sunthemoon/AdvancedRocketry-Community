@@ -267,7 +267,7 @@ public final class SatelliteBayRootGameTests {
                 expected.put(origin.west(), SatelliteBayFixtures.signature(raw));
                 expected.put(origin.north(), SatelliteBayFixtures.signature(consumed));
                 snapshot = SatelliteBayGameTests.scan(helper, origin);
-                assertPayloads(helper, snapshot, origin, expected);
+                assertPayloads(helper, snapshot, expected);
 
                 UUID assembly = UUID.randomUUID();
                 RocketTransactionResult assembled = new RocketAssemblyTransaction(world, locks, ledger,
@@ -279,7 +279,7 @@ public final class SatelliteBayRootGameTests {
                             && level.getBlockEntity(helper.absolutePos(relative)) == null, "Assembly left " + relative);
                 }
                 // A captured bay has no live slot: only the rocket's snapshot holds its root.
-                assertPayloads(helper, rocket.snapshot().orElseThrow(), origin, expected);
+                assertPayloads(helper, rocket.snapshot().orElseThrow(), expected);
                 helper.assertTrue(SatelliteBayFixtures.drops(level, helper.absolutePos(origin)).isEmpty(),
                         "Assembly dropped a package");
 
@@ -328,19 +328,22 @@ public final class SatelliteBayRootGameTests {
         }, origin);
     }
 
-    private static void assertPayloads(GameTestHelper helper, RocketStructureSnapshot snapshot, BlockPos origin,
+    /** Compares in absolute coordinates: the 1.20.1 {@code GameTestHelper.relativePos} also rotates by 180 degrees. */
+    private static void assertPayloads(GameTestHelper helper, RocketStructureSnapshot snapshot,
                                        Map<BlockPos, String> expected) {
+        Map<BlockPos, String> absolute = new LinkedHashMap<>();
+        expected.forEach((relative, signature) -> absolute.put(helper.absolutePos(relative), signature));
         int found = 0;
         for (RocketBlock block : snapshot.blocks()) {
             var payload = block.blockEntityPayload();
             if (payload.isEmpty() || !SatelliteBayRocketAdapter.ID.equals(payload.get().adapterId())) {
                 continue;
             }
-            BlockPos relative = helper.relativePos(new BlockPos(snapshot.sourceOrigin().x() + block.position().x(),
-                    snapshot.sourceOrigin().y() + block.position().y(), snapshot.sourceOrigin().z() + block.position().z()));
-            helper.assertTrue(expected.containsKey(relative)
-                            && expected.get(relative).equals(SatelliteBayFixtures.signature(payload.get().data())),
-                    "The captured bay root differs at " + relative);
+            BlockPos at = new BlockPos(snapshot.sourceOrigin().x() + block.position().x(),
+                    snapshot.sourceOrigin().y() + block.position().y(), snapshot.sourceOrigin().z() + block.position().z());
+            helper.assertTrue(absolute.containsKey(at)
+                            && absolute.get(at).equals(SatelliteBayFixtures.signature(payload.get().data())),
+                    "The captured bay root differs at " + at);
             found++;
         }
         helper.assertTrue(found == expected.size(), "Expected " + expected.size() + " bay payloads, found " + found);
