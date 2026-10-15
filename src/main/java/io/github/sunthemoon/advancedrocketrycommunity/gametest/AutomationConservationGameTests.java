@@ -90,5 +90,10 @@ public final class AutomationConservationGameTests {
         DeviceAutomationRuns.pipeSeal(helper, CLASSIC_TIMEOUT);
     }
 
+    @GameTest(template = "empty", batch = "w68_co2_scrubber", timeoutTicks = 400)
+    public static void scrubberTwentyCartridgesConserveCartridgesAndUses(GameTestHelper helper) {
+        new ScrubberAutomationRun(helper).start(400);
+    }
+
     private AutomationConservationGameTests() { }
 }
