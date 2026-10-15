@@ -298,6 +298,10 @@ public final class ModBlockEntities {
             ROCKET_SATELLITE_BAY = BLOCK_ENTITIES.register("rocket_satellite_bay", () -> BlockEntityType.Builder.of(
             io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity::new,
             ModBlocks.ROCKET_SATELLITE_BAY.get()).build(null));
+    public static final RegistryObject<BlockEntityType<io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity>>
+            FLUID_FUEL_LOADER = BLOCK_ENTITIES.register("fluid_fuel_loader", () -> BlockEntityType.Builder.of(
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity::new,
+            ModBlocks.FLUID_FUEL_LOADER.get()).build(null));
 
     private ModBlockEntities() {
     }

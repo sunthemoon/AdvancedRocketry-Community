@@ -237,6 +237,14 @@ public final class ModItems {
     /** ADR-065 C17c (W27b): a plain bay item; the bay's root never travels in a {@code BlockEntityTag}. */
     public static final RegistryObject<Item> ROCKET_SATELLITE_BAY = blockItem("rocket_satellite_bay",
             ModBlocks.ROCKET_SATELLITE_BAY);
+    /** ADR-065 C17a (W11b3): the nonstackable loader item, which carries a broken device's owner and tank. */
+    public static final RegistryObject<Item> FLUID_FUEL_LOADER = ITEMS.register("fluid_fuel_loader", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderItem(
+                    ModBlocks.FLUID_FUEL_LOADER.get(), new Item.Properties().stacksTo(1)));
+    /** W11b3: the linker's rocket-binding half; its other roles arrive with W11e. */
+    public static final RegistryObject<Item> LINKER = ITEMS.register("linker", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LinkerItem(
+                    new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> BEACON_FINDER = ITEMS.register("beacon_finder", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.beacon.finder.BeaconFinderItem(new Item.Properties()));
     public static final RegistryObject<Item> CARBON_BRICK = ITEMS.register("carbon_brick", () -> new Item(new Item.Properties()));
