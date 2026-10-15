@@ -5,7 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
-/** Pre-L1 reservations are encoded with the real codecs, including O1 in every connected member. */
+/** Admission proves its component with the real codecs, then reserves every unsettled member's ceiling. */
 final class EscrowSettlementCapacity {
     // Admission only. Persisted sections/chains retain the eight-marker decode bound.
     static final int ADMISSION_PER_ROCKET = 5;
@@ -31,69 +31,66 @@ final class EscrowSettlementCapacity {
                 }
                 continue;
             }
-            if (candidate != null ? component.stream().noneMatch(op -> op.id().equals(candidate))
-                    : component.stream().anyMatch(op -> op.reason() == EscrowReason.RELOCATED_ENDPOINT || op.reason() == EscrowReason.FLOOR_CONFLICT)) {
-                // Other components may need offline repair. Charge their full possible growth without previewing them.
-                var fixed = fixed(prospective, component);
-                reservedBytes += fixed.bytes(); reservedReceipts += fixed.receipts();
-                continue;
+            if (candidate != null && component.stream().anyMatch(op -> op.id().equals(candidate))) {
+                preview(prospective, component, selected.id(), true);
+            } else if (candidate == null && component.stream().noneMatch(op -> op.reason() == EscrowReason.RELOCATED_ENDPOINT
+                    || op.reason() == EscrowReason.FLOOR_CONFLICT)) {
+                // Retain the existing non-admission codec checks when a preview is eligible.
+                preview(prospective, component, selected.id(), false);
             }
-            var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
-            component.forEach(op -> { references.put(op.source().key(), op.source()); references.put(op.destination().key(), op.destination()); });
-            var chains = EscrowPrefix.chains(component); var observations = new ArrayList<EscrowSettlementIntent.Observation>();
-            for (var endpoint : references.values()) {
-                var chain = chains.get(endpoint.key()); var last = chain.get(chain.size() - 1);
-                var markers = new ArrayList<>(chain.stream().map(EscrowPrefix.Link::marker).toList());
-                long epoch = last.endpoint().afterEpoch();
-                if (EscrowSignatureKind.endpoint(endpoint) == EscrowSignatureKind.FUEL_VECTOR_V1) {
-                    // Charge the whole admission allowance, including retired markers not yet pruned.
-                    // UUIDs/longs have fixed encoded widths; these are sizing observations, never proofs.
-                    for (int i = markers.size(); i < ADMISSION_PER_ROCKET; i++) {
-                        UUID id = new UUID(-1, i);
-                        while (contains(markers, id)) { id = new UUID(id.getMostSignificantBits() - 1, i); }
-                        markers.add(new EscrowPrefix.Marker(id, i + 1, "DESTINATION", i + 1));
-                    }
-                    epoch = Math.max(epoch, markers.size());
-                    for (int i = 0; i < markers.size(); i++) {
-                        markers.set(i, new EscrowPrefix.Marker(markers.get(i).operation(), i + 1, "DESTINATION", epoch - markers.size() + i + 1));
-                    }
-                }
-                String invariant = component.stream().filter(op -> op.destination().key().equals(endpoint.key())).map(op -> op.nativeBinding().invariant())
-                        .findFirst().orElseGet(() -> EscrowInvariant.reference(endpoint));
-                observations.add(new EscrowSettlementIntent.Observation(endpoint,
-                        new EscrowPrefix.State(prospective.id(), epoch, last.endpoint().afterSignature(), markers), true,
-                        Long.MAX_VALUE, EscrowSignatureKind.endpoint(endpoint), invariant));
-            }
-            // NUL uses two modified-UTF bytes per one UTF-8 byte: the worst allowed actor-name encoding.
-            var hypothetical = prospective.replace(prospective.records().stream().map(op -> component.contains(op)
-                    && !op.reason().manual() ? op.withReason(EscrowReason.OTHER_STATE) : op).toList(), prospective.floors(), prospective.tombstones());
-            EscrowSettlementIntent preview;
-            try {
-                preview = EscrowSettlementIntent.preview(hypothetical, selected.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
-                        new UUID(0, 1), "\0".repeat(128), 0, observations);
-            } catch (IllegalArgumentException ineligible) {
-                // Admission still proves its own component. A previously admitted, now ineligible
-                // component must not stop unrelated O1/O3/O4 or flight writes: charge its maximum.
-                if (candidate != null) { throw ineligible; }
-                var fixed = fixed(prospective, component);
-                reservedBytes += fixed.bytes(); reservedReceipts += fixed.receipts();
-                continue;
-            }
-            var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
-            for (var member : hypothetical.records().stream().filter(op -> intent.ids().contains(op.id())).toList()) {
-                var encoded = EscrowCodec.operation(member.settle(intent));
-                reservedBytes += io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(encoded)
-                        - io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.operation(member));
-                EscrowSettlementTombstones.create(member, intent);
-                if (prospective.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(member.id()))) {
-                    reservedReceipts++; reservedBytes += 2_048;
-                }
-            }
+            // A later sticky repair reason must not increase the charge. Preview is an
+            // admission eligibility check, never a discount on this component's ceiling.
+            var fixed = fixed(prospective, component);
+            reservedBytes += fixed.bytes(); reservedReceipts += fixed.receipts();
         }
         // All components, both full tables, and terminal cleanup entries remain charged together.
         EscrowTags.require(reservedReceipts <= 64 && reservedBytes + (64 - prospective.armedFlights().size()) * 1_024L
                 + (64 - prospective.rocketAuthorities().size()) * 1_024L <= EscrowLimits.ROOT_BYTES,
                 "Settlement/flight root reservation exhausted");
+    }
+    private static void preview(EscrowLedger prospective, List<EscrowOperation> component, UUID selected, boolean admission) {
+        var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
+        component.forEach(op -> { references.put(op.source().key(), op.source()); references.put(op.destination().key(), op.destination()); });
+        var chains = EscrowPrefix.chains(component); var observations = new ArrayList<EscrowSettlementIntent.Observation>();
+        for (var endpoint : references.values()) {
+            var chain = chains.get(endpoint.key()); var last = chain.get(chain.size() - 1);
+            var markers = new ArrayList<>(chain.stream().map(EscrowPrefix.Link::marker).toList());
+            long epoch = last.endpoint().afterEpoch();
+            if (EscrowSignatureKind.endpoint(endpoint) == EscrowSignatureKind.FUEL_VECTOR_V1) {
+                // Charge the whole admission allowance, including retired markers not yet pruned.
+                // UUIDs/longs have fixed encoded widths; these are sizing observations, never proofs.
+                for (int i = markers.size(); i < ADMISSION_PER_ROCKET; i++) {
+                    UUID id = new UUID(-1, i);
+                    while (contains(markers, id)) { id = new UUID(id.getMostSignificantBits() - 1, i); }
+                    markers.add(new EscrowPrefix.Marker(id, i + 1, "DESTINATION", i + 1));
+                }
+                epoch = Math.max(epoch, markers.size());
+                for (int i = 0; i < markers.size(); i++) {
+                    markers.set(i, new EscrowPrefix.Marker(markers.get(i).operation(), i + 1, "DESTINATION", epoch - markers.size() + i + 1));
+                }
+            }
+            String invariant = component.stream().filter(op -> op.destination().key().equals(endpoint.key())).map(op -> op.nativeBinding().invariant())
+                    .findFirst().orElseGet(() -> EscrowInvariant.reference(endpoint));
+            observations.add(new EscrowSettlementIntent.Observation(endpoint,
+                    new EscrowPrefix.State(prospective.id(), epoch, last.endpoint().afterSignature(), markers), true,
+                    Long.MAX_VALUE, EscrowSignatureKind.endpoint(endpoint), invariant));
+        }
+        // NUL uses two modified-UTF bytes per one UTF-8 byte: the worst allowed actor-name encoding.
+        var hypothetical = prospective.replace(prospective.records().stream().map(op -> component.contains(op)
+                && !op.reason().manual() ? op.withReason(EscrowReason.OTHER_STATE) : op).toList(), prospective.floors(), prospective.tombstones());
+        EscrowSettlementIntent preview;
+        try {
+            preview = EscrowSettlementIntent.preview(hypothetical, selected, EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                    new UUID(0, 1), "\0".repeat(128), 0, observations);
+        } catch (IllegalArgumentException ineligible) {
+            if (admission) { throw ineligible; }
+            return; // Existing ineligible components still receive the fixed charge, never a discount.
+        }
+        var intent = preview.confirm(preview.actor(), preview.digest(), 0, observations);
+        for (var member : hypothetical.records().stream().filter(op -> intent.ids().contains(op.id())).toList()) {
+            EscrowCodec.operation(member.settle(intent));
+            EscrowSettlementTombstones.create(member, intent);
+        }
     }
     static void requireAdmission(EscrowLedger prospective, EscrowOperation candidate, RocketEscrowSection observed) {
         var markers = new java.util.HashSet<UUID>();
