@@ -67,7 +67,8 @@ public final class ServerLevelRocketScanWorld implements RocketScanWorld {
         if (ALWAYS_FORBIDDEN.contains(state.getBlock()) || state.is(ModBlockTags.ROCKET_FORBIDDEN)) {
             return RocketScanObservation.forbidden(id);
         }
-        if (!state.is(ModBlockTags.ROCKET_MOVABLE) && !state.is(ModBlockTags.ROCKET_PROPULSION)) {
+        if (!state.is(ModBlockTags.ROCKET_MOVABLE) && !state.is(ModBlockTags.ROCKET_PROPULSION)
+                && !state.is(ModBlockTags.ROCKET_SATELLITE_BAYS)) {
             return RocketScanObservation.boundary(id);
         }
 
