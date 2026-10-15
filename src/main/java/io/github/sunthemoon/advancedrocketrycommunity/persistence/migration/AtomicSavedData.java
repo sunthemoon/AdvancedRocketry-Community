@@ -37,7 +37,8 @@ public abstract class AtomicSavedData extends SavedData {
     }
 
     public final void flush(Path file) {
-        flush(file, CheckedSavedDataFile::atomicMove);
+        flush(file, io.github.sunthemoon.advancedrocketrycommunity.progression.classic.firstevent.FirstEventCutSeams
+                .ordinaryCommitter(type, CheckedSavedDataFile::atomicMove));
     }
 
     /** The committer is a gated release-test seam for the progression root (W44 section 6.1). */

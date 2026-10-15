@@ -25,6 +25,9 @@ import net.minecraft.server.MinecraftServer;
  */
 public final class FirstEventCutSeams {
     public static final String PROPERTY = "arce.releaseTest.firstEventCut";
+    /** Participant-only recovery fixture; never enables a halt or IO failure. */
+    public static final String PARTICIPANTS_PROPERTY = "arce.releaseTest.firstEventParticipants";
+    public static final String STATION_PROPERTY = "arce.releaseTest.firstEventStation";
     /** The release-test halt status of {@code ReleaseTestCommands}. */
     public static final int HALT_STATUS = 75;
     /** The fixed sorted participants of the synthetic M and WARP fixtures, and the later observer who is never one. */
@@ -47,6 +50,11 @@ public final class FirstEventCutSeams {
 
     private static final AtomicBoolean ELECTION_MOVED = new AtomicBoolean();
     private static final AtomicBoolean UNRELATED_FAILED = new AtomicBoolean();
+    private static final AtomicBoolean RELEASED = new AtomicBoolean();
+    private static final AtomicBoolean LATCH_USED = new AtomicBoolean();
+    private static FirstEventCutLatch latch;
+    private static final java.util.EnumSet<FirstEventKind> observedHolds = java.util.EnumSet.noneOf(FirstEventKind.class);
+    private static boolean moonWaitObserved;
 
     private FirstEventCutSeams() {
     }
@@ -119,8 +127,16 @@ public final class FirstEventCutSeams {
     public static void validateAtStartup(MinecraftServer server) {
         ELECTION_MOVED.set(false);
         UNRELATED_FAILED.set(false);
+        RELEASED.set(false);
+        LATCH_USED.set(false);
+        observedHolds.clear();
+        moonWaitObserved = false;
+        FirstEventAvailabilityCut.reset();
+        if (latch != null) { latch.release(); }
+        latch = null;
         configured().ifPresent(cut -> {
             EscrowTestEndpoints.requireEnabled(server);
+            if (cut == Cut.FM9 || cut == Cut.FP5) { latch = new FirstEventCutLatch(); }
             AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_cut id={} armed", cut.id());
         });
     }
@@ -146,7 +162,55 @@ public final class FirstEventCutSeams {
      * has zero connected players (W44 section 6.1, rows M and WARP).
      */
     public static Optional<List<UUID>> participants(MinecraftServer server, FirstEventKind kind) {
-        return active(server).map(cut -> List.of(P1, P2));
+        if (active(server).isPresent()) { return Optional.of(List.of(P1, P2)); }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS) && Boolean.getBoolean(PARTICIPANTS_PROPERTY)) {
+            EscrowTestEndpoints.requireEnabled(server);
+            return Optional.of(List.of(P1, P2));
+        }
+        return Optional.empty();
+    }
+
+    /** Saves the complete terminal DESCENT fixture on S, before any election write can block W. */
+    public static void beforeMoonElection(MinecraftServer server, Runnable save) {
+        if (is(server, Cut.FM1, Cut.FM2A, Cut.FM6B, Cut.FM7, Cut.FM9)) {
+            save.run();
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture descent_saved");
+        }
+    }
+
+    /** Removes a persistent test failure online, without altering roots or production retry timing. */
+    static void release(MinecraftServer server) {
+        active(server).orElseThrow(() -> new IllegalStateException("No first-event cut is armed"));
+        RELEASED.set(true);
+        if (latch != null) { latch.release(); }
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture released");
+    }
+
+    /** Advances only the test latch's hard limit; no-op in production. */
+    static void fixtureTick(MinecraftServer server) {
+        FirstEventAvailabilityCut.tick(server);
+        if (latch != null) {
+            active(server).orElseThrow();
+            latch.tick(server.getTickCount());
+        }
+    }
+
+    /** Stop cannot wait for an unreleased test latch while draining the journal. */
+    static void stopFixture() {
+        if (latch != null) { latch.release(); }
+    }
+
+    /** FP7a observes the real completion's WAIT, rather than merely observing an unreadable root at startup. */
+    public static void moonDeferred(MinecraftServer server) {
+        if (!is(server, Cut.FP7A)) { return; }
+        moonWaitObserved = true;
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture completion_wait");
+        if (observedHolds.size() == FirstEventKind.values().length
+                && io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData
+                        .get(server).acknowledgedCurrent()) {
+            FirstEventAvailabilityCut.status(server);
+            halt(Cut.FP7A, FIRST_STEP, null);
+        }
     }
 
     /** Warp visitor count seam: the real saturating count in production; 4,097 for FW8b. */
@@ -177,12 +241,36 @@ public final class FirstEventCutSeams {
      */
     public static void boundary(MinecraftServer server, String name, FirstEventKind kind, FirstEvent event) {
         Optional<Cut> configured = configured();
+        if (configured.filter(Cut.FW11::equals).isPresent() && kind == FirstEventKind.FIRST_STATION_WARP) {
+            EscrowTestEndpoints.requireEnabled(server);
+            if (name.equals(AWARDS_DISPATCHED) && event instanceof FirstEvent.StationWarp warp) {
+                var data = io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData.get(server);
+                data.delete(warp.stationId()).orElseThrow();
+                data.flush(server);
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture winner_deleted station={}", warp.stationId());
+            } else if (name.equals(DELIVERED_PUBLISHED)) {
+                halt(Cut.FW11, name, event.eventId());
+            }
+            return;
+        }
         if (configured.isEmpty() || !name.equals(configured.orElseThrow().boundary)
                 || configured.orElseThrow().kind().filter(expected -> expected != kind).isPresent()) {
             return;
         }
         Cut cut = configured.orElseThrow();
         EscrowTestEndpoints.requireEnabled(server);
+        if (cut == Cut.FP3 || cut == Cut.FP4 || cut == Cut.FP10 || cut == Cut.FP11) {
+            FirstEventAvailabilityCut.arm(server, cut);
+            return;
+        }
+        if (cut == Cut.FP2 || cut == Cut.FP7A || cut == Cut.FP7B || cut == Cut.FP9) {
+            observedHolds.add(kind);
+            if (observedHolds.size() != FirstEventKind.values().length || cut == Cut.FP7A && !moonWaitObserved) { return; }
+        }
+        if (cut == Cut.FP8) {
+            io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures.probeFrozen(server);
+        }
+        if (cut.name().startsWith("FP")) { FirstEventAvailabilityCut.status(server); }
         if (cut.saveBeforeHalt()) {
             server.saveEverything(false, true, true);
         }
@@ -233,6 +321,19 @@ public final class FirstEventCutSeams {
         return CheckedSavedDataFile::atomicMove;
     }
 
+    /** FM12's refusal covers ordinary dirty saves too; other roots and ordinary production writes are unchanged. */
+    public static CheckedSavedDataFile.Committer ordinaryCommitter(ManagedSavedDataType type,
+                                                                  CheckedSavedDataFile.Committer normal) {
+        if (type == ManagedSavedDataType.CLASSIC_PROGRESSION && configured()
+                .filter(cut -> cut == Cut.FM12A || cut == Cut.FM12B).isPresent()) {
+            MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server == null) { throw new IllegalStateException("The receipt save fixture has no running server"); }
+            EscrowTestEndpoints.requireEnabled(server);
+            return progressionCommitter(server);
+        }
+        return normal;
+    }
+
     /** Directory force of the station writer and the progression barrier: FM8b throws, in place of the Windows no-op. */
     public static CheckedSavedDataPolicy.DirectoryForce directoryForce(MinecraftServer server) {
         if (is(server, Cut.FM8B)) {
@@ -268,6 +369,18 @@ public final class FirstEventCutSeams {
         }
         Cut cut = active(server).orElseThrow();
         return switch (cut) {
+            case FM9, FP5 -> {
+                FirstEventCutLatch delay = java.util.Objects.requireNonNull(latch, "The first-event latch was not armed");
+                yield Optional.of(new CheckedSavedDataPolicy(type, (staged, target) -> {
+                    if ((cut == Cut.FP5 || electionGeneration(staged, target)) && LATCH_USED.compareAndSet(false, true)) {
+                        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture latch_wait id={} thread={}",
+                                cut.id(), Thread.currentThread().getName());
+                        delay.awaitMove();
+                        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture latch_released id={}", cut.id());
+                    }
+                    CheckedSavedDataFile.atomicMove(staged, target);
+                }));
+            }
             case FM1 -> Optional.of(new CheckedSavedDataPolicy(type, (staged, target) -> {
                 if (electionGeneration(staged, target)) { halt(cut, "before_election_move", null); }
                 CheckedSavedDataFile.atomicMove(staged, target);
@@ -278,7 +391,7 @@ public final class FirstEventCutSeams {
                 if (election) { ELECTION_MOVED.set(true); }
             }));
             case FM7 -> Optional.of(new CheckedSavedDataPolicy(type, (staged, target) -> {
-                if (electionGeneration(staged, target)) {
+                if (!RELEASED.get() && electionGeneration(staged, target)) {
                     AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_cut election_move_refused");
                     throw new IOException("Release-test election refusal before the move");
                 }
@@ -291,10 +404,21 @@ public final class FirstEventCutSeams {
                 CheckedSavedDataFile.atomicMove(staged, target);
             }));
             case FM6A -> Optional.of(unreadableAfterMove(type, FirstEventCutSeams::electionGeneration));
-            case FP6 -> Optional.of(unreadableAfterMove(type, (staged, target) -> outboxState(staged).equals("DELIVERED")
-                    && outboxState(target).equals("DELIVERED") && UNRELATED_FAILED.compareAndSet(false, true)));
+            case FP6 -> Optional.of(unreadableAfterMove(type, (staged, target) -> {
+                var candidate = CheckedSavedDataFile.readPayload(staged, type).orElseThrow();
+                var current = CheckedSavedDataFile.readPayload(target, type).orElseThrow();
+                return unrelatedGeneration(candidate, current) && UNRELATED_FAILED.compareAndSet(false, true);
+            }));
             default -> Optional.empty();
         };
+    }
+
+    /** FP6 selects an actual unrelated record change, not the identical first-session baseline capture. */
+    static boolean unrelatedGeneration(net.minecraft.nbt.CompoundTag candidate, net.minecraft.nbt.CompoundTag current) {
+        String key = ManagedSavedDataType.FIRST_MOON_LANDING_KEY;
+        return candidate.getCompound(key).getString("state").equals("DELIVERED")
+                && candidate.getCompound(key).equals(current.getCompound(key))
+                && !candidate.getList("transfers", 10).equals(current.getList("transfers", 10));
     }
 
     /** The generation a cut selects, from the staged candidate and the current target. */

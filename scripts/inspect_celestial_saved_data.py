@@ -29,8 +29,11 @@ class NbtError(ValueError):
 
 
 class NbtReader:
-    def __init__(self, payload: bytes):
+    def __init__(self, payload: bytes, *, max_tags: int = MAX_TAGS):
+        if not 1 <= max_tags <= 1_048_576:
+            raise NbtError("NBT tag budget outside the fixed reader bound")
         self.payload = payload
+        self.max_tags = max_tags
         self.offset = 0
         self.tags = 0
 
@@ -48,8 +51,8 @@ class NbtReader:
         if depth > MAX_DEPTH:
             raise NbtError(f"NBT exceeds depth {MAX_DEPTH}")
         self.tags += 1
-        if self.tags > MAX_TAGS:
-            raise NbtError(f"NBT exceeds {MAX_TAGS} tags")
+        if self.tags > self.max_tags:
+            raise NbtError(f"NBT exceeds {self.max_tags} tags")
         if tag_type == 1:
             return self._unpack(">b", 1)
         if tag_type == 2:
