@@ -87,4 +87,23 @@ class EscrowSettlementCapacityTest {
         return EscrowTestFixtures.nativeModel(new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
                 op.payload(), op.payloadHash(), op.source(), endpoint, op.guard()));
     }
+    @Test void unrelatedOfflineRepairDoesNotPreventAdmissionAndItsGrowthRemainsReserved() {
+        for (var reason : List.of(EscrowReason.RELOCATED_ENDPOINT, EscrowReason.FLOOR_CONFLICT)) {
+            var repair = operation(1, 1, 0, true).withReason(reason);
+            var root = EscrowTestFixtures.ledger(repair); var candidate = operation(2, 2, 0, true);
+            assertDoesNotThrow(() -> EscrowSettlementCapacity.preflight(root.append(List.of(candidate)), candidate.id()));
+            var connected = operation(2, 1, 1, true);
+            assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(root.append(List.of(connected)), connected.id()));
+            var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
+            try (var writer = new EscrowLedgerWriter(directory.resolve(reason.name()), 0); var coordinator = new EscrowCoordinator(data, writer)) {
+                assertDoesNotThrow(() -> coordinator.prepareTest(candidate, RocketEscrowSection.neutral(), ignored -> { }));
+                assertEquals(3, coordinator.nextSequence()); assertEquals(List.of(repair), coordinator.ledger().records());
+            }
+        }
+        var repairs = new ArrayList<EscrowOperation>();
+        for (int i = 1; i <= 64; i++) { repairs.add(operation(i, i, 0, false).withReason(EscrowReason.RELOCATED_ENDPOINT)); }
+        var full = EscrowTestFixtures.ledger(repairs.toArray(EscrowOperation[]::new));
+        // Sixty-four individually decodable repairs still consume a worst-case reservation, never zero bytes.
+        assertThrows(IllegalArgumentException.class, () -> EscrowSettlementCapacity.preflight(full));
+    }
 }

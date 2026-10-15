@@ -11,6 +11,9 @@ final class EscrowSettlementCapacity {
     static final int ADMISSION_PER_ROCKET = 5;
     private EscrowSettlementCapacity() { }
     static void preflight(EscrowLedger prospective) {
+        preflight(prospective, null);
+    }
+    static void preflight(EscrowLedger prospective, UUID candidate) {
         long reservedBytes = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.encode(prospective));
         int reservedReceipts = prospective.tombstones().size();
         var visited = new java.util.HashSet<UUID>();
@@ -19,6 +22,17 @@ final class EscrowSettlementCapacity {
             var component = EscrowSettlementIntent.component(prospective.records(), selected.id());
             component.forEach(op -> visited.add(op.id()));
             if (component.stream().anyMatch(op -> !op.settlement().isEmpty())) { continue; }
+            if (candidate != null ? component.stream().noneMatch(op -> op.id().equals(candidate))
+                    : component.stream().anyMatch(op -> op.reason() == EscrowReason.RELOCATED_ENDPOINT || op.reason() == EscrowReason.FLOOR_CONFLICT)) {
+                // Other components may need offline repair. Charge their full possible growth without previewing them.
+                for (var op : component) {
+                    reservedBytes += EscrowLimits.OP_BYTES - bytes(EscrowCodec.operation(op));
+                    if (prospective.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(op.id()))) {
+                        reservedReceipts++; reservedBytes += 2_048;
+                    }
+                }
+                continue;
+            }
             var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
             component.forEach(op -> { references.put(op.source().key(), op.source()); references.put(op.destination().key(), op.destination()); });
             var chains = EscrowPrefix.chains(component); var observations = new ArrayList<EscrowSettlementIntent.Observation>();
@@ -79,5 +93,8 @@ final class EscrowSettlementCapacity {
     }
     private static boolean contains(List<EscrowPrefix.Marker> markers, UUID id) {
         return markers.stream().anyMatch(marker -> marker.operation().equals(id));
+    }
+    private static int bytes(net.minecraft.nbt.CompoundTag tag) {
+        return io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(tag);
     }
 }

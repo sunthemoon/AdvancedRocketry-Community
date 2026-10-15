@@ -52,7 +52,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         var candidate = new ArrayList<>(queued.values()); candidate.add(op);
         EscrowSettlementCapacity.requireAdmission(data.ledger().append(candidate), op, observed);
         EscrowTags.require(op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || op.nativeBinding().complete(), "Native L1 needs a complete envelope binding");
-        EscrowSettlementCapacity.preflight(data.ledger().append(candidate));
+        EscrowSettlementCapacity.preflight(data.ledger().append(candidate), op.id());
         EscrowFloors.preflight(data.ledger().append(candidate)); // Reserve the L2 floor before any queued L1 state changes.
         var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
         EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared admission refused: " + reservation);
