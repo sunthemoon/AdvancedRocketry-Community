@@ -167,23 +167,34 @@ public final class ResourceRestartReleaseProbe {
         if (rocket.flightData().orElseThrow().state() != RocketFlightState.FUELED) { return; }
         ensureOwner((ServerLevel) rocket.level());
         balances(rocket, 2_000, 1_000);
+        if (!stage.equals("seed")) { require(containerFluid() == 1_000, "Restart changed owner fuel containers"); }
         if (stage.startsWith("reconnect")) {
+            var selectedPassenger = stage.equals("reconnect-first") ? FIRST : SECOND;
+            var absentPassenger = stage.equals("reconnect-first") ? SECOND : FIRST;
+            require(server.getPlayerList().getPlayer(absentPassenger) == null, "Recorded passenger sessions overlap");
             if (passenger == null) {
-                passenger = players.login(server, server.overworld(), stage.equals("reconnect-first") ? FIRST : SECOND);
+                passenger = players.login(server, server.overworld(), selectedPassenger);
                 return;
             }
             if (passenger.getVehicle() != rocket) { return; }
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_W63_RECONNECT online={} absent={} mounted=true",
+                    selectedPassenger, absentPassenger);
             if (scenario.equals("F2")) {
                 if (!journal().entries().isEmpty() || !RocketRuntime.resourceMutationAllowed(rocket)) { return; }
+                // Keep the pre-restart filled canister: the test supplies its empty
+                // exchange container in a different slot, never over saved fuel.
+                owner.getInventory().selected = 1;
+                require(owner.getItemInHand(InteractionHand.MAIN_HAND).isEmpty(), "Reconnect fixture slot is occupied");
                 owner.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.EMPTY_CANISTER.get()));
                 require(RocketPropulsionInteraction.exchange(owner, rocket, InteractionHand.MAIN_HAND)
                         == InteractionResult.CONSUME, "Mutation refused after reconnect");
                 balances(rocket, 1_000, 1_000);
-                complete("entities=1 primary=1000 oxidizer=1000 journal=0 unlocked=true passenger=mounted");
+                require(containerFluid() == 2_000, "Reconnect exchange did not conserve owner fuel");
+                complete("entities=1 primary=1000 oxidizer=1000 containers=2000 journal=0 unlocked=true passenger=mounted");
             } else {
                 require(journal().entries().size() == 1 && !RocketRuntime.resourceMutationAllowed(rocket),
                         "Nonoverlapping passenger sessions unexpectedly retired or unlocked source");
-                complete("entities=1 primary=2000 oxidizer=1000 journal=1 unlocked=false passenger=mounted nonoverlap=true");
+                complete("entities=1 primary=2000 oxidizer=1000 containers=1000 journal=1 unlocked=false passenger=mounted nonoverlap=true");
             }
             return;
         }
@@ -206,10 +217,18 @@ public final class ResourceRestartReleaseProbe {
             require(before.equals(loader.saveWithoutMetadata()), "Pending loader changed stored resources");
             AdvancedRocketryCommunity.LOGGER.info("ARCE_W63_LOADER status={} item={} buffered={} target={}",
                     loader.status().diagnosticKey(), loader.itemHandler().getStackInSlot(0), loader.bufferedUnits(), loader.targetRocketId());
-            require(loader.status().diagnosticKey().equals("recovery_pending"),
-                    "Loader did not report recovery_pending; actual=" + loader.status().diagnosticKey());
+            // TASK-W63 Root decision (2026-10-15): generic no-target feedback is
+            // accepted here; exclusion and resource conservation remain mandatory.
+            require(loader.status().diagnosticKey().equals("waiting_for_rocket")
+                    && loader.targetRocketId().isEmpty() && loader.bufferedUnits() == 0,
+                    "Pending loader selected a target, buffered fuel, or changed its waiting status");
         }
-        complete("entities=1 primary=2000 oxidizer=1000 journal=1 unlocked=false vector=exact");
+        var loader = (FuelLoaderBlockEntity) server.overworld().getBlockEntity(ORIGIN.east(3));
+        require(loader != null && loader.targetRocketId().isEmpty() && loader.bufferedUnits() == 0
+                && loader.itemHandler().getStackInSlot(0).is(ModItems.ROCKET_FUEL_CELL.get())
+                && loader.itemHandler().getStackInSlot(0).getCount() == 1, "Offline restart changed loader resources");
+        require(containerFluid() == 1_000, "Offline source owner fuel differs");
+        complete("entities=1 primary=2000 oxidizer=1000 containers=1000 journal=1 unlocked=false vector=exact");
     }
 
     private void refuse(RocketEntity rocket, ItemStack stack, String operation) {

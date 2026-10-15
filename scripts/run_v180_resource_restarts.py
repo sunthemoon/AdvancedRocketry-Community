@@ -34,6 +34,7 @@ CASES = {
 }
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 OWNER = "00630000-0000-4000-8000-000000000001"
+PASSENGERS = ("00630000-0000-4000-8000-000000000002", "00630000-0000-4000-8000-000000000003")
 NATIVE_TEMP = Path("D:/GitHub/ARCE-Task-Evidence/Temp")
 MARKER = re.compile(r"ARCE_W63_(?:RESULT|FAILURE) case=")
 
@@ -76,6 +77,13 @@ def capture(world: Path, target: Path) -> dict:
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, destination)
         files[path.relative_to(world).as_posix()] = smoke.digest_file(path)
+    for identity in PASSENGERS:
+        path = world / "playerdata" / (identity + ".dat")
+        if path.exists():
+            destination = target / path.relative_to(world)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, destination)
+            files[path.relative_to(world).as_posix()] = smoke.digest_file(path)
     journal = read_nbt(world / "data" / JOURNAL)["data"]
     owner = read_nbt(world / "playerdata" / (OWNER + ".dat"))
     loader = []
@@ -113,6 +121,20 @@ def verify_disk(disk: dict, case: str, stage: str) -> dict:
     expected = [0, 0] if case == "F1" else [1000, 1000] if released else [2000, 1000]
     if vector != expected:
         raise smoke.SmokeError(f"Saved bank vector differs: {vector} != {expected}")
+    if case != "F1":
+        canisters = sum(item["Count"] for item in inventory
+                        if item["id"] == "advancedrocketrycommunity:hydrogen_canister")
+        if canisters != (2 if released else 1) or sum(vector) + canisters * 1000 != 4000:
+            raise smoke.SmokeError("Saved rocket/player fuel is not conserved")
+        if not released:
+            loaders = disk["loader"]
+            if len(loaders) != 1:
+                raise smoke.SmokeError("Saved pending loader is missing or duplicated")
+            loader = loaders[0]["arce_fuel_loader"]
+            if (loader["buffered_units"] != 0 or "target_rocket_id" in loader
+                    or loader["slot_role"] != 1
+                    or loader["item"] != {"id": "advancedrocketrycommunity:rocket_fuel_cell", "Count": 1}):
+                raise smoke.SmokeError("Saved pending loader selected a target or changed its resources")
     if journal:
         entry = journal[0]
         if entry["phase"] != ("COMMITTED" if case == "F1" else "PREPARED"):
@@ -178,6 +200,9 @@ def run(args) -> dict:
                 process = None
                 disk = capture(session / ("world-W63-" + case), evidence / (name + "-saved"))
                 entry["disk"] = verify_disk(disk, case, stage)
+                if index and entry["disk"].get("entity_uuid") is not None:
+                    if entry["disk"]["entity_uuid"] != row["starts"][0]["disk"]["entity_uuid"]:
+                        raise smoke.SmokeError("Restart replaced the original rocket entity")
                 if entry["exit_code"] != 0 or errors or "ARCE_W63_FAILURE" in entry["live"]:
                     raise smoke.SmokeError(f"Native {name} failed: {entry['live']}")
                 print(f"{name}: PASS (clean stop, live and saved state)", flush=True)
