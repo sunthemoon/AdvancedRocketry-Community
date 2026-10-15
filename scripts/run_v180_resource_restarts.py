@@ -46,18 +46,27 @@ def read_nbt(path: Path) -> dict:
     return NbtReader(raw).read_root()
 
 
+def entity_slots(path: Path) -> list[int]:
+    with path.open("rb") as stream:
+        header = stream.read(4096)
+    # Vanilla can open an entity region without ever writing an entity to it.
+    if not header:
+        return []
+    if len(header) != 4096:
+        raise smoke.SmokeError("Truncated entity region header")
+    return [slot for slot in range(1024) if struct.unpack_from(">I", header, slot * 4)[0]]
+
+
 def capture(world: Path, target: Path) -> dict:
     target.mkdir()
     files = {}
     rockets = []
     # Inspect every populated entity slot, not just the expected rocket chunk.
     for path in sorted(world.rglob("entities/*.mca")):
-        header = path.read_bytes()[:4096]
-        for slot in range(1024):
-            if struct.unpack_from(">I", header, slot * 4)[0]:
-                for entity in record(path, slot).get("Entities", []):
-                    if "RocketEntityData" in entity:
-                        rockets.append(dict(file=path.relative_to(world).as_posix(), slot=slot, entity=entity))
+        for slot in entity_slots(path):
+            for entity in record(path, slot).get("Entities", []):
+                if "RocketEntityData" in entity:
+                    rockets.append(dict(file=path.relative_to(world).as_posix(), slot=slot, entity=entity))
         destination = target / path.relative_to(world)
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, destination)

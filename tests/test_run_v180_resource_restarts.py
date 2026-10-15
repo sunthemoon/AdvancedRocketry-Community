@@ -2,6 +2,7 @@
 import copy
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
@@ -21,6 +22,21 @@ def disk(case="F2"):
 
 
 class NativeResourceRestartInspectorTest(unittest.TestCase):
+    def test_empty_native_region_has_no_entities(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "r.0.0.mca"
+            path.write_bytes(b"")
+            self.assertEqual(runner.entity_slots(path), [])
+            path.write_bytes(bytes(4096))
+            self.assertEqual(runner.entity_slots(path), [])
+
+    def test_partial_region_header_is_not_treated_as_empty(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "r.0.0.mca"
+            path.write_bytes(bytes(4095))
+            with self.assertRaisesRegex(runner.smoke.SmokeError, "Truncated"):
+                runner.entity_slots(path)
+
     def test_matrix_includes_three_offline_restarts_and_separate_logins(self):
         self.assertEqual(runner.CASES["F2"].count("check"), 3)
         self.assertEqual(runner.CASES["F2_TWO"][-2:], ("reconnect-first", "reconnect-second"))
