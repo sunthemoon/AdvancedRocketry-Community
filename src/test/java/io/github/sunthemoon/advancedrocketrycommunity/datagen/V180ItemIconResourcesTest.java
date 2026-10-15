@@ -145,7 +145,7 @@ class V180ItemIconResourcesTest {
     }
 
     private static Path targetPath(String item) {
-        return Path.of("src/main/resources", ASSETS, "textures/item", item + ".png");
+        return Path.of("src/imported/v1.8/resources", ASSETS, "textures/item", item + ".png");
     }
 
     private static Path modelPath(String item) {
