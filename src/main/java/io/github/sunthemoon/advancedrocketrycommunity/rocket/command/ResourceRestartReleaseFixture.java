@@ -78,6 +78,10 @@ final class ResourceRestartReleaseFixture {
             earth.setBlockAndUpdate(new BlockPos(at.x(), at.y(), at.z()), Blocks.AIR.defaultBlockState());
         }
         var destination = snapshot.relocated(UUID.randomUUID(), moon.dimension().location(), snapshot.sourceOrigin(), now);
+        for (var block : destination.blocks()) {
+            var at = destination.sourceOrigin().add(block.position());
+            moon.setBlockAndUpdate(new BlockPos(at.x(), at.y(), at.z()), Blocks.AIR.defaultBlockState());
+        }
         var fuel = RocketFuelState.empty(snapshot.propulsion().orElseThrow()).withFluidBank(false,
                 ModIdentity.id(source ? "hydrogen" : "rocket_fuel"), null, source ? 2_000 : 3_000);
         if (source) { fuel = fuel.withFluidBank(true, ModIdentity.id("oxygen"), null, 1_000); }

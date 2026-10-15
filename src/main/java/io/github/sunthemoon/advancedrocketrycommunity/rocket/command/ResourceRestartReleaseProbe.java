@@ -136,11 +136,21 @@ public final class ResourceRestartReleaseProbe {
         balances(rocket, 0, 0);
         require(containerFluid() == 2_000, "Arrival owner inventory lost or duplicated fuel");
         require(rocket.flightData().orElseThrow().state() == RocketFlightState.ASSEMBLED, "Drained state differs");
-        require(journal().entries().size() == 1 && journal().find(TRANSFER).orElseThrow().phase().name().equals("COMMITTED"),
-                "Arrival reservation missing");
+        if (step == 1) {
+            require(journal().entries().size() == 1 && journal().find(TRANSFER).orElseThrow().phase().name().equals("COMMITTED"),
+                    "Arrival reservation missing");
+        }
         if (stage.equals("disassemble")) {
             var snapshot = rocket.snapshot().orElseThrow();
             RocketRuntime.requestDisassembly(owner, rocket);
+            if (step == 1 && !rocket.isRemoved()) {
+                // The first player request starts durable reservation retirement and refuses
+                // until its real asynchronous write acknowledges. Retry only after that ack.
+                require(journal().find(TRANSFER).isEmpty() && !journal().acknowledgedCurrent(),
+                        "Disassembly did not begin journal retirement");
+                step = 2;
+                return;
+            }
             require(rocket.isRemoved(), "Arrival disassembly refused");
             require(journal().find(TRANSFER).isEmpty(), "Disassembly retained COMMITTED record");
             for (var block : snapshot.blocks()) {
