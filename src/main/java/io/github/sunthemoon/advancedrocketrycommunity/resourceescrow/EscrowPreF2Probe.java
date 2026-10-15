@@ -55,7 +55,10 @@ final class EscrowPreF2Probe {
     void tick() {
         var level = server.overworld();
         if (done || waiting || !level.areEntitiesLoaded(new ChunkPos(POSITION).toLong()) || !level.isPositionEntityTicking(POSITION)) { return; }
-        if (data == null) { data = ResourceEscrowSavedData.forTests(server); data.bind(server); began = server.getTickCount(); }
+        if (data == null) {
+            data = ResourceEscrowSavedData.forTests(server); data.bind(server); began = server.getTickCount();
+            if (!recovery) { data.setDirty(); data.bind(server).autosave(); }
+        }
         var journal = RocketTransferSavedData.get(server);
         if (!journal.retryChecked(server)) { return; }
         if (recovery) {
@@ -78,6 +81,10 @@ final class EscrowPreF2Probe {
                     cut, before ? "UNARMED" : arms.get(0).outcome(), rocket.getUUID()); done = true; return;
         }
         if (step == 0) {
+            // Give the before-replacement cut an actual checked empty ledger to retain.
+            if (data.ledger().writerGeneration() == 0 || !data.bind(server).writerIdle()) {
+                data.bind(server).autosave(); return;
+            }
             // Establish world metadata before creating/refuelling the source. No fixture save follows.
             EscrowTags.require(server.saveEverything(false, true, true), "World metadata baseline refused");
             rocket = EscrowRocketAuditProbe.createRocket(level, UUID.randomUUID(), true);
