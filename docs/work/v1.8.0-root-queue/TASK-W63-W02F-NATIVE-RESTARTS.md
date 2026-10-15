@@ -58,3 +58,24 @@ W02F fixed two Critical rocket recovery defects. It verified them only with Game
   design; note what you observe.
 - The C17a loader's mB-precise follow-up (W02F's F3).
 - ADRs, the risk register, status files and the ledger (Root).
+
+## Root decision (2026-10-15): the loader's diagnostic
+
+This answers the F2 stop in `records/W63.md` (`efe50eb7`).
+
+- **What decides the case.** The loader excludes the locked rocket and changes neither bank. The
+  refusal and the unchanged balances are what F2 requires. The task's wording, "refused with the
+  recovery-pending message", over-specified the loader's status line.
+- **For the native runs:** accept `waiting_for_rocket` as the loader's status. Assert the exclusion,
+  the unchanged loader buffer, and the unchanged source vector.
+- **Follow-up for Root's queue, not this task:** a loader status that names the recovery lock.
+  Record it as a known gap.
+- **Next:** run the rest of F2:
+  - the three offline restarts;
+  - the reconnect and unlock;
+  - the two-passenger variant whose sessions do not overlap.
+
+  Then deliver as the task says.
+- **Cleanup:** Root deleted `D:/GitHub/ARCE-Task-Evidence/Temp/W63-native-01` and
+  `D:/GitHub/ARCE-Task-Evidence/Temp/W63-native-02`. If tool policy refuses your cleanup again,
+  record the paths again.
