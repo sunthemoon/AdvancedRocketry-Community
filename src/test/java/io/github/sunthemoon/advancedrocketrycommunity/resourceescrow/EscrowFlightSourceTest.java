@@ -62,6 +62,17 @@ class EscrowFlightSourceTest {
         var otherPhysical = entity.copy(); otherPhysical.putUUID("UUID", EscrowTestFixtures.id(8));
         duplicate = root.copy(); duplicate.getList("Entities", Tag.TAG_COMPOUND).add(otherPhysical); assertFalse(validator.test(duplicate));
         var missing = root.copy(); missing.put("Entities", new ListTag()); assertFalse(validator.test(missing));
+        var bounded = root.copy(); var census = bounded.getList("Entities", Tag.TAG_COMPOUND);
+        for (int i = 1; i < EscrowSettlementObserver.ENTITIES_PER_SLOT; i++) { census.add(new CompoundTag()); }
+        assertTrue(validator.test(bounded), "Exact slot-census limit must remain readable");
+        census.add(new CompoundTag()); assertFalse(validator.test(bounded), "One extra entity must refuse the proof");
+        var deep = root.copy(); var branch = new CompoundTag(); deep.getList("Entities", Tag.TAG_COMPOUND).add(branch);
+        for (int depth = 1; depth <= 16; depth++) {
+            var nested = new ListTag(); var child = new CompoundTag(); nested.add(child); branch.put("Passengers", nested); branch = child;
+        }
+        assertTrue(validator.test(deep), "Exact passenger-depth limit must remain readable");
+        var tooDeep = new ListTag(); tooDeep.add(new CompoundTag()); branch.put("Passengers", tooDeep);
+        assertFalse(validator.test(deep), "One extra passenger nesting level must refuse the proof");
         envelope.getCompound("flight").putInt("external_mutation", 1); assertTrue(validator.test(root), "Predicate must retain an immutable copy");
     }
 

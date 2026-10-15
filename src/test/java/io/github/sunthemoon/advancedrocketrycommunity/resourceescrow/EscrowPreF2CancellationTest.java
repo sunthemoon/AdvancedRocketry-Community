@@ -33,6 +33,48 @@ class EscrowPreF2CancellationTest {
     @ParameterizedTest @ValueSource(booleans = {false, true})
     void writtenTRefusesPreF2CancellationAcrossTwoRestarts(boolean callback) throws Exception { restart(callback, true); }
 
+    @Test void stopBeforeArmedReplacementRetainsNoSerialOrFlightAcrossTwoRestarts() throws Exception {
+        Path ledgerFile = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+        Path journalFile = directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
+        var root = ResourceEscrowSavedData.create().ledger().generation(1);
+        io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy
+                .atomic(ManagedSavedDataType.RESOURCE_ESCROW).replace(ledgerFile, () -> EscrowCodec.encode(root));
+        var launch = EscrowFlightAuthorityTest.launch(root, 1);
+        var journal = new RocketTransferSavedData();
+        EscrowArmedRestartBoundaryTest.acknowledge(journal, journalFile); journal.stop();
+        var beforeMove = new CountDownLatch(1); var release = new CountDownLatch(1); var callbacks = new AtomicInteger();
+        var writer = new EscrowLedgerWriter(ledgerFile, 1, (staged, target) -> {
+            beforeMove.countDown();
+            try {
+                if (!release.await(5, TimeUnit.SECONDS)) { throw new java.io.IOException("Before-replacement cut did not release"); }
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt(); throw new java.io.IOException(interrupted);
+            }
+            throw new java.io.IOException("Injected stop before ARMED replacement");
+        });
+        assertTrue(writer.baseline(root));
+        var coordinator = new EscrowCoordinator(ResourceEscrowSavedData.load(EscrowCodec.encode(root)), writer);
+        try {
+            assertTrue(coordinator.flightWrite(launch.logical(), (before, generation) -> EscrowFlightAuthority.arm(before, launch, generation),
+                    () -> true, committed -> callbacks.incrementAndGet()));
+            coordinator.tick(10); assertTrue(beforeMove.await(5, TimeUnit.SECONDS));
+            assertEquals(root, EscrowCodec.decode(CheckedSavedDataFile.readPayload(ledgerFile, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow()));
+        } finally { release.countDown(); coordinator.abort(); }
+        assertEquals(0, callbacks.get());
+        for (int restart = 0; restart < 2; restart++) {
+            var loaded = EscrowCodec.decode(CheckedSavedDataFile.readPayload(ledgerFile, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow());
+            try (var baseline = new EscrowLedgerWriter(ledgerFile, loaded.writerGeneration())) { assertTrue(baseline.baseline(loaded)); }
+            assertEquals(root, loaded); assertTrue(loaded.armedFlights().isEmpty()); assertEquals(0, loaded.issuedLaunchSerial());
+            var resumedJournal = RocketTransferSavedData.load(CheckedSavedDataFile.readPayload(journalFile, ManagedSavedDataType.ROCKET_TRANSFERS).orElseThrow());
+            try {
+                assertFalse(EscrowFlightJournal.noTransfer(resumedJournal, launch.logical(), launch.transfer(), 1).getAsBoolean());
+                EscrowArmedRestartBoundaryTest.acknowledge(resumedJournal, journalFile);
+                assertTrue(EscrowFlightJournal.noTransfer(resumedJournal, launch.logical(), launch.transfer(), 1).getAsBoolean());
+                assertTrue(resumedJournal.entries().isEmpty());
+            } finally { resumedJournal.stop(); }
+        }
+    }
+
     private void restart(boolean callback, boolean prepared) throws Exception {
         Path ledgerFile = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
         Path journalFile = directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
