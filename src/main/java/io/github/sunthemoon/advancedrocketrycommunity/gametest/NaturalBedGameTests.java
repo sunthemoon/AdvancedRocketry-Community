@@ -70,7 +70,9 @@ public final class NaturalBedGameTests {
         int[] state = {0, 0}; // Host and phase; occupancy changes must be rescanned before the next bed call.
         Tuple[] expected = {null};
         Zombie[] monsters = {null};
-        withRoomSteps(helper, "W37BMatrix", fixture -> {
+        // Each step waits only for its own host's room: the six chunks' entity sections load asynchronously, and
+        // waiting for all six before every step would put the slowest Level's load in front of every host (W74).
+        withRoomSteps(helper, "W37BMatrix", fixture -> fixture.ready(fixture.rooms.get(state[0])), fixture -> {
             ServerPlayer player = fixture.player;
             Room room = fixture.rooms.get(state[0]);
             player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
@@ -455,6 +457,12 @@ public final class NaturalBedGameTests {
     }
 
     private static void withRoomSteps(GameTestHelper helper, String name, Predicate<Fixture> checks) {
+        withRoomSteps(helper, name, Fixture::ready, checks);
+    }
+
+    /** Runs one step per tick once {@code ready} holds; it is checked again before every step. */
+    private static void withRoomSteps(GameTestHelper helper, String name, Predicate<Fixture> ready,
+                                      Predicate<Fixture> checks) {
         Fixture fixture = new Fixture(helper, name, HOSTS);
         boolean[] done = {false};
         GameTestTickPacer pacer = new GameTestTickPacer(fixture.server);
@@ -462,8 +470,9 @@ public final class NaturalBedGameTests {
             if (done[0]) { return; }
             try {
                 pacer.pace();
-                if (!fixture.ready()) {
-                    helper.assertTrue(helper.getTick() < 50, "The six bed fixtures did not become breathable: " + fixture.status());
+                if (!ready.test(fixture)) {
+                    helper.assertTrue(helper.getTick() < 50, "The bed fixtures did not become live and breathable: "
+                            + fixture.status());
                     return;
                 }
                 if (!checks.test(fixture)) { return; }
