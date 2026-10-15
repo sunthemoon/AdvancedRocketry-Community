@@ -1042,7 +1042,83 @@ class MarkdownCorrectionFileTests(unittest.TestCase):
                 with patch(f"scripts.validate_repository.{constant}", 0):
                     self.assert_sealed_links_fail(self.report(), message)
 
+    def export_head(self) -> Path:
+        """Return a temporary Git repository that holds exactly HEAD's paths.
+
+        Untracked files of this checkout (such as the ZIPs that
+        docs/work/v1.8.0-external-evidence/MANIFEST.md lists) are not copied, so they
+        cannot make a broken link resolve (W61F). Markdown files keep their committed
+        bytes. Every other file is empty, because the check only tests that a link
+        target exists; this avoids extracting about 580 MiB of evidence archives.
+        """
+
+        def git(directory: Path, *arguments: str, stdin: bytes | None = None) -> bytes:
+            return subprocess.run(
+                [
+                    "git",
+                    "-c",
+                    "user.name=Correction Fixture",
+                    "-c",
+                    "user.email=correction@example.invalid",
+                    "-C",
+                    str(directory),
+                    *arguments,
+                ],
+                input=stdin,
+                check=True,
+                capture_output=True,
+            ).stdout
+
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        export = Path(temporary.name)
+        tree = git(ROOT, "rev-parse", "HEAD^{tree}").decode("ascii").strip()
+        listing = git(ROOT, "ls-tree", "-r", "-z", "--full-tree", tree)
+        created: set[Path] = set()
+        markdown: list[tuple[str, str]] = []
+        for entry in filter(None, listing.split(b"\0")):
+            header, _, raw_name = entry.partition(b"\t")
+            _, kind, object_id = header.decode("ascii").split(" ")
+            name = raw_name.decode("utf-8")
+            self.assertEqual("blob", kind, name)
+            path = export.joinpath(*name.split("/"))
+            if path.parent not in created:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                created.add(path.parent)
+            path.write_bytes(b"")
+            if name.lower().endswith(".md"):
+                markdown.append((object_id, name))
+        batch = git(
+            ROOT,
+            "cat-file",
+            "--batch",
+            stdin="".join(f"{object_id}\n" for object_id, _ in markdown).encode("ascii"),
+        )
+        offset = 0
+        for object_id, name in markdown:
+            end = batch.index(b"\n", offset)
+            reported_id, kind, size = batch[offset:end].decode("ascii").split(" ")
+            self.assertEqual((object_id, "blob"), (reported_id, kind))
+            start = end + 1
+            export.joinpath(*name.split("/")).write_bytes(batch[start : start + int(size)])
+            offset = start + int(size) + 1
+        self.assertEqual(len(batch), offset)
+
+        # The export borrows this checkout's objects read-only, so HEAD's tree is
+        # indexed and committed without hashing a file again.
+        objects = (ROOT / git(ROOT, "rev-parse", "--git-path", "objects").decode("utf-8").strip())
+        git(export, "init", "--quiet")
+        (export / ".git/objects/info/alternates").write_bytes(
+            objects.resolve().as_posix().encode("utf-8") + b"\n"
+        )
+        git(export, "read-tree", tree)
+        commit = git(export, "commit-tree", tree, "-m", "HEAD export").decode("ascii").strip()
+        git(export, "update-ref", "HEAD", commit)
+        self.assertEqual(tree, git(export, "rev-parse", "HEAD^{tree}").decode("ascii").strip())
+        return export
+
     def test_repository_markdown_passes_with_the_six_w60_correction_files(self) -> None:
+        export = self.export_head()
         reports = []
 
         def recording_report(repository_root, paths):
@@ -1050,7 +1126,7 @@ class MarkdownCorrectionFileTests(unittest.TestCase):
             return reports[-1]
 
         results = Results()
-        with patch(
+        with patch("scripts.validate_repository.ROOT", export.resolve()), patch(
             "scripts.validate_repository.markdown_link_report",
             side_effect=recording_report,
         ):
