@@ -188,7 +188,10 @@ final class KernelAutomationRun {
             subTick++;
             power.tick(); rig.tickHoppers();
             if (subTick % DROPPER_PERIOD == 0 && completed() > 0) {
-                for (var feed : feeds) { if (!AutomationRig.empty(feed.dropper())) { rig.pulse(feed.dropper()); } }
+                // Only into a formed port: without a handler a vanilla dropper would throw the item into the world.
+                for (var feed : feeds) {
+                    if (!AutomationRig.empty(feed.dropper()) && items(feed.port(), null) != null) { rig.pulse(feed.dropper()); }
+                }
             }
             processTick.run();
             if (subTick % PIPE_PERIOD == 0) { pipeOutputs(subTick / PIPE_PERIOD % 2 == 0 ? Direction.EAST : Direction.NORTH); }
@@ -282,6 +285,7 @@ final class KernelAutomationRun {
         long generated = power.generated(), accounted = (long) power.buffered() + storedEnergy() + (long) BATCHES * energyPerBatch;
         helper.assertTrue(generated == accounted, name + " FE: generator made " + generated + ", buffer " + power.buffered()
                 + " + port " + storedEnergy() + " + stated use " + (long) BATCHES * energyPerBatch);
-        helper.assertTrue(rig.looseStacks(controller.getBlockPos(), 8) == 0, name + " spilled items into the world");
+        String spilled = rig.spilled(controller.getBlockPos(), 8);
+        helper.assertTrue(spilled.isEmpty(), name + " spilled items into the world: " + spilled);
     }
 }

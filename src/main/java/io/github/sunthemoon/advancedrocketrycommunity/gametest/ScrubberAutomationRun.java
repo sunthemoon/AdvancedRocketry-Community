@@ -147,6 +147,7 @@ final class ScrubberAutomationRun {
         helper.assertTrue(count == CARTRIDGES && facade(null).getStackInSlot(0).isEmpty(), "Scrubber returned " + count + " of " + CARTRIDGES + " cartridges");
         helper.assertTrue(supplied - left == usesSpent, "Scrubber uses: " + supplied + " supplied, " + left + " returned, " + usesSpent + " spent");
         helper.assertTrue(usesSpent > 0 && oxygenDebits > 0, "The vent never debited: " + vent.status());
-        helper.assertTrue(rig.looseStacks(scrubber.getBlockPos(), 6) == 0, "Scrubber automation spilled items into the world");
+        String spilled = rig.spilled(scrubber.getBlockPos(), 6);
+        helper.assertTrue(spilled.isEmpty(), "Scrubber automation spilled items into the world: " + spilled);
     }
 }

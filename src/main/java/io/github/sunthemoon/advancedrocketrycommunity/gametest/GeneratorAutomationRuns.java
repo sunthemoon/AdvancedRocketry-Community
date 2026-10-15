@@ -76,7 +76,8 @@ final class GeneratorAutomationRuns {
                         "Combustion generator did not burn exactly its 20 fuel items: " + generated + " FE");
                 helper.assertTrue(generated == accounted, "Combustion FE: generated " + generated + ", buffer " + feed.buffered()
                         + " + received " + sink.energyStored() + " + pulled " + state.pulled);
-                helper.assertTrue(rig.looseStacks(at, 6) == 0, "Combustion automation spilled items into the world");
+                String spilled = rig.spilled(at, 6);
+                helper.assertTrue(spilled.isEmpty(), "Combustion automation spilled items into the world: " + spilled);
             });
         } catch (RuntimeException | Error failure) { rig.close(); throw failure; }
     }

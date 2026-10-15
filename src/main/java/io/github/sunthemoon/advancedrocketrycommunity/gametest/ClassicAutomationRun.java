@@ -396,6 +396,7 @@ final class ClassicAutomationRun {
         }
         helper.assertTrue(injected == energyBudget && controller.storedEnergy() == 0,
                 kind + " FE: injected " + injected + ", stated " + energyBudget + ", left in plugs " + controller.storedEnergy());
-        helper.assertTrue(rig.looseStacks(origin, 8) == 0, kind + " spilled items into the world");
+        String spilled = rig.spilled(origin, 8);
+        helper.assertTrue(spilled.isEmpty(), kind + " spilled items into the world: " + spilled);
     }
 }

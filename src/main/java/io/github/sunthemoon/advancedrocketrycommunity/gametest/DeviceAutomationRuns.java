@@ -181,9 +181,9 @@ final class DeviceAutomationRuns {
                     rig.level.setBlockAndUpdate(signal, Blocks.AIR.defaultBlockState());
                 }
             }
-            others += rig.looseStacks(target, 3);
-            helper.assertTrue(plates == ROUNDS * stated.getCount() && others == 0,
-                    "Press: " + ROUNDS + " iron blocks made " + plates + " " + stated.getItem() + " and " + others + " other items");
+            String spilled = rig.spilled(target, 3);
+            helper.assertTrue(plates == ROUNDS * stated.getCount() && others == 0 && spilled.isEmpty(),
+                    "Press: " + ROUNDS + " iron blocks made " + plates + " " + stated.getItem() + " and " + others + " other items; loose: " + spilled);
         } finally { rig.close(); }
         helper.succeed();
     }
@@ -246,7 +246,8 @@ final class DeviceAutomationRuns {
                 long generated = power.generated(), accounted = (long) power.buffered() + sink.energyStored();
                 helper.assertTrue(generated == accounted && generated == 2L * power.burnTicks() * 40,
                         "Seal FE: generator made " + generated + ", buffer " + power.buffered() + " + received " + sink.energyStored());
-                helper.assertTrue(rig.looseStacks(items, 4) == 0, "Seal automation spilled items into the world");
+                String spilled = rig.spilled(items, 4);
+                helper.assertTrue(spilled.isEmpty(), "Seal automation spilled items into the world: " + spilled);
             });
         } catch (RuntimeException | Error failure) { rig.close(); throw failure; }
     }

@@ -42,6 +42,7 @@ final class AutomationRig implements AutoCloseable {
     private final Set<ChunkPos> tickets = new LinkedHashSet<>();
     private final List<HopperBlockEntity> hoppers = new ArrayList<>();
     private final List<Runnable> beforeClose = new ArrayList<>();
+    private final List<AABB> rooms = new ArrayList<>();
     private boolean closed;
 
     AutomationRig(GameTestHelper helper) { this.helper = helper; level = helper.getLevel(); }
@@ -62,6 +63,10 @@ final class AutomationRig implements AutoCloseable {
                     || position.getY() > max.getY() || position.getZ() < min.getZ() || position.getZ() > max.getZ();
             level.setBlock(position, shell ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
+        // Earlier batches reuse these coordinates; their loose items are not this machine's.
+        var box = new AABB(min.getX(), min.getY(), min.getZ(), max.getX() + 1, max.getY() + 1, max.getZ() + 1);
+        level.getEntitiesOfClass(ItemEntity.class, box).forEach(ItemEntity::discard);
+        rooms.add(box);
     }
     void place(BlockPos position, BlockState state) {
         hold(position); placed.putIfAbsent(position.immutable(), true); level.setBlock(position, state, Block.UPDATE_ALL);
@@ -117,13 +122,19 @@ final class AutomationRig implements AutoCloseable {
         for (int slot = 0; slot < container.getContainerSize(); slot++) { if (!container.getItem(slot).isEmpty()) { return false; } }
         return true;
     }
-    /** Loose items of {@code item} within {@code radius} blocks of {@code center}. */
-    int loose(BlockPos center, int radius, Item item) {
-        return level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(radius)).stream()
-                .filter(entity -> entity.isAlive() && entity.getItem().is(item)).mapToInt(entity -> entity.getItem().getCount()).sum();
-    }
-    int looseStacks(BlockPos center, int radius) {
-        return (int) level.getEntitiesOfClass(ItemEntity.class, new AABB(center).inflate(radius)).stream().filter(ItemEntity::isAlive).count();
+    /**
+     * Loose items in this rig's rooms (or, without a room, within {@code radius} of {@code center}), as "item xcount at
+     * position" text; empty when there are none. A machine fed and emptied by automation must leave none.
+     */
+    String spilled(BlockPos center, int radius) {
+        var boxes = rooms.isEmpty() ? List.of(new AABB(center).inflate(radius)) : rooms;
+        var found = new ArrayList<String>();
+        for (AABB box : boxes) {
+            for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, box)) {
+                if (entity.isAlive()) { found.add(entity.getItem() + " at " + entity.blockPosition().toShortString()); }
+            }
+        }
+        return String.join("; ", found);
     }
 
     /**

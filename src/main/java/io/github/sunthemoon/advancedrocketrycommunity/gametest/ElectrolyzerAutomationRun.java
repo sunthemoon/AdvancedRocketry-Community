@@ -143,6 +143,7 @@ final class ElectrolyzerAutomationRun {
         int waterLeft = reservoir + pump.fluid().getAmount() + machine.waterAmount();
         helper.assertTrue(supplied == WATER && waterLeft == 0, "Electrolyzer water: supplied " + supplied + ", unused " + waterLeft);
         helper.assertTrue(machine.progress() == 0, "Electrolyzer did not finish idle");
-        helper.assertTrue(rig.looseStacks(position, 8) == 0, "Electrolyzer automation spilled items into the world");
+        String spilled = rig.spilled(position, 8);
+        helper.assertTrue(spilled.isEmpty(), "Electrolyzer automation spilled items into the world: " + spilled);
     }
 }
