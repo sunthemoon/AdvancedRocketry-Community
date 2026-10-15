@@ -149,6 +149,8 @@ sourceSets.main.resources {
     srcDir 'src/generated/v1.6/resources'
     srcDir 'src/generated/v1.7/resources'
     srcDir 'src/generated/v1.8/resources'
+    // W52F: v1.8 upstream imports (tools/import/import_v180_assets.py) live outside the v0.1.0 managed root.
+    srcDir 'src/imported/v1.8/resources'
     exclude '.cache/**'
 }
 
