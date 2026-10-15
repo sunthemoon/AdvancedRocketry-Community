@@ -181,6 +181,44 @@ class EscrowSettlementCompletionTest {
         }
     }
     private Path file() { return directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()); }
+    @Test void nativeTwoSlotFloorRetiresAtO4WithoutCreatingAReadyHead() {
+        var floor = EscrowTestFixtures.floor(99); floor.putUUID("transfer_id", EscrowTestFixtures.id(800));
+        floor.putString("signature_kind", EscrowSignatureKind.FUEL_VECTOR_V1.name());
+        var root = new EscrowLedger(EscrowTestFixtures.id(500), 1, 0, List.of(), List.of(floor), List.of());
+        var observed = java.util.stream.IntStream.of(4, 5).mapToObj(chunk -> new EscrowSettlementIntent.Observation(
+                new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, "minecraft:overworld", floor.getUUID("entity_id"),
+                        floor.getUUID("rocket_id"), "advancedrocketrycommunity:rocket", chunk, 0, 4,
+                        EscrowEndpoint.Unit.PRIMARY, 1, floor.getString("signature"), floor.getString("signature")), null, false, 0)).toList();
+        var preview = EscrowSettlementIntent.floorPreview(root, EscrowTestFixtures.id(701), floor, EscrowTestFixtures.id(700), "operator", 10, observed);
+        var intent = preview.confirm(preview.actor(), preview.digest(), 210, observed);
+        var installed = EscrowSettlementTombstones.install(root.append(List.of(intent.floorOperation(2, 210))), intent);
+        var released = EscrowSettlementTombstones.release(installed, intent);
+        assertTrue(released.records().isEmpty()); assertTrue(released.floors().isEmpty()); assertTrue(released.rocketAuthorities().isEmpty());
+        assertEquals(2, released.tombstones().get(0).getList("missing", 10).size());
+        assertTrue(released.tombstones().get(0).getBoolean("released"));
+        assertTrue(EscrowSettlementTombstones.retiredTransfer(released, floor.getUUID("rocket_id"), floor.getUUID("transfer_id")));
+        assertEquals(released, EscrowCodec.decode(EscrowCodec.encode(released)));
+    }
+    @Test void multiplePresentNativeCandidatesAreRefusedAtPreviewBeforeO1() {
+        var sample = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE);
+        var old = sample.destination();
+        var first = new EscrowEndpoint(old.kind(), old.level(), old.identity(), old.logicalRocket(), "advancedrocketrycommunity:rocket",
+                4, 0, 4, old.unit(), old.beforeEpoch(), old.beforeSignature(), old.afterSignature());
+        var second = new EscrowEndpoint(old.kind(), old.level(), EscrowTestFixtures.id(999), old.logicalRocket(), first.type(),
+                5, 0, 4, old.unit(), old.beforeEpoch(), old.beforeSignature(), old.afterSignature());
+        var op = EscrowTestFixtures.nativeModel(new EscrowOperation(sample.id(), sample.sequence(), sample.owner(), sample.createdTick(), sample.phase(),
+                sample.reason(), sample.payload(), sample.payloadHash(), sample.source(), first, sample.guard()));
+        var other = EscrowTestFixtures.nativeModel(new EscrowOperation(EscrowTestFixtures.id(2), 2, op.owner(), 1, op.phase(), op.reason(),
+                op.payload(), op.payloadHash(), EscrowTestFixtures.operation(2).source(), second, op.guard()));
+        var root = EscrowTestFixtures.ledger(op, other);
+        var observed = List.of(new EscrowSettlementIntent.Observation(op.source(), new EscrowPrefix.State(root.id(), 0, op.source().beforeSignature(), List.of()), true, 0),
+                new EscrowSettlementIntent.Observation(other.source(), new EscrowPrefix.State(root.id(), 0, other.source().beforeSignature(), List.of()), true, 0),
+                new EscrowSettlementIntent.Observation(first, new EscrowPrefix.State(root.id(), 0, first.beforeSignature(), List.of()), true, 0),
+                new EscrowSettlementIntent.Observation(second, new EscrowPrefix.State(root.id(), 0, second.beforeSignature(), List.of()), true, 0));
+        var failure = assertThrows(IllegalArgumentException.class, () -> EscrowSettlementIntent.preview(root, op.id(),
+                EscrowSettlementIntent.Choice.ACCEPT_CURRENT, EscrowTestFixtures.id(700), "operator", 10, observed));
+        assertEquals("Settlement has multiple physical candidates for one logical rocket", failure.getMessage());
+    }
     private static EscrowSettlementIntent intent(EscrowLedger root, boolean missing) {
         var observed = EscrowSettlementIntentTest.observations(root, missing);
         var preview = EscrowSettlementIntent.preview(root, root.records().get(0).id(), missing ? EscrowSettlementIntent.Choice.ABANDON

@@ -79,13 +79,13 @@ final class EscrowSettlementTombstones {
         var heads = new ArrayList<>(root.rocketAuthorities());
         UUID anchor = intent.ids().stream().min(java.util.Comparator.comparing(UUID::toString)).orElseThrow();
         var nativeChoices = intent.checkpointed().stream().filter(observation -> observation.signatureKind() == EscrowSignatureKind.FUEL_VECTOR_V1).toList();
+        heads.removeIf(head -> nativeChoices.stream().anyMatch(chosen -> chosen.endpoint().logicalRocket().equals(head.logical())));
         var logicals = new java.util.HashSet<UUID>();
         for (var chosen : nativeChoices) {
             UUID logical = chosen.endpoint().logicalRocket();
-            EscrowTags.require(logicals.add(logical), "Settlement has multiple physical candidates for one logical rocket");
-            var previous = heads.stream().filter(head -> head.logical().equals(logical)).findFirst().orElse(null);
-            heads.removeIf(head -> head.logical().equals(logical));
             if (chosen.missing()) { continue; }
+            EscrowTags.require(logicals.add(logical), "Settlement has multiple physical candidates for one logical rocket");
+            var previous = root.rocketAuthorities().stream().filter(head -> head.logical().equals(logical)).findFirst().orElse(null);
             var member = root.records().stream().filter(op -> intent.ids().contains(op.id()) && op.destination().key().equals(chosen.endpoint().key())).findFirst().orElseThrow();
             heads.add(new EscrowFlightTables.Head(logical, member.owner(), anchor, generation, chosen.endpoint().identity(), chosen.state().epoch(),
                     chosen.signatureKind(), chosen.state().signature(), chosen.invariantDigest(), previous == null ? 0 : previous.issued(),

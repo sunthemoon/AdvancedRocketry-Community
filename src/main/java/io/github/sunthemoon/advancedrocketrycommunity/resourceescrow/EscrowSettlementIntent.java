@@ -68,9 +68,14 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                     : member.phase() == EscrowOperation.Phase.PREPARED || member.phase() == EscrowOperation.Phase.REPAIR
                     || member.phase() == EscrowOperation.Phase.STALLED, "Invalid original settlement member phase");
         }
+        var nativeLogicals = new HashSet<UUID>();
         for (Observation observation : observations) {
             EscrowTags.require(keys.add(observation.endpoint().key())
                     && (observation.missing() || ledger.equals(observation.state().ledger())), "Duplicate or foreign settlement observation");
+            if (!observation.missing() && observation.signatureKind() == EscrowSignatureKind.FUEL_VECTOR_V1) {
+                EscrowTags.require(nativeLogicals.add(observation.endpoint().logicalRocket()),
+                        "Settlement has multiple physical candidates for one logical rocket");
+            }
         }
         boolean missing = observations.stream().anyMatch(Observation::missing);
         EscrowTags.require(choice == Choice.ACCEPT_CURRENT ? !missing : missing, "Settlement choice does not match missing endpoints");
