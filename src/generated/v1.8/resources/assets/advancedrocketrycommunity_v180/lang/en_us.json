@@ -595,6 +595,7 @@
   "station.advancedrocketrycommunity.notice.while_away": "While you were away: %s",
   "station.advancedrocketrycommunity.warp_class.in_system": "in-system",
   "station.advancedrocketrycommunity.warp_class.interstellar": "interstellar",
+  "status.advancedrocketrycommunity.fuel_loader.recovery_pending": "nearby rocket locked until its transfer recovery finishes",
   "status.advancedrocketrycommunity.machine_recipe.generic": "Recipe cannot run",
   "status.advancedrocketrycommunity.machine_recipe.recipe_changed": "Recipe changed",
   "status.advancedrocketrycommunity.machine_recipe.recipe_missing": "Recipe missing",
