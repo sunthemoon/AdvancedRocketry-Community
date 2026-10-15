@@ -20,8 +20,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ChunkHolder;
-import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ChunkLevel;
+import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -310,7 +310,7 @@ public final class ElevatorCapsuleGameTests {
             Ticket<?> forcedTicket = new Ticket<>(TicketType.FORCED, ticking, fixture.terminalChunk, false);
             // Nonnegative ticket levels propagate one level per chunk. Even a level-zero ticket cannot keep
             // this arrival FULL beyond this bounded square; inspecting the map does not load any chunk.
-            int radius = ChunkLevel.FULL_CHUNK_LEVEL;
+            int radius = ChunkLevel.byStatus(FullChunkStatus.FULL);
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
                     ChunkPos pos = new ChunkPos(fixture.terminalChunk.x + dx, fixture.terminalChunk.z + dz);
