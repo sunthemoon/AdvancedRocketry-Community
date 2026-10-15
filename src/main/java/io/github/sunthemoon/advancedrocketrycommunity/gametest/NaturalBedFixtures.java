@@ -115,10 +115,13 @@ final class NaturalBedFixtures {
         ServerPlayer player;
         final long originalTime;
         final DiscoveryScope discovery;
+        /** The server tick that built the rooms and ticked each new vent once by hand. */
+        private final int builtTick;
         private boolean closed;
 
         Fixture(GameTestHelper helper, String name, List<ResourceKey<Level>> hosts) {
             server = helper.getLevel().getServer();
+            builtTick = server.getTickCount();
             originalTime = server.overworld().getDayTime();
             discovery = new DiscoveryScope(server);
             try {
@@ -177,7 +180,9 @@ final class NaturalBedFixtures {
 
         /** The room is live and its bed cells are breathable, so a bed call now meets the running authority. */
         boolean ready(Room room) {
-            if (!room.live()) {
+            // A test tick reads the atmosphere state of the previous server tick. The state after the build tick
+            // still carries the manual vent ticks, so only a later tick's state shows a vent that ticks by itself.
+            if (server.getTickCount() <= builtTick + 1 || !room.live()) {
                 return false;
             }
             if (room.level.dimension().equals(ExoplanetContent.TAU_CETI_F_LEVEL)) {
