@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.progression.classic.first
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.UuidArgument;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -28,6 +29,34 @@ public final class FirstEventFixtureCommands {
         if (!Boolean.getBoolean(EscrowTestEndpoints.HOOKS) || FirstEventCutSeams.configured().isEmpty()) { return; }
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("progression")
                 .then(Commands.literal("release-test").requires(source -> source.hasPermission(2))
+                        .then(Commands.literal("release-reservation").then(Commands.argument("entity", UuidArgument.uuid())
+                                .executes(context -> {
+                                    var server = context.getSource().getServer();
+                                    EscrowTestEndpoints.requireEnabled(server);
+                                    var id = UuidArgument.getUuid(context, "entity");
+                                    for (var level : server.getAllLevels()) {
+                                        if (level.getEntity(id) instanceof io.github.sunthemoon.advancedrocketrycommunity
+                                                .rocket.entity.RocketEntity rocket) {
+                                            boolean ready = io.github.sunthemoon.advancedrocketrycommunity.rocket.server
+                                                    .RocketRuntime.releaseLandedReservationForFirstEventTest(rocket);
+                                            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                                                    "ARCE_RELEASE_TEST first_event_fixture reservation_requested entity={} ready={}", id, ready);
+                                            return 1;
+                                        }
+                                    }
+                                    throw new IllegalStateException("Fixture rocket is not loaded");
+                                })))
+                        .then(Commands.literal("stations").executes(context -> {
+                            io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures
+                                    .create(context.getSource().getServer());
+                            return 1;
+                        }))
+                        .then(Commands.literal("warp").then(Commands.argument("station", UuidArgument.uuid())
+                                .executes(context -> {
+                                    io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures
+                                            .warp(context.getSource().getServer(), UuidArgument.getUuid(context, "station"));
+                                    return 1;
+                                })))
                         .then(Commands.literal("moon-two").executes(context -> {
                             io.github.sunthemoon.advancedrocketrycommunity.rocket.server.FirstEventRocketFixtures
                                     .twoDescents(context.getSource().getServer());

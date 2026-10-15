@@ -49,6 +49,26 @@ class MoonCutBoundaryTest(unittest.TestCase):
 
 
 class MoonRootOracleTest(unittest.TestCase):
+    def test_released_or_superseded_reservation_never_replaces_the_root_event(self):
+        event_id = uuid.UUID("00000000-0000-4000-8000-000000000044")
+        event = {"kind": "first_moon_landing", "event_id": moon.uuid_ints(event_id),
+                 "participants": moon.uuid_ints(moon.P1) + moon.uuid_ints(moon.P2), "transfer_id": [1, 2, 3, 4]}
+        event["fingerprint"] = hashlib.sha256(b"first_moon_landing\0" + event_id.bytes + (2).to_bytes(4, "big")
+                                              + moon.P1.bytes + moon.P2.bytes).hexdigest()
+        with tempfile.TemporaryDirectory() as folder:
+            world = Path(folder)
+            (world / "data").mkdir()
+            (world / "data" / moon.JOURNAL).write_bytes(b"journal")
+            journal = {moon.OUTBOX: {"state": "ELECTED", "event": event}, "transfers": []}
+            with patch.object(moon, "read_root", return_value=journal):
+                self.assertEqual(0, moon.inspect(world, "FM12a", str(event_id), "ELECTED", False)["transfers"])
+                journal["transfers"] = [{"transfer_id": [4, 3, 2, 1],
+                                          "destination_snapshot": {"source_dimension": moon.EARTH}}]
+                self.assertEqual(1, moon.inspect(world, "FM12b", str(event_id), "ELECTED", False)["transfers"])
+                journal["transfers"][0]["destination_snapshot"]["source_dimension"] = moon.MOON
+                with self.assertRaises(moon.smoke.SmokeError):
+                    moon.inspect(world, "FM12b", str(event_id), "ELECTED", False)
+
     def test_empty_source_rejects_a_receipt_and_requires_the_committed_record(self):
         with tempfile.TemporaryDirectory() as folder:
             world = Path(folder)

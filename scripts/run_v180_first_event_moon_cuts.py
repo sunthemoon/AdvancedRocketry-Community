@@ -55,6 +55,8 @@ CASES = {
     "FM8a": ("receipt_barrier_failed", True, "ELECTED", False, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED",)),
     # The receipt move succeeded before the directory force failed, so R(E) is on disk at the halt.
     "FM8b": ("receipt_barrier_failed", False, "ELECTED", True, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED",)),
+    "FM12a": ("fixture_stop", False, "ELECTED", False, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED",)),
+    "FM12b": ("fixture_stop", False, "ELECTED", False, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED",)),
 }
 HALT = re.compile(r"ARCE_RELEASE_TEST first_event_cut id=(\S+) boundary=(\S+) event=(\S+) thread=(.+)$")
 STATUS = re.compile(r"kind=first_moon_landing source=(\S+) event=(\S+) receipt=(\S+) hold=(\S+)")
@@ -105,7 +107,16 @@ def inspect(world: Path, case: str, event_id: str, source: str, durable_receipt:
     if outbox["state"] != source:
         raise smoke.SmokeError(f"{case}: the source is {outbox['state']}, not {source}")
     transfers = [entry for entry in journal.get("transfers", []) if entry.get("transfer_id") == event["transfer_id"]]
-    if len(transfers) != 1 or transfers[0]["phase"] != "COMMITTED":
+    if case in ("FM12a", "FM12b"):
+        all_transfers = journal.get("transfers", [])
+        if transfers:
+            raise smoke.SmokeError(f"{case}: the winning reservation was not superseded or released")
+        if case == "FM12a" and all_transfers:
+            raise smoke.SmokeError("FM12a: transfers is not empty")
+        if case == "FM12b" and (len(all_transfers) != 1
+                                or all_transfers[0]["destination_snapshot"]["source_dimension"] != EARTH):
+            raise smoke.SmokeError("FM12b: the single superseding record is not a return to Earth")
+    elif len(transfers) != 1 or transfers[0]["phase"] != "COMMITTED":
         raise smoke.SmokeError(f"{case}: the winning landed reservation is not the one COMMITTED record")
     state = dict(outbox=outbox["state"], event=event, journal_sha256=smoke.digest_file(journal_path),
                  transfers=len(journal.get("transfers", [])))
@@ -177,16 +188,20 @@ def delivered(case: str, process: smoke.CapturedProcess, event_id: str, timeout:
         time.sleep(2)
 
 
-def landed(case: str, process: smoke.CapturedProcess, timeout: float) -> dict:
+def landed(case: str, process: smoke.CapturedProcess, timeout: float, dimension: str = MOON, world: Path | None = None) -> dict:
     """The Moon rocket that recovery loaded (or rebuilt) reaches LANDED: a lagging entity is projected (FM4b)."""
     deadline = time.monotonic() + timeout
     while True:
         loaded = [match for match in map(ACTIVE.search, process.lines) if match]
-        if loaded:
-            entity = loaded[-1].group(1)
-            report = FlightHarness.report(process, MOON, entity)
+        entity = loaded[-1].group(1) if loaded else None
+        if dimension == EARTH:
+            records = read_root(world / "data" / JOURNAL)["transfers"]
+            entity = records[0].get("destination_entity_id") if records and records[0]["phase"] == "COMMITTED" else None
+            if entity is not None: entity = ints_uuid(entity)
+        if entity:
+            report = FlightHarness.report(process, dimension, entity)
             if report["state"] == "LANDED":
-                return dict(entity=entity, loaded_state=loaded[-1].group(2), state=report["state"],
+                return dict(entity=entity, loaded_state=loaded[-1].group(2) if loaded else "unknown", state=report["state"],
                             landing_logged=any("event=landing_complete" in line for line in process.lines))
         if time.monotonic() > deadline:
             raise smoke.SmokeError(f"{case}: the Moon rocket did not reach LANDED within {timeout} s")
@@ -287,7 +302,46 @@ def run(args) -> dict:
                     entry["launch"] = LAUNCH_LOG.search(process.lines[index]).group(7)
                     if entry["launch"] not in ("SUCCESS", "JOURNAL_PENDING"):
                         raise smoke.SmokeError(f"{case}: the Moon launch was refused: {entry['launch']}")
-                if case == "FM7" and cut is not None:
+                if case in ("FM12a", "FM12b") and start == 0:
+                    process.wait_for(re.compile("first_event_cut receipt_move_refused"), args.flight_timeout)
+                    entry["landed_before_action"] = landed(case, process, args.delivery_timeout)
+                    entity = entry["landed_before_action"]["entity"]
+                    begin = len(process.lines)
+                    process.command("save-all flush")
+                    process.wait_for(smoke.SAVE_MARKER, 60, start_at=begin)
+                    elected = read_root(world / "data" / JOURNAL)[OUTBOX]
+                    if elected["state"] != "ELECTED":
+                        raise smoke.SmokeError(f"{case}: the action did not start with confirmed ELECTED(E)")
+                    event_id = ints_uuid(elected["event"]["event_id"])
+                    if case == "FM12a":
+                        process.command(f"arce progression release-test release-reservation {entity}")
+                        process.wait_for(re.compile("event=landed_reservation_released"), 45)
+                    else:
+                        harness.refuel(process, MOON, entity)
+                        begin = len(process.lines)
+                        process.command(f"execute in {MOON} run arce rocket release-test launch {entity} earth")
+                        index = process.wait_for(LAUNCH_LOG, 45, start_at=begin)
+                        entry["return_launch"] = LAUNCH_LOG.search(process.lines[index]).group(7)
+                        if entry["return_launch"] not in ("SUCCESS", "JOURNAL_PENDING"):
+                            raise smoke.SmokeError(f"FM12b: return launch was refused: {entry['return_launch']}")
+                    deadline = time.monotonic() + 45
+                    while True:
+                        begin = len(process.lines)
+                        process.command("arce progression status")
+                        index = process.wait_for(STATUS, 15, start_at=begin)
+                        state = STATUS.search(process.lines[index]).groups()
+                        records = read_root(world / "data" / JOURNAL)["transfers"]
+                        changed = not records if case == "FM12a" else len(records) == 1 and records[0]["transfer_id"] != elected["event"]["transfer_id"]
+                        if state[0] == "KNOWN:ELECTED" and changed:
+                            entry["after_action_status"] = process.lines[index].rstrip()
+                            break
+                        if time.monotonic() > deadline:
+                            raise smoke.SmokeError(f"{case}: the action generation was not confirmed")
+                        time.sleep(1)
+                    process.command("arce progression release-test halt")
+                    entry.update(halted(case, process, 60))
+                    entry["disk"] = inspect(world, case, event_id, "ELECTED", False)
+                elif case == "FM7" and cut is not None:
                     entry["pending"] = pending(case, process, args.flight_timeout)
                     entry["disk"] = inspect(world, case, None, "EMPTY", False)
                     entry["roots"] = snapshot(world, evidence, case, start)
@@ -335,7 +389,7 @@ def run(args) -> dict:
                     entry["status"] = delivered(case, process, event_id, args.delivery_timeout)
                     if event_id is None:
                         event_id = STATUS.search(entry["status"]).group(2)
-                    entry["rocket"] = landed(case, process, args.delivery_timeout)
+                    entry["rocket"] = landed(case, process, args.delivery_timeout, EARTH if case == "FM12b" else MOON, world)
                     save_start = len(process.lines)
                     process.command("save-all flush")
                     process.wait_for(smoke.SAVE_MARKER, 60, start_at=save_start)

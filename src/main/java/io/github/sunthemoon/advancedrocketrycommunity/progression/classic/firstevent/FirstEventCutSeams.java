@@ -221,6 +221,18 @@ public final class FirstEventCutSeams {
      */
     public static void boundary(MinecraftServer server, String name, FirstEventKind kind, FirstEvent event) {
         Optional<Cut> configured = configured();
+        if (configured.filter(Cut.FW11::equals).isPresent() && kind == FirstEventKind.FIRST_STATION_WARP) {
+            EscrowTestEndpoints.requireEnabled(server);
+            if (name.equals(AWARDS_DISPATCHED) && event instanceof FirstEvent.StationWarp warp) {
+                var data = io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData.get(server);
+                data.delete(warp.stationId()).orElseThrow();
+                data.flush(server);
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture winner_deleted station={}", warp.stationId());
+            } else if (name.equals(DELIVERED_PUBLISHED)) {
+                halt(Cut.FW11, name, event.eventId());
+            }
+            return;
+        }
         if (configured.isEmpty() || !name.equals(configured.orElseThrow().boundary)
                 || configured.orElseThrow().kind().filter(expected -> expected != kind).isPresent()) {
             return;

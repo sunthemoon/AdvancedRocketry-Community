@@ -35,7 +35,8 @@ def inspect(world: Path, case: str, event: dict | None) -> dict:
     if outbox["state"] != "DELIVERED" or actual is None or event is not None and actual != event:
         raise smoke.SmokeError(f"{case}: source is not the exact DELIVERED event")
     progression = moon.read_root(world / "data" / moon.PROGRESSION)
-    if progression[moon.MOON_RECEIPT] != {"occurred": 1, "event": actual}:
+    receipt = progression[moon.MOON_RECEIPT]
+    if receipt.get("occurred") != 1 or receipt.get("event") != actual or receipt.get("source") != "rocket_transfers":
         raise smoke.SmokeError(f"{case}: receipt differs from source")
     if progression[moon.WARP_RECEIPT] != {"occurred": 0}:
         raise smoke.SmokeError(f"{case}: unrelated warp receipt changed")

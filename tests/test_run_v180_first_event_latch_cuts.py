@@ -8,7 +8,7 @@ from scripts import run_v180_first_event_latch_cuts as cuts
 class LatchRootOracleTest(unittest.TestCase):
     def roots(self, event, transfers=None):
         return [{cuts.moon.OUTBOX: {"state": "DELIVERED", "event": event}, "transfers": transfers or []},
-                {cuts.moon.MOON_RECEIPT: {"occurred": 1, "event": event}, cuts.moon.WARP_RECEIPT: {"occurred": 0}}]
+                {cuts.moon.MOON_RECEIPT: {"occurred": 1, "source": "rocket_transfers", "event": event}, cuts.moon.WARP_RECEIPT: {"occurred": 0}}]
 
     def test_fp5_accepts_the_root_event_without_a_transfer_record(self):
         event = {"event_id": [1, 2, 3, 4]}
