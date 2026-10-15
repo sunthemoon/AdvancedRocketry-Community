@@ -51,6 +51,15 @@ class BetaWorldMigrationEventsTest {
             assertArrayEquals(ledgerBefore, Files.readAllBytes(ledger)); assertArrayEquals(failingBefore, Files.readAllBytes(failing));
         }
     }
+    @Test void typeAnnotationPreservesTheOriginalExceptionAndDirectCause() {
+        var cause = new IllegalArgumentException("Checked baseline differs");
+        var failure = new SavedDataMigrationException(MigrationDiagnosticId.INVALID_SCHEMA, "failed semantic validation", cause);
+        var stack = failure.getStackTrace();
+        assertSame(failure, failure.forType(ManagedSavedDataType.RESOURCE_ESCROW));
+        assertSame(cause, failure.getCause()); assertArrayEquals(stack, failure.getStackTrace());
+        assertSame(failure, failure.forType(ManagedSavedDataType.STATIONS));
+        assertEquals(ManagedSavedDataType.RESOURCE_ESCROW, failure.dataType().orElseThrow());
+    }
     private static org.apache.logging.log4j.core.LogEvent diagnostic(SavedDataMigrationException failure) {
         var events = new java.util.ArrayList<org.apache.logging.log4j.core.LogEvent>();
         var logger = (org.apache.logging.log4j.core.Logger) org.apache.logging.log4j.LogManager.getLogger("advancedrocketrycommunity");
