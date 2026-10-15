@@ -6,6 +6,14 @@ from scripts import run_v180_first_event_latch_cuts as cuts
 
 
 class LatchRootOracleTest(unittest.TestCase):
+    def test_baseline_wait_and_election_wait_have_distinct_durable_views(self):
+        cuts.assert_blocked("FM9", ("KNOWN:EMPTY", "none", "ABSENT", "none"))
+        cuts.assert_blocked("FP5", ("SOURCE_UNCONFIRMED:UNCONFIRMED", "none", "CONFIRMED", "SOURCE_UNCONFIRMED"))
+        with self.assertRaises(cuts.smoke.SmokeError):
+            cuts.assert_blocked("FP5", ("KNOWN:EMPTY", "none", "CONFIRMED", "none"))
+        with self.assertRaises(cuts.smoke.SmokeError):
+            cuts.assert_blocked("FM9", ("KNOWN:EMPTY", "none", "CONFIRMED", "none"))
+
     def roots(self, event, transfers=None):
         return [{cuts.moon.OUTBOX: {"state": "DELIVERED", "event": event}, "transfers": transfers or []},
                 {cuts.moon.MOON_RECEIPT: {"occurred": 1, "source": "rocket_transfers", "event": event}, cuts.moon.WARP_RECEIPT: {"occurred": 0}}]

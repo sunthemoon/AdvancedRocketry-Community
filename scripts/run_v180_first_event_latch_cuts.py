@@ -28,6 +28,17 @@ def status(process) -> tuple[str, tuple]:
     return process.lines[index].rstrip(), moon.STATUS.search(process.lines[index]).groups()
 
 
+def assert_blocked(case: str, values: tuple) -> None:
+    # FP5 blocks the first baseline: there is no acknowledged source at all. FM9 blocks a later election
+    # generation: the previous EMPTY confirmation may remain readable, while the RAM slot and F3 prevent effects.
+    if case == "FP5":
+        valid = values[0] == "SOURCE_UNCONFIRMED:UNCONFIRMED" and values[3] == "SOURCE_UNCONFIRMED"
+    else:
+        valid = values[0] in ("KNOWN:EMPTY", "SOURCE_UNCONFIRMED:UNCONFIRMED") and values[2] == "ABSENT" and values[3] in ("none", "SOURCE_UNCONFIRMED")
+    if not valid:
+        raise smoke.SmokeError(f"{case}: blocked source/receipt violates its row oracle: {values}")
+
+
 def inspect(world: Path, case: str, event: dict | None) -> dict:
     journal = moon.read_root(world / "data" / moon.JOURNAL)
     outbox = journal[moon.OUTBOX]
@@ -122,8 +133,7 @@ def run(args) -> dict:
                     if WAIT.search(process.lines[index]).group(1) != case:
                         raise smoke.SmokeError("The wrong latch was delayed")
                     entry["blocked_status"], values = status(process)
-                    if values[0] != "SOURCE_UNCONFIRMED:UNCONFIRMED" or values[3] != "SOURCE_UNCONFIRMED":
-                        raise smoke.SmokeError(f"{case}: blocked source is not SOURCE_UNCONFIRMED: {values}")
+                    assert_blocked(case, values)
                     if case == "FM9":
                         entry["blocked_rockets"] = [moon.FlightHarness.report(process, moon.MOON, entity) for entity in entities]
                         time.sleep(3)
