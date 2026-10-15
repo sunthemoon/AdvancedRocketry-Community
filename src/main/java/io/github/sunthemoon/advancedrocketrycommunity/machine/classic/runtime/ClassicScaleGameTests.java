@@ -365,7 +365,12 @@ public final class ClassicScaleGameTests {
                         data.groundSurveyQuery(jobs -> jobs.previewTime(now)), OptionalLong.empty(), InstanceState.PENDING, InstanceOrigin.ground(id), Optional.empty());
                 check(data.groundSurveys(jobs -> jobs.start(new GroundSurveys.Start(id, owner, source, instance, 20, 20,
                         ResearchService.ANALYSIS_TICKS, ResearchService.ENERGY_PER_TICK, ResearchService.CREDIT), now)).changed(), "Analysis input fixture refused");
-                for (int tick = 0; tick < 20; tick++) { check(data.groundSurveys(jobs -> jobs.advanceSurvey(id, source, 24_000, now)).changed(), "Analysis input did not become ready"); }
+                // A fixture survey obeys the same durable START boundary as a player-started survey.
+                data.flush(run.level.getServer());
+                for (int tick = 0; tick < 20; tick++) {
+                    var result = data.groundSurveys(jobs -> jobs.advanceSurvey(id, source, 24_000, now));
+                    check(result.changed(), "Analysis input did not become ready: " + result.code());
+                }
             }
             check(service.intent(research, owner, kind == 7 ? 0 : 4), "Research start refused: " + research.researchStatus());
             jobId = service.work(research).orElseThrow().jobId();
