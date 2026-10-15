@@ -198,16 +198,6 @@ public final class SleepRespawnGameTests {
                 if (helper.getTick() <= start) {
                     return;
                 }
-                com.mojang.logging.LogUtils.getLogger().info(
-                        "W78 tick={} serverTick={} pendingPlaced={} moonLive={} spaceLive={} pendingLive={} "
-                                + "moonSupplied={} spaceSupplied={} pendingAir={} moonMetrics={} spaceMetrics={}",
-                        helper.getTick(), server.getTickCount(), pendingPlaced[0],
-                        new NaturalBedFixtures.Room(moon, moonVent).live(),
-                        new NaturalBedFixtures.Room(space, spaceVent).live(),
-                        new NaturalBedFixtures.Room(moon, pendingVent).live(),
-                        suppliedBed(moon, moonVent), suppliedBed(space, spaceVent),
-                        AtmosphereRuntime.breathabilityAt(moon, bedHead(pendingVent)),
-                        AtmosphereRuntime.metrics(moon), AtmosphereRuntime.metrics(space));
                 if (!pendingPlaced[0]) {
                     // placePreparedVent observes once by hand. Only later atmosphere state and live chunks prove
                     // that the small vents tick on their own; the large room's chunk must also be ready first.
@@ -257,8 +247,6 @@ public final class SleepRespawnGameTests {
                     pendingPlaced[0] = true;
                     pendingServerTick[0] = server.getTickCount();
                     pendingServiceTick[0] = AtmosphereRuntime.metrics(moon).orElseThrow().completedServiceTicks();
-                    com.mojang.logging.LogUtils.getLogger().info("W78 placed pending tick={} serverTick={} metrics={}",
-                            helper.getTick(), server.getTickCount(), AtmosphereRuntime.metrics(moon));
                     return;
                 }
                 BlockPos pendingHead = bedHead(pendingVent);
