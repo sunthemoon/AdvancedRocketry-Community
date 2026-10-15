@@ -142,3 +142,11 @@ The design is `records/W44-DESIGN.md`; the records are `records/W44I.md` (with i
 | `advancement:flightofpheonix` | REDESIGNED | `classic/first_station_warp`: the participants of the first committed world station warp, elected inside the checked relocation and granted from a durable receipt (R-037) |
 
 This addendum is development evidence only. It approves no Required Gate, candidate, version or release. The remaining H rows (W44L) and the real-client rows remain open.
+
+## Addendum (Root, 2026-10-15): W44L closes the world-first H rows
+
+| Merge on `codex/v1.8.0-classic-content` | Slice | Tested HEAD | Hosted run | Review |
+|---|---|---|---|---|
+| `8e123530` | W44L: the remaining 31 H rows (104 starts, each row with at least two restarts) and the pre-W44 jar's refusal of the four migrated roots (12 starts) | `8c769fcd` | 38686287927 (success) | Root review |
+
+The record is `records/W44L.md`; the packets, pinned to committed sources and jars, are in `D:/GitHub/ARCE-Task-Evidence/root-queue/W44L/`. The real-client rows remain for the final campaign. This addendum is development evidence only. It approves no Required Gate, candidate, version or release.
