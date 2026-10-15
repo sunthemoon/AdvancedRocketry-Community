@@ -254,7 +254,7 @@ config:CATEGORY_GENERAL.laserDrillPlanet,IMPLEMENTED,v1.7.0,endgame switches,ADR
 config:CATEGORY_GENERAL.LaserDrillPowerMultiplier,IMPLEMENTED,v1.7.0,endgame switches,ADR-054 ADR-055 ADR-058,,
 config:CATEGORY_GENERAL.lavaCentrifugeOutputs,REDESIGNED,v1.8.0,centrifuging recipe type (data pack recipes),ADR-062 ADR-064,data-driven outputs,docs/work/v1.8.0-c16c-machines/VERIFICATION.md
 config:CATEGORY_GENERAL.lowGravityBoots,REDESIGNED,v1.8.0,COMMON equipment.lowGravityBoots,ADR-062 ADR-066,,docs/work/v1.8.0-c18b-equipment/VERIFICATION.md
-config:CATEGORY_GENERAL.makeMaterialsForOtherMods,PLANNED,C16d,common item tags in recipes,ADR-061 ADR-062,tags replace the switch,
+config:CATEGORY_GENERAL.makeMaterialsForOtherMods,REDESIGNED,v1.8.0,common forge item tags in machine recipes,ADR-061 ADR-062 ADR-064,no setting; members of the common tags from any mod work as inputs; data packs add recipes for materials only other mods define,docs/work/v1.8.0-c16d-components-graph/VERIFICATION-MATERIALS-TAGS.md
 config:CATEGORY_GENERAL.resetPlanetsFromXML,REJECTED,-,-,ADR-031 ADR-062,planet definitions are data packs,
 config:CATEGORY_GENERAL.sawMillCutVanillaWood,REDESIGNED,v1.8.0,COMMON machines.sawmillVanillaWood,ADR-062 ADR-064,off pauses sawmill-marked cutting recipes without consuming resources,docs/work/v1.8.0-c16b-machines/VERIFICATION.md
 config:CATEGORY_GENERAL.spaceLaserDimIdBlackList,REDESIGNED,v1.7.0,laser drill body tables,ADR-055,"body IDs, not dimension IDs",

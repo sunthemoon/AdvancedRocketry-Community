@@ -194,6 +194,11 @@ No candidate or release approval is assigned.
   setting, on by default, also made machine recipes for materials that only
   other mods define, such as plates of another mod's metal. Those recipes are
   no longer generated; a data pack can add them.
+- Known limitation: before a rocket lands at a space station, only rockets in
+  loaded parts of the station are checked for overlap. A rocket parked where
+  the station is not loaded is not seen, so an arriving rocket can be placed
+  over it. A refused landing logs `ARCE_PAD_OCCUPANCY_REFUSED` with the
+  blocking rocket.
 
 ## v1.7.0 — in development
 

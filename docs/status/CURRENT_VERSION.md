@@ -39,8 +39,8 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: 5e59f5c034a11fe39ec42497b6c96a69bfa7727d
-latest_hosted_regression: run 38616170433 at 779191599dff0c678f236120d5a3166f8e87a2df, passed
-ledger_planned_units: 20
+latest_hosted_regression: run 38661777051 at 6bd6e1eb636e3af3a8b77b0bbee9a65f7de2a729, passed
+ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
 last_updated: 2026-10-15
@@ -78,7 +78,7 @@ It does not run:
 
 What is still open:
 
-- **Ledger.** 20 units are still PLANNED: C16d 1 (`makeMaterialsForOtherMods`), C17a 6 and C17c 1
+- **Ledger.** 19 units are still PLANNED: C17a 6 and C17c 1
   (the monitoring station, the five loader variants and the linker, which wait for the escrow
   chain and the bay), C18a 1 (the oxygen charger, owner decision D4) and C18d 11 (the ten sounds,
   which wait for the owner's listen, and `modelBakeEvent`, which waits for an OBJ import). The
