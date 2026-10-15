@@ -181,8 +181,15 @@ def seed(process, plan: dict):
     for item in plan["items"]:
         pos = " ".join(map(str, item["pos"]))
         query(process, f"item replace block {pos} container.{item['slot']} with {item['id']} 1", "Replaced")
+    query(process, "forceload add 256 256 303 303", "force load")
     query(process, "arce satellite release-test terminal 256 100 256 setup " + OWNER,
           r"ARCE_RELEASE_TEST setup .*status=READY")
+    research = query(process, f"arce satellite release-test launch {OWNER} mars",
+                     r"ARCE_RELEASE_TEST_SATELLITE_LAUNCH .*code=SUCCESS")
+    mission = re.search(r"mission=([a-f0-9-]{36})", research).group(1)
+    query(process, "arce satellite release-test advance 201", r"ARCE_RELEASE_TEST advance")
+    query(process, "arce satellite release-test claim " + mission,
+          r"ARCE_RELEASE_TEST_SATELLITE_CLAIM .*code=SUCCESS .*discovered=true")
     query(process, f"arce endgame release-test elevator build 288 100 288 {OWNER} {RIDER}",
           r"ARCE_RELEASE_TEST elevator built")
     query(process, "arce endgame release-test persist root", r"ARCE_RELEASE_TEST persist root")
@@ -276,5 +283,6 @@ def create(java: str, runtime: Path, evidence: Path) -> tuple[dict, dict]:
     satellite = inventory["roots"]["satellite_missions"]["data"]
     require(all(satellite[key] for key in ("satellites", "missions", "research_accounts", "instances")),
             "Missing representative satellite/research state")
+    require(any(row["balance"] > 0 for row in satellite["research_accounts"]), "No retained research balance")
     require(inventory["roots"]["endgame"]["data"]["endpoints"], "No endgame fixture")
     return plan, inventory
