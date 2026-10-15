@@ -37,7 +37,8 @@ final class C16cMachineFixture implements AutoCloseable {
     final GameTestHelper helper;
     final String kind;
     final ClassicMachineManager manager;
-    final ClassicControllerBlockEntity controller;
+    /** Not final: a reload replaces the block entity, and {@link #rebind()} follows it. */
+    ClassicControllerBlockEntity controller;
     final MultiblockPatternDefinition pattern;
     final PatternTransform transform;
     final BlockPos origin;
@@ -46,12 +47,19 @@ final class C16cMachineFixture implements AutoCloseable {
     int energyLeft, injected;
 
     C16cMachineFixture(GameTestHelper helper, String kind, Direction facing) {
-        this(helper, kind, facing, MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState());
+        this(helper, kind, facing, helper.absolutePos(new BlockPos(4, 4, 4)));
+    }
+    /** Builds with the controller at the absolute {@code origin}, which may lie outside the test structure. */
+    C16cMachineFixture(GameTestHelper helper, String kind, Direction facing, BlockPos origin) {
+        this(helper, kind, facing, MotorContent.block(MotorDefinition.MOTOR).get().defaultBlockState(), origin);
         helper.assertTrue(controller.formed(), "W10 " + kind + " did not form: " + controller.reason());
     }
     /** Places {@code motor} in every motor cell; the caller checks whether it formed. */
     C16cMachineFixture(GameTestHelper helper, String kind, Direction facing, BlockState motor) {
-        this.helper = helper; this.kind = kind; origin = helper.absolutePos(new BlockPos(4, 4, 4));
+        this(helper, kind, facing, motor, helper.absolutePos(new BlockPos(4, 4, 4)));
+    }
+    private C16cMachineFixture(GameTestHelper helper, String kind, Direction facing, BlockState motor, BlockPos origin) {
+        this.helper = helper; this.kind = kind; this.origin = origin;
         pattern = MultiblockPatternJsonCodec.decode(V180C16cMachineData.pattern(kind).toString().getBytes(StandardCharsets.UTF_8));
         transform = new PatternTransform(switch (facing) {
             case NORTH -> PatternRotation.ZERO; case EAST -> PatternRotation.CLOCKWISE_90;
@@ -126,6 +134,15 @@ final class C16cMachineFixture implements AutoCloseable {
         }
     }
     void tick(int ticks) { for (int i = 0; i < ticks; i++) { feed(); manager.tick(); } }
+    /** Follows the controller block entity now at the origin, after a reload replaced the old one. */
+    void rebind() { controller = (ClassicControllerBlockEntity) helper.getLevel().getBlockEntity(origin); }
+    /** Drops this fixture's chunk tickets so that the chunks can unload; {@link #retainChunks()} restores them. */
+    void releaseChunks() { tickets.forEach(chunk -> helper.getLevel().getChunkSource().removeRegionTicket(TICKET, chunk, 2, chunk)); }
+    void retainChunks() {
+        tickets.forEach(chunk -> {
+            helper.getLevel().getChunkSource().addRegionTicket(TICKET, chunk, 2, chunk); helper.getLevel().getChunk(chunk.x, chunk.z);
+        });
+    }
     CompoundTag resources() { return ClassicResourcesCodec.encode(controller.checkpoint().resources()); }
     void replaceBanks(List<ClassicResourceBank> banks) {
         var resources = controller.checkpoint().resources().replace(banks, false);
