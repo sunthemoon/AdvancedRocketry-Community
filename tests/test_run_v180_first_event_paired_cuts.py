@@ -1,15 +1,23 @@
 import copy
+import hashlib
 from pathlib import Path
 import unittest
-from unittest.mock import patch
+import uuid
+from unittest.mock import Mock, patch
 from scripts import run_v180_first_event_paired_cuts as cuts
 from scripts.inspect_celestial_saved_data import NbtReader, NbtError
 
 
 class PairedOracleTest(unittest.TestCase):
     def roots(self):
-        return {cuts.moon.JOURNAL: {cuts.moon.OUTBOX: {"schema_version": 1, "state": "DELIVERED", "event": {"id": "moon"}}, "transfers": []},
-                cuts.station.STATIONS: {cuts.station.OUTBOX: {"schema_version": 1, "state": "DELIVERED", "event": {"id": "warp"}},
+        def event(kind, value):
+            ident = uuid.UUID(int=value)
+            fingerprint = hashlib.sha256(kind.encode() + b"\0" + ident.bytes + (2).to_bytes(4, "big")
+                                         + cuts.moon.P1.bytes + cuts.moon.P2.bytes).hexdigest()
+            return dict(event_id=cuts.moon.uuid_ints(ident), participants=cuts.moon.uuid_ints(cuts.moon.P1)
+                        + cuts.moon.uuid_ints(cuts.moon.P2), fingerprint=fingerprint)
+        return {cuts.moon.JOURNAL: {cuts.moon.OUTBOX: {"schema_version": 1, "state": "DELIVERED", "event": event("first_moon_landing", 44)}, "transfers": []},
+                cuts.station.STATIONS: {cuts.station.OUTBOX: {"schema_version": 1, "state": "DELIVERED", "event": event("first_station_warp", 45)},
                                          "stations": [], "reservations": [], "orbital_clock": {"logical_tick": 1}},
                 cuts.moon.PROGRESSION: None}
 
@@ -48,6 +56,30 @@ class PairedOracleTest(unittest.TestCase):
         for count in (0, 1_048_577):
             with self.assertRaises(NbtError): NbtReader(payload, max_tags=count)
         self.assertEqual(4096, NbtReader(payload).max_tags)
+
+    def test_source_capture_requires_the_exact_participants_and_fingerprint(self):
+        ident = uuid.UUID(int=44)
+        kind = "first_moon_landing"
+        fingerprint = hashlib.sha256(kind.encode() + b"\0" + ident.bytes + (2).to_bytes(4, "big")
+                                     + cuts.moon.P1.bytes + cuts.moon.P2.bytes).hexdigest()
+        event = dict(event_id=cuts.moon.uuid_ints(ident), participants=cuts.moon.uuid_ints(cuts.moon.P1)
+                     + cuts.moon.uuid_ints(cuts.moon.P2), fingerprint=fingerprint)
+        cuts.captured_event(kind, event)
+        event["fingerprint"] = "0" * 64
+        with self.assertRaises(cuts.smoke.SmokeError): cuts.captured_event(kind, event)
+        event["fingerprint"] = fingerprint
+        event["participants"] = cuts.moon.uuid_ints(cuts.moon.P2) + cuts.moon.uuid_ints(cuts.moon.P1)
+        with self.assertRaises(cuts.smoke.SmokeError): cuts.captured_event(kind, event)
+
+    def test_warp_preparation_waits_for_the_actual_recovered_committed_reservations(self):
+        process = Mock()
+        record = dict(transfer_id=cuts.moon.uuid_ints(uuid.UUID(int=44)), phase="COMMITTED")
+        with patch.object(cuts.moon, "delivered"), patch.object(cuts.moon, "landed"), \
+                patch.object(cuts.moon, "read_root", return_value={"transfers": [record]}):
+            cuts.ready_to_warp("fixture", process, Path("world"), 120)
+            self.assertIn("phase=COMMITTED", process.wait_for.call_args.args[0].pattern)
+            record["phase"] = "PREPARED"
+            with self.assertRaises(cuts.smoke.SmokeError): cuts.ready_to_warp("fixture", process, Path("world"), 120)
 
 
 if __name__ == "__main__": unittest.main()

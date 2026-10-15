@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse
 import copy
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -44,6 +45,16 @@ def same_authority(actual, expected):
     return now >= before and actual == expected
 
 
+def captured_event(kind, event):
+    if event is None: return
+    participants = moon.uuid_ints(moon.P1) + moon.uuid_ints(moon.P2)
+    ident = uuid.UUID(moon.ints_uuid(event["event_id"]))
+    fingerprint = hashlib.sha256(kind.encode("ascii") + b"\0" + ident.bytes + (2).to_bytes(4, "big")
+                                 + moon.P1.bytes + moon.P2.bytes).hexdigest()
+    if event["participants"] != participants or event["fingerprint"] != fingerprint:
+        raise smoke.SmokeError("Paired source event does not retain the exact P1/P2 capture and fingerprint")
+
+
 def save(process):
     begin = len(process.lines); process.command("save-all flush")
     process.wait_for(smoke.SAVE_MARKER, 60, start_at=begin)
@@ -57,6 +68,17 @@ def stop(process):
 def prepared_without_errors(process):
     errors = [line.rstrip() for line in process.lines if "/ERROR]" in line or "/FATAL]" in line]
     if errors: raise smoke.SmokeError(f"Paired seed preparation had unexpected errors: {errors}")
+
+
+def ready_to_warp(case, process, world, timeout):
+    deadline = time.monotonic() + timeout
+    moon.delivered(case, process, None, max(0, deadline - time.monotonic()))
+    moon.landed(case, process, max(0, deadline - time.monotonic()))
+    for record in moon.read_root(world / "data" / moon.JOURNAL)["transfers"]:
+        transfer = moon.ints_uuid(record["transfer_id"])
+        if record["phase"] != "COMMITTED": raise smoke.SmokeError("Warp preparation contains a moving transfer")
+        process.wait_for(re.compile("ARCE_TRANSFER_RECOVERY transfer=" + transfer
+                                   + r" phase=COMMITTED .* status=RECOVERED"), max(0, deadline - time.monotonic()))
 
 
 def halt(process, case, boundary):
@@ -79,6 +101,8 @@ def check(case, world, expected, recovered=False):
     actual = roots(world)
     journal, registry, progression = actual[moon.JOURNAL], actual[station.STATIONS], actual[moon.PROGRESSION]
     old_journal, old_registry, old_progression = expected[moon.JOURNAL], expected[station.STATIONS], expected[moon.PROGRESSION]
+    captured_event("first_moon_landing", journal[moon.OUTBOX].get("event"))
+    captured_event("first_station_warp", registry[station.OUTBOX].get("event"))
     if registry["orbital_clock"]["logical_tick"] < old_registry["orbital_clock"]["logical_tick"]:
         raise smoke.SmokeError(f"{case}: the root orbital clock moved backwards")
     if case in FAULTS and not recovered:
@@ -179,6 +203,7 @@ def run(args):
         shutil.copy2(world / "data" / station.STATIONS, session / "w44l-before-warp.dat")
         stop(process); prepared_without_errors(process); process = None
         entry = dict(log="seed-main-1.log"); process = start_world(world.name, "FW9", entry["log"]); ready(process)
+        ready_to_warp(case, process, world, args.delivery_timeout)
         process.command("arce progression release-test warp " + ids[0]); station.delivered(process, None, args.delivery_timeout)
         process.command(f"execute in {moon.MOON} run forceload add 384 320"); time.sleep(2)
         process.command("arce progression release-test moon-extra")
@@ -198,6 +223,8 @@ def run(args):
         process.command("arce progression release-test warp " + wait_ids[0]); station.delivered(process, None, args.delivery_timeout)
         save(process); process.command(f"execute in {moon.MOON} run forceload add 320 320 352 320"); time.sleep(2)
         process.command("arce progression release-test moon-two"); process.wait_for(latch.WAIT, 25)
+        wait_rocket_ids = [match.group(2) for match in map(latch.DESCENT.search, process.lines) if match]
+        if len(wait_rocket_ids) != 2: raise smoke.SmokeError("The WAIT seed did not capture two actual DESCENT entities")
         process.command("arce progression release-test halt"); halt(process, "FM9", "fixture_stop")
         prepared_without_errors(process); process = None
         report["preparations"].append(dict(world="seed-wait", roots=moon.snapshot(world, evidence, "seed-wait", 0), station=wait_ids[0]))
@@ -229,6 +256,7 @@ def run(args):
                 else:
                     ready(process)
                     if start == 0 and case in ("FW8a", "FP8"):
+                        ready_to_warp(case, process, world, args.delivery_timeout)
                         process.command("arce progression release-test warp " + pin)
                         entry.update(halt(process, case, "warp_refused" if case == "FW8a" else "relocation_unknown"))
                     else:
@@ -249,6 +277,8 @@ def run(args):
                         elif case != "FW8a":
                             moon.delivered(case, process, None, args.delivery_timeout)
                             station.delivered(process, None, args.delivery_timeout, empty=False)
+                            if case == "FP7a":
+                                entry["recovered_rockets"] = latch.wait_landed(process, wait_rocket_ids, args.delivery_timeout)
                         if case == "FP6" and start == 0:
                             extra = [m.group(2) for m in map(latch.DESCENT.search, process.lines) if m][-1]
                             entry["extra_rocket"] = latch.wait_landed(process, [extra], args.delivery_timeout)
