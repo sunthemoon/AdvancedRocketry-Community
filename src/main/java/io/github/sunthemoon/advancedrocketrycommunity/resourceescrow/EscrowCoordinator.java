@@ -43,6 +43,8 @@ public final class EscrowCoordinator implements AutoCloseable {
                 && !requests.containsKey(op.id()), "Duplicate or stale admission");
         EscrowTags.require(!frontiers.containsKey(op.source().key()) && !frontiers.containsKey(op.destination().key()), "Frozen endpoint frontier");
         var candidate = new ArrayList<>(queued.values()); candidate.add(op);
+        EscrowTags.require(op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || op.nativeBinding().complete(), "Native L1 needs a complete envelope binding");
+        EscrowSettlementCapacity.preflight(data.ledger().append(candidate));
         EscrowFloors.preflight(data.ledger().append(candidate)); // Reserve the L2 floor before any queued L1 state changes.
         var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
         EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared admission refused: " + reservation);
@@ -103,11 +105,11 @@ public final class EscrowCoordinator implements AutoCloseable {
         owner();
         if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
                 || tick - lastStart < 10) { return false; }
-        var keys = intent.observations().stream().map(observation -> observation.endpoint().key()).collect(java.util.stream.Collectors.toSet());
+        var keys = intent.checkpointed().stream().map(observation -> observation.endpoint().key()).collect(java.util.stream.Collectors.toSet());
         var frozenProofs = Map.copyOf(proofs);
         EscrowTags.require(frozenProofs.keySet().equals(keys) && frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid),
                 "Settlement lacks jointly retained survivor/absence proofs");
-        for (var observation : intent.observations()) {
+        for (var observation : intent.checkpointed()) {
             var expected = observation.missing() ? new EscrowPrefix.State(intent.ledger(), 0,
                     EscrowSettlementTombstones.observationDigest(observation), List.of()) : observation.state();
             EscrowTags.require(expected.equals(frozenProofs.get(observation.endpoint().key()).frontier()), "Settlement proof does not cover the frozen decision");
@@ -115,7 +117,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         EscrowTags.require(data.ledger().records().stream().filter(op -> intent.ids().contains(op.id())).count() == intent.ids().size()
                 && data.ledger().records().stream().filter(op -> intent.ids().contains(op.id())).allMatch(op -> op.settlement().equals(intent.encode())),
                 "Settlement decision is not acknowledged");
-        EscrowLedger candidate = release ? EscrowSettlementTombstones.release(data.ledger(), intent)
+        EscrowLedger candidate = release ? EscrowSettlementTombstones.release(data.ledger(), intent, Math.addExact(writer.lastGeneration(), 1))
                 : EscrowSettlementTombstones.install(data.ledger(), intent);
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         boolean accepted = writer.request(() -> EscrowLedgerWriter.Snapshot.of(frozen, Set.of()), result -> {
@@ -132,7 +134,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     private EscrowLedgerWriter.Snapshot snapshot(boolean admissions, Set<UUID> retire, Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs) {
         EscrowLedger candidate = data.ledger();
-        candidate = new EscrowLedger(candidate.id(), candidate.issuedThrough(), candidate.writerGeneration(),
+        candidate = candidate.replace(
                 candidate.records().stream().map(op -> transitions.containsKey(op.id())
                         ? op.withReason(transitions.get(op.id())) : op).toList(), candidate.floors(), candidate.tombstones());
         if (retire != null) { candidate = EscrowFloors.retire(candidate, retire, proofs.entrySet().stream()

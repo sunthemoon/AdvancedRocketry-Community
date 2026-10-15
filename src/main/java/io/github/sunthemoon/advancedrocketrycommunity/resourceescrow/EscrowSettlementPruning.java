@@ -20,7 +20,7 @@ import net.minecraft.server.level.ServerLevel;
 /** Exact released groups remove only a leading marker prefix, never resources or epochs. */
 public final class EscrowSettlementPruning {
     private EscrowSettlementPruning() { }
-    record Endpoint(EscrowEndpoint reference, CompoundTag survivor) { }
+    record Endpoint(EscrowEndpoint reference, CompoundTag survivor, long generation) { }
     record Group(String digest, Set<UUID> members, List<Endpoint> endpoints) { }
     record Visit(Group group, Endpoint endpoint) { }
 
@@ -70,7 +70,7 @@ public final class EscrowSettlementPruning {
     static List<Group> groups(EscrowLedger root) {
         var tags = new LinkedHashMap<String, List<CompoundTag>>();
         for (var tag : root.tombstones()) {
-            if (tag.getInt("schema_version") == 2 && tag.getBoolean("released")) {
+            if (tag.getInt("schema_version") == EscrowSettlementTombstones.SCHEMA && tag.getBoolean("released")) {
                 tags.computeIfAbsent(tag.getString("decision_digest"), ignored -> new ArrayList<>()).add(tag);
             }
         }
@@ -81,7 +81,7 @@ public final class EscrowSettlementPruning {
                 for (var raw : EscrowTags.list(tag, "survivors", 2)) {
                     var survivor = (CompoundTag) raw;
                     var reference = EscrowCodec.endpoint(survivor.getCompound("endpoint"));
-                    var old = references.putIfAbsent(reference.key(), new Endpoint(reference, survivor.copy()));
+                    var old = references.putIfAbsent(reference.key(), new Endpoint(reference, survivor.copy(), tag.getLong("release_generation")));
                     EscrowTags.require(old == null || old.survivor().equals(survivor), "Released group has contradictory survivors");
                 }
             }
@@ -123,9 +123,9 @@ public final class EscrowSettlementPruning {
                 if (reference.kind() != EscrowEndpoint.Kind.ENTITY || !reference.identity().equals(rocket.getUUID())
                         || RocketEscrowAudit.placement(reference, rocket) != EscrowReason.NONE) { continue; }
                 var fuel = rocket.flightData().orElseThrow().fuel();
-                String composite = RocketNativeResources.hash("arce-escrow-rocket-1:" + reference.logicalRocket() + ":"
-                        + rocket.snapshot().orElseThrow().contentHash() + ":" + fuel.resourceSignature());
-                var state = new EscrowPrefix.State(root.id(), section.epoch(), composite, section.markers());
+                if (!chosen.survivor().getString("signature_kind").equals(EscrowSignatureKind.FUEL_VECTOR_V1.name())
+                        || !chosen.survivor().getString("invariant_digest").equals(EscrowInvariant.rocket(rocket))) { continue; }
+                var state = new EscrowPrefix.State(root.id(), section.epoch(), fuel.resourceSignature(), section.markers());
                 if (frontier(root, reference, state, fuel.totalAmount(), fuel.resourceSignature(), unresolved)) {
                     return new RocketEscrowSection(section.ledger(), section.epoch(), prune(section.markers(), members, unresolved));
                 }
@@ -136,17 +136,20 @@ public final class EscrowSettlementPruning {
 
     static boolean frontier(EscrowLedger root, EscrowEndpoint endpoint, EscrowPrefix.State current,
             long quantity, String nativeSignature, Set<UUID> unresolved) {
-        CompoundTag latest = null; var trusted = new java.util.HashSet<UUID>();
+        CompoundTag latest = null; long generation = -1; var trusted = new java.util.HashSet<UUID>();
         for (var group : groups(root)) {
             for (var chosen : group.endpoints()) {
                 if (!chosen.reference().key().equals(endpoint.key()) || !chosen.survivor().getBoolean("bound")) { continue; }
                 trusted.addAll(group.members());
-                if (latest == null || latest.getLong("epoch") < chosen.survivor().getLong("epoch")) { latest = chosen.survivor(); }
+                if (latest == null || generation < chosen.generation()) { latest = chosen.survivor(); generation = chosen.generation(); }
             }
         }
         if (latest == null || !root.id().equals(current.ledger()) || current.epoch() < latest.getLong("epoch")) { return false; }
         if (current.epoch() == latest.getLong("epoch")) {
-            return current.signature().equals(latest.getString("signature")) && quantity == latest.getLong("quantity");
+            var expected = markers(latest); int removed = expected.size() - current.markers().size();
+            return current.signature().equals(latest.getString("signature")) && quantity == latest.getLong("quantity") && removed >= 0
+                    && expected.subList(0, removed).stream().allMatch(marker -> trusted.contains(marker.operation()) && !unresolved.contains(marker.operation()))
+                    && expected.subList(removed, expected.size()).equals(current.markers());
         }
         trusted.removeAll(unresolved);
         var chain = EscrowPrefix.chains(root.records()).get(endpoint.key());
@@ -155,6 +158,13 @@ public final class EscrowSettlementPruning {
                 current.markers().stream().filter(marker -> !trusted.contains(marker.operation())).toList());
         var classified = EscrowPrefix.classify(root.id(), chain, live);
         return classified == EscrowPrefix.Classification.PREFIX || classified == EscrowPrefix.Classification.AFTER;
+    }
+    private static List<EscrowPrefix.Marker> markers(CompoundTag survivor) {
+        return EscrowTags.list(survivor, "markers", 8).stream().map(raw -> {
+            var marker = (CompoundTag) raw;
+            return new EscrowPrefix.Marker(EscrowTags.uuid(marker, "op_id"), EscrowTags.number(marker, "seq"),
+                    EscrowTags.string(marker, "role"), EscrowTags.number(marker, "epoch_after"));
+        }).toList();
     }
 
     private static void apply(MinecraftServer server, EscrowLedger root, Visit visit, Set<UUID> unresolved) {

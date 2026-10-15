@@ -29,13 +29,27 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
             return id.equals(op.id()) && digest.equals(RocketNativeResources.signature(tag));
         }
     }
-    public record Observation(EscrowEndpoint endpoint, EscrowPrefix.State state, boolean bound, long quantity) {
+    public record Observation(EscrowEndpoint endpoint, EscrowPrefix.State state, boolean bound, long quantity,
+                              EscrowSignatureKind signatureKind, String invariantDigest) {
+        public Observation(EscrowEndpoint endpoint, EscrowPrefix.State state, boolean bound, long quantity) {
+            this(endpoint, state, bound, quantity, EscrowSignatureKind.endpoint(endpoint), EscrowInvariant.reference(endpoint));
+        }
         public Observation {
             java.util.Objects.requireNonNull(endpoint);
+            java.util.Objects.requireNonNull(signatureKind); EscrowTags.digest(invariantDigest);
+            EscrowTags.require(signatureKind == EscrowSignatureKind.endpoint(endpoint), "Unexpected settlement signature projection");
             EscrowTags.require(quantity >= 0 && (state != null || quantity == 0 && !bound), "Invalid missing observation");
             EscrowTags.require(state == null || bound || state.epoch() == 0 && state.markers().isEmpty(), "Invalid neutral observation");
         }
         public boolean missing() { return state == null; }
+        public Observation checkpointed() {
+            return !missing() && !bound && signatureKind == EscrowSignatureKind.FUEL_VECTOR_V1
+                    ? new Observation(endpoint, state, true, quantity, signatureKind, invariantDigest) : this;
+        }
+        public RocketEscrowSection normalizedWrapper() {
+            EscrowTags.require(!missing() && signatureKind == EscrowSignatureKind.FUEL_VECTOR_V1, "Not a native survivor");
+            return new RocketEscrowSection(state.ledger(), state.epoch(), state.markers());
+        }
     }
     public EscrowSettlementIntent {
         java.util.Objects.requireNonNull(choice); java.util.Objects.requireNonNull(ledger); java.util.Objects.requireNonNull(actor);
@@ -75,6 +89,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
     }
     @Override public CompoundTag floor() { return floor.copy(); }
     public Set<UUID> ids() { return members.stream().map(Member::id).collect(java.util.stream.Collectors.toUnmodifiableSet()); }
+    public List<Observation> checkpointed() { return observations.stream().map(Observation::checkpointed).toList(); }
 
     public static EscrowSettlementIntent preview(EscrowLedger root, UUID selected, Choice choice, UUID actor,
                                                  String actorName, long tick, List<Observation> observations) {
@@ -125,7 +140,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
             EscrowTags.require(op.settlement().isEmpty() && op.phase() == member.phase() && op.reason() == member.reason()
                     && member.matches(op), "Record changed since preview");
         }
-        var frozen = new EscrowLedger(root.id(), root.issuedThrough(), root.writerGeneration(),
+        var frozen = root.replace(
                 root.records().stream().map(op -> ids().contains(op.id()) ? op.settle(this) : op).toList(), root.floors(), root.tombstones());
         reserve(frozen); EscrowCodec.encode(frozen);
         frozen.records().stream().filter(op -> ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, this));
@@ -214,7 +229,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
     }
     private static CompoundTag base(Choice choice, UUID ledger, UUID actor, String name, long preview,
                                     List<Member> members, List<Observation> observations, CompoundTag floor) {
-        var tag = new CompoundTag(); tag.putInt("schema_version", 1); tag.putString("choice", choice.name());
+        var tag = new CompoundTag(); tag.putInt("schema_version", 2); tag.putString("choice", choice.name());
         tag.putUUID("ledger_id", ledger); tag.putUUID("actor", actor); tag.putString("actor_name", name); tag.putLong("preview_tick", preview);
         var list = new ListTag();
         for (Member member : members) {
@@ -222,13 +237,18 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
             item.putString("reason", member.reason().name()); item.putString("digest", member.digest()); list.add(item);
         }
         tag.put("members", list); list = new ListTag();
-        for (Observation observation : observations) {
+        for (Observation observation : observations) { list.add(encodeObservation(observation)); }
+        tag.put("observations", list); if (!floor.isEmpty()) { tag.put("floor", floor.copy()); } return tag;
+    }
+    static CompoundTag encodeObservation(Observation observation) {
             var item = new CompoundTag(); item.put("endpoint", EscrowCodec.endpoint(observation.endpoint()));
             item.putBoolean("missing", observation.missing()); item.putBoolean("bound", observation.bound()); item.putLong("quantity", observation.quantity());
+            item.putString("signature_kind", observation.signatureKind().name()); item.putString("invariant_digest", observation.invariantDigest());
             if (!observation.missing()) { item.put("state", state(observation.state())); }
-            list.add(item);
-        }
-        tag.put("observations", list); if (!floor.isEmpty()) { tag.put("floor", floor.copy()); } return tag;
+            if (!observation.missing() && observation.signatureKind() == EscrowSignatureKind.FUEL_VECTOR_V1) {
+                item.put("normalized_wrapper", observation.normalizedWrapper().encode());
+            }
+            return item;
     }
     private static CompoundTag state(EscrowPrefix.State state) {
         var tag = new CompoundTag(); tag.putUUID("ledger_id", state.ledger()); tag.putLong("epoch", state.epoch()); tag.putString("signature", state.signature());
@@ -251,24 +271,30 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
     public static EscrowSettlementIntent decode(CompoundTag tag) {
         EscrowTags.bound(tag, EscrowLimits.OP_BYTES, 14, 480);
         EscrowTags.fields(tag, "schema_version", "choice", "ledger_id", "actor", "actor_name", "preview_tick", "confirmed_tick", "members", "observations", "floor", "digest");
-        EscrowTags.require(EscrowTags.integer(tag, "schema_version") == 1, "Unsupported settlement schema");
+        EscrowTags.require(EscrowTags.integer(tag, "schema_version") == 2, "Unsupported settlement schema");
         var members = new ArrayList<Member>(); var observations = new ArrayList<Observation>();
         for (var raw : EscrowTags.list(tag, "members", EscrowLimits.OPERATIONS)) {
             var item = (CompoundTag) raw; EscrowTags.fields(item, "op_id", "phase", "reason", "digest");
             members.add(new Member(EscrowTags.uuid(item, "op_id"), EscrowTags.enumeration(EscrowOperation.Phase.class, item, "phase"),
                     EscrowTags.enumeration(EscrowReason.class, item, "reason"), EscrowTags.string(item, "digest")));
         }
-        for (var raw : EscrowTags.list(tag, "observations", EscrowLimits.OPERATIONS * 2)) {
-            var item = (CompoundTag) raw; EscrowTags.fields(item, "endpoint", "missing", "bound", "quantity", "state");
-            byte missing = flag(item, "missing"), bound = flag(item, "bound");
-            EscrowTags.require(item.contains("state") == (missing == 0), "Missing observation has a state");
-            observations.add(new Observation(EscrowCodec.endpoint(EscrowTags.compound(item, "endpoint")),
-                    missing == 1 ? null : state(EscrowTags.compound(item, "state")), bound == 1, EscrowTags.number(item, "quantity")));
-        }
+        for (var raw : EscrowTags.list(tag, "observations", EscrowLimits.OPERATIONS * 2)) { observations.add(decodeObservation((CompoundTag) raw)); }
         return new EscrowSettlementIntent(EscrowTags.enumeration(Choice.class, tag, "choice"), EscrowTags.uuid(tag, "ledger_id"),
                 EscrowTags.uuid(tag, "actor"), EscrowTags.string(tag, "actor_name"), EscrowTags.number(tag, "preview_tick"),
                 EscrowTags.number(tag, "confirmed_tick"), members, observations,
                 tag.contains("floor") ? EscrowTags.compound(tag, "floor") : new CompoundTag(), EscrowTags.string(tag, "digest"));
+    }
+    static Observation decodeObservation(CompoundTag item) {
+            EscrowTags.fields(item, "endpoint", "missing", "bound", "quantity", "state", "signature_kind", "invariant_digest", "normalized_wrapper");
+            byte missing = flag(item, "missing"), bound = flag(item, "bound");
+            EscrowTags.require(item.contains("state") == (missing == 0), "Missing observation has a state");
+            var observation = new Observation(EscrowCodec.endpoint(EscrowTags.compound(item, "endpoint")),
+                    missing == 1 ? null : state(EscrowTags.compound(item, "state")), bound == 1, EscrowTags.number(item, "quantity"),
+                    EscrowTags.enumeration(EscrowSignatureKind.class, item, "signature_kind"), EscrowTags.string(item, "invariant_digest"));
+            boolean normalized = !observation.missing() && observation.signatureKind() == EscrowSignatureKind.FUEL_VECTOR_V1;
+            EscrowTags.require(item.contains("normalized_wrapper") == normalized && (!normalized
+                    || observation.normalizedWrapper().encode().equals(EscrowTags.compound(item, "normalized_wrapper"))), "Changed O1 normalization");
+            return observation;
     }
     private static byte flag(CompoundTag tag, String key) {
         EscrowTags.require(tag.contains(key, net.minecraft.nbt.Tag.TAG_BYTE) && (tag.getByte(key) == 0 || tag.getByte(key) == 1), "Invalid settlement flag");

@@ -156,9 +156,10 @@ public final class RocketSettlementIdleGameTests {
                     before.fuel().resourceSignature(), fuel.resourceSignature());
             var payload = sample.payload(); payload.putString("FluidName", ModIdentity.id("rocket_fuel").toString());
             var guard = journal.acknowledgedGuard(source.logical()).orElseThrow();
-            operation = new EscrowOperation(sample.id(), sample.sequence(), sample.owner(), sample.createdTick(), sample.phase(), sample.reason(),
+            operation = new EscrowOperation(sample.id(), sample.sequence(), rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(),
                     payload, RocketNativeResources.signature(payload), sample.source(), destination,
                     new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
+            operation = EscrowNativeBinding.captureTest(operation, rocket, source.source(), before.fuel(), fuel, data.ledger());
             var parent = rocket.saveWithoutId(new CompoundTag()); var wrapper = parent.getCompound("RocketEntityData");
             wrapper.put("flight_data", RocketFlightNbtCodec.encode(before.withFuel(fuel, level.getGameTime())));
             wrapper.put("resource_escrow", new RocketEscrowSection(data.ledger().id(), 1,
@@ -183,7 +184,7 @@ public final class RocketSettlementIdleGameTests {
                     && player.getMainHandItem().is(Items.BUCKET) && RocketEscrowGate.idle(rocket), "Refuel lost resources, epoch or idle state");
         }
     }
-    private static RocketEntity createRocket(ServerLevel level, BlockPos position, UUID logical) {
+    static RocketEntity createRocket(ServerLevel level, BlockPos position, UUID logical) {
         var descriptor = new RocketPropulsion(RocketPropulsion.Mode.MONO, 2_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS);
         var iron = new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of());
         var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(),

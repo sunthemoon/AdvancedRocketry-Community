@@ -38,7 +38,7 @@ class EscrowCodecIntersectionTest {
         for (int i = 1; i <= 256; i++) {
             var floor = EscrowTestFixtures.floor(i); floor.putUUID("transfer_id", EscrowTestFixtures.id(i + 1000));
             // All allowed fixed-width fields, including the optional UUID, define the maximum valid floor.
-            assertEquals(360, RocketNbtSize.uncompressedBytes(floor)); floors.add(floor);
+            assertEquals(483, RocketNbtSize.uncompressedBytes(floor)); floors.add(floor);
         }
         for (int i = 1; i <= 64; i++) { tombstones.add(exactTombstone(i)); }
         var ledger = new EscrowLedger(EscrowTestFixtures.id(500), 64, 1, records, floors, tombstones);
@@ -50,9 +50,9 @@ class EscrowCodecIntersectionTest {
         guard.putInt("extra", 1); assertThrows(IllegalArgumentException.class, () -> EscrowCodec.guard(guard));
     }
     @Test void tombstoneNestedCountAndByteLimitsIntersectRatherThanTruncating() {
-        var exact = exactTombstone(1); assertEquals(2_048, RocketNbtSize.uncompressedBytes(exact));
+        var exact = exactTombstone(1); assertEquals(2_048, RocketNbtSize.uncompressedBytes(EscrowReceiptCodec.encode(exact)));
         assertDoesNotThrow(() -> EscrowCodec.validateSection(exact, true));
-        var missing = exact.getList("missing", 10).getCompound(0); missing.putString("type", missing.getString("type") + "a");
+        var missing = exact.getList("before_choice", 10).getCompound(0).getCompound("endpoint"); missing.putString("type", missing.getString("type") + "a");
         assertThrows(IllegalArgumentException.class, () -> EscrowCodec.validateSection(exact, true));
         for (String key : List.of("retired", "guards")) {
             var full = tombstone(2); var entries = new ListTag();
@@ -67,9 +67,8 @@ class EscrowCodecIntersectionTest {
             assertThrows(IllegalArgumentException.class, () -> EscrowCodec.validateSection(full, true));
             entries.add(entries.getCompound(0).copy()); assertThrows(IllegalArgumentException.class, () -> EscrowCodec.validateSection(full, true));
         }
-        var full = tombstone(3); ListTag survivors = new ListTag();
-        for (int i = 0; i < 2; i++) { var entry = new CompoundTag(); entry.putUUID("identity", EscrowTestFixtures.id(i)); entry.putString("digest", EscrowTestFixtures.hash(i)); survivors.add(entry); }
-        full.put("survivors", survivors); assertDoesNotThrow(() -> EscrowCodec.validateSection(full, true));
+        var full = tombstone(3); ListTag survivors = full.getList("survivors", 10);
+        assertEquals(2, survivors.size()); assertDoesNotThrow(() -> EscrowCodec.validateSection(full, true));
         survivors.add(survivors.getCompound(0).copy()); assertThrows(IllegalArgumentException.class, () -> EscrowCodec.validateSection(full, true));
     }
     @Test void endpointMarkerCountsAndEnvelopesHoldAtOneAndEightWithoutUnknownPadding() {
@@ -104,22 +103,32 @@ class EscrowCodecIntersectionTest {
                 endpoint.x(), endpoint.y(), endpoint.z(), endpoint.unit(), endpoint.beforeEpoch(), endpoint.beforeSignature(), endpoint.afterSignature());
     }
     private static CompoundTag tombstone(int id) {
-        var tag = new CompoundTag(); tag.putInt("schema_version", 1); tag.putUUID("op_id", EscrowTestFixtures.id(id));
-        tag.putInt("amount", 1_000); tag.putString("payload_hash", EscrowTestFixtures.hash(id)); tag.putLong("audited_loss", 0);
-        for (String key : List.of("retired", "missing", "guards", "survivors")) { tag.put(key, new ListTag()); } return tag;
+        return EscrowTestFixtures.receipt(id);
     }
     private static CompoundTag exactTombstone(int id) {
-        // Search only bounded canonical combinations, not unknown-field padding.
-        for (int count = 0; count <= 64; count++) {
-            var tag = tombstone(id); var retired = new ListTag();
-            for (int i = 0; i < count; i++) { var entry = new CompoundTag(); entry.putUUID("op_id", EscrowTestFixtures.id(i + 1)); retired.add(entry); }
-            tag.put("retired", retired); var missing = new ListTag();
-            missing.add(EscrowCodec.endpoint(EscrowTestFixtures.operation(1).source())); missing.add(EscrowCodec.endpoint(EscrowTestFixtures.operation(2).source())); tag.put("missing", missing);
-            int extra = 2_048 - RocketNbtSize.uncompressedBytes(tag);
-            var endpoint = missing.getCompound(0); String type = endpoint.getString("type");
-            if (extra < 0 || type.length() + extra > 128 || RocketNbtSize.uncompressedBytes(endpoint) + extra > 512) { continue; }
-            endpoint.putString("type", type + "a".repeat(extra));
-            EscrowCodec.validateSection(tag, true); return tag;
+        var original = EscrowTestFixtures.operation(10_000 + id);
+        var op = new EscrowOperation(original.id(), original.sequence(), original.owner(), 0, EscrowOperation.Phase.REPAIR, EscrowReason.OTHER_STATE,
+                original.payload(), original.payloadHash(), padded(original.source(), 512), padded(original.destination(), 512), original.guard());
+        var root = EscrowTestFixtures.ledger(op);
+        // Complete observations, maximum canonical references and modified-UTF actor bytes; no padding fields.
+        for (int count = 0; count <= 8; count++) {
+            var markers = new ArrayList<EscrowPrefix.Marker>();
+            for (int i = 1; i <= count; i++) { markers.add(new EscrowPrefix.Marker(EscrowTestFixtures.id(i), i, "DESTINATION", i)); }
+            var observed = List.of(new EscrowSettlementIntent.Observation(op.source(), new EscrowPrefix.State(root.id(), 1,
+                            op.source().afterSignature(), List.of(new EscrowPrefix.Marker(op.id(), op.sequence(), "SOURCE", 1))), true, 4_000),
+                    new EscrowSettlementIntent.Observation(op.destination(), new EscrowPrefix.State(root.id(), count, EscrowTestFixtures.hash(count), markers), true, 1_000));
+            for (int nuls = 0; nuls <= 128; nuls++) {
+                for (int ascii = 0; ascii <= 1 && nuls + ascii <= 128; ascii++) {
+                    if (nuls + ascii == 0) { continue; }
+                    String actor = "\0".repeat(nuls) + "a".repeat(ascii);
+                    var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, EscrowTestFixtures.id(700), actor, 10, observed);
+                    var intent = preview.confirm(preview.actor(), preview.digest(), 11, observed);
+                    try {
+                        var tag = EscrowSettlementTombstones.create(op, intent);
+                        if (RocketNbtSize.uncompressedBytes(EscrowReceiptCodec.encode(tag)) == 2_048) { return tag; }
+                    } catch (IllegalArgumentException tooLarge) { /* Continue the bounded canonical search. */ }
+                }
+            }
         }
         throw new AssertionError("No canonical exact-limit tombstone fixture");
     }

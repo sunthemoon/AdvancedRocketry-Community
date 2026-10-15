@@ -44,16 +44,17 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         state.proofs.entrySet().removeIf(entry -> { if (entry.getValue().valid()) { return false; } entry.getValue().release(); return true; });
         try {
             var references = intent.observations().stream().map(EscrowSettlementIntent.Observation::endpoint).toList();
-            var current = EscrowSettlementObserver.observe(server, intent.ledger(), references);
-            EscrowTags.require(current.equals(intent.observations()), "Frozen settlement endpoint changed");
             var journal = RocketTransferSavedData.get(server);
             if (!journal.retryChecked(server)) { return; }
             boolean installed = EscrowSettlementTombstones.installed(coordinator.ledger(), intent);
             requireJournal(coordinator.ledger(), intent, journal, installed);
-            for (var observation : intent.observations()) {
+            if (EscrowSettlementNormalization.publish(server, coordinator, intent, journal.acknowledgedLease(), runtime)) { return; }
+            var current = EscrowSettlementObserver.observe(server, intent.ledger(), references);
+            EscrowTags.require(current.equals(intent.checkpointed()), "Frozen settlement endpoint changed");
+            for (var observation : intent.checkpointed()) {
                 if (state.proofs.containsKey(observation.endpoint().key())) { continue; }
                 var targets = new ArrayList<EscrowBarrier.Target>();
-                for (var candidate : intent.observations()) {
+                for (var candidate : intent.checkpointed()) {
                     if (!EscrowBarrier.sameSlot(observation.endpoint(), candidate.endpoint())) { continue; }
                     // One physical save must prove all references in that slot together.
                     var frontier = candidate.missing() ? new EscrowPrefix.State(intent.ledger(), 0,

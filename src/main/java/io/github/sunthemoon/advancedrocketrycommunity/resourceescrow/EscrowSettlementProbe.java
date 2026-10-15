@@ -102,8 +102,9 @@ final class EscrowSettlementProbe {
         var destination = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), rocket.getUUID(), source.logical(),
                 ModIdentity.id("rocket").toString(), 4, 0, 4, EscrowEndpoint.Unit.PRIMARY, epoch, before.resourceSignature(), after.resourceSignature());
         var guard = RocketTransferSavedData.get(server).acknowledgedGuard(source.logical()).orElseThrow();
-        return new EscrowOperation(sample.id(), sequence, sample.owner(), sample.createdTick(), sample.phase(), sample.reason(), sample.payload(), sample.payloadHash(),
+        var op = new EscrowOperation(sample.id(), sequence, rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(), sample.payload(), sample.payloadHash(),
                 sample.source(), destination, new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
+        return EscrowNativeBinding.captureTest(op, rocket, fixture.source(), before, after, data.ledger());
     }
     private void recovered() {
         EscrowTags.require(data.ledger().records().size() == (chain ? 2 : 1), "Settlement lost connected records");

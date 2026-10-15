@@ -23,6 +23,7 @@ public final class RocketEscrowGate {
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null) { return section.ledger() == null; }
         var ledger = data.ledger();
+        if (logical != null && ledger.armedFlights().stream().anyMatch(arm -> arm.logical().equals(logical))) { return false; }
         if (section.ledger() != null && !section.ledger().equals(ledger.id())) { return false; }
         if (logical != null && data.bind(level.getServer()).logicalLocked(logical)) { return false; }
         if (ledger.records().stream().anyMatch(record -> rocket.getUUID().equals(record.source().identity())
@@ -32,8 +33,11 @@ public final class RocketEscrowGate {
         if (!EscrowSettlementTombstones.history(ledger, logical)) { return true; }
         if (rocket.flightData().isEmpty() || rocket.snapshot().isEmpty()
                 || rocket.flightData().orElseThrow().fuel().propulsion().isEmpty()) { return false; }
-        String signature = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources.hash("arce-escrow-rocket-1:" + logical + ":"
-                + rocket.snapshot().orElseThrow().contentHash() + ":" + rocket.flightData().orElseThrow().fuel().resourceSignature());
+        String signature = rocket.flightData().orElseThrow().fuel().resourceSignature();
+        var head = ledger.rocketAuthorities().stream().filter(value -> value.logical().equals(logical)).findFirst().orElse(null);
+        if (head != null && (head.kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || !head.owner().equals(rocket.ownerId().orElseThrow())
+                || !head.invariant().equals(EscrowInvariant.rocket(rocket)) || section.epoch() < head.epoch()
+                || section.epoch() == head.epoch() && !signature.equals(head.signature()))) { return false; }
         return !EscrowSettlementTombstones.stateLocked(ledger, logical, rocket.getUUID(), section, signature,
                 rocket.flightData().orElseThrow().fuel().totalAmount());
     }

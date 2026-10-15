@@ -16,11 +16,11 @@ from run_v180_escrow_forced_stop import digest, ledger, record, LEDGER
 from run_v180_rocket_settlement_intent import ACTOR
 from inspect_celestial_saved_data import NbtReader
 
-CHOICES = ("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR")
+CHOICES = ("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMALIZE")
 CASES = tuple("SR_" + choice + "__" + boundary for choice in CHOICES for boundary in (
     *(f"O2_{side}_{index}" for index in range(3 if choice.startswith("CHAIN") else 2) for side in ("BEFORE", "AFTER")),
     "O3_BEFORE", "O3_AFTER", *(("O3J_BEFORE", "O3J_AFTER") if choice == "FLOOR" else ("O3J_AFTER",)),
-    "O4_BEFORE", "O4_AFTER", "VETO"))
+    "O4_BEFORE", "O4_AFTER", *(("O_BIND_BEFORE", "O_BIND_AFTER") if choice == "NORMALIZE" else ("VETO",))))
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 
 
@@ -68,8 +68,10 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
                 or not re.fullmatch(r"[0-9a-f]{64}", intents[0]["digest"])):
             raise smoke.SmokeError("Frozen actor/digest changed")
     for receipt in root["tombstones"]:
-        if (receipt.get("schema_version") != 2 or receipt.get("released") != int(released)
+        if (receipt.get("schema_version") != 3 or receipt.get("released") != int(released)
                 or receipt.get("actor") != ACTOR or receipt.get("actor_name") != "Server"
+                or receipt.get("accounting_status") != "UNKNOWN" or "audited_loss" in receipt or "loss_known" in receipt
+                or (receipt.get("release_generation", 0) > 0) != released
                 or not re.fullmatch(r"[0-9a-f]{64}", receipt.get("decision_digest", ""))):
             raise smoke.SmokeError("Wrong returning-identity receipt or acknowledgement state")
     transfers = journal(world)["transfers"]
@@ -97,9 +99,13 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
     if rockets:
         rocket = rockets[0]; wrapper = rocket["RocketEntityData"]
         section = wrapper["resource_escrow"]
-        if (wrapper["schema_version"] != 3 or wrapper["flight_data"]["fuel"]["amount"] != count * 1000
-                or section["resource_epoch"] != count or section["ledger_id"] != root["ledger_id"]
-                or len(section["markers"]) != (0 if restarted and released else count)
+        expected_fuel = (2_000 if restarted else 0) if choice == "NORMALIZE" else count * 1000
+        expected_epoch = (2 if restarted else 0) if choice == "NORMALIZE" else count
+        binding_matches = section.get("ledger_id") == root["ledger_id"] or (choice == "NORMALIZE" and not restarted
+                and not section.get("ledger_id") and section["resource_epoch"] == 0)
+        if (wrapper["schema_version"] != 3 or wrapper["flight_data"]["fuel"]["amount"] != expected_fuel
+                or section["resource_epoch"] != expected_epoch or not binding_matches
+                or len(section["markers"]) != (0 if choice == "NORMALIZE" or restarted and released else count)
                 or rocket["Pos"] != [64.5, 100., 64.5]):
             raise smoke.SmokeError("Checkpoint/release changed resources, epoch, markers or placement")
         references = root["records"][0]["settlement"]["observations"] if root["records"] else [
@@ -177,7 +183,7 @@ def run(args) -> dict:
     finally:
         if process is not None: process.abort()
         (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
-        if (session.exists() and not session.is_symlink() and marker.is_file() and not marker.is_symlink() and marker.read_text(encoding="ascii") == token):
+        if not args.retain_session and (session.exists() and not session.is_symlink() and marker.is_file() and not marker.is_symlink() and marker.read_text(encoding="ascii") == token):
             shutil.rmtree(session)
 
 
@@ -188,6 +194,7 @@ def main() -> int:
     parser.add_argument("--source-commit", required=True); parser.add_argument("--java", required=True)
     parser.add_argument("--lock-owner", help="Require this machine-wide lock owner before each JVM start")
     parser.add_argument("--case", action="append", choices=CASES); parser.add_argument("--startup-timeout", type=float, default=240)
+    parser.add_argument("--retain-session", action="store_true", help="Leave this owned disposable copy for validated external cleanup")
     args = parser.parse_args()
     try: run(args); return 0
     except (OSError, smoke.SmokeError) as failure: print(f"FAIL: {failure}"); return 1

@@ -38,6 +38,8 @@ public final class ResourceEscrowSavedData extends SavedData {
                     EscrowRuntime.of(server).ledgerCommitter(server),
                     EscrowRuntime.of(server)::checkpoint);
             writer.timings(EscrowRuntime.of(server).timings());
+            try { writer.baseline(ledger); }
+            catch (RuntimeException unavailable) { writer.abort(); throw unavailable; }
             attach(new EscrowCoordinator(this, writer), () -> server.isRunning() && !server.isStopped());
             coordinator.tick(server.getTickCount()); // The first explicit write uses the real server clock, not tick zero.
         }

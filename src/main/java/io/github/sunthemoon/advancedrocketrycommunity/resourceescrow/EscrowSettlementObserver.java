@@ -95,11 +95,10 @@ final class EscrowSettlementObserver {
                         && rocket.flightData().orElseThrow().state().acceptsFuel(), "Rocket placement, occupancy or stationary state changed");
                 var section = rocket.escrowSection();
                 EscrowTags.require(section.ledger() == null || section.ledger().equals(ledger), "Foreign rocket ledger");
-                String signature = RocketNativeResources.hash("arce-escrow-rocket-1:" + endpoint.logicalRocket() + ":"
-                        + rocket.snapshot().orElseThrow().contentHash() + ":" + rocket.flightData().orElseThrow().fuel().resourceSignature());
+                String signature = rocket.flightData().orElseThrow().fuel().resourceSignature();
                 result.add(new EscrowSettlementIntent.Observation(endpoint,
                         new EscrowPrefix.State(ledger, section.epoch(), signature, section.markers()), section.ledger() != null,
-                        rocket.flightData().orElseThrow().fuel().totalAmount()));
+                        rocket.flightData().orElseThrow().fuel().totalAmount(), EscrowSignatureKind.FUEL_VECTOR_V1, EscrowInvariant.rocket(rocket)));
             }
         }
         return List.copyOf(result);

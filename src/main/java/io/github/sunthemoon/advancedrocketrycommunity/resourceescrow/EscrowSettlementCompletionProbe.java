@@ -27,7 +27,7 @@ final class EscrowSettlementCompletionProbe {
     private final ServerLevel level;
     private final String cut;
     private final String boundary;
-    private final boolean recovery, chain, abandon, floor, veto;
+    private final boolean recovery, chain, abandon, floor, veto, normalization;
     private EscrowCoordinator coordinator;
     private ResourceEscrowSavedData data;
     private RocketEntity rocket;
@@ -44,10 +44,11 @@ final class EscrowSettlementCompletionProbe {
         EscrowTestEndpoints.requireEnabled(server); this.server = server; level = server.overworld();
         cut = System.getProperty("advancedrocketrycommunity.escrowCase", "");
         String[] parts = cut.substring(3).split("__", 2);
-        EscrowTags.require(parts.length == 2 && List.of("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR").contains(parts[0]),
+        EscrowTags.require(parts.length == 2 && List.of("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMALIZE").contains(parts[0]),
                 "Unknown settlement completion case");
         boundary = parts[1]; chain = parts[0].startsWith("CHAIN"); abandon = parts[0].endsWith("ABANDON");
         floor = parts[0].equals("FLOOR"); veto = boundary.equals("VETO");
+        normalization = parts[0].equals("NORMALIZE");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
     }
     void checkpoint(String name) {
@@ -97,7 +98,8 @@ final class EscrowSettlementCompletionProbe {
                         rocket.flightData().orElseThrow().withFuel(fuel, level.getGameTime())));
                 wrapper.put("resource_escrow", new RocketEscrowSection(data.ledger().id(), operations.size(), operations.stream()
                         .map(op -> new EscrowPrefix.Marker(op.id(), op.sequence(), "DESTINATION", op.destination().afterEpoch())).toList()).encode());
-                rocket.load(parent); EscrowTags.require(rocket.operational(), "Marked credited fixture is invalid");
+                if (!normalization) { rocket.load(parent); }
+                EscrowTags.require(rocket.operational(), "Marked credited fixture is invalid");
                 selected = operations.get(0).id();
                 for (var op : operations) { coordinator.prepareTest(op, committed -> EscrowTags.require(committed, "Completion fixture L1 failed")); }
                 EscrowTags.require(level.addFreshEntity(rocket), "Completion fixture rocket failed to publish");
@@ -149,8 +151,9 @@ final class EscrowSettlementCompletionProbe {
         var destination = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), rocket.getUUID(), source.logical(),
                 ModIdentity.id("rocket").toString(), 4, 0, 4, EscrowEndpoint.Unit.PRIMARY, epoch, before.resourceSignature(), after.resourceSignature());
         var guard = RocketTransferSavedData.get(server).acknowledgedGuard(source.logical()).orElseThrow();
-        return new EscrowOperation(sample.id(), sequence, sample.owner(), sample.createdTick(), sample.phase(), sample.reason(), sample.payload(), sample.payloadHash(),
+        var op = new EscrowOperation(sample.id(), sequence, rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(), sample.payload(), sample.payloadHash(),
                 sample.source(), destination, new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
+        return EscrowNativeBinding.captureTest(op, rocket, fixture.source(), before, after, data.ledger());
     }
     private boolean createFloor(RocketTransferSavedData journal) {
         BlockPos target = POSITION.offset(16, 0, 0);
@@ -177,10 +180,13 @@ final class EscrowSettlementCompletionProbe {
                 .destinationSpawned(identity).advance(RocketTransferPhase.PASSENGERS_TRANSFERRED).advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
         // Publish the test floor in the same owner-thread call, before flushing journal authority.
         journal.put(record);
-        var floorTag = new CompoundTag(); floorTag.putInt("schema_version", 1); floorTag.putUUID("rocket_id", logical); floorTag.putUUID("transfer_id", transfer);
+        var floorTag = new CompoundTag(); floorTag.putInt("schema_version", 2); floorTag.putUUID("rocket_id", logical); floorTag.putUUID("transfer_id", transfer);
         floorTag.putLong("journal_generation", 1); floorTag.putString("journal_digest", io.github.sunthemoon.advancedrocketrycommunity.persistence.CanonicalNbtDigest.of(
                 journal.save(new CompoundTag()).getList("transfers", 10).getCompound(0), RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES, 35));
         floorTag.putUUID("entity_id", identity); floorTag.putLong("resource_epoch", 1); floorTag.putString("signature", fuel.resourceSignature()); floorTag.putLong("highest_seq", 1);
+        var reference = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, to.sourceDimension().toString(), identity, logical, ModIdentity.id("rocket").toString(),
+                to.sourceOrigin().x() >> 4, 0, to.sourceOrigin().z() >> 4, EscrowEndpoint.Unit.PRIMARY, 1, fuel.resourceSignature(), fuel.resourceSignature());
+        floorTag.putString("signature_kind", EscrowSignatureKind.FUEL_VECTOR_V1.name()); floorTag.putString("invariant_digest", EscrowInvariant.rocket(reference, record.ownerId(), to));
         data.acknowledged(new EscrowLedger(data.ledger().id(), 1, data.ledger().writerGeneration(), List.of(), List.of(floorTag), List.of()), true);
         journal.flushChecked(server); coordinator.autosave(); return true;
     }
@@ -203,6 +209,16 @@ final class EscrowSettlementCompletionProbe {
         EscrowTags.require(data.ledger().floors().isEmpty() && data.ledger().tombstones().size() == (chain ? 2 : 1)
                 && data.ledger().tombstones().stream().allMatch(tag -> tag.getBoolean("released")), "Incomplete acknowledged release");
         for (var tag : data.ledger().tombstones()) {
+            for (var raw : EscrowTags.list(tag, "survivors", 2)) {
+                var endpoint = EscrowCodec.endpoint(((CompoundTag) raw).getCompound("endpoint"));
+                if (endpoint.kind() != EscrowEndpoint.Kind.BLOCK_ENTITY) { continue; }
+                var chunk = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4);
+                if (chunk == null) { return; }
+                var source = chunk.getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
+                if (source == null || !EscrowTestEndpoints.state(source.getPersistentData(), data.ledger().id(), false).markers().isEmpty()) { return; }
+            }
+        }
+        for (var tag : data.ledger().tombstones()) {
             for (var raw : EscrowTags.list(tag, "guards", 1)) {
                 var guard = EscrowCodec.guard((CompoundTag) raw); EscrowTags.require(guard.transfer() == null || journal.find(guard.transfer()).isEmpty(), "Released matching journal remains");
             }
@@ -211,8 +227,21 @@ final class EscrowSettlementCompletionProbe {
                 if (endpoint.kind() != EscrowEndpoint.Kind.ENTITY) { continue; }
                 if (!(level.getEntity(endpoint.identity()) instanceof RocketEntity survivor)) { return; }
                 survivor.pruneSettledEscrow();
+                if (normalization && survivor.escrowSection().epoch() == 0) {
+                    EscrowTags.require(survivor.flightData().orElseThrow().fuel().totalAmount() == 0
+                            && data.ledger().id().equals(survivor.escrowSection().ledger()) && RocketEscrowGate.idle(survivor), "Neutral normalization did not release intact");
+                    for (int epoch = 1; epoch <= 2; epoch++) {
+                        var flight = survivor.flightData().orElseThrow();
+                        survivor.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false,
+                                net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, epoch * 1_000L), level.getGameTime()));
+                        EscrowTags.require(survivor.escrowSection().epoch() == epoch, "Normalized native mutation did not advance its epoch");
+                    }
+                    EscrowTags.require(server.saveEverything(false, true, true), "Normalized successor save refused");
+                    level.entityManager.permanentStorage.flush(true); level.getChunkSource().chunkMap.worker.synchronize(true).join();
+                }
                 EscrowTags.require(survivor.flightData().orElseThrow().fuel().totalAmount() == (chain ? 2_000 : 1_000)
-                        && survivor.escrowSection().epoch() == (chain ? 2 : 1) && survivor.escrowSection().markers().isEmpty()
+                        + (normalization ? 1_000 : 0)
+                        && survivor.escrowSection().epoch() == (chain || normalization ? 2 : 1) && survivor.escrowSection().markers().isEmpty()
                         && RocketEscrowGate.idle(survivor), "Chosen survivor did not unlock intact");
                 var unproved = EscrowRocketAuditProbe.createRocket(level, endpoint.logicalRocket(), true);
                 EscrowTags.require(!RocketEscrowGate.idle(unproved), "Unproved returning physical identity unlocked");
@@ -225,7 +254,7 @@ final class EscrowSettlementCompletionProbe {
                 currentCopy.load(survivor.saveWithoutId(new CompoundTag()));
                 EscrowTags.require(currentCopy.operational() && RocketEscrowGate.idle(currentCopy), "Exact chosen state copy is invalid");
                 var previous = currentCopy.flightData().orElseThrow();
-                var changed = previous.fuel().withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, (chain ? 2_000 : 1_000) - 100);
+                var changed = previous.fuel().withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, (chain || normalization ? 2_000 : 1_000) - 100);
                 currentCopy.updateFlightData(previous.withFuel(changed, level.getGameTime()));
                 EscrowTags.require(currentCopy.escrowSection().epoch() == survivor.escrowSection().epoch() + 1 && RocketEscrowGate.idle(currentCopy),
                         "Approved native resource mutation did not advance the chosen epoch");

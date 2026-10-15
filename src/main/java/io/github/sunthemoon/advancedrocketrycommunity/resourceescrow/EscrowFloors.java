@@ -59,9 +59,10 @@ public final class EscrowFloors {
             var frontier = frontiers.get(op.destination().key());
             long highest = ledger.records().stream().filter(record -> record.destination().key().equals(op.destination().key()))
                     .mapToLong(EscrowOperation::sequence).max().orElseThrow();
-            CompoundTag floor = EscrowCodec.guard(op.guard()); floor.putInt("schema_version", 1);
+            CompoundTag floor = EscrowCodec.guard(op.guard()); floor.putInt("schema_version", 2);
             floor.putUUID("entity_id", op.destination().identity()); floor.putLong("resource_epoch", frontier.epoch());
             floor.putString("signature", frontier.signature()); floor.putLong("highest_seq", highest);
+            floor.putString("signature_kind", op.nativeBinding().kind().name()); floor.putString("invariant_digest", op.nativeBinding().invariant());
             EscrowCodec.validateSection(floor, false);
             Key key = key(op.guard());
             var previous = floors.stream().filter(value -> key.equals(key(value))).findFirst().orElse(null);
@@ -77,7 +78,7 @@ public final class EscrowFloors {
             floors.add(floor);
         }
         EscrowLedger retired = ledger.retire(ids);
-        return new EscrowLedger(retired.id(), retired.issuedThrough(), retired.writerGeneration(), retired.records(), floors, retired.tombstones());
+        return retired.replace(retired.records(), floors, retired.tombstones());
     }
 
     /** An exact checked journal snapshot without T is necessary; pending/queued references retain it. */
@@ -88,6 +89,6 @@ public final class EscrowFloors {
         });
         List<CompoundTag> floors = ledger.floors().stream().filter(floor -> key(floor) == null
                 || retained.contains(key(floor)) || !absent.test(key(floor).transfer())).toList();
-        return new EscrowLedger(ledger.id(), ledger.issuedThrough(), ledger.writerGeneration(), ledger.records(), floors, ledger.tombstones());
+        return ledger.replace(ledger.records(), floors, ledger.tombstones());
     }
 }

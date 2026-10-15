@@ -153,9 +153,9 @@ class EscrowNativeBankPrefixTest {
                 fixture.destination().identity(), fixture.destination().logicalRocket(),
                 "advancedrocketrycommunity:rocket", 0, 0, 0, unit, sequence - 1,
                 before.resourceSignature(), after.resourceSignature());
-        return new EscrowOperation(fixture.id(), sequence, fixture.owner(), fixture.createdTick(),
+        return EscrowTestFixtures.nativeModel(new EscrowOperation(fixture.id(), sequence, fixture.owner(), fixture.createdTick(),
                 fixture.phase(), fixture.reason(), fixture.payload(),
-                RocketNativeResources.signature(fixture.payload()), fixture.source(), destination, fixture.guard());
+                RocketNativeResources.signature(fixture.payload()), fixture.source(), destination, fixture.guard()));
     }
 
     private static EscrowPrefix.State frontier(RocketFuelState fuel, EscrowOperation... applied) {

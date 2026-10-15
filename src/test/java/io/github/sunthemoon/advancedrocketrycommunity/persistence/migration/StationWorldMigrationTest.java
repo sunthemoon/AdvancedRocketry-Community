@@ -77,8 +77,7 @@ final class StationWorldMigrationTest {
                 // W21b: satellite roots are current schema 4; stations migrate 2 -> 5 (ADR-065).
                 boolean satellites = name.equals(ManagedSavedDataType.SATELLITE_MISSIONS.fileName());
                 // v1.7: the endgame root has only its schema 1 (ADR-054 §10).
-                boolean endgame = name.equals(ManagedSavedDataType.ENDGAME.fileName())
-                        || name.equals(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+                boolean endgame = name.equals(ManagedSavedDataType.ENDGAME.fileName());
                 assertEquals(endgame ? 1 : satellites ? 4 : 2, row.get("sourceSchema").getAsInt());
                 assertEquals(name.equals(STATIONS.fileName()) ? 5 : satellites ? 4 : endgame ? 1 : 2,
                         row.get("targetSchema").getAsInt());

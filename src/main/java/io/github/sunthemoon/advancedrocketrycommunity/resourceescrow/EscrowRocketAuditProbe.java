@@ -86,8 +86,10 @@ final class EscrowRocketAuditProbe {
                         ModIdentity.id("rocket").toString(), 4, 0, 4, EscrowEndpoint.Unit.PRIMARY, 0, fuel.resourceSignature(),
                         fuel.withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1_000).resourceSignature());
                 var guard = journal.acknowledgedGuard(source.logical()).orElseThrow();
-                var op = new EscrowOperation(sample.id(), sample.sequence(), sample.owner(), sample.createdTick(), sample.phase(), sample.reason(),
+                var op = new EscrowOperation(sample.id(), sample.sequence(), rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(),
                         sample.payload(), sample.payloadHash(), sample.source(), destination, new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
+                op = EscrowNativeBinding.captureTest(op, rocket, source.source(), fuel,
+                        fuel.withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1_000), data.ledger());
                 coordinator.prepareTest(op, committed -> { EscrowTags.require(committed, "Rocket fixture L1 failed"); waiting = false; step = 2; }); step = 1;
             }
             case 1 -> waiting = coordinator.commitPreparations();

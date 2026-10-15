@@ -131,10 +131,7 @@ final class EscrowSettlementIntentTest {
         var op = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE);
         var tombstones = new ArrayList<CompoundTag>();
         for (int i = 0; i < 64; i++) {
-            var tag = new CompoundTag(); tag.putInt("schema_version", 1); tag.putUUID("op_id", EscrowTestFixtures.id(10_000 + i));
-            tag.putInt("amount", 1_000); tag.putString("payload_hash", EscrowTestFixtures.hash(i)); tag.putLong("audited_loss", 0);
-            for (String field : List.of("retired", "missing", "guards", "survivors")) { tag.put(field, new net.minecraft.nbt.ListTag()); }
-            tombstones.add(tag);
+            tombstones.add(EscrowTestFixtures.receipt(i));
         }
         var atLimit = new EscrowLedger(EscrowTestFixtures.id(500), 1, 0, List.of(op), List.of(), tombstones.subList(0, 63));
         var observed = observations(atLimit, false);

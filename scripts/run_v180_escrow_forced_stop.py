@@ -20,6 +20,7 @@ import zlib
 
 import run_dedicated_server_smoke as smoke
 from inspect_celestial_saved_data import NbtReader
+from inspect_escrow_receipt import decode_receipt
 from run_v060_flight_server_smoke import _server_command
 
 
@@ -49,8 +50,11 @@ def ledger(path: Path) -> dict:
         raise smoke.SmokeError("Oversized expanded native ledger")
     outer = NbtReader(raw).read_root()
     data = outer.get("data")
-    if not isinstance(data, dict) or data.get("schema_version") != 1:
+    if not isinstance(data, dict) or data.get("schema_version") != 2:
         raise smoke.SmokeError("Wrong native escrow schema")
+    if any(key not in data for key in ("issued_launch_serial", "armed_flights", "rocket_authorities")):
+        raise smoke.SmokeError("Incomplete escrow authority tables")
+    data["tombstones"] = [decode_receipt(receipt) for receipt in data["tombstones"]]
     return data
 
 

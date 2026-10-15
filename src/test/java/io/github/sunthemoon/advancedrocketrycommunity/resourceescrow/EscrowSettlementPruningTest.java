@@ -78,4 +78,23 @@ class EscrowSettlementPruningTest {
         var intent = preview.confirm(actor, preview.digest(), 11, observations);
         return EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent);
     }
+    @Test void sameFloorPruningNeedsTheFrozenMarkerSuffixNotOnlyMatchingFuel() {
+        var op = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE); var root = EscrowTestFixtures.ledger(op);
+        var marker = new EscrowPrefix.Marker(op.id(), op.sequence(), "DESTINATION", 1);
+        var observed = List.of(new EscrowSettlementIntent.Observation(op.source(), new EscrowPrefix.State(root.id(), 0,
+                        op.source().beforeSignature(), List.of()), true, 5_000),
+                new EscrowSettlementIntent.Observation(op.destination(), new EscrowPrefix.State(root.id(), 1,
+                        op.destination().afterSignature(), List.of(marker)), true, 1_000));
+        var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                EscrowTestFixtures.id(800), "operator", 10, observed);
+        var intent = preview.confirm(preview.actor(), preview.digest(), 11, observed);
+        var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent);
+        var current = observed.get(1).state();
+        assertTrue(EscrowSettlementPruning.frontier(released, op.destination(), current, 1_000, current.signature(), Set.of()));
+        var forged = new EscrowPrefix.State(root.id(), 1, current.signature(), List.of(new EscrowPrefix.Marker(op.id(), 99, "DESTINATION", 1)));
+        assertFalse(EscrowSettlementPruning.frontier(released, op.destination(), forged, 1_000, current.signature(), Set.of()));
+        var pruned = new EscrowPrefix.State(root.id(), 1, current.signature(), List.of());
+        assertTrue(EscrowSettlementPruning.frontier(released, op.destination(), pruned, 1_000, current.signature(), Set.of()));
+        assertFalse(EscrowSettlementPruning.frontier(released, op.destination(), pruned, 1_000, current.signature(), Set.of(op.id())));
+    }
 }

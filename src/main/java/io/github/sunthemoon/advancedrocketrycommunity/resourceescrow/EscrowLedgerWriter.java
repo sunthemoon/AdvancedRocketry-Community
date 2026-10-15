@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
-import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -26,7 +25,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         public Snapshot {
             EscrowTags.bound(payload, EscrowLimits.ROOT_BYTES, 24, 131_072);
             EscrowTags.require(ledger.equals(EscrowCodec.decode(payload))
-                    && digest.equals(RocketNativeResources.signature(payload)), "Snapshot identity/digest mismatch");
+                    && digest.equals(EscrowCodec.digest(payload)), "Snapshot identity/digest mismatch");
             payload = payload.copy(); admissions = Set.copyOf(admissions);
             EscrowTags.require(admissions.size() <= EscrowLimits.OPERATIONS, "Too many writer requests");
             EscrowTags.require(ledger.records().stream().map(EscrowOperation::id).collect(java.util.stream.Collectors.toSet())
@@ -35,7 +34,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         @Override public CompoundTag payload() { return payload.copy(); }
         public static Snapshot of(EscrowLedger ledger, Set<UUID> admissions) {
             CompoundTag payload = EscrowCodec.encode(ledger);
-            return new Snapshot(ledger, payload, RocketNativeResources.signature(payload), admissions);
+            return new Snapshot(ledger, payload, EscrowCodec.digest(payload), admissions);
         }
     }
     public record Completion(long generation, String digest, Outcome outcome, Snapshot snapshot) { }
@@ -79,6 +78,20 @@ public final class EscrowLedgerWriter implements AutoCloseable {
                               java.util.function.Consumer<String> checkpoint) {
         this.file = file; this.lastGeneration = generation; this.durableGeneration = generation; this.committer = committer;
         this.checkpoint = checkpoint;
+    }
+    /** Checked startup target, not a staged candidate or an in-memory deserialization, supplies release authority. */
+    void baseline(EscrowLedger loaded) {
+        owner(); EscrowTags.require(active == null && loaded.writerGeneration() == durableGeneration, "Invalid baseline generation");
+        try {
+            var expected = EscrowCodec.encode(loaded);
+            var first = CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW);
+            var second = CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW);
+            EscrowTags.require(first.equals(second) && (first.isPresent() ? first.get().equals(expected)
+                    : loaded.writerGeneration() == 0 && loaded.records().isEmpty() && loaded.floors().isEmpty()
+                    && loaded.tombstones().isEmpty() && loaded.armedFlights().isEmpty() && loaded.rocketAuthorities().isEmpty()
+                    && loaded.issuedLaunchSerial() == 0), "Escrow checked baseline differs from loaded authority");
+            durableDigest = first.isPresent() ? EscrowCodec.digest(expected) : null;
+        } catch (RuntimeException failure) { throw new IllegalStateException("Escrow checked startup baseline unavailable", failure); }
     }
     public boolean request(Supplier<Snapshot> capture, Consumer<Completion> callback) {
         return request(capture, callback, () -> true);
@@ -195,7 +208,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         if (disk.isEmpty()) { return generation == 0; }
         EscrowLedger durable = EscrowCodec.decode(disk.get());
         return durable.id().equals(ledger) && durable.writerGeneration() == generation
-                && (digest == null || digest.equals(RocketNativeResources.signature(disk.get())));
+                && (digest == null || digest.equals(EscrowCodec.digest(disk.get())));
     }
     /** Like a hard stop for this ledger: no further move and no callback. Restart validates the target file. */
     private void abandon(long generation) {

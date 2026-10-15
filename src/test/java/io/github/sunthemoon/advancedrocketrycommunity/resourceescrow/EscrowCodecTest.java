@@ -23,7 +23,7 @@ class EscrowCodecTest {
     @Test void allUnsupportedFieldsTypesKindsHashesAndEpochsRefuse() {
         var root = EscrowCodec.encode(EscrowTestFixtures.ledger(EscrowTestFixtures.operation(1)));
         for (java.util.function.Consumer<CompoundTag> mutation : List.<java.util.function.Consumer<CompoundTag>>of(
-                tag -> tag.putInt("schema_version", 2), tag -> tag.putString("format_epoch", "other"),
+                tag -> tag.putInt("schema_version", 3), tag -> tag.putInt("schema_version", 1), tag -> tag.putString("format_epoch", "other"),
                 tag -> tag.putString("issued_through", "1"), tag -> tag.putLong("issued_through", 0),
                 tag -> tag.putInt("unknown", 0), tag -> tag.remove("ledger_id"),
                 tag -> record(tag).putString("kind", "ITEM_CARGO_LOAD"),
@@ -55,11 +55,7 @@ class EscrowCodecTest {
         assertThrows(IllegalArgumentException.class, () -> EscrowCodec.decode(bad));
         var tombstones = new ArrayList<CompoundTag>();
         for (int i = 1; i <= 64; i++) {
-            var tombstone = new CompoundTag(); tombstone.putInt("schema_version", 1);
-            tombstone.putUUID("op_id", EscrowTestFixtures.id(i)); tombstone.putInt("amount", 1_000);
-            tombstone.putString("payload_hash", EscrowTestFixtures.hash(i)); tombstone.putLong("audited_loss", 0);
-            for (String field : List.of("retired", "missing", "guards", "survivors")) { tombstone.put(field, new ListTag()); }
-            tombstones.add(tombstone);
+            tombstones.add(EscrowTestFixtures.receipt(i));
         }
         var full = new EscrowLedger(root.id(), 64, 0, root.records(), root.floors(), tombstones);
         assertEquals(full, EscrowCodec.decode(EscrowCodec.encode(full)));

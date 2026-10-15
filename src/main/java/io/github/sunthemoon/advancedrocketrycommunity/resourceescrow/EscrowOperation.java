@@ -9,7 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTick, Phase phase,
                               EscrowReason reason, CompoundTag payload, String payloadHash,
                               EscrowEndpoint source, EscrowEndpoint destination, EscrowGuard guard,
-                              Kind kind, CompoundTag settlement) {
+                              Kind kind, CompoundTag settlement, EscrowNativeBinding nativeBinding) {
     public enum Kind { FLUID_PROPULSION_FILL, TRANSFER_FLOOR_RETIRE }
     public enum Phase { PREPARED, STALLED, REPAIR, SETTLING_ACCEPT, SETTLING_ABANDON }
 
@@ -17,13 +17,19 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
                            EscrowReason reason, CompoundTag payload, String payloadHash,
                            EscrowEndpoint source, EscrowEndpoint destination, EscrowGuard guard) {
         this(id, sequence, owner, createdTick, phase, reason, payload, payloadHash, source, destination, guard,
-                Kind.FLUID_PROPULSION_FILL, new CompoundTag());
+                Kind.FLUID_PROPULSION_FILL, new CompoundTag(), EscrowNativeBinding.model(owner, source, destination));
+    }
+    public EscrowOperation(UUID id, long sequence, UUID owner, long createdTick, Phase phase, EscrowReason reason,
+            CompoundTag payload, String payloadHash, EscrowEndpoint source, EscrowEndpoint destination, EscrowGuard guard, Kind kind, CompoundTag settlement) {
+        this(id, sequence, owner, createdTick, phase, reason, payload, payloadHash, source, destination, guard, kind, settlement,
+                EscrowNativeBinding.model(owner, source, destination));
     }
 
     public EscrowOperation {
         Objects.requireNonNull(id); Objects.requireNonNull(owner); Objects.requireNonNull(phase);
         Objects.requireNonNull(reason); Objects.requireNonNull(source); Objects.requireNonNull(destination);
         Objects.requireNonNull(guard); Objects.requireNonNull(kind); Objects.requireNonNull(settlement);
+        Objects.requireNonNull(nativeBinding).requireOperation(owner, source, destination); nativeBinding.encode();
         EscrowTags.require(sequence > 0 && createdTick >= 0, "Invalid operation counters");
         EscrowTags.bound(payload, EscrowLimits.FLUID_BYTES, 12, 384);
         if (kind == Kind.FLUID_PROPULSION_FILL) {
@@ -74,7 +80,7 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
         EscrowTags.require(kind == Kind.FLUID_PROPULSION_FILL && settlement.isEmpty(), "Already settling");
         return new EscrowOperation(id, sequence, owner, createdTick,
                 intent.choice() == EscrowSettlementIntent.Choice.ACCEPT_CURRENT ? Phase.SETTLING_ACCEPT : Phase.SETTLING_ABANDON,
-                reason, payload, payloadHash, source, destination, guard, kind, intent.encode());
+                reason, payload, payloadHash, source, destination, guard, kind, intent.encode(), nativeBinding);
     }
     public EscrowOperation withReason(EscrowReason next) {
         if (phase == Phase.SETTLING_ACCEPT || phase == Phase.SETTLING_ABANDON) {
@@ -83,6 +89,6 @@ public record EscrowOperation(UUID id, long sequence, UUID owner, long createdTi
         EscrowTags.require(!reason.manual() || next == reason, "Manual repair cannot clear through an automatic retry");
         return new EscrowOperation(id, sequence, owner, createdTick,
                 next.manual() ? Phase.REPAIR : next.retryableProofFailure() ? Phase.STALLED : Phase.PREPARED,
-                next, payload, payloadHash, source, destination, guard, kind, settlement);
+                next, payload, payloadHash, source, destination, guard, kind, settlement, nativeBinding);
     }
 }

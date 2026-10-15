@@ -63,9 +63,10 @@ final class EscrowSettlementDisk {
                 && flight.state().acceptsFuel() && flight.passengers().assignments().isEmpty()
                 && (!found.contains("Passengers") || found.getList("Passengers", 10).isEmpty())
                 && (section.ledger() == null || ledger.equals(section.ledger())), "Disk rocket placement/occupancy changed");
-        String signature = RocketNativeResources.hash("arce-escrow-rocket-1:" + endpoint.logicalRocket() + ":" + snapshot.contentHash() + ":" + flight.fuel().resourceSignature());
+        String signature = flight.fuel().resourceSignature();
         return new EscrowSettlementIntent.Observation(endpoint, new EscrowPrefix.State(ledger, section.epoch(), signature, section.markers()),
-                section.ledger() != null, flight.fuel().totalAmount());
+                section.ledger() != null, flight.fuel().totalAmount(), EscrowSignatureKind.FUEL_VECTOR_V1,
+                EscrowInvariant.rocket(endpoint, EscrowTags.uuid(wrapper, "owner_id"), snapshot));
     }
     private static void collect(List<net.minecraft.nbt.Tag> entries, List<CompoundTag> result, int depth, boolean entities) {
         EscrowTags.require(depth <= 16, "Passenger observation depth exceeded");
