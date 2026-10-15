@@ -54,3 +54,34 @@ say exactly where the next continuation starts.
 
 - Production admission, W11b3, the bay slices, W27f reconstruction, and signed per-fluid accounting.
 - ADRs, the risk register, status files and the ledger (Root).
+
+## Root decision (2026-10-15): the proof scope of a pre-F2 cancellation
+
+This answers the clarification in `records/W11B2.md`, "Continuation 12" (`696b99ae`).
+
+1. **Before F2, cancellation needs no destination-slot proof.** An ARMED entry whose journal holds no
+   record T for it is cancelled by:
+   - the exact unchanged source E;
+   - a checked no-T state: an acknowledged journal baseline with no record for this logical rocket and
+     none naming this serial.
+
+   This is the F1 row's own rule. It is not an exception to F6.
+2. **Why it is sound.** No destination effect can exist before F2:
+   - F1 forbids COUNTDOWN and every resource change before F2;
+   - the destination UUID is fixed fresh for each serial;
+   - spawning at the destination needs the PREPARED record T, which only F2 writes.
+
+   So "destination absent" follows from "no T" before F2.
+3. **From F2 onward** (T exists), cancellation follows F6 to F8 with the proved absent destination, as
+   the paragraph below F8 and section 1's cancellation row say.
+4. **What stays unchanged:**
+   - UNKNOWN is never no-T;
+   - a journal that is not checked or acknowledged is a hold;
+   - no field is added to `Armed`.
+5. **Tests.** Add both of these with their S2 cuts (two restarts each), pinned to the committed source
+   and its jar:
+   - A0 and native: a cut on each side of ARMED replacement, then a restart that acknowledges CANCELLED
+     for E with no T;
+   - the negative case: with T written, the same restart must not take the pre-F2 path.
+
+Then continue the task from step 3 in its order.
