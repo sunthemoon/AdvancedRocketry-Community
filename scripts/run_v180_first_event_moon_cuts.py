@@ -55,8 +55,8 @@ CASES = {
     "FM8a": ("receipt_barrier_failed", True, "ELECTED", False, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED",)),
     # The receipt move succeeded before the directory force failed, so R(E) is on disk at the halt.
     "FM8b": ("receipt_barrier_failed", False, "ELECTED", True, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED",)),
-    "FM12a": ("fixture_stop", False, "ELECTED", False, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED",)),
-    "FM12b": ("fixture_stop", False, "ELECTED", False, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED",)),
+    "FM12a": ("fixture_stop", False, "ELECTED", False, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED", "Atomic SavedData save failed for advancedrocketrycommunity_classic_progression; retained dirty state")),
+    "FM12b": ("fixture_stop", False, "ELECTED", False, ("ARCE_PROGRESSION_RECEIPT_BARRIER_FAILED", "Atomic SavedData save failed for advancedrocketrycommunity_classic_progression; retained dirty state")),
 }
 HALT = re.compile(r"ARCE_RELEASE_TEST first_event_cut id=(\S+) boundary=(\S+) event=(\S+) thread=(.+)$")
 STATUS = re.compile(r"kind=first_moon_landing source=(\S+) event=(\S+) receipt=(\S+) hold=(\S+)")
@@ -306,6 +306,8 @@ def run(args) -> dict:
                     process.wait_for(re.compile("first_event_cut receipt_move_refused"), args.flight_timeout)
                     entry["landed_before_action"] = landed(case, process, args.delivery_timeout)
                     entity = entry["landed_before_action"]["entity"]
+                    origin = FlightHarness.report(process, MOON, entity)["origin"]
+                    process.command(f"execute in {MOON} run forceload add {origin[0]} {origin[2]}")
                     begin = len(process.lines)
                     process.command("save-all flush")
                     process.wait_for(smoke.SAVE_MARKER, 60, start_at=begin)

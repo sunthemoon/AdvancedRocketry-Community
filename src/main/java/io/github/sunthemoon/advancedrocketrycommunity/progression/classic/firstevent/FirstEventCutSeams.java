@@ -289,6 +289,19 @@ public final class FirstEventCutSeams {
         return CheckedSavedDataFile::atomicMove;
     }
 
+    /** FM12's refusal covers ordinary dirty saves too; other roots and ordinary production writes are unchanged. */
+    public static CheckedSavedDataFile.Committer ordinaryCommitter(ManagedSavedDataType type,
+                                                                  CheckedSavedDataFile.Committer normal) {
+        if (type == ManagedSavedDataType.CLASSIC_PROGRESSION && configured()
+                .filter(cut -> cut == Cut.FM12A || cut == Cut.FM12B).isPresent()) {
+            MinecraftServer server = net.minecraftforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server == null) { throw new IllegalStateException("The receipt save fixture has no running server"); }
+            EscrowTestEndpoints.requireEnabled(server);
+            return progressionCommitter(server);
+        }
+        return normal;
+    }
+
     /** Directory force of the station writer and the progression barrier: FM8b throws, in place of the Windows no-op. */
     public static CheckedSavedDataPolicy.DirectoryForce directoryForce(MinecraftServer server) {
         if (is(server, Cut.FM8B)) {

@@ -37,6 +37,9 @@ class FirstEventCutSeamsTest {
     private static void assertProduction() {
         for (ManagedSavedDataType type : ManagedSavedDataType.values()) {
             assertDoesNotThrow(() -> FirstEventCutSeams.beforeLoad(null, type));
+            io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer normal =
+                    (staged, target) -> fail("The policy resolution never performs IO");
+            assertSame(normal, FirstEventCutSeams.ordinaryCommitter(type, normal));
         }
         assertTrue(FirstEventCutSeams.participants(null, FirstEventKind.FIRST_MOON_LANDING).isEmpty());
         assertTrue(FirstEventCutSeams.warpVisitorCount(null).isEmpty());
