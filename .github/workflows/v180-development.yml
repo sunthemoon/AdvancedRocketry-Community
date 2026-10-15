@@ -98,6 +98,7 @@ jobs:
           python -B scripts/validate_build_artifact.py "$ARCE_ARTIFACT" --expected-version "$ARCE_BUILD_VERSION" --content-manifest "$EVIDENCE_DIR/jar-content-manifest.json" | tee "$EVIDENCE_DIR/artifact-audit.log"
           sha256sum "$ARCE_ARTIFACT" > "$EVIDENCE_DIR/artifact-sha256.txt"
           python -B scripts/check_client_imports.py | tee "$EVIDENCE_DIR/client-boundary.log"
+          python -B scripts/check_client_bytecode.py "$ARCE_ARTIFACT" --report "$EVIDENCE_DIR/client-bytecode.json" | tee "$EVIDENCE_DIR/client-bytecode.log"
 
       - name: Generate data and require a clean tracked and untracked tree
         run: |
