@@ -38,8 +38,8 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 90d0714dc5da7c7dc66801083b3f60543fa4d2e5
-latest_hosted_regression: run 38603920684 at cc36612c24e8a5c24c1433d9c284edfd01e64236, passed
+latest_code_commit: 5e59f5c034a11fe39ec42497b6c96a69bfa7727d
+latest_hosted_regression: run 38616170433 at 779191599dff0c678f236120d5a3166f8e87a2df, passed
 ledger_planned_units: 20
 asset_review_items: 154
 required_gates_approved: none
@@ -88,9 +88,9 @@ What is still open:
   No S1 campaign has run.
 - **S2.** The D3-A crash cuts wait for W11b2 and W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
-- **C19.** The governance workflow now runs the full Python suite on the shared branch. It is red
-  until W49F restores the historical models that W49 changed; the v0.8.0 evidence test fails
-  until then. The strict validator chain and the evidence references are not started.
+- **C19.** The governance workflow now runs the full Python suite on the shared branch. W49F
+  (`48d81584`) fixed its only failure, the v0.8.0 evidence test; the next governance run on the
+  shared branch confirms it. The W58 audit plans the rest of C19.
 - **Owner decisions.** Nine are pending; QUEUE.md lists them with what each one blocks.
 - **Risks.** R-021 and the risks the W slices added (R-028 to R-037) stay open.
 

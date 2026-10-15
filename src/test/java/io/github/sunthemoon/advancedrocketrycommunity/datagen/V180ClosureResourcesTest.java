@@ -1,8 +1,8 @@
 package io.github.sunthemoon.advancedrocketrycommunity.datagen;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonElement;
@@ -18,26 +18,61 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.zip.ZipFile;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Checks the packaged model tree, including native parents and inherited #texture variables. */
 class V180ClosureResourcesTest {
+    private static final Path OUTPUT = Path.of("src/generated/v1.8/resources");
+
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void unexpectedOutputLayoutsAreRejectedBeforeWritingSiblingRoots() {
-        assertThrows(IllegalArgumentException.class, () -> new V180ClosureModels(new PackOutput(Path.of("build/w49/export"))));
-        assertNotNull(new V180ClosureModels(new PackOutput(Path.of("src/generated/v1.8/resources"))));
+    @Test void allWritesStayInsideTheSuppliedOutputRegardlessOfItsLayout(@TempDir Path temporary) throws Exception {
+        Set<Path> expected = V180ClosureModels.bindings().keySet().stream().map(Path::of).collect(Collectors.toSet());
+        for (Path output : new Path[] {temporary.resolve("generated/v1.8/resources"), temporary.resolve("export")}) {
+            new V180ClosureModels(new PackOutput(output)).run(CachedOutput.NO_CACHE).get(10, TimeUnit.SECONDS);
+            for (var binding : V180ClosureModels.bindings().entrySet()) {
+                assertEquals(binding.getValue(), JsonParser.parseString(Files.readString(output.resolve(binding.getKey()))));
+            }
+        }
+        Set<Path> files;
+        try (var tree = Files.walk(temporary)) {
+            files = tree.filter(Files::isRegularFile).map(temporary::relativize).collect(Collectors.toSet());
+        }
+        Set<Path> expectedFiles = new HashSet<>();
+        expected.forEach(path -> {
+            expectedFiles.add(Path.of("generated/v1.8/resources").resolve(path));
+            expectedFiles.add(Path.of("export").resolve(path));
+        });
+        assertEquals(expectedFiles, files, "provider must not create files in sibling roots");
     }
 
     @Test void allThirteenAuditedModelTargetsMatchTheProviderAndThePackagedResource() throws IOException {
         assertEquals(13, V180ClosureModels.bindings().size());
         for (var binding : V180ClosureModels.bindings().entrySet()) {
             assertEquals(binding.getValue(), JsonParser.parseString(Files.readString(
-                    Path.of("src/generated").resolve(binding.getKey()))), binding.getKey());
-            String resource = binding.getKey().substring(binding.getKey().indexOf("assets/"));
+                    OUTPUT.resolve(binding.getKey()))), binding.getKey());
+            String resource = binding.getKey();
             assertEquals(binding.getValue(), read(resource), resource);
+        }
+    }
+
+    @Test void everyBindingIsPackagedExactlyOnceWithTheV18Bytes() throws IOException {
+        String jarPath = System.getProperty("arce.runtimeJar");
+        assertNotNull(jarPath, "runtime jar must be supplied by Gradle");
+        try (ZipFile jar = new ZipFile(jarPath)) {
+            for (String resource : V180ClosureModels.bindings().keySet()) {
+                assertEquals(1L, jar.stream().filter(entry -> entry.getName().equals(resource)).count(), resource);
+                try (InputStream input = jar.getInputStream(jar.getEntry(resource))) {
+                    assertArrayEquals(Files.readAllBytes(OUTPUT.resolve(resource)), input.readAllBytes(), resource);
+                }
+            }
         }
     }
 

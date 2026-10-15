@@ -49,7 +49,7 @@ class V180ClosureProvenanceTest {
         }
         Set<String> expected = new HashSet<>();
         V180ClosureArtTest.textures().forEach(texture -> expected.add(TEXTURES + texture + ".png"));
-        V180ClosureModels.bindings().keySet().forEach(path -> expected.add("src/generated/" + path));
+        V180ClosureModels.bindings().keySet().forEach(path -> expected.add("src/generated/v1.8/resources/" + path));
         assertEquals(29, expected.size());
         assertEquals(expected, entries.keySet());
     }

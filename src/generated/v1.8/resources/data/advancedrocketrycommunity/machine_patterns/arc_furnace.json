@@ -9,7 +9,9 @@
   "cells": [
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 0,
       "y": 4,
@@ -17,7 +19,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 1,
       "y": 4,
@@ -25,7 +29,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 2,
       "y": 4,
@@ -33,7 +39,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 3,
       "y": 4,
@@ -41,7 +49,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 4,
       "y": 4,
@@ -49,7 +59,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 0,
       "y": 4,
@@ -81,7 +93,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 4,
       "y": 4,
@@ -89,7 +103,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 0,
       "y": 4,
@@ -121,7 +137,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 4,
       "y": 4,
@@ -129,7 +147,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 0,
       "y": 4,
@@ -161,7 +181,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 4,
       "y": 4,
@@ -169,7 +191,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 0,
       "y": 4,
@@ -177,7 +201,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 1,
       "y": 4,
@@ -185,7 +211,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 2,
       "y": 4,
@@ -193,7 +221,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 3,
       "y": 4,
@@ -201,7 +231,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 4,
       "y": 4,
@@ -209,7 +241,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 0,
       "y": 3,
@@ -241,7 +275,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 4,
       "y": 3,
@@ -369,7 +405,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 0,
       "y": 3,
@@ -401,7 +439,9 @@
     },
     {
       "matcher": {
-        "tag": "advancedrocketrycommunity:machine_clearance"
+        "optional": {
+          "tag": "advancedrocketrycommunity:machine_clearance"
+        }
       },
       "x": 4,
       "y": 3,

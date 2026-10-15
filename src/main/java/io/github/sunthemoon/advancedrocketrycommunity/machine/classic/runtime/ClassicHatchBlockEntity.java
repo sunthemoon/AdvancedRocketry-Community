@@ -72,7 +72,15 @@ public final class ClassicHatchBlockEntity extends BlockEntity implements Multib
     void reconcileGeneration(ClassicControllerBlockEntity owner) {
         if (binding == null || loadedOwner() != owner || owner.ownerUnavailable() || owner.transaction()) { return; }
         var state = owner.controllerState();
-        if (state.generation() == 0) { return; }
+        if (state.generation() == 0) {
+            // A never-formed controller snapshot binds generation 1 with no previous binding, which adopts only a part
+            // already at generation 1 (W01G review L1). Release a later binding of this owner and keep its claim.
+            if (binding.generation() > 1 && sameOwner(binding, new MultiblockPartBinding(MultiblockPartBinding.SCHEMA_VERSION,
+                    level.dimension(), owner.getBlockPos(), state.machineInstanceId(), 1))) {
+                setMultiblockBinding(Optional.empty());
+            }
+            return;
+        }
         var current = new MultiblockPartBinding(MultiblockPartBinding.SCHEMA_VERSION,
                 level.dimension(), owner.getBlockPos(), state.machineInstanceId(), state.generation());
         if (reconcilableOwnedBinding(binding, current)) { setMultiblockBinding(Optional.of(current)); }

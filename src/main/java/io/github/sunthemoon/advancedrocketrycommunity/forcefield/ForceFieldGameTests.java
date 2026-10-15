@@ -24,6 +24,7 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.level.BlockEvent;
@@ -159,6 +160,28 @@ public final class ForceFieldGameTests {
             try { f.work(); } finally { MinecraftForge.EVENT_BUS.unregister(placement); }
             helper.assertTrue(f.source.state().claims() == 0 && f.data.view().get(f.identity.key()).claims() == 0,
                     "Standard placement cancellation changed bookkeeping");
+        }
+        helper.succeed();
+    }
+    @GameTest(template = "empty", batch = "force_field", timeoutTicks = 20)
+    public static void placementPreflightReadsTheSnapshotSourceNotAnUnchargedCell(GameTestHelper helper) {
+        try (Fixture f = new Fixture(helper, Direction.EAST)) {
+            f.power(true); f.work();
+            helper.assertTrue(f.level.getBlockState(f.identity.target(1)).is(ModBlocks.FORCE_FIELD.get()), "Offset 1 was not projected");
+            // W04F review N4: the cell below offset 2 is outside the 25-cell stencil, so the preflight must not read it.
+            BlockPos outside = f.identity.target(2).below();
+            helper.assertTrue(!FieldCellView.powerPositions(f.identity.source()).contains(outside), "Fixture cell lies inside the stencil");
+            f.level.setBlock(outside, Blocks.GLASS.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+            f.extras.add(outside);
+            List<BlockState> against = new ArrayList<>();
+            Consumer<BlockEvent.EntityPlaceEvent> observe = event -> {
+                if (event.getLevel() == f.level && event.getPos().equals(f.identity.target(2))) { against.add(event.getPlacedAgainst()); }
+            };
+            MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, false, BlockEvent.EntityPlaceEvent.class, observe);
+            try { f.work(); } finally { MinecraftForge.EVENT_BUS.unregister(observe); }
+            helper.assertTrue(against.equals(List.of(f.level.getBlockState(f.identity.source())))
+                    && f.level.getBlockState(f.identity.target(2)).is(ModBlocks.FORCE_FIELD.get()),
+                    "Offset 2 preflight was placed against " + against + " instead of the snapshot's projector");
         }
         helper.succeed();
     }

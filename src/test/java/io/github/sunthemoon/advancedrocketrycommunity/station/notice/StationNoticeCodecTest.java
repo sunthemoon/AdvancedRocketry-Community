@@ -207,10 +207,30 @@ class StationNoticeCodecTest {
         });
         assertFalse(BoundedNbt.fits(deep, StationNoticeLimits.MAX_ROOT_BYTES, StationNoticeLimits.MAX_ROOT_DEPTH,
                 StationNoticeCodec.MAX_ROOT_NODES));
-        assertThrows(IllegalArgumentException.class, () -> StationNoticeCodec.decode(deep));
+        assertPreflightRefuses(deep);
         CompoundTag large = mutated(root -> root.put("padding", new net.minecraft.nbt.ByteArrayTag(
                 new byte[StationNoticeLimits.MAX_ROOT_BYTES])));
-        assertThrows(IllegalArgumentException.class, () -> StationNoticeCodec.decode(large));
+        assertPreflightRefuses(large);
+        // W22 review F10: each bound on its own, under known keys, so only the preflight can refuse first.
+        CompoundTag heavy = mutated(root -> entry(root, 0).put("outcome", new net.minecraft.nbt.ByteArrayTag(
+                new byte[StationNoticeLimits.MAX_ROOT_BYTES])));
+        assertTrue(BoundedNbt.fits(heavy, Integer.MAX_VALUE, StationNoticeLimits.MAX_ROOT_DEPTH,
+                StationNoticeCodec.MAX_ROOT_NODES));
+        assertPreflightRefuses(heavy);
+        CompoundTag crowded = mutated(root -> {
+            ListTag acknowledgements = entry(root, 0).getList("acks", Tag.TAG_COMPOUND);
+            for (int node = 0; node <= StationNoticeCodec.MAX_ROOT_NODES; node++) {
+                acknowledgements.add(new CompoundTag());
+            }
+        });
+        assertTrue(BoundedNbt.fits(crowded, StationNoticeLimits.MAX_ROOT_BYTES, StationNoticeLimits.MAX_ROOT_DEPTH,
+                Integer.MAX_VALUE));
+        assertPreflightRefuses(crowded);
+    }
+
+    private static void assertPreflightRefuses(CompoundTag root) {
+        assertEquals("Station notice root exceeds its byte, depth or node bound",
+                assertThrows(IllegalArgumentException.class, () -> StationNoticeCodec.decode(root)).getMessage());
     }
 
     /**

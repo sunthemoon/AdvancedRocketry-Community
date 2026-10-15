@@ -85,10 +85,11 @@ give their SHA-256 values.
 | [W52](TASK-W52-ITEM-ICONS.md) | Asset closure batch K6: import the six class B item icons through the W48 importer and point their models at them; the `satellite*.png` plan rule is not split (an ADR-062 change) | Delivered `2c4cf4ca` (Codex): six imports CLEAR; models published from a new v1.8 provider after Root's exclusion of the six historical copies (`843f92c8`); both jars hold one copy each; 1,050 GameTests. Root merged shared (`5bed982f`, both Root build exclusions kept) and marked the six sources IMPORTED in the asset plan (exact rows for `satellite.png` and `satelliteidchip.png` ahead of the unchanged wildcard); validator passes. **Merged** `1fa44462` (hosted run 38587782134 at `5bed982f`). Three escrow unit tests failed in W52's loaded runs and pass on a lighter machine: W54 |
 | [W53](TASK-W53-ART-SCREEN-HITS.md) | Parallel bug found by the first governance run on shared (38556570618): the v1.8 art screen flags `station_light` (HIT, `glow_item_frame`) and four SUSPECT textures; redraw them until the whole root screens CLEAR, with no tool or threshold change | **Merged** `1c3d7c84` (Claude, hosted run 38588985967 at `2df02245`): the five textures redrawn in code; the whole v1.8 root screens CLEAR (187) with no tool or threshold change; old provenance entries kept, new ones added |
 | [W54](TASK-W54-ESCROW-TEST-TIMING.md) | Parallel bug: three escrow writer tests poll an off-thread writer against a five-second wall-clock deadline and fail under machine load; make them deterministic without extending timeouts | Delivered `d75ebe78` (Claude): a package-private test-controlled IO thread (public constructors unchanged) and owner-tick driving; with a 2 s injected write delay the original tests fail at W52's lines and the new ones pass; 3,146 unit tests, 1,057 GameTests. Root review passed. **Merged** (hosted run 38600185649 at `e6b2a9d0`) |
-| [W55](TASK-W55-FOLLOWUP-SWEEP.md) | Parallel bugs: sweep the open small review follow-ups (W01 L1-L3, W04 N4-N6, W10-R1, W13 N1-N3, W18 F8, W21b F9, W21c M1, W22 F8-F10, the GroundSurvey timing test): classify against current shared, fix the small ones each in its own commit | Implementer (Claude) since 23:45 |
+| [W55](TASK-W55-FOLLOWUP-SWEEP.md) | Parallel bugs: sweep the open small review follow-ups (W01 L1-L3, W04 N4-N6, W10-R1, W13 N1-N3, W18 F8, W21b F9, W21c M1, W22 F8-F10, the GroundSurvey timing test): classify against current shared, fix the small ones each in its own commit | Delivered `dc215299` (Claude): 11 of 17 rows fixed, each in its own commit with a test; the two timing tests measure server-thread cost (CPU plus GC pauses) with the 500 ms budget unchanged; 3,146 unit tests, 1,063 GameTests, log checker PASS with no new expectation. Four rows need a design or a Root decision (W04 N5, W13 N1, W21c M1, W22 F8). Root review passed. **Merged** `5e59f5c0` (hosted run 38615499442). Root decisions: the timing tests' change of measured quantity is accepted, because the docs/17 budget is for the server thread's own spike on the reference node and wall time on this shared machine also counts other processes; the budget is unchanged and wall times are still printed. W22 F8 is accepted as section 5.3's rule; W13 N1 is recorded as a known limitation in ADR-065's W13 note, with the fixes reconsidered with W11b3; W21c M1 is deferred after v1.8 (only a legacy root above its budgets reaches it); W04 N5 needs a design note and a review. ADR-064's W01F note and R-021 now say the quarantined controller's power plugs still receive FE |
 | [W56](TASK-W56-LEDGER-CANDIDATES.md) | Ledger audit: verify whether `makeMaterialsForOtherMods`, `spacebreathing` and `blockMotor` (still PLANNED) are delivered by merged slices, and propose rows for Root | Delivered `c9759af5` (Claude, audit only). Root applied two rows (`d2e482d3`): `enchantment:spacebreathing` and `libvulpes:java/blockMotor` are IMPLEMENTED (the motor addendum is its own file, because the motor `VERIFICATION.md` matches its folder's `checksums.txt`), and ADR-025 has an additive revision note for the enchanted native armor rule. The ledger has 20 PLANNED rows. `makeMaterialsForOtherMods` stays PLANNED: the owner-required disclosure is missing and the CHANGELOG says kernel recipes refuse tags (W57) |
-| [W57](TASK-W57-MATERIALS-FOR-OTHER-MODS.md) | Close `makeMaterialsForOtherMods` (W56 row 1): correct the CHANGELOG's tag rule, add the owner-required disclosure of the legacy gap, a whole-catalog test that every material-form machine ingredient uses its common tag, a C16d evidence file and a ledger proposal | Implementer (Claude) since 02:40 |
-| W49F (task on its branch) | Parallel bug from governance run 38591893577: W49 rewrote 13 historical generated models and three sealed provenance records in place, breaking the v0.8.0 release-evidence pin. Root restored them (`16c1ed71`, the v0.8.0 evidence validates again) and excluded the historical copies; the worker writes v1.8 copies | Implementer (Codex) since 00:36 |
+| [W57](TASK-W57-MATERIALS-FOR-OTHER-MODS.md) | Close `makeMaterialsForOtherMods` (W56 row 1): correct the CHANGELOG's tag rule, add the owner-required disclosure of the legacy gap, a whole-catalog test that every material-form machine ingredient uses its common tag, a C16d evidence file and a ledger proposal | Implementer (Claude) since 02:24 |
+| [W58](TASK-W58-C19-AUDIT.md) | C19 audit (audit only): classify every open C19 candidate as still needed, superseded or record only against shared and the hosted governance run; list the C19 exit criteria; propose at most six slices | Auditor (Claude) since 02:29 |
+| W49F (task on its branch) | Parallel bug from governance run 38591893577: W49 rewrote 13 historical generated models and three sealed provenance records in place, breaking the v0.8.0 release-evidence pin. Root restored them (`16c1ed71`, the v0.8.0 evidence validates again) and excluded the historical copies; the worker writes v1.8 copies | Delivered `c9465224`, `d1838d73`, `2c630908` (Codex): v1.8 copies of the 13 models and a test that every historical file matches its sealed inventory. Root review passed. **Merged** `48d81584` (branch run 38613210501 at `6e2aa174`); the two v0.8.0 evidence tests that failed governance pass locally after the merge |
 | [W11b1](TASK-W11B1-ESCROW-CORE.md) | D3-A escrow core: coordinator, ledger writer, barrier, test endpoints, S2 cuts; no production admission | **Merged** `f1eb5d83` (admission disabled; review MERGE-WITH-FOLLOWUP; W11b1F fixed all 11 findings; native 24/24; Root fix `548f0c3f` paces the escrow GameTests; hosted run 38360139403). ADR-065 W11b1 note, R-031 and R-032 added. E2 `BARRIER_UNSTABLE` closed by W29 |
 | [W11b2 design](TASK-W11B2-DESIGN-NOTE.md) | Design note closing P1 to P5 of the round-2 review before W11b2 code | **Merged** `811a5796`. Independent review (Codex) **APPROVE-WITH-CHANGES** (SHA-256 `8ec318a3…`): W11b2's implementation applies R1 to R6 (R1 and R2 High: a failed checked journal write stops dependent transfer effects; fenced retries stay classified, ticket-free and leave unrelated warps available). W11b2 starts after W11b1 merges |
 | W11b2 | D3-A rocket integration with R1 to R6 (admission stays disabled) | Part 1 = `0638009f..3c47fa07` (hook, shared admission core, rocket integration); branch CI 38445924580 passed; independent review (Claude) **BLOCK** (SHA-256 `8c1da511…`): F1 Critical, `updateFlightData` throws for every rocket with legacy scalar fuel (all rockets saved before `546eeefc`), so a fuel loader or a launch crash-loops the server; F2 Medium, the escrow interlocks also lock mounting, dismounting and movement of every rocket while any journal write is unacknowledged, in worlds without a ledger; F3 Medium, journal writes serialize transfer phase advances server-wide; F5 to F9 Low. [W11B2-P1F](https://github.com/sunthemoon/AdvancedRocketry-Community/blob/codex/v1.8.0-w11b2-part1-fix/docs/work/v1.8.0-root-queue/TASK-W11B2-PART1-FIX.md) (Codex, since 08:32, branch `codex/v1.8.0-w11b2-part1-fix` from `3c47fa07`) delivered `bb385e09`: scalar comparison for legacy fuel, ledger-only interlocks with dismounts never cancelled, own-record waits for board, leave and refuelling, the directory force, `Throwable` to UNKNOWN, discard callbacks that finish requests; 3,037 unit tests, 970 GameTests. Root review (a different model from the implementer) **MERGE-WITH-FOLLOWUP** (SHA-256 `8266bf6f…`): N1, a section bound to the current ledger is now never idle (fail-closed, unreachable without admission; restore before W11b3 with a test); N2, a full effect queue in `failBackToSource` (part 1, with F3). Shared merged in (`5a2a8080`), branch CI 38496618459 passed. **Part 1 merged** `61f818c3` with the fixes; ADR-065 W11b2 part 1 note and R-035 added. Shared run 38498876649 passed all 994 GameTests but its log checker caught vanilla's worldgen DUMMY block-entity WARN pair in a newly generated chunk; Root admitted it (`38cb3225`, air only, at most four each) and run 38500934985 passed. F3, F8 and F9 go to the risk register as follow-ups. Continuation 06 done `30e6e3fc`: audited connected O1 settlement intents; 2,996 unit tests, 11 native cases. Continuation 07 delivered `f447affd` (Codex): durable O2 observations, acknowledged O3 tombstones and journal removal, O4 release and floor retirement, the O-veto; permanent receipts fence unproved returning identities; 3,062 unit tests, 972 GameTests, 55 native cuts with 110 restarts; evidence `W11b2-C07/verification-05`. Root removed its three refused cleanup targets. Independent review of continuations 06 and 07 (fresh Claude) **MERGE-WITH-FOLLOWUP** (SHA-256 `9ec5c86f…`): merge condition F2, resolve the conflicts with P1F, fix N1 and rerun on the merged tree (continuation 08's scope); before settlement or admission is enabled, fix F1 High (after a surviving-rocket settlement the next flight's destination entity is identity-locked for ever), F3 (an unbound chosen survivor locks after its first resource change), F4 (one held settlement starves marker pruning; the O4 callback prunes the wrong receipt) and F5 (receipts record zero known loss for every accept-current decision, even a half-applied one); F6 to F12 Low (veto restarts held by an observation mismatch, a hold visible only as INFO, 64 lifetime tombstones, coverage gaps, per-tick re-observation, one actor UUID for all non-entity sources, missing `inspect` and `retry` commands). Continuation 08 (Codex) delivered partly, `e66360b0`: the shared merge (`16304a20`), the current-ledger idle fix and a legacy-fuel fix; 3,135 unit tests, 1,004 GameTests, 55 native cuts. It stopped for Root at two gaps: a settled rocket's next fresh launch is fenced (FLOOR_CONFLICT; the log checker fails on three warnings in its new test, so N1 is not closed), and credited-world reconciliation lacks a frozen native mutation envelope (two endpoint signatures) and reconstruction boundary. Root froze neither ad hoc: [design 2](https://github.com/sunthemoon/AdvancedRocketry-Community/blob/codex/v1.8.0-w11b2-rocket-integration/docs/work/v1.8.0-root-queue/TASK-W11B2-DESIGN-2.md) (Codex) delivered `9b889a14`: settlement successors for a fresh launch, preserved legacy hashes, the reconstruction limit, per-settlement pruning, UNKNOWN loss accounting and R-035 text; independent review (fresh Claude) **APPROVE-WITH-CHANGES** (SHA-256 `658fdf2a…`): H1 the fresh-launch proof covers only rockets with a receipt; H2 the frozen state is not durable, so a crash mid-flight holds the rocket; M1 keep the journal root at schema 2; M2 Root decides in-place change of the unreleased escrow schemas (no migration chain; pre-change development data refused fail-closed); M3 a missing source is REPAIR, reconstruction deferred to W27f; L1 to L9. Revision delivered `238f4b9a` (ARMED entries for every bound rocket with server serials and a replay exclusion; F1 checkpoints the exact source before ARMED; journal root stays schema 2; in-place escrow schemas; missing source is REPAIR); Root re-read section 1 and section 5.4 and froze it. Continuation 09 (Codex) merged shared (`7456c1cf`) and stopped for a proof-identity decision: bank-keyed prefix chains conflict with the rocket section's single epoch and the whole fuel-vector signature (reproducer `a135d140`). Root decided (`f83103fa`): a rocket endpoint's prefix identity is the physical rocket, `Unit` stays the bank selector, other endpoint kinds keep per-unit identity where their sections keep per-unit epochs. Resumed 00:56; Root re-reads section 1 and the F1 row, then the implementation. Parallel bug noted: `GroundSurveyScaleTest` START median 565 ms over its 500 ms budget once under full-build load. Continuation 08 (Codex, since 15:34): merge the shared branch with the part 1 fixes, close N1, credited-world reconciliation. Still open: signed per-fluid loss accounting, production admission |
@@ -118,74 +119,50 @@ Root cannot make these; each blocks only the work named.
 
 | Task | Scope | Dispatch when |
 |---|---|---|
+| [W52F](TASK-W52F-IMPORT-ROOT.md) | Parallel bug from governance run 38616170516: W52's six K6 icons sit in the v0.1.0 managed root `src/main/resources`, so `validate_v010_asset_baseline.py` fails. Move the v1.8 imports to `src/imported/v1.8/resources` (Root adds the `srcDir`), change the importer and both plans, regenerate the K6 record | First free implementer slot (before W59) |
+| [W59](TASK-W59-FIELD-RESERVATION-LOAD.md) | Parallel bug W04 N5: release the stray UNBOUND force-field reservation after an in-place NBT load; design note first, independent review before merge | When an implementer slot frees |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
 `2e7b214e`); Root first merges the shared branch into it so that the new trigger applies.
 
 ## Next candidates
 
-Source: W30's verified reconciliation, `records/W30-STATUS-PROPOSAL.md` on branch
-`codex/v1.8.0-w30-status` (`2bc87cee`), section 5. Dispatch order: progress first, then the
-parallel bugs.
+Updated 2026-10-15. Dispatch order: progress first, then the parallel bugs.
 
-- **Escrow chain:**
+- **Escrow chain** (the remaining C17a and C17c ledger rows):
+  - W11b2 continuation 09 (active), then its independent review;
   - W11b3: `fluid_fuel_loader` and the linker's rocket-binding half, with packaged S2 evidence
     (also W02 F3's refill);
-  - W11c: cargo Fluid loaders and unloaders;
+  - W11c: cargo fluid loaders and unloaders;
   - W11d: item cargo loaders and unloaders;
   - W11e: the full linker and the monitoring station;
-  - the satellite bay, after W27a's review (ADR-065 sections 4.2, 4.3 and 8).
-- **C16d** (ADR-064 section 10):
-  - the tracking circuit;
-  - the graph run with the Tau Ceti Levels removed;
-  - the rebalance and its CHANGELOG entries.
-- **C16a-07b:** one formation GameTest per motor tier (ADR-064 section 4.1).
-- **Chemical reactor special recipes:**
-  - the `space_breathing` enchantment application (ADR-066 section 5.1);
-  - the lossless carbon-cartridge refresh (section 3.1).
-- **C18a environment rules** (ADR-066 sections 3.2 and 3.3), in three or four tasks:
-  - torches and fire starters;
-  - non-player atmosphere effects, `atmosphere_bypass` and spawn admission;
-  - `vacuumDamage`;
-  - sleep and the two respawn options;
-  - underwater breathing;
-  - the space safety return;
-  - gravity-scaled fall damage, after its M1.
-- **The gas charge pad** (ADR-066 sections 4 and 9, D4). Needs the **owner's decision** first:
-  prove the player-file save ordering, or approve an alternative interaction.
-- **World-first advancements** `one_small_step` and `first_station_warp` (ADR-066 section 6.2,
-  D3), after W11b2.
-- **C18d** (ADR-066 section 7.1):
-  - client rendering of the black-hole sky;
-  - the elevator capsule effect, which needs an S2C carrier;
-  - producers for the `lathe`, `rolling_machine` and `machine_large` sounds;
-  - the sound-namespace fold;
-  - the manual listen;
-  - OBJ loading, once the assets are imported.
-- **Per-asset closure** of the 154 REVIEW assets (ADR-066 section 7.3).
-- **C19:**
-  - merge the validator chain (`82f82b1f`, `d605be33`);
-  - the full Python suite and the strict validator;
-  - the evidence references;
-  - `PORTING_MATRIX`;
-  - the ADR-068, ADR-070 and ADR-071 decisions;
-  - R32-03;
-  - the ledger closure.
+  - the satellite bay slices W27b to W27e (W27e needs the owner's decisions).
+- **World-first:** the remaining H rows and the migration refusal checks (W44L, active).
+- **C16d:** `makeMaterialsForOtherMods` (W57, active).
+- **The gas charge pad** (ADR-066 D4): needs the owner's decision first.
+- **C18d:** the manual listen (owner), the OBJ imports K1 to K5 (the owner's origin findings) and
+  then `modelBakeEvent`.
+- **Per-asset closure** of the 154 REVIEW assets: batches X1 and X2 need the owner; N1 waits for
+  the listen.
+- **C19:** the W58 audit (active), then the slices it proposes.
 - **S1, V1 and V2** for every merged slice, plus W08 R02. These are for the final campaign.
-- **Parallel bugs** (open follow-ups):
-  - W01 L1 to L3;
+- **Parallel bugs and follow-ups:**
   - W02F (native restart; the locked rocket);
-  - W04 N4 to N6;
-  - W10-R1;
-  - W13 N1 to N3;
-  - W18 F8;
-  - W21b F9;
-  - W21c M1;
-  - W22 F8 to F10;
+  - W04 N5: a stray UNBOUND force-field reservation after an in-place NBT load (persistence: a
+    design note and a review first);
+  - W13 N1's fixes, reconsidered with W11b3 (ADR-065 W13 note);
+  - extending W01 L2's `optional` clearance cells to the C16c and beacon patterns (the research
+    patterns are frozen by W21a);
+  - a player-facing line for the W13 N1 limitation, after W57's CHANGELOG change merges;
   - the intermittent `cancellationreleasesexactlyonetransferclaim` GameTest ("Pad fixture/flight did not
     become ready"; hosted run 38400162712 failed once at `01e6b457` and passed on rerun);
   - the 5 ms atmosphere-boundary budget, which needs an ADR (it recurred on 2026-10-13);
-  - the HotSpot C2 crash, if it recurs.
+  - the HotSpot C2 crash, if it recurs;
+  - the horse-family fall follow-up, which needs a Mixin ADR;
+  - the slow-falling Moon hover;
+  - W55 measured the first, cold ground-survey START at 505 to 523 ms of wall time on this machine
+    without induced load; the reference-node performance campaign should measure it;
+  - W21c M1 (pause paid research while the reservations exceed the bound): deferred after v1.8.
 
 ## Parked
 

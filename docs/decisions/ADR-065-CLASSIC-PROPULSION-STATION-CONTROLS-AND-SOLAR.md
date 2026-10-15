@@ -704,10 +704,13 @@ outcome and the audit line are kept.
   refuses later ones, with one WARN (`ARCE_STATION_NOTICE_NOT_KEPT`) per refusal. It cannot be
   reached in practice.
 
-**Open follow-ups from the review:**
-- a new member is shown the latest outcome from before they joined (F8);
-- default station names contain the creator's player name (F9);
-- two tests could be tightened (F10).
+**Follow-ups from the review (closed 2026-10-15):**
+- F8, a new member is shown the latest outcome from before they joined: Root accepted it as
+  section 5.3's rule. An unacknowledged member sees the latest outcome once, and a new member is
+  unacknowledged. The summary names no member.
+- F9, default station names contain the creator's player name: W55 corrected the records
+  (`deed8855`).
+- F10, two tests could be tightened: W55 tightened them (`d2a846f1`).
 
 ## 6. Landing pads, light and force fields (C17b)
 
@@ -866,6 +869,15 @@ corresponding BE identities offline on a copy, then verify a clean save and two
 restarts. Restart alone cannot repair either root; resource/flight journals must
 not be reset to clear a pad. Native forced-stop and operator acceptance remain
 separate verification, not supplied by an in-memory round trip.
+
+**Known limitation (W13F review N1, Root decision 2026-10-15).** The station-wide occupancy
+search visits only loaded, accessible entity sections and never loads a chunk. A rocket parked
+where the entities are unloaded or still loading is not found, so an arrival can be placed over
+it. v1.8 records this limitation. Two fixes are reconsidered with W11b3's preparation contract:
+requiring loaded entities in every arrival chunk (at most 16, without loading), and a bounded
+index of parked rocket regions (new persisted state, which needs a design note and a review).
+A refusal now logs one INFO line, `ARCE_PAD_OCCUPANCY_REFUSED`, naming the blocking rocket
+(W13F review N3, W55).
 
 ## 7. Beacon and finder (C17c)
 
