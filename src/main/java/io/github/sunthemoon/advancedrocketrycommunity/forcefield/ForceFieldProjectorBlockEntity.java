@@ -117,4 +117,26 @@ public final class ForceFieldProjectorBlockEntity extends ForceFieldNativeBlockE
             FieldCleanupSavedData.get(server.getServer()).reserve(reservationIdentity(), state.claims());
         }
     }
+    /**
+     * NBT loaded into a live projector (an operator's item BlockEntityTag, a structure template, /setblock or /data)
+     * replaces the identity onLoad reserved. Only this projector's own empty UNBOUND entry is released, then the loaded
+     * identity is reserved as onLoad would; bound, claimed and foreign entries are untouched (W04F review N5).
+     */
+    @Override protected Runnable replacing() {
+        if (quarantined() || state.owner().isPresent() || state.claims() != 0 || isRemoved()
+                || !(level instanceof ServerLevel server) || !registered(server)) { return () -> { }; }
+        FieldIdentity previous = reservationIdentity();
+        var data = FieldCleanupSavedData.get(server.getServer());
+        if (!data.holdsEmptyReservation(previous)) { return () -> { }; }
+        return () -> {
+            if (!quarantined() && reservationIdentity().equals(previous)) { return; }
+            data.releaseEmptyReservation(previous);
+            if (!quarantined()) { data.reserve(reservationIdentity(), state.claims()); }
+        };
+    }
+    /** Read from the loaded chunk's map, so the check neither loads a chunk nor promotes a pending block entity. */
+    private boolean registered(ServerLevel server) {
+        var chunk = server.getChunkSource().getChunkNow(worldPosition.getX() >> 4, worldPosition.getZ() >> 4);
+        return chunk != null && chunk.getBlockEntities().get(worldPosition) == this;
+    }
 }

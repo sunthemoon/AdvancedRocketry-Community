@@ -61,6 +61,17 @@ public final class FieldCleanupSavedData extends SavedData {
         setDirty();
         return true;
     }
+    /** A live unowned projector's own empty reservation: the all-zero owner sentinel, zero claims, not an orphan. */
+    boolean holdsEmptyReservation(FieldIdentity identity) {
+        return operational() && identity.owner().equals(FieldIdentity.UNBOUND_OWNER)
+                && new FieldCleanupRoot.Entry(identity, 0, false).equals(root.get(identity.key()));
+    }
+    /** NBT replaced that projector's identity in place, so nothing holds the entry any more (W04F review N5). */
+    boolean releaseEmptyReservation(FieldIdentity previous) {
+        if (!holdsEmptyReservation(previous)) { return false; }
+        forget(previous.key());
+        return true;
+    }
     public boolean canRemove(FieldIdentity identity, int claims) {
         return operational() && root.canOrphan(new FieldCleanupRoot.Entry(identity, claims, true));
     }
