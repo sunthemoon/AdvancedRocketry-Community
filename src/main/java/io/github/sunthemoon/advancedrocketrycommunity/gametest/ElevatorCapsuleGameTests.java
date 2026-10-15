@@ -227,6 +227,7 @@ public final class ElevatorCapsuleGameTests {
     @GameTest(template = "empty", batch = EXPIRY, timeoutTicks = 1200)
     public static void expiredArrivalWaitSendsAnEmptyDepartureProjection(GameTestHelper helper) {
         ProjectionFixture test = new ProjectionFixture(helper);
+        GameTestTickPacer unloadPacer = new GameTestTickPacer(test.fixture.server);
         helper.startSequence()
                 .thenWaitUntil(() -> test.fixture.registered(helper))
                 .thenExecute(test::bind)
@@ -242,7 +243,10 @@ public final class ElevatorCapsuleGameTests {
                     fixture.space.getChunkSource().removeRegionTicket(ElevatorRides.ARRIVAL, fixture.terminalChunk,
                             0, test.rider.getUUID());
                 })
-                .thenExecuteAfter(130, () -> {
+                // Unloading runs asynchronously. Give the unchanged countdown its normal 20 TPS wall time,
+                // rather than relying on an earlier batch to have drained the chunk worker queues.
+                .thenExecuteFor(130, unloadPacer::pace)
+                .thenExecute(() -> {
                     helper.assertTrue(test.fixture.space.getChunkSource().getChunkNow(test.fixture.terminalChunk.x,
                             test.fixture.terminalChunk.z) == null, "The injected arrival did not unload");
                     test.ordinaryTicks();

@@ -139,7 +139,13 @@ public final class LaserPhysicalGameTests {
         String zone = "gt_laser_" + markerId.toString().substring(0, 8);
         int[] chunks = new int[2];
         List<Map<String, Integer>> tickets = new ArrayList<>();
+        GameTestTickPacer readinessPacer = new GameTestTickPacer(fixture.server);
         helper.startSequence()
+                .thenWaitUntil(() -> {
+                    readinessPacer.pace();
+                    playerChunksReady(helper, owner);
+                    fixture.ready(helper);
+                })
                 .thenWaitUntil(() -> {
                     LaserTargetGameTests.chunkSaved(overworld, marker);
                     helper.assertTrue(target.endpointActive(), "The marker did not register: " + target.describe());
@@ -220,7 +226,9 @@ public final class LaserPhysicalGameTests {
                     helper.assertTrue(target.nextLayer() == marker.getY() - 3, "The cursor did not move down");
                     helper.assertTrue(overworld.getChunkSource().getLoadedChunksCount() <= chunks[0]
                                     && fixture.space.getChunkSource().getLoadedChunksCount() <= chunks[1],
-                            "A layer loaded a chunk");
+                            "A layer loaded a chunk: overworld " + chunks[0] + " -> "
+                                    + overworld.getChunkSource().getLoadedChunksCount() + ", space " + chunks[1]
+                                    + " -> " + fixture.space.getChunkSource().getLoadedChunksCount());
                     // ADR-054 section 12: no ticket of any type was added (review C11R-L7).
                     Map<String, Integer> markerTickets = TicketCounts.near(overworld, new ChunkPos(marker), 2);
                     Map<String, Integer> drillTickets = TicketCounts.near(fixture.space,
@@ -483,6 +491,23 @@ public final class LaserPhysicalGameTests {
         long solid = layer.stream().filter(cell -> !drill.getLevel().getServer().overworld().getBlockState(cell).isAir())
                 .count();
         helper.assertTrue(solid == 9, "A stopped layer was changed: " + solid + " solid cells");
+    }
+
+    /** Finish the connected owner's asynchronous view/simulation loads before measuring the drill's chunk delta. */
+    private static void playerChunksReady(GameTestHelper helper, ServerPlayer player) {
+        var players = player.server.getPlayerList();
+        int distance = Math.max(players.getViewDistance(), players.getSimulationDistance());
+        helper.assertTrue(distance >= 2 && distance <= 32, "Unexpected player chunk distance: " + distance);
+        // Player tickets are ENTITY_TICKING; their two-chunk outer ring is still FULL.
+        int radius = distance + 2;
+        ChunkPos center = player.chunkPosition();
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                helper.assertTrue(player.serverLevel().getChunkSource().getChunkNow(center.x + dx, center.z + dz)
+                                != null,
+                        "The owner's chunk loads have not finished at " + (center.x + dx) + ", " + (center.z + dz));
+            }
+        }
     }
 
     private static void click(GameTestHelper helper, net.minecraft.world.inventory.AbstractContainerMenu menu,

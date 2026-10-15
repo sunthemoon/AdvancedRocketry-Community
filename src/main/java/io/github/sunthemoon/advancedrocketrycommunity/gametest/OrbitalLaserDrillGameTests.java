@@ -72,9 +72,10 @@ public final class OrbitalLaserDrillGameTests {
         long seed = drill.seed();
         drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
         drill.storage().setEnergy(200_000);
-        fixture.startAsOwner(helper);
         int[] chunks = new int[2];
         helper.startSequence()
+                .thenWaitUntil(() -> fixture.ready(helper))
+                .thenExecute(() -> fixture.startAsOwner(helper))
                 .thenWaitUntil(() -> helper.assertTrue(drill.operationIndex() == 1, "No first operation: "
                         + drill.describe()))
                 .thenExecute(() -> {
@@ -117,9 +118,10 @@ public final class OrbitalLaserDrillGameTests {
         for (int slot = 0; slot < output.getSlots(); slot++) {
             output.setStackInSlot(slot, new ItemStack(Items.WOODEN_SWORD));
         }
-        fixture.startAsOwner(helper);
         LaserDrillTable.Entry expected = draw(CelestialIds.EARTH_ID, drill.seed(), 0);
         helper.startSequence()
+                .thenWaitUntil(() -> fixture.ready(helper))
+                .thenExecute(() -> fixture.startAsOwner(helper))
                 .thenWaitUntil(() -> helper.assertTrue(drill.status() == EndgameCode.OUTPUT_FULL,
                         "The drill did not pause: " + drill.describe()))
                 .thenExecute(() -> {
@@ -198,6 +200,7 @@ public final class OrbitalLaserDrillGameTests {
         OrbitalLaserDrillBlockEntity drill = fixture.drill();
         BlockPos casing = fixture.controller.south().above();
         helper.startSequence()
+                .thenWaitUntil(() -> fixture.ready(helper))
                 .thenWaitUntil(() -> helper.assertTrue(drill.structureCode() == EndgameCode.OK, "Not formed: "
                         + drill.describe()))
                 .thenExecute(() -> fixture.space.setBlockAndUpdate(casing, Blocks.AIR.defaultBlockState()))
@@ -371,10 +374,12 @@ public final class OrbitalLaserDrillGameTests {
         final UUID owner = UUID.randomUUID();
         final BlockPos controller;
         private final ChunkPos chunk;
+        private final GameTestTickPacer readinessPacer;
         private boolean closed;
 
         Fixture(GameTestHelper helper, ResourceLocation body) {
             server = helper.getLevel().getServer();
+            readinessPacer = new GameTestTickPacer(server);
             space = server.getLevel(CelestialIds.SPACE_LEVEL);
             stations = StationRegistrySavedData.get(server);
             stations.reserve(stationId, owner, "Laser fixture", body, helper.getLevel().getGameTime());
@@ -405,6 +410,15 @@ public final class OrbitalLaserDrillGameTests {
 
         OrbitalLaserDrillBlockEntity drill() {
             return (OrbitalLaserDrillBlockEntity) space.getBlockEntity(controller);
+        }
+
+        /** A FULL setup chunk is not yet a ticking chunk with its entity sections loaded. */
+        void ready(GameTestHelper helper) {
+            readinessPacer.pace();
+            helper.assertTrue(space.isPositionEntityTicking(controller),
+                    "The drill fixture is not entity-ticking: " + space.getChunkSource().getChunkDebugData(chunk));
+            helper.assertTrue(drill().structureCode() == EndgameCode.OK,
+                    "The drill fixture has not formed: " + drill().describe());
         }
 
         /** Starts through the owner's menu button, as a connected player next to the drill. */
