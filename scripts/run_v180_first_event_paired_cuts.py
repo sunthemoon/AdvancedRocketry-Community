@@ -117,6 +117,15 @@ def check(case, world, expected, recovered=False):
     old_journal, old_registry, old_progression = expected[moon.JOURNAL], expected[station.STATIONS], expected[moon.PROGRESSION]
     captured_event("first_moon_landing", journal[moon.OUTBOX].get("event"))
     captured_event("first_station_warp", registry[station.OUTBOX].get("event"))
+    if case != "FP6" and journal["transfers"] != old_journal["transfers"]:
+        raise smoke.SmokeError(f"{case}: a paired cut/recovery changed a retained reservation")
+    event = journal[moon.OUTBOX].get("event")
+    if event is not None:
+        records = [record for record in journal["transfers"] if record["transfer_id"] == event["transfer_id"]]
+        if (len(records) != 1 or records[0]["phase"] != "COMMITTED"
+                or records[0]["checksum"] != event["record_checksum"]
+                or records[0]["destination_entity_id"] != event["terminal_rocket_id"]):
+            raise smoke.SmokeError(f"{case}: the Moon event differs from its retained terminal reservation")
     if registry["orbital_clock"]["logical_tick"] < old_registry["orbital_clock"]["logical_tick"]:
         raise smoke.SmokeError(f"{case}: the root orbital clock moved backwards")
     if case in FAULTS and not recovered:

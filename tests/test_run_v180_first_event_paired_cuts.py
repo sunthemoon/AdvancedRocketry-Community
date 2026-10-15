@@ -16,7 +16,11 @@ class PairedOracleTest(unittest.TestCase):
                                          + cuts.moon.P1.bytes + cuts.moon.P2.bytes).hexdigest()
             return dict(event_id=cuts.moon.uuid_ints(ident), participants=cuts.moon.uuid_ints(cuts.moon.P1)
                         + cuts.moon.uuid_ints(cuts.moon.P2), fingerprint=fingerprint)
-        return {cuts.moon.JOURNAL: {cuts.moon.OUTBOX: {"schema_version": 1, "state": "DELIVERED", "event": event("first_moon_landing", 44)}, "transfers": []},
+        transfer, terminal = cuts.moon.uuid_ints(uuid.UUID(int=46)), cuts.moon.uuid_ints(uuid.UUID(int=47))
+        moon_event = event("first_moon_landing", 44)
+        moon_event.update(transfer_id=transfer, terminal_rocket_id=terminal, record_checksum="a" * 64)
+        record = dict(transfer_id=transfer, destination_entity_id=terminal, checksum="a" * 64, phase="COMMITTED")
+        return {cuts.moon.JOURNAL: {cuts.moon.OUTBOX: {"schema_version": 1, "state": "DELIVERED", "event": moon_event}, "transfers": [record]},
                 cuts.station.STATIONS: {cuts.station.OUTBOX: {"schema_version": 1, "state": "DELIVERED", "event": event("first_station_warp", 45)},
                                          "stations": [], "reservations": [], "orbital_clock": {"logical_tick": 1}},
                 cuts.moon.PROGRESSION: None}
@@ -34,6 +38,18 @@ class PairedOracleTest(unittest.TestCase):
         actual[cuts.moon.JOURNAL][cuts.moon.OUTBOX]["state"] = "EMPTY"
         with patch.object(cuts, "roots", return_value=actual):
             with self.assertRaises(cuts.smoke.SmokeError): cuts.check("FP10", Path("world"), expected)
+
+    def test_recovery_cannot_drop_a_reservation_or_rebind_the_terminal_entity(self):
+        expected = self.roots()
+        actual = copy.deepcopy(expected); actual[cuts.moon.JOURNAL]["transfers"] = []
+        with patch.object(cuts, "roots", return_value=actual):
+            with self.assertRaisesRegex(cuts.smoke.SmokeError, "retained reservation"):
+                cuts.check("FP10", Path("world"), expected, recovered=True)
+        actual = copy.deepcopy(expected)
+        actual[cuts.moon.JOURNAL][cuts.moon.OUTBOX]["event"]["terminal_rocket_id"] = cuts.moon.uuid_ints(uuid.UUID(int=48))
+        with patch.object(cuts, "roots", return_value=actual):
+            with self.assertRaisesRegex(cuts.smoke.SmokeError, "terminal reservation"):
+                cuts.check("FP10", Path("world"), expected, recovered=True)
 
     def test_root_time_can_advance_but_event_time_or_authority_cannot_change(self):
         expected = self.roots(); actual = copy.deepcopy(expected)

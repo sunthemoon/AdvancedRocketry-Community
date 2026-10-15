@@ -32,7 +32,9 @@ final class FirstEventAvailabilityCut {
         boolean ready = ClassicFirstEventDelivery.installed(server).orElseThrow().status().stream().anyMatch(line ->
                 line.startsWith("kind=" + healthy + " source=KNOWN:DELIVERED ")
                         && line.contains(" receipt=CONFIRMED hold=none "));
-        if (!ready) {
+        if (!ready || pending == FirstEventCutSeams.Cut.FP4
+                && !io.github.sunthemoon.advancedrocketrycommunity.station.warp.FirstEventStationFixtures.warpReady(server,
+                        java.util.UUID.fromString(System.getProperty(FirstEventCutSeams.STATION_PROPERTY, "")))) {
             if ((long) server.getTickCount() - armedTick > 1_200 || System.nanoTime() - armedNanos > 60_000_000_000L) {
                 throw new IllegalStateException("The healthy availability counterpart did not settle within the fixture bound");
             }

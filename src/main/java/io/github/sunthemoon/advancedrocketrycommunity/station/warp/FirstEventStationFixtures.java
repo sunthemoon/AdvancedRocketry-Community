@@ -54,6 +54,20 @@ public final class FirstEventStationFixtures {
                 station, result.code(), result.balance());
     }
 
+    /** The normal read-only diagnostic classifies the session before the FP4 action; no guard is bypassed. */
+    public static boolean warpReady(MinecraftServer server, UUID station) {
+        gate(server);
+        var diagnostics = StationWarpRuntime.service().orElseThrow().diagnostics(server, java.util.Optional.of(station));
+        var line = diagnostics.stream().filter(value -> motionClear(value, station)).findFirst();
+        line.ifPresent(value -> AdvancedRocketryCommunity.LOGGER.info(
+                "ARCE_RELEASE_TEST first_event_fixture motion_ready {}", value));
+        return line.isPresent();
+    }
+
+    static boolean motionClear(String diagnostic, UUID station) {
+        return diagnostic.startsWith("station=" + station + " ") && diagnostic.contains(" rockets_in_motion=false ");
+    }
+
     public static void unreadable(MinecraftServer server, UUID station) {
         gate(server);
         if (FirstEventCutSeams.configured().orElseThrow() != FirstEventCutSeams.Cut.FP11) { throw new IllegalStateException("FP11 is not armed"); }
