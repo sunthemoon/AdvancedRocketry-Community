@@ -50,6 +50,8 @@ public final class FirstEventCutSeams {
     private static final AtomicBoolean ELECTION_MOVED = new AtomicBoolean();
     private static final AtomicBoolean UNRELATED_FAILED = new AtomicBoolean();
     private static final AtomicBoolean RELEASED = new AtomicBoolean();
+    private static final AtomicBoolean LATCH_USED = new AtomicBoolean();
+    private static FirstEventCutLatch latch;
 
     private FirstEventCutSeams() {
     }
@@ -123,8 +125,12 @@ public final class FirstEventCutSeams {
         ELECTION_MOVED.set(false);
         UNRELATED_FAILED.set(false);
         RELEASED.set(false);
+        LATCH_USED.set(false);
+        if (latch != null) { latch.release(); }
+        latch = null;
         configured().ifPresent(cut -> {
             EscrowTestEndpoints.requireEnabled(server);
+            if (cut == Cut.FM9 || cut == Cut.FP5) { latch = new FirstEventCutLatch(); }
             AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_cut id={} armed", cut.id());
         });
     }
@@ -160,7 +166,7 @@ public final class FirstEventCutSeams {
 
     /** Saves the complete terminal DESCENT fixture on S, before any election write can block W. */
     public static void beforeMoonElection(MinecraftServer server, Runnable save) {
-        if (is(server, Cut.FM1, Cut.FM2A, Cut.FM6B, Cut.FM7)) {
+        if (is(server, Cut.FM1, Cut.FM2A, Cut.FM6B, Cut.FM7, Cut.FM9)) {
             save.run();
             AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture descent_saved");
         }
@@ -170,7 +176,21 @@ public final class FirstEventCutSeams {
     static void release(MinecraftServer server) {
         active(server).orElseThrow(() -> new IllegalStateException("No first-event cut is armed"));
         RELEASED.set(true);
+        if (latch != null) { latch.release(); }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture released");
+    }
+
+    /** Advances only the test latch's hard limit; no-op in production. */
+    static void fixtureTick(MinecraftServer server) {
+        if (latch != null) {
+            active(server).orElseThrow();
+            latch.tick(server.getTickCount());
+        }
+    }
+
+    /** Stop cannot wait for an unreleased test latch while draining the journal. */
+    static void stopFixture() {
+        if (latch != null) { latch.release(); }
     }
 
     /** Warp visitor count seam: the real saturating count in production; 4,097 for FW8b. */
@@ -292,6 +312,18 @@ public final class FirstEventCutSeams {
         }
         Cut cut = active(server).orElseThrow();
         return switch (cut) {
+            case FM9, FP5 -> {
+                FirstEventCutLatch delay = java.util.Objects.requireNonNull(latch, "The first-event latch was not armed");
+                yield Optional.of(new CheckedSavedDataPolicy(type, (staged, target) -> {
+                    if ((cut == Cut.FP5 || electionGeneration(staged, target)) && LATCH_USED.compareAndSet(false, true)) {
+                        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture latch_wait id={} thread={}",
+                                cut.id(), Thread.currentThread().getName());
+                        delay.awaitMove();
+                        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture latch_released id={}", cut.id());
+                    }
+                    CheckedSavedDataFile.atomicMove(staged, target);
+                }));
+            }
             case FM1 -> Optional.of(new CheckedSavedDataPolicy(type, (staged, target) -> {
                 if (electionGeneration(staged, target)) { halt(cut, "before_election_move", null); }
                 CheckedSavedDataFile.atomicMove(staged, target);

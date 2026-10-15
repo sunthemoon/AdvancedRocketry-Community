@@ -48,6 +48,7 @@ class FirstEventCutSeamsTest {
         assertDoesNotThrow(() -> FirstEventCutSeams.boundary(null, FirstEventCutSeams.RECEIPT_CONFIRMED,
                 FirstEventKind.FIRST_STATION_WARP, null));
         assertDoesNotThrow(() -> FirstEventCutSeams.beforeMoonElection(null, () -> fail("production does not save a fixture")));
+        assertDoesNotThrow(() -> FirstEventCutSeams.fixtureTick(null));
     }
 
     @Test void aParticipantOnlyFixtureStillRequiresHooksAndTheEmptyServerGate() {
