@@ -29,14 +29,14 @@ modern recipe/material/config mapping is a scoped technical choice, not literal
 owner-selected legacy numbers. No pending native interception, hatch writer,
 oxygen/typed/first-event semantic change or risk exemption is accepted here.
 
-The [original review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-airlock-contract-independent-review-20261007-01/REVIEW-01.md)
+The original review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-airlock-contract-independent-review-20261007-01/REVIEW-01.md`)
 retains two Medium findings; the separate
-[successor review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-airlock-contract-independent-review-20261007-01/REVIEW-02.md),
+successor review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-airlock-contract-independent-review-20261007-01/REVIEW-02.md`),
 SHA-256 `fa85b2ed74d2f20d5a86a32b54574831e066a78d98143d2a8164cae6ece88135`,
 reports them addressed at specification level with no new C/H/M. Root reads the
 complete review (`2e4de9`, exit 0). The pre-assignment primary prerequisite is
 provided by the separately scoped
-[placement report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-airlock-placement-native-facts-20261007-01/REPORT-01.md),
+placement report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-airlock-placement-native-facts-20261007-01/REPORT-01.md`),
 SHA-256 `d2a83138f5e1bf969e26bbcd2d61776b9404b4d21c97b093d499adc588f12e2b`.
 Root reads and hash-checks its final 7,845 bytes (`9c1573`, exit 0). It proves the
 public placement-state signature and native BlockItem null-to-FAIL branch before
@@ -75,7 +75,7 @@ priority change. No Tau fix or Gate acceptance is part of this source assignment
 Source worktree: `D:/GitHub/arce-v180-airlock-20261007`; branch:
 `codex/v1.8.0-airlock-source`; actual committed base:
 `0f9f46a5cb201b76cb17c80354b3d879a9abdd2b`. Root's
-[setup receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-and-airlock-root-progress-20261007-01/AIRLOCK-WORKTREE-SETUP-01.json)
+setup receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-and-airlock-root-progress-20261007-01/AIRLOCK-WORKTREE-SETUP-01.json`)
 records the fresh worktree/branch and clean status before assigning worker
 `c16a04_fluids`. The adoption/provenance checkpoint was normally pushed before
 worker art authoring; the existing Java basis at setup is unchanged from 8b3.

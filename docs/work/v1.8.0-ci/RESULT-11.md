@@ -42,14 +42,14 @@ SHA `55f00238971e4f9817d3324607eb1bc923c11b4e9a8954ee2c16ee9fa2c92785`.
 The bounded collector also retrieves the full attempt logs; all-member path,
 size and CRC checks precede retention. Archives are not kept or replayed here.
 
-[Artifact receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-c6-artifact-20261007-c18-25fa10/RETRIEVAL-01.json)
+Artifact receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-c6-artifact-20261007-c18-25fa10/RETRIEVAL-01.json`)
 SHA `19c8fe42301edbc3473cf4cf6dd10c5f82f2c7279b4b060103ef1ecb036994f1`;
-[attempt-log receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-c6-attemptlogs-20261007-c18-25fa10/RETRIEVAL-01.json)
+attempt-log receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/tau-c6-attemptlogs-20261007-c18-25fa10/RETRIEVAL-01.json`)
 SHA `27e27645fbcf9f32f53470a8478f76f5c9d51fd5c8b3a0d38162b542fa282039`.
 Root independently rehashes all 371 artifact plus 18 attempt-log retained members,
 12,478,245 bytes, with no mismatch. Duplicate consoles are not summed as tests.
 
-[Root raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-tau-c6-raw-audit-20261007-01/AUDIT-01.json),
+Root raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-tau-c6-raw-audit-20261007-01/AUDIT-01.json`),
 SHA `42b4ae4f996dad647ae84aba20603e5a0fd53bc5341a9f0a4c37afede6f5015e`,
 is an actual fresh Python `-B` exit 0. It binds actual XML cases, main terminal/
 observations/ERROR counts, empty diff/status receipts and raw tested-commit bytes.

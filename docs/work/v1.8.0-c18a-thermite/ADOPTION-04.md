@@ -13,16 +13,16 @@ are authorized. The owner remains the release and Gate approver.
   `517dc651cf5dcd4a290c96e013fbc22a32ec6ebf`; unchanged production baseline:
   `9c816af94bee0798d3c22d179fb40652c7648246`.
 - Fresh independent Claude session `9b47b2b9-6f27-4d8c-a0ac-b9af2e784d0d`:
-  [report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-runtime-contract-claude-review04-20261008-01/REPORT-01.md),
+  report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-runtime-contract-claude-review04-20261008-01/REPORT-01.md`),
   SHA-256 `9047f3129cbb1d4e54141ccc404f7e268b0370621af7789c46edc94904efdba1`.
   It reports zero Critical/High/Medium and four Low findings plus three distinct
   policy items. All nine Root I/O checks pass, including all 17 live governance
   reads before the first write. CLI exit 0, no cap, all interests released.
   Receipt records 40 Read, 4 Glob, 12 Grep, 1 Write and 2 Edit calls; the report's
   shorter “one Write” narration does not replace those actual tool counts.
-- Independent platform [report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-platform-qualification-20261008-01/reviewer-01/REPORT-01.md):
+- Independent platform report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-platform-qualification-20261008-01/reviewer-01/REPORT-01.md`):
   SHA-256 `e170d21f313804ba25eff15cb3b1185a946e1fb0dea836a5ce4abf2729c33a72`.
-- Root [rotation interface qualification](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-goal-execution-20261008-01/ROTATION-01.json):
+- Root rotation interface qualification (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-goal-execution-20261008-01/ROTATION-01.json`):
   SHA-256 `81ec68c32e52d2a421bf913a5d18d1ead318ebc3e3c767bcafcae70043ae0fdb`.
   The fresh reviewer compared east/south/west/north 0/90/180/270 to this record;
   this is not attributed to the platform technician or native/visual execution.

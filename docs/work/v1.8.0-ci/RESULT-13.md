@@ -31,20 +31,20 @@ regression in [RESULT-14](RESULT-14.md). No result below is rebound to that sour
 
 ## Exact evidence and independent audit
 
-[Collector report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-collector-preparation-20261007-c18-84a6e2/REPORT-01.md),
+Collector report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-collector-preparation-20261007-c18-84a6e2/REPORT-01.md`),
 SHA `d39af2a20fc765a59cee70f03d593974e02ad5a6780029f363fe1c72dde7b694`,
 records one admitted serial metadata/artifact/log collection: outer and three
 children exit 0, followed by audit and sealing exit 0. No network retry occurs.
 Artifact 11432272472 is 1,746,054 compressed bytes; API/container SHA
 `24980674598111a7f98769b08e39a41decde4c6579b0d5e82e09624ba72bc800`.
-[Artifact receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-artifact-20261007-c18-84a6e2/RETRIEVAL-01.json)
+Artifact receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-artifact-20261007-c18-84a6e2/RETRIEVAL-01.json`)
 SHA `e42c1372b5075f2009da9e36fbdce4dbf8de1d781d438853533d93689e573f09`;
-[attempt-log receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-attemptlogs-20261007-c18-84a6e2/RETRIEVAL-01.json)
+attempt-log receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-attemptlogs-20261007-c18-84a6e2/RETRIEVAL-01.json`)
 SHA `74ad4997dc6062cd05bdcd35d55103979392e12eb7f9346505f64038eb4f709c`.
 The finite collector checks archive paths, bounds, CRC and artifact API digest
 before retaining thin files; discarded archives are not independently replayed.
 
-Root's separate [raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-detector-33a-raw-audit-20261007-01/AUDIT-01.json),
+Root's separate raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-detector-33a-raw-audit-20261007-01/AUDIT-01.json`),
 SHA `b9066ddc4b222e4d0e32c3c17be579bf9f63f9be14cdc8fd84c86a10b97dc443`,
 actually exits 0 (tool `dabf47`): 394 retained files /12,572,608 bytes match
 their receipts. It parses all XML actual children and attributes, verifies the
@@ -54,7 +54,7 @@ The collector independently records 406 named observations without drift.
 
 ## Tau observations and remaining scope
 
-The [primary main stream](D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-artifact-20261007-c18-84a6e2/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log)
+The primary main stream (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-artifact-20261007-c18-84a6e2/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`)
 is 1,560,029 bytes, SHA
 `9cc9e5f9417acbeace1be2330a4e6b02820524d0ed8ba5b7fc0957d0126114d0`.
 PRE/POST at lines 2710-2711 correlate transfer
@@ -65,7 +65,7 @@ Tau cohort. Both samples retain test tick 743 and game time 14896; their nanos
 differ by 1,013,685,266. These are two sequential samples, not continuous
 readiness, live-service membership, native load-completion or unique-cause proof.
 
-[Independent investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-gametest-investigation-20261007-905ed2/REPORT-01.md),
+Independent investigation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/detector-33a-gametest-investigation-20261007-905ed2/REPORT-01.md`),
 SHA `e631c26bee1c92bf8d9858469cfc1151ce79f747f164ae92e6a9f1d38619fd47`,
 checks fixed source and raw observations; no particular production correction
 is justified. Readiness checks, cold destination, 270/1400-tick limits and

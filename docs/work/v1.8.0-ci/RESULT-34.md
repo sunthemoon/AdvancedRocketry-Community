@@ -6,16 +6,16 @@ Date: 2026-10-07. Exact source
 This supplements the dated Root-only [RESULT-33](RESULT-33.md).
 
 Root reads/hashes the complete different-agent
-[REPORT-01.md](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-independent-audit-20261007-c16-48e2b9/REPORT-01.md)
+REPORT-01.md (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-independent-audit-20261007-c16-48e2b9/REPORT-01.md`)
 (`0cc2a1`, exit 0), 11,785 bytes /SHA-256
 `6acbac184bc0b23b480bf03d2ae96c67bebd1321e43017473bfd2b0c4c807cfd`.
 The independent auditor does not read Root's audit, previous cohorts or
 RESULT-33 as an expected-result oracle. All 397 retained inputs/7,701,456 bytes,
 three named context inputs and 42 fixed Git reads are rechecked without drift.
 Root also hashes its
-[AUDIT-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-independent-audit-20261007-c16-48e2b9/AUDIT-01.json),
+AUDIT-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-independent-audit-20261007-c16-48e2b9/AUDIT-01.json`),
 `57a12a96d3c3df9059c5b8bae1563e0b490455b15c9cfb41f438700aa3d84845`,
-and [SUPPLEMENT-02.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-independent-audit-20261007-c16-48e2b9/SUPPLEMENT-02.json),
+and SUPPLEMENT-02.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-ci-independent-audit-20261007-c16-48e2b9/SUPPLEMENT-02.json`),
 `f5558fd2f00a1adb5a3bdc458bcf39f5f68350df812fe52b8da711dcd826b261`
 (`87d270`, exit 0).
 

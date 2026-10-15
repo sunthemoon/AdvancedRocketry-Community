@@ -17,7 +17,7 @@ Prepared Pump03/Tank05 commands have not executed on this candidate. No
 candidate10 native, S2, independent Java rebuild, authored-source acceptance,
 visual, multiplayer, long-load or version Gate pass is supplied.
 
-[Frozen audit packet](integration10-independent-evidence-audit-01.zip):
+Frozen audit packet (`integration10-independent-evidence-audit-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):
 SHA256 `e989d52aa00ce07ece3beb09320e38d6e8184b804d63f7ddb4b76234e5511181`,
 12,204,592 bytes /3,318 entries; manifest
 `338a6e2c72bbe8749404e5092138298fdd9f6bf7c555a4390e1d9f3e1548af56`;

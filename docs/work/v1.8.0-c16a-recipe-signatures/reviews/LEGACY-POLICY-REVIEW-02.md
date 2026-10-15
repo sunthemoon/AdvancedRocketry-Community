@@ -8,8 +8,8 @@ schema, byte and ownership bounds remain unchanged.
 
 | Proposal | Archive | SHA-256 |
 |---|---|---|
-| 1 | [Evidence](legacy-policy-round-01-evidence.zip) | `bc29d0f6ff0545876d967d8e84f66bc7612c6fcf9f0964c7a19bcf7893f4b2d6` |
-| 2 | [Evidence](legacy-policy-round-02-evidence.zip) | `ef6f3dfc4e415efcf532162ae29a6d6d710e3b93b25f6e3da832fa82b9db32e2` |
+| 1 | Evidence (`legacy-policy-round-01-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) | `bc29d0f6ff0545876d967d8e84f66bc7612c6fcf9f0964c7a19bcf7893f4b2d6` |
+| 2 | Evidence (`legacy-policy-round-02-evidence.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)) | `ef6f3dfc4e415efcf532162ae29a6d6d710e3b93b25f6e3da832fa82b9db32e2` |
 
 ZIP CRC and every manifest entry verify. The reviewed proposal SHA-256 is
 `8b4ba607fd5ccd3cf4449546b8e8eec8b76cde545eaafeb7c5b1dd54c331f595`;

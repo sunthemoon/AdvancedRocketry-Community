@@ -8,7 +8,7 @@ Workflow run **37628727531 /attempt 1 /job 112817138488**, push event on
 
 Root starts the bounded monitor (`4d5153`); the live session 60972 reports this
 later observation in `c9dac7`. The unchanged
-[MONITOR-03.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-20261007-01/MONITOR-03.json)
+MONITOR-03.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-20261007-01/MONITOR-03.json`)
 has SHA-256 `868e840845b5ee326822b2c142e475905281a2df82f735aaf396847d01a56b30`.
 Root reads its fields/hash (`0e3ad4`, exit 0): exact SHA/attempt match,
 run is `in_progress`, conclusion null, clean build/fresh unit step in progress.

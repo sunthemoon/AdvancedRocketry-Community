@@ -14,14 +14,14 @@
       "sha256": "6809c0c5527ee06ba02a27de5015ce0e1b6c39ccc8e2b6f819d07d32489c8dc2"
     },
     {
-      "bytes": 343,
+      "bytes": 345,
       "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/block/electrolyzer.json",
-      "sha256": "69e12b7279c521eabfcdf5317ef71ebe9da41eb93b1e4c8a4b97655d1b093900"
+      "sha256": "0f9690e33991c2b4d1d856bdec35f7c3b229a2eee5da60c8c0b06e37801c3cdb"
     },
     {
-      "bytes": 350,
+      "bytes": 320,
       "path": "src/generated/v0.2/resources/assets/advancedrocketrycommunity/models/block/electrolyzer_active.json",
-      "sha256": "7ec170112a3627a4265127670deec198c937915e0319dc4eda680f1615281764"
+      "sha256": "e2e8445f320b6173819d077676a0b68ca8f49ee6cd4ab807a4a5eb186046451b"
     },
     {
       "bytes": 62,

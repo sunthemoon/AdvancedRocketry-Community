@@ -36,10 +36,10 @@ The local mapped Forge 1.20.1-47.4.10 JAR is read-only, SHA-256
 `95eecc5985233d83a6571299f89f02de034267646da171f7b36a5be2d394d71e`.
 The initial unqualified `javap` command is unavailable and fails; the fresh
 explicit JDK executable succeeds. All new inspection output is under
-[the project-parent D evidence directory](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-native-fixture-corrections-20261006-01/).
+the project-parent D evidence directory (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-native-fixture-corrections-20261006-01/`).
 No class, JAR, world or ZIP copy is retained.
 
-The [different-agent actual-diff review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-fixture-correction-review-20261006-cc7624/REVIEW-01.md)
+The different-agent actual-diff review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-fixture-correction-review-20261006-cc7624/REVIEW-01.md`)
 finds one Low: native `hasTag()` hides tags on empty stacks, so the first new
 branch does not enforce its stated untagged condition. The original review and
 pins remain unchanged. A separate one-line correction checks `getTag() == null`,

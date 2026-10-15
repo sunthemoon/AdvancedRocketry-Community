@@ -38,8 +38,8 @@ fresh native cohort with the integrated current artifact;do not borrow the old
 - [x] Independent source review and exact Root integration:49+10 controls pass,
   no C/H/M/L;[source adoption](S1-LIVE-TAG-ACCEPTANCE-01.md).
 - [x] Fresh same-host native tag observation and independent result audit:
-  [native20](SIGNATURE-NATIVE-20-01.zip) and
-  [audit20](reviews/signature-native20-independent-01.zip);18 clean phases,
+  native20 (`SIGNATURE-NATIVE-20-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) and
+  audit20 (`reviews/signature-native20-independent-01.zip`);18 clean phases,
   60 protected comparisons and17 independent controls pass. Injected cuts,
   typed-versus-byte order and Electro literal-control limitations remain.
 

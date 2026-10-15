@@ -32,7 +32,7 @@ corrected-detector cohort remains historical in [RESULT-13](RESULT-13.md).
 
 ## Evidence and independent raw audit
 
-[Collector report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/common-826-ci-collection-20261007-c18-392bc7/REPORT-01.md),
+Collector report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/common-826-ci-collection-20261007-c18-392bc7/REPORT-01.md`),
 SHA `96c64b913243a92b429d9489a64aac9bfbb1f20106745f974d19f0b718b04d13`,
 retains actual GET-only metadata, retrieval commands, complete capture and
 separate successor analysis. Observation/retrieval/audit children exit 0; no
@@ -40,14 +40,14 @@ workflow restart, retry or product execution occurs locally.
 
 Artifact 11436182951 is 1,746,234 compressed bytes; API/container SHA
 `0831e69523f5823d9a88262358f807e4676fcd998310129bd62e61afafedd169`.
-[Artifact receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/common-826-ci-artifact-20261007-c18-392bc7/RETRIEVAL-01.json)
+Artifact receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/common-826-ci-artifact-20261007-c18-392bc7/RETRIEVAL-01.json`)
 SHA `bdcc0711dae81d443c157bc75cd8f6f4b4d852779c48951ae6c1a58e457ea338`;
-[attempt-log receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/common-826-ci-attemptlogs-20261007-c18-392bc7/RETRIEVAL-01.json)
+attempt-log receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/common-826-ci-attemptlogs-20261007-c18-392bc7/RETRIEVAL-01.json`)
 SHA `eeb883cf455c06c06425d1a38ba2f535dcf12ac781bbe98282e39ee6bf1dff82`.
 Archives were bounded and checked in memory; their CRC execution is not
 independently replayed from the retained thin records.
 
-Root's separate [raw audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-common-826-raw-audit-20261007-01/AUDIT-01.json),
+Root's separate raw audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-common-826-raw-audit-20261007-01/AUDIT-01.json`),
 SHA `c509c0b8b015bcced51e32123779e51f6e56e00e52173dea71d8ccdf7bffcf05`,
 actually exits 0 (tool `2709f8`). It rehashes **394 files /12,547,915 bytes**,
 parses every XML actual child count, verifies source/run/attempt identity, reads
@@ -56,7 +56,7 @@ GameTest failure set. It does not rerun Java or reconstruct archive/JAR bytes.
 
 ## Observations and remaining work
 
-[Primary GameTest log](D:/GitHub/ARCE-Task-Evidence/v1.8.0/common-826-ci-artifact-20261007-c18-392bc7/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log),
+Primary GameTest log (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/common-826-ci-artifact-20261007-c18-392bc7/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`),
 SHA `ffa2cae6a1da12aac285c2d4e9868120fac3fdf155ecc3cc55f1c73a7f79c148`,
 records Planetary leg 1 awaiting Venus: one Mars rocket in TRANSIT, PREPARED
 journal, no destination entity, origin `(64,125,0)`, loaded true /

@@ -4,7 +4,7 @@ Date:2026-10-04. No C/H/M/L finding observed within the frozen source/delta,
 XML,package,command/GT and archive-identity scope. This is not an independent
 Java/native replay or review of the auditor's later values/codec implementation.
 
-[Frozen audit](integration12-independent-evidence-audit-01.zip):70,130,361
+Frozen audit (`integration12-independent-evidence-audit-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):70,130,361
 bytes/467 entries,SHA256
 `602fbfc94225ced6817bde9ec927cb5d860770ad82877eb86d0ba12e768b3013`;
 manifest `cb774f01e96583820e007bb36c933d4c50e5b82ea4e477f19f128da43ea2f811`.

@@ -14,7 +14,7 @@ the Root evidence leaf; user AGENTS hash and unrelated tracked/index work are
 unchanged. At 2026-10-07T16:35:54Z, public API bound hosted run 37653204825 /
 attempt 1 to this SHA, clean-build step in progress. This is metadata-only,
 not a terminal/runtime result. The closed first
-[MONITOR-01.json](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-01.json)
+MONITOR-01.json (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-ci-20261008-01/MONITOR-01.json`)
 retains that exact source/run association separately from the active monitor log;
 do not reuse b8136f0b's passing units for f9f2d9d2.
 The subsequent own ended build-copy cleanup request was rejected before script
@@ -51,7 +51,7 @@ No asset, registry, protocol, server authority, schema or save behavior changes.
 ## Independent combined-source review
 
 Root fully read the different-agent
-[REPORT-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-binding-independent-20261007-01/REPORT-01.md)
+REPORT-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-binding-independent-20261007-01/REPORT-01.md`)
 on 2026-10-08 (`38e21f41ee3eefe9c759a19e14eb95eb6ff3c9b63b1e42e4a639d4f47c49eb48`).
 It reports no established C/H/M/L finding on six exact source/test postimages,
 25/25 static controls and mapped native method descriptors. Its initial
@@ -70,7 +70,7 @@ assessment is asserted. Reviewer reads/HEAD interests are released.
 ## Actual intermediate execution
 
 Root evidence:
-[c18d-hud-integration-root-20261007-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-integration-root-20261007-01/).
+c18d-hud-integration-root-20261007-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-integration-root-20261007-01/`).
 Space preflight: C 29,905,580,032 bytes / D 320,681,418,752 bytes; no other JVM
 was running. Java 17.0.7 and process-local TEMP/TMP/TMPDIR/java.io.tmpdir used
 the owned D evidence temp, with no global configuration change.

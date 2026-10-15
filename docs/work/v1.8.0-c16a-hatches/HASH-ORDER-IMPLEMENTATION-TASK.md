@@ -37,7 +37,7 @@ Independent actual-diff review precedes Root application.
 - [x] Root exact integration/build/DataGen/GT regression;full stock19 has a
   separate preserved UI-marker failure,not whole-cohort Gate admission.
 
-Frozen [author source](native-key-order-implementation-01.zip)
-`1ac02a13...` and [independent review](reviews/native-key-order-independent-01.zip)
+Frozen author source (`native-key-order-implementation-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md))
+`1ac02a13...` and independent review (`reviews/native-key-order-independent-01.zip`)
 `0c876ca5...` preserve exact source/commands/XML. Root verifies every archive
 entry and records. No native framing/hash/GuardTicket/world/API result follows.

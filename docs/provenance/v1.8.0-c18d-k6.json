@@ -23,7 +23,7 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "8c5146f5694f28bc99e1e0acbc2993d694ddc0efc12737845373f3ecfafbda50",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/data_satellite_package.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/data_satellite_package.png",
       "target_sha256": "8c5146f5694f28bc99e1e0acbc2993d694ddc0efc12737845373f3ecfafbda50",
       "transformation": [
         "Byte copy renamed from textures/items/opticalsensor.png to assets/advancedrocketrycommunity/textures/item/data_satellite_package.png."
@@ -72,7 +72,7 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "863dbbc076b4daa770dc6b862db599908f9103f6838e4013a799f2d33e5cf3f1",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/laser_lens.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/laser_lens.png",
       "target_sha256": "863dbbc076b4daa770dc6b862db599908f9103f6838e4013a799f2d33e5cf3f1",
       "transformation": [
         "Byte copy renamed from textures/items/basiclens.png to assets/advancedrocketrycommunity/textures/item/laser_lens.png."
@@ -122,7 +122,7 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "db8baf7f5c71b90168f5e2e638368b90951e19821f8a4d11046fd95e3038c930",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/satellite_control_chip.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/satellite_control_chip.png",
       "target_sha256": "db8baf7f5c71b90168f5e2e638368b90951e19821f8a4d11046fd95e3038c930",
       "transformation": [
         "Byte copy renamed from textures/items/satelliteidchip.png to assets/advancedrocketrycommunity/textures/item/satellite_control_chip.png."
@@ -178,7 +178,7 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "8506ef216d7f62b7f949462ba0f85011b998cfbf89e27986fbccccea25692e47",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/satellite_package.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/satellite_package.png",
       "target_sha256": "8506ef216d7f62b7f949462ba0f85011b998cfbf89e27986fbccccea25692e47",
       "transformation": [
         "Byte copy renamed from textures/items/satellite.png to assets/advancedrocketrycommunity/textures/item/satellite_package.png."
@@ -232,7 +232,7 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "935869eebe9c61e4c5f6b635d24844b5df444f0c8a8994aeca6b4a8821a05b87",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/solar_transmitter_module.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/solar_transmitter_module.png",
       "target_sha256": "935869eebe9c61e4c5f6b635d24844b5df444f0c8a8994aeca6b4a8821a05b87",
       "transformation": [
         "Byte copy renamed from textures/items/microwavetransmitter.png to assets/advancedrocketrycommunity/textures/item/solar_transmitter_module.png."
@@ -282,7 +282,7 @@
       "source_repository": "https://github.com/Advanced-Rocketry/AdvancedRocketry",
       "source_sha256": "23b9b5ddb27e95045162676e87ace3201bf140de62efff780a40ff395ff8aca4",
       "status": "UPSTREAM_AR_MIT",
-      "target_path": "src/main/resources/assets/advancedrocketrycommunity/textures/item/survey_scanner_module.png",
+      "target_path": "src/imported/v1.8/resources/assets/advancedrocketrycommunity/textures/item/survey_scanner_module.png",
       "target_sha256": "23b9b5ddb27e95045162676e87ace3201bf140de62efff780a40ff395ff8aca4",
       "transformation": [
         "Byte copy renamed from textures/items/oremapper.png to assets/advancedrocketrycommunity/textures/item/survey_scanner_module.png."
@@ -318,9 +318,9 @@
     "bytes": 0,
     "vertices": 0
   },
-  "plan_sha256": "f444b997938f58fd7d0cc6f1d8ae6ab76c4ee40d2402e91ea5ecaa2a758b7f27",
+  "plan_sha256": "6e35f81508d1af1d6a76d1da469e4c07d2e7e55e04f41f661b9ed7ac89d1e43d",
   "review": {
-    "content_digest": "bab2da2f3a0bc3ae96d08f1e2e2270857672cdc3f3da5e04f2733a6755c7dc47",
+    "content_digest": "0113d7b1dd7ad38108ba38cb5eadbe813aab09095c9d29ba08b7fcf45aafcbab",
     "findings": [],
     "reviewed_at": null,
     "reviewer": null,

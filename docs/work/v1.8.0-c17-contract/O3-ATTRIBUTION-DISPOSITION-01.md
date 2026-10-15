@@ -23,7 +23,7 @@ wording. This record uses Root's named transcription, not independent capture
 of the owner's original conversation.
 ```
 
-The [literal receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIRST-EVENT-OWNER-REPLY-01.json)
+The literal receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-terminal-root-integration-20261005-01/FIRST-EVENT-OWNER-REPLY-01.json`)
 remains 1,262 bytes, SHA-256
 `0d676b9d3c55536fd48d773e1487d423c6fc9757ef9970615d4ee713c6fa911b`.
 The owner's answer is “保护首次记录，暂停不确定窗口的旧数据重写（推荐）”.
@@ -34,10 +34,10 @@ export. This correction adds no owner answer or semantic decision.
 
 ## Review and actual verification
 
-The [author correction](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-o3-attribution-correction-20261005-3bc621/CORRECTION-01.md)
+The author correction (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-o3-attribution-correction-20261005-3bc621/CORRECTION-01.md`)
 is 4,707 bytes, SHA-256
 `a7bf5cef057e2fb7a35ee95044c7bda8baae294a2a00563e80e6e09d865287fd`.
-The [different-agent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-o3-attribution-review-20261005-d8112a/REVIEW-01.md)
+The different-agent review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-o3-attribution-review-20261005-d8112a/REVIEW-01.md`)
 is 10,072 bytes, SHA-256
 `07432baf5110e58b80955a3f9bee9f342b3ddcdcdfae320f7b8f8214bea52436`.
 It identifies no introduced C/H/M/L within the exact paragraph/delta scope.
@@ -50,7 +50,7 @@ no whole replacement or original packet is copied.
 Root reads the complete correction/report/review and actual receipt, then runs
 a fresh Python 3.13.15 `-B` named-manifest intake: exit 0; author 15 payloads /
 44,072 bytes /16 checksums and reviewer 14 /69,240 bytes /15 checksums verified.
-[Root intake](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-o3-root-disposition-20261005-01/ROOT-INTAKE-01.json)
+Root intake (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-o3-root-disposition-20261005-01/ROOT-INTAKE-01.json`)
 records the exact argv and metadata hashes. No old checker or Java runs.
 
 ## Disposition and unchanged prerequisites

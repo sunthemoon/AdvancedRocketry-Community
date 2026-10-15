@@ -5,7 +5,7 @@ Exact source `b8136f0b8a41e64d51798f18e03127ebdd35693f`, run 37628727531
 /attempt 1 /artifact 11485063909. Full regression remains **FAILED**.
 
 Root fully reads/hashes the separate (`4984ed`, exit 0)
-[audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-independent-audit-20261007-01/REPORT-01.md),
+audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-seed-inputs-ci-independent-audit-20261007-01/REPORT-01.md`),
 SHA-256 `6719f31f15edd8a08071cd6097eb42cedf1625323c27fb7ea11c5d6a7c9573eb`.
 The independent final seal `d2d878` exits 0; 397 retained members and 13 named
 external inputs show zero drift. Its original control errors and separately

@@ -174,6 +174,31 @@ public final class C16cMachineGameTests {
         }
         helper.succeed();
     }
+    /** W10 review R1: the live guard, not the load-time quarantine, refuses the batch after the last ordinal. */
+    @GameTest(template = "empty", batch = "w10_ordinal_live", timeoutTicks = 30)
+    public static void lastOrdinalCompletesLiveThenTheNextBatchIsRefusedWithoutConsuming(GameTestHelper helper) {
+        try (var fixture = new C16cMachineFixture(helper, "centrifuge", Direction.NORTH)) {
+            CompoundTag original = fixture.controller.saveWithFullMetadata(), saved = original.copy();
+            saved.getCompound(ClassicCheckpointCodec.ROOT).putLong("batch_ordinal", Long.MAX_VALUE - 1);
+            fixture.controller.load(saved); fixture.manager.observe(fixture.controller); fixture.manager.tick();
+            helper.assertTrue(!fixture.controller.repairRequired() && fixture.controller.formed()
+                    && fixture.controller.checkpoint().batchOrdinal() == Long.MAX_VALUE - 1, "The last-but-one ordinal did not load live");
+            var recipe = fixture.recipe("centrifuging_enriched_lava"); fixture.seed(recipe);
+            fixture.tick(recipe.rows().processingTicks() + 1);
+            helper.assertTrue(fixture.controller.checkpoint().job().isEmpty() && fixture.controller.checkpoint().batchOrdinal() == Long.MAX_VALUE
+                    && fixture.controller.checkpoint().lastTransaction().isPresent(), "The last allowed batch did not complete: " + fixture.controller.reason());
+            fixture.clearOutput(); fixture.seed(recipe);
+            var resources = fixture.resources(); int energy = fixture.controller.storedEnergy();
+            helper.assertTrue(energy == recipe.rows().processingTicks() * recipe.rows().energyPerTick(), "The second batch was not fully powered");
+            fixture.tick(5);
+            helper.assertTrue(fixture.controller.reason() == ClassicWait.LIMIT && fixture.controller.checkpoint().job().isEmpty()
+                    && fixture.controller.checkpoint().batchOrdinal() == Long.MAX_VALUE && !fixture.controller.repairRequired()
+                    && fixture.controller.storedEnergy() == energy && resources.equals(fixture.resources()),
+                    "The live guard did not refuse the batch after the last ordinal without consuming: " + fixture.controller.reason());
+            fixture.controller.load(original); fixture.manager.observe(fixture.controller);
+        }
+        helper.succeed();
+    }
     private static List<io.github.sunthemoon.advancedrocketrycommunity.machine.classic.adapter.ClassicItemOutput> choices(C16cMachineFixture fixture, ClassicMachineRecipe recipe) {
         if (recipe.rows().chanceOutputs().isEmpty()) { return List.of(); }
         return ClassicChanceSelection.choose(recipe.rows().chanceOutputs(),

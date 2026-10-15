@@ -13,7 +13,7 @@ The [actual diff](independent.diff) matches the author diff byte-for-byte:
 modern source hashes, both owner receipts and the accepted C18 contract.
 Fifteen complete technical intervals, six tables and coverage/source companions
 are unchanged. [Packaging evidence](packaging-evidence.json) and the
-[original manifest](original-file-hashes.json) retain original filenames;
+original manifest (`original-file-hashes.json`) (see the [external evidence manifest](../../../v1.8.0-external-evidence/MANIFEST.md)) retain original filenames;
 the manifest's REVIEW-04.md/TASK.md refer to REVIEW-04.raw.txt/TASK.raw.txt.
 
 D1-A, full-vector disassembly consent/isolation, D2-A and D3-A match the owner

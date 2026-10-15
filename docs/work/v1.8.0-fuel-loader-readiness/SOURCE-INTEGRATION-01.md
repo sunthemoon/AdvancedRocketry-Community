@@ -32,7 +32,7 @@ baseline. No extra entity was filtered or removed to make an assertion pass.
 ## Independent source review
 
 New Codex worker `/root/fuel_loader_source_review` used a separate, non-resumed,
-read-only task. No Claude was dispatched. Its [report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-loader-source-review-20261010/REPORT.md)
+read-only task. No Claude was dispatched. Its report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-loader-source-review-20261010/REPORT.md`)
 is 13995 bytes, SHA-256
 `f7d03d33b77f72ccf70b13fcf876a3fdc87c9b3bfb54e3355e6c4076fc5a7fc9`.
 It requested no source revision, conditional on Root's actual native regression.
@@ -43,7 +43,7 @@ multi-chunk/negative positions, off-thread refusal and same-tick pacing were
 covered. These checks are not an independent native loader/world execution.
 Source/command cutoff was `2026-10-10T14:01:07.974787+00:00`, before Main moved.
 
-The separate [investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-loader-independent-20261010/REPORT.md)
+The separate investigation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-loader-independent-20261010/REPORT.md`)
 retains the count-attribution limitation and establishes no production loss or
 duplication. Its read cutoff was `2026-10-10T13:47:27.9034782Z`.
 
@@ -109,7 +109,7 @@ New read-only worker `/root/fuel_loader_integration_review` independently checke
 35 original receipts and complete streams, the native terminal/log hash and
 headers, all 846 actual generated payload hashes, candidate/merge parents and
 input equality, status conservation, original failures and admitted cleanup
-scope. Its [report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-loader-integration-review-20261010/REPORT.md)
+scope. Its report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-loader-integration-review-20261010/REPORT.md`)
 has SHA-256 `2f207031b4a7ec7160b001513b9961e3ac5108d94b835c7d6d100a2dd043b89a`.
 It found no actionable inconsistency in the four frozen proposed records and
 recommended committing them with limitations preserved. Its final read/command
@@ -141,7 +141,7 @@ The web reader still showed cached in-progress HTML and could not open the API;
 the fresh task-owned unauthenticated REST observations returned 200 and retain
 their exact bytes, times, identities and hashes. No credential was requested.
 
-Root [evidence leaf](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-loader-root-20261010)
+Root evidence leaf (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-loader-root-20261010`)
 contains TASK, original/successor helpers, corrections, attempt02 raw streams
 and receipts, complete generated/XML inventories, RESULT-AUDIT.json, native log,
 OUTPUT-RETIREMENT.json, exact CI metadata and integration command receipts.

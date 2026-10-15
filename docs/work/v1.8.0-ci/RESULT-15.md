@@ -29,14 +29,14 @@ No result is rebound to the later diagnostic commit.
 
 ## Evidence
 
-Root's fresh [raw/JAR audit](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-row-60f-raw-audit-20261007-01/AUDIT-01.json),
+Root's fresh raw/JAR audit (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-row-60f-raw-audit-20261007-01/AUDIT-01.json`),
 SHA `305739a8fa508fc3e15adc16c1876db30267ba49af3717103c1512f5d111116f`,
 actually exits 0 (tool `c08e62`). **398 retained files /18,322,358 B** are
 rehashed before/after without mismatch; exact source/run/attempt, every XML,
 build/DataGen/cleanliness and full GameTest terminal are checked independently.
 No Java is rerun by that audit.
 
-The separate [collector report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/row-60f-ci-collection-20261007-c18-31ac09/REPORT-01.md),
+The separate collector report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/row-60f-ci-collection-20261007-c18-31ac09/REPORT-01.md`),
 SHA `1a65f9b7d4a2eb74612b22ecf16065a4d6e4fa72537201d182810c490e7026ed`,
 records four actual retrieval/metadata children and outer exit 0, complete
 captures and an independent raw audit with matching derived results. An earlier
@@ -56,7 +56,7 @@ build artifact **11440230650** has container SHA
 Root checks retained identities, not an independent replay of the downloaded
 outer archives' CRC. The actual JAR stays external, not duplicated into Git.
 
-[Primary GameTest log](D:/GitHub/ARCE-Task-Evidence/v1.8.0/row-60f-ci-artifact-20261007-c18-31ac09/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log),
+Primary GameTest log (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/row-60f-ci-artifact-20261007-c18-31ac09/raw/0c4e7f51dede697d7724aaaf77ee2f800f2bc7bbbbaa36cc0361b4f3fed2eda5.log`),
 SHA `a84d54dea2cce65495b52a7ee5051c76ec459ca7fde149d77edbd4a38a6d9bde`,
 contains the pass/build-success terminal. API metadata is not substituted for
 raw results.

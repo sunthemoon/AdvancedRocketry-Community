@@ -13,7 +13,7 @@ The existing conditional owner authorization is quoted in CONTRACT-02; no new
 owner decision, major semantics, paid execution or broad source permission.
 
 Root reads/hashes the full repository-projection
-[review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-hud-projection-independent-review-20261007-r1-44fc28/REVIEW-01.md)
+review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-hud-projection-independent-review-20261007-r1-44fc28/REVIEW-01.md`)
 (`cd896d`, exit 0), SHA-256
 `b9149f9c9634e12c6d46c4bd39c3caff868a3809a20626dce3be19ec42231c71`.
 It binds the reviewed projection CONTRACT-02 SHA-256
@@ -34,7 +34,7 @@ The task names only three proposed NEW worker files and three existing Root
 adapter/config/test files, using the actual registered overlay. No worktree or
 source is claimed; no Claude model/auth session runs. Installed 2.1.292 CLI's
 bounded version/help preflight is retained separately in the
-[feasibility report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-handoff-feasibility-20261007-c16-ea41b8/REPORT-01.md),
+feasibility report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-cli-handoff-feasibility-20261007-c16-ea41b8/REPORT-01.md`),
 not authentication, OS isolation or paid-use evidence. Execution route/model/
 usage limits and exact worktree/base claims must precede any worker authoring.
 

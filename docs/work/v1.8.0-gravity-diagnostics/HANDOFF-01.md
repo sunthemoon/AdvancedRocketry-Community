@@ -47,7 +47,7 @@ was added.
 ## Actual verification
 
 Own thin evidence directory:
-[gravity-switch-diagnostics-author-20261006-9c4061](D:/GitHub/ARCE-Task-Evidence/v1.8.0/gravity-switch-diagnostics-author-20261006-9c4061).
+gravity-switch-diagnostics-author-20261006-9c4061 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/gravity-switch-diagnostics-author-20261006-9c4061`).
 All new Python subprocess temporary environment points to its `tmp` directory.
 
 - `python -B check_static02.py`: exit 0, 20 lexical controls, no input drift.

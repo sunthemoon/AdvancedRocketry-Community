@@ -5,7 +5,7 @@ build/package/GT and stopped-native result scope. This auditor does not review
 its own earlier Signature/Bank source work and did not replay Java/Minecraft.
 Independent module/fixture source reviews remain separate authorities.
 
-[Frozen audit](integration11-independent-evidence-audit-01.zip):66,656,912 bytes,
+Frozen audit (`integration11-independent-evidence-audit-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)):66,656,912 bytes,
 3,655 entries, SHA256
 `4d2ba002d7b8ca1176f8fe25eff251753ed92551ca48b4d6c70d3065c3941ff2`;
 manifest `4f5a71f9208a58c934b3a56dc03c8403422f81a9cb251a62eac46b13abcc4fa3`.

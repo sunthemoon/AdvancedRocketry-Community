@@ -11,7 +11,7 @@ ASSIGNMENT-01, TASK-01 and ADOPTION-01; historical process facts stay intact.
 ## Evidence and decision authority
 
 Root fully reads the independent actual helper/test/proposal
-[REVIEW-01](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-claude-source-independent-20261007-r1-4a862c/REVIEW-01.md)
+REVIEW-01 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-hud-claude-source-independent-20261007-r1-4a862c/REVIEW-01.md`)
 (`b19e44`, exit 0), SHA-256
 `7781065e65856f8f5815daf87b5c58567d8e9c5a6bc9e1ddbd809bf6719a9453`.
 It reports no scoped Critical/High/Medium functional geometry finding and one

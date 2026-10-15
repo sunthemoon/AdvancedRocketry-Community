@@ -11,7 +11,7 @@ scope boundary. No public API, gameplay ID, persistence writer or driver is adde
 
 ## Independent source review
 
-[Review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-stages-source-review-20261005-548dc7/REVIEW-01.md):
+Review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-stages-source-review-20261005-548dc7/REVIEW-01.md`):
 12,611 bytes / SHA-256
 `587d64014ac79216589ec895b26be9649c8549217122373f803f42d683326b8a`.
 No introduced Critical/High/Medium/Low finding was observed in the exact four-file
@@ -33,7 +33,7 @@ review's first collector fails after a successful 200-test child; its corrected
 collector reads the same original log. Original cleanup exits 1 with an ordinary
 Windows PowerShell NullReferenceException, leaving 43 entries /47,570 regular
 bytes /one alias. That failed cleanup remains immutable. A separately authorized
-[correction](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-stages-cleanup-followup-20261005-24d6f9/REPORT-01.md),
+correction (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-stages-cleanup-followup-20261005-24d6f9/REPORT-01.md`),
 SHA `478cde3ef2c306c2c0713a1ce3a6d74fb8f6800a68548e938b48905b0f215fb4`,
 removes those 43 entries using Core PowerShell literal nonrecursive operations;
 both exact disposable targets are absent. Root verifies 22 payloads /58,334
@@ -47,7 +47,7 @@ its separate correction verifies the source pins, then Windows PowerShell refuse
 the native script under its execution policy before the body runs. Both attempts
 delete zero files. No policy change, alternate-shell deletion or forced checkout
 retirement follows. This is temporary-copy debt, not a source finding.
-Root verifies the [failed correction report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-stages-author-copy-cleanup02-20261005-bb7cd690/REPORT-02.md),
+Root verifies the failed correction report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18c-stages-author-copy-cleanup02-20261005-bb7cd690/REPORT-02.md`),
 SHA `a149502c7472a02156b44440e46da2e9afec03303032784433f0e891572aed3c`,
 with its 24 payloads /85,347 bytes /25 sums; the original locator-failure packet
 has 16 payloads /27,417 bytes /17 sums and remains unchanged.

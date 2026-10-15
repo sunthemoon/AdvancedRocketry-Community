@@ -34,17 +34,17 @@ delays, deadlines and assertions are unchanged.
 
 ## Retained evidence
 
-The [collector report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-80463-observation-20261006-c18-8a60f3/REPORT-01.md)
+The collector report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-80463-observation-20261006-c18-8a60f3/REPORT-01.md`)
 is 6,409 bytes, SHA-256
 `3f92eaeb66d54800bea352160fbf523dc03c5b4ec4b1bbaefdf15c841bff1347`.
 The unchanged bounded collector verifies exact source/run/attempt, archive
 digest and CRC, then retains 367 mapped streams /7,358,410 bytes. Artifact
 11363616391 is 1,713,451 compressed bytes, SHA-256
 `7c5cfbd0d22c3ca5e0c0c5cd9c86e412a751c53df62f19e36ac76e934c4a5507`.
-[Retrieval receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-80463-attempt1-20261006-c18-01/RETRIEVAL-01.json),
+Retrieval receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-80463-attempt1-20261006-c18-01/RETRIEVAL-01.json`),
 SHA-256 `4dc52a1ae38efcf98ef44f73292fdc5873b872d36192b8fdd4bf40105ff5b7a6`,
 maps the literal finite streams; the collector independently rehashes them and
-parses every retained JUnit XML. The [different-agent retained-stream review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-80463-result-review-20261006-6a193f/REVIEW-01.md),
+parses every retained JUnit XML. The different-agent retained-stream review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-hosted-80463-result-review-20261006-6a193f/REVIEW-01.md`),
 SHA-256 `82a906a6f5058b2d4b8f303042617a332e3af7ce80b02615f762021b8d16c84e`,
 independently reproduces all hashes/counts, three native failure sets/status bars,
 DataGen facts and the lookup-qualified Tau observation. Its two failed reviewer
@@ -59,12 +59,12 @@ The independently reviewed Laser fixture correction is separately published
 at `86a819ca564c43206c6b9272c0b79076fceaa874`. It correlates registration with
 the exact serialized Save rather than assuming 25 ticks imply no native save.
 The same-call negative control and original downstream assertions/25/300 limits
-remain. Its [source review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-target-save-source-review-20261006-9d572a/REVIEW-01.md)
+remain. Its source review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/laser-target-save-source-review-20261006-9d572a/REVIEW-01.md`)
 finds no introduced C/H/M/L; the new hosted replay is pending.
 
 Root's separate targeted `javac -proc:none --release 17` compiles the exact Tau
 and Laser postimages against 117 existing cached classpath dependencies, exit 0.
-[Command/result](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-test-compile-20261006-01/RESULT-01.json)
+Command/result (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-test-compile-20261006-01/RESULT-01.json`)
 explicitly records that this is not a clean build or GameTest execution. The four
 temporary class outputs are removed; logs/argv/source hashes remain. Root's two
 new clean integrated Tau/Laser worktrees are normally retired after exact main

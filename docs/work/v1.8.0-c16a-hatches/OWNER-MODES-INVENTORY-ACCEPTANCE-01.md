@@ -5,8 +5,8 @@ server creative ingress/client/native/runtime admission remains incomplete.
 
 Under the owner's conditional no-unresolved-Critical/High/Medium authority,
 Root adopts only the exact additive inventory/witness delta in
-[amendment01](guard-inventory-owner-modes-amendment-01.zip),after different-agent
-[review01](reviews/guard-owner-modes-independent-01.zip). No further product
+amendment01 (`guard-inventory-owner-modes-amendment-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)),after different-agent
+review01 (`reviews/guard-owner-modes-independent-01.zip`). No further product
 choice was identified;this does not make the complete physical adapter ready.
 
 Author SHA `2f87e34176689cf53fab74291a81d6ccccc60ddf2f6127c4c7bd58f7fdc4958f`.

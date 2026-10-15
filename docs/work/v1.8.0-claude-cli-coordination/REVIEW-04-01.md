@@ -14,19 +14,19 @@ binds parents, tasks, sessions, final scopes, costs and preserved observer error
 
 ## Findings and current-version remaining scope
 
-- [Graph report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-access04-independent-20261008-01/reviewer-01/REPORT-01.md):
+- Graph report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c16d-graph-access04-independent-20261008-01/reviewer-01/REPORT-01.md`):
   original A1-A4 are addressed in proposed text. New AO12 needs an effective
   FUELED-state prerequisite before asserting INVALID_DESTINATION. Full graph
   R1 High, R2-R5, effective catalogs, concrete bindings and real observations
   remain open. No whole-graph or runtime acceptance follows from this scoped
   absence of introduced Critical/High/Medium.
-- [Audio report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-start04-independent-20261008-01/reviewer-01/REPORT-01.md):
+- Audio report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18d-audio-start04-independent-20261008-01/reviewer-01/REPORT-01.md`):
   same-tick PRESTART and purpose/kinded accounting improve the proposal, but
   I2 cannot detect the stated unlogged path, T-A-02 retains the incompatible
   traversal/total-charge equality, and two tests need explicit queue prefixes.
   Handoff read/edit counts differ from captures. Earlier M2/M4/L1, real ports,
   assets, one-shots and Root numeric choices remain open.
-- [Equipment report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-commit04-independent-20261008-01/reviewer-01/REPORT-01.md):
+- Equipment report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18b-equipment-commit04-independent-20261008-01/reviewer-01/REPORT-01.md`):
   ordering/refusal/alias/withdrawal clauses address or narrow their prior
   findings. BT27 lacks an incoming bounded-tag-content witness; callback and
   notification windows disagree. SQ-1..3, RP-1..6, all native preservation and
@@ -44,7 +44,7 @@ recorded. Earlier missing reads/origin errors are not retroactively repaired.
 
 ## Thermite-only preparation, not production authority
 
-The [fixed-source readiness report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-implementation-readiness-independent-20261008-01/reviewer-01/REPORT-01.md)
+The fixed-source readiness report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/v180-implementation-readiness-independent-20261008-01/reviewer-01/REPORT-01.md`)
 finds no fresh production leaf ready at main 4ac74585. Root selects a small
 thermite acquisition/ordinary-light contract instead of starting blocked
 machines. TASK is committed/pushed at 4f946d39; its three unchanged returns are
@@ -55,7 +55,7 @@ AGENTS read is omitted: seven scope/identity controls pass, the eighth read
 control fails and the runner exits 1. This actual deviation is not the earlier
 EOF observer bug. Turn-limit/result discrepancy is retained without claiming
 its enforcement proved. Different-agent technical review has now completed:
-[sealed report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-contract-independent-20261008-01/reviewer-01/REPORT-01.md),
+sealed report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-contract-independent-20261008-01/reviewer-01/REPORT-01.md`),
 SHA-256 a695e66581b4bbf1f966cd8a80c6a4e9ce54d7e82b6c0449933c302f82eebec9,
 finds 0 Critical/High, 2 Medium and 1 Low. The exact-item thermite ingredient
 conflicts with accepted material-tag interoperability; NEW art preparation is
@@ -78,7 +78,7 @@ torch family are not silently reduced by this narrower preparation.
 
 The separately registered fresh call returns candidate
 a8133ec107e07b1b471b82b9263c8e1287c36f36, parent d4a7aea9. Its completed
-[independent actual-diff report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-correction02-independent-20261008-01/reviewer-01/REPORT-01.md),
+independent actual-diff report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18a-thermite-correction02-independent-20261008-01/reviewer-01/REPORT-01.md`),
 SHA-256 e79cc44edb686eb28e71155d5b3cb9a3c77ecb0e57b54a93b25267300427586b,
 finds 0 Critical/High/Medium and 1 new Low. Original tag/art/acquisition findings
 are addressed in replacement text only, not whole-contract/runtime acceptance.
@@ -119,7 +119,7 @@ build copy is created and no rejected cleanup is retried.
 Author/runner packets are sealed once; source candidates and exact command/
 hash/backup receipts are named in the new dispatch and Root disposition evidence
 under D:/GitHub/ARCE-Task-Evidence/v1.8.0. The prior six-file metadata candidate
-0e03254d has [independent actual-commit review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-revision04-metadata-independent-20261008-01/reviewer-01/REPORT-01.md),
+0e03254d has independent actual-commit review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/claude-revision04-metadata-independent-20261008-01/reviewer-01/REPORT-01.md`),
 SHA-256 8adadea98348fac6b530889acfb1fbebdaafb133b47e3e9ef454a94663c02679:
 no introduced metadata finding, 458 documentary controls and 251 final drift
 controls pass. Its reviewer's transient 104,468,269-byte own evidence-cap breach

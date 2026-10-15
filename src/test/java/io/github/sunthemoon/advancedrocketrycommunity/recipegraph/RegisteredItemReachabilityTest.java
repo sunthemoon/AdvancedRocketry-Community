@@ -121,7 +121,7 @@ class RegisteredItemReachabilityTest {
     }
 
     /** Discover the providers from the real central register method; a newly wired registry cannot be skipped. */
-    private static Set<String> registered(String registerType) throws IOException, ReflectiveOperationException {
+    static Set<String> registered(String registerType) throws IOException, ReflectiveOperationException {
         String packageName = "io.github.sunthemoon.advancedrocketrycommunity.";
         Path sourceRoot = Path.of("src/main/java");
         String registrations = Files.readString(sourceRoot.resolve(packageName.replace('.', '/')

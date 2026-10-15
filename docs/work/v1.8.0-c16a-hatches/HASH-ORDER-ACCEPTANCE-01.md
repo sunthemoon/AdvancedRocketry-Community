@@ -2,8 +2,8 @@
 
 Date:2026-10-04. Status:TECHNICAL_RULE_ACCEPTED,not code/runtime admission.
 
-Root adopts the exact [proposal01](hash-order-proposal-01.zip) after the
-[independent review](reviews/hash-order-independent-01.zip) reports0 Critical/
+Root adopts the exact proposal01 (`hash-order-proposal-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) after the
+independent review (`reviews/hash-order-independent-01.zip`) reports0 Critical/
 High/Medium/Low under the owner's conditional contract authorization.
 For hash-v1 compound key ordering:compare complete unsigned ordinary UTF-8
 byte sequences first;only a complete primary tie compares original unsigned

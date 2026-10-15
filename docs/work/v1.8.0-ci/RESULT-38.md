@@ -7,7 +7,7 @@ attempt 1, job 112783570613, v180-development.yml, push event.
 
 Root's bounded API monitor starts as tool `d71d95`, process session 55164;
 one exact-source run is bound and subsequent observations do not restart CI.
-Retained [MONITOR-07](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-20261007-01/MONITOR-07.json)
+Retained MONITOR-07 (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-supply-diagnostic-ci-20261007-01/MONITOR-07.json`)
 is observed 2026-10-07T12:18:12.629523+00:00, SHA-256
 `884a280027c8f3c1d6916539404b92fa30471cbe3cc03c19f464872f734b1129`.
 Tool `170646` reads/hashes that exact receipt, exit 0. Its API source SHA,

@@ -448,11 +448,14 @@ only when it carries none of the six classic controller roots, so that path disc
 nothing. A partial set (for example a present resources root without its machine
 root, or the reverse) is quarantined like bounded unsupported/future roots: present
 roots are saved verbatim, missing roots stay missing, nothing is reset or dropped and
-no save is refused. The quarantine affects only that controller (no ticking, no hatch
-capabilities, no ordinary removal of it or its hatches), lasts until an offline repair
+no save is refused. The quarantine affects only that controller (no ticking, no Item or
+Fluid hatch capabilities, no ordinary removal of it or its hatches; its power plugs still
+receive FE, which stays in the plug and is not spent), lasts until an offline repair
 (restarts do not clear it), writes no log line (the controller reports REPAIR) and is
 recovered with the R-021 procedure. (Corrected by W01G on 2026-10-12: the W01F text
-reset a controller when either required root was missing.)
+reset a controller when either required root was missing. Corrected by Root on 2026-10-15
+after W55: the earlier text said "no hatch capabilities", but the power plugs still accept FE;
+the GameTest `quarantinedControllerPlugStillReceivesFeAndSpendsNone` pins it.)
 The existing exception-based guard refuses the whole terrain chunk; a 257th
 distinct denied coordinate saturates the entire Level. Denial lasts for the Level
 lifetime with no production reset and no total save-retry or ERROR/stack-log bound.

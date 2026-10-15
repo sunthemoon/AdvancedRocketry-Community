@@ -39,7 +39,7 @@ or any Required Gate.
 | `src/main/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicChunkRecords.java` | 3,634 | `f52da1bd91c6c621731ac257b405115a07a034076e3e14e7d2154250e59d8d19` |
 | `src/test/java/io/github/sunthemoon/advancedrocketrycommunity/machine/classic/adapter/ClassicChunkRecordsTest.java` | 7,174 | `4609a228fdfc6611b5db9980d1c33855e0e09f69c8e568533aa22adbf0846d77` |
 
-The [final independent review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-source-review-20261007/REVIEW-01.md)
+The final independent review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-source-review-20261007/REVIEW-01.md`)
 is sealed at SHA256
 `ae7b83561bdaa830bc07fc50d9f5d3686854eadd6a6cbcb98f29060a3c867873`.
 It establishes no Critical/High/Medium or code finding in these two files. Its
@@ -56,14 +56,14 @@ unreadable roots, native list/entry shape, wrong-ID roots, coordinate coercion,
 duplicates, chunk/Y boundaries, the exact 256/257 physical limit, immutable
 detached output, signed-coordinate/overflow edges and foreign/null tags.
 
-- Root's [original cached replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-check-20261007-01/RESULT-01.json)
+- Root's original cached replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-check-20261007-01/RESULT-01.json`)
   has actual javac/Jupiter exits 0/0, ten passed and zero failure/abort/skip or
   container failure, with 44 named inputs unchanged.
-- The [independent cached replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-source-review-20261007/RESULT-01.json)
+- The independent cached replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-source-review-20261007/RESULT-01.json`)
   has fresh javac/Jupiter exits 0/0, the exact ten source method identities
   executed and passed, no failure/abort/skip or container failure, with 45 used
   inputs unchanged. Its final union postcheck retains 62 unchanged named inputs.
-- Root's subsequent [fixed-commit replay](D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-fixed-check-20261007-01/VERIFICATION-01.md)
+- Root's subsequent fixed-commit replay (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/root-chunk-records-fixed-check-20261007-01/VERIFICATION-01.md`)
   runs after publication, compares both source files with their committed Git
   objects and passes the exact ten subjects with javac/Jupiter exits 0/0 and
   46 named inputs unchanged. It is separately sealed, with verification SHA256

@@ -4,7 +4,7 @@ Date: 2026-10-06. Integrator: Root. This decision uses the owner's conversation
 authorization: "授权无未解决 Critical/High/Medium 的审核定稿继续实现；重大语义调整仍另行确认".
 It is not a newly invented owner quotation or release approval.
 
-Root reads the full different-agent [three-draft review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-seal-task-review-20261006-0f618c/REVIEW-01.md),
+Root reads the full different-agent three-draft review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c18-seal-task-review-20261006-0f618c/REVIEW-01.md`),
 SHA-256 `99f4998f101d340ff6fbff70a1d85a0973be8283323379d5bf73edffe430f36c`.
 It reports no introduced C/H/M/L in its bounded contract/source-fact scope.
 The original 14,583-byte proposal remains the exact task prefix; 40 named

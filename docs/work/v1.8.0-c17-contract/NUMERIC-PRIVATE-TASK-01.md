@@ -19,7 +19,7 @@ owner approval of every clause below.
 
 Under that conditional authorization and ADR-065's scoped review requirement,
 Root adopts only sections 3–5 of the exact
-[private proposal](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-leaf-preparation-20261005-6da184/PROPOSED-LEAF-01.md),
+private proposal (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-leaf-preparation-20261005-6da184/PROPOSED-LEAF-01.md`),
 13,619 bytes / SHA-256
 `35b6454e3f160060ecd26b7b77de2b20300f18f7efe26a9ae496d4e2de1349ce`,
 together with its exclusions and verification requirements. Sections 1 and 6
@@ -27,13 +27,13 @@ are exclusions or future recommendations, not accepted caller stages. Its
 historical PROPOSAL status is superseded only within this private scalar scope.
 
 The different-agent
-[contract review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-private-review-20261005-f60271/REVIEW-01.md),
+contract review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-private-review-20261005-f60271/REVIEW-01.md`),
 13,285 bytes / SHA-256
 `32c6907b996e41a5b8e3fe4ea940ea95caacabe58f922d2246dfc30dfaac14af`,
 has no unresolved C/H/M/L in that exact scope. Root read both complete texts and
 freshly verified author 32 payloads /178,634 bytes /33 checksums and reviewer
 29 payloads /113,869 bytes /30 checksums; see
-[Root intake](D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-root-intake-20261005-01/INTAKE-02.json).
+Root intake (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/c17a-numeric-root-intake-20261005-01/INTAKE-02.json`).
 The review's 20 finite controls are not Java results. Its original source-selector
 failure remains preserved. No accepted ADR bytes or risk disposition are changed.
 

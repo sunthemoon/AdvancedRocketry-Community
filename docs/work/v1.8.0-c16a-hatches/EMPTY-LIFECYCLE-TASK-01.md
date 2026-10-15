@@ -26,7 +26,7 @@ Existing [inactive save integration](GUARDED-SAVE-SOURCE-INTEGRATION-01.md) and
 not installed-owner qualification. The accepted LOAD/EMIT inventory remains in
 [LOAD-JOIN-IMPLEMENTATION-01](LOAD-JOIN-IMPLEMENTATION-01.md).
 
-The [transition preparation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-hatch-transition-preparation-20261007/REPORT-01.md)
+The transition preparation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-empty-hatch-transition-preparation-20261007/REPORT-01.md`)
 identifies private expectation birth/cancel/removal, narrowly profiled standalone
 LIFECYCLE removal and held-operation/save coordination as proposed dependencies.
 Its descriptors are not accepted APIs. A different agent reviews the actual
@@ -48,7 +48,7 @@ question is now resolved by the
 [2026-10-07 decision](OUTER-HOOK-OWNER-DECISION-01.md): allow only the three listed
 ordinary-player interception sites, after review and contract/actual verification.
 Neither final ADR acceptance nor native implementation is inferred from CI success.
-The bounded [primary callsite investigation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-native-outer-hook-feasibility-20261007/REPORT-01.md)
+The bounded primary callsite investigation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/classic-native-outer-hook-feasibility-20261007/REPORT-01.md`)
 identifies one placement invocation and two removal invocations (including delayed
 mining completion). These are static version-bound facts, not installed hook,
 compatibility, rollback or restart verification. The selected exception still

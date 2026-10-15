@@ -4,7 +4,7 @@ Date:2026-10-04. Status:TECHNICAL_CONTRACT_ACCEPTED for bounded implementation;
 physical API/runtime and charged-removal admission remain open.
 
 Root adopts the exact signatures/field inventory and technical mechanisms in
-[proposal02](adapter-contract-proposal-02.zip) under the owner's authorization
+proposal02 (`adapter-contract-proposal-02.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)) under the owner's authorization
 for independently finalized contracts with no unresolved Critical/High/Medium.
 The [independent review02](reviews/ADAPTER-CONTRACT-REVIEW-02.md) has0 C/H/M/L and
 resolves both original specification findings. This elaborates accepted

@@ -4,7 +4,7 @@ No introduced Critical/High/Medium/Low findings in the exact two-file proposal.
 Existing Medium M1 current-orphan runtime classification remains open; changing
 only fixtures does not repair the full GameTest result.
 
-[Portable packet](root-fixture-independent-review-01.zip), SHA256
+Portable packet (`root-fixture-independent-review-01.zip`) (see the [external evidence manifest](../../v1.8.0-external-evidence/MANIFEST.md)), SHA256
 `b68e120352b75c74146d355a288382e0d5f7bfb58194be82e388fb334a9a7d09`,
 304,555 bytes /39 entries; manifest
 `7d32ff811c94aba3e356f6b31463957b802aa72043f2e6a0a8d583b88bcf0f31`.

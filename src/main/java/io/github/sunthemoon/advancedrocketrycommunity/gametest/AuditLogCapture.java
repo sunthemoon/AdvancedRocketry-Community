@@ -13,20 +13,26 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.Property;
 
 /**
- * Captures the mod's {@code ARCE_STATION_*} audit lines during a GameTest. Silent sources and
- * FakePlayers receive no replies, so their outcome is read from these lines (ADR-046 UI-03).
+ * Captures the mod's {@code ARCE_STATION_*} audit lines during a GameTest, or the lines with another prefix. Silent
+ * sources and FakePlayers receive no replies, so their outcome is read from these lines (ADR-046 UI-03).
  */
-final class AuditLogCapture extends AbstractAppender implements AutoCloseable {
+public final class AuditLogCapture extends AbstractAppender implements AutoCloseable {
     private final List<String> lines = new CopyOnWriteArrayList<>();
+    private final String prefix;
     private final LoggerContext context;
     private final LoggerConfig config;
+
+    AuditLogCapture() {
+        this("ARCE_STATION_");
+    }
 
     /**
      * Attaches to the logger configuration that already governs the mod's logger. Adding the appender
      * to the logger itself would create a new configuration for it and could detach the file appenders.
      */
-    AuditLogCapture() {
+    public AuditLogCapture(String prefix) {
         super("arce-audit-capture-" + UUID.randomUUID(), null, null, true, Property.EMPTY_ARRAY);
+        this.prefix = prefix;
         Logger logger = (Logger) LogManager.getLogger(AdvancedRocketryCommunity.class.getName());
         context = logger.getContext();
         config = context.getConfiguration().getLoggerConfig(logger.getName());
@@ -38,12 +44,12 @@ final class AuditLogCapture extends AbstractAppender implements AutoCloseable {
     @Override
     public void append(LogEvent event) {
         String message = event.getMessage().getFormattedMessage();
-        if (message.startsWith("ARCE_STATION_")) {
+        if (message.startsWith(prefix)) {
             lines.add(message);
         }
     }
 
-    List<String> lines() {
+    public List<String> lines() {
         return List.copyOf(lines);
     }
 

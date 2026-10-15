@@ -8,7 +8,7 @@ under the owner's existing no-open-Critical/High/Medium conditional authorizatio
 The separately frozen proposal remains unchanged. The independent actual-contract
 review reports0 Critical/High/Medium/Low;no new owner gameplay choice was needed.
 
-[Independent packet](reviews/menu-contract-independent-01.zip):216,329 bytes/102 entries,
+Independent packet (`reviews/menu-contract-independent-01.zip`) (see the [external evidence manifest](../v1.8.0-external-evidence/MANIFEST.md)):216,329 bytes/102 entries,
 SHA `9613fc455f53064c8342781e820631dddc46bac2e0419d1b672405d27fe50e0b`;
 manifest `e10da49f4b7c8c1e1a0b2660178e5fe86ac6ce91417a489c5a996ddbcb363cdf`;
 report `5e6f6260e666ee1962e8a2984e002f39f57444896acf4bfae7886523b5c35a19`.

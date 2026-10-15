@@ -5,14 +5,14 @@ terminal or borrowed prior cohort. Exact source
 `10eb561a5112ee6226e2c52fef1c1cc358c5ef3f`, run 37608847289 /attempt 1.
 
 Root reads/hashes the complete independent
-[report](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-ci-independent-audit-20261007-c16-673ba2/REPORT-01.md)
+report (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-ci-independent-audit-20261007-c16-673ba2/REPORT-01.md`)
 (`f2d54e`, exit 0): 10,624 bytes /SHA-256
 `433d4854c928be8d4128a23dccae959df72f26c79828826d65c7ad25ef78c3f6`.
 The reviewer derives raw facts without Root's audit or earlier counts as oracle;
 its own `python -B audit01.py` is `3e9d30`, exit 0. Final checks/seal
 `3c2674`, exit 0, reports 18 controls/zero failures, 397 retained files and
 44 fixed Git objects unchanged. No native/archive/API/binary replay occurs.
-The [independent derivation](D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-ci-independent-audit-20261007-c16-673ba2/AUDIT-01.json)
+The independent derivation (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/fuel-drop-diagnostic-ci-independent-audit-20261007-c16-673ba2/AUDIT-01.json`)
 has SHA-256 `6333b9abcff14bf1b25e126cb2b204188d2a9f1860597926c4ea0dd9bf60dd50`.
 
 Independent results agree: **372 XML /2,104 JUnit cases**, zero failure/error/

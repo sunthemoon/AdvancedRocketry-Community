@@ -4,7 +4,7 @@ Date: 2026-10-07. Status: implemented-unverified. This is the bounded fixture
 experiment in [the task](FIXTURE-TIMING-TASK-01.md), not a production repair.
 
 Root reads the complete different-agent
-[review](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-fixture-timing-independent-20261007-r1-9b78a4/REPORT-01.md),
+review (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-fixture-timing-independent-20261007-r1-9b78a4/REPORT-01.md`),
 13,512 bytes /SHA-256
 `fb25e95291c0dd10b927d00dd91660dfb30842fd0f8a3c66667f0452ab083c89`
 (`3a7568`, exit 0). Its 126 independent source/finite-model controls and sixteen
@@ -16,7 +16,7 @@ Only the frozen GameTest source and [source record](FIXTURE-TIMING-SOURCE-01.md)
 are committed in the worker at `97111d68ba67595e89d73b9cd9b3a3ddd5b34599`,
 then byte-identically cherry-picked and normally pushed in the main branch as
 `22f7d1cae0735a8b8c072165e7a3cf8089e3719c` (`ff9096`, exit 0).
-The [publication receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-root-integration-20261007-01/SOURCE-INTEGRATION-01.json)
+The publication receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-root-integration-20261007-01/SOURCE-INTEGRATION-01.json`)
 has SHA-256 `fb568e4a7471fe9242a232ddff682b9dee2b7b8c4f91ee1ccb90f638c90cc7e2`.
 It checks exact stage scope, committed postimages, remote equality and unchanged
 user AGENTS/unrelated state. Source pins are:
@@ -36,7 +36,7 @@ listeners are not a guaranteed restoration result.
 After clean status, retained source/branch, cherry patch-equivalence and exact
 remote checks, Root normally removes only its ended worktree without force
 (`354261`, exit 0). The
-[cleanup receipt](D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-root-integration-20261007-01/WORKTREE-CLEANUP-01.json)
+cleanup receipt (`D:/GitHub/ARCE-Task-Evidence/v1.8.0/airlock-timing-root-integration-20261007-01/WORKTREE-CLEANUP-01.json`)
 has SHA-256 `06e317dd68b7d6519b2293578b7f188b0f7d5adc675de16d8b404a98844540bb`.
 No other worktree, branch, user data or inherited evidence is removed.
 
