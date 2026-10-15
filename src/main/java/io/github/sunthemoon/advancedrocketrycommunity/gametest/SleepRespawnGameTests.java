@@ -193,6 +193,16 @@ public final class SleepRespawnGameTests {
                 if (helper.getTick() <= start) {
                     return;
                 }
+                com.mojang.logging.LogUtils.getLogger().info(
+                        "W78 tick={} serverTick={} pendingPlaced={} moonLive={} spaceLive={} pendingLive={} "
+                                + "moonSupplied={} spaceSupplied={} pendingAir={} moonMetrics={} spaceMetrics={}",
+                        helper.getTick(), server.getTickCount(), pendingPlaced[0],
+                        new NaturalBedFixtures.Room(moon, moonVent).live(),
+                        new NaturalBedFixtures.Room(space, spaceVent).live(),
+                        new NaturalBedFixtures.Room(moon, pendingVent).live(),
+                        suppliedBed(moon, moonVent), suppliedBed(space, spaceVent),
+                        AtmosphereRuntime.breathabilityAt(moon, bedHead(pendingVent)),
+                        AtmosphereRuntime.metrics(moon), AtmosphereRuntime.metrics(space));
                 if (!(suppliedBed(moon, moonVent) && suppliedBed(space, spaceVent))) {
                     helper.assertTrue(helper.getTick() < 50, "The supplied rooms did not seal: moon="
                             + vents[0].status() + " space=" + vents[1].status() + " metrics="
@@ -222,6 +232,8 @@ public final class SleepRespawnGameTests {
                     // 343 traversable cells exceed one task's unchanged 256-observation budget.
                     vents[2] = roomWithBed(moon, pendingVent, 4, 8);
                     pendingPlaced[0] = true;
+                    com.mojang.logging.LogUtils.getLogger().info("W78 placed pending tick={} serverTick={} metrics={}",
+                            helper.getTick(), server.getTickCount(), AtmosphereRuntime.metrics(moon));
                     return;
                 }
                 BlockPos pendingHead = bedHead(pendingVent);
