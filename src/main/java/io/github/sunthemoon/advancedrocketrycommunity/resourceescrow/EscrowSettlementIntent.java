@@ -147,7 +147,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         }
         var frozen = root.replace(
                 root.records().stream().map(op -> ids().contains(op.id()) ? op.settle(this) : op).toList(), root.floors(), root.tombstones());
-        reserve(frozen); EscrowCodec.encode(frozen);
+        EscrowSettlementCapacity.preflight(frozen); EscrowCodec.encode(frozen);
         frozen.records().stream().filter(op -> ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, this));
         return frozen;
     }

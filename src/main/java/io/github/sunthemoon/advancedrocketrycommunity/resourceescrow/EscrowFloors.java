@@ -36,19 +36,25 @@ public final class EscrowFloors {
         var usage = usage(candidate, List.of());
         EscrowTags.require(usage.total() <= EscrowLimits.FLOORS, "Escrow floor capacity exhausted");
         Map<Key, CompoundTag> existing = new HashMap<>(); candidate.floors().forEach(floor -> existing.put(key(floor), floor));
-        Map<Key, EscrowOperation> named = new HashMap<>();
         for (var op : candidate.records()) {
             Key key = key(op.guard()); if (key == null) { continue; }
-            named.put(key, op);
             var floor = existing.get(key);
             EscrowTags.require(floor == null || floor.getUUID("entity_id").equals(op.destination().identity()), "Floor identity cannot be rebound");
         }
-        long bytes = RocketNbtSize.uncompressedBytes(EscrowCodec.encode(candidate));
-        for (Key key : named.keySet()) {
+        EscrowTags.require(RocketNbtSize.uncompressedBytes(EscrowCodec.encode(candidate)) + reservedGrowth(candidate)
+                <= EscrowLimits.ROOT_BYTES, "Escrow floor byte reservation exhausted");
+    }
+
+    static long reservedGrowth(EscrowLedger candidate) {
+        Map<Key, CompoundTag> existing = new HashMap<>(); candidate.floors().forEach(floor -> existing.put(key(floor), floor));
+        Set<Key> named = new HashSet<>();
+        candidate.records().stream().map(op -> key(op.guard())).filter(java.util.Objects::nonNull).forEach(named::add);
+        long bytes = 0;
+        for (Key key : named) {
             var floor = existing.get(key);
             bytes += 1_024L - (floor == null ? 0 : RocketNbtSize.uncompressedBytes(floor) - 3L);
         }
-        EscrowTags.require(bytes <= EscrowLimits.ROOT_BYTES, "Escrow floor byte reservation exhausted");
+        return bytes;
     }
 
     /** Called inside the exact L2 snapshot, before the ledger writer captures it. */

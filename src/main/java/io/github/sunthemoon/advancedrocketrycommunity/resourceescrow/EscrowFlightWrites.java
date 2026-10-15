@@ -40,7 +40,7 @@ final class EscrowFlightWrites {
                 if (!request.valid().getAsBoolean()) { refused.add(request); continue; }
                 var next = request.change().apply(candidate, generation);
                 requireScope(candidate, next, request.logical());
-                EscrowCodec.encode(next); candidate = next; accepted.add(request);
+                EscrowSettlementCapacity.preflight(next); candidate = next; accepted.add(request);
             } catch (IllegalArgumentException | ArithmeticException invalid) { refused.add(request); }
         }
         // Do not call gameplay continuations while the immutable candidate is still being assembled.

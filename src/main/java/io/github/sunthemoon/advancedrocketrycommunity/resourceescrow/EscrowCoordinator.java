@@ -53,7 +53,6 @@ public final class EscrowCoordinator implements AutoCloseable {
         EscrowSettlementCapacity.requireAdmission(data.ledger().append(candidate), op, observed);
         EscrowTags.require(op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || op.nativeBinding().complete(), "Native L1 needs a complete envelope binding");
         EscrowSettlementCapacity.preflight(data.ledger().append(candidate), op.id());
-        EscrowFloors.preflight(data.ledger().append(candidate)); // Reserve the L2 floor before any queued L1 state changes.
         var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
         EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared admission refused: " + reservation);
         queued.put(op.id(), op); requests.put(op.id(), completion); issued = op.sequence(); data.setDirty();
@@ -77,7 +76,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                     "Floor changed since preview");
             candidate = data.ledger().append(List.of(intent.floorOperation(nextSequence(), tick)));
         } else { candidate = intent.freeze(data.ledger()); }
-        EscrowFloors.preflight(candidate);
+        EscrowSettlementCapacity.preflight(candidate);
         candidate.records().stream().filter(op -> intent.ids().contains(op.id())).forEach(op -> EscrowSettlementTombstones.create(op, intent));
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         if (intent.choice() == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
@@ -128,6 +127,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                 "Settlement decision is not acknowledged");
         EscrowLedger candidate = release ? EscrowSettlementTombstones.release(data.ledger(), intent, Math.addExact(writer.lastGeneration(), 1))
                 : EscrowSettlementTombstones.install(data.ledger(), intent);
+        EscrowSettlementCapacity.preflight(candidate);
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         boolean accepted = writer.request(() -> EscrowLedgerWriter.Snapshot.of(frozen, Set.of()), result -> {
             acknowledge(result);
@@ -157,6 +157,7 @@ public final class EscrowCoordinator implements AutoCloseable {
             List<EscrowOperation> additions = queued.values().stream()
                     .filter(op -> candidateContains(data.ledger(), op.id()) == false).toList();
             candidate = candidate.append(additions);
+            EscrowSettlementCapacity.preflight(candidate);
         }
         candidate = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         Set<UUID> included = candidate.records().stream().map(EscrowOperation::id)

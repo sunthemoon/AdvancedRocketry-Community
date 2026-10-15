@@ -14,14 +14,23 @@ final class EscrowSettlementCapacity {
         preflight(prospective, null);
     }
     static void preflight(EscrowLedger prospective, UUID candidate) {
+        EscrowFloors.preflight(prospective);
         long reservedBytes = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.encode(prospective));
+        reservedBytes += EscrowFloors.reservedGrowth(prospective);
         int reservedReceipts = prospective.tombstones().size();
         var visited = new java.util.HashSet<UUID>();
         for (var selected : prospective.records()) {
             if (!visited.add(selected.id())) { continue; }
             var component = EscrowSettlementIntent.component(prospective.records(), selected.id());
             component.forEach(op -> visited.add(op.id()));
-            if (component.stream().anyMatch(op -> !op.settlement().isEmpty())) { continue; }
+            if (component.stream().anyMatch(op -> !op.settlement().isEmpty())) {
+                for (var op : component) {
+                    if (prospective.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(op.id()))) {
+                        reservedReceipts++; reservedBytes += 2_048;
+                    }
+                }
+                continue;
+            }
             if (candidate != null ? component.stream().noneMatch(op -> op.id().equals(candidate))
                     : component.stream().anyMatch(op -> op.reason() == EscrowReason.RELOCATED_ENDPOINT || op.reason() == EscrowReason.FLOOR_CONFLICT)) {
                 // Other components may need offline repair. Charge their full possible growth without previewing them.

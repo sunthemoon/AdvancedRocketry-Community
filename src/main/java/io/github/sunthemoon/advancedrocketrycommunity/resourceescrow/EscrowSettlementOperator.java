@@ -23,7 +23,7 @@ final class EscrowSettlementOperator {
             var observed = EscrowSettlementObserver.floor(server, floor, data.ledger().id());
             var intent = EscrowSettlementIntent.floorPreview(data.ledger(), UUID.randomUUID(), floor, actor, name, tick, observed);
             var confirmed = intent.confirm(actor, intent.digest(), tick + 200, observed);
-            EscrowFloors.preflight(data.ledger().append(List.of(confirmed.floorOperation(data.bind(server).nextSequence(), tick))));
+            EscrowSettlementCapacity.preflight(data.ledger().append(List.of(confirmed.floorOperation(data.bind(server).nextSequence(), tick))));
             previews.put(intent, tick); return intent;
         }
         var observed = EscrowSettlementObserver.component(server, data.ledger(), selected);
