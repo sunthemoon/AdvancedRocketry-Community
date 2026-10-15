@@ -13,6 +13,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.*;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.FuelLoaderStatus;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelCatalog;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketPropulsionInteraction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
@@ -145,6 +147,57 @@ public final class RocketResourceRecoveryGameTests {
             }
             helper.succeed();
         });
+    }
+
+    /**
+     * W72: a PREPARED source waiting for an offline passenger is the owner's only nearby candidate. The loader names
+     * the recovery lock and moves no fuel; another owner's loader beside it still only waits for a rocket.
+     */
+    @GameTest(template = "rocket_test", batch = "resource_source_loader", timeoutTicks = 400)
+    public static void fuelLoaderNamesTheRecoveryLockOfAnOfflinePassengerSource(GameTestHelper helper) {
+        var fixture = new Fixture(helper, true);
+        fixture.whenReady(() -> {
+            fixture.source();
+            try {
+                fixture.recover(RocketTransferRecoveryReport.Status.WAITING_FOR_PASSENGERS);
+                helper.assertTrue(!RocketRuntime.resourceMutationAllowed(fixture.rocket), "Passenger wait unlocked resources");
+                BlockPos origin = new BlockPos(3, 2, 3);
+                var owned = queuedLoader(helper, origin.east(3), fixture.owner);
+                var other = queuedLoader(helper, origin.west(3), UUID.randomUUID());
+                helper.assertTrue(fixture.rocket.distanceToSqr(net.minecraft.world.phys.Vec3.atCenterOf(owned.getBlockPos()))
+                        <= FuelLoaderBlockEntity.MAX_RANGE * FuelLoaderBlockEntity.MAX_RANGE, "Source is outside loader range");
+                var fuel = fixture.rocket.flightData().orElseThrow().fuel();
+                var before = owned.saveWithoutMetadata();
+                for (int tick = 0; tick < 3; tick++) {
+                    for (var loader : java.util.List.of(owned, other)) {
+                        FuelLoaderBlockEntity.serverTick(fixture.earth, loader.getBlockPos(), loader.getBlockState(), loader);
+                    }
+                }
+                helper.assertTrue(owned.status() == FuelLoaderStatus.RECOVERY_PENDING,
+                        "Loader did not name the recovery lock: " + owned.status());
+                helper.assertTrue(other.status() == FuelLoaderStatus.WAITING_FOR_ROCKET,
+                        "Another owner's loader named the lock: " + other.status());
+                helper.assertTrue(before.equals(owned.saveWithoutMetadata()) && owned.targetRocketId().isEmpty()
+                        && owned.bufferedUnits() == 0L
+                        && owned.itemHandler().getStackInSlot(FuelLoaderBlockEntity.SLOT).is(ModItems.ROCKET_FUEL_CELL.get()),
+                        "Locked loader selected a target or consumed its queued fuel");
+                helper.assertTrue(fuel.equals(fixture.rocket.flightData().orElseThrow().fuel()), "Locked source fuel changed");
+                fixture.assertBalances(2_000, 1_000, 0);
+            } finally {
+                fixture.rocket.discard();
+                clearTransferJournal(fixture.earth);
+            }
+            helper.succeed();
+        });
+    }
+
+    private static FuelLoaderBlockEntity queuedLoader(GameTestHelper helper, BlockPos at, UUID owner) {
+        helper.setBlock(at, ModBlocks.FUEL_LOADER.get());
+        var loader = (FuelLoaderBlockEntity) helper.getBlockEntity(at);
+        loader.assignOwner(owner);
+        helper.assertTrue(loader.itemHandler().insertItem(FuelLoaderBlockEntity.SLOT,
+                new ItemStack(ModItems.ROCKET_FUEL_CELL.get()), false).isEmpty(), "Loader refused its fuel cell");
+        return loader;
     }
 
     static final class Fixture {

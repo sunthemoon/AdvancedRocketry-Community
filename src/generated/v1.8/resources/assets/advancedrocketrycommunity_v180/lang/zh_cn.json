@@ -595,6 +595,7 @@
   "station.advancedrocketrycommunity.notice.while_away": "你离线期间：%s",
   "station.advancedrocketrycommunity.warp_class.in_system": "星系内",
   "station.advancedrocketrycommunity.warp_class.interstellar": "星际",
+  "status.advancedrocketrycommunity.fuel_loader.recovery_pending": "附近火箭的转移恢复尚未完成，暂不能加注",
   "status.advancedrocketrycommunity.machine_recipe.generic": "配方无法处理",
   "status.advancedrocketrycommunity.machine_recipe.recipe_changed": "配方已变更",
   "status.advancedrocketrycommunity.machine_recipe.recipe_missing": "配方已移除",

@@ -80,7 +80,7 @@ public final class FuelLoaderBlockEntity extends BlockEntity {
                     ResourceLocation.tryParse(item.getString("id"))));
             if (definition == null) { setStatus(FuelLoaderStatus.UNSUPPORTED_FUEL); return; }
             Optional<RocketEntity> target = findTarget(level);
-            if (target.isEmpty()) { setStatus(FuelLoaderStatus.WAITING_FOR_ROCKET); return; }
+            if (target.isEmpty()) { setStatus(waitingStatus(level)); return; }
             // Prepare and validate everything before consuming the queued item.
             FuelLoaderData.Batch prepared;
             try {
@@ -101,7 +101,7 @@ public final class FuelLoaderBlockEntity extends BlockEntity {
         Optional<RocketEntity> selected = target(level).or(() -> findTarget(level));
         if (selected.isEmpty()) {
             if (targetRocketId != null) { targetRocketId = null; setChanged(); }
-            setStatus(FuelLoaderStatus.WAITING_FOR_ROCKET);
+            setStatus(waitingStatus(level));
             return;
         }
         RocketEntity rocket = selected.get();
@@ -134,9 +134,20 @@ public final class FuelLoaderBlockEntity extends BlockEntity {
                 .stream().min(nearest);
     }
 
+    /** With no eligible target: name the recovery lock when it alone refuses one of the owner's candidates (W72). */
+    private FuelLoaderStatus waitingStatus(ServerLevel level) {
+        return level.getEntitiesOfClass(RocketEntity.class, new AABB(worldPosition).inflate(MAX_RANGE), this::candidate)
+                .isEmpty() ? FuelLoaderStatus.WAITING_FOR_ROCKET : FuelLoaderStatus.RECOVERY_PENDING;
+    }
+
     private boolean eligible(RocketEntity rocket) {
+        return candidate(rocket)
+                && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket);
+    }
+
+    /** Every eligibility rule except the transfer recovery admission. */
+    private boolean candidate(RocketEntity rocket) {
         return rocket.operational() && ownerId != null && rocket.ownerId().filter(ownerId::equals).isPresent()
-                && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)
                 && rocket.distanceToSqr(worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
                         worldPosition.getZ() + 0.5D) <= MAX_RANGE * MAX_RANGE
                 && rocket.flightData().filter(data -> data.state().acceptsFuel())

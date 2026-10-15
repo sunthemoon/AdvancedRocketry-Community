@@ -8,7 +8,9 @@ public enum FuelLoaderStatus {
     OUTPUT_READY("output_ready"),
     UNSUPPORTED_FUEL("unsupported_fuel"),
     UNSUPPORTED_DATA("unsupported_data"),
-    INVALID_DATA("invalid_data");
+    INVALID_DATA("invalid_data"),
+    /** W72: the owner's nearby rocket is otherwise eligible, but transfer recovery admission refuses it. */
+    RECOVERY_PENDING("recovery_pending");
 
     private final String diagnosticKey;
 
