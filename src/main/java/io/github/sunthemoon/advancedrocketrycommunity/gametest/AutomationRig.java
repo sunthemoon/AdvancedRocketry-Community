@@ -30,7 +30,7 @@ import net.minecraft.world.phys.AABB;
 
 /**
  * W68 (W62 S5) test-only automation rig: vanilla hoppers and droppers placed beside a machine, a bounded sub-tick
- * loop for them, item counting, and cleanup of every block, container and loose item it placed. A sub-tick calls the
+ * loop for them, item counting, and cleanup of every block, container, loose item and room it made. A sub-tick calls the
  * same static hopper ticker and dropper block tick that the server calls, so one game tick can run several transfers.
  */
 final class AutomationRig implements AutoCloseable {
@@ -43,6 +43,7 @@ final class AutomationRig implements AutoCloseable {
     private final List<HopperBlockEntity> hoppers = new ArrayList<>();
     private final List<Runnable> beforeClose = new ArrayList<>();
     private final List<AABB> rooms = new ArrayList<>();
+    private final Map<BlockPos, BlockState> terrain = new LinkedHashMap<>();
     private boolean closed;
 
     AutomationRig(GameTestHelper helper) { this.helper = helper; level = helper.getLevel(); }
@@ -54,11 +55,13 @@ final class AutomationRig implements AutoCloseable {
     }
     /**
      * GameTests run deep underground; vanilla clears only a small box around a template. This opens an air room over
-     * [min, max] inside a one-block stone shell, so no cave fluid or terrain touches the fixture. The room stays air.
+     * [min, max] inside a one-block stone shell, so no cave fluid or terrain touches the fixture. Later batches are
+     * placed a few blocks away, so close puts the original terrain back (a block entity's cell stays air).
      */
     void room(BlockPos min, BlockPos max) {
         for (BlockPos position : BlockPos.betweenClosed(min.offset(-1, -1, -1), max.offset(1, 1, 1))) {
             hold(position);
+            terrain.putIfAbsent(position.immutable(), level.getBlockState(position));
             boolean shell = position.getX() < min.getX() || position.getX() > max.getX() || position.getY() < min.getY()
                     || position.getY() > max.getY() || position.getZ() < min.getZ() || position.getZ() > max.getZ();
             level.setBlock(position, shell ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
@@ -177,6 +180,9 @@ final class AutomationRig implements AutoCloseable {
         for (BlockPos position : positions) {
             level.getEntitiesOfClass(ItemEntity.class, new AABB(position).inflate(2)).forEach(ItemEntity::discard);
         }
+        for (AABB box : rooms) { level.getEntitiesOfClass(ItemEntity.class, box).forEach(ItemEntity::discard); }
+        terrain.forEach((position, state) -> level.setBlock(position,
+                state.hasBlockEntity() ? Blocks.AIR.defaultBlockState() : state, Block.UPDATE_CLIENTS));
         tickets.forEach(chunk -> level.getChunkSource().removeRegionTicket(TICKET, chunk, 2, chunk));
         if (failed != null) { throw failed; }
     }
