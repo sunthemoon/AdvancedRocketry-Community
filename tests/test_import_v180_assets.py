@@ -30,7 +30,9 @@ V010 = _load("import_v010_assets_for_v180_tests", "tools/import/import_v010_asse
 from tools.audit import vanilla_derivation as derivation  # noqa: E402
 
 LEGACY = "src/main/resources/assets/advancedrocketry/"
-TARGET = "src/main/resources/assets/advancedrocketrycommunity/"
+TARGET = "src/imported/v1.8/resources/assets/advancedrocketrycommunity/"
+# The v0.1.0 managed root, where NEW files are authored and v0.1.0 imports live.
+MAIN = "src/main/resources/assets/advancedrocketrycommunity/"
 ADR = "docs/decisions/ADR-061-CLASSIC-CONTENT-IDENTITY-IMPORT-AND-VALIDATION.md"
 COVERAGE = "docs/work/fixture-asset-coverage.csv"
 NOTICE_NEW = "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors"
@@ -186,11 +188,14 @@ class Fixture:
         _git(root, "add", "--all")
         _git(root, "commit", "-q", "-m", "base")
         self.base_commit = _git(root, "rev-parse", "HEAD").strip()
-        _write(root / (TARGET + "models/block/widget_new.mtl"), NEW_MTL)
-        _write(root / (TARGET + "textures/item/drawn.png"), _png(_noise(103)))
+        _write(root / (MAIN + "models/block/widget_new.mtl"), NEW_MTL)
+        _write(root / (MAIN + "textures/item/drawn.png"), _png(_noise(103)))
         _git(root, "add", "--all")
         _git(root, "commit", "-q", "-m", "Draw the NEW widget material")
         self.authoring_commit = _git(root, "rev-parse", "HEAD").strip()
+        # As K1 did (0e246333): the NEW files leave the runtime tree; the plan reads them from the authoring commit.
+        _git(root, "rm", "-q", MAIN + "models/block/widget_new.mtl", MAIN + "textures/item/drawn.png")
+        _git(root, "commit", "-q", "-m", "Read the NEW files from their authoring commit")
 
 
 class ImportV180AssetsTests(unittest.TestCase):
@@ -318,9 +323,9 @@ class ImportV180AssetsTests(unittest.TestCase):
             "source_branch": "codex/v1.8.0-fixture", "source_commit": self.fixture.base_commit,
             "authoring_commit": self.fixture.authoring_commit, "license": "MIT", "copyright_notice": NOTICE_NEW}
         self.plan["entries"][0]["transformation"]["mtllib"] = {"widget.mtl": "widget_new.mtl"}
-        new_path = TARGET + "models/block/widget_new.mtl"
-        self.add({"source": "community", "source_path": new_path,
-                  "source_sha256": V010.sha256((self.root / new_path).read_bytes()), "target_path": new_path,
+        new_path = "models/block/widget_new.mtl"
+        self.add({"source": "community", "source_path": MAIN + new_path,
+                  "source_sha256": V010.sha256(NEW_MTL.encode()), "target_path": TARGET + new_path,
                   "transformation": {"kind": "copy"}, "units": ["block:widget"], "asset_coverage_row": None})
         record = self.generate()
         self.assertEqual([], self.verify())
@@ -335,9 +340,10 @@ class ImportV180AssetsTests(unittest.TestCase):
             "status": "NEW", "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
             "source_branch": "codex/v1.8.0-fixture", "source_commit": self.fixture.authoring_commit,
             "authoring_commit": self.fixture.authoring_commit, "license": "MIT", "copyright_notice": NOTICE_NEW}
-        new_path = TARGET + "models/block/widget_new.mtl"
-        self.add({"source": "community", "source_path": new_path, "source_sha256": "0" * 64,
-                  "target_path": new_path, "transformation": {"kind": "copy"}, "units": [], "asset_coverage_row": None})
+        new_path = "models/block/widget_new.mtl"
+        self.add({"source": "community", "source_path": MAIN + new_path, "source_sha256": "0" * 64,
+                  "target_path": TARGET + new_path, "transformation": {"kind": "copy"}, "units": [],
+                  "asset_coverage_row": None})
         with self.assertRaisesRegex(ValueError, "not the parent of its authoring commit"):
             self.generate()
 
@@ -365,9 +371,10 @@ class ImportV180AssetsTests(unittest.TestCase):
             "status": "NEW", "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
             "source_branch": "codex/v1.8.0-fixture", "source_commit": self.fixture.base_commit,
             "authoring_commit": self.fixture.authoring_commit, "license": "MIT", "copyright_notice": NOTICE_NEW}
-        drawn = TARGET + "textures/item/drawn.png"
-        self.add({"source": "community", "source_path": drawn, "source_sha256": V010.sha256(_png(_noise(103))),
-                  "target_path": drawn, "transformation": {"kind": "copy"}, "units": [], "asset_coverage_row": None})
+        drawn = "textures/item/drawn.png"
+        self.add({"source": "community", "source_path": MAIN + drawn, "source_sha256": V010.sha256(_png(_noise(103))),
+                  "target_path": TARGET + drawn, "transformation": {"kind": "copy"}, "units": [],
+                  "asset_coverage_row": None})
         self.assert_fails("derivation verdict HIT", MODULE.ImportFailure)
 
     def test_excluded_or_review_handling_fails(self) -> None:
@@ -511,6 +518,15 @@ class ImportV180AssetsTests(unittest.TestCase):
         _write(self.root / "src/generated/v1.8/resources/assets/advancedrocketrycommunity/lang/de_de.json", "{}")
         self.assert_fails("same resource exists in src/generated/v1.8/resources", MODULE.ImportFailure)
 
+    def test_target_shadowed_by_the_main_resources_fails(self) -> None:
+        _write(self.root / (MAIN + "textures/item/gadget.png"), UPSTREAM_FILES["textures/items/Gadget.png"])
+        self.assert_fails("same resource exists in src/main/resources", MODULE.ImportFailure)
+
+    def test_target_under_the_main_resources_is_refused(self) -> None:
+        self.plan["entries"][3]["target_path"] = MAIN + "textures/item/gadget.png"
+        self.save_plan()
+        self.assert_fails("target is not a lower-case resource path under src/imported/v1.8/resources/assets/")
+
     def test_target_recorded_by_another_batch_fails(self) -> None:
         _write(self.root / "docs/provenance/v1.8.0-other.json", json.dumps({"schema_version": 2, "entries": [
             {"target_path": TARGET + "textures/item/gadget.png", "target_sha256": "0" * 64}]}))
@@ -586,7 +602,7 @@ class V010UnchangedTests(unittest.TestCase):
                 "source_commit": _git(upstream, "rev-parse", "HEAD").strip(), "license": "MIT",
                 "copyright_notice": "Copyright (c) 2017",
                 "entries": [{"source_path": LEGACY + "textures/items/source.png",
-                             "target_path": TARGET + "textures/item/target.png", "mode": "copy",
+                             "target_path": MAIN + "textures/item/target.png", "mode": "copy",
                              "transformation": ["rename namespace"]},
                             {"source_path": LEGACY + "lang/en_US.lang",
                              "target_path": "src/generated/resources/assets/advancedrocketrycommunity/lang/en_us.json",
