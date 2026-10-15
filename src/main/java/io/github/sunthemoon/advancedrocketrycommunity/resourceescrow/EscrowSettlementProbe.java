@@ -65,7 +65,7 @@ final class EscrowSettlementProbe {
                 EscrowTags.require(level.addFreshEntity(rocket), "Rocket publication failed"); source.bank().discard();
                 var operations = new ArrayList<EscrowOperation>(); operations.add(operation(source, coordinator.nextSequence(), 0));
                 if (chain) { operations.add(operation(EscrowTestEndpoints.chainSource(source, POSITION.offset(1, 0, 0)), coordinator.nextSequence() + 1, 1)); }
-                for (var op : operations) { coordinator.prepareTest(op, committed -> EscrowTags.require(committed, "Settlement fixture L1 failed")); }
+                for (var op : operations) { coordinator.prepareTest(op, rocket.escrowSection(), committed -> EscrowTags.require(committed, "Settlement fixture L1 failed")); }
                 step = 1;
             }
             case 1 -> { if (coordinator.commitPreparations()) { step = 2; } }

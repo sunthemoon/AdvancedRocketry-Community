@@ -90,7 +90,7 @@ final class EscrowRocketAuditProbe {
                         sample.payload(), sample.payloadHash(), sample.source(), destination, new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
                 op = EscrowNativeBinding.captureTest(op, rocket, source.source(), fuel,
                         fuel.withFluidBank(false, ResourceLocation.tryParse("minecraft:water"), null, 1_000), data.ledger());
-                coordinator.prepareTest(op, committed -> { EscrowTags.require(committed, "Rocket fixture L1 failed"); waiting = false; step = 2; }); step = 1;
+                coordinator.prepareTest(op, rocket.escrowSection(), committed -> { EscrowTags.require(committed, "Rocket fixture L1 failed"); waiting = false; step = 2; }); step = 1;
             }
             case 1 -> waiting = coordinator.commitPreparations();
             case 2 -> {

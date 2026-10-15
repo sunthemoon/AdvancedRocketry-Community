@@ -39,6 +39,9 @@ public final class EscrowCoordinator implements AutoCloseable {
     public EscrowAdmissionAuthority admissionAuthority() { owner(); return admission; }
     /** Caller must already be in an explicitly gated test fixture. No block/item/command invokes this. */
     void prepareTest(EscrowOperation op, Consumer<Boolean> completion) {
+        prepareTest(op, null, completion);
+    }
+    void prepareTest(EscrowOperation op, RocketEscrowSection observed, Consumer<Boolean> completion) {
         owner(); EscrowTags.require(!closed && !writer.unavailable(), "Ledger unavailable");
         EscrowTags.require(op.phase() == EscrowOperation.Phase.PREPARED && op.reason() == EscrowReason.NONE, "Admission must be a fresh preparation");
         EscrowTags.require(op.sequence() == nextSequence() && !queued.containsKey(op.id())
@@ -47,6 +50,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         EscrowTags.require(!flightWrites.locked(op.guard().rocket()) && data.ledger().armedFlights().stream()
                 .noneMatch(arm -> arm.logical().equals(op.guard().rocket())), "Flight authority holds the endpoint");
         var candidate = new ArrayList<>(queued.values()); candidate.add(op);
+        EscrowSettlementCapacity.requireAdmission(data.ledger().append(candidate), op, observed);
         EscrowTags.require(op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || op.nativeBinding().complete(), "Native L1 needs a complete envelope binding");
         EscrowSettlementCapacity.preflight(data.ledger().append(candidate));
         EscrowFloors.preflight(data.ledger().append(candidate)); // Reserve the L2 floor before any queued L1 state changes.

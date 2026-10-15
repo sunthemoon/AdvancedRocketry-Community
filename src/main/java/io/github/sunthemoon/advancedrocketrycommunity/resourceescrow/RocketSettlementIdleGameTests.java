@@ -165,7 +165,7 @@ public final class RocketSettlementIdleGameTests {
             wrapper.put("resource_escrow", new RocketEscrowSection(data.ledger().id(), 1,
                     List.of(new EscrowPrefix.Marker(operation.id(), operation.sequence(), "DESTINATION", 1))).encode());
             rocket.load(parent); helper.assertTrue(rocket.operational() && level.addFreshEntity(rocket), "Credited rocket fixture failed");
-            coordinator.prepareTest(operation, committed -> helper.assertTrue(committed, "L1 was not acknowledged")); step = 1;
+            coordinator.prepareTest(operation, rocket.escrowSection(), committed -> helper.assertTrue(committed, "L1 was not acknowledged")); step = 1;
         }
         private void exerciseMountAndRefuel() {
             var owner = new FakePlayer(level, new GameProfile(rocket.ownerId().orElseThrow(), "N1Board")); owner.setPos(rocket.position());

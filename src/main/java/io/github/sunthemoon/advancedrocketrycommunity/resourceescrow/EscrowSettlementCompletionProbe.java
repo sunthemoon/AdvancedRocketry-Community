@@ -104,7 +104,7 @@ final class EscrowSettlementCompletionProbe {
                 if (!normalization) { rocket.load(parent); }
                 EscrowTags.require(rocket.operational(), "Marked credited fixture is invalid");
                 selected = operations.get(0).id();
-                for (var op : operations) { coordinator.prepareTest(op, committed -> EscrowTags.require(committed, "Completion fixture L1 failed")); }
+                for (var op : operations) { coordinator.prepareTest(op, rocket.escrowSection(), committed -> EscrowTags.require(committed, "Completion fixture L1 failed")); }
                 EscrowTags.require(level.addFreshEntity(rocket), "Completion fixture rocket failed to publish");
                 if (veto) {
                     EscrowTags.require(server.saveEverything(false, true, true), "Veto baseline save refused");
