@@ -45,6 +45,7 @@ jobs:
         with:
           ref: ${{ env.REVIEW_COMMIT }}
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Verify checkout and execution host before setup
         env:
@@ -96,6 +97,7 @@ jobs:
       - name: Audit the built artifact
         run: |
           python -B scripts/validate_build_artifact.py "$ARCE_ARTIFACT" --expected-version "$ARCE_BUILD_VERSION" --content-manifest "$EVIDENCE_DIR/jar-content-manifest.json" | tee "$EVIDENCE_DIR/artifact-audit.log"
+          python -B scripts/validate_v180_provenance.py --jar "$ARCE_ARTIFACT" --output-dir "$EVIDENCE_DIR/provenance" 2>&1 | tee "$EVIDENCE_DIR/provenance-audit.log"
           sha256sum "$ARCE_ARTIFACT" > "$EVIDENCE_DIR/artifact-sha256.txt"
           python -B scripts/check_client_imports.py | tee "$EVIDENCE_DIR/client-boundary.log"
 
