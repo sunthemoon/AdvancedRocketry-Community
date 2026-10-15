@@ -74,7 +74,9 @@ class EscrowSettlementCapacityTest {
         try (var writer = new EscrowLedgerWriter(directory.resolve("queued"), 0); var coordinator = new EscrowCoordinator(data, writer)) {
             for (int n = 1; n <= 5; n++) { coordinator.prepareTest(operation(n, 99, n - 1, true), RocketEscrowSection.neutral(), ignored -> { }); }
             assertEquals(6, coordinator.nextSequence());
-            assertThrows(IllegalArgumentException.class, () -> coordinator.prepareTest(operation(6, 99, 5, true), RocketEscrowSection.neutral(), ignored -> fail()));
+            var refusal = assertThrows(IllegalArgumentException.class,
+                    () -> coordinator.prepareTest(operation(6, 99, 5, true), RocketEscrowSection.neutral(), ignored -> fail()));
+            assertEquals("Rocket settlement admission limit exceeded", refusal.getMessage());
             assertEquals(6, coordinator.nextSequence()); assertEquals(5, coordinator.admissionAuthority().pendingCount());
         }
     }
