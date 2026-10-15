@@ -63,6 +63,32 @@ class FieldCleanupRootTest {
         assertFalse(claimed.bindReservation(unowned, bound));
         assertEquals(1, claimed.view().get(unowned.key()).claims());
     }
+    @Test void onlyAnExactEmptySentinelReservationIsReleased() {
+        var data = new FieldCleanupSavedData();
+        var unbound = new FieldIdentity(new UUID(59, 1), FieldIdentity.UNBOUND_OWNER, 1, Level.OVERWORLD, BlockPos.ZERO, Direction.UP);
+        var claimed = new FieldIdentity(new UUID(59, 2), FieldIdentity.UNBOUND_OWNER, 1, Level.OVERWORLD, BlockPos.ZERO, Direction.UP);
+        var orphan = new FieldIdentity(new UUID(59, 3), FieldIdentity.UNBOUND_OWNER, 1, Level.OVERWORLD, BlockPos.ZERO, Direction.UP);
+        var bound = new FieldIdentity(new UUID(59, 4), new UUID(59, 99), 1, Level.OVERWORLD, BlockPos.ZERO, Direction.UP);
+        assertTrue(data.reserve(unbound, 0) && data.reserve(claimed, 1) && data.reserve(bound, 0)
+                && data.put(new FieldCleanupRoot.Entry(orphan, 0, true)));
+        var before = data.save(new CompoundTag());
+        var moved = new FieldIdentity(unbound.projector(), unbound.owner(), 1, Level.OVERWORLD, BlockPos.ZERO.above(), Direction.UP);
+        var missing = new FieldIdentity(new UUID(59, 5), FieldIdentity.UNBOUND_OWNER, 1, Level.OVERWORLD, BlockPos.ZERO, Direction.UP);
+        for (var refused : java.util.List.of(claimed, orphan, bound, moved, missing)) {
+            assertFalse(data.holdsEmptyReservation(refused));
+            assertFalse(data.releaseEmptyReservation(refused));
+        }
+        assertEquals(before, data.save(new CompoundTag()));
+        assertTrue(data.holdsEmptyReservation(unbound) && data.releaseEmptyReservation(unbound));
+        assertNull(data.view().get(unbound.key()));
+        assertEquals(3, data.view().size());
+        assertFalse(data.releaseEmptyReservation(unbound));
+        var future = new CompoundTag(); future.putInt("schema", 2); future.put("entries", new ListTag());
+        var refused = FieldCleanupSavedData.load(future);
+        assertFalse(refused.holdsEmptyReservation(unbound) || refused.releaseEmptyReservation(unbound));
+        assertFalse(refused.isDirty());
+        assertEquals(future, refused.save(new CompoundTag()));
+    }
     @Test void aggregateByteBudgetAlsoRefusesBeforeTheCountLimit() {
         var root = new FieldCleanupRoot();
         var longLevel = ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse("test:" + "x".repeat(250)));

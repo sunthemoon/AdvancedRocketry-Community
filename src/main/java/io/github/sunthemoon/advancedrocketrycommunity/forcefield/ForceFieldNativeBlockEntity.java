@@ -25,6 +25,7 @@ public abstract class ForceFieldNativeBlockEntity extends BlockEntity {
     public final boolean quarantined() { return refused != null; }
     public final boolean oversized() { return refused != null && !bounded(refused); }
     @Override public final void load(CompoundTag tag) {
+        Runnable replaced = replacing();
         super.load(tag);
         Tag raw = tag.get(rootName());
         refused = null;
@@ -37,7 +38,10 @@ public abstract class ForceFieldNativeBlockEntity extends BlockEntity {
             refused = raw == null ? new CompoundTag() : bounded(raw) ? raw.copy() : raw;
         }
         observeSaveGuard();
+        replaced.run();
     }
+    /** Runs before load replaces the root; the returned step runs after it. A chunk load from disk has no Level yet. */
+    protected Runnable replacing() { return () -> { }; }
     @Override protected final void saveAdditional(CompoundTag tag) {
         super.saveAdditional(tag);
         tag.put(rootName(), refused == null ? encode() : bounded(refused) ? refused.copy() : refused);
