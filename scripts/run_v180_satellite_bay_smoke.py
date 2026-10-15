@@ -61,6 +61,10 @@ GUARDED = re.compile(r"ARCE_SATELLITE_BAY_GUARDED pos=(?P<pos>-?\d+, -?\d+, -?\d
                      r"keepable=(?P<keepable>true|false)\s*$")
 SAY = r"^(?:\[\d{2}:\d{2}:\d{2}\] )?\[Server thread/INFO\] \[minecraft/MinecraftServer\]: (?:\[Not Secure\] )?\[Server\] "
 CHANGED = re.compile(r"Changed the block at (?P<x>-?\d+), (?P<y>-?\d+), (?P<z>-?\d+)\s*$")
+# W44's startup baseline: at most one temporary-hold WARN per start, as the GameTest manifest's
+# w44-first-moon-landing-startup-baseline expectation allows.
+FIRST_EVENT_BASELINE = re.compile(r"/WARN\] \[[^\]]*AdvancedRocketryCommunity/\]: "
+                                  r"ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED\s*$")
 
 
 class TypedReader:
@@ -271,9 +275,11 @@ def audit(lines: list[str], allowed_chunks: set[tuple[int, int]], reasons: set[s
     """Every ERROR is a paired refusal of an allowed chunk; the bay's audit lines are exactly the expected guards.
 
     The console abbreviates logger names, so the bay's WARN lines are found by their marker, not by logger."""
-    events, failures, warns = 0, [], {}
+    events, failures, warns, baseline = 0, [], {}, 0
     for finding in smoke.scan_log(lines):
-        if (match := EVENT_ERROR.search(finding)) is not None:
+        if FIRST_EVENT_BASELINE.search(finding) is not None:
+            baseline += 1
+        elif (match := EVENT_ERROR.search(finding)) is not None:
             require(match["reason"] in reasons, "Unexpected refusal reason: " + finding)
             events += 1
         elif (match := CHUNK_ERROR.search(finding)) is not None:
@@ -289,9 +295,11 @@ def audit(lines: list[str], allowed_chunks: set[tuple[int, int]], reasons: set[s
         require(match is not None and "/WARN]" in line, "Unexpected bay audit line: " + line.strip())
         text = f"{match['pos']}|{match['guard']}|{match['keepable']}"
         warns[text] = warns.get(text, 0) + 1
+    require(baseline <= 1, f"{baseline} first-event startup holds in one start")
     require(events == len(failures), f"Refusal headers are unpaired: {events} events, {len(failures)} chunk failures")
     require(warns == guarded, f"Guard lines differ: expected {guarded}, observed {warns}")
     return {"refusal_pairs": events, "refused_chunks": sorted(set(failures)), "guard_lines": warns,
+            "first_event_startup_holds": baseline,
             "log_counts": smoke.log_audit_counts(lines)}
 
 

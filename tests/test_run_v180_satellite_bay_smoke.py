@@ -75,6 +75,15 @@ class AuditTest(unittest.TestCase):
             bay.audit([self.EVENT.replace(bay.SAVE_REFUSAL, "other"), self.CHUNK], {(10, 10)},
                       {bay.SAVE_REFUSAL}, {})
 
+    def test_one_first_event_startup_hold_is_allowed_per_start(self) -> None:
+        hold = ("[12:00:00] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: "
+                "ARCE_FIRST_EVENT_HELD kind=first_moon_landing reason=SOURCE_UNCONFIRMED")
+        self.assertEqual(1, bay.audit([hold], set(), set(), {})["first_event_startup_holds"])
+        with self.assertRaises(smoke.SmokeError):
+            bay.audit([hold, hold], set(), set(), {})
+        with self.assertRaises(smoke.SmokeError):
+            bay.audit([hold.replace("SOURCE_UNCONFIRMED", "ROOT_UNREADABLE")], set(), set(), {})
+
     def test_other_bay_audit_lines_fail(self) -> None:
         removed = self.GUARD.replace("ARCE_SATELLITE_BAY_GUARDED", "ARCE_SATELLITE_BAY_GUARDED_ROOT_REMOVED")
         with self.assertRaises(smoke.SmokeError):
