@@ -22,9 +22,15 @@ final class EscrowFlightSource {
     private final Object snapshot;
     private final RocketEscrowSection wrapper;
     private final List<java.util.UUID> passengers;
+    private final java.util.function.BooleanSupplier boundary;
 
     EscrowFlightSource(RocketEntity rocket) {
+        this(rocket, () -> true);
+    }
+
+    EscrowFlightSource(RocketEntity rocket, java.util.function.BooleanSupplier boundary) {
         this.rocket = rocket;
+        this.boundary = java.util.Objects.requireNonNull(boundary);
         envelope = EscrowNativeEnvelope.rocket(rocket);
         digest = EscrowNativeEnvelope.digest(envelope);
         signature = signature(rocket.flightData().orElseThrow().fuel());
@@ -43,7 +49,7 @@ final class EscrowFlightSource {
     boolean observe() {
         if (!unchanged.get()) { return false; }
         var pos = envelope.getList("pos", Tag.TAG_DOUBLE); var motion = envelope.getList("motion", Tag.TAG_DOUBLE);
-        boolean same = !rocket.isRemoved() && rocket.isAddedToWorld() && rocket.operational()
+        boolean same = boundary.getAsBoolean() && !rocket.isRemoved() && rocket.isAddedToWorld() && rocket.operational()
                 && rocket.flightData().orElse(null) == flight && rocket.snapshot().orElse(null) == snapshot
                 && rocket.escrowSection().equals(wrapper) && rocket.getUUID().equals(endpoint.identity())
                 && rocket.ownerId().filter(envelope.getUUID("owner")::equals).isPresent()

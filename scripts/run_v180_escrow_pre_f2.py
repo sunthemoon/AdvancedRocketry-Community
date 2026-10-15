@@ -17,7 +17,8 @@ from run_v180_escrow_forced_stop import digest, ledger, record, LEDGER
 from run_v180_rocket_settlement_completion import require_lock, JOURNAL
 from inspect_celestial_saved_data import NbtReader
 
-CASES = ("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK", "PF_GOVERNED_T_ACK")
+CASES = ("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK", "PF_GOVERNED_T_ACK",
+         "PF_LIVE_F2_ACK", "PF_LIVE_COUNTDOWN")
 
 
 def journal(world: Path) -> dict:
@@ -34,7 +35,11 @@ def journal(world: Path) -> dict:
 
 
 def has_transfer(cut: str) -> bool:
-    return cut in ("PF_T_ACK", "PF_GOVERNED_T_ACK")
+    return cut == "PF_T_ACK" or governed_transfer(cut)
+
+
+def governed_transfer(cut: str) -> bool:
+    return cut in ("PF_GOVERNED_T_ACK", "PF_LIVE_F2_ACK", "PF_LIVE_COUNTDOWN")
 
 
 def require_governed_record(transfer: dict, arm: dict) -> None:
@@ -75,7 +80,7 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
         raise smoke.SmokeError("F1 lost or changed its native source frontier")
     if transfers and transfers[0]["transfer_id"] != arms[0]["t"]:
         raise smoke.SmokeError("Negative case lost T")
-    if cut == "PF_GOVERNED_T_ACK":
+    if governed_transfer(cut):
         require_governed_record(transfers[0], arms[0])
     # Excludes unrelated vanilla timers; includes every persisted field of the fixed source adapter.
     projection = {key: source.get(key) for key in ("UUID", "id", "RocketEntityData", "Pos", "Motion",

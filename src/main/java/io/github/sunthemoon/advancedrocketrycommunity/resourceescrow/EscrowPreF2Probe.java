@@ -35,7 +35,8 @@ final class EscrowPreF2Probe {
     EscrowPreF2Probe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
         cut = System.getProperty("advancedrocketrycommunity.escrowCase");
-        EscrowTags.require(List.of("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK", "PF_GOVERNED_T_ACK").contains(cut), "Unknown pre-F2 cut");
+        EscrowTags.require(List.of("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK", "PF_GOVERNED_T_ACK",
+                "PF_LIVE_F2_ACK", "PF_LIVE_COUNTDOWN").contains(cut), "Unknown pre-F2 cut");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
     }
 
@@ -44,7 +45,9 @@ final class EscrowPreF2Probe {
         if (name.equals("F1_ARM_CAPTURE")) { armWriting = true; }
         if (armWriting && (cut.equals("PF_ARM_BEFORE") && name.equals("K8")
                 || cut.equals("PF_ARM_REPLACED") && name.equals("K9"))
-                || cut.equals("PF_ARM_ACK") && name.equals("F1_ARM_ACK")) { pause(); }
+                || cut.equals("PF_ARM_ACK") && name.equals("F1_ARM_ACK")
+                || cut.equals("PF_LIVE_F2_ACK") && name.equals("F2_PREPARED_ACK")
+                || cut.equals("PF_LIVE_COUNTDOWN") && name.equals("F2_COUNTDOWN")) { pause(); }
     }
 
     private void pause() {
@@ -78,7 +81,7 @@ final class EscrowPreF2Probe {
                     && rocket.flightData().orElseThrow().fuel().committedDebits().isEmpty()
                     && rocket.flightData().orElseThrow().passengers().assignments().size() == 1
                     && rocket.flightData().orElseThrow().state().acceptsFuel() && journal.entries().size() == (hasT ? 1 : 0), "F1 changed fuel, manifest, epoch or journal");
-            if (cut.equals("PF_GOVERNED_T_ACK")) {
+            if (governedTransfer()) {
                 var record = journal.entries().get(0); var envelope = record.nativeTransfer().orElseThrow();
                 EscrowTags.require(envelope.armed().equals(arms.get(0))
                         && envelope.sourceEnvelope(record).equals(EscrowNativeEnvelope.rocket(rocket)), "Restart changed governed T or checkpoint source");
@@ -118,6 +121,14 @@ final class EscrowPreF2Probe {
             step = 1;
         }
         if (step == 1) {
+            if (livePreparation()) {
+                var countdown = rocket.flightData().orElseThrow().withPlan(prepared.sourceFlightData().plan().orElseThrow())
+                        .startCountdown(level.getGameTime());
+                waiting = EscrowGovernedPreparation.begin(rocket, countdown, prepared.destinationSnapshot(), record -> true,
+                        record -> { prepared = record; waiting = false; step = 2; },
+                        () -> { throw new IllegalStateException("Native live F1/F2 preparation was discarded"); });
+                return;
+            }
             if (governed != null) {
                 waiting = EscrowRuntime.of(server).flightCheckpoint().begin(rocket, governed, record -> {
                     waiting = false; EscrowTags.require(record != null, "Native governed F1 checkpoint/ARMED failed");
@@ -134,7 +145,9 @@ final class EscrowPreF2Probe {
         } else if (step == 2 && journal.acknowledgedCurrent()) { pause(); }
     }
 
-    private boolean hasTransfer() { return cut.equals("PF_T_ACK") || cut.equals("PF_GOVERNED_T_ACK"); }
+    private boolean hasTransfer() { return cut.equals("PF_T_ACK") || governedTransfer(); }
+    private boolean governedTransfer() { return cut.equals("PF_GOVERNED_T_ACK") || livePreparation(); }
+    private boolean livePreparation() { return cut.equals("PF_LIVE_F2_ACK") || cut.equals("PF_LIVE_COUNTDOWN"); }
 
     private static RocketTransferRecord prepared(RocketEntity rocket, UUID transfer) {
         var from = rocket.snapshot().orElseThrow(); var fuel = rocket.flightData().orElseThrow().fuel();

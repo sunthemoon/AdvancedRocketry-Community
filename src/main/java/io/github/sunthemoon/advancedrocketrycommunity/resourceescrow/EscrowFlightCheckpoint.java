@@ -25,25 +25,36 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
 
     /** Package-private; the successor dispatcher must supply its validated, fully reserved launch tuple. */
     boolean begin(RocketEntity rocket, EscrowFlightAuthority.Launch launch, Consumer<EscrowFlightTables.Armed> completion) {
-        return begin(rocket, launch, EscrowFlightAuthority::arm, completion);
+        return begin(rocket, launch, EscrowFlightAuthority::arm, () -> true, completion);
     }
 
     /** Complete F1 adapter: reserve the exact F2 record as well as its ARMED root before own-store. */
     boolean begin(RocketEntity rocket, EscrowGovernedLaunch prepared,
                   Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord> completion) {
+        return begin(rocket, prepared, record -> true, completion);
+    }
+
+    boolean begin(RocketEntity rocket, EscrowGovernedLaunch prepared,
+                  java.util.function.Predicate<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord> boundary,
+                  Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord> completion) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return false; }
         var journal = RocketTransferSavedData.get(level.getServer());
+        var captured = new java.util.concurrent.atomic.AtomicReference<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord>();
         return begin(rocket, prepared.launch(), (root, launch, generation) -> {
             var candidate = prepared.preflight(root, generation);
             var arm = candidate.armedFlights().stream().filter(value -> value.logical().equals(launch.logical())).findFirst().orElseThrow();
-            journal.validateNewRecord(prepared.record(arm));
+            var record = prepared.record(arm);
+            journal.validateNewRecord(record);
+            EscrowTags.require(boundary.test(record), "F1 launch lost its action boundary");
+            captured.set(record);
             return candidate;
-        }, arm -> {
+        }, () -> captured.get() != null && boundary.test(captured.get()), arm -> {
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record = null;
             if (arm != null) {
                 var data = ResourceEscrowSavedData.existing(level.getServer());
                 try {
-                    if (data != null && data.bind(level.getServer()).governedAvailable(arm.logical())) {
+                    if (data != null && data.bind(level.getServer()).governedAvailable(arm.logical())
+                            && boundary.test(captured.get())) {
                         record = prepared.afterArm(data.ledger(), arm, EscrowNativeEnvelope.rocket(rocket), journal);
                     }
                 } catch (IllegalArgumentException refused) {
@@ -59,7 +70,8 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
     }
 
     private boolean begin(RocketEntity rocket, EscrowFlightAuthority.Launch launch,
-                          Preparation preparation, Consumer<EscrowFlightTables.Armed> completion) {
+                          Preparation preparation, java.util.function.BooleanSupplier boundary,
+                          Consumer<EscrowFlightTables.Armed> completion) {
         if (closed || pending.size() >= 64 || locked(launch.logical()) || !RocketEscrowGate.idle(rocket)
                 || !(rocket.level() instanceof ServerLevel level)) { return false; }
         var server = level.getServer(); var data = ResourceEscrowSavedData.existing(server);
@@ -69,7 +81,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                 || !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)) { return false; }
         EscrowFlightSource frozen;
         try {
-            frozen = new EscrowFlightSource(rocket);
+            frozen = new EscrowFlightSource(rocket, boundary);
             EscrowTags.require(launch.source().equals(rocket.getUUID()) && launch.logical().equals(frozen.endpoint.logicalRocket())
                     && launch.owner().equals(rocket.ownerId().orElseThrow()) && launch.wrapper().equals(rocket.escrowSection())
                     && launch.signature().equals(frozen.signature) && launch.invariant().equals(frozen.invariant)

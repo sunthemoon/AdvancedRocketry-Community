@@ -125,6 +125,33 @@ final class RocketTransferService {
             );
         }
 
+        if (rocket.escrowSection().ledger() != null) {
+            boolean started = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation.begin(
+                    rocket, countdown, selected.snapshot().orElseThrow(),
+                    candidate -> RocketGovernedLaunchBoundary.allows(server, journal, candidate, rocket, recovery.bays()),
+                    acknowledged -> {
+                        // The exact F2 callback already consumed START_COUNTDOWN. Never use the legacy idle exemption.
+                        RocketTransferEntities.keepLoaded(sourceLevel, acknowledged.sourceSnapshot(), acknowledged.transferId());
+                        RocketTransferEntities.keepLoaded(destinationLevel, acknowledged.destinationSnapshot(), acknowledged.transferId());
+                        RocketFlightFeedback.countdownAccepted(rocket);
+                        diagnostics.prepared(acknowledged.transferId());
+                        auditPrepare(rocket, plan, selected, RocketFlightRequestCode.SUCCESS);
+                        completion.accepted().run();
+                    }, () -> {
+                        // Only a definitely unarmed/idle failure can release the tentative pad.
+                        if (journal.actionAuthorityAvailable() && journal.find(plan.requestId()).isEmpty()
+                                && resourceMutationAllowed(rocket)) {
+                            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
+                        }
+                        completion.discarded().run();
+                    });
+            if (!started) {
+                io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
+            }
+            return new RocketFlightRequestResult(started ? RocketFlightRequestCode.JOURNAL_PENDING
+                    : RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED, plan.requiredFuel());
+        }
+
         RocketTransferRecord record;
         try {
             RocketFlightData sourceTransit = scheduledTransit(countdown);

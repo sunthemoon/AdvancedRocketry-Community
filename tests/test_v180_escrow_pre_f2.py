@@ -33,10 +33,12 @@ class PreF2OracleTest(unittest.TestCase):
         with self.assertRaises(runner.smoke.SmokeError):
             self.read_journal(data, b"x" * (16 * 1024 * 1024 + 1))
 
-    def test_only_the_two_written_record_cases_expect_armed_after_restart(self):
-        self.assertEqual(len(runner.CASES), 5)
+    def test_only_written_record_cases_expect_armed_after_restart(self):
+        self.assertEqual(len(runner.CASES), 7)
         self.assertEqual([cut for cut in runner.CASES if runner.has_transfer(cut)],
-                         ["PF_T_ACK", "PF_GOVERNED_T_ACK"])
+                         ["PF_T_ACK", "PF_GOVERNED_T_ACK", "PF_LIVE_F2_ACK", "PF_LIVE_COUNTDOWN"])
+        self.assertEqual([cut for cut in runner.CASES if runner.governed_transfer(cut)],
+                         ["PF_GOVERNED_T_ACK", "PF_LIVE_F2_ACK", "PF_LIVE_COUNTDOWN"])
 
     def test_governed_oracle_requires_independent_versions_exact_arm_and_no_publication(self):
         arm = {"serial": 1, "outcome": "ARMED", "d": "fixed-destination"}

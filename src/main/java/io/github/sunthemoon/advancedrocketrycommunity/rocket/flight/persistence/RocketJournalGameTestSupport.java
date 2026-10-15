@@ -15,8 +15,17 @@ public final class RocketJournalGameTestSupport {
         helper.assertTrue(rocket.flightData().orElseThrow().state() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState.FUELED
                 || rocket.flightData().orElseThrow().state() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState.LANDED,
                 "Launch started flight before its exact acknowledgement");
-        helper.assertTrue(!RocketTransferSavedData.get(helper.getLevel().getServer()).acknowledgedCurrent(),
-                "Launch synchronously acknowledged its newly captured generation");
+        var journal = RocketTransferSavedData.get(helper.getLevel().getServer());
+        if (rocket.escrowSection().ledger() != null) {
+            // F1 precedes F2: the idle journal is still checked, but the complete source is already frozen.
+            helper.assertTrue(journal.acknowledgedCurrent()
+                    && journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).isEmpty()
+                    && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.flightFrozen(rocket)
+                    && !io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket),
+                    "Bound launch did not wait at its frozen F1/no-T boundary");
+        } else {
+            helper.assertTrue(!journal.acknowledgedCurrent(), "Launch synchronously acknowledged its newly captured generation");
+        }
     }
     public static io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryReport recoverFixture(
             GameTestHelper helper,
