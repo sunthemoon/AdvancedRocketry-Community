@@ -20,7 +20,7 @@ CHOICES = ("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMA
 CASES = tuple("SR_" + choice + "__" + boundary for choice in CHOICES for boundary in (
     *(f"O2_{side}_{index}" for index in range(3 if choice.startswith("CHAIN") else 2) for side in ("BEFORE", "AFTER")),
     "O3_BEFORE", "O3_AFTER", *(("O3J_BEFORE", "O3J_AFTER") if choice == "FLOOR" else ("O3J_AFTER",)),
-    "O4_BEFORE", "O4_AFTER", *(("O_BIND_BEFORE", "O_BIND_AFTER") if choice == "NORMALIZE" else ("VETO",))))
+    "O4_BEFORE", "O4_AFTER", "VETO", *(("O_BIND_BEFORE", "O_BIND_AFTER") if choice == "NORMALIZE" else ()) ))
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 
 

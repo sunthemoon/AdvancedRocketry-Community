@@ -22,8 +22,8 @@ class SettlementCompletionOracleTest(unittest.TestCase):
     def setUp(self):
         endpoint = dict(kind="ENTITY", identity=[1, 2, 3, 4])
         self.root = dict(ledger_id=[10, 11, 12, 13], records=[], floors=[], tombstones=[
-            dict(schema_version=2, released=1, actor=native.ACTOR, actor_name="Server", decision_digest="a" * 64,
-                 survivors=[dict(endpoint=endpoint)])])
+            dict(schema_version=3, released=1, actor=native.ACTOR, actor_name="Server", decision_digest="a" * 64,
+                 accounting_status="UNKNOWN", release_generation=1, survivors=[dict(endpoint=endpoint)])])
         self.wrapper = dict(schema_version=3, flight_data=dict(fuel=dict(amount=1000)),
                             resource_escrow=dict(resource_epoch=1, ledger_id=self.root["ledger_id"], markers=[]))
         self.rocket = dict(UUID=endpoint["identity"], Pos=[64.5, 100., 64.5], RocketEntityData=self.wrapper)
