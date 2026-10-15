@@ -33,9 +33,10 @@ public final class EscrowSettlementNormalization {
     static boolean publish(MinecraftServer server, EscrowCoordinator coordinator, EscrowSettlementIntent intent,
             BooleanSupplier journalLease, EscrowRuntime runtime) {
         var acknowledged = coordinator.ledger();
+        var encoded = intent.encode();
         EscrowTags.require(server.isSameThread() && intent.ledger().equals(acknowledged.id())
                 && intent.ids().stream().allMatch(id -> acknowledged.records().stream()
-                .anyMatch(op -> op.id().equals(id) && op.settlement().equals(intent.encode()))), "Normalization requires acknowledged O1");
+                .anyMatch(op -> op.id().equals(id) && op.settlement().equals(encoded))), "Normalization requires acknowledged O1");
         for (int i = 0; i < intent.observations().size(); i++) {
             var chosen = intent.observations().get(i);
             if (chosen.missing() || chosen.bound() || chosen.signatureKind() != EscrowSignatureKind.FUEL_VECTOR_V1) { continue; }

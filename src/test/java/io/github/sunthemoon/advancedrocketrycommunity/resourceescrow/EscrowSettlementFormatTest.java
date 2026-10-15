@@ -34,6 +34,13 @@ class EscrowSettlementFormatTest {
         assertEquals(preview, EscrowSettlementIntent.decode(preview.encode()));
         assertFalse(neutral.bound()); assertTrue(neutral.checkpointed().bound());
         assertEquals(neutral.state(), neutral.checkpointed().state());
+        var confirmed = preview.confirm(preview.actor(), preview.digest(), 11, preview.observations());
+        var frozen = confirmed.freeze(root);
+        try (var recovery = new EscrowSettlementRecovery()) {
+            var decoded = recovery.intents(frozen);
+            assertEquals(List.of(confirmed), decoded); assertSame(decoded, recovery.intents(frozen));
+            assertNotSame(decoded, recovery.intents(frozen.generation(1)));
+        }
         assertEquals(new RocketEscrowSection(root.id(), 0, List.of()), neutral.normalizedWrapper());
         assertEquals(EscrowSignatureKind.FUEL_VECTOR_V1, neutral.signatureKind());
         var encoded = EscrowSettlementIntent.encodeObservation(neutral);

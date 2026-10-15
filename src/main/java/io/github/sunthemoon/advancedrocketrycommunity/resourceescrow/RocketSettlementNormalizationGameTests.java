@@ -56,6 +56,8 @@ public final class RocketSettlementNormalizationGameTests {
                     fixture.applySource(operation); coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
                 } else if (step == 3) {
                     if (!coordinator.writerIdle() || writing) { return; }
+                    if (data.ledger().records().stream().noneMatch(op -> op.id().equals(operation.id())
+                            && op.reason() == EscrowReason.OTHER_STATE)) { return; }
                     var operator = EscrowRuntime.of(level.getServer()).settlement();
                     var preview = operator.preview(level.getServer(), operation.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT, owner, "NormalizationGameTest");
                     helper.assertTrue(preview.observations().stream().anyMatch(observation -> observation.endpoint().identity().equals(physical)

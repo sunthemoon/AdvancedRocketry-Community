@@ -90,10 +90,13 @@ final class EscrowSettlementCompletionProbe {
                 var operations = new ArrayList<EscrowOperation>(); operations.add(operation(source, coordinator.nextSequence(), 0));
                 if (chain) {
                     var second = EscrowTestEndpoints.chainSource(source, POSITION.offset(1, 0, 0)); sources.add(second);
-                    operations.add(operation(second, coordinator.nextSequence() + 1, 1));
+                    operations.add(operation(second, coordinator.nextSequence() + 1, 1, data.ledger().append(operations)));
                 }
                 var parent = rocket.saveWithoutId(new CompoundTag()); var wrapper = parent.getCompound("RocketEntityData");
-                var fuel = rocket.flightData().orElseThrow().fuel().withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, operations.size() * 1_000L);
+                var fuel = rocket.flightData().orElseThrow().fuel();
+                for (int epoch = 1; epoch <= operations.size(); epoch++) {
+                    fuel = fuel.withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, epoch * 1_000L);
+                }
                 wrapper.put("flight_data", io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec.encode(
                         rocket.flightData().orElseThrow().withFuel(fuel, level.getGameTime())));
                 wrapper.put("resource_escrow", new RocketEscrowSection(data.ledger().id(), operations.size(), operations.stream()
@@ -145,15 +148,18 @@ final class EscrowSettlementCompletionProbe {
                 : abandon ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT;
     }
     private EscrowOperation operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch) {
+        return operation(fixture, sequence, epoch, data.ledger());
+    }
+    private EscrowOperation operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch, EscrowLedger bindingRoot) {
         var sample = fixture.operation(sequence); var fuel = rocket.flightData().orElseThrow().fuel();
         var before = epoch == 0 ? fuel : fuel.withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, 1_000);
-        var after = fuel.withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, (epoch + 1) * 1_000);
+        var after = before.withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, (epoch + 1) * 1_000);
         var destination = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), rocket.getUUID(), source.logical(),
                 ModIdentity.id("rocket").toString(), 4, 0, 4, EscrowEndpoint.Unit.PRIMARY, epoch, before.resourceSignature(), after.resourceSignature());
         var guard = RocketTransferSavedData.get(server).acknowledgedGuard(source.logical()).orElseThrow();
         var op = new EscrowOperation(sample.id(), sequence, rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(), sample.payload(), sample.payloadHash(),
                 sample.source(), destination, new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-        return EscrowNativeBinding.captureTest(op, rocket, fixture.source(), before, after, data.ledger());
+        return EscrowNativeBinding.captureTest(op, rocket, fixture.source(), before, after, bindingRoot);
     }
     private boolean createFloor(RocketTransferSavedData journal) {
         BlockPos target = POSITION.offset(16, 0, 0);

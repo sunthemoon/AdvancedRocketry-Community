@@ -121,7 +121,8 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
         observed = [(entry.get("x"), entry.get("y"), entry.get("z"), entry["ForgeData"]["arce_escrow_fixture"]["amount"]) for entry in sources]
         raise smoke.SmokeError(f"Source checkpoint mutated quantities or lost an unproved returning source: expected {expected_sources} x {amount}, observed {observed}")
     return dict(ledger=root, journal=transfers, wrapper=wrapper, source_count=len(sources),
-                raw_total=sum(entry["ForgeData"]["arce_escrow_fixture"]["amount"] for entry in sources) + (0 if floor else count * 1000),
+                raw_total=sum(entry["ForgeData"]["arce_escrow_fixture"]["amount"] for entry in sources)
+                + (wrapper["flight_data"]["fuel"]["amount"] if wrapper is not None else 0),
                 entity_slot_present=bool(entity_slot_present),
                 files={name: digest(world / name) if (world / name).is_file() else "ABSENT" for name in
                        ("data/" + LEDGER, "data/" + JOURNAL, "region/r.0.0.mca", "entities/r.0.0.mca")})

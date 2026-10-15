@@ -137,10 +137,12 @@ public final class EscrowSettlementPruning {
     static boolean frontier(EscrowLedger root, EscrowEndpoint endpoint, EscrowPrefix.State current,
             long quantity, String nativeSignature, Set<UUID> unresolved) {
         CompoundTag latest = null; long generation = -1; var trusted = new java.util.HashSet<UUID>();
+        var auditedMarkers = new java.util.HashSet<EscrowPrefix.Marker>();
         for (var group : groups(root)) {
             for (var chosen : group.endpoints()) {
                 if (!chosen.reference().key().equals(endpoint.key()) || !chosen.survivor().getBoolean("bound")) { continue; }
                 trusted.addAll(group.members());
+                auditedMarkers.addAll(markers(chosen.survivor()));
                 if (latest == null || generation < chosen.generation()) { latest = chosen.survivor(); generation = chosen.generation(); }
             }
         }
@@ -152,6 +154,7 @@ public final class EscrowSettlementPruning {
                     && expected.subList(removed, expected.size()).equals(current.markers());
         }
         trusted.removeAll(unresolved);
+        if (current.markers().stream().anyMatch(marker -> trusted.contains(marker.operation()) && !auditedMarkers.contains(marker))) { return false; }
         var chain = EscrowPrefix.chains(root.records()).get(endpoint.key());
         if (chain == null) { return false; }
         var live = new EscrowPrefix.State(root.id(), current.epoch(), nativeSignature,

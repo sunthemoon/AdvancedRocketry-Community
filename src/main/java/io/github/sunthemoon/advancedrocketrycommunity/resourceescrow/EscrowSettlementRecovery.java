@@ -26,14 +26,15 @@ final class EscrowSettlementRecovery implements AutoCloseable {
     }
     private final Map<String, Work> work = new HashMap<>();
     private final EscrowSettlementPruning.Cursor pruning = new EscrowSettlementPruning.Cursor();
+    private EscrowLedger decodedRoot;
+    private List<EscrowSettlementIntent> decodedIntents = List.of();
     private int cursor;
     private boolean closed;
     void tick(MinecraftServer server, EscrowCoordinator coordinator, EscrowRuntime runtime) {
         if (closed || runtime.stopping()) { return; }
         // Released groups progress independently of unrelated permanently held O1 decisions.
         pruning.tick(server, coordinator);
-        var intents = coordinator.ledger().records().stream().filter(op -> !op.settlement().isEmpty())
-                .map(op -> EscrowSettlementIntent.decode(op.settlement())).distinct().toList();
+        var intents = intents(coordinator.ledger());
         var live = intents.stream().map(EscrowSettlementIntent::digest).collect(java.util.stream.Collectors.toSet());
         work.entrySet().removeIf(entry -> { if (live.contains(entry.getKey())) { return false; } entry.getValue().clear(); return true; });
         if (intents.isEmpty()) { return; }
@@ -112,6 +113,14 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             stalled(runtime, intent, state, refused.getMessage(), tick);
         }
     }
+    List<EscrowSettlementIntent> intents(EscrowLedger root) {
+        if (decodedRoot != root) {
+            decodedIntents = root.records().stream().filter(op -> !op.settlement().isEmpty())
+                    .map(op -> EscrowSettlementIntent.decode(op.settlement())).distinct().toList();
+            decodedRoot = root;
+        }
+        return decodedIntents;
+    }
     private static int index(EscrowSettlementIntent intent, EscrowEndpoint.Key key) {
         for (int i = 0; i < intent.observations().size(); i++) { if (intent.observations().get(i).endpoint().key().equals(key)) { return i; } }
         throw new IllegalArgumentException("Unknown proof endpoint");
@@ -134,5 +143,5 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         }
     }
     String phase() { return work.values().stream().map(value -> value.phase).findFirst().orElse("O2"); }
-    @Override public void close() { closed = true; work.values().forEach(Work::clear); work.clear(); }
+    @Override public void close() { closed = true; work.values().forEach(Work::clear); work.clear(); decodedRoot = null; decodedIntents = List.of(); }
 }

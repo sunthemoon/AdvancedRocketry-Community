@@ -96,5 +96,11 @@ class EscrowSettlementPruningTest {
         var pruned = new EscrowPrefix.State(root.id(), 1, current.signature(), List.of());
         assertTrue(EscrowSettlementPruning.frontier(released, op.destination(), pruned, 1_000, current.signature(), Set.of()));
         assertFalse(EscrowSettlementPruning.frontier(released, op.destination(), pruned, 1_000, current.signature(), Set.of(op.id())));
+        var next = EscrowTestFixtures.operation(2, 1, 1); var extended = released.append(List.of(next));
+        var later = new EscrowPrefix.Link(next, next.destination(), "DESTINATION").marker();
+        var advanced = new EscrowPrefix.State(root.id(), 2, next.destination().afterSignature(), List.of(marker, later));
+        assertTrue(EscrowSettlementPruning.frontier(extended, op.destination(), advanced, 2_000, advanced.signature(), Set.of(next.id())));
+        var falsePrefix = new EscrowPrefix.State(root.id(), 2, advanced.signature(), List.of(forged.markers().get(0), later));
+        assertFalse(EscrowSettlementPruning.frontier(extended, op.destination(), falsePrefix, 2_000, falsePrefix.signature(), Set.of(next.id())));
     }
 }
