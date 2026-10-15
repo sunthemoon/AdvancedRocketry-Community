@@ -47,5 +47,18 @@ public final class AutomationConservationGameTests {
         new ClassicAutomationRun(helper, "centrifuge", "centrifuging_enriched_lava", 200).start(CLASSIC_TIMEOUT);
     }
 
+    @GameTest(template = "empty", batch = "w68_rolling_machine", timeoutTicks = CLASSIC_TIMEOUT)
+    public static void rollingMachineTwentyBarBatchesConserveIngotsWaterAndGeneratorFe(GameTestHelper helper) {
+        KernelAutomationRun.rolling(helper).start(CLASSIC_TIMEOUT);
+    }
+    @GameTest(template = "empty", batch = "w68_precision_assembler", timeoutTicks = CLASSIC_TIMEOUT)
+    public static void precisionAssemblerTwentyCircuitBatchesConserveInputsAndGeneratorFe(GameTestHelper helper) {
+        KernelAutomationRun.precision(helper).start(CLASSIC_TIMEOUT);
+    }
+    @GameTest(template = "empty", batch = "w68_electrolyzer", timeoutTicks = CLASSIC_TIMEOUT)
+    public static void electrolyzerTwentyBatchesConserveCanistersWaterAndRedstoneFe(GameTestHelper helper) {
+        new ElectrolyzerAutomationRun(helper).start(CLASSIC_TIMEOUT);
+    }
+
     private AutomationConservationGameTests() { }
 }
