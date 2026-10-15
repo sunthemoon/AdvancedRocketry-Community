@@ -176,7 +176,7 @@ Updated 2026-10-15. Dispatch order: progress first, then the parallel bugs.
   - W02F: the native restart checks passed (W63); an admin recovery for a rocket whose recorded passengers never come back online together needs a design;
   - W13 N1's fixes, reconsidered with W11b3 (ADR-065 W13 note);
   - the 5 ms atmosphere-boundary budget, which needs an ADR (it recurred on 2026-10-13);
-  - `NaturalBedGameTests.sixNativeHostsSleepKeepAbsenceAndTuplesAndRefuseLate` (batch `natural_beds_matrix`) timed out once ("Didn't succeed or fail within 60 ticks") on W70's branch run 38718568565, a hosted run unrelated to beds; the rerun passed, so it is intermittent. Six Levels' chunk loading inside 60 ticks is the likely cause (the 2026-10-10 tick-pacing pattern).
+  - `NaturalBedGameTests.sixNativeHostsSleepKeepAbsenceAndTuplesAndRefuseLate` (batch `natural_beds_matrix`) timed out once ("Didn't succeed or fail within 60 ticks") on W70's branch run 38718568565, a hosted run unrelated to beds; the rerun passed, so it is intermittent. It then failed on shared run 38730366442 (passed on rerun) and on both attempts of shared run 38746776434 at `17b4444a` (the W73 merge, whose own branch run passed it), so the shared regression is red until W74's fix merges. Six Levels' chunk loading inside 60 ticks is the likely cause (the 2026-10-10 tick-pacing pattern).
   - `SleepRespawnGameTests.sealedBreathableRoomsAdmitSleepButAPendingRoomDoesNot` ("The large room was not pending after one production scan tick") failed in W11b2 continuations 09 and 14 and passed on other runs; it goes to W74's session after its first finding.
   - hosted run 38730366442 at `cf289a48` (documentation only, after the W72 merge) failed three GameTests once: the six-host natural-beds test (W74), `FirstMoonLandingGameTests.theFirstMoonLandingElectsTheAboardPassengerAndLandsOnlyAfterTheConfirmation` ("The fixture origin never became entity ticking") and `AtmosphereSpawnAdmissionGameTests.spawnEggAndCommandAreExplicitExceptionsNotNaturalAdmission` ("The spawn egg did not place exactly one zombie in vacuum: CONSUME 0"); the failed job is being rerun, and the last two go to W76;
   - the HotSpot C2 crash, if it recurs;
@@ -185,6 +185,10 @@ Updated 2026-10-15. Dispatch order: progress first, then the parallel bugs.
   - W55 measured the first, cold ground-survey START at 505 to 523 ms of wall time on this machine
     without induced load; the reference-node performance campaign should measure it;
   - W21c M1 (pause paid research while the reservations exceed the bound): deferred after v1.8.
+
+## Machine operations
+
+- 2026-10-15 22:48: W68's A/B script held the heavy-JVM lock while its fourth Gradle run sat idle for 50 minutes before any test started. `jstack` showed ForgeGradle's `EnvironmentChecks.testServerConnection` blocked in a TLS handshake to the Forge Maven server (no read timeout; the check runs even with `--offline`). Root stopped only that Gradle daemon; the script released the lock and W74 took it. Root added `systemProp.net.minecraftforge.gradle.check.certs=false` to the machine-local `C:/Users/Administrator/.gradle/gradle.properties` (not in the repository; hosted CI unchanged); a `--debug` run confirmed the check is skipped.
 
 ## Parked
 
