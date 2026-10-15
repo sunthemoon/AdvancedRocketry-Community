@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "advancedrocketrycommunity:block/fluid_fuel_loader_bottom",
+    "side": "advancedrocketrycommunity:block/fluid_fuel_loader_side",
+    "top": "advancedrocketrycommunity:block/fluid_fuel_loader_top"
+  }
+}
