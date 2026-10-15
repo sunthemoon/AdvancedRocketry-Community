@@ -119,6 +119,7 @@ Root cannot make these; each blocks only the work named.
 
 | Task | Scope | Dispatch when |
 |---|---|---|
+| [W52F](TASK-W52F-IMPORT-ROOT.md) | Parallel bug from governance run 38616170516: W52's six K6 icons sit in the v0.1.0 managed root `src/main/resources`, so `validate_v010_asset_baseline.py` fails. Move the v1.8 imports to `src/imported/v1.8/resources` (Root adds the `srcDir`), change the importer and both plans, regenerate the K6 record | First free implementer slot (before W59) |
 | [W59](TASK-W59-FIELD-RESERVATION-LOAD.md) | Parallel bug W04 N5: release the stray UNBOUND force-field reservation after an in-place NBT load; design note first, independent review before merge | When an implementer slot frees |
 
 Hosted CI runs on each implementer branch after Root pushes it (workflow change
