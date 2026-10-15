@@ -127,6 +127,10 @@ public final class ModMenuTypes {
                         .client(kind, id, inventory, buffer)));
     }
 
+    public static final RegistryObject<MenuType<io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayMenu>>
+            ROCKET_SATELLITE_BAY = MENUS.register("rocket_satellite_bay", () -> IForgeMenuType.create(
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayMenu::new));
+
     private ModMenuTypes() {
     }
 

@@ -234,6 +234,9 @@ public final class ModItems {
             "station_orientation_controller", ModBlocks.STATION_ORIENTATION_CONTROLLER);
     /** ADR-065 C17c: the beacon and its finder; the finder is the one registration of the shared HEAD module ID. */
     public static final RegistryObject<Item> PLANETARY_BEACON = blockItem("planetary_beacon", ModBlocks.PLANETARY_BEACON);
+    /** ADR-065 C17c (W27b): a plain bay item; the bay's root never travels in a {@code BlockEntityTag}. */
+    public static final RegistryObject<Item> ROCKET_SATELLITE_BAY = blockItem("rocket_satellite_bay",
+            ModBlocks.ROCKET_SATELLITE_BAY);
     public static final RegistryObject<Item> BEACON_FINDER = ITEMS.register("beacon_finder", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.beacon.finder.BeaconFinderItem(new Item.Properties()));
     public static final RegistryObject<Item> CARBON_BRICK = ITEMS.register("carbon_brick", () -> new Item(new Item.Properties()));

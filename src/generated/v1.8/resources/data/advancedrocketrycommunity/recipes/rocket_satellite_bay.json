@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "b": {
+      "item": "advancedrocketrycommunity:basic_circuit"
+    },
+    "c": {
+      "item": "minecraft:chest"
+    },
+    "p": {
+      "tag": "forge:plates/aluminum"
+    }
+  },
+  "pattern": [
+    "p p",
+    "pcp",
+    "pbp"
+  ],
+  "result": {
+    "count": 1,
+    "item": "advancedrocketrycommunity:rocket_satellite_bay"
+  }
+}

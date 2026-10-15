@@ -358,6 +358,24 @@
       "reason": "A retained unlit torch root above 2 KiB must refuse the whole chunk save through the shared guard; the event bus logs the thrown refusal at ERROR."
     },
     {
+      "id": "w27b-satellite-bay-guarded-root",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity/",
+      "message": "ARCE_SATELLITE_BAY_GUARDED pos=-?\\d+, -?\\d+, -?\\d+ guard=(?:QUARANTINED|UNSUPPORTED_ROOT|UNSUPPORTED_DATA|PACKAGE_UNAVAILABLE|INVALID_PACKAGE) keepable=(?:true|false)",
+      "counts": {"satellite_bay": 11},
+      "test": "SatelliteBayRootGameTests.rawUnknownAndFutureRootsAreKeptGuardedAndDropNothing (5), assemblyAndDisassemblyKeepEveryBayRootByteForByte (2), onlyARootNativeSerializationCannotKeepRefusesItsChunkSave (4)",
+      "reason": "R-038: each load into a guarded state writes one audit line. The tests load five guarded roots, two capture fixtures, and four save-admission fixtures: the keepable quarantine, W27B-R1's oversized quarantined and future roots (both retained without denial), and the unkeepable deep root."
+    },
+    {
+      "id": "w27b-satellite-bay-live-replacement-refused",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlockEntity/",
+      "message": "ARCE_SATELLITE_BAY_LIVE_REPLACEMENT_REFUSED pos=-?\\d+, -?\\d+, -?\\d+ guard=(?:QUARANTINED|UNSUPPORTED_ROOT|UNSUPPORTED_DATA|PACKAGE_UNAVAILABLE|INVALID_PACKAGE)",
+      "counts": {"satellite_bay": 5},
+      "test": "SatelliteBayRootGameTests.rawUnknownAndFutureRootsAreKeptGuardedAndDropNothing",
+      "reason": "R-038: a live /data replacement keeps a held guarded root and writes one audit line; the test tries it once on each of the five guarded roots."
+    },
+    {
       "id": "w33-torch-queue-overloaded",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.TorchCombustionService/",

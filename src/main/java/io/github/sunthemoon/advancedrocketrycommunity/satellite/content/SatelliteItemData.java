@@ -66,7 +66,8 @@ public final class SatelliteItemData {
         return readTag(stack.getTag());
     }
 
-    static DecodeResult readTag(CompoundTag root) {
+    /** Decodes the identity from an item's raw {@code tag} compound, so an unregistered item can still be read. */
+    public static DecodeResult readTag(CompoundTag root) {
         if (root == null || !root.contains(DATA_KEY)) {
             return DecodeResult.empty();
         }
