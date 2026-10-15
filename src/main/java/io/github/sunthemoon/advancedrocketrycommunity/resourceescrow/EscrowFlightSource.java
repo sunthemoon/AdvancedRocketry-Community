@@ -27,7 +27,7 @@ final class EscrowFlightSource {
         this.rocket = rocket;
         envelope = EscrowNativeEnvelope.rocket(rocket);
         digest = EscrowNativeEnvelope.digest(envelope);
-        signature = rocket.flightData().orElseThrow().fuel().resourceSignature();
+        signature = signature(rocket.flightData().orElseThrow().fuel());
         invariant = EscrowInvariant.rocket(rocket);
         flight = rocket.flightData().orElseThrow(); snapshot = rocket.snapshot().orElseThrow(); wrapper = rocket.escrowSection();
         passengers = rocket.getPassengers().stream().map(net.minecraft.world.entity.Entity::getUUID).toList();
@@ -60,6 +60,12 @@ final class EscrowFlightSource {
     }
 
     Predicate<CompoundTag> validator() { return validator(endpoint, envelope); }
+
+    static String signature(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState fuel) {
+        // Unsupported/legacy endpoints are holds, not an uncaught failure in the server tick.
+        EscrowTags.require(fuel.propulsion().isPresent(), "Source checkpoint requires native fuel");
+        return fuel.resourceSignature();
+    }
 
     static Predicate<CompoundTag> validator(EscrowEndpoint endpoint, CompoundTag envelope) {
         CompoundTag frozen = envelope.copy();

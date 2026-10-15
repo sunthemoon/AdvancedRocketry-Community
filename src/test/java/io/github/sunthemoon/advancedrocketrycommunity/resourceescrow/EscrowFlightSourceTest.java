@@ -12,6 +12,16 @@ import org.junit.jupiter.api.Test;
 class EscrowFlightSourceTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void unsupportedScalarSourceIsARecoverableValidationRefusal() {
+        var scalar = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(1_000);
+        assertThrows(IllegalArgumentException.class, () -> EscrowFlightSource.signature(scalar));
+        var descriptor = new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion(
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Mode.ABSTRACT,
+                1_000, 0, 1, 1, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings.DEFAULTS);
+        var nativeFuel = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(descriptor);
+        assertEquals(nativeFuel.resourceSignature(), EscrowFlightSource.signature(nativeFuel));
+    }
+
     @Test void sourcePredicateChecksEveryPersistedEnvelopeFieldAndSlotCensus() {
         var endpoint = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, "minecraft:overworld", EscrowTestFixtures.id(1),
                 EscrowTestFixtures.id(2), "advancedrocketrycommunity:rocket", 4, 0, 4, EscrowEndpoint.Unit.PRIMARY, 2,
