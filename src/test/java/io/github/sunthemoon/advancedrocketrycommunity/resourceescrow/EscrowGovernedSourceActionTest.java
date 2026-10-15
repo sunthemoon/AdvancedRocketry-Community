@@ -68,6 +68,26 @@ class EscrowGovernedSourceActionTest {
         } finally { journal.stop(); }
     }
 
+    @Test void acknowledgedLandedSuccessorStartsWithoutRewritingItsF1Checkpoint() throws Exception {
+        var fixture = EscrowGovernedLaunchTest.landed(); var initial = flight(fixture.source());
+        var baseline = EscrowLedger.empty(fixture.record().nativeTransfer().orElseThrow().armed().ledger());
+        var countdown = initial.withFuel(initial.fuel(), initial.stateStartedGameTime())
+                .withPlan(fixture.record().sourceFlightData().plan().orElseThrow()).startCountdown(2);
+        var prepared = EscrowGovernedLaunch.prepare(baseline, fixture.source(), fixture.record().sourceSnapshot(), countdown,
+                fixture.record().destinationSnapshot(), fixture.record().nativeTransfer().orElseThrow().armed().destination(),
+                fixture.record().nativeTransfer().orElseThrow().armed().journal());
+        var root = prepared.preflight(baseline, 1).generation(1); var record = prepared.record(root.armedFlights().get(0));
+        var journal = new RocketTransferSavedData(); journal.put(record);
+        try {
+            var authority = acknowledge(root, journal, record); var original = fixture.source().copy();
+            var after = EscrowGovernedSourceAction.issue(authority, START_COUNTDOWN, fixture.source(), 2, () -> true)
+                    .consume(fixture.source()::copy);
+            assertEquals(countdown, after); assertEquals(initial.fuel(), after.fuel());
+            assertEquals(original, fixture.source());
+            assertEquals(original, record.nativeTransfer().orElseThrow().sourceEnvelope(record));
+        } finally { journal.stop(); }
+    }
+
     @Test void phaseTimersAndExactTopOfAscentAreRequired() throws Exception {
         var fixture = GovernedTransferFixture.create(); var record = fixture.record();
         var root = EscrowGovernedDispatchTest.root(record); var journal = new RocketTransferSavedData(); journal.put(record);

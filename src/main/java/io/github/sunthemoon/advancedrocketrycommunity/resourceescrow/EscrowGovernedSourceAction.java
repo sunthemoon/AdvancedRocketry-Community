@@ -57,7 +57,7 @@ public final class EscrowGovernedSourceAction {
         var initial = flight(expected);
         EscrowTags.require(gameTime >= initial.stateStartedGameTime(), "Source action clock moved backwards");
         var actual = flight(observed);
-        var planned = initial.withPlan(record.sourceFlightData().plan().orElseThrow());
+        var planned = EscrowGovernedLaunch.planned(initial, record.sourceFlightData());
         RocketFlightData before;
         RocketFlightData after;
         switch (action) {

@@ -241,6 +241,19 @@ public final class RocketTransferSavedData extends SavedData {
                 .findFirst();
     }
 
+    /** Read-only F1 reservation check; neither a candidate nor this check acknowledges PREPARED. */
+    public void validateNewRecord(RocketTransferRecord record) {
+        Objects.requireNonNull(record, "record");
+        if (!operational() || stopping || entries.containsKey(record.transferId())
+                || entries.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) {
+            throw new IllegalArgumentException("New transfer authority is unavailable");
+        }
+        ensureNoAuthorityConflict(record);
+        var candidate = new java.util.ArrayList<>(entries()); candidate.add(record);
+        try { encode(candidate, firstMoonLanding, new CompoundTag()); }
+        catch (IllegalStateException invalid) { throw new IllegalArgumentException("New transfer does not fit the journal", invalid); }
+    }
+
     public void put(RocketTransferRecord record) {
         if (!operational()) {
             throw new IllegalStateException("Transfer journal is blocked by unsupported or invalid data");

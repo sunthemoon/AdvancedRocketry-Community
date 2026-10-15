@@ -25,6 +25,41 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
 
     /** Package-private; the successor dispatcher must supply its validated, fully reserved launch tuple. */
     boolean begin(RocketEntity rocket, EscrowFlightAuthority.Launch launch, Consumer<EscrowFlightTables.Armed> completion) {
+        return begin(rocket, launch, EscrowFlightAuthority::arm, completion);
+    }
+
+    /** Complete F1 adapter: reserve the exact F2 record as well as its ARMED root before own-store. */
+    boolean begin(RocketEntity rocket, EscrowGovernedLaunch prepared,
+                  Consumer<io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord> completion) {
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return false; }
+        var journal = RocketTransferSavedData.get(level.getServer());
+        return begin(rocket, prepared.launch(), (root, launch, generation) -> {
+            var candidate = prepared.preflight(root, generation);
+            var arm = candidate.armedFlights().stream().filter(value -> value.logical().equals(launch.logical())).findFirst().orElseThrow();
+            journal.validateNewRecord(prepared.record(arm));
+            return candidate;
+        }, arm -> {
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record = null;
+            if (arm != null) {
+                var data = ResourceEscrowSavedData.existing(level.getServer());
+                try {
+                    if (data != null && data.bind(level.getServer()).governedAvailable(arm.logical())) {
+                        record = prepared.afterArm(data.ledger(), arm, EscrowNativeEnvelope.rocket(rocket), journal);
+                    }
+                } catch (IllegalArgumentException refused) {
+                    // ARMED remains durable and locked; only its checked cancellation/recovery may retire it.
+                }
+            }
+            completion.accept(record);
+        });
+    }
+
+    @FunctionalInterface private interface Preparation {
+        EscrowLedger capture(EscrowLedger root, EscrowFlightAuthority.Launch launch, long generation);
+    }
+
+    private boolean begin(RocketEntity rocket, EscrowFlightAuthority.Launch launch,
+                          Preparation preparation, Consumer<EscrowFlightTables.Armed> completion) {
         if (closed || pending.size() >= 64 || locked(launch.logical()) || !RocketEscrowGate.idle(rocket)
                 || !(rocket.level() instanceof ServerLevel level)) { return false; }
         var server = level.getServer(); var data = ResourceEscrowSavedData.existing(server);
@@ -43,7 +78,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                     && coordinator.admissionAuthority().pendingFor(launch.logical()) == 0
                     && RocketEscrowAudit.journal(launch.journal(), journal.acknowledgedGuard(launch.logical()).orElse(null)) == EscrowReason.NONE,
                     "F1 source or journal binding changed");
-            EscrowSettlementCapacity.preflight(EscrowFlightAuthority.arm(coordinator.ledger(), launch,
+            EscrowSettlementCapacity.preflight(preparation.capture(coordinator.ledger(), launch,
                     Math.addExact(coordinator.ledger().writerGeneration(), 1)));
         } catch (IllegalArgumentException | ArithmeticException refused) { return false; }
         var noTransfer = EscrowFlightJournal.noTransfer(journal, launch.logical(), launch.transfer(),
@@ -61,7 +96,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                     boolean queued = coordinator.flightWrite(launch.logical(), (root, generation) -> {
                         EscrowTags.require(frozen.observe(), "F1 source changed before ARMED capture");
                         runtime.checkpoint("F1_ARM_CAPTURE");
-                        return EscrowFlightAuthority.arm(root, launch, generation);
+                        return preparation.capture(root, launch, generation);
                     }, () -> proof.valid() && frozen.unchanged.get() && noTransfer.getAsBoolean(), committed -> {
                         proof.release(); pending.remove(launch.logical(), frozen);
                         if (committed) {

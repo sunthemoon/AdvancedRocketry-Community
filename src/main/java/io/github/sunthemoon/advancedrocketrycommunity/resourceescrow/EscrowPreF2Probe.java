@@ -25,8 +25,7 @@ final class EscrowPreF2Probe {
     private RocketEntity rocket;
     private RocketTransferRecord prepared;
     private EscrowFlightAuthority.Launch launch;
-    private CompoundTag sourceEnvelope;
-    private CompoundTag destinationEnvelope;
+    private EscrowGovernedLaunch governed;
     private volatile boolean armWriting;
     private boolean waiting;
     private boolean done;
@@ -104,35 +103,31 @@ final class EscrowPreF2Probe {
             var frozen = new EscrowFlightSource(rocket); var logical = rocket.assemblyTransactionId().orElseThrow();
             var transfer = UUID.randomUUID(); var destination = UUID.randomUUID();
             prepared = prepared(rocket, transfer);
-            sourceEnvelope = frozen.envelope.copy();
-            if (cut.equals("PF_GOVERNED_T_ACK")) {
-                // Create an unregistered native observation only. Nothing publishes or saves a destination.
-                var candidate = io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities.ROCKET.get().create(level);
-                EscrowTags.require(candidate != null, "Missing native destination adapter"); candidate.setUUID(destination);
-                candidate.initializeTransferred(prepared.destinationSnapshot(), logical, rocket.ownerId().orElseThrow(), prepared.destinationFlightData());
-                var body = candidate.saveWithoutId(new CompoundTag());
-                body.getCompound("RocketEntityData").put("resource_escrow", new RocketEscrowSection(data.ledger().id(), 0, List.of()).encode());
-                candidate.load(body); destinationEnvelope = EscrowNativeEnvelope.rocket(candidate);
-            }
             var guard = journal.acknowledgedGuard(logical).orElseThrow();
-            launch = new EscrowFlightAuthority.Launch(logical, rocket.ownerId().orElseThrow(), rocket.getUUID(), rocket.escrowSection(),
-                    frozen.signature, frozen.invariant, transfer, destination, frozen.invariant, prepared.checksum(), frozen.digest,
-                    destinationEnvelope == null ? RocketNativeResources.hash("pre-F2 fixture destination:" + destination)
-                            : EscrowNativeEnvelope.digest(destinationEnvelope),
-                    new EscrowGuard(logical, null, Math.max(1, guard.sequence()), guard.rootDigest()), Set.of());
+            var checked = new EscrowGuard(logical, null, Math.max(1, guard.sequence()), guard.rootDigest());
+            if (cut.equals("PF_GOVERNED_T_ACK")) {
+                var countdown = rocket.flightData().orElseThrow().withPlan(prepared.sourceFlightData().plan().orElseThrow())
+                        .startCountdown(level.getGameTime());
+                governed = EscrowGovernedLaunch.prepare(data.ledger(), frozen.envelope, prepared.sourceSnapshot(), countdown,
+                        prepared.destinationSnapshot(), destination, checked);
+            } else {
+                launch = new EscrowFlightAuthority.Launch(logical, rocket.ownerId().orElseThrow(), rocket.getUUID(), rocket.escrowSection(),
+                        frozen.signature, frozen.invariant, transfer, destination, frozen.invariant, prepared.checksum(), frozen.digest,
+                        RocketNativeResources.hash("pre-F2 fixture destination:" + destination), checked, Set.of());
+            }
             step = 1;
         }
         if (step == 1) {
+            if (governed != null) {
+                waiting = EscrowRuntime.of(server).flightCheckpoint().begin(rocket, governed, record -> {
+                    waiting = false; EscrowTags.require(record != null, "Native governed F1 checkpoint/ARMED failed");
+                    prepared = record; journal.put(prepared); journal.flushChecked(server); step = 2;
+                });
+                return;
+            }
             waiting = EscrowRuntime.of(server).flightCheckpoint().begin(rocket, launch, arm -> {
                 waiting = false; EscrowTags.require(arm != null, "Native F1 checkpoint/ARMED failed");
                 if (hasTransfer()) {
-                    if (cut.equals("PF_GOVERNED_T_ACK")) {
-                        var envelope = EscrowTransferEnvelope.capture(arm, sourceEnvelope, destinationEnvelope,
-                                prepared.sourceSnapshot(), prepared.destinationSnapshot(), prepared.sourceFlightData(), prepared.destinationFlightData());
-                        prepared = RocketTransferRecord.createGoverned(prepared.transferId(), prepared.logicalRocketId(), prepared.ownerId(),
-                                prepared.sourceEntityId(), prepared.sourceSnapshot(), prepared.destinationSnapshot(), prepared.sourceFlightData(),
-                                prepared.destinationFlightData(), prepared.requiredFuel(), prepared.createdAtGameTime(), envelope);
-                    }
                     journal.put(prepared); journal.flushChecked(server); step = 2;
                 }
             });
