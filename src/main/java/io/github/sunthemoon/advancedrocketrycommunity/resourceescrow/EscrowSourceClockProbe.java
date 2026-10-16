@@ -56,6 +56,9 @@ final class EscrowSourceClockProbe {
             if (data.ledger().writerGeneration() == 0 || !data.bind(server).writerIdle()) {
                 data.setDirty(); data.bind(server).autosave(); return;
             }
+            // Keep this source-only cut scoped to F3 now that the dispatcher also implements F4.
+            // The source must still reach DESTINATION_DUE; a blocked pad cannot publish a destination.
+            level.setBlockAndUpdate(DESTINATION, net.minecraft.world.level.block.Blocks.IRON_BLOCK.defaultBlockState());
             EscrowTags.require(server.saveEverything(false, true, true), "Source-clock metadata baseline refused");
             // Deliberately create an older metadata/newer entity-store order without rewriting disk files.
             // This occurs before F1; no autosave is inserted after its complete source checkpoint.

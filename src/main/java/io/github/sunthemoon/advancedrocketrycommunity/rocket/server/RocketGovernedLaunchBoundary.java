@@ -19,12 +19,24 @@ final class RocketGovernedLaunchBoundary {
 
     static boolean allows(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                           RocketEntity source, RocketTransferBayDispatch bays) {
+        return allows(server, journal, record, source, null, bays, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
+    }
+
+    static boolean allows(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                          RocketEntity source, RocketEntity arrival, RocketTransferBayDispatch bays) {
+        return allows(server, journal, record, source, arrival, bays, RocketTransferBayRecoveryGate.Action.SPAWN_DESTINATION);
+    }
+
+    private static boolean allows(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                          RocketEntity source, RocketEntity arrival, RocketTransferBayDispatch bays, RocketTransferBayRecoveryGate.Action action) {
         if (!server.isSameThread()) { return false; }
-        var bay = bays.before(server, journal, record, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
+        var bay = bays.before(server, journal, record, action);
         // Credited bay-source consumption is W27f, not an escrow exemption for a bay permit.
         if (bay == null || bay.kind() != RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED
                 || record.nativeTransfer().isEmpty() || !source.isAlive() || !source.isAddedToWorld()
                 || !source.operational() || !record.sourceEntityId().equals(source.getUUID())) { return false; }
+        if (arrival != null && (!arrival.isAlive() || !arrival.isAddedToWorld() || !arrival.operational()
+                || !record.nativeTransfer().orElseThrow().armed().destination().equals(arrival.getUUID()))) { return false; }
         var transactions = RocketTransactionSavedData.get(server);
         if (!transactions.operational() || transactions.entries().stream().anyMatch(entry ->
                 entry.record().region().overlaps(RocketRegion.fromSnapshot(record.sourceSnapshot()))
@@ -53,8 +65,9 @@ final class RocketGovernedLaunchBoundary {
                 return candidates.size() >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES
                         ? AbortableIterationConsumer.Continuation.ABORT : AbortableIterationConsumer.Continuation.CONTINUE;
             });
-            if (candidates.size() != 1 || !candidates.contains(source)) { return false; }
+            if (candidates.size() >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES) { return false; }
         }
-        return true;
+        return candidates.size() == (arrival == null ? 1 : 2) && candidates.contains(source)
+                && (arrival == null || candidates.contains(arrival));
     }
 }

@@ -165,6 +165,22 @@ public final class RocketEntity extends Entity implements MenuProvider {
     public RocketEscrowSection escrowSection() { return escrowSection; }
     public long governedObservation() { return governedObservation; }
 
+    /** Only F4's checked, one-use permit can initialize a new bound destination. */
+    public void initializeGovernedDestination(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestinationAction.Permit permit) {
+        var record = Objects.requireNonNull(permit).consume(this);
+        var envelope = record.nativeTransfer().orElseThrow().destinationEnvelope(record);
+        setUUID(record.nativeTransfer().orElseThrow().armed().destination());
+        initializeTransferred(record.destinationSnapshot(), record.logicalRocketId(), record.ownerId(), record.destinationFlightData());
+        escrowSection = RocketEscrowSection.decode(envelope.getCompound("wrapper"));
+        var pos = envelope.getList("pos", net.minecraft.nbt.Tag.TAG_DOUBLE);
+        var motion = envelope.getList("motion", net.minecraft.nbt.Tag.TAG_DOUBLE);
+        setPos(pos.getDouble(0), pos.getDouble(1), pos.getDouble(2));
+        setDeltaMovement(motion.getDouble(0), motion.getDouble(1), motion.getDouble(2));
+        setNoGravity(envelope.getBoolean("no_gravity")); noPhysics = envelope.getBoolean("no_physics");
+        setOnGround(envelope.getBoolean("on_ground")); setInvulnerable(envelope.getBoolean("invulnerable"));
+        setYRot(envelope.getFloat("yaw")); setXRot(envelope.getFloat("pitch"));
+    }
+
     public void moveGovernedSource(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedSourceFlight.MotionPermit permit) {
         var position = Objects.requireNonNull(permit).consume(this);
         setPos(position.x, position.y, position.z);

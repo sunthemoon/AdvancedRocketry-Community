@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-/** Live F1/F2 to F3, not a complete-flight or terminal handoff fixture. */
+/** Live F1-F4, not a complete-flight or terminal handoff fixture. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedSourceFlightGameTests {
@@ -67,12 +67,16 @@ public final class EscrowGovernedSourceFlightGameTests {
         private boolean observedAscent;
         private long changedAt = -1;
         private double previousY;
+        private CompoundTag checkpoint;
+        private boolean restoredCheckpoint;
+        private boolean repeatedPublication;
         private int step;
 
         Scenario(GameTestHelper helper, Fault fault) {
             this.helper = helper; this.fault = fault; level = helper.getLevel();
             pacer = new GameTestTickPacer(level.getServer());
-            position = new BlockPos(590_008 + 128 * fault.ordinal(), 100, 590_008); destination = position.offset(32, 0, 0);
+            position = new BlockPos(590_008 + 128 * fault.ordinal(), 100, 590_008);
+            destination = position.offset(fault == Fault.CLOCK ? 4 : 32, 0, 0);
         }
         void start() {
             for (var pos : List.of(position, destination)) {
@@ -87,6 +91,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             if (List.of(position, destination).stream().anyMatch(pos -> !level.areEntitiesLoaded(new ChunkPos(pos).toLong())
                     || !level.isPositionEntityTicking(pos))) { return; }
             var journal = RocketTransferSavedData.get(level.getServer());
+            if (step == 3) { publication(journal); return; }
             if (step == 0) {
                 if (!journal.retryChecked(level.getServer())) { return; }
                 prepare(); step = 1; return;
@@ -154,8 +159,51 @@ public final class EscrowGovernedSourceFlightGameTests {
             var record = journal.find(transfer).orElseThrow();
             helper.assertTrue(record.phase() == RocketTransferPhase.PREPARED && journal.acknowledgedCurrent()
                     && data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()), "Source minted destination or terminal authority");
+            if (fault == Fault.NONE || fault == Fault.CLOCK) { step = 3; return; }
+            finish(journal, null);
+        }
+
+        private void publication(RocketTransferSavedData journal) {
+            var record = journal.find(transfer).orElseThrow();
+            if (record.phase() != RocketTransferPhase.DESTINATION_SPAWNED || !journal.acknowledgedCurrent()) { return; }
+            var destinationId = record.nativeTransfer().orElseThrow().armed().destination();
+            if (fault == Fault.CLOCK && !restoredCheckpoint) {
+                helper.assertTrue(level.getEntity(destinationId) == null, "F4 published without awaiting fresh slot proofs");
+                // Mixed save order: F4 survives but the source has only its exact F1 checkpoint.
+                // Replace the entity instance, never mutate a live protected source through /data.
+                rocket.discard(); rocket = io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities.ROCKET.get().create(level);
+                helper.assertTrue(rocket != null, "F1 checkpoint source could not be created");
+                rocket.load(checkpoint.copy()); helper.assertTrue(level.addFreshEntity(rocket), "F1 checkpoint source was not added");
+                restoredCheckpoint = true; return;
+            }
+            if (!(level.getEntity(destinationId) instanceof RocketEntity arrival)) { return; }
+            helper.assertTrue(record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(arrival)),
+                    "Published destination differs from its complete fixed envelope");
+            helper.assertTrue(!arrival.getUUID().equals(rocket.getUUID()) && arrival.escrowSection().ledger().equals(wrapper.ledger())
+                    && arrival.escrowSection().epoch() == 0 && arrival.escrowSection().markers().isEmpty()
+                    && arrival.flightData().orElseThrow().fuel().totalAmount() == 500
+                    && arrival.flightData().orElseThrow().fuel().committedDebits().equals(List.of(transfer)),
+                    "Publication lost the independent epoch or exact one-time debit");
+            helper.assertTrue(rocket.isAlive() && initial.fuel().equals(rocket.flightData().orElseThrow().fuel())
+                    && initial.passengers().equals(rocket.flightData().orElseThrow().passengers()) && wrapper.equals(rocket.escrowSection())
+                    && data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed())
+                    && !RocketEscrowGate.idle(rocket) && !RocketEscrowGate.idle(arrival),
+                    "F4 changed source credit or released either resource lock");
+            helper.assertTrue(arrival.getPassengers().isEmpty(), "F4 transferred passengers before F5 acknowledgement");
+            if (fault == Fault.CLOCK) {
+                helper.assertTrue(restoredCheckpoint && EscrowNativeEnvelope.rocket(rocket).equals(record.nativeTransfer().orElseThrow().sourceEnvelope(record)),
+                        "F4 recovery replaced or progressed the F1-checkpointed source");
+            }
+            if (fault == Fault.NONE && !repeatedPublication) {
+                arrival.discard(); repeatedPublication = true; return;
+            }
+            finish(journal, arrival);
+        }
+
+        private void finish(RocketTransferSavedData journal, RocketEntity arrival) {
             journal.remove(transfer); RocketJournalGameTestSupport.acknowledgeFixture(helper);
             rocket.discard();
+            if (arrival != null) { arrival.discard(); }
             if (duplicate != null) { duplicate.discard(); }
             for (var pos : List.of(position, destination)) {
                 level.getChunkSource().removeRegionTicket(TicketType.START, new ChunkPos(pos), 2, Unit.INSTANCE);
@@ -190,8 +238,15 @@ public final class EscrowGovernedSourceFlightGameTests {
             wrapper = new RocketEscrowSection(data.ledger().id(), 7, List.of());
             tag.getCompound("RocketEntityData").put("resource_escrow", wrapper.encode());
             rocket.load(tag); helper.assertTrue(level.addFreshEntity(rocket), "Source was not published");
+            checkpoint = rocket.saveWithoutId(new CompoundTag());
             initial = rocket.flightData().orElseThrow(); previousY = rocket.getY();
             var from = rocket.snapshot().orElseThrow();
+            var unloaded = from.relocated(UUID.randomUUID(), from.sourceDimension(), new RocketPosition(1_100_008, 100, 1_100_008), now);
+            var unloadedChunk = new ChunkPos(unloaded.sourceOrigin().x() >> 4, unloaded.sourceOrigin().z() >> 4);
+            helper.assertTrue(level.getChunkSource().getChunkNow(unloadedChunk.x, unloadedChunk.z) == null
+                    && !new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector().availableLoaded(level, unloaded)
+                    && level.getChunkSource().getChunkNow(unloadedChunk.x, unloadedChunk.z) == null,
+                    "Governed pad check loaded an absent terrain chunk");
             var to = from.relocated(UUID.randomUUID(), from.sourceDimension(), new RocketPosition(destination.getX(), destination.getY(), destination.getZ()), now);
             var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                     from.sourceDimension(), from.sourceDimension(), 500, now).withPropulsionDebit(new RocketPropulsionDebit(500, 0,

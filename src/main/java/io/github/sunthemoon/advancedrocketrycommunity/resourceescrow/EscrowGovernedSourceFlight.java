@@ -86,6 +86,28 @@ public final class EscrowGovernedSourceFlight {
 
     public void clear() { bindings.clear(); }
 
+    /** F4 uses the checked source's logical phase clock, not a rolled-back Level timestamp. */
+    long publicationTime(EscrowGovernedDispatch.Authority authority, RocketEntity source, BooleanSupplier boundary) {
+        EscrowTags.require(authority != null && authority.valid()
+                && authority.decision().route() == EscrowGovernedDispatch.Route.ACTIVE && boundary.getAsBoolean(),
+                "Publication lost its source authority");
+        var record = authority.record();
+        EscrowTags.require(record.phase() == RocketTransferPhase.PREPARED || record.phase() == RocketTransferPhase.DESTINATION_SPAWNED,
+                "Publication source phase changed");
+        var binding = bindings.get(record.logicalRocketId());
+        if (binding != null && binding.entity != source && binding.entity.isRemoved()) {
+            bindings.remove(record.logicalRocketId()); binding = null;
+        }
+        EscrowTags.require(binding == null || binding.sameNative(source)
+                && binding.authority.record().nativeTransfer().equals(record.nativeTransfer()), "Publication source changed");
+        if (binding == null) {
+            EscrowTags.require(bindings.size() < RocketFlightLimits.MAX_ACTIVE_TRANSFERS, "Source binding capacity exhausted");
+            var clock = EscrowGovernedSourceClock.resume(record, EscrowNativeEnvelope.rocket(source), source.level().getGameTime());
+            binding = new Binding(authority, source, clock); bindings.put(record.logicalRocketId(), binding);
+        }
+        return binding.clock.at(source.level().getGameTime());
+    }
+
     MotionPermit movement(RocketEntity source, BooleanSupplier boundary) {
         var binding = source.assemblyTransactionId().map(bindings::get).orElse(null);
         EscrowTags.require(binding != null, "No validated source binding");

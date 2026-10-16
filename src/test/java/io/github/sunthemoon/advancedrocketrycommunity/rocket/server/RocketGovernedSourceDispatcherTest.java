@@ -43,4 +43,19 @@ class RocketGovernedSourceDispatcherTest {
         RocketGovernedSourceDispatcher.visit(List.of(destination, record), -1, visited::add);
         assertEquals(List.of(record), visited);
     }
+
+    @Test void combinedSourceAndPublicationVisitsShareTheSameEightVisitBudget() {
+        var record = GovernedTransferFixture.create().record();
+        var destination = record.destinationSpawned(record.nativeTransfer().orElseThrow().armed().destination());
+        var records = new ArrayList<RocketTransferRecord>();
+        for (int i = 0; i < 64; i++) { records.add(i % 2 == 0 ? record : destination); }
+        var visited = new ArrayList<RocketTransferRecord>(); int cursor = 0;
+        for (int tick = 0; tick < 8; tick++) {
+            int count = visited.size(); cursor = RocketGovernedSourceDispatcher.visit(records, cursor, true, visited::add);
+            assertEquals(8, visited.size() - count);
+        }
+        assertEquals(records, visited);
+        var later = destination.advance(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.PASSENGERS_TRANSFERRED);
+        assertEquals(0, RocketGovernedSourceDispatcher.visit(List.of(later), 0, true, value -> fail()));
+    }
 }
