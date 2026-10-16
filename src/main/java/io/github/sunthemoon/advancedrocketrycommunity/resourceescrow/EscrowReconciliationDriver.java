@@ -46,14 +46,16 @@ final class EscrowReconciliationDriver {
         }
         // Historical settlement/relocation harnesses own their endpoint actions. Only the explicitly
         // registered native fixture source enters this driver; registration itself grants no authority.
-        if (!registeredSources.contains(op.source().key())) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
+        if (!registeredSources.contains(op.source().key())) {
+            completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
+        }
         if (cached != root) {
             cached = root; chains = EscrowPrefix.chains(root.records()); components.clear(); views.clear();
         }
         if (tick != server.getTickCount()) { tick = server.getTickCount(); changed.clear(); captured = false; actionApplied = false; }
         var component = components.computeIfAbsent(op.id(), id -> EscrowSettlementIntent.component(root.records(), id));
         if (component.stream().anyMatch(member -> !registeredSources.contains(member.source().key()))) {
-            completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+            completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         var key = component.get(0).id();
         if (actionApplied || changed.contains(key) || component.stream().anyMatch(member -> coordinator.currentReason(member).manual()
