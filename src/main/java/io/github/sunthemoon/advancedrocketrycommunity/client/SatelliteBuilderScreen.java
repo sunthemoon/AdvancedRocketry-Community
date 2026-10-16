@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Community-authored builder console: components, a server-evaluated blueprint preview and one ASSEMBLE intent. */
 public final class SatelliteBuilderScreen extends AbstractContainerScreen<SatelliteBuilderMenu> {
+    private final ScreenText text = new ScreenText();
     private static final int PANEL_TOP = 0xFF1B2D24;
     private static final int PANEL_BOTTOM = 0xFF0C1712;
     private static final int EDGE = 0xFF6CB88A;
@@ -34,16 +35,17 @@ public final class SatelliteBuilderScreen extends AbstractContainerScreen<Satell
     @Override
     protected void init() {
         super.init();
-        addRenderableWidget(Button.builder(Component.translatable("screen.advancedrocketrycommunity.satellite_builder.assemble"),
+        addRenderableWidget(ScreenText.fitButton(Button.builder(Component.translatable("screen.advancedrocketrycommunity.satellite_builder.assemble"),
                 ignored -> {
                     if (minecraft != null && minecraft.gameMode != null) {
                         minecraft.gameMode.handleInventoryButtonClick(menu.containerId, SatelliteBuilderMenu.BUTTON_ASSEMBLE);
                     }
-                }).bounds(leftPos + 118, topPos + 64, 70, 16).build());
+                }).bounds(leftPos + 118, topPos + 64, 70, 16).build(), font));
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
@@ -51,6 +53,7 @@ public final class SatelliteBuilderScreen extends AbstractContainerScreen<Satell
             graphics.renderTooltip(font, Component.translatable("tooltip.advancedrocketrycommunity.energy",
                     menu.energyStored(), menu.energyCapacity()), mouseX, mouseY);
         }
+        text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
     }
 
     @Override
@@ -78,22 +81,22 @@ public final class SatelliteBuilderScreen extends AbstractContainerScreen<Satell
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, MUTED, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 206, TEXT);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 184, MUTED);
         SatelliteOperationCode preview = menu.previewCode();
         var kind = menu.previewKind();
         Component kindText = kind.map(value -> Component.translatable("satellite_kind.advancedrocketrycommunity." + value.id()))
                 .orElse(Component.translatable("screen.advancedrocketrycommunity.satellite_builder.no_kind"));
-        graphics.drawString(font, kindText, 12, 80, TEXT, false);
+        text.draw(graphics, font, kindText, 12, 80, 180, TEXT);
         SatelliteStats stats = menu.previewStats().orElse(null);
         if (stats != null) {
-            graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.satellite_builder.stats",
-                    stats.power(), stats.battery(), stats.data(), stats.cargo(), stats.rating()), 12, 91, MUTED, false);
+            text.draw(graphics, font, Component.translatable("screen.advancedrocketrycommunity.satellite_builder.stats",
+                    stats.power(), stats.battery(), stats.data(), stats.cargo(), stats.rating()), 12, 91, 202, MUTED);
         }
-        int color = preview == SatelliteOperationCode.SUCCESS ? GREEN : RED;
-        Component status = Component.translatable(menu.status() == SatelliteOperationCode.SUCCESS
-                ? preview.translationKey() : menu.status().translationKey());
-        graphics.drawString(font, font.plainSubstrByWidth(status.getString(), 108), 110, 88, color, false);
+        SatelliteOperationCode code = menu.status() == SatelliteOperationCode.SUCCESS ? preview : menu.status();
+        int color = code == SatelliteOperationCode.SUCCESS ? GREEN : RED;
+        Component status = Component.translatable(code.translationKey()).append(" [" + code.name() + "]");
+        text.draw(graphics, font, status, 12, 19, 180, color);
     }
 
     private static void drawSlot(GuiGraphics graphics, int x, int y) {

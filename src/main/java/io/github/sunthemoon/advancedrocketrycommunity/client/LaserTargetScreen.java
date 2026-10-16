@@ -20,6 +20,7 @@ import net.minecraft.world.entity.player.Inventory;
  * last code with their stable codes, the cursor and link as a tooltip, and the reset button.
  */
 public final class LaserTargetScreen extends AbstractContainerScreen<LaserTargetMenu> {
+    private final ScreenText text = new ScreenText();
     private static final int PANEL_TOP = 0xFF1B1F2A;
     private static final int PANEL_BOTTOM = 0xFF0D1016;
     private static final int EDGE = 0xFF7FD3FF;
@@ -39,12 +40,15 @@ public final class LaserTargetScreen extends AbstractContainerScreen<LaserTarget
     @Override
     protected void init() {
         super.init();
-        addRenderableWidget(Button.builder(Component.translatable(
-                        "screen.advancedrocketrycommunity.laser_target.reset"), ignored -> {
+        Button reset = ScreenText.fitButton(Button.builder(Component.translatable(
+                        "screen.advancedrocketrycommunity.laser_target.reset_short"), ignored -> {
                     if (minecraft != null && minecraft.gameMode != null) {
                         minecraft.gameMode.handleInventoryButtonClick(menu.containerId, LaserTargetMenu.BUTTON_RESET);
                     }
-                }).bounds(leftPos + 118, topPos + 4, 50, 12).build());
+                }).bounds(leftPos + 118, topPos + 4, 50, 12).build(), font);
+        reset.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                Component.translatable("screen.advancedrocketrycommunity.laser_target.reset")));
+        addRenderableWidget(reset);
     }
 
     @Override
@@ -55,18 +59,24 @@ public final class LaserTargetScreen extends AbstractContainerScreen<LaserTarget
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
-        if (view.isPresent() && isHovering(8, 74, 160, 18, mouseX, mouseY)) {
+        if (view.isPresent() && isHovering(8, 74, 160, 19, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
+            lines.add(statusLine(view.get().status()));
+            if (view.get().lastStop() != EndgameCode.OK) { lines.add(statusLine(view.get().lastStop())); }
             for (EndgameDeviceView.Line line : view.get().lines()) {
                 Component value = line.translated() ? Component.translatable(line.value())
                         : Component.literal(line.value());
                 lines.add(Component.translatable(line.label()).append(": ").append(value));
             }
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+        }
+        if (!isHovering(8, 74, 160, 19, mouseX, mouseY)) {
+            text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         }
     }
 
@@ -92,16 +102,16 @@ public final class LaserTargetScreen extends AbstractContainerScreen<LaserTarget
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, MUTED, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 104, TEXT);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 160, MUTED);
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
         if (view.isEmpty()) {
             return;
         }
         EndgameCode status = view.get().status();
-        graphics.drawString(font, statusLine(status), 8, 74, status == EndgameCode.OK ? BEAM : WARNING, false);
+        text.draw(graphics, font, statusLine(status), 8, 74, 160, status == EndgameCode.OK ? BEAM : WARNING);
         if (view.get().lastStop() != EndgameCode.OK) {
-            graphics.drawString(font, statusLine(view.get().lastStop()), 8, 84, MUTED, false);
+            text.draw(graphics, font, statusLine(view.get().lastStop()), 8, 84, 160, MUTED);
         }
     }
 
