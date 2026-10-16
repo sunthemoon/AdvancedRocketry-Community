@@ -209,7 +209,7 @@ Updated 2026-10-15. Dispatch order: progress first, then the parallel bugs.
   - the HotSpot C2 crash, if it recurs;
   - the horse-family fall follow-up, which needs a Mixin ADR;
   - the slow-falling Moon hover;
-  - the 2026-10-06 real-client report's F3 (rocket position synced every 20 ticks, after the W11b2 merge), F8 (Cygnus X-1 has no orbital appearance) and F9 (the Moon's fixed midnight, an owner question); W87 takes its F1, F4 to F7 and F10;
+  - the 2026-10-06 real-client report's F3 (rocket position synced every 20 ticks, after the W11b2 merge), F8 (Cygnus X-1 had no orbital appearance; `90716084` on 2026-10-14, ADR-066 section 7.1, now draws the black-hole sky for a server singularity context, so only the final campaign's V1 check remains, together with the flat, faceted Earth disc as V1 tuning) and F9 (the Moon's fixed midnight, an owner question); W87 takes its F1, F4 to F7 and F10;
   - W55 measured the first, cold ground-survey START at 505 to 523 ms of wall time on this machine
     without induced load; the reference-node performance campaign should measure it;
   - W21c M1 (pause paid research while the reservations exceed the bound): deferred after v1.8.
