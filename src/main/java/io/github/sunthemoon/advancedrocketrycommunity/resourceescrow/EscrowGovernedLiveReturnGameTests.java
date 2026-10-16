@@ -27,6 +27,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedLiveReturnGameTests {
+    private enum Fault { CANCEL, PAD, SPAWN }
     private EscrowGovernedLiveReturnGameTests() { }
 
     // The checked journal is global; these single-flight acknowledgement fixtures require isolated batches.
@@ -40,13 +41,35 @@ public final class EscrowGovernedLiveReturnGameTests {
         new Scenario(helper, true).start();
     }
 
+    @GameTest(template = "empty", batch = "escrow_live_blocked_return_separate", timeoutTicks = 600)
+    public static void blockedLandingReturnsToF6WithPassenger(GameTestHelper helper) {
+        new Scenario(helper, false, Fault.PAD).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_live_blocked_return_shared", timeoutTicks = 600)
+    public static void blockedLandingReturnsThroughSharedSlotWithPassenger(GameTestHelper helper) {
+        new Scenario(helper, true, Fault.PAD).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_live_spawn_return_separate", timeoutTicks = 600)
+    public static void rejectedDestinationSpawnReturnsToF6WithPassenger(GameTestHelper helper) {
+        new Scenario(helper, false, Fault.SPAWN).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_live_spawn_return_shared", timeoutTicks = 600)
+    public static void rejectedDestinationSpawnReturnsThroughSharedSlotWithPassenger(GameTestHelper helper) {
+        new Scenario(helper, true, Fault.SPAWN).start();
+    }
+
     private static final class Scenario {
         private final GameTestHelper helper;
         private final ServerLevel level;
         private final GameTestTickPacer pacer;
         private final BlockPos position;
         private final BlockPos destination;
+        private final Fault fault;
         private final UUID transfer = UUID.randomUUID();
+        private final UUID previousDebit = UUID.randomUUID();
         private ResourceEscrowSavedData data;
         private RocketEntity rocket;
         private ServerPlayer passenger;
@@ -58,10 +81,19 @@ public final class EscrowGovernedLiveReturnGameTests {
         private boolean requested;
         private boolean done;
         private long checkpointAt = -1;
+        private boolean faultInstalled;
+        private boolean observedAscent;
+        private boolean observedTransit;
+        private int vetoes;
+        private java.util.function.Consumer<net.minecraftforge.event.entity.EntityJoinLevelEvent> veto;
 
         Scenario(GameTestHelper helper, boolean shared) {
+            this(helper, shared, Fault.CANCEL);
+        }
+        Scenario(GameTestHelper helper, boolean shared, Fault fault) {
             this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
-            position = new BlockPos(shared ? 594_136 : 594_008, 100, 594_008);
+            this.fault = fault;
+            position = new BlockPos((shared ? 594_136 : 594_008) + 512 * fault.ordinal(), 100, 594_008);
             destination = position.offset(shared ? 4 : 32, 0, 0);
         }
 
@@ -85,11 +117,23 @@ public final class EscrowGovernedLiveReturnGameTests {
             if (!accepted) { return; }
             var returns = EscrowRuntime.of(server).returns(); var flight = rocket.flightData().orElseThrow();
             helper.assertTrue(flight.fuel().equals(initial.fuel()) && flight.passengers().equals(initial.passengers())
+                    && flight.fuel().committedDebits().equals(List.of(previousDebit))
                     && wrapper.equals(rocket.escrowSection()) && passenger.getVehicle() == rocket
                     && passenger.connection.connection.isConnected() && !RocketEscrowGate.idle(rocket),
                     "Return changed fuel, debits, assignments, passenger or ARMED lock");
             if (!requested) {
                 record = journal.find(transfer).orElseThrow();
+                if (fault != Fault.CANCEL) {
+                    if (!faultInstalled) { installFault(); faultInstalled = true; }
+                    observedAscent |= flight.state() == RocketFlightState.ASCENT;
+                    observedTransit |= flight.state() == RocketFlightState.TRANSIT;
+                    if (!returns.handles(record, rocket)) { return; }
+                    helper.assertTrue(observedAscent && observedTransit && !returns.checkpoint(server, record),
+                            "Failed landing skipped live source phases or its native return wait");
+                    helper.assertTrue(record.phase() == (fault == Fault.SPAWN ? RocketTransferPhase.DESTINATION_SPAWNED : RocketTransferPhase.PREPARED)
+                            && (fault != Fault.SPAWN || vetoes == 1), "Return was not caused by the intended live failure");
+                    requested = true; return;
+                }
                 helper.assertTrue(flight.state() == RocketFlightState.COUNTDOWN && journal.acknowledgedCurrent(),
                         "Cancellation did not start from a live checked countdown");
                 var before = EscrowNativeEnvelope.rocket(rocket);
@@ -104,7 +148,8 @@ public final class EscrowGovernedLiveReturnGameTests {
                     && level.getEntity(record.nativeTransfer().orElseThrow().armed().destination()) == null,
                     "Return fabricated terminal authority, removed its journal or published a destination");
             if (!returns.checkpoint(server, record)) {
-                helper.assertTrue(flight.state() == RocketFlightState.COUNTDOWN || EscrowGovernedReturnAction.returned(record,
+                helper.assertTrue(flight.state() == (fault == Fault.CANCEL ? RocketFlightState.COUNTDOWN : RocketFlightState.TRANSIT)
+                        || EscrowGovernedReturnAction.returned(record,
                         EscrowNativeEnvelope.rocket(rocket)), "A pending cancellation advanced the source");
                 return;
             }
@@ -115,13 +160,30 @@ public final class EscrowGovernedLiveReturnGameTests {
                     "CANCELLED F6 checkpoint lacks its exact returned source or passenger");
             if (checkpointAt < 0) { checkpointAt = level.getGameTime(); return; }
             if (level.getGameTime() - checkpointAt < 5) { return; }
+            if (fault == Fault.SPAWN) { helper.assertTrue(vetoes == 1, "Failed publication was retried instead of returned"); }
             // Cached success is not authority after departure or a changed checked-journal lease.
             passenger.stopRiding(); helper.assertTrue(!returns.checkpoint(server, record), "Departure retained the terminal checkpoint");
             journal.setDirty(); helper.assertTrue(!returns.checkpoint(server, record), "Unacknowledged journal retained F6 authority");
             journal.remove(transfer); RocketJournalGameTestSupport.acknowledgeFixture(helper);
             server.getPlayerList().remove(passenger); rocket.discard();
+            if (veto != null) { net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(veto); }
+            if (fault == Fault.PAD) { level.removeBlock(destination, false); }
             for (var chunk : chunks()) { level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE); }
             done = true; helper.succeed();
+        }
+
+        private void installFault() {
+            if (fault == Fault.PAD) {
+                helper.assertTrue(level.setBlock(destination, net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 3),
+                        "Destination obstruction was not installed");
+            } else {
+                var identity = record.nativeTransfer().orElseThrow().armed().destination();
+                veto = event -> {
+                    if (event.getEntity().getUUID().equals(identity)) { vetoes++; event.setCanceled(true); }
+                };
+                net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.LOWEST,
+                        false, net.minecraftforge.event.entity.EntityJoinLevelEvent.class, veto);
+            }
         }
 
         private void prepare() {
@@ -135,7 +197,8 @@ public final class EscrowGovernedLiveReturnGameTests {
             passenger.teleportTo(level, position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
             rocket = RocketSettlementIdleGameTests.createRocket(level, position, UUID.randomUUID());
             var base = rocket.flightData().orElseThrow(); long now = level.getGameTime();
-            var fuel = base.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1000);
+            var filled = base.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1000);
+            var fuel = RocketFuelState.restorePropulsion(filled.propulsion().orElseThrow(), List.of(previousDebit));
             rocket.updateFlightData(base.withFuel(fuel, now).withPassengers(base.passengers().assign(passenger.getUUID()).orElseThrow()));
             var tag = rocket.saveWithoutId(new CompoundTag()); wrapper = new RocketEscrowSection(data.ledger().id(), 7, List.of());
             tag.getCompound("RocketEntityData").put("resource_escrow", wrapper.encode()); rocket.load(tag);

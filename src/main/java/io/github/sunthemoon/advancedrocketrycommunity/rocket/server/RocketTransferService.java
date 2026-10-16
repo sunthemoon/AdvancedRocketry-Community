@@ -242,13 +242,8 @@ final class RocketTransferService {
             if (record.phase() != RocketTransferPhase.PREPARED || !record.sourceEntityId().equals(rocket.getUUID())) {
                 return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
             }
-            boolean queued = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(level.getServer()).returns()
-                    .request(level.getServer(), journal, record, rocket,
-                            () -> RocketGovernedLaunchBoundary.allows(level.getServer(), journal, record, rocket, recovery.bays()),
-                            () -> {
-                                RocketFlightFeedback.returnedToSource(rocket);
-                                completion.accepted().run();
-                            });
+            boolean queued = failBackToSource(level.getServer(), journal, record, rocket,
+                    RocketTransferReturnReason.COUNTDOWN_CANCELLED, completion);
             // The request is complete only after the return's native F6 checkpoint, not merely queue admission.
             return queued ? new RocketFlightRequestResult(RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel())
                     : RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
@@ -682,6 +677,9 @@ final class RocketTransferService {
 
     private boolean failBackToSource(MinecraftServer server, RocketTransferSavedData journal,
             RocketTransferRecord record, RocketEntity source, RocketTransferReturnReason reason, RocketRequestCompletion completion) {
+        if (record.nativeTransfer().isPresent()) {
+            return RocketGovernedSourceDispatcher.requestReturn(server, journal, record, source, recovery.bays(), reason, completion.accepted());
+        }
         if (!flightAllowed(server, journal, record, SETTLE_SOURCE)
                 || !recovery.bays().allowed(server, journal, record, REMOVE_JOURNAL)) { return false; }
         RocketFlightData safe = RocketTransferEntities.stationarySource(

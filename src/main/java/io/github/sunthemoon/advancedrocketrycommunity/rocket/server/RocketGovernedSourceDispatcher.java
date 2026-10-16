@@ -30,8 +30,14 @@ final class RocketGovernedSourceDispatcher {
             if (source != null && !source.operational()) { return; }
             var returns = EscrowRuntime.of(server).returns();
             if (returns.handles(record, source)) {
-                returns.tick(server, journal, record, source,
+                var result = returns.tick(server, journal, record, source,
                         () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays));
+                if (result != io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedReturn.Result.HELD) {
+                    // Refresh only the existing recorded-end flight tickets after the positive native boundary.
+                    RocketTransferEntities.keepLoaded(level, record.sourceSnapshot(), record.transferId());
+                    RocketTransferEntities.keepLoaded(RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension()),
+                            record.destinationSnapshot(), record.transferId());
+                }
                 return;
             }
             if (record.phase() != RocketTransferPhase.PREPARED) {
@@ -65,10 +71,24 @@ final class RocketGovernedSourceDispatcher {
 
     private static void destination(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                                     RocketEntity source, RocketTransferBayDispatch bays) {
+        if (source != null && (record.phase() == RocketTransferPhase.PREPARED || record.phase() == RocketTransferPhase.DESTINATION_SPAWNED)
+                && RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays) && !landingAvailable(server, record)) {
+            requestReturn(server, journal, record, source, bays, RocketTransferReturnReason.DESTINATION_PAD_BLOCKED, () -> { });
+            return;
+        }
         var result = EscrowRuntime.of(server).destinations().tick(server, journal, record, source,
                 (checked, from, to) -> RocketGovernedLaunchBoundary.allows(server, journal, checked, from, to, bays)
+                        && !EscrowRuntime.of(server).returns().handles(checked, from)
                         && EscrowRuntime.of(server).flightPhases().allowsNative(from, to)
                         && (to != null || landingAvailable(server, checked)));
+        if (result == io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestination.Result.CREATE_FAILED
+                || result == io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestination.Result.SPAWN_FAILED) {
+            requestReturn(server, journal, record, source, bays,
+                    result == io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestination.Result.CREATE_FAILED
+                            ? RocketTransferReturnReason.DESTINATION_ENTITY_CREATE_FAILED : RocketTransferReturnReason.DESTINATION_ENTITY_SPAWN_FAILED,
+                    () -> { });
+            return;
+        }
         if (result != io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestination.Result.HELD) {
             // A positive checked-source/candidate boundary precedes these existing recorded-end tickets.
             RocketTransferEntities.keepLoaded(RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension()),
@@ -88,6 +108,18 @@ final class RocketGovernedSourceDispatcher {
                 RocketGovernedArrivalDispatcher.tick(server, journal, record, arrival, bays);
             }
         }
+    }
+
+    static boolean requestReturn(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                                 RocketEntity source, RocketTransferBayDispatch bays, RocketTransferReturnReason reason,
+                                 Runnable checkpointed) {
+        return EscrowRuntime.of(server).returns().request(server, journal, record, source,
+                () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays), () -> {
+                    RocketFlightFeedback.returnedToSource(source);
+                    io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                            "ARCE_GOVERNED_RETURN_CHECKPOINT transfer={} reason={}", record.transferId(), reason);
+                    checkpointed.run();
+                });
     }
 
     private static boolean landingAvailable(MinecraftServer server, RocketTransferRecord record) {

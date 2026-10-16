@@ -19,7 +19,7 @@ import net.minecraft.server.level.ServerLevel;
 
 /** Fixed destination publication/recovery. Publication never proves F5 removal or F6 handoff. */
 public final class EscrowGovernedDestination implements AutoCloseable {
-    public enum Result { HELD, WAITING, PUBLISHED, PRESENT }
+    public enum Result { HELD, WAITING, PUBLISHED, PRESENT, CREATE_FAILED, SPAWN_FAILED }
     @FunctionalInterface public interface Boundary {
         boolean allows(RocketTransferRecord record, RocketEntity source, RocketEntity destination);
     }
@@ -55,6 +55,11 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         BooleanSupplier finalBoundary = () -> boundary.allows(record, source, destination);
         if (!finalBoundary.getAsBoolean()) { return Result.HELD; }
         var cached = work.get(record.transferId());
+        // A definite failed publication is handed to the return controller, never retried as a fresh spawn.
+        // Any object appearing after that failure remains an unresolved publication, not return authority.
+        if (cached != null && cached.failure != null) {
+            return destination == null && cached.sourceValid() ? cached.failure : Result.HELD;
+        }
         if (cached != null && cached.authority.valid() && cached.sourceValid()) {
             if (destination != null && cached.arrival != null && cached.arrival.rocket == destination && cached.arrival.observe()) {
                 return Result.PRESENT;
@@ -126,7 +131,10 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         var permit = EscrowGovernedDestinationAction.issue(authority, state.sourceEnvelope(), time, level.getGameTime(),
                 () -> source == null ? null : EscrowNativeEnvelope.rocket(source), finalBoundary, () -> ready.sourceValid() && ready.proved());
         var created = ModEntities.ROCKET.get().create(level);
-        if (created == null) { state.retry(server.getTickCount()); return Result.HELD; }
+        if (created == null) {
+            if (!EscrowGovernedReturnAction.phase(record)) { state.retry(server.getTickCount()); return Result.HELD; }
+            state.release(); state.failure = Result.CREATE_FAILED; return state.failure;
+        }
         created.initializeGovernedDestination(permit);
         EscrowTags.require(record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(created)),
                 "Initialized destination differs from its complete envelope");
@@ -134,9 +142,13 @@ public final class EscrowGovernedDestination implements AutoCloseable {
                 "Destination changed before publication");
         runtime.checkpoint("F4_PUBLICATION_BEFORE");
         boolean added = level.addFreshEntity(created);
-        state.release(); work.remove(record.transferId());
+        state.release();
         // A spawn veto or an unexpected join never authorizes source deletion or a refund.
-        if (!added) { return Result.HELD; }
+        if (!added) {
+            if (!EscrowGovernedReturnAction.phase(record)) { work.remove(record.transferId()); return Result.HELD; }
+            state.failure = Result.SPAWN_FAILED; return state.failure;
+        }
+        work.remove(record.transferId());
         runtime.checkpoint("F4_PUBLICATION_AFTER");
         return boundary.allows(record, source, created)
                 && java.util.Objects.equals(state.sourceEnvelope(), source == null ? null : EscrowNativeEnvelope.rocket(source))
@@ -160,6 +172,7 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         boolean pending;
         long nextAttempt;
         int failures;
+        Result failure;
         Work(RocketTransferRecord record, EscrowGovernedDispatch.Authority authority, EscrowFlightSource source) {
             this.record = record; this.authority = authority; this.source = source;
             var destination = EscrowGovernedDestinationDisk.endpoint(record, true);

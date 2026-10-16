@@ -40,8 +40,15 @@ public final class EscrowGovernedReturn implements AutoCloseable {
     /** A pending request or an already-returned complete progression must never enter forward dispatch. */
     public boolean handles(RocketTransferRecord record, RocketEntity source) {
         if (work.containsKey(record.transferId())) { return true; }
-        try { return source != null && EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(source)); }
+        // Forward interpolation must not serialize the complete rocket just to rule out a return.
+        if (source == null || !EscrowGovernedReturnAction.phase(record)
+                || !stationaryCandidate(source.flightData().orElse(null))) { return false; }
+        try { return EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(source)); }
         catch (IllegalArgumentException | IllegalStateException invalid) { return false; }
+    }
+
+    static boolean stationaryCandidate(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData flight) {
+        return flight != null && flight.plan().isEmpty() && flight.activeTransferId().isEmpty();
     }
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
