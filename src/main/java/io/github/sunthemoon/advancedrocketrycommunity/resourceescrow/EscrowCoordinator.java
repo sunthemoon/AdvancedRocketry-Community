@@ -53,6 +53,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         owner(); EscrowTestEndpoints.requireEnabled(rocket.getServer());
         EscrowTags.require(operational() && writer.idle() && queued.isEmpty(), "C0 waits for the acknowledged ledger");
         EscrowReconciliationPruning.source(rocket.getServer(), this, op.source());
+        requireNativeSourceAvailable(EscrowTestEndpoints.state(source.getPersistentData(), data.ledger().id(), false));
         // Rocket restart pruning runs from the ordinary observation hook; C0 never binds a stale wrapper.
         EscrowReconciliationPruning.observe(rocket);
         var capture = EscrowNativeBinding.captureCurrentTest(op, rocket, source, data.ledger());
@@ -60,6 +61,10 @@ public final class EscrowCoordinator implements AutoCloseable {
         EscrowReconciliationView.capture(rocket.getServer(), candidate, EscrowSettlementIntent.component(candidate.records(), op.id()));
         reconciliation.registerTestSource(rocket.getServer(), op.source());
         prepareTest(capture.operation(), capture.before(), completion);
+    }
+    /** The fixture's fixed C2 projection supports one source member, not a live source chain. */
+    static void requireNativeSourceAvailable(EscrowPrefix.State source) {
+        EscrowTags.require(source.markers().isEmpty(), "Fixture source still carries an earlier member");
     }
     /** Caller must already be in an explicitly gated test fixture. No block/item/command invokes this. */
     void prepareTest(EscrowOperation op, Consumer<Boolean> completion) {

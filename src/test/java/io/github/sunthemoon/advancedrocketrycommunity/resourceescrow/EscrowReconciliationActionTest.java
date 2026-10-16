@@ -56,6 +56,21 @@ class EscrowReconciliationActionTest {
         assertEquals(f.first(), permit.consume(f::before));
     }
 
+    @Test void nativeAdmissionRefusesAnEarlierSourceMarkerUntilValidatedPruningRemovesIt() {
+        var f = EscrowReconciliationBindingBoundaryTest.sample();
+        var marker = new EscrowPrefix.Link(f.a(), f.a().source(), "SOURCE").marker();
+        var state = new EscrowPrefix.State(f.ledger().id(), 1, f.a().source().afterSignature(), List.of(marker));
+        assertThrows(IllegalArgumentException.class, () -> EscrowCoordinator.requireNativeSourceAvailable(state));
+        assertTrue(EscrowReconciliationPruning.retired(f.ledger(), f.a().source(), state, java.util.Set.of()).isEmpty());
+        assertThrows(IllegalArgumentException.class, () -> EscrowCoordinator.requireNativeSourceAvailable(state));
+        var retired = EscrowReconciliationPruning.retired(f.ledger().retire(java.util.Set.of(f.a().id())),
+                f.a().source(), state, java.util.Set.of());
+        var markers = EscrowSettlementPruning.prune(state.markers(), retired, java.util.Set.of());
+        assertDoesNotThrow(() -> EscrowCoordinator.requireNativeSourceAvailable(
+                new EscrowPrefix.State(state.ledger(), state.epoch(), state.signature(), markers)));
+        assertEquals(List.of(marker), state.markers(), "Admission refusal must not remove the source marker");
+    }
+
     @Test void exactNamedFloorRetainsIdentityTypedInvariantEpochAndSignatureBounds() {
         var f = EscrowReconciliationBindingBoundaryTest.sample(); var endpoint = f.a().destination();
         var state = new EscrowPrefix.State(f.ledger().id(), 1, endpoint.afterSignature(), List.of());
