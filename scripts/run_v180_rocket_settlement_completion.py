@@ -44,9 +44,14 @@ def slot_present(path: Path, slot: int) -> bool:
 
 def journal(world: Path) -> dict:
     with gzip.open(world / "data" / JOURNAL, "rb") as stream:
-        data = NbtReader(stream.read(16 * 1024 * 1024 + 1)).read_root()["data"]
-    if data.get("schema_version") != 2:
-        raise smoke.SmokeError("Wrong checked journal schema")
+        payload = stream.read(16 * 1024 * 1024 + 1)
+    if len(payload) > 16 * 1024 * 1024:
+        raise smoke.SmokeError("Checked settlement journal exceeds its bound")
+    data = NbtReader(payload).read_root()["data"]
+    # W44's integrated root 3 is independent of the governed record schema.
+    if (data.get("schema_version") != 3 or not isinstance(data.get("transfers"), list)
+            or data.get("classic_first_moon_landing") != {"schema_version": 1, "state": "EMPTY"}):
+        raise smoke.SmokeError("Wrong checked settlement journal root or nonempty landing outbox")
     return data
 
 

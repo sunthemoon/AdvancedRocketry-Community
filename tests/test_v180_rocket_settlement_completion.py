@@ -1,4 +1,5 @@
 import copy
+import io
 import sys
 import unittest
 from pathlib import Path
@@ -18,6 +19,20 @@ def wire(**fields):
 
 
 class SettlementCompletionOracleTest(unittest.TestCase):
+    def test_journal_pins_integrated_w44_root_and_empty_outbox(self):
+        good = dict(schema_version=3, transfers=[], classic_first_moon_landing=dict(schema_version=1, state="EMPTY"))
+        for field, value in ((None, None), ("schema_version", 2), ("transfers", {}),
+                             ("classic_first_moon_landing", None),
+                             ("classic_first_moon_landing", dict(schema_version=1, state="PENDING"))):
+            data = copy.deepcopy(good)
+            if field: data[field] = value
+            with patch.object(native.gzip, "open", return_value=io.BytesIO(b"fixture")), \
+                    patch.object(native, "NbtReader") as reader:
+                reader.return_value.read_root.return_value = {"data": data}
+                if field:
+                    with self.assertRaises(native.smoke.SmokeError): native.journal(Path("world"))
+                else: self.assertEqual(good, native.journal(Path("world")))
+
     def test_each_veto_start_requires_its_actual_published_hold_reason(self):
         for choice in native.CHOICES:
             for boundary in ("VETO", "VETO_CHECKPOINTED"):
