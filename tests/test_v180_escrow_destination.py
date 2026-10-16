@@ -13,7 +13,7 @@ class DestinationOracleTest(unittest.TestCase):
         root = dict(armed_flights=[arm], issued_launch_serial=1, records=[], floors=[], tombstones=[], rocket_authorities=[], ledger_id="ledger")
         passengers = dict(assignments=[dict(passenger="assigned")])
         source_flight = dict(state="TRANSIT", active_transfer_id="transfer", fuel=dict(amount=1000, committed_debits=[]), passengers=passengers)
-        destination_flight = dict(state="DESCENT", fuel=dict(amount=500, committed_debits=["transfer"]), passengers=passengers)
+        destination_flight = dict(state="DESCENT", fuel=dict(amount=500, committed_debits=[dict(transaction_id="transfer")]), passengers=passengers)
         transfer = dict(schema_version=3, phase="DESTINATION_SPAWNED", transfer_id="transfer", source_entity_id="source",
                         destination_entity_id="destination", owner_id="owner", source_snapshot="source_snapshot",
                         destination_snapshot="destination_snapshot", source_flight=source_flight, destination_flight=destination_flight,
@@ -50,10 +50,11 @@ class DestinationOracleTest(unittest.TestCase):
                 runner.require_state(root, transfer, source, destination, True)
 
     def test_refuses_duplicate_debit_foreign_wrapper_and_destination_mutation(self):
-        for fault in ("debit", "epoch", "fuel", "snapshot", "physical", "position", "passenger"):
+        for fault in ("debit", "debit_shape", "epoch", "fuel", "snapshot", "physical", "position", "passenger"):
             root, transfer, source, destination = self.fixture()
             data = destination["RocketEntityData"]
-            if fault == "debit": data["flight_data"]["fuel"]["committed_debits"].append("transfer")
+            if fault == "debit": data["flight_data"]["fuel"]["committed_debits"].append(dict(transaction_id="transfer"))
+            elif fault == "debit_shape": data["flight_data"]["fuel"]["committed_debits"] = ["transfer"]
             elif fault == "epoch": data["resource_escrow"]["resource_epoch"] = 1
             elif fault == "fuel": data["flight_data"]["fuel"]["amount"] = 1000
             elif fault == "snapshot": data["snapshot"] = "wrong"

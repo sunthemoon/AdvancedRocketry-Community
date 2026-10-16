@@ -53,7 +53,7 @@ def require_state(root: dict, transfer: dict, source: dict, destination: dict | 
                 or arrival["assembly_transaction_id"] != arm["l"] or arrival["owner_id"] != transfer["owner_id"]
                 or arrival["snapshot"] != transfer["destination_snapshot"] or arrival["flight_data"] != transfer["destination_flight"]
                 or arrival["flight_data"]["fuel"]["amount"] != 500
-                or arrival["flight_data"]["fuel"]["committed_debits"] != [transfer["transfer_id"]]
+                or arrival["flight_data"]["fuel"]["committed_debits"] != [dict(transaction_id=transfer["transfer_id"])]
                 or arrival["resource_escrow"] != dict(schema_version=1, ledger_id=root["ledger_id"], resource_epoch=0, markers=[])
                 or destination["Pos"] != [80.5, 148.0, 64.5] or destination["Motion"] != [0.0, 0.0, 0.0]
                 or destination.get("Passengers", [])):
