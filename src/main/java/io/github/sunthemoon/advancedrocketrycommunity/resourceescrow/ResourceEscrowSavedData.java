@@ -19,6 +19,10 @@ public final class ResourceEscrowSavedData extends SavedData {
     public static ResourceEscrowSavedData load(CompoundTag payload) { return new ResourceEscrowSavedData(EscrowCodec.decode(payload)); }
     public boolean operational() { return coordinator == null || coordinator.operational(); }
     public EscrowLedger ledger() { return ledger; }
+    /** Diagnostics retain queued reservations without lazily opening a writer. */
+    EscrowFloors.Usage floorUsage() {
+        return coordinator == null ? EscrowFloors.usage(ledger, java.util.List.of()) : coordinator.floorUsage();
+    }
     @Override public CompoundTag save(CompoundTag target) { return EscrowCodec.encode(ledger); }
     @Override public void save(File file) {
         // The crash path reaches saveAllChunks without ServerStoppingEvent; no new generation starts during teardown.

@@ -72,11 +72,19 @@ public final class EscrowOperatorGameTests {
         // Execute both function forms through the actual function manager, not only Brigadier.
         for (String name : List.of("tick", "load")) {
             var outcomes = new ArrayList<Integer>();
-            var source = server.getFunctions().getGameLoopSender().withPermission(4).withCallback((context, success, result) -> outcomes.add(result));
+            var commands = new ArrayList<String>(); var returns = new ArrayList<String>();
+            var source = server.getFunctions().getGameLoopSender().withPermission(4);
             String command = "arce escrow accept-current " + UUID.randomUUID();
+            var expected = List.of(command, command + " confirm " + "0".repeat(64));
             var function = net.minecraft.commands.CommandFunction.fromLines(ModIdentity.id("escrow_actor_" + name), dispatcher, source,
-                    List.of(command, command + " confirm " + "0".repeat(64)));
-            server.getFunctions().execute(function, source);
+                    expected);
+            int executed = server.getFunctions().execute(function, source, new net.minecraft.server.ServerFunctionManager.TraceCallbacks() {
+                @Override public void onCommand(int depth, String text) { commands.add(text); }
+                @Override public void onReturn(int depth, String text, int result) { returns.add(text); outcomes.add(result); }
+                @Override public void onError(int depth, String message) { helper.fail("Function execution error: " + message); }
+                @Override public void onCall(int depth, net.minecraft.resources.ResourceLocation id, int size) { helper.fail("Unexpected nested function"); }
+            });
+            helper.assertTrue(executed == 2 && commands.equals(expected) && returns.equals(expected), "Exactly two function commands executed and returned");
             helper.assertTrue(outcomes.equals(List.of(0, 0)), "Permission-four function preview/confirm refused: " + outcomes);
         }
         // Diagnostics remain available to non-player permission-two sources, including RCON.

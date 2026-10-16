@@ -17,10 +17,12 @@ final class EscrowOperatorDiagnostics {
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return List.of("escrow admission=disabled ledger=absent held=0 released=0 pruning_groups=0 receipts=0/64"); }
         var runtime = EscrowRuntime.of(server);
-        return status(data.ledger(), op -> runtimeReason(runtime, op));
+        return status(data.ledger(), op -> runtimeReason(runtime, op), data.floorUsage());
     }
     static List<String> status(EscrowLedger root, Function<EscrowOperation, String> reason) {
-        var usage = EscrowFloors.usage(root, List.of());
+        return status(root, reason, EscrowFloors.usage(root, List.of()));
+    }
+    static List<String> status(EscrowLedger root, Function<EscrowOperation, String> reason, EscrowFloors.Usage usage) {
         var receipts = root.tombstones(); var groups = EscrowSettlementPruning.groups(root);
         var reasons = new java.util.TreeMap<String, Integer>();
         root.records().forEach(op -> reasons.merge(bounded(reason.apply(op)), 1, Integer::sum));

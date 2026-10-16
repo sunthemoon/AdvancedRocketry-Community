@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class EscrowOperatorDiagnosticsTest {
+    @org.junit.jupiter.api.io.TempDir java.nio.file.Path temp;
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @Test void inspectShowsOnlyFourMembersAndMetadataWithoutChangingTheRoot() {
         var ops = new ArrayList<EscrowOperation>();
@@ -47,5 +48,23 @@ class EscrowOperatorDiagnosticsTest {
         assertTrue(lines.stream().allMatch(line -> line.length() < 1200));
         assertTrue(lines.get(1).contains("accept_current_members=0 abandon_members=0 floor_members=0"));
         assertTrue(lines.get(2).contains("all choices refuse"));
+    }
+    @Test void readOnlyStatusRetainsQueuedFloorReservationsWithoutOpeningOrStartingAWriter() {
+        var data = ResourceEscrowSavedData.create();
+        assertEquals(new EscrowFloors.Usage(0, 0), data.floorUsage());
+        var file = temp.resolve("ledger.dat");
+        try (var writer = new EscrowLedgerWriter(file, 0); var coordinator = new EscrowCoordinator(data, writer)) {
+            data.attach(coordinator, () -> true);
+            var op = EscrowTestFixtures.operation(1);
+            var guarded = new EscrowOperation(op.id(), op.sequence(), op.owner(), op.createdTick(), op.phase(), op.reason(),
+                    op.payload(), op.payloadHash(), op.source(), op.destination(),
+                    new EscrowGuard(op.guard().rocket(), EscrowTestFixtures.id(900), 1, EscrowTestFixtures.hash(900)));
+            coordinator.prepareTest(guarded, ignored -> fail("Diagnostics must not submit a write"));
+            var before = EscrowCodec.encode(data.ledger());
+            var lines = EscrowOperatorDiagnostics.status(data.ledger(), value -> value.reason().name(), data.floorUsage());
+            assertTrue(lines.get(1).contains("floors_used=0 floors_reserved=1/"));
+            assertTrue(data.ledger().records().isEmpty()); assertEquals(before, EscrowCodec.encode(data.ledger()));
+            assertTrue(writer.idle()); assertFalse(java.nio.file.Files.exists(file));
+        }
     }
 }
