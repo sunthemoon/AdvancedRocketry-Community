@@ -100,12 +100,12 @@ class SettlementIntentNativeOracleTest(unittest.TestCase):
         import run_v180_rocket_settlement_completion as completion
         op = self.root["records"][0]
         op["destination"]["kind"] = "ENTITY"
-        op["guard"] = dict(rocket_id=[20, 21, 22, 23])
+        op["transfer_guard"] = dict(rocket_id=[20, 21, 22, 23])
         op["source"] = self.intent["observations"][0]["endpoint"]
         self.intent["observations"][1]["endpoint"] = dict(op["destination"])
         baseline = copy.deepcopy(self.inspect())
         receipt = dict(schema_version=3, op_id=op["op_id"], actor=native.ACTOR, actor_name="Server", choice="ACCEPT_CURRENT",
-                       confirmed_tick=11, decision_digest="a" * 64, guards=[op["guard"]],
+                       confirmed_tick=11, decision_digest="a" * 64, guards=[op["transfer_guard"]],
                        before_choice=copy.deepcopy(self.intent["observations"]), released=1, release_generation=10, accounting_status="UNKNOWN")
         self.root["records"] = []; self.root["tombstones"] = [receipt]
         self.wrapper["resource_escrow"]["ledger_id"] = self.root["ledger_id"]

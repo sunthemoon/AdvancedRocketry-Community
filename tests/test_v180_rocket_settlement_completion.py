@@ -161,7 +161,7 @@ class SettlementCompletionOracleTest(unittest.TestCase):
 
     def test_named_fill_must_retain_the_exact_guard_until_checked_removal(self):
         guard = dict(transfer_id=[9, 8, 7, 6])
-        self.root["records"] = [dict(guard=guard, settlement=dict(actor=native.ACTOR, actor_name="Server", digest="a" * 64,
+        self.root["records"] = [dict(transfer_guard=guard, settlement=dict(actor=native.ACTOR, actor_name="Server", digest="a" * 64,
                                       observations=[dict(endpoint=dict(kind="ENTITY", identity=self.rocket["UUID"]))]))]
         self.root["floors"] = [dict(transfer_id=guard["transfer_id"])]
         self.root["tombstones"] = []
@@ -179,9 +179,9 @@ class SettlementCompletionOracleTest(unittest.TestCase):
         intent = dict(actor=native.ACTOR, actor_name="Server", digest="a" * 64, choice="ACCEPT_CURRENT",
                       confirmed_tick=10, observations=[observation])
         op = dict(op_id=[1, 2, 3, 4], kind="FLUID_PROPULSION_FILL", source=dict(kind="BLOCK_ENTITY"),
-                  destination=endpoint, guard=dict(transfer_id=[9, 9, 9, 9]), settlement=intent)
+                  destination=endpoint, transfer_guard=dict(transfer_id=[9, 9, 9, 9]), settlement=intent)
         receipt = dict(op_id=op["op_id"], actor=native.ACTOR, actor_name="Server", decision_digest="a" * 64,
-                       choice="ACCEPT_CURRENT", confirmed_tick=10, guards=[op["guard"]],
+                       choice="ACCEPT_CURRENT", confirmed_tick=10, guards=[op["transfer_guard"]],
                        before_choice=[{key: value for key, value in observation.items() if key != "normalized_wrapper"}])
         before = dict(records=[op], tombstones=[])
         after = dict(records=[], tombstones=[receipt])

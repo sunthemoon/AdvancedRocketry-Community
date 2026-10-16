@@ -94,7 +94,7 @@ def require_progress(before: dict, after: dict) -> None:
         observations = [{key: value for key, value in item.items() if key != "normalized_wrapper"}
                         for item in intent["observations"] if op["kind"] == "TRANSFER_FLOOR_RETIRE"
                         or any(same_endpoint(item["endpoint"], endpoint) for endpoint in (op["source"], op["destination"]))]
-        if receipt["before_choice"] != observations or receipt["guards"] != [op["guard"]]:
+        if receipt["before_choice"] != observations or receipt["guards"] != [op["transfer_guard"]]:
             raise smoke.SmokeError("Release changed the frozen observations or named guard")
 
 
@@ -136,7 +136,7 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
     if len(transfers) != int((floor or named) and not absent_journal):
         raise smoke.SmokeError("Matching checked journal was removed before its boundary or retained after release")
     if named:
-        guards = [op["guard"] for op in root["records"]] if root["records"] else [guard for item in root["tombstones"] for guard in item["guards"]]
+        guards = [op["transfer_guard"] for op in root["records"]] if root["records"] else [guard for item in root["tombstones"] for guard in item["guards"]]
         if not guards or any(not guard.get("transfer_id") for guard in guards):
             raise smoke.SmokeError("Named fill lost its transfer guard")
         if transfers and any(guard["transfer_id"] != transfers[0]["transfer_id"] for guard in guards):
