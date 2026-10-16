@@ -54,6 +54,16 @@ public final class EscrowGovernedSourceFlightGameTests {
         new Scenario(helper, Fault.LANDING).start();
     }
 
+    @GameTest(template = "empty", batch = "escrow_governed_terminal_slots", timeoutTicks = 600)
+    public static void landedDestinationCheckpointProvesSourceAbsentInBothSlots(GameTestHelper helper) {
+        new Scenario(helper, false).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_governed_terminal_slots", timeoutTicks = 600)
+    public static void landedDestinationCheckpointProvesSharedSourceAndDestinationSlot(GameTestHelper helper) {
+        new Scenario(helper, true).start();
+    }
+
     private static final class Scenario {
         private final GameTestHelper helper;
         private final ServerLevel level;
@@ -81,12 +91,22 @@ public final class EscrowGovernedSourceFlightGameTests {
         private int step;
         private double arrivalY = Double.POSITIVE_INFINITY;
         private boolean observedDescent;
+        private boolean terminalCheckpoint;
+        private EscrowFlightSource terminalSource;
+        private boolean terminalPending;
+        private final java.util.ArrayList<EscrowBarrier.Proof> terminalProofs = new java.util.ArrayList<>();
 
         Scenario(GameTestHelper helper, Fault fault) {
             this.helper = helper; this.fault = fault; level = helper.getLevel();
             pacer = new GameTestTickPacer(level.getServer());
             position = new BlockPos(590_008 + 128 * fault.ordinal(), 100, 590_008);
             destination = position.offset(fault == Fault.CLOCK ? 4 : 32, 0, 0);
+        }
+        Scenario(GameTestHelper helper, boolean shared) {
+            this.helper = helper; fault = Fault.LANDING; level = helper.getLevel();
+            pacer = new GameTestTickPacer(level.getServer()); terminalCheckpoint = true;
+            position = new BlockPos(shared ? 592_136 : 592_008, 100, 592_008);
+            destination = position.offset(shared ? 4 : 32, 0, 0);
         }
         void start() {
             for (var pos : List.of(position, destination)) {
@@ -251,9 +271,48 @@ public final class EscrowGovernedSourceFlightGameTests {
                         && arrival.flightData().orElseThrow().fuel().equals(record.destinationFlightData().fuel())
                         && arrival.flightData().orElseThrow().passengers().equals(record.destinationFlightData().passengers()),
                         "Governed landing changed the frozen debit or assignments");
+                if (terminalCheckpoint && !checkpointTerminal(record, arrival)) { return; }
                 finish(journal, arrival); return;
             }
             passenger.stopRiding(); arrival.setDeltaMovement(new Vec3(0.125, 0, 0)); changedDestinationAt = level.getGameTime();
+        }
+
+        private boolean checkpointTerminal(RocketTransferRecord record, RocketEntity arrival) {
+            var slots = EscrowGovernedTerminalDisk.slots(record, EscrowFlightTables.Outcome.HANDED_OFF);
+            helper.assertTrue(slots.size() != 1 || slots.get(0).identity().equals(arrival.getUUID())
+                    && slots.get(0).beforeEpoch() == 0, "Shared terminal frontier belongs to the disappeared source");
+            if (terminalSource == null) { terminalSource = new EscrowFlightSource(arrival); }
+            helper.assertTrue(terminalSource.observe() && EscrowGovernedTerminalDisk.survivor(record,
+                    EscrowFlightTables.Outcome.HANDED_OFF, terminalSource.envelope), "F6 destination changed while proving slots");
+            if (terminalPending) { return false; }
+            if (terminalProofs.stream().anyMatch(proof -> !proof.valid())) {
+                terminalProofs.forEach(EscrowBarrier.Proof::release); terminalProofs.clear();
+            }
+            if (terminalProofs.size() < slots.size()) {
+                var slot = slots.get(terminalProofs.size()); var runtime = EscrowRuntime.of(level.getServer());
+                terminalPending = true;
+                boolean started = runtime.barrier().begin(runtime.store(level), slot,
+                        new EscrowPrefix.State(data.ledger().id(), slot.beforeEpoch(), slot.beforeSignature(), List.of()),
+                        EscrowGovernedTerminalDisk.validator(record, EscrowFlightTables.Outcome.HANDED_OFF, slot, terminalSource.envelope),
+                        level.getServer().getTickCount(), result -> {
+                            terminalPending = false;
+                            if (result.confirmed()) { terminalProofs.add(result.proof()); }
+                            else {
+                                helper.assertTrue(result.reason() == EscrowReason.SUPERSEDING_SAVE || result.reason().retryableProofFailure(),
+                                        "Terminal storage proof refused: " + result.reason());
+                                terminalProofs.forEach(EscrowBarrier.Proof::release); terminalProofs.clear();
+                            }
+                        });
+                if (!started) { terminalPending = false; }
+                return false;
+            }
+            helper.assertTrue(terminalProofs.stream().allMatch(EscrowBarrier.Proof::valid)
+                    && terminalSource.observe() && passenger.getVehicle() == arrival
+                    && EscrowGovernedTerminalPassengers.resolved(level.getServer(), record, EscrowFlightTables.Outcome.HANDED_OFF, arrival),
+                    "Joint checkpoint lost its source absence, native successor or online passenger");
+            helper.assertTrue(data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed())
+                    && !RocketEscrowGate.idle(arrival), "F6 disk equality fabricated a handoff or resource release");
+            terminalProofs.forEach(EscrowBarrier.Proof::release); terminalProofs.clear(); return true;
         }
 
         private void finish(RocketTransferSavedData journal, RocketEntity arrival) {

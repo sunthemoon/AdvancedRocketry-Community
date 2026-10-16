@@ -54,6 +54,7 @@ public final class EscrowGovernedReturnGameTests {
         private EscrowLedger root;
         private EscrowGovernedDispatch.Authority authority;
         private boolean pending;
+        private boolean returned;
         private boolean done;
 
         Scenario(GameTestHelper helper, boolean shared) {
@@ -87,7 +88,8 @@ public final class EscrowGovernedReturnGameTests {
                 pending = true;
                 boolean started = runtime.barrier().begin(runtime.store(level), slot,
                         new EscrowPrefix.State(root.id(), slot.beforeEpoch(), slot.beforeSignature(), List.of()),
-                        EscrowGovernedDestinationDisk.validator(record, slot, frozen.envelope), level.getServer().getTickCount(), result -> {
+                        returned ? EscrowGovernedTerminalDisk.validator(record, EscrowFlightTables.Outcome.CANCELLED, slot, frozen.envelope)
+                                : EscrowGovernedDestinationDisk.validator(record, slot, frozen.envelope), level.getServer().getTickCount(), result -> {
                             pending = false;
                             if (result.confirmed()) { proofs.add(result.proof()); }
                             else {
@@ -98,6 +100,20 @@ public final class EscrowGovernedReturnGameTests {
                         });
                 if (!started) { pending = false; }
                 return;
+            }
+            if (returned) {
+                helper.assertTrue(proofs.size() == slots.size() && proofs.stream().allMatch(EscrowBarrier.Proof::valid)
+                        && authority.valid() && frozen.observe() && EscrowGovernedTerminalDisk.survivor(record,
+                        EscrowFlightTables.Outcome.CANCELLED, frozen.envelope)
+                        && EscrowGovernedTerminalPassengers.resolved(level.getServer(), record, EscrowFlightTables.Outcome.CANCELLED, rocket),
+                        "Returned F6 checkpoint lost a joint prerequisite");
+                helper.assertTrue(root.armedFlights().get(0).outcome() == EscrowFlightTables.Outcome.ARMED
+                        && journal.find(record.transferId()).isPresent() && !RocketEscrowGate.idle(rocket),
+                        "Storage equality alone released authority");
+                proofs.forEach(EscrowBarrier.Proof::release); proofs.clear();
+                rocket.discard(); journal.stop();
+                for (var chunk : chunks()) { level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE); }
+                done = true; helper.succeed(); return;
             }
             var before = EscrowNativeEnvelope.rocket(rocket);
             rocket.returnGovernedSource(permit());
@@ -111,9 +127,8 @@ public final class EscrowGovernedReturnGameTests {
                     && root.armedFlights().get(0).outcome() == EscrowFlightTables.Outcome.ARMED && !RocketEscrowGate.idle(rocket),
                     "Return fabricated cancellation, journal cleanup or ordinary idle authority");
             proofs.forEach(EscrowBarrier.Proof::release); proofs.clear();
-            rocket.discard(); journal.stop();
-            for (var chunk : chunks()) { level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE); }
-            done = true; helper.succeed();
+            returned = true; frozen = new EscrowFlightSource(rocket);
+            slots = EscrowGovernedTerminalDisk.slots(record, EscrowFlightTables.Outcome.CANCELLED);
         }
         private EscrowGovernedReturnAction.Permit permit() {
             return EscrowGovernedReturnAction.issue(authority, frozen.envelope, level.getGameTime(), level.getGameTime(),
