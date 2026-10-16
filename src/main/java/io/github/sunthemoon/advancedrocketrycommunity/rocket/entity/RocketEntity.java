@@ -228,6 +228,17 @@ public final class RocketEntity extends Entity implements MenuProvider {
         refreshSyncedData();
     }
 
+    /** A post-F4 return requires its own durable absence permit, never a legacy recovery exemption. */
+    public void returnGovernedSource(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedReturnAction.Permit permit) {
+        var change = Objects.requireNonNull(permit).consume(this);
+        RocketFlightData previous = flightData;
+        flightData = change.flight();
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previous; throw failure; }
+        setPos(change.position().x, change.position().y, change.position().z);
+        refreshSyncedData();
+    }
+
     public RocketFlightState displayedFlightState() {
         try {
             return RocketFlightState.valueOf(entityData.get(DISPLAYED_FLIGHT_STATE));
