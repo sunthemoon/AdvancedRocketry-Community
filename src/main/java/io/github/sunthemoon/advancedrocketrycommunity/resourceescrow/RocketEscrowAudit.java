@@ -66,6 +66,7 @@ public final class RocketEscrowAudit {
                     && op.phase() != EscrowOperation.Phase.SETTLING_ABANDON) { coordinator.transition(op.id(), reason); }
         }
         coordinator.persistTransitions();
+        EscrowReconciliationPruning.observe(rocket);
     }
 
     private static void invalidate(ServerLevel level, EscrowEndpoint endpoint, RocketEntity rocket) {

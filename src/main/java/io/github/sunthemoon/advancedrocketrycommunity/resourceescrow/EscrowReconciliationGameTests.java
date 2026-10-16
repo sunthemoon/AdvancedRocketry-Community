@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-/** Real native endpoints with a detached checked ledger; these C0-C2 tests claim no native L2 proof. */
+/** Real native endpoints with a detached checked ledger and separate C2, C6 and exact C7/C8 boundaries. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowReconciliationGameTests {
@@ -43,6 +43,11 @@ public final class EscrowReconciliationGameTests {
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 400)
     public static void jointNativeReadbackKeepsBothFrontiersLockedWithoutReportingL2(GameTestHelper helper) throws Exception {
         new Scenario(helper, 3).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 400)
+    public static void exactNativeL2PrunesOnlyAfterAcknowledgementAndKeepsResourcesAndEpochs(GameTestHelper helper) throws Exception {
+        new Scenario(helper, 4).start();
     }
 
     private static final class Scenario {
@@ -115,23 +120,45 @@ public final class EscrowReconciliationGameTests {
                 step = 3; return;
             }
             if (step == 3) {
+                if (missing == 3 && coordinator.reconciliationCheckpointProved(operation.id())) {
+                    assertC6(); finish(); return; // Stop this boundary test before requesting C7.
+                }
                 if (missing == 2) { level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState()); }
                 RocketEscrowAudit.attempt(coordinator, server, operation, data.ledger().records(), replies::add);
+                if (missing == 4) {
+                    helper.assertTrue(rocket.flightData().orElseThrow().fuel().totalAmount() == 1_000
+                            && fixture.sourceState().epoch() == 1 && rocket.escrowSection().epoch() == 1
+                            && EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000, "C7/C8 changed resources or epochs");
+                    if (data.ledger().records().isEmpty()) {
+                        helper.assertTrue(replies.stream().filter(EscrowReconciliationScheduler.Result::proved).count() == 1
+                                && rocket.escrowSection().markers().isEmpty() && fixture.sourceState().markers().isEmpty()
+                                && !coordinator.locked(operation.source().key()) && !coordinator.locked(operation.destination().key())
+                                && !coordinator.reconciliationCheckpointProved(operation.id()), "Exact L2 did not prune/release once");
+                        finish(); return;
+                    }
+                    helper.assertTrue(replies.stream().noneMatch(EscrowReconciliationScheduler.Result::proved)
+                            && coordinator.locked(operation.source().key()) && coordinator.locked(operation.destination().key()),
+                            "Pending C7 reported success or released an endpoint");
+                    return;
+                }
                 helper.assertTrue(rocket.flightData().orElseThrow().fuel().totalAmount() == 1_000
                         && EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
                         && replies.stream().noneMatch(EscrowReconciliationScheduler.Result::proved), "C2 replayed or fabricated proof");
                 if (missing == 2) { assertMissing(1_000); }
                 if (missing == 3) {
-                    helper.assertTrue(coordinator.frozen(operation.source().key()) && coordinator.frozen(operation.destination().key())
-                            && coordinator.locked(operation.source().key()) && coordinator.locked(operation.destination().key())
-                            && data.ledger().records().size() == 1, "C3-C6 released an L1 record or an endpoint frontier");
+                    assertC6();
                     if (!coordinator.reconciliationCheckpointProved(operation.id())) { return; }
-                    helper.assertTrue(rocket.escrowSection().epoch() == 1 && rocket.escrowSection().markers().size() == 1
-                            && fixture.sourceState().epoch() == 1 && fixture.sourceState().markers().size() == 1,
-                            "Native readback changed an epoch or marker");
                 }
                 finish();
             }
+        }
+        void assertC6() {
+            helper.assertTrue(coordinator.frozen(operation.source().key()) && coordinator.frozen(operation.destination().key())
+                    && coordinator.locked(operation.source().key()) && coordinator.locked(operation.destination().key())
+                    && data.ledger().records().size() == 1, "C3-C6 released an L1 record or an endpoint frontier");
+            helper.assertTrue(rocket.escrowSection().epoch() == 1 && rocket.escrowSection().markers().size() == 1
+                    && fixture.sourceState().epoch() == 1 && fixture.sourceState().markers().size() == 1
+                    && replies.stream().noneMatch(EscrowReconciliationScheduler.Result::proved), "Native readback changed an epoch/marker or reported L2");
         }
         void assertMissing(long expectedFuel) {
             helper.assertTrue(replies.get(replies.size() - 1).reason() == EscrowReason.MISSING_ENDPOINT

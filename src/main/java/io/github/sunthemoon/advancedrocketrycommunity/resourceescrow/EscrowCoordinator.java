@@ -51,6 +51,9 @@ public final class EscrowCoordinator implements AutoCloseable {
                            net.minecraft.world.level.block.entity.BlockEntity source, Consumer<Boolean> completion) {
         owner(); EscrowTestEndpoints.requireEnabled(rocket.getServer());
         EscrowTags.require(operational() && writer.idle() && queued.isEmpty(), "C0 waits for the acknowledged ledger");
+        EscrowReconciliationPruning.source(rocket.getServer(), this, op.source());
+        // Rocket restart pruning runs from the ordinary observation hook; C0 never binds a stale wrapper.
+        EscrowReconciliationPruning.observe(rocket);
         var capture = EscrowNativeBinding.captureCurrentTest(op, rocket, source, data.ledger());
         var candidate = data.ledger().append(List.of(capture.operation()));
         EscrowReconciliationView.capture(rocket.getServer(), candidate, EscrowSettlementIntent.component(candidate.records(), op.id()));
@@ -154,6 +157,11 @@ public final class EscrowCoordinator implements AutoCloseable {
         boolean accepted = writer.request(() -> EscrowLedgerWriter.Snapshot.of(frozen, Set.of()), result -> {
             acknowledge(result);
             if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
+            // An ordinary C3 freeze may precede a later sticky repair/O1. Only exact O4,
+            // never O1/O3 or a failed/unknown write, supersedes that obsolete frontier.
+            if (release && result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED) {
+                keys.forEach(frontiers::remove); reconciliation.settled(keys);
+            }
             if (!closed) { callback.accept(new SettlementAcknowledgement(intent.ledger(), intent.digest(), intent.ids(),
                     result.generation(), result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED)); }
         }, () -> frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid) && journalLease.getAsBoolean());
@@ -255,6 +263,50 @@ public final class EscrowCoordinator implements AutoCloseable {
                 if (!closed) { callback.accept(true); }
             } else if (!closed) { callback.accept(false); }
         }, () -> frozenProofs.values().stream().allMatch(EscrowBarrier.Proof::valid));
+        if (accepted) { lastStart = tick; }
+        return accepted;
+    }
+    record RetirementAcknowledgement(UUID ledger, Set<UUID> members, long generation, String digest, boolean committed) {
+        RetirementAcknowledgement { members = Set.copyOf(members); }
+    }
+    /** C7 consumes a native C3-C6 request, not caller-supplied booleans or individual endpoint proofs. */
+    boolean retireNative(EscrowReconciliationCheckpoint request, Consumer<RetirementAcknowledgement> callback) {
+        owner();
+        if (closed || !writer.idle() || writer.unavailable() || !queued.isEmpty() || !transitions.isEmpty()
+                || tick - lastStart < 10 || data.ledger() != request.root || !request.proved()
+                || !ordinaryRetirementAllowed(request.members)) { return false; }
+        var members = request.members;
+        var proofs = Map.copyOf(request.proofs);
+        var lease = request.journalLease;
+        var states = request.ends.entrySet().stream().collect(java.util.stream.Collectors.toMap(
+                Map.Entry::getKey, entry -> entry.getValue().state()));
+        EscrowTags.require(EscrowReconciliationValidation.retirementReady(request.root, members, states),
+                "C7 waits for every later acknowledged member on the affected endpoints");
+        requireCoveringProofs(request.root.records(), members, proofs, frontiers);
+        java.util.function.BooleanSupplier valid = () -> lease.getAsBoolean()
+                && proofs.values().stream().allMatch(EscrowBarrier.Proof::valid);
+        // Idle writer capture is synchronous on the owner thread. No uncaptured successor can
+        // substitute a newer root or a different retirement request beneath this acknowledgement.
+        long generation = Math.addExact(writer.lastGeneration(), 1);
+        boolean accepted = writer.request(() -> {
+            // A racing lease/token loss is a normal refusal, never a sticky endpoint diagnosis.
+            return snapshot(false, data.ledger() == request.root && ordinaryRetirementAllowed(members)
+                    && valid.getAsBoolean() ? members : null, proofs);
+        }, result -> {
+            acknowledge(result);
+            if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
+            boolean committed = result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
+                    && result.generation() == generation && result.snapshot().ledger().id().equals(request.root.id())
+                    && result.snapshot().ledger().records().stream().noneMatch(op -> members.contains(op.id()));
+            if (committed) {
+                // As with the model-fixture L2 path, release only in this exact writer callback.
+                // Remaining operations still hold their endpoints and require freshly frozen tokens.
+                request.ends.keySet().forEach(frontiers::remove);
+                proofs.values().forEach(EscrowBarrier.Proof::release);
+            }
+            if (!closed) { callback.accept(new RetirementAcknowledgement(request.root.id(), members,
+                    result.generation(), result.digest(), committed)); }
+        }, valid);
         if (accepted) { lastStart = tick; }
         return accepted;
     }

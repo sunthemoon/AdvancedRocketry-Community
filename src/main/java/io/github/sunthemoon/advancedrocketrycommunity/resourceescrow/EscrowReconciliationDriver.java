@@ -71,6 +71,7 @@ final class EscrowReconciliationDriver {
                 // captured per tick, and retained complete captures stay under the existing cap.
                 if (captured) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
                 captured = true;
+                for (var member : component) { EscrowReconciliationPruning.source(server, coordinator, member.source()); }
                 view = EscrowReconciliationView.capture(server, root, component);
                 views.remove(key);
                 if (views.values().stream().mapToLong(value -> value.bytes).sum() + view.bytes > EscrowLimits.CAPTURE_BYTES) { views.clear(); }
@@ -137,12 +138,38 @@ final class EscrowReconciliationDriver {
             if (!accepted) { work.busy = false; completion.accept(EscrowReconciliationScheduler.Result.deferred()); }
             return;
         }
-        // C7/C8 are a separate row group. Keep all L1 records and endpoint freezes meanwhile.
-        completion.accept(EscrowReconciliationScheduler.Result.deferred());
+        var frozen = work; var runtime = EscrowRuntime.of(server);
+        work.busy = true;
+        boolean accepted = coordinator.retireNative(work, ack -> {
+            frozen.busy = false;
+            if (checkpoints.get(op.id()) != frozen || !ack.members().equals(frozen.members)
+                    || !ack.ledger().equals(frozen.root.id())) {
+                frozen.close(); completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+            }
+            if (ack.committed()) {
+                runtime.checkpoint("C7_ACKNOWLEDGED");
+                EscrowReconciliationPruning.acknowledged(server, coordinator, frozen, ack);
+                frozen.close(); checkpoints.remove(op.id()); views.clear();
+                runtime.checkpoint("C8_RELEASED");
+                completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.NONE, true));
+            } else {
+                // A definite failed candidate repeats both native proofs, retaining the frozen frontiers.
+                frozen.proofs.values().forEach(EscrowBarrier.Proof::release); frozen.proofs.clear();
+                completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.LEDGER_WRITE_FAILED, false));
+            }
+        });
+        if (!accepted) { work.busy = false; completion.accept(EscrowReconciliationScheduler.Result.deferred()); }
     }
 
     boolean checkpointProved(UUID operation) {
         var work = checkpoints.get(operation); return work != null && work.proved();
+    }
+
+    void settled(Set<EscrowEndpoint.Key> endpoints) {
+        checkpoints.entrySet().removeIf(entry -> {
+            if (entry.getValue().ends.keySet().stream().noneMatch(endpoints::contains)) { return false; }
+            entry.getValue().close(); return true;
+        });
     }
 
     void close() {
