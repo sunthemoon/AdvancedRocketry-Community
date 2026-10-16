@@ -26,25 +26,29 @@ final class EscrowReturnProbe {
     private final String cut;
     private final boolean recovery;
     private final boolean cancel;
+    private final boolean spawn;
     private final int slot;
     private final String point;
     private final BlockPos destination;
-    private boolean started;
+    private volatile boolean started;
     private boolean accepted;
     private boolean discarded;
     private boolean requested;
     private boolean done;
+    private boolean vetoInstalled;
+    private int vetoes;
     private volatile int returnSlot = -1;
 
     EscrowReturnProbe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
         cut = System.getProperty("advancedrocketrycommunity.escrowCase");
         String[] parts = cut.split("_", 6);
-        EscrowTags.require(parts.length == 6 && parts[0].equals("RT") && List.of("CANCEL", "PAD").contains(parts[1])
+        EscrowTags.require(parts.length == 6 && parts[0].equals("RT") && List.of("CANCEL", "PAD", "SPAWN").contains(parts[1])
                 && List.of("SHARED", "SEPARATE").contains(parts[2]) && List.of("0", "1").contains(parts[3])
                 && List.of("STORE", "FORCE", "READBACK").contains(parts[4]) && List.of("BEFORE", "AFTER").contains(parts[5]),
                 "Unknown return cut");
-        cancel = parts[1].equals("CANCEL"); slot = Integer.parseInt(parts[3]); point = "BARRIER_" + parts[4] + "_" + parts[5];
+        cancel = parts[1].equals("CANCEL"); spawn = parts[1].equals("SPAWN");
+        slot = Integer.parseInt(parts[3]); point = "BARRIER_" + parts[4] + "_" + parts[5];
         boolean shared = parts[2].equals("SHARED"); EscrowTags.require(!shared || slot == 0, "Shared return has only one joint slot");
         destination = new BlockPos(shared ? 68 : 80, 100, 64);
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
@@ -76,6 +80,17 @@ final class EscrowReturnProbe {
         EscrowTags.require(data.ledger().armedFlights().equals(List.of(arm)), "Return released or changed ARMED authority");
         var source = level.getEntity(record.sourceEntityId()) instanceof RocketEntity found ? found : null;
         var arrival = level.getEntity(arm.destination()) instanceof RocketEntity found ? found : null;
+        if (!recovery && spawn && !vetoInstalled) {
+            net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(net.minecraftforge.eventbus.api.EventPriority.LOWEST,
+                    false, net.minecraftforge.event.entity.EntityJoinLevelEvent.class, event -> {
+                        if (event.getEntity().getUUID().equals(arm.destination())) { vetoes++; event.setCanceled(true); }
+                    });
+            vetoInstalled = true;
+        }
+        if (!recovery && spawn && EscrowRuntime.of(server).returns().handles(record, source)) {
+            EscrowTags.require(vetoes == 1 && record.phase() == RocketTransferPhase.DESTINATION_SPAWNED && arrival == null,
+                    "Spawn return did not follow exactly one refused F4 publication");
+        }
         if (!recovery && cancel && !requested) {
             EscrowTags.require(source != null && source.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN,
                     "Cancellation lost its live countdown");
@@ -96,7 +111,7 @@ final class EscrowReturnProbe {
             finish("RETURNED");
         } else if (source == null && arrival != null && arrival.flightData().orElseThrow().state() == RocketFlightState.LANDED) {
             // The first post-return store has not happened at this cut; its volatile request is not a durable cancellation.
-            EscrowTags.require(cancel && slot == 0 && point.equals("BARRIER_STORE_BEFORE")
+            EscrowTags.require((cancel || spawn) && slot == 0 && point.equals("BARRIER_STORE_BEFORE")
                     && record.phase() == RocketTransferPhase.COMMITTED
                     && EscrowGovernedTerminalDisk.survivor(record, EscrowFlightTables.Outcome.HANDED_OFF, EscrowNativeEnvelope.rocket(arrival))
                     && arrival.escrowSection().epoch() == 0 && arrival.flightData().orElseThrow().fuel().totalAmount() == 500
@@ -108,7 +123,7 @@ final class EscrowReturnProbe {
 
     private void prepare(ResourceEscrowSavedData data) {
         var level = server.overworld();
-        if (!cancel) { level.setBlock(destination, Blocks.STONE.defaultBlockState(), 3); }
+        if (!cancel && !spawn) { level.setBlock(destination, Blocks.STONE.defaultBlockState(), 3); }
         // Persist level clocks and the obstruction before F1, never flush over the cut under observation.
         EscrowTags.require(server.saveEverything(false, true, true), "Return baseline save refused");
         level.getChunkSource().chunkMap.worker.synchronize(true).join();

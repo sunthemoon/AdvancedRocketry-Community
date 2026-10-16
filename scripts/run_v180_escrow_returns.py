@@ -9,13 +9,13 @@ from pathlib import Path
 import run_v180_escrow_phases as phases
 
 CASES = tuple(f"RT_{kind}_{layout}_{slot}_{operation}_{side}"
-              for kind in ("CANCEL", "PAD") for layout, slots in (("SEPARATE", (0, 1)), ("SHARED", (0,)))
+              for kind in ("CANCEL", "PAD", "SPAWN") for layout, slots in (("SEPARATE", (0, 1)), ("SHARED", (0,)))
               for slot in slots for operation in ("STORE", "FORCE", "READBACK") for side in ("BEFORE", "AFTER"))
 
 
 def require_state(root, transfer, source, destination, cut, restarted):
     _, kind, layout, slot, operation, side = cut.split("_")
-    volatile_cancel = kind == "CANCEL" and slot == "0" and operation == "STORE" and side == "BEFORE"
+    volatile_return = kind in ("CANCEL", "SPAWN") and slot == "0" and operation == "STORE" and side == "BEFORE"
     if (len(root["armed_flights"]) != 1 or root["issued_launch_serial"] != 1 or root["records"] or root["floors"]
             or root["tombstones"] or root["rocket_authorities"]):
         raise phases.smoke.SmokeError("Return changed or released its retained ledger authority")
@@ -27,10 +27,11 @@ def require_state(root, transfer, source, destination, cut, restarted):
     if (source is None) == (destination is None):
         raise phases.smoke.SmokeError("Return lost or duplicated its physical survivor")
     arrived = destination is not None
-    if arrived and not (restarted and volatile_cancel and transfer["phase"] == "COMMITTED"
+    if arrived and not (restarted and volatile_return and transfer["phase"] == "COMMITTED"
                         and transfer["destination_entity_id"] == arm["d"]):
         raise phases.smoke.SmokeError("Return fabricated a destination after a durable return")
-    if not arrived and (transfer["phase"] != "PREPARED" or "destination_entity_id" in transfer):
+    if not arrived and (transfer["phase"] != ("DESTINATION_SPAWNED" if kind == "SPAWN" else "PREPARED")
+                        or (transfer.get("destination_entity_id") != arm["d"] if kind == "SPAWN" else "destination_entity_id" in transfer)):
         raise phases.smoke.SmokeError("Return changed its retained PREPARED record")
     fuel = transfer["source_flight"]["fuel"]
     prior = fuel["committed_debits"]
@@ -64,12 +65,12 @@ def require_state(root, transfer, source, destination, cut, restarted):
             raise phases.smoke.SmokeError("Return store failed to persist its stationary survivor")
         expected = copy.deepcopy(transfer["source_flight"])
         expected.update(state="COUNTDOWN" if kind == "CANCEL" else "TRANSIT", state_started_game_time=time)
-        if kind == "PAD": expected["active_transfer_id"] = arm["t"]
+        if kind != "CANCEL": expected["active_transfer_id"] = arm["t"]
         else: expected.pop("active_transfer_id", None)
-        if time < transfer["created_at_game_time"] + (140 if kind == "PAD" else 0):
+        if time < transfer["created_at_game_time"] + (0 if kind == "CANCEL" else 140):
             raise phases.smoke.SmokeError("Return cut has a backwards source clock")
     x = (68.5 if layout == "SHARED" else 80.5) if arrived else 64.5
-    y = 148.0 if not arrived and not returned and kind == "PAD" else 100.0
+    y = 148.0 if not arrived and not returned and kind != "CANCEL" else 100.0
     if (entity["id"] != "advancedrocketrycommunity:rocket" or data["schema_version"] != 3 or entity["UUID"] != arm["d" if arrived else "src"]
             or data["assembly_transaction_id"] != arm["l"] or data["owner_id"] != transfer["owner_id"]
             or data["snapshot"] != transfer[end + "_snapshot"] or flight != expected
