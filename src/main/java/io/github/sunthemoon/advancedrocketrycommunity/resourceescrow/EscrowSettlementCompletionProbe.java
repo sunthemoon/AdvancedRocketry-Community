@@ -27,11 +27,13 @@ final class EscrowSettlementCompletionProbe {
     private final ServerLevel level;
     private final String cut;
     private final String boundary;
-    private final boolean recovery, chain, abandon, floor, veto, normalization;
+    private final boolean recovery, chain, abandon, floor, veto, normalization, heldB;
     private EscrowCoordinator coordinator;
     private ResourceEscrowSavedData data;
     private RocketEntity rocket;
     private EscrowTestEndpoints.Fixture source;
+    private EscrowTestEndpoints.Fixture heldSource;
+    private UUID heldId;
     private final List<EscrowTestEndpoints.Fixture> sources = new ArrayList<>();
     private EscrowSettlementIntent preview;
     private UUID selected;
@@ -44,11 +46,12 @@ final class EscrowSettlementCompletionProbe {
         EscrowTestEndpoints.requireEnabled(server); this.server = server; level = server.overworld();
         cut = System.getProperty("advancedrocketrycommunity.escrowCase", "");
         String[] parts = cut.substring(3).split("__", 2);
-        EscrowTags.require(parts.length == 2 && List.of("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMALIZE").contains(parts[0]),
+        EscrowTags.require(parts.length == 2 && List.of("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMALIZE", "HELD_B").contains(parts[0]),
                 "Unknown settlement completion case");
         boundary = parts[1]; chain = parts[0].startsWith("CHAIN"); abandon = parts[0].endsWith("ABANDON");
         floor = parts[0].equals("FLOOR"); veto = boundary.equals("VETO");
         normalization = parts[0].equals("NORMALIZE");
+        heldB = parts[0].equals("HELD_B");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
     }
     void checkpoint(String name) {
@@ -63,6 +66,9 @@ final class EscrowSettlementCompletionProbe {
         }
         if (recovery || veto || writingIntent) { return; }
         if (name.equals(boundary)) { pause(name); }
+        if (boundary.equals("O4_REPLACED") && ledgerPhase.equals("O4") && (name.equals("K2") || name.equals("K9"))) {
+            pause(boundary);
+        }
         if ((name.equals("K1") || name.equals("K8")) && boundary.equals(ledgerPhase + "_BEFORE")) {
             pause(boundary);
         }
@@ -77,7 +83,7 @@ final class EscrowSettlementCompletionProbe {
         if (data == null) { data = ResourceEscrowSavedData.forTests(server); coordinator = data.bind(server); startTick = server.getTickCount(); }
         if (recovery) {
             if (veto && !vetoInstalled && !data.ledger().records().isEmpty()) { installVeto(); }
-            if (!veto && data.ledger().records().isEmpty() && !data.ledger().tombstones().isEmpty()) { completed(); }
+            if (!veto && data.ledger().records().size() == (heldB ? 1 : 0) && !data.ledger().tombstones().isEmpty()) { completed(); }
             return;
         }
         switch (step) {
@@ -107,6 +113,11 @@ final class EscrowSettlementCompletionProbe {
                 selected = operations.get(0).id();
                 for (var capture : captures) { coordinator.prepareTest(capture.operation(), capture.before(),
                         committed -> EscrowTags.require(committed, "Completion fixture L1 failed")); }
+                if (heldB) {
+                    heldSource = EscrowTestEndpoints.create(level, POSITION.offset(16, 0, 0), data.ledger().id());
+                    var held = heldSource.operation(coordinator.nextSequence()); heldId = held.id();
+                    heldSource.prepare(coordinator, held, committed -> EscrowTags.require(committed, "Held group B L1 failed"));
+                }
                 EscrowTags.require(level.addFreshEntity(rocket), "Completion fixture rocket failed to publish");
                 if (veto) {
                     EscrowTags.require(server.saveEverything(false, true, true), "Veto baseline save refused");
@@ -116,10 +127,14 @@ final class EscrowSettlementCompletionProbe {
             }
             case 1 -> { if (coordinator.commitPreparations()) { step = 2; } }
             case 2 -> {
-                if (!coordinator.writerIdle() || data.ledger().records().size() != (chain ? 2 : 1)) { return; }
+                if (!coordinator.writerIdle() || data.ledger().records().size() != (chain ? 2 : 1) + (heldB ? 1 : 0)) { return; }
                 // Refuse vanilla's intervening saves as well as the later O2 own-store attempt.
                 if (veto && !vetoInstalled) { installVeto(); }
                 for (int i = 0; i < sources.size(); i++) { sources.get(i).applySource(data.ledger().records().get(i)); }
+                if (heldB) {
+                    heldSource.apply(data.ledger().records().stream().filter(op -> op.id().equals(heldId)).findFirst().orElseThrow());
+                    coordinator.transition(heldId, EscrowReason.OTHER_STATE);
+                }
                 coordinator.transition(selected, EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
             }
             case 3 -> {
@@ -214,6 +229,7 @@ final class EscrowSettlementCompletionProbe {
     }
     private void completed() {
         var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
+        if (heldB && !heldGroupIntact()) { return; }
         EscrowTags.require(data.ledger().floors().isEmpty() && data.ledger().tombstones().size() == (chain ? 2 : 1)
                 && data.ledger().tombstones().stream().allMatch(tag -> tag.getBoolean("released")), "Incomplete acknowledged release");
         for (var tag : data.ledger().tombstones()) {
@@ -234,7 +250,8 @@ final class EscrowSettlementCompletionProbe {
                 var endpoint = EscrowCodec.endpoint(((CompoundTag) raw).getCompound("endpoint"));
                 if (endpoint.kind() != EscrowEndpoint.Kind.ENTITY) { continue; }
                 if (!(level.getEntity(endpoint.identity()) instanceof RocketEntity survivor)) { return; }
-                survivor.pruneSettledEscrow();
+                if (heldB) { if (!survivor.escrowSection().markers().isEmpty()) { return; } }
+                else { survivor.pruneSettledEscrow(); }
                 if (normalization && survivor.escrowSection().epoch() == 0) {
                     EscrowTags.require(survivor.flightData().orElseThrow().fuel().totalAmount() == 0
                             && data.ledger().id().equals(survivor.escrowSection().ledger()) && RocketEscrowGate.idle(survivor), "Neutral normalization did not release intact");
@@ -272,7 +289,31 @@ final class EscrowSettlementCompletionProbe {
                 EscrowTags.require(coordinator.locked(endpoint.key()), "Returning missing identity was released");
             }
         }
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT cut={} state=RELEASED records=0 tombstones={} locked=false", cut, data.ledger().tombstones().size());
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT cut={} state=RELEASED records={} tombstones={} locked=false", cut,
+                data.ledger().records().size(), data.ledger().tombstones().size());
         done = true;
+    }
+
+    private boolean heldGroupIntact() {
+        var op = data.ledger().records().get(0);
+        EscrowTags.require(op.reason() == EscrowReason.OTHER_STATE && op.settlement().isEmpty()
+                && coordinator.unresolvedIds().contains(op.id()) && coordinator.locked(op.source().key())
+                && coordinator.locked(op.destination().key()), "Independent group B lost its manual hold");
+        var from = op.source(); var to = op.destination();
+        var chunk = level.getChunkSource().getChunkNow(from.x() >> 4, from.z() >> 4);
+        if (chunk == null || level.getEntity(to.identity()) == null) { return false; }
+        var block = chunk.getBlockEntity(new BlockPos(from.x(), from.y(), from.z()));
+        if (block == null) { return false; }
+        var entity = level.getEntity(to.identity());
+        var sourceState = EscrowTestEndpoints.state(block.getPersistentData(), data.ledger().id(), false);
+        var bankState = EscrowTestEndpoints.state(entity.getPersistentData(), data.ledger().id(), true);
+        EscrowTags.require(EscrowTestEndpoints.amount(block.getPersistentData()) == 4_000
+                && EscrowTestEndpoints.amount(entity.getPersistentData()) == 1_000
+                && sourceState.epoch() == from.afterEpoch() && sourceState.signature().equals(from.afterSignature())
+                && bankState.epoch() == to.afterEpoch() && bankState.signature().equals(to.afterSignature())
+                && sourceState.markers().equals(List.of(new EscrowPrefix.Marker(op.id(), op.sequence(), "SOURCE", from.afterEpoch())))
+                && bankState.markers().equals(List.of(new EscrowPrefix.Marker(op.id(), op.sequence(), "DESTINATION", to.afterEpoch()))),
+                "Independent group B changed resources, epochs or markers during A pruning");
+        return true;
     }
 }
