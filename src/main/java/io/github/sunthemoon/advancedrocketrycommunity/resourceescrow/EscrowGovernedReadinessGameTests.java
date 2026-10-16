@@ -191,7 +191,11 @@ public final class EscrowGovernedReadinessGameTests {
                         var journalFile = server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
                         var saved = CheckedSavedDataPolicy.atomic(ManagedSavedDataType.ROCKET_TRANSFERS).read(journalFile).orElseThrow();
                         journal.stop();
-                        server.overworld().getDataStorage().set(ManagedSavedDataType.ROCKET_TRANSFERS.dataName(), RocketTransferSavedData.load(saved));
+                        var restored = RocketTransferSavedData.load(saved);
+                        helper.assertTrue(restored.operational() && saved.equals(restored.save(new CompoundTag())),
+                                "Startup fixture changed the complete serialized journal");
+                        record = restored.find(transfer).orElseThrow();
+                        server.overworld().getDataStorage().set(ManagedSavedDataType.ROCKET_TRANSFERS.dataName(), restored);
                         installedAt = server.getTickCount();
                         observedWait = !ready(position) || !ready(destination) || end == End.UNAVAILABLE;
                         step = 3;
