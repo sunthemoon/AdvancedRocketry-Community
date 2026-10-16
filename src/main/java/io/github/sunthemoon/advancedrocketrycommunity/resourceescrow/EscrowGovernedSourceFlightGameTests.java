@@ -54,12 +54,14 @@ public final class EscrowGovernedSourceFlightGameTests {
         new Scenario(helper, Fault.LANDING).start();
     }
 
-    @GameTest(template = "empty", batch = "escrow_governed_terminal_slots", timeoutTicks = 600)
+    // These single-flight fixtures assert the whole journal's acknowledgement at F3.
+    // Keep them in distinct batches so another fixture cannot queue an unrelated write.
+    @GameTest(template = "empty", batch = "escrow_governed_terminal_separate_slots", timeoutTicks = 600)
     public static void landedDestinationCheckpointProvesSourceAbsentInBothSlots(GameTestHelper helper) {
         new Scenario(helper, false).start();
     }
 
-    @GameTest(template = "empty", batch = "escrow_governed_terminal_slots", timeoutTicks = 600)
+    @GameTest(template = "empty", batch = "escrow_governed_terminal_shared_slot", timeoutTicks = 600)
     public static void landedDestinationCheckpointProvesSharedSourceAndDestinationSlot(GameTestHelper helper) {
         new Scenario(helper, true).start();
     }
@@ -189,7 +191,10 @@ public final class EscrowGovernedSourceFlightGameTests {
             }
             var record = journal.find(transfer).orElseThrow();
             helper.assertTrue(record.phase() == RocketTransferPhase.PREPARED && journal.acknowledgedCurrent()
-                    && data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()), "Source minted destination or terminal authority");
+                    && data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()),
+                    "Source minted destination or terminal authority: phase=" + record.phase()
+                            + ", acknowledged=" + journal.acknowledgedCurrent() + ", armed="
+                            + data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()));
             if (fault == Fault.NONE || fault == Fault.CLOCK || fault == Fault.LANDING) { step = 3; return; }
             finish(journal, null);
         }
