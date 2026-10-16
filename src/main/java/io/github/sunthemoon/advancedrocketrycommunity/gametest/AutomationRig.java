@@ -68,9 +68,11 @@ final class AutomationRig implements AutoCloseable {
                     || position.getY() > max.getY() || position.getZ() < min.getZ() || position.getZ() > max.getZ();
             level.setBlock(position, shell ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
         }
-        // Earlier batches reuse these coordinates; their loose items are not this machine's.
+        // Earlier batches reuse these coordinates. Carving can also drop fragile terrain: a rail's onRemove can
+        // notify neighbours even with UPDATE_CLIENTS. Include the shell, where a drop can otherwise survive and be
+        // pushed into the room next tick. Finish cleanup here, before any machine runs; never erase later spills.
         var box = new AABB(min.getX(), min.getY(), min.getZ(), max.getX() + 1, max.getY() + 1, max.getZ() + 1);
-        level.getEntitiesOfClass(ItemEntity.class, box).forEach(ItemEntity::discard);
+        level.getEntitiesOfClass(ItemEntity.class, box.inflate(1)).forEach(ItemEntity::discard);
         rooms.add(box);
     }
     void place(BlockPos position, BlockState state) {
