@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
+import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeResources;
@@ -60,7 +61,7 @@ public final class EscrowReconciliationGameTests {
             position = new BlockPos(681_008 + missing * 32, 100, 681_008); chunk = new ChunkPos(position);
             pacer = new GameTestTickPacer(helper.getLevel().getServer());
             directory = Files.createTempDirectory("arce-c35-reconcile-");
-            coordinator = new EscrowCoordinator(data, new EscrowLedgerWriter(directory.resolve("ledger.dat"), 0));
+            coordinator = new EscrowCoordinator(data, new EscrowLedgerWriter(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0));
         }
         void start() {
             var level = helper.getLevel();
@@ -87,7 +88,9 @@ public final class EscrowReconciliationGameTests {
                 operation = new EscrowOperation(sample.id(), sample.sequence(), rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(),
                         sample.reason(), payload, RocketNativeResources.signature(payload), sample.source(), destination,
                         new EscrowGuard(fixture.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
-                coordinator.prepareNativeTest(operation, rocket, fixture.source(), result -> acknowledged = result);
+                coordinator.prepareNativeTest(operation, rocket, fixture.source(), result -> {
+                    helper.assertTrue(result, "The checked L1 writer refused the fixture preparation"); acknowledged = true;
+                });
                 helper.assertTrue(data.ledger().records().isEmpty() && rocket.flightData().orElseThrow().fuel().totalAmount() == 0
                         && EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 5_000, "C0 changed an endpoint before L1");
                 step = 1;
