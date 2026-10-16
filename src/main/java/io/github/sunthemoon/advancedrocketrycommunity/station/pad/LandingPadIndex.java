@@ -109,6 +109,19 @@ public final class LandingPadIndex extends SavedData {
         bucket(station).put(entry.padId(), entry.withClaim(null)); setDirty(); return true;
     }
 
+    /** Checked terminal cleanup may restart after its journal record, and hence its plan, is gone. */
+    public boolean releaseTransfer(UUID transfer) {
+        java.util.Objects.requireNonNull(transfer);
+        if (!operational()) { return false; }
+        // The codec/registration limits bound this saved index; never query any world blocks.
+        for (var bucket : stations.values()) {
+            for (var entry : List.copyOf(bucket.values())) {
+                if (transfer.equals(entry.claim())) { bucket.put(entry.padId(), entry.withClaim(null)); setDirty(); }
+            }
+        }
+        return true;
+    }
+
     @Override public CompoundTag save(CompoundTag ignored) {
         return preserved == null ? LandingPadIndexCodec.encode(nextEpoch, all(), false) : preserved;
     }
