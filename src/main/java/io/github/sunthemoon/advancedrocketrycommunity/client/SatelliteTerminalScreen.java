@@ -25,6 +25,7 @@ import java.util.Optional;
 
 /** Community-authored telemetry console with visible mission and discovery progress. */
 public final class SatelliteTerminalScreen extends AbstractContainerScreen<SatelliteTerminalMenu> {
+    private final ScreenText text = new ScreenText();
     private static final int PANEL_TOP = 0xFF18303A;
     private static final int PANEL_BOTTOM = 0xFF0B151B;
     private static final int EDGE = 0xFF5CA8B8;
@@ -56,7 +57,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         addRenderableWidget(button(10, 83, 18, "<", SatelliteTerminalMenu.BUTTON_PREVIOUS));
         addRenderableWidget(button(196, 83, 18, ">", SatelliteTerminalMenu.BUTTON_NEXT));
         addRenderableWidget(button(6, 105, 44,
-                "screen.advancedrocketrycommunity.satellite.assemble",
+                "screen.advancedrocketrycommunity.satellite.assemble_short",
                 SatelliteTerminalMenu.BUTTON_ASSEMBLE));
         addRenderableWidget(button(52, 105, 40,
                 "screen.advancedrocketrycommunity.satellite.launch",
@@ -98,15 +99,16 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
 
     private Button button(int x, int y, int width, String label, int buttonId) {
         Component text = label.length() == 1 ? Component.literal(label) : Component.translatable(label);
-        return Button.builder(text, ignored -> {
+        return ScreenText.fitButton(Button.builder(text, ignored -> {
             if (minecraft != null && minecraft.gameMode != null) {
                 minecraft.gameMode.handleInventoryButtonClick(menu.containerId, buttonId);
             }
-        }).bounds(leftPos + x, topPos + y, width, 16).build();
+        }).bounds(leftPos + x, topPos + y, width, 16).build(), font);
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
@@ -122,6 +124,7 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                     mouseY
             );
         }
+        text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
     }
 
     @Override
@@ -130,8 +133,8 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         int y = topPos;
         graphics.fillGradient(x, y, x + imageWidth, y + imageHeight, PANEL_TOP, PANEL_BOTTOM);
         graphics.renderOutline(x, y, imageWidth, imageHeight, EDGE);
-        graphics.fill(x + 6, y + 17, x + 218, y + 79, 0xC9081116);
-        graphics.renderOutline(x + 6, y + 17, 212, 62, 0xFF355D67);
+        graphics.fill(x + 6, y + 17, x + 218, y + 83, 0xC9081116);
+        graphics.renderOutline(x + 6, y + 17, 212, 66, 0xFF355D67);
         graphics.fill(x + PANEL_X - 3, y + 4, x + PANEL_X + PANEL_WIDTH + 3, y + imageHeight - 4, 0xC9081116);
         graphics.renderOutline(x + PANEL_X - 3, y + 4, PANEL_WIDTH + 6, imageHeight - 8, 0xFF355D67);
 
@@ -148,19 +151,19 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
         int duration = menu.missionDurationSeconds();
         int progressWidth = duration <= 0
                 ? 0
-                : Math.max(2, 62 - Math.min(62, remaining * 62 / duration));
-        graphics.fill(x + 82, y + 84, x + 144, y + 91, RECESS);
+                : Math.max(2, 158 - Math.min(158, remaining * 158 / duration));
+        graphics.fill(x + 10, y + 135, x + 168, y + 138, RECESS);
         if (menu.missionStatus().isPresent()) {
-            graphics.fill(x + 82, y + 84, x + 82 + progressWidth, y + 91,
+            graphics.fill(x + 10, y + 135, x + 10 + progressWidth, y + 138,
                     menu.missionStatus().orElseThrow() == MissionStatus.READY ? GOLD : CYAN);
         }
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, MUTED, false);
-        graphics.drawString(
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 209, TEXT);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 187, MUTED);
+        text.draw(graphics,
                 font,
                 Component.translatable(
                         "screen.advancedrocketrycommunity.satellite.research",
@@ -168,10 +171,10 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                 ),
                 10,
                 23,
-                GOLD,
-                false
+                112,
+                GOLD
         );
-        graphics.drawString(
+        text.draw(graphics,
                 font,
                 Component.translatable(
                         "screen.advancedrocketrycommunity.satellite.power",
@@ -179,8 +182,8 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                 ),
                 10,
                 35,
-                menu.energyStored() >= SatelliteTerminalBlockEntity.LAUNCH_POWER_THRESHOLD ? GREEN : RED,
-                false
+                112,
+                menu.energyStored() >= SatelliteTerminalBlockEntity.LAUNCH_POWER_THRESHOLD ? GREEN : RED
         );
 
         ResourceLocation target = menu.selectedTarget()
@@ -197,11 +200,12 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                         .append(Component.translatable(menu.targetDiscovered()
                                 ? "screen.advancedrocketrycommunity.satellite.discovered"
                                 : "screen.advancedrocketrycommunity.satellite.unknown"));
-        graphics.drawCenteredString(
+        text.centered(graphics,
                 font,
                 targetDisplay,
-                imageWidth / 2,
+                30,
                 84,
+                164,
                 menu.targetDiscovered() ? GREEN : GOLD
         );
 
@@ -213,16 +217,16 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
                 ))
                 .or(this::kindLine)
                 .orElse(Component.translatable("screen.advancedrocketrycommunity.satellite.mission.none"));
-        graphics.drawString(font, mission, 10, 72, MUTED, false);
+        text.draw(graphics, font, mission, 10, 73, 204, MUTED);
 
         SatelliteOperationCode status = menu.status();
-        graphics.drawString(
+        text.draw(graphics,
                 font,
-                Component.translatable(status.translationKey()),
-                10,
+                Component.translatable(status.translationKey()).append(" [" + status.name() + "]"),
+                30,
                 94,
-                isError(status) || !menu.ownedByViewer() ? RED : MUTED,
-                false
+                164,
+                isError(status) || !menu.ownedByViewer() ? RED : MUTED
         );
         view().ifPresent(current -> renderDelivery(graphics, current));
     }
@@ -265,25 +269,25 @@ public final class SatelliteTerminalScreen extends AbstractContainerScreen<Satel
     }
 
     private int entries(GuiGraphics graphics, List<RewardEntry> entries, int y, int maximum) {
-        for (int index = 0; index < Math.min(maximum, entries.size()); index++) {
+        int shown = entries.size() > maximum ? maximum - 1 : entries.size();
+        for (int index = 0; index < shown; index++) {
             text(graphics, Component.translatable(DELIVERY + "entry", entries.get(index).count(),
                     itemName(entries.get(index).item())), y, TEXT);
             y += 9;
         }
         if (entries.size() > maximum) {
-            text(graphics, Component.translatable(DELIVERY + "more", entries.size() - maximum), y, MUTED);
+            text(graphics, Component.translatable(DELIVERY + "more", entries.size() - shown), y, MUTED);
             y += 9;
         }
         return y;
     }
 
     private void text(GuiGraphics graphics, Component component, int y, int color) {
-        graphics.drawString(font, font.substrByWidth(component, PANEL_WIDTH).getString(), PANEL_X, y, color, false);
+        text.draw(graphics, font, component, PANEL_X, y, PANEL_WIDTH, color);
     }
 
     private void centered(GuiGraphics graphics, Component component, int y, int color) {
-        String value = font.substrByWidth(component, PANEL_WIDTH - 36).getString();
-        graphics.drawString(font, value, PANEL_X + (PANEL_WIDTH - font.width(value)) / 2, y, color, false);
+        text.centered(graphics, font, component, PANEL_X + 18, y, PANEL_WIDTH - 36, color);
     }
 
     private static Component itemName(ResourceLocation id) {

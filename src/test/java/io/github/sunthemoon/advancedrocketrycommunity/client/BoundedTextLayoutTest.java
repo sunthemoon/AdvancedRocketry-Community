@@ -42,6 +42,18 @@ class BoundedTextLayoutTest {
         assertEquals("ordin...", BoundedTextLayout.fit("ordinary [not a code]", 44, WIDTH).text());
     }
 
+    @Test void satelliteLabelsFitTheirIndependentMainAndDeliveryColumns() {
+        String[] labels = {"Earth / DISCOVERED", "Terminal ready / operation completed [SUCCESS]",
+                "Insert chassis, solar panel and components [INVALID_COMPONENTS]", "No instance or product"};
+        int[] widths = {164, 164, 180, 82};
+        for (int i = 0; i < labels.length; i++) {
+            var line = BoundedTextLayout.fit(labels[i], widths[i], WIDTH);
+            assertTrue(WIDTH.applyAsInt(line.text()) * line.scale() <= widths[i]);
+            assertEquals(WIDTH.applyAsInt(labels[i]) > widths[i], line.shortened());
+        }
+        assertEquals("Build", BoundedTextLayout.fit("Build", 44 - 6, WIDTH).text());
+    }
+
     private static void checkCode(String code) {
         for (int width : new int[]{40, 108, 160, 204, 1000}) {
             String full = "A lengthy translated reason [" + code + "]";

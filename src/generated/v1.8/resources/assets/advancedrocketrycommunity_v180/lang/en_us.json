@@ -510,6 +510,7 @@
   "screen.advancedrocketrycommunity.rocket_satellite_bay.phase": "Deployment phase: %s",
   "screen.advancedrocketrycommunity.rocket_satellite_bay.phase.none": "None",
   "screen.advancedrocketrycommunity.rocket_satellite_bay.reason.deployment_unavailable": "Satellite deployment is not available in this version.",
+  "screen.advancedrocketrycommunity.satellite.assemble_short": "Build",
   "screen.advancedrocketrycommunity.solar.context.0": "Context: unavailable",
   "screen.advancedrocketrycommunity.solar.context.1": "Context: surface",
   "screen.advancedrocketrycommunity.solar.context.2": "Context: committed station orbit",

@@ -510,6 +510,7 @@
   "screen.advancedrocketrycommunity.rocket_satellite_bay.phase": "部署阶段：%s",
   "screen.advancedrocketrycommunity.rocket_satellite_bay.phase.none": "无",
   "screen.advancedrocketrycommunity.rocket_satellite_bay.reason.deployment_unavailable": "本版本尚不能部署卫星。",
+  "screen.advancedrocketrycommunity.satellite.assemble_short": "组装",
   "screen.advancedrocketrycommunity.solar.context.0": "环境：不可用",
   "screen.advancedrocketrycommunity.solar.context.1": "环境：行星地表",
   "screen.advancedrocketrycommunity.solar.context.2": "环境：已提交空间站轨道",
