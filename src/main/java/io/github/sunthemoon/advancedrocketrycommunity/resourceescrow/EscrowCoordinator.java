@@ -41,6 +41,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     void registerReconciliationTestSource(net.minecraft.server.MinecraftServer server, EscrowEndpoint source) {
         owner(); reconciliation.registerTestSource(server, source);
     }
+    boolean reconciliationCheckpointProved(UUID operation) { owner(); return reconciliation.checkpointProved(operation); }
     public boolean operational() { owner(); return !closed && writer.baselineAvailable(); }
     public EscrowLedger ledger() { return data.ledger(); }
     public long nextSequence() { owner(); return Math.addExact(Math.max(issued, data.ledger().issuedThrough()), 1); }

@@ -60,6 +60,7 @@ final class EscrowSettlementDisk {
         var position = found.getList("Pos", net.minecraft.nbt.Tag.TAG_DOUBLE); var origin = flight.currentOrigin();
         EscrowTags.require(position.size() == 3 && position.getDouble(0) == origin.x() + .5D && position.getDouble(1) == origin.y()
                 && position.getDouble(2) == origin.z() + .5D && flight.currentDimension().toString().equals(endpoint.level())
+                && endpoint.logicalRocket().equals(flight.logicalRocketId())
                 && flight.state().acceptsFuel() && flight.passengers().assignments().isEmpty()
                 && (!found.contains("Passengers") || found.getList("Passengers", 10).isEmpty())
                 && (section.ledger() == null || ledger.equals(section.ledger())), "Disk rocket placement/occupancy changed");

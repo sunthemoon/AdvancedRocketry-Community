@@ -40,6 +40,11 @@ public final class EscrowReconciliationGameTests {
         new Scenario(helper, 1).start();
     }
 
+    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 400)
+    public static void jointNativeReadbackKeepsBothFrontiersLockedWithoutReportingL2(GameTestHelper helper) throws Exception {
+        new Scenario(helper, 3).start();
+    }
+
     private static final class Scenario {
         final GameTestHelper helper;
         final int missing;
@@ -116,6 +121,15 @@ public final class EscrowReconciliationGameTests {
                         && EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
                         && replies.stream().noneMatch(EscrowReconciliationScheduler.Result::proved), "C2 replayed or fabricated proof");
                 if (missing == 2) { assertMissing(1_000); }
+                if (missing == 3) {
+                    helper.assertTrue(coordinator.frozen(operation.source().key()) && coordinator.frozen(operation.destination().key())
+                            && coordinator.locked(operation.source().key()) && coordinator.locked(operation.destination().key())
+                            && data.ledger().records().size() == 1, "C3-C6 released an L1 record or an endpoint frontier");
+                    if (!coordinator.reconciliationCheckpointProved(operation.id())) { return; }
+                    helper.assertTrue(rocket.escrowSection().epoch() == 1 && rocket.escrowSection().markers().size() == 1
+                            && fixture.sourceState().epoch() == 1 && fixture.sourceState().markers().size() == 1,
+                            "Native readback changed an epoch or marker");
+                }
                 finish();
             }
         }

@@ -16,6 +16,7 @@ final class EscrowReconciliationDriver {
     private Map<EscrowEndpoint.Key, List<EscrowPrefix.Link>> chains = Map.of();
     private final Map<UUID, List<EscrowOperation>> components = new HashMap<>();
     private final Map<UUID, EscrowReconciliationView> views = new HashMap<>();
+    private final Map<UUID, EscrowReconciliationCheckpoint> checkpoints = new HashMap<>();
     private final Set<UUID> changed = new HashSet<>();
     private final Set<EscrowEndpoint.Key> registeredSources = new HashSet<>();
     private long tick = Long.MIN_VALUE;
@@ -51,6 +52,7 @@ final class EscrowReconciliationDriver {
         }
         if (cached != root) {
             cached = root; chains = EscrowPrefix.chains(root.records()); components.clear(); views.clear();
+            checkpoints.values().forEach(EscrowReconciliationCheckpoint::close); checkpoints.clear();
         }
         if (tick != server.getTickCount()) { tick = server.getTickCount(); changed.clear(); captured = false; actionApplied = false; }
         var component = components.computeIfAbsent(op.id(), id -> EscrowSettlementIntent.component(root.records(), id));
@@ -83,8 +85,7 @@ final class EscrowReconciliationDriver {
                 actionApplied = true; changed.add(key); views.remove(key);
                 completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
             }
-            // C3-C8 are wired in the next row group. Apply is never reported as proof or unlock.
-            completion.accept(EscrowReconciliationScheduler.Result.deferred());
+            checkpoint(server, op, view, completion);
         } catch (EscrowReconciliationView.Refusal refused) {
             completion.accept(new EscrowReconciliationScheduler.Result(refused.reason, false));
         } catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
@@ -92,5 +93,60 @@ final class EscrowReconciliationDriver {
         }
     }
 
-    void close() { views.clear(); components.clear(); changed.clear(); registeredSources.clear(); cached = null; chains = Map.of(); }
+    private void checkpoint(MinecraftServer server, EscrowOperation op, EscrowReconciliationView view,
+                            Consumer<EscrowReconciliationScheduler.Result> completion) {
+        var ids = Set.of(op.id());
+        try { EscrowPrefix.requireRetirementPrefix(view.root.records(), ids); }
+        catch (IllegalArgumentException dependency) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
+        var states = view.ends.entrySet().stream().collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().state()));
+        if (!EscrowReconciliationValidation.retirementReady(view.root, ids, states)) {
+            completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+        }
+        var work = checkpoints.get(op.id());
+        if (work != null && !work.journalLease.getAsBoolean()) { work.close(); checkpoints.remove(op.id()); work = null; }
+        if (work == null) {
+            var references = List.of(op.source(), op.destination());
+            if (checkpoints.values().stream().anyMatch(other -> references.stream().anyMatch(end -> other.ends.containsKey(end.key())))) {
+                completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+            }
+            var observations = EscrowSettlementObserver.observe(server, view.root.id(), references);
+            work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease);
+            // Validate the whole affected set before publishing any freeze. No owner-thread interleaving.
+            EscrowTags.require(view.unchanged(coordinator), "C3 observation changed before freezing");
+            for (var end : observations) { coordinator.freeze(end.endpoint().key(), end.state()); }
+            checkpoints.put(op.id(), work); EscrowRuntime.of(server).checkpoint("C3_FROZEN");
+        }
+        work.discardInvalid();
+        if (work.busy) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
+        for (var end : work.ends.values()) {
+            if (work.proofs.containsKey(end.endpoint().key())) { continue; }
+            var frozen = work; var targets = work.targets(end.endpoint()); var runtime = EscrowRuntime.of(server);
+            work.busy = true;
+            boolean accepted = runtime.barrier().beginJoint(runtime.store(view.ends.get(end.endpoint().key()).level()), targets,
+                    server.getTickCount(), result -> {
+                        frozen.busy = false;
+                        if (checkpoints.get(op.id()) != frozen) {
+                            result.proofs().values().forEach(EscrowBarrier.Proof::release);
+                            completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+                        }
+                        frozen.accept(targets, result);
+                        if (frozen.proved()) { runtime.checkpoint("C6_JOINT_READBACK"); }
+                        // C6 is internal proof, never scheduler success or release authority.
+                        completion.accept(new EscrowReconciliationScheduler.Result(result.reason(), false));
+                    });
+            if (!accepted) { work.busy = false; completion.accept(EscrowReconciliationScheduler.Result.deferred()); }
+            return;
+        }
+        // C7/C8 are a separate row group. Keep all L1 records and endpoint freezes meanwhile.
+        completion.accept(EscrowReconciliationScheduler.Result.deferred());
+    }
+
+    boolean checkpointProved(UUID operation) {
+        var work = checkpoints.get(operation); return work != null && work.proved();
+    }
+
+    void close() {
+        checkpoints.values().forEach(EscrowReconciliationCheckpoint::close); checkpoints.clear();
+        views.clear(); components.clear(); changed.clear(); registeredSources.clear(); cached = null; chains = Map.of();
+    }
 }
