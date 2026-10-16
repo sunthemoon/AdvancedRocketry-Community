@@ -74,8 +74,9 @@ final class RocketTransferFences {
             drop(record.transferId()); settled.remove(record.transferId()); live.add(record.transferId()); return;
         }
         if (route.route() == EscrowGovernedDispatch.Route.HOLD
-                && "GOVERNED_JOURNAL_UNACKNOWLEDGED".equals(route.reason())) {
-            // R10: retain the exclusion while awaiting the exact acknowledgement, without
+                && ("GOVERNED_JOURNAL_UNACKNOWLEDGED".equals(route.reason())
+                        || "GOVERNED_LEDGER_PENDING".equals(route.reason()))) {
+            // R10/R11: retain the exclusion while awaiting the exact acknowledgement, without
             // diagnosing offline repair or replacing a previously observed repair reason.
             approved.remove(record.transferId());
             reasons.putIfAbsent(record.transferId(), route.reason());

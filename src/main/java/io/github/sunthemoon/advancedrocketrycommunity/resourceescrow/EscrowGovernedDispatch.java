@@ -53,6 +53,12 @@ public final class EscrowGovernedDispatch implements AutoCloseable {
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return Decision.hold("GOVERNED_LEDGER_MISSING"); }
         var coordinator = data.bind(server);
+        return classify(coordinator, journal, record);
+    }
+
+    Decision classify(EscrowCoordinator coordinator, RocketTransferSavedData journal, RocketTransferRecord record) {
+        String reason = coordinator.governedWaitReason(record.logicalRocketId());
+        if (reason != null) { invalidated(record.logicalRocketId()); return Decision.hold(reason); }
         return classify(coordinator::ledger, () -> coordinator.governedAvailable(record.logicalRocketId()), journal, record);
     }
 

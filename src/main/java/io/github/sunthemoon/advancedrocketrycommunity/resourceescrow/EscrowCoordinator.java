@@ -282,11 +282,18 @@ public final class EscrowCoordinator implements AutoCloseable {
     public boolean writerIdle() { return writer.idle(); }
     /** ARMED is consulted by the governed dispatcher, not treated as ordinary idle authority. */
     boolean governedAvailable(UUID logical) {
+        return governedWaitReason(logical) == null;
+    }
+    /** R11 distinguishes ordinary queued work from a writer or manual-repair failure. */
+    String governedWaitReason(UUID logical) {
         owner();
-        return operational() && !writer.unavailable() && !flightWrites.locked(logical)
-                && frontiers.keySet().stream().noneMatch(key -> logical.equals(key.logicalRocket()))
-                && unresolved().noneMatch(op -> logical.equals(op.guard().rocket())
-                        || logical.equals(op.source().logicalRocket()) || logical.equals(op.destination().logicalRocket()));
+        if (!operational() || writer.unavailable()) { return "GOVERNED_LEDGER_UNAVAILABLE"; }
+        var related = unresolved().filter(op -> logical.equals(op.guard().rocket())
+                || logical.equals(op.source().logicalRocket()) || logical.equals(op.destination().logicalRocket())).toList();
+        if (related.stream().anyMatch(op -> currentReason(op).manual())) { return "GOVERNED_LEDGER_UNAVAILABLE"; }
+        return flightWrites.locked(logical) || !related.isEmpty()
+                || frontiers.keySet().stream().anyMatch(key -> logical.equals(key.logicalRocket()))
+                ? "GOVERNED_LEDGER_PENDING" : null;
     }
     EscrowReason currentReason(EscrowOperation op) { owner(); return transitions.getOrDefault(op.id(), op.reason()); }
     private boolean ordinaryRetirementAllowed(Set<UUID> ids) {

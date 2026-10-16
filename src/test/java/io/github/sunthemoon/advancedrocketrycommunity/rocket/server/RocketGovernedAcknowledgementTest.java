@@ -82,6 +82,8 @@ class RocketGovernedAcknowledgementTest {
                     live.add(record.transferId()); settled.add(record.transferId());
                     fences.classifyGoverned(record, held, live, settled);
                     fences.classifyGoverned(record, waiting, live, settled);
+                    fences.classifyGoverned(record, new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD,
+                            "GOVERNED_LEDGER_PENDING"), live, settled);
                     assertEquals(reason, fences.reason(record.transferId()));
                     assertTrue(fences.ids().contains(record.transferId()));
                     assertTrue(live.isEmpty()); assertTrue(settled.isEmpty());
