@@ -18,6 +18,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     private final Map<UUID, Consumer<Boolean>> requests = new HashMap<>();
     private final Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers = new HashMap<>();
     private final Map<UUID, EscrowReason> transitions = new HashMap<>();
+    private final EscrowReconciliationPruning.Candidates pruningCandidates = new EscrowReconciliationPruning.Candidates();
     private final EscrowAdmissionAuthority admission = new EscrowAdmissionAuthority();
     private final EscrowFlightWrites flightWrites = new EscrowFlightWrites();
     private final EscrowReconciliationDriver reconciliation = new EscrowReconciliationDriver(this);
@@ -352,6 +353,14 @@ public final class EscrowCoordinator implements AutoCloseable {
         owner(); return queued.values().stream().anyMatch(op -> op.source().key().equals(endpoint) || op.destination().key().equals(endpoint));
     }
     public boolean writerIdle() { return writer.idle(); }
+    void observePruningCandidate(RocketEscrowSection section, Runnable observation) {
+        owner(); pruningCandidates.observe(data.ledger(), section, observation);
+    }
+    /** Scheduling hint only; every writer entry point still repeats its own checks. */
+    boolean checkedWriteReady() {
+        owner(); return !closed && writer.idle() && !writer.unavailable() && queued.isEmpty()
+                && transitions.isEmpty() && tick - lastStart >= 10;
+    }
     /** ARMED is consulted by the governed dispatcher, not treated as ordinary idle authority. */
     boolean governedAvailable(UUID logical) {
         return governedWaitReason(logical) == null;

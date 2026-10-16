@@ -37,6 +37,8 @@ public final class EscrowReconciliationScheduler {
     private final Driver driver;
     private final ArrayDeque<UUID> queue = new ArrayDeque<>();
     private final Map<UUID, Retry> retries = new HashMap<>();
+    private EscrowLedger indexed;
+    private Map<UUID, EscrowOperation> current = Map.of();
     private long tick;
 
     public EscrowReconciliationScheduler(Supplier<EscrowLedger> ledger, BiConsumer<UUID, EscrowReason> transition, Driver driver) {
@@ -64,14 +66,19 @@ public final class EscrowReconciliationScheduler {
     }
     public void tick(long now) {
         owner(); tick = now;
-        List<EscrowOperation> records = ledger.get().records();
-        Map<UUID, EscrowOperation> current = new HashMap<>();
-        records.forEach(op -> current.put(op.id(), op));
-        queue.removeIf(id -> !current.containsKey(id)); retries.keySet().retainAll(current.keySet());
-        var queued = new HashSet<>(queue);
-        records.stream().sorted(Comparator.comparingLong(EscrowOperation::sequence)).filter(op -> queued.add(op.id())).forEach(op -> {
-            queue.addLast(op.id()); retries.put(op.id(), new Retry(op));
-        });
+        var root = ledger.get();
+        if (indexed != root) {
+            var next = new HashMap<UUID, EscrowOperation>();
+            root.records().forEach(op -> next.put(op.id(), op)); current = Map.copyOf(next);
+            queue.removeIf(id -> !current.containsKey(id)); retries.keySet().retainAll(current.keySet());
+            var queued = new HashSet<>(queue);
+            root.records().stream().sorted(Comparator.comparingLong(EscrowOperation::sequence))
+                    .filter(op -> queued.add(op.id())).forEach(op -> {
+                        queue.addLast(op.id()); retries.put(op.id(), new Retry(op));
+                    });
+            indexed = root;
+        }
+        List<EscrowOperation> records = root.records();
         int visits = Math.min(VISITS_PER_TICK, queue.size());
         while (visits-- > 0) {
             UUID id = queue.removeFirst(); queue.addLast(id);

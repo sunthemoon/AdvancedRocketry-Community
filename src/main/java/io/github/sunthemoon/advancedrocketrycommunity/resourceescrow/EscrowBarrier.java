@@ -55,6 +55,11 @@ public final class EscrowBarrier implements AutoCloseable {
         this.checkpoint = checkpoint; active = lifetime; this.timings = timings;
     }
 
+    /** Read-only scheduling hint. begin still reserves atomically before any capture. */
+    boolean available(EscrowEndpoint endpoint, long tick) {
+        owner(); return working.get() && budget.available(endpoint.level(), endpoint.kind() == EscrowEndpoint.Kind.ENTITY, tick);
+    }
+
     /** One serialization/store/force/readback proves every frozen endpoint in the same Anvil slot. */
     public boolean beginJoint(EscrowChunkStore store, List<Target> targets, long tick, Consumer<JointResult> callback) {
         owner(); List<Target> frozen = List.copyOf(targets);

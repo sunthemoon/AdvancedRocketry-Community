@@ -78,6 +78,9 @@ public final class RocketEscrowAudit {
     /** Only the coordinator's exact C7 acknowledgement may report scheduler success. */
     static void attempt(EscrowCoordinator coordinator, net.minecraft.server.MinecraftServer server, EscrowOperation op,
                         List<EscrowOperation> records, java.util.function.Consumer<EscrowReconciliationScheduler.Result> completion) {
+        if (!coordinator.operational() || !coordinator.writerIdle()) {
+            completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+        }
         var journal = RocketTransferSavedData.get(server);
         if (!journal.retryChecked(server)) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.TRANSFER_JOURNAL_UNPROVED, false)); return;

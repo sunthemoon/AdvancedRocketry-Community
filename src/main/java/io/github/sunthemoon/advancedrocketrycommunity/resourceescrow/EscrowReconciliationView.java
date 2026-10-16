@@ -24,18 +24,21 @@ final class EscrowReconciliationView {
     }
     record End(EscrowEndpoint reference, EscrowPrefix.State state, CompoundTag envelope,
                ServerLevel level, RocketEntity rocket, BlockEntity source, BooleanSupplier sameCapture) {
-        boolean unchanged() {
+        boolean current() {
             if (!loaded(level, reference)) { return false; }
             if (rocket != null) {
                 return !rocket.isRemoved() && level.getEntity(reference.identity()) == rocket
                         && RocketEscrowAudit.placement(reference, rocket) == EscrowReason.NONE
                         && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.escrowReconciliationBoundary(rocket)
-                        && sameCapture.getAsBoolean()
-                        && state.equals(EscrowSettlementObserver.observe(level.getServer(), state.ledger(), List.of(reference)).get(0).state());
+                        && sameCapture.getAsBoolean();
             }
             return !source.isRemoved() && level.getChunkSource().getChunkNow(reference.x() >> 4, reference.z() >> 4)
                     .getBlockEntity(new BlockPos(reference.x(), reference.y(), reference.z())) == source
                     && envelope.equals(source.saveWithFullMetadata());
+        }
+        boolean unchanged() {
+            return current() && (rocket == null || state.equals(EscrowSettlementObserver
+                    .observe(level.getServer(), state.ledger(), List.of(reference)).get(0).state()));
         }
     }
     final EscrowLedger root;
@@ -134,13 +137,18 @@ final class EscrowReconciliationView {
                 && frame.equals(EscrowNativeEnvelope.frame(rocket));
     }
 
-    boolean unchanged(EscrowCoordinator coordinator) {
+    boolean current(EscrowCoordinator coordinator) {
         return server.isSameThread() && !EscrowRuntime.of(server).stopping() && coordinator.operational()
                 && coordinator.ledger() == root && journalLease.getAsBoolean()
                 && members.stream().noneMatch(op -> coordinator.currentReason(op).manual()
                 || EscrowRuntime.of(server).flightCheckpoint().locked(op.guard().rocket())
                 || coordinator.admitting(op.source().key()) || coordinator.admitting(op.destination().key()))
-                && ends.values().stream().allMatch(End::unchanged);
+                && ends.values().stream().allMatch(End::current);
+    }
+
+    /** Final action/freeze checks are deliberately not served from a scheduling cache. */
+    boolean unchanged(EscrowCoordinator coordinator) {
+        return current(coordinator) && ends.values().stream().allMatch(End::unchanged);
     }
 
     static boolean loaded(ServerLevel level, EscrowEndpoint endpoint) {

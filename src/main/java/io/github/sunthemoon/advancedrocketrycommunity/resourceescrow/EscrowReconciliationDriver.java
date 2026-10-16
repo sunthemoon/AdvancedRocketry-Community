@@ -55,7 +55,11 @@ final class EscrowReconciliationDriver {
             checkpoints.values().forEach(EscrowReconciliationCheckpoint::close); checkpoints.clear();
         }
         if (tick != server.getTickCount()) { tick = server.getTickCount(); changed.clear(); captured = false; actionApplied = false; }
-        var component = components.computeIfAbsent(op.id(), id -> EscrowSettlementIntent.component(root.records(), id));
+        var component = components.get(op.id());
+        if (component == null) {
+            component = EscrowSettlementIntent.component(root.records(), op.id());
+            for (var member : component) { components.put(member.id(), component); }
+        }
         if (component.stream().anyMatch(member -> !registeredSources.contains(member.source().key()))) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
@@ -65,8 +69,18 @@ final class EscrowReconciliationDriver {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
         }
         try {
+            var pending = checkpoints.get(op.id());
+            if (pending != null && pending.journalLease.getAsBoolean()) {
+                if (pending.busy) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
+                pending.discardInvalid();
+                var next = pending.ends.values().stream().filter(end -> !pending.proofs.containsKey(end.endpoint().key())).findFirst();
+                if (next.isPresent() ? !EscrowRuntime.of(server).barrier().available(next.orElseThrow().endpoint(), server.getTickCount())
+                        : !coordinator.checkedWriteReady()) {
+                    completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+                }
+            }
             var view = views.get(key);
-            if (view == null || !view.unchanged(coordinator)) {
+            if (view == null || !view.current(coordinator)) {
                 // The scheduler keeps its eight cheap visits. At most one whole component is
                 // captured per tick, and retained complete captures stay under the existing cap.
                 if (captured) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
@@ -111,6 +125,10 @@ final class EscrowReconciliationDriver {
             if (checkpoints.values().stream().anyMatch(other -> references.stream().anyMatch(end -> other.ends.containsKey(end.key())))) {
                 completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
             }
+            var barrier = EscrowRuntime.of(server).barrier();
+            if (references.stream().noneMatch(end -> barrier.available(end, server.getTickCount()))) {
+                completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+            }
             var observations = EscrowSettlementObserver.observe(server, view.root.id(), references);
             work = new EscrowReconciliationCheckpoint(view.root, ids, observations, view.journalLease);
             // Validate the whole affected set before publishing any freeze. No owner-thread interleaving.
@@ -120,6 +138,9 @@ final class EscrowReconciliationDriver {
         }
         work.discardInvalid();
         if (work.busy) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
+        // The cheap view above is never C4/C7 authority. Re-observe the complete
+        // affected component immediately before either capture, including duplicate identities.
+        EscrowTags.require(view.unchanged(coordinator), "Native observation changed before checkpoint capture");
         for (var end : work.ends.values()) {
             if (work.proofs.containsKey(end.endpoint().key())) { continue; }
             var frozen = work; var targets = work.targets(end.endpoint()); var runtime = EscrowRuntime.of(server);

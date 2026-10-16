@@ -35,8 +35,13 @@ final class EscrowSettlementRecovery implements AutoCloseable {
     private final EscrowSettlementPruning.Cursor pruning = new EscrowSettlementPruning.Cursor();
     private EscrowLedger decodedRoot;
     private List<EscrowSettlementIntent> decodedIntents = List.of();
+    private final java.util.function.Function<net.minecraft.nbt.CompoundTag, EscrowSettlementIntent> decode;
     private int cursor;
     private boolean closed;
+    EscrowSettlementRecovery() { this(EscrowSettlementIntent::decode); }
+    EscrowSettlementRecovery(java.util.function.Function<net.minecraft.nbt.CompoundTag, EscrowSettlementIntent> decode) {
+        this.decode = decode;
+    }
     List<EscrowSettlementPruning.Group> pruningGroups(EscrowLedger root) { return pruning.released(root); }
     record View(String phase, String reason, int provedSlots, int waitingSlots, long nextTick, boolean active) { }
     View view(EscrowSettlementIntent intent) {
@@ -76,6 +81,7 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         long pruningStart = System.nanoTime();
         pruning.tick(server, coordinator);
         runtime.timings().sample("settlement_pruning_main", System.nanoTime() - pruningStart);
+        if (!coordinator.operational() || !coordinator.writerIdle()) { return; }
         var intents = intents(coordinator.ledger());
         var live = intents.stream().map(EscrowSettlementIntent::digest).collect(java.util.stream.Collectors.toSet());
         work.entrySet().removeIf(entry -> { if (live.contains(entry.getKey())) { return false; } entry.getValue().clear(); return true; });
@@ -91,6 +97,9 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             if (!journal.retryChecked(server)) { return; }
             boolean installed = EscrowSettlementTombstones.installed(coordinator.ledger(), intent);
             requireJournal(coordinator.ledger(), intent, journal, installed);
+            var next = intent.checkpointed().stream().filter(end -> !state.proofs.containsKey(end.endpoint().key())).findFirst();
+            if (next.isPresent() ? !runtime.barrier().available(next.orElseThrow().endpoint(), tick)
+                    : !coordinator.checkedWriteReady()) { return; }
             if (EscrowSettlementNormalization.publish(server, coordinator, intent, journal.acknowledgedLease(), runtime)) { return; }
             var current = EscrowSettlementObserver.observe(server, intent.ledger(), references);
             EscrowTags.require(current.equals(intent.checkpointed()), "Frozen settlement endpoint changed");
@@ -157,8 +166,20 @@ final class EscrowSettlementRecovery implements AutoCloseable {
     }
     List<EscrowSettlementIntent> intents(EscrowLedger root) {
         if (decodedRoot != root) {
-            decodedIntents = root.records().stream().filter(op -> !op.settlement().isEmpty())
-                    .map(op -> EscrowSettlementIntent.decode(op.settlement())).distinct().toList();
+            // Every member stores the same frozen component intent. Decode/hash it once,
+            // not once for each member, and never again while this acknowledged root is current.
+            var members = new HashSet<java.util.UUID>();
+            var result = new ArrayList<EscrowSettlementIntent>();
+            for (var op : root.records()) {
+                if (members.contains(op.id()) || op.phase() != EscrowOperation.Phase.SETTLING_ACCEPT
+                        && op.phase() != EscrowOperation.Phase.SETTLING_ABANDON) { continue; }
+                var encoded = op.settlement();
+                // Earlier development settling phases without an intent remain locked.
+                if (encoded.isEmpty()) { continue; }
+                var intent = decode.apply(encoded);
+                result.add(intent); members.addAll(intent.ids());
+            }
+            decodedIntents = List.copyOf(result);
             decodedRoot = root;
         }
         return decodedIntents;

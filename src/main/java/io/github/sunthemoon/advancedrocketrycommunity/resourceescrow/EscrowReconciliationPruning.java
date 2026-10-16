@@ -18,6 +18,27 @@ import net.minecraft.world.level.ChunkPos;
 public final class EscrowReconciliationPruning {
     private EscrowReconciliationPruning() { }
 
+    /** Negative scheduling cache only. A possible orphan still needs every native/final check below. */
+    static final class Candidates {
+        private EscrowLedger cached;
+        private Set<UUID> retained = Set.of();
+
+        boolean possible(EscrowLedger root, RocketEscrowSection section) {
+            if (section.markers().isEmpty()) { return false; }
+            if (cached != root) {
+                var ids = new HashSet<>(EscrowSettlementTombstones.retiredIds(root.tombstones()));
+                root.records().forEach(op -> ids.add(op.id()));
+                retained = Set.copyOf(ids); cached = root;
+            }
+            // Store/load/native changes cannot retire a live operation or a settlement receipt.
+            // Do not cache a positive result or a failed observation: those depend on live state.
+            return section.markers().stream().anyMatch(marker -> !retained.contains(marker.operation()));
+        }
+        void observe(EscrowLedger root, RocketEscrowSection section, Runnable observation) {
+            if (possible(root, section)) { observation.run(); }
+        }
+    }
+
     public static final class Permit {
         private final Thread owner = Thread.currentThread();
         private final RocketEntity target;
@@ -90,6 +111,10 @@ public final class EscrowReconciliationPruning {
         var data = ResourceEscrowSavedData.existing(level.getServer());
         if (data == null || !data.operational()) { return; }
         var coordinator = data.bind(level.getServer());
+        coordinator.observePruningCandidate(rocket.escrowSection(), () -> observeCandidate(rocket, level, coordinator));
+    }
+
+    private static void observeCandidate(RocketEntity rocket, ServerLevel level, EscrowCoordinator coordinator) {
         try {
             var fuel = rocket.flightData().orElseThrow().fuel();
             var reference = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, level.dimension().location().toString(), rocket.getUUID(),

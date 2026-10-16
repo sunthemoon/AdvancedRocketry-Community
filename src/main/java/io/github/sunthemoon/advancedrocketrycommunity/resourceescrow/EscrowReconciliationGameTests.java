@@ -50,6 +50,11 @@ public final class EscrowReconciliationGameTests {
         new Scenario(helper, 4).start();
     }
 
+    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 400)
+    public static void cachedNativeViewStillChecksIdentityAtTheFinalBoundary(GameTestHelper helper) throws Exception {
+        new Scenario(helper, 5).start();
+    }
+
     private static final class Scenario {
         final GameTestHelper helper;
         final int missing;
@@ -120,6 +125,7 @@ public final class EscrowReconciliationGameTests {
                 step = 3; return;
             }
             if (step == 3) {
+                if (missing == 5) { assertCachedBoundary(); finish(); return; }
                 if (missing == 3 && coordinator.reconciliationCheckpointProved(operation.id())) {
                     assertC6(); finish(); return; // Stop this boundary test before requesting C7.
                 }
@@ -151,6 +157,27 @@ public final class EscrowReconciliationGameTests {
                 }
                 finish();
             }
+        }
+        void assertCachedBoundary() {
+            var root = coordinator.ledger();
+            var view = EscrowReconciliationView.capture(helper.getLevel().getServer(), root, root.records());
+            helper.assertTrue(view.current(coordinator) && view.unchanged(coordinator), "Fresh native binding is not current");
+            var persistent = fixture.source().getPersistentData();
+            persistent.putBoolean("c39_changed", true);
+            helper.assertTrue(!view.current(coordinator), "Fixture mutation did not invalidate the cached binding");
+            persistent.remove("c39_changed");
+            double x = rocket.getX(); rocket.setPos(x + 1, rocket.getY(), rocket.getZ());
+            helper.assertTrue(!view.current(coordinator), "Native placement did not invalidate the cached binding");
+            rocket.setPos(x, rocket.getY(), rocket.getZ());
+            var duplicate = RocketSettlementIdleGameTests.createRocket(helper.getLevel(), position, fixture.logical());
+            helper.assertTrue(helper.getLevel().addFreshEntity(duplicate), "Duplicate fixture publication failed");
+            try {
+                boolean refused;
+                try { refused = !view.unchanged(coordinator); }
+                catch (IllegalArgumentException invalid) { refused = true; }
+                helper.assertTrue(refused, "Scheduling cache bypassed the final native identity census");
+            } finally { duplicate.discard(); }
+            helper.assertTrue(view.unchanged(coordinator), "Removing the duplicate did not restore the actual observation");
         }
         void assertC6() {
             helper.assertTrue(coordinator.frozen(operation.source().key()) && coordinator.frozen(operation.destination().key())

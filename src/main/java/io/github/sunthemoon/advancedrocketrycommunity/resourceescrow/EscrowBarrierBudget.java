@@ -11,13 +11,19 @@ final class EscrowBarrierBudget {
     private int pending, bytes;
     private long lastCapture = Long.MIN_VALUE;
 
-    boolean reserve(String level, boolean entity, long tick) {
+    boolean available(String level, boolean entity, long tick) {
         if (pending >= PENDING || lastCapture == tick
                 || bytes > EscrowLimits.CAPTURE_BYTES - AnvilRecordReader.DECODED_BYTES
                 || !batches.containsKey(level) && batches.size() >= LEVELS) { return false; }
         Batch batch = batches.get(level);
         if (batch == null || tick - batch.start() >= CADENCE) { batch = new Batch(tick, 0, 0); }
         if ((entity ? batch.entities() : batch.terrain()) >= PER_TYPE) { return false; }
+        return true;
+    }
+    boolean reserve(String level, boolean entity, long tick) {
+        if (!available(level, entity, tick)) { return false; }
+        Batch batch = batches.get(level);
+        if (batch == null || tick - batch.start() >= CADENCE) { batch = new Batch(tick, 0, 0); }
         batches.put(level, new Batch(batch.start(), batch.terrain() + (entity ? 0 : 1), batch.entities() + (entity ? 1 : 0)));
         lastCapture = tick; pending++; bytes += AnvilRecordReader.DECODED_BYTES; return true;
     }
