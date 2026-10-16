@@ -41,8 +41,32 @@ public final class JackhammerFeedbackGameTests {
                 f.action(ServerboundPlayerActionPacket.Action.STOP_DESTROY_BLOCK);
                 f.action(ServerboundPlayerActionPacket.Action.ABORT_DESTROY_BLOCK);
                 helper.assertTrue(f.disabledStartFeedback() == 0, "Progress/STOP/ABORT repeated start feedback");
+                // Advance only the notice clock; native mining progress and final refusal remain unchanged.
+                f.player.tickCount += JackhammerFeedback.NOTICE_COOLDOWN_TICKS;
                 f.start();
                 helper.assertTrue(f.disabledStartFeedback() == 1, "Second native START did not send exactly one notice");
+                f.unchanged(Blocks.OBSIDIAN, before);
+            } finally { SwitchOverrides.clear(CommonConfig.CLASSIC_EQUIPMENT_ENABLED); }
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", batch = "jackhammer_native", timeoutTicks = 100)
+    public static void disabledStartBurstIsRateLimitedWithoutChangingMining(GameTestHelper helper) {
+        try (var f = new JackhammerFixture(helper)) {
+            f.setTarget(Blocks.OBSIDIAN);
+            f.disabledStartFeedback();
+            CompoundTag before = f.tool().save(new CompoundTag());
+            SwitchOverrides.set(CommonConfig.CLASSIC_EQUIPMENT_ENABLED, false);
+            try {
+                for (int i = 0; i < 10; i++) { f.start(); }
+                helper.assertTrue(f.disabledStartFeedback() == 1, "START burst did not produce exactly one notice");
+                f.player.tickCount += JackhammerFeedback.NOTICE_COOLDOWN_TICKS - 1;
+                f.start();
+                helper.assertTrue(f.disabledStartFeedback() == 0, "Notice repeated before cooldown expired");
+                f.player.tickCount++;
+                f.start();
+                helper.assertTrue(f.disabledStartFeedback() == 1, "Notice did not resume at the cooldown boundary");
                 f.unchanged(Blocks.OBSIDIAN, before);
             } finally { SwitchOverrides.clear(CommonConfig.CLASSIC_EQUIPMENT_ENABLED); }
         }
