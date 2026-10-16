@@ -66,6 +66,11 @@ public final class EscrowGovernedLiveReturnGameTests {
         new Scenario(helper, false, Fault.CANCEL, true).start();
     }
 
+    @GameTest(template = "empty", batch = "escrow_terminal_retry_replacement", timeoutTicks = 1000)
+    public static void terminalProofFailuresSurviveReplacementOfNativeCapture(GameTestHelper helper) {
+        new Scenario(helper, false, Fault.CANCEL, false, true).start();
+    }
+
     private static final class Scenario {
         private final GameTestHelper helper;
         private final ServerLevel level;
@@ -87,6 +92,7 @@ public final class EscrowGovernedLiveReturnGameTests {
         private boolean done;
         private final boolean dismountCut;
         private EscrowTerminalLeaseCut leaseCut;
+        private final EscrowTerminalRetryCut retryCut;
         private boolean sawF6, sawF7;
         private long f7Tick;
         private List<EscrowFlightTables.Armed> otherArms;
@@ -106,9 +112,14 @@ public final class EscrowGovernedLiveReturnGameTests {
             this(helper, shared, fault, false);
         }
         Scenario(GameTestHelper helper, boolean shared, Fault fault, boolean dismountCut) {
+            this(helper, shared, fault, dismountCut, false);
+        }
+        Scenario(GameTestHelper helper, boolean shared, Fault fault, boolean dismountCut, boolean retryCut) {
             this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
             this.fault = fault; this.dismountCut = dismountCut;
-            position = new BlockPos((shared ? 594_136 : 594_008) + 512 * fault.ordinal() + (dismountCut ? 2_048 : 0), 100, 594_008);
+            this.retryCut = retryCut ? new EscrowTerminalRetryCut() : null;
+            position = new BlockPos((shared ? 594_136 : 594_008) + 512 * fault.ordinal()
+                    + (dismountCut ? 2_048 : 0) + (retryCut ? 4_096 : 0), 100, 594_008);
             destination = position.offset(shared ? 4 : 32, 0, 0);
         }
 
@@ -157,7 +168,9 @@ public final class EscrowGovernedLiveReturnGameTests {
                         flight.plan().orElseThrow().destinationTarget(), UUID.randomUUID());
                 helper.assertTrue(returns.handles(record, rocket) && !returns.checkpoint(server, record)
                         && before.equals(EscrowNativeEnvelope.rocket(rocket)), "Cancellation bypassed its native proof wait");
-                requested = true; leaseCut = new EscrowTerminalLeaseCut(server, data, record, EscrowFlightTables.Outcome.CANCELLED); return;
+                requested = true;
+                if (retryCut == null) { leaseCut = new EscrowTerminalLeaseCut(server, data, record, EscrowFlightTables.Outcome.CANCELLED); }
+                return;
             }
         }
 
@@ -169,6 +182,12 @@ public final class EscrowGovernedLiveReturnGameTests {
                     && passenger.connection.connection.isConnected()
                     && level.getEntity(record.nativeTransfer().orElseThrow().armed().destination()) == null,
                     "Return lost its connected passenger, repeated a debit or published a destination");
+            if (retryCut != null && retryCut.tick(helper, server, record, rocket)) {
+                helper.assertTrue(data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed())
+                        && !RocketEscrowGate.resourcesIdle(rocket) && journal.find(transfer).filter(record::equals).isPresent(),
+                        "F6 retry inferred F7 or released its resource/journal hold");
+                finish(journal); return;
+            }
             if (!sawF7) {
                 helper.assertTrue(flight.fuel().equals(initial.fuel()) && wrapper.equals(rocket.escrowSection())
                         && !RocketEscrowGate.resourcesIdle(rocket) && journal.find(transfer).filter(record::equals).isPresent(),
@@ -194,6 +213,7 @@ public final class EscrowGovernedLiveReturnGameTests {
                 try { leaseCut.exercise(helper, dismountCut ? EscrowTerminalLeaseCut.Fault.DISMOUNT : EscrowTerminalLeaseCut.Fault.NONE, rocket, passenger); }
                 finally { leaseCut.close(); leaseCut = null; }
                 if (dismountCut) {
+                    EscrowTerminalRetryCut.assertWriteFailure(helper, server, record);
                     helper.assertTrue(!runtime.terminal().checkpoint(server, record) && !runtime.returns().checkpoint(server, record),
                             "Departure retained a terminal checkpoint");
                     journal.setDirty();
