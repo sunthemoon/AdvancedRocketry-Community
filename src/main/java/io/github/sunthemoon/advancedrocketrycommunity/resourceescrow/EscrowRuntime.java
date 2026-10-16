@@ -52,6 +52,7 @@ public final class EscrowRuntime {
         EscrowTags.require(server.isSameThread() && (cut == null || terminalTestCut == null), "Terminal cut requires exclusive owner-thread setup");
         terminalTestCut = cut;
     }
+    private EscrowReturnProbe returnProbe;
     private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
     private final EscrowSettlementRecovery settlements = new EscrowSettlementRecovery();
     private final EscrowPreF2Cancellation preF2Cancellation = new EscrowPreF2Cancellation();
@@ -106,6 +107,7 @@ public final class EscrowRuntime {
     public void checkpoint(String cut) {
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
+        if (returnProbe != null) { returnProbe.checkpoint(cut); }
         if (phaseProbe != null) { phaseProbe.checkpoint(cut); }
         if (destinationProbe != null) { destinationProbe.checkpoint(cut); }
         if (probe != null) { probe.checkpoint(cut); }
@@ -197,6 +199,9 @@ public final class EscrowRuntime {
             if (testCase.startsWith("FT_")) {
                 if (runtime.terminalProbe == null) { runtime.terminalProbe = new EscrowTerminalProbe(event.getServer()); }
                 runtime.terminalProbe.tick();
+            } else if (testCase.startsWith("RT_")) {
+                if (runtime.returnProbe == null) { runtime.returnProbe = new EscrowReturnProbe(event.getServer()); }
+                runtime.returnProbe.tick();
             } else if (testCase.startsWith("FP_") || testCase.startsWith("FD_")) {
                 if (runtime.phaseProbe == null) { runtime.phaseProbe = new EscrowPhaseProbe(event.getServer()); }
                 runtime.phaseProbe.tick();

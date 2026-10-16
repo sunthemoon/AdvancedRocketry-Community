@@ -40,8 +40,15 @@ public final class EscrowGovernedReturn implements AutoCloseable {
     /** A pending request or an already-returned complete progression must never enter forward dispatch. */
     public boolean handles(RocketTransferRecord record, RocketEntity source) {
         if (work.containsKey(record.transferId())) { return true; }
-        try { return source != null && EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(source)); }
+        // Forward interpolation must not serialize the complete rocket just to rule out a return.
+        if (source == null || !EscrowGovernedReturnAction.phase(record)
+                || !stationaryCandidate(source.flightData().orElse(null))) { return false; }
+        try { return EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(source)); }
         catch (IllegalArgumentException | IllegalStateException invalid) { return false; }
+    }
+
+    static boolean stationaryCandidate(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData flight) {
+        return flight != null && flight.plan().isEmpty() && flight.activeTransferId().isEmpty();
     }
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
@@ -79,6 +86,7 @@ public final class EscrowGovernedReturn implements AutoCloseable {
             if (level == null) { return Result.HELD; }
             var runtime = EscrowRuntime.of(server);
             state.pending = true;
+            runtime.checkpoint("RETURN_" + (state.returned ? "F6" : "ABSENCE") + "_SLOT_" + state.proofs.size());
             boolean started = runtime.barrier().begin(runtime.store(level), slot,
                     new EscrowPrefix.State(authority.ledger().id(), slot.beforeEpoch(), slot.beforeSignature(), List.of()),
                     state.returned ? EscrowGovernedTerminalDisk.validator(record, EscrowFlightTables.Outcome.CANCELLED, slot, state.source.envelope)
@@ -110,6 +118,7 @@ public final class EscrowGovernedReturn implements AutoCloseable {
         state.release();
         EscrowTags.require(EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(source)), "Return changed its complete projection");
         state.source = new EscrowFlightSource(source, boundary); state.returned = true;
+        EscrowRuntime.of(server).checkpoint("RETURN_APPLIED");
         return Result.WAITING;
     }
 

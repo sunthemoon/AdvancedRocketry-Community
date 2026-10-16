@@ -88,8 +88,8 @@ def main():
     args = parser.parse_args()
     try:
         phases.run(args, cases=CASES, inspect_state=inspect,
-                   pause_prefix="ARCE_RELEASE_TERMINAL_PAUSED", result_prefix="ARCE_RELEASE_TERMINAL_RESULT",
-                   result_suffix=r" journal=idle armed=0 fuel=500 epoch=0")
+                   pause_marker="ARCE_RELEASE_TERMINAL_PAUSED cut={cut}",
+                   result_marker="ARCE_RELEASE_TERMINAL_RESULT cut={cut} journal=idle armed=0 fuel=500 epoch=0")
         return 0
     except (OSError, phases.smoke.SmokeError) as failure:
         print(f"FAIL: {failure}")

@@ -72,8 +72,8 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
 
 
 def run(args, *, cases=CASES, inspect_state=inspect,
-        pause_prefix="ARCE_RELEASE_PHASE_PAUSED", result_prefix="ARCE_RELEASE_PHASE_RESULT",
-        result_suffix=r" phase=COMMITTED") -> dict:
+        pause_marker="ARCE_RELEASE_PHASE_PAUSED cut={cut}",
+        result_marker="ARCE_RELEASE_PHASE_RESULT cut={cut} phase=COMMITTED") -> dict:
     assert_pin(args.source_commit)
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     if (session.exists() or session.is_symlink() or evidence.exists() or session == evidence
@@ -108,11 +108,11 @@ def run(args, *, cases=CASES, inspect_state=inspect,
                 row.setdefault("starts", []).append(dict(restart=restart, command=command, free_bytes=free, lock_owner=args.lock_owner))
                 process = smoke.CapturedProcess(command, session, evidence / f"{cut}-{restart}.log")
                 if restart == 0:
-                    process.wait_for(re.compile(re.escape(pause_prefix) + r" cut=" + cut), args.startup_timeout)
+                    process.wait_for(re.compile(pause_marker.format(cut=re.escape(cut))), args.startup_timeout)
                     process.process.kill(); process.abort(); process = None
                     row["cut_disk"] = inspect_state(session / ("world-" + cut), cut, False)
                 else:
-                    process.wait_for(re.compile(re.escape(result_prefix) + r" cut=" + cut + result_suffix), args.startup_timeout)
+                    process.wait_for(re.compile(result_marker.format(cut=re.escape(cut))), args.startup_timeout)
                     process.command("stop"); code = process.finish()
                     if code or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                         raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")

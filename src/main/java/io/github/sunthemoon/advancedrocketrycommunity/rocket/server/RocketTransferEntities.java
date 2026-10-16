@@ -372,6 +372,22 @@ final class RocketTransferEntities {
             RocketStructureSnapshot snapshot,
             UUID transferId
     ) {
+        refreshFlightTicket(level, snapshot, transferId);
+        loadOrigin(level, snapshot);
+    }
+
+    /** Called only after checked ACTIVE classification; never synchronously loads an endpoint. */
+    static void refreshGovernedFlightTickets(MinecraftServer server, RocketTransferRecord record) {
+        if (!server.isSameThread() || record.nativeTransfer().isEmpty()) { return; }
+        var source = level(server, record.sourceSnapshot().sourceDimension());
+        var destination = level(server, record.destinationSnapshot().sourceDimension());
+        if (source == null || destination == null) { return; }
+        // Same two origins, type, level and expiry as legacy flight; no per-footprint ticket expansion.
+        refreshFlightTicket(source, record.sourceSnapshot(), record.transferId());
+        refreshFlightTicket(destination, record.destinationSnapshot(), record.transferId());
+    }
+
+    private static void refreshFlightTicket(ServerLevel level, RocketStructureSnapshot snapshot, UUID transferId) {
         RocketPosition origin = snapshot.sourceOrigin();
         ChunkPos chunk = new ChunkPos(origin.x() >> 4, origin.z() >> 4);
         level.getChunkSource().addRegionTicket(
@@ -380,7 +396,6 @@ final class RocketTransferEntities {
                 FLIGHT_TICKET_LEVEL,
                 transferId
         );
-        loadOrigin(level, snapshot);
     }
 
     static boolean destinationEntityChunkReady(

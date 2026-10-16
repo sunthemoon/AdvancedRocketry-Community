@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDispatch;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
@@ -13,6 +14,22 @@ import org.junit.jupiter.api.Test;
 
 class RocketGovernedSourceDispatcherTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
+
+    @Test void onlyActiveClassificationRefreshesTicketsBeforeReadinessAndLoadingDoesNotProceed() {
+        var calls = new ArrayList<String>();
+        var active = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.ACTIVE, null);
+        for (boolean loaded : List.of(false, false, true)) {
+            calls.clear();
+            assertEquals(loaded, RocketGovernedSourceDispatcher.afterClassification(active,
+                    () -> calls.add("tickets"), () -> { calls.add("readiness"); return loaded; }));
+            assertEquals(List.of("tickets", "readiness"), calls);
+        }
+        for (var route : List.of(EscrowGovernedDispatch.Route.HOLD, EscrowGovernedDispatch.Route.CLEANUP)) {
+            var decision = new EscrowGovernedDispatch.Decision(route, route == EscrowGovernedDispatch.Route.HOLD ? "WAIT" : null);
+            assertFalse(RocketGovernedSourceDispatcher.afterClassification(decision,
+                    () -> fail("Non-active classification added tickets"), () -> { fail("Non-active readiness query"); return true; }));
+        }
+    }
 
     @Test void visitsEightAtMostAndEveryRecordAtThe64EntryLimit() {
         var records = new ArrayList<RocketTransferRecord>();
