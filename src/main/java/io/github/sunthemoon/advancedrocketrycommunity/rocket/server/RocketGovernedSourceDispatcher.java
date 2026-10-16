@@ -11,7 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.
 import java.util.List;
 import net.minecraft.server.MinecraftServer;
 
-/** Fair, loaded-only F3/F4 dispatch. Missing sources and destination work never enter legacy recovery. */
+/** Fair, loaded-only F3-F5 dispatch. Missing sources and destination work never enter legacy recovery. */
 final class RocketGovernedSourceDispatcher {
     static final int VISITS_PER_TICK = 8;
     private int cursor;
@@ -23,11 +23,15 @@ final class RocketGovernedSourceDispatcher {
                     || EscrowRuntime.of(server).governedFlights().classify(server, journal, record).route()
                     != EscrowGovernedDispatch.Route.ACTIVE) { return; }
             var level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
-            if (level == null || !(level.getEntity(record.sourceEntityId()) instanceof RocketEntity source)
-                    || !source.operational()) { return; }
-            if (record.phase() == RocketTransferPhase.DESTINATION_SPAWNED) {
+            if (level == null) { return; }
+            var entity = level.getEntity(record.sourceEntityId());
+            if (entity != null && !(entity instanceof RocketEntity)) { return; }
+            var source = (RocketEntity) entity;
+            if (source != null && !source.operational()) { return; }
+            if (record.phase() != RocketTransferPhase.PREPARED) {
                 destination(server, journal, record, source, bays); return;
             }
+            if (source == null) { return; }
             var previous = source.flightData().orElseThrow().state();
             var result = EscrowRuntime.of(server).sourceFlights().tick(server, journal, record, source,
                     () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays));
@@ -57,6 +61,7 @@ final class RocketGovernedSourceDispatcher {
                                     RocketEntity source, RocketTransferBayDispatch bays) {
         var result = EscrowRuntime.of(server).destinations().tick(server, journal, record, source,
                 (checked, from, to) -> RocketGovernedLaunchBoundary.allows(server, journal, checked, from, to, bays)
+                        && EscrowRuntime.of(server).flightPhases().allowsNative(from, to)
                         && (to != null || landingAvailable(server, checked)));
         if (result != io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestination.Result.HELD) {
             // A positive checked-source/candidate boundary precedes these existing recorded-end tickets.
@@ -64,6 +69,14 @@ final class RocketGovernedSourceDispatcher {
                     record.sourceSnapshot(), record.transferId());
             RocketTransferEntities.keepLoaded(RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension()),
                     record.destinationSnapshot(), record.transferId());
+        }
+        if (result == io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestination.Result.PRESENT) {
+            var level = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
+            var arrival = (RocketEntity) level.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
+            EscrowRuntime.of(server).flightPhases().tick(server, journal, record, source, arrival,
+                    () -> RocketGovernedLaunchBoundary.allows(server, journal, record,
+                            source != null && source.isRemoved() ? null : source, arrival, bays)
+                            && EscrowRuntime.of(server).flightPhases().allowsNative(source, arrival));
         }
     }
 
@@ -85,7 +98,7 @@ final class RocketGovernedSourceDispatcher {
     static int visit(List<RocketTransferRecord> records, int cursor, boolean destinations,
                      java.util.function.Consumer<RocketTransferRecord> action) {
         var sources = records.stream().filter(record -> record.nativeTransfer().isPresent()
-                && (record.phase() == RocketTransferPhase.PREPARED || destinations && record.phase() == RocketTransferPhase.DESTINATION_SPAWNED))
+                && (record.phase() == RocketTransferPhase.PREPARED || destinations))
                 .limit(RocketFlightLimits.MAX_ACTIVE_TRANSFERS).toList();
         if (sources.isEmpty()) { return 0; }
         int count = Math.min(VISITS_PER_TICK, sources.size());

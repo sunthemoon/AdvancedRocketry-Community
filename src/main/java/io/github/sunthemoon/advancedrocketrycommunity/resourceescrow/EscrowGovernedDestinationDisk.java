@@ -22,15 +22,15 @@ final class EscrowGovernedDestinationDisk {
     static Predicate<CompoundTag> validator(RocketTransferRecord record, EscrowEndpoint slot, CompoundTag source) {
         var sourceEndpoint = endpoint(record, false);
         boolean sourceSlot = EscrowBarrier.sameSlot(slot, sourceEndpoint);
-        var present = EscrowFlightSource.validator(sourceEndpoint, source);
+        var present = source == null ? null : EscrowFlightSource.validator(sourceEndpoint, source);
         return root -> {
             try {
                 int[] position = root.getIntArray("Position");
                 if (position.length != 2 || position[0] != slot.x() || position[1] != slot.z()) { return false; }
                 // The source validator rejects all other copies of L, and checks complete source E.
-                if (sourceSlot && !present.test(root)) { return false; }
+                if (sourceSlot && present != null && !present.test(root)) { return false; }
                 return absent(EscrowTags.list(root, "Entities", EscrowSettlementObserver.ENTITIES_PER_SLOT),
-                        record, sourceSlot, 0, new int[] {0});
+                        record, sourceSlot && source != null, 0, new int[] {0});
             } catch (RuntimeException invalid) { return false; }
         };
     }

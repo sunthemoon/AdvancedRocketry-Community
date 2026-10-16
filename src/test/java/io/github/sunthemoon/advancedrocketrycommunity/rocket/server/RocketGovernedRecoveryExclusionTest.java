@@ -44,7 +44,7 @@ class RocketGovernedRecoveryExclusionTest {
         assertFalse(fences.permit(null, journal, record, live, settled)); assertTrue(live.isEmpty()); assertTrue(settled.isEmpty());
     }
 
-    @Test void checkedF3AndF4RouteToTheirExecutorsButPendingAndLaterPhasesStayFenced() {
+    @Test void checkedF3ThroughF5RouteToTheirExecutorsButPendingAndTerminalAuthorityStayFenced() {
         var prepared = GovernedTransferFixture.create().record();
         var spawned = prepared.destinationSpawned(prepared.nativeTransfer().orElseThrow().armed().destination());
         var fences = new RocketTransferFences();
@@ -54,9 +54,8 @@ class RocketGovernedRecoveryExclusionTest {
             record = phase == prepared.phase() ? prepared : phase == spawned.phase() ? spawned : record.advance(phase);
             var active = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.ACTIVE, null);
             fences.classifyGoverned(record, active, live, settled);
-            boolean implemented = phase == prepared.phase() || phase == spawned.phase();
-            assertEquals(implemented, live.contains(record.transferId()));
-            assertEquals(!implemented, fences.ids().contains(record.transferId()));
+            assertTrue(live.contains(record.transferId()));
+            assertFalse(fences.ids().contains(record.transferId()));
             assertTrue(settled.isEmpty());
             var pending = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, "GOVERNED_JOURNAL_UNACKNOWLEDGED");
             fences.classifyGoverned(record, pending, live, settled);

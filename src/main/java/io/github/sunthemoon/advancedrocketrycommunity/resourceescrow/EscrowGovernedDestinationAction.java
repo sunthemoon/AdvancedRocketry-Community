@@ -10,7 +10,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import net.minecraft.nbt.CompoundTag;
 
-/** F4's one-use initialization authority. It neither debits the source nor permits a handoff. */
+/** One-use initialization under F4 or later checked authority; never a debit, removal or handoff. */
 public final class EscrowGovernedDestinationAction {
     private EscrowGovernedDestinationAction() { }
 
@@ -32,7 +32,7 @@ public final class EscrowGovernedDestinationAction {
 
         private Permit(EscrowGovernedDispatch.Authority authority, CompoundTag source, Supplier<CompoundTag> observed,
                        BooleanSupplier boundary, BooleanSupplier proofs, long tick) {
-            this.authority = authority; this.source = source.copy(); this.observed = observed;
+            this.authority = authority; this.source = source == null ? null : source.copy(); this.observed = observed;
             this.boundary = boundary; this.proofs = proofs; this.tick = tick;
         }
 
@@ -46,7 +46,7 @@ public final class EscrowGovernedDestinationAction {
         RocketTransferRecord consume(BooleanSupplier target) {
             EscrowTags.require(!used, "Destination permit already consumed"); used = true;
             EscrowTags.require(target.getAsBoolean() && authority.valid() && boundary.getAsBoolean()
-                    && proofs.getAsBoolean() && source.equals(observed.get()), "Destination publication lost its final proof");
+                    && proofs.getAsBoolean() && java.util.Objects.equals(source, observed.get()), "Destination publication lost its final proof");
             return authority.record();
         }
     }
@@ -54,9 +54,11 @@ public final class EscrowGovernedDestinationAction {
     static Permit issue(EscrowGovernedDispatch.Authority authority, CompoundTag source, long phaseTime, long tick,
                         Supplier<CompoundTag> observed, BooleanSupplier boundary, BooleanSupplier proofs) {
         EscrowTags.require(authority != null && authority.valid() && authority.decision().route() == EscrowGovernedDispatch.Route.ACTIVE
-                && authority.record().phase() == RocketTransferPhase.DESTINATION_SPAWNED
+                && authority.record().phase().ordinal() >= RocketTransferPhase.DESTINATION_SPAWNED.ordinal()
                 && boundary.getAsBoolean() && proofs.getAsBoolean() && tick >= 0
-                && EscrowGovernedSourceRecovery.sourceMatches(authority.record(), source, phaseTime),
+                && (authority.record().phase() == RocketTransferPhase.DESTINATION_SPAWNED
+                        ? source != null && EscrowGovernedSourceRecovery.sourceMatches(authority.record(), source, phaseTime)
+                        : EscrowGovernedPhaseAction.sourceMatches(authority.record(), source, phaseTime)),
                 "Destination lacks checked F4 and fresh absence proofs");
         return new Permit(authority, source, observed, boundary, proofs, tick);
     }

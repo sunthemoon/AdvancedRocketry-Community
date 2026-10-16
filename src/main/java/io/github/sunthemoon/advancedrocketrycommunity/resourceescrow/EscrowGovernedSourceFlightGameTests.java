@@ -22,7 +22,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-/** Live F1-F4, not a complete-flight or terminal handoff fixture. */
+/** Live F1-F5, not a complete-flight or terminal handoff fixture. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedSourceFlightGameTests {
@@ -70,6 +70,9 @@ public final class EscrowGovernedSourceFlightGameTests {
         private CompoundTag checkpoint;
         private boolean restoredCheckpoint;
         private boolean repeatedPublication;
+        private net.minecraft.server.level.ServerPlayer passenger;
+        private boolean dismounted;
+        private long changedDestinationAt = -1;
         private int step;
 
         Scenario(GameTestHelper helper, Fault fault) {
@@ -91,6 +94,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             if (List.of(position, destination).stream().anyMatch(pos -> !level.areEntitiesLoaded(new ChunkPos(pos).toLong())
                     || !level.isPositionEntityTicking(pos))) { return; }
             var journal = RocketTransferSavedData.get(level.getServer());
+            if (step == 4) { phases(journal); return; }
             if (step == 3) { publication(journal); return; }
             if (step == 0) {
                 if (!journal.retryChecked(level.getServer())) { return; }
@@ -197,11 +201,44 @@ public final class EscrowGovernedSourceFlightGameTests {
             if (fault == Fault.NONE && !repeatedPublication) {
                 arrival.discard(); repeatedPublication = true; return;
             }
+            if (fault == Fault.NONE) { step = 4; return; }
             finish(journal, arrival);
+        }
+
+        private void phases(RocketTransferSavedData journal) {
+            var record = journal.find(transfer).orElseThrow();
+            if (!journal.acknowledgedCurrent() || record.phase() != RocketTransferPhase.COMMITTED) { return; }
+            var arrival = (RocketEntity) level.getEntity(record.destinationEntityId().orElseThrow());
+            helper.assertTrue(arrival != null && rocket.isRemoved() && rocket.getPassengers().isEmpty()
+                    && level.getEntity(rocket.getUUID()) == null, "F5 did not remove exactly its emptied source");
+            helper.assertTrue(initial.fuel().equals(rocket.flightData().orElseThrow().fuel()) && wrapper.equals(rocket.escrowSection())
+                    && arrival.flightData().orElseThrow().equals(record.destinationFlightData())
+                    && arrival.escrowSection().epoch() == 0 && !RocketEscrowGate.idle(arrival)
+                    && data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()),
+                    "F5 changed credit, repeated a debit or released ARMED before F6/F7");
+            if (changedDestinationAt >= 0) {
+                if (level.getGameTime() - changedDestinationAt < 30) { return; }
+                helper.assertTrue(arrival.getDeltaMovement().equals(Vec3.ZERO) && passenger.getVehicle() == null,
+                        "Normalized destination motion retained an F5 remount permission");
+                finish(journal, arrival); return;
+            }
+            if (passenger.getVehicle() != arrival) { return; }
+            if (!dismounted) {
+                helper.assertTrue(arrival.getPassengers().equals(List.of(passenger)), "F5 lost its online assignment");
+                passenger.stopRiding();
+                helper.assertTrue(passenger.getVehicle() == null && !passenger.startRiding(arrival, true),
+                        "Physical dismount was cancelled or an external mount bypassed ARMED");
+                dismounted = true; return;
+            }
+            helper.assertTrue(arrival.getPassengers().equals(List.of(passenger)), "Checked F5 reconnect duplicated its passenger");
+            passenger.stopRiding(); arrival.setDeltaMovement(new Vec3(0.125, 0, 0)); changedDestinationAt = level.getGameTime();
         }
 
         private void finish(RocketTransferSavedData journal, RocketEntity arrival) {
             journal.remove(transfer); RocketJournalGameTestSupport.acknowledgeFixture(helper);
+            if (passenger != null) {
+                passenger.stopRiding(); level.getServer().getPlayerList().remove(passenger);
+            }
             rocket.discard();
             if (arrival != null) { arrival.discard(); }
             if (duplicate != null) { duplicate.discard(); }
@@ -230,14 +267,27 @@ public final class EscrowGovernedSourceFlightGameTests {
 
         private void prepare() {
             data = ResourceEscrowSavedData.forTests(level.getServer()); data.bind(level.getServer());
+            if (fault == Fault.NONE) {
+                passenger = new net.minecraft.server.level.ServerPlayer(level.getServer(), level,
+                        new com.mojang.authlib.GameProfile(UUID.randomUUID(), "F5Passenger")) {
+                    @Override public boolean isCreative() { return true; }
+                    @Override public boolean isSpectator() { return false; }
+                };
+                var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+                new io.netty.channel.embedded.EmbeddedChannel(connection);
+                level.getServer().getPlayerList().placeNewPlayer(connection, passenger);
+                passenger.teleportTo(level, position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
+            }
             rocket = RocketSettlementIdleGameTests.createRocket(level, position, UUID.randomUUID());
             var base = rocket.flightData().orElseThrow(); long now = level.getGameTime();
             var fuel = base.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1000);
-            rocket.updateFlightData(base.withFuel(fuel, now).withPassengers(base.passengers().assign(UUID.randomUUID()).orElseThrow()));
+            rocket.updateFlightData(base.withFuel(fuel, now).withPassengers(base.passengers().assign(
+                    passenger == null ? UUID.randomUUID() : passenger.getUUID()).orElseThrow()));
             var tag = rocket.saveWithoutId(new CompoundTag());
             wrapper = new RocketEscrowSection(data.ledger().id(), 7, List.of());
             tag.getCompound("RocketEntityData").put("resource_escrow", wrapper.encode());
             rocket.load(tag); helper.assertTrue(level.addFreshEntity(rocket), "Source was not published");
+            if (passenger != null) { helper.assertTrue(passenger.startRiding(rocket, true), "Passenger could not board before F1"); }
             checkpoint = rocket.saveWithoutId(new CompoundTag());
             initial = rocket.flightData().orElseThrow(); previousY = rocket.getY();
             var from = rocket.snapshot().orElseThrow();

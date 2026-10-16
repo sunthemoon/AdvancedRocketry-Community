@@ -56,6 +56,9 @@ class RocketGovernedSourceDispatcherTest {
         }
         assertEquals(records, visited);
         var later = destination.advance(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.PASSENGERS_TRANSFERRED);
-        assertEquals(0, RocketGovernedSourceDispatcher.visit(List.of(later), 0, true, value -> fail()));
+        assertEquals(0, RocketGovernedSourceDispatcher.visit(List.of(later), 0, value -> fail()));
+        visited.clear();
+        RocketGovernedSourceDispatcher.visit(List.of(later), 0, true, visited::add);
+        assertEquals(List.of(later), visited, "F5 shares the bounded governed dispatcher, never the source-only executor");
     }
 }

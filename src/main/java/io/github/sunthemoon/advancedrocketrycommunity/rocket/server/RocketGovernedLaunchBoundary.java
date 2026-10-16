@@ -33,8 +33,11 @@ final class RocketGovernedLaunchBoundary {
         var bay = bays.before(server, journal, record, action);
         // Credited bay-source consumption is W27f, not an escrow exemption for a bay permit.
         if (bay == null || bay.kind() != RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED
-                || record.nativeTransfer().isEmpty() || !source.isAlive() || !source.isAddedToWorld()
-                || !source.operational() || !record.sourceEntityId().equals(source.getUUID())) { return false; }
+                || record.nativeTransfer().isEmpty()) { return false; }
+        if (source == null && record.phase() != io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.SOURCE_REMOVED
+                && record.phase() != io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.COMMITTED) { return false; }
+        if (source != null && (!source.isAlive() || !source.isAddedToWorld()
+                || !source.operational() || !record.sourceEntityId().equals(source.getUUID()))) { return false; }
         if (arrival != null && (!arrival.isAlive() || !arrival.isAddedToWorld() || !arrival.operational()
                 || !record.nativeTransfer().orElseThrow().armed().destination().equals(arrival.getUUID()))) { return false; }
         var transactions = RocketTransactionSavedData.get(server);
@@ -67,7 +70,7 @@ final class RocketGovernedLaunchBoundary {
             });
             if (candidates.size() >= RocketFlightLimits.MAX_TRANSFER_ENTITY_MATCHES) { return false; }
         }
-        return candidates.size() == (arrival == null ? 1 : 2) && candidates.contains(source)
+        return candidates.size() == (source == null ? 0 : 1) + (arrival == null ? 0 : 1) && (source == null || candidates.contains(source))
                 && (arrival == null || candidates.contains(arrival));
     }
 }

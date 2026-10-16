@@ -70,12 +70,11 @@ final class RocketTransferFences {
 
     /** Classification is not permission: both implemented executors repeat their final action checks. */
     void classifyGoverned(RocketTransferRecord record, EscrowGovernedDispatch.Decision route, Set<UUID> live, Set<UUID> settled) {
-        if (route.route() == EscrowGovernedDispatch.Route.ACTIVE
-                && (record.phase() == RocketTransferPhase.PREPARED || record.phase() == RocketTransferPhase.DESTINATION_SPAWNED)) {
+        if (route.route() == EscrowGovernedDispatch.Route.ACTIVE) {
             drop(record.transferId()); settled.remove(record.transferId()); live.add(record.transferId()); return;
         }
-        // Pending/unknown authority remains held. Later phases are not implemented by F3/F4,
-        // and terminal entries can only enter checked F8 cleanup, never legacy recovery.
+        // Pending/unknown authority remains held. Terminal entries can only enter checked
+        // F8 cleanup, never legacy recovery. ACTIVE COMMITTED still retains its F6/F7 hold.
         String reason = switch (route.route()) {
             case HOLD -> route.reason();
             case ACTIVE -> "GOVERNED_ACTION_REQUIRED";

@@ -42,7 +42,11 @@ public final class RocketEscrowInterlocks {
             }
             return;
         }
-        if (protectedRocket(event.getEntityMounting()) || protectedRocket(event.getEntityBeingMounted())) { event.setCanceled(true); }
+        if (protectedRocket(event.getEntityMounting()) || protectedRocket(event.getEntityBeingMounted())) {
+            if (event.getEntityBeingMounted() instanceof RocketEntity rocket && !rocket.level().isClientSide
+                    && EscrowRuntime.of(rocket.getServer()).flightPhases().mountAllowed(event.getEntityMounting(), rocket)) { return; }
+            event.setCanceled(true);
+        }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void teleport(EntityTeleportEvent.TeleportCommand event) {
