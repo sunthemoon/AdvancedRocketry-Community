@@ -70,7 +70,7 @@ final class RocketTransferFences {
 
     /** Classification is not permission: both implemented executors repeat their final action checks. */
     void classifyGoverned(RocketTransferRecord record, EscrowGovernedDispatch.Decision route, Set<UUID> live, Set<UUID> settled) {
-        if (route.route() == EscrowGovernedDispatch.Route.ACTIVE) {
+        if (route.route() == EscrowGovernedDispatch.Route.ACTIVE || route.route() == EscrowGovernedDispatch.Route.CLEANUP) {
             drop(record.transferId()); settled.remove(record.transferId()); live.add(record.transferId()); return;
         }
         if (route.route() == EscrowGovernedDispatch.Route.HOLD
@@ -82,14 +82,9 @@ final class RocketTransferFences {
             reasons.putIfAbsent(record.transferId(), route.reason());
             live.remove(record.transferId()); settled.remove(record.transferId()); return;
         }
-        // Pending/unknown authority remains held. Terminal entries can only enter checked
-        // F8 cleanup, never legacy recovery. ACTIVE COMMITTED still retains its F6/F7 hold.
-        String reason = switch (route.route()) {
-            case HOLD -> route.reason();
-            case ACTIVE -> "GOVERNED_ACTION_REQUIRED";
-            case CLEANUP -> "GOVERNED_CLEANUP_REQUIRED";
-        };
-        fence(record, reason, live, settled);
+        // R11: CLEANUP is dispatched only to F8, never legacy recovery or a forward phase.
+        // The cleanup executor reports a specific blocked reason when operator action is needed.
+        fence(record, route.reason(), live, settled);
     }
 
     private static boolean loadedProtectedHint(MinecraftServer server, RocketTransferRecord record, boolean proved) {

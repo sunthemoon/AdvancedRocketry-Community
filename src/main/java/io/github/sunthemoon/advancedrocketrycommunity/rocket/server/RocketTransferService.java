@@ -44,6 +44,7 @@ final class RocketTransferService {
     private final Set<UUID> liveTransfers = new HashSet<>();
     private final Set<UUID> settledTransfers = new HashSet<>();
     private final RocketGovernedSourceDispatcher governedSources = new RocketGovernedSourceDispatcher();
+    private final RocketGovernedCleanupDispatcher governedCleanup = new RocketGovernedCleanupDispatcher();
     // BEGIN transfer service diagnostics
     private final TransferFailureDiagnostics diagnostics = new TransferFailureDiagnostics();
     // END transfer service diagnostics
@@ -284,6 +285,7 @@ final class RocketTransferService {
         recovery.recoverNext(server, journal);
         recovery.tickReconnects(server, journal);
         governedSources.tick(server, journal, recovery.bays());
+        governedCleanup.tick(server, journal, recovery.bays());
         List<UUID> active = liveTransfers.stream().sorted().toList();
         for (UUID transferId : active) {
             RocketTransferRecord record = journal.find(transferId).orElse(null);
@@ -499,6 +501,7 @@ final class RocketTransferService {
         settledTransfers.clear();
         recovery.clear();
         governedSources.clear();
+        governedCleanup.clear();
         // BEGIN transfer service diagnostics
         diagnostics.clear();
         // END transfer service diagnostics

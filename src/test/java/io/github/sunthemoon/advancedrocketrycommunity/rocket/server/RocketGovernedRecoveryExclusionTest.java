@@ -44,7 +44,7 @@ class RocketGovernedRecoveryExclusionTest {
         assertFalse(fences.permit(null, journal, record, live, settled)); assertTrue(live.isEmpty()); assertTrue(settled.isEmpty());
     }
 
-    @Test void checkedF3ThroughF5RouteToTheirExecutorsButPendingAndTerminalAuthorityStayFenced() {
+    @Test void checkedFlightsAndCleanupRouteToTheirExecutorsButNeverLegacyRecovery() {
         var prepared = GovernedTransferFixture.create().record();
         var spawned = prepared.destinationSpawned(prepared.nativeTransfer().orElseThrow().armed().destination());
         var fences = new RocketTransferFences();
@@ -62,7 +62,17 @@ class RocketGovernedRecoveryExclusionTest {
             assertTrue(live.isEmpty()); assertEquals(pending.reason(), fences.reason(record.transferId()));
             var terminal = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.CLEANUP, null);
             fences.classifyGoverned(record, terminal, live, settled);
-            assertTrue(live.isEmpty()); assertEquals("GOVERNED_CLEANUP_REQUIRED", fences.reason(record.transferId()));
+            assertEquals(Set.of(record.transferId()), live); assertNull(fences.reason(record.transferId()));
+            assertTrue(settled.isEmpty());
+            assertNull(RocketTransferRecoveryService.step(List.of(record), live, settled, fences.ids(), 0,
+                    candidate -> { fail("Terminal cleanup entered legacy readiness"); return true; }).candidate());
+            try (var unused = new EscrowGovernedDispatch()) {
+                var journal = new RocketTransferSavedData(); journal.put(record);
+                assertFalse(fences.permit(null, journal, record, live, settled));
+                for (var action : RocketTransferRecoveryAction.values()) {
+                    assertFalse(fences.actionAllowed(null, journal, record, action, List.of(), List.of(), live, settled));
+                }
+            }
         }
     }
 }

@@ -27,6 +27,14 @@ public final class EscrowGovernedCleanup {
                 && EscrowFlightJournal.noTransfer(journal, arm.logical(), arm.transfer(), arm.serial()).getAsBoolean();
     }
 
+    /** Transient acknowledgements stay silent; contradictory checked cleanup needs an operator. */
+    public static String blockedReason(EscrowCoordinator coordinator, RocketTransferSavedData journal, EscrowFlightTables.Armed arm) {
+        if (!coordinator.governedAvailable(arm.logical()) || !journal.actionAuthorityAvailable()) { return null; }
+        if (!terminal(coordinator.ledger(), arm)) { return "GOVERNED_CLEANUP_AUTHORITY_CONFLICT"; }
+        return EscrowFlightJournal.noTransfer(journal, arm.logical(), arm.transfer(), arm.serial()).getAsBoolean()
+                ? null : "GOVERNED_CLEANUP_JOURNAL_CONFLICT";
+    }
+
     /** No callbacks, candidates, failed writes or UNKNOWN outcomes can waive the absence lease. */
     public static boolean prune(EscrowCoordinator coordinator, RocketTransferSavedData journal, EscrowFlightTables.Armed arm,
                                 BooleanSupplier dependenciesReleased, Consumer<Boolean> completion) {
@@ -44,6 +52,9 @@ public final class EscrowGovernedCleanup {
         if (!root.id().equals(arm.ledger()) || !root.armedFlights().contains(arm)
                 || arm.outcome() == EscrowFlightTables.Outcome.ARMED || arm.serial() > root.issuedLaunchSerial()
                 || arm.generation() > root.writerGeneration() || EscrowSettlementTombstones.logicalLocked(root, arm.logical())
+                || root.floors().stream().anyMatch(floor -> floor.hasUUID("transfer_id") && arm.transfer().equals(floor.getUUID("transfer_id")))
+                || root.tombstones().stream().flatMap(tag -> EscrowTags.list(tag, "guards", 64).stream())
+                        .map(tag -> EscrowCodec.guard((net.minecraft.nbt.CompoundTag) tag)).anyMatch(guard -> arm.transfer().equals(guard.transfer()))
                 || root.records().stream().anyMatch(op -> arm.logical().equals(op.guard().rocket())
                 || arm.logical().equals(op.source().logicalRocket()) || arm.logical().equals(op.destination().logicalRocket()))) { return false; }
         var head = root.rocketAuthorities().stream().filter(value -> value.logical().equals(arm.logical())).findFirst().orElse(null);

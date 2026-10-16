@@ -29,7 +29,7 @@ class EscrowGovernedTerminalDiagnosticsTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path directory;
 
-    @Test void healthyTerminalWriteWaitsSilentlyButCleanupRemainsFencedUntilItsExecutorExists() throws Exception {
+    @Test void healthyTerminalWriteWaitsSilentlyAndCleanupRoutesWithoutAFence() throws Exception {
         var fixture = GovernedTransferFixture.create(); var record = fixture.record();
         var arm = record.nativeTransfer().orElseThrow().armed();
         var root = EscrowGovernedDispatchTest.root(record);
@@ -70,13 +70,25 @@ class EscrowGovernedTerminalDiagnosticsTest {
                 var terminal = dispatch.classify(coordinator, journal, record);
                 assertEquals(EscrowGovernedDispatch.Route.CLEANUP, terminal.route());
                 classify.invoke(fences, record, terminal, live, settled);
-                assertTrue(live.isEmpty()); assertTrue(settled.isEmpty());
-                var warnings = logs.events.stream().filter(event -> event.getLevel() == Level.WARN).toList();
-                assertEquals(List.of("ARCE_TRANSFER_FENCED transfer=" + record.transferId()
-                                + " reason=GOVERNED_CLEANUP_REQUIRED repair=offline-whole-world"),
-                        warnings.stream().map(event -> event.getMessage().getFormattedMessage()).toList());
+                assertEquals(Set.of(record.transferId()), live); assertTrue(settled.isEmpty());
+                assertTrue(logs.events.isEmpty(), "R11 routes actionable cleanup without an offline-repair warning");
+                assertTrue(EscrowGovernedCleanup.remove(coordinator, journal, record, () -> true));
+                assertFalse(EscrowGovernedCleanup.absent(coordinator, journal, coordinator.ledger().armedFlights().get(0)));
             }
         } finally { journal.stop(); }
+    }
+
+    @Test void blockedCleanupReportsItsSpecificOperatorReasonOnlyOnce() throws Exception {
+        var type = Class.forName("io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketGovernedCleanupDispatcher");
+        var constructor = type.getDeclaredConstructor(); constructor.setAccessible(true); var cleanup = constructor.newInstance();
+        var blocked = type.getDeclaredMethod("blocked", UUID.class, String.class); blocked.setAccessible(true);
+        var transfer = UUID.randomUUID();
+        try (var logs = new Logs()) {
+            for (int tick = 0; tick < 20; tick++) { blocked.invoke(cleanup, transfer, "GOVERNED_CLEANUP_PAD_UNAVAILABLE"); }
+            assertEquals(1, logs.events.size()); assertEquals(Level.WARN, logs.events.get(0).getLevel());
+            assertEquals("ARCE_TRANSFER_FENCED transfer=" + transfer
+                    + " reason=GOVERNED_CLEANUP_PAD_UNAVAILABLE repair=offline-whole-world", logs.events.get(0).getMessage().getFormattedMessage());
+        }
     }
 
     @Test void nonManualOperationAndFrozenFrontierArePendingButQueuedManualReasonWarnsOnce() throws Exception {
