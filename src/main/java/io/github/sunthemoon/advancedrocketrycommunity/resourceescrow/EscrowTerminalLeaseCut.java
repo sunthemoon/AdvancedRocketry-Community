@@ -20,6 +20,7 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
     private final MinecraftServer server;
     private final ResourceEscrowSavedData data;
     private final RocketTransferRecord record;
+    private final EscrowFlightTables.Outcome outcome;
     private final Path file;
     private final CountDownLatch reached = new CountDownLatch(1), resume = new CountDownLatch(1);
     private final AtomicBoolean intercepted = new AtomicBoolean();
@@ -27,8 +28,14 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
     private final EscrowCoordinator coordinator;
 
     EscrowTerminalLeaseCut(MinecraftServer server, ResourceEscrowSavedData data, RocketTransferRecord record) {
+        this(server, data, record, EscrowFlightTables.Outcome.HANDED_OFF);
+    }
+
+    EscrowTerminalLeaseCut(MinecraftServer server, ResourceEscrowSavedData data, RocketTransferRecord record,
+                           EscrowFlightTables.Outcome outcome) {
         EscrowTestEndpoints.requireEnabled(server);
-        this.server = server; this.data = data; this.record = record;
+        this.server = server; this.data = data; this.record = record; this.outcome = outcome;
+        EscrowTags.require(outcome != EscrowFlightTables.Outcome.ARMED, "Terminal cut requires a terminal outcome");
         coordinator = data.bind(server);
         EscrowTags.require(coordinator.writerIdle(), "Terminal cut requires an idle writer");
         file = server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
@@ -38,7 +45,7 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
                 var staged = EscrowCodec.decode(CheckedSavedDataFile.readPayload(file.resolveSibling(
                         ManagedSavedDataType.RESOURCE_ESCROW.fileName() + ".arce-pending"), ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow());
                 if (staged.armedFlights().stream().noneMatch(arm -> arm.transfer().equals(record.transferId())
-                        && arm.outcome() == EscrowFlightTables.Outcome.HANDED_OFF)) { return; }
+                        && arm.outcome() == outcome)) { return; }
                 intercepted.set(true); reached.countDown();
                 if (!resume.await(5, TimeUnit.SECONDS)) { throw new IllegalStateException("Terminal cut owner did not resume the writer"); }
             } catch (InterruptedException stopped) { Thread.currentThread().interrupt(); throw new IllegalStateException(stopped); }
@@ -71,7 +78,7 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
         helper.assertTrue(coordinator.writerIdle(), "F7 cut did not reach a definite checked outcome");
         var arm = data.ledger().armedFlights().stream().filter(value -> value.transfer().equals(record.transferId())).findFirst().orElseThrow();
         boolean handoff = fault == Fault.MOTION || fault == Fault.NONE;
-        helper.assertTrue(arm.outcome() == (handoff ? EscrowFlightTables.Outcome.HANDED_OFF : EscrowFlightTables.Outcome.ARMED),
+        helper.assertTrue(arm.outcome() == (handoff ? outcome : EscrowFlightTables.Outcome.ARMED),
                 "F7 cut published the wrong terminal outcome for " + fault);
         if (handoff) {
             helper.assertTrue(RocketEscrowGate.resourcesIdle(survivor) && !RocketEscrowGate.idle(survivor)

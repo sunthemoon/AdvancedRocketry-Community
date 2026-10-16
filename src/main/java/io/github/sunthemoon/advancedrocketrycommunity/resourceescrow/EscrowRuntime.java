@@ -72,6 +72,8 @@ public final class EscrowRuntime {
     // Do not let a newly implemented later executor race that fixture's historical cut boundary.
     boolean destinationCutActive() { return destinationProbe != null; }
     boolean phaseCutActive() { return phaseProbe != null && phaseProbe.holdsArrival(); }
+    // Historical native return cuts stop at F6; live returns continue through the terminal executor.
+    boolean returnCutActive() { return returnProbe != null; }
     public EscrowGovernedDestination destinations() { return destinations; }
     public EscrowGovernedSourceFlight sourceFlights() { return sourceFlights; }
     public EscrowGovernedDispatch governedFlights() { return governedFlights; }

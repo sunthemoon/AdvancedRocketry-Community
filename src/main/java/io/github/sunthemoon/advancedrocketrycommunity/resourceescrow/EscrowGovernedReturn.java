@@ -15,7 +15,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 
-/** Live exact-source returns, ending at F6. No terminal ledger or journal mutation is authorized here. */
+/** Live exact-source returns. Terminal authority belongs to the shared F6/F7 adapter, never the return itself. */
 public final class EscrowGovernedReturn implements AutoCloseable {
     public enum Result { HELD, WAITING, CHECKPOINT }
     private final Map<UUID, Work> work = new HashMap<>();
@@ -63,12 +63,30 @@ public final class EscrowGovernedReturn implements AutoCloseable {
         }
     }
 
+    /** Release the return proofs before the terminal adapter takes sole checkpoint ownership. */
+    public void tickThroughTerminal(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                                    RocketEntity source, BooleanSupplier boundary) {
+        if (closed || !server.isSameThread()) { return; }
+        prune(journal);
+        var state = work.get(record.transferId());
+        if (state == null || !state.terminal) {
+            if (tick(server, journal, record, source, boundary) != Result.CHECKPOINT
+                    || EscrowRuntime.of(server).returnCutActive()) { return; }
+            state = work.get(record.transferId());
+            state.release();
+            state.terminal = true;
+        }
+        EscrowRuntime.of(server).terminal().tick(server, journal, record, source,
+                EscrowFlightTables.Outcome.CANCELLED, boundary);
+    }
+
     private Result checked(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                            RocketEntity source, BooleanSupplier boundary) {
         if (source == null || !EscrowGovernedReturnAction.phase(record) || !boundary.getAsBoolean()) { return Result.HELD; }
         var authority = authority(server, journal, record);
         if (authority == null) { return Result.HELD; }
         var state = work.get(record.transferId());
+        if (state != null && state.terminal) { return Result.WAITING; }
         if (state == null) {
             var capture = new EscrowFlightSource(source, boundary);
             if (!EscrowGovernedReturnAction.returned(record, capture.envelope)) { return Result.HELD; }
@@ -125,7 +143,7 @@ public final class EscrowGovernedReturn implements AutoCloseable {
     /** Read-only checkpoint status; every prerequisite is checked again, not remembered as a success flag. */
     public boolean checkpoint(MinecraftServer server, RocketTransferRecord record) {
         var state = work.get(record.transferId());
-        return !closed && server.isSameThread() && state != null && state.record.equals(record) && state.returned
+        return !closed && server.isSameThread() && state != null && !state.terminal && state.record.equals(record) && state.returned
                 && state.authority.valid() && state.source.observe() && state.proved()
                 && EscrowGovernedTerminalPassengers.resolved(server, record, EscrowFlightTables.Outcome.CANCELLED, state.source.rocket);
     }
@@ -167,6 +185,7 @@ public final class EscrowGovernedReturn implements AutoCloseable {
         boolean returned;
         boolean pending;
         boolean notified;
+        boolean terminal;
         int failures;
         long nextAttempt;
         Work(RocketTransferRecord record, EscrowGovernedDispatch.Authority authority, EscrowFlightSource source,

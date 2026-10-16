@@ -100,9 +100,10 @@ class EscrowGovernedHandoffTest {
         }
     }
 
-    @Test void replacementRechecksEveryJointTokenAndNeverReadsOwnerThreadObservations() throws Exception {
+    @ParameterizedTest @EnumSource(value = EscrowFlightTables.Outcome.class, names = {"HANDED_OFF", "CANCELLED"})
+    void replacementRechecksEveryJointTokenAndNeverReadsOwnerThreadObservations(EscrowFlightTables.Outcome outcome) throws Exception {
         for (int invalidation = 0; invalidation < 4; invalidation++) {
-            try (var f = new Fixture(EscrowFlightTables.Outcome.HANDED_OFF, false)) {
+            try (var f = new Fixture(outcome, false)) {
                 int change = invalidation; var results = new ArrayList<Boolean>(); var moved = new AtomicInteger();
                 try (var writer = f.writer((staged, target) -> { moved.incrementAndGet(); CheckedSavedDataFile.atomicMove(staged, target); }, cut -> {
                     if (!cut.equals("K8")) { return; }

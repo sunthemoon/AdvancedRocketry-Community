@@ -23,7 +23,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-/** Installed request/flight dispatch with native return proofs and a connected passenger. No F7/F8 fixture. */
+/** Installed return dispatch through CANCELLED F7/F8 with native proofs and a connected passenger. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedLiveReturnGameTests {
@@ -61,6 +61,11 @@ public final class EscrowGovernedLiveReturnGameTests {
         new Scenario(helper, true, Fault.SPAWN).start();
     }
 
+    @GameTest(template = "empty", batch = "escrow_cancelled_dismount_cut", timeoutTicks = 600)
+    public static void dismountBetweenCancelledCheckpointAndReplacementRefusesWrite(GameTestHelper helper) {
+        new Scenario(helper, false, Fault.CANCEL, true).start();
+    }
+
     private static final class Scenario {
         private final GameTestHelper helper;
         private final ServerLevel level;
@@ -80,7 +85,13 @@ public final class EscrowGovernedLiveReturnGameTests {
         private boolean discarded;
         private boolean requested;
         private boolean done;
-        private long checkpointAt = -1;
+        private final boolean dismountCut;
+        private EscrowTerminalLeaseCut leaseCut;
+        private boolean sawF6, sawF7;
+        private long f7Tick;
+        private List<EscrowFlightTables.Armed> otherArms;
+        private io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadEntry claimedPad, otherPad;
+        private final UUID otherTransfer = UUID.randomUUID();
         private boolean faultInstalled;
         private boolean observedAscent;
         private boolean observedTransit;
@@ -92,9 +103,12 @@ public final class EscrowGovernedLiveReturnGameTests {
             this(helper, shared, Fault.CANCEL);
         }
         Scenario(GameTestHelper helper, boolean shared, Fault fault) {
+            this(helper, shared, fault, false);
+        }
+        Scenario(GameTestHelper helper, boolean shared, Fault fault, boolean dismountCut) {
             this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
-            this.fault = fault;
-            position = new BlockPos((shared ? 594_136 : 594_008) + 512 * fault.ordinal(), 100, 594_008);
+            this.fault = fault; this.dismountCut = dismountCut;
+            position = new BlockPos((shared ? 594_136 : 594_008) + 512 * fault.ordinal() + (dismountCut ? 2_048 : 0), 100, 594_008);
             destination = position.offset(shared ? 4 : 32, 0, 0);
         }
 
@@ -116,6 +130,7 @@ public final class EscrowGovernedLiveReturnGameTests {
             if (rocket == null) { if (journal.retryChecked(server)) { prepare(); } return; }
             helper.assertTrue(!discarded, "Live return launch preparation was discarded");
             if (!accepted) { return; }
+            if (requested) { terminal(journal); return; }
             var returns = EscrowRuntime.of(server).returns(); var flight = rocket.flightData().orElseThrow();
             helper.assertTrue(flight.fuel().equals(initial.fuel()) && flight.passengers().equals(initial.passengers())
                     && flight.fuel().committedDebits().equals(List.of(previousDebit))
@@ -133,7 +148,7 @@ public final class EscrowGovernedLiveReturnGameTests {
                             "Failed landing skipped live source phases or its native return wait");
                     helper.assertTrue(record.phase() == (fault == Fault.SPAWN ? RocketTransferPhase.DESTINATION_SPAWNED : RocketTransferPhase.PREPARED)
                             && (fault != Fault.SPAWN || vetoes == 1), "Return was not caused by the intended live failure");
-                    requested = true; return;
+                    requested = true; leaseCut = new EscrowTerminalLeaseCut(server, data, record, EscrowFlightTables.Outcome.CANCELLED); return;
                 }
                 helper.assertTrue(flight.state() == RocketFlightState.COUNTDOWN && journal.acknowledgedCurrent(),
                         "Cancellation did not start from a live checked countdown");
@@ -142,29 +157,102 @@ public final class EscrowGovernedLiveReturnGameTests {
                         flight.plan().orElseThrow().destinationTarget(), UUID.randomUUID());
                 helper.assertTrue(returns.handles(record, rocket) && !returns.checkpoint(server, record)
                         && before.equals(EscrowNativeEnvelope.rocket(rocket)), "Cancellation bypassed its native proof wait");
-                requested = true; return;
+                requested = true; leaseCut = new EscrowTerminalLeaseCut(server, data, record, EscrowFlightTables.Outcome.CANCELLED); return;
             }
-            helper.assertTrue(journal.find(transfer).filter(record::equals).isPresent()
-                    && data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed())
+        }
+
+        private void terminal(RocketTransferSavedData journal) {
+            var server = level.getServer(); var runtime = EscrowRuntime.of(server);
+            var flight = rocket.flightData().orElseThrow();
+            helper.assertTrue(flight.fuel().committedDebits().equals(List.of(previousDebit))
+                    && flight.passengers().equals(initial.passengers()) && passenger.getVehicle() == rocket
+                    && passenger.connection.connection.isConnected()
                     && level.getEntity(record.nativeTransfer().orElseThrow().armed().destination()) == null,
-                    "Return fabricated terminal authority, removed its journal or published a destination");
-            if (!returns.checkpoint(server, record)) {
+                    "Return lost its connected passenger, repeated a debit or published a destination");
+            if (!sawF7) {
+                helper.assertTrue(flight.fuel().equals(initial.fuel()) && wrapper.equals(rocket.escrowSection())
+                        && !RocketEscrowGate.resourcesIdle(rocket) && journal.find(transfer).filter(record::equals).isPresent(),
+                        "Return released resources or changed source credit before F7");
                 helper.assertTrue(flight.state() == (fault == Fault.CANCEL ? RocketFlightState.COUNTDOWN : RocketFlightState.TRANSIT)
                         || EscrowGovernedReturnAction.returned(record,
                         EscrowNativeEnvelope.rocket(rocket)), "A pending cancellation advanced the source");
+            }
+            var slots = EscrowGovernedTerminalDisk.slots(record, EscrowFlightTables.Outcome.CANCELLED);
+            helper.assertTrue(slots.size() != 1 || slots.get(0).identity().equals(rocket.getUUID())
+                    && slots.get(0).beforeEpoch() == wrapper.epoch(), "Shared CANCELLED frontier lost the source epoch");
+            if (runtime.terminal().checkpoint(server, record)) {
+                sawF6 = true;
+                helper.assertTrue(!runtime.returns().checkpoint(server, record)
+                        && EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(rocket))
+                        && EscrowGovernedTerminalPassengers.resolved(server, record, EscrowFlightTables.Outcome.CANCELLED, rocket)
+                        && rocket.getX() == position.getX() + 0.5 && rocket.getY() == position.getY()
+                        && rocket.getZ() == position.getZ() + 0.5 && flight.plan().isEmpty() && flight.activeTransferId().isEmpty(),
+                        "CANCELLED F6 lacks its exact survivor or overlaps the return proof set");
+            }
+            if (leaseCut != null && leaseCut.ready()) {
+                helper.assertTrue(sawF6, "F7 was captured without the joint CANCELLED checkpoint");
+                try { leaseCut.exercise(helper, dismountCut ? EscrowTerminalLeaseCut.Fault.DISMOUNT : EscrowTerminalLeaseCut.Fault.NONE, rocket, passenger); }
+                finally { leaseCut.close(); leaseCut = null; }
+                if (dismountCut) {
+                    helper.assertTrue(!runtime.terminal().checkpoint(server, record) && !runtime.returns().checkpoint(server, record),
+                            "Departure retained a terminal checkpoint");
+                    journal.setDirty();
+                    helper.assertTrue(!runtime.terminal().checkpoint(server, record) && !RocketEscrowGate.resourcesIdle(rocket),
+                            "Unacknowledged journal retained terminal authority");
+                    finish(journal); return;
+                }
+                sawF7 = true; f7Tick = server.getTickCount();
+                helper.assertTrue(RocketEscrowGate.resourcesIdle(rocket) && !RocketEscrowGate.idle(rocket)
+                        && RocketRuntime.resourceMutationAllowed(rocket) && wrapper.equals(rocket.escrowSection()),
+                        "F7 did not release only the unchanged source's resource lock");
+                helper.assertTrue(io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferFenceGameTests.flightTickets(server, transfer) == slots.size(),
+                        "CANCELLED tickets were not retained through F7");
+                var pads = io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex.get(server);
+                helper.assertTrue(transfer.equals(pads.find(transfer, claimedPad.reference()).orElseThrow().claim()),
+                        "CANCELLED pad claim was released before checked journal absence");
+                verifyStoredSurvivor(slots);
+                rocket.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_100), level.getGameTime()));
+                helper.assertTrue(rocket.escrowSection().epoch() == wrapper.epoch() + 1
+                        && rocket.flightData().orElseThrow().fuel().committedDebits().equals(List.of(previousDebit)),
+                        "Released CANCELLED refuel reset its epoch or debit history");
+            }
+            var arm = data.ledger().armedFlights().stream().filter(value -> value.transfer().equals(transfer)).findFirst().orElse(null);
+            if (arm != null) {
+                helper.assertTrue(arm.outcome() == (sawF7 ? EscrowFlightTables.Outcome.CANCELLED : EscrowFlightTables.Outcome.ARMED)
+                        && !RocketEscrowGate.idle(rocket), "Return fabricated completion or released terminal capacity early");
                 return;
             }
-            helper.assertTrue(EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(rocket))
-                    && EscrowGovernedTerminalPassengers.resolved(server, record, EscrowFlightTables.Outcome.CANCELLED, rocket)
-                    && rocket.getX() == position.getX() + 0.5 && rocket.getY() == position.getY()
-                    && rocket.getZ() == position.getZ() + 0.5 && flight.plan().isEmpty() && flight.activeTransferId().isEmpty(),
-                    "CANCELLED F6 checkpoint lacks its exact returned source or passenger");
-            if (checkpointAt < 0) { checkpointAt = level.getGameTime(); return; }
-            if (level.getGameTime() - checkpointAt < 5) { return; }
+            helper.assertTrue(sawF6 && sawF7 && journal.actionAuthorityAvailable() && journal.find(transfer).isEmpty()
+                    && journal.acknowledgedGuard(record.logicalRocketId()).orElseThrow().transfer() == null
+                    && data.ledger().armedFlights().equals(otherArms), "F8 did not prune only its exact CANCELLED entry after checked absence");
+            helper.assertTrue(RocketEscrowGate.idle(rocket) && RocketRuntime.resourceMutationAllowed(rocket)
+                    && rocket.flightData().orElseThrow().fuel().totalAmount() == 1_100 && rocket.isAlive()
+                    && rocket.getPassengers().equals(List.of(passenger)), "F8 lost the available returned rocket or refuel");
+            helper.assertTrue(server.getTickCount() - f7Tick < RocketFlightLimits.FLIGHT_TICKET_TIMEOUT_TICKS
+                    && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferFenceGameTests.flightTickets(server, transfer) == 0,
+                    "CANCELLED F8 relied on ticket expiry instead of explicit release");
+            var pads = io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex.get(server);
+            helper.assertTrue(pads.find(transfer, claimedPad.reference()).orElseThrow().claim() == null
+                    && otherTransfer.equals(pads.find(transfer, otherPad.reference()).orElseThrow().claim()), "F8 released the wrong pad claim");
             if (fault == Fault.SPAWN) { helper.assertTrue(vetoes == 1, "Failed publication was retried instead of returned"); }
-            // Cached success is not authority after departure or a changed checked-journal lease.
-            passenger.stopRiding(); helper.assertTrue(!returns.checkpoint(server, record), "Departure retained the terminal checkpoint");
-            journal.setDirty(); helper.assertTrue(!returns.checkpoint(server, record), "Unacknowledged journal retained F6 authority");
+            finish(journal);
+        }
+
+        private void verifyStoredSurvivor(List<EscrowEndpoint> slots) {
+            var directory = net.minecraft.world.level.dimension.DimensionType.getStorageFolder(level.dimension(),
+                    level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)).resolve("entities");
+            try {
+                for (var slot : slots) {
+                    helper.assertTrue(EscrowGovernedTerminalDisk.validator(record, EscrowFlightTables.Outcome.CANCELLED, slot,
+                            EscrowNativeEnvelope.rocket(rocket)).test(AnvilRecordReader.read(directory, new ChunkPos(slot.x(), slot.z())).root()),
+                            "F7 disk lost the unchanged source or proved destination absence");
+                }
+            } catch (java.io.IOException failure) { throw new java.io.UncheckedIOException(failure); }
+        }
+
+        private void finish(RocketTransferSavedData journal) {
+            var server = level.getServer();
+            passenger.stopRiding();
             journal.remove(transfer); RocketJournalGameTestSupport.acknowledgeFixture(helper);
             server.getPlayerList().remove(passenger); rocket.discard();
             if (veto != null) { net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(veto); }
@@ -189,6 +277,7 @@ public final class EscrowGovernedLiveReturnGameTests {
 
         private void prepare() {
             var server = level.getServer(); data = ResourceEscrowSavedData.forTests(server); data.bind(server);
+            otherArms = List.copyOf(data.ledger().armedFlights());
             // Remote chunks use generated terrain, not the empty GameTest template. Own only these four cells.
             for (var origin : List.of(position, destination)) {
                 for (int height = 0; height < 2; height++) {
@@ -214,6 +303,13 @@ public final class EscrowGovernedLiveReturnGameTests {
             tag.getCompound("RocketEntityData").put("resource_escrow", wrapper.encode()); rocket.load(tag);
             helper.assertTrue(level.addFreshEntity(rocket) && passenger.startRiding(rocket, true), "Return source or passenger was not published");
             initial = rocket.flightData().orElseThrow(); var from = rocket.snapshot().orElseThrow();
+            // Synthetic dependent claims check exact release, not named-pad destination selection.
+            var pads = io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex.get(server);
+            var owner = rocket.ownerId().orElseThrow();
+            claimedPad = pads.register(transfer, owner, UUID.randomUUID(), "Cancelled", new io.github.sunthemoon.advancedrocketrycommunity.station.model.StationPosition(0, 80, 0));
+            otherPad = pads.register(transfer, owner, UUID.randomUUID(), "Unrelated", new io.github.sunthemoon.advancedrocketrycommunity.station.model.StationPosition(1, 80, 0));
+            helper.assertTrue(pads.claim(transfer, claimedPad.reference(), claimedPad.physicalId(), transfer)
+                    && pads.claim(transfer, otherPad.reference(), otherPad.physicalId(), otherTransfer), "Return pad dependencies were not claimed");
             var to = from.relocated(UUID.randomUUID(), from.sourceDimension(), new RocketPosition(destination.getX(), destination.getY(), destination.getZ()), now);
             helper.assertTrue(new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector()
                     .availableLoaded(level, to), "Return fixture's landing area is not clear before fault injection");

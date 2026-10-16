@@ -31,7 +31,7 @@ final class RocketGovernedSourceDispatcher {
             if (source != null && !source.operational()) { return; }
             var returns = EscrowRuntime.of(server).returns();
             if (returns.handles(record, source)) {
-                returns.tick(server, journal, record, source,
+                returns.tickThroughTerminal(server, journal, record, source,
                         () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays));
                 return;
             }
