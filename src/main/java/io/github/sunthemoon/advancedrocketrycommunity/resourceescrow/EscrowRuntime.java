@@ -42,6 +42,7 @@ public final class EscrowRuntime {
     private EscrowSettlementProbe settlementProbe;
     private EscrowSettlementCompletionProbe settlementCompletionProbe;
     private EscrowPreF2Probe preF2Probe;
+    private volatile EscrowReconciliationProbe reconciliationProbe;
     private EscrowSourceClockProbe sourceClockProbe;
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
@@ -107,6 +108,7 @@ public final class EscrowRuntime {
         return reconciliation;
     }
     public void checkpoint(String cut) {
+        var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
         if (returnProbe != null) { returnProbe.checkpoint(cut); }
@@ -198,7 +200,10 @@ public final class EscrowRuntime {
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("FT_")) {
+            if (testCase.startsWith("CR_")) {
+                if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
+                runtime.reconciliationProbe.tick();
+            } else if (testCase.startsWith("FT_")) {
                 if (runtime.terminalProbe == null) { runtime.terminalProbe = new EscrowTerminalProbe(event.getServer()); }
                 runtime.terminalProbe.tick();
             } else if (testCase.startsWith("RT_")) {

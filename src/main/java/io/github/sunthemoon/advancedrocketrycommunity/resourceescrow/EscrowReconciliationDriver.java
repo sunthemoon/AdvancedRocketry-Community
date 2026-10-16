@@ -101,6 +101,7 @@ final class EscrowReconciliationDriver {
         catch (IllegalArgumentException dependency) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
         var states = view.ends.entrySet().stream().collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().state()));
         if (!EscrowReconciliationValidation.retirementReady(view.root, ids, states)) {
+            EscrowRuntime.of(server).checkpoint("C3_LATER_MEMBER_WAIT");
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
         }
         var work = checkpoints.get(op.id());
@@ -122,6 +123,7 @@ final class EscrowReconciliationDriver {
         for (var end : work.ends.values()) {
             if (work.proofs.containsKey(end.endpoint().key())) { continue; }
             var frozen = work; var targets = work.targets(end.endpoint()); var runtime = EscrowRuntime.of(server);
+            runtime.checkpoint(end.endpoint().kind() == EscrowEndpoint.Kind.ENTITY ? "C4_DESTINATION_SELECTED" : "C4_SOURCE_SELECTED");
             work.busy = true;
             boolean accepted = runtime.barrier().beginJoint(runtime.store(view.ends.get(end.endpoint().key()).level()), targets,
                     server.getTickCount(), result -> {
