@@ -19,6 +19,13 @@ public final class EscrowGovernedPhases {
     private Mount mount;
     private final EscrowGovernedPhaseTracking tracking = new EscrowGovernedPhaseTracking();
     public boolean allowsNative(RocketEntity source, RocketEntity destination) { return tracking.allows(source) && tracking.allows(destination); }
+
+    /** A retired flight's observations cannot constrain its successor's next flight. */
+    public boolean releaseCompleted(EscrowCoordinator coordinator, RocketTransferSavedData journal, EscrowFlightTables.Armed terminal) {
+        if (!EscrowGovernedCleanup.absent(coordinator, journal, terminal)) { return false; }
+        tracking.completed(terminal);
+        return true;
+    }
     void observe(RocketEntity rocket) { tracking.observe(rocket); }
     void follow(RocketEntity rocket, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData flight, Vec3 position) {
         tracking.follow(rocket, flight, position);

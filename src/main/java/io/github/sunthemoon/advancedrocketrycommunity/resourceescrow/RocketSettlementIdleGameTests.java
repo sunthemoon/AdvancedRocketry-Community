@@ -320,6 +320,8 @@ public final class RocketSettlementIdleGameTests {
                         rocket.level().getGameTime()));
                 helper.assertTrue(rocket.escrowSection().epoch() == 1 && rocket.flightData().orElseThrow().fuel().totalAmount() == 2_000
                         && rocket.flightData().orElseThrow().fuel().committedDebits().equals(completed), "Successor refuelling lost its new epoch or debit history");
+                helper.assertTrue(EscrowRuntime.of(server).flightPhases().allowsNative(rocket, null),
+                        "Completed F8 retained an old F5 observation across successor refuelling");
                 step = 5; return;
             }
             helper.assertTrue(completed.size() == 2, "Required two-flight case did not complete");

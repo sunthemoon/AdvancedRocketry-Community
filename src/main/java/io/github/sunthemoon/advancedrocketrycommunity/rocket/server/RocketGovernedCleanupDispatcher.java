@@ -48,6 +48,7 @@ final class RocketGovernedCleanupDispatcher {
                 continue;
             }
             if (state.record != null && !unclaimed(server, journal, state.record, bays)) { continue; }
+            if (!EscrowRuntime.of(server).flightPhases().releaseCompleted(coordinator, journal, arm)) { continue; }
             EscrowRuntime.of(server).checkpoint("F8_JOURNAL_ACK");
             // On restart there are no old runtime tickets. A retained record supplies both exact
             // ticket coordinates in the live path; the saved pad index can release by exact T.
