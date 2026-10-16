@@ -14,11 +14,11 @@ import org.joml.Matrix4f;
 
 /**
  * ADR-057 section 6: one bounded accretion-disc effect around a generating black-hole generator, from its update
- * tag only: a flat ring of 48 quads (192 vertices, under the 512-vertex bound) slowly turning above the structure's
+ * tag only: a flat ring of 48 double-sided quads (384 vertices, under the 512-vertex bound) slowly turning above the structure's
  * centre. Drawn from code; no texture is used or copied.
  */
 public final class AccretionDiscRenderer implements BlockEntityRenderer<BlackHoleGeneratorBlockEntity> {
-    private static final int SEGMENTS = 48;
+    static final int SEGMENTS = 48;
     private static final float INNER = 1.2F;
     private static final float OUTER = 2.6F;
 
@@ -47,7 +47,7 @@ public final class AccretionDiscRenderer implements BlockEntityRenderer<BlackHol
         pose.popPose();
     }
 
-    private static void quad(VertexConsumer consumer, Matrix4f matrix, double a0, double a1, int alpha) {
+    static void quad(VertexConsumer consumer, Matrix4f matrix, double a0, double a1, int alpha) {
         float cos0 = (float) Math.cos(a0);
         float sin0 = (float) Math.sin(a0);
         float cos1 = (float) Math.cos(a1);
@@ -56,6 +56,12 @@ public final class AccretionDiscRenderer implements BlockEntityRenderer<BlackHol
         consumer.vertex(matrix, OUTER * cos0, 0.0F, OUTER * sin0).color(255, 120, 40, 0).endVertex();
         consumer.vertex(matrix, OUTER * cos1, 0.0F, OUTER * sin1).color(255, 120, 40, 0).endVertex();
         consumer.vertex(matrix, INNER * cos1, 0.0F, INNER * sin1).color(255, 210, 160, alpha).endVertex();
+        // lightning() culls back faces. Keep the original underside and add the opposite winding;
+        // exactly one face contributes from either side, preserving its colour and transparency.
+        consumer.vertex(matrix, INNER * cos1, 0.0F, INNER * sin1).color(255, 210, 160, alpha).endVertex();
+        consumer.vertex(matrix, OUTER * cos1, 0.0F, OUTER * sin1).color(255, 120, 40, 0).endVertex();
+        consumer.vertex(matrix, OUTER * cos0, 0.0F, OUTER * sin0).color(255, 120, 40, 0).endVertex();
+        consumer.vertex(matrix, INNER * cos0, 0.0F, INNER * sin0).color(255, 210, 160, alpha).endVertex();
     }
 
     @Override
