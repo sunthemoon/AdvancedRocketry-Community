@@ -55,6 +55,8 @@ public final class EscrowRuntime {
     private final EscrowGovernedPhases flightPhases = new EscrowGovernedPhases();
     private final EscrowGovernedArrival arrivals = new EscrowGovernedArrival();
     private final EscrowGovernedReturn returns = new EscrowGovernedReturn();
+    private final EscrowGovernedTerminal terminal = new EscrowGovernedTerminal();
+    public EscrowGovernedTerminal terminal() { return terminal; }
     public EscrowGovernedReturn returns() { return returns; }
     public EscrowGovernedArrival arrivals() { return arrivals; }
     public EscrowGovernedPhases flightPhases() { return flightPhases; }
@@ -72,10 +74,12 @@ public final class EscrowRuntime {
         flightPhases.observe(rocket);
         arrivals.observe(rocket);
         returns.observe(rocket);
+        terminal.observe(rocket);
         flightCheckpoint.observe(rocket); preF2Cancellation.observe(rocket);
     }
     void invalidateFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
         flightCheckpoint.invalidated(rocket); preF2Cancellation.invalidated(rocket);
+        terminal.invalidated(rocket);
         rocket.assemblyTransactionId().ifPresent(governedFlights::invalidated);
     }
     EscrowSettlementOperator settlement() { return settlement; }
@@ -235,6 +239,7 @@ public final class EscrowRuntime {
         runtime.settlements.close();
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
+        runtime.terminal.close();
         runtime.governedFlights.close(); runtime.destinations.close();
         runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.barrier != null) { runtime.barrier.close(); }
@@ -263,6 +268,7 @@ public final class EscrowRuntime {
         runtime.settlements.close();
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
+        runtime.terminal.close();
         runtime.governedFlights.close(); runtime.destinations.close();
         runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
@@ -270,7 +276,7 @@ public final class EscrowRuntime {
     private static final class Provider implements ICapabilityProvider {
         private final EscrowRuntime runtime = new EscrowRuntime();
         private final LazyOptional<EscrowRuntime> value = LazyOptional.of(() -> runtime);
-        private void invalidate() { runtime.stopping = true; runtime.governedFlights.close(); runtime.destinations.close(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
+        private void invalidate() { runtime.stopping = true; runtime.terminal.close(); runtime.governedFlights.close(); runtime.destinations.close(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
         @Override @NotNull public <T> LazyOptional<T> getCapability(@NotNull Capability<T> requested, @Nullable Direction side) {
             return CAPABILITY.orEmpty(requested, value);
         }

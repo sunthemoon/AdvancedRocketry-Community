@@ -257,11 +257,11 @@ public final class RocketEntity extends Entity implements MenuProvider {
         }
         RocketFlightData previous = flightData;
         RocketFlightData candidate = normalizeFlightData(Objects.requireNonNull(updatedFlightData, "updatedFlightData"));
-        if (RocketEscrowGate.flightFrozen(this)) {
+        if (RocketEscrowGate.flightFrozen(this) && !RocketEscrowGate.terminalFuelUpdate(this, candidate)) {
             throw new IllegalStateException("Rocket flight state requires an exact escrow action permit");
         }
         boolean resourceChanged = previous != null && !previous.fuel().sameResources(candidate.fuel());
-        if (resourceChanged && !RocketEscrowGate.idle(this)) {
+        if (resourceChanged && !RocketEscrowGate.resourcesIdle(this)) {
             throw new IllegalStateException("Rocket resources are protected by escrow");
         }
         RocketEscrowSection nextSection = resourceChanged ? escrowSection.afterNativeResourceMutation() : escrowSection;

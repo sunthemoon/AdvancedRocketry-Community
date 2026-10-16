@@ -27,6 +27,10 @@ final class RocketGovernedArrivalDispatcher {
             var completion = MoonLandingCompletion.complete(server, journal, record, arrival, bays,
                     () -> land(server, journal, record, arrival, bays), FirstEventDispositionSource.WORLD);
             if (completion == MoonLandingCompletion.Result.ORDINARY) { land(server, journal, record, arrival, bays); }
+        } else if (result == EscrowGovernedArrival.Result.LANDED) {
+            EscrowRuntime.of(server).terminal().tick(server, journal, record, arrival,
+                    io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowFlightTables.Outcome.HANDED_OFF,
+                    () -> RocketGovernedLaunchBoundary.allows(server, journal, record, null, arrival, bays));
         }
     }
 

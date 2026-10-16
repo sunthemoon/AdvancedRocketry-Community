@@ -172,6 +172,34 @@ class EscrowGovernedHandoffTest {
         }
     }
 
+    @Test void acceptedR13MotionIntervalKeepsDiskAuthorityAndReleasesOnlyAfterCallback() throws Exception {
+        try (var f = new Fixture(EscrowFlightTables.Outcome.HANDED_OFF, false)) {
+            var reached = new java.util.concurrent.CountDownLatch(1);
+            var resume = new java.util.concurrent.CountDownLatch(1);
+            var results = new ArrayList<Boolean>();
+            try (var writer = f.writer(CheckedSavedDataFile::atomicMove, cut -> {
+                if (!cut.equals("K8")) { return; }
+                reached.countDown();
+                try { assertTrue(resume.await(5, java.util.concurrent.TimeUnit.SECONDS)); }
+                catch (InterruptedException stopped) { Thread.currentThread().interrupt(); throw new IllegalStateException(stopped); }
+            }); var coordinator = new EscrowCoordinator(f.data, writer)) {
+                assertTrue(EscrowGovernedHandoff.request(coordinator, f.journal, f.proof, results::add)); coordinator.tick(0);
+                try {
+                    assertTrue(reached.await(5, java.util.concurrent.TimeUnit.SECONDS));
+                    f.observed.put("motion", GovernedTransferFixture.vector(0.125, 0, 0));
+                    assertTrue(f.proof.valid()); assertTrue(results.isEmpty());
+                    assertFalse(EscrowTerminalSuccessor.matches(coordinator.ledger(), f.record, f.observed));
+                } finally { resume.countDown(); }
+                pump(coordinator, 1, () -> !results.isEmpty());
+                assertEquals(List.of(true), results);
+                assertTrue(EscrowTerminalSuccessor.matches(coordinator.ledger(), f.record, f.observed));
+                assertEquals(coordinator.ledger(), f.disk());
+                assertEquals(f.record, f.journal.find(f.record.transferId()).orElseThrow());
+                assertEquals(GovernedTransferFixture.vector(0, 0, 0), f.survivor.getList("motion", 6));
+            } finally { resume.countDown(); }
+        }
+    }
+
     @Test void unknownKeepsExactCandidateTokensAndCapacityUntilItsAcknowledgement() throws Exception {
         try (var f = new Fixture(EscrowFlightTables.Outcome.CANCELLED, false)) {
             var results = new ArrayList<Boolean>(); var fail = new AtomicBoolean(true);

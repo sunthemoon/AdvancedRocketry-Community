@@ -448,7 +448,7 @@ final class RocketTransferService {
 
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
     boolean resourceMutationAllowed(RocketEntity rocket) {
-        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) { return false; }
+        if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
                 || !rocket.operational() || rocket.flightData().orElseThrow().activeTransferId().isPresent()) {
             return false;
@@ -456,6 +456,9 @@ final class RocketTransferService {
         var journal = RocketTransferSavedData.get(level.getServer());
         if (journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow())) { return false; }
         var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
+        if (record != null && record.nativeTransfer().isPresent()) {
+            return io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.terminalSuccessor(rocket);
+        }
         return resourceMutationAllowed(journal.operational(), record == null ? null : record.phase(),
                 record != null && settledTransfers.contains(record.transferId()) && !liveTransfers.contains(record.transferId()),
                 record != null && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record));

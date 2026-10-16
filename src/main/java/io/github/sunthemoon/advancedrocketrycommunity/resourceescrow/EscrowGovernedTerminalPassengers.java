@@ -23,7 +23,8 @@ final class EscrowGovernedTerminalPassengers {
         return resolved(manifest, id -> {
             var player = server.getPlayerList().getPlayer(id);
             return player != null && player.getServer() == server && !player.isRemoved() && player.isAlive()
-                    && !player.isSpectator() && player.connection != null && player.level() == survivor.level()
+                    && !player.isSpectator() && player.connection != null && player.connection.connection.isConnected()
+                    && player.level() == survivor.level()
                     && player.getVehicle() == survivor;
         });
     }

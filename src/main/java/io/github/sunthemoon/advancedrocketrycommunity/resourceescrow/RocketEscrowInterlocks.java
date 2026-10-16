@@ -26,11 +26,20 @@ public final class RocketEscrowInterlocks {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void left(net.minecraftforge.event.entity.EntityLeaveLevelEvent event) {
+        if (!event.getLevel().isClientSide && event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            EscrowRuntime.of(player.getServer()).terminal().passengerLeft(player.getUUID());
+        }
         // Forge posts this on tracking loss as well as removal. A previously loaded proof is no longer current.
         if (!event.getLevel().isClientSide && event.getEntity() instanceof RocketEntity rocket) {
             EscrowRuntime.of(rocket.getServer()).invalidateFlight(rocket);
             RocketEscrowAudit.observe(rocket);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.onRocketJoined(rocket);
+        }
+    }
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void logout(net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
+            EscrowRuntime.of(player.getServer()).terminal().passengerLeft(player.getUUID());
         }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST)
