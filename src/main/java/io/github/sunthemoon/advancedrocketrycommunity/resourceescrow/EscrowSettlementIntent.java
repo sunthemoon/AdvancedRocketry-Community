@@ -103,6 +103,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         EscrowTags.require(component.stream().anyMatch(op -> op.phase() == EscrowOperation.Phase.REPAIR
                 || op.phase() == EscrowOperation.Phase.STALLED), "Component has no manual conflict or persisted stall");
         var members = component.stream().map(Member::of).toList();
+        requireReceiptRoom(root, members.stream().map(Member::id).toList());
         var sorted = sorted(observations); requireEndpoints(component, sorted);
         return create(choice, root.id(), actor, actorName, tick, -1, members, sorted, new CompoundTag());
     }
@@ -111,6 +112,7 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
         EscrowTags.require(root.records().stream().noneMatch(op -> op.guard().rocket().equals(floor.getUUID("rocket_id"))),
                 "Floor still has an unretired operation");
         EscrowTags.require(root.floors().stream().anyMatch(floor::equals), "Floor is not authoritative");
+        requireReceiptRoom(root, List.of(operation));
         return create(Choice.TRANSFER_FLOOR_RETIRE, root.id(), actor, actorName, tick, -1,
                 List.of(new Member(operation, EscrowOperation.Phase.SETTLING_ABANDON, EscrowReason.FLOOR_CONFLICT,
                         RocketNativeResources.signature(floor))), sorted(observations), floor);
@@ -198,11 +200,25 @@ public record EscrowSettlementIntent(Choice choice, UUID ledger, UUID actor, Str
                 count += (int) intent.ids().stream().filter(id -> root.tombstones().stream().noneMatch(tag -> tag.getUUID("op_id").equals(id))).count();
             }
         }
-        EscrowTags.require(count <= EscrowLimits.TOMBSTONES, "Settlement tombstone capacity exhausted");
+        EscrowTags.require(count <= EscrowLimits.TOMBSTONES, RECEIPTS_FULL);
         if (digests.isEmpty()) { return; }
         long bytes = io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(EscrowCodec.encode(root));
         EscrowTags.require(bytes + (count - root.tombstones().size()) * 2_048L <= EscrowLimits.ROOT_BYTES,
                 "Settlement retirement byte reservation exhausted");
+    }
+    static final String RECEIPTS_FULL = "Permanent settlement receipt capacity exhausted (64 members across accept-current, abandon and floor settlement); stopped-server whole-world offline repair required. No receipt eviction.";
+    static int reservedReceipts(EscrowLedger root) {
+        var ids = receiptIds(root);
+        return ids.size() - root.tombstones().size();
+    }
+    private static Set<UUID> receiptIds(EscrowLedger root) {
+        var ids = root.tombstones().stream().map(tag -> tag.getUUID("op_id")).collect(java.util.stream.Collectors.toSet());
+        root.records().stream().filter(op -> !op.settlement().isEmpty()).map(EscrowOperation::id).forEach(ids::add);
+        return ids;
+    }
+    static void requireReceiptRoom(EscrowLedger root, java.util.Collection<UUID> members) {
+        var ids = receiptIds(root); ids.addAll(members);
+        EscrowTags.require(ids.size() <= EscrowLimits.TOMBSTONES, RECEIPTS_FULL);
     }
     private static void requireEndpoints(List<EscrowOperation> component, List<Observation> observations) {
         var keys = component.stream().flatMap(op -> java.util.stream.Stream.of(op.source().key(), op.destination().key()))

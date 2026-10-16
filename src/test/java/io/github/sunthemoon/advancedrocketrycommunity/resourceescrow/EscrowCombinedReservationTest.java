@@ -102,7 +102,9 @@ class EscrowCombinedReservationTest {
             if (settleFills) {
                 coordinator.tick(tick += 10);
                 var refused = assertThrows(IllegalArgumentException.class, () -> coordinator.beginSettlement(second, ignored -> fail()));
-                assertEquals(EscrowSettlementCapacity.FLOOR_FULL, refused.getMessage());
+                // Design 2 F8: all 64 members have irrevocable O1 receipt reservations.
+                // Completing/pruning those decisions cannot reclaim a permanent receipt slot.
+                assertEquals(EscrowSettlementIntent.RECEIPTS_FULL, refused.getMessage());
                 assertEquals(acknowledged, coordinator.ledger()); assertEquals(next, coordinator.nextSequence());
                 assertFalse(data.isDirty()); assertEquals(capacity + 1, coordinator.admissionAuthority().pendingCount());
                 assertTrue(writer.idle()); assertTrue(writer.capturedOperations().isEmpty());
