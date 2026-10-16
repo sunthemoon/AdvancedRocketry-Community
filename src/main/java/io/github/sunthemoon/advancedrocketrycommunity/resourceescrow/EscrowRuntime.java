@@ -177,6 +177,13 @@ public final class EscrowRuntime {
             if (runtime.settlementCompletionProbe == null) { runtime.settlementCompletionProbe = new EscrowSettlementCompletionProbe(event.getServer()); }
             runtime.settlementCompletionProbe.tick();
         }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && System.getProperty("advancedrocketrycommunity.escrowScenario") != null
+                && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("SO_")) {
+            // Observe retained O1 before recovery can publish normalization or advance O2.
+            if (runtime.settlementProbe == null) { runtime.settlementProbe = new EscrowSettlementProbe(event.getServer()); }
+            runtime.settlementProbe.tick();
+        }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) {
             var coordinator = data.bind(event.getServer());
@@ -221,8 +228,7 @@ public final class EscrowRuntime {
             } else if (testCase.startsWith("SR_")) {
                 // This probe runs before settlement recovery so its deliberate veto precedes every O2 attempt.
             } else if (testCase.startsWith("SO_")) {
-                if (runtime.settlementProbe == null) { runtime.settlementProbe = new EscrowSettlementProbe(event.getServer()); }
-                runtime.settlementProbe.tick();
+                // The O1 probe observes before recovery above, then follows eventual O2-O4.
             } else if (testCase.startsWith("RA_")) {
                 if (runtime.rocketAuditProbe == null) { runtime.rocketAuditProbe = new EscrowRocketAuditProbe(event.getServer()); }
                 runtime.rocketAuditProbe.tick();

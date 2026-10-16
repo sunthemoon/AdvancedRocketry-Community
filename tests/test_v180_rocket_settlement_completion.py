@@ -137,9 +137,63 @@ class SettlementCompletionOracleTest(unittest.TestCase):
         self.transfers = [dict(transfer_id=[9, 9, 9, 9])]
         with self.assertRaises(native.smoke.SmokeError): self.inspect()
 
+    def test_pre_o1_neither_invents_intent_nor_releases_records(self):
+        self.root["tombstones"] = []
+        self.root["records"] = [dict(destination=dict(kind="ENTITY", identity=self.rocket["UUID"]),
+                                     phase="REPAIR", reason="OTHER_STATE")]
+        self.wrapper["resource_escrow"]["markers"] = [dict(op_id=[1, 2, 3, 4])]
+        self.inspect("SR_ACCEPT__O1_BEFORE")
+        self.root["records"][0]["settlement"] = dict(digest="a" * 64)
+        with self.assertRaises(native.smoke.SmokeError): self.inspect("SR_ACCEPT__O1_BEFORE")
+
+    def test_floor_requires_real_empty_payload_at_ack_but_allows_later_vanilla_empty_deletion(self):
+        def check(restarted, present, entities):
+            def slot(path, index=132):
+                return dict(Position=[index & 31, index >> 5], Entities=entities, block_entities=[])
+            with patch.object(native, "ledger", return_value=self.root), patch.object(native, "digest", return_value="a" * 64), \
+                    patch.object(native, "journal", return_value=dict(transfers=[])), \
+                    patch.object(native, "slot_present", return_value=present), patch.object(native, "record", side_effect=slot):
+                return native.inspect(Path("world"), "SR_FLOOR__O4_AFTER", restarted=restarted)
+        self.assertEqual(0, check(False, True, [])["raw_total"])
+        self.assertEqual({132: False, 133: False}, check(True, False, [])["empty_slots"])
+        with self.assertRaises(native.smoke.SmokeError): check(False, False, [])
+        with self.assertRaises(native.smoke.SmokeError): check(False, True, [dict(id="minecraft:armor_stand")])
+
+    def test_named_fill_must_retain_the_exact_guard_until_checked_removal(self):
+        guard = dict(transfer_id=[9, 8, 7, 6])
+        self.root["records"] = [dict(guard=guard, settlement=dict(actor=native.ACTOR, actor_name="Server", digest="a" * 64,
+                                      observations=[dict(endpoint=dict(kind="ENTITY", identity=self.rocket["UUID"]))]))]
+        self.root["floors"] = [dict(transfer_id=guard["transfer_id"])]
+        self.root["tombstones"] = []
+        self.transfers = [dict(transfer_id=guard["transfer_id"])]
+        self.wrapper["resource_escrow"]["markers"] = [dict(op_id=[1, 2, 3, 4])]
+        self.inspect("SR_NAMED_ACCEPT__O1_AFTER", restarted=False)
+        self.transfers = [dict(transfer_id=[0, 0, 0, 0])]
+        with self.assertRaises(native.smoke.SmokeError): self.inspect("SR_NAMED_ACCEPT__O1_AFTER", restarted=False)
+        self.transfers = []
+        with self.assertRaises(native.smoke.SmokeError): self.inspect("SR_NAMED_ACCEPT__O1_AFTER", restarted=False)
+
+    def test_release_preserves_exact_frozen_decision_and_named_guard(self):
+        endpoint = dict(kind="ENTITY", identity=[5, 6, 7, 8])
+        observation = dict(endpoint=endpoint, missing=0, quantity=1000, normalized_wrapper={})
+        intent = dict(actor=native.ACTOR, actor_name="Server", digest="a" * 64, choice="ACCEPT_CURRENT",
+                      confirmed_tick=10, observations=[observation])
+        op = dict(op_id=[1, 2, 3, 4], kind="FLUID_PROPULSION_FILL", source=dict(kind="BLOCK_ENTITY"),
+                  destination=endpoint, guard=dict(transfer_id=[9, 9, 9, 9]), settlement=intent)
+        receipt = dict(op_id=op["op_id"], actor=native.ACTOR, actor_name="Server", decision_digest="a" * 64,
+                       choice="ACCEPT_CURRENT", confirmed_tick=10, guards=[op["guard"]],
+                       before_choice=[{key: value for key, value in observation.items() if key != "normalized_wrapper"}])
+        before = dict(records=[op], tombstones=[])
+        after = dict(records=[], tombstones=[receipt])
+        native.require_progress(before, after)
+        for key, value in (("actor_name", "different"), ("choice", "ABANDON"), ("decision_digest", "b" * 64),
+                           ("confirmed_tick", 11), ("guards", []), ("before_choice", []), ("op_id", [8, 8, 8, 8])):
+            changed = copy.deepcopy(after); changed["tombstones"][0][key] = value
+            with self.assertRaises(native.smoke.SmokeError): native.require_progress(before, changed)
+
     def test_matrix_covers_every_acknowledgement_and_every_choice_veto(self):
         for choice in native.CHOICES:
-            for phase in ("O3", "O4"):
+            for phase in ("O1", "O3", "O4"):
                 for side in ("BEFORE", "AFTER"):
                     self.assertIn(f"SR_{choice}__{phase}_{side}", native.CASES)
             for index in range(3 if choice.startswith("CHAIN") else 2):
@@ -148,6 +202,9 @@ class SettlementCompletionOracleTest(unittest.TestCase):
             self.assertIn(f"SR_{choice}__VETO", native.CASES)
         self.assertIn("SR_FLOOR__O3J_BEFORE", native.CASES)
         self.assertIn("SR_FLOOR__O3J_AFTER", native.CASES)
+        for choice in ("NAMED_ACCEPT", "NAMED_ABANDON"):
+            for side in ("BEFORE", "AFTER"):
+                self.assertIn(f"SR_{choice}__O3J_{side}", native.CASES)
         self.assertIn("SR_NORMALIZE__O_BIND_BEFORE", native.CASES)
         self.assertIn("SR_NORMALIZE__O_BIND_AFTER", native.CASES)
         self.assertEqual(len(native.CASES), len(set(native.CASES)))

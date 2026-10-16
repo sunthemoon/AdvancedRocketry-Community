@@ -181,6 +181,36 @@ class EscrowSettlementCompletionTest {
         }
     }
     private Path file() { return directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()); }
+    @Test void genuinelyEmptyEntityPayloadProvesAbsenceOnlyAtItsExactSlot() {
+        var endpoint = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, "minecraft:overworld", EscrowTestFixtures.id(801),
+                EscrowTestFixtures.id(802), "advancedrocketrycommunity:rocket", 4, 0, 4, EscrowEndpoint.Unit.PRIMARY,
+                1, EscrowTestFixtures.hash(1), EscrowTestFixtures.hash(1));
+        var missing = new EscrowSettlementIntent.Observation(endpoint, null, false, 0);
+        var validator = EscrowSettlementDisk.validator(missing, EscrowTestFixtures.id(500));
+        var root = new CompoundTag(); root.putIntArray("Position", new int[] {4, 4}); root.put("Entities", new ListTag());
+        assertTrue(validator.test(root));
+        root.putIntArray("Position", new int[] {5, 4}); assertFalse(validator.test(root));
+        root.putIntArray("Position", new int[] {4, 4}); root.remove("Entities"); assertFalse(validator.test(root));
+        var returning = new CompoundTag(); returning.putUUID("UUID", endpoint.identity()); returning.putString("id", endpoint.type());
+        var entities = new ListTag(); entities.add(returning); root.put("Entities", entities); assertFalse(validator.test(root));
+    }
+    @Test void eachFillChoiceRetainsItsNamedTransferGuardThroughTheReceipt() {
+        for (boolean missing : List.of(false, true)) {
+            var sample = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE);
+            var guard = new EscrowGuard(sample.guard().rocket(), EscrowTestFixtures.id(800), 1, EscrowTestFixtures.hash(9));
+            var op = new EscrowOperation(sample.id(), sample.sequence(), sample.owner(), sample.createdTick(), sample.phase(), sample.reason(),
+                    sample.payload(), sample.payloadHash(), sample.source(), sample.destination(), guard);
+            var root = EscrowTestFixtures.ledger(op); var intent = intent(root, missing);
+            var frozen = intent.freeze(root); var installed = EscrowSettlementTombstones.install(frozen, intent);
+            assertEquals(guard, EscrowCodec.guard(installed.tombstones().get(0).getList("guards", 10).getCompound(0)));
+            assertFalse(installed.tombstones().get(0).getBoolean("released")); assertEquals(1, installed.records().size());
+            var released = EscrowSettlementTombstones.release(installed, intent);
+            assertTrue(released.records().isEmpty());
+            assertEquals(guard, EscrowCodec.guard(released.tombstones().get(0).getList("guards", 10).getCompound(0)));
+            assertTrue(EscrowSettlementTombstones.retiredTransfer(released, guard.rocket(), guard.transfer()));
+            assertEquals(released, EscrowCodec.decode(EscrowCodec.encode(released)));
+        }
+    }
     @Test void nativeTwoSlotFloorRetiresAtO4WithoutCreatingAReadyHead() {
         var floor = EscrowTestFixtures.floor(99); floor.putUUID("transfer_id", EscrowTestFixtures.id(800));
         floor.putString("signature_kind", EscrowSignatureKind.FUEL_VECTOR_V1.name());

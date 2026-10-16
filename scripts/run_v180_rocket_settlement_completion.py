@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Force-stop O2/O3/O4 settlement acknowledgements and O-veto; restart each world twice."""
+"""Force-stop O1/O2/O3/O4 settlement acknowledgements and vetoes; restart each world twice."""
 from __future__ import annotations
 
 import argparse
@@ -16,10 +16,11 @@ from run_v180_escrow_forced_stop import digest, ledger, record, LEDGER
 from run_v180_rocket_settlement_intent import ACTOR
 from inspect_celestial_saved_data import NbtReader
 
-CHOICES = ("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMALIZE")
+CHOICES = ("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMALIZE", "NAMED_ACCEPT", "NAMED_ABANDON")
 CASES = tuple("SR_" + choice + "__" + boundary for choice in CHOICES for boundary in (
+    "O1_BEFORE", "O1_AFTER",
     *(f"O2_{side}_{index}" for index in range(3 if choice.startswith("CHAIN") else 2) for side in ("BEFORE", "AFTER")),
-    "O3_BEFORE", "O3_AFTER", *(("O3J_BEFORE", "O3J_AFTER") if choice == "FLOOR" else ("O3J_AFTER",)),
+    "O3_BEFORE", "O3_AFTER", *(("O3J_BEFORE", "O3J_AFTER") if choice == "FLOOR" or choice.startswith("NAMED_") else ("O3J_AFTER",)),
     "O4_BEFORE", "O4_AFTER", "VETO", *(("VETO_CHECKPOINTED",) if choice != "FLOOR" else ()),
     *(("O_BIND_BEFORE", "O_BIND_AFTER") if choice == "NORMALIZE" else ()) ))
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
@@ -70,19 +71,53 @@ def inspect_hold(lines: list[str], cut: str, restart: int) -> str:
     return expected
 
 
+def require_progress(before: dict, after: dict) -> None:
+    """Every released receipt must retain its exact O1 member, actor, choice, guard and observations."""
+    frozen = before["records"]
+    if not frozen:
+        if before["tombstones"] != after["tombstones"]:
+            raise smoke.SmokeError("Restart changed released receipt history")
+        return
+    if after["records"] or len(after["tombstones"]) != len(frozen):
+        raise smoke.SmokeError("Restart did not finish the frozen component")
+    receipts = {tuple(item["op_id"]): item for item in after["tombstones"]}
+    if set(receipts) != {tuple(op["op_id"]) for op in frozen}:
+        raise smoke.SmokeError("Released the wrong O1 members")
+    for op in frozen:
+        receipt, intent = receipts[tuple(op["op_id"])], op["settlement"]
+        for receipt_key, intent_key in (("decision_digest", "digest"), ("actor", "actor"), ("actor_name", "actor_name"),
+                                        ("choice", "choice"), ("confirmed_tick", "confirmed_tick")):
+            if receipt[receipt_key] != intent[intent_key]:
+                raise smoke.SmokeError("Release changed the frozen decision")
+        def same_endpoint(left, right):
+            return all(left.get(key) == right.get(key) for key in ("kind", "level", "identity", "logical_rocket", "type", "x", "y", "z", "unit"))
+        observations = [{key: value for key, value in item.items() if key != "normalized_wrapper"}
+                        for item in intent["observations"] if op["kind"] == "TRANSFER_FLOOR_RETIRE"
+                        or any(same_endpoint(item["endpoint"], endpoint) for endpoint in (op["source"], op["destination"]))]
+        if receipt["before_choice"] != observations or receipt["guards"] != [op["guard"]]:
+            raise smoke.SmokeError("Release changed the frozen observations or named guard")
+
+
 def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
     choice, boundary = cut[3:].split("__")
     count = 2 if choice.startswith("CHAIN") else 1
     floor, veto = choice == "FLOOR", boundary in ("VETO", "VETO_CHECKPOINTED")
+    named = choice.startswith("NAMED_")
+    pre_o1 = boundary == "O1_BEFORE"
     stale_source = boundary == "VETO"
-    released = restarted and not veto or boundary == "O4_AFTER"
+    released = restarted and not veto and not pre_o1 or boundary == "O4_AFTER"
     installed = released or boundary in ("O3_AFTER", "O3J_BEFORE", "O3J_AFTER", "O4_BEFORE")
     root = ledger(world / "data" / LEDGER)
-    if (len(root["records"]) != (0 if released else count)
-            or len(root["floors"]) != int(floor and not released)
+    if (len(root["records"]) != (0 if released or floor and pre_o1 else count)
+            or len(root["floors"]) != int((floor or named) and not released)
             or len(root["tombstones"]) != (count if installed else 0)):
         raise smoke.SmokeError("Wrong durable settlement boundary, record/floor loss or premature retirement")
-    if not released:
+    if pre_o1:
+        if any("settlement" in op for op in root["records"]):
+            raise smoke.SmokeError("Pre-O1 cut invented an operator decision")
+        if not floor and (root["records"][0]["phase"] != "REPAIR" or root["records"][0]["reason"] != "OTHER_STATE"):
+            raise smoke.SmokeError("Pre-O1 cut changed the repair boundary")
+    elif not released:
         intents = [op.get("settlement") for op in root["records"]]
         if not intents[0] or any(intent != intents[0] for intent in intents):
             raise smoke.SmokeError("Frozen connected decision was lost or split")
@@ -98,8 +133,14 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
             raise smoke.SmokeError("Wrong returning-identity receipt or acknowledgement state")
     transfers = journal(world)["transfers"]
     absent_journal = released or boundary in ("O3J_AFTER", "O4_BEFORE")
-    if len(transfers) != int(floor and not absent_journal):
+    if len(transfers) != int((floor or named) and not absent_journal):
         raise smoke.SmokeError("Matching checked journal was removed before its boundary or retained after release")
+    if named:
+        guards = [op["guard"] for op in root["records"]] if root["records"] else [guard for item in root["tombstones"] for guard in item["guards"]]
+        if not guards or any(not guard.get("transfer_id") for guard in guards):
+            raise smoke.SmokeError("Named fill lost its transfer guard")
+        if transfers and any(guard["transfer_id"] != transfers[0]["transfer_id"] for guard in guards):
+            raise smoke.SmokeError("Named fill guards another transfer")
     entity_file = world / "entities/r.0.0.mca"
     entity_slot_present = slot_present(entity_file, 132)
     if not entity_slot_present and not floor:
@@ -108,15 +149,19 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
     rockets = [entry for entry in entities if "RocketEntityData" in entry]
     if len(rockets) != int(not floor):
         raise smoke.SmokeError("Lost or duplicated chosen physical rocket")
-    if floor and released:
-        for receipt in root["tombstones"]:
-            for endpoint in receipt["missing"]:
-                slot = (endpoint["x"] & 31) + (endpoint["z"] & 31) * 32
-                if not slot_present(entity_file, slot):
-                    raise smoke.SmokeError("Released floor lacks its own durable absence slot")
-                for entity in record(entity_file, slot)["Entities"]:
-                    if (entity.get("UUID") == endpoint["identity"] or entity.get("RocketEntityData", {}).get("assembly_transaction_id") == endpoint["logical_rocket"]):
-                        raise smoke.SmokeError("Released floor still contains an unproved returning identity")
+    empty_slots = {}
+    if floor:
+        for slot in (132, 133):
+            present = slot_present(entity_file, slot)
+            empty_slots[slot] = present
+            # After a clean stop vanilla may remove its empty record. The O2/O3/O4 cut
+            # itself must show the own-store payload; a later deletion is not that proof.
+            if not restarted and installed and not present:
+                raise smoke.SmokeError("Acknowledged floor lacks its own durable absence slot")
+            if present:
+                payload = record(entity_file, slot)
+                if payload.get("Entities") != [] or payload.get("Position") != [slot & 31, slot >> 5]:
+                    raise smoke.SmokeError("Floor fixture slot is not genuinely empty")
     wrapper = None
     if rockets:
         rocket = rockets[0]; wrapper = rocket["RocketEntityData"]
@@ -130,7 +175,8 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
                 or len(section["markers"]) != (0 if choice == "NORMALIZE" or restarted and released else count)
                 or rocket["Pos"] != [64.5, 100., 64.5]):
             raise smoke.SmokeError("Checkpoint/release changed resources, epoch, markers or placement")
-        references = root["records"][0]["settlement"]["observations"] if root["records"] else [
+        references = ([dict(endpoint=op["destination"]) for op in root["records"]] if pre_o1 else
+                      root["records"][0]["settlement"]["observations"]) if root["records"] else [
             survivor for receipt in root["tombstones"] for survivor in receipt["survivors"]]
         identities = [item["endpoint"]["identity"] for item in references if item["endpoint"]["kind"] == "ENTITY"]
         if not identities or any(identity != rocket["UUID"] for identity in identities):
@@ -145,7 +191,7 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
     return dict(ledger=root, journal=transfers, wrapper=wrapper, source_count=len(sources),
                 raw_total=sum(entry["ForgeData"]["arce_escrow_fixture"]["amount"] for entry in sources)
                 + (wrapper["flight_data"]["fuel"]["amount"] if wrapper is not None else 0),
-                entity_slot_present=bool(entity_slot_present),
+                entity_slot_present=bool(entity_slot_present), empty_slots=empty_slots,
                 files={name: digest(world / name) if (world / name).is_file() else "ABSENT" for name in
                        ("data/" + LEDGER, "data/" + JOURNAL, "region/r.0.0.mca", "entities/r.0.0.mca")})
 
@@ -189,7 +235,7 @@ def run(args) -> dict:
                     require_lock(args.lock_owner)
                     row["cut_disk"] = inspect(session / ("world-" + cut), cut)
                 else:
-                    state = "HELD" if "__VETO" in cut else "RELEASED"
+                    state = "PRE_O1" if cut.endswith("__O1_BEFORE") else "HELD" if "__VETO" in cut else "RELEASED"
                     process.wait_for(re.compile(r"ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT cut=" + cut + " state=" + state), args.startup_timeout)
                     if state == "HELD":
                         process.process.kill(); process.abort(); code = process.process.returncode
@@ -201,6 +247,10 @@ def run(args) -> dict:
                     process = None; require_lock(args.lock_owner); disk = inspect(session / ("world-" + cut), cut, restarted=True)
                     if state == "HELD" and disk["ledger"]["records"] != row["cut_disk"]["ledger"]["records"]:
                         raise smoke.SmokeError("Restart altered the retained frozen settlement")
+                    if state == "PRE_O1" and (disk["ledger"]["records"] != row["cut_disk"]["ledger"]["records"]
+                                              or disk["journal"] != row["cut_disk"]["journal"]):
+                        raise smoke.SmokeError("Pre-O1 restart changed the undecided authority")
+                    if state == "RELEASED": require_progress(row["cut_disk"]["ledger"], disk["ledger"])
                     row["restarts"].append(dict(restart=restart, exit_code=code, hold_reason=reason, disk=disk))
             row["status"] = "PASS"; report["cases"].append(row); report.pop("in_progress", None)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
