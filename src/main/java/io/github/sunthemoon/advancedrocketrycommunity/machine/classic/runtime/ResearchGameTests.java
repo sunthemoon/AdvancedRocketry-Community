@@ -268,8 +268,14 @@ public final class ResearchGameTests {
             }
         });
     }
+    /**
+     * Every fixture is entity-ticking and formed and, with {@code sky}, every observatory sees the sky: what an intent
+     * needs from it. Ticking alone is not enough (W88). An update beside a footprint, such as gravel falling into a cave
+     * under a fixture built in raw terrain, queues the controller for revalidation, and it reads as unformed until the
+     * server's END tick revalidates it. A GameTest step runs after the Level tick and before that END tick.
+     */
     static Step ticking(List<ResearchFixture> fixtures, boolean sky) {
-        return () -> fixtures.stream().allMatch(fixture -> fixture.ticking()
+        return () -> fixtures.stream().allMatch(fixture -> fixture.ticking() && fixture.controller.formed()
                 && (fixture.controller.processor() || !sky || fixture.level.canSeeSky(fixture.lens())));
     }
     static Step then(Runnable action) { return () -> { action.run(); return true; }; }

@@ -3,6 +3,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.machine.classic.runtime;
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.machine.multiblock.pattern.PatternPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.mission.*;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
@@ -170,17 +171,11 @@ public final class ResearchEnvironmentGameTests {
         ResearchGameTests.ready(helper, fixtures, false, () -> {
             try {
                 var data = SatelliteMissionSavedData.get(server); var service = ResearchRuntime.service(helper.getLevel());
-                for (var fixture : fixtures) {
-                    UUID owner = fixture.controller.researchOwner().orElseThrow(), job = UUID.randomUUID();
-                    var source = new GroundSurveyJob.Device(UUID.randomUUID(), helper.getLevel().dimension().location(), 0);
-                    long now = server.overworld().getGameTime(), created = data.groundSurveyQuery(jobs -> jobs.previewTime(now));
-                    var instance = new AsteroidInstance(2, UUID.randomUUID(), owner, CelestialIds.EARTH_ID, ModIdentity.id("small_asteroid"),
-                            "0123456789abcdef", "0123456789abcdef", 1, List.of(new RewardEntry(net.minecraft.resources.ResourceLocation.tryParse("minecraft:iron_ore"), 1)),
-                            created, OptionalLong.empty(), InstanceState.PENDING, InstanceOrigin.ground(job), Optional.empty());
-                    helper.assertTrue(data.groundSurveys(jobs -> jobs.start(new GroundSurveys.Start(job, owner, source, instance, 20, 20, 200, 20, 120), now)).changed(), "Fairness job refused");
-                    fixture.flush();
-                    for (int tick = 0; tick < 20; tick++) { helper.assertTrue(data.groundSurveys(jobs -> jobs.advanceSurvey(job, source, 24_000, now)).changed(), "Fairness survey refused"); }
-                    helper.assertTrue(service.intent(fixture.controller, owner, 4), "Fairness processor claim refused"); fixture.feed(100);
+                for (int index = 0; index < fixtures.size(); index++) {
+                    var fixture = fixtures.get(index); UUID owner = readySurvey(helper, fixture, "Fairness");
+                    helper.assertTrue(service.intent(fixture.controller, owner, 4), "Fairness processor claim refused: fixture " + index
+                            + " in " + fixture.level.dimension().location() + " read " + fixture.controller.researchStatus());
+                    fixture.feed(100);
                 }
                 data.flush(server);
                 for (var fixture : fixtures) { service.enqueue(fixture.controller); } service.tick();
@@ -194,6 +189,46 @@ public final class ResearchEnvironmentGameTests {
             } finally { fixtures.forEach(ResearchFixture::close); }
             helper.succeed();
         });
+    }
+    /**
+     * W88: an update beside a formed processor, as falling gravel makes in raw terrain, queues it for revalidation. It
+     * reads as unformed until the server's END tick revalidates it, so a claim in that tick is refused, and the shared
+     * readiness step must not pass then. The fairness test above builds its Earth fixtures in raw cave terrain; when one
+     * stood in a mineshaft, its claim sometimes ran in such a tick.
+     */
+    @GameTest(template = "empty", batch = "research_neighbour_update", timeoutTicks = 200)
+    public static void aNeighbourUpdateHoldsReadinessUntilTheProcessorRevalidates(GameTestHelper helper) {
+        var fixture = ResearchGameTests.fixture(helper, true, Direction.NORTH, UUID.randomUUID(), 0);
+        var service = ResearchRuntime.service(fixture.level); var ready = ResearchGameTests.ticking(List.of(fixture), false);
+        // One block east of the footprint's local x 2 column, outside the pattern.
+        BlockPos beside = fixture.world(new PatternPosition(3, 0, 0)); UUID[] owner = new UUID[1];
+        Runnable cleanup = () -> { fixture.close(); fixture.level.setBlock(beside, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL); };
+        ResearchGameTests.steps(helper, cleanup, ready, ResearchGameTests.then(() -> {
+            owner[0] = readySurvey(helper, fixture, "Neighbour update");
+            fixture.level.setBlock(beside, Blocks.STONE.defaultBlockState(), Block.UPDATE_ALL);
+            helper.assertTrue(!fixture.controller.formed(), "A neighbour update did not queue the processor for revalidation");
+            helper.assertTrue(!ready.run(), "Readiness passed while the processor waits for revalidation");
+            helper.assertTrue(!service.intent(fixture.controller, owner[0], 4) && fixture.controller.researchStatus() == ResearchStatus.UNFORMED,
+                    "A processor waiting for revalidation took a claim: " + fixture.controller.researchStatus());
+        }), ready, ResearchGameTests.then(() -> {
+            helper.assertTrue(service.intent(fixture.controller, owner[0], 4), "The revalidated processor refused the claim: "
+                    + fixture.controller.researchStatus());
+            cleanup.run(); helper.succeed();
+        }));
+    }
+    /** Starts and completes a ground survey for the fixture's owner, so its processor can claim the analysis. */
+    private static UUID readySurvey(GameTestHelper helper, ResearchFixture fixture, String label) {
+        var server = helper.getLevel().getServer(); var data = SatelliteMissionSavedData.get(server);
+        UUID owner = fixture.controller.researchOwner().orElseThrow(), job = UUID.randomUUID();
+        var source = new GroundSurveyJob.Device(UUID.randomUUID(), helper.getLevel().dimension().location(), 0);
+        long now = server.overworld().getGameTime(), created = data.groundSurveyQuery(jobs -> jobs.previewTime(now));
+        var instance = new AsteroidInstance(2, UUID.randomUUID(), owner, CelestialIds.EARTH_ID, ModIdentity.id("small_asteroid"),
+                "0123456789abcdef", "0123456789abcdef", 1, List.of(new RewardEntry(net.minecraft.resources.ResourceLocation.tryParse("minecraft:iron_ore"), 1)),
+                created, OptionalLong.empty(), InstanceState.PENDING, InstanceOrigin.ground(job), Optional.empty());
+        helper.assertTrue(data.groundSurveys(jobs -> jobs.start(new GroundSurveys.Start(job, owner, source, instance, 20, 20, 200, 20, 120), now)).changed(), label + " job refused");
+        fixture.flush();
+        for (int tick = 0; tick < 20; tick++) { helper.assertTrue(data.groundSurveys(jobs -> jobs.advanceSurvey(job, source, 24_000, now)).changed(), label + " survey refused"); }
+        return owner;
     }
     @GameTest(template = "empty", batch = "research_authority", timeoutTicks = 200)
     public static void menuRejectsDistanceSpectatorForeignOwnerAndRapidIntents(GameTestHelper helper) {
