@@ -55,7 +55,7 @@ final class EscrowReconciliationView {
     }
 
     static EscrowReconciliationView capture(MinecraftServer server, EscrowLedger root, List<EscrowOperation> members) {
-        EscrowTags.require(server.isSameThread() && members.size() <= EscrowLimits.PER_ROCKET, "Invalid native component capture");
+        requireCaptureBounds(server.isSameThread(), members.size());
         var journal = RocketTransferSavedData.get(server);
         if (!journal.retryChecked(server) || !journal.actionAuthorityAvailable()) { throw new Refusal(EscrowReason.TRANSFER_JOURNAL_UNPROVED); }
         var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
@@ -124,6 +124,16 @@ final class EscrowReconciliationView {
                     rocket == null ? () -> true : sameNativeCapture(rocket)));
         }
         return new EscrowReconciliationView(server, root, members, ends, journal.acknowledgedLease(), bytes);
+    }
+
+    static void requireCaptureBounds(boolean ownerThread, int members) {
+        EscrowTags.require(ownerThread, "Invalid native component capture thread");
+        if (members > EscrowLimits.PER_ROCKET) { throw new Refusal(EscrowReason.BARRIER_BOUNDS); }
+    }
+
+    static void requireStoreCapacity(boolean stopping, boolean known, int size) {
+        EscrowTags.require(!stopping, "Escrow runtime is stopping");
+        if (!known && size >= 64) { throw new Refusal(EscrowReason.BARRIER_BOUNDS); }
     }
 
     /** A removable stale prefix is a cleanup wait, never authority to apply or a manual diagnosis. */

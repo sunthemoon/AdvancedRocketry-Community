@@ -122,4 +122,20 @@ class EscrowObservationSchedulingTest {
         assertFalse(budget.available("other", true, 100)); budget.release(0);
         assertTrue(budget.available("other", true, 100)); assertTrue(budget.reserve("other", true, 100));
     }
+
+    @Test void componentAndLevelCapacityRefusalsAreRetryableButInvalidThreadOrLifetimeIsNotCapacity() {
+        assertDoesNotThrow(() -> EscrowReconciliationView.requireCaptureBounds(true, 8));
+        var component = assertThrows(EscrowReconciliationView.Refusal.class,
+                () -> EscrowReconciliationView.requireCaptureBounds(true, 9));
+        assertEquals(EscrowReason.BARRIER_BOUNDS, component.reason); assertFalse(component.reason.manual());
+        assertDoesNotThrow(() -> EscrowReconciliationView.requireStoreCapacity(false, false, 63));
+        assertDoesNotThrow(() -> EscrowReconciliationView.requireStoreCapacity(false, true, 64));
+        var level = assertThrows(EscrowReconciliationView.Refusal.class,
+                () -> EscrowReconciliationView.requireStoreCapacity(false, false, 64));
+        assertEquals(EscrowReason.BARRIER_BOUNDS, level.reason); assertTrue(level.reason.retryableProofFailure());
+        assertEquals(IllegalArgumentException.class, assertThrows(IllegalArgumentException.class,
+                () -> EscrowReconciliationView.requireCaptureBounds(false, 9)).getClass());
+        assertEquals(IllegalArgumentException.class, assertThrows(IllegalArgumentException.class,
+                () -> EscrowReconciliationView.requireStoreCapacity(true, false, 64)).getClass());
+    }
 }

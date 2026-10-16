@@ -154,7 +154,7 @@ public final class EscrowRuntime {
         if (barrier == null) { barrier = new EscrowBarrier(this::checkpoint, new java.util.concurrent.atomic.AtomicBoolean(true), timings()); } return barrier;
     }
     public EscrowChunkStore store(ServerLevel level) {
-        EscrowTags.require(!stopping && (stores.containsKey(level.dimension()) || stores.size() < 64), "Escrow Level service limit exceeded");
+        EscrowReconciliationView.requireStoreCapacity(stopping, stores.containsKey(level.dimension()), stores.size());
         return stores.computeIfAbsent(level.dimension(), key -> new EscrowChunkStore(level, monitor));
     }
     @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
