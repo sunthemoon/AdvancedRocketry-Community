@@ -73,6 +73,14 @@ final class RocketTransferFences {
         if (route.route() == EscrowGovernedDispatch.Route.ACTIVE) {
             drop(record.transferId()); settled.remove(record.transferId()); live.add(record.transferId()); return;
         }
+        if (route.route() == EscrowGovernedDispatch.Route.HOLD
+                && "GOVERNED_JOURNAL_UNACKNOWLEDGED".equals(route.reason())) {
+            // R10: retain the exclusion while awaiting the exact acknowledgement, without
+            // diagnosing offline repair or replacing a previously observed repair reason.
+            approved.remove(record.transferId());
+            reasons.putIfAbsent(record.transferId(), route.reason());
+            live.remove(record.transferId()); settled.remove(record.transferId()); return;
+        }
         // Pending/unknown authority remains held. Terminal entries can only enter checked
         // F8 cleanup, never legacy recovery. ACTIVE COMMITTED still retains its F6/F7 hold.
         String reason = switch (route.route()) {
