@@ -86,6 +86,7 @@ public final class EscrowGovernedLiveReturnGameTests {
         private boolean observedTransit;
         private int vetoes;
         private java.util.function.Consumer<net.minecraftforge.event.entity.EntityJoinLevelEvent> veto;
+        private final java.util.Map<BlockPos, net.minecraft.world.level.block.state.BlockState> terrain = new java.util.LinkedHashMap<>();
 
         Scenario(GameTestHelper helper, boolean shared) {
             this(helper, shared, Fault.CANCEL);
@@ -167,7 +168,7 @@ public final class EscrowGovernedLiveReturnGameTests {
             journal.remove(transfer); RocketJournalGameTestSupport.acknowledgeFixture(helper);
             server.getPlayerList().remove(passenger); rocket.discard();
             if (veto != null) { net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(veto); }
-            if (fault == Fault.PAD) { level.removeBlock(destination, false); }
+            terrain.forEach((pos, state) -> level.setBlock(pos, state, 3));
             for (var chunk : chunks()) { level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE); }
             done = true; helper.succeed();
         }
@@ -188,6 +189,15 @@ public final class EscrowGovernedLiveReturnGameTests {
 
         private void prepare() {
             var server = level.getServer(); data = ResourceEscrowSavedData.forTests(server); data.bind(server);
+            // Remote chunks use generated terrain, not the empty GameTest template. Own only these four cells.
+            for (var origin : List.of(position, destination)) {
+                for (int height = 0; height < 2; height++) {
+                    var cell = origin.above(height);
+                    helper.assertTrue(level.getBlockEntity(cell) == null, "Return fixture overlaps a block entity");
+                    terrain.put(cell, level.getBlockState(cell));
+                    level.setBlock(cell, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
             passenger = new ServerPlayer(server, level, new com.mojang.authlib.GameProfile(UUID.randomUUID(), "ReturnPassenger")) {
                 @Override public boolean isCreative() { return true; }
                 @Override public boolean isSpectator() { return false; }
@@ -205,6 +215,8 @@ public final class EscrowGovernedLiveReturnGameTests {
             helper.assertTrue(level.addFreshEntity(rocket) && passenger.startRiding(rocket, true), "Return source or passenger was not published");
             initial = rocket.flightData().orElseThrow(); var from = rocket.snapshot().orElseThrow();
             var to = from.relocated(UUID.randomUUID(), from.sourceDimension(), new RocketPosition(destination.getX(), destination.getY(), destination.getZ()), now);
+            helper.assertTrue(new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector()
+                    .availableLoaded(level, to), "Return fixture's landing area is not clear before fault injection");
             var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                     from.sourceDimension(), from.sourceDimension(), 500, now).withPropulsionDebit(new RocketPropulsionDebit(500, 0,
                     fuel.propulsion().orElseThrow().revision(), fuel.resourceSignature(), RocketNativeResources.hash("Live return fixture")));
