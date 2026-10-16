@@ -219,6 +219,10 @@ public final class RailgunBlockEntity extends CargoEndpointBlockEntity implement
 
     @Override
     public boolean triggerEvent(int id, int parameter) {
+        // ServerLevel broadcasts a block event only after the server-side handler accepts it.
+        if (level != null && !level.isClientSide && (id == EVENT_LAUNCH || id == EVENT_ARRIVAL)) {
+            return true;
+        }
         if (level != null && level.isClientSide && (id == EVENT_LAUNCH || id == EVENT_ARRIVAL)
                 && RailgunEffects.start(level, level.getGameTime(), EFFECT_TICKS)) {
             effect = id;
