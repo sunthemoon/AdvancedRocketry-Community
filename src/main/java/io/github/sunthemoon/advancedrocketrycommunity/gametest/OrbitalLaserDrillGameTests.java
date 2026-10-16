@@ -35,6 +35,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.gametest.framework.GameTestInfo;
+import net.minecraft.gametest.framework.GameTestListener;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtIo;
@@ -72,9 +74,10 @@ public final class OrbitalLaserDrillGameTests {
         long seed = drill.seed();
         drill.storage().lens().setStackInSlot(0, new ItemStack(ModItems.LASER_LENS.get()));
         drill.storage().setEnergy(200_000);
-        fixture.startAsOwner(helper);
         int[] chunks = new int[2];
         helper.startSequence()
+                .thenWaitUntil(() -> fixture.ready(helper))
+                .thenExecute(() -> fixture.startAsOwner(helper))
                 .thenWaitUntil(() -> helper.assertTrue(drill.operationIndex() == 1, "No first operation: "
                         + drill.describe()))
                 .thenExecute(() -> {
@@ -117,9 +120,10 @@ public final class OrbitalLaserDrillGameTests {
         for (int slot = 0; slot < output.getSlots(); slot++) {
             output.setStackInSlot(slot, new ItemStack(Items.WOODEN_SWORD));
         }
-        fixture.startAsOwner(helper);
         LaserDrillTable.Entry expected = draw(CelestialIds.EARTH_ID, drill.seed(), 0);
         helper.startSequence()
+                .thenWaitUntil(() -> fixture.ready(helper))
+                .thenExecute(() -> fixture.startAsOwner(helper))
                 .thenWaitUntil(() -> helper.assertTrue(drill.status() == EndgameCode.OUTPUT_FULL,
                         "The drill did not pause: " + drill.describe()))
                 .thenExecute(() -> {
@@ -198,6 +202,7 @@ public final class OrbitalLaserDrillGameTests {
         OrbitalLaserDrillBlockEntity drill = fixture.drill();
         BlockPos casing = fixture.controller.south().above();
         helper.startSequence()
+                .thenWaitUntil(() -> fixture.ready(helper))
                 .thenWaitUntil(() -> helper.assertTrue(drill.structureCode() == EndgameCode.OK, "Not formed: "
                         + drill.describe()))
                 .thenExecute(() -> fixture.space.setBlockAndUpdate(casing, Blocks.AIR.defaultBlockState()))
@@ -371,10 +376,13 @@ public final class OrbitalLaserDrillGameTests {
         final UUID owner = UUID.randomUUID();
         final BlockPos controller;
         private final ChunkPos chunk;
+        private final GameTestTickPacer readinessPacer;
+        private boolean ownsForcedChunk;
         private boolean closed;
 
         Fixture(GameTestHelper helper, ResourceLocation body) {
             server = helper.getLevel().getServer();
+            readinessPacer = new GameTestTickPacer(server);
             space = server.getLevel(CelestialIds.SPACE_LEVEL);
             stations = StationRegistrySavedData.get(server);
             stations.reserve(stationId, owner, "Laser fixture", body, helper.getLevel().getGameTime());
@@ -382,6 +390,9 @@ public final class OrbitalLaserDrillGameTests {
             controller = new BlockPos(station.landingPad().x() + 6, StationLimits.LANDING_Y + 6,
                     station.landingPad().z() + 6);
             chunk = new ChunkPos(controller);
+            // A region ticket alone does not prevent ServerLevel's 300-tick empty-Level sleep.
+            // Keep this fixture ticking even when no earlier test left a player in Space.
+            retainChunks(helper);
             space.getChunkSource().addRegionTicket(FIXTURE_TICKET, chunk, 2, stationId);
             space.getChunkAt(controller); // Test setup only; the drill never loads a chunk.
             BlockState casing = ModBlocks.ENDGAME_CASING.get().defaultBlockState();
@@ -405,6 +416,38 @@ public final class OrbitalLaserDrillGameTests {
 
         OrbitalLaserDrillBlockEntity drill() {
             return (OrbitalLaserDrillBlockEntity) space.getBlockEntity(controller);
+        }
+
+        /** A FULL setup chunk is not yet a ticking chunk with its entity sections loaded. */
+        void ready(GameTestHelper helper) {
+            readinessPacer.pace();
+            helper.assertTrue(space.isPositionEntityTicking(controller),
+                    "The drill fixture is not entity-ticking: " + space.getChunkSource().getChunkDebugData(chunk));
+            helper.assertTrue(drill().structureCode() == EndgameCode.OK,
+                    "The drill fixture has not formed: " + drill().describe());
+        }
+
+        private void retainChunks(GameTestHelper helper) {
+            try {
+                var field = GameTestHelper.class.getDeclaredField("testInfo");
+                field.setAccessible(true);
+                ((GameTestInfo) field.get(helper)).addListener(new GameTestListener() {
+                    @Override public void testStructureLoaded(GameTestInfo info) { }
+                    @Override public void testPassed(GameTestInfo info) { releaseChunks(); }
+                    @Override public void testFailed(GameTestInfo info) { releaseChunks(); }
+                });
+            } catch (ReflectiveOperationException failure) {
+                throw new IllegalStateException("Could not attach drill fixture ticket cleanup", failure);
+            }
+            ownsForcedChunk = space.setChunkForced(chunk.x, chunk.z, true);
+        }
+
+        private void releaseChunks() {
+            space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 2, stationId);
+            if (ownsForcedChunk) {
+                space.setChunkForced(chunk.x, chunk.z, false);
+                ownsForcedChunk = false;
+            }
         }
 
         /** Starts through the owner's menu button, as a connected player next to the drill. */
@@ -436,7 +479,7 @@ public final class OrbitalLaserDrillGameTests {
                     }
                 }
             }
-            space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 2, stationId);
+            releaseChunks();
             stations.delete(stationId);
             stations.flush(server);
         }
