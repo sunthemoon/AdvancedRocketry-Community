@@ -42,6 +42,7 @@ public final class EscrowRuntime {
     private EscrowSettlementProbe settlementProbe;
     private EscrowSettlementCompletionProbe settlementCompletionProbe;
     private EscrowPreF2Probe preF2Probe;
+    private EscrowSourceClockProbe sourceClockProbe;
     private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
     private final EscrowSettlementRecovery settlements = new EscrowSettlementRecovery();
     private final EscrowPreF2Cancellation preF2Cancellation = new EscrowPreF2Cancellation();
@@ -160,7 +161,10 @@ public final class EscrowRuntime {
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("PF_")) {
+            if (testCase.startsWith("SC_")) {
+                if (runtime.sourceClockProbe == null) { runtime.sourceClockProbe = new EscrowSourceClockProbe(event.getServer()); }
+                runtime.sourceClockProbe.tick();
+            } else if (testCase.startsWith("PF_")) {
                 if (runtime.preF2Probe == null) { runtime.preF2Probe = new EscrowPreF2Probe(event.getServer()); }
                 runtime.preF2Probe.tick();
             } else if (testCase.startsWith("SR_")) {
