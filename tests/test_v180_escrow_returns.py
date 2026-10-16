@@ -13,13 +13,13 @@ class ReturnOracleTest(unittest.TestCase):
         arrived = "RT_CANCEL_" in cut and "_0_STORE_BEFORE" in cut and restarted
         arm = dict(outcome="ARMED", serial=1, src="source", d="destination", l="logical", t="transfer", epoch=7)
         root = dict(armed_flights=[arm], issued_launch_serial=1, records=[], floors=[], tombstones=[], rocket_authorities=[], ledger_id="ledger")
-        flight = dict(state="COUNTDOWN", state_started_game_time=10, plan={"target": "moon"},
+        flight = dict(state="TRANSIT", state_started_game_time=150, active_transfer_id="transfer", plan={"target": "moon"},
                       fuel=dict(amount=1000, committed_debits=[dict(transaction_id="prior")]), passengers=dict(assignments=[]))
         dest_flight = copy.deepcopy(flight)
         dest_flight.update(state="DESCENT", state_started_game_time=170, active_transfer_id="transfer")
         dest_flight["fuel"] = dict(amount=500, committed_debits=[dict(transaction_id="prior"), dict(transaction_id="transfer")])
         pose = dict(motion=[0.0, 0.0, 0.0], yaw=0.0, pitch=0.0, no_gravity=1, on_ground=0, invulnerable=0)
-        native = dict(armed=arm, source=dict(**pose, flight_changes=dict(state="FUELED", state_started_game_time=9), flight_absent=["plan"]),
+        native = dict(armed=arm, source=dict(**pose, flight_changes=dict(state="FUELED", state_started_game_time=9), flight_absent=["active_transfer_id", "plan"]),
                       destination=dict(**pose, flight_changes={}, flight_absent=[]))
         transfer = dict(schema_version=3, phase="COMMITTED" if arrived else "PREPARED", transfer_id="transfer",
                         source_entity_id="source", owner_id="owner", source_snapshot="source-snapshot", destination_snapshot="dest-snapshot",
@@ -32,6 +32,7 @@ class ReturnOracleTest(unittest.TestCase):
         if before:
             actual = copy.deepcopy(flight)
             if "RT_PAD_" in cut: actual.update(state="TRANSIT", active_transfer_id="transfer", state_started_game_time=150); y = 148.0
+            else: actual.update(state="COUNTDOWN", state_started_game_time=10); actual.pop("active_transfer_id")
         entity = dict(id="advancedrocketrycommunity:rocket", UUID="destination" if arrived else "source", Pos=[(68.5 if "_SHARED_" in cut else 80.5) if arrived else 64.5, y, 64.5],
                       Motion=[0.0, 0.0, 0.0], Rotation=[0.0, 0.0], NoGravity=1,
                       RocketEntityData=dict(schema_version=3, assembly_transaction_id="logical", owner_id="owner",

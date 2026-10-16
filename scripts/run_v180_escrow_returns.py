@@ -65,6 +65,7 @@ def require_state(root, transfer, source, destination, cut, restarted):
         expected = copy.deepcopy(transfer["source_flight"])
         expected.update(state="COUNTDOWN" if kind == "CANCEL" else "TRANSIT", state_started_game_time=time)
         if kind == "PAD": expected["active_transfer_id"] = arm["t"]
+        else: expected.pop("active_transfer_id", None)
         if time < transfer["created_at_game_time"] + (140 if kind == "PAD" else 0):
             raise phases.smoke.SmokeError("Return cut has a backwards source clock")
     x = (68.5 if layout == "SHARED" else 80.5) if arrived else 64.5
