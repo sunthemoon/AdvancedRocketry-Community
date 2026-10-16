@@ -45,6 +45,7 @@ public final class EscrowRuntime {
     private EscrowSourceClockProbe sourceClockProbe;
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
+    private EscrowReturnProbe returnProbe;
     private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
     private final EscrowSettlementRecovery settlements = new EscrowSettlementRecovery();
     private final EscrowPreF2Cancellation preF2Cancellation = new EscrowPreF2Cancellation();
@@ -93,6 +94,7 @@ public final class EscrowRuntime {
         return reconciliation;
     }
     public void checkpoint(String cut) {
+        if (returnProbe != null) { returnProbe.checkpoint(cut); }
         if (phaseProbe != null) { phaseProbe.checkpoint(cut); }
         if (destinationProbe != null) { destinationProbe.checkpoint(cut); }
         if (probe != null) { probe.checkpoint(cut); }
@@ -181,7 +183,10 @@ public final class EscrowRuntime {
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("FP_") || testCase.startsWith("FD_")) {
+            if (testCase.startsWith("RT_")) {
+                if (runtime.returnProbe == null) { runtime.returnProbe = new EscrowReturnProbe(event.getServer()); }
+                runtime.returnProbe.tick();
+            } else if (testCase.startsWith("FP_") || testCase.startsWith("FD_")) {
                 if (runtime.phaseProbe == null) { runtime.phaseProbe = new EscrowPhaseProbe(event.getServer()); }
                 runtime.phaseProbe.tick();
             } else if (testCase.startsWith("DP_")) {
