@@ -29,17 +29,17 @@ public final class EscrowGovernedSourceFlightGameTests {
     private enum Fault { NONE, MOTION, DUPLICATE }
     private EscrowGovernedSourceFlightGameTests() { }
 
-    @GameTest(template = "empty", batch = "escrow_governed_source_flight", timeoutTicks = 600)
+    @GameTest(template = "empty", batch = "escrow_governed_source_progress", timeoutTicks = 600)
     public static void liveSourceProgressesToTransitAfterSaveAndJoinRevalidation(GameTestHelper helper) {
         new Scenario(helper, Fault.NONE).start();
     }
 
-    @GameTest(template = "empty", batch = "escrow_governed_source_flight", timeoutTicks = 600)
+    @GameTest(template = "empty", batch = "escrow_governed_source_motion", timeoutTicks = 600)
     public static void changedNativeMotionCannotHideBehindEntityTickNormalization(GameTestHelper helper) {
         new Scenario(helper, Fault.MOTION).start();
     }
 
-    @GameTest(template = "empty", batch = "escrow_governed_source_flight", timeoutTicks = 600)
+    @GameTest(template = "empty", batch = "escrow_governed_source_duplicate", timeoutTicks = 600)
     public static void duplicateJoinHoldsBothCandidatesWithoutLegacyElection(GameTestHelper helper) {
         new Scenario(helper, Fault.DUPLICATE).start();
     }
@@ -58,6 +58,7 @@ public final class EscrowGovernedSourceFlightGameTests {
         private RocketFlightData initial;
         private RocketEscrowSection wrapper;
         private boolean accepted;
+        private boolean discarded;
         private boolean observedAscent;
         private long changedAt = -1;
         private double previousY;
@@ -85,6 +86,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                 if (!journal.retryChecked(level.getServer())) { return; }
                 prepare(); step = 1; return;
             }
+            helper.assertTrue(!discarded, "Source preparation was discarded");
             if (!accepted) { return; }
             var flight = rocket.flightData().orElseThrow();
             helper.assertTrue(initial.fuel().equals(flight.fuel()) && initial.passengers().equals(flight.passengers())
@@ -174,7 +176,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                     from.sourceDimension(), from.sourceDimension(), 500, now).withPropulsionDebit(new RocketPropulsionDebit(500, 0,
                     fuel.propulsion().orElseThrow().revision(), fuel.resourceSignature(), RocketNativeResources.hash("F3 source fixture")));
             helper.assertTrue(EscrowGovernedPreparation.begin(rocket, initial.withPlan(plan).startCountdown(now), to, record -> true,
-                    record -> accepted = true, () -> helper.fail("Source preparation was discarded")), "F1 preparation was refused");
+                    record -> accepted = true, () -> discarded = true), "F1 preparation was refused");
         }
     }
 }
