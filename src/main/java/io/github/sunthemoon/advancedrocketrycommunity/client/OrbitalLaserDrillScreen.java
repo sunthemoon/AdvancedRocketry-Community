@@ -96,7 +96,8 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
             if (view.get().lastStop() != EndgameCode.OK) { lines.add(statusLine(view.get().lastStop())); }
             for (EndgameDeviceView.Line line : view.get().lines()) {
                 Component value = line.translated() ? Component.translatable(line.value())
-                        : Component.literal(line.value());
+                        : line.label().equals("advancedrocketrycommunity.endgame.view.body")
+                                ? bodyName(line.value()) : Component.literal(line.value());
                 lines.add(Component.translatable(line.label()).append(": ").append(value));
             }
             if (!lines.isEmpty()) {
@@ -155,5 +156,11 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
     private static Component statusLine(EndgameCode code) {
         return Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY, Component.translatable(code.translationKey()),
                 code.name());
+    }
+
+    static Component bodyName(String value) {
+        var id = net.minecraft.resources.ResourceLocation.tryParse(value);
+        return id == null ? Component.literal(value) : Component.translatableWithFallback(
+                "body." + id.getNamespace() + "." + id.getPath(), value);
     }
 }

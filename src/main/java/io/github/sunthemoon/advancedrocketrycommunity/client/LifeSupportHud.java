@@ -53,7 +53,7 @@ public final class LifeSupportHud {
             int screenHeight
     ) {
         var player = gui.getMinecraft().player;
-        if (player == null || gui.getMinecraft().options.hideGui) {
+        if (!visible(player != null, gui.getMinecraft().options.hideGui, gui.getMinecraft().options.renderDebug)) {
             return;
         }
         List<PanelContent> contents = new ArrayList<>(LifeSupportHudLayout.MAX_PANELS);
@@ -117,6 +117,10 @@ public final class LifeSupportHud {
         for (int i = 0; i < contents.size(); i++) {
             drawPanel(graphics, font, placement.panels().get(i), texts.get(i), compact, contents.get(i));
         }
+    }
+
+    static boolean visible(boolean hasPlayer, boolean hideGui, boolean debug) {
+        return hasPlayer && !hideGui && !debug;
     }
 
     private static Component modules(List<ModuleKind> kinds) {
