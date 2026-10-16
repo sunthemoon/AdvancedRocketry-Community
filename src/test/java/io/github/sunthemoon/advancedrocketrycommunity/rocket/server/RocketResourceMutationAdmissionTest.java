@@ -7,6 +7,20 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransf
 import org.junit.jupiter.api.Test;
 
 class RocketResourceMutationAdmissionTest {
+    @org.junit.jupiter.api.BeforeAll static void bootstrap() {
+        io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap.initialize();
+    }
+
+    @Test
+    void c2NamedCommittedRecordWaitsForCurrentSessionSettlementAndNoLiveTransfer() {
+        var record = RocketStationMotionRuleTest.record(new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition(80, 80, 80))
+                .destinationSpawned(java.util.UUID.randomUUID()).advance(RocketTransferPhase.PASSENGERS_TRANSFERRED)
+                .advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
+        assertFalse(RocketTransferService.reconciliationRecordAllowed(record, false, false, true, false));
+        assertFalse(RocketTransferService.reconciliationRecordAllowed(record, true, true, true, false));
+        assertFalse(RocketTransferService.reconciliationRecordAllowed(record, true, false, false, false));
+        assertTrue(RocketTransferService.reconciliationRecordAllowed(record, true, false, true, false));
+    }
     @Test
     void passengerWaitingSourceRemainsLockedEvenWhenTransientlyClassifiedSettled() {
         for (var phase : RocketTransferPhase.values()) {

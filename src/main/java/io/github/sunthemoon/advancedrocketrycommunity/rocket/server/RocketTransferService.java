@@ -453,7 +453,15 @@ final class RocketTransferService {
         if (record == null) { return true; }
         var bay = recovery.bays().before(level.getServer(), journal, record, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
         return bay != null && bay.kind() == RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED
-                && record.phase() == RocketTransferPhase.COMMITTED && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record);
+                && reconciliationRecordAllowed(record, settledTransfers.contains(record.transferId()), liveTransfers.contains(record.transferId()),
+                RocketTransferEntities.isReplaceableLandedAuthority(rocket, record),
+                record.nativeTransfer().isPresent() && io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.terminalSuccessor(rocket));
+    }
+
+    static boolean reconciliationRecordAllowed(RocketTransferRecord record, boolean settled, boolean live,
+                                               boolean stationaryArrival, boolean terminalSuccessor) {
+        return record.nativeTransfer().isPresent() ? terminalSuccessor
+                : resourceMutationAllowed(true, record.phase(), settled && !live, stationaryArrival);
     }
 
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
