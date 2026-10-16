@@ -49,7 +49,8 @@ public final class EscrowGovernedDispatch implements AutoCloseable {
 
     /** No ledger creation, entity lookup, chunk readiness query, ticket or journal retry occurs here. */
     public Decision classify(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
-        if (closed || server == null || !server.isSameThread()) { return Decision.hold("GOVERNED_ACTION_REQUIRED"); }
+        if (server == null || !server.isSameThread()) { return Decision.hold("GOVERNED_ACTION_REQUIRED"); }
+        if (closed) { return Decision.hold("GOVERNED_RUNTIME_STOPPED"); }
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return Decision.hold("GOVERNED_LEDGER_MISSING"); }
         var coordinator = data.bind(server);
@@ -57,6 +58,7 @@ public final class EscrowGovernedDispatch implements AutoCloseable {
     }
 
     Decision classify(EscrowCoordinator coordinator, RocketTransferSavedData journal, RocketTransferRecord record) {
+        if (closed) { return Decision.hold("GOVERNED_RUNTIME_STOPPED"); }
         String reason = coordinator.governedWaitReason(record.logicalRocketId());
         if (reason != null) { invalidated(record.logicalRocketId()); return Decision.hold(reason); }
         return classify(coordinator::ledger, () -> coordinator.governedAvailable(record.logicalRocketId()), journal, record);
@@ -64,7 +66,8 @@ public final class EscrowGovernedDispatch implements AutoCloseable {
 
     Decision classify(Supplier<EscrowLedger> ledger, BooleanSupplier operational,
                       RocketTransferSavedData journal, RocketTransferRecord record) {
-        if (closed || !operational.getAsBoolean()) {
+        if (closed) { return Decision.hold("GOVERNED_RUNTIME_STOPPED"); }
+        if (!operational.getAsBoolean()) {
             invalidated(record.logicalRocketId()); return Decision.hold("GOVERNED_LEDGER_UNAVAILABLE");
         }
         checked.entrySet().removeIf(entry -> !entry.getValue().valid());

@@ -108,6 +108,11 @@ class EscrowGovernedDispatchTest {
             dispatch.invalidated(record.logicalRocketId()); assertFalse(authority.valid());
             authority = dispatch.authority(root::get, available::get, journal, record);
             dispatch.close(); assertFalse(authority.valid());
+            assertEquals("GOVERNED_RUNTIME_STOPPED", dispatch.classify(root::get,
+                    () -> { fail("Stopped dispatch queried availability"); return false; }, journal, record).reason());
+            assertEquals("GOVERNED_RUNTIME_STOPPED", dispatch.classify((EscrowCoordinator) null, journal, record).reason());
+            assertEquals("GOVERNED_ACTION_REQUIRED", dispatch.classify((net.minecraft.server.MinecraftServer) null, journal, record).reason(),
+                    "A missing server is still a programming error, not a lifecycle stop");
             assertNull(dispatch.authority(root::get, available::get, journal, record));
         } finally { dispatch.close(); journal.stop(); }
     }

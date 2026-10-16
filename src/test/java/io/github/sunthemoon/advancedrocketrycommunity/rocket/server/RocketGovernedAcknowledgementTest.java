@@ -94,6 +94,38 @@ class RocketGovernedAcknowledgementTest {
         }
     }
 
+    @Test void lifecycleStopIsSilentKeepsExclusionAndPreservesEarlierConflict() throws Exception {
+        var record = GovernedTransferFixture.create().record();
+        var journal = new RocketTransferSavedData(); journal.put(record);
+        var fences = new RocketTransferFences(); var live = new HashSet<UUID>(); var settled = new HashSet<UUID>();
+        try (var dispatch = new EscrowGovernedDispatch(); var logs = new Logs()) {
+            dispatch.close();
+            var stopped = classify(dispatch, null, journal, record);
+            assertEquals(EscrowGovernedDispatch.Route.HOLD, stopped.route());
+            assertEquals("GOVERNED_RUNTIME_STOPPED", stopped.reason());
+            for (int tick = 0; tick < 20; tick++) {
+                live.add(record.transferId()); settled.add(record.transferId());
+                fences.classifyGoverned(record, stopped, live, settled);
+                assertEquals("GOVERNED_RUNTIME_STOPPED", fences.reason(record.transferId()));
+                assertTrue(live.isEmpty()); assertTrue(settled.isEmpty());
+                assertFalse(fences.permit(null, journal, record, live, settled));
+                assertNull(RocketTransferRecoveryService.step(List.of(record), live, settled, fences.ids(), tick,
+                        ignored -> { fail("Stopped dispatch entered legacy readiness"); return true; }).candidate());
+            }
+            assertTrue(logs.events.isEmpty(), logs.events.toString());
+            fences.classifyGoverned(record, new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD,
+                    "GOVERNED_ARM_MISMATCH"), live, settled);
+            for (int tick = 0; tick < 20; tick++) {
+                fences.classifyGoverned(record, stopped, live, settled);
+                assertEquals("GOVERNED_ARM_MISMATCH", fences.reason(record.transferId()));
+            }
+            assertEquals(1, logs.events.size());
+            assertEquals(Level.WARN, logs.events.get(0).getLevel());
+            assertTrue(logs.events.get(0).getMessage().getFormattedMessage().contains("reason=GOVERNED_ARM_MISMATCH"));
+            assertEquals(List.of(record), journal.entries());
+        } finally { journal.stop(); }
+    }
+
     private static EscrowGovernedDispatch.Decision classify(EscrowGovernedDispatch dispatch, EscrowLedger root,
             RocketTransferSavedData journal, RocketTransferRecord record) throws Exception {
         // Exercise the real checked dispatcher without exposing its owner-thread test seam as public API.

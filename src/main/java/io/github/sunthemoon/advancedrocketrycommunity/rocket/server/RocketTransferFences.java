@@ -75,8 +75,9 @@ final class RocketTransferFences {
         }
         if (route.route() == EscrowGovernedDispatch.Route.HOLD
                 && ("GOVERNED_JOURNAL_UNACKNOWLEDGED".equals(route.reason())
-                        || "GOVERNED_LEDGER_PENDING".equals(route.reason()))) {
-            // R10/R11: retain the exclusion while awaiting the exact acknowledgement, without
+                        || "GOVERNED_LEDGER_PENDING".equals(route.reason())
+                        || "GOVERNED_RUNTIME_STOPPED".equals(route.reason()))) {
+            // R10/R11/R14: retain the exclusion during acknowledgement waits or lifecycle stop, without
             // diagnosing offline repair or replacing a previously observed repair reason.
             approved.remove(record.transferId());
             reasons.putIfAbsent(record.transferId(), route.reason());
