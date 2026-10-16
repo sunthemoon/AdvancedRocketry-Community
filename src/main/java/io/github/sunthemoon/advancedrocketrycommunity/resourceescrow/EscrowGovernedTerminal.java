@@ -97,21 +97,38 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
 
     void observe(RocketEntity rocket) {
         for (var state : work.values()) {
-            if (state.source.rocket == rocket) { state.source.observe(); }
+            if (state.source.rocket == rocket) {
+                if (!state.source.observe() && !state.queued) { state.release(); }
+            }
             else if (rocket.assemblyTransactionId().filter(state.record.logicalRocketId()::equals).isPresent()) {
-                state.source.unchanged.set(false);
+                invalidate(state);
             }
         }
     }
 
     void invalidated(RocketEntity rocket) {
         work.values().stream().filter(state -> rocket.assemblyTransactionId().filter(state.record.logicalRocketId()::equals).isPresent())
-                .forEach(state -> state.source.unchanged.set(false));
+                .forEach(EscrowGovernedTerminal::invalidate);
     }
 
     void passengerLeft(UUID passenger) {
         work.values().stream().filter(state -> state.record.sourceFlightData().passengers().assignment(passenger).isPresent())
-                .forEach(state -> state.source.unchanged.set(false));
+                .forEach(EscrowGovernedTerminal::invalidate);
+    }
+
+    private static void invalidate(Work state) {
+        state.source.unchanged.set(false);
+        if (!state.queued) { state.release(); }
+    }
+
+    /** Read-only F6 status; a cached success never replaces a fresh joint prerequisite. */
+    public boolean checkpoint(MinecraftServer server, RocketTransferRecord record) {
+        if (closed || !server.isSameThread()) { return false; }
+        var state = work.get(record.transferId());
+        var journal = RocketTransferSavedData.get(server);
+        return state != null && state.record == record && state.source.observe()
+                && journal.actionAuthorityAvailable() && journal.find(record.transferId()).filter(record::equals).isPresent()
+                && state.proofs.size() == state.slots.size() && state.proofs.values().stream().allMatch(EscrowBarrier.Proof::valid);
     }
 
     static void requireCapacity(Map<UUID, ?> work, UUID transfer) {

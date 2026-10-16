@@ -87,7 +87,7 @@ public final class RocketTransferFenceGameTests {
     }
 
     /** Test-only inspection by field type survives mapped and packaged names without expanding the production AT. */
-    static int flightTickets(MinecraftServer server, UUID id) {
+    public static int flightTickets(MinecraftServer server, UUID id) {
         int count = 0;
         try {
             for (var level : server.getAllLevels()) {

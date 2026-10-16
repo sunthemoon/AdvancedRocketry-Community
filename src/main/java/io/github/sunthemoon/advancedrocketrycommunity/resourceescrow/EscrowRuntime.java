@@ -45,6 +45,12 @@ public final class EscrowRuntime {
     private EscrowSourceClockProbe sourceClockProbe;
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
+    private volatile java.util.function.Consumer<String> terminalTestCut;
+    void terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
+        EscrowTestEndpoints.requireEnabled(server);
+        EscrowTags.require(server.isSameThread() && (cut == null || terminalTestCut == null), "Terminal cut requires exclusive owner-thread setup");
+        terminalTestCut = cut;
+    }
     private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
     private final EscrowSettlementRecovery settlements = new EscrowSettlementRecovery();
     private final EscrowPreF2Cancellation preF2Cancellation = new EscrowPreF2Cancellation();
@@ -97,6 +103,7 @@ public final class EscrowRuntime {
         return reconciliation;
     }
     public void checkpoint(String cut) {
+        var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         if (phaseProbe != null) { phaseProbe.checkpoint(cut); }
         if (destinationProbe != null) { destinationProbe.checkpoint(cut); }
         if (probe != null) { probe.checkpoint(cut); }
