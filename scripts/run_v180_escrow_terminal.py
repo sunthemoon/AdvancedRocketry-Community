@@ -8,54 +8,70 @@ from pathlib import Path
 
 import run_v180_escrow_phases as phases
 
-CASES = tuple("FT_" + stage + "_" + point
+CASES = tuple(prefix + stage + "_" + point
+              for prefix in ("FT_", "FT_CANCEL_")
               for stage in ("HANDOFF", "JOURNAL", "PRUNE")
               for point in ("BEFORE", "REPLACED", "ACK"))
 
 
 def require_state(root, transfers, source, destination, cut, restarted):
-    if cut not in CASES or source is not None or destination is None:
-        raise phases.smoke.SmokeError("Terminal cut lost its sole survivor or restored its source")
-    pruned = restarted or cut in ("FT_PRUNE_REPLACED", "FT_PRUNE_ACK")
-    has_journal = not restarted and (cut.startswith("FT_HANDOFF") or cut == "FT_JOURNAL_BEFORE")
+    cancel = cut.startswith("FT_CANCEL_")
+    stage_cut = cut.replace("FT_CANCEL_", "FT_")
+    survivor, absent = (source, destination) if cancel else (destination, source)
+    if cut not in CASES or absent is not None or survivor is None:
+        raise phases.smoke.SmokeError("Terminal cut lost its sole survivor or restored the absent identity")
+    pruned = restarted or stage_cut in ("FT_PRUNE_REPLACED", "FT_PRUNE_ACK")
+    has_journal = not restarted and (stage_cut.startswith("FT_HANDOFF") or stage_cut == "FT_JOURNAL_BEFORE")
     arms = root["armed_flights"]
     if (root["issued_launch_serial"] != 1 or root["records"] or root["floors"] or root["tombstones"]
             or root["rocket_authorities"] or len(arms) != int(not pruned) or len(transfers) != int(has_journal)):
         raise phases.smoke.SmokeError("Terminal cut violated the ledger/journal acknowledgement order")
-    data = destination["RocketEntityData"]
+    data = survivor["RocketEntityData"]
     flight, wrapper = data["flight_data"], data["resource_escrow"]
     debits = flight["fuel"]["committed_debits"]
-    if (flight["state"] != "LANDED" or "plan" in flight or "active_transfer_id" in flight
-            or flight["fuel"]["amount"] != 500 or len(debits) != 1
-            or flight["passengers"]["assignments"] or destination.get("Passengers", [])
-            or wrapper != dict(schema_version=1, ledger_id=root["ledger_id"], resource_epoch=0, markers=[])
-            or destination["Pos"] != [80.5, 100., 64.5] or destination["Motion"] != [0., 0., 0.]
-            or destination["id"] != "advancedrocketrycommunity:rocket" or data["schema_version"] != 3
-            or not destination.get("NoGravity") or destination.get("OnGround", False)):
+    if (flight["state"] != ("FUELED" if cancel else "LANDED") or "plan" in flight or "active_transfer_id" in flight
+            or flight["fuel"]["amount"] != (1000 if cancel else 500) or len(debits) != 1
+            or flight["passengers"]["assignments"] or survivor.get("Passengers", [])
+            or wrapper != dict(schema_version=1, ledger_id=root["ledger_id"], resource_epoch=7 if cancel else 0, markers=[])
+            or survivor["Pos"] != [64.5 if cancel else 80.5, 100., 64.5] or survivor["Motion"] != [0., 0., 0.]
+            or survivor["id"] != "advancedrocketrycommunity:rocket" or data["schema_version"] != 3
+            or not survivor.get("NoGravity") or survivor.get("OnGround", False)):
         raise phases.smoke.SmokeError("Terminal cut changed its native survivor, debit, epoch or manifest")
     if arms:
         arm = arms[0]
-        expected = "ARMED" if cut == "FT_HANDOFF_BEFORE" else "HANDED_OFF"
+        expected = "ARMED" if stage_cut == "FT_HANDOFF_BEFORE" else "CANCELLED" if cancel else "HANDED_OFF"
         if (arm["outcome"] != expected or arm["serial"] != 1 or arm["ledger"] != root["ledger_id"]
-                or arm["d"] != destination["UUID"] or arm["src"] == destination["UUID"]
+                or arm["src" if cancel else "d"] != survivor["UUID"] or arm["d" if cancel else "src"] == survivor["UUID"]
                 or arm["l"] != data["assembly_transaction_id"] or arm["o"] != data["owner_id"]
-                or arm["t"] != debits[0]["transaction_id"]):
+                or (cancel and (arm["epoch"] != 7 or arm["t"] == debits[0]["transaction_id"]))
+                or (not cancel and arm["t"] != debits[0]["transaction_id"])):
             raise phases.smoke.SmokeError("Terminal cut lost its exact transfer or successor authority")
     if transfers:
         transfer = transfers[0]
         armed = copy.deepcopy(arms[0]); armed["outcome"] = "ARMED"
-        expected_flight = copy.deepcopy(transfer["destination_flight"])
-        expected_flight["state"] = "LANDED"
+        end = "source" if cancel else "destination"
+        expected_flight = copy.deepcopy(transfer[end + "_flight"])
+        if cancel:
+            projection = transfer["native_transfer"][end]
+            expected_flight.update(projection["flight_changes"])
+            for field in projection["flight_absent"]: expected_flight.pop(field)
+            if (flight["state_started_game_time"] <= expected_flight["state_started_game_time"]
+                    or flight["state_started_game_time"] < transfer["created_at_game_time"]
+                    or survivor["Rotation"] != [projection["yaw"], projection["pitch"]]
+                    or survivor.get("Invulnerable", 0) != projection["invulnerable"]):
+                raise phases.smoke.SmokeError("Terminal cancellation lost its returned progression or native flags")
+        expected_flight["state"] = "FUELED" if cancel else "LANDED"
         expected_flight["state_started_game_time"] = flight["state_started_game_time"]
         expected_flight.pop("plan", None); expected_flight.pop("active_transfer_id", None)
-        if (transfer["schema_version"] != 3 or transfer["phase"] != "COMMITTED"
+        if (transfer["schema_version"] != 3 or transfer["phase"] != ("PREPARED" if cancel else "COMMITTED")
                 or transfer["native_transfer"]["armed"] != armed
-                or transfer["transfer_id"] != debits[0]["transaction_id"]
-                or transfer["destination_entity_id"] != destination["UUID"]
-                or transfer["destination_snapshot"] != data["snapshot"] or flight != expected_flight):
+                or transfer["transfer_id"] != armed["t"]
+                or transfer[end + "_entity_id"] != survivor["UUID"]
+                or (cancel and "destination_entity_id" in transfer)
+                or transfer[end + "_snapshot"] != data["snapshot"] or flight != expected_flight):
             raise phases.smoke.SmokeError("Terminal cut changed its frozen journal or authorized landing projection")
     # Ignore vanilla timers, not adapter state. Both restarts must preserve this whole projection.
-    projection = {key: destination.get(key) for key in ("UUID", "id", "RocketEntityData", "Pos", "Motion",
+    projection = {key: survivor.get(key) for key in ("UUID", "id", "RocketEntityData", "Pos", "Motion",
                                                        "Rotation", "NoGravity", "OnGround", "Invulnerable")}
     return dict(ledger_id=root["ledger_id"], issued=1, survivor=projection)
 
@@ -89,7 +105,7 @@ def main():
     try:
         phases.run(args, cases=CASES, inspect_state=inspect,
                    pause_marker="ARCE_RELEASE_TERMINAL_PAUSED cut={cut}",
-                   result_marker="ARCE_RELEASE_TERMINAL_RESULT cut={cut} journal=idle armed=0 fuel=500 epoch=0")
+                   result_marker="ARCE_RELEASE_TERMINAL_RESULT cut={cut} journal=idle armed=0")
         return 0
     except (OSError, phases.smoke.SmokeError) as failure:
         print(f"FAIL: {failure}")
