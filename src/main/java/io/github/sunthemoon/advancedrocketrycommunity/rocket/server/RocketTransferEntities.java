@@ -408,6 +408,18 @@ final class RocketTransferEntities {
                 && level.isPositionEntityTicking(position);
     }
 
+    /** F8's explicit release; expiry is only a backstop, never its acknowledgement. No chunk loads. */
+    static void releaseFlightTickets(MinecraftServer server, RocketTransferRecord record) {
+        if (!server.isSameThread()) { throw new IllegalStateException("Flight ticket release requires the server thread"); }
+        for (var snapshot : List.of(record.sourceSnapshot(), record.destinationSnapshot())) {
+            var level = level(server, snapshot.sourceDimension());
+            if (level == null) { continue; }
+            var origin = snapshot.sourceOrigin();
+            level.getChunkSource().removeRegionTicket(FLIGHT_TICKET, new ChunkPos(origin.x() >> 4, origin.z() >> 4),
+                    FLIGHT_TICKET_LEVEL, record.transferId());
+        }
+    }
+
     private static boolean entityChunkLoaded(
             MinecraftServer server,
             RocketStructureSnapshot snapshot,

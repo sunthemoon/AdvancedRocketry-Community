@@ -11,6 +11,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class LandingPadIndexTest {
+    @Test void terminalTransferReleaseIsExactIdempotentAndSurvivesReload() {
+        var index = new LandingPadIndex(); var first = register(index, 1, "First"); var other = register(index, 2, "Other");
+        var transfer = UUID.randomUUID(); var retained = UUID.randomUUID();
+        assertTrue(index.claim(STATION, first.reference(), first.physicalId(), transfer));
+        assertTrue(index.claim(STATION, other.reference(), other.physicalId(), retained));
+        index = LandingPadIndex.load(index.save(new CompoundTag()));
+        assertTrue(index.releaseTransfer(transfer)); assertTrue(index.releaseTransfer(transfer));
+        assertNull(index.find(STATION, first.reference()).orElseThrow().claim());
+        assertEquals(retained, index.find(STATION, other.reference()).orElseThrow().claim());
+        var invalid = index.save(new CompoundTag()); invalid.putInt("schema", 999);
+        var blocked = LandingPadIndex.load(invalid); assertFalse(blocked.releaseTransfer(transfer));
+        assertEquals(invalid, blocked.save(new CompoundTag()));
+    }
     private static final UUID STATION = new UUID(1, 1);
     private static final UUID OWNER = new UUID(2, 2);
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }

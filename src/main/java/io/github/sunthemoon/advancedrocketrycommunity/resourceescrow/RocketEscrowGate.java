@@ -12,6 +12,17 @@ public final class RocketEscrowGate {
         return escrowIdle(rocket);
     }
 
+    public static boolean resourcesIdle(RocketEntity rocket) {
+        return escrowIdle(rocket) || terminalSuccessor(rocket);
+    }
+
+    public static boolean terminalSuccessor(RocketEntity rocket) { return EscrowTerminalSuccessor.released(rocket); }
+
+    public static boolean terminalFuelUpdate(RocketEntity rocket,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData candidate) {
+        return EscrowTerminalSuccessor.fuelUpdate(rocket, candidate);
+    }
+
     /** Frozen flight authority also protects non-resource state and the boarded manifest. */
     public static boolean flightFrozen(RocketEntity rocket) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return true; }

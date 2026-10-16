@@ -45,6 +45,13 @@ public final class EscrowRuntime {
     private EscrowSourceClockProbe sourceClockProbe;
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
+    private volatile EscrowTerminalProbe terminalProbe;
+    private volatile java.util.function.Consumer<String> terminalTestCut;
+    void terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
+        EscrowTestEndpoints.requireEnabled(server);
+        EscrowTags.require(server.isSameThread() && (cut == null || terminalTestCut == null), "Terminal cut requires exclusive owner-thread setup");
+        terminalTestCut = cut;
+    }
     private EscrowReturnProbe returnProbe;
     private final EscrowSettlementOperator settlement = new EscrowSettlementOperator();
     private final EscrowSettlementRecovery settlements = new EscrowSettlementRecovery();
@@ -56,6 +63,8 @@ public final class EscrowRuntime {
     private final EscrowGovernedPhases flightPhases = new EscrowGovernedPhases();
     private final EscrowGovernedArrival arrivals = new EscrowGovernedArrival();
     private final EscrowGovernedReturn returns = new EscrowGovernedReturn();
+    private final EscrowGovernedTerminal terminal = new EscrowGovernedTerminal();
+    public EscrowGovernedTerminal terminal() { return terminal; }
     public EscrowGovernedReturn returns() { return returns; }
     public EscrowGovernedArrival arrivals() { return arrivals; }
     public EscrowGovernedPhases flightPhases() { return flightPhases; }
@@ -63,6 +72,8 @@ public final class EscrowRuntime {
     // Do not let a newly implemented later executor race that fixture's historical cut boundary.
     boolean destinationCutActive() { return destinationProbe != null; }
     boolean phaseCutActive() { return phaseProbe != null && phaseProbe.holdsArrival(); }
+    // Historical native return cuts stop at F6; live returns continue through the terminal executor.
+    boolean returnCutActive() { return returnProbe != null; }
     public EscrowGovernedDestination destinations() { return destinations; }
     public EscrowGovernedSourceFlight sourceFlights() { return sourceFlights; }
     public EscrowGovernedDispatch governedFlights() { return governedFlights; }
@@ -73,10 +84,12 @@ public final class EscrowRuntime {
         flightPhases.observe(rocket);
         arrivals.observe(rocket);
         returns.observe(rocket);
+        terminal.observe(rocket);
         flightCheckpoint.observe(rocket); preF2Cancellation.observe(rocket);
     }
     void invalidateFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
         flightCheckpoint.invalidated(rocket); preF2Cancellation.invalidated(rocket);
+        terminal.invalidated(rocket);
         rocket.assemblyTransactionId().ifPresent(governedFlights::invalidated);
     }
     EscrowSettlementOperator settlement() { return settlement; }
@@ -94,6 +107,8 @@ public final class EscrowRuntime {
         return reconciliation;
     }
     public void checkpoint(String cut) {
+        var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
+        var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
         if (returnProbe != null) { returnProbe.checkpoint(cut); }
         if (phaseProbe != null) { phaseProbe.checkpoint(cut); }
         if (destinationProbe != null) { destinationProbe.checkpoint(cut); }
@@ -183,7 +198,10 @@ public final class EscrowRuntime {
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("RT_")) {
+            if (testCase.startsWith("FT_")) {
+                if (runtime.terminalProbe == null) { runtime.terminalProbe = new EscrowTerminalProbe(event.getServer()); }
+                runtime.terminalProbe.tick();
+            } else if (testCase.startsWith("RT_")) {
                 if (runtime.returnProbe == null) { runtime.returnProbe = new EscrowReturnProbe(event.getServer()); }
                 runtime.returnProbe.tick();
             } else if (testCase.startsWith("FP_") || testCase.startsWith("FD_")) {
@@ -240,6 +258,7 @@ public final class EscrowRuntime {
         runtime.settlements.close();
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
+        runtime.terminal.close();
         runtime.governedFlights.close(); runtime.destinations.close();
         runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.barrier != null) { runtime.barrier.close(); }
@@ -268,6 +287,7 @@ public final class EscrowRuntime {
         runtime.settlements.close();
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
+        runtime.terminal.close();
         runtime.governedFlights.close(); runtime.destinations.close();
         runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
@@ -275,7 +295,7 @@ public final class EscrowRuntime {
     private static final class Provider implements ICapabilityProvider {
         private final EscrowRuntime runtime = new EscrowRuntime();
         private final LazyOptional<EscrowRuntime> value = LazyOptional.of(() -> runtime);
-        private void invalidate() { runtime.stopping = true; runtime.governedFlights.close(); runtime.destinations.close(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
+        private void invalidate() { runtime.stopping = true; runtime.terminal.close(); runtime.governedFlights.close(); runtime.destinations.close(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
         @Override @NotNull public <T> LazyOptional<T> getCapability(@NotNull Capability<T> requested, @Nullable Direction side) {
             return CAPABILITY.orEmpty(requested, value);
         }

@@ -71,11 +71,9 @@ class RocketGovernedAcknowledgementTest {
         var waiting = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD,
                 "GOVERNED_JOURNAL_UNACKNOWLEDGED");
         for (String reason : List.of("GOVERNED_LEDGER_UNAVAILABLE", "GOVERNED_LEDGER_MISMATCH",
-                "GOVERNED_ARM_MISSING", "GOVERNED_ACTION_REQUIRED", "GOVERNED_CLEANUP_REQUIRED")) {
+                "GOVERNED_ARM_MISSING", "GOVERNED_ACTION_REQUIRED", "GOVERNED_CLEANUP_AUTHORITY_CONFLICT")) {
             var fences = new RocketTransferFences();
-            var held = reason.equals("GOVERNED_CLEANUP_REQUIRED")
-                    ? new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.CLEANUP, null)
-                    : new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, reason);
+            var held = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, reason);
             try (var logs = new Logs()) {
                 fences.classifyGoverned(record, waiting, live, settled);
                 for (int tick = 0; tick < 20; tick++) {

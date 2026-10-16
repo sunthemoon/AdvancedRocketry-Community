@@ -11,6 +11,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketDestination;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -48,25 +51,38 @@ import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-/** N1: a current-ledger binding survives real O2/O3/O4 without becoming a permanent interlock. */
+/** N1/F3: settlement and ordinary checked L2 each permit two complete passenger flights. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class RocketSettlementIdleGameTests {
+    private enum Release { SETTLEMENT, L2, NORMALIZED }
     private RocketSettlementIdleGameTests() { }
 
     @GameTest(template = "empty", batch = "rocket_settlement_idle", timeoutTicks = 1_200)
     public static void acknowledgedSettlementRestoresMountRefuelAndLaunch(GameTestHelper helper) {
-        new Scenario(helper).start();
+        new Scenario(helper, Release.SETTLEMENT).start();
+    }
+
+    @GameTest(template = "empty", batch = "rocket_l2_complete_flights", timeoutTicks = 1_200)
+    public static void ordinaryL2WithoutReceiptCompletesTwoPassengerFlights(GameTestHelper helper) {
+        new Scenario(helper, Release.L2).start();
+    }
+
+    @GameTest(template = "empty", batch = "rocket_normalized_complete_flights", timeoutTicks = 1_200)
+    public static void normalizedSettlementSurvivorCompletesTwoPassengerFlights(GameTestHelper helper) {
+        new Scenario(helper, Release.NORMALIZED).start();
     }
 
     private static final class Scenario {
         private final GameTestHelper helper;
         private final ServerLevel level;
-        private final BlockPos position = new BlockPos(550_001, 100, 550_001);
-        private final ChunkPos chunk = new ChunkPos(position);
+        private final Release release;
+        private final BlockPos position;
+        private final ChunkPos chunk;
         private final GameTestTickPacer pacer;
         private final UUID actor = UUID.randomUUID();
-        private final UUID launch = UUID.randomUUID();
+        private UUID launch;
+        private final java.util.ArrayList<UUID> completed = new java.util.ArrayList<>();
         private ResourceEscrowSavedData data;
         private EscrowCoordinator coordinator;
         private EscrowTestEndpoints.Fixture source;
@@ -74,9 +90,22 @@ public final class RocketSettlementIdleGameTests {
         private EscrowOperation operation;
         private int step;
         private boolean intentQueued;
+        private ServerPlayer passenger;
+        private RocketEntity predecessor, successor;
+        private RocketFlightData departure;
+        private RocketEscrowSection departureWrapper;
+        private RocketTransferRecord terminalRecord;
+        private EscrowTerminalLeaseCut leaseCut;
+        private final java.util.EnumSet<RocketFlightState> sourceStates = java.util.EnumSet.noneOf(RocketFlightState.class);
+        private final java.util.EnumSet<RocketTransferPhase> phases = java.util.EnumSet.noneOf(RocketTransferPhase.class);
+        private boolean sawDescent, sawF6, sawF7;
+        private List<CompoundTag> receipts;
+        private final Map<EscrowEndpoint.Key, EscrowBarrier.Proof> l2Proofs = new java.util.LinkedHashMap<>();
+        private boolean proving, retiring;
 
-        Scenario(GameTestHelper helper) {
-            this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
+        Scenario(GameTestHelper helper, Release release) {
+            this.helper = helper; this.release = release; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
+            position = new BlockPos(550_001 + 256 * release.ordinal(), 100, 550_001); chunk = new ChunkPos(position);
         }
         void start() {
             level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
@@ -86,6 +115,7 @@ public final class RocketSettlementIdleGameTests {
             var pad = new ChunkPos(SafeCelestialTravel.FIXED_FEET_POSITION);
             moon.getChunkSource().addRegionTicket(TicketType.START, pad, 2, Unit.INSTANCE);
             moon.getChunk(pad.x, pad.z);
+            level.getChunkSource().addRegionTicket(TicketType.START, pad, 2, Unit.INSTANCE); level.getChunk(pad.x, pad.z);
             // Register exactly once; no scheduling from a scheduled callback.
             helper.onEachTick(this::tick);
         }
@@ -99,6 +129,7 @@ public final class RocketSettlementIdleGameTests {
                     if (!coordinator.writerIdle() || data.ledger().records().stream().noneMatch(op -> op.id().equals(operation.id()))) { return; }
                     helper.assertTrue(!RocketEscrowGate.idle(rocket), "Pending current-ledger rocket is idle");
                     source.applySource(operation);
+                    if (release == Release.L2) { step = 20; return; }
                     coordinator.transition(operation.id(), EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
                 }
                 case 3 -> {
@@ -117,33 +148,191 @@ public final class RocketSettlementIdleGameTests {
                     var receipt = data.ledger().tombstones().stream().filter(tag -> operation.id().equals(tag.getUUID("op_id"))).findFirst().orElseThrow();
                     helper.assertTrue(receipt.getBoolean("released"), "Record disappeared before acknowledged O4");
                     if (!rocket.escrowSection().markers().isEmpty()) { return; }
-                    helper.assertTrue(data.ledger().id().equals(rocket.escrowSection().ledger()) && rocket.escrowSection().epoch() == 1,
+                    helper.assertTrue(data.ledger().id().equals(rocket.escrowSection().ledger())
+                            && rocket.escrowSection().epoch() == (release == Release.NORMALIZED ? 0 : 1),
                             "O4 reset the permanent ledger binding or epoch");
                     helper.assertTrue(RocketEscrowGate.idle(rocket), "Settled current-ledger rocket remains locked");
-                    exerciseMountAndRefuel(); step = 5;
+                    released();
                 }
                 case 5 -> {
-                    var moon = level.getServer().getLevel(CelestialIds.MOON_LEVEL);
-                    if (!moon.areEntitiesLoaded(new ChunkPos(SafeCelestialTravel.FIXED_FEET_POSITION).toLong())
-                            || !moon.isPositionEntityTicking(SafeCelestialTravel.FIXED_FEET_POSITION)) { return; }
-                    var result = RocketRuntime.requestAdminFlight(rocket, RocketDestination.MOON, launch);
+                    var target = completed.isEmpty() ? level.getServer().getLevel(CelestialIds.MOON_LEVEL) : level;
+                    if (!target.areEntitiesLoaded(new ChunkPos(SafeCelestialTravel.FIXED_FEET_POSITION).toLong())
+                            || !target.isPositionEntityTicking(SafeCelestialTravel.FIXED_FEET_POSITION)) { return; }
+                    launch = UUID.randomUUID(); predecessor = rocket; successor = null;
+                    departure = rocket.flightData().orElseThrow(); departureWrapper = rocket.escrowSection();
+                    sourceStates.clear(); phases.clear(); sawDescent = false; sawF6 = false; sawF7 = false;
+                    var result = RocketRuntime.requestAdminFlight(rocket, completed.isEmpty() ? RocketDestination.MOON : RocketDestination.EARTH, launch);
                     RocketJournalGameTestSupport.assertPendingLaunch(helper, result, rocket); step = 6;
                 }
-                case 6 -> {
-                    if (rocket.flightData().orElseThrow().state() != RocketFlightState.COUNTDOWN) { return; }
-                    helper.assertTrue(RocketTransferSavedData.get(level.getServer()).acknowledgedCurrent(), "Launch preceded its journal acknowledgement");
-                    helper.assertTrue(data.ledger().id().equals(rocket.escrowSection().ledger()) && rocket.escrowSection().epoch() == 2,
-                            "Launch reset the post-refuel escrow envelope");
-                    rocket.discard(); source.bank().discard(); level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState());
-                    RocketTransferSavedData.get(level.getServer()).remove(launch); RocketJournalGameTestSupport.acknowledgeFixture(helper);
-                    level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
-                    var moon = level.getServer().getLevel(CelestialIds.MOON_LEVEL);
-                    moon.getChunkSource().removeRegionTicket(TicketType.START, new ChunkPos(SafeCelestialTravel.FIXED_FEET_POSITION), 2, Unit.INSTANCE);
-                    step = 7; helper.succeed();
-                }
+                case 6 -> flight();
+                case 7 -> terminal();
+                case 20 -> ordinaryL2();
                 default -> { }
             }
         }
+
+        private void released() {
+            receipts = data.ledger().tombstones();
+            helper.assertTrue(release != Release.L2 || !EscrowSettlementTombstones.history(data.ledger(), source.logical()),
+                    "Ordinary L2 fabricated settlement history");
+            exerciseMountAndRefuel();
+            var server = level.getServer();
+            passenger = new ServerPlayer(server, level, new GameProfile(rocket.ownerId().orElseThrow(), "N1Flight")) {
+                @Override public boolean isCreative() { return true; }
+                @Override public boolean isSpectator() { return false; }
+            };
+            var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+            new io.netty.channel.embedded.EmbeddedChannel(connection); server.getPlayerList().placeNewPlayer(connection, passenger);
+            passenger.teleportTo(level, rocket.getX(), rocket.getY(), rocket.getZ(), 0, 0);
+            RocketRuntime.requestFlightIntent(passenger, rocket.getId(), RocketFlightAction.BOARD,
+                    new TravelTarget.BodySurface(CelestialIds.EARTH_ID), UUID.randomUUID());
+            helper.assertTrue(passenger.getVehicle() == rocket
+                    && rocket.flightData().orElseThrow().passengers().assignment(passenger.getUUID()).isPresent(),
+                    "Released source did not board its connected passenger");
+            step = 5;
+        }
+
+        /** Test the existing L2 core; C32 owns the native C0-C8 adapter and its automatic pruning. */
+        private void ordinaryL2() {
+            var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
+            if (proving || retiring || !journal.actionAuthorityAvailable()) { return; }
+            if (l2Proofs.values().stream().anyMatch(proof -> !proof.valid())) {
+                l2Proofs.values().forEach(EscrowBarrier.Proof::release); l2Proofs.clear();
+            }
+            var observations = EscrowSettlementObserver.component(server, data.ledger(), operation.id());
+            for (var observation : observations) {
+                var endpoint = observation.endpoint();
+                if (l2Proofs.containsKey(endpoint.key())) { continue; }
+                coordinator.freeze(endpoint.key(), observation.state()); proving = true;
+                var runtime = EscrowRuntime.of(server);
+                boolean started = runtime.barrier().begin(runtime.store(level), endpoint, observation.state(),
+                        EscrowSettlementDisk.validator(observation, data.ledger().id()), server.getTickCount(), result -> {
+                            proving = false;
+                            if (result.confirmed()) { l2Proofs.put(endpoint.key(), result.proof()); }
+                        });
+                if (!started) { proving = false; }
+                return;
+            }
+            helper.assertTrue(!RocketEscrowGate.idle(rocket) && journal.acknowledgedGuard(source.logical()).orElseThrow().transfer() == null,
+                    "L2 fixture lost its checked journal or released before retirement");
+            retiring = coordinator.retire(java.util.Set.of(operation.id()), l2Proofs, acknowledged -> {
+                retiring = false;
+                if (!acknowledged) { l2Proofs.clear(); return; }
+                helper.assertTrue(data.ledger().records().stream().noneMatch(op -> op.id().equals(operation.id()))
+                        && data.ledger().issuedThrough() >= operation.sequence() && journal.actionAuthorityAvailable(),
+                        "L2 callback is not its exact checked retirement");
+                var envelope = EscrowNativeEnvelope.rocket(rocket);
+                var encoded = rocket.saveWithoutId(new CompoundTag());
+                var section = rocket.escrowSection();
+                var pruned = new RocketEscrowSection(section.ledger(), section.epoch(), section.markers().stream()
+                        .filter(marker -> !marker.operation().equals(operation.id())).toList());
+                encoded.getCompound("RocketEntityData").put("resource_escrow", pruned.encode());
+                // Explicit fixture setup after real L2, not a production C8 API or an unproved release.
+                rocket.discard(); rocket = ModEntities.ROCKET.get().create(level);
+                helper.assertTrue(rocket != null, "Post-L2 fixture could not reload its survivor");
+                rocket.load(encoded); helper.assertTrue(level.addFreshEntity(rocket), "Post-L2 survivor did not rejoin");
+                envelope.put("wrapper", pruned.encode());
+                helper.assertTrue(envelope.equals(EscrowNativeEnvelope.rocket(rocket)) && pruned.epoch() == 1
+                        && pruned.markers().isEmpty() && RocketEscrowGate.idle(rocket), "Post-L2 setup changed more than its retired marker");
+                EscrowTestEndpoints.clearRetired(source, java.util.Set.of(operation.id()));
+                released();
+            });
+        }
+
+        private void flight() {
+            var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
+            var sourceFlight = predecessor.flightData().orElseThrow();
+            sourceStates.add(sourceFlight.state());
+            helper.assertTrue(sourceFlight.fuel().equals(departure.fuel()) && predecessor.escrowSection().equals(departureWrapper),
+                    "Flight rewrote its credited source fuel or retained epoch");
+            var record = journal.find(launch).orElse(null);
+            if (record == null) { return; }
+            // A phase's exact acknowledgement can immediately queue the next phase in the same
+            // owner tick. Observe every staged phase; COMMITTED below requires checked authority.
+            phases.add(record.phase());
+            if (sourceFlight.state() == RocketFlightState.COUNTDOWN) {
+                helper.assertTrue(journal.acknowledgedCurrent() && departureWrapper.epoch() == (completed.isEmpty() ? 2 : 1),
+                        "Launch preceded its acknowledgement or reset the post-refuel envelope");
+            }
+            var arrivalLevel = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                    record.destinationSnapshot().sourceDimension()));
+            var arrival = arrivalLevel.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
+            if (!(arrival instanceof RocketEntity found)) { return; }
+            successor = found;
+            var flight = successor.flightData().orElseThrow();
+            var expectedDebits = new java.util.ArrayList<>(completed); expectedDebits.add(launch);
+            helper.assertTrue(!successor.getUUID().equals(predecessor.getUUID()) && successor.escrowSection().epoch() == 0
+                    && successor.escrowSection().markers().isEmpty() && data.ledger().id().equals(successor.escrowSection().ledger())
+                    && flight.fuel().equals(record.destinationFlightData().fuel())
+                    && flight.fuel().committedDebits().equals(expectedDebits)
+                    && departure.fuel().debit(record.sourceFlightData().plan().orElseThrow()).state().equals(flight.fuel()),
+                    "Destination lost its fixed identity, independent epoch or exact one-time debit");
+            sawDescent |= flight.state() == RocketFlightState.DESCENT;
+            if (record.phase() != RocketTransferPhase.COMMITTED || !journal.actionAuthorityAvailable()) { return; }
+            helper.assertTrue(predecessor.isRemoved() && predecessor.getPassengers().isEmpty()
+                    && ((ServerLevel) predecessor.level()).getEntity(predecessor.getUUID()) == null && passenger.getVehicle() == successor
+                    && successor.getPassengers().equals(List.of(passenger)) && passenger.connection.connection.isConnected(),
+                    "COMMITTED did not follow source removal and connected passenger handoff");
+            if (flight.state() != RocketFlightState.LANDED) { return; }
+            helper.assertTrue(sawDescent && sourceStates.containsAll(java.util.EnumSet.of(RocketFlightState.COUNTDOWN,
+                    RocketFlightState.ASCENT, RocketFlightState.TRANSIT)) && phases.containsAll(java.util.EnumSet.allOf(RocketTransferPhase.class))
+                    && flight.plan().isEmpty() && flight.activeTransferId().isEmpty() && !RocketEscrowGate.resourcesIdle(successor),
+                    "Flight skipped a checked phase or released its landed successor before F7");
+            terminalRecord = record; leaseCut = new EscrowTerminalLeaseCut(server, data, record); step = 7;
+        }
+
+        private void terminal() {
+            var server = level.getServer(); var journal = RocketTransferSavedData.get(server);
+            if (EscrowRuntime.of(server).terminal().checkpoint(server, terminalRecord)) { sawF6 = true; }
+            if (leaseCut != null && leaseCut.ready()) {
+                try { leaseCut.exercise(helper, EscrowTerminalLeaseCut.Fault.NONE, successor, passenger); }
+                finally { leaseCut.close(); leaseCut = null; }
+                sawF7 = true;
+                var arm = data.ledger().armedFlights().stream().filter(value -> value.transfer().equals(launch)).findFirst().orElseThrow();
+                var head = data.ledger().rocketAuthorities().stream().filter(value -> value.logical().equals(source.logical())).findFirst().orElse(null);
+                helper.assertTrue(sawF6 && arm.outcome() == EscrowFlightTables.Outcome.HANDED_OFF
+                        && arm.epoch() == departureWrapper.epoch() && receipts.equals(data.ledger().tombstones()),
+                        "Handoff lost its proof, source epoch or immutable receipts");
+                if (release == Release.L2) {
+                    helper.assertTrue(head == null && arm.anchor() == null, "Ordinary flight invented a receipt-backed head");
+                } else {
+                    helper.assertTrue(head != null && head.physical().equals(successor.getUUID()) && head.epoch() == 0
+                            && head.issued() == arm.serial() && head.completed() == arm.serial()
+                            && head.kind() == EscrowSignatureKind.FUEL_VECTOR_V1
+                            && head.signature().equals(successor.flightData().orElseThrow().fuel().resourceSignature())
+                            && head.invariant().equals(EscrowInvariant.rocket(successor)), "F7 did not advance its typed READY head");
+                }
+            }
+            if (data.ledger().armedFlights().stream().anyMatch(value -> value.transfer().equals(launch))) { return; }
+            helper.assertTrue(sawF6 && sawF7 && journal.actionAuthorityAvailable() && journal.find(launch).isEmpty()
+                    && journal.acknowledgedGuard(source.logical()).orElseThrow().transfer() == null
+                    && RocketEscrowGate.idle(successor) && RocketRuntime.resourceMutationAllowed(successor)
+                    && passenger.getVehicle() == successor && successor.getPassengers().equals(List.of(passenger))
+                    && ((ServerLevel) predecessor.level()).getEntity(predecessor.getUUID()) == null
+                    && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferFenceGameTests.flightTickets(server, launch) == 0,
+                    "F8 did not leave exactly one available passenger rocket and an idle checked journal");
+            completed.add(launch); rocket = successor;
+            helper.assertTrue(rocket.flightData().orElseThrow().fuel().committedDebits().equals(completed)
+                    && receipts.equals(data.ledger().tombstones()), "Cleanup repeated a debit or changed historical receipts");
+            if (completed.size() == 1) {
+                var before = rocket.flightData().orElseThrow();
+                rocket.updateFlightData(before.withFuel(before.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 2_000),
+                        rocket.level().getGameTime()));
+                helper.assertTrue(rocket.escrowSection().epoch() == 1 && rocket.flightData().orElseThrow().fuel().totalAmount() == 2_000
+                        && rocket.flightData().orElseThrow().fuel().committedDebits().equals(completed), "Successor refuelling lost its new epoch or debit history");
+                step = 5; return;
+            }
+            helper.assertTrue(completed.size() == 2, "Required two-flight case did not complete");
+            passenger.stopRiding(); server.getPlayerList().remove(passenger); rocket.discard(); source.bank().discard();
+            level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState());
+            level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
+            var pad = new ChunkPos(SafeCelestialTravel.FIXED_FEET_POSITION);
+            for (var end : List.of(level, server.getLevel(CelestialIds.MOON_LEVEL))) {
+                end.getChunkSource().removeRegionTicket(TicketType.START, pad, 2, Unit.INSTANCE);
+            }
+            step = 8; helper.succeed();
+        }
+
         private void prepare() {
             var journal = RocketTransferSavedData.get(level.getServer()); if (!journal.retryChecked(level.getServer())) { return; }
             data = ResourceEscrowSavedData.forTests(level.getServer()); coordinator = data.bind(level.getServer());
@@ -161,11 +350,14 @@ public final class RocketSettlementIdleGameTests {
                     new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
             var capture = EscrowNativeBinding.captureTest(operation, rocket, source.source(), before.fuel(), fuel, data.ledger());
             operation = capture.operation();
-            var parent = rocket.saveWithoutId(new CompoundTag()); var wrapper = parent.getCompound("RocketEntityData");
-            wrapper.put("flight_data", RocketFlightNbtCodec.encode(before.withFuel(fuel, level.getGameTime())));
-            wrapper.put("resource_escrow", new RocketEscrowSection(data.ledger().id(), 1,
-                    List.of(new EscrowPrefix.Marker(operation.id(), operation.sequence(), "DESTINATION", 1))).encode());
-            rocket.load(parent); helper.assertTrue(rocket.operational() && level.addFreshEntity(rocket), "Credited rocket fixture failed");
+            if (release != Release.NORMALIZED) {
+                var parent = rocket.saveWithoutId(new CompoundTag()); var wrapper = parent.getCompound("RocketEntityData");
+                wrapper.put("flight_data", RocketFlightNbtCodec.encode(before.withFuel(fuel, level.getGameTime())));
+                wrapper.put("resource_escrow", new RocketEscrowSection(data.ledger().id(), 1,
+                        List.of(new EscrowPrefix.Marker(operation.id(), operation.sequence(), "DESTINATION", 1))).encode());
+                rocket.load(parent);
+            }
+            helper.assertTrue(rocket.operational() && level.addFreshEntity(rocket), "Credited rocket fixture failed");
             coordinator.prepareTest(operation, capture.before(), committed -> helper.assertTrue(committed, "L1 was not acknowledged")); step = 1;
         }
         private void exerciseMountAndRefuel() {
@@ -178,6 +370,11 @@ public final class RocketSettlementIdleGameTests {
             helper.assertTrue(owner.getVehicle() == null && rocket.flightData().orElseThrow().passengers().assignment(owner.getUUID()).isEmpty(),
                     "Settled rocket cannot dismount");
             var player = new BucketPlayer(level, rocket.ownerId().orElseThrow()); player.setPos(rocket.position());
+            if (release == Release.NORMALIZED) {
+                var flight = rocket.flightData().orElseThrow();
+                rocket.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 1_000), level.getGameTime()));
+                helper.assertTrue(rocket.escrowSection().epoch() == 1, "First normalized resource change did not advance epoch 0");
+            }
             player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ClassicFluids.ROCKET_FUEL_BUCKET.get()));
             helper.assertTrue(RocketPropulsionInteraction.exchange(player, rocket, InteractionHand.MAIN_HAND) == InteractionResult.CONSUME,
                     "Settled rocket cannot refuel through the hand exchange");
