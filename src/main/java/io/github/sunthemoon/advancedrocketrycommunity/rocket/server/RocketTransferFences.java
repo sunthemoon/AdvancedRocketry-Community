@@ -7,6 +7,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRunti
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPresence;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryDecision;
@@ -54,19 +55,7 @@ final class RocketTransferFences {
             if (record.nativeTransfer().isPresent()) {
                 var route = server == null ? new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, "GOVERNED_ACTION_REQUIRED")
                         : EscrowRuntime.of(server).governedFlights().classify(server, journal, record);
-                if (route.route() == EscrowGovernedDispatch.Route.ACTIVE
-                        && record.phase() == io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase.PREPARED) {
-                    // Membership records routing/motion only. The F3 executor repeats all final action checks.
-                    drop(record.transferId()); settled.remove(record.transferId()); live.add(record.transferId()); continue;
-                }
-                // Positive routing never enters legacy recovery. The executor still needs its
-                // native action permit; terminal entries can only enter checked F8 cleanup.
-                String reason = switch (route.route()) {
-                    case HOLD -> route.reason();
-                    case ACTIVE -> "GOVERNED_ACTION_REQUIRED";
-                    case CLEANUP -> "GOVERNED_CLEANUP_REQUIRED";
-                };
-                fence(record, reason, live, settled); continue;
+                classifyGoverned(record, route, live, settled); continue;
             }
             var ledger = ledgerReader.apply(server);
             String reason = null;
@@ -77,6 +66,22 @@ final class RocketTransferFences {
             // An existing detailed conflict is retained during re-evaluation, not reset every tick.
             if (reason != null && !reasons.containsKey(record.transferId())) { fence(record, reason, live, settled); }
         }
+    }
+
+    /** Classification is not permission: both implemented executors repeat their final action checks. */
+    void classifyGoverned(RocketTransferRecord record, EscrowGovernedDispatch.Decision route, Set<UUID> live, Set<UUID> settled) {
+        if (route.route() == EscrowGovernedDispatch.Route.ACTIVE
+                && (record.phase() == RocketTransferPhase.PREPARED || record.phase() == RocketTransferPhase.DESTINATION_SPAWNED)) {
+            drop(record.transferId()); settled.remove(record.transferId()); live.add(record.transferId()); return;
+        }
+        // Pending/unknown authority remains held. Later phases are not implemented by F3/F4,
+        // and terminal entries can only enter checked F8 cleanup, never legacy recovery.
+        String reason = switch (route.route()) {
+            case HOLD -> route.reason();
+            case ACTIVE -> "GOVERNED_ACTION_REQUIRED";
+            case CLEANUP -> "GOVERNED_CLEANUP_REQUIRED";
+        };
+        fence(record, reason, live, settled);
     }
 
     private static boolean loadedProtectedHint(MinecraftServer server, RocketTransferRecord record, boolean proved) {

@@ -2,6 +2,8 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDispatch;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecoveryAction;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
@@ -40,5 +42,28 @@ class RocketGovernedRecoveryExclusionTest {
         }
         fences.joined(null, record.logicalRocketId(), true, journal, live, settled);
         assertFalse(fences.permit(null, journal, record, live, settled)); assertTrue(live.isEmpty()); assertTrue(settled.isEmpty());
+    }
+
+    @Test void checkedF3AndF4RouteToTheirExecutorsButPendingAndLaterPhasesStayFenced() {
+        var prepared = GovernedTransferFixture.create().record();
+        var spawned = prepared.destinationSpawned(prepared.nativeTransfer().orElseThrow().armed().destination());
+        var fences = new RocketTransferFences();
+        var live = new HashSet<UUID>(); var settled = new HashSet<UUID>();
+        var record = prepared;
+        for (var phase : RocketTransferPhase.values()) {
+            record = phase == prepared.phase() ? prepared : phase == spawned.phase() ? spawned : record.advance(phase);
+            var active = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.ACTIVE, null);
+            fences.classifyGoverned(record, active, live, settled);
+            boolean implemented = phase == prepared.phase() || phase == spawned.phase();
+            assertEquals(implemented, live.contains(record.transferId()));
+            assertEquals(!implemented, fences.ids().contains(record.transferId()));
+            assertTrue(settled.isEmpty());
+            var pending = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.HOLD, "GOVERNED_JOURNAL_UNACKNOWLEDGED");
+            fences.classifyGoverned(record, pending, live, settled);
+            assertTrue(live.isEmpty()); assertEquals(pending.reason(), fences.reason(record.transferId()));
+            var terminal = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.CLEANUP, null);
+            fences.classifyGoverned(record, terminal, live, settled);
+            assertTrue(live.isEmpty()); assertEquals("GOVERNED_CLEANUP_REQUIRED", fences.reason(record.transferId()));
+        }
     }
 }
