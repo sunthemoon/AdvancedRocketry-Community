@@ -58,6 +58,11 @@ public final class RocketRuntime {
         return service instanceof RocketManager manager && manager.resourceMutationAllowed(rocket);
     }
 
+    /** Other interlocks only; this read-only boundary never grants an escrow publication permit. */
+    public static boolean escrowReconciliationBoundary(RocketEntity rocket) {
+        return service instanceof RocketManager manager && manager.escrowReconciliationBoundary(rocket);
+    }
+
     /** Empty-server-only fixture; the manager delegates to the normal reservation-release service. */
     public static boolean releaseLandedReservationForFirstEventTest(RocketEntity rocket) {
         if (!(service instanceof RocketManager manager)) { throw new IllegalStateException("No rocket manager"); }

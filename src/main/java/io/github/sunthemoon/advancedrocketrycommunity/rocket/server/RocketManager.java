@@ -98,6 +98,13 @@ public final class RocketManager implements RocketOperationService {
         return journal.operational() && !transactions.hasPendingRecovery(journal, rocket.snapshot().orElseThrow());
     }
 
+    boolean escrowReconciliationBoundary(RocketEntity rocket) {
+        if (!flights.escrowReconciliationBoundary(rocket)) { return false; }
+        var journal = io.github.sunthemoon.advancedrocketrycommunity.rocket.persistence.RocketTransactionSavedData
+                .get(((ServerLevel) rocket.level()).getServer());
+        return journal.operational() && !transactions.hasPendingRecovery(journal, rocket.snapshot().orElseThrow());
+    }
+
     @Override
     public void requestAssembler(ServerPlayer player, BlockPos assemblerPosition, boolean assemble) {
         assemblerScans.requestAssembler(player, assemblerPosition, assemble);

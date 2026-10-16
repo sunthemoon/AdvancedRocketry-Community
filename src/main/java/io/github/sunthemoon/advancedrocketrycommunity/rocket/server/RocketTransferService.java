@@ -443,6 +443,19 @@ final class RocketTransferService {
         );
     }
 
+    /** Reconciliation still requires the checked landed authority and an unclaimed bay boundary. */
+    boolean escrowReconciliationBoundary(RocketEntity rocket) {
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()
+                || rocket.flightData().orElseThrow().activeTransferId().isPresent()) { return false; }
+        var journal = RocketTransferSavedData.get(level.getServer());
+        if (!journal.actionAuthorityAvailable()) { return false; }
+        var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
+        if (record == null) { return true; }
+        var bay = recovery.bays().before(level.getServer(), journal, record, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
+        return bay != null && bay.kind() == RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED
+                && record.phase() == RocketTransferPhase.COMMITTED && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record);
+    }
+
     /** No endpoint may mutate a balance that restart recovery can replace from its journal. */
     boolean resourceMutationAllowed(RocketEntity rocket) {
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.resourcesIdle(rocket)) { return false; }

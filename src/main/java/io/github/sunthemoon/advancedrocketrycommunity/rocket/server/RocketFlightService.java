@@ -629,6 +629,8 @@ final class RocketFlightService {
         return transfers.resourceMutationAllowed(rocket);
     }
 
+    boolean escrowReconciliationBoundary(RocketEntity rocket) { return transfers.escrowReconciliationBoundary(rocket); }
+
     private record Access(RocketEntity rocket, RocketFlightRequestCode code) {
         private Access {
             Objects.requireNonNull(code, "code");

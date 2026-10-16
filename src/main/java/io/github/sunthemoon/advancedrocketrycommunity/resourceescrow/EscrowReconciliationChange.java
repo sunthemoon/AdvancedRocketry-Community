@@ -25,7 +25,8 @@ final class EscrowReconciliationChange {
                 && bank.fluidId().equals(fluid) && Objects.equals(bank.fluidTag(), tag), "Fill changes existing native fluid");
         var changed = fuel.withFluidBank(oxidizer, fluid, tag, Math.addExact(bank.amount(), payload.getInt("Amount")));
         var wrapper = RocketEscrowSection.decode(before.getCompound("wrapper"));
-        EscrowTags.require(ledger.equals(wrapper.ledger()) && wrapper.epoch() == op.destination().beforeEpoch(), "Fill needs exact epoch");
+        EscrowTags.require((wrapper.ledger() == null || ledger.equals(wrapper.ledger()))
+                && wrapper.epoch() == op.destination().beforeEpoch(), "Fill needs exact epoch");
         var markers = new ArrayList<>(wrapper.markers());
         markers.add(new EscrowPrefix.Link(op, op.destination(), "DESTINATION").marker());
         var after = before.copy();

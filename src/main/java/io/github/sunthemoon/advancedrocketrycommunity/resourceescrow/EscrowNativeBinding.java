@@ -61,6 +61,20 @@ public record EscrowNativeBinding(EscrowSignatureKind kind, UUID physical, UUID 
                     "Admission capture has a different marker section");
         }
     }
+    /** C0 uses the actual native capture. Historical projection fixtures below are not admission authority. */
+    static Admission captureCurrentTest(EscrowOperation op,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket,
+            net.minecraft.world.level.block.entity.BlockEntity source, EscrowLedger root) {
+        EscrowTestEndpoints.requireEnabled(rocket.getServer());
+        EscrowTags.require(EscrowReconciliationValidation.canBind(root, op.destination(), rocket.escrowSection().markers())
+                && EscrowReconciliationValidation.canBind(root, op.source(),
+                EscrowTestEndpoints.state(source.getPersistentData(), root.id(), false).markers()), "C0 waits for stale marker pruning");
+        var before = EscrowNativeEnvelope.rocket(rocket);
+        var after = EscrowReconciliationChange.rocket(root.id(), op, before);
+        var next = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec
+                .decode(after.getCompound("flight")).data().orElseThrow().fuel();
+        return captureTest(op, rocket, source, rocket.flightData().orElseThrow().fuel(), next, root);
+    }
     static Admission captureTest(EscrowOperation op, io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket,
             net.minecraft.world.level.block.entity.BlockEntity source,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState beforeFuel,

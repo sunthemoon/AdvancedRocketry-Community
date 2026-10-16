@@ -165,6 +165,16 @@ public final class RocketEntity extends Entity implements MenuProvider {
     public RocketEscrowSection escrowSection() { return escrowSection; }
     public long governedObservation() { return governedObservation; }
 
+    /** The ordinary reconciliation permit publishes native resources and their wrapper as one action. */
+    public void applyEscrowFill(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction.Permit permit) {
+        var change = Objects.requireNonNull(permit).consume(this);
+        var previousFlight = flightData; var previousSection = escrowSection;
+        flightData = change.flight(); escrowSection = change.wrapper();
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previousFlight; escrowSection = previousSection; throw failure; }
+        refreshSyncedData();
+    }
+
     /** Only F4's checked, one-use permit can initialize a new bound destination. */
     public void initializeGovernedDestination(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestinationAction.Permit permit) {
         var record = Objects.requireNonNull(permit).consume(this);

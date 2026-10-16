@@ -19,7 +19,9 @@ final class EscrowReconciliationValidation {
             var snapshot = RocketSnapshotNbtCodec.decode(EscrowTags.compound(envelope, "snapshot")).snapshot().orElseThrow();
             var flight = RocketFlightNbtCodec.decode(EscrowTags.compound(envelope, "flight")).data().orElseThrow();
             var wrapper = RocketEscrowSection.decode(EscrowTags.compound(envelope, "wrapper"));
-            if (!ledger.equals(wrapper.ledger()) || flight.fuel().propulsion().isEmpty()
+            // The first acknowledged fill may still find the pristine, not-yet-bound native wrapper.
+            // C2 binds it atomically with epoch 1 and the first marker; no other neutral state is valid.
+            if (wrapper.ledger() != null && !ledger.equals(wrapper.ledger()) || flight.fuel().propulsion().isEmpty()
                     || !snapshot.snapshotId().equals(EscrowTags.uuid(envelope, "assembly_snapshot"))
                     || !snapshot.contentHash().equals(envelope.getString("content_hash"))) { return EscrowPrefix.Classification.OTHER; }
             for (var link : chain) {
@@ -49,6 +51,14 @@ final class EscrowReconciliationValidation {
     static boolean canBind(EscrowLedger root, EscrowEndpoint endpoint, List<EscrowPrefix.Marker> markers) {
         var chain = EscrowPrefix.chains(root.records()).getOrDefault(endpoint.key(), List.of());
         return markers.stream().allMatch(marker -> chain.stream().anyMatch(link -> link.marker().equals(marker)));
+    }
+
+    /** A retained floor for the exact checked T remains a lower bound during ordinary fills. */
+    static boolean floorMatches(CompoundTag floor, EscrowEndpoint endpoint, EscrowPrefix.State state, String invariant) {
+        return floor.getInt("schema_version") == 2 && endpoint.identity().equals(floor.getUUID("entity_id"))
+                && EscrowSignatureKind.FUEL_VECTOR_V1.name().equals(floor.getString("signature_kind"))
+                && invariant.equals(floor.getString("invariant_digest")) && state.epoch() >= floor.getLong("resource_epoch")
+                && (state.epoch() != floor.getLong("resource_epoch") || state.signature().equals(floor.getString("signature")));
     }
 
     /** A later L1 member still BEFORE/PREFIX silently delays retirement on every touched end. */

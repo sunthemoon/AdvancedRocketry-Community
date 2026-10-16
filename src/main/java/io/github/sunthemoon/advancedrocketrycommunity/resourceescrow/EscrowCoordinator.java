@@ -20,6 +20,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     private final Map<UUID, EscrowReason> transitions = new HashMap<>();
     private final EscrowAdmissionAuthority admission = new EscrowAdmissionAuthority();
     private final EscrowFlightWrites flightWrites = new EscrowFlightWrites();
+    private final EscrowReconciliationDriver reconciliation = new EscrowReconciliationDriver(this);
     private long issued;
     private long tick;
     private long lastStart = -10;
@@ -33,10 +34,28 @@ public final class EscrowCoordinator implements AutoCloseable {
                         .flatMap(java.util.function.Function.identity()).map(EscrowAdmissionAuthority.Pending::of).toList()));
     }
     public boolean productionAdmissionEnabled() { return false; }
+    void reconcile(net.minecraft.server.MinecraftServer server, EscrowOperation operation,
+                   Consumer<EscrowReconciliationScheduler.Result> completion) {
+        owner(); reconciliation.attempt(server, operation, completion);
+    }
+    void registerReconciliationTestSource(net.minecraft.server.MinecraftServer server, EscrowEndpoint source) {
+        owner(); reconciliation.registerTestSource(server, source);
+    }
     public boolean operational() { owner(); return !closed && writer.baselineAvailable(); }
     public EscrowLedger ledger() { return data.ledger(); }
     public long nextSequence() { owner(); return Math.addExact(Math.max(issued, data.ledger().issuedThrough()), 1); }
     public EscrowAdmissionAuthority admissionAuthority() { owner(); return admission; }
+    /** Gated C0/C1 entry: observed native state, acknowledged component/guard, then the existing L1 writer. */
+    void prepareNativeTest(EscrowOperation op, io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket,
+                           net.minecraft.world.level.block.entity.BlockEntity source, Consumer<Boolean> completion) {
+        owner(); EscrowTestEndpoints.requireEnabled(rocket.getServer());
+        EscrowTags.require(operational() && writer.idle() && queued.isEmpty(), "C0 waits for the acknowledged ledger");
+        var capture = EscrowNativeBinding.captureCurrentTest(op, rocket, source, data.ledger());
+        var candidate = data.ledger().append(List.of(capture.operation()));
+        EscrowReconciliationView.capture(rocket.getServer(), candidate, EscrowSettlementIntent.component(candidate.records(), op.id()));
+        reconciliation.registerTestSource(rocket.getServer(), op.source());
+        prepareTest(capture.operation(), capture.before(), completion);
+    }
     /** Caller must already be in an explicitly gated test fixture. No block/item/command invokes this. */
     void prepareTest(EscrowOperation op, Consumer<Boolean> completion) {
         prepareTest(op, null, completion);
@@ -326,8 +345,8 @@ public final class EscrowCoordinator implements AutoCloseable {
     Set<UUID> unresolvedIds() {
         owner(); return unresolved().map(EscrowOperation::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
-    @Override public void close() { owner(); if (!closed) { closed = true; flightWrites.close(); writer.close(); frontiers.clear(); } }
+    @Override public void close() { owner(); if (!closed) { closed = true; reconciliation.close(); flightWrites.close(); writer.close(); frontiers.clear(); } }
     /** Crash path, where ServerStoppingEvent never ran: no drain or callbacks, but the writer is joined. */
-    public void abort() { owner(); if (!closed) { closed = true; flightWrites.close(); writer.abort(); frontiers.clear(); } }
+    public void abort() { owner(); if (!closed) { closed = true; reconciliation.close(); flightWrites.close(); writer.abort(); frontiers.clear(); } }
     private void owner() { EscrowTags.require(Thread.currentThread() == owner, "Escrow coordinator requires its owner thread"); }
 }
