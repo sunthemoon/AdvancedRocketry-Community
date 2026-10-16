@@ -1,0 +1,388 @@
+{
+  "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+  "batch_id": "v1.8.0-c17a-fluid-fuel-loader-w82",
+  "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+  "entries": [
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid_fuel_loader_side.png",
+      "target_sha256": "f0ee935efa249294224f23eff6f361b57966e49f1b2985718b3446ca79ae6014",
+      "transformation": [
+        "Original 16x16 grid of a tank shell with a sight glass, hoops and a feed pipe; V180MaterialArt.png, tint 0xB9C8D4; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid_fuel_loader_top.png",
+      "target_sha256": "a50997aa52532c144ba5ee252f78d73a67b8e3fa498f2fae7289172e1cddc87c",
+      "transformation": [
+        "Original 16x16 grid of an off-centre coupling flange with a valve wheel and bolts; V180MaterialArt.png, tint 0xD9C08E; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid_fuel_loader_bottom.png",
+      "target_sha256": "6deb75c301764735f987fb7222fdc664239b778534c4cf4023fe3027a2abcf3d",
+      "transformation": [
+        "Original 16x16 grid of a base plate with two skids and a drain; V180MaterialArt.png, tint 0x9AA5AF; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/linker.png",
+      "target_sha256": "56f5c0638ac1edc1b2175a3129ad6d2c97120175fb3e46f2be17bf336d1c8e4f",
+      "transformation": [
+        "Original 16x16 grid of a handheld unit with an antenna, a screen, keys and a cable; V180MaterialArt.png, tint 0x8FC6E6; no bitmap input."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/blockstates/fluid_fuel_loader.json",
+      "target_sha256": "303442d3ef1ab04bc7f9a16431214a529d6a33081a4d51fdd96a2ec38e62bf1f",
+      "transformation": [
+        "Generate a single-variant blockstate that names the new block model by resource ID."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/block/fluid_fuel_loader.json",
+      "target_sha256": "2d7b2c9ec1c54e21768f510f6af45e26025cef156baee0f70a0074a938b68ea8",
+      "transformation": [
+        "Reference minecraft:block/cube_bottom_top and the new textures by resource ID; no model file copied."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/fluid_fuel_loader.json",
+      "target_sha256": "98b52f629998b1b088c05bd84db2dfcf32720b5f98211315b46fd486145b176e",
+      "transformation": [
+        "Reference the new block model by resource ID."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity/models/item/linker.json",
+      "target_sha256": "ca846721e1056bfd8132f8ede97f1f927574a4e30d4cd22e7cd7d65b134c60be",
+      "transformation": [
+        "Reference minecraft:item/generated and the new texture by resource ID; no model file copied."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/loot_tables/blocks/fluid_fuel_loader.json",
+      "target_sha256": "002313ac22443f46647b98e01fa968d07a0f0a2025f44c1ec3528dacb64e0f03",
+      "transformation": [
+        "Generate a loot table that drops one loader item; the block adds the carrier."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/fluid_fuel_loader.json",
+      "target_sha256": "d4c1f6278e8c72ccb25f0fbc65c23fe30165abb490bbc3b3d05e210bb7ad7d05",
+      "transformation": [
+        "New community shapeless recipe with the empty-pressurized-tank ingredient (W11b3 design section 4); no legacy recipe parity is claimed."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/recipes/linker.json",
+      "target_sha256": "d2bf41fba6afd7fc12854e7f902bab48547619383b1d56898a3ecf050b7ed608",
+      "transformation": [
+        "New community shapeless recipe (W11b3 design section 4); nothing from LibVulpes is copied."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/fluid_fuel_loader.json",
+      "target_sha256": "642b7a8cac86c1b0b8d00ad1a53562b3eca5aa13d81724f87b57c070d503be9f",
+      "transformation": [
+        "Generate a recipe-unlock advancement for the new recipe."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/data/advancedrocketrycommunity/advancements/recipes/misc/linker.json",
+      "target_sha256": "d306c7eea1d8ca398424cf8fd93ed265d79a00439d8b4d093e6b7a0e120da376",
+      "transformation": [
+        "Generate a recipe-unlock advancement for the new recipe."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "new_keys": [
+        "block.advancedrocketrycommunity.fluid_fuel_loader",
+        "item.advancedrocketrycommunity.linker",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.admission_disabled",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.ambiguous_bank",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.bank_full",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.carrier_refused",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.empty",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.escrow_full",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.escrow_pending",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.exchange_refused",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.incompatible_fluid",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.invalid_data",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.ledger_unavailable",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.not_owner",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.out_of_range",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.preparing",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.ready",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.rocket_busy",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.stale_binding",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.transfer_journal_unproved",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.transferring",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.unbound",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.unsupported_data",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.waiting_unloaded",
+        "message.advancedrocketrycommunity.linker.already_bound",
+        "message.advancedrocketrycommunity.linker.bound",
+        "message.advancedrocketrycommunity.linker.cleared",
+        "message.advancedrocketrycommunity.linker.no_selection",
+        "message.advancedrocketrycommunity.linker.not_bound",
+        "message.advancedrocketrycommunity.linker.selected",
+        "message.advancedrocketrycommunity.linker.too_far",
+        "message.advancedrocketrycommunity.linker.unbound",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.bound",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.contents",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.empty",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.status_unknown",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.unbound",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.unknown_fluid",
+        "tooltip.advancedrocketrycommunity.fluid_fuel_loader.contents",
+        "tooltip.advancedrocketrycommunity.fluid_fuel_loader.empty",
+        "tooltip.advancedrocketrycommunity.linker.invalid",
+        "tooltip.advancedrocketrycommunity.linker.none",
+        "tooltip.advancedrocketrycommunity.linker.selection"
+      ],
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/en_us.json",
+      "target_sha256": "38dd41a9edabffcd2a14f218a14ea7910a77358ddfcac822ec2365a6408aabbc",
+      "transformation": [
+        "Deterministic v1.8 DataGen from new MIT source; no copied upstream or official text."
+      ]
+    },
+    {
+      "authoring_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "copyright_notice": "Copyright (c) 2026 Advanced Rocketry: Community Edition contributors",
+      "generator_class": "io.github.sunthemoon.advancedrocketrycommunity.datagen.V180FluidFuelLoaderData",
+      "license": "MIT",
+      "new_keys": [
+        "block.advancedrocketrycommunity.fluid_fuel_loader",
+        "item.advancedrocketrycommunity.linker",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.admission_disabled",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.ambiguous_bank",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.bank_full",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.carrier_refused",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.empty",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.escrow_full",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.escrow_pending",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.exchange_refused",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.incompatible_fluid",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.invalid_data",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.ledger_unavailable",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.not_owner",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.out_of_range",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.preparing",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.ready",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.rocket_busy",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.stale_binding",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.transfer_journal_unproved",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.transferring",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.unbound",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.unsupported_data",
+        "message.advancedrocketrycommunity.fluid_fuel_loader.waiting_unloaded",
+        "message.advancedrocketrycommunity.linker.already_bound",
+        "message.advancedrocketrycommunity.linker.bound",
+        "message.advancedrocketrycommunity.linker.cleared",
+        "message.advancedrocketrycommunity.linker.no_selection",
+        "message.advancedrocketrycommunity.linker.not_bound",
+        "message.advancedrocketrycommunity.linker.selected",
+        "message.advancedrocketrycommunity.linker.too_far",
+        "message.advancedrocketrycommunity.linker.unbound",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.bound",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.contents",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.empty",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.status_unknown",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.unbound",
+        "screen.advancedrocketrycommunity.fluid_fuel_loader.unknown_fluid",
+        "tooltip.advancedrocketrycommunity.fluid_fuel_loader.contents",
+        "tooltip.advancedrocketrycommunity.fluid_fuel_loader.empty",
+        "tooltip.advancedrocketrycommunity.linker.invalid",
+        "tooltip.advancedrocketrycommunity.linker.none",
+        "tooltip.advancedrocketrycommunity.linker.selection"
+      ],
+      "source_branch": "codex/v1.8.0-w82-w11b3-device",
+      "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+      "source_path": "src/main/java/io/github/sunthemoon/advancedrocketrycommunity/datagen/V180FluidFuelLoaderData.java",
+      "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+      "source_sha256": "90d0169fe92916edbb50307e9eb383dce8a9ae079d90ed5d5d5deea99fc10790",
+      "status": "NEW",
+      "target_path": "src/generated/v1.8/resources/assets/advancedrocketrycommunity_v180/lang/zh_cn.json",
+      "target_sha256": "9fb8c449bf99ba4b429dedca3840d21f6cfb47850473b89534ed90f35dddf99b",
+      "transformation": [
+        "Deterministic v1.8 DataGen from new MIT source; no copied upstream or official text."
+      ]
+    }
+  ],
+  "human_visual_and_originality_gate": "OPEN",
+  "license": "MIT",
+  "preauthoring_record": "docs/provenance/v1.8.0-c17a-fluid-fuel-loader-preauthoring.md",
+  "review": {
+    "content_digest": "40ad8336db0d8f4f055bf8297070eabfb3f9722d7f9eec543523bcfbf13a449b",
+    "findings": [],
+    "reviewed_at": null,
+    "reviewer": null,
+    "status": "PENDING_HUMAN_REVIEW"
+  },
+  "schema_version": 2,
+  "screening": {
+    "command": "python tools/audit/screen_generated_art.py --root src/generated/v1.8/resources --vanilla 1.12.2=<client-1.12.2.jar> --vanilla 1.20.1=<client-1.20.1.jar> --output docs/work/v1.8.0-root-queue/records/W82-logs/generated-art-screen.json",
+    "counts": {
+      "CLEAR": 194
+    },
+    "derivation_tool_path": "tools/audit/vanilla_derivation.py",
+    "derivation_tool_sha256": "19ce7221e0f1ec1446fd21238e2398f4fe235dff71719d8b4dbfaf74cce1416d",
+    "report_path": "docs/work/v1.8.0-root-queue/records/W82-logs/generated-art-screen.json",
+    "report_sha256": "199d16231442a03aeaeafd575de56c20873a130f2d718c6ee280be054a2c06c0",
+    "root": "src/generated/v1.8/resources",
+    "screened_files": 194,
+    "screened_targets": {
+      "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid_fuel_loader_bottom.png": "6deb75c301764735f987fb7222fdc664239b778534c4cf4023fe3027a2abcf3d",
+      "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid_fuel_loader_side.png": "f0ee935efa249294224f23eff6f361b57966e49f1b2985718b3446ca79ae6014",
+      "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/block/fluid_fuel_loader_top.png": "a50997aa52532c144ba5ee252f78d73a67b8e3fa498f2fae7289172e1cddc87c",
+      "src/generated/v1.8/resources/assets/advancedrocketrycommunity/textures/item/linker.png": "56f5c0638ac1edc1b2175a3129ad6d2c97120175fb3e46f2be17bf336d1c8e4f"
+    },
+    "thresholds": "Unchanged ADR-061 section 4.8 tool constants; non-CLEAR is failure.",
+    "tool_path": "tools/audit/screen_generated_art.py",
+    "tool_sha256": "bb9935fbf7fcc62818084b68ef4784208fb15304adc62db666f5462374c04516"
+  },
+  "source_branch": "codex/v1.8.0-w82-w11b3-device",
+  "source_commit": "2e1551590691a941c8f15e55706a79cd06b247a9",
+  "source_repository": "https://github.com/sunthemoon/AdvancedRocketry-Community",
+  "target_version": "v1.8.0"
+}

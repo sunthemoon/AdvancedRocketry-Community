@@ -293,6 +293,10 @@ final class PackagedRecipeGraph {
                 members.add(json.get("item").getAsString());
             } else if (json.has("tag") && json.size() == 1) {
                 members.add("#" + json.get("tag").getAsString());
+            } else if (json.size() == 1 && json.has("type")
+                    && json.get("type").getAsString().equals(NAMESPACE + ":empty_pressurized_tank")) {
+                // W82: the loader's ingredient matches an empty pressurized tank, an ordinary crafted item.
+                members.add(id("pressurized_tank"));
             } else {
                 throw new IllegalStateException("Unmodelled ingredient in " + context + ": " + json);
             }

@@ -1,0 +1,3 @@
+[INFO] 1107 game tests complete; All 1107 required tests passed :)
+[INFO] FATAL 0, ERROR 98, WARN 176
+[PASS] Every ERROR and WARN entry of build\gametest\logs\latest.log matches one of 109 expectations with its declared count; no FATAL entry

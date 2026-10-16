@@ -1,0 +1,6 @@
+[FAIL] line 9529: unsuccessful or unrecognized required-test summary: 1 required tests failed :(
+[FAIL] line 9555: shutdown before successful required-test summary
+[FAIL] the log has no successful required-test summary
+[FAIL] line 3148: unexpected ERROR, batch 'fluid_fuel_loader', logger 'net.minecraft.gametest.framework.LogTestReporter/': theportsimulateswithouteffectandrefusesstalereentrantanduncarriablecalls failed! Capacity is not 16,000 mB [no GameTest frame]
+[INFO] 1107 game tests complete; 1 required tests failed :(
+[INFO] FATAL 0, ERROR 99, WARN 295

@@ -1,0 +1,6 @@
+[NOT_RUN] Rule 1: Every packaged assets/ and data/ entry comes from exactly one source root (0 checked)
+[PASS] Rule 2: Every file with a legacy-manifest SHA-256 is the target of a record (14 checked)
+[NOT_RUN] Rule 3: No QUARANTINED or REJECTED target is packaged (0 checked)
+[PASS] Rule 4: A target matches the latest record that names it (274 checked)
+[PASS] Rule 5: The shared v1.8 language files match their records key by key (20 checked)
+[PASS] v1.8 provenance audit: 274 targets, 14 legacy-hash files, 20 language namings
