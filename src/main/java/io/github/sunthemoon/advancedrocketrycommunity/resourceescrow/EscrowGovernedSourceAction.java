@@ -47,9 +47,15 @@ public final class EscrowGovernedSourceAction {
     /** The executor supplies its final bay/transaction/loaded-candidate boundary, not a caller's fresh flag. */
     static Permit issue(EscrowGovernedDispatch.Authority authority, Action action,
                         CompoundTag observed, long gameTime, BooleanSupplier boundary) {
+        return issue(authority, action, observed, gameTime, gameTime, boundary);
+    }
+
+    /** Phase time may be rebased after restart; the permit remains bound to the actual Level tick. */
+    static Permit issue(EscrowGovernedDispatch.Authority authority, Action action,
+                        CompoundTag observed, long gameTime, long levelTime, BooleanSupplier boundary) {
         java.util.Objects.requireNonNull(authority); java.util.Objects.requireNonNull(action);
         java.util.Objects.requireNonNull(boundary);
-        EscrowTags.require(gameTime >= 0 && authority.valid() && boundary.getAsBoolean()
+        EscrowTags.require(gameTime >= 0 && levelTime >= 0 && authority.valid() && boundary.getAsBoolean()
                 && authority.decision().route() == EscrowGovernedDispatch.Route.ACTIVE
                 && authority.record().phase() == RocketTransferPhase.PREPARED, "Source progression lacks checked PREPARED authority");
         var record = authority.record();
@@ -84,7 +90,7 @@ public final class EscrowGovernedSourceAction {
         expected.put("flight", RocketFlightNbtCodec.encode(before));
         EscrowTags.require(expected.equals(observed), "Source differs from the permitted complete progression");
         EscrowTags.require(before.fuel().equals(after.fuel()), "Source action changed resources");
-        return new Permit(authority, observed, after, boundary, gameTime);
+        return new Permit(authority, observed, after, boundary, levelTime);
     }
 
     private static RocketFlightData flight(CompoundTag envelope) {

@@ -38,41 +38,44 @@ public final class EscrowGovernedSourceFlight {
                 () -> data.bind(server).governedAvailable(record.logicalRocketId()), journal, record);
         if (authority == null || authority.decision().route() != EscrowGovernedDispatch.Route.ACTIVE
                 || record.phase() != RocketTransferPhase.PREPARED) { return Result.HELD; }
-        bindings.entrySet().removeIf(entry -> !entry.getValue().authority.valid());
-        long now = source.level().getGameTime();
+        bindings.entrySet().removeIf(entry -> journal.find(entry.getValue().authority.record().transferId()).isEmpty());
+        long levelTime = source.level().getGameTime();
         var binding = bindings.get(record.logicalRocketId());
         if (binding != null && !binding.sameNative(source)) { return Result.HELD; }
         if (binding == null || !binding.valid(source, boundary)) {
-            bindings.remove(record.logicalRocketId());
             var observed = EscrowNativeEnvelope.rocket(source);
-            if (!EscrowGovernedSourceRecovery.sourceMatches(record, observed, now)) { return Result.HELD; }
-            if (bindings.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) { return Result.HELD; }
-            binding = new Binding(authority, source); bindings.put(record.logicalRocketId(), binding);
+            var clock = binding == null ? EscrowGovernedSourceClock.resume(record, observed, levelTime) : binding.clock;
+            if (!EscrowGovernedSourceRecovery.sourceMatches(record, observed, clock.at(levelTime))) { return Result.HELD; }
+            if (binding == null && bindings.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) { return Result.HELD; }
+            binding = new Binding(authority, source, clock); bindings.put(record.logicalRocketId(), binding);
         }
+        long now = binding.clock.at(levelTime);
         var flight = source.flightData().orElseThrow();
         if (flight.state() != RocketFlightState.COUNTDOWN && flight.state() != RocketFlightState.ASCENT
                 && flight.state() != RocketFlightState.TRANSIT) {
             // An acknowledged F2 may have stopped before its countdown callback. Only exact E reaches here.
-            return transition(source, authority, EscrowGovernedSourceAction.Action.START_COUNTDOWN, now, boundary, Result.COUNTDOWN);
+            return transition(source, binding, EscrowGovernedSourceAction.Action.START_COUNTDOWN, now, boundary, Result.COUNTDOWN);
         }
         long elapsed = now <= flight.stateStartedGameTime() ? 0 : now - flight.stateStartedGameTime();
         if (flight.state() == RocketFlightState.COUNTDOWN) {
             return elapsed < RocketFlightLimits.COUNTDOWN_TICKS ? Result.COUNTDOWN
-                    : transition(source, authority, EscrowGovernedSourceAction.Action.COMPLETE_COUNTDOWN, now, boundary, Result.ASCENT);
+                    : transition(source, binding, EscrowGovernedSourceAction.Action.COMPLETE_COUNTDOWN, now, boundary, Result.ASCENT);
         }
         if (flight.state() == RocketFlightState.ASCENT) {
-            source.moveGovernedSource(binding.motion(source, now, boundary));
+            source.moveGovernedSource(binding.motion(source, levelTime, boundary));
             return elapsed < RocketFlightLimits.ASCENT_TICKS ? Result.ASCENT
-                    : transition(source, authority, EscrowGovernedSourceAction.Action.BEGIN_TRANSIT, now, boundary, Result.TRANSIT);
+                    : transition(source, binding, EscrowGovernedSourceAction.Action.BEGIN_TRANSIT, now, boundary, Result.TRANSIT);
         }
         return elapsed < RocketFlightLimits.TRANSIT_TICKS ? Result.TRANSIT : Result.DESTINATION_DUE;
     }
 
-    private Result transition(RocketEntity source, EscrowGovernedDispatch.Authority authority,
+    private Result transition(RocketEntity source, Binding binding,
             EscrowGovernedSourceAction.Action action, long now, BooleanSupplier boundary, Result result) {
-        var permit = EscrowGovernedSourceAction.issue(authority, action, EscrowNativeEnvelope.rocket(source), now, boundary);
+        var authority = binding.authority;
+        var permit = EscrowGovernedSourceAction.issue(authority, action, EscrowNativeEnvelope.rocket(source), now,
+                source.level().getGameTime(), boundary);
         source.advanceGovernedSource(permit);
-        bindings.remove(authority.record().logicalRocketId());
+        bindings.put(authority.record().logicalRocketId(), new Binding(authority, source, binding.clock));
         return result;
     }
 
@@ -101,11 +104,13 @@ public final class EscrowGovernedSourceFlight {
         private final RocketFlightData flight;
         private final RocketEscrowSection wrapper;
         private final long observation;
+        private final EscrowGovernedSourceClock clock;
         private CompoundTag frame;
         private boolean changed;
 
-        Binding(EscrowGovernedDispatch.Authority authority, RocketEntity entity) {
+        Binding(EscrowGovernedDispatch.Authority authority, RocketEntity entity, EscrowGovernedSourceClock clock) {
             this.authority = authority; this.entity = entity; snapshot = entity.snapshot().orElseThrow();
+            this.clock = clock;
             flight = entity.flightData().orElseThrow(); wrapper = entity.escrowSection();
             observation = entity.governedObservation(); frame = EscrowNativeEnvelope.frame(entity);
         }
@@ -120,7 +125,7 @@ public final class EscrowGovernedSourceFlight {
         MotionPermit motion(RocketEntity rocket, long now, BooleanSupplier boundary) {
             EscrowTags.require(valid(rocket, boundary) && flight.state() == RocketFlightState.ASCENT, "Invalid ascent binding");
             var origin = authority.record().sourceSnapshot().sourceOrigin();
-            double y = ascentHeight(origin.y(), flight.stateStartedGameTime(), now);
+            double y = ascentHeight(origin.y(), flight.stateStartedGameTime(), clock.at(now));
             EscrowTags.require(y >= rocket.getY(), "Ascent clock moved backwards");
             return new MotionPermit(this, boundary, now, new Vec3(origin.x() + 0.5, y, origin.z() + 0.5));
         }

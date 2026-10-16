@@ -26,7 +26,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedSourceFlightGameTests {
-    private enum Fault { NONE, MOTION, DUPLICATE }
+    private enum Fault { NONE, MOTION, DUPLICATE, CLOCK }
     private EscrowGovernedSourceFlightGameTests() { }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_progress", timeoutTicks = 600)
@@ -42,6 +42,11 @@ public final class EscrowGovernedSourceFlightGameTests {
     @GameTest(template = "empty", batch = "escrow_governed_source_duplicate", timeoutTicks = 600)
     public static void duplicateJoinHoldsBothCandidatesWithoutLegacyElection(GameTestHelper helper) {
         new Scenario(helper, Fault.DUPLICATE).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_governed_source_clock", timeoutTicks = 600)
+    public static void restoredAscentAheadOfLevelClockResumesWithoutResourceChanges(GameTestHelper helper) {
+        new Scenario(helper, Fault.CLOCK).start();
     }
 
     private static final class Scenario {
@@ -106,6 +111,19 @@ public final class EscrowGovernedSourceFlightGameTests {
                         helper.assertTrue(duplicate != null, "Duplicate fixture could not be created");
                         duplicate.load(rocket.saveWithoutId(new CompoundTag())); duplicate.setUUID(UUID.randomUUID());
                         helper.assertTrue(level.addFreshEntity(duplicate), "Duplicate fixture was not published");
+                    } else if (fault == Fault.CLOCK) {
+                        var saved = rocket.saveWithoutId(new CompoundTag());
+                        var future = RocketFlightData.restore(flight.schemaVersion(), flight.logicalRocketId(), flight.state(), flight.fuel(),
+                                flight.plan().orElseThrow(), flight.passengers(), flight.currentBody(), flight.currentDimension(),
+                                flight.currentOrigin(), flight.stateStartedGameTime() + 10_000, null, flight.currentTarget().orElseThrow());
+                        saved.getCompound("RocketEntityData").put("flight_data", io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec.encode(future));
+                        // Simulate a fresh runtime observing an entity store newer than the Level clock.
+                        // This is a reload integration test, not a native forced-stop claim.
+                        EscrowRuntime.of(level.getServer()).sourceFlights().clear();
+                        rocket.load(saved);
+                        helper.assertTrue(rocket.flightData().orElseThrow().stateStartedGameTime() > level.getGameTime(),
+                                "Restored clock fixture did not precede its source timestamp");
+                        io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.onRocketJoined(rocket);
                     } else {
                         verifyMotionPermits();
                         var saved = rocket.saveWithoutId(new CompoundTag());
@@ -116,7 +134,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                     return;
                 }
             }
-            if (fault != Fault.NONE) {
+            if (fault == Fault.MOTION || fault == Fault.DUPLICATE) {
                 if (changedAt < 0 || level.getGameTime() - changedAt < 30) { return; }
                 helper.assertTrue(flight.state() == RocketFlightState.ASCENT && rocket.getDeltaMovement().equals(Vec3.ZERO),
                         "Fixture did not exercise entity-tick motion normalization");
