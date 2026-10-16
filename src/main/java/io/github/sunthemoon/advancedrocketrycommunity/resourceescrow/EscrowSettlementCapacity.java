@@ -46,6 +46,7 @@ final class EscrowSettlementCapacity {
     }
     /** Shared by operator preview and O1; all checks precede admission/writer mutation. */
     static EscrowLedger floorRetirement(EscrowLedger root, EscrowSettlementIntent intent, long sequence, long tick) {
+        EscrowSettlementIntent.requireReceiptRoom(root, intent.ids());
         var tombstones = root.tombstones();
         long receipts = tombstones.size() + root.records().stream().filter(op -> tombstones.stream()
                 .noneMatch(tag -> tag.getUUID("op_id").equals(op.id()))).count();

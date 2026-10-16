@@ -15,7 +15,7 @@ import net.minecraft.server.MinecraftServer;
 
 /** Bounded loaded-only O2 -> O3a -> O3b -> O4. Restart reacquires every endpoint proof. */
 final class EscrowSettlementRecovery implements AutoCloseable {
-    private static final class Work {
+    static final class Work {
         final Map<EscrowEndpoint.Key, EscrowBarrier.Proof> proofs = new HashMap<>();
         final Set<EscrowEndpoint.Key> busy = new HashSet<>();
         boolean writing;
@@ -23,6 +23,13 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         String phase = "O2";
         String lastReason;
         void clear() { proofs.values().forEach(EscrowBarrier.Proof::release); proofs.clear(); }
+        EscrowOperatorRetry.Outcome accelerate(long now) {
+            if (writing || !busy.isEmpty()) { return EscrowOperatorRetry.Outcome.PENDING; }
+            if (!retryable(lastReason)) { return EscrowOperatorRetry.Outcome.REFUSED; }
+            if (retryAt <= now) { return EscrowOperatorRetry.Outcome.PENDING; }
+            retryAt = now;
+            return EscrowOperatorRetry.Outcome.ACCEPTED;
+        }
     }
     private final Map<String, Work> work = new HashMap<>();
     private final EscrowSettlementPruning.Cursor pruning = new EscrowSettlementPruning.Cursor();
@@ -31,6 +38,38 @@ final class EscrowSettlementRecovery implements AutoCloseable {
     private int cursor;
     private boolean closed;
     List<EscrowSettlementPruning.Group> pruningGroups(EscrowLedger root) { return pruning.released(root); }
+    record View(String phase, String reason, int provedSlots, int waitingSlots, long nextTick, boolean active) { }
+    View view(EscrowSettlementIntent intent) {
+        var state = work.get(intent.digest());
+        var slots = new HashMap<String, Boolean>();
+        for (var observation : intent.checkpointed()) {
+            var endpoint = observation.endpoint();
+            boolean entity = endpoint.kind() == EscrowEndpoint.Kind.ENTITY;
+            String slot = endpoint.level() + "/" + entity + "/" + (entity ? endpoint.x() : endpoint.x() >> 4)
+                    + "/" + (entity ? endpoint.z() : endpoint.z() >> 4);
+            var proof = state == null ? null : state.proofs.get(endpoint.key());
+            slots.merge(slot, proof != null && proof.valid(), (a, b) -> a && b);
+        }
+        int proved = (int) slots.values().stream().filter(Boolean::booleanValue).count();
+        return new View(state == null ? "O2_QUEUED" : state.phase,
+                state == null || state.lastReason == null ? "NONE" : state.lastReason,
+                proved, slots.size() - proved, state == null ? -1 : state.retryAt,
+                state != null && (state.writing || !state.busy.isEmpty()));
+    }
+    EscrowOperatorRetry.Outcome accelerate(EscrowSettlementIntent intent, long now) {
+        var state = work.get(intent.digest());
+        if (closed) { return EscrowOperatorRetry.Outcome.REFUSED; }
+        return state == null ? EscrowOperatorRetry.Outcome.PENDING : state.accelerate(now);
+    }
+    static boolean retryable(String reason) {
+        if (reason == null) { return false; }
+        return switch (reason) {
+            case "BARRIER_IO", "BARRIER_FORCE", "BARRIER_UNSTABLE", "SUPERSEDING_SAVE",
+                    "O3_WRITE_UNACKNOWLEDGED", "O4_WRITE_UNACKNOWLEDGED", "Unacknowledged journal",
+                    "WAITING_UNLOADED: endpoint slot must be FULL, entity-loaded and ticking", "Endpoint Level is unavailable" -> true;
+            default -> false;
+        };
+    }
     void tick(MinecraftServer server, EscrowCoordinator coordinator, EscrowRuntime runtime) {
         if (closed || runtime.stopping()) { return; }
         // Released groups progress independently of unrelated permanently held O1 decisions.

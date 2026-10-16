@@ -12,10 +12,12 @@ final class EscrowSettlementOperator {
     static final int PREVIEWS = 64;
     static final int PREVIEW_TICKS = 1_200;
     private final PreviewCache previews = new PreviewCache();
+    private final EscrowOperatorRetry retries = new EscrowOperatorRetry();
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     EscrowSettlementIntent preview(MinecraftServer server, UUID selected, EscrowSettlementIntent.Choice choice, UUID actor, String name) {
         var data = existing(server); long tick = server.getTickCount();
+        EscrowTags.require(data.ledger().tombstones().size() < EscrowLimits.TOMBSTONES, EscrowSettlementIntent.RECEIPTS_FULL);
         previews.requireCapacity(actor, tick);
         if (choice == EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE) {
             var floor = data.ledger().floors().stream().filter(tag -> tag.hasUUID("transfer_id") && selected.equals(tag.getUUID("transfer_id")))
@@ -29,9 +31,8 @@ final class EscrowSettlementOperator {
         var observed = EscrowSettlementObserver.component(server, data.ledger(), selected);
         var intent = EscrowSettlementIntent.preview(data.ledger(), selected, choice, actor, name, tick, observed);
         // Validate operation envelopes and reserve capacity before offering a confirm digest.
-        if (choice == EscrowSettlementIntent.Choice.ACCEPT_CURRENT) {
-            intent.confirm(actor, intent.digest(), tick, observed).freeze(data.ledger());
-        }
+        intent.confirm(actor, intent.digest(), tick + (observed.stream().anyMatch(EscrowSettlementIntent.Observation::missing) ? 200 : 0), observed)
+                .freeze(data.ledger());
         previews.put(intent, tick); return intent;
     }
     boolean confirm(MinecraftServer server, UUID selected, EscrowSettlementIntent.Choice choice, UUID actor,
@@ -59,7 +60,25 @@ final class EscrowSettlementOperator {
         var data = ResourceEscrowSavedData.existing(server);
         EscrowTags.require(data != null, "No escrow ledger; settlement does not create one"); return data;
     }
-    void close() { previews.clear(); }
+    EscrowOperatorRetry.Result retry(MinecraftServer server, UUID selected) {
+        var data = existing(server); var runtime = EscrowRuntime.of(server); long tick = server.getTickCount();
+        var result = retries.request(data.ledger(), selected, tick, () -> {
+            var op = data.ledger().records().stream().filter(value -> value.id().equals(selected)).findFirst().orElseThrow();
+            if (!op.settlement().isEmpty()) {
+                return runtime.settlementRecovery().accelerate(EscrowSettlementIntent.decode(op.settlement()), tick);
+            }
+            if (op.phase() == EscrowOperation.Phase.REPAIR || op.reason().manual() || op.reason() == EscrowReason.BARRIER_VETO) {
+                return EscrowOperatorRetry.Outcome.REFUSED;
+            }
+            var scheduler = runtime.reconciliationScheduler();
+            return scheduler == null ? EscrowOperatorRetry.Outcome.PENDING : scheduler.accelerate(selected, tick);
+        });
+        if (result.outcome() == EscrowOperatorRetry.Outcome.ACCEPTED) {
+            LOGGER.info("ARCE_ESCROW_RETRY operation={} next_command_tick={} proof=not-claimed", selected, result.nextTick());
+        }
+        return result;
+    }
+    void close() { previews.clear(); retries.clear(); }
     static final class PreviewCache {
         private final Map<UUID, EscrowSettlementIntent> entries = new HashMap<>();
         void requireCapacity(UUID actor, long tick) {

@@ -93,6 +93,8 @@ public final class EscrowRuntime {
         rocket.assemblyTransactionId().ifPresent(governedFlights::invalidated);
     }
     EscrowSettlementOperator settlement() { return settlement; }
+    EscrowSettlementRecovery settlementRecovery() { return settlements; }
+    EscrowReconciliationScheduler reconciliationScheduler() { return scheduler; }
     String settlementPhase() { return settlements.phase(); }
     EscrowTimingSink timings() { return benchmark == null ? EscrowTimingSink.NONE : benchmark; }
     java.util.List<EscrowSettlementPruning.Group> settlementGroups(EscrowLedger root) { return settlements.pruningGroups(root); }
