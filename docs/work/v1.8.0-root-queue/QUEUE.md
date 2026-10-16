@@ -153,6 +153,7 @@ Root cannot make these; each blocks only the work named.
 |---|---|---|
 | Gas charge pad: prove the player-file save ordering, or approve an alternative interaction (ADR-066 D4) | The gas charge pad | ADR-066 sections 4 and 9 |
 | Satellite bay: the neutral-source limit; the passenger-exit permit with the per-owner limit | W27e | ADR-065 section 10 |
+| Before fuel admission is turned on: the disposition of R-035's residuals, including UNKNOWN settlement-loss accounting, the measured escrow capacities, and P1-F8's recorded crash windows (a partly failed rollback, an unwritable write-back, removal before write-back, entity-removal-first loss); Root recommends accepting them with W83 as a prerequisite | Enabling production admission (W11b3 leaf B3-E's switch) | `records/W11B3-DESIGN.md` section 6; `records/W85-DESIGN.md` revision 3 |
 | Whether sleeping off-world should save a planet point when `allowPlanetRespawn` is on (today D1 outcome 3 keeps the existing point) | Only a change of that behaviour | QUEUE W37 row, Root's answer (2) |
 | The seven legacy translations: import after a contributor finding, new credited translations, or English and Chinese only; and, if importing, whether the upstream MIT licence suffices | Asset rows class F, batch X2 | AUDIT-01 section 6, questions 1 and 2 |
 | The AR 16x set: ask the merger or Cl1ff about authorship, or keep NEW replacements | 10 class D rows, 21 class E rows | AUDIT-01 section 6, question 3 |
