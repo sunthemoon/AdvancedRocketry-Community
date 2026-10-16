@@ -186,6 +186,17 @@ public final class RocketEntity extends Entity implements MenuProvider {
         setPos(position.x, position.y, position.z);
     }
 
+    /** Descent and landing retain fuel, manifest and wrapper under their own checked action. */
+    public void advanceGovernedArrival(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedArrival.Permit permit) {
+        var change = Objects.requireNonNull(permit).consume(this);
+        RocketFlightData previous = flightData;
+        flightData = change.flight();
+        try { validateBindings(); }
+        catch (RuntimeException failure) { flightData = previous; throw failure; }
+        setPos(change.position().x, change.position().y, change.position().z);
+        if (flightData != previous) { refreshSyncedData(); }
+    }
+
     public void pruneSettledEscrow() {
         escrowSection = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSettlementPruning.rocket(this, escrowSection);
     }

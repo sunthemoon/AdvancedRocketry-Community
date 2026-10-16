@@ -71,7 +71,7 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
                 files={name: digest(world / name) for name in ("data/" + LEDGER, "data/" + JOURNAL, "entities/r.0.0.mca")})
 
 
-def run(args) -> dict:
+def run(args, *, cases=CASES, inspect_state=inspect) -> dict:
     assert_pin(args.source_commit)
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     if (session.exists() or session.is_symlink() or evidence.exists() or session == evidence
@@ -89,7 +89,7 @@ def run(args) -> dict:
         shutil.copytree(libraries, session / "libraries"); (session / "mods").mkdir()
         shutil.copy2(args.jar, session / "mods" / args.jar.name)
         port = smoke.allocate_port(); smoke.write_server_configuration(session, port, True)
-        for cut in args.case or CASES:
+        for cut in args.case or cases:
             properties = smoke.expected_server_properties(port, True)
             properties.update({"level-name": "world-" + cut, "level-type": "minecraft:flat", "max-tick-time": "60000",
                                "generator-settings": json.dumps({"layers": [{"block": "minecraft:bedrock", "height": 1}], "biome": "minecraft:plains"})})
@@ -108,13 +108,13 @@ def run(args) -> dict:
                 if restart == 0:
                     process.wait_for(re.compile(r"ARCE_RELEASE_PHASE_PAUSED cut=" + cut), args.startup_timeout)
                     process.process.kill(); process.abort(); process = None
-                    row["cut_disk"] = inspect(session / ("world-" + cut), cut, False)
+                    row["cut_disk"] = inspect_state(session / ("world-" + cut), cut, False)
                 else:
                     process.wait_for(re.compile(r"ARCE_RELEASE_PHASE_RESULT cut=" + cut + r" phase=COMMITTED"), args.startup_timeout)
                     process.command("stop"); code = process.finish()
                     if code or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                         raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")
-                    process = None; disk = inspect(session / ("world-" + cut), cut, True)
+                    process = None; disk = inspect_state(session / ("world-" + cut), cut, True)
                     if disk["invariant"] != row["cut_disk"]["invariant"]:
                         raise smoke.SmokeError("F5 restart changed frozen authority, resources or assignment")
                     row["restarts"].append(dict(restart=restart, exit_code=code, disk=disk))

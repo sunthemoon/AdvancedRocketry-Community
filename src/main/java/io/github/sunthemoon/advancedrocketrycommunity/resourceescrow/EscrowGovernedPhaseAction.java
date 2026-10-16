@@ -39,6 +39,12 @@ public final class EscrowGovernedPhaseAction {
     static boolean destinationMatches(RocketTransferRecord record, CompoundTag destination) {
         if (destination == null) { return false; }
         riders(record, destination);
+        if (record.phase() == RocketTransferPhase.COMMITTED) {
+            try {
+                long now = EscrowGovernedArrivalState.resumeTime(record, destination, 0);
+                return EscrowGovernedArrivalState.matches(record, destination, now);
+            } catch (IllegalArgumentException | IllegalStateException | ArithmeticException invalid) { return false; }
+        }
         var comparison = destination.copy();
         comparison.put("passengers", new ListTag());
         return comparison.equals(record.nativeTransfer().orElseThrow().destinationEnvelope(record));

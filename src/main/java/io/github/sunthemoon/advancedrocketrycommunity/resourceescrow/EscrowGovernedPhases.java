@@ -20,6 +20,9 @@ public final class EscrowGovernedPhases {
     private final EscrowGovernedPhaseTracking tracking = new EscrowGovernedPhaseTracking();
     public boolean allowsNative(RocketEntity source, RocketEntity destination) { return tracking.allows(source) && tracking.allows(destination); }
     void observe(RocketEntity rocket) { tracking.observe(rocket); }
+    void follow(RocketEntity rocket, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData flight, Vec3 position) {
+        tracking.follow(rocket, flight, position);
+    }
     void clear() { mount = null; tracking.clear(); }
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,

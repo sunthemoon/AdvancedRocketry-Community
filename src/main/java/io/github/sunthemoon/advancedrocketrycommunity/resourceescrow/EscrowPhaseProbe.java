@@ -26,11 +26,14 @@ final class EscrowPhaseProbe {
     private boolean discarded;
     private boolean pending;
     private boolean done;
+    private boolean holdingArrival;
+    private boolean sourceStored;
 
     EscrowPhaseProbe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
         cut = System.getProperty("advancedrocketrycommunity.escrowCase");
-        EscrowTags.require(List.of("FP_PASSENGERS_ACK", "FP_SOURCE_ACK", "FP_SOURCE_REMOVED", "FP_COMMITTED", "FP_ABSENT_SOURCE").contains(cut),
+        EscrowTags.require(List.of("FP_PASSENGERS_ACK", "FP_SOURCE_ACK", "FP_SOURCE_REMOVED", "FP_COMMITTED", "FP_ABSENT_SOURCE",
+                "FD_DESCENT", "FD_LANDED").contains(cut),
                 "Unknown F5 phase cut");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
         for (var position : POSITIONS) {
@@ -50,6 +53,8 @@ final class EscrowPhaseProbe {
         };
         if (point.equals(expected)) { pause(); }
     }
+
+    boolean holdsArrival() { return cut.startsWith("FP_") || holdingArrival; }
 
     void tick() {
         if (done || pending || !loaded()) { return; }
@@ -78,6 +83,7 @@ final class EscrowPhaseProbe {
         if (record.phase() != RocketTransferPhase.COMMITTED || !journal.actionAuthorityAvailable()) { return; }
         if (level.getEntity(record.sourceEntityId()) != null
                 || !(level.getEntity(record.destinationEntityId().orElseThrow()) instanceof RocketEntity arrival)) { return; }
+        if (cut.startsWith("FD_")) { arrival(record, arrival, data); return; }
         EscrowTags.require(record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(arrival))
                 && arrival.flightData().orElseThrow().fuel().totalAmount() == 500 && arrival.escrowSection().epoch() == 0
                 && data.ledger().armedFlights().equals(List.of(record.nativeTransfer().orElseThrow().armed()))
@@ -94,6 +100,34 @@ final class EscrowPhaseProbe {
                 EscrowGovernedDestinationDisk.validator(record, slot, null), server.getTickCount(), result -> {
                     EscrowTags.require(result.confirmed(), "F5 absence checkpoint failed: " + result.reason());
                     result.proof().release(); pause();
+                });
+    }
+
+    private void arrival(RocketTransferRecord record, RocketEntity arrival, ResourceEscrowSavedData data) {
+        EscrowTags.require(EscrowGovernedPhaseAction.destinationMatches(record, EscrowNativeEnvelope.rocket(arrival))
+                && arrival.flightData().orElseThrow().fuel().totalAmount() == 500
+                && arrival.flightData().orElseThrow().fuel().committedDebits().equals(List.of(record.transferId()))
+                && arrival.escrowSection().epoch() == 0 && !RocketEscrowGate.idle(arrival)
+                && data.ledger().armedFlights().equals(List.of(record.nativeTransfer().orElseThrow().armed()))
+                && arrival.flightData().orElseThrow().passengers().assignments().size() == 1,
+                "Native descent changed resources, assignments or ARMED authority");
+        boolean landed = arrival.flightData().orElseThrow().state() == RocketFlightState.LANDED;
+        if (recovery) {
+            if (!landed || arrival.getY() != 100) { return; }
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_PHASE_RESULT cut={} phase=COMMITTED landed=true source_absent=true armed=true", cut);
+            done = true; return;
+        }
+        if (!holdingArrival && (cut.equals("FD_LANDED") ? !landed : landed || arrival.getY() >= 136 || arrival.getY() <= 112)) { return; }
+        holdingArrival = true;
+        var runtime = EscrowRuntime.of(server); var slot = EscrowGovernedDestinationDisk.endpoint(record, sourceStored);
+        var frozen = new EscrowFlightSource(arrival);
+        var validator = sourceStored ? frozen.validator() : EscrowGovernedDestinationDisk.validator(record, slot, null);
+        pending = runtime.barrier().begin(runtime.store(server.overworld()), slot,
+                new EscrowPrefix.State(data.ledger().id(), slot.beforeEpoch(), slot.beforeSignature(), List.of()), validator,
+                server.getTickCount(), result -> {
+                    EscrowTags.require(result.confirmed() && frozen.observe(), "Descent cut store failed: " + result.reason());
+                    result.proof().release(); pending = false;
+                    if (sourceStored) { pause(); } else { sourceStored = true; }
                 });
     }
 

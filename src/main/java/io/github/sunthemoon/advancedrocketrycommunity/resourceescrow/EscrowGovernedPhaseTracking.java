@@ -34,6 +34,12 @@ final class EscrowGovernedPhaseTracking {
     }
 
     void observe(RocketEntity rocket) { var captured = captures.get(rocket.getUUID()); if (captured != null) { captured.observe(rocket); } }
+    void follow(RocketEntity rocket, Object flight, net.minecraft.world.phys.Vec3 position) {
+        var captured = captures.get(rocket.getUUID());
+        if (captured == null) { return; }
+        EscrowTags.require(captured.observe(rocket), "Native observation changed before authorized arrival");
+        captured.flight = flight; captured.frame.put("pos", EscrowGovernedArrival.position(position));
+    }
     void clear() { captures.clear(); }
 
     private static CompoundTag frame(RocketEntity rocket) {
@@ -41,7 +47,7 @@ final class EscrowGovernedPhaseTracking {
     }
     private static final class Capture {
         final RocketEntity rocket;
-        final Object flight;
+        Object flight;
         final Object snapshot;
         final RocketEscrowSection wrapper;
         final CompoundTag frame;

@@ -53,10 +53,13 @@ public final class EscrowRuntime {
     private final EscrowGovernedSourceFlight sourceFlights = new EscrowGovernedSourceFlight();
     private final EscrowGovernedDestination destinations = new EscrowGovernedDestination();
     private final EscrowGovernedPhases flightPhases = new EscrowGovernedPhases();
+    private final EscrowGovernedArrival arrivals = new EscrowGovernedArrival();
+    public EscrowGovernedArrival arrivals() { return arrivals; }
     public EscrowGovernedPhases flightPhases() { return flightPhases; }
     // The explicitly enabled DP_* cut fixture observes F4 only, including its asynchronous own-store.
     // Do not let a newly implemented later executor race that fixture's historical cut boundary.
     boolean destinationCutActive() { return destinationProbe != null; }
+    boolean phaseCutActive() { return phaseProbe != null && phaseProbe.holdsArrival(); }
     public EscrowGovernedDestination destinations() { return destinations; }
     public EscrowGovernedSourceFlight sourceFlights() { return sourceFlights; }
     public EscrowGovernedDispatch governedFlights() { return governedFlights; }
@@ -65,6 +68,7 @@ public final class EscrowRuntime {
         sourceFlights.observe(rocket);
         destinations.observe(rocket);
         flightPhases.observe(rocket);
+        arrivals.observe(rocket);
         flightCheckpoint.observe(rocket); preF2Cancellation.observe(rocket);
     }
     void invalidateFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
@@ -174,7 +178,7 @@ public final class EscrowRuntime {
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("FP_")) {
+            if (testCase.startsWith("FP_") || testCase.startsWith("FD_")) {
                 if (runtime.phaseProbe == null) { runtime.phaseProbe = new EscrowPhaseProbe(event.getServer()); }
                 runtime.phaseProbe.tick();
             } else if (testCase.startsWith("DP_")) {
@@ -229,7 +233,7 @@ public final class EscrowRuntime {
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
         runtime.governedFlights.close(); runtime.destinations.close();
-        runtime.sourceFlights.clear(); runtime.flightPhases.clear();
+        runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear();
         if (runtime.barrier != null) { runtime.barrier.close(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
@@ -257,13 +261,13 @@ public final class EscrowRuntime {
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
         runtime.governedFlights.close(); runtime.destinations.close();
-        runtime.sourceFlights.clear(); runtime.flightPhases.clear();
+        runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear();
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {
         private final EscrowRuntime runtime = new EscrowRuntime();
         private final LazyOptional<EscrowRuntime> value = LazyOptional.of(() -> runtime);
-        private void invalidate() { runtime.stopping = true; runtime.governedFlights.close(); runtime.destinations.close(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
+        private void invalidate() { runtime.stopping = true; runtime.governedFlights.close(); runtime.destinations.close(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
         @Override @NotNull public <T> LazyOptional<T> getCapability(@NotNull Capability<T> requested, @Nullable Direction side) {
             return CAPABILITY.orEmpty(requested, value);
         }

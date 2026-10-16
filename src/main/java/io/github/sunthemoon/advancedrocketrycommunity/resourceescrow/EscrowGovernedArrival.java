@@ -1,0 +1,188 @@
+package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
+
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.BooleanSupplier;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.DoubleTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.phys.Vec3;
+
+/** COMMITTED descent/landing actions. Neither LANDED nor a position tick releases ARMED. */
+public final class EscrowGovernedArrival {
+    public enum Result { HELD, DESCENDING, READY_TO_LAND, LANDED }
+    private final Map<UUID, Binding> bindings = new HashMap<>();
+
+    public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                       RocketEntity destination, BooleanSupplier boundary) {
+        if (!server.isSameThread()) { return Result.HELD; }
+        // The separately gated FP_* fixture ends at F5, before this executor's first action.
+        if (EscrowRuntime.of(server).phaseCutActive()) { return Result.HELD; }
+        try {
+            var binding = binding(server, journal, record, destination, boundary);
+            if (binding == null) { return Result.HELD; }
+            var flight = destination.flightData().orElseThrow();
+            if (flight.state() == RocketFlightState.LANDED) { return Result.LANDED; }
+            long now = binding.time(destination.level().getGameTime());
+            double y = EscrowGovernedArrivalState.height(binding.initialHeight, record.destinationSnapshot().sourceOrigin().y(),
+                    flight.stateStartedGameTime(), now);
+            EscrowTags.require(y <= destination.getY(), "Descent moved upwards");
+            var origin = record.destinationSnapshot().sourceOrigin();
+            apply(destination, binding, flight, new Vec3(origin.x() + 0.5, y, origin.z() + 0.5), boundary);
+            return now - flight.stateStartedGameTime() >= RocketFlightLimits.DESCENT_TICKS
+                    ? Result.READY_TO_LAND : Result.DESCENDING;
+        } catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return Result.HELD; }
+    }
+
+    /** Reacquires the exact authority after any deferred world-first acknowledgement. */
+    public boolean land(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                        RocketEntity destination, BooleanSupplier boundary) {
+        try {
+            var binding = binding(server, journal, record, destination, boundary);
+            if (binding == null) { return false; }
+            var flight = destination.flightData().orElseThrow(); long now = binding.time(destination.level().getGameTime());
+            var before = EscrowNativeEnvelope.rocket(destination);
+            if (!ready(record, before, now)) { return false; }
+            var permit = EscrowGovernedLandingAction.issue(binding.authority, before, now, boundary);
+            apply(destination, binding, permit.consume(() -> EscrowNativeEnvelope.rocket(destination)), destination.position(), boundary);
+            EscrowRuntime.of(server).checkpoint("F6_LANDED"); return true;
+        } catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return false; }
+    }
+
+    public boolean ready(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                         RocketEntity destination, BooleanSupplier boundary) {
+        try {
+            var binding = binding(server, journal, record, destination, boundary);
+            return binding != null && ready(record, EscrowNativeEnvelope.rocket(destination), binding.time(destination.level().getGameTime()));
+        } catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return false; }
+    }
+
+    static boolean ready(RocketTransferRecord record, CompoundTag envelope, long now) {
+        var flight = EscrowGovernedArrivalState.flight(envelope);
+        return flight.state() == RocketFlightState.DESCENT && now >= flight.stateStartedGameTime()
+                && now - flight.stateStartedGameTime() >= RocketFlightLimits.DESCENT_TICKS
+                && envelope.getList("pos", 6).getDouble(1) == record.destinationSnapshot().sourceOrigin().y()
+                && EscrowGovernedArrivalState.matches(record, envelope, now);
+    }
+
+    private Binding binding(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                            RocketEntity destination, BooleanSupplier boundary) {
+        if (!server.isSameThread() || destination == null || record.phase() != RocketTransferPhase.COMMITTED
+                || !boundary.getAsBoolean() || !EscrowRuntime.of(server).flightPhases().allowsNative(null, destination)) { return null; }
+        var data = ResourceEscrowSavedData.existing(server);
+        if (data == null) { return null; }
+        var authority = EscrowRuntime.of(server).governedFlights().authority(data::ledger,
+                () -> data.bind(server).governedAvailable(record.logicalRocketId()), journal, record);
+        if (authority == null || authority.decision().route() != EscrowGovernedDispatch.Route.ACTIVE) { return null; }
+        bindings.entrySet().removeIf(entry -> journal.find(entry.getKey()).isEmpty());
+        var old = bindings.get(record.transferId());
+        if (old != null && old.entity != destination && old.entity.isRemoved()) { bindings.remove(record.transferId()); old = null; }
+        if (old != null && !old.sameNative(destination)) { return null; }
+        if (old != null && old.authority.valid() && old.observation == destination.governedObservation()) { return old; }
+        var observed = EscrowNativeEnvelope.rocket(destination); long levelTime = destination.level().getGameTime();
+        long now = old == null ? EscrowGovernedArrivalState.resumeTime(record, observed, levelTime) : old.time(levelTime);
+        EscrowTags.require(EscrowGovernedArrivalState.matches(record, observed, now), "Arrival complete envelope changed");
+        requireCapacity(bindings, record.transferId());
+        var binding = new Binding(authority, destination, levelTime, now); bindings.put(record.transferId(), binding);
+        if (old == null && EscrowGovernedArrivalState.withoutRiders(observed)
+                .equals(record.nativeTransfer().orElseThrow().destinationEnvelope(record))) {
+            // Publication time was frozen before F1. Start the live descent at this checked COMMITTED visit.
+            apply(destination, binding, EscrowGovernedArrivalState.descent(record, now), destination.position(), boundary);
+        }
+        return binding;
+    }
+
+    private static void apply(RocketEntity rocket, Binding binding, RocketFlightData flight, Vec3 position, BooleanSupplier boundary) {
+        var permit = new Permit(binding, boundary, rocket.level().getGameTime(), flight, position);
+        rocket.advanceGovernedArrival(permit);
+        EscrowTags.require(binding.sameNative(rocket), "Native fields changed inside the arrival effect");
+        binding.observation = rocket.governedObservation();
+    }
+
+    void observe(RocketEntity rocket) {
+        for (var binding : bindings.values()) {
+            if (binding.entity == rocket && !binding.sameNative(rocket)) { binding.changed = true; }
+        }
+    }
+    void clear() { bindings.clear(); }
+
+    static void requireCapacity(Map<UUID, ?> bindings, UUID transfer) {
+        EscrowTags.require(bindings.containsKey(transfer) || bindings.size() < RocketFlightLimits.MAX_ACTIVE_TRANSFERS,
+                "Arrival binding limit exceeded");
+    }
+
+    private static CompoundTag frame(RocketEntity rocket) {
+        var frame = EscrowNativeEnvelope.frame(rocket); frame.remove("passengers"); return frame;
+    }
+
+    private static final class Binding {
+        final EscrowGovernedDispatch.Authority authority;
+        final RocketEntity entity;
+        final Object snapshot;
+        final RocketEscrowSection wrapper;
+        final long levelBase;
+        final long phaseBase;
+        final double initialHeight;
+        long lastTime;
+        long observation;
+        Object flight;
+        CompoundTag frame;
+        boolean changed;
+        Binding(EscrowGovernedDispatch.Authority authority, RocketEntity entity, long levelTime, long phaseTime) {
+            this.authority = authority; this.entity = entity; snapshot = entity.snapshot().orElseThrow();
+            initialHeight = EscrowGovernedArrivalState.initialHeight(authority.record());
+            wrapper = entity.escrowSection(); levelBase = levelTime; phaseBase = phaseTime; lastTime = levelTime; refresh(entity);
+        }
+        void refresh(RocketEntity rocket) {
+            flight = rocket.flightData().orElseThrow(); frame = frame(rocket); observation = rocket.governedObservation();
+        }
+        boolean sameNative(RocketEntity rocket) {
+            if (changed) { return false; }
+            boolean same = entity == rocket && rocket.isAlive() && rocket.isAddedToWorld() && rocket.operational()
+                    && rocket.snapshot().orElse(null) == snapshot && rocket.flightData().orElse(null) == flight
+                    && rocket.escrowSection().equals(wrapper) && frame.equals(frame(rocket));
+            if (!same) { changed = true; } return same;
+        }
+        long time(long levelTime) {
+            EscrowTags.require(levelTime >= lastTime, "Loaded descent clock moved backwards"); lastTime = levelTime;
+            return Math.addExact(phaseBase, levelTime - levelBase);
+        }
+    }
+
+    /** Owner-tick, exact bound-state permit. Constructors are private to the checked executor. */
+    public static final class Permit {
+        private final Binding binding;
+        private final BooleanSupplier boundary;
+        private final long tick;
+        private final RocketFlightData flight;
+        private final Vec3 position;
+        private boolean used;
+        private Permit(Binding binding, BooleanSupplier boundary, long tick, RocketFlightData flight, Vec3 position) {
+            this.binding = binding; this.boundary = boundary; this.tick = tick; this.flight = flight; this.position = position;
+        }
+        public EscrowGovernedSourceRecovery.Change consume(RocketEntity rocket) {
+            EscrowTags.require(!used, "Arrival permit already consumed"); used = true;
+            EscrowTags.require(!rocket.level().isClientSide && rocket.getServer().isSameThread()
+                    && rocket.level().getGameTime() == tick && binding.authority.valid() && boundary.getAsBoolean()
+                    && binding.sameNative(rocket), "Arrival lost its final bound authority");
+            EscrowRuntime.of(rocket.getServer()).flightPhases().follow(rocket, flight, position);
+            // Record the exact permitted native change before setPos can trigger an observation.
+            binding.flight = flight; binding.frame.put("pos", position(position));
+            return new EscrowGovernedSourceRecovery.Change(flight, position);
+        }
+    }
+
+    static ListTag position(Vec3 position) {
+        var tag = new ListTag(); tag.add(DoubleTag.valueOf(position.x)); tag.add(DoubleTag.valueOf(position.y));
+        tag.add(DoubleTag.valueOf(position.z)); return tag;
+    }
+}

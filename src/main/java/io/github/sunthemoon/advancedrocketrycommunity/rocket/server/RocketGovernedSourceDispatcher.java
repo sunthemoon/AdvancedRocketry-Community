@@ -73,10 +73,14 @@ final class RocketGovernedSourceDispatcher {
         if (result == io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDestination.Result.PRESENT) {
             var level = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
             var arrival = (RocketEntity) level.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
-            EscrowRuntime.of(server).flightPhases().tick(server, journal, record, source, arrival,
+            var phase = EscrowRuntime.of(server).flightPhases().tick(server, journal, record, source, arrival,
                     () -> RocketGovernedLaunchBoundary.allows(server, journal, record,
                             source != null && source.isRemoved() ? null : source, arrival, bays)
                             && EscrowRuntime.of(server).flightPhases().allowsNative(source, arrival));
+            if (phase == io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPhases.Result.COMMITTED
+                    && source == null) {
+                RocketGovernedArrivalDispatcher.tick(server, journal, record, arrival, bays);
+            }
         }
     }
 

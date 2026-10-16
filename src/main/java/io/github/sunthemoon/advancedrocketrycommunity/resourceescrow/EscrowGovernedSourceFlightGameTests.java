@@ -22,11 +22,11 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 
-/** Live F1-F5, not a complete-flight or terminal handoff fixture. */
+/** Live F1-F5 and governed landing, not a terminal handoff fixture. */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedSourceFlightGameTests {
-    private enum Fault { NONE, MOTION, DUPLICATE, CLOCK }
+    private enum Fault { NONE, MOTION, DUPLICATE, CLOCK, LANDING }
     private EscrowGovernedSourceFlightGameTests() { }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_progress", timeoutTicks = 600)
@@ -47,6 +47,11 @@ public final class EscrowGovernedSourceFlightGameTests {
     @GameTest(template = "empty", batch = "escrow_governed_source_clock", timeoutTicks = 600)
     public static void restoredAscentAheadOfLevelClockResumesWithoutResourceChanges(GameTestHelper helper) {
         new Scenario(helper, Fault.CLOCK).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_governed_arrival", timeoutTicks = 600)
+    public static void governedDescentLandsWithPassengerAndRetainsArm(GameTestHelper helper) {
+        new Scenario(helper, Fault.LANDING).start();
     }
 
     private static final class Scenario {
@@ -74,6 +79,8 @@ public final class EscrowGovernedSourceFlightGameTests {
         private boolean dismounted;
         private long changedDestinationAt = -1;
         private int step;
+        private double arrivalY = Double.POSITIVE_INFINITY;
+        private boolean observedDescent;
 
         Scenario(GameTestHelper helper, Fault fault) {
             this.helper = helper; this.fault = fault; level = helper.getLevel();
@@ -163,7 +170,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             var record = journal.find(transfer).orElseThrow();
             helper.assertTrue(record.phase() == RocketTransferPhase.PREPARED && journal.acknowledgedCurrent()
                     && data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()), "Source minted destination or terminal authority");
-            if (fault == Fault.NONE || fault == Fault.CLOCK) { step = 3; return; }
+            if (fault == Fault.NONE || fault == Fault.CLOCK || fault == Fault.LANDING) { step = 3; return; }
             finish(journal, null);
         }
 
@@ -201,7 +208,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             if (fault == Fault.NONE && !repeatedPublication) {
                 arrival.discard(); repeatedPublication = true; return;
             }
-            if (fault == Fault.NONE) { step = 4; return; }
+            if (fault == Fault.NONE || fault == Fault.LANDING) { step = 4; return; }
             finish(journal, arrival);
         }
 
@@ -212,7 +219,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             helper.assertTrue(arrival != null && rocket.isRemoved() && rocket.getPassengers().isEmpty()
                     && level.getEntity(rocket.getUUID()) == null, "F5 did not remove exactly its emptied source");
             helper.assertTrue(initial.fuel().equals(rocket.flightData().orElseThrow().fuel()) && wrapper.equals(rocket.escrowSection())
-                    && arrival.flightData().orElseThrow().equals(record.destinationFlightData())
+                    && EscrowGovernedPhaseAction.destinationMatches(record, EscrowNativeEnvelope.rocket(arrival))
                     && arrival.escrowSection().epoch() == 0 && !RocketEscrowGate.idle(arrival)
                     && data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()),
                     "F5 changed credit, repeated a debit or released ARMED before F6/F7");
@@ -231,6 +238,21 @@ public final class EscrowGovernedSourceFlightGameTests {
                 dismounted = true; return;
             }
             helper.assertTrue(arrival.getPassengers().equals(List.of(passenger)), "Checked F5 reconnect duplicated its passenger");
+            if (fault == Fault.LANDING) {
+                helper.assertTrue(arrival.getY() <= arrivalY && arrival.getY() >= destination.getY(), "Descent escaped its monotonic column");
+                arrivalY = arrival.getY();
+                if (arrival.flightData().orElseThrow().state() == RocketFlightState.DESCENT) {
+                    if (arrival.getY() < destination.getY() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS) { observedDescent = true; }
+                    return;
+                }
+                helper.assertTrue(observedDescent && arrival.flightData().orElseThrow().state() == RocketFlightState.LANDED
+                        && arrival.getY() == destination.getY() && arrival.flightData().orElseThrow().plan().isEmpty()
+                        && arrival.flightData().orElseThrow().activeTransferId().isEmpty()
+                        && arrival.flightData().orElseThrow().fuel().equals(record.destinationFlightData().fuel())
+                        && arrival.flightData().orElseThrow().passengers().equals(record.destinationFlightData().passengers()),
+                        "Governed landing changed the frozen debit or assignments");
+                finish(journal, arrival); return;
+            }
             passenger.stopRiding(); arrival.setDeltaMovement(new Vec3(0.125, 0, 0)); changedDestinationAt = level.getGameTime();
         }
 
@@ -267,7 +289,7 @@ public final class EscrowGovernedSourceFlightGameTests {
 
         private void prepare() {
             data = ResourceEscrowSavedData.forTests(level.getServer()); data.bind(level.getServer());
-            if (fault == Fault.NONE) {
+            if (fault == Fault.NONE || fault == Fault.LANDING) {
                 passenger = new net.minecraft.server.level.ServerPlayer(level.getServer(), level,
                         new com.mojang.authlib.GameProfile(UUID.randomUUID(), "F5Passenger")) {
                     @Override public boolean isCreative() { return true; }
