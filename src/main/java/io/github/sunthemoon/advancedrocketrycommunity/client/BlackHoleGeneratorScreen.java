@@ -20,6 +20,7 @@ import net.minecraft.world.entity.player.Inventory;
  * remaining burn and the status with its stable code, never colour alone. It has no buttons.
  */
 public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<BlackHoleGeneratorMenu> {
+    private final ScreenText text = new ScreenText();
     private static final int PANEL_TOP = 0xFF16121C;
     private static final int PANEL_BOTTOM = 0xFF07060A;
     private static final int EDGE = 0xFFFF9D5C;
@@ -44,6 +45,7 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
@@ -52,14 +54,19 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
                     menu.energyStored(), BlackHoleGeneratorBlockEntity.ENERGY_CAPACITY), mouseX, mouseY);
         }
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
-        if (view.isPresent() && isHovering(8, 76, 160, 12, mouseX, mouseY) && !view.get().lines().isEmpty()) {
+        if (view.isPresent() && isHovering(8, 76, 160, 12, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
+            lines.add(Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
+                    Component.translatable(view.get().status().translationKey()), view.get().status().name()));
             for (EndgameDeviceView.Line line : view.get().lines()) {
                 Component value = line.translated() ? Component.translatable(line.value())
                         : Component.literal(line.value());
                 lines.add(Component.translatable(line.label()).append(": ").append(value));
             }
             graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
+        }
+        if (!isHovering(8, 76, 160, 12, mouseX, mouseY)) {
+            text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         }
     }
 
@@ -89,19 +96,19 @@ public final class BlackHoleGeneratorScreen extends AbstractContainerScreen<Blac
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, MUTED, false);
-        graphics.drawString(font, Component.translatable("advancedrocketrycommunity.endgame.view.rate")
-                .append(": " + String.format(Locale.ROOT, "%,d FE/t", menu.rate())), 120, 22, MUTED, false);
-        graphics.drawString(font, Component.translatable("advancedrocketrycommunity.endgame.view.remaining")
-                .append(": " + menu.remaining()), 120, 34, MUTED, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 160, TEXT);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 160, MUTED);
+        text.draw(graphics, font, Component.translatable("advancedrocketrycommunity.endgame.view.rate")
+                .append(": " + String.format(Locale.ROOT, "%,d FE/t", menu.rate())), 24, 55, 144, MUTED);
+        text.draw(graphics, font, Component.translatable("advancedrocketrycommunity.endgame.view.remaining")
+                .append(": " + menu.remaining()), 24, 65, 144, MUTED);
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
         if (view.isEmpty()) {
             return;
         }
         EndgameCode status = view.get().status();
-        graphics.drawString(font, Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
-                Component.translatable(status.translationKey()), status.name()), 8, 78,
-                status == EndgameCode.GENERATING ? GLOW : WARNING, false);
+        text.draw(graphics, font, Component.translatable(EndgameIntentGuard.STATUS_LINE_KEY,
+                Component.translatable(status.translationKey()), status.name()), 8, 78, 160,
+                status == EndgameCode.GENERATING ? GLOW : WARNING);
     }
 }

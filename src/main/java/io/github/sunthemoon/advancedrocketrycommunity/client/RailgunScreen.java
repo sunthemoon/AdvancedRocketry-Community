@@ -22,6 +22,7 @@ import net.minecraft.world.entity.player.Inventory;
  * device view (hover for the destination, route, settings and counts), so no state is shown by colour alone.
  */
 public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
+    private final ScreenText text = new ScreenText();
     private static final int PANEL_TOP = 0xFF1B1F2A;
     private static final int PANEL_BOTTOM = 0xFF0D1016;
     private static final int EDGE = 0xFF7FD3FF;
@@ -49,8 +50,11 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
                 44, 76, 44));
         addRenderableWidget(button(RailgunMenu.BUTTON_AUTO, "screen.advancedrocketrycommunity.railgun.auto",
                 90, 76, 36));
-        addRenderableWidget(button(RailgunMenu.BUTTON_REDSTONE, "screen.advancedrocketrycommunity.railgun.redstone",
-                128, 76, 40));
+        Button redstone = button(RailgunMenu.BUTTON_REDSTONE, "screen.advancedrocketrycommunity.railgun.redstone_short",
+                128, 76, 40);
+        redstone.setTooltip(net.minecraft.client.gui.components.Tooltip.create(
+                Component.translatable("screen.advancedrocketrycommunity.railgun.redstone")));
+        addRenderableWidget(redstone);
         addRenderableWidget(button(RailgunMenu.BUTTON_MIN_DOWN_16,
                 "screen.advancedrocketrycommunity.railgun.min_down_16",
                 8, 92, 38));
@@ -63,12 +67,12 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
     }
 
     private Button button(int id, String key, int x, int y, int width) {
-        return Button.builder(Component.translatable(key),
+        return ScreenText.fitButton(Button.builder(Component.translatable(key),
                 ignored -> {
                     if (minecraft != null && minecraft.gameMode != null) {
                         minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id);
                     }
-                }).bounds(leftPos + x, topPos + y, width, 14).build();
+                }).bounds(leftPos + x, topPos + y, width, 14).build(), font);
     }
 
     @Override
@@ -79,6 +83,7 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         renderTooltip(graphics, mouseX, mouseY);
@@ -89,6 +94,8 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
         if (view.isPresent() && isHovering(8, 108, 160, 20, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
+            lines.add(statusLine(view.get().status()));
+            if (view.get().lastStop() != EndgameCode.OK) { lines.add(statusLine(view.get().lastStop())); }
             for (EndgameDeviceView.Line line : view.get().lines()) {
                 Component value = line.translated() ? Component.translatable(line.value())
                         : Component.literal(line.value());
@@ -97,6 +104,9 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
             if (!lines.isEmpty()) {
                 graphics.renderComponentTooltip(font, lines, mouseX, mouseY);
             }
+        }
+        if (!isHovering(8, 108, 160, 20, mouseX, mouseY)) {
+            text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         }
     }
 
@@ -130,19 +140,19 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, title, titleLabelX, titleLabelY, TEXT, false);
-        graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.railgun.received"), 8, 44,
-                MUTED, false);
-        graphics.drawString(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, MUTED, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 160, TEXT);
+        text.draw(graphics, font, Component.translatable("screen.advancedrocketrycommunity.railgun.received"), 8, 44,
+                140, MUTED);
+        text.draw(graphics, font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, 160, MUTED);
         Optional<EndgameDeviceView> view = EndgameDeviceViewCache.view(menu.containerId);
         if (view.isEmpty()) {
             return;
         }
         EndgameCode status = view.get().status();
-        graphics.drawString(font, statusLine(status), 8, 110, status == EndgameCode.OK ? CHARGE : WARNING, false);
+        text.draw(graphics, font, statusLine(status), 8, 109, 160, status == EndgameCode.OK ? CHARGE : WARNING);
         if (view.get().lastStop() != EndgameCode.OK && view.get().lastStop() != status) {
-            graphics.drawString(font, Component.translatable("screen.advancedrocketrycommunity.railgun.last",
-                    statusLine(view.get().lastStop())), 8, 120, MUTED, false);
+            text.draw(graphics, font, Component.translatable("screen.advancedrocketrycommunity.railgun.last",
+                    statusLine(view.get().lastStop())), 8, 119, 160, MUTED);
         }
     }
 
