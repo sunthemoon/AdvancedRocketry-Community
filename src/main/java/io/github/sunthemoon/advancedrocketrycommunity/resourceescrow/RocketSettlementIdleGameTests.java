@@ -3,7 +3,6 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 import com.mojang.authlib.GameProfile;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
-import io.github.sunthemoon.advancedrocketrycommunity.celestial.service.SafeCelestialTravel;
 import io.github.sunthemoon.advancedrocketrycommunity.fluid.ClassicFluids;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities;
@@ -56,6 +55,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @PrefixGameTestTemplate(false)
 public final class RocketSettlementIdleGameTests {
     private enum Release { SETTLEMENT, L2, NORMALIZED }
+    private static final TicketType<UUID> FLIGHT_FIXTURE = TicketType.create("arce_n1_fixture", UUID::compareTo);
     private RocketSettlementIdleGameTests() { }
 
     @GameTest(template = "empty", batch = "rocket_settlement_idle", timeoutTicks = 1_200)
@@ -102,6 +102,7 @@ public final class RocketSettlementIdleGameTests {
         private List<CompoundTag> receipts;
         private final Map<EscrowEndpoint.Key, EscrowBarrier.Proof> l2Proofs = new java.util.LinkedHashMap<>();
         private boolean proving, retiring;
+        private final Map<ServerLevel, java.util.Set<ChunkPos>> flightChunks = new java.util.LinkedHashMap<>();
 
         Scenario(GameTestHelper helper, Release release) {
             this.helper = helper; this.release = release; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
@@ -112,10 +113,6 @@ public final class RocketSettlementIdleGameTests {
             level.getChunk(chunk.x, chunk.z);
             var moon = level.getServer().getLevel(CelestialIds.MOON_LEVEL);
             helper.assertTrue(moon != null, "Moon Level is unavailable");
-            var pad = new ChunkPos(SafeCelestialTravel.FIXED_FEET_POSITION);
-            moon.getChunkSource().addRegionTicket(TicketType.START, pad, 2, Unit.INSTANCE);
-            moon.getChunk(pad.x, pad.z);
-            level.getChunkSource().addRegionTicket(TicketType.START, pad, 2, Unit.INSTANCE); level.getChunk(pad.x, pad.z);
             // Register exactly once; no scheduling from a scheduled callback.
             helper.onEachTick(this::tick);
         }
@@ -156,9 +153,8 @@ public final class RocketSettlementIdleGameTests {
                 }
                 case 5 -> {
                     var target = completed.isEmpty() ? level.getServer().getLevel(CelestialIds.MOON_LEVEL) : level;
-                    if (!target.areEntitiesLoaded(new ChunkPos(SafeCelestialTravel.FIXED_FEET_POSITION).toLong())
-                            || !target.isPositionEntityTicking(SafeCelestialTravel.FIXED_FEET_POSITION)) { return; }
-                    launch = UUID.randomUUID(); predecessor = rocket; successor = null;
+                    if (!readyLaunch(target)) { return; }
+                    predecessor = rocket; successor = null;
                     departure = rocket.flightData().orElseThrow(); departureWrapper = rocket.escrowSection();
                     sourceStates.clear(); phases.clear(); sawDescent = false; sawF6 = false; sawF7 = false;
                     var result = RocketRuntime.requestAdminFlight(rocket, completed.isEmpty() ? RocketDestination.MOON : RocketDestination.EARTH, launch);
@@ -169,6 +165,46 @@ public final class RocketSettlementIdleGameTests {
                 case 20 -> ordinaryL2();
                 default -> { }
             }
+        }
+
+        private boolean readyLaunch(ServerLevel target) {
+            var journal = RocketTransferSavedData.get(level.getServer());
+            if (!journal.retryChecked(level.getServer())) { return false; }
+            helper.assertTrue(coordinator.governedAvailable(source.logical()) && RocketEscrowGate.idle(rocket)
+                    && RocketRuntime.resourceMutationAllowed(rocket), "Released source lost its launch authority");
+            if (launch == null) { launch = UUID.randomUUID(); }
+            var selected = new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector().select(
+                    target, rocket.snapshot().orElseThrow(), launch, journal.entries().stream()
+                            .map(RocketTransferRecord::destinationSnapshot)
+                            .map(io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion::fromSnapshot).toList(),
+                    target.getGameTime());
+            helper.assertTrue(selected.success(), "N1 fixture has no available server-owned landing pad");
+            // The shared test world may select a noncentral pad. Load its exact election margin,
+            // not just the fixed pad's center; production F1 still performs its unchanged checks.
+            boolean sourceReady = readyRegion((ServerLevel) rocket.level(), rocket.snapshot().orElseThrow());
+            boolean destinationReady = readyRegion(target, selected.snapshot().orElseThrow());
+            return sourceReady && destinationReady;
+        }
+
+        private boolean readyRegion(ServerLevel end, RocketStructureSnapshot snapshot) {
+            var region = io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion.fromSnapshot(snapshot);
+            int minX = (region.minimum().x() - 1) >> 4, maxX = (region.maximum().x() + 2) >> 4;
+            int minZ = (region.minimum().z() - 1) >> 4, maxZ = (region.maximum().z() + 2) >> 4;
+            helper.assertTrue((long) (maxX - minX + 1) * (maxZ - minZ + 1)
+                    <= io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits.MAX_LANDING_CHUNKS,
+                    "N1 fixture election region exceeds the flight bound");
+            var retained = flightChunks.computeIfAbsent(end, ignored -> new java.util.LinkedHashSet<>());
+            boolean ready = true;
+            for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    var slot = new ChunkPos(x, z);
+                    if (retained.add(slot)) { end.getChunkSource().addRegionTicket(FLIGHT_FIXTURE, slot, 2, actor); }
+                    end.getChunk(x, z);
+                    ready &= end.areEntitiesLoaded(slot.toLong())
+                            && end.isPositionEntityTicking(new BlockPos(x << 4, snapshot.sourceOrigin().y(), z << 4));
+                }
+            }
+            return ready;
         }
 
         private void released() {
@@ -322,16 +358,14 @@ public final class RocketSettlementIdleGameTests {
                         && rocket.flightData().orElseThrow().fuel().committedDebits().equals(completed), "Successor refuelling lost its new epoch or debit history");
                 helper.assertTrue(EscrowRuntime.of(server).flightPhases().allowsNative(rocket, null),
                         "Completed F8 retained an old F5 observation across successor refuelling");
-                step = 5; return;
+                launch = null; step = 5; return;
             }
             helper.assertTrue(completed.size() == 2, "Required two-flight case did not complete");
             passenger.stopRiding(); server.getPlayerList().remove(passenger); rocket.discard(); source.bank().discard();
             level.setBlockAndUpdate(position, Blocks.AIR.defaultBlockState());
             level.getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
-            var pad = new ChunkPos(SafeCelestialTravel.FIXED_FEET_POSITION);
-            for (var end : List.of(level, server.getLevel(CelestialIds.MOON_LEVEL))) {
-                end.getChunkSource().removeRegionTicket(TicketType.START, pad, 2, Unit.INSTANCE);
-            }
+            flightChunks.forEach((end, slots) -> slots.forEach(slot ->
+                    end.getChunkSource().removeRegionTicket(FLIGHT_FIXTURE, slot, 2, actor)));
             step = 8; helper.succeed();
         }
 
