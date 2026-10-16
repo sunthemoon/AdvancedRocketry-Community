@@ -394,6 +394,33 @@
       "reason": "R-038: a live /data replacement keeps a held guarded root and writes one audit line; the test tries it once on each of the five guarded roots."
     },
     {
+      "id": "w82-fluid-fuel-loader-unsupported-root",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=(?:FUTURE|INVALID|UNREGISTERED_FLUID)",
+      "counts": {"fluid_fuel_loader": 4},
+      "test": "FluidFuelLoaderGameTests.protectedLoadersRefuseRemovalDropNothingAndDetectCommandReplacement",
+      "reason": "W11b3 design section 3: each load of an unsupported loader root writes one audit line. The test loads four: a future root, an unknown field, an oversized root and one naming an unregistered Fluid."
+    },
+    {
+      "id": "w82-fluid-fuel-loader-live-replacement-refused",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_LIVE_REPLACEMENT_REFUSED pos=-?\\d+, -?\\d+, -?\\d+ unsupported=(?:true|false)",
+      "counts": {"fluid_fuel_loader": 5},
+      "test": "FluidFuelLoaderGameTests.protectedLoadersRefuseRemovalDropNothingAndDetectCommandReplacement",
+      "reason": "W11b3 design section 3: a live /data replacement keeps a protected loader root and writes one audit line; the test tries it once on each of the four unsupported roots and the escrow-locked one."
+    },
+    {
+      "id": "w82-fluid-fuel-loader-protected-root-removed",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_PROTECTED_ROOT_REMOVED pos=-?\\d+, -?\\d+, -?\\d+ unsupported=(?:true|false)",
+      "counts": {"fluid_fuel_loader": 2},
+      "test": "FluidFuelLoaderGameTests.protectedLoadersRefuseRemovalDropNothingAndDetectCommandReplacement",
+      "reason": "W11b3 design section 3: /setblock and raw replacement stay detectable repair residuals; the test replaces the unregistered-Fluid root and the escrow-locked root by command, one audit line each."
+    },
+    {
       "id": "w33-torch-queue-overloaded",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.atmosphere.torch.TorchCombustionService/",

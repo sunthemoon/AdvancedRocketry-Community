@@ -20,9 +20,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.ChunkLevel;
 import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.Ticket;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -227,10 +231,15 @@ public final class ElevatorCapsuleGameTests {
     @GameTest(template = "empty", batch = EXPIRY, timeoutTicks = 1200)
     public static void expiredArrivalWaitSendsAnEmptyDepartureProjection(GameTestHelper helper) {
         ProjectionFixture test = new ProjectionFixture(helper);
+        GameTestTickPacer unloadPacer = new GameTestTickPacer(test.fixture.server);
         helper.startSequence()
                 .thenWaitUntil(() -> test.fixture.registered(helper))
                 .thenExecute(test::bind)
                 .thenWaitUntil(() -> helper.assertTrue(test.fixture.anchor().tetherForRender(), "Tether not synchronized"))
+                .thenWaitUntil(() -> {
+                    unloadPacer.pace();
+                    arrivalHeldOnlyByFixture(helper, test.fixture);
+                })
                 .thenExecute(test::request)
                 .thenExecute(() -> {
                     // Fault injection only: remove the fixture hold and the ride's pre-load ticket so the real
@@ -242,7 +251,10 @@ public final class ElevatorCapsuleGameTests {
                     fixture.space.getChunkSource().removeRegionTicket(ElevatorRides.ARRIVAL, fixture.terminalChunk,
                             0, test.rider.getUUID());
                 })
-                .thenExecuteAfter(130, () -> {
+                // Unloading runs asynchronously. Give the unchanged countdown its normal 20 TPS wall time,
+                // rather than relying on an earlier batch to have drained the chunk worker queues.
+                .thenExecuteFor(130, unloadPacer::pace)
+                .thenExecute(() -> {
                     helper.assertTrue(test.fixture.space.getChunkSource().getChunkNow(test.fixture.terminalChunk.x,
                             test.fixture.terminalChunk.z) == null, "The injected arrival did not unload");
                     test.ordinaryTicks();
@@ -284,5 +296,37 @@ public final class ElevatorCapsuleGameTests {
 
     private static ElevatorRides rides() {
         return EndgameRuntime.devices().orElseThrow().elevatorRides();
+    }
+
+    /** A previous station flight can retain its 400-tick ticket after landing; do not remove another test's hold. */
+    private static void arrivalHeldOnlyByFixture(GameTestHelper helper, ElevatorGameTests.Fixture fixture) {
+        try {
+            var manager = fixture.space.getChunkSource().chunkMap.getDistanceManager();
+            var field = net.minecraft.server.level.DistanceManager.class.getDeclaredField("tickets");
+            field.setAccessible(true);
+            var byChunk = (it.unimi.dsi.fastutil.longs.Long2ObjectMap<?>) field.get(manager);
+            int ticking = ChunkLevel.byStatus(FullChunkStatus.ENTITY_TICKING);
+            Ticket<?> fixtureTicket = new Ticket<>(ElevatorGameTests.FIXTURE_TICKET, ticking, fixture.stationId, false);
+            Ticket<?> forcedTicket = new Ticket<>(TicketType.FORCED, ticking, fixture.terminalChunk, false);
+            // Nonnegative ticket levels propagate one level per chunk. Even a level-zero ticket cannot keep
+            // this arrival FULL beyond this bounded square; inspecting the map does not load any chunk.
+            int radius = ChunkLevel.byStatus(FullChunkStatus.FULL);
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    ChunkPos pos = new ChunkPos(fixture.terminalChunk.x + dx, fixture.terminalChunk.z + dz);
+                    if (!(byChunk.get(pos.toLong()) instanceof Iterable<?> tickets)) { continue; }
+                    for (Object held : tickets) {
+                        if (!(held instanceof Ticket<?> ticket)) { continue; }
+                        if (dx == 0 && dz == 0 && (ticket.equals(fixtureTicket) || ticket.equals(forcedTicket))) {
+                            continue;
+                        }
+                        helper.assertTrue(ticket.getTicketLevel() + Math.max(Math.abs(dx), Math.abs(dz)) > radius,
+                                "The arrival still has a foreign hold at " + pos + ": " + ticket);
+                    }
+                }
+            }
+        } catch (ReflectiveOperationException failure) {
+            throw new IllegalStateException("Could not inspect arrival tickets", failure);
+        }
     }
 }

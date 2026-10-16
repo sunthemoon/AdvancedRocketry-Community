@@ -125,6 +125,10 @@ Run Gradle with `--offline` from your worktree, using `gradlew.bat` in PowerShel
   - Before `runGameTestServer`, `runData` or a full `build`, check that C: and D: each have
     at least 10 GB free (AGENTS.md section 9). The Gradle home and the temp folders are on
     C:.
+  - **A refused cleanup never stops your work.** If the tool policy refuses a delete
+    (`rm -rf`, `Remove-Item`), write the exact paths into your record for Root and carry on.
+    `runGameTestServer` deletes its own `build/gametest/world` before it starts; running it
+    again is normal use, not a way around the refusal.
 
 ## When you finish
 

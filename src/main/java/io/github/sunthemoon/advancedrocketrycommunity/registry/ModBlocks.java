@@ -413,6 +413,11 @@ public final class ModBlocks {
             ROCKET_SATELLITE_BAY = BLOCKS.register("rocket_satellite_bay", () ->
             new io.github.sunthemoon.advancedrocketrycommunity.rocket.bay.SatelliteBayBlock(
                     metalProperties().pushReaction(PushReaction.BLOCK)));
+    /** ADR-065 C17a (W11b3): the native-Fluid propulsion loader; admission is not wired yet. */
+    public static final RegistryObject<io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlock>
+            FLUID_FUEL_LOADER = BLOCKS.register("fluid_fuel_loader", () ->
+            new io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlock(
+                    metalProperties().pushReaction(PushReaction.BLOCK)));
 
     /** Passive ordinary lights: native support/placement, distinct registered loot tables. */
     public static final RegistryObject<TorchBlock> THERMITE_TORCH = BLOCKS.register("thermite_torch", () ->

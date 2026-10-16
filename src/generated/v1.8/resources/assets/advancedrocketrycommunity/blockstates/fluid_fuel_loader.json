@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "advancedrocketrycommunity:block/fluid_fuel_loader"
+    }
+  }
+}
