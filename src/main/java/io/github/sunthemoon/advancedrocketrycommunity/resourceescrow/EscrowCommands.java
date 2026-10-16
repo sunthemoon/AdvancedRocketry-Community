@@ -53,16 +53,14 @@ public final class EscrowCommands {
     }
     private static int execute(CommandSourceStack source, java.util.UUID selected, EscrowSettlementIntent.Choice choice, String digest) {
         try {
+            var actor = EscrowCommandActor.require(source);
             var server = source.getServer(); var operator = EscrowRuntime.of(server).settlement();
-            var actor = source.getEntity() == null
-                    ? java.util.UUID.nameUUIDFromBytes("arce:escrow:server-console".getBytes(java.nio.charset.StandardCharsets.US_ASCII))
-                    : source.getEntity().getUUID();
             if (digest == null) {
-                var preview = operator.preview(server, selected, choice, actor, source.getTextName());
+                var preview = operator.preview(server, selected, choice, actor.id(), actor.name());
                 source.sendSuccess(() -> Component.literal(EscrowOperatorDiagnostics.preview(preview)), false);
                 return 1;
             }
-            boolean queued = operator.confirm(server, selected, choice, actor, digest, committed -> {
+            boolean queued = operator.confirm(server, selected, choice, actor.id(), digest, committed -> {
                 if (committed) {
                     source.sendSuccess(() -> Component.literal("Decision acknowledged; affected resources remain locked until settlement checkpoints and release are acknowledged."), true);
                 } else { source.sendFailure(Component.literal("Decision was not acknowledged; no settlement or release occurred.")); }

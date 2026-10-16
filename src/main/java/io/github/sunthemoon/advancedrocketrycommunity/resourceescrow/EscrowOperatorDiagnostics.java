@@ -94,7 +94,7 @@ final class EscrowOperatorDiagnostics {
         return List.copyOf(result);
     }
     static String preview(EscrowSettlementIntent intent) {
-        return "Settlement preview; release requires acknowledged O2-O4. choice=" + intent.choice()
+        return "Settlement preview; release requires acknowledged O2-O4. actor_type=" + EscrowCommandActor.kind(intent.actor()) + " choice=" + intent.choice()
                 + " members=" + intent.members().size() + " operations=" + intent.members().stream().limit(DETAILS).map(EscrowSettlementIntent.Member::id).toList()
                 + " omitted=" + Math.max(0, intent.members().size() - DETAILS) + " digest=" + intent.digest()
                 + " permanent_receipts_consumed=" + intent.members().size()
