@@ -31,12 +31,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** C34 diagnostic: real checked L2 with explicit A0 slot tokens, not native storage evidence. */
+/** R15 requirements use real checked L2 with explicit A0 slot tokens, not native storage evidence. */
 class EscrowReconciliationBindingBoundaryTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path directory;
 
-    @Test void partialL2PruningPreservesNativeResourcesButChangesSurvivingEnvelopeCommitments() throws Exception {
+    record Sample(EscrowLedger ledger, EscrowOperation a, EscrowOperation b, CompoundTag before, CompoundTag first, CompoundTag after) { }
+
+    static Sample sample() {
         var sample = GovernedTransferFixture.create(); var original = sample.record().sourceSnapshot();
         var descriptor = new RocketPropulsion(RocketPropulsion.Mode.MONO, 1_000, 0, 1, 1,
                 RocketPropulsion.Settings.DEFAULTS.withAllowedFluids(Map.of(RocketPropulsion.Role.MONO, List.of("minecraft:water"),
@@ -62,6 +64,15 @@ class EscrowReconciliationBindingBoundaryTest {
         after.put("wrapper", new RocketEscrowSection(ledgerId, 2, List.of(markerA, markerB)).encode());
         var a = operation(1, before, first, snapshot); var b = operation(2, first, after, snapshot);
         var ledger = new EscrowLedger(ledgerId, 2, 1, List.of(a, b), List.of(), List.of());
+        return new Sample(ledger, a, b, before, first, after);
+    }
+
+    @Test void partialL2PruningPreservesNativeResourcesButChangesSurvivingEnvelopeCommitments() throws Exception {
+        var sample = sample(); var ledger = sample.ledger(); var ledgerId = ledger.id();
+        var a = sample.a(); var b = sample.b(); var first = sample.first(); var after = sample.after();
+        var fuel2 = RocketFlightNbtCodec.decode(after.getCompound("flight")).data().orElseThrow().fuel();
+        var markerA = new EscrowPrefix.Link(a, a.destination(), "DESTINATION").marker();
+        var markerB = new EscrowPrefix.Link(b, b.destination(), "DESTINATION").marker();
         var data = ResourceEscrowSavedData.load(EscrowCodec.encode(ledger));
         var io = new AwaitedLedgerIo();
         var file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
@@ -103,7 +114,90 @@ class EscrowReconciliationBindingBoundaryTest {
             assertEquals(b.nativeBinding(), reloaded.records().get(0).nativeBinding(), "L2 does not rebind the remaining operation");
             assertEquals(b.nativeBinding().beforeWrapper(), EscrowNativeEnvelope.digest(first.getCompound("wrapper")));
             assertNotEquals(b.nativeBinding().beforeWrapper(), EscrowNativeEnvelope.digest(new RocketEscrowSection(ledgerId, 1, List.of()).encode()));
+            assertEquals(EscrowPrefix.Classification.AFTER, EscrowReconciliationValidation.rocket(ledgerId,
+                    EscrowPrefix.chains(reloaded.records()).get(b.destination().key()), prunedEnvelope),
+                    "R15 C0/C3/C6 validate the surviving typed prefix without historical wrapper/envelope digests");
         }
+    }
+
+    @Test void retirementWaitsWithAllLocksUntilTheLaterAcknowledgedMemberApplies() {
+        var f = sample(); var root = f.ledger(); var a = f.a(); var b = f.b();
+        var states = new HashMap<EscrowEndpoint.Key, EscrowPrefix.State>();
+        states.put(a.source().key(), EscrowTestEndpoints.state(source(1, root.id(), true).getCompound("ForgeData"), root.id(), false));
+        var wrapper = RocketEscrowSection.decode(f.first().getCompound("wrapper"));
+        states.put(a.destination().key(), new EscrowPrefix.State(root.id(), wrapper.epoch(), a.destination().afterSignature(), wrapper.markers()));
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
+        try (var writer = new EscrowLedgerWriter(directory.resolve("waiting.dat"), 1);
+             var coordinator = new EscrowCoordinator(data, writer)) {
+            assertFalse(EscrowReconciliationValidation.retirementReady(root, Set.of(a.id()), states));
+            assertTrue(coordinator.locked(a.source().key())); assertTrue(coordinator.locked(b.destination().key()));
+            assertEquals(root, coordinator.ledger()); assertTrue(writer.idle());
+            assertEquals(EscrowReason.NONE, EscrowReconciliationValidation.action(root, b, f.first(), f.after(), true));
+            var after = RocketEscrowSection.decode(f.after().getCompound("wrapper"));
+            states.put(b.destination().key(), new EscrowPrefix.State(root.id(), after.epoch(), b.destination().afterSignature(), after.markers()));
+            assertTrue(EscrowReconciliationValidation.retirementReady(root, Set.of(a.id()), states));
+            assertTrue(coordinator.locked(a.source().key()), "Readiness is not retirement acknowledgement");
+        }
+    }
+
+    @Test void newBindingWaitsForStaleMarkerPruningWithoutRebindingTheSurvivor() {
+        var f = sample(); var remaining = f.ledger().retire(Set.of(f.a().id()));
+        var wrapper = RocketEscrowSection.decode(f.after().getCompound("wrapper"));
+        assertFalse(EscrowReconciliationValidation.canBind(remaining, f.b().destination(), wrapper.markers()));
+        var pruned = EscrowSettlementPruning.prune(wrapper.markers(), Set.of(f.a().id()), Set.of(f.b().id()));
+        assertTrue(EscrowReconciliationValidation.canBind(remaining, f.b().destination(), pruned));
+        assertEquals(f.b().nativeBinding(), remaining.records().get(0).nativeBinding());
+        var forged = List.of(new EscrowPrefix.Marker(f.b().id(), f.b().sequence(), "DESTINATION", 99));
+        assertFalse(EscrowReconciliationValidation.canBind(remaining, f.b().destination(), forged));
+    }
+
+    @Test void c2WrapperMismatchBecomesStickyRepairRatherThanRebinding() {
+        var f = sample(); var b = f.b(); var root = f.ledger().retire(Set.of(f.a().id()));
+        var before = f.first().copy(); before.put("wrapper", new RocketEscrowSection(root.id(), 1, List.of()).encode());
+        var after = EscrowReconciliationChange.rocket(root.id(), b, before);
+        assertEquals(EscrowPrefix.Classification.BEFORE,
+                EscrowReconciliationValidation.rocket(root.id(), EscrowPrefix.chains(root.records()).get(b.destination().key()), before));
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
+        try (var writer = new EscrowLedgerWriter(directory.resolve("repair.dat"), 1);
+             var coordinator = new EscrowCoordinator(data, writer)) {
+            var attempts = new java.util.concurrent.atomic.AtomicInteger();
+            var scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition, (op, records, done) -> {
+                attempts.incrementAndGet();
+                done.accept(new EscrowReconciliationScheduler.Result(EscrowReconciliationValidation.action(root, op, before, after, true), false));
+            });
+            scheduler.tick(1); scheduler.tick(2_000);
+            assertEquals(1, attempts.get()); assertEquals(EscrowReason.OTHER_STATE, coordinator.currentReason(b));
+            assertEquals(EscrowOperation.Phase.REPAIR, b.withReason(coordinator.currentReason(b)).phase());
+            assertTrue(coordinator.locked(b.destination().key()));
+            assertThrows(IllegalArgumentException.class, () -> coordinator.transition(b.id(), EscrowReason.NONE));
+            assertEquals(b.nativeBinding(), coordinator.ledger().records().get(0).nativeBinding());
+        }
+    }
+
+    @Test void persistentValidationRejectsChangedIdentityFrontierAndMarkerButIgnoresMutableFrame() {
+        var f = sample(); var chain = EscrowPrefix.chains(f.ledger().records()).get(f.a().destination().key());
+        for (var field : List.of("physical", "logical", "owner", "assembly_snapshot")) {
+            var changed = f.after().copy(); changed.putUUID(field, EscrowTestFixtures.id(9999));
+            assertEquals(EscrowPrefix.Classification.OTHER, EscrowReconciliationValidation.rocket(f.ledger().id(), chain, changed), field);
+        }
+        var moved = f.after().copy(); moved.putFloat("yaw", 45); moved.putBoolean("on_ground", !moved.getBoolean("on_ground"));
+        assertEquals(EscrowPrefix.Classification.AFTER, EscrowReconciliationValidation.rocket(f.ledger().id(), chain, moved));
+        var changed = f.after().copy(); changed.put("flight", f.first().getCompound("flight").copy());
+        assertEquals(EscrowPrefix.Classification.OTHER, EscrowReconciliationValidation.rocket(f.ledger().id(), chain, changed));
+        changed = f.after().copy(); changed.put("wrapper", f.first().getCompound("wrapper").copy());
+        assertEquals(EscrowPrefix.Classification.OTHER, EscrowReconciliationValidation.rocket(f.ledger().id(), chain, changed));
+    }
+
+    @Test void c2ChecksOnlyTheExactPermittedDeltaAndCompleteFixtureCapture() {
+        var f = sample();
+        assertEquals(EscrowReason.NONE, EscrowReconciliationValidation.action(f.ledger(), f.a(), f.before(), f.first(), true));
+        var changed = f.first().copy(); changed.putFloat("yaw", 45);
+        assertEquals(EscrowReason.OTHER_STATE, EscrowReconciliationValidation.action(f.ledger(), f.a(), f.before(), changed, true));
+        var before = source(1, f.ledger().id(), false); var after = source(1, f.ledger().id(), true);
+        assertEquals(EscrowReason.NONE, EscrowReconciliationValidation.action(f.ledger(), f.a(), before, after, false));
+        before.putString("CustomName", "changed");
+        assertEquals(EscrowReason.OTHER_STATE, EscrowReconciliationValidation.action(f.ledger(), f.a(), before,
+                EscrowReconciliationChange.fixture(f.ledger().id(), f.a(), before), false));
     }
 
     private static EscrowOperation operation(long sequence, CompoundTag before, CompoundTag after, RocketStructureSnapshot snapshot) {
