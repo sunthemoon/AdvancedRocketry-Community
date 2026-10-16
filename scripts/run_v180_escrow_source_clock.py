@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import gzip
 import json
 from pathlib import Path
 import re
@@ -15,7 +14,7 @@ from run_v060_flight_server_smoke import _server_command
 from run_v180_escrow_forced_stop import digest, ledger, record, LEDGER
 from run_v180_escrow_pre_f2 import assert_pin, journal, require_governed_record
 from run_v180_rocket_settlement_completion import require_lock, slot_present, JOURNAL
-from inspect_celestial_saved_data import NbtReader
+from v170_world_fixture import read_nbt
 
 CASES = ("SC_COUNTDOWN", "SC_ASCENT", "SC_TRANSIT")
 
@@ -65,8 +64,8 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
     path = world / "entities/r.0.0.mca"
     if slot_present(path, 133) and any("RocketEntityData" in value for value in record(path, 133)["Entities"]):
         raise smoke.SmokeError("Source-only cut published a destination")
-    with gzip.open(world / "level.dat", "rb") as stream:
-        level_time = NbtReader(stream.read(16 * 1024 * 1024 + 1)).read_root()["Data"]["Time"]
+    # level.dat includes Forge's registry dump, not just a small celestial SavedData root.
+    level_time = read_nbt(world / "level.dat")["Data"]["Time"]
     started = source["RocketEntityData"]["flight_data"]["state_started_game_time"]
     if not restarted and level_time >= started:
         raise smoke.SmokeError("Cut did not retain older Level metadata")
