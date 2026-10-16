@@ -28,6 +28,12 @@ final class RocketGovernedSourceDispatcher {
             if (entity != null && !(entity instanceof RocketEntity)) { return; }
             var source = (RocketEntity) entity;
             if (source != null && !source.operational()) { return; }
+            var returns = EscrowRuntime.of(server).returns();
+            if (returns.handles(record, source)) {
+                returns.tick(server, journal, record, source,
+                        () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays));
+                return;
+            }
             if (record.phase() != RocketTransferPhase.PREPARED) {
                 destination(server, journal, record, source, bays); return;
             }
