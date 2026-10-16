@@ -86,6 +86,12 @@ final class EscrowReconciliationDriver {
                 if (captured) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); return; }
                 captured = true;
                 for (var member : component) { EscrowReconciliationPruning.source(server, coordinator, member.source()); }
+                var destinations = new HashSet<EscrowEndpoint.Key>();
+                for (var member : component) {
+                    if (destinations.add(member.destination().key())) {
+                        EscrowReconciliationPruning.destination(server, coordinator, member.destination());
+                    }
+                }
                 view = EscrowReconciliationView.capture(server, root, component);
                 views.remove(key);
                 if (views.values().stream().mapToLong(value -> value.bytes).sum() + view.bytes > EscrowLimits.CAPTURE_BYTES) { views.clear(); }

@@ -103,9 +103,7 @@ final class EscrowReconciliationView {
             EscrowTags.bound(envelope, EscrowNativeEnvelope.MAX_BYTES, 24, 131_072);
             bytes = Math.addExact(bytes, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(envelope));
             if (bytes > EscrowLimits.CAPTURE_BYTES) { throw new Refusal(EscrowReason.BARRIER_BOUNDS); }
-            var classified = rocket != null ? EscrowReconciliationValidation.rocket(root.id(), chains.get(endpoint.key()), envelope)
-                    : EscrowPrefix.classify(root.id(), chains.get(endpoint.key()), observation.state());
-            if (classified == EscrowPrefix.Classification.OTHER) { throw new Refusal(EscrowReason.OTHER_STATE); }
+            requirePrefix(root, endpoint, chains.get(endpoint.key()), observation.state(), envelope);
             if (EscrowSettlementTombstones.endpointLocked(root, endpoint.key()) || rocket != null
                     && EscrowSettlementTombstones.stateLocked(root, endpoint.logicalRocket(), endpoint.identity(), rocket.escrowSection(),
                     observation.state().signature(), observation.quantity())) { throw new Refusal(EscrowReason.FLOOR_CONFLICT); }
@@ -126,6 +124,26 @@ final class EscrowReconciliationView {
                     rocket == null ? () -> true : sameNativeCapture(rocket)));
         }
         return new EscrowReconciliationView(server, root, members, ends, journal.acknowledgedLease(), bytes);
+    }
+
+    /** A removable stale prefix is a cleanup wait, never authority to apply or a manual diagnosis. */
+    static void requirePrefix(EscrowLedger root, EscrowEndpoint endpoint, List<EscrowPrefix.Link> chain,
+                              EscrowPrefix.State state, CompoundTag envelope) {
+        boolean rocket = endpoint.kind() == EscrowEndpoint.Kind.ENTITY;
+        var classified = rocket ? EscrowReconciliationValidation.rocket(root.id(), chain, envelope)
+                : EscrowPrefix.classify(root.id(), chain, state);
+        if (classified != EscrowPrefix.Classification.OTHER) { return; }
+        var retired = EscrowReconciliationPruning.retired(root, endpoint, state, java.util.Set.of());
+        if (!retired.isEmpty()) {
+            var markers = EscrowSettlementPruning.prune(state.markers(), retired, java.util.Set.of());
+            var pruned = new EscrowPrefix.State(state.ledger(), state.epoch(), state.signature(), markers);
+            var projected = envelope.copy();
+            if (rocket) { projected.put("wrapper", new RocketEscrowSection(state.ledger(), state.epoch(), markers).encode()); }
+            var after = rocket ? EscrowReconciliationValidation.rocket(root.id(), chain, projected)
+                    : EscrowPrefix.classify(root.id(), chain, pruned);
+            if (after != EscrowPrefix.Classification.OTHER) { throw new Refusal(EscrowReason.NONE); }
+        }
+        throw new Refusal(EscrowReason.OTHER_STATE);
     }
 
     /** Immutable native values plus the small mutable frame avoid re-encoding snapshots on every visit. */

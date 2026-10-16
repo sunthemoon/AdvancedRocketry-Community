@@ -151,6 +151,26 @@ class EscrowReconciliationBindingBoundaryTest {
         assertFalse(EscrowReconciliationValidation.canBind(remaining, f.b().destination(), forged));
     }
 
+    @Test void driverCaptureWaitsForRetiredLeadingMarkerRatherThanMakingTheSurvivorManual() {
+        var f = sample(); var remaining = f.ledger().retire(Set.of(f.a().id()));
+        var wrapper = RocketEscrowSection.decode(f.after().getCompound("wrapper"));
+        var state = new EscrowPrefix.State(remaining.id(), wrapper.epoch(), f.b().destination().afterSignature(), wrapper.markers());
+        var chain = EscrowPrefix.chains(remaining.records()).get(f.b().destination().key());
+        var refusal = assertThrows(EscrowReconciliationView.Refusal.class,
+                () -> EscrowReconciliationView.requirePrefix(remaining, f.b().destination(), chain, state, f.after()));
+        assertEquals(EscrowReason.NONE, refusal.reason); assertFalse(refusal.reason.manual());
+        assertEquals(2, wrapper.epoch()); assertEquals(2, wrapper.markers().size());
+        var pruned = f.after().copy();
+        var markers = List.of(wrapper.markers().get(1));
+        pruned.put("wrapper", new RocketEscrowSection(remaining.id(), 2, markers).encode());
+        assertDoesNotThrow(() -> EscrowReconciliationView.requirePrefix(remaining, f.b().destination(), chain,
+                new EscrowPrefix.State(remaining.id(), 2, state.signature(), markers), pruned));
+        var changed = f.after().copy(); changed.putUUID("owner", EscrowTestFixtures.id(9999));
+        assertEquals(EscrowReason.OTHER_STATE, assertThrows(EscrowReconciliationView.Refusal.class,
+                () -> EscrowReconciliationView.requirePrefix(remaining, f.b().destination(), chain, state, changed)).reason);
+        assertEquals(f.b().nativeBinding(), remaining.records().get(0).nativeBinding());
+    }
+
     @Test void c2WrapperMismatchBecomesStickyRepairRatherThanRebinding() {
         var f = sample(); var b = f.b(); var root = f.ledger().retire(Set.of(f.a().id()));
         var before = f.first().copy(); before.put("wrapper", new RocketEscrowSection(root.id(), 1, List.of()).encode());

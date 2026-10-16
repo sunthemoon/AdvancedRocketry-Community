@@ -21,7 +21,7 @@ class ReconciliationRunnerTest(unittest.TestCase):
         return root, [source], rocket
 
     def test_all_declared_cuts_are_unique_and_both_stores_have_every_boundary(self):
-        self.assertEqual(31, len(runner.CASES))
+        self.assertEqual(32, len(runner.CASES))
         self.assertEqual(len(runner.CASES), len(set(runner.CASES)))
         for endpoint in ("SOURCE", "DESTINATION"):
             for stage in ("STORE", "FORCE", "READBACK"):
@@ -64,7 +64,7 @@ class ReconciliationRunnerTest(unittest.TestCase):
             runner.require_state(*sample, "CR_C2_MISMATCH", True)
 
     def test_later_member_and_stale_binding_restarts_finish_exactly_two_fills(self):
-        for cut in ("CR_LATER_WAIT", "CR_STALE_BIND"):
+        for cut in ("CR_LATER_WAIT", "CR_STALE_BIND", "CR_LATER_L2_REPLACED"):
             sample = self.sample(issued=2, amount=2000)
             sample[1].append(copy.deepcopy(sample[1][0]))
             sample[1][1]["arce_escrow_fixture"]["identity"] = "second"
@@ -72,6 +72,16 @@ class ReconciliationRunnerTest(unittest.TestCase):
             sample[1][1]["arce_escrow_fixture"]["amount"] = 5000
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.require_state(*sample, cut, True)
+
+    def test_partial_l2_cut_requires_both_markers_and_only_the_later_record(self):
+        sample = self.sample(records=1, issued=2, amount=2000)
+        sample[1].append(copy.deepcopy(sample[1][0]))
+        sample[0]["records"][0]["op_id"] = "B"
+        sample[2]["RocketEntityData"]["resource_escrow"]["markers"] = [dict(op_id="A", seq=1), dict(op_id="B", seq=2)]
+        runner.require_state(*sample, "CR_LATER_L2_REPLACED", False)
+        sample[2]["RocketEntityData"]["resource_escrow"]["markers"].pop(0)
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.require_state(*sample, "CR_LATER_L2_REPLACED", False)
 
 
 if __name__ == "__main__":

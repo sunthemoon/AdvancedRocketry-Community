@@ -44,7 +44,8 @@ final class EscrowReconciliationProbe {
                 || firstAcknowledged && (cut.equals("CR_L2_BEFORE") && name.equals("K8") || cut.equals("CR_L2_REPLACED") && name.equals("K9"))
                 || cut.equals("CR_" + name)
                 || name.startsWith("BARRIER_") && cut.equals("CR_" + selected + "_" + name.substring("BARRIER_".length()))
-                || cut.equals("CR_STALE_BIND") && name.equals("C7_ACKNOWLEDGED")) { pause(); }
+                || cut.equals("CR_STALE_BIND") && name.equals("C7_ACKNOWLEDGED")
+                || cut.equals("CR_LATER_L2_REPLACED") && secondPrepared && name.equals("K9")) { pause(); }
         if (cut.equals("CR_LATER_WAIT") && name.equals("C3_LATER_MEMBER_WAIT") && data.ledger().records().size() == 2) {
             var coordinator = data.bind(server); var endpoint = data.ledger().records().get(0).destination();
             EscrowTags.require(!coordinator.frozen(endpoint.key()) && rocket.escrowSection().epoch() == 1,
@@ -84,7 +85,7 @@ final class EscrowReconciliationProbe {
         }
         if (step == 1) {
             coordinator.commitPreparations();
-            if (firstAcknowledged && cut.equals("CR_LATER_WAIT") && !secondPrepared
+            if (firstAcknowledged && (cut.equals("CR_LATER_WAIT") || cut.equals("CR_LATER_L2_REPLACED")) && !secondPrepared
                     && rocket.flightData().orElseThrow().fuel().totalAmount() == 1_000) {
                 prepare(second, true); secondPrepared = true;
             }
@@ -93,7 +94,16 @@ final class EscrowReconciliationProbe {
         }
     }
 
-    private boolean chain() { return cut.equals("CR_LATER_WAIT") || cut.equals("CR_STALE_BIND"); }
+    private boolean chain() { return cut.equals("CR_LATER_WAIT") || cut.equals("CR_STALE_BIND") || cut.equals("CR_LATER_L2_REPLACED"); }
+
+    void beforeReconciliation() {
+        if (!recovery) { return; }
+        var existing = ResourceEscrowSavedData.existing(server);
+        if (existing != null && existing.operational()) {
+            var coordinator = existing.bind(server);
+            for (var op : existing.ledger().records()) { coordinator.registerReconciliationTestSource(server, op.source()); }
+        }
+    }
 
     private void prepare(BlockEntity from, boolean later) {
         var coordinator = data.bind(server); var logical = rocket.assemblyTransactionId().orElseThrow();

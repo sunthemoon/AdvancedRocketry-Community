@@ -21,14 +21,15 @@ CASES = ("CR_C0", "CR_L1_BEFORE", "CR_L1_REPLACED", "CR_L1_ACK",
                                 for endpoint in ("SOURCE", "DESTINATION")
                                 for stage in ("STORE", "FORCE", "READBACK") for side in ("BEFORE", "AFTER")) + (
          "CR_C6_JOINT_READBACK", "CR_L2_BEFORE", "CR_L2_REPLACED", "CR_C7_ACKNOWLEDGED",
-         "CR_C8_PRUNE_BEFORE", "CR_C8_PRUNE_AFTER", "CR_C8_RELEASED", "CR_LATER_WAIT", "CR_STALE_BIND", "CR_C2_MISMATCH")
+         "CR_C8_PRUNE_BEFORE", "CR_C8_PRUNE_AFTER", "CR_C8_RELEASED", "CR_LATER_WAIT", "CR_STALE_BIND", "CR_C2_MISMATCH",
+         "CR_LATER_L2_REPLACED")
 L2 = {"CR_L2_REPLACED", "CR_C7_ACKNOWLEDGED", "CR_C8_PRUNE_BEFORE", "CR_C8_PRUNE_AFTER", "CR_C8_RELEASED", "CR_STALE_BIND"}
 
 
 def require_state(root: dict, sources: list[dict], rocket: dict, cut: str, restarted: bool) -> dict:
     before = cut in ("CR_C0", "CR_L1_BEFORE")
     repair = cut == "CR_C2_MISMATCH"
-    chain = cut in ("CR_LATER_WAIT", "CR_STALE_BIND")
+    chain = cut in ("CR_LATER_WAIT", "CR_STALE_BIND", "CR_LATER_L2_REPLACED")
     data = rocket["RocketEntityData"]
     flight, wrapper = data["flight_data"], data["resource_escrow"]
     fuel = flight["fuel"]["amount"]
@@ -39,18 +40,23 @@ def require_state(root: dict, sources: list[dict], rocket: dict, cut: str, resta
             or data["assembly_transaction_id"] != flight["logical_rocket_id"]
             or rocket["id"] != "advancedrocketrycommunity:rocket" or rocket["Pos"] != [64.5, 100., 64.5]):
         raise smoke.SmokeError("Ordinary reconciliation changed native identity/flight authority")
-    expected_watermark = 0 if before else 2 if cut == "CR_LATER_WAIT" or restarted and cut == "CR_STALE_BIND" else 1
-    expected_records = 1 if repair else 0 if restarted or before or cut in L2 else expected_watermark
+    expected_watermark = 0 if before else 2 if cut in ("CR_LATER_WAIT", "CR_LATER_L2_REPLACED") or restarted and cut == "CR_STALE_BIND" else 1
+    expected_records = 1 if repair or cut == "CR_LATER_L2_REPLACED" and not restarted else 0 if restarted or before or cut in L2 else expected_watermark
     if root["issued_through"] != expected_watermark or len(root["records"]) != expected_records:
         raise smoke.SmokeError("Wrong native C1/C7 ledger boundary")
+    if cut == "CR_LATER_L2_REPLACED" and not restarted:
+        markers = wrapper["markers"]
+        if (len(markers) != 2 or [marker["seq"] for marker in markers] != [1, 2]
+                or markers[1]["op_id"] != root["records"][0]["op_id"]):
+            raise smoke.SmokeError("Partial L2 cut did not retain [A, B] against the surviving B record")
     if repair and any(op["phase"] != "REPAIR" or op["reason"] != "OTHER_STATE" for op in root["records"]):
         raise smoke.SmokeError("C2 mismatch lost sticky REPAIR")
     if before or repair:
         if amounts != [5000] or fuel != 0 or wrapper["resource_epoch"] != 0 or wrapper["markers"]:
             raise smoke.SmokeError("Unacknowledged or refused C2 changed resources")
-    elif restarted or cut in L2:
-        applied = 2 if restarted and chain else 1
-        expected_amounts = [4000] + ([4000 if restarted else 5000] if chain else [])
+    elif restarted or cut in L2 or cut == "CR_LATER_L2_REPLACED":
+        applied = 2 if restarted and chain or cut == "CR_LATER_L2_REPLACED" else 1
+        expected_amounts = [4000] + ([4000 if applied == 2 else 5000] if chain else [])
         if amounts != expected_amounts or fuel != applied * 1000 or wrapper["resource_epoch"] != applied:
             raise smoke.SmokeError("Retired native prefix changed conservation/epochs")
         if sum(amounts) + fuel != 5000 * len(sources):
@@ -80,7 +86,7 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
     if len(rockets) != 1 or journal(world)["transfers"]:
         raise smoke.SmokeError("Native rocket is missing/duplicated or an ordinary fill created a transfer")
     sources = []
-    for x in (64, 68) if cut in ("CR_LATER_WAIT", "CR_STALE_BIND") else (64,):
+    for x in (64, 68) if cut in ("CR_LATER_WAIT", "CR_STALE_BIND", "CR_LATER_L2_REPLACED") else (64,):
         chosen = [entry for entry in terrain["block_entities"] if [entry.get(k) for k in ("x", "y", "z")] == [x, 100, 64]]
         if len(chosen) != 1 or chosen[0]["id"] != "minecraft:chest":
             raise smoke.SmokeError("Fixture source missing/duplicated/retyped")

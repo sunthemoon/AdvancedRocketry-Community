@@ -126,6 +126,15 @@ public final class EscrowReconciliationPruning {
         }
     }
 
+    /** The scheduler can see a just-added rocket before its first tick observation. */
+    static void destination(MinecraftServer server, EscrowCoordinator coordinator, EscrowEndpoint endpoint) {
+        var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
+        if (level == null || !EscrowReconciliationView.loaded(level, endpoint)
+                || !(level.getEntity(endpoint.identity()) instanceof RocketEntity rocket)
+                || !rocket.isAddedToWorld() || !rocket.operational()) { return; }
+        coordinator.observePruningCandidate(rocket.escrowSection(), () -> observeCandidate(rocket, level, coordinator));
+    }
+
     /** Gated sources have no production tick adapter; prune at the next registered C0/C2 observation. */
     static void source(MinecraftServer server, EscrowCoordinator coordinator, EscrowEndpoint endpoint) {
         EscrowTestEndpoints.requireEnabled(server);

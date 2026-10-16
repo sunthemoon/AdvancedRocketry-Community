@@ -194,6 +194,11 @@ public final class EscrowRuntime {
             }
         }
         if (runtime.barrier != null) { runtime.barrier.tick(event.getServer().getTickCount()); }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("CR_")) {
+            if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
+            runtime.reconciliationProbe.beforeReconciliation();
+        }
         if (runtime.scheduler != null && data != null) {
             runtime.scheduler.tick(event.getServer().getTickCount()); data.bind(event.getServer()).persistTransitions();
         }
