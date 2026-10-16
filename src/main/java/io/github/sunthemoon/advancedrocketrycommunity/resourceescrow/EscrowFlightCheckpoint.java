@@ -11,9 +11,15 @@ import net.minecraft.server.level.ServerLevel;
 /** F1 only: source-own store, same-worker force and readback before the checked ARMED write. */
 final class EscrowFlightCheckpoint implements AutoCloseable {
     private final Map<UUID, EscrowFlightSource> pending = new HashMap<>();
+    private record Retry(RocketEntity rocket, EscrowSuccessorRetry schedule) { }
+    private final Map<UUID, Retry> retries = new HashMap<>();
     private boolean closed;
 
     boolean locked(UUID logical) { return pending.containsKey(logical); }
+    boolean retryReady(UUID logical, long tick) {
+        var retry = retries.get(logical);
+        return !closed && (retry == null || retry.schedule().ready(tick));
+    }
     void invalidated(RocketEntity rocket) {
         var frozen = pending.get(rocket.assemblyTransactionId().orElse(null));
         if (frozen != null) { frozen.unchanged.set(false); }
@@ -76,6 +82,9 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                 || !(rocket.level() instanceof ServerLevel level)) { return false; }
         var server = level.getServer(); var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return false; }
+        retries.entrySet().removeIf(entry -> entry.getValue().rocket().isRemoved() && !pending.containsKey(entry.getKey()));
+        if (!retryReady(launch.logical(), server.getTickCount())
+                || !retries.containsKey(launch.logical()) && retries.size() >= 64) { return false; }
         var coordinator = data.bind(server); var journal = RocketTransferSavedData.get(server);
         if (!coordinator.operational() || !journal.retryChecked(server)
                 || !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)) { return false; }
@@ -96,32 +105,57 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
         var noTransfer = EscrowFlightJournal.noTransfer(journal, launch.logical(), launch.transfer(),
                 Math.addExact(coordinator.ledger().issuedLaunchSerial(), 1));
         if (!noTransfer.getAsBoolean() || !frozen.observe()) { return false; }
+        var retry = retries.computeIfAbsent(launch.logical(), key -> new Retry(rocket, new EscrowSuccessorRetry())).schedule();
+        // Zero means not yet assigned by the actual coalesced writer capture, not a reserved serial.
+        var serial = new java.util.concurrent.atomic.AtomicLong();
         var runtime = EscrowRuntime.of(server); pending.put(launch.logical(), frozen);
         runtime.checkpoint("F1_STORE_BEFORE");
         boolean started = runtime.barrier().begin(runtime.store(level), frozen.endpoint, frozen.frontier, frozen.validator(),
                 server.getTickCount(), result -> {
                     if (closed || !result.confirmed() || !frozen.observe() || !noTransfer.getAsBoolean()) {
+                        String reason = result.confirmed() ? "SOURCE_OR_JOURNAL_CHANGED"
+                                : result.reason() == EscrowReason.NONE ? "SUPERSEDING_SAVE" : result.reason().name();
                         if (result.proof() != null) { result.proof().release(); }
+                        if (!closed) { retry.failed(coordinator.ledger().id(), launch.transfer(), 0, "F1_PROOF",
+                                reason, server.getTickCount()); }
                         pending.remove(launch.logical(), frozen); completion.accept(null); return;
                     }
                     runtime.checkpoint("F1_READBACK_AFTER"); var proof = result.proof();
                     boolean queued = coordinator.flightWrite(launch.logical(), (root, generation) -> {
                         EscrowTags.require(frozen.observe(), "F1 source changed before ARMED capture");
                         runtime.checkpoint("F1_ARM_CAPTURE");
-                        return preparation.capture(root, launch, generation);
+                        var candidate = preparation.capture(root, launch, generation);
+                        serial.set(candidate.armedFlights().stream().filter(arm -> arm.logical().equals(launch.logical())
+                                && arm.transfer().equals(launch.transfer())).findFirst().orElseThrow().serial());
+                        return candidate;
                     }, () -> proof.valid() && frozen.unchanged.get() && noTransfer.getAsBoolean(), committed -> {
                         proof.release(); pending.remove(launch.logical(), frozen);
                         if (committed) {
+                            retries.remove(launch.logical());
                             runtime.checkpoint("F1_ARM_ACK");
                             completion.accept(coordinator.ledger().armedFlights().stream()
                                     .filter(arm -> arm.logical().equals(launch.logical()) && arm.transfer().equals(launch.transfer())).findFirst().orElseThrow());
-                        } else { completion.accept(null); }
+                        } else {
+                            if (!closed) { retry.failed(coordinator.ledger().id(), launch.transfer(), serial.get(),
+                                    "F1_WRITE", "LEDGER_WRITE_FAILED", server.getTickCount()); }
+                            completion.accept(null);
+                        }
                     });
-                    if (!queued) { proof.release(); pending.remove(launch.logical(), frozen); completion.accept(null); }
+                    if (!queued) {
+                        proof.release(); pending.remove(launch.logical(), frozen);
+                        if (!closed) { retry.failed(coordinator.ledger().id(), launch.transfer(), 0,
+                                "F1_WRITE", "LEDGER_QUEUE_WAIT", server.getTickCount()); }
+                        completion.accept(null);
+                    }
                 });
-        if (!started) { pending.remove(launch.logical(), frozen); }
+        if (!started) {
+            pending.remove(launch.logical(), frozen);
+            if (retry.failures() == 0) { retries.remove(launch.logical()); }
+        }
         return started;
     }
 
-    @Override public void close() { closed = true; pending.values().forEach(value -> value.unchanged.set(false)); pending.clear(); }
+    @Override public void close() {
+        closed = true; pending.values().forEach(value -> value.unchanged.set(false)); pending.clear(); retries.clear();
+    }
 }

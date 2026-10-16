@@ -21,6 +21,7 @@ public final class EscrowGovernedPreparation {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()
                 || !rocket.operational() || !RocketEscrowGate.idle(rocket)) { return false; }
         var server = level.getServer(); var data = ResourceEscrowSavedData.existing(server);
+        if (!EscrowRuntime.of(server).flightCheckpoint().retryReady(countdown.logicalRocketId(), server.getTickCount())) { return false; }
         var journal = RocketTransferSavedData.get(server);
         if (data == null || !data.bind(server).governedAvailable(countdown.logicalRocketId())
                 || !journal.retryChecked(server)) { return false; }

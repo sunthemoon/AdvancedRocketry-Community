@@ -88,6 +88,9 @@ public final class EscrowGovernedPreparationGameTests {
                 helper.assertTrue(data.ledger().armedFlights().stream().noneMatch(arm -> arm.transfer().equals(transfer))
                         && journal.find(transfer).isEmpty() && RocketEscrowGate.idle(rocket),
                         "Invalidated F1 minted authority or left an unacknowledged preparation lock");
+                var checkpoint = EscrowRuntime.of(level.getServer()).flightCheckpoint();
+                helper.assertTrue(!checkpoint.retryReady(rocket.assemblyTransactionId().orElseThrow(), level.getServer().getTickCount()),
+                        "Failed F1 can retry before its proof backoff");
             } else {
                 helper.assertTrue(accepted && !discarded && journal.acknowledgedCurrent(), "Countdown has no exact F2 acknowledgement");
                 var record = journal.find(transfer).orElseThrow();

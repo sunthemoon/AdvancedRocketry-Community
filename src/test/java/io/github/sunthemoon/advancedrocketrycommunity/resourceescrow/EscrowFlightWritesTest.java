@@ -101,6 +101,46 @@ class EscrowFlightWritesTest {
         }
     }
 
+    @Test void unknownCandidateCannotRestartBeforeItsExact200TickGate() throws Exception {
+        var data = ResourceEscrowSavedData.create(); var initial = data.ledger();
+        var launch = EscrowFlightAuthorityTest.launch(initial, 1); var attempts = new AtomicInteger();
+        var replies = new ArrayList<Boolean>(); var io = new AwaitedLedgerIo();
+        try (var writer = io.writer(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0, (staged, target) -> {
+            if (attempts.incrementAndGet() == 1) { throw new java.io.IOException("injected unknown replacement"); }
+            CheckedSavedDataFile.atomicMove(staged, target);
+        }); var coordinator = new EscrowCoordinator(data, writer)) {
+            assertTrue(coordinator.flightWrite(launch.logical(), (root, generation) -> EscrowFlightAuthority.arm(root, launch, generation),
+                    () -> true, replies::add));
+            coordinator.tick(0); io.awaitWrites(); coordinator.tick(1);
+            assertTrue(writer.unknown()); assertEquals(1, attempts.get());
+            for (long tick = 2; tick < 201; tick++) { coordinator.tick(tick); }
+            assertEquals(1, attempts.get()); assertTrue(replies.isEmpty()); assertSame(initial, coordinator.ledger());
+            assertTrue(coordinator.logicalLocked(launch.logical()));
+            coordinator.tick(201); io.awaitWrites(); coordinator.tick(202);
+            assertEquals(2, attempts.get()); assertEquals(java.util.List.of(true), replies);
+            assertEquals(1, coordinator.ledger().writerGeneration()); assertEquals(1, coordinator.ledger().issuedLaunchSerial());
+        }
+    }
+
+    @Test void oneRefusedRequestDoesNotReceiveAnotherRequestsCoalescedAcknowledgement() throws Exception {
+        var data = ResourceEscrowSavedData.create(); var root = data.ledger(); var moves = new AtomicInteger();
+        var refused = new ArrayList<Boolean>(); var accepted = new ArrayList<Boolean>(); var io = new AwaitedLedgerIo();
+        try (var writer = io.writer(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0, (staged, target) -> {
+            moves.incrementAndGet(); CheckedSavedDataFile.atomicMove(staged, target);
+        }); var coordinator = new EscrowCoordinator(data, writer)) {
+            var bad = EscrowFlightAuthorityTest.launch(root, 1); var good = EscrowFlightAuthorityTest.launch(root, 2);
+            assertTrue(coordinator.flightWrite(bad.logical(), (candidate, generation) -> {
+                fail("Invalidated request must not be captured"); return candidate;
+            }, () -> false, refused::add));
+            assertTrue(coordinator.flightWrite(good.logical(), (candidate, generation) -> EscrowFlightAuthority.arm(candidate, good, generation),
+                    () -> true, accepted::add));
+            coordinator.tick(0); io.awaitWrites(); coordinator.tick(1);
+            assertEquals(java.util.List.of(false), refused); assertEquals(java.util.List.of(true), accepted);
+            assertEquals(1, moves.get()); assertEquals(1, coordinator.ledger().writerGeneration());
+            assertEquals(java.util.List.of(good.logical()), coordinator.ledger().armedFlights().stream().map(EscrowFlightTables.Armed::logical).toList());
+        }
+    }
+
     private static void pump(EscrowCoordinator coordinator, long start, java.util.function.BooleanSupplier done) throws InterruptedException {
         for (long tick = start; tick < start + 1_000 && !done.getAsBoolean(); tick++) { coordinator.tick(tick); Thread.sleep(2); }
         assertTrue(done.getAsBoolean(), "Expected exact writer completion within the bounded test pump");
