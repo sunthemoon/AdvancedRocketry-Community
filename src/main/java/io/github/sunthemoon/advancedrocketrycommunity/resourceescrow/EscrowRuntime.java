@@ -45,6 +45,7 @@ public final class EscrowRuntime {
     private EscrowSourceClockProbe sourceClockProbe;
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
+    private volatile EscrowTerminalProbe terminalProbe;
     private volatile java.util.function.Consumer<String> terminalTestCut;
     void terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
         EscrowTestEndpoints.requireEnabled(server);
@@ -104,6 +105,7 @@ public final class EscrowRuntime {
     }
     public void checkpoint(String cut) {
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
+        var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
         if (phaseProbe != null) { phaseProbe.checkpoint(cut); }
         if (destinationProbe != null) { destinationProbe.checkpoint(cut); }
         if (probe != null) { probe.checkpoint(cut); }
@@ -192,7 +194,10 @@ public final class EscrowRuntime {
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("FP_") || testCase.startsWith("FD_")) {
+            if (testCase.startsWith("FT_")) {
+                if (runtime.terminalProbe == null) { runtime.terminalProbe = new EscrowTerminalProbe(event.getServer()); }
+                runtime.terminalProbe.tick();
+            } else if (testCase.startsWith("FP_") || testCase.startsWith("FD_")) {
                 if (runtime.phaseProbe == null) { runtime.phaseProbe = new EscrowPhaseProbe(event.getServer()); }
                 runtime.phaseProbe.tick();
             } else if (testCase.startsWith("DP_")) {

@@ -566,6 +566,7 @@ public final class RocketTransferSavedData extends SavedData {
             writer = new RocketJournalWriter(normalized, FirstEventCutSeams.journalDirectoryForce(ownerServer));
         }
         if (!writerFile.equals(normalized)) { throw new IllegalArgumentException("Journal writer cannot rebind its target"); }
+        policy = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTerminalProbe.journalPolicy(ownerServer, policy);
         return writer.request(capture(), presence == ManagedRootPresence.PROVEN_ABSENT ? firstWriteChecked(policy) : policy);
     }
 

@@ -88,7 +88,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         state.queued = EscrowGovernedHandoff.request(coordinator, journal, proof, committed -> {
             pending.queued = false;
             pending.release();
-            if (committed) { work.remove(record.transferId(), pending); }
+            if (committed) { work.remove(record.transferId(), pending); EscrowRuntime.of(server).checkpoint("F7_ACK"); }
             else { pending.retry(server.getTickCount()); }
         });
         if (!state.queued) { state.retry(server.getTickCount()); }

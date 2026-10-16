@@ -48,6 +48,7 @@ final class RocketGovernedCleanupDispatcher {
                 continue;
             }
             if (state.record != null && !unclaimed(server, journal, state.record, bays)) { continue; }
+            EscrowRuntime.of(server).checkpoint("F8_JOURNAL_ACK");
             // On restart there are no old runtime tickets. A retained record supplies both exact
             // ticket coordinates in the live path; the saved pad index can release by exact T.
             var pads = server.overworld().getDataStorage().get(LandingPadIndex::load, LandingPadIndex.DATA_NAME);
@@ -60,7 +61,7 @@ final class RocketGovernedCleanupDispatcher {
                     () -> (pads == null || pads.operational())
                             && (state.record == null || unclaimed(server, journal, state.record, bays)), committed -> {
                         state.queued = false;
-                        if (committed) { work.remove(arm.transfer(), state); }
+                        if (committed) { work.remove(arm.transfer(), state); EscrowRuntime.of(server).checkpoint("F8_PRUNE_ACK"); }
                         else {
                             state.failures = Math.min(3, state.failures + 1);
                             state.retryAt = server.getTickCount() + (state.failures == 1 ? 100 : state.failures == 2 ? 400 : 1_200);
