@@ -238,6 +238,21 @@ final class RocketTransferService {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }
         RocketTransferRecord record = journal.find(plan.requestId()).orElse(null);
+        if (record != null && record.nativeTransfer().isPresent()) {
+            if (record.phase() != RocketTransferPhase.PREPARED || !record.sourceEntityId().equals(rocket.getUUID())) {
+                return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_STATE);
+            }
+            boolean queued = io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(level.getServer()).returns()
+                    .request(level.getServer(), journal, record, rocket,
+                            () -> RocketGovernedLaunchBoundary.allows(level.getServer(), journal, record, rocket, recovery.bays()),
+                            () -> {
+                                RocketFlightFeedback.returnedToSource(rocket);
+                                completion.accepted().run();
+                            });
+            // The request is complete only after the return's native F6 checkpoint, not merely queue admission.
+            return queued ? new RocketFlightRequestResult(RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel())
+                    : RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
+        }
         if (!io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate.idle(rocket)) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.TRANSFER_JOURNAL_BLOCKED);
         }

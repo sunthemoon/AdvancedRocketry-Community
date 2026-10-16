@@ -54,6 +54,8 @@ public final class EscrowRuntime {
     private final EscrowGovernedDestination destinations = new EscrowGovernedDestination();
     private final EscrowGovernedPhases flightPhases = new EscrowGovernedPhases();
     private final EscrowGovernedArrival arrivals = new EscrowGovernedArrival();
+    private final EscrowGovernedReturn returns = new EscrowGovernedReturn();
+    public EscrowGovernedReturn returns() { return returns; }
     public EscrowGovernedArrival arrivals() { return arrivals; }
     public EscrowGovernedPhases flightPhases() { return flightPhases; }
     // The explicitly enabled DP_* cut fixture observes F4 only, including its asynchronous own-store.
@@ -69,6 +71,7 @@ public final class EscrowRuntime {
         destinations.observe(rocket);
         flightPhases.observe(rocket);
         arrivals.observe(rocket);
+        returns.observe(rocket);
         flightCheckpoint.observe(rocket); preF2Cancellation.observe(rocket);
     }
     void invalidateFlight(io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity rocket) {
@@ -233,7 +236,7 @@ public final class EscrowRuntime {
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
         runtime.governedFlights.close(); runtime.destinations.close();
-        runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear();
+        runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.barrier != null) { runtime.barrier.close(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
@@ -261,7 +264,7 @@ public final class EscrowRuntime {
         runtime.preF2Cancellation.close();
         runtime.flightCheckpoint.close();
         runtime.governedFlights.close(); runtime.destinations.close();
-        runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear();
+        runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {
