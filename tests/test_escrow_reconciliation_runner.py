@@ -8,11 +8,12 @@ import run_v180_escrow_reconciliation as runner
 
 
 class ReconciliationRunnerTest(unittest.TestCase):
-    def sample(self, records=0, issued=1, amount=1000, source_amount=4000):
+    def sample(self, records=0, issued=1, amount=1000, source_amount=4000, retained=False):
         root = dict(ledger_id="ledger", issued_through=issued, records=[dict(phase="PREPARED", reason="NONE")] * records,
                     floors=[], tombstones=[], armed_flights=[], rocket_authorities=[], issued_launch_serial=0)
         source = dict(arce_escrow_fixture=dict(identity="source", amount=source_amount),
-                      resource_escrow=dict(ledger_id="ledger", resource_epoch=(5000-source_amount)//1000, markers=[]))
+                      resource_escrow=dict(ledger_id="ledger", resource_epoch=(5000-source_amount)//1000,
+                        markers=[dict(op_id="A", seq=1, role="SOURCE", epoch_after=1)] if retained else []))
         rocket = dict(UUID="physical", id="advancedrocketrycommunity:rocket", Pos=[64.5, 100., 64.5],
                       RocketEntityData=dict(assembly_transaction_id="logical", owner_id="owner", snapshot=dict(id="snapshot"),
                         resource_escrow=dict(ledger_id="ledger", resource_epoch=amount//1000, markers=[]),
@@ -43,7 +44,7 @@ class ReconciliationRunnerTest(unittest.TestCase):
             runner.require_state(*sample, "CR_L2_REPLACED", False)
 
     def test_restart_requires_conservation_pruned_markers_and_same_identity(self):
-        sample = self.sample()
+        sample = self.sample(retained=True)
         identity = runner.require_state(*sample, "CR_C8_RELEASED", True)
         self.assertEqual("physical", identity["physical"])
         bad = copy.deepcopy(sample)
@@ -68,6 +69,8 @@ class ReconciliationRunnerTest(unittest.TestCase):
             sample = self.sample(issued=2, amount=2000)
             sample[1].append(copy.deepcopy(sample[1][0]))
             sample[1][1]["arce_escrow_fixture"]["identity"] = "second"
+            if cut != "CR_LATER_WAIT":
+                sample[1][0]["resource_escrow"]["markers"] = [dict(op_id="A", seq=1, role="SOURCE", epoch_after=1)]
             runner.require_state(*sample, cut, True)
             sample[1][1]["arce_escrow_fixture"]["amount"] = 5000
             with self.assertRaises(runner.smoke.SmokeError):
@@ -82,6 +85,14 @@ class ReconciliationRunnerTest(unittest.TestCase):
         sample[2]["RocketEntityData"]["resource_escrow"]["markers"].pop(0)
         with self.assertRaises(runner.smoke.SmokeError):
             runner.require_state(*sample, "CR_LATER_L2_REPLACED", False)
+
+    def test_l2_restart_requires_product_retained_source_marker_not_probe_cleanup(self):
+        sample = self.sample(retained=True)
+        runner.require_state(*sample, "CR_L2_REPLACED", True)
+        sample[1][0]["resource_escrow"]["markers"].clear()
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.require_state(*sample, "CR_L2_REPLACED", True)
+        runner.require_state(*sample, "CR_C6_JOINT_READBACK", True)
 
 
 if __name__ == "__main__":

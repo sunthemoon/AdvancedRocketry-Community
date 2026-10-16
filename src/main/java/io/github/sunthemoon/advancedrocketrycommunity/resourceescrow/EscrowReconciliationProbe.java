@@ -107,7 +107,6 @@ final class EscrowReconciliationProbe {
 
     private void prepare(BlockEntity from, boolean later) {
         var coordinator = data.bind(server); var logical = rocket.assemblyTransactionId().orElseThrow();
-        EscrowReconciliationPruning.source(server, coordinator, reference(from));
         var sourceState = EscrowTestEndpoints.state(from.getPersistentData(), data.ledger().id(), false);
         var fuel = rocket.flightData().orElseThrow().fuel();
         var after = fuel.withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, fuel.amount() + 1_000);
@@ -154,8 +153,6 @@ final class EscrowReconciliationProbe {
             EscrowTags.require(source != null && (!chain() || second != null), "Restart lost a fixture source");
         }
         for (var op : data.ledger().records()) { coordinator.registerReconciliationTestSource(server, op.source()); }
-        EscrowReconciliationPruning.source(server, coordinator, reference(source));
-        if (second != null) { EscrowReconciliationPruning.source(server, coordinator, reference(second)); }
         if (cut.equals("CR_STALE_BIND") && data.ledger().issuedThrough() == 1 && data.ledger().records().isEmpty()
                 && coordinator.writerIdle() && !secondPrepared) {
             EscrowReconciliationPruning.observe(rocket); prepare(second, true); secondPrepared = true;
@@ -168,7 +165,8 @@ final class EscrowReconciliationProbe {
                 && EscrowTestEndpoints.amount(source.getPersistentData()) == (amount == 0 ? 5_000 : 4_000)
                 && (second == null || EscrowTestEndpoints.amount(second.getPersistentData()) == 4_000)
                 && rocket.escrowSection().epoch() == amount / 1_000 && rocket.escrowSection().markers().isEmpty()
-                && EscrowTestEndpoints.state(source.getPersistentData(), data.ledger().id(), false).markers().isEmpty()
+                && sourceMarkersMatch(source, retainedSourceMarker())
+                && (second == null || sourceMarkersMatch(second, false))
                 && rocket.flightData().orElseThrow().fuel().committedDebits().isEmpty(), "Restart violated native conservation, epoch or pruning");
         if (repair) {
             EscrowTags.require(data.ledger().records().size() == 1 && data.ledger().records().get(0).phase() == EscrowOperation.Phase.REPAIR
@@ -177,5 +175,17 @@ final class EscrowReconciliationProbe {
         } else { EscrowTags.require(!coordinator.logicalLocked(rocket.assemblyTransactionId().orElseThrow()), "Completed ordinary prefix stayed locked"); }
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_RECONCILIATION_RESULT cut={} fuel={} records={} epoch={} source={}",
                 cut, amount, data.ledger().records().size(), rocket.escrowSection().epoch(), rocket.getUUID()); done = true;
+    }
+
+    private boolean retainedSourceMarker() {
+        return List.of("CR_L2_REPLACED", "CR_C7_ACKNOWLEDGED", "CR_C8_PRUNE_BEFORE", "CR_C8_PRUNE_AFTER",
+                "CR_C8_RELEASED", "CR_STALE_BIND", "CR_LATER_L2_REPLACED").contains(cut);
+    }
+
+    private boolean sourceMarkersMatch(BlockEntity from, boolean retained) {
+        var state = EscrowTestEndpoints.state(from.getPersistentData(), data.ledger().id(), false);
+        if (!retained) { return state.markers().isEmpty(); }
+        return state.markers().size() == 1 && state.markers().get(0).sequence() == 1
+                && state.markers().get(0).role().equals("SOURCE") && state.markers().get(0).epochAfter() == state.epoch();
     }
 }

@@ -61,8 +61,18 @@ def require_state(root: dict, sources: list[dict], rocket: dict, cut: str, resta
             raise smoke.SmokeError("Retired native prefix changed conservation/epochs")
         if sum(amounts) + fuel != 5000 * len(sources):
             raise smoke.SmokeError("Native resource conservation failed")
-        if restarted and (wrapper["markers"] or any(source["resource_escrow"]["markers"] for source in sources)):
-            raise smoke.SmokeError("Restart retained retired markers")
+        if restarted:
+            if wrapper["markers"]:
+                raise smoke.SmokeError("Restart retained retired rocket markers")
+            for index, source in enumerate(sources):
+                markers = source["resource_escrow"]["markers"]
+                retained = index == 0 and (cut in L2 or cut == "CR_LATER_L2_REPLACED")
+                if retained:
+                    if (len(markers) != 1 or markers[0]["seq"] != 1 or markers[0]["role"] != "SOURCE"
+                            or markers[0]["epoch_after"] != source["resource_escrow"]["resource_epoch"]):
+                        raise smoke.SmokeError("Restart did not retain the untouched fixture source marker")
+                elif markers:
+                    raise smoke.SmokeError("The exact C8 callback did not prune its source marker")
     else:
         # Independent endpoint stores may contain different exact prefixes while durable L1 holds.
         # Their only legal values are the recorded BEFORE/AFTER; both restarts must converge conservatively.
