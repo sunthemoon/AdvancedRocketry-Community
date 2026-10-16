@@ -95,7 +95,10 @@ public final class RailgunScreen extends AbstractContainerScreen<RailgunMenu> {
         if (view.isPresent() && isHovering(8, 108, 160, 20, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             lines.add(statusLine(view.get().status()));
-            if (view.get().lastStop() != EndgameCode.OK) { lines.add(statusLine(view.get().lastStop())); }
+            if (view.get().lastStop() != EndgameCode.OK) {
+                lines.add(Component.translatable("screen.advancedrocketrycommunity.railgun.last",
+                        statusLine(view.get().lastStop())));
+            }
             for (EndgameDeviceView.Line line : view.get().lines()) {
                 Component value = line.translated() ? Component.translatable(line.value())
                         : Component.literal(line.value());

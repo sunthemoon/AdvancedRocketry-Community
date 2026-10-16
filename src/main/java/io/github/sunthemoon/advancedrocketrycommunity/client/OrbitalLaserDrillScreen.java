@@ -93,7 +93,10 @@ public final class OrbitalLaserDrillScreen extends AbstractContainerScreen<Orbit
         if (view.isPresent() && isHovering(8, 108, 160, 20, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             lines.add(statusLine(view.get().status()));
-            if (view.get().lastStop() != EndgameCode.OK) { lines.add(statusLine(view.get().lastStop())); }
+            if (view.get().lastStop() != EndgameCode.OK) {
+                lines.add(Component.translatable("screen.advancedrocketrycommunity.orbital_laser_drill.last_stop",
+                        statusLine(view.get().lastStop())));
+            }
             for (EndgameDeviceView.Line line : view.get().lines()) {
                 Component value = line.translated() ? Component.translatable(line.value())
                         : line.label().equals("advancedrocketrycommunity.endgame.view.body")

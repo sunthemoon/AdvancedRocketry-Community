@@ -25,17 +25,20 @@ public final class ScreenText {
     private void draw(GuiGraphics graphics, Font font, Component full, int x, int y, int width, int color,
                       boolean centered) {
         var line = BoundedTextLayout.fit(full.getString(), width, font::width);
-        float offset = centered ? (width - font.width(line.text()) * line.scale()) / 2 : 0;
+        Component displayed = line.shortened() ? Component.literal(line.text()) : full;
+        int measured = font.width(displayed);
+        // A styled server notice can be wider than its plain string (for example bold text).
+        float scale = measured == 0 ? 1 : Math.min(line.scale(), (float) width / measured);
+        float offset = centered ? (width - measured * scale) / 2 : 0;
         graphics.pose().pushPose();
         try {
             graphics.pose().translate(x + offset, y, 0);
-            graphics.pose().scale(line.scale(), line.scale(), 1);
-            graphics.drawString(font, line.shortened() ? Component.literal(line.text()) : full, 0, 0, color, false);
+            graphics.pose().scale(scale, scale, 1);
+            graphics.drawString(font, displayed, 0, 0, color, false);
         } finally { graphics.pose().popPose(); }
-        if (line.shortened()) { shortened.add(new Label(full, x, y, width, font.lineHeight)); }
+        if (line.shortened() || scale < 1) { shortened.add(new Label(full, x, y, width, font.lineHeight)); }
     }
 
-    /** Extra device details remain available when a shortened status occupies their hover area. */
     public boolean renderTooltip(GuiGraphics graphics, Font font, int left, int top, int mouseX, int mouseY,
                                  List<Component> details) {
         for (Label label : shortened) {
