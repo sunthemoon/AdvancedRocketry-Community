@@ -36,6 +36,9 @@ class BoundedTextLayoutTest {
     @Test void everyReasonCodeRemainsCompleteEvenWhenTheCodeAloneNeedsScaling() {
         for (EndgameCode code : EndgameCode.values()) { checkCode(code.name()); }
         for (SatelliteOperationCode code : SatelliteOperationCode.values()) { checkCode(code.name()); }
+        for (var code : io.github.sunthemoon.advancedrocketrycommunity.machine.solar.SolarGeneration.Reason.values()) {
+            checkCode(code.name());
+        }
     }
 
     @Test void nonCodeBracketsAreOrdinaryText() {
@@ -52,6 +55,20 @@ class BoundedTextLayoutTest {
             assertEquals(WIDTH.applyAsInt(labels[i]) > widths[i], line.shortened());
         }
         assertEquals("Build", BoundedTextLayout.fit("Build", 44 - 6, WIDTH).text());
+    }
+
+    @Test void solarWeatherAndLongReasonsStayInsideTheReadout() {
+        for (boolean chinese : new boolean[]{false, true}) {
+            String weather = io.github.sunthemoon.advancedrocketrycommunity.datagen.V180SolarLanguage
+                    .entries(chinese).get("screen.advancedrocketrycommunity.solar.weather").formatted(1000);
+            assertTrue(weather.contains("1000‰"));
+            assertFalse(weather.contains("per mille"));
+            var line = BoundedTextLayout.fit(weather, 170, WIDTH);
+            assertTrue(WIDTH.applyAsInt(line.text()) <= 170);
+        }
+        var line = BoundedTextLayout.fit("Data retained; back up and repair offline", 164, WIDTH);
+        assertTrue(line.shortened());
+        assertTrue(WIDTH.applyAsInt(line.text()) <= 164);
     }
 
     private static void checkCode(String code) {

@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.Inventory;
 
 /** Original blue collector panel, with no imported GUI texture and no client-side energy decision. */
 public final class SolarGeneratorScreen extends AbstractContainerScreen<SolarGeneratorMenu> {
+    private final ScreenText text = new ScreenText();
     private static final String PREFIX = "screen.advancedrocketrycommunity.solar.";
     public SolarGeneratorScreen(SolarGeneratorMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -17,6 +18,7 @@ public final class SolarGeneratorScreen extends AbstractContainerScreen<SolarGen
         imageHeight = 142;
     }
     @Override public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        text.clear();
         renderBackground(graphics);
         super.render(graphics, mouseX, mouseY, partialTick);
         var view = menu.view();
@@ -26,6 +28,9 @@ public final class SolarGeneratorScreen extends AbstractContainerScreen<SolarGen
         }
         if (isHovering(38, 108, 170, 20, mouseX, mouseY)) {
             graphics.renderTooltip(font, reason(view), mouseX, mouseY);
+        }
+        if (!isHovering(38, 108, 170, 20, mouseX, mouseY)) {
+            text.renderTooltip(graphics, font, leftPos, topPos, mouseX, mouseY);
         }
     }
     @Override protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
@@ -40,18 +45,19 @@ public final class SolarGeneratorScreen extends AbstractContainerScreen<SolarGen
     }
     @Override protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         var view = menu.view();
-        graphics.drawString(font, title, titleLabelX, titleLabelY, 0xFFE4EDF4, false);
-        graphics.drawString(font, Component.literal(view.energy() + " FE"), 38, 25, 0xFFF2C46E, false);
-        graphics.drawString(font, Component.translatable(PREFIX + "rate", view.credit()), 38, 40, 0xFFF2C46E, false);
-        graphics.drawString(font, Component.translatable(PREFIX + "sky." + (view.sky() ? "open" : "blocked")), 38, 56, 0xFFACC5D7, false);
-        graphics.drawString(font, Component.translatable(PREFIX + "day." + view.day()), 38, 70, 0xFFACC5D7, false);
-        graphics.drawString(font, Component.translatable(PREFIX + "context." + view.context()), 38, 84, 0xFFACC5D7, false);
-        graphics.drawString(font, Component.translatable(PREFIX + "weather", view.weather()), 38, 97, 0xFFACC5D7, false);
+        text.draw(graphics, font, title, titleLabelX, titleLabelY, 204, 0xFFE4EDF4);
+        text.draw(graphics, font, Component.literal(view.energy() + " FE"), 38, 25, 170, 0xFFF2C46E);
+        text.draw(graphics, font, Component.translatable(PREFIX + "rate", view.credit()), 38, 40, 170, 0xFFF2C46E);
+        text.draw(graphics, font, Component.translatable(PREFIX + "sky." + (view.sky() ? "open" : "blocked")), 38, 56, 170, 0xFFACC5D7);
+        text.draw(graphics, font, Component.translatable(PREFIX + "day." + view.day()), 38, 70, 170, 0xFFACC5D7);
+        text.draw(graphics, font, Component.translatable(PREFIX + "context." + view.context()), 38, 84, 170, 0xFFACC5D7);
+        text.draw(graphics, font, Component.translatable(PREFIX + "weather", view.weather()), 38, 97, 170, 0xFFACC5D7);
         Component status = reason(view);
-        graphics.drawString(font, font.plainSubstrByWidth(status.getString(), 165), 42, 113,
-                view.reason() == SolarGeneration.Reason.GENERATING ? 0xFFB8DEC6 : 0xFFACC5D7, false);
+        text.draw(graphics, font, status, 42, 113, 164,
+                view.reason() == SolarGeneration.Reason.GENERATING ? 0xFFB8DEC6 : 0xFFACC5D7);
     }
     private static Component reason(SolarGeneratorMenu.View view) {
-        return Component.translatable(PREFIX + "reason." + view.reason().name().toLowerCase(Locale.ROOT));
+        return Component.translatable(PREFIX + "reason." + view.reason().name().toLowerCase(Locale.ROOT))
+                .append(" [" + view.reason().name() + "]");
     }
 }

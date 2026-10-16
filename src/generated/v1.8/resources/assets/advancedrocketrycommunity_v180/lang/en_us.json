@@ -529,7 +529,7 @@
   "screen.advancedrocketrycommunity.solar.reason.sky_blocked": "UP face obstructed",
   "screen.advancedrocketrycommunity.solar.sky.blocked": "UP exposure: not confirmed open",
   "screen.advancedrocketrycommunity.solar.sky.open": "UP exposure: open",
-  "screen.advancedrocketrycommunity.solar.weather": "Weather transmission: %s per mille",
+  "screen.advancedrocketrycommunity.solar.weather": "Weather transmission: %s‰",
   "screen.advancedrocketrycommunity.solar_array.collectors": "Collectors: %s / 63",
   "screen.advancedrocketrycommunity.solar_array.structure.conflict": "Structure: output plug already claimed",
   "screen.advancedrocketrycommunity.solar_array.structure.formed": "Structure: formed",
