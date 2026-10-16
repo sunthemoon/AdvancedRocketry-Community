@@ -18,6 +18,22 @@ def wire(**fields):
 
 
 class SettlementCompletionOracleTest(unittest.TestCase):
+    def test_each_veto_start_requires_its_actual_published_hold_reason(self):
+        for choice in native.CHOICES:
+            for boundary in ("VETO", "VETO_CHECKPOINTED"):
+                if choice == "FLOOR" and boundary == "VETO_CHECKPOINTED": continue
+                cut = f"SR_{choice}__{boundary}"
+                self.assertIn(cut, native.CASES)
+                for restart in range(3):
+                    expected = "Frozen settlement endpoint changed" if restart and choice != "FLOOR" and boundary == "VETO" else "BARRIER_VETO"
+                    lines = [f"ARCE_ESCROW_SETTLEMENT_HELD digest=abc reason={expected} records=retained",
+                             f"ARCE_RELEASE_SETTLEMENT_VETO cut={cut} reason={expected} records={2 if choice.startswith('CHAIN') else 1} "
+                             f"checkpointed={str(boundary == 'VETO_CHECKPOINTED').lower()} recovery={str(bool(restart)).lower()}"]
+                    self.assertEqual(expected, native.inspect_hold(lines, cut, restart))
+                    for invalid in ([], lines[:1], lines[1:], lines + lines[1:],
+                                    [line.replace(expected, "WRONG_REASON") for line in lines]):
+                        with self.assertRaises(native.smoke.SmokeError): native.inspect_hold(invalid, cut, restart)
+
     def test_native_start_and_acceptance_require_the_same_machine_lock_owner(self):
         self.assertIsNone(native.require_lock(None))
         with patch.object(Path, "read_text", return_value="owner\n"):
@@ -51,6 +67,33 @@ class SettlementCompletionOracleTest(unittest.TestCase):
 
     def test_released_resources_and_epoch_are_intact(self):
         self.assertEqual(5000, self.inspect()["raw_total"])
+
+    def test_checkpointed_veto_and_historical_mismatch_have_distinct_source_states(self):
+        endpoint = dict(kind="ENTITY", identity=self.rocket["UUID"])
+        self.root["records"] = [dict(settlement=dict(actor=native.ACTOR, actor_name="Server", digest="a" * 64,
+                                                     observations=[dict(endpoint=endpoint)]))]
+        self.root["tombstones"] = []
+        self.wrapper["resource_escrow"]["markers"] = [dict(op_id=[1, 2, 3, 4])]
+        for restarted in (False, True):
+            self.sources[0]["ForgeData"]["arce_escrow_fixture"]["amount"] = 4000
+            self.inspect("SR_ACCEPT__VETO_CHECKPOINTED", restarted)
+            with self.assertRaises(native.smoke.SmokeError): self.inspect("SR_ACCEPT__VETO", restarted)
+            self.sources[0]["ForgeData"]["arce_escrow_fixture"]["amount"] = 5000
+            self.inspect("SR_ACCEPT__VETO", restarted)
+            with self.assertRaises(native.smoke.SmokeError): self.inspect("SR_ACCEPT__VETO_CHECKPOINTED", restarted)
+        self.sources = []
+        self.inspect("SR_ABANDON__VETO_CHECKPOINTED")
+        with self.assertRaises(native.smoke.SmokeError): self.inspect("SR_ABANDON__VETO")
+
+    def test_held_normalization_does_not_claim_released_resource_mutations(self):
+        self.root["records"] = [dict(settlement=dict(actor=native.ACTOR, actor_name="Server", digest="a" * 64,
+                                                     observations=[dict(endpoint=dict(kind="ENTITY", identity=self.rocket["UUID"]))]))]
+        self.root["tombstones"] = []
+        self.wrapper["flight_data"]["fuel"]["amount"] = 0
+        self.wrapper["resource_escrow"] = dict(resource_epoch=0, markers=[])
+        self.inspect("SR_NORMALIZE__VETO_CHECKPOINTED")
+        self.wrapper["flight_data"]["fuel"]["amount"] = 2000
+        with self.assertRaises(native.smoke.SmokeError): self.inspect("SR_NORMALIZE__VETO_CHECKPOINTED")
 
     def test_unacknowledged_or_lost_receipt_is_rejected(self):
         self.root["tombstones"][0]["released"] = 0

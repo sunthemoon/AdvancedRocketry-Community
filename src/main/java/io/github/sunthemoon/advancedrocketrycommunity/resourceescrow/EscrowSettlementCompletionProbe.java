@@ -27,7 +27,7 @@ final class EscrowSettlementCompletionProbe {
     private final ServerLevel level;
     private final String cut;
     private final String boundary;
-    private final boolean recovery, chain, abandon, floor, veto, normalization;
+    private final boolean recovery, chain, abandon, floor, veto, checkpointedVeto, normalization;
     private EscrowCoordinator coordinator;
     private ResourceEscrowSavedData data;
     private RocketEntity rocket;
@@ -36,7 +36,7 @@ final class EscrowSettlementCompletionProbe {
     private EscrowSettlementIntent preview;
     private UUID selected;
     private long startTick;
-    private boolean waiting, done, vetoInstalled;
+    private boolean waiting, done, vetoInstalled, holdObserved;
     private int step;
     private volatile boolean writingIntent;
     private volatile String ledgerPhase = "";
@@ -47,7 +47,8 @@ final class EscrowSettlementCompletionProbe {
         EscrowTags.require(parts.length == 2 && List.of("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMALIZE").contains(parts[0]),
                 "Unknown settlement completion case");
         boundary = parts[1]; chain = parts[0].startsWith("CHAIN"); abandon = parts[0].endsWith("ABANDON");
-        floor = parts[0].equals("FLOOR"); veto = boundary.equals("VETO");
+        floor = parts[0].equals("FLOOR"); checkpointedVeto = boundary.equals("VETO_CHECKPOINTED");
+        veto = boundary.equals("VETO") || checkpointedVeto;
         normalization = parts[0].equals("NORMALIZE");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
     }
@@ -55,11 +56,8 @@ final class EscrowSettlementCompletionProbe {
         if (done) { return; }
         if (name.equals("O3_CAPTURE") || name.equals("O4_CAPTURE")) { ledgerPhase = name.substring(0, 2); return; }
         if (veto && name.equals("O_VETO") && vetoInstalled) {
-            EscrowTags.require(!data.ledger().records().isEmpty() && data.ledger().tombstones().isEmpty(), "Veto permitted retirement");
-            if (recovery) {
-                AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT cut={} state=HELD records={} locked=true", cut, data.ledger().records().size());
-                done = true;
-            } else { pause("O_VETO"); }
+            // stalled() publishes its diagnostic after this checkpoint. Read it on the next owner tick.
+            holdObserved = true;
         }
         if (recovery || veto || writingIntent) { return; }
         if (name.equals(boundary)) { pause(name); }
@@ -75,6 +73,7 @@ final class EscrowSettlementCompletionProbe {
     void tick() {
         if (done || waiting || !level.areEntitiesLoaded(new ChunkPos(POSITION).toLong()) || !level.isPositionEntityTicking(POSITION)) { return; }
         if (data == null) { data = ResourceEscrowSavedData.forTests(server); coordinator = data.bind(server); startTick = server.getTickCount(); }
+        if (holdObserved) { held(); return; }
         if (recovery) {
             if (veto && !vetoInstalled && !data.ledger().records().isEmpty()) { installVeto(); }
             if (!veto && data.ledger().records().isEmpty() && !data.ledger().tombstones().isEmpty()) { completed(); }
@@ -118,7 +117,7 @@ final class EscrowSettlementCompletionProbe {
             case 2 -> {
                 if (!coordinator.writerIdle() || data.ledger().records().size() != (chain ? 2 : 1)) { return; }
                 // Refuse vanilla's intervening saves as well as the later O2 own-store attempt.
-                if (veto && !vetoInstalled) { installVeto(); }
+                if (veto && !checkpointedVeto && !vetoInstalled) { installVeto(); }
                 for (int i = 0; i < sources.size(); i++) { sources.get(i).applySource(data.ledger().records().get(i)); }
                 coordinator.transition(selected, EscrowReason.OTHER_STATE); coordinator.persistTransitions(); step = 3;
             }
@@ -126,8 +125,9 @@ final class EscrowSettlementCompletionProbe {
                 if (!coordinator.writerIdle() || floor && !RocketTransferSavedData.get(server).retryChecked(server)
                         || !floor && data.ledger().records().get(0).reason() != EscrowReason.OTHER_STATE) { return; }
                 if (abandon) { level.setBlockAndUpdate(POSITION, Blocks.AIR.defaultBlockState()); }
-                if (!veto || floor) { EscrowTags.require(server.saveEverything(false, true, true), "Completion fixture baseline save refused"); }
+                if (!veto || floor || checkpointedVeto) { EscrowTags.require(server.saveEverything(false, true, true), "Completion fixture baseline save refused"); }
                 level.entityManager.permanentStorage.flush(true); level.getChunkSource().chunkMap.worker.synchronize(true).join();
+                if (checkpointedVeto) { installVeto(); }
                 preview = EscrowRuntime.of(server).settlement().preview(server, selected, choice(), ACTOR, "Server"); step = 4;
             }
             case 4 -> {
@@ -148,6 +148,21 @@ final class EscrowSettlementCompletionProbe {
     private EscrowSettlementIntent.Choice choice() {
         return floor ? EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE
                 : abandon ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT;
+    }
+    private void held() {
+        EscrowTags.require(!data.ledger().records().isEmpty() && data.ledger().tombstones().isEmpty(), "Veto permitted retirement");
+        var intent = EscrowSettlementIntent.decode(data.ledger().records().get(0).settlement());
+        var reason = EscrowRuntime.of(server).settlementRecovery().view(intent).reason();
+        String expected = recovery && !floor && !checkpointedVeto ? "Frozen settlement endpoint changed" : "BARRIER_VETO";
+        EscrowTags.require(expected.equals(reason), "Unexpected settlement hold reason: " + reason + "; expected " + expected);
+        EscrowTags.require(intent.ids().size() == (chain ? 2 : 1) && intent.ids().stream().allMatch(id ->
+                data.ledger().records().stream().anyMatch(op -> op.id().equals(id) && !op.settlement().isEmpty())), "Hold lost frozen members");
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_VETO cut={} reason={} records={} checkpointed={} recovery={}",
+                cut, reason, data.ledger().records().size(), checkpointedVeto, recovery);
+        if (recovery) {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT cut={} state=HELD records={} locked=true", cut, data.ledger().records().size());
+            done = true;
+        } else { pause("O_VETO"); }
     }
     private EscrowNativeBinding.Admission operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch) {
         return operation(fixture, sequence, epoch, data.ledger());

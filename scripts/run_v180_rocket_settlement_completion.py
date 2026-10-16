@@ -20,7 +20,8 @@ CHOICES = ("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMA
 CASES = tuple("SR_" + choice + "__" + boundary for choice in CHOICES for boundary in (
     *(f"O2_{side}_{index}" for index in range(3 if choice.startswith("CHAIN") else 2) for side in ("BEFORE", "AFTER")),
     "O3_BEFORE", "O3_AFTER", *(("O3J_BEFORE", "O3J_AFTER") if choice == "FLOOR" else ("O3J_AFTER",)),
-    "O4_BEFORE", "O4_AFTER", "VETO", *(("O_BIND_BEFORE", "O_BIND_AFTER") if choice == "NORMALIZE" else ()) ))
+    "O4_BEFORE", "O4_AFTER", "VETO", *(("VETO_CHECKPOINTED",) if choice != "FLOOR" else ()),
+    *(("O_BIND_BEFORE", "O_BIND_AFTER") if choice == "NORMALIZE" else ()) ))
 JOURNAL = "advancedrocketrycommunity_rocket_transfers.dat"
 
 
@@ -49,10 +50,26 @@ def journal(world: Path) -> dict:
     return data
 
 
+def inspect_hold(lines: list[str], cut: str, restart: int) -> str:
+    """Require the actual published recovery diagnostic, not just a generic HELD result."""
+    choice, boundary = cut[3:].split("__")
+    checkpointed = boundary == "VETO_CHECKPOINTED"
+    expected = "Frozen settlement endpoint changed" if restart and choice != "FLOOR" and not checkpointed else "BARRIER_VETO"
+    pattern = re.compile(r"ARCE_RELEASE_SETTLEMENT_VETO cut=" + re.escape(cut)
+                         + r" reason=(.*?) records=(\d+) checkpointed=(true|false) recovery=(true|false)")
+    observed = [match.groups() for line in lines if (match := pattern.search(line))]
+    wanted = (expected, str(2 if choice.startswith("CHAIN") else 1), str(checkpointed).lower(), str(bool(restart)).lower())
+    if observed != [wanted] or not any("ARCE_ESCROW_SETTLEMENT_HELD" in line
+                                    and f"reason={expected} records=retained" in line for line in lines):
+        raise smoke.SmokeError(f"Wrong or missing actual settlement hold reason: expected {wanted}, observed {observed}")
+    return expected
+
+
 def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
     choice, boundary = cut[3:].split("__")
     count = 2 if choice.startswith("CHAIN") else 1
-    floor, veto = choice == "FLOOR", boundary == "VETO"
+    floor, veto = choice == "FLOOR", boundary in ("VETO", "VETO_CHECKPOINTED")
+    stale_source = boundary == "VETO"
     released = restarted and not veto or boundary == "O4_AFTER"
     installed = released or boundary in ("O3_AFTER", "O3J_BEFORE", "O3J_AFTER", "O4_BEFORE")
     root = ledger(world / "data" / LEDGER)
@@ -99,9 +116,9 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
     if rockets:
         rocket = rockets[0]; wrapper = rocket["RocketEntityData"]
         section = wrapper["resource_escrow"]
-        expected_fuel = (2_000 if restarted else 0) if choice == "NORMALIZE" else count * 1000
-        expected_epoch = (2 if restarted else 0) if choice == "NORMALIZE" else count
-        binding_matches = section.get("ledger_id") == root["ledger_id"] or (choice == "NORMALIZE" and not restarted
+        expected_fuel = (2_000 if restarted and released else 0) if choice == "NORMALIZE" else count * 1000
+        expected_epoch = (2 if restarted and released else 0) if choice == "NORMALIZE" else count
+        binding_matches = section.get("ledger_id") == root["ledger_id"] or (choice == "NORMALIZE" and not (restarted and released)
                 and not section.get("ledger_id") and section["resource_epoch"] == 0)
         if (wrapper["schema_version"] != 3 or wrapper["flight_data"]["fuel"]["amount"] != expected_fuel
                 or section["resource_epoch"] != expected_epoch or not binding_matches
@@ -115,8 +132,8 @@ def inspect(world: Path, cut: str, *, restarted: bool = False) -> dict:
             raise smoke.SmokeError("Chosen physical identity changed")
     sources = [entry for entry in record(world / "region/r.0.0.mca")["block_entities"]
                if entry.get("ForgeData", {}).get("arce_escrow_fixture")]
-    expected_sources = 0 if floor else count - int(choice.endswith("ABANDON") and not veto)
-    amount = 5000 if veto else 4000
+    expected_sources = 0 if floor else count - int(choice.endswith("ABANDON") and not stale_source)
+    amount = 5000 if stale_source else 4000
     if len(sources) != expected_sources or any(entry["ForgeData"]["arce_escrow_fixture"]["amount"] != amount for entry in sources):
         observed = [(entry.get("x"), entry.get("y"), entry.get("z"), entry["ForgeData"]["arce_escrow_fixture"]["amount"]) for entry in sources]
         raise smoke.SmokeError(f"Source checkpoint mutated quantities or lost an unproved returning source: expected {expected_sources} x {amount}, observed {observed}")
@@ -161,11 +178,13 @@ def run(args) -> dict:
                 row.setdefault("starts", []).append(dict(command=command, free_bytes=free, restart=restart, lock_owner=lock_owner))
                 if restart == 0:
                     process.wait_for(re.compile(r"ARCE_RELEASE_SETTLEMENT_COMPLETION_PAUSED cut=" + cut), args.startup_timeout)
-                    process.process.kill(); process.abort(); process = None
+                    process.process.kill(); process.abort()
+                    if "__VETO" in cut: row["cut_hold_reason"] = inspect_hold(process.lines, cut, restart)
+                    process = None
                     require_lock(args.lock_owner)
                     row["cut_disk"] = inspect(session / ("world-" + cut), cut)
                 else:
-                    state = "HELD" if cut.endswith("__VETO") else "RELEASED"
+                    state = "HELD" if "__VETO" in cut else "RELEASED"
                     process.wait_for(re.compile(r"ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT cut=" + cut + " state=" + state), args.startup_timeout)
                     if state == "HELD":
                         process.process.kill(); process.abort(); code = process.process.returncode
@@ -173,8 +192,11 @@ def run(args) -> dict:
                         process.command("stop"); code = process.finish()
                         if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                             raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")
+                    reason = inspect_hold(process.lines, cut, restart) if state == "HELD" else None
                     process = None; require_lock(args.lock_owner); disk = inspect(session / ("world-" + cut), cut, restarted=True)
-                    row["restarts"].append(dict(restart=restart, exit_code=code, disk=disk))
+                    if state == "HELD" and disk["ledger"]["records"] != row["cut_disk"]["ledger"]["records"]:
+                        raise smoke.SmokeError("Restart altered the retained frozen settlement")
+                    row["restarts"].append(dict(restart=restart, exit_code=code, hold_reason=reason, disk=disk))
             row["status"] = "PASS"; report["cases"].append(row); report.pop("in_progress", None)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
             print(f"{cut}: PASS (forced stop, two restarts)", flush=True)
