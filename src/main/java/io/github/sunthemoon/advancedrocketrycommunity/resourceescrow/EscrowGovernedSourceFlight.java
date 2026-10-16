@@ -41,6 +41,11 @@ public final class EscrowGovernedSourceFlight {
         bindings.entrySet().removeIf(entry -> journal.find(entry.getValue().authority.record().transferId()).isEmpty());
         long levelTime = source.level().getGameTime();
         var binding = bindings.get(record.logicalRocketId());
+        if (binding != null && binding.entity != source && binding.entity.isRemoved()) {
+            // A loaded replacement must prove complete E again. Keep no clock or native observation
+            // from its old entity instance; a second still-live instance remains a conflict.
+            bindings.remove(record.logicalRocketId()); binding = null;
+        }
         if (binding != null && !binding.sameNative(source)) { return Result.HELD; }
         if (binding == null || !binding.valid(source, boundary)) {
             var observed = EscrowNativeEnvelope.rocket(source);

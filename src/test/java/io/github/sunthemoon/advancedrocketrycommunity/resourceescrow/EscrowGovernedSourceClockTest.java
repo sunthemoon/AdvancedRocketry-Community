@@ -25,8 +25,9 @@ class EscrowGovernedSourceClockTest {
             observed.put("pos", GovernedTransferFixture.vector(8.5, y, 8.5));
             var before = observed.copy(); var clock = EscrowGovernedSourceClock.resume(record, observed, 0);
             long expected = state == initial ? 1 : state == ascent ? 1100 : state.stateStartedGameTime();
-            assertEquals(expected, clock.at(0)); assertEquals(expected + 20, clock.at(20));
+            assertEquals(expected, clock.at(0));
             assertTrue(EscrowGovernedSourceRecovery.sourceMatches(record, observed, clock.at(0)));
+            assertEquals(expected + 20, clock.at(20));
             assertEquals(before, observed); assertEquals(fixture.record(), record);
             // A second process starts with no first-session clock and proves the same persisted envelope again.
             assertEquals(expected, EscrowGovernedSourceClock.resume(record, observed, 0).at(0));
@@ -37,6 +38,7 @@ class EscrowGovernedSourceClockTest {
         var fixture = GovernedTransferFixture.create();
         var clock = EscrowGovernedSourceClock.resume(fixture.record(), fixture.source(), 200);
         assertEquals(200, clock.at(200)); assertEquals(340, clock.at(340));
+        assertThrows(IllegalArgumentException.class, () -> clock.at(339));
         assertThrows(IllegalArgumentException.class, () -> clock.at(199));
         assertThrows(IllegalArgumentException.class, () -> EscrowGovernedSourceClock.resume(fixture.record(), fixture.source(), -1));
     }

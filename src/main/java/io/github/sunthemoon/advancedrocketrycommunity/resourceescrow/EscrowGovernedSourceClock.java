@@ -11,9 +11,10 @@ import net.minecraft.nbt.Tag;
 final class EscrowGovernedSourceClock {
     private final long levelBase;
     private final long phaseBase;
+    private long lastLevelTime;
 
     private EscrowGovernedSourceClock(long levelBase, long phaseBase) {
-        this.levelBase = levelBase; this.phaseBase = phaseBase;
+        this.levelBase = levelBase; this.phaseBase = phaseBase; lastLevelTime = levelBase;
     }
 
     /** Called only after checked ARMED/PREPARED authority and the loaded candidate boundary. */
@@ -41,7 +42,9 @@ final class EscrowGovernedSourceClock {
     }
 
     long at(long levelTime) {
-        EscrowTags.require(levelTime >= levelBase, "Loaded Level clock moved backwards during flight");
-        return Math.addExact(phaseBase, levelTime - levelBase);
+        EscrowTags.require(levelTime >= lastLevelTime, "Loaded Level clock moved backwards during flight");
+        long phaseTime = Math.addExact(phaseBase, levelTime - levelBase);
+        lastLevelTime = levelTime;
+        return phaseTime;
     }
 }

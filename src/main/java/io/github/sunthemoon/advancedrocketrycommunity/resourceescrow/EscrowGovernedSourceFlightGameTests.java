@@ -117,10 +117,13 @@ public final class EscrowGovernedSourceFlightGameTests {
                                 flight.plan().orElseThrow(), flight.passengers(), flight.currentBody(), flight.currentDimension(),
                                 flight.currentOrigin(), flight.stateStartedGameTime() + 10_000, null, flight.currentTarget().orElseThrow());
                         saved.getCompound("RocketEntityData").put("flight_data", io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketFlightNbtCodec.encode(future));
-                        // Simulate a fresh runtime observing an entity store newer than the Level clock.
-                        // This is a reload integration test, not a native forced-stop claim.
-                        EscrowRuntime.of(level.getServer()).sourceFlights().clear();
+                        // Reload another entity instance without clearing the service. Its saved phase
+                        // is newer than the Level clock; the old live-instance cache must not survive.
+                        rocket.discard();
+                        rocket = io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities.ROCKET.get().create(level);
+                        helper.assertTrue(rocket != null, "Reloaded source fixture could not be created");
                         rocket.load(saved);
+                        helper.assertTrue(level.addFreshEntity(rocket), "Reloaded source was not published");
                         helper.assertTrue(rocket.flightData().orElseThrow().stateStartedGameTime() > level.getGameTime(),
                                 "Restored clock fixture did not precede its source timestamp");
                         io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.onRocketJoined(rocket);
