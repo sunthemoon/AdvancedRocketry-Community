@@ -38,6 +38,7 @@ final class EscrowReconciliationProbe {
 
     void checkpoint(String name) {
         if (recovery || done || paused.get()) { return; }
+        if (cut.equals("CR_STALE_BIND") && name.equals("C7_ACKNOWLEDGED")) { assertStaleBindingRefused(); }
         if (name.equals("C4_SOURCE_SELECTED")) { selected = "SOURCE"; }
         if (name.equals("C4_DESTINATION_SELECTED")) { selected = "DESTINATION"; }
         if (l1Writing && (cut.equals("CR_L1_BEFORE") && name.equals("K1") || cut.equals("CR_L1_REPLACED") && name.equals("K2"))
@@ -89,12 +90,13 @@ final class EscrowReconciliationProbe {
                     && rocket.flightData().orElseThrow().fuel().totalAmount() == 1_000) {
                 prepare(second, true); secondPrepared = true;
             }
-            if (cut.equals("CR_C2_MISMATCH") && data.ledger().records().stream().anyMatch(op -> op.reason() == EscrowReason.OTHER_STATE)
+            if (mismatch() && data.ledger().records().stream().anyMatch(op -> op.reason() == EscrowReason.OTHER_STATE)
                     && coordinator.writerIdle()) { pause(); }
         }
     }
 
     private boolean chain() { return cut.equals("CR_LATER_WAIT") || cut.equals("CR_STALE_BIND") || cut.equals("CR_LATER_L2_REPLACED"); }
+    private boolean mismatch() { return cut.equals("CR_C2_MISMATCH") || cut.equals("CR_C2_DESTINATION_MISMATCH"); }
 
     void beforeReconciliation() {
         if (!recovery) { return; }
@@ -106,24 +108,14 @@ final class EscrowReconciliationProbe {
     }
 
     private void prepare(BlockEntity from, boolean later) {
-        var coordinator = data.bind(server); var logical = rocket.assemblyTransactionId().orElseThrow();
+        var coordinator = data.bind(server); var operation = operation(from);
         var sourceState = EscrowTestEndpoints.state(from.getPersistentData(), data.ledger().id(), false);
-        var fuel = rocket.flightData().orElseThrow().fuel();
-        var after = fuel.withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, fuel.amount() + 1_000);
-        var destination = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, rocket.level().dimension().location().toString(), rocket.getUUID(), logical,
-                EscrowAdapterIds.ROCKET, rocket.chunkPosition().x, 0, rocket.chunkPosition().z, EscrowEndpoint.Unit.PRIMARY,
-                rocket.escrowSection().epoch(), fuel.resourceSignature(), after.resourceSignature());
-        var payload = new CompoundTag(); payload.putString("FluidName", "minecraft:water"); payload.putInt("Amount", 1_000);
-        var guard = RocketTransferSavedData.get(server).acknowledgedGuard(logical).orElseThrow();
-        var operation = new EscrowOperation(UUID.randomUUID(), coordinator.nextSequence(), rocket.ownerId().orElseThrow(), server.overworld().getGameTime(),
-                EscrowOperation.Phase.PREPARED, EscrowReason.NONE, payload, RocketNativeResources.signature(payload), reference(from), destination,
-                new EscrowGuard(logical, null, Math.max(1, guard.sequence()), guard.rootDigest()));
         if (recovery && cut.equals("CR_STALE_BIND")) {
             EscrowTags.require(sourceState.markers().isEmpty() && rocket.escrowSection().markers().isEmpty(), "C0 incorporated stale retired markers");
             AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_RECONCILIATION_BIND sequence={} markers=0", operation.sequence());
         }
         l1Writing = true;
-        coordinator.prepareNativeTest(operation, rocket, from, committed -> {
+        java.util.function.Consumer<Boolean> acknowledged = committed -> {
             EscrowTags.require(committed, "Native C1 preparation failed"); l1Writing = false;
             if (!later) {
                 firstAcknowledged = true;
@@ -132,7 +124,40 @@ final class EscrowReconciliationProbe {
                     source.getPersistentData().putString("c37_capture_fault", "changed after L1");
                 }
             }
-        });
+        };
+        if (cut.equals("CR_C2_DESTINATION_MISMATCH")) {
+            // Deliberately inconsistent section commitment; canonical C0 remains valid, real C2 must refuse.
+            var admission = EscrowNativeBinding.captureCurrentTest(operation, rocket, from, data.ledger());
+            var encoded = EscrowCodec.operation(admission.operation());
+            EscrowFlightTables.digest(encoded.getCompound("native_binding"), "before_wrapper", RocketNativeResources.hash("C40 destination fault"));
+            coordinator.registerReconciliationTestSource(server, operation.source());
+            coordinator.prepareTest(EscrowCodec.operation(encoded), acknowledged);
+        } else { coordinator.prepareNativeTest(operation, rocket, from, acknowledged); }
+    }
+
+    private EscrowOperation operation(BlockEntity from) {
+        var coordinator = data.bind(server); var logical = rocket.assemblyTransactionId().orElseThrow();
+        var fuel = rocket.flightData().orElseThrow().fuel();
+        var after = fuel.withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, fuel.amount() + 1_000);
+        var destination = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, rocket.level().dimension().location().toString(), rocket.getUUID(), logical,
+                EscrowAdapterIds.ROCKET, rocket.chunkPosition().x, 0, rocket.chunkPosition().z, EscrowEndpoint.Unit.PRIMARY,
+                rocket.escrowSection().epoch(), fuel.resourceSignature(), after.resourceSignature());
+        var payload = new CompoundTag(); payload.putString("FluidName", "minecraft:water"); payload.putInt("Amount", 1_000);
+        var guard = RocketTransferSavedData.get(server).acknowledgedGuard(logical).orElseThrow();
+        return new EscrowOperation(UUID.randomUUID(), coordinator.nextSequence(), rocket.ownerId().orElseThrow(), server.overworld().getGameTime(),
+                EscrowOperation.Phase.PREPARED, EscrowReason.NONE, payload, RocketNativeResources.signature(payload), reference(from), destination,
+                new EscrowGuard(logical, null, Math.max(1, guard.sequence()), guard.rootDigest()));
+    }
+
+    private void assertStaleBindingRefused() {
+        EscrowTags.require(!rocket.escrowSection().markers().isEmpty(), "Stale-binding cut lost its unpruned marker");
+        try { EscrowNativeBinding.captureCurrentTest(operation(second), rocket, second, data.ledger()); }
+        catch (IllegalArgumentException refused) {
+            EscrowTags.require("C0 waits for stale marker pruning".equals(refused.getMessage()), "Wrong stale-binding refusal");
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_RECONCILIATION_STALE_REFUSED markers={}", rocket.escrowSection().markers().size());
+            return;
+        }
+        throw new IllegalStateException("Native binding accepted an unpruned retired marker");
     }
 
     private EscrowEndpoint reference(BlockEntity from) {
@@ -154,11 +179,11 @@ final class EscrowReconciliationProbe {
         }
         for (var op : data.ledger().records()) { coordinator.registerReconciliationTestSource(server, op.source()); }
         if (cut.equals("CR_STALE_BIND") && data.ledger().issuedThrough() == 1 && data.ledger().records().isEmpty()
-                && coordinator.writerIdle() && !secondPrepared) {
-            EscrowReconciliationPruning.observe(rocket); prepare(second, true); secondPrepared = true;
+                && coordinator.writerIdle() && !secondPrepared && rocket.escrowSection().markers().isEmpty()) {
+            prepare(second, true); secondPrepared = true;
         }
         coordinator.commitPreparations();
-        boolean before = cut.equals("CR_C0") || cut.equals("CR_L1_BEFORE"), repair = cut.equals("CR_C2_MISMATCH");
+        boolean before = cut.equals("CR_C0") || cut.equals("CR_L1_BEFORE"), repair = mismatch();
         if (!coordinator.writerIdle() || server.getTickCount() - began < 100 || !repair && !data.ledger().records().isEmpty()) { return; }
         long amount = before || repair ? 0 : chain() ? 2_000 : 1_000;
         EscrowTags.require(rocket.flightData().orElseThrow().fuel().totalAmount() == amount

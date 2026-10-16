@@ -22,7 +22,7 @@ class ReconciliationRunnerTest(unittest.TestCase):
         return root, [source], rocket
 
     def test_all_declared_cuts_are_unique_and_both_stores_have_every_boundary(self):
-        self.assertEqual(32, len(runner.CASES))
+        self.assertEqual(33, len(runner.CASES))
         self.assertEqual(len(runner.CASES), len(set(runner.CASES)))
         for endpoint in ("SOURCE", "DESTINATION"):
             for stage in ("STORE", "FORCE", "READBACK"):
@@ -56,13 +56,14 @@ class ReconciliationRunnerTest(unittest.TestCase):
         with self.assertRaises(runner.smoke.SmokeError):
             runner.require_state(*bad, "CR_C8_RELEASED", True)
 
-    def test_repair_must_stay_manual_even_when_the_original_endpoint_is_restored(self):
-        sample = self.sample(records=1, amount=0, source_amount=5000)
-        sample[0]["records"] = [dict(phase="REPAIR", reason="OTHER_STATE")]
-        runner.require_state(*sample, "CR_C2_MISMATCH", True)
-        sample[0]["records"][0]["reason"] = "NONE"
-        with self.assertRaises(runner.smoke.SmokeError):
-            runner.require_state(*sample, "CR_C2_MISMATCH", True)
+    def test_source_and_destination_mismatch_require_the_persisted_manual_reason(self):
+        for cut in ("CR_C2_MISMATCH", "CR_C2_DESTINATION_MISMATCH"):
+            sample = self.sample(records=1, amount=0, source_amount=5000)
+            sample[0]["records"] = [dict(phase="REPAIR", reason="OTHER_STATE")]
+            runner.require_state(*sample, cut, True)
+            sample[0]["records"][0]["reason"] = "NONE"
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.require_state(*sample, cut, True)
 
     def test_later_member_and_stale_binding_restarts_finish_exactly_two_fills(self):
         for cut in ("CR_LATER_WAIT", "CR_STALE_BIND", "CR_LATER_L2_REPLACED"):

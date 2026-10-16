@@ -97,20 +97,44 @@ final class EscrowReconciliationDriver {
                 if (views.values().stream().mapToLong(value -> value.bytes).sum() + view.bytes > EscrowLimits.CAPTURE_BYTES) { views.clear(); }
                 views.put(key, view);
             }
-            for (var endpoint : List.of(op.source(), op.destination())) {
-                var end = view.ends.get(endpoint.key()); var chain = chains.get(endpoint.key());
-                int applied = end.state().markers().size();
-                if (applied == chain.size() || !chain.get(applied).operation().equals(op)) { continue; }
-                if (coordinator.frozen(endpoint.key())) { continue; }
-                EscrowReconciliationAction.apply(coordinator, view, op, endpoint.kind() == EscrowEndpoint.Kind.ENTITY);
-                actionApplied = true; changed.add(key); views.remove(key);
-                completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
+            var capturedView = view;
+            var action = applyNext(coordinator, root, op, chains, endpoint -> capturedView.ends.get(endpoint.key()).state(),
+                    endpoint -> capturedView.ends.get(endpoint.key()).envelope(), () -> capturedView.unchanged(coordinator),
+                    (destination, permit) -> EscrowReconciliationAction.apply(capturedView, op, destination, permit));
+            if (action != null) {
+                if (action.reason() == EscrowReason.NONE) { actionApplied = true; changed.add(key); views.remove(key); }
+                completion.accept(action); return;
             }
             checkpoint(server, op, view, completion);
         } catch (EscrowReconciliationView.Refusal refused) {
             completion.accept(new EscrowReconciliationScheduler.Result(refused.reason, false));
         } catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.INVALID_ENDPOINT, false));
+        }
+    }
+
+    /** Driver C2 path, with only native capture/publication supplied by the world adapter. */
+    static EscrowReconciliationScheduler.Result applyNext(EscrowCoordinator coordinator, EscrowLedger root, EscrowOperation op,
+            Map<EscrowEndpoint.Key, List<EscrowPrefix.Link>> chains,
+            java.util.function.Function<EscrowEndpoint, EscrowPrefix.State> states,
+            java.util.function.Function<EscrowEndpoint, net.minecraft.nbt.CompoundTag> captures,
+            java.util.function.BooleanSupplier authority,
+            java.util.function.BiConsumer<Boolean, EscrowReconciliationAction.Permit> publish) {
+        try {
+            for (var endpoint : List.of(op.source(), op.destination())) {
+                var chain = chains.get(endpoint.key()); int applied = states.apply(endpoint).markers().size();
+                if (applied == chain.size() || !chain.get(applied).operation().equals(op) || coordinator.frozen(endpoint.key())) { continue; }
+                boolean destination = endpoint.kind() == EscrowEndpoint.Kind.ENTITY;
+                var permit = EscrowReconciliationAction.issue(root, op, captures.apply(endpoint), destination,
+                        () -> authority.getAsBoolean() && !coordinator.frozen(endpoint.key()) && !coordinator.currentReason(op).manual());
+                publish.accept(destination, permit);
+                return EscrowReconciliationScheduler.Result.deferred();
+            }
+            return null; // No C2 action remains; the caller proceeds to C3, not to release.
+        } catch (EscrowReconciliationView.Refusal refused) {
+            return new EscrowReconciliationScheduler.Result(refused.reason, false);
+        } catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
+            return new EscrowReconciliationScheduler.Result(EscrowReason.INVALID_ENDPOINT, false);
         }
     }
 

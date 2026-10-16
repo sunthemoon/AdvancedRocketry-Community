@@ -183,7 +183,14 @@ class EscrowReconciliationBindingBoundaryTest {
             var attempts = new java.util.concurrent.atomic.AtomicInteger();
             var scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition, (op, records, done) -> {
                 attempts.incrementAndGet();
-                done.accept(new EscrowReconciliationScheduler.Result(EscrowReconciliationValidation.action(root, op, before, after, true), false));
+                var source = source(2, root.id(), true);
+                var sourceState = EscrowTestEndpoints.state(source.getCompound("ForgeData"), root.id(), false);
+                var wrapper = RocketEscrowSection.decode(before.getCompound("wrapper"));
+                var destinationState = new EscrowPrefix.State(root.id(), wrapper.epoch(), b.destination().beforeSignature(), wrapper.markers());
+                done.accept(EscrowReconciliationDriver.applyNext(coordinator, root, op, EscrowPrefix.chains(records),
+                        endpoint -> endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? destinationState : sourceState,
+                        endpoint -> endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? before : source, () -> true,
+                        (destination, permit) -> fail("A mismatching C2 capture must not reach native publication")));
             });
             scheduler.tick(1); scheduler.tick(2_000);
             assertEquals(1, attempts.get()); assertEquals(EscrowReason.OTHER_STATE, coordinator.currentReason(b));

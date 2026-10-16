@@ -22,13 +22,13 @@ CASES = ("CR_C0", "CR_L1_BEFORE", "CR_L1_REPLACED", "CR_L1_ACK",
                                 for stage in ("STORE", "FORCE", "READBACK") for side in ("BEFORE", "AFTER")) + (
          "CR_C6_JOINT_READBACK", "CR_L2_BEFORE", "CR_L2_REPLACED", "CR_C7_ACKNOWLEDGED",
          "CR_C8_PRUNE_BEFORE", "CR_C8_PRUNE_AFTER", "CR_C8_RELEASED", "CR_LATER_WAIT", "CR_STALE_BIND", "CR_C2_MISMATCH",
-         "CR_LATER_L2_REPLACED")
+         "CR_LATER_L2_REPLACED", "CR_C2_DESTINATION_MISMATCH")
 L2 = {"CR_L2_REPLACED", "CR_C7_ACKNOWLEDGED", "CR_C8_PRUNE_BEFORE", "CR_C8_PRUNE_AFTER", "CR_C8_RELEASED", "CR_STALE_BIND"}
 
 
 def require_state(root: dict, sources: list[dict], rocket: dict, cut: str, restarted: bool) -> dict:
     before = cut in ("CR_C0", "CR_L1_BEFORE")
-    repair = cut == "CR_C2_MISMATCH"
+    repair = cut in ("CR_C2_MISMATCH", "CR_C2_DESTINATION_MISMATCH")
     chain = cut in ("CR_LATER_WAIT", "CR_STALE_BIND", "CR_LATER_L2_REPLACED")
     data = rocket["RocketEntityData"]
     flight, wrapper = data["flight_data"], data["resource_escrow"]
@@ -144,6 +144,8 @@ def run(args) -> dict:
                 process = smoke.CapturedProcess(command, session, evidence / f"{cut}-{restart}.log")
                 if restart == 0:
                     process.wait_for(re.compile(r"ARCE_RELEASE_RECONCILIATION_PAUSED cut=" + cut), args.startup_timeout)
+                    if cut == "CR_STALE_BIND" and not any("ARCE_RELEASE_RECONCILIATION_STALE_REFUSED markers=1" in line for line in process.lines):
+                        raise smoke.SmokeError("Native stale-binding refusal was not observed before pruning")
                     process.process.kill(); process.abort()
                     if any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                         raise smoke.SmokeError("Forced-stop start logged ERROR/FATAL")
