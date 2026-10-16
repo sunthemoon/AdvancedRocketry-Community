@@ -24,7 +24,29 @@ final class EscrowGovernedPhaseTracking {
         captures.entrySet().removeIf(entry -> entry.getValue().rocket.isRemoved()
                 || journal.findByLogicalRocket(entry.getValue().rocket.assemblyTransactionId().orElseThrow()).isEmpty());
         if (rocket == null || captures.containsKey(rocket.getUUID())) { return; }
-        reserve(captures, rocket.getUUID(), () -> new Capture(rocket));
+        var arm = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElseThrow()
+                .nativeTransfer().orElseThrow().armed();
+        reserve(captures, rocket.getUUID(), () -> new Capture(rocket, arm));
+    }
+
+    /** The caller has checked F8 terminal authority and acknowledged journal absence. */
+    void completed(EscrowFlightTables.Armed terminal) {
+        for (var physical : java.util.List.of(terminal.source(), terminal.destination())) {
+            var captured = captures.get(physical);
+            if (captured != null && completedCapture(captured.arm, terminal)) { captures.remove(physical, captured); }
+        }
+    }
+
+    static boolean completedCapture(EscrowFlightTables.Armed captured, EscrowFlightTables.Armed terminal) {
+        return terminal.outcome() != EscrowFlightTables.Outcome.ARMED && captured.outcome() == EscrowFlightTables.Outcome.ARMED
+                && captured.ledger().equals(terminal.ledger()) && captured.logical().equals(terminal.logical())
+                && captured.transfer().equals(terminal.transfer()) && captured.serial() == terminal.serial()
+                && captured.source().equals(terminal.source()) && captured.destination().equals(terminal.destination())
+                && captured.owner().equals(terminal.owner()) && captured.epoch() == terminal.epoch()
+                && captured.generation() == terminal.generation() && captured.binding().equals(terminal.binding())
+                && captured.launch().equals(terminal.launch()) && captured.sourceEnvelope().equals(terminal.sourceEnvelope())
+                && captured.destinationEnvelope().equals(terminal.destinationEnvelope()) && captured.journal().equals(terminal.journal())
+                && java.util.Objects.equals(captured.anchor(), terminal.anchor()) && captured.releaseGeneration() == terminal.releaseGeneration();
     }
 
     static <T> void reserve(Map<UUID, T> captures, UUID id, java.util.function.Supplier<T> capture) {
@@ -47,13 +69,14 @@ final class EscrowGovernedPhaseTracking {
     }
     private static final class Capture {
         final RocketEntity rocket;
+        final EscrowFlightTables.Armed arm;
         Object flight;
         final Object snapshot;
         final RocketEscrowSection wrapper;
         final CompoundTag frame;
         boolean changed;
-        Capture(RocketEntity rocket) {
-            this.rocket = rocket; flight = rocket.flightData().orElseThrow(); snapshot = rocket.snapshot().orElseThrow();
+        Capture(RocketEntity rocket, EscrowFlightTables.Armed arm) {
+            this.rocket = rocket; this.arm = arm; flight = rocket.flightData().orElseThrow(); snapshot = rocket.snapshot().orElseThrow();
             wrapper = rocket.escrowSection(); frame = frame(rocket);
         }
         boolean observe(RocketEntity candidate) {

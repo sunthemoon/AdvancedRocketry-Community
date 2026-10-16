@@ -135,6 +135,45 @@ class EscrowGovernedCleanupTest {
         }
     }
 
+    @ParameterizedTest @EnumSource(value = EscrowFlightTables.Outcome.class, names = {"HANDED_OFF", "CANCELLED"})
+    void completedPhaseObservationsRequireExactTerminalAndCheckedAbsence(EscrowFlightTables.Outcome outcome) throws Exception {
+        try (var f = new Fixture(outcome, CheckedSavedDataFile::atomicMove, cut -> { })) {
+            var phases = new EscrowGovernedPhases();
+            var captured = f.record.nativeTransfer().orElseThrow().armed();
+            assertTrue(EscrowGovernedPhaseTracking.completedCapture(captured, f.arm));
+            assertFalse(EscrowGovernedPhaseTracking.completedCapture(captured, captured));
+            assertFalse(EscrowGovernedPhaseTracking.completedCapture(f.arm, f.arm));
+            assertFalse(phases.releaseCompleted(f.coordinator, f.journal, f.arm));
+            assertTrue(EscrowGovernedCleanup.remove(f.coordinator, f.journal, f.record, () -> true));
+            assertFalse(phases.releaseCompleted(f.coordinator, f.journal, f.arm));
+            f.acknowledge();
+            assertFalse(phases.releaseCompleted(f.coordinator, f.journal, captured));
+            assertTrue(phases.releaseCompleted(f.coordinator, f.journal, f.arm));
+            f.journal.put(f.record);
+            assertFalse(phases.releaseCompleted(f.coordinator, f.journal, f.arm));
+            for (String field : List.of("ledger", "o", "src", "t", "d")) {
+                var changed = f.arm.encode(); changed.putUUID(field, GovernedTransferFixture.id(999));
+                assertFalse(EscrowGovernedPhaseTracking.completedCapture(captured, EscrowFlightTables.Armed.decode(changed)), field);
+            }
+            for (String field : List.of("epoch", "serial", "g")) {
+                var changed = f.arm.encode(); changed.putLong(field, changed.getLong(field) + 1);
+                assertFalse(EscrowGovernedPhaseTracking.completedCapture(captured, EscrowFlightTables.Armed.decode(changed)), field);
+            }
+            for (String field : List.of("binding", "launch", "source", "dest")) {
+                var changed = f.arm.encode(); var digest = changed.getByteArray(field); digest[0] ^= 1; changed.putByteArray(field, digest);
+                assertFalse(EscrowGovernedPhaseTracking.completedCapture(captured, EscrowFlightTables.Armed.decode(changed)), field);
+            }
+            var logicalChanged = f.arm.encode(); logicalChanged.putUUID("l", GovernedTransferFixture.id(999));
+            logicalChanged.getCompound("j").putUUID("rocket_id", GovernedTransferFixture.id(999));
+            assertFalse(EscrowGovernedPhaseTracking.completedCapture(captured, EscrowFlightTables.Armed.decode(logicalChanged)));
+            var guardChanged = f.arm.encode(); var digest = guardChanged.getCompound("j").getByteArray("journal_digest"); digest[0] ^= 1;
+            guardChanged.getCompound("j").putByteArray("journal_digest", digest);
+            assertFalse(EscrowGovernedPhaseTracking.completedCapture(captured, EscrowFlightTables.Armed.decode(guardChanged)));
+            var changed = f.arm.encode(); changed.putUUID("a", GovernedTransferFixture.id(999)); changed.putLong("release", 1);
+            assertFalse(EscrowGovernedPhaseTracking.completedCapture(captured, EscrowFlightTables.Armed.decode(changed)));
+        }
+    }
+
     private final class Fixture implements AutoCloseable {
         final RocketTransferRecord record;
         final EscrowFlightTables.Armed arm;
