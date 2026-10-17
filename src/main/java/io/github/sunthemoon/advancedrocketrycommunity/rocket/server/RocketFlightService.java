@@ -625,6 +625,17 @@ final class RocketFlightService {
         return transfers.releaseLandedReservation(rocket);
     }
 
+    io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode beginLandedDisassembly(
+            RocketEntity rocket, java.util.function.Supplier<Optional<
+                    io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode>> preflight,
+            RocketLandedDisassemblies.Request request) {
+        return transfers.beginLandedDisassembly(rocket, preflight, request);
+    }
+
+    boolean landedDisassemblyPending(RocketEntity rocket) {
+        return transfers.landedDisassemblyPending(rocket);
+    }
+
     boolean resourceMutationAllowed(RocketEntity rocket) {
         return transfers.resourceMutationAllowed(rocket);
     }

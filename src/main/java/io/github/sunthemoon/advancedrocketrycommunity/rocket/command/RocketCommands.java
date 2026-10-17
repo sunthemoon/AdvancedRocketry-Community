@@ -103,11 +103,17 @@ public final class RocketCommands {
                                     .executes(this::reportFlight)))
                     .then(Commands.literal("disassemble")
                             .then(Commands.argument(ROCKET_ARGUMENT, EntityArgument.entity())
-                                    .executes(context -> disassembleFlight(context, -1L))
+                                    .executes(context -> disassembleFlight(context, -1L, false))
+                                    .then(Commands.literal("obstruct")
+                                            .executes(context -> disassembleFlight(context, -1L, true)))
                                     .then(Commands.literal("discard-fuel")
                                             .then(Commands.argument("expected-units", LongArgumentType.longArg(0L))
                                                     .executes(context -> disassembleFlight(context,
-                                                            LongArgumentType.getLong(context, "expected-units"))))))));
+                                                            LongArgumentType.getLong(context, "expected-units"), false))
+                                                    .then(Commands.literal("obstruct")
+                                                            .executes(context -> disassembleFlight(context,
+                                                                    LongArgumentType.getLong(context, "expected-units"),
+                                                                    true))))))));
         }
         event.getDispatcher().register(Commands.literal("arce").then(root));
         RocketDisassemblyCommands.register(event.getDispatcher(), rockets);
@@ -397,10 +403,26 @@ public final class RocketCommands {
         return 1;
     }
 
-    private int disassembleFlight(CommandContext<CommandSourceStack> context, long expectedDiscardFuel)
+    /**
+     * W85 K4: {@code obstruct} places one stone block in the footprint right after a landed request answers
+     * DISASSEMBLY_PENDING, so the restoration fails without mutation and the identical record is written back.
+     */
+    private int disassembleFlight(CommandContext<CommandSourceStack> context, long expectedDiscardFuel, boolean obstruct)
             throws CommandSyntaxException {
         RocketEntity rocket = releaseTestRocket(context);
+        var footprint = rocket.snapshot().orElseThrow();
         RocketValidationCode code = rockets.disassembleForReleaseTest(rocket, expectedDiscardFuel);
+        if (code == RocketValidationCode.DISASSEMBLY_PENDING) {
+            if (obstruct) {
+                var at = footprint.sourceOrigin().add(footprint.blocks().get(0).position());
+                context.getSource().getLevel().setBlockAndUpdate(new net.minecraft.core.BlockPos(at.x(), at.y(), at.z()),
+                        net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST_DISASSEMBLY_OBSTRUCTED entity={} at={},{},{}",
+                        rocket.getUUID(), at.x(), at.y(), at.z());
+            }
+            context.getSource().sendSuccess(() -> Component.literal("Release-test disassembly pending"), false);
+            return 1;
+        }
         if (code != RocketValidationCode.SUCCESS) {
             context.getSource().sendFailure(Component.literal(
                     "Release-test disassembly failed: " + code

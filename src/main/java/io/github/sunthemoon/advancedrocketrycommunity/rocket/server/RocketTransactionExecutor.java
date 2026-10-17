@@ -70,6 +70,17 @@ final class RocketTransactionExecutor {
                 .execute(UUID.randomUUID(), rocket.getUUID(), snapshot);
     }
 
+    /** W85 M0: the disassembly's read-only preflight on the live level, without the ledger, the lock or the probe. */
+    java.util.Optional<io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue> preflightDisassembly(
+            ServerLevel level,
+            UUID ownerId,
+            RocketEntity rocket,
+            RocketStructureSnapshot snapshot
+    ) {
+        return RocketDisassemblyTransaction.preflight(new ServerLevelRocketTransactionWorld(level, adapters, ownerId),
+                rocket.getUUID(), snapshot);
+    }
+
     boolean hasPendingRecovery(
             RocketTransactionSavedData savedData,
             RocketStructureSnapshot snapshot
