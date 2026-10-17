@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import gzip
 import json
 from pathlib import Path
@@ -14,7 +15,7 @@ import uuid
 import run_dedicated_server_smoke as smoke
 from run_v060_flight_server_smoke import _server_command
 from run_v180_escrow_forced_stop import digest, ledger, record, LEDGER
-from run_v180_rocket_settlement_completion import require_lock, JOURNAL
+from run_v180_rocket_settlement_completion import require_lock, slot_present, JOURNAL
 from inspect_celestial_saved_data import NbtReader
 
 CASES = ("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK", "PF_GOVERNED_T_ACK",
@@ -57,6 +58,8 @@ def crewed_cancellation(cut: str, crewed: bool) -> bool:
 
 
 def recovery_outcome(cut: str, crewed: bool) -> str:
+    if governed_transfer(cut):
+        return "RESUMED"
     if crewed_cancellation(cut, crewed):
         return "CANCELLED_CLEANED"
     return "UNARMED" if cut == "PF_ARM_BEFORE" else "ARMED" if has_transfer(cut) else "CANCELLED"
@@ -67,9 +70,55 @@ def require_unchanged_source(disk: dict, before: dict) -> None:
         raise smoke.SmokeError("Restart changed checkpointed E")
 
 
-def inspect(world: Path, cut: str, restarted: bool, crewed: bool = False) -> dict:
+def source_projection(source: dict) -> dict:
+    return {key: source.get(key) for key in ("UUID", "id", "RocketEntityData", "Pos", "Motion",
+                                           "Rotation", "NoGravity", "OnGround", "Invulnerable")}
+
+
+def require_resumed(root: dict, transfers: list, sources: list, destinations: list, before: dict) -> dict:
+    # Import lazily: the established F5/arrival oracles themselves import this runner's journal reader.
+    from run_v180_escrow_arrival import require_state as require_landed
+    if len(transfers) != 1 or sources or len(destinations) != 1:
+        raise smoke.SmokeError("Resumed pre-F2 cut lost T or has a missing/duplicate endpoint")
+    transfer = transfers[0]; original = before["journal"][0]; source = before["source"]
+    if (root["ledger_id"] != before["ledger"]["ledger_id"]
+            or root["armed_flights"] != before["ledger"]["armed_flights"]):
+        raise smoke.SmokeError("Resumed pre-F2 cut changed its exact arm or ledger")
+    immutable = lambda value: {key: item for key, item in value.items()
+                               if key not in ("phase", "checksum", "destination_entity_id")}
+    if immutable(transfer) != immutable(original):
+        raise smoke.SmokeError("Resumed pre-F2 cut changed T or a frozen source invariant")
+    data = source["RocketEntityData"]
+    if (transfer["source_entity_id"] != source["UUID"] or transfer["logical_rocket_id"] != data["assembly_transaction_id"]
+            or transfer["owner_id"] != data["owner_id"] or transfer["source_snapshot"] != data["snapshot"]
+            or transfer["source_flight"]["fuel"] != data["flight_data"]["fuel"]
+            or transfer["source_flight"]["passengers"] != data["flight_data"]["passengers"]):
+        raise smoke.SmokeError("Resumed pre-F2 cut changed the checkpoint source invariant")
+    # Keeps the exact F5 arm/serial/phase, credit/debit, manifest, wrapper and arrival-clock/pose assertions.
+    destination = destinations[0]
+    require_landed(root, transfer, None, destination, "FD_LANDED", True)
+    expected_data = copy.deepcopy(data)
+    expected_data.update(snapshot=transfer["destination_snapshot"], flight_data=destination["RocketEntityData"]["flight_data"],
+                         resource_escrow=dict(schema_version=1, ledger_id=root["ledger_id"], resource_epoch=0, markers=[]))
+    if (destination["RocketEntityData"] != expected_data
+            or any(destination.get(key) != source.get(key)
+                   for key in ("id", "Rotation", "NoGravity", "OnGround", "Invulnerable"))):
+        raise smoke.SmokeError("Resumed pre-F2 cut changed its complete survivor projection")
+    return source_projection(destination)
+
+
+def inspect(world: Path, cut: str, restarted: bool, crewed: bool = False, resumed_from: dict | None = None) -> dict:
     root = ledger(world / "data" / LEDGER)
     transfers = journal(world)["transfers"]
+    if restarted and governed_transfer(cut):
+        if resumed_from is None:
+            raise smoke.SmokeError("Resumed pre-F2 oracle requires its forced-stop checkpoint")
+        path = world / "entities/r.0.0.mca"
+        sources = [entry for entry in record(path)["Entities"] if "RocketEntityData" in entry] if slot_present(path, 132) else []
+        destinations = [entry for entry in record(path, 133)["Entities"] if "RocketEntityData" in entry] if slot_present(path, 133) else []
+        survivor = require_resumed(root, transfers, sources, destinations, resumed_from)
+        return dict(ledger=root, journal=transfers, survivor=survivor,
+                    files={name: digest(world / name) for name in ("data/" + LEDGER, "data/" + JOURNAL, "entities/r.0.0.mca")})
     entities = record(world / "entities/r.0.0.mca")["Entities"]
     rockets = [entry for entry in entities if "RocketEntityData" in entry]
     if len(rockets) != 1:
@@ -101,8 +150,7 @@ def inspect(world: Path, cut: str, restarted: bool, crewed: bool = False) -> dic
     if governed_transfer(cut):
         require_governed_record(transfers[0], arms[0])
     # Excludes unrelated vanilla timers; includes every persisted field of the fixed source adapter.
-    projection = {key: source.get(key) for key in ("UUID", "id", "RocketEntityData", "Pos", "Motion",
-                                                  "Rotation", "NoGravity", "OnGround", "Invulnerable")}
+    projection = source_projection(source)
     return dict(ledger=root, journal=transfers, source=projection,
                 files={name: digest(world / name) for name in ("data/" + LEDGER, "data/" + JOURNAL, "entities/r.0.0.mca")})
 
@@ -150,10 +198,10 @@ def run(args) -> dict:
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"))
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowCase=" + cut)
+                if governed_transfer(cut) or crewed_cancellation(cut, args.crewed):
+                    command.insert(1, "-Dadvancedrocketrycommunity.escrowPreF2Restart=" + str(restart))
                 if args.crewed:
                     command.insert(1, "-Dadvancedrocketrycommunity.escrowCrewed=true")
-                    if crewed_cancellation(cut, True):
-                        command.insert(1, "-Dadvancedrocketrycommunity.escrowPreF2Restart=" + str(restart))
                 row.setdefault("starts", []).append(dict(restart=restart, command=command, free_bytes=free, lock_owner=args.lock_owner))
                 process = smoke.CapturedProcess(command, session, evidence / f"{cut}-{restart}.log")
                 if restart == 0:
@@ -169,12 +217,20 @@ def run(args) -> dict:
                         cancellations = [line for line in process.lines if "ARCE_RELEASE_PRE_F2_CANCELLED cut=" + cut + " " in line]
                         if len(cancellations) != 1 or "serial=1 issued=1 outcome=CANCELLED digest=" not in cancellations[0]:
                             raise smoke.SmokeError("Crewed first recovery lacks its exact acknowledged CANCELLED outcome")
+                    if governed_transfer(cut):
+                        countdowns = [line for line in process.lines if "ARCE_RELEASE_PRE_F2_COUNTDOWN cut=" + cut + " " in line]
+                        if len(countdowns) != int(restart == 1):
+                            raise smoke.SmokeError("Governed recovery missed COUNTDOWN or replayed it on the second restart")
                     process.command("stop"); code = process.finish()
                     if code or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                         raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")
                     process = None
-                    disk = inspect(session / ("world-" + cut), cut, True, args.crewed)
-                    require_unchanged_source(disk, row["cut_disk"])
+                    disk = inspect(session / ("world-" + cut), cut, True, args.crewed, row["cut_disk"] if governed_transfer(cut) else None)
+                    if governed_transfer(cut):
+                        if restart == 2 and disk["survivor"] != row["restarts"][0]["disk"]["survivor"]:
+                            raise smoke.SmokeError("Second restart changed the complete landed survivor")
+                    else:
+                        require_unchanged_source(disk, row["cut_disk"])
                     row["restarts"].append(dict(restart=restart, exit_code=code, disk=disk))
             row["status"] = "PASS"; report["cases"].append(row); report.pop("in_progress", None)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

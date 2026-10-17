@@ -34,6 +34,9 @@ final class EscrowPreF2Probe {
     private int step;
     private String cancelledSource;
     private boolean observedPrune;
+    private boolean observedCountdown;
+    private RocketTransferRecord recoveredTransfer;
+    private CompoundTag landedEnvelope;
 
     EscrowPreF2Probe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
@@ -42,11 +45,13 @@ final class EscrowPreF2Probe {
                 "PF_LIVE_F2_ACK", "PF_LIVE_COUNTDOWN").contains(cut), "Unknown pre-F2 cut");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
         restart = Integer.getInteger("advancedrocketrycommunity.escrowPreF2Restart", 0);
-        EscrowTags.require(!recovery || !crewedCancellation() || restart == 1 || restart == 2,
-                "Crewed pre-F2 recovery requires an explicit first or second restart");
+        EscrowTags.require(!recovery || !(crewedCancellation() || governedTransfer()) || restart == 1 || restart == 2,
+                "Pre-F2 recovery requires an explicit first or second restart");
     }
 
     void checkpoint(String name) {
+        EscrowTags.require(!recovery || !governedTransfer() || !name.equals("F1_CANCELLED"),
+                "Pre-F2 cancellation acted while governed T exists");
         if (recovery && crewedCancellation() && !done) {
             if (name.equals("F1_CANCELLED")) { observeCancelled(); }
             if (name.equals("F8_PRUNE_ACK")) {
@@ -79,6 +84,7 @@ final class EscrowPreF2Probe {
         var journal = RocketTransferSavedData.get(server);
         if (recovery && crewedCancellation() && restart == 2) { requireCleanedRoot(journal); }
         if (!journal.retryChecked(server)) { return; }
+        if (recovery && governedTransfer()) { recoverGoverned(journal); return; }
         if (recovery) {
             var rockets = level.getEntitiesOfClass(RocketEntity.class, new net.minecraft.world.phys.AABB(POSITION).inflate(8));
             if (rockets.isEmpty()) { return; }
@@ -97,11 +103,6 @@ final class EscrowPreF2Probe {
                     && rocket.flightData().orElseThrow().fuel().committedDebits().isEmpty()
                     && rocket.flightData().orElseThrow().passengers().assignments().size() == 1
                     && rocket.flightData().orElseThrow().state().acceptsFuel() && journal.entries().size() == (hasT ? 1 : 0), "F1 changed fuel, manifest, epoch or journal");
-            if (governedTransfer()) {
-                var record = journal.entries().get(0); var envelope = record.nativeTransfer().orElseThrow();
-                EscrowTags.require(envelope.armed().equals(arms.get(0))
-                        && EscrowGovernedEnvelope.same(envelope.sourceEnvelope(record), EscrowNativeEnvelope.rocket(rocket)), "Restart changed governed T or checkpoint source");
-            }
             AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_PRE_F2_RESULT cut={} outcome={} source={} fuel=1000 epoch=1 manifest=1 debits=0",
                     cut, before ? "UNARMED" : arms.get(0).outcome(), rocket.getUUID()); done = true; return;
         }
@@ -164,6 +165,81 @@ final class EscrowPreF2Probe {
 
     private boolean crewedCancellation() {
         return EscrowCrewedProbe.enabled() && (cut.equals("PF_ARM_REPLACED") || cut.equals("PF_ARM_ACK"));
+    }
+
+    private void recoverGoverned(RocketTransferSavedData journal) {
+        var root = data.ledger(); var arms = root.armedFlights();
+        EscrowTags.require(arms.size() == 1 && root.issuedLaunchSerial() == 1 && root.records().isEmpty()
+                && root.floors().isEmpty() && root.tombstones().isEmpty() && root.rocketAuthorities().isEmpty()
+                && journal.entries().size() == 1, "Governed recovery changed its arm, serial or T count");
+        var arm = arms.get(0); var record = journal.entries().get(0);
+        EscrowTags.require(arm.outcome() == EscrowFlightTables.Outcome.ARMED && arm.serial() == 1
+                && arm.transfer().equals(record.transferId()) && arm.equals(record.nativeTransfer().orElseThrow().armed())
+                && journal.acknowledgedGuard(arm.logical()).orElseThrow().transfer().equals(arm.transfer()),
+                "Governed recovery cancelled or replaced its checked T");
+        if (recoveredTransfer == null) { recoveredTransfer = record; }
+        EscrowTags.require(record.nativeTransfer().equals(recoveredTransfer.nativeTransfer())
+                && record.transferId().equals(recoveredTransfer.transferId())
+                && record.sourceFlightData().equals(recoveredTransfer.sourceFlightData())
+                && record.destinationFlightData().equals(recoveredTransfer.destinationFlightData()), "Governed recovery changed its frozen flight");
+        if (restart == 2) {
+            EscrowTags.require(record.phase() == RocketTransferPhase.COMMITTED, "Second recovery replayed its completed flight");
+        }
+        var candidates = server.overworld().getEntitiesOfClass(RocketEntity.class,
+                new net.minecraft.world.phys.AABB(63, 90, 63, 96, 160, 80));
+        EscrowTags.require(candidates.size() <= 2 && candidates.stream().allMatch(entity ->
+                entity.assemblyTransactionId().filter(arm.logical()::equals).isPresent()
+                        && (entity.getUUID().equals(arm.source()) || entity.getUUID().equals(arm.destination()))),
+                "Governed recovery has a duplicate or foreign rocket");
+        var sources = candidates.stream().filter(entity -> entity.getUUID().equals(arm.source())).toList();
+        var destinations = candidates.stream().filter(entity -> entity.getUUID().equals(arm.destination())).toList();
+        EscrowTags.require(sources.size() <= 1 && destinations.size() <= 1, "Governed recovery duplicated an endpoint");
+        if (!sources.isEmpty()) {
+            var source = sources.get(0); var flight = source.flightData().orElseThrow();
+            EscrowTags.require(restart == 1 && EscrowGovernedPhaseAction.sourceMatches(record,
+                    EscrowGovernedEnvelope.capture(source), source.level().getGameTime()), "Governed recovery changed its complete source progression");
+            if (!observedCountdown && flight.state() == RocketFlightState.COUNTDOWN) {
+                var checkpointDigest = countdownCheckpoint(record, EscrowNativeEnvelope.rocket(source), source.level().getGameTime());
+                observedCountdown = true;
+                AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_PRE_F2_COUNTDOWN cut={} transfer={} serial=1 issued=1 checkpoint_digest={} fuel=1000 epoch=1 manifest=1 debits=0",
+                        cut, record.transferId(), checkpointDigest);
+            }
+        }
+        if (destinations.isEmpty()) { return; }
+        var destination = destinations.get(0); var flight = destination.flightData().orElseThrow();
+        var observed = EscrowGovernedEnvelope.capture(destination);
+        EscrowTags.require(EscrowGovernedPhaseAction.destinationMatches(record, observed), "Governed recovery changed its destination progression");
+        if (record.phase() != RocketTransferPhase.COMMITTED || flight.state() != RocketFlightState.LANDED) { return; }
+        EscrowTags.require(sources.isEmpty() && candidates.size() == 1 && (restart == 2 || observedCountdown)
+                && flight.fuel().totalAmount() == 500 && flight.fuel().committedDebits().equals(List.of(arm.transfer()))
+                && flight.passengers().equals(record.sourceFlightData().passengers())
+                && flight.passengers().assignments().size() == 1
+                && flight.passengers().assignments().stream().allMatch(assignment -> server.getPlayerList().getPlayer(assignment.passengerId()) == null)
+                && destination.escrowSection().epoch() == 0 && destination.escrowSection().markers().isEmpty()
+                && !RocketEscrowGate.idle(destination), "Governed recovery lacks its stable F6 passenger wait");
+        if (landedEnvelope == null) { landedEnvelope = observed; }
+        EscrowTags.require(landedEnvelope.equals(observed), "Governed recovery changed its stable landed survivor");
+        if (server.getTickCount() - began < 100) { return; }
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_PRE_F2_RESULT cut={} outcome=RESUMED phase=COMMITTED state=LANDED transfer={} serial=1 issued=1 fuel=500 epoch=0 manifest=1 debits=1 restart={}",
+                cut, record.transferId(), restart); done = true;
+    }
+
+    /** Validate every COUNTDOWN field before projecting only its permitted flight transition back to F1. */
+    static String countdownCheckpoint(RocketTransferRecord record, CompoundTag observed, long levelTime) {
+        var flight = EscrowGovernedArrivalState.flight(observed);
+        var clock = EscrowGovernedSourceClock.resume(record, observed, levelTime);
+        EscrowTags.require(record.phase() == RocketTransferPhase.PREPARED && flight.state() == RocketFlightState.COUNTDOWN
+                && flight.fuel().totalAmount() == 1_000 && flight.fuel().committedDebits().isEmpty()
+                && flight.passengers().assignments().size() == 1
+                && EscrowGovernedSourceRecovery.sourceMatches(record, observed, clock.at(levelTime)),
+                "First COUNTDOWN differs from its complete permitted progression");
+        var comparison = EscrowGovernedEnvelope.comparison(observed);
+        comparison.put("flight", record.nativeTransfer().orElseThrow().sourceEnvelope(record).getCompound("flight").copy());
+        var digest = EscrowGovernedEnvelope.digest(comparison);
+        EscrowTags.require(record.nativeTransfer().orElseThrow().armed().sourceEnvelope().equals(digest)
+                && RocketEscrowSection.decode(comparison.getCompound("wrapper")).epoch() == 1,
+                "First COUNTDOWN changed the R18 checkpoint digest or epoch");
+        return digest;
     }
 
     private void observeCancelled() {

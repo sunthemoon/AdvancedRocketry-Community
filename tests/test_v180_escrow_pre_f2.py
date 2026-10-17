@@ -101,8 +101,8 @@ class PreF2OracleTest(unittest.TestCase):
             with self.subTest(kind=kind), self.assertRaisesRegex(runner.smoke.SmokeError, "Restart changed checkpointed E"):
                 runner.require_unchanged_source(disk, before)
 
-    def test_only_crewed_no_t_cut_outcomes_change(self):
-        expected = ("UNARMED", "CANCELLED", "CANCELLED", "ARMED", "ARMED", "ARMED", "ARMED")
+    def test_governed_cut_outcomes_resume_and_crewed_no_t_cleans(self):
+        expected = ("UNARMED", "CANCELLED", "CANCELLED", "ARMED", "RESUMED", "RESUMED", "RESUMED")
         for cut, outcome in zip(runner.CASES, expected):
             self.assertEqual(outcome, runner.recovery_outcome(cut, False))
             cleaned = cut in ("PF_ARM_REPLACED", "PF_ARM_ACK")
