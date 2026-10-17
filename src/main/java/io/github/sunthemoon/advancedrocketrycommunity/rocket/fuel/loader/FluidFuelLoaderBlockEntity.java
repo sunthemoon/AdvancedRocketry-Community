@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.machine.tank.TankContainerExchange;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlockEntities;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationAction;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowReconciliationPruning;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -186,8 +188,24 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
             loader.pacer = RefillPacer.loadedAt(level.getGameTime());
         }
         if (loader.pacer.tryStart(level.getGameTime())) {
+            if (loader.root != null && loader.root.escrow().locked() && loader.live()) {
+                // Restart and next-observation cleanup of a retired marker; live records belong to reconciliation.
+                EscrowReconciliationPruning.observe(loader);
+            }
             loader.attempted = loader.attempt();
         }
+    }
+
+    /** The ordinary reconciliation permit debits the tank and records its SOURCE marker as one write. */
+    public void applyEscrowDebit(EscrowReconciliationAction.Permit permit) {
+        LoaderRoot after = LoaderRoot.decode(Objects.requireNonNull(permit, "permit").consume(this));
+        write(after);
+    }
+
+    /** C8 and O4: the one-use permit removes only retired markers; the tank and epoch stay. */
+    public void pruneReconciledEscrow(EscrowReconciliationPruning.SourcePermit permit) {
+        LoaderEscrowSection section = Objects.requireNonNull(permit, "permit").consume(this);
+        write(new LoaderRoot(root.owner(), root.device(), root.binding(), root.tank(), section));
     }
 
     /**

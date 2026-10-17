@@ -1,6 +1,9 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderEscrowSection;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +56,25 @@ public final class EscrowReconciliationPruning {
             consumed = true;
             EscrowTags.require(authority.getAsBoolean() && before.equals(rocket.escrowSection()), "Pruning authority changed");
             return after;
+        }
+    }
+
+    /** The loader's one-use C8/O4 marker permit, bound to its exact envelope; the tank, identity and epoch never change. */
+    public static final class SourcePermit {
+        private final Thread owner = Thread.currentThread();
+        private final FluidFuelLoaderBlockEntity target;
+        private final net.minecraft.nbt.CompoundTag before;
+        private final EscrowPrefix.State after;
+        private final BooleanSupplier authority;
+        private boolean consumed;
+        SourcePermit(FluidFuelLoaderBlockEntity target, EscrowPrefix.State after, BooleanSupplier authority) {
+            this.target = target; before = target.saveWithFullMetadata(); this.after = after; this.authority = authority;
+        }
+        public LoaderEscrowSection consume(FluidFuelLoaderBlockEntity loader) {
+            EscrowTags.require(Thread.currentThread() == owner && !consumed && target == loader, "Invalid pruning permit");
+            consumed = true;
+            EscrowTags.require(authority.getAsBoolean() && before.equals(loader.saveWithFullMetadata()), "Pruning authority changed");
+            return EscrowLoaderEndpoint.pruned(loader.root().orElseThrow(), after);
         }
     }
 
@@ -126,6 +148,26 @@ public final class EscrowReconciliationPruning {
         }
     }
 
+    /**
+     * Restart and next-observation cleanup for a loader whose section still holds a marker, from its paced attempt
+     * (at most once per device per 20 ticks). Only an independently validated retired marker is removed.
+     */
+    public static void observe(FluidFuelLoaderBlockEntity loader) {
+        var held = loader.root().orElse(null);
+        if (held == null || !held.escrow().locked() || loader.isRemoved() || loader.dataStatus() != LoaderRoot.Status.VALID
+                || !(loader.getLevel() instanceof ServerLevel level) || !level.getServer().isSameThread()) { return; }
+        var data = ResourceEscrowSavedData.existing(level.getServer());
+        if (data == null || !data.operational()) { return; }
+        var position = loader.getBlockPos();
+        var reference = new EscrowEndpoint(EscrowEndpoint.Kind.BLOCK_ENTITY, level.dimension().location().toString(), held.device(), null,
+                EscrowAdapterIds.LOADER, position.getX(), position.getY(), position.getZ(), EscrowEndpoint.Unit.TANK,
+                held.escrow().epoch(), held.signature(), held.signature());
+        try { apply(level.getServer(), data.bind(level.getServer()), reference, null, null); }
+        catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException invalid) {
+            // The device stays locked; live records are diagnosed by reconciliation, never here.
+        }
+    }
+
     /** The scheduler can see a just-added rocket before its first tick observation. */
     static void destination(MinecraftServer server, EscrowCoordinator coordinator, EscrowEndpoint endpoint) {
         var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
@@ -135,9 +177,12 @@ public final class EscrowReconciliationPruning {
         coordinator.observePruningCandidate(rocket.escrowSection(), () -> observeCandidate(rocket, level, coordinator));
     }
 
-    /** Gated sources have no production tick adapter; prune at the next registered C0/C2 observation. */
+    /**
+     * Prune at the next C0/C2 observation of a source. Gated fixture sources have no tick adapter; the loader also
+     * prunes from its own paced attempt ({@link #observe(FluidFuelLoaderBlockEntity)}).
+     */
     static void source(MinecraftServer server, EscrowCoordinator coordinator, EscrowEndpoint endpoint) {
-        EscrowTestEndpoints.requireEnabled(server);
+        if (!EscrowLoaderEndpoint.is(endpoint)) { EscrowTestEndpoints.requireEnabled(server); }
         try { apply(server, coordinator, endpoint, null, null); }
         catch (EscrowReconciliationView.Refusal invalid) { throw invalid; }
         catch (IllegalArgumentException | IllegalStateException | java.util.NoSuchElementException unavailable) {
@@ -187,6 +232,11 @@ public final class EscrowReconciliationPruning {
             rocket.pruneReconciledEscrow(new Permit(rocket, new RocketEscrowSection(root.id(), state.epoch(), markers),
                     () -> coordinator.ledger() == root && coordinator.operational() && (expected != null || coordinator.writerIdle())
                     && !coordinator.pruningBusy(endpoint.key()) && rocket.flightData().orElseThrow() == flight));
+        } else if (EscrowLoaderEndpoint.is(endpoint)) {
+            if (!(level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)
+                    .getBlockEntity(EscrowLoaderEndpoint.position(endpoint)) instanceof FluidFuelLoaderBlockEntity loader)) { return; }
+            loader.pruneReconciledEscrow(new SourcePermit(loader, state, () -> coordinator.ledger() == root && coordinator.operational()
+                    && (expected != null || coordinator.writerIdle()) && !coordinator.pruningBusy(endpoint.key())));
         } else {
             EscrowTestEndpoints.requireEnabled(server);
             var source = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)

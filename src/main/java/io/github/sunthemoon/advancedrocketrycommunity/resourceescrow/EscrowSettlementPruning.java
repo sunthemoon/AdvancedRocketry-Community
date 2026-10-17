@@ -288,6 +288,25 @@ public final class EscrowSettlementPruning {
                 return retains(rocket.escrowSection().markers(), members)
                         ? decide(rocket, rocket.escrowSection(), visit.group().digest(), members).state() : State.DONE;
             }
+        } else if (EscrowLoaderEndpoint.is(endpoint)) {
+            var chunk = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4);
+            if (chunk == null) { return null; }
+            if (!(chunk.getBlockEntity(EscrowLoaderEndpoint.position(endpoint))
+                    instanceof io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity loader)) { return null; }
+            var held = loader.root().orElse(null);
+            if (held == null || loader.dataStatus() != io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderRoot.Status.VALID
+                    || !endpoint.identity().equals(held.device())) { return State.refused("source identity or type changed"); }
+            if (held.escrow().markers().isEmpty()) { return State.DONE; }
+            if (!root.id().equals(held.escrow().ledger())) { return State.refused("source belongs to another ledger"); }
+            var state = new EscrowPrefix.State(root.id(), held.escrow().epoch(), held.signature(), held.escrow().markers());
+            if (!frontier(root, groups, endpoint, state, held.tank().amount(), state.signature(), unresolved)) {
+                return retains(state.markers(), members) ? State.refused("frontier: live state is neither the released survivor nor a proved later prefix") : State.DONE;
+            }
+            var markers = prune(state.markers(), members, unresolved);
+            if (markers.equals(state.markers())) { return retains(markers, members) ? State.WAITING_EARLIER_GROUP : State.DONE; }
+            loader.pruneReconciledEscrow(new EscrowReconciliationPruning.SourcePermit(loader,
+                    new EscrowPrefix.State(root.id(), state.epoch(), state.signature(), markers), () -> true));
+            return State.DONE;
         } else if (server instanceof net.minecraft.gametest.framework.GameTestServer || Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) {
             EscrowTestEndpoints.requireEnabled(server);
             var chunk = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4);

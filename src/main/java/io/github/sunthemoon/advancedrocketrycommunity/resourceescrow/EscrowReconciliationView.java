@@ -94,11 +94,13 @@ final class EscrowReconciliationView {
                     throw new Refusal(EscrowReason.NONE);
                 }
             } else {
-                EscrowTestEndpoints.requireEnabled(server);
+                // The registered loader adapter needs no hooks; every other source is a gated chest fixture.
+                boolean loader = EscrowLoaderEndpoint.is(endpoint);
+                if (!loader) { EscrowTestEndpoints.requireEnabled(server); }
                 source = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4)
                         .getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
                 if (source == null) { throw new Refusal(EscrowReason.MISSING_ENDPOINT); }
-                if (!endpoint.type().equals("minecraft:chest")) { throw new Refusal(EscrowReason.INVALID_ENDPOINT); }
+                if (!loader && !endpoint.type().equals("minecraft:chest")) { throw new Refusal(EscrowReason.INVALID_ENDPOINT); }
             }
             // Reuse the fixed registered adapters' identity, duplicate, occupancy and stationary checks.
             var observation = EscrowSettlementObserver.observe(server, root.id(), List.of(endpoint)).get(0);
