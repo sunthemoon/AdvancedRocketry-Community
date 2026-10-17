@@ -175,8 +175,8 @@ final class EscrowReconciliationDriver {
             if (work.proofs.containsKey(end.endpoint().key())) { continue; }
             var frozen = work; var targets = work.targets(end.endpoint()); var runtime = EscrowRuntime.of(server);
             runtime.checkpoint(end.endpoint().kind() == EscrowEndpoint.Kind.ENTITY ? "C4_DESTINATION_SELECTED" : "C4_SOURCE_SELECTED");
-            work.busy = true;
-            boolean accepted = runtime.barrier().beginJoint(runtime.store(view.ends.get(end.endpoint().key()).level()), targets,
+            var level = view.ends.get(end.endpoint().key()).level();
+            boolean accepted = capture(busy -> frozen.busy = busy, () -> runtime.store(level), store -> runtime.barrier().beginJoint(store, targets,
                     server.getTickCount(), result -> {
                         frozen.busy = false;
                         if (checkpoints.get(op.id()) != frozen) {
@@ -187,8 +187,8 @@ final class EscrowReconciliationDriver {
                         if (frozen.proved()) { runtime.checkpoint("C6_JOINT_READBACK"); }
                         // C6 is internal proof, never scheduler success or release authority.
                         completion.accept(new EscrowReconciliationScheduler.Result(result.reason(), false));
-                    });
-            if (!accepted) { work.busy = false; completion.accept(EscrowReconciliationScheduler.Result.deferred()); }
+                    }));
+            if (!accepted) { completion.accept(EscrowReconciliationScheduler.Result.deferred()); }
             return;
         }
         var frozen = work; var runtime = EscrowRuntime.of(server);
@@ -212,6 +212,15 @@ final class EscrowReconciliationDriver {
             }
         });
         if (!accepted) { work.busy = false; completion.accept(EscrowReconciliationScheduler.Result.deferred()); }
+    }
+
+    /** Final review A, I4: the store is obtained before C4 sets busy, so its refusal cannot leave the checkpoint busy. */
+    static <S> boolean capture(Consumer<Boolean> busy, java.util.function.Supplier<S> store, java.util.function.Predicate<S> joint) {
+        var selected = store.get();
+        busy.accept(true);
+        boolean accepted = joint.test(selected);
+        if (!accepted) { busy.accept(false); }
+        return accepted;
     }
 
     boolean checkpointProved(UUID operation) {

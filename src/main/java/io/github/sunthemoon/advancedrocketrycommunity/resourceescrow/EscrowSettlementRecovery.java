@@ -114,10 +114,10 @@ final class EscrowSettlementRecovery implements AutoCloseable {
                             EscrowSettlementTombstones.observationDigest(candidate), List.of()) : candidate.state();
                     targets.add(new EscrowBarrier.Target(candidate.endpoint(), frontier, EscrowSettlementDisk.validator(candidate, intent.ledger())));
                 }
-                var keys = targets.stream().map(target -> target.endpoint().key()).toList(); state.busy.addAll(keys);
+                var keys = targets.stream().map(target -> target.endpoint().key()).toList();
                 var endpoint = observation.endpoint();
                 var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
-                boolean accepted = runtime.barrier().beginJoint(runtime.store(level), targets, tick, result -> {
+                begin(state.busy, keys, () -> runtime.store(level), store -> runtime.barrier().beginJoint(store, targets, tick, result -> {
                     state.busy.removeAll(keys);
                     if (closed) { result.proofs().values().forEach(EscrowBarrier.Proof::release); return; }
                     if (!result.confirmed()) { stalled(runtime, intent, state, result.reason().name(), server.getTickCount()); return; }
@@ -126,8 +126,7 @@ final class EscrowSettlementRecovery implements AutoCloseable {
                         var old = state.proofs.put(key, proof); if (old != null) { old.release(); }
                         runtime.checkpoint("O2_AFTER_" + index(intent, key));
                     });
-                });
-                if (!accepted) { state.busy.removeAll(keys); }
+                }));
                 return;
             }
             if (!state.proofs.values().stream().allMatch(EscrowBarrier.Proof::valid)) { return; }
@@ -184,6 +183,15 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             decodedRoot = root;
         }
         return decodedIntents;
+    }
+    /** Final review A, I4: the store is obtained before the slots become busy, so its refusal cannot leave them busy. */
+    static <S> boolean begin(Set<EscrowEndpoint.Key> busy, List<EscrowEndpoint.Key> keys, java.util.function.Supplier<S> store,
+            java.util.function.Predicate<S> joint) {
+        var selected = store.get();
+        busy.addAll(keys);
+        boolean accepted = joint.test(selected);
+        if (!accepted) { busy.removeAll(keys); }
+        return accepted;
     }
     private static int index(EscrowSettlementIntent intent, EscrowEndpoint.Key key) {
         for (int i = 0; i < intent.observations().size(); i++) { if (intent.observations().get(i).endpoint().key().equals(key)) { return i; } }
