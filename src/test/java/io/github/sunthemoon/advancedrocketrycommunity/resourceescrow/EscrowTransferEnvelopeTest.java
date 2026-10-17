@@ -44,6 +44,21 @@ class EscrowTransferEnvelopeTest {
         metadata.validate(record); metadata.validate(second); assertEquals(4, hashes.get());
     }
 
+    @Test void builtInDigestCounterMatchesAnInjectedCountingDigestForTheDispatcherGameTest() {
+        var original = EscrowGovernedArrivalStateTest.record();
+        var hashes = new java.util.concurrent.atomic.AtomicInteger();
+        var metadata = EscrowTransferEnvelope.decode(original.nativeTransfer().orElseThrow().encode(), tag -> {
+            hashes.incrementAndGet(); return EscrowNativeEnvelope.digest(tag);
+        });
+        assertEquals(0, metadata.envelopeDigests());
+        var record = withMetadata(original, metadata);
+        assertEquals(2, hashes.get()); assertEquals(hashes.get(), metadata.envelopeDigests());
+        for (int tick = 0; tick < 10; tick++) { metadata.validate(record); metadata.destinationEnvelope(record); }
+        assertEquals(2, metadata.envelopeDigests());
+        withMetadata(original, metadata);
+        assertEquals(4, hashes.get()); assertEquals(hashes.get(), metadata.envelopeDigests());
+    }
+
     @Test void committedMatchingIsSkippedOnlyForCapturedIdleDestinationObservations() {
         for (var phase : RocketTransferPhase.values()) {
             for (boolean source : List.of(false, true)) {
