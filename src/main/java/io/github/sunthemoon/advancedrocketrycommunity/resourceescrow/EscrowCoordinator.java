@@ -128,7 +128,8 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public void autosave() {
         owner(); if (closed || !data.isDirty() || tick - lastStart < 10) { return; }
-        if (flightWrites.pending() && transitions.isEmpty()) { return; }
+        // R17 item 4: an unavailable writer needs this checked generation to recover; queued flights cannot start first.
+        if (flightWrites.pending() && transitions.isEmpty() && !writer.unavailable()) { return; }
         // Only acknowledged records are included. Queued preparations are never implicit autosave admissions.
         if (writer.request(() -> snapshot(false, null), this::acknowledge)) { lastStart = tick; }
     }
@@ -216,7 +217,8 @@ public final class EscrowCoordinator implements AutoCloseable {
                 if (callback != null && !closed) { callback.accept(true); }
             }
             data.setDirty(!queued.isEmpty() || !transitions.isEmpty() || !writer.idle());
-        } else if (completion.outcome() == EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE) {
+        } else if (completion.outcome() == EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE
+                || completion.outcome() == EscrowLedgerWriter.Outcome.GUARD_REFUSED) {
             for (UUID id : completion.snapshot().admissions()) {
                 // A captured successor is still a potential durable L1; do not cancel its admission.
                 if (!writer.containsCaptured(id)) {

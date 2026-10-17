@@ -173,6 +173,67 @@ class EscrowFlightWritesTest {
         }
     }
 
+    /** R17 item 4: three consecutive flight generations refused by their guards leave the ledger writer available. */
+    @Test void threeFlightGuardRefusalsLeaveTheLedgerWriterAndLaunchesAvailable() throws Exception {
+        var data = ResourceEscrowSavedData.create(); var root = data.ledger(); var io = new AwaitedLedgerIo();
+        var results = new ArrayList<Boolean>(); long tick = 0;
+        try (var writer = io.writer(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0, CheckedSavedDataFile::atomicMove);
+             var coordinator = new EscrowCoordinator(data, writer)) {
+            for (int i = 1; i <= 3; i++) {
+                var launch = EscrowFlightAuthorityTest.launch(root, i); var checks = new AtomicInteger(); int expected = i;
+                assertTrue(coordinator.flightWrite(launch.logical(), (candidate, generation) -> EscrowFlightAuthority.arm(candidate, launch, generation),
+                        () -> checks.incrementAndGet() == 1, results::add));
+                tick = io.tickUntil(coordinator::tick, tick, () -> results.size() == expected);
+                assertEquals(java.util.Collections.nCopies(expected, false), results);
+                assertFalse(writer.unavailable(), "Guard refusal " + i + " counted as a writer failure");
+                assertNull(coordinator.governedWaitReason(launch.logical()), "A guard refusal fenced the ledger as unavailable");
+            }
+            var launch = EscrowFlightAuthorityTest.launch(root, 4);
+            assertTrue(coordinator.flightWrite(launch.logical(), (candidate, generation) -> EscrowFlightAuthority.arm(candidate, launch, generation),
+                    () -> true, results::add));
+            io.tickUntil(coordinator::tick, tick, () -> results.size() == 4);
+            assertEquals(java.util.List.of(false, false, false, true), results);
+            assertEquals(java.util.List.of(launch.logical()), coordinator.ledger().armedFlights().stream().map(EscrowFlightTables.Armed::logical).toList());
+        }
+    }
+
+    /** R17 item 4: autosave is not skipped while the writer is unavailable, so a queued flight need not wait for a restart. */
+    @Test void anUnavailableWriterStillAutosavesAndThenServesTheQueuedFlight() throws Exception {
+        var base = ResourceEscrowSavedData.create().ledger().generation(1);
+        var file = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+        io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataPolicy.atomic(ManagedSavedDataType.RESOURCE_ESCROW)
+                .replace(file, () -> EscrowCodec.encode(base));
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(base)); var fail = new AtomicBoolean(true);
+        var results = new ArrayList<Boolean>(); var io = new AwaitedLedgerIo(); long tick = 0;
+        try (var writer = io.writer(file, 1, CheckedSavedDataFile::atomicMove, cut -> {
+            // A ledger without operation records reaches the staging boundary as K8.
+            if (fail.get() && (cut.equals("K1") || cut.equals("K8"))) { throw new IllegalStateException("Injected definite pre-replace failure"); }
+        }); var coordinator = new EscrowCoordinator(data, writer)) {
+            for (int i = 1; i <= 3; i++) {
+                var launch = EscrowFlightAuthorityTest.launch(base, i); int expected = i;
+                assertTrue(coordinator.flightWrite(launch.logical(), (candidate, generation) -> EscrowFlightAuthority.arm(candidate, launch, generation),
+                        () -> true, results::add));
+                if (i < 3) { tick = io.tickUntil(coordinator::tick, tick, () -> results.size() == expected); continue; }
+                // Another rocket queues its request while the third failing generation is being written.
+                tick = io.tickUntil(coordinator::tick, tick, () -> !writer.idle());
+                var queued = EscrowFlightAuthorityTest.launch(base, 4);
+                assertTrue(coordinator.flightWrite(queued.logical(), (candidate, generation) -> EscrowFlightAuthority.arm(candidate, queued, generation),
+                        () -> true, results::add));
+                tick = io.tickUntil(coordinator::tick, tick, () -> results.size() == expected);
+            }
+            assertEquals(java.util.List.of(false, false, false), results); assertTrue(writer.unavailable());
+            for (long end = tick + 20; tick < end; tick++) { io.awaitWrites(); coordinator.tick(tick); }
+            assertTrue(writer.idle() && results.size() == 3, "The queued flight started while the writer was unavailable");
+            fail.set(false); assertTrue(data.isDirty());
+            coordinator.autosave();
+            assertFalse(writer.idle(), "Autosave was skipped while the writer was unavailable and a flight request was queued");
+            io.tickUntil(coordinator::tick, tick, () -> results.size() == 4);
+            assertEquals(java.util.List.of(false, false, false, true), results); assertFalse(writer.unavailable());
+            assertEquals(java.util.List.of(EscrowFlightAuthorityTest.launch(base, 4).logical()),
+                    coordinator.ledger().armedFlights().stream().map(EscrowFlightTables.Armed::logical).toList());
+        }
+    }
+
     private static void pump(EscrowCoordinator coordinator, long start, java.util.function.BooleanSupplier done) throws InterruptedException {
         for (long tick = start; tick < start + 1_000 && !done.getAsBoolean(); tick++) { coordinator.tick(tick); Thread.sleep(2); }
         assertTrue(done.getAsBoolean(), "Expected exact writer completion within the bounded test pump");
