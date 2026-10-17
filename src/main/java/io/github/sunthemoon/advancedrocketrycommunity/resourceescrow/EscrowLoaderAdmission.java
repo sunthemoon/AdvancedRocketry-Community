@@ -116,6 +116,20 @@ public final class EscrowLoaderAdmission {
     }
 
     /**
+     * Gated GameTest seam: the same capture and prepareFill against a detached coordinator, so a deliberately missing
+     * endpoint leaves its sticky REPAIR record outside the server's ledger. Never a production path.
+     */
+    static EscrowCoordinator.Fill admitDetachedForTests(FluidFuelLoaderBlockEntity loader, RocketEntity rocket,
+                                                        EscrowCoordinator coordinator, Consumer<Boolean> completion) {
+        var level = (ServerLevel) loader.getLevel(); EscrowTestEndpoints.requireEnabled(level.getServer());
+        var journal = RocketTransferSavedData.get(level.getServer()).acknowledgedGuard(rocket.assemblyTransactionId().orElseThrow()).orElseThrow();
+        var capture = capture(level, loader, loader.root().orElseThrow(), rocket, coordinator, coordinator.ledger().id(),
+                coordinator.nextSequence(), journal);
+        EscrowTags.require(capture.refusal() == null, "Detached fixture capture refused: " + capture.refusal());
+        return coordinator.prepareFill(capture.admission(), completion);
+    }
+
+    /**
      * Design section 2's first fill. Step 1: the pure check against the virtual empty root, then the shared
      * reservation while the delegate is NO_FILE; a refusal at either point creates nothing. Step 2, with no refusal
      * path and nothing that can fail between the reservation and its queue entry: store the ledger, attach its
