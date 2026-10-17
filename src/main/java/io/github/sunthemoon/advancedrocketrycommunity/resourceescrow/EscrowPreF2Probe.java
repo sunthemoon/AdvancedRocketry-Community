@@ -69,6 +69,7 @@ final class EscrowPreF2Probe {
             var rockets = level.getEntitiesOfClass(RocketEntity.class, new net.minecraft.world.phys.AABB(POSITION).inflate(8));
             if (rockets.isEmpty()) { return; }
             EscrowTags.require(rockets.size() == 1, "Duplicate F1 source"); rocket = rockets.get(0);
+            if (EscrowCrewedProbe.enabled()) { EscrowCrewedProbe.reconnect(rocket); }
             var arms = data.ledger().armedFlights(); boolean before = cut.equals("PF_ARM_BEFORE"), hasT = hasTransfer();
             if (!before && (arms.isEmpty() || !hasT && arms.get(0).outcome() != EscrowFlightTables.Outcome.CANCELLED)) { return; }
             // Let repeated scheduler visits try the negative case; a single early observation is insufficient.
@@ -103,6 +104,7 @@ final class EscrowPreF2Probe {
             var flight = rocket.flightData().orElseThrow();
             var fuel = flight.fuel().withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, 1_000);
             rocket.updateFlightData(flight.withFuel(fuel, level.getGameTime()).withPassengers(flight.passengers().assign(UUID.randomUUID()).orElseThrow()));
+            EscrowCrewedProbe.mount(rocket, cut);
             var frozen = new EscrowFlightSource(rocket); var logical = rocket.assemblyTransactionId().orElseThrow();
             var transfer = UUID.randomUUID(); var destination = UUID.randomUUID();
             prepared = prepared(rocket, transfer);

@@ -123,6 +123,7 @@ public final class EscrowRuntime {
         if (settlementProbe != null) { settlementProbe.checkpoint(cut); }
         if (settlementCompletionProbe != null) { settlementCompletionProbe.checkpoint(cut); }
         if (preF2Probe != null) { preF2Probe.checkpoint(cut); }
+        if (sourceClockProbe != null) { sourceClockProbe.checkpoint(cut); }
     }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");

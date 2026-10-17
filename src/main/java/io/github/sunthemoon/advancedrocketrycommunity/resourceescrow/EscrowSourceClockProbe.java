@@ -32,6 +32,8 @@ final class EscrowSourceClockProbe {
     private boolean accepted;
     private boolean discarded;
     private int step;
+    private RocketTransferRecord recoveredRecord;
+    private boolean sawF7;
 
     EscrowSourceClockProbe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
@@ -70,6 +72,7 @@ final class EscrowSourceClockProbe {
             var flight = rocket.flightData().orElseThrow(); long now = level.getGameTime();
             var fuel = flight.fuel().withFluidBank(false, net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, 1_000);
             rocket.updateFlightData(flight.withFuel(fuel, now).withPassengers(flight.passengers().assign(UUID.randomUUID()).orElseThrow()));
+            EscrowCrewedProbe.mount(rocket, cut);
             step = 1;
         }
         if (step == 1) {
@@ -96,6 +99,7 @@ final class EscrowSourceClockProbe {
     }
 
     private void recover(RocketTransferSavedData journal) {
+        if (EscrowCrewedProbe.enabled()) { recoverCrewed(journal); return; }
         EscrowTags.require(journal.entries().size() == 1, "Source-clock cut lost its checked journal");
         var record = journal.entries().get(0);
         var entity = server.overworld().getEntity(record.sourceEntityId());
@@ -116,6 +120,52 @@ final class EscrowSourceClockProbe {
         EscrowTags.require(observedRollback && source.getY() == 148, "Source-clock recovery did not exercise a rollback");
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SOURCE_CLOCK_RESULT cut={} state={} rollback=true fuel=1000 epoch=1 manifest=1 debits=0",
                 cut, result); done = true;
+    }
+
+    void checkpoint(String point) {
+        if (!recovery || !EscrowCrewedProbe.enabled() || !point.equals("F7_ACK")) { return; }
+        var arm = data.ledger().armedFlights().stream().filter(value -> recoveredRecord != null
+                && value.transfer().equals(recoveredRecord.transferId())).findFirst().orElseThrow();
+        EscrowTags.require(arm.outcome() == EscrowFlightTables.Outcome.CANCELLED
+                && EscrowGovernedReturnAction.returned(recoveredRecord, EscrowGovernedEnvelope.capture(rocket)),
+                "Crewed source restart acknowledged the wrong terminal survivor or outcome");
+        sawF7 = true;
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SOURCE_CLOCK_F7 cut={} transfer={} serial={} outcome=CANCELLED",
+                cut, arm.transfer(), arm.serial());
+    }
+
+    private void recoverCrewed(RocketTransferSavedData journal) {
+        var candidates = server.overworld().getEntitiesOfClass(RocketEntity.class, new AABB(63, 90, 63, 96, 160, 80));
+        if (candidates.isEmpty()) { return; }
+        EscrowTags.require(candidates.size() == 1, "Crewed restart lost its unique source survivor");
+        rocket = candidates.get(0); var flight = rocket.flightData().orElseThrow();
+        var passenger = EscrowCrewedProbe.reconnect(rocket);
+        EscrowTags.require(passenger.getVehicle() == null && rocket.getPassengers().isEmpty(), "Cancelled restart re-seated its passenger");
+        if (!journal.entries().isEmpty()) {
+            EscrowTags.require(journal.entries().size() == 1, "Crewed source restart gained another transfer");
+            var record = journal.entries().get(0);
+            if (recoveredRecord == null) {
+                recoveredRecord = record;
+                observedRollback = flight.stateStartedGameTime() > rocket.level().getGameTime();
+                EscrowTags.require(observedRollback, "Crewed source cut did not exercise its older Level clock");
+            }
+            EscrowTags.require(record == recoveredRecord && flight.fuel().equals(record.sourceFlightData().fuel())
+                    && flight.passengers().equals(record.sourceFlightData().passengers()) && onlySource(),
+                    "Crewed return changed its checked record, source fuel or manifest");
+            return;
+        }
+        if (!data.ledger().armedFlights().isEmpty() || !journal.actionAuthorityAvailable() || !data.bind(server).writerIdle()) { return; }
+        EscrowTags.require(data.ledger().issuedLaunchSerial() == 1 && data.ledger().rocketAuthorities().isEmpty()
+                && flight.state().acceptsFuel() && flight.plan().isEmpty() && flight.activeTransferId().isEmpty()
+                && flight.fuel().totalAmount() == 1_000 && flight.fuel().committedDebits().isEmpty()
+                && rocket.escrowSection().epoch() == 1 && rocket.escrowSection().markers().isEmpty()
+                && rocket.getX() == 64.5 && rocket.getY() == 100 && rocket.getZ() == 64.5 && RocketEscrowGate.idle(rocket)
+                && journal.acknowledgedGuard(rocket.assemblyTransactionId().orElseThrow()).orElseThrow().transfer() == null
+                && (recoveredRecord == null || sawF7 && observedRollback
+                && EscrowGovernedReturnAction.returned(recoveredRecord, EscrowGovernedEnvelope.capture(rocket))),
+                "Crewed source restart lacks exact checked cancellation and cleanup");
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SOURCE_CLOCK_RESULT cut={} state=CANCELLED_CLEANED checked=true fuel=1000 epoch=1 manifest=1 debits=0",
+                cut); done = true;
     }
 
     private boolean loaded() {

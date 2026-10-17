@@ -36,6 +36,11 @@ public final class EscrowGovernedLiveReturnGameTests {
         new Scenario(helper, false).start();
     }
 
+    @GameTest(template = "empty", batch = "escrow_cancelled_unmounted_complete", timeoutTicks = 600)
+    public static void dismountAfterReturnCompletesCancelledF7AndF8WithoutReseating(GameTestHelper helper) {
+        new Scenario(helper, false, Fault.CANCEL, false, false, true).start();
+    }
+
     @GameTest(template = "empty", batch = "escrow_live_cancel_shared", timeoutTicks = 600)
     public static void countdownCancellationProvesSharedSlotWithPassenger(GameTestHelper helper) {
         new Scenario(helper, true).start();
@@ -91,6 +96,8 @@ public final class EscrowGovernedLiveReturnGameTests {
         private boolean requested;
         private boolean done;
         private final boolean dismountCut;
+        private final boolean departureAfterReturn;
+        private boolean departed;
         private EscrowTerminalLeaseCut leaseCut;
         private final EscrowTerminalRetryCut retryCut;
         private boolean sawF6, sawF7;
@@ -115,11 +122,15 @@ public final class EscrowGovernedLiveReturnGameTests {
             this(helper, shared, fault, dismountCut, false);
         }
         Scenario(GameTestHelper helper, boolean shared, Fault fault, boolean dismountCut, boolean retryCut) {
+            this(helper, shared, fault, dismountCut, retryCut, false);
+        }
+        Scenario(GameTestHelper helper, boolean shared, Fault fault, boolean dismountCut, boolean retryCut, boolean departureAfterReturn) {
             this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
             this.fault = fault; this.dismountCut = dismountCut;
+            this.departureAfterReturn = departureAfterReturn;
             this.retryCut = retryCut ? new EscrowTerminalRetryCut() : null;
             position = new BlockPos((shared ? 594_136 : 594_008) + 512 * fault.ordinal()
-                    + (dismountCut ? 2_048 : 0) + (retryCut ? 4_096 : 0), 100, 594_008);
+                    + (dismountCut ? 2_048 : 0) + (retryCut ? 4_096 : 0) + (departureAfterReturn ? 8_192 : 0), 100, 594_008);
             destination = position.offset(shared ? 4 : 32, 0, 0);
         }
 
@@ -177,8 +188,13 @@ public final class EscrowGovernedLiveReturnGameTests {
         private void terminal(RocketTransferSavedData journal) {
             var server = level.getServer(); var runtime = EscrowRuntime.of(server);
             var flight = rocket.flightData().orElseThrow();
+            if (departureAfterReturn && !departed && EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(rocket))) {
+                passenger.stopRiding(); departed = true;
+                helper.assertTrue(passenger.getVehicle() == null, "Returned passenger could not dismount");
+            }
             helper.assertTrue(flight.fuel().committedDebits().equals(List.of(previousDebit))
-                    && flight.passengers().equals(initial.passengers()) && passenger.getVehicle() == rocket
+                    && flight.passengers().equals(initial.passengers()) && (departed ? passenger.getVehicle() == null : passenger.getVehicle() == rocket)
+                    && passenger.level() == level
                     && passenger.connection.connection.isConnected()
                     && level.getEntity(record.nativeTransfer().orElseThrow().armed().destination()) == null,
                     "Return lost its connected passenger, repeated a debit or published a destination");
@@ -247,7 +263,8 @@ public final class EscrowGovernedLiveReturnGameTests {
                     && data.ledger().armedFlights().equals(otherArms), "F8 did not prune only its exact CANCELLED entry after checked absence");
             helper.assertTrue(RocketEscrowGate.idle(rocket) && RocketRuntime.resourceMutationAllowed(rocket)
                     && rocket.flightData().orElseThrow().fuel().totalAmount() == 1_100 && rocket.isAlive()
-                    && rocket.getPassengers().equals(List.of(passenger)), "F8 lost the available returned rocket or refuel");
+                    && rocket.getPassengers().equals(departureAfterReturn ? List.of() : List.of(passenger))
+                    && (!departureAfterReturn || departed && passenger.getVehicle() == null), "F8 lost the available returned rocket or refuel");
             helper.assertTrue(server.getTickCount() - f7Tick < RocketFlightLimits.FLIGHT_TICKET_TIMEOUT_TICKS
                     && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferFenceGameTests.flightTickets(server, transfer) == 0,
                     "CANCELLED F8 relied on ticket expiry instead of explicit release");

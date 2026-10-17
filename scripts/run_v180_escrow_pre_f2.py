@@ -110,7 +110,7 @@ def run(args) -> dict:
     token = uuid.uuid4().hex
     (session / ".arce-pre-f2-owned").write_text(token, encoding="ascii")
     report = dict(status="IN_PROGRESS", source_commit=args.source_commit, jar_sha256=digest(args.jar),
-                  session=str(session), ownership_token=token, cases=[])
+                  session=str(session), ownership_token=token, crewed=args.crewed, cases=[])
     process = None
     try:
         shutil.copytree(libraries, session / "libraries")
@@ -132,10 +132,14 @@ def run(args) -> dict:
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"))
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowCase=" + cut)
+                if args.crewed:
+                    command.insert(1, "-Dadvancedrocketrycommunity.escrowCrewed=true")
                 row.setdefault("starts", []).append(dict(restart=restart, command=command, free_bytes=free, lock_owner=args.lock_owner))
                 process = smoke.CapturedProcess(command, session, evidence / f"{cut}-{restart}.log")
                 if restart == 0:
                     process.wait_for(re.compile(r"ARCE_RELEASE_PRE_F2_PAUSED cut=" + cut), args.startup_timeout)
+                    if args.crewed and not any("ARCE_RELEASE_CREWED_F1 cut=" + cut in line and "mounted=true" in line for line in process.lines):
+                        raise smoke.SmokeError("Native cut lacks its facility-owned mounted F1 passenger")
                     process.process.kill(); process.abort(); process = None
                     row["cut_disk"] = inspect(session / ("world-" + cut), cut, False)
                 else:
@@ -168,6 +172,7 @@ def main() -> int:
     parser.add_argument("--source-commit", required=True); parser.add_argument("--java", required=True)
     parser.add_argument("--lock-owner", required=True)
     parser.add_argument("--case", action="append", choices=CASES)
+    parser.add_argument("--crewed", action="store_true", help="Mount a facility-owned assigned passenger before F1")
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
     try: run(args); return 0
