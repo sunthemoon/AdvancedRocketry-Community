@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
+import io.github.sunthemoon.advancedrocketrycommunity.gametest.EscrowGameTestProof;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,12 +32,13 @@ public final class EscrowSettlementEmptySlotGameTests {
         var runtime = EscrowRuntime.of(server); var pacer = new GameTestTickPacer(server);
         var ledger = UUID.randomUUID(); var identity = UUID.randomUUID(); var logical = UUID.randomUUID();
         class Scenario {
-            int index; boolean busy; boolean done;
+            int index; boolean done;
+            EscrowGameTestProof<EscrowBarrier.JointResult> pending;
             final List<EscrowBarrier.Proof> proofs = new ArrayList<>();
             void tick() {
                 if (done) { return; }
                 pacer.pace();
-                if (busy) { return; }
+                if (pending != null) { pending.tick(); return; }
                 if (index == chunks.size()) {
                     helper.assertTrue(proofs.size() == 2 && proofs.stream().allMatch(EscrowBarrier.Proof::valid), "Empty-slot proofs were not retained together");
                     proofs.forEach(EscrowBarrier.Proof::release);
@@ -55,14 +57,16 @@ public final class EscrowSettlementEmptySlotGameTests {
                 var observation = new EscrowSettlementIntent.Observation(endpoint, null, false, 0);
                 var frontier = new EscrowPrefix.State(ledger, 0, EscrowSettlementTombstones.observationDigest(observation), List.of());
                 var target = new EscrowBarrier.Target(endpoint, frontier, EscrowSettlementDisk.validator(observation, ledger));
-                busy = true;
-                if (!runtime.barrier().beginJoint(runtime.store(level), List.of(target), server.getTickCount(), result -> {
-                    busy = false;
-                    helper.assertTrue(result.confirmed(), "Empty-slot own-store refused: " + result.reason());
-                    var proof = result.proofs().get(endpoint.key());
-                    helper.assertTrue(proof != null && proof.valid() && proof.capture().bytes() > 0, "Empty-slot result lacks a stored payload proof");
-                    proofs.add(proof); index++;
-                })) { busy = false; }
+                pending = new EscrowGameTestProof<>(server::getTickCount,
+                        (tick, completed) -> runtime.barrier().beginJoint(runtime.store(level), List.of(target), tick, completed),
+                        EscrowBarrier.JointResult::confirmed, EscrowBarrier.JointResult::reason, result -> {
+                            pending = null;
+                            helper.assertTrue(result.confirmed(), "Empty-slot own-store refused: " + result.reason());
+                            var proof = result.proofs().get(endpoint.key());
+                            helper.assertTrue(proof != null && proof.valid() && proof.capture().bytes() > 0, "Empty-slot result lacks a stored payload proof");
+                            proofs.add(proof); index++;
+                        });
+                pending.tick();
             }
         }
         var scenario = new Scenario(); helper.onEachTick(scenario::tick);
