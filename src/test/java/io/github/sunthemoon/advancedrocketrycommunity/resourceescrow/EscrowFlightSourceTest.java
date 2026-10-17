@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBoots
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.nbt.*;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -74,6 +75,53 @@ class EscrowFlightSourceTest {
         var tooDeep = new ListTag(); tooDeep.add(new CompoundTag()); branch.put("Passengers", tooDeep);
         assertFalse(validator.test(deep), "One extra passenger nesting level must refuse the proof");
         envelope.getCompound("flight").putInt("external_mutation", 1); assertTrue(validator.test(root), "Predicate must retain an immutable copy");
+    }
+
+    @Test void transientDeltaMovementIsNotNowWithoutTheStickyFlagButPersistentChangesStaySticky() {
+        var unchanged = new java.util.concurrent.atomic.AtomicBoolean(true);
+        var compared = new java.util.concurrent.atomic.AtomicInteger();
+        // An impulse after the entity tick is visible in END; the rocket's next tick zeroes it.
+        for (var motion : List.of(new Vec3(0.125, 0, 0), new Vec3(0, -0.4, 0), new Vec3(0, 0, 1e-9), new Vec3(-0.0, 0, 0))) {
+            for (int poll = 0; poll < 3; poll++) {
+                assertFalse(EscrowFlightSource.observe(unchanged, motion, () -> { compared.incrementAndGet(); return true; }));
+                assertTrue(unchanged.get(), "Transient motion " + motion + " set the sticky flag");
+            }
+        }
+        assertEquals(0, compared.get(), "Transient motion must answer before comparing the capture");
+        assertTrue(EscrowFlightSource.observe(unchanged, Vec3.ZERO, () -> { compared.incrementAndGet(); return true; }));
+        assertEquals(1, compared.get());
+        // A persistent change of position or any other field invalidates the capture exactly as before.
+        assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, () -> false));
+        assertFalse(unchanged.get());
+        assertFalse(EscrowFlightSource.observe(unchanged, Vec3.ZERO, () -> true), "A later match cleared a persistent change");
+        assertFalse(EscrowFlightSource.observe(unchanged, new Vec3(0.125, 0, 0), () -> true));
+        assertEquals(1, compared.get(), "A sticky capture compared again");
+        // Explicit departure invalidation is the same sticky flag.
+        var departed = new java.util.concurrent.atomic.AtomicBoolean(false);
+        assertFalse(EscrowFlightSource.observe(departed, Vec3.ZERO, () -> true));
+    }
+
+    @Test void aSaveTakenWithTransientMotionStillRefusesTheDiskProof() {
+        var endpoint = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, "minecraft:overworld", EscrowTestFixtures.id(1),
+                EscrowTestFixtures.id(2), "advancedrocketrycommunity:rocket", 4, 0, 4, EscrowEndpoint.Unit.PRIMARY, 2,
+                EscrowTestFixtures.hash(1), EscrowTestFixtures.hash(1));
+        var envelope = new CompoundTag(); envelope.putUUID("owner", EscrowTestFixtures.id(3));
+        for (String key : List.of("snapshot", "flight", "wrapper")) { var tag = new CompoundTag(); tag.putString("fixture", key); envelope.put(key, tag); }
+        envelope.put("pos", vector(64.5, 100, 64.5)); envelope.put("motion", vector(0, 0, 0));
+        envelope.putBoolean("no_gravity", true); envelope.putBoolean("no_physics", true);
+        envelope.putBoolean("on_ground", false); envelope.putBoolean("invulnerable", false);
+        envelope.putFloat("yaw", 0); envelope.putFloat("pitch", 0);
+        var entity = new CompoundTag(); entity.putUUID("UUID", endpoint.identity()); entity.putString("id", endpoint.type());
+        var data = new CompoundTag(); data.putInt("schema_version", 3); data.putUUID("assembly_transaction_id", endpoint.logicalRocket());
+        data.putUUID("owner_id", envelope.getUUID("owner")); data.put("snapshot", envelope.getCompound("snapshot").copy());
+        data.put("flight_data", envelope.getCompound("flight").copy()); data.put("resource_escrow", envelope.getCompound("wrapper").copy());
+        entity.put("RocketEntityData", data); entity.put("Pos", envelope.get("pos").copy()); entity.put("Motion", vector(0.125, 0, 0));
+        var rotation = new ListTag(); rotation.add(FloatTag.valueOf(0)); rotation.add(FloatTag.valueOf(0)); entity.put("Rotation", rotation);
+        entity.putBoolean("NoGravity", true); entity.putBoolean("OnGround", false); entity.putBoolean("Invulnerable", false);
+        var root = new CompoundTag(); root.putIntArray("Position", new int[] {4, 4}); var entities = new ListTag(); entities.add(entity); root.put("Entities", entities);
+        assertFalse(EscrowFlightSource.validator(endpoint, envelope).test(root), "A save with transient motion proved the stationary capture");
+        entity.put("Motion", vector(0, 0, 0));
+        assertTrue(EscrowFlightSource.validator(endpoint, envelope).test(root));
     }
 
     private static ListTag vector(double x, double y, double z) {

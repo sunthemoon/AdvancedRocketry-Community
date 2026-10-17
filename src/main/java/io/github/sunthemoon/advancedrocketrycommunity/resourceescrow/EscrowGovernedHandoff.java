@@ -72,7 +72,11 @@ final class EscrowGovernedHandoff {
             EscrowTags.require(Thread.currentThread() == owner, "F7 observation requires its owner thread");
             if (!valid()) { return false; }
             try {
-                if (passengersResolved.getAsBoolean() && EscrowGovernedEnvelope.same(survivor, observeSurvivor.get())) { return valid(); }
+                var observed = observeSurvivor.get();
+                // R17 item 5: motion that the survivor's own tick zeroes is "not now"; it does not end this proof.
+                // The slot proofs still compare the saved Motion, and the replacement lease is unchanged.
+                if (EscrowGovernedFrame.transientMotion(observed)) { return false; }
+                if (passengersResolved.getAsBoolean() && EscrowGovernedEnvelope.same(survivor, observed)) { return valid(); }
             } catch (IllegalArgumentException | IllegalStateException | ArithmeticException invalid) {
                 // A malformed live observation refuses this write; it is not a server-tick exception.
             }

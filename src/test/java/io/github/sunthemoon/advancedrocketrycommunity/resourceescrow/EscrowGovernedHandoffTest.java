@@ -201,6 +201,41 @@ class EscrowGovernedHandoffTest {
         }
     }
 
+    @ParameterizedTest @EnumSource(value = EscrowFlightTables.Outcome.class, names = {"HANDED_OFF", "CANCELLED"})
+    void transientSurvivorMotionIsNotNowAndKeepsTheF7Proof(EscrowFlightTables.Outcome outcome) throws Exception {
+        try (var f = new Fixture(outcome, false);
+             var writer = f.writer(CheckedSavedDataFile::atomicMove, cut -> { }); var coordinator = new EscrowCoordinator(f.data, writer)) {
+            var before = coordinator.ledger(); var results = new ArrayList<Boolean>();
+            // R17 item 5: an impulse seen in END, before the survivor's next tick zeroes it.
+            f.observed.put("motion", GovernedTransferFixture.vector(0.125, 0, 0));
+            for (int poll = 0; poll < 3; poll++) {
+                assertFalse(EscrowGovernedHandoff.request(coordinator, f.journal, f.proof, results::add));
+                assertTrue(f.proof.valid(), "Transient motion ended the F7 proof");
+            }
+            assertEquals(before, coordinator.ledger()); assertTrue(results.isEmpty()); assertEquals(0, f.releases.get());
+            f.observed.put("motion", GovernedTransferFixture.vector(0, 0, 0));
+            assertTrue(EscrowGovernedHandoff.request(coordinator, f.journal, f.proof, results::add));
+            pump(coordinator, 0, () -> !results.isEmpty());
+            assertEquals(List.of(true), results); assertEquals(outcome, coordinator.ledger().armedFlights().get(0).outcome());
+            assertEquals(coordinator.ledger(), f.disk());
+        }
+    }
+
+    @Test void persistentSurvivorChangeStillEndsTheF7ProofAfterItsFieldReturns() throws Exception {
+        try (var f = new Fixture(EscrowFlightTables.Outcome.CANCELLED, false);
+             var writer = f.writer(CheckedSavedDataFile::atomicMove, cut -> { }); var coordinator = new EscrowCoordinator(f.data, writer)) {
+            var before = coordinator.ledger(); var results = new ArrayList<Boolean>();
+            var pos = f.survivor.getList("pos", 6);
+            f.observed.put("pos", GovernedTransferFixture.vector(pos.getDouble(0) + 1, pos.getDouble(1), pos.getDouble(2)));
+            assertFalse(EscrowGovernedHandoff.request(coordinator, f.journal, f.proof, results::add));
+            assertFalse(f.proof.valid(), "A persistent placement change kept the F7 proof");
+            f.observed.put("pos", f.survivor.get("pos").copy());
+            assertFalse(EscrowGovernedHandoff.request(coordinator, f.journal, f.proof, results::add));
+            coordinator.tick(0);
+            assertTrue(results.isEmpty()); assertEquals(before, coordinator.ledger()); assertEquals(before, f.disk());
+        }
+    }
+
     @Test void unknownKeepsExactCandidateTokensAndCapacityUntilItsAcknowledgement() throws Exception {
         try (var f = new Fixture(EscrowFlightTables.Outcome.CANCELLED, false)) {
             var results = new ArrayList<Boolean>(); var fail = new AtomicBoolean(true);

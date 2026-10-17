@@ -46,9 +46,24 @@ final class EscrowFlightSource {
 
     /** Cheap owner-thread observation of immutable model identities and native mutable fields. */
     boolean observe() {
-        if (!unchanged.get()) { return false; }
+        return observe(unchanged, rocket.getDeltaMovement(), this::same);
+    }
+
+    /**
+     * R17 item 5: delta movement that the rocket's own tick zeroes is transient, so it answers "not now" without the
+     * sticky flag. Proof callbacks run in ServerTickEvent END, after that tick. The disk validators still compare the
+     * saved Motion, so a save taken with the motion still refuses its proof. Any other change stays sticky.
+     */
+    static boolean observe(AtomicBoolean unchanged, net.minecraft.world.phys.Vec3 motion, java.util.function.BooleanSupplier same) {
+        if (!unchanged.get() || EscrowGovernedFrame.transientMotion(motion)) { return false; }
+        boolean result = same.getAsBoolean();
+        if (!result) { unchanged.set(false); }
+        return result;
+    }
+
+    private boolean same() {
         var pos = envelope.getList("pos", Tag.TAG_DOUBLE); var motion = envelope.getList("motion", Tag.TAG_DOUBLE);
-        boolean same = boundary.getAsBoolean() && !rocket.isRemoved() && rocket.isAddedToWorld() && rocket.operational()
+        return boundary.getAsBoolean() && !rocket.isRemoved() && rocket.isAddedToWorld() && rocket.operational()
                 && rocket.flightData().orElse(null) == flight && rocket.snapshot().orElse(null) == snapshot
                 && rocket.escrowSection().equals(wrapper) && rocket.getUUID().equals(endpoint.identity())
                 && rocket.ownerId().filter(envelope.getUUID("owner")::equals).isPresent()
@@ -60,8 +75,6 @@ final class EscrowFlightSource {
                 && rocket.onGround() == envelope.getBoolean("on_ground") && rocket.isInvulnerable() == envelope.getBoolean("invulnerable")
                 && rocket.getYRot() == envelope.getFloat("yaw") && rocket.getXRot() == envelope.getFloat("pitch")
                 && EscrowGovernedEnvelope.liveRiders(rocket);
-        if (!same) { unchanged.set(false); }
-        return same;
     }
 
     Predicate<CompoundTag> validator() { return validator(endpoint, envelope); }

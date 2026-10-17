@@ -4,6 +4,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.phys.Vec3;
 
 /** R17: warm bindings observe fields after the tick's motion/plan normalization, not transient impulses. */
@@ -11,7 +12,13 @@ final class EscrowGovernedFrame {
     private EscrowGovernedFrame() { }
 
     static boolean transientMotion(RocketEntity rocket) {
-        return rocket != null && !Vec3.ZERO.equals(rocket.getDeltaMovement());
+        return rocket != null && transientMotion(rocket.getDeltaMovement());
+    }
+    static boolean transientMotion(Vec3 motion) { return !Vec3.ZERO.equals(motion); }
+    /** The same rule over a live envelope; a missing or malformed vector is not transient and still mismatches. */
+    static boolean transientMotion(CompoundTag observed) {
+        var motion = observed.getList("motion", Tag.TAG_DOUBLE);
+        return motion.size() == 3 && transientMotion(new Vec3(motion.getDouble(0), motion.getDouble(1), motion.getDouble(2)));
     }
 
     static boolean moving(RocketFlightState state) {
