@@ -244,6 +244,34 @@ def load_arrival(process: smoke.CapturedProcess, origin: tuple[int, int, int]) -
     FlightHarness.command_marker(process, _in_dimension(MOON, f"say {marker}"), marker, 30)
 
 
+def recovery_actions(lines: list[str], transfer: str) -> list[str]:
+    """The actions of the RECOVERED lines that ordinary recovery logged for one transfer, in order."""
+    pattern = re.compile(rf"ARCE_TRANSFER_RECOVERY transfer={re.escape(transfer)} .*action=([A-Z_]+) status=RECOVERED")
+    return [match.group(1) for match in map(pattern.search, lines) if match]
+
+
+def check_restart_actions(case: str, first: list[str], second: list[str]) -> None:
+    """W92-R6 (a): restart 2 never rebuilds the arrival again, and it keeps an arrival that restart 1 rebuilt."""
+    if "REBUILD_DESTINATION" in second:
+        raise smoke.SmokeError(f"{case}: restart 2 rebuilt the arrival again: {second}")
+    if "REBUILD_DESTINATION" in first and "KEEP_DESTINATION" not in second:
+        raise smoke.SmokeError(f"{case}: restart 2 did not keep the arrival that restart 1 rebuilt: {second}")
+
+
+def settle_arrival(process, landed: dict) -> None:
+    """A rebuilt arrival replays its descent; return only once it has landed again, so that both restarts save the
+    same settled entity rather than one taken mid-descent."""
+    descending = re.compile(rf"ARCE_ROCKET_ENTITY_ACTIVE entity={re.escape(landed['entity'])} .*flight_state=DESCENT")
+    retained = re.compile(rf"ARCE_TRANSFER_PHASE transfer={re.escape(landed['transfer'])} "
+                          r".*event=landed_reservation_retained ")
+    if "REBUILD_DESTINATION" in recovery_actions(process.lines, landed["transfer"]):
+        # W92-R6 (b): the DESCENT line can follow the recovery line by a second, so one scan could miss it. Wait a
+        # bounded time for it, or for the landing itself, before deciding; the wait raises on timeout.
+        process.wait_for(re.compile(f"(?:{descending.pattern})|(?:{retained.pattern})"), 30)
+    if any(descending.search(line) for line in process.lines):
+        process.wait_for(retained, 120)
+
+
 def restart(args, session: Path, evidence: Path, case: str, number: int, landed: dict) -> dict:
     process = start(args, session, evidence, f"{case}-restart-{number}", {})
     try:
@@ -255,17 +283,13 @@ def restart(args, session: Path, evidence: Path, case: str, number: int, landed:
             if any(recovered.search(line) for line in process.lines):
                 break
             time.sleep(1)
-        # A rebuilt arrival replays its descent; stop only once it has landed again, so that both restarts save
-        # the same settled entity rather than one taken mid-descent.
-        descending = re.compile(rf"ARCE_ROCKET_ENTITY_ACTIVE entity={re.escape(landed['entity'])} .*flight_state=DESCENT")
-        if any(descending.search(line) for line in process.lines):
-            process.wait_for(re.compile(rf"ARCE_TRANSFER_PHASE transfer={re.escape(landed['transfer'])} "
-                                        r".*event=landed_reservation_retained "), 120)
+        settle_arrival(process, landed)
         time.sleep(3)
         code = stop(process)
         if code != 0:
             raise smoke.SmokeError(f"{case}: restart {number} exited {code}")
         return dict(exit_code=code, recovered=any(recovered.search(line) for line in process.lines),
+                    actions=recovery_actions(process.lines, landed["transfer"]),
                     errors=[line.rstrip() for line in process.lines if "/ERROR]" in line or "/FATAL]" in line])
     except BaseException:
         process.abort()
@@ -341,6 +365,7 @@ def run_case(args, session: Path, evidence: Path, case: str, report: dict) -> di
             check_expected(case, state, obstruction)
             states.append(state)
             row["restarts"].append(dict(result, disk=state))
+        check_restart_actions(case, row["restarts"][0]["actions"], row["restarts"][1]["actions"])
         first, second = comparable(states[0]), comparable(states[1])
         if first != second:
             changed = sorted(key for key in first if first[key] != second[key])

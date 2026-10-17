@@ -11,6 +11,28 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import run_v180_landed_disassembly_cuts as runner
 
 
+TRANSFER = "e6814a3c-ede6-438d-a369-84258a003e25"
+OTHER = "3ac32069-d81e-43f2-a3bd-6b2c860a246d"
+ENTITY = "44c6426f-a2af-4420-97fc-e82238498bcb"
+
+
+class FakeProcess:
+    """Server lines that appear only while the harness waits, as a live server's do."""
+
+    def __init__(self, lines, later):
+        self.lines, self.later, self.waits = list(lines), list(later), []
+
+    def wait_for(self, marker, timeout, *, start_at=0):
+        self.waits.append(marker)
+        while True:
+            for index in range(start_at, len(self.lines)):
+                if marker.search(self.lines[index]):
+                    return index
+            if not self.later:
+                raise runner.smoke.SmokeError(f"Timed out after {timeout} s waiting for {marker.pattern}")
+            self.lines.append(self.later.pop(0))
+
+
 def state(landed=True, rockets=1, blocks=None, block_entities=()):
     return dict(records=[], landed=[{"transfer": "t"}] if landed else [], rockets=[{"uuid": "e"}] * rockets,
                 blocks=blocks or {"0,80,0": "minecraft:air"}, block_entities=list(block_entities), files={})
@@ -73,6 +95,39 @@ class LandedDisassemblyCutsTest(unittest.TestCase):
                           ("K10", state(block_entities=[{"id": "minecraft:chest"}]))):
             with self.assertRaises(runner.smoke.SmokeError, msg=case):
                 runner.check_expected(case, bad, "1,80,0" if case == "K4" else None)
+
+    def test_restart_two_keeps_a_rebuilt_arrival_and_never_rebuilds_again(self):
+        # W92-R6 (a); the line shape is K1's restart 1 in the W92 native-all2 evidence.
+        lines = [f"[04:57:26] [Server thread/WARN] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_TRANSFER_RECOVERY "
+                 f"transfer={TRANSFER} phase=COMMITTED source_count=0 destination_count=0 action=REBUILD_DESTINATION "
+                 f"status=RECOVERED",
+                 f"ARCE_TRANSFER_RECOVERY transfer={OTHER} phase=COMMITTED action=KEEP_DESTINATION status=RECOVERED"]
+        self.assertEqual(["REBUILD_DESTINATION"], runner.recovery_actions(lines, TRANSFER))
+        for first, second in ((["REBUILD_DESTINATION"], ["KEEP_DESTINATION"]), (["KEEP_DESTINATION"], ["KEEP_DESTINATION"]),
+                              ([], [])):
+            runner.check_restart_actions("K1", first, second)
+        for first, second in ((["REBUILD_DESTINATION"], ["REBUILD_DESTINATION"]), (["REBUILD_DESTINATION"], []),
+                              (["KEEP_DESTINATION"], ["REBUILD_DESTINATION"])):
+            with self.assertRaises(runner.smoke.SmokeError, msg=f"{first} {second}"):
+                runner.check_restart_actions("K1", first, second)
+
+    def test_a_late_descent_line_after_a_rebuild_still_waits_for_the_landing(self):
+        # W92-R6 (b): the DESCENT line arrives only while the harness waits, after the recovery line was seen.
+        landed = dict(transfer=TRANSFER, entity=ENTITY)
+        recovered = (f"ARCE_TRANSFER_RECOVERY transfer={TRANSFER} phase=COMMITTED action=REBUILD_DESTINATION "
+                     f"status=RECOVERED")
+        descent = f"ARCE_ROCKET_ENTITY_ACTIVE entity={ENTITY} operational=true flight_state=DESCENT fuel=628"
+        retained = f"ARCE_TRANSFER_PHASE transfer={TRANSFER} phase=COMMITTED event=landed_reservation_retained entity=x"
+        process = FakeProcess([recovered], [descent, retained])
+        runner.settle_arrival(process, landed)
+        self.assertEqual(2, len(process.waits), "The rebuilt arrival was not followed to its landing")
+        self.assertTrue(process.waits[-1].search(retained))
+        kept = FakeProcess([recovered.replace("REBUILD_DESTINATION", "KEEP_DESTINATION")], [])
+        runner.settle_arrival(kept, landed)
+        self.assertEqual([], kept.waits, "A kept, landed arrival needs no wait")
+        silent = FakeProcess([recovered], [])
+        with self.assertRaises(runner.smoke.SmokeError):
+            runner.settle_arrival(silent, landed)
 
     def test_every_required_cut_is_planned_with_two_restarts_and_no_forced_flush(self):
         self.assertEqual({"K1", "K2", "K4", "K5", "K9", "K10"}, set(runner.CASES))
