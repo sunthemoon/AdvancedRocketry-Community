@@ -11,6 +11,8 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderStatus;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.LoaderEscrowSection;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.RefillPacer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -19,6 +21,7 @@ import java.util.UUID;
 import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.gametest.GameTestHolder;
@@ -27,9 +30,10 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 /**
  * W95, leaf B3-E: a world's first admitted fill creates the ledger (W11B3-DESIGN section 2). The test runs alone in its
  * batch: it detaches the shared GameTest ledger through the runtime's retarget method and sets its file aside, so the
- * world is NO_FILE; a gated real loader's fair-queue visit then creates a fresh production ledger, whose empty
- * generation-1 baseline reaches the disk before L1. Production reconciliation completes the fill, and the original
- * ledger and its file are restored exactly, by the after-batch cleanup if the test fails or times out (W95-R2).
+ * world is NO_FILE. Before any fill is admitted, a closed switch (W95-R4) and then a full fair queue (W95-R5) create
+ * nothing and show their refusal. A gated real loader's fair-queue visit then creates a fresh production ledger, whose
+ * empty generation-1 baseline reaches the disk before L1. Production reconciliation completes the fill, and the
+ * original ledger and its file are restored exactly, by the after-batch cleanup if the test fails or times out (W95-R2).
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
@@ -45,10 +49,10 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
     }
 
     /**
-     * W95-R2: runs after a failure or a timeout too. Unless the test finished, it closes the device gate, clears the
-     * fixtures and restores the original ledger and its file. The retarget refuses while the created ledger holds
-     * queued, captured or UNKNOWN work; then the shared ledger stays detached, and one line naming the batch says so,
-     * so that any later failure is attributable.
+     * W95-R2: runs after a failure or a timeout too. Unless the test finished, it closes the device gate, stops the
+     * fillers, clears the fixtures and restores the original ledger and its file. The retarget refuses while the created
+     * ledger holds queued, captured or UNKNOWN work; then the shared ledger stays detached, and one line naming the batch
+     * says so, so that any later failure is attributable.
      */
     @AfterBatch(batch = BATCH)
     public static void afterBatch(ServerLevel level) {
@@ -79,8 +83,11 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
         UUID operation;
         /** The fixture holds the server's ledger slot, and the ledger file holds no original bytes; undo restores both. */
         boolean detached, fileAside;
+        /** W95-R5's inert entries renew themselves while this is set and the phase's deadline has not passed. */
+        boolean fillers;
+        long fullUntil;
         boolean baselineSeen, finished;
-        int step;
+        int step, closedTicks;
         Creation(GameTestHelper helper) {
             this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
             area = new Area(level, 47_040, 47_000);
@@ -108,13 +115,53 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
                     rocket = FluidFuelLoaderEscrowFixtures.rocket(level, area.at(8, 100, 8), owner, mono(2_000));
                     helper.assertTrue(level.addFreshEntity(rocket), "Native rocket publication failed");
                     loader = FluidFuelLoaderEscrowFixtures.loader(level, area.at(6, 100, 8), owner, tank(ROCKET_FUEL, 1_000), binding(rocket));
-                    runtime.loaderAdmissionForTests(server, device(loader), true);
                     step = 1;
                 }
                 case 1 -> {
+                    // W95-R4: the switch stays closed (no device hook, no property), so the loader path creates nothing.
+                    nothingCreated(server, delegate);
+                    helper.assertTrue(!EscrowLoaderAdmission.enabled(server, device(loader)), "The switch opened without the device's hook");
+                    if (++closedTicks <= 2 * RefillPacer.INTERVAL_TICKS || loader.lastAttempt() != FluidFuelLoaderStatus.ADMISSION_DISABLED) { return; }
+                    // Both entry points once more, synchronously: the paced attempt and the fair-queue visit.
+                    var envelope = loader.saveWithFullMetadata(); var native_ = rocket.saveWithoutId(new CompoundTag());
+                    helper.assertTrue(loader.attempt() == FluidFuelLoaderStatus.ADMISSION_DISABLED && !loader.admitFromQueue()
+                            && loader.lastAttempt() == FluidFuelLoaderStatus.ADMISSION_DISABLED
+                            && loader.displayStatus() == FluidFuelLoaderStatus.ADMISSION_DISABLED, "A closed switch did not show ADMISSION_DISABLED");
+                    helper.assertTrue(envelope.equals(loader.saveWithFullMetadata()) && native_.equals(rocket.saveWithoutId(new CompoundTag())),
+                            "A closed switch changed the loader's or the rocket's envelope");
+                    nothingCreated(server, delegate);
+                    step = 2;
+                }
+                case 2 -> {
+                    // W95-R5: inert entries fill the fair queue before the device's switch opens.
+                    var fills = runtime.fills(server);
+                    helper.assertTrue(fills.size() == 0, "Another device waits in the fair queue");
+                    fillers = true; fullUntil = level.getGameTime() + 3L * RefillPacer.INTERVAL_TICKS;
+                    for (int i = 0; i < EscrowFillQueue.CAPACITY; i++) {
+                        var id = new UUID(0x5795FL, i);
+                        helper.assertTrue(fills.offer(id, filler(fills, id)), "The fair queue refused filler " + i);
+                    }
+                    runtime.loaderAdmissionForTests(server, device(loader), true);
+                    helper.assertTrue(fills.size() == EscrowFillQueue.CAPACITY, "The fair queue is not full");
+                    step = 3;
+                }
+                case 3 -> {
+                    nothingCreated(server, delegate);
+                    var fills = runtime.fills(server); var last = loader.lastAttempt();
+                    helper.assertTrue(last.refusal(), "A device met the full fair queue with " + last);
+                    if (last != FluidFuelLoaderStatus.ESCROW_FULL) {
+                        helper.assertTrue(level.getGameTime() < fullUntil, "No paced attempt met the full fair queue: " + last);
+                        return;
+                    }
+                    helper.assertTrue(loader.displayStatus() == FluidFuelLoaderStatus.ESCROW_FULL && fills.size() == EscrowFillQueue.CAPACITY,
+                            "A full fair queue showed " + loader.displayStatus());
+                    // The fillers leave at the queue's own pace; the device then joins and is admitted.
+                    fillers = false; step = 4;
+                }
+                case 4 -> {
                     var data = ResourceEscrowSavedData.existing(server);
                     if (data == null) {
-                        // Ordinary queries, paced attempts and an unbound or waiting device create nothing.
+                        // Ordinary queries, paced attempts and a waiting device create nothing.
                         helper.assertTrue(!Files.exists(file) && delegate.state() == EscrowAdmissionAuthority.Delegate.State.NO_FILE
                                 && amount(loader) == 1_000, "Something but the first admitted fill created a ledger");
                         return;
@@ -127,9 +174,9 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
                             "Creation did not attach the ledger and queue exactly the reserved fill");
                     helper.assertTrue(named.get(0).sequence() == 1 && created.ledger().records().isEmpty() && amount(loader) == 1_000
                             && loader.displayStatus() == FluidFuelLoaderStatus.PREPARING, "The first fill moved or showed progress early");
-                    operation = named.get(0).id(); step = 2;
+                    operation = named.get(0).id(); step = 5;
                 }
-                case 2 -> {
+                case 5 -> {
                     var coordinator = created.bind(server);
                     var disk = readable();
                     if (disk != null && disk.writerGeneration() == 1) {
@@ -142,9 +189,9 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
                         return;
                     }
                     helper.assertTrue(baselineSeen && !coordinator.creationBaselinePending(), "L1 was not preceded by the empty baseline");
-                    step = 3;
+                    step = 6;
                 }
-                case 3 -> {
+                case 6 -> {
                     long held = held(server, rocket, List.of(loader));
                     helper.assertTrue(amount(loader) + bank(rocket, false) + held == 1_000, "Conservation failed");
                     var coordinator = created.bind(server);
@@ -153,10 +200,27 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
                             || coordinator.admissionAuthority().pendingFor(rocket.assemblyTransactionId().orElseThrow()) != 0) { return; }
                     helper.assertTrue(created.ledger().id().equals(rocket.escrowSection().ledger())
                             && created.ledger().id().equals(section(loader).ledger()), "The endpoints are not bound to the created ledger");
-                    step = 4;
+                    step = 7;
                 }
                 default -> restore(server, delegate);
             }
+        }
+        /** Before the first admitted fill: no ledger, no file, NO_FILE, both resource stores untouched, the device not queued. */
+        void nothingCreated(MinecraftServer server, EscrowAdmissionAuthority.Delegate delegate) {
+            helper.assertTrue(ResourceEscrowSavedData.existing(server) == null && !Files.exists(file)
+                    && delegate.state() == EscrowAdmissionAuthority.Delegate.State.NO_FILE, "A ledger exists before the first admitted fill");
+            helper.assertTrue(amount(loader) == 1_000 && bank(rocket, false) == 0 && section(loader).equals(LoaderEscrowSection.neutral())
+                    && rocket.escrowSection().markers().isEmpty(), "A resource moved before the first admitted fill");
+            helper.assertTrue(!EscrowRuntime.of(server).fills(server).waiting(device(loader)), "The device was queued");
+        }
+        /** An inert entry: it captures nothing and, while the full-queue phase lasts, joins the back of the queue again. */
+        EscrowFillQueue.Attempt filler(EscrowFillQueue fills, UUID id) {
+            return new EscrowFillQueue.Attempt() {
+                @Override public boolean visit() {
+                    if (fillers && level.getGameTime() < fullUntil) { fills.offer(id, this); }
+                    return false;
+                }
+            };
         }
         /** The disk's ledger, or null while the IO thread replaces it. */
         EscrowLedger readable() {
@@ -170,12 +234,13 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
             finished = true; helper.succeed();
         }
         /**
-         * Undoes the fixture: the device gate, the loader, the rocket and the ticket, then the original ledger and its
-         * file. It returns false, leaving the ledger and both files as they are, while the created ledger holds queued,
-         * captured or UNKNOWN work, because the retarget then refuses. Running it again changes nothing.
+         * Undoes the fixture: the device gate and the fillers, the loader, the rocket and the ticket, then the original
+         * ledger and its file. It returns false, leaving the ledger and both files as they are, while the created ledger
+         * holds queued, captured or UNKNOWN work, because the retarget then refuses. Running it again changes nothing.
          */
         boolean undo(MinecraftServer server) {
             var runtime = EscrowRuntime.of(server);
+            fillers = false;
             if (loader != null) {
                 loader.root().ifPresent(root -> runtime.loaderAdmissionForTests(server, root.device(), false));
                 clear(level, loader.getBlockPos());
