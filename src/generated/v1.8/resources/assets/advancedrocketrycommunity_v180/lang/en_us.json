@@ -719,6 +719,7 @@
   "tooltip.advancedrocketrycommunity.linker.selection": "Selected loader at %s, %s, %s",
   "tooltip.advancedrocketrycommunity.seal_detector.measurement_only": "One boundary does not certify a room",
   "tooltip.advancedrocketrycommunity.tank.contents": "%s: %s mB",
+  "validation.advancedrocketrycommunity.rocket.disassembly_pending": "Disassembly pending: the landing reservation is being released; the rocket disassembles once that is saved.",
   "validation.advancedrocketrycommunity.rocket.external_component_abstract_only": "External thrust/capacity components support abstract fuel only; they cannot join typed Fluid propulsion.",
   "validation.advancedrocketrycommunity.rocket.missing_propulsion_tank": "This mode requires matching fuel and, for bipropellant, oxidizer tanks.",
   "validation.advancedrocketrycommunity.rocket.mixed_propulsion_modes": "Host engines select incompatible propulsion modes.",
