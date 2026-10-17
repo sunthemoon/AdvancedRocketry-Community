@@ -42,6 +42,35 @@ class EscrowOperatorRetryTest {
         assertEquals(EscrowOperatorRetry.Outcome.REFUSED, commands.request(root, EscrowTestFixtures.id(3), 1000, accept).outcome());
         assertEquals(3, requests.get());
     }
+    @Test void settledChainMembersShareTheirIntentCooldown() {
+        var first = EscrowTestFixtures.operation(1, 99, 0).withReason(EscrowReason.OTHER_STATE);
+        var second = EscrowTestFixtures.operation(2, 99, 1).withReason(EscrowReason.OTHER_STATE);
+        var unrelated = EscrowTestFixtures.operation(3);
+        var chain = EscrowTestFixtures.ledger(first, second); var observations = EscrowSettlementIntentTest.observations(chain, false);
+        var preview = EscrowSettlementIntent.preview(chain, first.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                EscrowTestFixtures.id(700), "operator", 0, observations);
+        var intent = preview.confirm(preview.actor(), preview.digest(), 1, observations);
+        var frozen = intent.freeze(chain).append(List.of(unrelated));
+        assertEquals(java.util.Set.of(first.id(), second.id()), intent.ids());
+        var state = new EscrowSettlementRecovery.Work(); state.lastReason = "BARRIER_IO"; state.retryAt = 500;
+        var commands = new EscrowOperatorRetry(); var requests = new AtomicInteger(); var tick = new java.util.concurrent.atomic.AtomicLong();
+        java.util.function.Supplier<EscrowOperatorRetry.Outcome> settle = () -> { requests.incrementAndGet(); return state.accelerate(tick.get()); };
+        tick.set(10);
+        assertEquals(EscrowOperatorRetry.Outcome.ACCEPTED, commands.request(frozen, first.id(), 10, settle).outcome());
+        assertEquals(10, state.retryAt);
+        state.retryAt = 11 + 200; // The accelerated attempt failed again and stalled.
+        tick.set(11);
+        var other = commands.request(frozen, second.id(), 11, settle);
+        assertEquals(EscrowOperatorRetry.Outcome.COOLDOWN, other.outcome()); assertEquals(210, other.nextTick());
+        assertEquals(1, requests.get()); assertEquals(211, state.retryAt);
+        assertEquals(EscrowOperatorRetry.Outcome.ACCEPTED, commands.request(frozen, unrelated.id(), 11,
+                () -> EscrowOperatorRetry.Outcome.ACCEPTED).outcome());
+        tick.set(210);
+        assertEquals(EscrowOperatorRetry.Outcome.ACCEPTED, commands.request(frozen, second.id(), 210, settle).outcome());
+        assertEquals(2, requests.get()); assertEquals(210, state.retryAt);
+        assertEquals(EscrowOperatorRetry.Outcome.COOLDOWN, commands.request(frozen, first.id(), 211, settle).outcome());
+        assertEquals(2, requests.get());
+    }
     @Test void sixtyFourAccelerationsRetainTheEightVisitBudgetAndQueueOrder() {
         var ops = new ArrayList<EscrowOperation>(); for (int i = 1; i <= 64; i++) { ops.add(EscrowTestFixtures.operation(i)); }
         var root = EscrowTestFixtures.ledger(ops.toArray(EscrowOperation[]::new)); var visits = new ArrayList<Long>();

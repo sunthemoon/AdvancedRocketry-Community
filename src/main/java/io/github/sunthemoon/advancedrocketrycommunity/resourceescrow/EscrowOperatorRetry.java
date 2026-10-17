@@ -19,16 +19,25 @@ final class EscrowOperatorRetry {
             };
         }
     }
-    private final Map<UUID, Long> next = new HashMap<>();
+    private final Map<Object, Long> next = new HashMap<>();
     Result request(EscrowLedger root, UUID operation, long tick, Supplier<Outcome> accelerate) {
-        var live = root.records().stream().map(EscrowOperation::id).collect(java.util.stream.Collectors.toSet());
+        var live = new java.util.HashSet<>(); Object key = null;
+        for (var op : root.records()) {
+            var unit = unit(op); live.add(unit);
+            if (op.id().equals(operation)) { key = unit; }
+        }
         next.keySet().retainAll(live);
-        if (!live.contains(operation)) { return new Result(Outcome.REFUSED, -1); }
-        long eligible = next.getOrDefault(operation, 0L);
+        if (key == null) { return new Result(Outcome.REFUSED, -1); }
+        long eligible = next.getOrDefault(key, 0L);
         if (tick < eligible) { return new Result(Outcome.COOLDOWN, eligible); }
         var outcome = accelerate.get();
-        if (outcome == Outcome.ACCEPTED) { next.put(operation, tick + COOLDOWN_TICKS); }
-        return new Result(outcome, next.getOrDefault(operation, -1L));
+        if (outcome == Outcome.ACCEPTED) { next.put(key, tick + COOLDOWN_TICKS); }
+        return new Result(outcome, next.getOrDefault(key, -1L));
+    }
+    /** The retried unit: a settled member's frozen intent (all members share one cooldown), otherwise the operation. */
+    static Object unit(EscrowOperation op) {
+        var settlement = op.settlement();
+        return settlement.isEmpty() ? op.id() : EscrowTags.string(settlement, "digest");
     }
     static boolean retryable(EscrowReason reason) {
         return switch (reason) {
