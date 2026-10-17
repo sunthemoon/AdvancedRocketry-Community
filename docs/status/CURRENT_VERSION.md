@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: c7b5b99f (W11b2 continuation 54 merged after the W11b2 merge)
-latest_hosted_regression: run 39049214708 at d9a7c0e9 (after the W11b2 merge and continuation 54), passed
+latest_hosted_regression: run 39070027622 at 39887e72 (after the W93, W94 and W95 merges), failed two escrow proof GameTests at their 200-tick timeout (W94's retries; W94B fixes them); the last passing run is 39049214708 at d9a7c0e9
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
