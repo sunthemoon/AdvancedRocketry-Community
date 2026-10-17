@@ -9,7 +9,7 @@ import net.minecraft.server.MinecraftServer;
  */
 @FunctionalInterface
 public interface FirstEventDispositionSource {
-    FirstEventDispositionSource WORLD = ClassicFirstEventDelivery::disposition;
+    FirstEventDispositionSource WORLD = FirstEventCutSeams::disposition;
 
     FirstEventDisposition disposition(MinecraftServer server, FirstEventKind kind, FirstEventSourceView source,
                                       FirstEventOutbox ram);

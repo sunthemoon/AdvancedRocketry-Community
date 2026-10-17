@@ -54,6 +54,7 @@ public final class FirstEventCutSeams {
     private static final AtomicBoolean RELEASED = new AtomicBoolean();
     private static final AtomicBoolean LATCH_USED = new AtomicBoolean();
     private static FirstEventCutLatch latch;
+    private static FirstEventBenchmarkHold benchmarkHold;
     private static final java.util.EnumSet<FirstEventKind> observedHolds = java.util.EnumSet.noneOf(FirstEventKind.class);
     private static boolean moonWaitObserved;
 
@@ -135,6 +136,8 @@ public final class FirstEventCutSeams {
         FirstEventAvailabilityCut.reset();
         if (latch != null) { latch.release(); }
         latch = null;
+        if (benchmarkHold != null) { benchmarkHold.close(); }
+        benchmarkHold = null;
         AtomicSavedData.installCommitterSelector(null);
         configured().ifPresent(cut -> {
             EscrowTestEndpoints.requireEnabled(server);
@@ -193,6 +196,7 @@ public final class FirstEventCutSeams {
     /** Advances only the test latch's hard limit; no-op in production. */
     static void fixtureTick(MinecraftServer server) {
         FirstEventAvailabilityCut.tick(server);
+        if (benchmarkHold != null) { benchmarkHold.tick(server.getTickCount()); }
         if (latch != null) {
             active(server).orElseThrow();
             latch.tick(server.getTickCount());
@@ -202,6 +206,35 @@ public final class FirstEventCutSeams {
     /** Stop cannot wait for an unreleased test latch while draining the journal. */
     static void stopFixture() {
         if (latch != null) { latch.release(); }
+        if (benchmarkHold != null) { benchmarkHold.close(); }
+    }
+
+    /** Holds only the existing disposition-source seam; the real landing code must observe and handle DEFER. */
+    public static FirstEventBenchmarkHold holdBenchmarkDisposition(MinecraftServer server) {
+        requireBenchmark(server);
+        if (benchmarkHold != null || configured().isPresent()) {
+            throw new IllegalStateException("A first-event hold was already installed");
+        }
+        benchmarkHold = new FirstEventBenchmarkHold(server.getTickCount());
+        return benchmarkHold;
+    }
+
+    /** Production delegates unchanged; only the explicitly armed native benchmark can defer an ALLOW. */
+    static FirstEventDisposition disposition(MinecraftServer server, FirstEventKind kind,
+                                             FirstEventSourceView source, FirstEventOutbox ram) {
+        var actual = ClassicFirstEventDelivery.disposition(server, kind, source, ram);
+        if (benchmarkHold == null || benchmarkHold.released()) { return actual; }
+        requireBenchmark(server);
+        return benchmarkHold.disposition(kind, actual);
+    }
+
+    private static void requireBenchmark(MinecraftServer server) {
+        if (!Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                || !"GOVERNED_BENCH".equals(System.getProperty("advancedrocketrycommunity.escrowCase"))
+                || !"start".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"))) {
+            throw new IllegalStateException("The first-event benchmark hold is release-test only");
+        }
+        EscrowTestEndpoints.requireEnabled(server);
     }
 
     /** FP7a observes the real completion's WAIT, rather than merely observing an unreadable root at startup. */
@@ -210,6 +243,7 @@ public final class FirstEventCutSeams {
                 && "GOVERNED_BENCH".equals(System.getProperty("advancedrocketrycommunity.escrowCase"))) {
             EscrowTestEndpoints.requireEnabled(server);
             io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server).checkpoint("WORLD_FIRST_DEFER");
+            if (benchmarkHold != null) { benchmarkHold.deferred(server.getTickCount()); }
         }
         if (!is(server, Cut.FP7A)) { return; }
         moonWaitObserved = true;

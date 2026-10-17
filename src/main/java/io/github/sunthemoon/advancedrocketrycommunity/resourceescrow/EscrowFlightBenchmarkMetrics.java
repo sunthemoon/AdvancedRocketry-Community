@@ -23,6 +23,7 @@ final class EscrowFlightBenchmarkMetrics implements EscrowTimingSink {
     private final Map<Long, Map<String, Integer>> topology = new TreeMap<>();
     private volatile boolean active;
     private long tickStart, allocationStart;
+    private int defersAtTickStart;
 
     void start() { active = true; }
     void stop() { active = false; }
@@ -79,16 +80,20 @@ final class EscrowFlightBenchmarkMetrics implements EscrowTimingSink {
         checkpoints.merge(name, 1, Math::addExact);
     }
     synchronized Map<String, Integer> checkpoints() { return Map.copyOf(checkpoints); }
+    private synchronized int deferCount() { return checkpoints.getOrDefault("WORLD_FIRST_DEFER", 0); }
     synchronized Map<Long, Map<String, Integer>> topology() { return Map.copyOf(topology); }
     void startTick() {
         if (!active) { return; }
         tickStart = System.nanoTime(); allocationStart = allocated();
+        defersAtTickStart = deferCount();
     }
     void endTick(boolean save) {
         if (!active || tickStart == 0) { return; }
         long elapsed = System.nanoTime() - tickStart;
         sample("tick_main", elapsed);
         if (!save) { sample("tick_main_nonsave", elapsed); }
+        // Whole ticks containing actual deferred visits, not an attributed per-visit executor cost.
+        if (deferCount() > defersAtTickStart) { sample("tick_main_world_first_defer", elapsed); }
         sample("allocation_bytes", allocated() - allocationStart);
         tickStart = 0;
     }
