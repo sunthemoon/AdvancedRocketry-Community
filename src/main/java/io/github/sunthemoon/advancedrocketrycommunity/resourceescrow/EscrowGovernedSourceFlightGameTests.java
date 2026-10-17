@@ -146,6 +146,7 @@ public final class EscrowGovernedSourceFlightGameTests {
         private Departure departure = Departure.NONE;
         private boolean departed, reconnected;
         private long offlineLandedAt = -1;
+        private final java.util.Map<BlockPos, net.minecraft.world.level.block.state.BlockState> terrain = new java.util.LinkedHashMap<>();
 
         Scenario(GameTestHelper helper, Fault fault) {
             this.helper = helper; this.fault = fault; level = helper.getLevel();
@@ -496,6 +497,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             rocket.discard();
             if (arrival != null) { arrival.discard(); }
             if (duplicate != null) { duplicate.discard(); }
+            terrain.forEach((pos, state) -> level.setBlock(pos, state, 3));
             for (var pos : List.of(position, destination)) {
                 level.getChunkSource().removeRegionTicket(TicketType.START, new ChunkPos(pos), 2, Unit.INSTANCE);
             }
@@ -534,6 +536,18 @@ public final class EscrowGovernedSourceFlightGameTests {
 
         private void prepare() {
             data = ResourceEscrowSavedData.forTests(level.getServer()); data.bind(level.getServer());
+            if (departure != Departure.NONE) {
+                // Remote generated chunks are not covered by the empty GameTest template.
+                // Own and restore only the two-block source and destination footprints.
+                for (var origin : List.of(position, destination)) {
+                    for (int height = 0; height < 2; height++) {
+                        var cell = origin.above(height);
+                        helper.assertTrue(level.getBlockEntity(cell) == null, "Departure fixture overlaps a block entity");
+                        terrain.put(cell, level.getBlockState(cell));
+                        level.setBlock(cell, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+            }
             if (fault == Fault.NONE || fault == Fault.LANDING) {
                 passenger = connect(UUID.randomUUID());
             }
@@ -567,6 +581,10 @@ public final class EscrowGovernedSourceFlightGameTests {
                     && level.getChunkSource().getChunkNow(unloadedChunk.x, unloadedChunk.z) == null,
                     "Governed pad check loaded an absent terrain chunk");
             var to = from.relocated(UUID.randomUUID(), from.sourceDimension(), new RocketPosition(destination.getX(), destination.getY(), destination.getZ()), now);
+            if (departure != Departure.NONE) {
+                helper.assertTrue(new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector()
+                        .availableLoaded(level, to), "Departure fixture's landing footprint is not clear");
+            }
             var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                     from.sourceDimension(), from.sourceDimension(), 500, now).withPropulsionDebit(new RocketPropulsionDebit(500, 0,
                     fuel.propulsion().orElseThrow().revision(), fuel.resourceSignature(), RocketNativeResources.hash("F3 source fixture")));
