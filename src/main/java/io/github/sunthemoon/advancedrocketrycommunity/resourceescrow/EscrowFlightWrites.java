@@ -11,7 +11,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.BiFunction;
 
-/** Bounded owner-thread batching; one exact generation acknowledges all independent requests. */
+/**
+ * Bounded owner-thread batching; one exact generation acknowledges all independent requests. A request whose guard
+ * refuses at capture or immediately before replacement alone receives false; the others are captured again.
+ */
 final class EscrowFlightWrites {
     private record Request(UUID logical, BiFunction<EscrowLedger, Long, EscrowLedger> change, BooleanSupplier valid, Consumer<Boolean> callback) { }
     private final Map<UUID, Request> queued = new LinkedHashMap<>();
@@ -48,6 +51,8 @@ final class EscrowFlightWrites {
         if (active.isEmpty()) { refused.forEach(value -> value.callback().accept(false)); return false; }
         var capturedRequests = active;
         var snapshot = EscrowLedgerWriter.Snapshot.of(candidate.generation(generation), Set.of());
+        // Written by the writer's guard on its IO thread; the completion queue publishes it to the owner thread.
+        var refusedAtReplace = new java.util.concurrent.atomic.AtomicReference<Request>();
         boolean started = writer.request(() -> snapshot, result -> {
             acknowledge.accept(result);
             if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
@@ -55,9 +60,24 @@ final class EscrowFlightWrites {
             if (!closed) {
                 boolean committed = result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
                         && result.generation() == generation && result.digest().equals(snapshot.digest());
+                var guardRefused = committed ? null : refusedAtReplace.get();
+                if (guardRefused != null) {
+                    // R17 item 3: only the request whose guard refused receives false; the others are captured again.
+                    var again = new LinkedHashMap<UUID, Request>();
+                    capturedRequests.stream().filter(value -> value != guardRefused).forEach(value -> again.put(value.logical(), value));
+                    again.putAll(queued); queued.clear(); queued.putAll(again);
+                    guardRefused.callback().accept(false);
+                    return;
+                }
                 capturedRequests.forEach(value -> value.callback().accept(committed));
             }
-        }, () -> capturedRequests.stream().allMatch(value -> value.valid().getAsBoolean()));
+        }, () -> {
+            refusedAtReplace.set(null);
+            for (var value : capturedRequests) {
+                if (!value.valid().getAsBoolean()) { refusedAtReplace.set(value); return false; }
+            }
+            return true;
+        });
         if (!started) {
             active = List.of();
             capturedRequests.forEach(value -> queued.put(value.logical(), value));

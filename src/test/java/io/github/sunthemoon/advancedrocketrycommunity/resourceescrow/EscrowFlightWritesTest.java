@@ -141,6 +141,38 @@ class EscrowFlightWritesTest {
         }
     }
 
+    /** R17 item 3: a coalesced generation whose one guard refuses before replacement is captured again without it. */
+    @Test void aRequestRefusedBeforeReplacementAloneReceivesFalseAndTheOthersAreCapturedAgain() throws Exception {
+        var data = ResourceEscrowSavedData.create(); var root = data.ledger(); var moves = new AtomicInteger();
+        var io = new AwaitedLedgerIo(); var refusedChecks = new AtomicInteger(); var otherCaptures = new AtomicInteger();
+        var results = new java.util.TreeMap<Integer, java.util.List<Boolean>>();
+        try (var writer = io.writer(directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), 0, (staged, target) -> {
+            moves.incrementAndGet(); CheckedSavedDataFile.atomicMove(staged, target);
+        }); var coordinator = new EscrowCoordinator(data, writer)) {
+            for (int i = 1; i <= 3; i++) {
+                var launch = EscrowFlightAuthorityTest.launch(root, i); int index = i; results.put(i, new ArrayList<>());
+                // Request 2 is valid at capture and invalid at the writer's pre-replacement check.
+                assertTrue(coordinator.flightWrite(launch.logical(), (candidate, generation) -> {
+                    if (index == 2) { assertEquals(1, refusedChecks.get(), "The refused request was captured again"); }
+                    else { otherCaptures.incrementAndGet(); }
+                    return EscrowFlightAuthority.arm(candidate, launch, generation);
+                }, index == 2 ? () -> refusedChecks.incrementAndGet() == 1 : () -> true, results.get(i)::add));
+            }
+            io.tickUntil(coordinator::tick, 0, () -> results.values().stream().noneMatch(java.util.List::isEmpty));
+            assertEquals(java.util.List.of(false), results.get(2), "Only the refused request receives false");
+            assertEquals(java.util.List.of(true), results.get(1)); assertEquals(java.util.List.of(true), results.get(3));
+            assertEquals(2, refusedChecks.get()); assertEquals(4, otherCaptures.get(), "The others were not captured again");
+            assertEquals(1, moves.get(), "The refused generation was replaced");
+            assertEquals(java.util.List.of(EscrowFlightAuthorityTest.launch(root, 1).logical(), EscrowFlightAuthorityTest.launch(root, 3).logical()),
+                    coordinator.ledger().armedFlights().stream().map(EscrowFlightTables.Armed::logical).toList());
+            assertEquals(2, coordinator.ledger().issuedLaunchSerial(), "The refused request consumed a serial");
+            assertFalse(coordinator.logicalLocked(EscrowFlightAuthorityTest.launch(root, 2).logical()));
+            assertFalse(writer.unavailable());
+            assertEquals(coordinator.ledger(), EscrowCodec.decode(CheckedSavedDataFile.readPayload(
+                    directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()), ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow()));
+        }
+    }
+
     private static void pump(EscrowCoordinator coordinator, long start, java.util.function.BooleanSupplier done) throws InterruptedException {
         for (long tick = start; tick < start + 1_000 && !done.getAsBoolean(); tick++) { coordinator.tick(tick); Thread.sleep(2); }
         assertTrue(done.getAsBoolean(), "Expected exact writer completion within the bounded test pump");
