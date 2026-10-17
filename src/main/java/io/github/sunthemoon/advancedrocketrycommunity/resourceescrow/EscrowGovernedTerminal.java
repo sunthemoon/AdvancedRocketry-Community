@@ -20,6 +20,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
     public enum Result { HELD, WAITING, ACKNOWLEDGED }
     private final Map<UUID, Work> work = new HashMap<>();
     private final EscrowTerminalRetries retries = new EscrowTerminalRetries();
+    private final EscrowGovernedEnvelopeHolds envelopeHolds = new EscrowGovernedEnvelopeHolds();
     private boolean closed;
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
@@ -30,6 +31,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
             entry.getValue().close(); return true;
         });
         if (journal.actionAuthorityAvailable()) {
+            envelopeHolds.retain(logical -> journal.findByLogicalRocket(logical).isPresent());
             retries.retain(logical -> journal.findByLogicalRocket(logical).isPresent()
                     || work.values().stream().anyMatch(state -> state.record.logicalRocketId().equals(logical)));
         }
@@ -65,8 +67,11 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
             return Result.ACKNOWLEDGED;
         }
         if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE
-                || !EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor) || !boundary.getAsBoolean()
-                || !EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor)) { return Result.HELD; }
+                || !EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor) || !boundary.getAsBoolean()) { return Result.HELD; }
+        if (envelopeHolds.capture(record.logicalRocketId(), data.ledger(), survivor, null,
+                () -> EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor) ? Boolean.TRUE : null) == null) {
+            return Result.HELD;
+        }
         if (state != null && (!state.record.equals(record) || state.source.rocket != survivor
                 || state.outcome != outcome || !state.source.observe())) {
             state.close(); work.remove(record.transferId(), state); state = null;
@@ -176,7 +181,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
                 "Terminal checkpoint work limit exceeded");
     }
 
-    @Override public void close() { closed = true; work.values().forEach(Work::close); work.clear(); retries.clear(); }
+    @Override public void close() { closed = true; work.values().forEach(Work::close); work.clear(); retries.clear(); envelopeHolds.clear(); }
 
     private static final class Work implements AutoCloseable {
         final RocketTransferRecord record;

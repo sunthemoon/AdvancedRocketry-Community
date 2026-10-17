@@ -25,6 +25,7 @@ public final class EscrowGovernedDestination implements AutoCloseable {
     }
     private final Map<UUID, Work> work = new HashMap<>();
     private final EscrowTerminalRetries retries = new EscrowTerminalRetries();
+    private final EscrowGovernedEnvelopeHolds envelopeHolds = new EscrowGovernedEnvelopeHolds();
     private boolean closed;
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
@@ -36,6 +37,7 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         });
         if (journal.actionAuthorityAvailable()) {
             retries.retain(logical -> journal.findByLogicalRocket(logical).isPresent());
+            envelopeHolds.retain(logical -> journal.findByLogicalRocket(logical).isPresent());
         }
         try { return checked(server, journal, record, source, boundary); }
         catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) {
@@ -78,9 +80,8 @@ public final class EscrowGovernedDestination implements AutoCloseable {
             if (destination == null && (cached.pending || !cached.retry.ready(server.getTickCount()))) { return Result.WAITING; }
         }
         boolean phases = record.phase().ordinal() >= RocketTransferPhase.PASSENGERS_TRANSFERRED.ordinal();
-        long time = phases ? (source == null ? server.overworld().getGameTime() : source.level().getGameTime())
-                : runtime.sourceFlights().publicationTime(authority, source, finalBoundary);
         if (record.phase() == RocketTransferPhase.PREPARED) {
+            long time = runtime.sourceFlights().publicationTime(authority, source, finalBoundary);
             if (!EscrowGovernedDestinationAction.sourceDue(record, EscrowNativeEnvelope.rocket(source), time)) { return Result.WAITING; }
             if (destination != null || !journal.canQueueEffect()) { return Result.HELD; }
             var next = record.destinationSpawned(record.nativeTransfer().orElseThrow().armed().destination());
@@ -95,13 +96,21 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         }
         // The acknowledged F4 may survive with only F1's E on disk. Do not require a second
         // source ascent or debit; validate the unchanged source at E or its permitted progression.
-        var observedSource = source == null ? null : EscrowNativeEnvelope.rocket(source);
-        if (!(phases ? EscrowGovernedPhaseAction.sourceMatches(record, observedSource, time)
-                : EscrowGovernedSourceRecovery.sourceMatches(record, observedSource, time))) { return Result.HELD; }
+        var time = envelopeHolds.capture(record.logicalRocketId(), data.ledger(), source, destination, () -> {
+            long observedTime = phases ? (source == null ? server.overworld().getGameTime() : source.level().getGameTime())
+                    : runtime.sourceFlights().publicationTime(authority, source, finalBoundary);
+            var observedSource = source == null ? null : EscrowNativeEnvelope.rocket(source);
+            if (!(phases ? EscrowGovernedPhaseAction.sourceMatches(record, observedSource, observedTime)
+                    : EscrowGovernedSourceRecovery.sourceMatches(record, observedSource, observedTime))) { return null; }
+            if (destination != null) {
+                var previous = work.remove(record.transferId()); if (previous != null) { previous.release(); }
+                if (!(phases ? EscrowGovernedPhaseAction.destinationMatches(record, EscrowNativeEnvelope.rocket(destination))
+                        : record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(destination)))) { return null; }
+            }
+            return observedTime;
+        });
+        if (time == null) { return Result.HELD; }
         if (destination != null) {
-            var previous = work.remove(record.transferId()); if (previous != null) { previous.release(); }
-            if (!(phases ? EscrowGovernedPhaseAction.destinationMatches(record, EscrowNativeEnvelope.rocket(destination))
-                    : record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(destination)))) { return Result.HELD; }
             if (work.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) { return Result.HELD; }
             var present = new Work(record, authority, source == null ? null : new EscrowFlightSource(source, finalBoundary),
                     retries.history(record.logicalRocketId()));
@@ -174,7 +183,7 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         work.values().stream().filter(value -> value.source != null && value.source.rocket == rocket).forEach(value -> value.source.observe());
     }
 
-    @Override public void close() { closed = true; work.values().forEach(Work::release); work.clear(); retries.clear(); }
+    @Override public void close() { closed = true; work.values().forEach(Work::release); work.clear(); retries.clear(); envelopeHolds.clear(); }
 
     static final class Work {
         final RocketTransferRecord record;
