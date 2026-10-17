@@ -215,6 +215,27 @@ class EscrowReconciliationBindingBoundaryTest {
         assertEquals(EscrowPrefix.Classification.OTHER, EscrowReconciliationValidation.rocket(f.ledger().id(), chain, changed));
     }
 
+    @Test void nativeDestinationFaultKeepsTheAdmissionCaptureAndFailsAtTheRealDriverAction() {
+        var f = sample(); var op = EscrowReconciliationProbe.destinationMismatch(f.a());
+        var root = new EscrowLedger(f.ledger().id(), 1, 1, List.of(op), List.of(), List.of());
+        var wrapper = RocketEscrowSection.decode(f.before().getCompound("wrapper"));
+        assertDoesNotThrow(() -> EscrowSettlementCapacity.requireAdmission(root, op, wrapper));
+        var source = source(1, root.id(), true);
+        var sourceState = EscrowTestEndpoints.state(source.getCompound("ForgeData"), root.id(), false);
+        var destinationState = new EscrowPrefix.State(root.id(), wrapper.epoch(), op.destination().beforeSignature(), wrapper.markers());
+        var data = ResourceEscrowSavedData.load(EscrowCodec.encode(root));
+        try (var writer = new EscrowLedgerWriter(directory.resolve("destination-fault.dat"), 1);
+             var coordinator = new EscrowCoordinator(data, writer)) {
+            var result = EscrowReconciliationDriver.applyNext(coordinator, root, op, EscrowPrefix.chains(root.records()),
+                    endpoint -> endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? destinationState : sourceState,
+                    endpoint -> endpoint.kind() == EscrowEndpoint.Kind.ENTITY ? f.before() : source, () -> true,
+                    (destination, permit) -> fail("The destination fault must not publish"));
+            assertEquals(EscrowReason.OTHER_STATE, result.reason()); assertFalse(result.proved());
+            assertEquals(f.a().nativeBinding().beforeWrapper(), op.nativeBinding().beforeWrapper());
+            assertNotEquals(f.a().nativeBinding().afterWrapper(), op.nativeBinding().afterWrapper());
+        }
+    }
+
     @Test void c2ChecksOnlyTheExactPermittedDeltaAndCompleteFixtureCapture() {
         var f = sample();
         assertEquals(EscrowReason.NONE, EscrowReconciliationValidation.action(f.ledger(), f.a(), f.before(), f.first(), true));

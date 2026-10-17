@@ -133,11 +133,15 @@ final class EscrowReconciliationProbe {
         if (cut.equals("CR_C2_DESTINATION_MISMATCH")) {
             // Deliberately inconsistent section commitment; canonical C0 remains valid, real C2 must refuse.
             var admission = EscrowNativeBinding.captureCurrentTest(operation, rocket, from, data.ledger());
-            var encoded = EscrowCodec.operation(admission.operation());
-            EscrowFlightTables.digest(encoded.getCompound("native_binding"), "before_wrapper", RocketNativeResources.hash("C40 destination fault"));
             coordinator.registerReconciliationTestSource(server, operation.source());
-            coordinator.prepareTest(EscrowCodec.operation(encoded), acknowledged);
+            coordinator.prepareTest(destinationMismatch(admission.operation()), admission.before(), acknowledged);
         } else { coordinator.prepareNativeTest(operation, rocket, from, acknowledged); }
+    }
+
+    static EscrowOperation destinationMismatch(EscrowOperation operation) {
+        var encoded = EscrowCodec.operation(operation);
+        EscrowFlightTables.digest(encoded.getCompound("native_binding"), "after_wrapper", RocketNativeResources.hash("C40 destination fault"));
+        return EscrowCodec.operation(encoded);
     }
 
     private EscrowOperation operation(BlockEntity from) {
