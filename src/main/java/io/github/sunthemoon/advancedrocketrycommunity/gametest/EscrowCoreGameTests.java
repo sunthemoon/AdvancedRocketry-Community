@@ -111,7 +111,9 @@ public final class EscrowCoreGameTests {
                 level.getChunkSource().removeRegionTicket(net.minecraft.server.level.TicketType.START, chunk, 2, net.minecraft.util.Unit.INSTANCE);
                 helper.succeed(); return;
             }
-            proofs.get(index).tick();
+            // These are independent terrain/entity slots. Start both prepared proofs together so one 100-tick
+            // retry plus two 21-tick windows fits the existing 200 ticks after W36's readiness wait.
+            proofs.forEach(EscrowGameTestProof::tick);
         });
     }
     @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 100)
