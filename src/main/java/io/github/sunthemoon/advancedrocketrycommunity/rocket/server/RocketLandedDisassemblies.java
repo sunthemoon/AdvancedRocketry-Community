@@ -117,7 +117,13 @@ final class RocketLandedDisassemblies {
             return RocketValidationCode.REGION_BUSY;
         }
         RocketTransferSavedData journal = RocketTransferSavedData.get(level.getServer());
-        if (!journal.operational()) {
+        return begin(rocket, journal, ports.apply(level.getServer(), journal), preflight, request);
+    }
+
+    /** {@link #begin} against a given journal; the W85 A1 GameTests use an isolated checked journal file. */
+    RocketValidationCode begin(RocketEntity rocket, RocketTransferSavedData journal, Port port,
+                               Supplier<Optional<RocketValidationCode>> preflight, Request request) {
+        if (!journal.operational() || !rocket.operational()) {
             return RocketValidationCode.REGION_BUSY;
         }
         UUID logical = rocket.assemblyTransactionId().orElseThrow();
@@ -125,7 +131,6 @@ final class RocketLandedDisassemblies {
             return RocketValidationCode.DISASSEMBLY_PENDING;
         }
         RocketTransferRecord record = journal.findByLogicalRocket(logical).orElse(null);
-        Port port = ports.apply(level.getServer(), journal);
         var decision = RocketLandedDisassemblyRules.admit(record != null, journal.resourceMutationUnproved(logical),
                 () -> record.schemaVersion() == RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION
                         && record.nativeTransfer().isEmpty()

@@ -162,7 +162,7 @@ final class RocketDisassemblyService {
         ServerLevel level = player.serverLevel();
         RocketStructureSnapshot snapshot = rocket.snapshot().orElseThrow();
         long fuel = rocket.flightData().orElseThrow().fuel().totalAmount();
-        LandedRequest request = LandedRequest.of(this, level, rocket, player.getUUID(), false);
+        LandedRequest request = LandedRequest.of(this, level, rocket, player, false);
         if (request == null || consent != null && !request.snapshot.consented(consent)) {
             player.sendSystemMessage(Component.translatable(MESSAGE + "disassembly_confirmation_invalid"));
             return false;
@@ -231,8 +231,13 @@ final class RocketDisassemblyService {
                 entity, logical, code, blocks, rolledBack);
     }
 
-    private Optional<RocketValidationCode> preflight(ServerLevel level, RocketEntity rocket,
-                                                     RocketStructureSnapshot snapshot) {
+    /** W85 A1: the production request and preflight, for the GameTests that drive an isolated journal. */
+    RocketLandedDisassemblies.Request landedRequest(RocketEntity rocket, ServerPlayer requester, boolean releaseTest) {
+        return LandedRequest.of(this, (ServerLevel) rocket.level(), rocket, requester, releaseTest);
+    }
+
+    Optional<RocketValidationCode> preflight(ServerLevel level, RocketEntity rocket,
+                                             RocketStructureSnapshot snapshot) {
         return transactions.preflightDisassembly(level, rocket.ownerId().orElseThrow(), rocket, snapshot)
                 .map(io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationIssue::code);
     }
@@ -299,8 +304,8 @@ final class RocketDisassemblyService {
     }
 
     /**
-     * W85: one landed request's world side. It keeps identifiers and S, never the entity or the player, and finds E
-     * only through a lookup that never loads a chunk.
+     * W85: one landed request's world side. It keeps S and identifiers, never the entity, and finds E only through a
+     * lookup that never loads a chunk. The requester is notified while still connected, or through its new session.
      */
     private static final class LandedRequest implements RocketLandedDisassemblies.Request {
         private final RocketDisassemblyService service;
@@ -308,11 +313,11 @@ final class RocketDisassemblyService {
         private final RocketStructureSnapshot structure;
         private final RocketLandedDisassemblyRules.Snapshot snapshot;
         private final UUID logical;
-        private final UUID requester;
+        private final ServerPlayer requester;
         private final boolean releaseTest;
 
-        private LandedRequest(RocketDisassemblyService service, ServerLevel level, RocketEntity rocket, UUID requester,
-                              boolean releaseTest) {
+        private LandedRequest(RocketDisassemblyService service, ServerLevel level, RocketEntity rocket,
+                              ServerPlayer requester, boolean releaseTest) {
             this.service = service;
             this.level = level;
             this.structure = rocket.snapshot().orElseThrow();
@@ -324,7 +329,7 @@ final class RocketDisassemblyService {
 
         /** Null when S cannot be formed, which refuses the request before any mutation. */
         static LandedRequest of(RocketDisassemblyService service, ServerLevel level, RocketEntity rocket,
-                                UUID requester, boolean releaseTest) {
+                                ServerPlayer requester, boolean releaseTest) {
             try {
                 return new LandedRequest(service, level, rocket, requester, releaseTest);
             } catch (IllegalArgumentException | java.util.NoSuchElementException invalid) {
@@ -371,7 +376,11 @@ final class RocketDisassemblyService {
                         result == null ? 0 : result.rolledBackBlocks());
                 return;
             }
-            ServerPlayer player = requester == null ? null : level.getServer().getPlayerList().getPlayer(requester);
+            ServerPlayer player = requester == null ? null
+                    : level.getServer().getPlayerList().getPlayer(requester.getUUID());
+            if (player == null && requester != null && !requester.hasDisconnected()) {
+                player = requester;
+            }
             if (result == null) {
                 if (player != null) {
                     reject(player, code);

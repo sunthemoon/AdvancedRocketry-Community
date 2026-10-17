@@ -91,9 +91,7 @@ final class RocketTransferService {
         if (destinationLevel == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
-        List<RocketRegion> reservations = landingReservations(journal, java.util.stream.Stream.concat(
-                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation
-                        .pendingDestinations(server).stream(), landed.reservations(journal).stream()).toList());
+        List<RocketRegion> reservations = launchReservations(server, journal);
         RocketLandingPadSelection selected;
         if (plan.destinationStation().isPresent()) {
             StationState station = StationRegistrySavedData.get(server)
@@ -220,6 +218,12 @@ final class RocketTransferService {
             );
         }
         return new RocketFlightRequestResult(RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel());
+    }
+
+    /** prepareLaunch's input: the journal, governed pre-F2 destinations and P's regions while T is absent (W85-R6). */
+    List<RocketRegion> launchReservations(MinecraftServer server, RocketTransferSavedData journal) {
+        return landingReservations(journal, java.util.stream.Stream.concat(io.github.sunthemoon.advancedrocketrycommunity
+                .resourceescrow.EscrowGovernedPreparation.pendingDestinations(server).stream(), landed.reservations(journal).stream()).toList());
     }
 
     /** The same reservation inputs feed surface, station and explicitly named station selection. */
@@ -504,10 +508,9 @@ final class RocketTransferService {
     /** W85 M0 and M1; SUCCESS means that L has no landed record T, so the caller runs today's one-tick path. */
     RocketValidationCode beginLandedDisassembly(RocketEntity rocket, java.util.function.Supplier<Optional<RocketValidationCode>> preflight,
             RocketLandedDisassemblies.Request request) { return landed.begin(rocket, preflight, request, this::landedPort); }
-
     boolean landedDisassemblyPending(RocketEntity rocket) { return landed.pending(rocket.assemblyTransactionId().orElse(null)); }
-
-    private RocketLandedDisassemblies.Port landedPort(MinecraftServer server, RocketTransferSavedData journal) {
+    RocketLandedDisassemblies landedDisassemblies() { return landed; }
+    RocketLandedDisassemblies.Port landedPort(MinecraftServer server, RocketTransferSavedData journal) {
         return new RocketLandedDisassemblyPort(server, journal, recovery.bays(), liveTransfers, settledTransfers);
     }
 

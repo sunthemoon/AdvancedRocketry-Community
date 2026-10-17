@@ -636,6 +636,11 @@ final class RocketFlightService {
         return transfers.landedDisassemblyPending(rocket);
     }
 
+    /** W85 A1: the GameTest bridge reads P's inputs to a new flight from this session's transfer service. */
+    RocketTransferService transfers() {
+        return transfers;
+    }
+
     boolean resourceMutationAllowed(RocketEntity rocket) {
         return transfers.resourceMutationAllowed(rocket);
     }

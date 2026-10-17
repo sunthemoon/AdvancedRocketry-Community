@@ -26,8 +26,17 @@ final class RocketTransactionExecutor {
             Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks"),
             System.getProperty(RocketTransactionReleaseProbe.PROPERTY));
 
+    private final io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketFailureInjector disassemblyFaults;
+
     RocketTransactionExecutor(RocketBlockEntityAdapters adapters) {
+        this(adapters, io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketFailureInjector.NONE);
+    }
+
+    /** W85 A1 GameTests only inject a disassembly fault; production always uses {@code NONE}. */
+    RocketTransactionExecutor(RocketBlockEntityAdapters adapters,
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketFailureInjector disassemblyFaults) {
         this.adapters = Objects.requireNonNull(adapters, "adapters");
+        this.disassemblyFaults = Objects.requireNonNull(disassemblyFaults, "disassemblyFaults");
     }
 
     RocketBlockEntityAdapters adapters() {
@@ -66,7 +75,7 @@ final class RocketTransactionExecutor {
                 new ServerLevelRocketTransactionWorld(level, adapters, ownerId),
                 savedData.journalFor(snapshot, ownerId)
         );
-        return new RocketDisassemblyTransaction(observed.world(), locks, ledger, observed.journal())
+        return new RocketDisassemblyTransaction(observed.world(), locks, ledger, observed.journal(), disassemblyFaults)
                 .execute(UUID.randomUUID(), rocket.getUUID(), snapshot);
     }
 
