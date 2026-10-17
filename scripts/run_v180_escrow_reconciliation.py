@@ -26,6 +26,21 @@ CASES = ("CR_C0", "CR_L1_BEFORE", "CR_L1_REPLACED", "CR_L1_ACK",
 L2 = {"CR_L2_REPLACED", "CR_C7_ACKNOWLEDGED", "CR_C8_PRUNE_BEFORE", "CR_C8_PRUNE_AFTER", "CR_C8_RELEASED", "CR_STALE_BIND"}
 
 
+def require_marker_prefix(root: dict, sources: list[dict], amounts: list[int], wrapper: dict, fuel: int) -> None:
+    """While L1 holds, each endpoint's markers are exactly its applied prefix: one per applied operation, none otherwise."""
+    records = sorted(root["records"], key=lambda op: op["seq"])
+
+    def marker(index: int, role: str, epoch: int) -> dict:
+        if index >= len(records):
+            raise smoke.SmokeError("Applied native prefix has no durable L1 record")
+        return dict(op_id=records[index]["op_id"], seq=records[index]["seq"], role=role, epoch_after=epoch)
+    for index, (source, amount) in enumerate(zip(sources, amounts)):
+        if source["resource_escrow"]["markers"] != ([] if amount == 5000 else [marker(index, "SOURCE", 1)]):
+            raise smoke.SmokeError("Unretired source markers do not match its amount")
+    if wrapper["markers"] != [marker(index, "DESTINATION", index + 1) for index in range(fuel // 1000)]:
+        raise smoke.SmokeError("Unretired rocket markers do not match its fuel")
+
+
 def require_state(root: dict, sources: list[dict], rocket: dict, cut: str, restarted: bool) -> dict:
     before = cut in ("CR_C0", "CR_L1_BEFORE")
     repair = cut in ("CR_C2_MISMATCH", "CR_C2_DESTINATION_MISMATCH")
@@ -62,6 +77,7 @@ def require_state(root: dict, sources: list[dict], rocket: dict, cut: str, resta
     elif before or repair:
         if amounts != [5000] or fuel != 0 or wrapper["resource_epoch"] != 0 or wrapper["markers"]:
             raise smoke.SmokeError("Unacknowledged or refused C2 changed resources")
+        require_marker_prefix(root, sources, amounts, wrapper, fuel)
     elif restarted or cut in L2 or cut == "CR_LATER_L2_REPLACED":
         applied = 2 if restarted and chain or cut == "CR_LATER_L2_REPLACED" else 1
         expected_amounts = [4000] + ([4000 if applied == 2 else 5000] if chain else [])
@@ -86,6 +102,8 @@ def require_state(root: dict, sources: list[dict], rocket: dict, cut: str, resta
         # Their only legal values are the recorded BEFORE/AFTER; both restarts must converge conservatively.
         if any(amount not in (4000, 5000) for amount in amounts) or fuel not in range(0, expected_watermark * 1000 + 1, 1000):
             raise smoke.SmokeError("Unretired native endpoint is not a recorded prefix")
+        # Final review A, I2: markers against amounts, as the epoch check below does for epochs.
+        require_marker_prefix(root, sources, amounts, wrapper, fuel)
     if wrapper["resource_epoch"] != fuel // 1000 or (fuel and wrapper.get("ledger_id") != root["ledger_id"]):
         raise smoke.SmokeError("Rocket resource epoch or ledger changed")
     for source, amount in zip(sources, amounts):
