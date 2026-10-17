@@ -12,9 +12,12 @@ import java.util.function.Consumer;
 /**
  * Ledger-owned coordinator: one exists for each bound ledger SavedData, and only a test hook's ledger replacement ends
  * its attachment. Admission uses the runtime-owned authority through the PROPULSION delegate. Production admission
- * stays disabled: {@link #prepareFill} exists, but no device calls it yet.
+ * stays disabled: the loader's fair queue reaches {@link #prepareFill} through {@link EscrowLoaderAdmission} only behind
+ * its gated release-test switch.
  */
 public final class EscrowCoordinator implements AutoCloseable {
+    /** W11B3-DESIGN section 2's enabling condition is not met; only Root's reviewed enable commit may change this. */
+    static final boolean PRODUCTION_ADMISSION = false;
     private final Thread owner = Thread.currentThread();
     private final ResourceEscrowSavedData data;
     private final EscrowLedgerWriter writer;
@@ -37,6 +40,8 @@ public final class EscrowCoordinator implements AutoCloseable {
     private long tick;
     private long lastStart = -10;
     private boolean closed;
+    /** A ledger created by a first fill: its empty generation-1 baseline must be acknowledged before any L1 capture. */
+    private boolean creationBaseline;
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData floorJournal;
 
     /** Detached coordinator with its own authority, for unit tests and gated standalone fixtures; never a server's ledger. */
@@ -52,7 +57,63 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     /** Retargets the PROPULSION delegate to this ledger; false, with nothing changed, while another ledger holds work. */
     boolean attachAdmission() { owner(); return propulsion.retarget(admissionStore); }
-    public boolean productionAdmissionEnabled() { return false; }
+    public boolean productionAdmissionEnabled() { return PRODUCTION_ADMISSION; }
+    /** Creation step 2's mode (W11B3-DESIGN section 2): set once, on the owner thread, for a ledger nothing has written. */
+    void beginCreationBaseline() {
+        owner(); EscrowTags.require(!creationBaseline && data.ledger().writerGeneration() == 0 && data.ledger().records().isEmpty()
+                && writer.idle() && writer.lastGeneration() == 0 && queued.isEmpty(), "Creation baseline needs an unwritten empty ledger");
+        creationBaseline = true;
+    }
+    /** True until the empty creation baseline's exact acknowledgement; L1 is never captured before it. */
+    boolean creationBaselinePending() { owner(); return creationBaseline; }
+    /**
+     * Creation step 2's queue entry for an operation the authority has already reserved. A failed bind-time readback
+     * counts as a definite baseline failure: the operation leaves the queue at once, and its reservation with it.
+     */
+    void enqueueCreated(EscrowOperation op, Consumer<Boolean> completion) {
+        owner(); EscrowTags.require(creationBaseline && op.sequence() == nextSequence() && queued.isEmpty(), "Creation admission out of order");
+        enqueue(op, completion);
+        if (!writer.baselineAvailable()) { cancelUncaptured(); }
+    }
+    /** A definite failure before L1: only queued, never-captured work leaves, each with exactly one false callback. */
+    private void cancelUncaptured() {
+        for (UUID id : List.copyOf(queued.keySet())) {
+            if (writer.containsCaptured(id)) { continue; }
+            queued.remove(id); Consumer<Boolean> callback = requests.remove(id);
+            if (callback != null && !closed) { callback.accept(false); }
+        }
+        data.setDirty(); admission.refresh();
+    }
+    /**
+     * Every unresolved fill naming an endpoint, by sequence: durable records, queued admissions and captured writer
+     * candidates, each once. Same-direction chaining projects a capture through exactly this prefix.
+     */
+    List<EscrowOperation> unresolvedChain(EscrowEndpoint.Key endpoint) {
+        owner(); var seen = new java.util.HashSet<UUID>();
+        return unresolved().filter(op -> op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL
+                        && (op.source().key().equals(endpoint) || op.destination().key().equals(endpoint)) && seen.add(op.id()))
+                .sorted(java.util.Comparator.comparingLong(EscrowOperation::sequence)).toList();
+    }
+    /**
+     * Every unresolved operation naming the logical rocket is an ordinary loader fill into exactly this endpoint:
+     * PREPARED, no reason and no settlement.
+     */
+    boolean ordinaryFillsOnly(UUID logical, EscrowEndpoint.Key destination) {
+        owner();
+        return unresolved().filter(op -> logical.equals(op.guard().rocket()) || logical.equals(op.destination().logicalRocket()))
+                .allMatch(op -> op.kind() == EscrowOperation.Kind.FLUID_PROPULSION_FILL && op.settlement().isEmpty()
+                        && currentReason(op) == EscrowReason.NONE && op.phase() == EscrowOperation.Phase.PREPARED
+                        && EscrowLoaderEndpoint.is(op.source()) && op.destination().key().equals(destination));
+    }
+    /** Every unresolved operation whose source or destination identity is this physical UUID, each once. */
+    List<EscrowOperation> unresolvedNaming(UUID identity) {
+        owner(); var seen = new java.util.HashSet<UUID>();
+        return unresolved().filter(op -> (identity.equals(op.source().identity()) || identity.equals(op.destination().identity()))
+                && seen.add(op.id())).toList();
+    }
+    boolean durable(UUID operation) { owner(); return data.ledger().records().stream().anyMatch(op -> op.id().equals(operation)); }
+    boolean writerUnknown() { owner(); return writer.unknown(); }
+    boolean frozenIdentity(UUID identity) { owner(); return frontiers.keySet().stream().anyMatch(key -> identity.equals(key.identity())); }
     void reconcile(net.minecraft.server.MinecraftServer server, EscrowOperation operation,
                    Consumer<EscrowReconciliationScheduler.Result> completion) {
         owner(); reconciliation.attempt(server, operation, completion);
@@ -116,9 +177,7 @@ public final class EscrowCoordinator implements AutoCloseable {
     Fill prepareFill(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
         owner(); var op = capture.operation();
         if (closed || writer.unavailable()) { return Fill.UNAVAILABLE; }
-        if (op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL || op.phase() != EscrowOperation.Phase.PREPARED
-                || op.reason() != EscrowReason.NONE || !op.settlement().isEmpty()
-                || op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || !op.nativeBinding().complete()) { return Fill.INVALID; }
+        if (invalid(op)) { return Fill.INVALID; }
         if (op.sequence() != nextSequence() || requests.containsKey(op.id())
                 || unresolved().anyMatch(existing -> existing.id().equals(op.id()))) { return Fill.STALE; }
         if (frontiers.containsKey(op.source().key()) || frontiers.containsKey(op.destination().key())
@@ -129,18 +188,27 @@ public final class EscrowCoordinator implements AutoCloseable {
         var refusal = fillRefusal(data.ledger(), queued.values(), capture);
         if (refusal.isPresent()) { return refusal.get(); }
         var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
-        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) {
-            return switch (reservation) {
-                case SERVER_FULL -> Fill.SERVER_FULL;
-                case ROCKET_FULL -> Fill.ROCKET_FULL;
-                case IDENTITY_CONFLICT -> Fill.IDENTITY_CONFLICT;
-                case ALREADY_HELD -> Fill.STALE;
-                case UNAVAILABLE, RESERVED -> Fill.UNAVAILABLE;
-            };
-        }
+        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) { return fill(reservation); }
         // Nothing that can fail runs between the reservation and its queue entry: a reservation has no release call.
         enqueue(op, completion);
         return Fill.QUEUED;
+    }
+    /** Not a fresh FLUID_PROPULSION_FILL with a complete FUEL_VECTOR_V1 binding. */
+    static boolean invalid(EscrowOperation op) {
+        return op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL || op.phase() != EscrowOperation.Phase.PREPARED
+                || op.reason() != EscrowReason.NONE || !op.settlement().isEmpty()
+                || op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || !op.nativeBinding().complete();
+    }
+    /** The authority's refusal as a typed fill result; ALREADY_HELD is STALE because every index was checked first. */
+    static Fill fill(EscrowAdmissionAuthority.Result reservation) {
+        return switch (reservation) {
+            case SERVER_FULL -> Fill.SERVER_FULL;
+            case ROCKET_FULL -> Fill.ROCKET_FULL;
+            case IDENTITY_CONFLICT -> Fill.IDENTITY_CONFLICT;
+            case ALREADY_HELD -> Fill.STALE;
+            case UNAVAILABLE -> Fill.UNAVAILABLE;
+            case RESERVED -> Fill.QUEUED;
+        };
     }
     /**
      * prepareFill's pure check against a given root and its queued admissions: the five-marker limit and settlement
@@ -169,6 +237,12 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     public boolean commitPreparations() {
         owner(); if (closed || queued.isEmpty() || tick - lastStart < 10) { return false; }
+        if (creationBaseline) {
+            // Creation step 3: the empty generation-1 root, never a queued admission, is the first checked write.
+            if (!writer.idle()) { return false; }
+            if (writer.request(() -> snapshot(false, null), this::acknowledge)) { lastStart = tick; return true; }
+            return false;
+        }
         if (writer.request(() -> snapshot(true, null), this::acknowledge)) { lastStart = tick; return true; }
         return false;
     }
@@ -287,6 +361,8 @@ public final class EscrowCoordinator implements AutoCloseable {
     private void acknowledge(EscrowLedgerWriter.Completion completion) {
         owner();
         if (completion.outcome() == EscrowLedgerWriter.Outcome.COMMITTED) {
+            // Any exact acknowledgement establishes the file, the creation baseline included; L1 may follow.
+            creationBaseline = false;
             if (completion.generation() > data.ledger().writerGeneration()) {
                 data.acknowledged(completion.snapshot().ledger(), !queued.isEmpty());
             }
@@ -297,6 +373,11 @@ public final class EscrowCoordinator implements AutoCloseable {
                 if (callback != null && !closed) { callback.accept(true); }
             }
             data.setDirty(!queued.isEmpty() || !transitions.isEmpty() || !writer.idle());
+        } else if (creationBaseline && (completion.outcome() == EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE
+                || completion.outcome() == EscrowLedgerWriter.Outcome.GUARD_REFUSED)) {
+            // Creation step 4: a definite baseline failure before L1 removes the queued fills and their reservations.
+            // The empty root stays in RAM; a later checked write may still publish it. UNKNOWN keeps everything.
+            cancelUncaptured();
         } else if (completion.outcome() == EscrowLedgerWriter.Outcome.FAILED_BEFORE_REPLACE
                 || completion.outcome() == EscrowLedgerWriter.Outcome.GUARD_REFUSED) {
             for (UUID id : completion.snapshot().admissions()) {

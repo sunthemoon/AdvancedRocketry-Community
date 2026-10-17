@@ -56,6 +56,23 @@ public final class ResourceEscrowSavedData extends SavedData {
         return server.overworld().getDataStorage().get(ResourceEscrowSavedData::load,
                 ManagedSavedDataType.RESOURCE_ESCROW.dataName());
     }
+    /**
+     * Production creation (W11B3-DESIGN section 2, step 2), only from a first fill that the authority has already
+     * reserved while the PROPULSION delegate was NO_FILE. The ledger carries the ID the virtual empty root was checked
+     * against; its coordinator attaches to the delegate, which becomes LOADED, in creation-baseline mode. Creation has
+     * no refusal path of its own: a failed bind-time readback leaves the coordinator unavailable, and the caller's queue
+     * entry then cancels at once.
+     */
+    static EscrowCoordinator createForFill(MinecraftServer server, UUID id) {
+        EscrowTags.require(server.isSameThread() && existing(server) == null
+                && EscrowRuntime.of(server).propulsion(server).state() == EscrowAdmissionAuthority.Delegate.State.NO_FILE,
+                "Production ledger creation needs a NO_FILE world");
+        var created = new ResourceEscrowSavedData(EscrowLedger.empty(id));
+        server.overworld().getDataStorage().set(ManagedSavedDataType.RESOURCE_ESCROW.dataName(), created);
+        var coordinator = created.bind(server);
+        coordinator.beginCreationBaseline();
+        return coordinator;
+    }
     /** Gated test creation goes through the runtime's retarget method, so a new ledger never registers a second index. */
     public static ResourceEscrowSavedData forTests(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);
