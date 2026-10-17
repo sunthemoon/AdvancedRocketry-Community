@@ -5,6 +5,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.atmosphere.vent.OxygenVent
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
 import io.github.sunthemoon.advancedrocketrycommunity.endgame.command.ReleaseTestPlayers;
 import io.github.sunthemoon.advancedrocketrycommunity.registry.ModBlocks;
+import io.github.sunthemoon.advancedrocketrycommunity.registry.ModItems;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.satellite.persistence.SatelliteMissionSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.persistence.StationRegistrySavedData;
@@ -20,6 +21,8 @@ import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Unit;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -103,10 +106,24 @@ final class EscrowFlightBenchmarkLoad {
         for (var pos : vents) {
             var vent = (OxygenVentBlockEntity) moon.getBlockEntity(pos);
             EscrowTags.require(vent != null, "Reference vent missing");
-            var tag = vent.saveWithoutMetadata(); var payload = tag.getCompound("arce_oxygen_vent");
-            payload.putInt("oxygen_units", 4000); payload.putInt("energy", 40000);
-            vent.load(tag); vent.setChanged();
+            refill(vent);
         }
+    }
+    static void refill(OxygenVentBlockEntity vent) {
+        // Supply through the same automation interfaces as a hopper and an energy cable.
+        // Canisters are consumed by the vent's normal ticker, without resetting its scan or phase.
+        refill(vent.itemHandler(), vent.getCapability(ForgeCapabilities.ENERGY)
+                .orElseThrow(() -> new IllegalStateException("Vent energy absent")), ModItems.OXYGEN_CANISTER.get());
+    }
+    static void refill(net.minecraftforge.items.IItemHandler items, net.minecraftforge.energy.IEnergyStorage energy,
+                       net.minecraft.world.item.Item canister) {
+        items.extractItem(OxygenVentBlockEntity.SLOT_EMPTY, 64, false);
+        int missing = 4 - items.getStackInSlot(OxygenVentBlockEntity.SLOT_OXYGEN).getCount();
+        if (missing > 0) {
+            EscrowTags.require(items.insertItem(OxygenVentBlockEntity.SLOT_OXYGEN,
+                    new ItemStack(canister, missing), false).isEmpty(), "Vent supply refused");
+        }
+        energy.receiveEnergy(40000, false);
     }
     int activeVents() {
         return (int) vents.stream().filter(pos -> moon.getBlockEntity(pos) instanceof OxygenVentBlockEntity vent

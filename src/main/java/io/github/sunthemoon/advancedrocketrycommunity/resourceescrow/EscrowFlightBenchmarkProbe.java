@@ -139,12 +139,36 @@ final class EscrowFlightBenchmarkProbe {
             report.addProperty("records", data.ledger().records().size());
             report.addProperty("armed", data.ledger().armedFlights().size());
             report.add("journal_phases", gson.toJsonTree(journal.entries().stream().map(record -> record.phase().name()).toList()));
+            report.add("flight_readiness", gson.toJsonTree(journal.entries().stream().map(record ->
+                    java.util.Map.of("logical", record.logicalRocketId().toString(),
+                            "classification", EscrowGovernedDispatch.decide(data.ledger(), record).toString(),
+                            "source", readiness(record.sourceSnapshot()), "destination", readiness(record.destinationSnapshot()))).toList()));
+            report.add("sources", gson.toJsonTree(sources.stream().map(rocket -> java.util.Map.of(
+                    "logical", rocket.assemblyTransactionId().orElseThrow().toString(), "ticks", rocket.tickCount,
+                    "state", rocket.flightData().orElseThrow().state().name())).toList()));
         }
         report.add("generation_topology", gson.toJsonTree(metrics.topology()));
         report.add("checkpoints", gson.toJsonTree(metrics.checkpoints()));
         Files.writeString(root.resolve("governed-benchmark.json"), gson.toJson(report));
         AdvancedRocketryCommunity.LOGGER.info("ARCE_GOVERNED_BENCH_FAILED age={} elapsed={} accepted={} saves={} load={}",
                 age, elapsed, accepted, saves, load.diagnostics());
+    }
+    private java.util.List<java.util.Map<String, Object>> readiness(
+            io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot snapshot) {
+        var level = server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION,
+                snapshot.sourceDimension()));
+        var region = io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion.fromSnapshot(snapshot);
+        var result = new java.util.ArrayList<java.util.Map<String, Object>>();
+        // Same bounded discovery margin as RocketTransferEntities.endAlreadyLoaded; observation only.
+        for (int x = (region.minimum().x() - 1) >> 4; x <= (region.maximum().x() + 2) >> 4; x++) {
+            for (int z = (region.minimum().z() - 1) >> 4; z <= (region.maximum().z() + 2) >> 4; z++) {
+                EscrowTags.require(result.size() < 16, "Benchmark diagnostic footprint exceeded its bound");
+                result.add(java.util.Map.of("x", x, "z", z, "loaded", level != null
+                        && level.areEntitiesLoaded(net.minecraft.world.level.ChunkPos.asLong(x, z)), "entity_ticking", level != null
+                        && level.isPositionEntityTicking(new net.minecraft.core.BlockPos(x << 4, snapshot.sourceOrigin().y(), z << 4))));
+            }
+        }
+        return result;
     }
     private void launch(int i) {
         var rocket = sources.get(i); var from = rocket.snapshot().orElseThrow(); var pos = EscrowFlightBenchmarkLoad.destination(i);
