@@ -98,12 +98,19 @@ final class EscrowFlightBenchmarkWork {
         }
         if (confirming && data.ledger().tombstones().stream().anyMatch(tag -> tag.getUUID("op_id").equals(settlementId)
                 && tag.getBoolean("released"))) {
-            EscrowTags.require(data.ledger().records().stream().noneMatch(op -> op.id().equals(settlementId))
-                    && settlementRocket.flightData().orElseThrow().fuel().totalAmount() == 1000
-                    && settlementRocket.escrowSection().markers().isEmpty()
-                    && settlement.sourceState().markers().isEmpty(), "Settlement completed without exact chosen resources/pruning");
-            settlementDone = true;
+            settlementDone = settlementPruned(
+                    data.ledger().records().stream().anyMatch(op -> op.id().equals(settlementId)),
+                    settlementRocket.flightData().orElseThrow().fuel().totalAmount(),
+                    EscrowTestEndpoints.amount(settlement.source().getPersistentData()),
+                    settlementRocket.escrowSection().markers().size(), settlement.sourceState().markers().size());
         }
+    }
+    static boolean settlementPruned(boolean recordPresent, long fuel, long sourceAmount, int rocketMarkers, int sourceMarkers) {
+        EscrowTags.require(!recordPresent && fuel == 1000 && sourceAmount == 4000,
+                "Settlement released without exact chosen resources/retirement");
+        // O4 acknowledges release and enqueues bounded pruning; it does not complete both endpoints inline.
+        // Observe the product cursor without pruning here or extending the probe's fixed deadline.
+        return rocketMarkers == 0 && sourceMarkers == 0;
     }
     boolean done() { return ordinaryDone && settlementDone; }
 }
