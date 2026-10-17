@@ -1,5 +1,6 @@
 package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
+import com.mojang.logging.LogUtils;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +19,7 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.ChunkDataEvent;
 import net.minecraftforge.event.level.LevelEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -26,10 +28,17 @@ import net.minecraftforge.fml.common.Mod;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/** Overworld-lifetime service handle. Static members are event adapters/capability identity, never world state. */
+/**
+ * Runtime-owned escrow services: a capability of the Overworld ServerLevel, so it lives as long as the running server.
+ * It owns the one admission authority for fills and the bay; each ledger-owned coordinator attaches to its PROPULSION
+ * delegate. Static members are event adapters/capability identity, never world state.
+ */
 @Mod.EventBusSubscriber(modid = ModIdentity.MOD_ID)
 public final class EscrowRuntime {
     public static final Capability<EscrowRuntime> CAPABILITY = CapabilityManager.get(new CapabilityToken<>() { });
+    private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
+    private EscrowAdmissionAuthority admission;
+    private EscrowAdmissionAuthority.Delegate propulsion;
     private final EscrowSaveMonitor monitor = new EscrowSaveMonitor();
     private final Map<ResourceKey<Level>, EscrowChunkStore> stores = new HashMap<>();
     private EscrowBarrier barrier;
@@ -152,6 +161,45 @@ public final class EscrowRuntime {
     }
     public static EscrowRuntime of(MinecraftServer server) {
         return server.overworld().getCapability(CAPABILITY).orElseThrow(() -> new IllegalStateException("Missing escrow lifetime service"));
+    }
+    /**
+     * The one PROPULSION delegate, registered on the server thread at ServerStartingEvent. A ledger bound earlier, while
+     * the Levels prepare, registers it at that bind instead; there is never a second registration.
+     */
+    EscrowAdmissionAuthority.Delegate propulsion(MinecraftServer server) {
+        if (propulsion == null) {
+            EscrowTags.require(server.isSameThread(), "Escrow admission registers on the server thread");
+            admission = new EscrowAdmissionAuthority();
+            propulsion = admission.register(EscrowAdmissionAuthority.Consumer.PROPULSION);
+        }
+        return propulsion;
+    }
+    /**
+     * The only path that replaces the ledger SavedData, for test hooks. It retargets the PROPULSION delegate on the
+     * owner thread and returns false, changing nothing and throwing nothing, while the attached coordinator still holds
+     * queued, captured or UNKNOWN work. A null ledger returns the delegate to NO_FILE; a replaced coordinator stays open
+     * and attaches again if its ledger is restored.
+     */
+    public boolean replaceLedgerForTests(MinecraftServer server, @Nullable ResourceEscrowSavedData next) {
+        EscrowTestEndpoints.requireEnabled(server);
+        var delegate = propulsion(server);
+        if (ResourceEscrowSavedData.existing(server) != next && delegate.holdsWork()) { return false; }
+        server.overworld().getDataStorage().set(io.github.sunthemoon.advancedrocketrycommunity.persistence.migration
+                .ManagedSavedDataType.RESOURCE_ESCROW.dataName(), next);
+        return next == null ? delegate.retarget(null) : next.bind(server).attachAdmission();
+    }
+    /**
+     * Startup lookup, before the first tick: the load-only {@code existing} never creates a file. An existing ledger
+     * binds at once, so its coordinator's index is LOADED before any admission; no file means NO_FILE. A file that did
+     * not load (the pre-start check normally refuses startup first) keeps the delegate NOT_LOADED, so admission refuses.
+     */
+    @SubscribeEvent public static void starting(ServerStartingEvent event) {
+        var server = event.getServer(); var delegate = of(server).propulsion(server);
+        if (delegate.state() != EscrowAdmissionAuthority.Delegate.State.NOT_LOADED) { return; }
+        var data = ResourceEscrowSavedData.existing(server);
+        if (data != null) { data.bind(server); }
+        else if (!java.nio.file.Files.exists(ResourceEscrowSavedData.file(server))) { delegate.noFile(); }
+        else { LOGGER.warn("ARCE_ESCROW_LEDGER_NOT_LOADED; the ledger file did not load, so escrow admission stays refused"); }
     }
     public EscrowSaveMonitor monitor() { return monitor; }
     public EscrowBarrier barrier() {

@@ -9,7 +9,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-/** Server-lifetime coordinator. This slice deliberately has no production admission entry point. */
+/**
+ * Ledger-owned coordinator: one exists for each bound ledger SavedData, and only a test hook's ledger replacement ends
+ * its attachment. Admission uses the runtime-owned authority through the PROPULSION delegate. This slice deliberately
+ * has no production admission entry point.
+ */
 public final class EscrowCoordinator implements AutoCloseable {
     private final Thread owner = Thread.currentThread();
     private final ResourceEscrowSavedData data;
@@ -19,7 +23,14 @@ public final class EscrowCoordinator implements AutoCloseable {
     private final Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers = new HashMap<>();
     private final Map<UUID, EscrowReason> transitions = new HashMap<>();
     private final EscrowReconciliationPruning.Candidates pruningCandidates = new EscrowReconciliationPruning.Candidates();
-    private final EscrowAdmissionAuthority admission = new EscrowAdmissionAuthority();
+    private final EscrowAdmissionAuthority admission;
+    private final EscrowAdmissionAuthority.Delegate propulsion;
+    private final EscrowAdmissionAuthority.Store admissionStore = new EscrowAdmissionAuthority.Store() {
+        @Override public EscrowAdmissionAuthority.Index index() {
+            return new EscrowAdmissionAuthority.Index(true, unresolved().map(EscrowAdmissionAuthority.Pending::of).toList());
+        }
+        @Override public boolean holdsWork() { return !queued.isEmpty() || !writer.idle(); }
+    };
     private final EscrowFlightWrites flightWrites = new EscrowFlightWrites();
     private final EscrowReconciliationDriver reconciliation = new EscrowReconciliationDriver(this);
     private long issued;
@@ -28,12 +39,19 @@ public final class EscrowCoordinator implements AutoCloseable {
     private boolean closed;
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData floorJournal;
 
-    public EscrowCoordinator(ResourceEscrowSavedData data, EscrowLedgerWriter writer) {
-        this.data = data; this.writer = writer; issued = data.ledger().issuedThrough();
-        admission.registerIndex(EscrowAdmissionAuthority.Consumer.PROPULSION, () -> new EscrowAdmissionAuthority.Index(true,
-                java.util.stream.Stream.of(data.ledger().records().stream(), queued.values().stream(), writer.capturedOperations().stream())
-                        .flatMap(java.util.function.Function.identity()).map(EscrowAdmissionAuthority.Pending::of).toList()));
+    /** Detached coordinator with its own authority, for unit tests and gated standalone fixtures; never a server's ledger. */
+    EscrowCoordinator(ResourceEscrowSavedData data, EscrowLedgerWriter writer) {
+        this(data, writer, new EscrowAdmissionAuthority().register(EscrowAdmissionAuthority.Consumer.PROPULSION));
     }
+    /** Attaches this ledger's index to the given PROPULSION delegate; it never registers one. */
+    EscrowCoordinator(ResourceEscrowSavedData data, EscrowLedgerWriter writer, EscrowAdmissionAuthority.Delegate propulsion) {
+        EscrowTags.require(propulsion.consumer() == EscrowAdmissionAuthority.Consumer.PROPULSION, "Coordinator needs the PROPULSION delegate");
+        this.data = data; this.writer = writer; issued = data.ledger().issuedThrough();
+        this.propulsion = propulsion; admission = propulsion.authority();
+        EscrowTags.require(attachAdmission(), "Admission delegate still holds another ledger's queued, captured or UNKNOWN work");
+    }
+    /** Retargets the PROPULSION delegate to this ledger; false, with nothing changed, while another ledger holds work. */
+    boolean attachAdmission() { owner(); return propulsion.retarget(admissionStore); }
     public boolean productionAdmissionEnabled() { return false; }
     void reconcile(net.minecraft.server.MinecraftServer server, EscrowOperation operation,
                    Consumer<EscrowReconciliationScheduler.Result> completion) {
