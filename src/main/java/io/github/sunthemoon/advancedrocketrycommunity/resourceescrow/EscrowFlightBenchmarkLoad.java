@@ -112,6 +112,14 @@ final class EscrowFlightBenchmarkLoad {
         return (int) vents.stream().filter(pos -> moon.getBlockEntity(pos) instanceof OxygenVentBlockEntity vent
                 && vent.status() == VentOperatingStatus.ACTIVE).count();
     }
+    java.util.Map<String, Object> diagnostics() {
+        return java.util.Map.of("loaded", loaded(), "active_vents", activeVents(), "player_ticks", tickDelta(),
+                "vents", vents.stream().map(pos -> {
+                    var vent = (OxygenVentBlockEntity) moon.getBlockEntity(pos);
+                    return vent == null ? java.util.Map.of("status", "MISSING")
+                            : java.util.Map.of("status", vent.status().name(), "oxygen", vent.oxygenUnits(), "energy", vent.energyStored());
+                }).toList());
+    }
     int playerTicks() { return players.stream().mapToInt(player -> player.tickCount).sum(); }
     int tickDelta() { return playerTicks() - initialPlayerTicks; }
     void assemble() {

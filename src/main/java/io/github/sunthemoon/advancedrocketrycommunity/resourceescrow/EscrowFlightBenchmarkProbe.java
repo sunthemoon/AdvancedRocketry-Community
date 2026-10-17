@@ -45,6 +45,14 @@ final class EscrowFlightBenchmarkProbe {
         load = new EscrowFlightBenchmarkLoad(server);
     }
     void tick() {
+        try { tickWork(); }
+        catch (RuntimeException failure) {
+            try { failureSnapshot(failure); }
+            catch (Exception observationFailure) { failure.addSuppressed(observationFailure); }
+            throw failure;
+        }
+    }
+    private void tickWork() {
         if (done || finishing) { return; }
         EscrowTestEndpoints.requireEnabled(server);
         EscrowTags.require(++age <= DEADLINE_TICKS, "Governed benchmark exceeded its fixed 4000-tick deadline");
@@ -110,6 +118,33 @@ final class EscrowFlightBenchmarkProbe {
                     "Benchmark did not retain the required concurrent load");
             finishing = true;
         }
+    }
+    private void failureSnapshot(RuntimeException failure) throws java.io.IOException {
+        metrics.stop();
+        var root = server.getWorldPath(LevelResource.ROOT);
+        metrics.write(root.resolve("governed-benchmark.csv"));
+        var report = new com.google.gson.JsonObject();
+        report.addProperty("status", "FAILED_PARTIAL_OBSERVATION"); report.addProperty("error", failure.toString());
+        report.addProperty("age", age); report.addProperty("elapsed", elapsed); report.addProperty("accepted", accepted);
+        report.addProperty("peak_concurrent", peakConcurrent); report.addProperty("saves", saves);
+        report.addProperty("all_flights_completed", allCompleted());
+        report.addProperty("competing_done", competing != null && competing.done());
+        var gson = new com.google.gson.GsonBuilder().setPrettyPrinting().create();
+        report.add("load", gson.toJsonTree(load.diagnostics()));
+        if (data != null) {
+            var journal = RocketTransferSavedData.get(server);
+            report.addProperty("journal_acknowledged", journal.acknowledgedCurrent());
+            report.addProperty("ledger_operational", data.bind(server).operational());
+            report.addProperty("writer_idle", data.bind(server).writerIdle());
+            report.addProperty("records", data.ledger().records().size());
+            report.addProperty("armed", data.ledger().armedFlights().size());
+            report.add("journal_phases", gson.toJsonTree(journal.entries().stream().map(record -> record.phase().name()).toList()));
+        }
+        report.add("generation_topology", gson.toJsonTree(metrics.topology()));
+        report.add("checkpoints", gson.toJsonTree(metrics.checkpoints()));
+        Files.writeString(root.resolve("governed-benchmark.json"), gson.toJson(report));
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_GOVERNED_BENCH_FAILED age={} elapsed={} accepted={} saves={} load={}",
+                age, elapsed, accepted, saves, load.diagnostics());
     }
     private void launch(int i) {
         var rocket = sources.get(i); var from = rocket.snapshot().orElseThrow(); var pos = EscrowFlightBenchmarkLoad.destination(i);
