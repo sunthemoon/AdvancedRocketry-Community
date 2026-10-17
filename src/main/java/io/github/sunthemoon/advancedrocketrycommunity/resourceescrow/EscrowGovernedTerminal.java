@@ -39,6 +39,10 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) {
             var state = work.get(record.transferId());
             if (state != null && !state.queued) { state.close(); work.remove(record.transferId(), state); }
+            if (envelopeHolds.rejected(record.logicalRocketId()) && EscrowRuntime.of(server).governedFlights()
+                    .classify(server, journal, record).route() == EscrowGovernedDispatch.Route.ACTIVE) {
+                EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.TERMINAL_ENVELOPE);
+            }
             return Result.HELD;
         }
     }
@@ -68,10 +72,13 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         }
         if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE
                 || !EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor) || !boundary.getAsBoolean()) { return Result.HELD; }
+        if (EscrowGovernedFrame.transientMotion(survivor)) { return Result.WAITING; }
         if (envelopeHolds.capture(record.logicalRocketId(), data.ledger(), survivor, null,
                 () -> EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor) ? Boolean.TRUE : null) == null) {
+            EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.TERMINAL_ENVELOPE);
             return Result.HELD;
         }
+        EscrowRuntime.of(server).executorHolds().healthy(record);
         if (state != null && (!state.record.equals(record) || state.source.rocket != survivor
                 || state.outcome != outcome || !state.source.observe())) {
             state.close(); work.remove(record.transferId(), state); state = null;

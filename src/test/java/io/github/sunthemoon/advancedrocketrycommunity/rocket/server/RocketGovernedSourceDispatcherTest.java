@@ -15,19 +15,21 @@ import org.junit.jupiter.api.Test;
 class RocketGovernedSourceDispatcherTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
-    @Test void onlyActiveClassificationRefreshesTicketsBeforeReadinessAndLoadingDoesNotProceed() {
+    @Test void onlyActiveClassificationChecksReadinessAndExecutesBeforeRefreshingTickets() {
         var calls = new ArrayList<String>();
         var active = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.ACTIVE, null);
         for (boolean loaded : List.of(false, false, true)) {
             calls.clear();
-            assertEquals(loaded, RocketGovernedSourceDispatcher.afterClassification(active,
-                    () -> calls.add("tickets"), () -> { calls.add("readiness"); return loaded; }));
-            assertEquals(List.of("tickets", "readiness"), calls);
+            assertEquals(loaded, RocketGovernedSourceDispatcher.afterClassification(active, () -> false,
+                    () -> calls.add("tickets"), () -> { calls.add("readiness"); return loaded; }, () -> calls.add("execute")));
+            assertEquals(loaded ? List.of("readiness", "execute", "tickets") : List.of("readiness", "tickets"), calls);
         }
         for (var route : List.of(EscrowGovernedDispatch.Route.HOLD, EscrowGovernedDispatch.Route.CLEANUP)) {
             var decision = new EscrowGovernedDispatch.Decision(route, route == EscrowGovernedDispatch.Route.HOLD ? "WAIT" : null);
             assertFalse(RocketGovernedSourceDispatcher.afterClassification(decision,
-                    () -> fail("Non-active classification added tickets"), () -> { fail("Non-active readiness query"); return true; }));
+                    () -> { fail("Non-active executor hold query"); return false; },
+                    () -> fail("Non-active classification added tickets"), () -> { fail("Non-active readiness query"); return true; },
+                    () -> fail("Non-active executor")));
         }
     }
 
@@ -37,15 +39,32 @@ class RocketGovernedSourceDispatcherTest {
         var tickets = new java.util.concurrent.atomic.AtomicInteger();
         var loaded = new java.util.concurrent.atomic.AtomicBoolean();
         for (int tick = 0; tick < 2_000; tick++) {
-            assertFalse(RocketGovernedSourceDispatcher.afterClassification(active, tickets::incrementAndGet,
-                    () -> { probes.incrementAndGet(); return loaded.get(); }));
+            assertFalse(RocketGovernedSourceDispatcher.afterClassification(active, () -> false, tickets::incrementAndGet,
+                    () -> { probes.incrementAndGet(); return loaded.get(); }, () -> fail("Loading ran an executor")));
         }
         assertEquals(2_000, probes.get()); assertEquals(2_000, tickets.get());
         loaded.set(true);
-        assertTrue(RocketGovernedSourceDispatcher.afterClassification(active, tickets::incrementAndGet, loaded::get));
+        assertTrue(RocketGovernedSourceDispatcher.afterClassification(active, () -> false, tickets::incrementAndGet, loaded::get, () -> { }));
         loaded.set(false);
-        assertFalse(RocketGovernedSourceDispatcher.afterClassification(active, tickets::incrementAndGet, loaded::get),
+        assertFalse(RocketGovernedSourceDispatcher.afterClassification(active, () -> false, tickets::incrementAndGet, loaded::get, () -> fail("Unloaded executor")),
                 "A prior loaded result became cached action authority");
+    }
+
+    @Test void aNewExecutorHoldStopsRefreshInThatVisitAndAfterChunksExpire() {
+        var active = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.ACTIVE, null);
+        var held = new java.util.concurrent.atomic.AtomicBoolean();
+        var tickets = new java.util.concurrent.atomic.AtomicInteger();
+        assertTrue(RocketGovernedSourceDispatcher.afterClassification(active, held::get,
+                tickets::incrementAndGet, () -> true, () -> held.set(true)));
+        assertEquals(0, tickets.get(), "Already refreshed tickets before discovering the real hold");
+        for (int tick = 0; tick < 2000; tick++) {
+            assertFalse(RocketGovernedSourceDispatcher.afterClassification(active, held::get,
+                    tickets::incrementAndGet, () -> false, () -> fail("Expired chunks entered an executor")));
+        }
+        assertEquals(0, tickets.get(), "An expired held flight reactivated itself");
+        assertTrue(RocketGovernedSourceDispatcher.afterClassification(active, held::get,
+                tickets::incrementAndGet, () -> true, () -> held.set(false)));
+        assertEquals(1, tickets.get(), "Loaded recovery did not restore the existing refresh policy");
     }
 
     @Test void visitsEightAtMostAndEveryRecordAtThe64EntryLimit() {

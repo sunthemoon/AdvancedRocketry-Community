@@ -42,6 +42,10 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         try { return checked(server, journal, record, source, boundary); }
         catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) {
             var state = work.remove(record.transferId()); if (state != null) { state.release(); }
+            if (envelopeHolds.rejected(record.logicalRocketId()) && EscrowRuntime.of(server).governedFlights()
+                    .classify(server, journal, record).route() == EscrowGovernedDispatch.Route.ACTIVE) {
+                EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.DESTINATION_ENVELOPE);
+            }
             return Result.HELD;
         }
     }
@@ -63,10 +67,18 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         ServerLevel level = server.getLevel(ResourceKey.create(Registries.DIMENSION, record.destinationSnapshot().sourceDimension()));
         if (level == null) { return Result.HELD; }
         var entity = level.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
-        if (entity != null && !(entity instanceof RocketEntity)) { return Result.HELD; }
+        if (entity != null && !(entity instanceof RocketEntity)) {
+            runtime.executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.NATIVE_ENDPOINT); return Result.HELD;
+        }
         var destination = (RocketEntity) entity;
+        if (EscrowGovernedFrame.transientMotion(source) || EscrowGovernedFrame.transientMotion(destination)) { return Result.WAITING; }
         BooleanSupplier finalBoundary = () -> boundary.allows(record, source, destination);
-        if (!finalBoundary.getAsBoolean()) { return Result.HELD; }
+        if (!finalBoundary.getAsBoolean()) {
+            if (!runtime.flightPhases().allowsNative(source, destination)) {
+                runtime.executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.PHASE_ENVELOPE);
+            }
+            return Result.HELD;
+        }
         var cached = work.get(record.transferId());
         // A definite failed publication is handed to the return controller, never retried as a fresh spawn.
         // Any object appearing after that failure remains an unresolved publication, not return authority.
@@ -75,6 +87,7 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         }
         if (cached != null && cached.authority.valid() && cached.sourceValid()) {
             if (destination != null && cached.arrival != null && cached.arrival.rocket == destination && cached.arrival.observe()) {
+                runtime.executorHolds().healthy(record);
                 return Result.PRESENT;
             }
             if (destination == null && (cached.pending || !cached.retry.ready(server.getTickCount()))) { return Result.WAITING; }
@@ -109,7 +122,10 @@ public final class EscrowGovernedDestination implements AutoCloseable {
             }
             return observedTime;
         });
-        if (time == null) { return Result.HELD; }
+        if (time == null) {
+            runtime.executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.DESTINATION_ENVELOPE); return Result.HELD;
+        }
+        runtime.executorHolds().healthy(record);
         if (destination != null) {
             if (work.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) { return Result.HELD; }
             var present = new Work(record, authority, source == null ? null : new EscrowFlightSource(source, finalBoundary),
@@ -173,10 +189,11 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         }
         work.remove(record.transferId());
         runtime.checkpoint("F4_PUBLICATION_AFTER");
-        return boundary.allows(record, source, created)
-                && java.util.Objects.equals(state.sourceEnvelope(), source == null ? null : EscrowGovernedEnvelope.capture(source))
-                && record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowGovernedEnvelope.capture(created))
-                ? Result.PUBLISHED : Result.HELD;
+        if (!boundary.allows(record, source, created)) { return Result.HELD; }
+        boolean exact = java.util.Objects.equals(state.sourceEnvelope(), source == null ? null : EscrowGovernedEnvelope.capture(source))
+                && record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowGovernedEnvelope.capture(created));
+        if (!exact) { runtime.executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.DESTINATION_ENVELOPE); }
+        return exact ? Result.PUBLISHED : Result.HELD;
     }
 
     void observe(RocketEntity rocket) {

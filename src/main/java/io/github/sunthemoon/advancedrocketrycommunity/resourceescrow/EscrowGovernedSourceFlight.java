@@ -27,12 +27,18 @@ public final class EscrowGovernedSourceFlight {
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                        RocketEntity source, BooleanSupplier boundary) {
         try { return tickChecked(server, journal, record, source, boundary); }
-        catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return Result.HELD; }
+        catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) {
+            if (server.isSameThread() && !EscrowGovernedFrame.transientMotion(source) && boundary.getAsBoolean()) {
+                report(server, journal, record);
+            }
+            return Result.HELD;
+        }
     }
 
     private Result tickChecked(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                        RocketEntity source, BooleanSupplier boundary) {
-        if (!server.isSameThread() || source == null || !boundary.getAsBoolean()) { return Result.HELD; }
+        if (!server.isSameThread() || source == null || !boundary.getAsBoolean()
+                || EscrowGovernedFrame.transientMotion(source)) { return Result.HELD; }
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return Result.HELD; }
         var authority = EscrowRuntime.of(server).governedFlights().authority(data::ledger,
@@ -48,7 +54,7 @@ public final class EscrowGovernedSourceFlight {
             // from its old entity instance; a second still-live instance remains a conflict.
             bindings.remove(record.logicalRocketId()); binding = null;
         }
-        if (binding != null && !binding.sameNative(source)) { return Result.HELD; }
+        if (binding != null && !binding.sameNative(source)) { report(server, journal, record); return Result.HELD; }
         if (binding == null || !binding.valid(source, boundary)) {
             var previous = binding;
             var clock = envelopeHolds.capture(record.logicalRocketId(), data.ledger(), source, null, () -> {
@@ -57,13 +63,14 @@ public final class EscrowGovernedSourceFlight {
                 var candidate = previous == null ? EscrowGovernedSourceClock.resume(record, observed, levelTime) : previous.clock;
                 return EscrowGovernedSourceRecovery.sourceMatches(record, observed, candidate.at(levelTime)) ? candidate : null;
             });
-            if (clock == null) { return Result.HELD; }
+            if (clock == null) { report(server, journal, record); return Result.HELD; }
             if (binding == null && bindings.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) { return Result.HELD; }
             binding = new Binding(authority, source, clock);
             if (previous != null) { binding.frame = EscrowGovernedFrame.normalized(binding.frame, previous.frame, previous.flight.state()); }
             bindings.put(record.logicalRocketId(), binding);
         }
         long now = binding.clock.at(levelTime);
+        EscrowRuntime.of(server).executorHolds().healthy(record);
         var flight = source.flightData().orElseThrow();
         if (flight.state() != RocketFlightState.COUNTDOWN && flight.state() != RocketFlightState.ASCENT
                 && flight.state() != RocketFlightState.TRANSIT) {
@@ -94,6 +101,13 @@ public final class EscrowGovernedSourceFlight {
     }
 
     public void clear() { bindings.clear(); envelopeHolds.clear(); }
+
+    private static void report(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
+        var runtime = EscrowRuntime.of(server);
+        if (runtime.governedFlights().classify(server, journal, record).route() == EscrowGovernedDispatch.Route.ACTIVE) {
+            runtime.executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.SOURCE_ENVELOPE);
+        }
+    }
 
     /** F4 uses the checked source's logical phase clock, not a rolled-back Level timestamp. */
     long publicationTime(EscrowGovernedDispatch.Authority authority, RocketEntity source, BooleanSupplier boundary) {

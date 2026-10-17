@@ -25,7 +25,8 @@ public final class EscrowGovernedExecutorHolds {
     }
     EscrowGovernedExecutorHolds(Consumer<Notice> logger) { this.logger = logger; }
 
-    void hold(MinecraftServer server, RocketTransferRecord record, Reason reason) {
+    public void hold(MinecraftServer server, RocketTransferRecord record, Reason reason) {
+        EscrowTags.require(server.isSameThread(), "Executor diagnostics require the owner thread");
         retain(RocketTransferSavedData.get(server).entries()); hold(record.transferId(), reason);
     }
     void hold(UUID transfer, Reason reason) {

@@ -24,7 +24,7 @@ public final class EscrowGovernedArrival {
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                        RocketEntity destination, BooleanSupplier boundary) {
-        if (!server.isSameThread()) { return Result.HELD; }
+        if (!server.isSameThread() || EscrowGovernedFrame.transientMotion(destination)) { return Result.HELD; }
         // The separately gated FP_* fixture ends at F5, before this executor's first action.
         if (EscrowRuntime.of(server).phaseCutActive()) { return Result.HELD; }
         try {
@@ -40,7 +40,9 @@ public final class EscrowGovernedArrival {
             apply(destination, binding, flight, new Vec3(origin.x() + 0.5, y, origin.z() + 0.5), boundary);
             return now - flight.stateStartedGameTime() >= RocketFlightLimits.DESCENT_TICKS
                     ? Result.READY_TO_LAND : Result.DESCENDING;
-        } catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return Result.HELD; }
+        } catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) {
+            if (boundary.getAsBoolean()) { report(server, journal, record); } return Result.HELD;
+        }
     }
 
     /** Reacquires the exact authority after any deferred world-first acknowledgement. */
@@ -77,7 +79,8 @@ public final class EscrowGovernedArrival {
     private Binding binding(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                             RocketEntity destination, BooleanSupplier boundary) {
         if (!server.isSameThread() || destination == null || record.phase() != RocketTransferPhase.COMMITTED
-                || !boundary.getAsBoolean() || !EscrowRuntime.of(server).flightPhases().allowsNative(null, destination)) { return null; }
+                || EscrowGovernedFrame.transientMotion(destination) || !boundary.getAsBoolean()) { return null; }
+        if (!EscrowRuntime.of(server).flightPhases().allowsNative(null, destination)) { report(server, journal, record); return null; }
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return null; }
         var authority = EscrowRuntime.of(server).governedFlights().authority(data::ledger,
@@ -86,12 +89,15 @@ public final class EscrowGovernedArrival {
         bindings.entrySet().removeIf(entry -> journal.find(entry.getKey()).isEmpty());
         var old = bindings.get(record.transferId());
         if (old != null && old.entity != destination && old.entity.isRemoved()) { bindings.remove(record.transferId()); old = null; }
-        if (old != null && !old.sameNative(destination)) { return null; }
-        if (old != null && old.authority.valid() && old.observation == destination.governedObservation()) { return old; }
+        if (old != null && !old.sameNative(destination)) { report(server, journal, record); return null; }
+        if (old != null && old.authority.valid() && old.observation == destination.governedObservation()) {
+            EscrowRuntime.of(server).executorHolds().healthy(record); return old;
+        }
         var observed = EscrowGovernedEnvelope.capture(destination); long levelTime = destination.level().getGameTime();
         if (old != null) { observed = EscrowGovernedFrame.normalized(observed, old.frame, ((RocketFlightData) old.flight).state()); }
         long now = old == null ? EscrowGovernedArrivalState.resumeTime(record, observed, levelTime) : old.time(levelTime);
         EscrowTags.require(EscrowGovernedArrivalState.matches(record, observed, now), "Arrival complete envelope changed");
+        EscrowRuntime.of(server).executorHolds().healthy(record);
         requireCapacity(bindings, record.transferId());
         var binding = new Binding(authority, destination, levelTime, now);
         if (old != null) { binding.frame = EscrowGovernedFrame.normalized(binding.frame, old.frame, ((RocketFlightData) old.flight).state()); }
@@ -119,6 +125,13 @@ public final class EscrowGovernedArrival {
         }
     }
     void clear() { bindings.clear(); }
+
+    private static void report(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
+        var runtime = EscrowRuntime.of(server);
+        if (runtime.governedFlights().classify(server, journal, record).route() == EscrowGovernedDispatch.Route.ACTIVE) {
+            runtime.executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.ARRIVAL_ENVELOPE);
+        }
+    }
 
     static void requireCapacity(Map<UUID, ?> bindings, UUID transfer) {
         EscrowTags.require(bindings.containsKey(transfer) || bindings.size() < RocketFlightLimits.MAX_ACTIVE_TRANSFERS,

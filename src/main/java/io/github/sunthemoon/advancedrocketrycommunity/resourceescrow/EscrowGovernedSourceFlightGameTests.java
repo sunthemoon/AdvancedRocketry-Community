@@ -26,7 +26,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedSourceFlightGameTests {
-    private enum Fault { NONE, MOTION, DUPLICATE, CLOCK, LANDING, POSITION }
+    private enum Fault { NONE, MOTION, DUPLICATE, CLOCK, LANDING, POSITION, REST_POSITION }
     private EscrowGovernedSourceFlightGameTests() { }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_progress", timeoutTicks = 600)
@@ -42,6 +42,11 @@ public final class EscrowGovernedSourceFlightGameTests {
     @GameTest(template = "empty", batch = "escrow_governed_source_position", timeoutTicks = 600)
     public static void movingPlanRestoresTransientPositionWithoutAStickyHold(GameTestHelper helper) {
         new Scenario(helper, Fault.POSITION).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_governed_rest_hold", timeoutTicks = 600)
+    public static void persistentRestPlacementHoldsAndLetsFlightTicketsExpire(GameTestHelper helper) {
+        new Scenario(helper, Fault.REST_POSITION).start();
     }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_duplicate", timeoutTicks = 600)
@@ -168,6 +173,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             var flight = rocket.flightData().orElseThrow();
             helper.assertTrue(initial.fuel().equals(flight.fuel()) && initial.passengers().equals(flight.passengers())
                     && wrapper.equals(rocket.escrowSection()) && !RocketEscrowGate.idle(rocket), "Source progression changed resources, manifest or hold");
+            if (fault == Fault.REST_POSITION) { restingHold(journal); return; }
             helper.assertTrue(rocket.getX() == position.getX() + 0.5 && rocket.getZ() == position.getZ() + 0.5
                     && rocket.getY() >= previousY && rocket.getY() <= position.getY() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS,
                     "Source escaped its bounded ascent column");
@@ -231,6 +237,27 @@ public final class EscrowGovernedSourceFlightGameTests {
                             + ", acknowledged=" + journal.acknowledgedCurrent() + ", armed="
                             + data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()));
             if (fault != Fault.DUPLICATE) { step = 3; return; }
+            finish(journal, null);
+        }
+
+        private void restingHold(RocketTransferSavedData journal) {
+            var server = level.getServer(); var record = journal.find(transfer).orElseThrow();
+            if (changedAt < 0) {
+                if (!journal.acknowledgedCurrent() || io.github.sunthemoon.advancedrocketrycommunity.rocket.server
+                        .RocketTransferFenceGameTests.flightTickets(server, transfer) == 0) { return; }
+                helper.assertTrue(EscrowRuntime.of(server).sourceFlights().tick(server, journal, record, rocket, () -> true)
+                        == EscrowGovernedSourceFlight.Result.COUNTDOWN, "Rest fixture did not bind a stationary countdown");
+                changedAt = server.getTickCount(); rocket.setPos(rocket.getX() + 0.125, rocket.getY(), rocket.getZ()); return;
+            }
+            helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN
+                    && rocket.getX() == position.getX() + 0.625 && rocket.getY() == position.getY(),
+                    "A persistent rest displacement resumed or was silently repaired");
+            if (server.getTickCount() - changedAt <= RocketFlightLimits.FLIGHT_TICKET_TIMEOUT_TICKS + 3) { return; }
+            helper.assertTrue(EscrowRuntime.of(server).executorHolds().held(record)
+                    && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferFenceGameTests.flightTickets(server, transfer) == 0,
+                    "An ACTIVE executor hold kept refreshing its flight tickets");
+            helper.assertTrue(data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed())
+                    && journal.acknowledgedCurrent(), "Placement hold changed the checked flight authority");
             finish(journal, null);
         }
 

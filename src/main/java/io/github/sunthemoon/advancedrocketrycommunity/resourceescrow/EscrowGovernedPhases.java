@@ -45,7 +45,14 @@ public final class EscrowGovernedPhases {
         if (journal.actionAuthorityAvailable()) { passengerRetries.retain(logical -> journal.findByLogicalRocket(logical).isPresent()); }
         if (!passengerAttemptDue(record.logicalRocketId(), server.getTickCount())) { return Result.HELD; }
         try { return checked(server, journal, record, source, destination, boundary); }
-        catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return Result.HELD; }
+        catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) {
+            var checked = authority(server, journal, record);
+            if (!EscrowGovernedFrame.transientMotion(source) && !EscrowGovernedFrame.transientMotion(destination)
+                    && boundary.getAsBoolean() && checked != null && checked.decision().route() == EscrowGovernedDispatch.Route.ACTIVE) {
+                EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.PHASE_ENVELOPE);
+            }
+            return Result.HELD;
+        }
         finally { mount = null; }
     }
 
@@ -53,10 +60,18 @@ public final class EscrowGovernedPhases {
                            RocketEntity source, RocketEntity destination, BooleanSupplier boundary) {
         var authority = authority(server, journal, record);
         if (authority == null || authority.decision().route() != EscrowGovernedDispatch.Route.ACTIVE
-                || record.phase() == RocketTransferPhase.PREPARED || destination == null || !boundary.getAsBoolean() || !allowsNative(source, destination)
-                || !EscrowGovernedPhaseAction.matches(record, envelope(source), envelope(destination), sourceTime(server, source))) {
+                || record.phase() == RocketTransferPhase.PREPARED || destination == null) {
             return Result.HELD;
         }
+        if (EscrowGovernedFrame.transientMotion(source) || EscrowGovernedFrame.transientMotion(destination)) { return Result.WAITING; }
+        if (!allowsNative(source, destination)) {
+            EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.PHASE_ENVELOPE); return Result.HELD;
+        }
+        if (!boundary.getAsBoolean()) { return Result.HELD; }
+        if (!EscrowGovernedPhaseAction.matches(record, envelope(source), envelope(destination), sourceTime(server, source))) {
+            EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.PHASE_ENVELOPE); return Result.HELD;
+        }
+        EscrowRuntime.of(server).executorHolds().healthy(record);
         tracking.capture(source, journal); tracking.capture(destination, journal);
         if (record.phase() == RocketTransferPhase.DESTINATION_SPAWNED) {
             // F4's callback never transfers a passenger. This separate checked snapshot does.

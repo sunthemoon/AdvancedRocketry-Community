@@ -108,7 +108,12 @@ public final class EscrowGovernedReturn implements AutoCloseable {
             requireCapacity(work, record.transferId());
             state = new Work(record, authority, capture, true, () -> { }); work.put(record.transferId(), state);
         }
-        if (!state.record.equals(record) || state.source.rocket != source || !state.source.observe()) { return Result.HELD; }
+        if (EscrowGovernedFrame.transientMotion(source)) { return Result.WAITING; }
+        if (!state.record.equals(record) || state.source.rocket != source || !state.source.observe()) {
+            EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.RETURN_ENVELOPE);
+            return Result.HELD;
+        }
+        EscrowRuntime.of(server).executorHolds().healthy(record);
         if (!state.authority.valid()) { state.release(); state.authority = authority; }
         if (state.proofs.stream().anyMatch(proof -> !proof.valid())) { state.retry(server.getTickCount(), "SUPERSEDING_SAVE"); }
         if (!state.retry.ready(server.getTickCount())) { return Result.WAITING; }

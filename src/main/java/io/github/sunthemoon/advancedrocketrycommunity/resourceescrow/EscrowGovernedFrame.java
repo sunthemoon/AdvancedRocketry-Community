@@ -10,6 +10,10 @@ import net.minecraft.world.phys.Vec3;
 final class EscrowGovernedFrame {
     private EscrowGovernedFrame() { }
 
+    static boolean transientMotion(RocketEntity rocket) {
+        return rocket != null && !Vec3.ZERO.equals(rocket.getDeltaMovement());
+    }
+
     static boolean moving(RocketFlightState state) {
         return state == RocketFlightState.ASCENT || state == RocketFlightState.DESCENT;
     }
