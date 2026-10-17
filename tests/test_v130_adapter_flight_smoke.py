@@ -223,7 +223,15 @@ class BoundsAndDriverTests(unittest.TestCase):
         commands = [call.args[1] for call in query.call_args_list]
         base = f"execute in {runner.EARTH} run arce rocket release-test disassemble {uid(12)}"
         self.assertEqual([base, base + " discard-fuel 257", base + " discard-fuel 256"], commands)
-        self.assertIn("amount=256 reason=confirmed_disassembly", process.wait_for.call_args_list[0].args[0].pattern)
+        # W85 question 6 (W92 `01219e43`): the logged line carries the disposal vector between amount and reason.
+        discarded = process.wait_for.call_args_list[0].args[0]
+        line = (f"[05:02:06] [Server thread/INFO] [io.gi.su.ad.AdvancedRocketryCommunity/]: ARCE_ROCKET_FUEL_DISCARDED "
+                f"entity={uid(12)} logical={uid(1)} amount=256 vector=MONO: ABSTRACT 256; revision=2 "
+                f"reason=confirmed_disassembly")
+        self.assertIsNotNone(discarded.search(line))
+        for wrong in (line.replace("amount=256", "amount=255"), line.replace("confirmed_disassembly", "other"),
+                      line.replace(f"entity={uid(12)}", f"entity={uid(13)}")):
+            self.assertIsNone(discarded.search(wrong), wrong)
 
     def test_only_the_validated_generated_properties_timestamp_may_change(self):
         original = (b"#Minecraft server properties\r\n#Sun Sep 27 00:24:52 CST 2026\r\n"
