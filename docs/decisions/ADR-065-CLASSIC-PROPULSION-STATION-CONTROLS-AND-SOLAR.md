@@ -1526,8 +1526,8 @@ These short-run numbers are development evidence, not a soak, a reference-node m
 Gate result.
 
 **Open before W11b3 or any admission:**
-- Part 1's F3, F8 and N2 (designs W86 and W85, frozen; code after the merge). F9 was fixed by W77
-  and N1 by part 2.
+- Part 1's F3 and N2 (design W86, frozen; W91 implements them). F8 was fixed by W92 (the P1-F8
+  note below), F9 by W77 and N1 by part 2.
 - Signed per-fluid accounting.
 - Governed readiness (W90): dispatch needs each end's whole discovery margin loaded and
   entity-ticking, but the flight tickets make only each end's origin chunk entity-ticking, so a
@@ -1543,6 +1543,41 @@ Gate result.
 - W83 (arrival entity readiness) before admission, as Root recommends.
 
 This is a development implementation note, not owner acceptance or a Gate result.
+
+### P1-F8 implementation note: landed disassembly keeps its claim (W92, Design M of W85 revision 3)
+
+Implemented by W92 (commits `2a28c604` to `df25825a`, record `records/W92.md`, merged at the W92 merge) and reviewed independently (W92-review, MERGE-WITH-FOLLOWUP, SHA-256 `4c8b9c2d…`). Root's decisions on the review: M2 also rechecks the v0.5 journal's operability and pending recovery before restoring (W92-R2), and a non-native schema-1 record may be disassembled with an identical write-back (W92-R4); both, with the review's other low findings, follow in W92F. The diagnostic native cuts K6 and K11 move to the S2 campaign.
+
+Disassembly of a landed arrival keeps the existing order: the checked removal of its transfer record
+T is acknowledged before any block is restored, so the transfer journal never rebuilds the rocket
+over restored blocks. This is not a promise that a stale native entity cannot reappear. No record,
+key, schema or root is added, and older jars read the journal unchanged. A request first runs the
+restoration's no-mutation checks; a predictable failure answers its code and keeps T. Otherwise the
+service reserves a journal continuation, removes T, keeps T's destination region and journal slot
+reserved for new flights in a session-only pending entry (at most 64), and answers
+DISASSEMBLY_PENDING. Repeated requests answer DISASSEMBLY_PENDING after the actor, identity, range
+and permission checks, and zero-fuel arrivals take the same path. On the removal's exact
+acknowledgement, and at most 200 ticks after the request, the continuation sets a one-way
+restoration latch and restores the rocket. The identical T is written back only when restoration
+never started (a late acknowledgement, a failed precondition or a discarded continuation) or after a
+certified complete rollback. Once mutation is uncertain (ROLLBACK_FAILED, or an exception or `Error`
+after the latch), nothing writes T back, and the v0.5 recovery stays the only owner of its record. A
+written-back T keeps the pending entry and the rocket's interlocks until its write is acknowledged,
+with no time limit; no timeout releases unacknowledged state. Residuals (R-035): ROLLBACK_FAILED or
+an uncertain mutation, a refused write-back, and a process stop while disk lacks T leave T released.
+That disk gap is about one tick or one checked write when uncontended, and unbounded while a
+successor write is late or failing or after an UNKNOWN outcome. The spot is then protected only by
+the loaded-rocket occupancy check and, once merged, W83's footprint readiness, which does not see an
+unloaded rocket whose entity lies outside the footprint. A process stop after the removal reaches
+disk loses an arrival whose entity section was never saved. A write-back that keeps failing locks
+the rocket and, while F3 is open, pauses every flight until storage is repaired. After a successful
+restoration, vanilla saves terrain chunks and entity sections independently, so a stop can leave a
+stale entity together with saved blocks, lose the unsaved chunks' blocks of a never-saved arrival,
+or, when the entity's removal was saved while a footprint chunk was inside its 10-second save
+cooldown, lose those blocks of an arrival that had been saved. These belong to the existing v0.5
+disassembly class. Only ROLLBACK_FAILED is detected, and a restart makes the losses and duplicates
+permanent. Repair needs a known-consistent whole-world backup from before the operation. This is a
+development implementation note, not owner acceptance or a Gate result.
 
 ## 11. Network, provenance, progression and verification
 

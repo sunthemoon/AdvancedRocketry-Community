@@ -61,7 +61,7 @@ branch. Each merge records its hosted run and independent review in
   settings.
 - The D3-A escrow core and its rocket integration (W11b2: settlement, ordinary reconciliation and
   governed flights) are merged with admission disabled. Before admission: W11b3, W90a and W90b
-  (governed readiness and the destination warm-up), part 1's F3, F8 and N2, and W83.
+  (governed readiness and the destination warm-up), part 1's F3 and N2 (W91), and W83. P1-F8 is merged (W92).
 
 The hosted regression runs on the exact pushed commit:
 - a clean build with the unit tests;
