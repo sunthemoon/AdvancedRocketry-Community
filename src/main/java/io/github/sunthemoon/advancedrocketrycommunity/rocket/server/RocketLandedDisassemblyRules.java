@@ -1,6 +1,7 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.util.EnumSet;
 import java.util.Objects;
@@ -48,6 +49,16 @@ final class RocketLandedDisassemblyRules {
 
     private static Decision refuse(RocketValidationCode code) {
         return new Decision(Admission.REFUSE, code);
+    }
+
+    /**
+     * M0's record clause: a record without a native transfer that M3 can put back unchanged. Besides schema 2 it admits
+     * a settled schema-1 record whose target migration is blocked; its write-back is the identical schema-1 record, so no
+     * format changes (W92-R4, Root's decision in TASK W92F). Governed record 3 stays excluded (G9).
+     */
+    static boolean landedRecordAdmitted(int schemaVersion, boolean nativeTransfer) {
+        return !nativeTransfer
+                && (schemaVersion == 1 || schemaVersion == RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION);
     }
 
     /**

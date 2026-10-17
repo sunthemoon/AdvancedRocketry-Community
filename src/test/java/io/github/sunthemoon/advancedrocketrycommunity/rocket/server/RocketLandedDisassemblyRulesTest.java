@@ -54,6 +54,17 @@ class RocketLandedDisassemblyRulesTest {
         }
     }
 
+    @Test void schemaOneAndTwoRecordsWithoutANativeTransferAreAdmitted() {
+        // W92-R4: a settled schema-1 record is disassembled in place; governed record 3 stays excluded (G9).
+        assertTrue(RocketLandedDisassemblyRules.landedRecordAdmitted(1, false), "Settled schema-1 record");
+        assertTrue(RocketLandedDisassemblyRules.landedRecordAdmitted(2, false));
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(3, true), "Governed record 3");
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(3, false));
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(1, true));
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(2, true));
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(4, false), "A future schema");
+    }
+
     @Test void pendingStatusRunsActorRangeIdentityAndPermissionInThatOrder() {
         assertEquals(RocketValidationCode.ENTITY_STATE_INVALID, RocketLandedDisassemblyRules.status(false, false,
                 RocketValidationCode.UNSUPPORTED_SCHEMA, false));

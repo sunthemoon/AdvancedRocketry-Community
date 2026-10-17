@@ -10,6 +10,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlan;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketLegacyTransferFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketPassengerManifest;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
@@ -34,6 +35,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketT
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionWorld;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketWorldBlock;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
+import io.github.sunthemoon.advancedrocketrycommunity.testsupport.GovernedTransferFixture;
 import io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,6 +48,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.UnaryOperator;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -140,6 +143,33 @@ class RocketLandedDisassembliesTest {
             assertEquals(List.of(f.landed.transferId()), f.diskRecords());
             f.close();
         }
+    }
+
+    @Test void aSettledSchemaOneRecordIsDisassembledInPlaceAndWrittenBackUnchanged() throws IOException {
+        // W92-R4: the clause admits the schema-1 record; the governed record 3 stays refused.
+        assertFalse(RocketLandedDisassemblyRules.landedRecordAdmitted(GovernedTransferFixture.create().record()
+                .schemaVersion(), true));
+        var clean = new Fixture(new RocketPosition(64, 80, 64), RocketLegacyTransferFixture::schemaOne);
+        assertEquals(1, clean.landed.schemaVersion());
+        assertTrue(RocketLandedDisassemblyRules.landedRecordAdmitted(clean.landed.schemaVersion(),
+                clean.landed.nativeTransfer().isPresent()));
+        CompoundTag before = clean.diskRecord();
+        clean.world.blocks.put(clean.absolute(1), new RocketWorldBlock(state("minecraft:stone"), null)); // 0 of 0
+        assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, clean.release());
+        clean.acknowledge();
+        assertSame(clean.landed, clean.journal.find(clean.landed.transferId()).orElseThrow(), "The identical record");
+        clean.acknowledge();
+        assertFalse(clean.disassemblies.pending(clean.logical()));
+        assertEquals(before, clean.diskRecord(), "The write-back is the byte-identical schema-1 record");
+        assertEquals(1, before.getInt("schema_version"));
+        clean.close();
+
+        var success = new Fixture(new RocketPosition(128, 80, 64), RocketLegacyTransferFixture::schemaOne);
+        assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, success.release());
+        success.acknowledge();
+        assertEquals(List.of("SUCCESS"), success.request.reports);
+        assertTrue(success.world.rockets.isEmpty() && success.diskRecords().isEmpty());
+        success.close();
     }
 
     @Test void uncertainMutationNeverWritesTheRecordBack() {
@@ -302,7 +332,11 @@ class RocketLandedDisassembliesTest {
         final FakeRequest request;
 
         Fixture(RocketPosition arrival) {
-            landed = landed(arrival);
+            this(arrival, UnaryOperator.identity());
+        }
+
+        Fixture(RocketPosition arrival, UnaryOperator<RocketTransferRecord> form) {
+            landed = form.apply(landed(arrival));
             entity = landed.destinationEntityId().orElseThrow();
             world.rockets.put(entity, snapshot().snapshotId());
             world.hash = snapshot().contentHash();
@@ -332,6 +366,15 @@ class RocketLandedDisassembliesTest {
         List<UUID> diskRecords() {
             var payload = CheckedSavedDataFile.readPayload(file(), TYPE).orElseThrow();
             return RocketTransferSavedData.load(payload).entries().stream().map(RocketTransferRecord::transferId).toList();
+        }
+
+        /** T's encoded record on disk, or an empty tag. */
+        CompoundTag diskRecord() {
+            for (var raw : CheckedSavedDataFile.readPayload(file(), TYPE).orElseThrow().getList("transfers", 10)) {
+                var tag = (CompoundTag) raw;
+                if (tag.getUUID("transfer_id").equals(landed.transferId())) { return tag.copy(); }
+            }
+            return new CompoundTag();
         }
 
         void close() {

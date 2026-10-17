@@ -138,8 +138,8 @@ final class RocketLandedDisassemblies {
         }
         RocketTransferRecord record = journal.findByLogicalRocket(logical).orElse(null);
         var decision = RocketLandedDisassemblyRules.admit(record != null, journal.resourceMutationUnproved(logical),
-                () -> record.schemaVersion() == RocketFlightLimits.TRANSFER_JOURNAL_SCHEMA_VERSION
-                        && record.nativeTransfer().isEmpty()
+                () -> RocketLandedDisassemblyRules.landedRecordAdmitted(record.schemaVersion(),
+                        record.nativeTransfer().isPresent())
                         && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record),
                 () -> port.bayAllowsRemoval(record), journal.canQueueEffect(), hasCapacity(), preflight);
         return decision.admission() == RocketLandedDisassemblyRules.Admission.RELEASE
