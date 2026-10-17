@@ -225,8 +225,8 @@ public final class EscrowLoaderAdmission {
     /**
      * The device's escrow progress, or null when escrow names nothing for it. PREPARING lasts until the device's own
      * debit is applied (the creation baseline, L1 or an UNKNOWN L1 outcome); TRANSFERRING follows through the proofs
-     * and L2; ESCROW_PENDING is a held or retired-but-unpruned state, never a claim that no fuel moved. Reading never
-     * creates a ledger.
+     * and L2; ESCROW_PENDING is a held or retired-but-unpruned state, never a claim that no fuel moved; LEDGER_UNAVAILABLE
+     * appears only before the debit. Reading never creates a ledger.
      */
     public static FluidFuelLoaderStatus progress(FluidFuelLoaderBlockEntity loader) {
         var root = loader.root().orElse(null);
@@ -243,17 +243,32 @@ public final class EscrowLoaderAdmission {
             return root.escrow().locked() || coordinator.frozenIdentity(root.device())
                     || EscrowSettlementTombstones.endpointLocked(data.ledger(), key) ? FluidFuelLoaderStatus.ESCROW_PENDING : null;
         }
-        if (!coordinator.operational()) { return FluidFuelLoaderStatus.LEDGER_UNAVAILABLE; }
         var op = named.get(0);
-        if (!coordinator.durable(op.id())) { return FluidFuelLoaderStatus.PREPARING; }
-        var scheduler = EscrowRuntime.of(server).reconciliationScheduler();
-        if (coordinator.currentReason(op) != EscrowReason.NONE || op.phase() != EscrowOperation.Phase.PREPARED || !op.settlement().isEmpty()
-                || scheduler != null && !scheduler.view(op.id()).reason().equals(EscrowReason.NONE.name())) {
-            return FluidFuelLoaderStatus.ESCROW_PENDING;
-        }
         boolean applied = root.escrow().markers().stream().anyMatch(marker -> marker.operation().equals(op.id()));
-        return !applied ? FluidFuelLoaderStatus.PREPARING
-                : coordinator.writerUnknown() ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.TRANSFERRING;
+        var scheduler = EscrowRuntime.of(server).reconciliationScheduler();
+        boolean held = coordinator.currentReason(op) != EscrowReason.NONE || op.phase() != EscrowOperation.Phase.PREPARED
+                || !op.settlement().isEmpty() || scheduler != null && !scheduler.view(op.id()).reason().equals(EscrowReason.NONE.name());
+        return progress(coordinator.durable(op.id()), applied, coordinator.operational(), coordinator.writerUnavailable(), held,
+                coordinator.writerUnknown());
+    }
+
+    /**
+     * The progress of one operation naming the device (W95-R1), pure so that every combination is pinned. "Applied" means
+     * the device's section holds this operation's marker, so its own debit has happened, and no status after it may say
+     * that no fuel moved: an unavailable coordinator or writer (a failed baseline, or three unresolved writes) then reads
+     * ESCROW_PENDING, and LEDGER_UNAVAILABLE only before it. An available ledger shows PREPARING until the debit,
+     * TRANSFERRING after it, and ESCROW_PENDING for a held durable record or an UNKNOWN write after the debit.
+     */
+    static FluidFuelLoaderStatus progress(boolean durable, boolean applied, boolean operational, boolean writerUnavailable,
+                                          boolean held, boolean writerUnknown) {
+        if (!operational || writerUnavailable) {
+            return applied ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.LEDGER_UNAVAILABLE;
+        }
+        if (applied) {
+            // A debit needs the exact L1 acknowledgement, so an applied operation that is not durable is held, not new.
+            return !durable || held || writerUnknown ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.TRANSFERRING;
+        }
+        return durable && held ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.PREPARING;
     }
 
     /** Queues a paced device's attempt once in the fair queue; false when the queue is full (it retries next interval). */

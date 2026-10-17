@@ -113,6 +113,8 @@ public final class EscrowCoordinator implements AutoCloseable {
     }
     boolean durable(UUID operation) { owner(); return data.ledger().records().stream().anyMatch(op -> op.id().equals(operation)); }
     boolean writerUnknown() { owner(); return writer.unknown(); }
+    /** A failed baseline or three unresolved writes (EscrowLedgerWriter#unavailable); operational() covers only the first. */
+    boolean writerUnavailable() { owner(); return writer.unavailable(); }
     boolean frozenIdentity(UUID identity) { owner(); return frontiers.keySet().stream().anyMatch(key -> identity.equals(key.identity())); }
     void reconcile(net.minecraft.server.MinecraftServer server, EscrowOperation operation,
                    Consumer<EscrowReconciliationScheduler.Result> completion) {

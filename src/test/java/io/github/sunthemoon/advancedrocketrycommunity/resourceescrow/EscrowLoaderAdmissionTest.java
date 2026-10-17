@@ -9,7 +9,10 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-/** W11b3 B3-E: prepareFill's typed results as player status, the disabled production switch and the fair queue. */
+/**
+ * W11b3 B3-E: prepareFill's typed results as player status, the device progress, the disabled production switch
+ * and the fair queue.
+ */
 class EscrowLoaderAdmissionTest {
     @Test void everyPrepareFillResultHasOneStatusAndOnlyQueuedIsProgress() {
         var expected = new EnumMap<EscrowCoordinator.Fill, FluidFuelLoaderStatus>(EscrowCoordinator.Fill.class);
@@ -45,6 +48,44 @@ class EscrowLoaderAdmissionTest {
 
     @Test void productionAdmissionStaysDisabled() {
         assertFalse(EscrowCoordinator.PRODUCTION_ADMISSION, "Only Root's reviewed enable commit may change this");
+    }
+
+    /** W95-R1: all 64 combinations of (durable, applied, operational, writer unavailable, held, writer unknown). */
+    @Test void progressPinsEveryCombinationAndNeverSaysNoFuelMovedAfterTheDebit() {
+        var counts = new EnumMap<FluidFuelLoaderStatus, Integer>(FluidFuelLoaderStatus.class);
+        for (int bits = 0; bits < 64; bits++) {
+            boolean durable = (bits & 1) != 0, applied = (bits & 2) != 0, operational = (bits & 4) != 0;
+            boolean unavailable = (bits & 8) != 0, held = (bits & 16) != 0, unknown = (bits & 32) != 0;
+            var status = EscrowLoaderAdmission.progress(durable, applied, operational, unavailable, held, unknown);
+            String label = "durable=" + durable + " applied=" + applied + " operational=" + operational + " unavailable=" + unavailable
+                    + " held=" + held + " unknown=" + unknown;
+            counts.merge(status, 1, Integer::sum);
+            if (!operational || unavailable) {
+                // A failed baseline, a failed bind-time readback or three unresolved writes.
+                assertEquals(applied ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.LEDGER_UNAVAILABLE, status, label);
+            } else if (!applied) {
+                assertEquals(durable && held ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.PREPARING, status, label);
+            } else {
+                assertEquals(durable && !held && !unknown ? FluidFuelLoaderStatus.TRANSFERRING : FluidFuelLoaderStatus.ESCROW_PENDING, status, label);
+            }
+            // PREPARING and LEDGER_UNAVAILABLE say that no fuel moved; neither may follow the device's own debit.
+            if (applied) {
+                assertNotEquals(FluidFuelLoaderStatus.PREPARING, status, label);
+                assertNotEquals(FluidFuelLoaderStatus.LEDGER_UNAVAILABLE, status, label);
+            } else {
+                assertNotEquals(FluidFuelLoaderStatus.TRANSFERRING, status, label);
+            }
+        }
+        assertEquals(Map.of(FluidFuelLoaderStatus.LEDGER_UNAVAILABLE, 24, FluidFuelLoaderStatus.ESCROW_PENDING, 33,
+                FluidFuelLoaderStatus.PREPARING, 6, FluidFuelLoaderStatus.TRANSFERRING, 1), counts);
+        // B3-S1: three unresolved creation-baseline outcomes leave the writer unavailable before any L1.
+        assertEquals(FluidFuelLoaderStatus.LEDGER_UNAVAILABLE, EscrowLoaderAdmission.progress(false, false, true, true, false, true));
+        // The review's trigger: a bind-time readback fails while a debited fill is held.
+        assertEquals(FluidFuelLoaderStatus.ESCROW_PENDING, EscrowLoaderAdmission.progress(true, true, false, false, false, false));
+        // A pending baseline or an UNKNOWN L1 is still PREPARING; an UNKNOWN write after the debit is ESCROW_PENDING.
+        assertEquals(FluidFuelLoaderStatus.PREPARING, EscrowLoaderAdmission.progress(false, false, true, false, false, true));
+        assertEquals(FluidFuelLoaderStatus.ESCROW_PENDING, EscrowLoaderAdmission.progress(true, true, true, false, false, true));
+        assertEquals(FluidFuelLoaderStatus.TRANSFERRING, EscrowLoaderAdmission.progress(true, true, true, false, false, false));
     }
 
     @Test void theFairQueueVisitsInArrivalOrderOncePerDeviceWithOneCapturePerTick() {
