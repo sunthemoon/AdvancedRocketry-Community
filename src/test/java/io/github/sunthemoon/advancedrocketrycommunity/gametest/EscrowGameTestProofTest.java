@@ -101,6 +101,44 @@ class EscrowGameTestProofTest {
         assertSame(failure, assertThrows(AssertionError.class, refused::tick));
     }
 
+    @Test void twoAttemptFixtureFailsOnSecondSupersessionWithoutWaitingForAnotherBackoff() {
+        var clock = new AtomicLong(0);
+        var delivered = new ArrayList<Result>();
+        var proof = new EscrowGameTestProof<Result>(clock::get,
+                (tick, callback) -> { callback.accept(SUPERSEDED); return true; },
+                Result::confirmed, Result::reason, delivered::add, 2);
+        proof.tick(); clock.set(99); proof.tick();
+        assertEquals(1, proof.attempts()); assertTrue(delivered.isEmpty());
+        clock.set(100); proof.tick();
+        assertEquals(2, proof.attempts()); assertEquals(List.of(SUPERSEDED), delivered);
+        clock.set(10_000); proof.tick(); assertEquals(2, proof.attempts());
+    }
+
+    @Test void preparationDeferralsDoNotConsumeAttemptsOrStartBackoff() {
+        var clock = new AtomicLong(0);
+        var delivered = new ArrayList<Result>();
+        var requested = new ArrayList<Long>();
+        var proof = new EscrowGameTestProof<Result>(clock::get, (tick, callback) -> {
+            if (tick < 50 || tick >= 150 && tick < 160) { return false; }
+            requested.add(tick); callback.accept(requested.size() == 1 ? SUPERSEDED : CONFIRMED); return true;
+        }, Result::confirmed, Result::reason, delivered::add, 2);
+        for (long tick = 0; tick <= 160; tick++) { clock.set(tick); proof.tick(); }
+        assertEquals(List.of(50L, 160L), requested); assertEquals(2, proof.attempts());
+        assertEquals(List.of(CONFIRMED), delivered);
+    }
+
+    @Test void attemptLimitCannotExceedTheProductRetryPolicyOrBeEmpty() {
+        for (int attempts : new int[] {0, -1, 4}) {
+            assertThrows(IllegalArgumentException.class, () -> new EscrowGameTestProof<Result>(() -> 0,
+                    (tick, callback) -> true, Result::confirmed, Result::reason, result -> { }, attempts));
+        }
+        var delivered = new ArrayList<Result>();
+        var proof = new EscrowGameTestProof<Result>(() -> 0,
+                (tick, callback) -> { callback.accept(SUPERSEDED); return true; },
+                Result::confirmed, Result::reason, delivered::add, 1);
+        proof.tick(); assertEquals(List.of(SUPERSEDED), delivered); assertEquals(1, proof.attempts());
+    }
+
     private static EscrowGameTestProof<Result> driver(AtomicLong clock, EscrowGameTestProof.Request<Result> request,
                                                      List<Result> delivered) {
         return new EscrowGameTestProof<>(clock::get, request, Result::confirmed, Result::reason, delivered::add);

@@ -21,14 +21,18 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowProofRetryGameTests {
+    // Two captures only: up to 200 ticks of fixture preparation, two 20-tick force windows plus one
+    // completion tick each, and the first product backoff (100). No third attempt / 400-tick backoff.
+    private static final int PREPARATION_TICKS = 200;
+    private static final int TIMEOUT_TICKS = PREPARATION_TICKS + 2 * (20 + 1) + 100;
     private EscrowProofRetryGameTests() { }
 
-    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 200)
+    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = TIMEOUT_TICKS)
     public static void supersededTerrainProofRetriesTheSameFrontierAfterBackoff(GameTestHelper helper) {
         new Scenario(helper, false).start();
     }
 
-    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = 200)
+    @GameTest(template = "empty", batch = "escrow_core", timeoutTicks = TIMEOUT_TICKS)
     public static void supersededEntityProofRetriesTheSameFrontierAfterBackoff(GameTestHelper helper) {
         new Scenario(helper, true).start();
     }
@@ -45,6 +49,7 @@ public final class EscrowProofRetryGameTests {
         private boolean injected, closed;
         private final long startedAt;
         private long refusedAt = -1;
+        private int preparationTicks;
 
         Scenario(GameTestHelper helper, boolean entity) {
             this.helper = helper; this.entity = entity;
@@ -55,20 +60,29 @@ public final class EscrowProofRetryGameTests {
             level.getChunk(chunk.x, chunk.z);
             fixture = EscrowTestEndpoints.create(level, position, UUID.randomUUID());
             var operation = fixture.operation(1); fixture.apply(operation);
+            // Request this nonempty entity slot's disk load now, rather than waiting for the surrounding
+            // terrain's entity-ticking promotion to request it much later. This is vanilla's normal save path.
+            if (entity) { level.entityManager.storeChunkSections(chunk.toLong(), value -> { }); }
             var endpoint = entity ? operation.destination() : operation.source();
             var frontier = entity ? fixture.bankState() : fixture.sourceState();
             var validator = EscrowTestEndpoints.validator(endpoint, frontier);
             var store = EscrowRuntime.of(server).store(level);
             pacer = new GameTestTickPacer(server);
             proof = new EscrowGameTestProof<>(server::getTickCount,
-                    (tick, completed) -> barrier.begin(store, endpoint, frontier, validator, tick, result -> {
+                    (tick, completed) -> {
+                        if (!entity && !EscrowGameTestProof.freshTerrainSave(level, chunk)) {
+                            preparationTick(); return false;
+                        }
+                        checkpoint("capture");
+                        return barrier.begin(store, endpoint, frontier, validator, tick, result -> {
                         if (!result.confirmed()) {
                             helper.assertTrue(result.reason() == EscrowReason.SUPERSEDING_SAVE, "Injected save produced another refusal: " + result.reason());
                             refusedAt = server.getTickCount();
                             checkpoint("superseded");
                         }
                         completed.accept(result);
-                    }), EscrowBarrier.Result::confirmed, EscrowBarrier.Result::reason, result -> {
+                        });
+                    }, EscrowBarrier.Result::confirmed, EscrowBarrier.Result::reason, result -> {
                         helper.assertTrue(result.confirmed(), "Retried proof was not confirmed: " + result.reason());
                         helper.assertTrue(injected && attempts() == 2 && barrier.supersedingSaves() == 1
                                 && barrier.ioFailures() == 0 && barrier.refusals() == 0, "Retry did not follow exactly one real superseding save");
@@ -78,7 +92,7 @@ public final class EscrowProofRetryGameTests {
                         helper.assertTrue(EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
                                 && EscrowTestEndpoints.amount(fixture.bank().getPersistentData()) == 1_000, "Retry changed resource conservation");
                         checkpoint("confirmed"); result.proof().release(); helper.succeed();
-                    });
+                    }, 2);
             try {
                 var field = GameTestHelper.class.getDeclaredField("testInfo"); field.setAccessible(true);
                 ((GameTestInfo) field.get(helper)).addListener(this);
@@ -91,9 +105,8 @@ public final class EscrowProofRetryGameTests {
             if (closed) { return; }
             pacer.pace(); var level = helper.getLevel();
             barrier.tick(level.getServer().getTickCount());
-            if (closed || entity && !level.areEntitiesLoaded(chunk.toLong())) { return; }
-            // This test deliberately supersedes its first capture. Waiting for the terrain cooldown before that
-            // rejected attempt wastes the unchanged tick budget; the real save and product backoff precede the retry.
+            if (closed) { return; }
+            if (entity && !level.areEntitiesLoaded(chunk.toLong())) { preparationTick(); return; }
             proof.tick();
             if (proof.attempts() == 1 && !injected) {
                 injected = true; checkpoint("inject_save");
@@ -107,6 +120,9 @@ public final class EscrowProofRetryGameTests {
                     level.getChunkSource().chunkMap.write(chunk, newer);
                 }
             }
+        }
+        private void preparationTick() {
+            helper.assertTrue(++preparationTicks <= PREPARATION_TICKS, "Retry fixture preparation exceeded its explicit budget");
         }
         @Override public void testStructureLoaded(GameTestInfo info) { }
         @Override public void testPassed(GameTestInfo info) { close(); }
