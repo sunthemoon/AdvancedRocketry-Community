@@ -60,6 +60,8 @@ public final class EscrowRuntime {
     private final EscrowPreF2Cancellation preF2Cancellation = new EscrowPreF2Cancellation();
     private final EscrowFlightCheckpoint flightCheckpoint = new EscrowFlightCheckpoint();
     private final EscrowGovernedDispatch governedFlights = new EscrowGovernedDispatch();
+    private final EscrowGovernedExecutorHolds executorHolds = new EscrowGovernedExecutorHolds();
+    public EscrowGovernedExecutorHolds executorHolds() { return executorHolds; }
     private final EscrowGovernedSourceFlight sourceFlights = new EscrowGovernedSourceFlight();
     private final EscrowGovernedDestination destinations = new EscrowGovernedDestination();
     private final EscrowGovernedPhases flightPhases = new EscrowGovernedPhases();
@@ -123,6 +125,7 @@ public final class EscrowRuntime {
         if (settlementProbe != null) { settlementProbe.checkpoint(cut); }
         if (settlementCompletionProbe != null) { settlementCompletionProbe.checkpoint(cut); }
         if (preF2Probe != null) { preF2Probe.checkpoint(cut); }
+        if (sourceClockProbe != null) { sourceClockProbe.checkpoint(cut); }
     }
     io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile.Committer ledgerCommitter(MinecraftServer server) {
         String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
@@ -289,7 +292,7 @@ public final class EscrowRuntime {
         runtime.flightCheckpoint.close();
         runtime.terminal.close();
         runtime.governedFlights.close(); runtime.destinations.close();
-        runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
+        runtime.executorHolds.clear(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.barrier != null) { runtime.barrier.close(); }
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
@@ -318,13 +321,13 @@ public final class EscrowRuntime {
         runtime.flightCheckpoint.close();
         runtime.terminal.close();
         runtime.governedFlights.close(); runtime.destinations.close();
-        runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
+        runtime.executorHolds.clear(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.returns.close();
         if (runtime.reconciliation != null) { runtime.reconciliation.close(); }
     }
     private static final class Provider implements ICapabilityProvider {
         private final EscrowRuntime runtime = new EscrowRuntime();
         private final LazyOptional<EscrowRuntime> value = LazyOptional.of(() -> runtime);
-        private void invalidate() { runtime.stopping = true; runtime.terminal.close(); runtime.governedFlights.close(); runtime.destinations.close(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
+        private void invalidate() { runtime.stopping = true; runtime.terminal.close(); runtime.governedFlights.close(); runtime.destinations.close(); runtime.executorHolds.clear(); runtime.sourceFlights.clear(); runtime.flightPhases.clear(); runtime.arrivals.clear(); runtime.monitor.clear(); runtime.stores.clear(); value.invalidate(); }
         @Override @NotNull public <T> LazyOptional<T> getCapability(@NotNull Capability<T> requested, @Nullable Direction side) {
             return CAPABILITY.orEmpty(requested, value);
         }

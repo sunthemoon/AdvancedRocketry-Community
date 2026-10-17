@@ -20,51 +20,59 @@ final class RocketGovernedSourceDispatcher {
     private int cursor;
 
     void tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferBayDispatch bays) {
+        var holds = EscrowRuntime.of(server).executorHolds();
+        holds.retain(journal.entries());
         cursor = visit(journal.entries(), cursor, true, record -> {
             var boundary = bays.before(server, journal, record, RocketTransferBayRecoveryGate.Action.TICK_SOURCE);
             if (boundary == null || boundary.kind() != RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED) { return; }
-            if (!afterClassification(EscrowRuntime.of(server).governedFlights().classify(server, journal, record),
-                    () -> RocketTransferEntities.refreshGovernedFlightTickets(server, record),
-                    () -> RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record))) { return; }
-            var level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
-            if (level == null) { return; }
-            var entity = level.getEntity(record.sourceEntityId());
-            if (entity != null && !(entity instanceof RocketEntity)) { return; }
-            var source = (RocketEntity) entity;
-            if (source != null && !source.operational()) { return; }
-            // At-rest passenger waits must precede destination/phase/return envelope captures.
-            // This negative hint performs no action; all successful routes still repeat their final checks.
-            if (passengersPending(server, record, source)) { return; }
-            var returns = EscrowRuntime.of(server).returns();
-            if (returns.waitingForPassengers(server, record, source)) { return; }
-            if (returns.handles(record, source)) {
-                returns.tickThroughTerminal(server, journal, record, source,
-                        () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays));
-                return;
-            }
-            if (record.phase() != RocketTransferPhase.PREPARED) {
-                destination(server, journal, record, source, bays); return;
-            }
-            if (source == null) { return; }
-            var previous = source.flightData().orElseThrow().state();
-            var result = EscrowRuntime.of(server).sourceFlights().tick(server, journal, record, source,
-                    () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays));
-            if (result == EscrowGovernedSourceFlight.Result.HELD) { return; }
-            var state = source.flightData().orElseThrow().state();
-            if (state != previous) {
-                switch (state) {
-                    case COUNTDOWN -> RocketFlightFeedback.countdownAccepted(source);
-                    case ASCENT -> RocketFlightFeedback.ascentStarted(source);
-                    case TRANSIT -> RocketFlightFeedback.transitStarted(source);
-                    default -> { }
-                }
-            } else if (result == EscrowGovernedSourceFlight.Result.ASCENT) {
-                RocketFlightFeedback.ascentTrail(source, level.getGameTime() - source.flightData().orElseThrow().stateStartedGameTime());
-            }
-            if (result == EscrowGovernedSourceFlight.Result.DESTINATION_DUE) {
-                destination(server, journal, record, source, bays);
-            }
+            afterClassification(EscrowRuntime.of(server).governedFlights().classify(server, journal, record),
+                    () -> holds.held(record), () -> RocketTransferEntities.refreshGovernedFlightTickets(server, record),
+                    () -> RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record),
+                    () -> dispatchLoaded(server, journal, record, bays));
         });
+    }
+
+    private static void dispatchLoaded(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
+                                       RocketTransferBayDispatch bays) {
+        var level = RocketTransferEntities.level(server, record.sourceSnapshot().sourceDimension());
+        if (level == null) { return; }
+        var entity = level.getEntity(record.sourceEntityId());
+        if (entity != null && !(entity instanceof RocketEntity)) { endpointHold(server, record); return; }
+        var source = (RocketEntity) entity;
+        if (source != null && !source.operational()) { endpointHold(server, record); return; }
+        if (source == null && record.phase().ordinal() < RocketTransferPhase.SOURCE_REMOVED.ordinal()) { endpointHold(server, record); return; }
+        // At-rest passenger waits must precede destination/phase/return envelope captures.
+        // This negative hint performs no action; all successful routes still repeat their final checks.
+        if (passengersPending(server, record, source)) { return; }
+        var returns = EscrowRuntime.of(server).returns();
+        if (returns.waitingForPassengers(server, record, source)) { return; }
+        if (returns.handles(record, source)) {
+            returns.tickThroughTerminal(server, journal, record, source,
+                    () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays));
+            return;
+        }
+        if (record.phase() != RocketTransferPhase.PREPARED) {
+            destination(server, journal, record, source, bays); return;
+        }
+        if (source == null) { return; }
+        var previous = source.flightData().orElseThrow().state();
+        var result = EscrowRuntime.of(server).sourceFlights().tick(server, journal, record, source,
+                () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays));
+        if (result == EscrowGovernedSourceFlight.Result.HELD) { return; }
+        var state = source.flightData().orElseThrow().state();
+        if (state != previous) {
+            switch (state) {
+                case COUNTDOWN -> RocketFlightFeedback.countdownAccepted(source);
+                case ASCENT -> RocketFlightFeedback.ascentStarted(source);
+                case TRANSIT -> RocketFlightFeedback.transitStarted(source);
+                default -> { }
+            }
+        } else if (result == EscrowGovernedSourceFlight.Result.ASCENT) {
+            RocketFlightFeedback.ascentTrail(source, level.getGameTime() - source.flightData().orElseThrow().stateStartedGameTime());
+        }
+        if (result == EscrowGovernedSourceFlight.Result.DESTINATION_DUE) {
+            destination(server, journal, record, source, bays);
+        }
     }
 
     private static boolean passengersPending(MinecraftServer server, RocketTransferRecord record, RocketEntity source) {
@@ -73,7 +81,7 @@ final class RocketGovernedSourceDispatcher {
         var entity = level == null ? null : level.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
         return entity instanceof RocketEntity arrival
                 && arrival.flightData().filter(flight -> flight.state() == RocketFlightState.LANDED).isPresent()
-                && !EscrowGovernedTerminalPassengers.present(server, record, EscrowFlightTables.Outcome.HANDED_OFF, arrival);
+                && EscrowGovernedTerminalPassengers.hasOffline(server, record);
     }
 
     private static void destination(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
@@ -82,6 +90,15 @@ final class RocketGovernedSourceDispatcher {
                 && RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays) && !landingAvailable(server, record)) {
             requestReturn(server, journal, record, source, bays, RocketTransferReturnReason.DESTINATION_PAD_BLOCKED, () -> { });
             return;
+        }
+        // Restore a warm COMMITTED descent's planned pose before F4/F5 inspect it. This is the
+        // same checked arrival movement, never landing, a passenger move or a new phase authority.
+        if (source == null && record.phase() == RocketTransferPhase.COMMITTED) {
+            var level = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
+            if (level != null && level.getEntity(record.nativeTransfer().orElseThrow().armed().destination()) instanceof RocketEntity arrival) {
+                EscrowRuntime.of(server).arrivals().tick(server, journal, record, arrival,
+                        () -> RocketGovernedLaunchBoundary.allows(server, journal, record, null, arrival, bays));
+            }
         }
         var result = EscrowRuntime.of(server).destinations().tick(server, journal, record, source,
                 (checked, from, to) -> RocketGovernedLaunchBoundary.allows(server, journal, checked, from, to, bays)
@@ -137,12 +154,19 @@ final class RocketGovernedSourceDispatcher {
         return visit(records, cursor, false, action);
     }
 
-    /** Loading is only a wait: no entity lookup or phase executor runs until both ends are ready. */
-    static boolean afterClassification(EscrowGovernedDispatch.Decision decision, Runnable refreshTickets,
-                                       java.util.function.BooleanSupplier ready) {
+    /** Loading may bootstrap tickets. A loaded executor decides its hold before any refresh. */
+    static boolean afterClassification(EscrowGovernedDispatch.Decision decision, java.util.function.BooleanSupplier held,
+                                       Runnable refreshTickets, java.util.function.BooleanSupplier ready, Runnable execute) {
         if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE) { return false; }
-        refreshTickets.run();
-        return ready.getAsBoolean();
+        boolean loaded = ready.getAsBoolean();
+        if (loaded) { execute.run(); }
+        if (!held.getAsBoolean()) { refreshTickets.run(); }
+        return loaded;
+    }
+
+    private static void endpointHold(MinecraftServer server, RocketTransferRecord record) {
+        EscrowRuntime.of(server).executorHolds().hold(server, record,
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedExecutorHolds.Reason.NATIVE_ENDPOINT);
     }
 
     static int visit(List<RocketTransferRecord> records, int cursor, boolean destinations,

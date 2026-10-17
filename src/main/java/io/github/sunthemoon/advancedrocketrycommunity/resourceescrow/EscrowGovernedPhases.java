@@ -24,6 +24,12 @@ public final class EscrowGovernedPhases {
         passengerRetries = new EscrowTerminalRetries(logger);
     }
     public boolean allowsNative(RocketEntity source, RocketEntity destination) { return tracking.allows(source) && tracking.allows(destination); }
+    boolean present(RocketTransferRecord record, RocketEntity destination) { return tracking.present(record, destination); }
+    void capturePresence(RocketEntity destination, RocketTransferSavedData journal) { tracking.capture(destination, journal); }
+
+    static boolean matchingRequired(RocketTransferPhase phase, boolean sourcePresent, boolean captured, boolean action) {
+        return phase != RocketTransferPhase.COMMITTED || sourcePresent || !captured || action;
+    }
 
     /** A retired flight's observations cannot constrain its successor's next flight. */
     public boolean releaseCompleted(EscrowCoordinator coordinator, RocketTransferSavedData journal, EscrowFlightTables.Armed terminal) {
@@ -45,7 +51,14 @@ public final class EscrowGovernedPhases {
         if (journal.actionAuthorityAvailable()) { passengerRetries.retain(logical -> journal.findByLogicalRocket(logical).isPresent()); }
         if (!passengerAttemptDue(record.logicalRocketId(), server.getTickCount())) { return Result.HELD; }
         try { return checked(server, journal, record, source, destination, boundary); }
-        catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return Result.HELD; }
+        catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) {
+            var checked = authority(server, journal, record);
+            if (!EscrowGovernedFrame.transientMotion(source) && !EscrowGovernedFrame.transientMotion(destination)
+                    && boundary.getAsBoolean() && checked != null && checked.decision().route() == EscrowGovernedDispatch.Route.ACTIVE) {
+                EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.PHASE_ENVELOPE);
+            }
+            return Result.HELD;
+        }
         finally { mount = null; }
     }
 
@@ -53,10 +66,23 @@ public final class EscrowGovernedPhases {
                            RocketEntity source, RocketEntity destination, BooleanSupplier boundary) {
         var authority = authority(server, journal, record);
         if (authority == null || authority.decision().route() != EscrowGovernedDispatch.Route.ACTIVE
-                || record.phase() == RocketTransferPhase.PREPARED || destination == null || !boundary.getAsBoolean() || !allowsNative(source, destination)
-                || !EscrowGovernedPhaseAction.matches(record, envelope(source), envelope(destination), sourceTime(server, source))) {
+                || record.phase() == RocketTransferPhase.PREPARED || destination == null) {
             return Result.HELD;
         }
+        if (EscrowGovernedFrame.transientMotion(source) || EscrowGovernedFrame.transientMotion(destination)) { return Result.WAITING; }
+        if (!allowsNative(source, destination)) {
+            EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.PHASE_ENVELOPE); return Result.HELD;
+        }
+        if (!boundary.getAsBoolean()) { return Result.HELD; }
+        boolean action = record.destinationFlightData().passengers().assignments().stream().anyMatch(seat -> {
+            var player = server.getPlayerList().getPlayer(seat.passengerId());
+            return player != null && player.getVehicle() != destination;
+        });
+        boolean complete = matchingRequired(record.phase(), source != null, tracking.present(record, destination), action);
+        if (complete && !EscrowGovernedPhaseAction.matches(record, envelope(source), envelope(destination), sourceTime(server, source))) {
+            EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.PHASE_ENVELOPE); return Result.HELD;
+        }
+        EscrowRuntime.of(server).executorHolds().healthy(record);
         tracking.capture(source, journal); tracking.capture(destination, journal);
         if (record.phase() == RocketTransferPhase.DESTINATION_SPAWNED) {
             // F4's callback never transfers a passenger. This separate checked snapshot does.
@@ -78,6 +104,9 @@ public final class EscrowGovernedPhases {
             }
         }
         if (source != null && !source.getPassengers().isEmpty()) { return Result.HELD; }
+        // A warm COMMITTED observation with no physical action consumes no new permit.
+        // Any move above still uses complete capture/consume checks and reaches the final permit.
+        if (!complete) { return Result.COMMITTED; }
         // Reacquire after every physical dismount/join. Such events invalidate the previous authority.
         var permit = permit(server, journal, record, source, destination, () -> boundary.getAsBoolean()
                 && onlinePassengersAtDestination(server, record, destination));
@@ -128,7 +157,7 @@ public final class EscrowGovernedPhases {
         player.stopRiding();
         var detachedSource = EscrowGovernedPhaseAction.withoutRider(beforeSource, player.getUUID());
         BooleanSupplier detached = () -> boundary.getAsBoolean() && online(server, player) && player.getVehicle() == null
-                && Objects.equals(detachedSource, envelope(source)) && beforeDestination.equals(envelope(destination));
+                && EscrowGovernedEnvelope.same(detachedSource, envelope(source)) && EscrowGovernedEnvelope.same(beforeDestination, envelope(destination));
         // stopRiding posts the ordinary invalidation event. Never suppress it or reuse the old permit.
         permit(server, journal, record, source, destination, detached).consume();
         player.setDeltaMovement(Vec3.ZERO); player.fallDistance = 0;
@@ -148,7 +177,7 @@ public final class EscrowGovernedPhases {
         var expectedDestination = beforeDestination.copy();
         var rider = new CompoundTag(); rider.putUUID("physical", player.getUUID());
         expectedDestination.getList("passengers", net.minecraft.nbt.Tag.TAG_COMPOUND).add(rider);
-        EscrowTags.require(Objects.equals(detachedSource, envelope(source)) && expectedDestination.equals(envelope(destination)),
+        EscrowTags.require(EscrowGovernedEnvelope.same(detachedSource, envelope(source)) && EscrowGovernedEnvelope.same(expectedDestination, envelope(destination)),
                 "Passenger callback changed a native endpoint");
         permit(server, journal, record, source, destination, boundary).consume();
         EscrowRuntime.of(server).checkpoint("F5_PASSENGER_AFTER"); return true;

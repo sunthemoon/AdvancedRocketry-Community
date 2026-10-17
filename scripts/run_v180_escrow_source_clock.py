@@ -49,10 +49,29 @@ def require_source(root: dict, transfer: dict, source: dict, phase: str) -> dict
                 snapshot=data["snapshot"], fuel=flight["fuel"], passengers=flight["passengers"], wrapper=wrapper)
 
 
-def inspect(world: Path, cut: str, restarted: bool) -> dict:
+def source_invariant(source: dict) -> dict:
+    data = source["RocketEntityData"]
+    flight = data["flight_data"]
+    return dict(physical=source["UUID"], logical=data["assembly_transaction_id"], owner=data["owner_id"],
+                snapshot=data["snapshot"], fuel=flight["fuel"], passengers=flight["passengers"], wrapper=data["resource_escrow"])
+
+
+def require_cancelled(root: dict, transfers: list, source: dict, before: dict) -> dict:
+    invariant = source_invariant(source)
+    flight = source["RocketEntityData"]["flight_data"]
+    if (transfers or root["armed_flights"] or root["issued_launch_serial"] != 1 or root["records"]
+            or root["floors"] or root["tombstones"] or root["rocket_authorities"]
+            or root["ledger_id"] != before["ledger"]["ledger_id"] or invariant != before["invariant"]
+            or flight["state"] != "FUELED" or "plan" in flight or "active_transfer_id" in flight
+            or source["Pos"] != [64.5, 100., 64.5]):
+        raise smoke.SmokeError("Crewed return lacks exact source cancellation and checked cleanup")
+    return invariant
+
+
+def inspect(world: Path, cut: str, restarted: bool, cancelled_from: dict | None = None) -> dict:
     root = ledger(world / "data" / LEDGER)
     transfers = journal(world)["transfers"]
-    if len(transfers) != 1:
+    if cancelled_from is None and len(transfers) != 1:
         raise smoke.SmokeError("Source cut lost or duplicated its checked record")
     entities = record(world / "entities/r.0.0.mca")["Entities"]
     rockets = [entry for entry in entities if "RocketEntityData" in entry]
@@ -60,7 +79,8 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
         raise smoke.SmokeError("Source cut lost or duplicated its native rocket")
     source = rockets[0]
     phase = "TRANSIT" if restarted else cut.removeprefix("SC_")
-    invariant = require_source(root, transfers[0], source, phase)
+    invariant = (require_cancelled(root, transfers, source, cancelled_from) if cancelled_from is not None
+                 else require_source(root, transfers[0], source, phase))
     path = world / "entities/r.0.0.mca"
     if slot_present(path, 133) and any("RocketEntityData" in value for value in record(path, 133)["Entities"]):
         raise smoke.SmokeError("Source-only cut published a destination")
@@ -88,7 +108,7 @@ def run(args) -> dict:
     token = uuid.uuid4().hex
     (session / ".arce-source-clock-owned").write_text(token, encoding="ascii")
     report = dict(status="IN_PROGRESS", source_commit=args.source_commit, jar_sha256=digest(args.jar),
-                  session=str(session), ownership_token=token, cases=[])
+                  session=str(session), ownership_token=token, crewed=args.crewed, cases=[])
     process = None
     try:
         shutil.copytree(libraries, session / "libraries")
@@ -108,21 +128,34 @@ def run(args) -> dict:
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"))
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowCase=" + cut)
+                if args.crewed:
+                    command.insert(1, "-Dadvancedrocketrycommunity.escrowCrewed=true")
                 row.setdefault("starts", []).append(dict(restart=restart, command=command, free_bytes=free, lock_owner=args.lock_owner))
                 process = smoke.CapturedProcess(command, session, evidence / f"{cut}-{restart}.log")
                 if restart == 0:
                     process.wait_for(re.compile(r"ARCE_RELEASE_SOURCE_CLOCK_PAUSED cut=" + cut), args.startup_timeout)
+                    if args.crewed and not any("ARCE_RELEASE_CREWED_F1 cut=" + cut in line and "mounted=true" in line for line in process.lines):
+                        raise smoke.SmokeError("Native cut lacks its facility-owned mounted F1 passenger")
                     process.process.kill(); process.abort(); process = None
                     row["cut_disk"] = inspect(session / ("world-" + cut), cut, False)
                 else:
-                    process.wait_for(re.compile(r"ARCE_RELEASE_SOURCE_CLOCK_RESULT cut=" + cut + r" state=DESTINATION_DUE"), args.startup_timeout)
+                    outcome = "CANCELLED_CLEANED" if args.crewed else "DESTINATION_DUE"
+                    process.wait_for(re.compile(r"ARCE_RELEASE_SOURCE_CLOCK_RESULT cut=" + cut + " state=" + outcome), args.startup_timeout)
+                    if args.crewed and restart == 1 and not any("ARCE_RELEASE_SOURCE_CLOCK_F7 cut=" + cut in line
+                            and "outcome=CANCELLED" in line for line in process.lines):
+                        raise smoke.SmokeError("Crewed first recovery lacks its exact acknowledged CANCELLED outcome")
                     process.command("stop"); code = process.finish()
                     if code or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                         raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")
                     process = None
-                    disk = inspect(session / ("world-" + cut), cut, True)
+                    disk = inspect(session / ("world-" + cut), cut, True, row["cut_disk"] if args.crewed else None)
                     if disk["invariant"] != row["cut_disk"]["invariant"]:
                         raise smoke.SmokeError("Restart changed frozen source resources or identity")
+                    if args.crewed and restart == 2:
+                        previous = row["restarts"][0]["disk"]["source"]
+                        keys = ("UUID", "id", "RocketEntityData", "Pos", "Motion", "Rotation", "NoGravity", "OnGround", "Invulnerable")
+                        if {key: previous.get(key) for key in keys} != {key: disk["source"].get(key) for key in keys}:
+                            raise smoke.SmokeError("Second restart changed the checked returned source")
                     row["restarts"].append(dict(restart=restart, exit_code=code, disk=disk))
             row["status"] = "PASS"; report["cases"].append(row); report.pop("in_progress", None)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -141,6 +174,7 @@ def main() -> int:
         parser.add_argument("--" + key, type=Path, required=True)
     parser.add_argument("--source-commit", required=True); parser.add_argument("--java", required=True)
     parser.add_argument("--lock-owner", required=True); parser.add_argument("--case", action="append", choices=CASES)
+    parser.add_argument("--crewed", action="store_true", help="Mount at F1 and recover through checked CANCELLED F7/F8")
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
     try: run(args); return 0

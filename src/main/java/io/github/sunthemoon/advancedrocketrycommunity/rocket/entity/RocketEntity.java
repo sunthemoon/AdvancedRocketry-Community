@@ -463,9 +463,9 @@ public final class RocketEntity extends Entity implements MenuProvider {
     @Override
     public void tick() {
         super.tick();
+        setDeltaMovement(Vec3.ZERO);
         io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowAudit.observe(this);
         setNoGravity(true);
-        setDeltaMovement(Vec3.ZERO);
         if (!level().isClientSide && !activeStateLogged) {
             activeStateLogged = true;
             AdvancedRocketryCommunity.LOGGER.info(

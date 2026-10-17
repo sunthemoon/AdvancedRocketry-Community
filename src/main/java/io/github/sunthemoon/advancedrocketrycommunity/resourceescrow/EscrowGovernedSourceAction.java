@@ -38,7 +38,7 @@ public final class EscrowGovernedSourceAction {
 
         RocketFlightData consume(java.util.function.Supplier<CompoundTag> observed) {
             EscrowTags.require(!used, "Governed source action was already consumed"); used = true;
-            EscrowTags.require(authority.valid() && boundary.getAsBoolean() && before.equals(observed.get()),
+            EscrowTags.require(authority.valid() && boundary.getAsBoolean() && EscrowGovernedEnvelope.same(before, observed.get()),
                     "Governed source action lost its checked authority or complete source");
             return after;
         }
@@ -88,7 +88,7 @@ public final class EscrowGovernedSourceAction {
             default -> throw new IllegalArgumentException("Unsupported source action");
         }
         expected.put("flight", RocketFlightNbtCodec.encode(before));
-        EscrowTags.require(expected.equals(observed), "Source differs from the permitted complete progression");
+        EscrowTags.require(EscrowGovernedEnvelope.same(expected, observed), "Source differs from the permitted complete progression");
         EscrowTags.require(before.fuel().equals(after.fuel()), "Source action changed resources");
         return new Permit(authority, observed, after, boundary, levelTime);
     }

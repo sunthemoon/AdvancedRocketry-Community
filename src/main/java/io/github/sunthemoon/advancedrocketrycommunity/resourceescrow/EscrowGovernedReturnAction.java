@@ -33,8 +33,7 @@ public final class EscrowGovernedReturnAction {
             var next = initial.markFailed(started).recover(initial.fuel().availableForLaunch(), started);
             expected.put("flight", RocketFlightNbtCodec.encode(next));
             EscrowGovernedPhaseAction.riders(record, source);
-            expected.put("passengers", source.get("passengers").copy());
-            return expected.equals(source);
+            return EscrowGovernedEnvelope.same(expected, source);
         } catch (IllegalArgumentException | IllegalStateException | ArithmeticException invalid) { return false; }
     }
 
@@ -85,7 +84,7 @@ public final class EscrowGovernedReturnAction {
         EscrowGovernedSourceRecovery.Change consume(Supplier<CompoundTag> source) {
             EscrowTags.require(!used, "Return permit already consumed"); used = true;
             EscrowTags.require(authority.valid() && boundary.getAsBoolean() && jointAbsence.getAsBoolean()
-                    && before.equals(observed.get()) && before.equals(source.get()), "Return lost its final authority or source");
+                    && EscrowGovernedEnvelope.same(before, observed.get()) && EscrowGovernedEnvelope.same(before, source.get()), "Return lost its final authority or source");
             return change;
         }
     }

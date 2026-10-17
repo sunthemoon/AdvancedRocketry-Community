@@ -39,6 +39,7 @@ final class EscrowGovernedLaunch {
             RocketStructureSnapshot sourceSnapshot, RocketFlightData countdown,
             RocketStructureSnapshot destinationSnapshot, UUID destinationId, EscrowGuard journal) {
         EscrowTags.bound(source, EscrowNativeEnvelope.MAX_BYTES, 24, 131_072);
+        source = EscrowGovernedEnvelope.comparison(source);
         var initial = flight(source);
         var wrapper = RocketEscrowSection.decode(EscrowTags.compound(source, "wrapper"));
         var plan = countdown.plan().orElseThrow(() -> new IllegalArgumentException("Launch has no plan"));
@@ -93,7 +94,7 @@ final class EscrowGovernedLaunch {
     RocketTransferRecord afterArm(EscrowLedger acknowledged, EscrowFlightTables.Armed arm, CompoundTag observed,
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData journal) {
         EscrowTags.require(acknowledged.writerGeneration() >= arm.generation()
-                && acknowledged.armedFlights().contains(arm) && source.equals(observed)
+                && acknowledged.armedFlights().contains(arm) && EscrowGovernedEnvelope.same(source, observed)
                 && EscrowFlightJournal.noTransfer(journal, arm.logical(), arm.transfer(), arm.serial()).getAsBoolean(),
                 "F1 callback lost its acknowledged arm, exact source or checked no-T state");
         var record = record(arm);

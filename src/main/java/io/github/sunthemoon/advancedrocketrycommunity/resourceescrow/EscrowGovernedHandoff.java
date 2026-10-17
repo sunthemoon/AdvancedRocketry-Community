@@ -72,7 +72,7 @@ final class EscrowGovernedHandoff {
             EscrowTags.require(Thread.currentThread() == owner, "F7 observation requires its owner thread");
             if (!valid()) { return false; }
             try {
-                if (passengersResolved.getAsBoolean() && survivor.equals(observeSurvivor.get())) { return valid(); }
+                if (passengersResolved.getAsBoolean() && EscrowGovernedEnvelope.same(survivor, observeSurvivor.get())) { return valid(); }
             } catch (IllegalArgumentException | IllegalStateException | ArithmeticException invalid) {
                 // A malformed live observation refuses this write; it is not a server-tick exception.
             }

@@ -63,6 +63,31 @@ class SourceClockOracleTest(unittest.TestCase):
             with self.subTest(kind=kind), self.assertRaises(runner.smoke.SmokeError):
                 runner.require_source(root, transfer, source, "TRANSIT")
 
+    def test_crewed_cancellation_requires_exact_resources_and_complete_cleanup(self):
+        root, transfer, source = self.fixture()
+        before = dict(ledger=copy.deepcopy(root), invariant=runner.require_source(root, transfer, source, "ASCENT"))
+        source = copy.deepcopy(source)
+        source["RocketEntityData"]["flight_data"]["state"] = "FUELED"
+        source["Pos"][1] = 100
+        root["armed_flights"] = []
+        self.assertEqual(before["invariant"], runner.require_cancelled(root, [], source, before))
+        for kind in ("arm", "record", "serial", "fuel", "manifest", "position", "state", "active", "plan", "ledger"):
+            changed_root, changed_source = copy.deepcopy((root, source))
+            records = []
+            flight = changed_source["RocketEntityData"]["flight_data"]
+            if kind == "arm": changed_root["armed_flights"] = [transfer["native_transfer"]["armed"]]
+            elif kind == "record": records = [transfer]
+            elif kind == "serial": changed_root["issued_launch_serial"] = 2
+            elif kind == "fuel": flight["fuel"]["amount"] = 500
+            elif kind == "manifest": flight["passengers"]["assignments"] = []
+            elif kind == "position": changed_source["Pos"][1] = 148
+            elif kind == "state": flight["state"] = "TRANSIT"
+            elif kind == "active": flight["active_transfer_id"] = "transfer"
+            elif kind == "plan": flight["plan"] = {}
+            elif kind == "ledger": changed_root["ledger_id"] = "other"
+            with self.subTest(kind=kind), self.assertRaises(runner.smoke.SmokeError):
+                runner.require_cancelled(changed_root, records, changed_source, before)
+
 
 if __name__ == "__main__":
     unittest.main()

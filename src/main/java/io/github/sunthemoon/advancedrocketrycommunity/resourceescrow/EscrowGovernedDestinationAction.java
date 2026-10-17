@@ -46,7 +46,7 @@ public final class EscrowGovernedDestinationAction {
         RocketTransferRecord consume(BooleanSupplier target) {
             EscrowTags.require(!used, "Destination permit already consumed"); used = true;
             EscrowTags.require(target.getAsBoolean() && authority.valid() && boundary.getAsBoolean()
-                    && proofs.getAsBoolean() && java.util.Objects.equals(source, observed.get()), "Destination publication lost its final proof");
+                    && proofs.getAsBoolean() && EscrowGovernedEnvelope.same(source, observed.get()), "Destination publication lost its final proof");
             return authority.record();
         }
     }

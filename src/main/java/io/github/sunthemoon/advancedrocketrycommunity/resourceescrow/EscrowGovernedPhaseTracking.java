@@ -8,9 +8,16 @@ import java.util.Map;
 import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
 
-/** Observes native fields before entity ticks can normalize them. Physical riders have F5's separate checks. */
+/** Warm native observations use the permitted moving frame; riders have separate manifest checks. */
 final class EscrowGovernedPhaseTracking {
     private final Map<UUID, Capture> captures = new HashMap<>();
+
+    boolean present(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record, RocketEntity rocket) {
+        if (rocket == null) { return false; }
+        var captured = captures.get(rocket.getUUID());
+        return captured != null && captured.rocket == rocket
+                && captured.arm.equals(record.nativeTransfer().orElseThrow().armed()) && captured.observe(rocket);
+    }
 
     boolean allows(RocketEntity rocket) {
         if (rocket == null) { return true; }
@@ -24,9 +31,8 @@ final class EscrowGovernedPhaseTracking {
         captures.entrySet().removeIf(entry -> entry.getValue().rocket.isRemoved()
                 || journal.findByLogicalRocket(entry.getValue().rocket.assemblyTransactionId().orElseThrow()).isEmpty());
         if (rocket == null || captures.containsKey(rocket.getUUID())) { return; }
-        var arm = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElseThrow()
-                .nativeTransfer().orElseThrow().armed();
-        reserve(captures, rocket.getUUID(), () -> new Capture(rocket, arm));
+        var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElseThrow();
+        reserve(captures, rocket.getUUID(), () -> new Capture(rocket, record));
     }
 
     /** The caller has checked F8 terminal authority and acknowledged journal absence. */
@@ -65,18 +71,19 @@ final class EscrowGovernedPhaseTracking {
     void clear() { captures.clear(); }
 
     private static CompoundTag frame(RocketEntity rocket) {
-        var frame = EscrowNativeEnvelope.frame(rocket); frame.remove("passengers"); return frame;
+        return EscrowGovernedEnvelope.frame(rocket);
     }
     private static final class Capture {
         final RocketEntity rocket;
         final EscrowFlightTables.Armed arm;
+        final io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record;
         Object flight;
         final Object snapshot;
         final RocketEscrowSection wrapper;
         final CompoundTag frame;
         boolean changed;
-        Capture(RocketEntity rocket, EscrowFlightTables.Armed arm) {
-            this.rocket = rocket; this.arm = arm; flight = rocket.flightData().orElseThrow(); snapshot = rocket.snapshot().orElseThrow();
+        Capture(RocketEntity rocket, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record) {
+            this.rocket = rocket; this.record = record; this.arm = record.nativeTransfer().orElseThrow().armed(); flight = rocket.flightData().orElseThrow(); snapshot = rocket.snapshot().orElseThrow();
             wrapper = rocket.escrowSection(); frame = frame(rocket);
         }
         boolean observe(RocketEntity candidate) {
@@ -84,7 +91,8 @@ final class EscrowGovernedPhaseTracking {
             try {
                 if (candidate != rocket || !rocket.operational() || rocket.flightData().orElse(null) != flight
                         || rocket.snapshot().orElse(null) != snapshot || !rocket.escrowSection().equals(wrapper)
-                        || !frame.equals(frame(rocket))) { changed = true; }
+                        || !EscrowGovernedFrame.matches(record, rocket, frame,
+                                ((io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData) flight).state())) { changed = true; }
             } catch (IllegalArgumentException | IllegalStateException invalid) { changed = true; }
             return !changed;
         }

@@ -26,7 +26,8 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedSourceFlightGameTests {
-    private enum Fault { NONE, MOTION, DUPLICATE, CLOCK, LANDING }
+    private enum Fault { NONE, MOTION, DUPLICATE, CLOCK, LANDING, POSITION, REST_POSITION }
+    private enum Departure { NONE, ASCENT, LANDED, LOGOUT }
     private EscrowGovernedSourceFlightGameTests() { }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_progress", timeoutTicks = 600)
@@ -35,8 +36,18 @@ public final class EscrowGovernedSourceFlightGameTests {
     }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_motion", timeoutTicks = 600)
-    public static void changedNativeMotionCannotHideBehindEntityTickNormalization(GameTestHelper helper) {
+    public static void transientNativeMotionDoesNotStopSourceProgression(GameTestHelper helper) {
         new Scenario(helper, Fault.MOTION).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_governed_source_position", timeoutTicks = 600)
+    public static void movingPlanRestoresTransientPositionWithoutAStickyHold(GameTestHelper helper) {
+        new Scenario(helper, Fault.POSITION).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_governed_rest_hold", timeoutTicks = 600)
+    public static void persistentRestPlacementHoldsAndLetsFlightTicketsExpire(GameTestHelper helper) {
+        new Scenario(helper, Fault.REST_POSITION).start();
     }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_duplicate", timeoutTicks = 600)
@@ -52,6 +63,19 @@ public final class EscrowGovernedSourceFlightGameTests {
     @GameTest(template = "empty", batch = "escrow_governed_arrival", timeoutTicks = 600)
     public static void governedDescentLandsWithPassengerAndRetainsArm(GameTestHelper helper) {
         new Scenario(helper, Fault.LANDING).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_ascent_dismount_complete", timeoutTicks = 600)
+    public static void ascentDismountCompletesCheckedHandoffAndCleanup(GameTestHelper helper) {
+        new Scenario(helper, Departure.ASCENT).start();
+    }
+    @GameTest(template = "empty", batch = "escrow_landed_dismount_complete", timeoutTicks = 600)
+    public static void landedDismountCompletesCheckedHandoffAndCleanup(GameTestHelper helper) {
+        new Scenario(helper, Departure.LANDED).start();
+    }
+    @GameTest(template = "empty", batch = "escrow_landed_relogin_complete", timeoutTicks = 600)
+    public static void logoutDuringAscentAndLoginAfterLandingCompletesHandoffAndCleanup(GameTestHelper helper) {
+        new Scenario(helper, Departure.LOGOUT).start();
     }
 
     // These single-flight fixtures assert the whole journal's acknowledgement at F3.
@@ -119,6 +143,10 @@ public final class EscrowGovernedSourceFlightGameTests {
         private long f7Tick;
         private io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadEntry claimedPad, otherPad;
         private final UUID otherTransfer = UUID.randomUUID();
+        private Departure departure = Departure.NONE;
+        private boolean departed, reconnected;
+        private long offlineLandedAt = -1;
+        private final java.util.Map<BlockPos, net.minecraft.world.level.block.state.BlockState> terrain = new java.util.LinkedHashMap<>();
 
         Scenario(GameTestHelper helper, Fault fault) {
             this.helper = helper; this.fault = fault; level = helper.getLevel();
@@ -136,6 +164,12 @@ public final class EscrowGovernedSourceFlightGameTests {
             this.helper = helper; fault = Fault.LANDING; this.terminalFault = terminalFault;
             level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer()); terminalCheckpoint = true;
             position = new BlockPos(596_008 + 128 * terminalFault.ordinal(), 100, 596_008);
+            destination = position.offset(32, 0, 0);
+        }
+        Scenario(GameTestHelper helper, Departure departure) {
+            this.helper = helper; this.departure = departure; fault = Fault.LANDING;
+            level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer()); terminalCheckpoint = true;
+            position = new BlockPos(602_008 + 128 * departure.ordinal(), 100, 602_008);
             destination = position.offset(32, 0, 0);
         }
         void start() {
@@ -163,6 +197,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             var flight = rocket.flightData().orElseThrow();
             helper.assertTrue(initial.fuel().equals(flight.fuel()) && initial.passengers().equals(flight.passengers())
                     && wrapper.equals(rocket.escrowSection()) && !RocketEscrowGate.idle(rocket), "Source progression changed resources, manifest or hold");
+            if (fault == Fault.REST_POSITION) { restingHold(journal); return; }
             helper.assertTrue(rocket.getX() == position.getX() + 0.5 && rocket.getZ() == position.getZ() + 0.5
                     && rocket.getY() >= previousY && rocket.getY() <= position.getY() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS,
                     "Source escaped its bounded ascent column");
@@ -172,7 +207,17 @@ public final class EscrowGovernedSourceFlightGameTests {
                 if (rocket.getY() > position.getY() && changedAt < 0) {
                     changedAt = level.getGameTime();
                     frozenHeight = rocket.getY();
-                    if (fault == Fault.MOTION) { rocket.setDeltaMovement(new Vec3(0.125, 0, 0)); }
+                    if (departure == Departure.ASCENT || departure == Departure.LOGOUT) {
+                        passenger.stopRiding(); departed = true;
+                        helper.assertTrue(passenger.getVehicle() == null, "Ascent departure was prevented");
+                        if (departure == Departure.LOGOUT) {
+                            level.getServer().getPlayerList().remove(passenger);
+                            helper.assertTrue(level.getServer().getPlayerList().getPlayer(passenger.getUUID()) == null,
+                                    "Logout did not remove the assigned player");
+                        }
+                    }
+                    else if (fault == Fault.MOTION) { rocket.setDeltaMovement(new Vec3(0.125, 0, 0)); }
+                    else if (fault == Fault.POSITION) { rocket.setPos(rocket.getX() + 0.125, rocket.getY() + 3, rocket.getZ() + 0.125); }
                     else if (fault == Fault.DUPLICATE) {
                         duplicate = io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities.ROCKET.get().create(level);
                         helper.assertTrue(duplicate != null, "Duplicate fixture could not be created");
@@ -204,7 +249,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                     return;
                 }
             }
-            if (fault == Fault.MOTION || fault == Fault.DUPLICATE) {
+            if (fault == Fault.DUPLICATE) {
                 if (changedAt < 0 || level.getGameTime() - changedAt < 30) { return; }
                 helper.assertTrue(flight.state() == RocketFlightState.ASCENT && rocket.getDeltaMovement().equals(Vec3.ZERO),
                         "Fixture did not exercise entity-tick motion normalization");
@@ -224,7 +269,28 @@ public final class EscrowGovernedSourceFlightGameTests {
                     "Source minted destination or terminal authority: phase=" + record.phase()
                             + ", acknowledged=" + journal.acknowledgedCurrent() + ", armed="
                             + data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()));
-            if (fault == Fault.NONE || fault == Fault.CLOCK || fault == Fault.LANDING) { step = 3; return; }
+            if (fault != Fault.DUPLICATE) { step = 3; return; }
+            finish(journal, null);
+        }
+
+        private void restingHold(RocketTransferSavedData journal) {
+            var server = level.getServer(); var record = journal.find(transfer).orElseThrow();
+            if (changedAt < 0) {
+                if (!journal.acknowledgedCurrent() || io.github.sunthemoon.advancedrocketrycommunity.rocket.server
+                        .RocketTransferFenceGameTests.flightTickets(server, transfer) == 0) { return; }
+                helper.assertTrue(EscrowRuntime.of(server).sourceFlights().tick(server, journal, record, rocket, () -> true)
+                        == EscrowGovernedSourceFlight.Result.COUNTDOWN, "Rest fixture did not bind a stationary countdown");
+                changedAt = server.getTickCount(); rocket.setPos(rocket.getX() + 0.125, rocket.getY(), rocket.getZ()); return;
+            }
+            helper.assertTrue(rocket.flightData().orElseThrow().state() == RocketFlightState.COUNTDOWN
+                    && rocket.getX() == position.getX() + 0.625 && rocket.getY() == position.getY(),
+                    "A persistent rest displacement resumed or was silently repaired");
+            if (server.getTickCount() - changedAt <= RocketFlightLimits.FLIGHT_TICKET_TIMEOUT_TICKS + 3) { return; }
+            helper.assertTrue(EscrowRuntime.of(server).executorHolds().held(record)
+                    && io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketTransferFenceGameTests.flightTickets(server, transfer) == 0,
+                    "An ACTIVE executor hold kept refreshing its flight tickets");
+            helper.assertTrue(data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed())
+                    && journal.acknowledgedCurrent(), "Placement hold changed the checked flight authority");
             finish(journal, null);
         }
 
@@ -277,10 +343,27 @@ public final class EscrowGovernedSourceFlightGameTests {
                     && arrival.escrowSection().epoch() == 0 && !RocketEscrowGate.idle(arrival)
                     && data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()),
                     "F5 changed credit, repeated a debit or released ARMED before F6/F7");
+            if (arrival.flightData().orElseThrow().state() == RocketFlightState.DESCENT
+                    && arrival.getY() < destination.getY() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS) { observedDescent = true; }
+            if (departure == Departure.LOGOUT && !reconnected) {
+                helper.assertTrue(departed && level.getServer().getPlayerList().getPlayer(passenger.getUUID()) == null
+                        && arrival.getPassengers().isEmpty(), "Offline assignment was reconstructed or seated");
+                if (arrival.flightData().orElseThrow().state() != RocketFlightState.LANDED) { return; }
+                if (offlineLandedAt < 0) { offlineLandedAt = level.getServer().getTickCount(); }
+                if (level.getServer().getTickCount() - offlineLandedAt < 20) { return; }
+                passenger = connect(passenger.getUUID()); reconnected = true;
+                helper.assertTrue(passenger.getVehicle() == null, "Login fixture seated its passenger instead of F5"); return;
+            }
+            if (departure == Departure.LANDED && !departed
+                    && arrival.flightData().orElseThrow().state() == RocketFlightState.LANDED) {
+                helper.assertTrue(passenger.getVehicle() == arrival, "Landed departure lacks its checked arriving passenger");
+                passenger.stopRiding(); departed = true;
+                helper.assertTrue(passenger.getVehicle() == null, "Landed dismount was prevented"); return;
+            }
             if (changedDestinationAt >= 0) {
                 if (level.getGameTime() - changedDestinationAt < 30) { return; }
-                helper.assertTrue(arrival.getDeltaMovement().equals(Vec3.ZERO) && passenger.getVehicle() == null,
-                        "Normalized destination motion retained an F5 remount permission");
+                helper.assertTrue(arrival.getDeltaMovement().equals(Vec3.ZERO) && passenger.getVehicle() == arrival,
+                        "Transient destination motion prevented the checked F5 remount");
                 finish(journal, arrival); return;
             }
             if (passenger.getVehicle() != arrival) { return; }
@@ -398,6 +481,10 @@ public final class EscrowGovernedSourceFlightGameTests {
         }
 
         private void finish(RocketTransferSavedData journal, RocketEntity arrival) {
+            if (departure != Departure.NONE) {
+                helper.assertTrue(departed && sawF6 && sawF7 && journal.find(transfer).isEmpty()
+                        && (departure != Departure.LOGOUT || reconnected), "Departure fixture did not finish checked F7/F8");
+            }
             if (claimedPad != null) {
                 var pads = io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex.get(level.getServer());
                 pads.remove(transfer, claimedPad.reference(), claimedPad.physicalId());
@@ -410,6 +497,7 @@ public final class EscrowGovernedSourceFlightGameTests {
             rocket.discard();
             if (arrival != null) { arrival.discard(); }
             if (duplicate != null) { duplicate.discard(); }
+            terrain.forEach((pos, state) -> level.setBlock(pos, state, 3));
             for (var pos : List.of(position, destination)) {
                 level.getChunkSource().removeRegionTicket(TicketType.START, new ChunkPos(pos), 2, Unit.INSTANCE);
             }
@@ -433,18 +521,35 @@ public final class EscrowGovernedSourceFlightGameTests {
             helper.assertTrue(rejected, "Consumed motion permit was reusable");
         }
 
+        private net.minecraft.server.level.ServerPlayer connect(UUID id) {
+            var player = new net.minecraft.server.level.ServerPlayer(level.getServer(), level,
+                    new com.mojang.authlib.GameProfile(id, "F5Passenger")) {
+                @Override public boolean isCreative() { return true; }
+                @Override public boolean isSpectator() { return false; }
+            };
+            var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
+            new io.netty.channel.embedded.EmbeddedChannel(connection);
+            level.getServer().getPlayerList().placeNewPlayer(connection, player);
+            player.teleportTo(level, position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
+            return player;
+        }
+
         private void prepare() {
             data = ResourceEscrowSavedData.forTests(level.getServer()); data.bind(level.getServer());
+            if (departure != Departure.NONE) {
+                // Remote generated chunks are not covered by the empty GameTest template.
+                // Own and restore only the two-block source and destination footprints.
+                for (var origin : List.of(position, destination)) {
+                    for (int height = 0; height < 2; height++) {
+                        var cell = origin.above(height);
+                        helper.assertTrue(level.getBlockEntity(cell) == null, "Departure fixture overlaps a block entity");
+                        terrain.put(cell, level.getBlockState(cell));
+                        level.setBlock(cell, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+            }
             if (fault == Fault.NONE || fault == Fault.LANDING) {
-                passenger = new net.minecraft.server.level.ServerPlayer(level.getServer(), level,
-                        new com.mojang.authlib.GameProfile(UUID.randomUUID(), "F5Passenger")) {
-                    @Override public boolean isCreative() { return true; }
-                    @Override public boolean isSpectator() { return false; }
-                };
-                var connection = new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.SERVERBOUND);
-                new io.netty.channel.embedded.EmbeddedChannel(connection);
-                level.getServer().getPlayerList().placeNewPlayer(connection, passenger);
-                passenger.teleportTo(level, position.getX() + 0.5, position.getY(), position.getZ() + 0.5, 0, 0);
+                passenger = connect(UUID.randomUUID());
             }
             rocket = RocketSettlementIdleGameTests.createRocket(level, position, UUID.randomUUID());
             var base = rocket.flightData().orElseThrow(); long now = level.getGameTime();
@@ -476,6 +581,10 @@ public final class EscrowGovernedSourceFlightGameTests {
                     && level.getChunkSource().getChunkNow(unloadedChunk.x, unloadedChunk.z) == null,
                     "Governed pad check loaded an absent terrain chunk");
             var to = from.relocated(UUID.randomUUID(), from.sourceDimension(), new RocketPosition(destination.getX(), destination.getY(), destination.getZ()), now);
+            if (departure != Departure.NONE) {
+                helper.assertTrue(new io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketLandingPadSelector()
+                        .availableLoaded(level, to), "Departure fixture's landing footprint is not clear");
+            }
             var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                     from.sourceDimension(), from.sourceDimension(), 500, now).withPropulsionDebit(new RocketPropulsionDebit(500, 0,
                     fuel.propulsion().orElseThrow().revision(), fuel.resourceSignature(), RocketNativeResources.hash("F3 source fixture")));

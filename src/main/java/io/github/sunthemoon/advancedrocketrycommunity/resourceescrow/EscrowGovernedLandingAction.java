@@ -27,7 +27,7 @@ final class EscrowGovernedLandingAction {
         }
         RocketFlightData consume(Supplier<CompoundTag> observed) {
             EscrowTags.require(!used, "Landing permit already consumed"); used = true;
-            EscrowTags.require(authority.valid() && boundary.getAsBoolean() && before.equals(observed.get()),
+            EscrowTags.require(authority.valid() && boundary.getAsBoolean() && EscrowGovernedEnvelope.same(before, observed.get()),
                     "Landing callback lost its authority or complete destination");
             return EscrowGovernedArrivalState.flight(before).land(now);
         }

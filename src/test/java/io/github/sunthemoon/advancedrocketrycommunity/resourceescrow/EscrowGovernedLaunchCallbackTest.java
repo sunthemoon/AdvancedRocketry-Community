@@ -22,7 +22,7 @@ class EscrowGovernedLaunchCallbackTest {
             var before = state.journal.save(new CompoundTag()); long sequence = state.journal.mutationSequence();
             var record = state.launch.afterArm(state.root, state.arm(), state.fixture.source(), state.journal);
             assertEquals(state.arm(), record.nativeTransfer().orElseThrow().armed());
-            assertEquals(state.fixture.source(), record.nativeTransfer().orElseThrow().sourceEnvelope(record));
+            assertEquals(EscrowGovernedEnvelope.comparison(state.fixture.source()), record.nativeTransfer().orElseThrow().sourceEnvelope(record));
             assertEquals(before, state.journal.save(new CompoundTag())); assertEquals(sequence, state.journal.mutationSequence());
             assertTrue(state.journal.acknowledgedCurrent()); assertTrue(state.journal.entries().isEmpty());
         }
@@ -41,7 +41,7 @@ class EscrowGovernedLaunchCallbackTest {
         }
     }
 
-    @Test void lateDismountRelocationAndWrapperChangesRetainArmAndRefuseF2() throws Exception {
+    @Test void assignedDismountKeepsCommitmentButRelocationAndWrapperChangesRefuseF2() throws Exception {
         try (var state = state()) {
             var before = EscrowCodec.encode(state.root);
             for (String field : List.of("passengers", "wrapper", "pos", "flight", "snapshot", "motion")) {
@@ -50,8 +50,8 @@ class EscrowGovernedLaunchCallbackTest {
                         () -> state.launch.afterArm(state.root, state.arm(), changed, state.journal), field);
             }
             var dismounted = state.fixture.source().copy(); dismounted.put("passengers", new net.minecraft.nbt.ListTag());
-            assertThrows(IllegalArgumentException.class,
-                    () -> state.launch.afterArm(state.root, state.arm(), dismounted, state.journal));
+            assertEquals(state.arm(), state.launch.afterArm(state.root, state.arm(), dismounted, state.journal)
+                    .nativeTransfer().orElseThrow().armed());
             var relocated = state.fixture.source().copy(); relocated.put("pos", GovernedTransferFixture.vector(8.5, 80.5, 8.5));
             assertThrows(IllegalArgumentException.class,
                     () -> state.launch.afterArm(state.root, state.arm(), relocated, state.journal));

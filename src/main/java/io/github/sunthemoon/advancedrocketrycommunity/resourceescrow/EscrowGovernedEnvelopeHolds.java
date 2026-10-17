@@ -36,6 +36,7 @@ final class EscrowGovernedEnvelopeHolds {
     }
 
     void retain(Predicate<UUID> present) { rejected.keySet().removeIf(logical -> !present.test(logical)); }
+    boolean rejected(UUID logical) { return rejected.containsKey(logical); }
     void clear() { rejected.clear(); }
     private record Rejected(Object root, Object first, long firstObservation, Object second, long secondObservation) { }
 }

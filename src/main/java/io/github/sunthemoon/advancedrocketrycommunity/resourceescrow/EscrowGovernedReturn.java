@@ -43,7 +43,7 @@ public final class EscrowGovernedReturn implements AutoCloseable {
         // Forward interpolation must not serialize the complete rocket just to rule out a return.
         if (source == null || !EscrowGovernedReturnAction.phase(record)
                 || !stationaryCandidate(source.flightData().orElse(null))) { return false; }
-        try { return EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(source)); }
+        try { return EscrowGovernedReturnAction.returned(record, EscrowGovernedEnvelope.capture(source)); }
         catch (IllegalArgumentException | IllegalStateException invalid) { return false; }
     }
 
@@ -108,7 +108,12 @@ public final class EscrowGovernedReturn implements AutoCloseable {
             requireCapacity(work, record.transferId());
             state = new Work(record, authority, capture, true, () -> { }); work.put(record.transferId(), state);
         }
-        if (!state.record.equals(record) || state.source.rocket != source || !state.source.observe()) { return Result.HELD; }
+        if (EscrowGovernedFrame.transientMotion(source)) { return Result.WAITING; }
+        if (!state.record.equals(record) || state.source.rocket != source || !state.source.observe()) {
+            EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.RETURN_ENVELOPE);
+            return Result.HELD;
+        }
+        EscrowRuntime.of(server).executorHolds().healthy(record);
         if (!state.authority.valid()) { state.release(); state.authority = authority; }
         if (state.proofs.stream().anyMatch(proof -> !proof.valid())) { state.retry(server.getTickCount(), "SUPERSEDING_SAVE"); }
         if (!state.retry.ready(server.getTickCount())) { return Result.WAITING; }
@@ -145,11 +150,11 @@ public final class EscrowGovernedReturn implements AutoCloseable {
         }
         var ready = state;
         var permit = EscrowGovernedReturnAction.issue(authority, state.source.envelope, source.level().getGameTime(),
-                source.level().getGameTime(), () -> EscrowNativeEnvelope.rocket(source), boundary,
+                source.level().getGameTime(), () -> EscrowGovernedEnvelope.capture(source), boundary,
                 () -> ready.source.observe() && ready.proved());
         source.returnGovernedSource(permit);
         state.release();
-        EscrowTags.require(EscrowGovernedReturnAction.returned(record, EscrowNativeEnvelope.rocket(source)), "Return changed its complete projection");
+        EscrowTags.require(EscrowGovernedReturnAction.returned(record, EscrowGovernedEnvelope.capture(source)), "Return changed its complete projection");
         state.source = new EscrowFlightSource(source, boundary); state.returned = true;
         EscrowRuntime.of(server).checkpoint("RETURN_APPLIED");
         return Result.WAITING;

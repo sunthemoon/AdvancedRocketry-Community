@@ -27,12 +27,18 @@ public final class EscrowGovernedSourceFlight {
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                        RocketEntity source, BooleanSupplier boundary) {
         try { return tickChecked(server, journal, record, source, boundary); }
-        catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return Result.HELD; }
+        catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) {
+            if (server.isSameThread() && !EscrowGovernedFrame.transientMotion(source) && boundary.getAsBoolean()) {
+                report(server, journal, record);
+            }
+            return Result.HELD;
+        }
     }
 
     private Result tickChecked(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                        RocketEntity source, BooleanSupplier boundary) {
-        if (!server.isSameThread() || source == null || !boundary.getAsBoolean()) { return Result.HELD; }
+        if (!server.isSameThread() || source == null || !boundary.getAsBoolean()
+                || EscrowGovernedFrame.transientMotion(source)) { return Result.HELD; }
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null) { return Result.HELD; }
         var authority = EscrowRuntime.of(server).governedFlights().authority(data::ledger,
@@ -48,19 +54,23 @@ public final class EscrowGovernedSourceFlight {
             // from its old entity instance; a second still-live instance remains a conflict.
             bindings.remove(record.logicalRocketId()); binding = null;
         }
-        if (binding != null && !binding.sameNative(source)) { return Result.HELD; }
+        if (binding != null && !binding.sameNative(source)) { report(server, journal, record); return Result.HELD; }
         if (binding == null || !binding.valid(source, boundary)) {
             var previous = binding;
             var clock = envelopeHolds.capture(record.logicalRocketId(), data.ledger(), source, null, () -> {
-                var observed = EscrowNativeEnvelope.rocket(source);
+                var observed = EscrowGovernedEnvelope.capture(source);
+                if (previous != null) { observed = EscrowGovernedFrame.normalized(observed, previous.frame, previous.flight.state()); }
                 var candidate = previous == null ? EscrowGovernedSourceClock.resume(record, observed, levelTime) : previous.clock;
                 return EscrowGovernedSourceRecovery.sourceMatches(record, observed, candidate.at(levelTime)) ? candidate : null;
             });
-            if (clock == null) { return Result.HELD; }
+            if (clock == null) { report(server, journal, record); return Result.HELD; }
             if (binding == null && bindings.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) { return Result.HELD; }
-            binding = new Binding(authority, source, clock); bindings.put(record.logicalRocketId(), binding);
+            binding = new Binding(authority, source, clock);
+            if (previous != null) { binding.frame = EscrowGovernedFrame.normalized(binding.frame, previous.frame, previous.flight.state()); }
+            bindings.put(record.logicalRocketId(), binding);
         }
         long now = binding.clock.at(levelTime);
+        EscrowRuntime.of(server).executorHolds().healthy(record);
         var flight = source.flightData().orElseThrow();
         if (flight.state() != RocketFlightState.COUNTDOWN && flight.state() != RocketFlightState.ASCENT
                 && flight.state() != RocketFlightState.TRANSIT) {
@@ -83,7 +93,7 @@ public final class EscrowGovernedSourceFlight {
     private Result transition(RocketEntity source, Binding binding,
             EscrowGovernedSourceAction.Action action, long now, BooleanSupplier boundary, Result result) {
         var authority = binding.authority;
-        var permit = EscrowGovernedSourceAction.issue(authority, action, EscrowNativeEnvelope.rocket(source), now,
+        var permit = EscrowGovernedSourceAction.issue(authority, action, EscrowGovernedEnvelope.capture(source), now,
                 source.level().getGameTime(), boundary);
         source.advanceGovernedSource(permit);
         bindings.put(authority.record().logicalRocketId(), new Binding(authority, source, binding.clock));
@@ -91,6 +101,13 @@ public final class EscrowGovernedSourceFlight {
     }
 
     public void clear() { bindings.clear(); envelopeHolds.clear(); }
+
+    private static void report(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
+        var runtime = EscrowRuntime.of(server);
+        if (runtime.governedFlights().classify(server, journal, record).route() == EscrowGovernedDispatch.Route.ACTIVE) {
+            runtime.executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.SOURCE_ENVELOPE);
+        }
+    }
 
     /** F4 uses the checked source's logical phase clock, not a rolled-back Level timestamp. */
     long publicationTime(EscrowGovernedDispatch.Authority authority, RocketEntity source, BooleanSupplier boundary) {
@@ -108,7 +125,7 @@ public final class EscrowGovernedSourceFlight {
                 && binding.authority.record().nativeTransfer().equals(record.nativeTransfer()), "Publication source changed");
         if (binding == null) {
             EscrowTags.require(bindings.size() < RocketFlightLimits.MAX_ACTIVE_TRANSFERS, "Source binding capacity exhausted");
-            var clock = EscrowGovernedSourceClock.resume(record, EscrowNativeEnvelope.rocket(source), source.level().getGameTime());
+            var clock = EscrowGovernedSourceClock.resume(record, EscrowGovernedEnvelope.capture(source), source.level().getGameTime());
             binding = new Binding(authority, source, clock); bindings.put(record.logicalRocketId(), binding);
         }
         return binding.clock.at(source.level().getGameTime());
@@ -120,7 +137,7 @@ public final class EscrowGovernedSourceFlight {
         return binding.motion(source, source.level().getGameTime(), boundary);
     }
 
-    /** Observe before entity ticks normalize motion and before saves/loads can hide a changed native field. */
+    /** Observe the normalized moving frame; all persistent native fields still invalidate the binding. */
     void observe(RocketEntity rocket) {
         var binding = rocket.assemblyTransactionId().map(bindings::get).orElse(null);
         if (binding != null && binding.entity == rocket) {
@@ -145,7 +162,7 @@ public final class EscrowGovernedSourceFlight {
             this.authority = authority; this.entity = entity; snapshot = entity.snapshot().orElseThrow();
             this.clock = clock;
             flight = entity.flightData().orElseThrow(); wrapper = entity.escrowSection();
-            observation = entity.governedObservation(); frame = EscrowNativeEnvelope.frame(entity);
+            observation = entity.governedObservation(); frame = EscrowGovernedEnvelope.frame(entity);
         }
         boolean valid(RocketEntity rocket, BooleanSupplier boundary) {
             return authority.valid() && boundary.getAsBoolean() && observation == rocket.governedObservation() && sameNative(rocket);
@@ -153,13 +170,13 @@ public final class EscrowGovernedSourceFlight {
         boolean sameNative(RocketEntity rocket) {
             return !changed && entity == rocket && rocket.isAlive() && rocket.isAddedToWorld() && rocket.operational()
                     && rocket.snapshot().orElseThrow() == snapshot && rocket.flightData().orElseThrow() == flight
-                    && rocket.escrowSection().equals(wrapper) && frame.equals(EscrowNativeEnvelope.frame(rocket));
+                    && rocket.escrowSection().equals(wrapper) && EscrowGovernedFrame.matches(authority.record(), rocket, frame, flight.state());
         }
         MotionPermit motion(RocketEntity rocket, long now, BooleanSupplier boundary) {
             EscrowTags.require(valid(rocket, boundary) && flight.state() == RocketFlightState.ASCENT, "Invalid ascent binding");
             var origin = authority.record().sourceSnapshot().sourceOrigin();
             double y = ascentHeight(origin.y(), flight.stateStartedGameTime(), clock.at(now));
-            EscrowTags.require(y >= rocket.getY(), "Ascent clock moved backwards");
+            EscrowTags.require(y >= frame.getList("pos", 6).getDouble(1), "Ascent clock moved backwards");
             return new MotionPermit(this, boundary, now, new Vec3(origin.x() + 0.5, y, origin.z() + 0.5));
         }
     }

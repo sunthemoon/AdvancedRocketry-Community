@@ -36,6 +36,10 @@ public final class EscrowGovernedSourceRecovery {
             } else { source = null; }
         }
         CompoundTag source() { return source == null ? null : source.copy(); }
+        boolean same(Observation value) {
+            return value != null && loaded == value.loaded && sourceCount == value.sourceCount
+                    && destinationCount == value.destinationCount && EscrowGovernedEnvelope.same(source, value.source);
+        }
         @Override public boolean equals(Object other) {
             return other instanceof Observation value && loaded == value.loaded && sourceCount == value.sourceCount
                     && destinationCount == value.destinationCount && Objects.equals(source, value.source);
@@ -76,7 +80,7 @@ public final class EscrowGovernedSourceRecovery {
             EscrowTags.require(authority.valid() && boundary.getAsBoolean(), "Source recovery lost its final boundary");
             var current = observations.get();
             EscrowTags.require(EscrowRecoveryFence.reason(authority, action, current, gameTime) == null
-                    && before.equals(current) && before.source.equals(source.get()),
+                    && before.same(current) && EscrowGovernedEnvelope.same(before.source, source.get()),
                     "Source recovery lost its complete source or loaded census");
             return change;
         }
@@ -125,6 +129,7 @@ public final class EscrowGovernedSourceRecovery {
 
     /** Complete E or an allowed source progression; no historical fuel, wrapper, passenger or snapshot replacement. */
     static boolean sourceMatches(RocketTransferRecord record, CompoundTag observed, long gameTime) {
+        observed = EscrowGovernedEnvelope.comparison(observed);
         var expected = record.nativeTransfer().orElseThrow().sourceEnvelope(record);
         var initial = flight(expected); var actual = flight(observed);
         if (gameTime < record.createdAtGameTime() || actual.stateStartedGameTime() > gameTime) { return false; }

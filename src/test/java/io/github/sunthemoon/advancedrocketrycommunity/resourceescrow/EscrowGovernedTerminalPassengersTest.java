@@ -8,8 +8,32 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
 class EscrowGovernedTerminalPassengersTest {
+    @BeforeAll static void bootstrap() {
+        io.github.sunthemoon.advancedrocketrycommunity.testsupport.MinecraftBootstrap.initialize();
+    }
+
+    @Test void cancellationAcceptsOnlyOnlineSourceLevelPassengersWithoutAnotherVehicle() {
+        var outcome = EscrowFlightTables.Outcome.CANCELLED;
+        assertTrue(EscrowGovernedTerminalPassengers.placement(outcome, true, true, true, false));
+        assertTrue(EscrowGovernedTerminalPassengers.placement(outcome, true, true, false, true));
+        assertFalse(EscrowGovernedTerminalPassengers.placement(outcome, true, true, false, false));
+        for (boolean aboard : java.util.List.of(false, true)) {
+            assertFalse(EscrowGovernedTerminalPassengers.placement(outcome, false, true, aboard, !aboard));
+            assertFalse(EscrowGovernedTerminalPassengers.placement(outcome, true, false, aboard, !aboard));
+        }
+    }
+
+    @Test void handoffStillRequiresEveryoneAboardAndArmedIsNotATerminalOutcome() {
+        assertTrue(EscrowGovernedTerminalPassengers.placement(EscrowFlightTables.Outcome.HANDED_OFF, true, true, true, false));
+        assertFalse(EscrowGovernedTerminalPassengers.placement(EscrowFlightTables.Outcome.HANDED_OFF, true, true, false, true));
+        assertFalse(EscrowGovernedTerminalPassengers.placement(EscrowFlightTables.Outcome.HANDED_OFF, false, true, true, false));
+        assertFalse(EscrowGovernedTerminalPassengers.placement(EscrowFlightTables.Outcome.HANDED_OFF, true, false, true, false));
+        assertFalse(EscrowGovernedTerminalPassengers.placement(EscrowFlightTables.Outcome.ARMED, true, true, true, false));
+    }
+
     @Test void unresolvedPollingDoesNotCaptureAndReconnectRepeatsTheFullCheck() {
         var first = UUID.randomUUID(); var second = UUID.randomUUID();
         var manifest = RocketPassengerManifest.empty(2).assign(first).orElseThrow().assign(second).orElseThrow();

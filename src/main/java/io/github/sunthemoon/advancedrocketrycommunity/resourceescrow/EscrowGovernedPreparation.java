@@ -34,7 +34,7 @@ public final class EscrowGovernedPreparation {
         if (guard == null || guard.transfer() != null) { return false; }
         EscrowGovernedLaunch prepared;
         try {
-            prepared = EscrowGovernedLaunch.prepare(data.ledger(), EscrowNativeEnvelope.rocket(rocket),
+            prepared = EscrowGovernedLaunch.prepare(data.ledger(), EscrowGovernedEnvelope.capture(rocket),
                     rocket.snapshot().orElseThrow(), countdown, destination, UUID.randomUUID(),
                     new EscrowGuard(guard.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
         } catch (IllegalArgumentException | ArithmeticException refused) { return false; }
@@ -45,7 +45,7 @@ public final class EscrowGovernedPreparation {
                 if (!rocket.isAlive() || !rocket.isAddedToWorld() || !rocket.operational() || !boundary.test(record)) { return false; }
                 var authority = EscrowRuntime.of(server).governedFlights().authority(data::ledger,
                         () -> data.bind(server).governedAvailable(record.logicalRocketId()), journal, record);
-                var permit = countdownPermit(authority, EscrowNativeEnvelope.rocket(rocket), level.getGameTime(),
+                var permit = countdownPermit(authority, EscrowGovernedEnvelope.capture(rocket), level.getGameTime(),
                         () -> rocket.isAlive() && rocket.isAddedToWorld() && boundary.test(record));
                 if (permit == null) { return false; }
                 EscrowRuntime.of(server).checkpoint("F2_PREPARED_ACK");

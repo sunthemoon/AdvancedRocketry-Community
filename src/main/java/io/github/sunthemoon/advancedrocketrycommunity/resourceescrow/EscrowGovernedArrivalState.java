@@ -61,8 +61,7 @@ final class EscrowGovernedArrivalState {
             progression = record.destinationFlightData().land(actual.stateStartedGameTime());
         } else { return false; }
         expected.put("flight", RocketFlightNbtCodec.encode(progression)); expected.put("pos", position.copy());
-        expected.put("passengers", observed.get("passengers").copy());
-        return expected.equals(observed);
+        return EscrowGovernedEnvelope.same(expected, observed);
     }
 
     /** Recover only a rolled-back Level clock; complete E is still checked at the resulting time. */
@@ -81,6 +80,6 @@ final class EscrowGovernedArrivalState {
     }
 
     static CompoundTag withoutRiders(CompoundTag envelope) {
-        var copy = envelope.copy(); copy.put("passengers", new ListTag()); return copy;
+        return EscrowGovernedEnvelope.comparison(envelope);
     }
 }
