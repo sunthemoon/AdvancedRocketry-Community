@@ -51,6 +51,13 @@ public final class EscrowGovernedReturn implements AutoCloseable {
         return flight != null && flight.plan().isEmpty() && flight.activeTransferId().isEmpty();
     }
 
+    /** Only an already recognized return may skip expensive dispatch while its assignments are unresolved. */
+    public boolean waitingForPassengers(MinecraftServer server, RocketTransferRecord record, RocketEntity source) {
+        var state = work.get(record.transferId());
+        return state != null && state.returned
+                && !EscrowGovernedTerminalPassengers.present(server, record, EscrowFlightTables.Outcome.CANCELLED, source);
+    }
+
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                        RocketEntity source, BooleanSupplier boundary) {
         if (closed || !server.isSameThread()) { return Result.HELD; }
@@ -82,11 +89,19 @@ public final class EscrowGovernedReturn implements AutoCloseable {
 
     private Result checked(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                            RocketEntity source, BooleanSupplier boundary) {
+        var state = work.get(record.transferId());
+        var waiting = state;
+        if (waiting != null && !waiting.ready(server.getTickCount(), () -> waiting.proofs.size() == waiting.slots.size()
+                || EscrowRuntime.of(server).barrier().available(waiting.slots.get(waiting.proofs.size()), server.getTickCount()))) {
+            return Result.WAITING;
+        }
+        if (state != null && state.returned
+                && !EscrowGovernedTerminalPassengers.present(server, record, EscrowFlightTables.Outcome.CANCELLED, source)) {
+            return Result.HELD;
+        }
         if (source == null || !EscrowGovernedReturnAction.phase(record) || !boundary.getAsBoolean()) { return Result.HELD; }
         var authority = authority(server, journal, record);
         if (authority == null) { return Result.HELD; }
-        var state = work.get(record.transferId());
-        if (state != null && state.terminal) { return Result.WAITING; }
         if (state == null) {
             var capture = new EscrowFlightSource(source, boundary);
             if (!EscrowGovernedReturnAction.returned(record, capture.envelope)) { return Result.HELD; }
@@ -94,10 +109,9 @@ public final class EscrowGovernedReturn implements AutoCloseable {
             state = new Work(record, authority, capture, true, () -> { }); work.put(record.transferId(), state);
         }
         if (!state.record.equals(record) || state.source.rocket != source || !state.source.observe()) { return Result.HELD; }
-        if (state.pending) { return Result.WAITING; }
         if (!state.authority.valid()) { state.release(); state.authority = authority; }
-        if (state.proofs.stream().anyMatch(proof -> !proof.valid())) { state.retry(server.getTickCount()); }
-        if (server.getTickCount() < state.nextAttempt) { return Result.WAITING; }
+        if (state.proofs.stream().anyMatch(proof -> !proof.valid())) { state.retry(server.getTickCount(), "SUPERSEDING_SAVE"); }
+        if (!state.retry.ready(server.getTickCount())) { return Result.WAITING; }
         if (!state.proved()) {
             var pending = state; var slot = state.slots.get(state.proofs.size());
             var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(slot.level())));
@@ -116,7 +130,8 @@ public final class EscrowGovernedReturn implements AutoCloseable {
                             pending.release(); return;
                         }
                         if (result.confirmed()) { pending.proofs.add(result.proof()); }
-                        else { pending.retry(server.getTickCount()); }
+                        else { pending.retry(server.getTickCount(), result.reason() == EscrowReason.NONE
+                                ? "SUPERSEDING_SAVE" : result.reason().name()); }
                     });
             if (!started) { state.pending = false; }
             return Result.WAITING;
@@ -175,7 +190,7 @@ public final class EscrowGovernedReturn implements AutoCloseable {
 
     @Override public void close() { closed = true; work.values().forEach(Work::release); work.clear(); }
 
-    private static final class Work {
+    static final class Work {
         final RocketTransferRecord record;
         EscrowGovernedDispatch.Authority authority;
         EscrowFlightSource source;
@@ -186,8 +201,7 @@ public final class EscrowGovernedReturn implements AutoCloseable {
         boolean pending;
         boolean notified;
         boolean terminal;
-        int failures;
-        long nextAttempt;
+        final EscrowSuccessorRetry retry = new EscrowSuccessorRetry();
         Work(RocketTransferRecord record, EscrowGovernedDispatch.Authority authority, EscrowFlightSource source,
              boolean returned, Runnable checkpointed) {
             this.record = record; this.authority = authority; this.source = source;
@@ -195,10 +209,15 @@ public final class EscrowGovernedReturn implements AutoCloseable {
             slots = EscrowGovernedTerminalDisk.slots(record, EscrowFlightTables.Outcome.CANCELLED);
         }
         boolean proved() { return proofs.size() == slots.size() && proofs.stream().allMatch(EscrowBarrier.Proof::valid); }
+        boolean ready(long tick, BooleanSupplier capacity) {
+            return !terminal && !pending && retry.ready(tick) && capacity.getAsBoolean();
+        }
         void release() { proofs.forEach(EscrowBarrier.Proof::release); proofs.clear(); }
-        void retry(long tick) {
-            release(); failures = Math.min(3, failures + 1);
-            nextAttempt = tick + (failures == 1 ? 100 : failures == 2 ? 400 : 1_200);
+        void retry(long tick, String reason) {
+            release();
+            var arm = record.nativeTransfer().orElseThrow().armed();
+            retry.failed(arm.ledger(), arm.logical(), arm.transfer(), arm.serial(),
+                    returned ? "RETURN_F6_PROOF" : "RETURN_ABSENCE_PROOF", reason, tick);
         }
     }
 }

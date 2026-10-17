@@ -57,7 +57,11 @@ public final class EscrowBarrier implements AutoCloseable {
 
     /** Read-only scheduling hint. begin still reserves atomically before any capture. */
     boolean available(EscrowEndpoint endpoint, long tick) {
-        owner(); return working.get() && budget.available(endpoint.level(), endpoint.kind() == EscrowEndpoint.Kind.ENTITY, tick);
+        return available(endpoint.level(), endpoint.kind() == EscrowEndpoint.Kind.ENTITY, tick);
+    }
+
+    boolean available(String level, boolean entity, long tick) {
+        owner(); return working.get() && budget.available(level, entity, tick);
     }
 
     /** One serialization/store/force/readback proves every frozen endpoint in the same Anvil slot. */

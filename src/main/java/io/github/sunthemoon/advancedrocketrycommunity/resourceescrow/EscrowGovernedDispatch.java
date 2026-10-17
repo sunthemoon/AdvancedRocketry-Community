@@ -45,16 +45,21 @@ public final class EscrowGovernedDispatch implements AutoCloseable {
     }
 
     private final Map<UUID, Authority> checked = new HashMap<>();
+    private final EscrowDispatchRetries retries = new EscrowDispatchRetries();
     private boolean closed;
 
     /** No ledger creation, entity lookup, chunk readiness query, ticket or journal retry occurs here. */
     public Decision classify(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
         if (server == null || !server.isSameThread()) { return Decision.hold("GOVERNED_ACTION_REQUIRED"); }
         if (closed) { return Decision.hold("GOVERNED_RUNTIME_STOPPED"); }
-        var data = ResourceEscrowSavedData.existing(server);
-        if (data == null) { return Decision.hold("GOVERNED_LEDGER_MISSING"); }
-        var coordinator = data.bind(server);
-        return classify(coordinator, journal, record);
+        if (journal.actionAuthorityAvailable()) {
+            retries.retain(logical -> journal.findByLogicalRocket(logical).isPresent());
+        }
+        return retries.poll(record, server.getTickCount(), () -> {
+            var data = ResourceEscrowSavedData.existing(server);
+            if (data == null) { return Decision.hold("GOVERNED_LEDGER_MISSING"); }
+            return classify(data.bind(server), journal, record);
+        });
     }
 
     Decision classify(EscrowCoordinator coordinator, RocketTransferSavedData journal, RocketTransferRecord record) {
@@ -174,5 +179,7 @@ public final class EscrowGovernedDispatch implements AutoCloseable {
         return original.equals(observed);
     }
 
-    @Override public void close() { closed = true; checked.values().forEach(value -> value.invalidated = true); checked.clear(); }
+    @Override public void close() {
+        closed = true; checked.values().forEach(value -> value.invalidated = true); checked.clear(); retries.clear();
+    }
 }

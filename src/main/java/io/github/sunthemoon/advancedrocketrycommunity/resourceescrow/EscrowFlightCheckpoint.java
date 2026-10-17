@@ -88,6 +88,9 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
         var coordinator = data.bind(server); var journal = RocketTransferSavedData.get(server);
         if (!coordinator.operational() || !journal.retryChecked(server)
                 || !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)) { return false; }
+        if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(), true, server.getTickCount())) {
+            return false;
+        }
         EscrowFlightSource frozen;
         try {
             frozen = new EscrowFlightSource(rocket, boundary);
@@ -116,7 +119,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                         String reason = result.confirmed() ? "SOURCE_OR_JOURNAL_CHANGED"
                                 : result.reason() == EscrowReason.NONE ? "SUPERSEDING_SAVE" : result.reason().name();
                         if (result.proof() != null) { result.proof().release(); }
-                        if (!closed) { retry.failed(coordinator.ledger().id(), launch.transfer(), 0, "F1_PROOF",
+                        if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), 0, "F1_PROOF",
                                 reason, server.getTickCount()); }
                         pending.remove(launch.logical(), frozen); completion.accept(null); return;
                     }
@@ -136,14 +139,14 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                             completion.accept(coordinator.ledger().armedFlights().stream()
                                     .filter(arm -> arm.logical().equals(launch.logical()) && arm.transfer().equals(launch.transfer())).findFirst().orElseThrow());
                         } else {
-                            if (!closed) { retry.failed(coordinator.ledger().id(), launch.transfer(), serial.get(),
+                            if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), serial.get(),
                                     "F1_WRITE", "LEDGER_WRITE_FAILED", server.getTickCount()); }
                             completion.accept(null);
                         }
                     });
                     if (!queued) {
                         proof.release(); pending.remove(launch.logical(), frozen);
-                        if (!closed) { retry.failed(coordinator.ledger().id(), launch.transfer(), 0,
+                        if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), 0,
                                 "F1_WRITE", "LEDGER_QUEUE_WAIT", server.getTickCount()); }
                         completion.accept(null);
                     }

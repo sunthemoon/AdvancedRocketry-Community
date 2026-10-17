@@ -19,15 +19,20 @@ import net.minecraft.server.MinecraftServer;
 public final class EscrowGovernedTerminal implements AutoCloseable {
     public enum Result { HELD, WAITING, ACKNOWLEDGED }
     private final Map<UUID, Work> work = new HashMap<>();
+    private final EscrowTerminalRetries retries = new EscrowTerminalRetries();
     private boolean closed;
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                        RocketEntity survivor, EscrowFlightTables.Outcome outcome, BooleanSupplier boundary) {
         if (closed || !server.isSameThread()) { return Result.HELD; }
         work.entrySet().removeIf(entry -> {
-            if (entry.getValue().queued || journal.find(entry.getKey()).isPresent()) { return false; }
+            if (!journal.actionAuthorityAvailable() || entry.getValue().queued || journal.find(entry.getKey()).isPresent()) { return false; }
             entry.getValue().close(); return true;
         });
+        if (journal.actionAuthorityAvailable()) {
+            retries.retain(logical -> journal.findByLogicalRocket(logical).isPresent()
+                    || work.values().stream().anyMatch(state -> state.record.logicalRocketId().equals(logical)));
+        }
         try { return checked(server, journal, record, survivor, outcome, boundary); }
         catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) {
             var state = work.get(record.transferId());
@@ -39,15 +44,28 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
     private Result checked(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                            RocketEntity survivor, EscrowFlightTables.Outcome outcome, BooleanSupplier boundary) {
         var state = work.get(record.transferId());
-        if (state != null && state.queued) { return Result.WAITING; }
+        // Retain the owner of an in-flight callback, including an invalidated F6 capture.
+        // Its completion releases the exact watch and records the failure before recapture.
+        if (state != null && (state.queued || state.pending)) { return Result.WAITING; }
+        // A recapture or a different proposed T is not permission to bypass this logical flight's backoff.
+        if (!retries.ready(record.logicalRocketId(), server.getTickCount())) { return Result.WAITING; }
+        if (state != null && state.proofs.size() < state.slots.size()
+                && !EscrowRuntime.of(server).barrier().available(state.slots.get(state.proofs.size()), server.getTickCount())) {
+            return Result.WAITING;
+        }
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null || survivor == null) { return Result.HELD; }
         var coordinator = data.bind(server);
         if (!coordinator.governedAvailable(record.logicalRocketId()) || !journal.actionAuthorityAvailable()
                 || journal.find(record.transferId()).filter(record::equals).isEmpty()) { return Result.HELD; }
         var decision = EscrowGovernedDispatch.decide(data.ledger(), record);
-        if (decision.route() == EscrowGovernedDispatch.Route.CLEANUP) { return Result.ACKNOWLEDGED; }
-        if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE || !boundary.getAsBoolean()
+        if (decision.route() == EscrowGovernedDispatch.Route.CLEANUP) {
+            if (state != null) { state.close(); work.remove(record.transferId(), state); }
+            retries.completed(record.logicalRocketId());
+            return Result.ACKNOWLEDGED;
+        }
+        if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE
+                || !EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor) || !boundary.getAsBoolean()
                 || !EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor)) { return Result.HELD; }
         if (state != null && (!state.record.equals(record) || state.source.rocket != survivor
                 || state.outcome != outcome || !state.source.observe())) {
@@ -55,12 +73,14 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         }
         if (state == null) {
             requireCapacity(work, record.transferId());
-            state = new Work(record, outcome, new EscrowFlightSource(survivor, () -> boundary.getAsBoolean()
-                    && EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor)));
+            retries.history(record.logicalRocketId());
+            state = new Work(record, outcome, new EscrowFlightSource(survivor,
+                    () -> EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor) && boundary.getAsBoolean()));
             work.put(record.transferId(), state);
         }
-        if (state.pending || server.getTickCount() < state.nextAttempt) { return Result.WAITING; }
-        if (state.proofs.values().stream().anyMatch(proof -> !proof.valid())) { state.retry(server.getTickCount()); return Result.WAITING; }
+        if (state.proofs.values().stream().anyMatch(proof -> !proof.valid())) {
+            retry(state, "F6_PROOF", "SUPERSEDING_SAVE", server.getTickCount()); return Result.WAITING;
+        }
         var pending = state;
         if (state.proofs.size() < state.slots.size()) {
             var slot = state.slots.get(state.proofs.size());
@@ -71,13 +91,21 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
                     new EscrowPrefix.State(data.ledger().id(), slot.beforeEpoch(), slot.beforeSignature(), List.of()),
                     EscrowGovernedTerminalDisk.validator(record, outcome, slot, state.source.envelope), server.getTickCount(), result -> {
                         pending.pending = false;
-                        if (closed || work.get(record.transferId()) != pending || !pending.source.observe()
-                                || !journal.actionAuthorityAvailable() || journal.find(record.transferId()).filter(record::equals).isEmpty()) {
+                        if (closed || work.get(record.transferId()) != pending) {
                             if (result.proof() != null) { result.proof().release(); }
                             pending.release(); return;
                         }
+                        if (!pending.source.observe() || !journal.actionAuthorityAvailable()
+                                || journal.find(record.transferId()).filter(record::equals).isEmpty()) {
+                            if (result.proof() != null) { result.proof().release(); }
+                            retry(pending, "F6_PROOF", "SOURCE_OR_JOURNAL_CHANGED", server.getTickCount()); return;
+                        }
                         if (result.confirmed()) { pending.proofs.put(slot, result.proof()); }
-                        else { pending.retry(server.getTickCount()); }
+                        else {
+                            if (result.proof() != null) { result.proof().release(); }
+                            retry(pending, "F6_PROOF", result.reason() == EscrowReason.NONE
+                                    ? "SUPERSEDING_SAVE" : result.reason().name(), server.getTickCount());
+                        }
                     });
             if (!started) { state.pending = false; }
             return Result.WAITING;
@@ -88,11 +116,18 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         state.queued = EscrowGovernedHandoff.request(coordinator, journal, proof, committed -> {
             pending.queued = false;
             pending.release();
-            if (committed) { work.remove(record.transferId(), pending); EscrowRuntime.of(server).checkpoint("F7_ACK"); }
-            else { pending.retry(server.getTickCount()); }
+            if (closed || work.get(record.transferId()) != pending) { return; }
+            if (committed) {
+                work.remove(record.transferId(), pending); retries.completed(record.logicalRocketId());
+                EscrowRuntime.of(server).checkpoint("F7_ACK");
+            } else { retry(pending, "F7_WRITE", "LEDGER_WRITE_FAILED", server.getTickCount()); }
         });
-        if (!state.queued) { state.retry(server.getTickCount()); }
+        if (!state.queued) { retry(state, "F7_WRITE", "LEDGER_QUEUE_WAIT", server.getTickCount()); }
         return Result.WAITING;
+    }
+
+    private void retry(Work state, String phase, String reason, long tick) {
+        state.release(); retries.failed(state.record, phase, reason, tick);
     }
 
     void observe(RocketEntity rocket) {
@@ -136,7 +171,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
                 "Terminal checkpoint work limit exceeded");
     }
 
-    @Override public void close() { closed = true; work.values().forEach(Work::close); work.clear(); }
+    @Override public void close() { closed = true; work.values().forEach(Work::close); work.clear(); retries.clear(); }
 
     private static final class Work implements AutoCloseable {
         final RocketTransferRecord record;
@@ -147,8 +182,6 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         EscrowGovernedHandoff.Proof handoff;
         boolean pending;
         boolean queued;
-        int failures;
-        long nextAttempt;
         Work(RocketTransferRecord record, EscrowFlightTables.Outcome outcome, EscrowFlightSource source) {
             this.record = record; this.outcome = outcome; this.source = source;
             slots = EscrowGovernedTerminalDisk.slots(record, outcome);
@@ -156,10 +189,6 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         void release() {
             if (handoff != null) { handoff.close(); handoff = null; }
             proofs.values().forEach(EscrowBarrier.Proof::release); proofs.clear();
-        }
-        void retry(long tick) {
-            release(); failures = Math.min(3, failures + 1);
-            nextAttempt = tick + (failures == 1 ? 100 : failures == 2 ? 400 : 1_200);
         }
         @Override public void close() { source.unchanged.set(false); release(); }
     }

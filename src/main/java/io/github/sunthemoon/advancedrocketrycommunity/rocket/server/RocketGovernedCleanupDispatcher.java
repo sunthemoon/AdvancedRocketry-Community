@@ -6,6 +6,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGover
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDispatch;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowSuccessorRetry;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadIndex;
@@ -34,7 +35,7 @@ final class RocketGovernedCleanupDispatcher {
             var arm = entries.get((start + index) % entries.size());
             var state = work.computeIfAbsent(arm.transfer(), ignored -> new Work(arm));
             if (!state.arm.equals(arm)) { blocked(arm.transfer(), "GOVERNED_CLEANUP_AUTHORITY_CONFLICT"); continue; }
-            if (state.queued || server.getTickCount() < state.retryAt) { continue; }
+            if (state.queued || !state.retry.ready(server.getTickCount())) { continue; }
             var record = journal.find(arm.transfer()).orElse(null);
             if (record != null) {
                 var decision = EscrowRuntime.of(server).governedFlights().classify(server, journal, record);
@@ -64,8 +65,8 @@ final class RocketGovernedCleanupDispatcher {
                         state.queued = false;
                         if (committed) { work.remove(arm.transfer(), state); EscrowRuntime.of(server).checkpoint("F8_PRUNE_ACK"); }
                         else {
-                            state.failures = Math.min(3, state.failures + 1);
-                            state.retryAt = server.getTickCount() + (state.failures == 1 ? 100 : state.failures == 2 ? 400 : 1_200);
+                            state.retry.failed(arm.ledger(), arm.logical(), arm.transfer(), arm.serial(),
+                                    "F8_PRUNE", "LEDGER_WRITE_FAILED", server.getTickCount());
                         }
                     });
         }
@@ -90,8 +91,7 @@ final class RocketGovernedCleanupDispatcher {
         final EscrowFlightTables.Armed arm;
         RocketTransferRecord record;
         boolean queued;
-        int failures;
-        long retryAt;
+        final EscrowSuccessorRetry retry = new EscrowSuccessorRetry();
         Work(EscrowFlightTables.Armed arm) { this.arm = arm; }
     }
 }

@@ -25,6 +25,9 @@ public final class EscrowGovernedPreparation {
         var journal = RocketTransferSavedData.get(server);
         if (data == null || !data.bind(server).governedAvailable(countdown.logicalRocketId())
                 || !journal.retryChecked(server)) { return false; }
+        if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(), true, server.getTickCount())) {
+            return false;
+        }
         var guard = journal.acknowledgedGuard(countdown.logicalRocketId()).orElse(null);
         // COMMITTED-predecessor replacement has its own F7/F8 prerequisite; never treat it as no-T.
         if (guard == null || guard.transfer() != null) { return false; }
