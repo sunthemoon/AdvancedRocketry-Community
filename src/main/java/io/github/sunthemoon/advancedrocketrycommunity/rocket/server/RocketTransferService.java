@@ -707,13 +707,16 @@ final class RocketTransferService {
         });
     }
 
-    private boolean failBackToSource(MinecraftServer server, RocketTransferSavedData journal,
+    boolean failBackToSource(MinecraftServer server, RocketTransferSavedData journal,
             RocketTransferRecord record, RocketEntity source, RocketTransferReturnReason reason, RocketRequestCompletion completion) {
         if (record.nativeTransfer().isPresent()) {
             return RocketGovernedSourceDispatcher.requestReturn(server, journal, record, source, recovery.bays(), reason, completion.accepted());
         }
         if (!flightAllowed(server, journal, record, SETTLE_SOURCE)
                 || !recovery.bays().allowed(server, journal, record, REMOVE_JOURNAL)) { return false; }
+        // N2: no poll or callback intervenes before remove/queue on the owner thread.
+        // A failed write may retain this continuation; only capacity/lifecycle refuse it.
+        if (!journal.canReserveRemovalEffect()) { return false; }
         RocketFlightData safe = RocketTransferEntities.stationarySource(
                 record,
                 source.level().getGameTime()

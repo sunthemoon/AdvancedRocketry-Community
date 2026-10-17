@@ -495,6 +495,11 @@ public final class RocketTransferSavedData extends SavedData {
 
     public boolean canQueueEffect() { return !stopping && !failedWrite && effects.size() < 2; }
 
+    /** Owner-thread preflight for a removal that will need a new continuation generation. */
+    public boolean canReserveRemovalEffect() {
+        return operational() && !stopping && effects.size() < 2;
+    }
+
     public void pollWriter(long tick) {
         if (!operational()) { return; }
         if (writer != null) { writer.tick(tick, this::publish); }
