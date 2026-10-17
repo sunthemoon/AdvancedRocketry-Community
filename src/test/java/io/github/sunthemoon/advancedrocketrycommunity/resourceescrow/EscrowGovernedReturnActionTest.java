@@ -98,7 +98,7 @@ class EscrowGovernedReturnActionTest {
     @Test void supersededJournalAndLedgerInvalidateDeferredReturns() throws Exception {
         try (var state = state(true)) {
             var first = issue(state, state.fixture.source(), () -> true);
-            state.journal.setDirty();
+            state.journal.put(state.record);
             assertThrows(IllegalArgumentException.class, () -> first.consume(state.fixture.source()::copy));
             acknowledge(state.journal);
             var second = issue(state, state.fixture.source(), () -> true);

@@ -33,7 +33,7 @@ class EscrowGovernedPreparationTest {
 
     @Test void unacknowledgedOrStoppedJournalDoesNotIssueACountdownPermit() throws Exception {
         try (var state = state()) {
-            state.journal.setDirty();
+            state.journal.put(state.fixture.record());
             assertNull(EscrowGovernedPreparation.countdownPermit(state.authority(), state.fixture.source(), 20, () -> true));
             acknowledge(state.journal); state.journal.stop();
             assertNull(EscrowGovernedPreparation.countdownPermit(state.authority(), state.fixture.source(), 20, () -> true));
