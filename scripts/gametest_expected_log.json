@@ -403,6 +403,15 @@
       "reason": "W11b3 design section 3: each load of an unsupported loader root writes one audit line. The test loads four: a future root, an unknown field, an oversized root and one naming an unregistered Fluid."
     },
     {
+      "id": "w95-fluid-fuel-loader-escrow-refused-future-root",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",
+      "message": "ARCE_FLUID_FUEL_LOADER_UNSUPPORTED pos=-?\\d+, -?\\d+, -?\\d+ status=FUTURE",
+      "counts": {"fluid_fuel_loader_escrow": 1},
+      "test": "FluidFuelLoaderEscrowGameTests.everyRefusalLeavesBothEnvelopesTheQueueAndTheCountsUnchanged",
+      "reason": "W11b3 leaf B3-E: the refusal matrix loads one future loader root, which writes its one audit line, and shows that a fair-queue visit refuses it as UNSUPPORTED_DATA with both envelopes and every queue and count unchanged."
+    },
+    {
       "id": "w82-fluid-fuel-loader-live-replacement-refused",
       "level": "WARN",
       "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader.FluidFuelLoaderBlockEntity/",

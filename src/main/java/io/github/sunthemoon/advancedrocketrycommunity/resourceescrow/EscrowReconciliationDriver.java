@@ -33,6 +33,11 @@ final class EscrowReconciliationDriver {
         registeredSources.add(source.key());
     }
 
+    /** The registered production loader adapter, or an explicitly registered gated fixture source. */
+    private boolean adapter(EscrowEndpoint source) {
+        return EscrowLoaderEndpoint.is(source) || registeredSources.contains(source.key());
+    }
+
     void attempt(MinecraftServer server, EscrowOperation op, Consumer<EscrowReconciliationScheduler.Result> completion) {
         if (!server.isSameThread() || EscrowRuntime.of(server).stopping() || !coordinator.operational() || !coordinator.writerIdle()) {
             completion.accept(EscrowReconciliationScheduler.Result.deferred()); return;
@@ -45,9 +50,9 @@ final class EscrowReconciliationDriver {
         if (op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
-        // Historical settlement/relocation harnesses own their endpoint actions. Only the explicitly
-        // registered native fixture source enters this driver; registration itself grants no authority.
-        if (!registeredSources.contains(op.source().key())) {
+        // Historical settlement/relocation harnesses own their endpoint actions. The production loader adapter is always
+        // registered; a fixture source enters only when explicitly registered. Registration itself grants no authority.
+        if (!adapter(op.source())) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         if (cached != root) {
@@ -60,7 +65,7 @@ final class EscrowReconciliationDriver {
             component = EscrowSettlementIntent.component(root.records(), op.id());
             for (var member : component) { components.put(member.id(), component); }
         }
-        if (component.stream().anyMatch(member -> !registeredSources.contains(member.source().key()))) {
+        if (component.stream().anyMatch(member -> !adapter(member.source()))) {
             completion.accept(new EscrowReconciliationScheduler.Result(EscrowReason.RECONCILIATION_UNIMPLEMENTED, false)); return;
         }
         var key = component.get(0).id();

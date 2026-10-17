@@ -51,7 +51,9 @@ final class EscrowReconciliationCheckpoint implements AutoCloseable {
                 EscrowTags.require(end.signatureKind() == EscrowSignatureKind.FUEL_VECTOR_V1
                         && binding.invariant().equals(end.invariantDigest()), "Checkpoint native identity changed");
             } else {
-                EscrowTags.require(end.signatureKind() == EscrowSignatureKind.FIXTURE_RESOURCE_V1, "Unsupported source projection");
+                // The registered loader tank, or the gated chest fixture; the observation already pins kind to endpoint.
+                EscrowTags.require(end.signatureKind() == EscrowSignatureKind.FLUID_TANK_V1
+                        || end.signatureKind() == EscrowSignatureKind.FIXTURE_RESOURCE_V1, "Unsupported source projection");
             }
         }
     }

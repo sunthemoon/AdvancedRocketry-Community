@@ -78,7 +78,7 @@ final class EscrowReconciliationValidation {
             var binding = op.nativeBinding();
             if (!binding.complete() || op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL
                     || !(destination ? EscrowReconciliationChange.rocket(root.id(), op, before)
-                    : EscrowReconciliationChange.fixture(root.id(), op, before)).equals(after)) { return EscrowReason.OTHER_STATE; }
+                    : EscrowReconciliationChange.source(root.id(), op, before)).equals(after)) { return EscrowReason.OTHER_STATE; }
             if (destination) {
                 var chain = EscrowPrefix.chains(root.records()).get(op.destination().key());
                 var classified = rocket(root.id(), chain, before);

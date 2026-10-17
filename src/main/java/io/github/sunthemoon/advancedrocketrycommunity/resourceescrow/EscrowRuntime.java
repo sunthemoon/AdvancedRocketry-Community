@@ -57,6 +57,7 @@ public final class EscrowRuntime {
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
     private volatile EscrowTerminalProbe terminalProbe;
+    private volatile EscrowLoaderReleaseProbe loaderProbe;
     private volatile java.util.function.Consumer<String> terminalTestCut;
     void terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
         EscrowTestEndpoints.requireEnabled(server);
@@ -112,20 +113,47 @@ public final class EscrowRuntime {
     EscrowTimingSink timings() { return flightBenchmark != null ? flightBenchmark.metrics : benchmark == null ? EscrowTimingSink.NONE : benchmark; }
     java.util.List<EscrowSettlementPruning.Group> settlementGroups(EscrowLedger root) { return settlements.pruningGroups(root); }
     private EscrowReconciliationScheduler scheduler;
+    /** The coordinator the scheduler drives; a test hook's ledger replacement makes the tick rebuild it. */
+    private EscrowCoordinator scheduled;
     private EscrowTestReconciliation reconciliation;
+    private EscrowFillQueue fills;
+    /** GameTest half of the gated switch: admission for exactly these devices, never a production enable. */
+    private final java.util.Set<java.util.UUID> admissionDevices = new java.util.HashSet<>();
     boolean stopping() { return stopping; }
     EscrowTestReconciliation reconcileTests(EscrowCoordinator coordinator, java.util.List<EscrowTestEndpoints.Fixture> fixtures,
                                           java.util.function.Predicate<EscrowEndpoint> veto) {
         if (reconciliation != null) { reconciliation.close(); }
         reconciliation = new EscrowTestReconciliation(coordinator, this, fixtures, veto);
         scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition, reconciliation);
+        scheduled = coordinator;
         return reconciliation;
     }
+    /** The loaders' fair queue, created on the server thread. */
+    EscrowFillQueue fills(MinecraftServer server) {
+        if (fills == null) {
+            EscrowTags.require(server.isSameThread(), "The fill queue lives on the server thread");
+            fills = new EscrowFillQueue();
+        }
+        return fills;
+    }
+    /**
+     * The gated switch for GameTests (W11B3-DESIGN section 2): opens or closes admission for one loader device. It
+     * needs the release-test gate; production admission stays disabled.
+     */
+    public void loaderAdmissionForTests(MinecraftServer server, java.util.UUID device, boolean allowed) {
+        EscrowTestEndpoints.requireEnabled(server);
+        if (!allowed) { admissionDevices.remove(device); return; }
+        EscrowTags.require(admissionDevices.contains(device) || admissionDevices.size() < EscrowLimits.OPERATIONS,
+                "Too many gated loader devices");
+        admissionDevices.add(device);
+    }
+    boolean loaderAdmissionAllowed(java.util.UUID device) { return admissionDevices.contains(device); }
     public void checkpoint(String cut) {
         var measured = flightBenchmark; if (measured != null) { measured.metrics.checkpoint(cut); }
         var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
+        var loader = loaderProbe; if (loader != null) { loader.checkpoint(cut); }
         if (returnProbe != null) { returnProbe.checkpoint(cut); }
         if (phaseProbe != null) { phaseProbe.checkpoint(cut); }
         if (destinationProbe != null) { destinationProbe.checkpoint(cut); }
@@ -244,13 +272,16 @@ public final class EscrowRuntime {
             if (runtime.settlementProbe == null) { runtime.settlementProbe = new EscrowSettlementProbe(event.getServer()); }
             runtime.settlementProbe.tick();
         }
+        // The loaders' fair queue first: at most one capture per tick, possibly a world's first fill and its ledger.
+        runtime.fills(event.getServer()).tick(event.getServer());
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
         if (data != null) {
             var coordinator = data.bind(event.getServer());
             if (!data.operational()) { return; }
-            if (runtime.scheduler == null) {
+            if (runtime.scheduler == null || runtime.scheduled != coordinator) {
                 runtime.scheduler = new EscrowReconciliationScheduler(coordinator::ledger, coordinator::transition,
                         (op, records, completion) -> RocketEscrowAudit.attempt(coordinator, event.getServer(), op, records, completion));
+                runtime.scheduled = coordinator;
             }
             data.tick(event.getServer().getTickCount());
             if (data.ledger().floors().stream().anyMatch(floor -> floor.hasUUID("transfer_id"))) {
@@ -277,6 +308,9 @@ public final class EscrowRuntime {
             } else if (testCase.startsWith("CR_")) {
                 if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
                 runtime.reconciliationProbe.tick();
+            } else if (testCase.startsWith(EscrowLoaderReleaseProbe.PREFIX)) {
+                if (runtime.loaderProbe == null) { runtime.loaderProbe = new EscrowLoaderReleaseProbe(event.getServer()); }
+                runtime.loaderProbe.tick();
             } else if (testCase.startsWith("FT_")) {
                 if (runtime.terminalProbe == null) { runtime.terminalProbe = new EscrowTerminalProbe(event.getServer()); }
                 runtime.terminalProbe.tick();
@@ -317,6 +351,15 @@ public final class EscrowRuntime {
             }
         }
     }
+    /** W95's native restart fixture inspects the START of the first tick, before level ticking can bind a ledger lazily. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void loaderProbeStart(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.START || !Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                || System.getProperty("advancedrocketrycommunity.escrowScenario") == null
+                || !System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith(EscrowLoaderReleaseProbe.PREFIX)) { return; }
+        var runtime = of(event.getServer()); if (runtime.stopping) { return; }
+        if (runtime.loaderProbe == null) { runtime.loaderProbe = new EscrowLoaderReleaseProbe(event.getServer()); }
+        runtime.loaderProbe.startTick();
+    }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void benchmarkStart(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             var benchmark = of(event.getServer()).benchmark; if (benchmark != null) { benchmark.startTick(); }
@@ -331,6 +374,7 @@ public final class EscrowRuntime {
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
         EscrowRuntime runtime = of(event.getServer()); runtime.stopping = true;
+        if (runtime.fills != null) { runtime.fills.clear(); }
         runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.quiesce(); }
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(event.getServer());
@@ -360,6 +404,7 @@ public final class EscrowRuntime {
         EscrowRuntime runtime = overworld.getCapability(CAPABILITY).resolve().orElse(null);
         if (runtime == null || runtime.stopping) { return; }
         runtime.stopping = true;
+        if (runtime.fills != null && server.isSameThread()) { runtime.fills.clear(); }
         runtime.settlement.close();
         if (runtime.barrier != null) { runtime.barrier.close(); } // Discards unfinished barriers; no new synchronization.
         ResourceEscrowSavedData data = ResourceEscrowSavedData.existing(server);

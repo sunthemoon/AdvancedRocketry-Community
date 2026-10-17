@@ -150,7 +150,8 @@ public final class LinkerItem extends Item {
         if (!loader.admitted(player)) {
             return FluidFuelLoaderStatus.OUT_OF_RANGE;
         }
-        return refusal == FluidFuelLoaderStatus.ESCROW_PENDING ? refusal : null;
+        // A held device shows its progress elsewhere; a rebinding or clearing is refused as locked by escrow.
+        return loader.escrowLocked() ? FluidFuelLoaderStatus.ESCROW_PENDING : null;
     }
 
     /**
