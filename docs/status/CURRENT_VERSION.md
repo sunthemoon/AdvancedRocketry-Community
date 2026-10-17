@@ -90,7 +90,8 @@ What is still open:
 - **Intermittent GameTest.** Hosted run 39047343116 at `b01f441e` failed
   `EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier` once with
   `SUPERSEDING_SAVE` (a test-timing race, W36's class); the next run passed. W94 (merged `ec7214c5`)
-  lets such proof tests retry only that reason; 30 of 30 local batch runs passed.
+  lets such proof tests retry only that reason; 30 of 30 local batch runs passed. Its two new
+  forced-supersession GameTests then timed out on hosted run 39060903571 at `8c3f5717`; W94B fixes them.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). The
   S2 campaign waits for W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
