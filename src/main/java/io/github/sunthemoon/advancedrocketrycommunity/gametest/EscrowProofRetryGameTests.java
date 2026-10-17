@@ -41,14 +41,15 @@ public final class EscrowProofRetryGameTests {
         private final EscrowBarrier barrier = new EscrowBarrier();
         private final GameTestTickPacer pacer;
         private final EscrowTestEndpoints.Fixture fixture;
-        private final ChunkSaveWatcher saves;
         private final EscrowGameTestProof<EscrowBarrier.Result> proof;
-        private boolean saved, injected, closed;
+        private boolean injected, closed;
+        private final long startedAt;
         private long refusedAt = -1;
 
         Scenario(GameTestHelper helper, boolean entity) {
             this.helper = helper; this.entity = entity;
             var level = helper.getLevel(); var server = level.getServer();
+            startedAt = server.getTickCount();
             position = new BlockPos(entity ? 548_001 : 546_001, 100, 546_001); chunk = new ChunkPos(position);
             level.getChunkSource().addRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
             level.getChunk(chunk.x, chunk.z);
@@ -58,12 +59,13 @@ public final class EscrowProofRetryGameTests {
             var frontier = entity ? fixture.bankState() : fixture.sourceState();
             var validator = EscrowTestEndpoints.validator(endpoint, frontier);
             var store = EscrowRuntime.of(server).store(level);
-            pacer = new GameTestTickPacer(server); saves = ChunkSaveWatcher.start(helper, position);
+            pacer = new GameTestTickPacer(server);
             proof = new EscrowGameTestProof<>(server::getTickCount,
                     (tick, completed) -> barrier.begin(store, endpoint, frontier, validator, tick, result -> {
                         if (!result.confirmed()) {
                             helper.assertTrue(result.reason() == EscrowReason.SUPERSEDING_SAVE, "Injected save produced another refusal: " + result.reason());
                             refusedAt = server.getTickCount();
+                            checkpoint("superseded");
                         }
                         completed.accept(result);
                     }), EscrowBarrier.Result::confirmed, EscrowBarrier.Result::reason, result -> {
@@ -75,7 +77,7 @@ public final class EscrowProofRetryGameTests {
                                 && !result.proof().capture().stored().isCompletedExceptionally(), "Retry changed the frozen frontier or omitted its own store");
                         helper.assertTrue(EscrowTestEndpoints.amount(fixture.source().getPersistentData()) == 4_000
                                 && EscrowTestEndpoints.amount(fixture.bank().getPersistentData()) == 1_000, "Retry changed resource conservation");
-                        result.proof().release(); helper.succeed();
+                        checkpoint("confirmed"); result.proof().release(); helper.succeed();
                     });
             try {
                 var field = GameTestHelper.class.getDeclaredField("testInfo"); field.setAccessible(true);
@@ -90,13 +92,11 @@ public final class EscrowProofRetryGameTests {
             pacer.pace(); var level = helper.getLevel();
             barrier.tick(level.getServer().getTickCount());
             if (closed || !level.areEntitiesLoaded(chunk.toLong())) { return; }
-            if (!saved) {
-                if (!saves.any(position) && !VanillaChunkSave.saveIfNeeded(level, chunk)) { return; }
-                saves.stop(); saved = true;
-            }
+            // This test deliberately supersedes its first capture. Waiting for the terrain cooldown before that
+            // rejected attempt wastes the unchanged tick budget; the real save and product backoff precede the retry.
             proof.tick();
             if (proof.attempts() == 1 && !injected) {
-                injected = true;
+                injected = true; checkpoint("inject_save");
                 if (entity) {
                     // The same slot-specific store called by PersistentEntitySectionManager.autoSave, without saving other tests.
                     helper.assertTrue(level.entityManager.storeChunkSections(chunk.toLong(), value -> { }), "Loaded entity save was refused");
@@ -111,9 +111,14 @@ public final class EscrowProofRetryGameTests {
         @Override public void testStructureLoaded(GameTestInfo info) { }
         @Override public void testPassed(GameTestInfo info) { close(); }
         @Override public void testFailed(GameTestInfo info) { close(); }
+        private void checkpoint(String stage) {
+            io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity.LOGGER.info(
+                    "ARCE_GAMETEST_PROOF_RETRY entities={} stage={} fixture_ticks={} attempts={}",
+                    entity, stage, helper.getLevel().getServer().getTickCount() - startedAt, attempts());
+        }
         private void close() {
             if (closed) { return; }
-            closed = true; barrier.close(); saves.stop(); fixture.bank().discard();
+            closed = true; barrier.close(); fixture.bank().discard();
             helper.getLevel().getChunkSource().removeRegionTicket(TicketType.START, chunk, 2, Unit.INSTANCE);
         }
     }
