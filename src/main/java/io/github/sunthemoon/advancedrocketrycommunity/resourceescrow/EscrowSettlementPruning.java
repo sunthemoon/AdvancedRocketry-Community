@@ -19,10 +19,24 @@ import net.minecraft.server.level.ServerLevel;
 
 /** Exact released groups remove only a leading marker prefix, never resources or epochs. */
 public final class EscrowSettlementPruning {
+    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private EscrowSettlementPruning() { }
     record Endpoint(EscrowEndpoint reference, CompoundTag survivor, long generation) { }
     record Group(String digest, Set<UUID> members, List<Endpoint> endpoints) { }
     record Visit(Group group, Endpoint endpoint) { }
+    /** The last visited state of one released (group, endpoint). Visibility only, never pruning authority. */
+    record State(Kind kind, String reason) {
+        enum Kind { DONE, WAITING_EARLIER_GROUP, WAITING_LIVE_WORK, REFUSED }
+        static final State DONE = new State(Kind.DONE, ""), WAITING_EARLIER_GROUP = new State(Kind.WAITING_EARLIER_GROUP, ""),
+                WAITING_LIVE_WORK = new State(Kind.WAITING_LIVE_WORK, "");
+        static State refused(String reason) {
+            String clean = String.valueOf(reason).replaceAll("[\\p{Cntrl}]", " ");
+            return new State(Kind.REFUSED, clean.length() <= 160 ? clean : clean.substring(0, 160));
+        }
+        String text() { return kind == Kind.REFUSED ? "REFUSED(" + reason + ")" : kind.name(); }
+    }
+    record Decision(RocketEscrowSection section, State state) { }
+    private record Slot(String digest, EscrowEndpoint.Key endpoint) { }
 
     /** Scheduling only: all authority comes from acknowledged receipts, including after restart. */
     static final class Cursor {
@@ -30,6 +44,9 @@ public final class EscrowSettlementPruning {
         private List<Group> groups = List.of();
         private final ArrayDeque<String> priority = new ArrayDeque<>();
         private final Map<String, Integer> endpoints = new java.util.HashMap<>();
+        // Final review A, F5: bounded by the released groups' survivors (two per receipt, 64 receipts).
+        private final Map<Slot, State> states = new java.util.HashMap<>();
+        private final Map<Slot, String> warned = new java.util.HashMap<>();
         private int cursor;
         void enqueue(EscrowLedger root, EscrowCoordinator.SettlementAcknowledgement ack) {
             EscrowTags.require(ack.committed() && root.id().equals(ack.ledger())
@@ -64,6 +81,7 @@ public final class EscrowSettlementPruning {
                 groups = EscrowSettlementPruning.groups(root); cached = root;
                 var live = groups.stream().map(Group::digest).collect(java.util.stream.Collectors.toSet());
                 endpoints.keySet().retainAll(live); priority.removeIf(digest -> !live.contains(digest));
+                states.keySet().removeIf(slot -> !live.contains(slot.digest())); warned.keySet().removeIf(slot -> !live.contains(slot.digest()));
             }
             return groups;
         }
@@ -71,12 +89,48 @@ public final class EscrowSettlementPruning {
             var root = coordinator.ledger(); var unresolved = coordinator.unresolvedIds();
             var visit = next(root, unresolved, coordinator::pruningBusy);
             if (visit != null) {
-                try { apply(server, root, visit, unresolved, groups); }
+                State state;
+                try { state = apply(server, root, visit, unresolved, groups); }
                 catch (IllegalArgumentException | java.util.NoSuchElementException unavailable) {
                     // A malformed/unloaded survivor cannot starve another released group.
+                    state = State.refused(unavailable.getMessage());
                 }
+                if (state != null) { observe(visit, state); }
             }
         }
+        /** One WARN when a (group, endpoint) enters a refusal reason, one INFO when it later prunes; never per visit. */
+        void observe(Visit visit, State state) {
+            var slot = new Slot(visit.group().digest(), visit.endpoint().reference().key());
+            states.put(slot, state);
+            var endpoint = visit.endpoint().reference();
+            if (state.kind() == State.Kind.REFUSED && !state.reason().equals(warned.get(slot))) {
+                warned.put(slot, state.reason());
+                LOGGER.warn("ARCE_ESCROW_PRUNING_REFUSED digest={} endpoint={}/{} level={} reason={} markers=retained recovery=frontier-match-or-offline-repair",
+                        slot.digest(), endpoint.kind(), endpoint.identity(), endpoint.level(), state.reason());
+            } else if (state.kind() == State.Kind.DONE && warned.remove(slot) != null) {
+                LOGGER.info("ARCE_ESCROW_PRUNING_CLEARED digest={} endpoint={}/{} level={}", slot.digest(), endpoint.kind(), endpoint.identity(), endpoint.level());
+            }
+        }
+        /** Read-only: the worst last-visited state of these endpoints; UNVISITED when one has no visit since restart. */
+        String summary(String digest, java.util.Collection<EscrowEndpoint.Key> keys) {
+            if (keys.isEmpty()) { return "NONE"; }
+            State refused = null; boolean waiting = false, live = false, unvisited = false;
+            for (var key : keys) {
+                var state = states.get(new Slot(digest, key));
+                if (state == null) { unvisited = true; continue; }
+                switch (state.kind()) {
+                    case REFUSED -> { if (refused == null) { refused = state; } }
+                    case WAITING_EARLIER_GROUP -> waiting = true;
+                    case WAITING_LIVE_WORK -> live = true;
+                    case DONE -> { }
+                }
+            }
+            return refused != null ? refused.text() : waiting ? State.WAITING_EARLIER_GROUP.text()
+                    : live ? State.WAITING_LIVE_WORK.text() : unvisited ? "UNVISITED" : State.DONE.text();
+        }
+    }
+    private static boolean retains(List<EscrowPrefix.Marker> markers, Set<UUID> members) {
+        return markers.stream().anyMatch(marker -> members.contains(marker.operation()));
     }
 
     static boolean busy(EscrowEndpoint.Key endpoint, List<EscrowOperation> durable,
@@ -134,38 +188,52 @@ public final class EscrowSettlementPruning {
         var root = data.ledger(); var coordinator = data.bind(level.getServer());
         var groups = EscrowRuntime.of(level.getServer()).settlementGroups(root);
         for (var group : groups) {
-            if (group.members().contains(first)) { return rocket(rocket, section, group.digest(), group.members(), root, groups, coordinator); }
+            if (group.members().contains(first)) { return decide(rocket, section, group.digest(), group.members(), root, groups, coordinator).section(); }
         }
         return section;
     }
     public static RocketEscrowSection rocket(RocketEntity rocket, RocketEscrowSection section, String digest, Set<UUID> members) {
-        if (section.markers().isEmpty()) { return section; }
-        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread() || !rocket.operational()) { return section; }
+        return decide(rocket, section, digest, members).section();
+    }
+    static Decision decide(RocketEntity rocket, RocketEscrowSection section, String digest, Set<UUID> members) {
+        if (section.markers().isEmpty()) { return new Decision(section, State.DONE); }
+        if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()) {
+            return new Decision(section, State.refused("not on the server thread"));
+        }
+        if (!rocket.operational()) { return new Decision(section, State.refused("rocket is not operational")); }
         var data = ResourceEscrowSavedData.existing(level.getServer());
-        if (data == null || !data.ledger().id().equals(section.ledger())) { return section; }
+        if (data == null || !data.ledger().id().equals(section.ledger())) { return new Decision(section, State.refused("absent or foreign ledger")); }
         var coordinator = data.bind(level.getServer());
         var root = data.ledger();
-        return rocket(rocket, section, digest, members, root, EscrowRuntime.of(level.getServer()).settlementGroups(root), coordinator);
+        return decide(rocket, section, digest, members, root, EscrowRuntime.of(level.getServer()).settlementGroups(root), coordinator);
     }
-    private static RocketEscrowSection rocket(RocketEntity rocket, RocketEscrowSection section, String digest, Set<UUID> members,
+    /** The section is decided exactly as before; the state only names why markers of this group remain. */
+    private static Decision decide(RocketEntity rocket, RocketEscrowSection section, String digest, Set<UUID> members,
             EscrowLedger root, List<Group> groups, EscrowCoordinator coordinator) {
         var unresolved = coordinator.unresolvedIds();
+        var why = State.refused("no released survivor of this group names this rocket");
         for (var group : groups) {
             if (!group.digest().equals(digest) || !group.members().equals(members)) { continue; }
             for (var chosen : group.endpoints()) {
                 var reference = chosen.reference();
-                if (reference.kind() != EscrowEndpoint.Kind.ENTITY || !reference.identity().equals(rocket.getUUID())
-                        || RocketEscrowAudit.placement(reference, rocket) != EscrowReason.NONE || coordinator.pruningBusy(reference.key())) { continue; }
+                if (reference.kind() != EscrowEndpoint.Kind.ENTITY || !reference.identity().equals(rocket.getUUID())) { continue; }
+                var placement = RocketEscrowAudit.placement(reference, rocket);
+                if (placement != EscrowReason.NONE) { why = State.refused("placement " + placement); continue; }
+                if (coordinator.pruningBusy(reference.key())) { why = State.WAITING_LIVE_WORK; continue; }
                 var fuel = rocket.flightData().orElseThrow().fuel();
                 if (!chosen.survivor().getString("signature_kind").equals(EscrowSignatureKind.FUEL_VECTOR_V1.name())
-                        || !chosen.survivor().getString("invariant_digest").equals(EscrowInvariant.rocket(rocket))) { continue; }
+                        || !chosen.survivor().getString("invariant_digest").equals(EscrowInvariant.rocket(rocket))) {
+                    why = State.refused("signature kind or invariant digest differs from the released survivor"); continue;
+                }
                 var state = new EscrowPrefix.State(root.id(), section.epoch(), fuel.resourceSignature(), section.markers());
                 if (frontier(root, groups, reference, state, fuel.totalAmount(), fuel.resourceSignature(), unresolved)) {
-                    return new RocketEscrowSection(section.ledger(), section.epoch(), prune(section.markers(), members, unresolved));
+                    var pruned = new RocketEscrowSection(section.ledger(), section.epoch(), prune(section.markers(), members, unresolved));
+                    return new Decision(pruned, retains(pruned.markers(), members) ? State.WAITING_EARLIER_GROUP : State.DONE);
                 }
+                why = State.refused("frontier: live state is neither the released survivor nor a proved later prefix");
             }
         }
-        return section;
+        return new Decision(section, retains(section.markers(), members) ? why : State.DONE);
     }
 
     static boolean frontier(EscrowLedger root, EscrowEndpoint endpoint, EscrowPrefix.State current,
@@ -208,27 +276,39 @@ public final class EscrowSettlementPruning {
         }).toList();
     }
 
-    private static void apply(MinecraftServer server, EscrowLedger root, Visit visit, Set<UUID> unresolved, List<Group> groups) {
-        var endpoint = visit.endpoint().reference();
+    /** Returns the visited state, or null when the endpoint was not visited (unloaded, absent or not a fixture world). */
+    private static State apply(MinecraftServer server, EscrowLedger root, Visit visit, Set<UUID> unresolved, List<Group> groups) {
+        var endpoint = visit.endpoint().reference(); var members = visit.group().members();
         var level = server.getLevel(ResourceKey.create(Registries.DIMENSION, ResourceLocation.tryParse(endpoint.level())));
-        if (level == null) { return; }
+        if (level == null) { return null; }
         if (endpoint.kind() == EscrowEndpoint.Kind.ENTITY) {
             if (level.getEntity(endpoint.identity()) instanceof RocketEntity rocket) {
-                rocket.pruneSettledEscrow(visit.group().digest(), visit.group().members());
+                rocket.pruneSettledEscrow(visit.group().digest(), members);
+                // Read-only second decision, only when this group's markers remain, to name the reason.
+                return retains(rocket.escrowSection().markers(), members)
+                        ? decide(rocket, rocket.escrowSection(), visit.group().digest(), members).state() : State.DONE;
             }
         } else if (server instanceof net.minecraft.gametest.framework.GameTestServer || Boolean.getBoolean(EscrowTestEndpoints.HOOKS)) {
             EscrowTestEndpoints.requireEnabled(server);
             var chunk = level.getChunkSource().getChunkNow(endpoint.x() >> 4, endpoint.z() >> 4);
-            if (chunk == null) { return; }
+            if (chunk == null) { return null; }
             var source = chunk.getBlockEntity(new BlockPos(endpoint.x(), endpoint.y(), endpoint.z()));
-            if (source == null || !endpoint.identity().equals(source.getPersistentData().getCompound("arce_escrow_fixture").getUUID("identity"))
-                    || !endpoint.type().equals(net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(source.getType()).toString())) { return; }
+            if (source == null) { return null; }
+            if (!endpoint.identity().equals(source.getPersistentData().getCompound("arce_escrow_fixture").getUUID("identity"))
+                    || !endpoint.type().equals(net.minecraft.core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(source.getType()).toString())) {
+                return State.refused("source identity or type changed");
+            }
             var state = EscrowTestEndpoints.state(source.getPersistentData(), root.id(), false);
-            if (state.markers().isEmpty() || !frontier(root, groups, endpoint, state, EscrowTestEndpoints.amount(source.getPersistentData()), state.signature(), unresolved)) { return; }
-            var markers = prune(state.markers(), visit.group().members(), unresolved);
-            if (markers.equals(state.markers())) { return; }
+            if (state.markers().isEmpty()) { return State.DONE; }
+            if (!frontier(root, groups, endpoint, state, EscrowTestEndpoints.amount(source.getPersistentData()), state.signature(), unresolved)) {
+                return retains(state.markers(), members) ? State.refused("frontier: live state is neither the released survivor nor a proved later prefix") : State.DONE;
+            }
+            var markers = prune(state.markers(), members, unresolved);
+            if (markers.equals(state.markers())) { return retains(markers, members) ? State.WAITING_EARLIER_GROUP : State.DONE; }
             EscrowTestEndpoints.putState(source.getPersistentData(), new EscrowPrefix.State(root.id(), state.epoch(), state.signature(), markers), false);
             source.setChanged();
+            return State.DONE;
         }
+        return null;
     }
 }

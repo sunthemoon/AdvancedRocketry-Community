@@ -39,6 +39,31 @@ class EscrowOperatorDiagnosticsTest {
         assertTrue(EscrowOperatorDiagnostics.preview(preview).contains("permanent_receipts_consumed=1"));
         assertTrue(EscrowOperatorDiagnostics.preview(preview).contains("zero loss"));
     }
+    @Test void releasedMembersShowThePruningCursorsStateWithoutChangingTheRoot() {
+        var op = EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE); var root = EscrowTestFixtures.ledger(op);
+        var observations = EscrowSettlementIntentTest.observations(root, false);
+        var preview = EscrowSettlementIntent.preview(root, op.id(), EscrowSettlementIntent.Choice.ACCEPT_CURRENT,
+                EscrowTestFixtures.id(700), "operator", 0, observations);
+        var intent = preview.confirm(preview.actor(), preview.digest(), 1, observations);
+        var released = EscrowSettlementTombstones.release(EscrowSettlementTombstones.install(intent.freeze(root), intent), intent);
+        var before = EscrowCodec.encode(released); var cursor = new EscrowSettlementPruning.Cursor();
+        java.util.function.Supplier<List<String>> inspect = () -> EscrowOperatorDiagnostics.inspect(released, op.id(),
+                ignored -> fail(), id -> fail(), "ACKNOWLEDGED", cursor::summary);
+        var lines = inspect.get();
+        assertEquals(2, lines.size()); assertTrue(lines.get(0).contains("pruning=UNVISITED"));
+        assertTrue(lines.get(1).contains("O2=not-retained pruning=UNVISITED"), lines.get(1));
+        var first = cursor.next(released, java.util.Set.of()); var second = cursor.next(released, java.util.Set.of());
+        cursor.observe(first, EscrowSettlementPruning.State.WAITING_EARLIER_GROUP); cursor.observe(second, EscrowSettlementPruning.State.DONE);
+        assertTrue(inspect.get().stream().allMatch(line -> line.contains("pruning=WAITING_EARLIER_GROUP")));
+        cursor.observe(first, EscrowSettlementPruning.State.refused("frontier: live state differs"));
+        lines = inspect.get();
+        assertTrue(lines.stream().allMatch(line -> line.contains("pruning=REFUSED(frontier: live state differs)") && line.length() < 1200));
+        cursor.observe(first, EscrowSettlementPruning.State.DONE);
+        assertTrue(inspect.get().stream().allMatch(line -> line.contains("pruning=DONE")));
+        assertTrue(EscrowOperatorDiagnostics.inspect(released, op.id(), ignored -> fail(), id -> fail(), "ACKNOWLEDGED")
+                .stream().allMatch(line -> line.contains("pruning=UNVISITED")));
+        assertEquals(before, EscrowCodec.encode(released));
+    }
     @Test void statusBoundsReasonsAndIncludesPermanentAndReservedMemberCounts() {
         var ops = new ArrayList<EscrowOperation>(); for (int i = 1; i <= 64; i++) { ops.add(EscrowTestFixtures.operation(i)); }
         var root = EscrowTestFixtures.ledger(ops.toArray(EscrowOperation[]::new));

@@ -51,23 +51,34 @@ final class EscrowOperatorDiagnostics {
         var journal = RocketTransferSavedData.existing(server);
         return inspect(data.ledger(), selected, runtime.settlementRecovery()::view,
                 id -> scheduler == null ? new EscrowReconciliationScheduler.View("QUEUED", "NONE", -1, 0, false) : scheduler.view(id),
-                journal == null ? "absent-unproved" : journal.checkedWriteResult().toString());
+                journal == null ? "absent-unproved" : journal.checkedWriteResult().toString(), runtime.settlementRecovery()::pruningState);
     }
     static List<String> inspect(EscrowLedger root, UUID selected,
             Function<EscrowSettlementIntent, EscrowSettlementRecovery.View> settlement,
             Function<UUID, EscrowReconciliationScheduler.View> reconciliation, String journal) {
+        return inspect(root, selected, settlement, reconciliation, journal, (digest, endpoints) -> "UNVISITED");
+    }
+    /** Released members show the pruning cursor's last visited state: waiting, refused with a reason, or done (F5). */
+    static List<String> inspect(EscrowLedger root, UUID selected,
+            Function<EscrowSettlementIntent, EscrowSettlementRecovery.View> settlement,
+            Function<UUID, EscrowReconciliationScheduler.View> reconciliation, String journal,
+            java.util.function.BiFunction<String, List<EscrowEndpoint.Key>, String> pruning) {
         var op = root.records().stream().filter(value -> value.id().equals(selected)).findFirst().orElse(null);
         var receipt = root.tombstones().stream().filter(tag -> selected.equals(tag.getUUID("op_id"))).findFirst().orElse(null);
         EscrowTags.require(op != null || receipt != null, "Unknown operation");
         var result = new ArrayList<String>();
         if (op == null) {
-            var group = root.tombstones().stream().filter(tag -> tag.getString("decision_digest").equals(receipt.getString("decision_digest")))
+            String digest = receipt.getString("decision_digest");
+            var group = root.tombstones().stream().filter(tag -> tag.getString("decision_digest").equals(digest))
                     .sorted(java.util.Comparator.comparing(tag -> tag.getUUID("op_id").toString())).toList();
-            result.add("group=" + receipt.getString("decision_digest") + " members=" + group.size()
-                    + " omitted=" + Math.max(0, group.size() - DETAILS) + " journal=" + bounded(journal) + " accounting=UNKNOWN");
+            var survivors = new java.util.LinkedHashSet<EscrowEndpoint.Key>(); group.forEach(member -> survivors.addAll(survivors(member)));
+            result.add("group=" + digest + " members=" + group.size()
+                    + " omitted=" + Math.max(0, group.size() - DETAILS) + " pruning=" + pruning(pruning, digest, receipt, List.copyOf(survivors))
+                    + " journal=" + bounded(journal) + " accounting=UNKNOWN");
             for (var member : group.stream().limit(DETAILS).toList()) {
                 UUID logical = EscrowCodec.guard((net.minecraft.nbt.CompoundTag) EscrowTags.list(member, "guards", 1).get(0)).rocket();
                 result.add("operation=" + member.getUUID("op_id") + " persisted=RETIRED runtime=RELEASED reason=NONE O2=not-retained"
+                        + " pruning=" + pruning(pruning, digest, member, survivors(member))
                         + " next_retry=none receipt=" + (member.getBoolean("released") ? "RELEASED" : "INSTALLED")
                         + " head=" + head(root, logical) + " accounting=UNKNOWN");
             }
@@ -108,6 +119,15 @@ final class EscrowOperatorDiagnostics {
         var scheduler = runtime.reconciliationScheduler();
         if (op.reason() != EscrowReason.NONE || scheduler == null) { return op.reason().name(); }
         return scheduler.view(op.id()).reason();
+    }
+    private static List<EscrowEndpoint.Key> survivors(net.minecraft.nbt.CompoundTag receipt) {
+        return EscrowTags.list(receipt, "survivors", 2).stream()
+                .map(raw -> EscrowCodec.endpoint(((net.minecraft.nbt.CompoundTag) raw).getCompound("endpoint")).key()).toList();
+    }
+    private static String pruning(java.util.function.BiFunction<String, List<EscrowEndpoint.Key>, String> pruning, String digest,
+            net.minecraft.nbt.CompoundTag receipt, List<EscrowEndpoint.Key> survivors) {
+        // The cursor bounds and cleans each refusal reason to 160 characters.
+        return receipt.getBoolean("released") ? pruning.apply(digest, survivors) : "NOT_RELEASED";
     }
     private static String head(EscrowLedger root, UUID logical) {
         var head = root.rocketAuthorities().stream().filter(value -> value.logical().equals(logical)).findFirst().orElse(null);

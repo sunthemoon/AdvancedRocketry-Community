@@ -43,6 +43,7 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         this.decode = decode;
     }
     List<EscrowSettlementPruning.Group> pruningGroups(EscrowLedger root) { return pruning.released(root); }
+    String pruningState(String digest, java.util.Collection<EscrowEndpoint.Key> endpoints) { return pruning.summary(digest, endpoints); }
     record View(String phase, String reason, int provedSlots, int waitingSlots, long nextTick, boolean active) { }
     View view(EscrowSettlementIntent intent) {
         var state = work.get(intent.digest());

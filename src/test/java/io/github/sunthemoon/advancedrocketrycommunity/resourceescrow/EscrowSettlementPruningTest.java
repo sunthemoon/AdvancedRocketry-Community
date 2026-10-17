@@ -70,6 +70,60 @@ class EscrowSettlementPruningTest {
         assertNotEquals(first.endpoint().reference().key(), later.endpoint().reference().key());
     }
 
+    @Test void refusedPruningLogsOneBoundedWarningPerReasonTransitionNeverPerVisit() {
+        var root = released(EscrowTestFixtures.operation(1).withReason(EscrowReason.OTHER_STATE));
+        var cursor = new EscrowSettlementPruning.Cursor();
+        var first = cursor.next(root, Set.of()); var second = cursor.next(root, Set.of());
+        String digest = first.group().digest();
+        var keys = List.of(first.endpoint().reference().key(), second.endpoint().reference().key());
+        assertNotEquals(keys.get(0), keys.get(1));
+        assertEquals("UNVISITED", cursor.summary(digest, keys)); assertEquals("NONE", cursor.summary(digest, List.of()));
+        var frontier = EscrowSettlementPruning.State.refused("frontier\n" + "x".repeat(300));
+        assertEquals(160, frontier.reason().length()); assertFalse(frontier.reason().contains("\n"));
+        try (var logs = new Logs()) {
+            for (int visit = 0; visit < 5; visit++) { cursor.observe(first, frontier); }
+            assertEquals(1, logs.warnings().size(), "One WARN per (group, endpoint, reason), never per visit");
+            assertTrue(logs.warnings().get(0).contains("digest=" + digest) && logs.warnings().get(0).contains("markers=retained")
+                    && logs.warnings().get(0).length() < 600);
+            assertEquals(frontier.text(), cursor.summary(digest, keys));
+            // A wait and the same reason again do not log; a different reason is a new transition.
+            cursor.observe(first, EscrowSettlementPruning.State.WAITING_EARLIER_GROUP);
+            assertEquals("WAITING_EARLIER_GROUP", cursor.summary(digest, keys));
+            cursor.observe(first, frontier); assertEquals(1, logs.warnings().size());
+            var placement = EscrowSettlementPruning.State.refused("placement RELOCATED_ENDPOINT");
+            cursor.observe(first, placement); cursor.observe(first, placement);
+            assertEquals(2, logs.warnings().size()); assertTrue(logs.warnings().get(1).contains("reason=placement RELOCATED_ENDPOINT"));
+            // The other endpoint has its own transition, and an unvisited endpoint keeps the group short of DONE.
+            cursor.observe(second, placement); assertEquals(3, logs.warnings().size());
+            cursor.observe(first, EscrowSettlementPruning.State.DONE); cursor.observe(first, EscrowSettlementPruning.State.DONE);
+            assertEquals(1, logs.infos().size()); assertEquals(placement.text(), cursor.summary(digest, keys));
+            assertEquals("DONE", cursor.summary(digest, List.of(keys.get(0))));
+            cursor.observe(second, EscrowSettlementPruning.State.DONE);
+            assertEquals("DONE", cursor.summary(digest, keys)); assertEquals(2, logs.infos().size()); assertEquals(3, logs.warnings().size());
+        }
+        // States follow the released groups of the acknowledged root and stay bounded by them.
+        cursor.released(new EscrowLedger(root.id(), root.issuedThrough(), root.writerGeneration(), List.of(), List.of(), List.of()));
+        assertEquals("UNVISITED", cursor.summary(digest, keys));
+    }
+
+    static final class Logs extends org.apache.logging.log4j.core.appender.AbstractAppender implements AutoCloseable {
+        private final org.apache.logging.log4j.core.Logger logger = (org.apache.logging.log4j.core.Logger) org.apache.logging.log4j.LogManager.getRootLogger();
+        private final java.util.List<org.apache.logging.log4j.core.LogEvent> events = new java.util.concurrent.CopyOnWriteArrayList<>();
+        Logs() {
+            super("settlement-pruning-diagnostic", null, null, true, org.apache.logging.log4j.core.config.Property.EMPTY_ARRAY);
+            start(); logger.addAppender(this);
+        }
+        @Override public void append(org.apache.logging.log4j.core.LogEvent event) {
+            if (event.getMessage().getFormattedMessage().startsWith("ARCE_ESCROW_PRUNING_")) { events.add(event.toImmutable()); }
+        }
+        List<String> warnings() { return lines(org.apache.logging.log4j.Level.WARN); }
+        List<String> infos() { return lines(org.apache.logging.log4j.Level.INFO); }
+        private List<String> lines(org.apache.logging.log4j.Level level) {
+            return events.stream().filter(event -> event.getLevel() == level).map(event -> event.getMessage().getFormattedMessage()).toList();
+        }
+        @Override public void close() { logger.removeAppender(this); stop(); }
+    }
+
     private static EscrowLedger released(EscrowOperation op) {
         var root = EscrowTestFixtures.ledger(op);
         var observations = EscrowSettlementIntentTest.observations(root, false);
