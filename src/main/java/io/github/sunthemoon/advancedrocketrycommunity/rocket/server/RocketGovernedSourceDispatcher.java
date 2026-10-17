@@ -11,6 +11,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlight
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import java.util.List;
 import net.minecraft.server.MinecraftServer;
 
@@ -27,9 +28,27 @@ final class RocketGovernedSourceDispatcher {
             if (boundary == null || boundary.kind() != RocketTransferBayRecoveryGate.BoundaryKind.UNCLAIMED) { return; }
             afterClassification(EscrowRuntime.of(server).governedFlights().classify(server, journal, record),
                     () -> holds.held(record), () -> RocketTransferEntities.refreshGovernedFlightTickets(server, record),
-                    () -> RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record),
+                    () -> ready(server, record),
                     () -> dispatchLoaded(server, journal, record, bays));
         });
+    }
+
+    /**
+     * W90 (R21 item 2): a recorded end outside the checked column set is a {@code DISCOVERY_MARGIN} hold before any
+     * readiness, execution or refresh. Otherwise the unchanged readiness predicate decides.
+     */
+    private static boolean ready(MinecraftServer server, RocketTransferRecord record) {
+        if (!marginsAdmissible(record)) {
+            EscrowRuntime.of(server).executorHolds().hold(server, record,
+                    io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedExecutorHolds.Reason.DISCOVERY_MARGIN);
+            return false;
+        }
+        return RocketTransferEntities.recoveryEndsAlreadyLoaded(server, record);
+    }
+
+    static boolean marginsAdmissible(RocketTransferRecord record) {
+        return RocketDiscoveryColumns.of(record.sourceSnapshot()).admissible()
+                && RocketDiscoveryColumns.of(record.destinationSnapshot()).admissible();
     }
 
     private static void dispatchLoaded(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,

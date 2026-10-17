@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransf
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPosition;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketStructureSnapshot;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transfer.RocketDiscoveryColumns;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -195,14 +196,33 @@ final class RocketTransferEntities {
         return endAlreadyLoaded(server, record.sourceSnapshot()) && endAlreadyLoaded(server, record.destinationSnapshot());
     }
 
-    private static boolean endAlreadyLoaded(MinecraftServer server, RocketStructureSnapshot snapshot) {
+    /** W90: the checked column set, every column loaded and entity-ticking. Neither predicate alone suffices (R22 S5). */
+    static boolean endAlreadyLoaded(MinecraftServer server, RocketStructureSnapshot snapshot) {
         ServerLevel level = level(server, snapshot.sourceDimension());
-        if (level == null) { return false; }
-        var region = RocketRegion.fromSnapshot(snapshot);
-        int minX = (region.minimum().x() - 1) >> 4, maxX = (region.maximum().x() + 2) >> 4;
-        int minZ = (region.minimum().z() - 1) >> 4, maxZ = (region.maximum().z() + 2) >> 4;
-        return columnsAlreadyLoaded(minX, maxX, minZ, maxZ, (x, z) -> level.areEntitiesLoaded(ChunkPos.asLong(x, z))
-                && level.isPositionEntityTicking(new BlockPos(x << 4, snapshot.sourceOrigin().y(), z << 4)));
+        return level != null && marginReady(snapshot, (x, z) -> columnReady(level, x, z, snapshot.sourceOrigin().y()));
+    }
+
+    /** The readiness predicate over the checked set; the same answer as the pre-W90 formula for every snapshot. */
+    static boolean marginReady(RocketStructureSnapshot snapshot, java.util.function.BiPredicate<Integer, Integer> ready) {
+        var columns = RocketDiscoveryColumns.of(snapshot);
+        return columns.valid() && columnsAlreadyLoaded(columns.minColumnX(), columns.maxColumnX(), columns.minColumnZ(),
+                columns.maxColumnZ(), ready);
+    }
+
+    static boolean columnReady(ServerLevel level, int x, int z, int y) {
+        return level.areEntitiesLoaded(ChunkPos.asLong(x, z)) && level.isPositionEntityTicking(new BlockPos(x << 4, y, z << 4));
+    }
+
+    /** Read-only {@code k/n} over the recorded rectangle, or {@code invalid}; never loads or tickets. */
+    static String marginStatus(MinecraftServer server, RocketStructureSnapshot snapshot) {
+        var columns = RocketDiscoveryColumns.of(snapshot);
+        if (!columns.valid()) { return "invalid"; }
+        ServerLevel level = level(server, snapshot.sourceDimension());
+        int ready = 0;
+        for (var column : columns.columns()) {
+            if (level != null && columnReady(level, column.x, column.z, snapshot.sourceOrigin().y())) { ready++; }
+        }
+        return ready + "/" + columns.count();
     }
 
     /** Skinny snapshots can have a large footprint despite the block bound. Never scan it here. */
@@ -376,15 +396,54 @@ final class RocketTransferEntities {
         loadOrigin(level, snapshot);
     }
 
-    /** Called only after checked ACTIVE classification; never synchronously loads an endpoint. */
-    static void refreshGovernedFlightTickets(MinecraftServer server, RocketTransferRecord record) {
-        if (!server.isSameThread() || record.nativeTransfer().isEmpty()) { return; }
-        var source = level(server, record.sourceSnapshot().sourceDimension());
-        var destination = level(server, record.destinationSnapshot().sourceDimension());
-        if (source == null || destination == null) { return; }
-        // Same two origins, type, level and expiry as legacy flight; no per-footprint ticket expansion.
-        refreshFlightTicket(source, record.sourceSnapshot(), record.transferId());
-        refreshFlightTicket(destination, record.destinationSnapshot(), record.transferId());
+    /**
+     * Called only after checked ACTIVE classification of an unheld record; never synchronously loads an endpoint.
+     * Returns the number of distinct columns ticketed: at most 16 per end and 32 per transfer.
+     */
+    static int refreshGovernedFlightTickets(MinecraftServer server, RocketTransferRecord record) {
+        if (!server.isSameThread() || record.nativeTransfer().isEmpty()) { return 0; }
+        return refreshMargins(record.transferId(), record.sourceSnapshot(), record.destinationSnapshot(), levelTickets(server));
+    }
+
+    /**
+     * W90 (R21 item 1), an explicit change of the two-origin budget: one ticket on each column of each recorded end's
+     * checked set, the origin among them. Nothing unless both Levels exist and both ends are admissible; a recorded end
+     * that is not is a {@code DISCOVERY_MARGIN} hold, which never reaches a refresh.
+     */
+    static int refreshMargins(UUID transfer, RocketStructureSnapshot source, RocketStructureSnapshot destination,
+                              FlightTickets tickets) {
+        var ends = List.of(source, destination);
+        for (var snapshot : ends) {
+            if (!tickets.present(snapshot.sourceDimension()) || !RocketDiscoveryColumns.of(snapshot).admissible()) { return 0; }
+        }
+        var refreshed = new java.util.LinkedHashSet<java.util.Map.Entry<ResourceLocation, ChunkPos>>();
+        for (var snapshot : ends) {
+            for (var column : RocketDiscoveryColumns.of(snapshot).refreshSet()) {
+                if (refreshed.add(java.util.Map.entry(snapshot.sourceDimension(), column))) {
+                    tickets.add(snapshot.sourceDimension(), column, transfer);
+                }
+            }
+        }
+        return refreshed.size();
+    }
+
+    /** The flight-ticket calls of one Level, keyed by its dimension; a recording sink in unit tests. */
+    interface FlightTickets {
+        boolean present(ResourceLocation dimension);
+        void add(ResourceLocation dimension, ChunkPos column, UUID transfer);
+        void remove(ResourceLocation dimension, ChunkPos column, UUID transfer);
+    }
+
+    private static FlightTickets levelTickets(MinecraftServer server) {
+        return new FlightTickets() {
+            @Override public boolean present(ResourceLocation dimension) { return level(server, dimension) != null; }
+            @Override public void add(ResourceLocation dimension, ChunkPos column, UUID transfer) {
+                level(server, dimension).getChunkSource().addRegionTicket(FLIGHT_TICKET, column, FLIGHT_TICKET_LEVEL, transfer);
+            }
+            @Override public void remove(ResourceLocation dimension, ChunkPos column, UUID transfer) {
+                level(server, dimension).getChunkSource().removeRegionTicket(FLIGHT_TICKET, column, FLIGHT_TICKET_LEVEL, transfer);
+            }
+        };
     }
 
     private static void refreshFlightTicket(ServerLevel level, RocketStructureSnapshot snapshot, UUID transferId) {
@@ -411,12 +470,18 @@ final class RocketTransferEntities {
     /** F8's explicit release; expiry is only a backstop, never its acknowledgement. No chunk loads. */
     static void releaseFlightTickets(MinecraftServer server, RocketTransferRecord record) {
         if (!server.isSameThread()) { throw new IllegalStateException("Flight ticket release requires the server thread"); }
-        for (var snapshot : List.of(record.sourceSnapshot(), record.destinationSnapshot())) {
-            var level = level(server, snapshot.sourceDimension());
-            if (level == null) { continue; }
-            var origin = snapshot.sourceOrigin();
-            level.getChunkSource().removeRegionTicket(FLIGHT_TICKET, new ChunkPos(origin.x() >> 4, origin.z() >> 4),
-                    FLIGHT_TICKET_LEVEL, record.transferId());
+        releaseMargins(record.transferId(), record.sourceSnapshot(), record.destinationSnapshot(), levelTickets(server));
+    }
+
+    /** Each end's release set in its own Level: the origin always, plus the checked set of an admissible end. */
+    static void releaseMargins(UUID transfer, RocketStructureSnapshot source, RocketStructureSnapshot destination,
+                               FlightTickets tickets) {
+        for (var snapshot : List.of(source, destination)) {
+            // An absent Level holds no tickets; the other end is still released.
+            if (!tickets.present(snapshot.sourceDimension())) { continue; }
+            for (var column : RocketDiscoveryColumns.of(snapshot).releaseSet()) {
+                tickets.remove(snapshot.sourceDimension(), column, transfer);
+            }
         }
     }
 
