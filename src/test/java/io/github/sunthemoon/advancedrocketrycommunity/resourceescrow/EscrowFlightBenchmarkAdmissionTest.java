@@ -18,12 +18,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Diagnostic for the native benchmark's first coalesced F1/F2 callback failure; no proof is bypassed. */
+/**
+ * The native benchmark's first coalesced F1/F2 callback failure (continuation 45): before R17 item 3 the first F2
+ * publication revoked every other callback's journal-wide checked no-T. Under the per-rocket lease each callback
+ * publishes its own F2 record and the others keep theirs; a rocket's own record still refuses it. No proof is bypassed.
+ */
 class EscrowFlightBenchmarkAdmissionTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path directory;
 
-    @Test void firstF2PublicationInvalidatesTheOtherSevenCoalescedCallbacksUntilJournalAcknowledgement() throws Exception {
+    @Test void eachCoalescedCallbackPublishesItsOwnF2WithoutRevokingTheOthers() throws Exception {
         var journal = new RocketTransferSavedData();
         var file = directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName());
         try {
@@ -56,18 +60,22 @@ class EscrowFlightBenchmarkAdmissionTest {
             for (int i = 0; i < 8; i++) {
                 launches.get(i).afterArm(acknowledged, acknowledged.armedFlights().get(i), sources.get(i), journal);
             }
-            var first = launches.get(0).afterArm(acknowledged, acknowledged.armedFlights().get(0), sources.get(0), journal);
-            journal.put(first);
-            assertFalse(journal.acknowledgedCurrent());
-            for (int i = 1; i < 8; i++) {
+            for (int i = 0; i < 8; i++) {
                 var launch = launches.get(i); var source = sources.get(i); var arm = acknowledged.armedFlights().get(i);
+                var record = assertDoesNotThrow(() -> launch.afterArm(acknowledged, arm, source, journal),
+                        "Another rocket's unacknowledged F2 record revoked this callback's checked no-T");
+                journal.put(record);
+                assertFalse(journal.acknowledgedCurrent());
+                // L's own unacknowledged record names T, so the same callback is never checked no-T again.
                 var refused = assertThrows(IllegalArgumentException.class, () -> launch.afterArm(acknowledged, arm, source, journal));
                 assertEquals("F1 callback lost its acknowledged arm, exact source or checked no-T state", refused.getMessage());
             }
-            assertEquals(1, journal.entries().size()); assertEquals(8, acknowledged.armedFlights().size());
+            assertEquals(8, journal.entries().size()); assertEquals(8, acknowledged.armedFlights().size());
             EscrowArmedRestartBoundaryTest.acknowledge(journal, file);
-            assertDoesNotThrow(() -> launches.get(1).afterArm(acknowledged, acknowledged.armedFlights().get(1), sources.get(1), journal));
-            assertEquals(1, journal.entries().size(), "Re-observation itself must not publish F2");
+            assertThrows(IllegalArgumentException.class,
+                    () -> launches.get(1).afterArm(acknowledged, acknowledged.armedFlights().get(1), sources.get(1), journal),
+                    "An acknowledged F2 record still names T");
+            assertEquals(8, journal.entries().size(), "Re-observation itself must not publish F2");
         } finally { journal.stop(); }
     }
 }
