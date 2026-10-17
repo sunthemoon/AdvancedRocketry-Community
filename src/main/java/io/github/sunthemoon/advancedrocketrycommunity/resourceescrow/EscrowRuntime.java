@@ -57,6 +57,7 @@ public final class EscrowRuntime {
     private EscrowDestinationProbe destinationProbe;
     private EscrowPhaseProbe phaseProbe;
     private volatile EscrowTerminalProbe terminalProbe;
+    private volatile EscrowLoaderReleaseProbe loaderProbe;
     private volatile java.util.function.Consumer<String> terminalTestCut;
     void terminalCutForTests(MinecraftServer server, java.util.function.Consumer<String> cut) {
         EscrowTestEndpoints.requireEnabled(server);
@@ -152,6 +153,7 @@ public final class EscrowRuntime {
         var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
+        var loader = loaderProbe; if (loader != null) { loader.checkpoint(cut); }
         if (returnProbe != null) { returnProbe.checkpoint(cut); }
         if (phaseProbe != null) { phaseProbe.checkpoint(cut); }
         if (destinationProbe != null) { destinationProbe.checkpoint(cut); }
@@ -306,6 +308,9 @@ public final class EscrowRuntime {
             } else if (testCase.startsWith("CR_")) {
                 if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
                 runtime.reconciliationProbe.tick();
+            } else if (testCase.startsWith(EscrowLoaderReleaseProbe.PREFIX)) {
+                if (runtime.loaderProbe == null) { runtime.loaderProbe = new EscrowLoaderReleaseProbe(event.getServer()); }
+                runtime.loaderProbe.tick();
             } else if (testCase.startsWith("FT_")) {
                 if (runtime.terminalProbe == null) { runtime.terminalProbe = new EscrowTerminalProbe(event.getServer()); }
                 runtime.terminalProbe.tick();
@@ -345,6 +350,15 @@ public final class EscrowRuntime {
                 runtime.probe.tick();
             }
         }
+    }
+    /** W95's native restart fixture inspects the START of the first tick, before level ticking can bind a ledger lazily. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST) public static void loaderProbeStart(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.START || !Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                || System.getProperty("advancedrocketrycommunity.escrowScenario") == null
+                || !System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith(EscrowLoaderReleaseProbe.PREFIX)) { return; }
+        var runtime = of(event.getServer()); if (runtime.stopping) { return; }
+        if (runtime.loaderProbe == null) { runtime.loaderProbe = new EscrowLoaderReleaseProbe(event.getServer()); }
+        runtime.loaderProbe.startTick();
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void benchmarkStart(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
