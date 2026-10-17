@@ -37,6 +37,18 @@ class RocketJournalFailurePolicyTest {
         assertTrue(RocketJournalFailurePolicy.reject("ADVANCEMENT", root(null, 0), root(RocketTransferPhase.PREPARED, 1)));
     }
 
+    /** W85 K9 and K1: only a write that drops a COMMITTED record still on disk is a landed removal. */
+    @Test void landedRemovalRefusesOnlyTheDropOfACommittedRecordOnDisk() {
+        var landed = withId(root(RocketTransferPhase.COMMITTED, 1), 0);
+        var prepared = withId(root(RocketTransferPhase.PREPARED, 1), 0);
+        assertTrue(RocketJournalFailurePolicy.reject("LANDED_REMOVAL", root(null, 0), landed));
+        assertTrue(RocketJournalFailurePolicy.landedRemoval(withId(root(RocketTransferPhase.PREPARED, 1), 1), landed));
+        assertFalse(RocketJournalFailurePolicy.reject("LANDED_REMOVAL", landed, landed), "A write-back keeps T");
+        assertFalse(RocketJournalFailurePolicy.reject("LANDED_REMOVAL", root(null, 0), null), "No previous file");
+        assertFalse(RocketJournalFailurePolicy.reject("LANDED_REMOVAL", root(null, 0), prepared), "Not a landed record");
+        assertFalse(RocketJournalFailurePolicy.reject("LANDED_REMOVAL", landed, root(null, 0)), "An admission");
+    }
+
     @Test void missingLiveServerCannotEnableFaultsEvenWithThePropertiesSet() {
         String old = System.getProperty(RocketJournalFailurePolicy.PROPERTY);
         String oldHooks = System.getProperty(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.HOOKS);
@@ -51,6 +63,11 @@ class RocketJournalFailurePolicyTest {
             else { System.setProperty(io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowTestEndpoints.HOOKS, oldHooks); }
         }
         assertThrows(IllegalArgumentException.class, () -> RocketJournalFailurePolicy.reject("other", root(null, 0), null));
+    }
+
+    private static CompoundTag withId(CompoundTag root, long id) {
+        root.getList("transfers", 10).getCompound(0).putUUID("transfer_id", new java.util.UUID(0x85L, id));
+        return root;
     }
 
     private static CompoundTag root(RocketTransferPhase phase, int count) {
