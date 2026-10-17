@@ -255,6 +255,12 @@ def restart(args, session: Path, evidence: Path, case: str, number: int, landed:
             if any(recovered.search(line) for line in process.lines):
                 break
             time.sleep(1)
+        # A rebuilt arrival replays its descent; stop only once it has landed again, so that both restarts save
+        # the same settled entity rather than one taken mid-descent.
+        descending = re.compile(rf"ARCE_ROCKET_ENTITY_ACTIVE entity={re.escape(landed['entity'])} .*flight_state=DESCENT")
+        if any(descending.search(line) for line in process.lines):
+            process.wait_for(re.compile(rf"ARCE_TRANSFER_PHASE transfer={re.escape(landed['transfer'])} "
+                                        r".*event=landed_reservation_retained "), 120)
         time.sleep(3)
         code = stop(process)
         if code != 0:
@@ -266,7 +272,7 @@ def restart(args, session: Path, evidence: Path, case: str, number: int, landed:
         raise
 
 
-def run_case(args, session: Path, evidence: Path, case: str) -> dict:
+def run_case(args, session: Path, evidence: Path, case: str, report: dict) -> dict:
     spec = CASES[case]
     properties = smoke.expected_server_properties(args.port, True)
     properties.update({"level-name": "world-" + case, "level-type": "minecraft:flat", "max-tick-time": "60000",
@@ -277,6 +283,7 @@ def run_case(args, session: Path, evidence: Path, case: str) -> dict:
     harness = FlightHarness(java=args.java, server=session, port=args.port, expected_version=args.expected_version,
                             startup_timeout=args.startup_timeout)
     row = dict(case=case, outcome=spec["outcome"], saved=spec["saved"], cut=spec["stop"], restarts=[])
+    report["in_progress"] = row
     process = start(args, session, evidence, f"{case}-cut", spec["properties"])
     try:
         landed = fly_and_land(harness, process)
@@ -334,8 +341,10 @@ def run_case(args, session: Path, evidence: Path, case: str) -> dict:
             check_expected(case, state, obstruction)
             states.append(state)
             row["restarts"].append(dict(result, disk=state))
-        if comparable(states[0]) != comparable(states[1]):
-            raise smoke.SmokeError(f"{case}: the second restart changed the raw state")
+        first, second = comparable(states[0]), comparable(states[1])
+        if first != second:
+            changed = sorted(key for key in first if first[key] != second[key])
+            raise smoke.SmokeError(f"{case}: the second restart changed the raw state in {changed}")
         row["status"] = "PASS"
         return row
     finally:
@@ -373,7 +382,8 @@ def run(args) -> dict:
         args.port = smoke.allocate_port()
         smoke.write_server_configuration(session, args.port, True)
         for case in args.case or list(CASES):
-            row = run_case(args, session, evidence, case)
+            row = run_case(args, session, evidence, case, report)
+            report.pop("in_progress", None)
             report["cases"].append(row)
             print(f"{case}: PASS ({row['outcome']})", flush=True)
             shutil.rmtree(session / ("world-" + case), ignore_errors=True)
