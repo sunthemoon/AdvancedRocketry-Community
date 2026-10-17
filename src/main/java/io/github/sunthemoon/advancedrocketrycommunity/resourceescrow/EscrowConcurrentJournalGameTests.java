@@ -35,7 +35,7 @@ public final class EscrowConcurrentJournalGameTests {
         final RocketTransferSavedData journal = new RocketTransferSavedData();
         final RocketEntity[] sources = new RocketEntity[2];
         final RocketTransferRecord[] records = new RocketTransferRecord[2];
-        final EscrowGovernedSourceFlight sourceFlight = new EscrowGovernedSourceFlight();
+        final EscrowGovernedSourceFlight sourceFlight;
         final EscrowGovernedDestination destination = new EscrowGovernedDestination();
         final GameTestTickPacer pacer;
         ResourceEscrowSavedData previous, data;
@@ -43,23 +43,28 @@ public final class EscrowConcurrentJournalGameTests {
         Path directory, file;
         int stage, waits, rises;
         boolean closed, swapped;
-        Scenario(GameTestHelper helper) { this.helper = helper; pacer = new GameTestTickPacer(helper.getLevel().getServer()); }
+        Scenario(GameTestHelper helper) {
+            this.helper = helper; pacer = new GameTestTickPacer(helper.getLevel().getServer());
+            sourceFlight = EscrowRuntime.of(helper.getLevel().getServer()).sourceFlights();
+        }
         void start() { helper.onEachTick(this::tick); }
         void tick() {
             if (closed) { return; }
             try {
                 helper.assertTrue(++waits < 600, "Governed concurrency fixture exceeded its bounded wait");
                 var server = helper.getLevel().getServer();
+                if (data != null) { installLedger(); }
                 if (stage == 0) { setup(); }
                 else if (stage == 1) {
+                    var decision = EscrowRuntime.of(server).governedFlights().classify(server, journal, records[0]);
+                    helper.assertTrue(decision.route() == EscrowGovernedDispatch.Route.ACTIVE,
+                            "Checked fixture arm was not active: " + decision.reason());
                     var result = sourceFlight.tick(server, journal, records[0], sources[0], () -> true);
                     helper.assertTrue(result != EscrowGovernedSourceFlight.Result.HELD, "First governed source was held before F4");
                     if (result == EscrowGovernedSourceFlight.Result.DESTINATION_DUE) {
                         journal.setDirty(); held = RocketJournalSchedulingGameTestSupport.hold(helper, journal, file); stage = 2;
                     }
                 } else if (stage == 2 && held.entered()) {
-                    // F4 uses the runtime's source-clock binding; establish it against the same exact source.
-                    EscrowRuntime.of(server).sourceFlights().tick(server, journal, records[0], sources[0], () -> true);
                     destination.tick(server, journal, records[0], sources[0], (record, source, arrival) -> true);
                     helper.assertTrue(journal.find(records[0].transferId()).orElseThrow().phase() == RocketTransferPhase.DESTINATION_SPAWNED
                             && journal.outstandingEffectCount() == 1, "F4 did not queue its real destination continuation");
@@ -95,6 +100,7 @@ public final class EscrowConcurrentJournalGameTests {
                 if (!closed) { pacer.pace(); }
             } catch (java.io.IOException failure) { close(); throw new java.io.UncheckedIOException(failure); }
             catch (RuntimeException | Error failure) { close(); throw failure; }
+            finally { restoreLedger(); }
         }
         void setup() throws java.io.IOException {
             var level = helper.getLevel(); var server = level.getServer();
@@ -123,29 +129,45 @@ public final class EscrowConcurrentJournalGameTests {
                 var prepared = EscrowGovernedLaunch.prepare(root, EscrowGovernedEnvelope.capture(rocket), from,
                         rocket.flightData().orElseThrow().withPlan(plan).startCountdown(now), to, UUID.randomUUID(),
                         new EscrowGuard(guard.logical(), null, guard.sequence(), guard.rootDigest()));
-                root = prepared.preflight(root, root.writerGeneration() + 1);
+                long generation = root.writerGeneration() + 1;
+                root = prepared.preflight(root, generation).generation(generation);
                 var arm = root.armedFlights().stream().filter(value -> value.logical().equals(base.logicalRocketId())).findFirst().orElseThrow();
                 records[i] = prepared.record(arm); journal.put(records[i]);
+                helper.assertTrue(EscrowGovernedDispatch.decide(root, records[i]).route() == EscrowGovernedDispatch.Route.ACTIVE,
+                        "Prepared fixture arm lacks its matching checked generation");
             }
             var ledgerFile = directory.resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName()); var checkedRoot = root;
             CheckedSavedDataFile.replace(ledgerFile, ManagedSavedDataType.RESOURCE_ESCROW, () -> EscrowCodec.encode(checkedRoot));
             data = ResourceEscrowSavedData.load(CheckedSavedDataFile.readPayload(ledgerFile, ManagedSavedDataType.RESOURCE_ESCROW).orElseThrow());
             var writer = new EscrowLedgerWriter(ledgerFile, root.writerGeneration()); writer.baseline(data.ledger());
             data.attach(new EscrowCoordinator(data, writer), () -> true);
-            server.overworld().getDataStorage().set(ManagedSavedDataType.RESOURCE_ESCROW.dataName(), data); swapped = true;
+            installLedger();
             for (var rocket : sources) { helper.assertTrue(level.addFreshEntity(rocket), "Governed source was not published"); }
             RocketJournalGameTestSupport.confirmDetached(helper, journal, file); stage = 1;
         }
+        void installLedger() {
+            // Only this callback consumes the detached root. END's world-journal orphan scan must not see it.
+            var storage = helper.getLevel().getServer().overworld().getDataStorage();
+            previous = ResourceEscrowSavedData.existing(helper.getLevel().getServer());
+            storage.set(ManagedSavedDataType.RESOURCE_ESCROW.dataName(), data); swapped = true;
+        }
+        void restoreLedger() {
+            if (swapped) {
+                helper.getLevel().getServer().overworld().getDataStorage().set(ManagedSavedDataType.RESOURCE_ESCROW.dataName(), previous);
+                swapped = false;
+            }
+        }
         void close() {
             if (closed) { return; } closed = true; if (held != null) { held.close(); }
-            destination.close(); sourceFlight.clear(); journal.abort();
+            destination.close(); journal.abort();
             for (var record : records) { if (record != null) {
+                sourceFlight.completed(record.nativeTransfer().orElseThrow().armed());
                 var arrival = helper.getLevel().getEntity(record.nativeTransfer().orElseThrow().armed().destination());
                 if (arrival != null) { arrival.discard(); }
             } }
             for (var source : sources) { if (source != null) { source.discard(); } }
             if (data != null) { data.abort(); }
-            if (swapped) { helper.getLevel().getServer().overworld().getDataStorage().set(ManagedSavedDataType.RESOURCE_ESCROW.dataName(), previous); }
+            restoreLedger();
             if (directory != null) {
                 try (var paths = Files.walk(directory)) {
                     for (var path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) { Files.delete(path); }
