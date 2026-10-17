@@ -31,7 +31,7 @@ GENERATION_PHASES = {"generation_capture_main", "generation_encode_main", "gener
 REQUIRED_PHASES = {"capture_main", "ledger_capture_main", "ledger_io", "force_io", "readback_io",
                    "allocation_bytes", "tick_main", "tick_main_nonsave", "ordinary_start_to_c8", "flight_handoff_latency",
                    "autosave_main", "flight_writer_queue_age"} | GENERATION_PHASES
-FLIGHT_POINTS = ("F1_ARM_ACK", "F2_PREPARED_ACK", "F2_COUNTDOWN", "F4_DESTINATION_ACK", "F4_PUBLICATION_AFTER",
+FLIGHT_POINTS = ("F1_ARM_ACK", "BENCH_F2_ACKNOWLEDGED", "BENCH_COUNTDOWN_OBSERVED", "F4_DESTINATION_ACK", "F4_PUBLICATION_AFTER",
                  "F5_SOURCE_REMOVAL_AFTER", "F6_LANDED", "F7_ACK", "F8_JOURNAL_ACK", "F8_PRUNE_ACK")
 
 
@@ -120,7 +120,7 @@ def read_samples(path: Path) -> tuple[dict, dict]:
 def coverage(load: dict, phases: dict, generations: dict, restart: bool) -> list[str]:
     """Missing proof is not a performance pass, even if every reported tick meets a limit."""
     gaps = []
-    exact = dict(schema_version=1, players=2, active_oxygen=16, stations=10, satellite_tasks=100,
+    exact = dict(schema_version=1, players=2, active_oxygen=16, active_providers=16, stations=10, satellite_tasks=100,
                  flights_completed=8, peak_concurrent=8, assembly_blocks=2048, dimension_transfers=8)
     for name, value in exact.items():
         if type(load.get(name)) is not int or load[name] != value:

@@ -10,7 +10,7 @@ import run_v180_governed_benchmark as runner
 
 class GovernedBenchmarkTest(unittest.TestCase):
     def proof(self):
-        load = dict(schema_version=1, players=2, active_oxygen=16, stations=10, satellite_tasks=100,
+        load = dict(schema_version=1, players=2, active_oxygen=16, active_providers=16, stations=10, satellite_tasks=100,
                     flights_completed=8, peak_concurrent=8, assembly_blocks=2048, dimension_transfers=8,
                     ticks=1400, player_tick_delta=2800, periodic_saves=7, ordinary_retired=True, root_encode_bytes=1048576,
                     generation_topology={"1": dict(records=0, floors=0, receipts=1, heads=8, armed=0)},
@@ -26,7 +26,7 @@ class GovernedBenchmarkTest(unittest.TestCase):
     def test_complete_evidence_and_each_required_load_counter(self):
         args = self.proof()
         self.assertEqual([], runner.coverage(*args, True))
-        for key in ("players", "player_tick_delta", "active_oxygen", "stations", "satellite_tasks", "flights_completed",
+        for key in ("players", "player_tick_delta", "active_oxygen", "active_providers", "stations", "satellite_tasks", "flights_completed",
                     "peak_concurrent", "assembly_blocks", "dimension_transfers", "ticks", "periodic_saves"):
             bad = copy.deepcopy(args); bad[0][key] = 0
             self.assertIn("load:" + key, runner.coverage(*bad, True))
@@ -39,6 +39,14 @@ class GovernedBenchmarkTest(unittest.TestCase):
             self.assertIn("checkpoint:" + point, runner.coverage(bad, phases, generations, True))
         phases.pop("root_1mib_encode_main")
         self.assertIn("1 MiB root encode", runner.coverage(load, phases, generations, True))
+
+    def test_f2_requires_eight_checked_countdowns_even_when_callbacks_overflow(self):
+        load, phases, generations = self.proof()
+        load["checkpoints"].update(F2_PREPARED_ACK=2, F2_COUNTDOWN=2)
+        self.assertEqual([], runner.coverage(load, phases, generations, True))
+        for point in ("BENCH_F2_ACKNOWLEDGED", "BENCH_COUNTDOWN_OBSERVED"):
+            bad = copy.deepcopy(load); bad["checkpoints"][point] = 7
+            self.assertIn("checkpoint:" + point, runner.coverage(bad, phases, generations, True))
 
     def test_no_pruning_generation_can_be_silently_omitted_from_accounting(self):
         load, phases, generations = self.proof()
