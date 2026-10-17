@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeR
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -40,10 +41,21 @@ public final class EscrowLoaderAdmission {
      * named, and a gated release dedicated server (hooks, no RCON, only test-owned players) opens it by {@link #SWITCH}.
      */
     public static boolean enabled(MinecraftServer server, UUID device) {
-        if (EscrowCoordinator.PRODUCTION_ADMISSION) { return true; }
-        if (!server.isSameThread() || !EscrowTestEndpoints.enabled(server)) { return false; }
-        return Boolean.getBoolean(EscrowTestEndpoints.HOOKS) && Boolean.getBoolean(SWITCH)
-                || EscrowRuntime.of(server).loaderAdmissionAllowed(device);
+        return switchOpen(EscrowCoordinator.PRODUCTION_ADMISSION, server.isSameThread(), () -> EscrowTestEndpoints.enabled(server),
+                Boolean.getBoolean(EscrowTestEndpoints.HOOKS), Boolean.getBoolean(SWITCH),
+                () -> EscrowRuntime.of(server).loaderAdmissionAllowed(device));
+    }
+
+    /**
+     * The switch's decision (W95-R4), pure so that every combination is pinned: on the owner thread, the release-test
+     * gate, and then either both properties or a device that a GameTest hook named. Neither property opens anything
+     * without the gate, and the gate alone opens nothing. The gate is read only on the owner thread, and the device set
+     * only behind the gate.
+     */
+    static boolean switchOpen(boolean production, boolean ownerThread, BooleanSupplier gate, boolean hooks, boolean property,
+                              BooleanSupplier device) {
+        if (production) { return true; }
+        return ownerThread && gate.getAsBoolean() && (hooks && property || device.getAsBoolean());
     }
 
     /** prepareFill's typed results as player status; every member but QUEUED is a refusal that changed nothing. */

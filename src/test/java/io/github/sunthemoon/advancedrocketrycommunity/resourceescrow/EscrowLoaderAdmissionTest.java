@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 
 /**
- * W11b3 B3-E: prepareFill's typed results as player status, the device progress, the disabled production switch
- * and the fair queue.
+ * W11b3 B3-E: prepareFill's typed results as player status, the device progress, the gated switch, the disabled
+ * production switch and the fair queue.
  */
 class EscrowLoaderAdmissionTest {
     @Test void everyPrepareFillResultHasOneStatusAndOnlyQueuedIsProgress() {
@@ -86,6 +87,36 @@ class EscrowLoaderAdmissionTest {
         assertEquals(FluidFuelLoaderStatus.PREPARING, EscrowLoaderAdmission.progress(false, false, true, false, false, true));
         assertEquals(FluidFuelLoaderStatus.ESCROW_PENDING, EscrowLoaderAdmission.progress(true, true, true, false, false, true));
         assertEquals(FluidFuelLoaderStatus.TRANSFERRING, EscrowLoaderAdmission.progress(true, true, true, false, false, false));
+    }
+
+    /** W95-R4: all 32 combinations of (owner thread, release-test gate, hooks property, switch property, named device). */
+    @Test void theSwitchStaysClosedWithoutTheReleaseTestGateWhateverThePropertiesOrDevices() {
+        int open = 0;
+        for (int bits = 0; bits < 32; bits++) {
+            boolean ownerThread = (bits & 1) != 0, gate = (bits & 2) != 0, hooks = (bits & 4) != 0;
+            boolean property = (bits & 8) != 0, device = (bits & 16) != 0;
+            var gateRead = new AtomicBoolean(); var deviceRead = new AtomicBoolean();
+            boolean result = EscrowLoaderAdmission.switchOpen(false, ownerThread, () -> { gateRead.set(true); return gate; }, hooks, property,
+                    () -> { deviceRead.set(true); return device; });
+            String label = "ownerThread=" + ownerThread + " gate=" + gate + " hooks=" + hooks + " property=" + property + " device=" + device;
+            if (!ownerThread || !gate) {
+                assertFalse(result, "Nothing opens without the owner thread and the release-test gate: " + label);
+                assertFalse(deviceRead.get(), "The device set is read only behind the gate: " + label);
+                if (!ownerThread) { assertFalse(gateRead.get(), "The gate is read only on the owner thread: " + label); }
+            } else {
+                // Behind the gate: both properties together, or a device that a GameTest hook named.
+                assertEquals(hooks && property || device, result, label);
+            }
+            if (result) { open++; }
+        }
+        assertEquals(5, open, "Only the gate with both properties (2 combinations) or a named device (4) opens, less their 1 overlap");
+        // The switch property alone, the hooks property alone and the gate alone open nothing.
+        assertFalse(EscrowLoaderAdmission.switchOpen(false, true, () -> false, true, true, () -> true));
+        assertFalse(EscrowLoaderAdmission.switchOpen(false, true, () -> true, false, true, () -> false));
+        assertFalse(EscrowLoaderAdmission.switchOpen(false, true, () -> true, true, false, () -> false));
+        assertFalse(EscrowLoaderAdmission.switchOpen(false, true, () -> true, false, false, () -> false));
+        // The production constant is the only lever that needs no gate, and it is false.
+        assertTrue(EscrowLoaderAdmission.switchOpen(true, false, () -> false, false, false, () -> false));
     }
 
     @Test void theFairQueueVisitsInArrivalOrderOncePerDeviceWithOneCapturePerTick() {
