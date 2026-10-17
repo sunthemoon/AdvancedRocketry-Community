@@ -1,8 +1,10 @@
 package io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.loader;
 
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowLoaderAdmission;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.fuel.RocketFluidFuelRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.travel.model.TravelTarget;
@@ -16,9 +18,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Design section 2's eligibility, as far as this leaf reaches: the exact binding, the rocket's state and both resource
- * layers, then the side-effect-free bank selection. Nothing loads a chunk, scans for a nearest rocket, captures,
- * reserves or moves anything; where a fill would start, admission is disabled.
+ * Design section 2, step 1: the exact binding, the rocket's state and both resource layers, then the side-effect-free
+ * bank selection. Nothing here loads a chunk, scans for a nearest rocket, captures, reserves or moves anything; the
+ * fair queue's capture repeats the bank selection against the rocket projected through any pending prefix.
  */
 final class LoaderEligibility {
     /** Design section 2: the rocket is within 6 blocks of the device. */
@@ -71,23 +73,37 @@ final class LoaderEligibility {
 
     /** One attempt's result: a refusal, or ADMISSION_DISABLED where a fill would start. */
     static FluidFuelLoaderStatus check(ServerLevel level, BlockPos device, LoaderRoot root) {
+        FluidFuelLoaderStatus status = evaluate(level, device, root).refusal();
+        return status == null ? FluidFuelLoaderStatus.ADMISSION_DISABLED : status;
+    }
+
+    /**
+     * Every eligibility check a fill needs; a null refusal means the bound rocket is ready. A same-direction chain,
+     * whose earlier markers make the rocket not idle, passes only the coordinator's prefix check and then the service
+     * layer's other interlocks; nothing else is relaxed.
+     */
+    static Resolved evaluate(ServerLevel level, BlockPos device, LoaderRoot root) {
         Resolved resolved = resolve(level, device, root);
         if (resolved.refusal() != null) {
-            return resolved.refusal();
+            return resolved;
         }
         RocketEntity rocket = resolved.rocket();
         if (!stationary(rocket) || occupied(rocket)) {
-            return FluidFuelLoaderStatus.ROCKET_BUSY;
+            return Resolved.refused(FluidFuelLoaderStatus.ROCKET_BUSY);
         }
-        if (!RocketEscrowGate.idle(rocket)) {
-            return FluidFuelLoaderStatus.ESCROW_PENDING;
-        }
-        if (!RocketRuntime.resourceMutationAllowed(rocket)) {
-            return FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED;
+        if (RocketEscrowGate.idle(rocket)) {
+            if (!RocketRuntime.resourceMutationAllowed(rocket)) {
+                return Resolved.refused(FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED);
+            }
+        } else if (!EscrowLoaderAdmission.chainable(rocket)) {
+            return Resolved.refused(FluidFuelLoaderStatus.ESCROW_PENDING);
+        } else if (!RocketRuntime.escrowReconciliationBoundary(rocket) || RocketTransferSavedData.get(level.getServer())
+                .resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow())) {
+            return Resolved.refused(FluidFuelLoaderStatus.TRANSFER_JOURNAL_UNPROVED);
         }
         BankSelection.Result plan = BankSelection.plan(rocket.flightData().orElseThrow().fuel().propulsion().orElse(null),
                 RocketFluidFuelRuntime.capture(), root.tank());
-        return plan.status() == FluidFuelLoaderStatus.READY ? FluidFuelLoaderStatus.ADMISSION_DISABLED : plan.status();
+        return plan.status() == FluidFuelLoaderStatus.READY ? resolved : Resolved.refused(plan.status());
     }
 
     /** A FULL chunk with loaded entity sections; never a load. */
