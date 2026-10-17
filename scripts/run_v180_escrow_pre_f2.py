@@ -52,7 +52,22 @@ def require_governed_record(transfer: dict, arm: dict) -> None:
         raise smoke.SmokeError("Governed pre-F2 fixture changed its record versions or exact authority")
 
 
-def inspect(world: Path, cut: str, restarted: bool) -> dict:
+def crewed_cancellation(cut: str, crewed: bool) -> bool:
+    return crewed and cut in ("PF_ARM_REPLACED", "PF_ARM_ACK")
+
+
+def recovery_outcome(cut: str, crewed: bool) -> str:
+    if crewed_cancellation(cut, crewed):
+        return "CANCELLED_CLEANED"
+    return "UNARMED" if cut == "PF_ARM_BEFORE" else "ARMED" if has_transfer(cut) else "CANCELLED"
+
+
+def require_unchanged_source(disk: dict, before: dict) -> None:
+    if disk["source"] != before["source"]:
+        raise smoke.SmokeError("Restart changed checkpointed E")
+
+
+def inspect(world: Path, cut: str, restarted: bool, crewed: bool = False) -> dict:
     root = ledger(world / "data" / LEDGER)
     transfers = journal(world)["transfers"]
     entities = record(world / "entities/r.0.0.mca")["Entities"]
@@ -63,10 +78,11 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
     data = source["RocketEntityData"]
     wrapper, flight = data["resource_escrow"], data["flight_data"]
     before, has_t = cut == "PF_ARM_BEFORE", has_transfer(cut)
+    cleaned = restarted and crewed_cancellation(cut, crewed)
     expected = "CANCELLED" if restarted and not has_t else "ARMED"
     arms = root["armed_flights"]
     if (root["records"] or root["floors"] or root["tombstones"] or root["rocket_authorities"]
-            or root["issued_launch_serial"] != int(not before) or len(arms) != int(not before)
+            or root["issued_launch_serial"] != int(not before) or len(arms) != int(not before and not cleaned)
             or len(transfers) != int(has_t)):
         raise smoke.SmokeError("Wrong F1 ledger or checked journal boundary")
     if arms and (arms[0]["outcome"] != expected or arms[0]["serial"] != 1 or arms[0]["src"] != source["UUID"]
@@ -78,6 +94,8 @@ def inspect(world: Path, cut: str, restarted: bool) -> dict:
             or len(flight["passengers"]["assignments"]) != 1 or "active_transfer_id" in flight
             or source["Pos"] != [64.5, 100., 64.5]):
         raise smoke.SmokeError("F1 lost or changed its native source frontier")
+    if cleaned and (flight.get("state") != "FUELED" or "plan" in flight):
+        raise smoke.SmokeError("Crewed pre-F2 source is not idle after cleanup")
     if transfers and transfers[0]["transfer_id"] != arms[0]["t"]:
         raise smoke.SmokeError("Negative case lost T")
     if governed_transfer(cut):
@@ -134,6 +152,8 @@ def run(args) -> dict:
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowCase=" + cut)
                 if args.crewed:
                     command.insert(1, "-Dadvancedrocketrycommunity.escrowCrewed=true")
+                    if crewed_cancellation(cut, True):
+                        command.insert(1, "-Dadvancedrocketrycommunity.escrowPreF2Restart=" + str(restart))
                 row.setdefault("starts", []).append(dict(restart=restart, command=command, free_bytes=free, lock_owner=args.lock_owner))
                 process = smoke.CapturedProcess(command, session, evidence / f"{cut}-{restart}.log")
                 if restart == 0:
@@ -141,17 +161,20 @@ def run(args) -> dict:
                     if args.crewed and not any("ARCE_RELEASE_CREWED_F1 cut=" + cut in line and "mounted=true" in line for line in process.lines):
                         raise smoke.SmokeError("Native cut lacks its facility-owned mounted F1 passenger")
                     process.process.kill(); process.abort(); process = None
-                    row["cut_disk"] = inspect(session / ("world-" + cut), cut, False)
+                    row["cut_disk"] = inspect(session / ("world-" + cut), cut, False, args.crewed)
                 else:
-                    outcome = "UNARMED" if cut == "PF_ARM_BEFORE" else "ARMED" if has_transfer(cut) else "CANCELLED"
-                    process.wait_for(re.compile(r"ARCE_RELEASE_PRE_F2_RESULT cut=" + cut + " outcome=" + outcome), args.startup_timeout)
+                    outcome = recovery_outcome(cut, args.crewed)
+                    process.wait_for(re.compile(r"ARCE_RELEASE_PRE_F2_RESULT cut=" + cut + " outcome=" + outcome + r"\s"), args.startup_timeout)
+                    if crewed_cancellation(cut, args.crewed) and restart == 1:
+                        cancellations = [line for line in process.lines if "ARCE_RELEASE_PRE_F2_CANCELLED cut=" + cut + " " in line]
+                        if len(cancellations) != 1 or "serial=1 issued=1 outcome=CANCELLED digest=" not in cancellations[0]:
+                            raise smoke.SmokeError("Crewed first recovery lacks its exact acknowledged CANCELLED outcome")
                     process.command("stop"); code = process.finish()
                     if code or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                         raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")
                     process = None
-                    disk = inspect(session / ("world-" + cut), cut, True)
-                    if disk["source"] != row["cut_disk"]["source"]:
-                        raise smoke.SmokeError("Restart changed checkpointed E")
+                    disk = inspect(session / ("world-" + cut), cut, True, args.crewed)
+                    require_unchanged_source(disk, row["cut_disk"])
                     row["restarts"].append(dict(restart=restart, exit_code=code, disk=disk))
             row["status"] = "PASS"; report["cases"].append(row); report.pop("in_progress", None)
             (evidence / "results.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

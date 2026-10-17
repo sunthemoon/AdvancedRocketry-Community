@@ -21,6 +21,7 @@ final class EscrowPreF2Probe {
     private final MinecraftServer server;
     private final String cut;
     private final boolean recovery;
+    private final int restart;
     private ResourceEscrowSavedData data;
     private RocketEntity rocket;
     private RocketTransferRecord prepared;
@@ -31,6 +32,8 @@ final class EscrowPreF2Probe {
     private boolean done;
     private long began;
     private int step;
+    private String cancelledSource;
+    private boolean observedPrune;
 
     EscrowPreF2Probe(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server); this.server = server;
@@ -38,9 +41,19 @@ final class EscrowPreF2Probe {
         EscrowTags.require(List.of("PF_ARM_BEFORE", "PF_ARM_REPLACED", "PF_ARM_ACK", "PF_T_ACK", "PF_GOVERNED_T_ACK",
                 "PF_LIVE_F2_ACK", "PF_LIVE_COUNTDOWN").contains(cut), "Unknown pre-F2 cut");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
+        restart = Integer.getInteger("advancedrocketrycommunity.escrowPreF2Restart", 0);
+        EscrowTags.require(!recovery || !crewedCancellation() || restart == 1 || restart == 2,
+                "Crewed pre-F2 recovery requires an explicit first or second restart");
     }
 
     void checkpoint(String name) {
+        if (recovery && crewedCancellation() && !done) {
+            if (name.equals("F1_CANCELLED")) { observeCancelled(); }
+            if (name.equals("F8_PRUNE_ACK")) {
+                EscrowTags.require(restart == 1 && cancelledSource != null, "Pre-F2 prune preceded observed cancellation");
+                observedPrune = true;
+            }
+        }
         if (recovery || done) { return; }
         if (name.equals("F1_ARM_CAPTURE")) { armWriting = true; }
         if (armWriting && (cut.equals("PF_ARM_BEFORE") && name.equals("K8")
@@ -64,11 +77,13 @@ final class EscrowPreF2Probe {
             if (!recovery) { data.setDirty(); data.bind(server).autosave(); }
         }
         var journal = RocketTransferSavedData.get(server);
+        if (recovery && crewedCancellation() && restart == 2) { requireCleanedRoot(journal); }
         if (!journal.retryChecked(server)) { return; }
         if (recovery) {
             var rockets = level.getEntitiesOfClass(RocketEntity.class, new net.minecraft.world.phys.AABB(POSITION).inflate(8));
             if (rockets.isEmpty()) { return; }
             EscrowTags.require(rockets.size() == 1, "Duplicate F1 source"); rocket = rockets.get(0);
+            if (crewedCancellation()) { recoverCrewed(journal); return; }
             if (EscrowCrewedProbe.enabled()) { EscrowCrewedProbe.reconnect(rocket); }
             var arms = data.ledger().armedFlights(); boolean before = cut.equals("PF_ARM_BEFORE"), hasT = hasTransfer();
             if (!before && (arms.isEmpty() || !hasT && arms.get(0).outcome() != EscrowFlightTables.Outcome.CANCELLED)) { return; }
@@ -145,6 +160,63 @@ final class EscrowPreF2Probe {
                 }
             });
         } else if (step == 2 && journal.acknowledgedCurrent()) { pause(); }
+    }
+
+    private boolean crewedCancellation() {
+        return EscrowCrewedProbe.enabled() && (cut.equals("PF_ARM_REPLACED") || cut.equals("PF_ARM_ACK"));
+    }
+
+    private void observeCancelled() {
+        EscrowTags.require(restart == 1 && cancelledSource == null, "Unexpected repeated pre-F2 cancellation");
+        var root = data.ledger(); var arms = root.armedFlights();
+        EscrowTags.require(arms.size() == 1, "Pre-F2 cancellation lost its acknowledged arm");
+        var arm = arms.get(0);
+        var entity = server.overworld().getEntity(arm.source());
+        EscrowTags.require(entity instanceof RocketEntity, "Pre-F2 cancellation lost its source");
+        rocket = (RocketEntity) entity;
+        EscrowTags.require(arm.outcome() == EscrowFlightTables.Outcome.CANCELLED && arm.serial() == 1
+                && root.issuedLaunchSerial() == 1 && arm.logical().equals(rocket.assemblyTransactionId().orElseThrow())
+                && arm.sourceEnvelope().equals(EscrowGovernedEnvelope.digest(EscrowNativeEnvelope.rocket(rocket)))
+                && EscrowFlightJournal.noTransfer(RocketTransferSavedData.get(server), arm.logical(), arm.transfer(), arm.serial()).getAsBoolean(),
+                "Wrong acknowledged pre-F2 cancellation, source digest or checked no-T");
+        cancelledSource = arm.sourceEnvelope();
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_PRE_F2_CANCELLED cut={} source={} serial=1 issued=1 outcome=CANCELLED digest={}",
+                cut, rocket.getUUID(), cancelledSource);
+    }
+
+    private void requireCleanedRoot(RocketTransferSavedData journal) {
+        var root = data.ledger();
+        EscrowTags.require(root.armedFlights().isEmpty() && root.records().isEmpty() && root.floors().isEmpty()
+                && root.tombstones().isEmpty() && root.rocketAuthorities().isEmpty()
+                && root.issuedLaunchSerial() == 1 && journal.entries().isEmpty(), "Crewed pre-F2 root is not cleaned");
+    }
+
+    private void recoverCrewed(RocketTransferSavedData journal) {
+        var passenger = EscrowCrewedProbe.reconnect(rocket);
+        var flight = rocket.flightData().orElseThrow();
+        var digest = EscrowGovernedEnvelope.digest(EscrowNativeEnvelope.rocket(rocket));
+        if (restart == 2 && cancelledSource == null) { cancelledSource = digest; }
+        EscrowTags.require(passenger.getVehicle() == null && rocket.getPassengers().isEmpty()
+                && flight.fuel().totalAmount() == 1_000 && flight.fuel().committedDebits().isEmpty()
+                && flight.passengers().assignments().size() == 1 && flight.state().acceptsFuel()
+                && flight.plan().isEmpty() && flight.activeTransferId().isEmpty()
+                && rocket.escrowSection().epoch() == 1 && rocket.escrowSection().markers().isEmpty()
+                && data.ledger().id().equals(rocket.escrowSection().ledger())
+                && rocket.getX() == 64.5 && rocket.getY() == 100 && rocket.getZ() == 64.5
+                && (cancelledSource == null || cancelledSource.equals(digest))
+                && journal.entries().isEmpty(), "Crewed pre-F2 recovery changed source E or journal");
+        if (restart == 1) {
+            if (!data.ledger().armedFlights().isEmpty()) { return; }
+            EscrowTags.require(cancelledSource != null && observedPrune, "Crewed pre-F2 recovery skipped checked cancellation/prune");
+        }
+        requireCleanedRoot(journal);
+        if (!data.bind(server).writerIdle() || !journal.actionAuthorityAvailable()) { return; }
+        EscrowTags.require(journal.acknowledgedGuard(rocket.assemblyTransactionId().orElseThrow()).orElseThrow().transfer() == null
+                && RocketEscrowGate.idle(rocket), "Crewed pre-F2 cleanup lacks checked no-T or idle source");
+        // The second recovery must remain cleaned throughout the existing negative-case observation window.
+        if (restart == 2 && server.getTickCount() - began < 100) { return; }
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_PRE_F2_RESULT cut={} outcome=CANCELLED_CLEANED source={} checked=true fuel=1000 epoch=1 manifest=1 debits=0 restart={}",
+                cut, rocket.getUUID(), restart); done = true;
     }
 
     private boolean hasTransfer() { return cut.equals("PF_T_ACK") || governedTransfer(); }
