@@ -1106,6 +1106,50 @@
       },
       "test": "EscrowGovernedSourceFlightGameTests.persistentRestPlacementHoldsAndLetsFlightTicketsExpire",
       "reason": "Root decision R17 item 6 (W11b2 continuation 46): a governed COUNTDOWN rocket displaced at rest is a non-transient executor hold. It logs exactly one WARN for the flight and reason, stops refreshing the flight tickets and keeps the ARMED entry and the checked journal unchanged."
+    },
+    {
+      "id": "w92-landed-reservation-not-restored-mismatch",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_LANDED_RESERVATION_NOT_RESTORED transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} entity=[0-9a-f-]{36} reason=mismatch",
+      "counts": {
+        "landed_disassembly_requests": 1
+      },
+      "test": "RocketLandedDisassemblyGameTests.landedRequestsKeepTheClaimUntilRestorationAndAnswerPending",
+      "reason": "W85 G16: the arrival is destroyed in a loaded section while its removal is pending, so M2 does not restore and M3 refuses the write-back as a mismatch; T stays released (R-035 residual 2), logged once."
+    },
+    {
+      "id": "w92-landed-reservation-not-restored-rollback-failed",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_LANDED_RESERVATION_NOT_RESTORED transfer=[0-9a-f-]{36} logical=[0-9a-f-]{36} entity=[0-9a-f-]{36} reason=rollback_failed",
+      "counts": {
+        "landed_disassembly_rollbacks": 1
+      },
+      "test": "RocketLandedDisassemblyGameTests.cleanFailuresWriteTheIdenticalRecordBackAndUncertainOnesNever",
+      "reason": "W85 G3b: an injected ROLLBACK_FAILED after the restoration latch never writes T back; the v0.5 FAILED record is the only recovery owner. Logged once."
+    },
+    {
+      "id": "w92-landed-disassembly-unacknowledged-write-back",
+      "level": "WARN",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity/",
+      "message": "ARCE_LANDED_DISASSEMBLY_UNACKNOWLEDGED logical=[0-9a-f-]{36} stage=write_back",
+      "counts": {
+        "landed_disassembly_writer": 2
+      },
+      "test": "RocketLandedDisassemblyGameTests.lateDiscardedAndFailingWritesNeverRestoreLateOrReleaseUnacknowledgedState",
+      "reason": "W85 G13 and G13b: the isolated journal's write-back fails (NOT_COMMITTED, then UNKNOWN); each pending entry logs at most one WARN for its stage, although the test reports three times."
+    },
+    {
+      "id": "w92-isolated-landed-journal-unacknowledged",
+      "level": "ERROR",
+      "logger": "io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData/",
+      "message": "ARCE_TRANSFER_JOURNAL_UNACKNOWLEDGED retained dirty authority; dependent effects are blocked",
+      "counts": {
+        "landed_disassembly_writer": 4
+      },
+      "test": "RocketLandedDisassemblyGameTests.lateDiscardedAndFailingWritesNeverRestoreLateOrReleaseUnacknowledgedState",
+      "reason": "W85 G8, G12, G13 and G13b: each isolated checked journal file is given one injected failure episode (UNKNOWN after the move twice, NOT_COMMITTED, UNKNOWN); the journal's existing ERROR appears once per episode. The world journal is never failed."
     }
   ]
 }

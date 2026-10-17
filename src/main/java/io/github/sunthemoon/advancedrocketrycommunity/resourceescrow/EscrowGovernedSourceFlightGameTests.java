@@ -501,6 +501,19 @@ public final class EscrowGovernedSourceFlightGameTests {
                     helper.assertTrue(transfer.equals(pads.find(transfer, claimedPad.reference()).orElseThrow().claim()),
                             "Pad claim was released before checked journal absence");
                     verifyStoredSurvivor(record, arrival);
+                    // W85 G9: the terminal successor passes resource validation, but its record-3 T is refused
+                    // before any release; nothing changes and no pending disassembly starts.
+                    var landedSession = io.github.sunthemoon.advancedrocketrycommunity.rocket.server
+                            .RocketLandedDisassemblyGameTestSupport.create(helper);
+                    var owner = new io.github.sunthemoon.advancedrocketrycommunity.rocket.server
+                            .RocketLandedDisassemblyGameTestSupport.Requester((ServerLevel) arrival.level(), arrival.ownerId().orElseThrow());
+                    owner.setPos(arrival.position());
+                    var governedRecord = journal.find(transfer).orElseThrow();
+                    landedSession.requestDisassembly(owner, arrival);
+                    helper.assertTrue(owner.token != null && !landedSession.confirmDisassembly(owner, owner.token)
+                            && "validation.advancedrocketrycommunity.rocket.region_busy".equals(owner.lastActionBar())
+                            && journal.find(transfer).orElse(null) == governedRecord && !landedSession.pending(arrival)
+                            && arrival.isAlive() && journal.actionAuthorityAvailable(), "A record-3 arrival reached a landed release");
                     var flight = arrival.flightData().orElseThrow();
                     arrival.updateFlightData(flight.withFuel(flight.fuel().withFluidBank(false, ModIdentity.id("rocket_fuel"), null, 600), level.getGameTime()));
                     helper.assertTrue(arrival.escrowSection().epoch() == 1 && arrival.flightData().orElseThrow().fuel().committedDebits().equals(List.of(transfer)),

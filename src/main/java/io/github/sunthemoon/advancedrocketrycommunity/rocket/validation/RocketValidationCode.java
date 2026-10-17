@@ -49,7 +49,9 @@ public enum RocketValidationCode {
     MISSING_PROPULSION_TANK,
     NUCLEAR_CORE_SUPPORT_REQUIRED,
     PROPULSION_CAPACITY_EXCEEDED,
-    PROPULSION_AGGREGATE_OVERFLOW;
+    PROPULSION_AGGREGATE_OVERFLOW,
+    /** W85: a landed arrival's checked reservation removal is under way; restoration follows its acknowledgement. */
+    DISASSEMBLY_PENDING;
 
     public String translationKey() {
         return "validation.advancedrocketrycommunity.rocket."

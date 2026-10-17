@@ -513,8 +513,9 @@ class FlightRun(recovery.RecoveryRun):
         match = self.query(process, flight._in_dimension(EARTH, command + f" discard-fuel {last['fuel']}"),
                            flight.DISASSEMBLY_LOG, 45)
         require(match.groups() == (last["entity"], last["logical"], "SUCCESS", "5", "0"), "Disassembly receipt differs")
+        # W85 question 6: the service logs the disposal vector before the reason; the amount and timeout are unchanged.
         process.wait_for(re.compile(rf"ARCE_ROCKET_FUEL_DISCARDED entity={last['entity']} logical={last['logical']} "
-                                    rf"amount={last['fuel']} reason=confirmed_disassembly$"), 30, start_at=start)
+                                    rf"amount={last['fuel']} vector=.* reason=confirmed_disassembly$"), 30, start_at=start)
         process.wait_for(re.compile(rf"ARCE_TRANSFER_PHASE transfer={self.legs[-1]['transfer']} .*event=landed_reservation_released "),
                          30, start_at=start)
 

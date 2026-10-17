@@ -65,71 +65,12 @@ public final class RocketDisassemblyTransaction {
             );
         }
 
-        RocketRegion region;
-        try {
-            region = RocketRegion.fromSnapshot(snapshot);
-        } catch (RuntimeException exception) {
-            return failWithoutMutation(
-                    transactionId,
-                    rocketId,
-                    RocketValidationCode.POSITION_OVERFLOW,
-                    snapshot.sourceOrigin(),
-                    exception.getMessage()
-            );
+        Optional<RocketValidationIssue> refused = preflight(world, rocketId, snapshot);
+        if (refused.isPresent()) {
+            return failWithoutMutation(transactionId, rocketId, refused.orElseThrow());
         }
+        RocketRegion region = RocketRegion.fromSnapshot(snapshot);
         Optional<RocketPosition> occupied;
-        try {
-            if (!world.dimension().equals(snapshot.sourceDimension())) {
-                return failWithoutMutation(
-                        transactionId,
-                        rocketId,
-                        RocketValidationCode.ENTITY_STATE_INVALID,
-                        snapshot.sourceOrigin(),
-                        "snapshot dimension does not match transaction world"
-                );
-            }
-            if (!world.isRegionLoaded(region)) {
-                return failWithoutMutation(
-                        transactionId,
-                        rocketId,
-                        RocketValidationCode.UNLOADED_CHUNK,
-                        snapshot.sourceOrigin(),
-                        "disassembly region is not fully loaded"
-                );
-            }
-            if (!world.rocketMatches(rocketId, snapshot.snapshotId(), snapshot.contentHash())) {
-                return failWithoutMutation(
-                        transactionId,
-                        rocketId,
-                        RocketValidationCode.ENTITY_STATE_INVALID,
-                        snapshot.sourceOrigin(),
-                        "RocketEntity identity or snapshot hash does not match"
-                );
-            }
-            if (!world.canRestoreSnapshot(snapshot)) {
-                return failWithoutMutation(transactionId, rocketId,
-                        RocketValidationCode.UNSUPPORTED_BLOCK_ENTITY, snapshot.sourceOrigin(),
-                        "snapshot restoration dependencies are unavailable");
-            }
-            occupied = firstOccupiedPosition(snapshot);
-            if (occupied.isPresent()) {
-                return failWithoutMutation(
-                        transactionId,
-                        rocketId,
-                        RocketValidationCode.TARGET_OCCUPIED,
-                        occupied.orElseThrow(),
-                        "disassembly target contains a block"
-                );
-            }
-        } catch (RuntimeException exception) {
-            return failWithoutMutation(
-                    transactionId,
-                    rocketId,
-                    RocketValidationCode.WORLD_CHANGED,
-                    snapshot.sourceOrigin(),
-                    safeMessage(exception)
-            );
-        }
 
         ArrayList<PlacedBlock> restored = new ArrayList<>();
         RocketRegionLockManager.LockToken lock = null;
@@ -171,7 +112,7 @@ public final class RocketDisassemblyTransaction {
                         "RocketEntity changed while acquiring the lock"
                 );
             }
-            occupied = firstOccupiedPosition(snapshot);
+            occupied = firstOccupiedPosition(world, snapshot);
             if (occupied.isPresent()) {
                 throw new RocketTransactionAbortException(
                         RocketValidationCode.TARGET_OCCUPIED,
@@ -267,7 +208,57 @@ public final class RocketDisassemblyTransaction {
         }
     }
 
-    private Optional<RocketPosition> firstOccupiedPosition(RocketStructureSnapshot snapshot) {
+    /**
+     * W85 M0: the checks that precede the ledger, the lock and every write (snapshot region, dimension, a fully loaded
+     * region, the entity's identity and hash, restorable block entities and an empty target). {@link #execute} calls
+     * the same method, so a landed request can answer a predictable failure before it releases anything. Read-only.
+     */
+    public static Optional<RocketValidationIssue> preflight(
+            RocketTransactionWorld world,
+            UUID rocketId,
+            RocketStructureSnapshot snapshot
+    ) {
+        Objects.requireNonNull(world, "world");
+        Objects.requireNonNull(rocketId, "rocketId");
+        Objects.requireNonNull(snapshot, "snapshot");
+        RocketRegion region;
+        try {
+            region = RocketRegion.fromSnapshot(snapshot);
+        } catch (RuntimeException exception) {
+            return Optional.of(issue(RocketValidationCode.POSITION_OVERFLOW, snapshot.sourceOrigin(),
+                    exception.getMessage()));
+        }
+        try {
+            if (!world.dimension().equals(snapshot.sourceDimension())) {
+                return Optional.of(issue(RocketValidationCode.ENTITY_STATE_INVALID, snapshot.sourceOrigin(),
+                        "snapshot dimension does not match transaction world"));
+            }
+            if (!world.isRegionLoaded(region)) {
+                return Optional.of(issue(RocketValidationCode.UNLOADED_CHUNK, snapshot.sourceOrigin(),
+                        "disassembly region is not fully loaded"));
+            }
+            if (!world.rocketMatches(rocketId, snapshot.snapshotId(), snapshot.contentHash())) {
+                return Optional.of(issue(RocketValidationCode.ENTITY_STATE_INVALID, snapshot.sourceOrigin(),
+                        "RocketEntity identity or snapshot hash does not match"));
+            }
+            if (!world.canRestoreSnapshot(snapshot)) {
+                return Optional.of(issue(RocketValidationCode.UNSUPPORTED_BLOCK_ENTITY, snapshot.sourceOrigin(),
+                        "snapshot restoration dependencies are unavailable"));
+            }
+            Optional<RocketPosition> occupied = firstOccupiedPosition(world, snapshot);
+            if (occupied.isPresent()) {
+                return Optional.of(issue(RocketValidationCode.TARGET_OCCUPIED, occupied.orElseThrow(),
+                        "disassembly target contains a block"));
+            }
+        } catch (RuntimeException exception) {
+            return Optional.of(issue(RocketValidationCode.WORLD_CHANGED, snapshot.sourceOrigin(),
+                    safeMessage(exception)));
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<RocketPosition> firstOccupiedPosition(RocketTransactionWorld world,
+                                                                  RocketStructureSnapshot snapshot) {
         for (RocketBlock block : snapshot.blocks()) {
             RocketPosition absolute = snapshot.sourceOrigin().add(block.position());
             if (world.readBlock(absolute).isPresent()) {
@@ -360,14 +351,12 @@ public final class RocketDisassemblyTransaction {
     private RocketTransactionResult failWithoutMutation(
             UUID transactionId,
             UUID rocketId,
-            RocketValidationCode code,
-            RocketPosition position,
-            String detail
+            RocketValidationIssue issue
     ) {
         ledger.finish(transactionId, false);
         return RocketTransactionResult.failure(
                 transactionId,
-                issue(code, position, detail),
+                issue,
                 rocketId,
                 0,
                 0

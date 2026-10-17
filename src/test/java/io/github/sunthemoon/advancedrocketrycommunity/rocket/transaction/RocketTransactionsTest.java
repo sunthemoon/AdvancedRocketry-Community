@@ -213,6 +213,43 @@ final class RocketTransactionsTest {
         assertTrue(unloaded.rockets.containsKey(ROCKET_ID));
     }
 
+    /** W85 M0: the landed request's read-only preflight and {@code execute} answer the same code from one fixture. */
+    @Test
+    void preflightAndExecuteAnswerTheSameCodeWithoutMutation() {
+        RocketStructureSnapshot snapshot = snapshot();
+        RocketPosition target = absolute(snapshot, snapshot.blocks().get(2));
+        List<java.util.function.Consumer<FakeWorld>> faults = List.of(
+                world -> world.blocks.put(target, new RocketWorldBlock(state("minecraft:stone"), null)),
+                world -> world.loaded = false,
+                world -> world.rockets.clear(),
+                world -> world.restorable = false,
+                world -> world.readFailure = true);
+        List<RocketValidationCode> codes = List.of(RocketValidationCode.TARGET_OCCUPIED,
+                RocketValidationCode.UNLOADED_CHUNK, RocketValidationCode.ENTITY_STATE_INVALID,
+                RocketValidationCode.UNSUPPORTED_BLOCK_ENTITY, RocketValidationCode.WORLD_CHANGED);
+        for (int index = 0; index < faults.size(); index++) {
+            FakeWorld world = assembledWorld(snapshot);
+            faults.get(index).accept(world);
+            String before = world.materialSignature();
+            var refused = RocketDisassemblyTransaction.preflight(world, ROCKET_ID, snapshot).orElseThrow();
+            assertEquals(before, world.materialSignature());
+            RocketOperationLedger ledger = new RocketOperationLedger();
+            RocketTransactionResult result = new RocketDisassemblyTransaction(world, new RocketRegionLockManager(),
+                    ledger, RocketTransactionJournal.NO_OP).execute(operation(30 + index), ROCKET_ID, snapshot);
+            var executed = result.issue().orElseThrow();
+            assertEquals(codes.get(index), refused.code());
+            assertEquals(refused.code(), executed.code());
+            assertEquals(refused.position(), executed.position());
+            assertEquals(refused.parameters(), executed.parameters());
+            assertEquals(0, result.changedBlocks());
+            assertEquals(before, world.materialSignature());
+            assertEquals(RocketOperationLedger.Outcome.FAILED, ledger.outcome(operation(30 + index)));
+        }
+        FakeWorld clean = assembledWorld(snapshot);
+        assertTrue(RocketDisassemblyTransaction.preflight(clean, ROCKET_ID, snapshot).isEmpty());
+        assertTrue(disassemble(clean, snapshot, operation(39), RocketFailureInjector.NONE).success());
+    }
+
     @Test
     void interruptedDisassemblyRemovesPartialBlocksAndKeepsTheEntity() {
         RocketStructureSnapshot snapshot = snapshot();
@@ -511,6 +548,8 @@ final class RocketTransactionsTest {
         private boolean loaded = true;
         private boolean spawnAllowed = true;
         private boolean removeRocketAllowed = true;
+        private boolean restorable = true;
+        private boolean readFailure;
         private RocketPosition failRemoveAt;
         private RocketPosition failPlaceAt;
 
@@ -533,7 +572,15 @@ final class RocketTransactionsTest {
         }
 
         @Override
+        public boolean canRestoreSnapshot(RocketStructureSnapshot snapshot) {
+            return restorable;
+        }
+
+        @Override
         public Optional<RocketWorldBlock> readBlock(RocketPosition absolutePosition) {
+            if (readFailure) {
+                throw new IllegalStateException("injected read failure");
+            }
             return Optional.ofNullable(blocks.get(absolutePosition));
         }
 

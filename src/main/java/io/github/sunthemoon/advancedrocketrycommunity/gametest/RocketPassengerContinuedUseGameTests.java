@@ -140,12 +140,12 @@ public final class RocketPassengerContinuedUseGameTests {
             manager.requestDisassembly(player, rocket);
             helper.assertTrue(rocket.isAlive() && rocket.flightData().orElseThrow().fuel().amount() == 1000,
                     "Implicit fueled teardown changed arrival authority");
-            helper.assertTrue(RocketDisassemblyGameTests.confirmCommand(manager, player) == 0 && rocket.isAlive(),
+            // W85: the confirmed request answers pending; nothing is restored or discarded before the acknowledgement.
+            helper.assertTrue(RocketDisassemblyGameTests.confirmCommand(manager, player) == 1 && rocket.isAlive()
+                    && player.discarded == 0 && rocket.flightData().orElseThrow().fuel().amount() == 1000,
                     "Unacknowledged retirement consumed arrival authority");
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
-            manager.requestDisassembly(player, rocket);
-            helper.assertTrue(RocketDisassemblyGameTests.confirmCommand(manager, player) == 1
-                    && player.discarded == 1000, "Explicit arrival disposal did not report its exact amount");
+            helper.assertTrue(player.discarded == 1000, "Explicit arrival disposal did not report its exact amount");
             helper.assertTrue(rocket.isRemoved(), "Refueled arrival did not disassemble");
             var journal = RocketTransferSavedData.get(helper.getLevel().getServer());
             helper.assertTrue(journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).isEmpty(),
