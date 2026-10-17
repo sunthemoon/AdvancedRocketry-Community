@@ -12,6 +12,13 @@ import net.minecraft.nbt.CompoundTag;
 final class EscrowGovernedPhaseTracking {
     private final Map<UUID, Capture> captures = new HashMap<>();
 
+    boolean present(io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record, RocketEntity rocket) {
+        if (rocket == null) { return false; }
+        var captured = captures.get(rocket.getUUID());
+        return captured != null && captured.rocket == rocket
+                && captured.arm.equals(record.nativeTransfer().orElseThrow().armed()) && captured.observe(rocket);
+    }
+
     boolean allows(RocketEntity rocket) {
         if (rocket == null) { return true; }
         var captured = captures.get(rocket.getUUID());

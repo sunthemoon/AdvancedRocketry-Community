@@ -86,7 +86,7 @@ public final class EscrowGovernedDestination implements AutoCloseable {
             return destination == null && cached.sourceValid() ? cached.failure : Result.HELD;
         }
         if (cached != null && cached.authority.valid() && cached.sourceValid()) {
-            if (destination != null && cached.arrival != null && cached.arrival.rocket == destination && cached.arrival.observe()) {
+            if (destination != null && cached.arrival == destination && runtime.flightPhases().present(record, destination)) {
                 runtime.executorHolds().healthy(record);
                 return Result.PRESENT;
             }
@@ -130,7 +130,8 @@ public final class EscrowGovernedDestination implements AutoCloseable {
             if (work.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) { return Result.HELD; }
             var present = new Work(record, authority, source == null ? null : new EscrowFlightSource(source, finalBoundary),
                     retries.history(record.logicalRocketId()));
-            present.arrival = new EscrowFlightSource(destination, finalBoundary); work.put(record.transferId(), present);
+            runtime.flightPhases().capturePresence(destination, journal);
+            present.arrival = destination; work.put(record.transferId(), present);
             return Result.PRESENT;
         }
         var state = work.get(record.transferId());
@@ -206,7 +207,7 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         final RocketTransferRecord record;
         final EscrowGovernedDispatch.Authority authority;
         final EscrowFlightSource source;
-        EscrowFlightSource arrival;
+        RocketEntity arrival;
         final List<EscrowEndpoint> slots;
         final java.util.ArrayList<EscrowBarrier.Proof> proofs = new java.util.ArrayList<>();
         boolean pending;

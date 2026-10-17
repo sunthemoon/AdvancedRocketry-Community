@@ -18,6 +18,51 @@ import org.junit.jupiter.api.Test;
 class EscrowTransferEnvelopeTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
 
+    @Test void immutableRecordExpansionHashesOnceAndAccessorsRemainCopiesAcrossEveryDescentTick() {
+        var original = EscrowGovernedArrivalStateTest.record();
+        var hashes = new java.util.concurrent.atomic.AtomicInteger();
+        var metadata = EscrowTransferEnvelope.decode(original.nativeTransfer().orElseThrow().encode(), tag -> {
+            hashes.incrementAndGet(); return EscrowNativeEnvelope.digest(tag);
+        });
+        var record = withMetadata(original, metadata);
+        assertEquals(2, hashes.get());
+        var frozen = metadata.destinationEnvelope(record);
+        for (int elapsed = 0; elapsed <= RocketFlightLimits.DESCENT_TICKS; elapsed++) {
+            int before = hashes.get();
+            metadata.validate(record);
+            var observed = EscrowGovernedArrivalStateTest.descent(record, 500, elapsed);
+            assertTrue(EscrowGovernedArrivalState.matches(record, observed, 500 + elapsed));
+            assertEquals(elapsed == RocketFlightLimits.DESCENT_TICKS,
+                    EscrowGovernedArrival.ready(record, observed, 500 + elapsed));
+            metadata.sourceEnvelope(record).getCompound("flight").putInt("external", 1);
+            metadata.destinationEnvelope(record).getCompound("wrapper").putLong("resource_epoch", 99);
+            assertEquals(frozen, metadata.destinationEnvelope(record));
+            assertEquals(0, hashes.get() - before, "native envelope digests at descent tick " + elapsed);
+        }
+        var second = withMetadata(original, metadata);
+        assertNotSame(record, second); assertEquals(4, hashes.get());
+        metadata.validate(record); metadata.validate(second); assertEquals(4, hashes.get());
+    }
+
+    @Test void committedMatchingIsSkippedOnlyForCapturedIdleDestinationObservations() {
+        for (var phase : RocketTransferPhase.values()) {
+            for (boolean source : List.of(false, true)) {
+                for (boolean captured : List.of(false, true)) {
+                    for (boolean action : List.of(false, true)) {
+                        assertEquals(phase != RocketTransferPhase.COMMITTED || source || !captured || action,
+                                EscrowGovernedPhases.matchingRequired(phase, source, captured, action));
+                    }
+                }
+            }
+        }
+    }
+
+    private static RocketTransferRecord withMetadata(RocketTransferRecord r, EscrowTransferEnvelope metadata) {
+        return RocketTransferRecord.restoreGoverned(r.transferId(), r.phase(), r.logicalRocketId(), r.ownerId(),
+                r.sourceEntityId(), r.destinationEntityId().orElse(null), r.sourceSnapshot(), r.destinationSnapshot(),
+                r.sourceFlightData(), r.destinationFlightData(), r.requiredFuel(), r.createdAtGameTime(), r.checksum(), metadata);
+    }
+
     @Test void recordThreeRoundTripsCompleteEnvelopesWithIndependentJournalAndFlightSchemas() {
         var fixture = GovernedTransferFixture.create(); var record = fixture.record();
         var metadata = record.nativeTransfer().orElseThrow();

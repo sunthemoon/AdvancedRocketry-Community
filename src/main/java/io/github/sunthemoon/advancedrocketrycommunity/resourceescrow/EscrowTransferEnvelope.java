@@ -14,10 +14,19 @@ public final class EscrowTransferEnvelope {
     private final CompoundTag source;
     private final CompoundTag destination;
     private final String digest;
+    private final java.util.function.Function<CompoundTag, String> envelopeDigest;
+    // RocketTransferRecord has identity equality. Values never retain their weak keys.
+    private final java.util.Map<RocketTransferRecord, Expanded> validated = new java.util.WeakHashMap<>();
 
     private EscrowTransferEnvelope(EscrowFlightTables.Armed armed, CompoundTag source, CompoundTag destination) {
+        this(armed, source, destination, EscrowNativeEnvelope::digest);
+    }
+
+    private EscrowTransferEnvelope(EscrowFlightTables.Armed armed, CompoundTag source, CompoundTag destination,
+                                  java.util.function.Function<CompoundTag, String> envelopeDigest) {
         EscrowTags.require(armed.outcome() == EscrowFlightTables.Outcome.ARMED, "Record requires its original ARMED tuple");
         this.armed = armed; this.source = source.copy(); this.destination = destination.copy();
+        this.envelopeDigest = envelopeDigest;
         digest = CanonicalNbtDigest.of(encode(), MAX_BYTES, 16);
     }
 
@@ -40,43 +49,50 @@ public final class EscrowTransferEnvelope {
     }
 
     public static EscrowTransferEnvelope decode(CompoundTag tag) {
+        return decode(tag, EscrowNativeEnvelope::digest);
+    }
+
+    static EscrowTransferEnvelope decode(CompoundTag tag, java.util.function.Function<CompoundTag, String> envelopeDigest) {
         EscrowTags.bound(tag, MAX_BYTES, 16, 512);
         EscrowTags.fields(tag, "schema_version", "armed", "source", "destination", "signature_kind");
         EscrowTags.require(EscrowTags.integer(tag, "schema_version") == SCHEMA
                 && EscrowTags.enumeration(EscrowSignatureKind.class, tag, "signature_kind") == EscrowSignatureKind.FUEL_VECTOR_V1,
                 "Unsupported native transfer envelope");
         return new EscrowTransferEnvelope(EscrowFlightTables.Armed.decode(EscrowTags.compound(tag, "armed")),
-                EscrowTags.compound(tag, "source"), EscrowTags.compound(tag, "destination"));
+                EscrowTags.compound(tag, "source"), EscrowTags.compound(tag, "destination"), envelopeDigest);
     }
 
     public EscrowFlightTables.Armed armed() { return armed; }
     public String digest() { return digest; }
 
-    public void validate(RocketTransferRecord record) {
+    public synchronized void validate(RocketTransferRecord record) {
+        if (validated.containsKey(record)) { return; }
         EscrowTags.require(record.schemaVersion() == 3 && record.transferId().equals(armed.transfer())
                 && record.logicalRocketId().equals(armed.logical()) && record.ownerId().equals(armed.owner())
                 && record.sourceEntityId().equals(armed.source())
                 && record.destinationEntityId().map(armed.destination()::equals).orElse(true), "Governed record identity changed");
-        validateBodies(record.sourceSnapshot(), record.destinationSnapshot(), record.sourceFlightData(), record.destinationFlightData());
+        validated.put(record, validateBodies(record.sourceSnapshot(), record.destinationSnapshot(), record.sourceFlightData(), record.destinationFlightData()));
     }
 
-    private void validateBodies(RocketStructureSnapshot sourceSnapshot, RocketStructureSnapshot destinationSnapshot,
+    private Expanded validateBodies(RocketStructureSnapshot sourceSnapshot, RocketStructureSnapshot destinationSnapshot,
                                 RocketFlightData sourceFlight, RocketFlightData destinationFlight) {
         EscrowTags.require(sourceFlight.schemaVersion() == 2 && destinationFlight.schemaVersion() == 2
                 && sourceFlight.fuel().propulsion().isPresent() && destinationFlight.fuel().propulsion().isPresent(),
                 "Governed record requires native schema-2 flight bodies");
-        EscrowTags.require(armed.sourceEnvelope().equals(EscrowGovernedEnvelope.digest(
-                EscrowTransferProjection.expand(source, armed, false, sourceSnapshot, sourceFlight)))
-                && armed.destinationEnvelope().equals(EscrowGovernedEnvelope.digest(
-                EscrowTransferProjection.expand(destination, armed, true, destinationSnapshot, destinationFlight))),
+        var expandedSource = EscrowGovernedEnvelope.comparison(EscrowTransferProjection.expand(source, armed, false, sourceSnapshot, sourceFlight));
+        var expandedDestination = EscrowGovernedEnvelope.comparison(EscrowTransferProjection.expand(destination, armed, true, destinationSnapshot, destinationFlight));
+        EscrowTags.require(armed.sourceEnvelope().equals(envelopeDigest.apply(expandedSource))
+                && armed.destinationEnvelope().equals(envelopeDigest.apply(expandedDestination)),
                 "Governed record envelope digest changed");
+        return new Expanded(expandedSource, expandedDestination);
     }
 
-    public CompoundTag sourceEnvelope(RocketTransferRecord record) {
-        validate(record); return EscrowGovernedEnvelope.comparison(EscrowTransferProjection.expand(source, armed, false, record.sourceSnapshot(), record.sourceFlightData()));
+    public synchronized CompoundTag sourceEnvelope(RocketTransferRecord record) {
+        validate(record); return validated.get(record).source.copy();
     }
 
-    public CompoundTag destinationEnvelope(RocketTransferRecord record) {
-        validate(record); return EscrowGovernedEnvelope.comparison(EscrowTransferProjection.expand(destination, armed, true, record.destinationSnapshot(), record.destinationFlightData()));
+    public synchronized CompoundTag destinationEnvelope(RocketTransferRecord record) {
+        validate(record); return validated.get(record).destination.copy();
     }
+    private record Expanded(CompoundTag source, CompoundTag destination) { }
 }

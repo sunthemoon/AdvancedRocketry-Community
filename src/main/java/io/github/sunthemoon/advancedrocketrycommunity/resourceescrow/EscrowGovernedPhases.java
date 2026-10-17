@@ -24,6 +24,12 @@ public final class EscrowGovernedPhases {
         passengerRetries = new EscrowTerminalRetries(logger);
     }
     public boolean allowsNative(RocketEntity source, RocketEntity destination) { return tracking.allows(source) && tracking.allows(destination); }
+    boolean present(RocketTransferRecord record, RocketEntity destination) { return tracking.present(record, destination); }
+    void capturePresence(RocketEntity destination, RocketTransferSavedData journal) { tracking.capture(destination, journal); }
+
+    static boolean matchingRequired(RocketTransferPhase phase, boolean sourcePresent, boolean captured, boolean action) {
+        return phase != RocketTransferPhase.COMMITTED || sourcePresent || !captured || action;
+    }
 
     /** A retired flight's observations cannot constrain its successor's next flight. */
     public boolean releaseCompleted(EscrowCoordinator coordinator, RocketTransferSavedData journal, EscrowFlightTables.Armed terminal) {
@@ -68,7 +74,12 @@ public final class EscrowGovernedPhases {
             EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.PHASE_ENVELOPE); return Result.HELD;
         }
         if (!boundary.getAsBoolean()) { return Result.HELD; }
-        if (!EscrowGovernedPhaseAction.matches(record, envelope(source), envelope(destination), sourceTime(server, source))) {
+        boolean action = record.destinationFlightData().passengers().assignments().stream().anyMatch(seat -> {
+            var player = server.getPlayerList().getPlayer(seat.passengerId());
+            return player != null && player.getVehicle() != destination;
+        });
+        boolean complete = matchingRequired(record.phase(), source != null, tracking.present(record, destination), action);
+        if (complete && !EscrowGovernedPhaseAction.matches(record, envelope(source), envelope(destination), sourceTime(server, source))) {
             EscrowRuntime.of(server).executorHolds().hold(server, record, EscrowGovernedExecutorHolds.Reason.PHASE_ENVELOPE); return Result.HELD;
         }
         EscrowRuntime.of(server).executorHolds().healthy(record);
@@ -93,6 +104,9 @@ public final class EscrowGovernedPhases {
             }
         }
         if (source != null && !source.getPassengers().isEmpty()) { return Result.HELD; }
+        // A warm COMMITTED observation with no physical action consumes no new permit.
+        // Any move above still uses complete capture/consume checks and reaches the final permit.
+        if (!complete) { return Result.COMMITTED; }
         // Reacquire after every physical dismount/join. Such events invalidate the previous authority.
         var permit = permit(server, journal, record, source, destination, () -> boundary.getAsBoolean()
                 && onlinePassengersAtDestination(server, record, destination));
