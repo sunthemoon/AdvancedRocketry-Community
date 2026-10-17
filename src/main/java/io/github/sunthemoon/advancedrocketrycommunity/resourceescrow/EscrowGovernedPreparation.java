@@ -16,6 +16,12 @@ import net.minecraft.server.level.ServerLevel;
 public final class EscrowGovernedPreparation {
     private EscrowGovernedPreparation() { }
 
+    /** Read-only pre-F2 pad reservations; publication transfers responsibility to the journal in the same callback. */
+    public static java.util.List<io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion> pendingDestinations(
+            net.minecraft.server.MinecraftServer server) {
+        return EscrowRuntime.of(server).flightCheckpoint().pendingDestinations();
+    }
+
     public static boolean begin(RocketEntity rocket, RocketFlightData countdown, RocketStructureSnapshot destination,
             Predicate<RocketTransferRecord> boundary, Consumer<RocketTransferRecord> accepted, Runnable discarded) {
         if (!(rocket.level() instanceof ServerLevel level) || !level.getServer().isSameThread()

@@ -88,10 +88,9 @@ final class RocketTransferService {
         if (destinationLevel == null) {
             return RocketFlightRequestResult.failure(RocketFlightRequestCode.INVALID_DESTINATION);
         }
-        List<RocketRegion> reservations = journal.entries().stream()
-                .map(RocketTransferRecord::destinationSnapshot)
-                .map(RocketRegion::fromSnapshot)
-                .toList();
+        List<RocketRegion> reservations = landingReservations(journal,
+                io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedPreparation
+                        .pendingDestinations(server));
         RocketLandingPadSelection selected;
         if (plan.destinationStation().isPresent()) {
             StationState station = StationRegistrySavedData.get(server)
@@ -218,6 +217,12 @@ final class RocketTransferService {
             );
         }
         return new RocketFlightRequestResult(RocketFlightRequestCode.JOURNAL_PENDING, plan.requiredFuel());
+    }
+
+    /** The same reservation inputs feed surface, station and explicitly named station selection. */
+    static List<RocketRegion> landingReservations(RocketTransferSavedData journal, List<RocketRegion> pending) {
+        return java.util.stream.Stream.concat(journal.entries().stream()
+                .map(RocketTransferRecord::destinationSnapshot).map(RocketRegion::fromSnapshot), pending.stream()).toList();
     }
 
     RocketFlightRequestResult cancelCountdown(RocketEntity rocket) {

@@ -2,7 +2,9 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -11,11 +13,14 @@ import net.minecraft.server.level.ServerLevel;
 /** F1 only: source-own store, same-worker force and readback before the checked ARMED write. */
 final class EscrowFlightCheckpoint implements AutoCloseable {
     private final Map<UUID, EscrowFlightSource> pending = new HashMap<>();
+    // Same lifetime and 64-launch bound as pending, retained through the synchronous F2 publication callback.
+    private final Map<UUID, RocketRegion> destinations = new HashMap<>();
     private record Retry(RocketEntity rocket, EscrowSuccessorRetry schedule) { }
     private final Map<UUID, Retry> retries = new HashMap<>();
     private boolean closed;
 
     boolean locked(UUID logical) { return pending.containsKey(logical); }
+    List<RocketRegion> pendingDestinations() { return List.copyOf(destinations.values()); }
     boolean retryReady(UUID logical, long tick) {
         var retry = retries.get(logical);
         return !closed && (retry == null || retry.schedule().ready(tick));
@@ -31,7 +36,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
 
     /** Package-private; the successor dispatcher must supply its validated, fully reserved launch tuple. */
     boolean begin(RocketEntity rocket, EscrowFlightAuthority.Launch launch, Consumer<EscrowFlightTables.Armed> completion) {
-        return begin(rocket, launch, EscrowFlightAuthority::arm, () -> true, completion);
+        return begin(rocket, launch, EscrowFlightAuthority::arm, () -> true, () -> null, completion);
     }
 
     /** Complete F1 adapter: reserve the exact F2 record as well as its ARMED root before own-store. */
@@ -54,7 +59,8 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
             EscrowTags.require(boundary.test(record), "F1 launch lost its action boundary");
             captured.set(record);
             return candidate;
-        }, () -> captured.get() != null && boundary.test(captured.get()), arm -> {
+        }, () -> captured.get() != null && boundary.test(captured.get()),
+                () -> RocketRegion.fromSnapshot(captured.get().destinationSnapshot()), arm -> {
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord record = null;
             if (arm != null) {
                 var data = ResourceEscrowSavedData.existing(level.getServer());
@@ -77,6 +83,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
 
     private boolean begin(RocketEntity rocket, EscrowFlightAuthority.Launch launch,
                           Preparation preparation, java.util.function.BooleanSupplier boundary,
+                          java.util.function.Supplier<RocketRegion> destination,
                           Consumer<EscrowFlightTables.Armed> completion) {
         if (closed || pending.size() >= 64 || locked(launch.logical()) || !RocketEscrowGate.idle(rocket)
                 || !(rocket.level() instanceof ServerLevel level)) { return false; }
@@ -113,6 +120,12 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
         // Zero means not yet assigned by the actual coalesced writer capture, not a reserved serial.
         var serial = new java.util.concurrent.atomic.AtomicLong();
         var runtime = EscrowRuntime.of(server); pending.put(launch.logical(), frozen);
+        var region = destination.get();
+        if (region != null) { destinations.put(launch.logical(), region); }
+        Consumer<EscrowFlightTables.Armed> finished = arm -> {
+            try { completion.accept(arm); }
+            finally { destinations.remove(launch.logical(), region); }
+        };
         runtime.checkpoint("F1_STORE_BEFORE");
         boolean started = runtime.barrier().begin(runtime.store(level), frozen.endpoint, frozen.frontier, frozen.validator(),
                 server.getTickCount(), result -> {
@@ -122,7 +135,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                         if (result.proof() != null) { result.proof().release(); }
                         if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), 0, "F1_PROOF",
                                 reason, server.getTickCount()); }
-                        pending.remove(launch.logical(), frozen); completion.accept(null); return;
+                        pending.remove(launch.logical(), frozen); finished.accept(null); return;
                     }
                     runtime.checkpoint("F1_READBACK_AFTER"); var proof = result.proof();
                     boolean queued = coordinator.flightWrite(launch.logical(), (root, generation) -> {
@@ -137,29 +150,30 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                         if (committed) {
                             retries.remove(launch.logical());
                             runtime.checkpoint("F1_ARM_ACK");
-                            completion.accept(coordinator.ledger().armedFlights().stream()
+                            finished.accept(coordinator.ledger().armedFlights().stream()
                                     .filter(arm -> arm.logical().equals(launch.logical()) && arm.transfer().equals(launch.transfer())).findFirst().orElseThrow());
                         } else {
                             if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), serial.get(),
                                     "F1_WRITE", "LEDGER_WRITE_FAILED", server.getTickCount()); }
-                            completion.accept(null);
+                            finished.accept(null);
                         }
                     });
                     if (!queued) {
                         proof.release(); pending.remove(launch.logical(), frozen);
                         if (!closed) { retry.failed(coordinator.ledger().id(), launch.logical(), launch.transfer(), 0,
                                 "F1_WRITE", "LEDGER_QUEUE_WAIT", server.getTickCount()); }
-                        completion.accept(null);
+                        finished.accept(null);
                     }
                 });
         if (!started) {
             pending.remove(launch.logical(), frozen);
+            destinations.remove(launch.logical(), region);
             if (retry.failures() == 0) { retries.remove(launch.logical()); }
         }
         return started;
     }
 
     @Override public void close() {
-        closed = true; pending.values().forEach(value -> value.unchanged.set(false)); pending.clear(); retries.clear();
+        closed = true; pending.values().forEach(value -> value.unchanged.set(false)); pending.clear(); destinations.clear(); retries.clear();
     }
 }
