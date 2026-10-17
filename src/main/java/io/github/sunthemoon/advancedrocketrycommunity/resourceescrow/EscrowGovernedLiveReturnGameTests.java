@@ -293,6 +293,12 @@ public final class EscrowGovernedLiveReturnGameTests {
             helper.assertTrue(pads.find(transfer, claimedPad.reference()).orElseThrow().claim() == null
                     && otherTransfer.equals(pads.find(transfer, otherPad.reference()).orElseThrow().claim()), "F8 released the wrong pad claim");
             if (fault == Fault.SPAWN) { helper.assertTrue(vetoes == 1, "Failed publication was retried instead of returned"); }
+            // Review N3: F8 drops the retired bindings, and moving the idle survivor afterwards holds nothing.
+            helper.assertTrue(!runtime.sourceFlights().bound(record.logicalRocketId()) && !runtime.arrivals().bound(transfer),
+                    "F8 kept the retired flight's F3 or arrival binding");
+            rocket.setPos(rocket.getX() + 1, rocket.getY(), rocket.getZ());
+            runtime.sourceFlights().observe(rocket); runtime.arrivals().observe(rocket); runtime.flightPhases().observe(rocket);
+            helper.assertTrue(!runtime.executorHolds().held(record), "A retired flight's placement observation recorded a hold");
             finish(journal);
         }
 

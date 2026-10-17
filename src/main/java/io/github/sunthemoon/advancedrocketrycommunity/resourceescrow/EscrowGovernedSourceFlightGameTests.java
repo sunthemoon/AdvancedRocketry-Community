@@ -461,7 +461,18 @@ public final class EscrowGovernedSourceFlightGameTests {
             helper.assertTrue(pads.find(transfer, claimedPad.reference()).orElseThrow().claim() == null
                     && otherTransfer.equals(pads.find(transfer, otherPad.reference()).orElseThrow().claim()),
                     "F8 did not release only its dependent pad claim");
+            retiredPlacement(record, arrival);
             finish(journal, arrival);
+        }
+
+        /** Review N3: F8 drops the retired bindings, and moving the idle landed rocket afterwards holds nothing. */
+        private void retiredPlacement(RocketTransferRecord record, RocketEntity arrival) {
+            var runtime = EscrowRuntime.of(level.getServer());
+            helper.assertTrue(!runtime.sourceFlights().bound(record.logicalRocketId()) && !runtime.arrivals().bound(record.transferId()),
+                    "F8 kept the retired flight's F3 or arrival binding");
+            arrival.setPos(arrival.getX() + 1, arrival.getY(), arrival.getZ());
+            runtime.sourceFlights().observe(arrival); runtime.arrivals().observe(arrival); runtime.flightPhases().observe(arrival);
+            helper.assertTrue(!runtime.executorHolds().held(record), "A retired flight's placement observation recorded a hold");
         }
 
         private void verifyStoredSurvivor(RocketTransferRecord record, RocketEntity arrival) {

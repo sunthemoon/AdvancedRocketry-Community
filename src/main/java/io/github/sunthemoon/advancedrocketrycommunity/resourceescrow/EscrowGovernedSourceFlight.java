@@ -102,6 +102,13 @@ public final class EscrowGovernedSourceFlight {
 
     public void clear() { bindings.clear(); envelopeHolds.clear(); }
 
+    /** Review N3: F8 drops the retired flight's binding with F5's captures; it supplied no authority. */
+    public void completed(EscrowFlightTables.Armed terminal) {
+        bindings.values().removeIf(binding -> EscrowGovernedPhaseTracking.completedCapture(
+                binding.authority.record().nativeTransfer().orElseThrow().armed(), terminal));
+    }
+    boolean bound(UUID logical) { return bindings.containsKey(logical); }
+
     private static void report(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
         var runtime = EscrowRuntime.of(server);
         if (runtime.governedFlights().classify(server, journal, record).route() == EscrowGovernedDispatch.Route.ACTIVE) {
