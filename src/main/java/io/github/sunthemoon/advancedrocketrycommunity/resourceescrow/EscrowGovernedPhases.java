@@ -18,24 +18,32 @@ public final class EscrowGovernedPhases {
     public enum Result { HELD, WAITING, COMMITTED }
     private Mount mount;
     private final EscrowGovernedPhaseTracking tracking = new EscrowGovernedPhaseTracking();
+    private final EscrowTerminalRetries passengerRetries;
+    public EscrowGovernedPhases() { passengerRetries = new EscrowTerminalRetries(); }
+    EscrowGovernedPhases(java.util.function.Consumer<EscrowSuccessorRetry.Hold> logger) {
+        passengerRetries = new EscrowTerminalRetries(logger);
+    }
     public boolean allowsNative(RocketEntity source, RocketEntity destination) { return tracking.allows(source) && tracking.allows(destination); }
 
     /** A retired flight's observations cannot constrain its successor's next flight. */
     public boolean releaseCompleted(EscrowCoordinator coordinator, RocketTransferSavedData journal, EscrowFlightTables.Armed terminal) {
         if (!EscrowGovernedCleanup.absent(coordinator, journal, terminal)) { return false; }
         tracking.completed(terminal);
+        passengerRetries.completed(terminal.logical());
         return true;
     }
     void observe(RocketEntity rocket) { tracking.observe(rocket); }
     void follow(RocketEntity rocket, io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightData flight, Vec3 position) {
         tracking.follow(rocket, flight, position);
     }
-    void clear() { mount = null; tracking.clear(); }
+    void clear() { mount = null; tracking.clear(); passengerRetries.clear(); }
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                        RocketEntity source, RocketEntity destination, BooleanSupplier boundary) {
         if (!server.isSameThread()) { return Result.HELD; }
         if (EscrowRuntime.of(server).destinationCutActive()) { return Result.WAITING; }
+        if (journal.actionAuthorityAvailable()) { passengerRetries.retain(logical -> journal.findByLogicalRocket(logical).isPresent()); }
+        if (!passengerAttemptDue(record.logicalRocketId(), server.getTickCount())) { return Result.HELD; }
         try { return checked(server, journal, record, source, destination, boundary); }
         catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return Result.HELD; }
         finally { mount = null; }
@@ -59,8 +67,15 @@ public final class EscrowGovernedPhases {
         for (var seat : record.destinationFlightData().passengers().assignments()) {
             var player = server.getPlayerList().getPlayer(seat.passengerId());
             if (player == null) { continue; }
-            if (!online(server, player) || player.getVehicle() != destination
-                    && !move(server, journal, record, source, destination, player, boundary)) { return Result.HELD; }
+            if (!online(server, player)) { return passengerFailed(record, "PASSENGER_INELIGIBLE", server.getTickCount()); }
+            if (player.getVehicle() != destination) {
+                if (player.getVehicle() != null && player.getVehicle() != source) {
+                    return passengerFailed(record, "PASSENGER_RIDING_OTHER", server.getTickCount());
+                }
+                if (!move(server, journal, record, source, destination, player, boundary)) {
+                    return passengerFailed(record, "PASSENGER_MOVE_REFUSED", server.getTickCount());
+                }
+            }
         }
         if (source != null && !source.getPassengers().isEmpty()) { return Result.HELD; }
         // Reacquire after every physical dismount/join. Such events invalidate the previous authority.
@@ -95,6 +110,12 @@ public final class EscrowGovernedPhases {
             EscrowRuntime.of(server).checkpoint("F5_" + phase + "_ACK"); return true;
         }, () -> { });
         return Result.WAITING;
+    }
+
+    boolean passengerAttemptDue(java.util.UUID logical, long tick) { return passengerRetries.ready(logical, tick); }
+    Result passengerFailed(RocketTransferRecord record, String reason, long tick) {
+        passengerRetries.failed(record, "F5_PASSENGER", reason, tick);
+        return Result.HELD;
     }
 
     private boolean move(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
