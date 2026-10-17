@@ -38,7 +38,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         }
     }
     public record Completion(long generation, String digest, Outcome outcome, Snapshot snapshot) { }
-    private record Request(Supplier<Snapshot> capture, Consumer<Completion> callback, BooleanSupplier beforeReplace) { }
+    private record Request(Supplier<Snapshot> capture, Consumer<Completion> callback, BooleanSupplier beforeReplace, long requestedAt) { }
     /** Shutdown stops retrying one unresolved candidate after this many further unknown outcomes. */
     static final int DRAIN_UNKNOWN_ATTEMPTS = 3;
     private static final org.slf4j.Logger LOGGER = LogUtils.getLogger();
@@ -66,6 +66,16 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     private long lastIoStart = -10;
     private EscrowTimingSink timings = EscrowTimingSink.NONE;
     void timings(EscrowTimingSink sink) { owner(); timings = sink; }
+    void timing(String phase, long nanos) { owner(); timings.sample(phase, nanos); }
+    /** Release-test observation includes encode, digest and the unchanged snapshot validation/copy. */
+    Snapshot snapshot(EscrowLedger ledger, Set<UUID> admissions) {
+        owner();
+        if (timings == EscrowTimingSink.NONE) { return Snapshot.of(ledger, admissions); }
+        long start = System.nanoTime();
+        var result = Snapshot.of(ledger, admissions);
+        timings.encoded(result, System.nanoTime() - start);
+        return result;
+    }
 
     public EscrowLedgerWriter(Path file, long generation) {
         this(file, generation, CheckedSavedDataFile::atomicMove);
@@ -104,7 +114,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
     public boolean request(Supplier<Snapshot> capture, Consumer<Completion> callback, BooleanSupplier beforeReplace) {
         owner();
         if (closed || draining || baselineFailed) { return false; }
-        Request request = new Request(capture, callback, beforeReplace);
+        Request request = new Request(capture, callback, beforeReplace, System.nanoTime());
         if (active == null) { active = request; captureAndStart(); return true; }
         if (successor != null) { return false; }
         successor = request; return true;
@@ -117,7 +127,10 @@ public final class EscrowLedgerWriter implements AutoCloseable {
             active = null; captured = null;
             throw refused;
         }
-        timings.sample("ledger_capture_main", System.nanoTime() - started);
+        long captureNanos = System.nanoTime() - started;
+        timings.sample("ledger_capture_main", captureNanos);
+        timings.captured(next, captureNanos);
+        timings.queued(next.ledger().writerGeneration(), started - active.requestedAt());
         EscrowTags.require(next.ledger().writerGeneration() > lastGeneration, "Nonincreasing writer generation");
         lastGeneration = next.ledger().writerGeneration(); captured = next; uncertain = false; drainUnknown = 0; startIo();
     }
@@ -125,6 +138,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         if (tick < Math.max(retryAt, lastIoStart + 10)) { return; }
         lastIoStart = tick;
         running = true; Snapshot snapshot = captured; BooleanSupplier beforeReplace = active.beforeReplace();
+        timings.writing(snapshot.ledger().writerGeneration());
         boolean previouslyUncertain = uncertain; long durable = durableGeneration; String durableSignature = durableDigest;
         io.execute(() -> {
             long started = System.nanoTime();
@@ -158,7 +172,9 @@ public final class EscrowLedgerWriter implements AutoCloseable {
                     } catch (RuntimeException | IOException unreadable) { /* Keep this exact candidate for retry. */ }
                 }
             }
-            timings.sample("ledger_io", System.nanoTime() - started);
+            long ioNanos = System.nanoTime() - started;
+            timings.sample("ledger_io", ioNanos);
+            timings.written(snapshot.ledger().writerGeneration(), ioNanos);
             completions.add(new Completion(snapshot.ledger().writerGeneration(), snapshot.digest(), outcome, snapshot));
         });
     }
@@ -167,6 +183,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
         if (completion != null) {
             EscrowTags.require(captured != null && completion.generation() == captured.ledger().writerGeneration()
                     && completion.digest().equals(captured.digest()), "Stale or foreign writer callback");
+            timings.acknowledged(completion.generation());
             running = false; boolean wasUnavailable = unavailable();
             if (completion.outcome() == Outcome.UNKNOWN) {
                 if (!uncertain) {

@@ -14,6 +14,12 @@ final class EscrowTerminalRetryCut {
     private int injected;
     private int observedFailures;
 
+    static void assertInvalidated(GameTestHelper helper, MinecraftServer server, RocketTransferRecord record) {
+        var captures = (Map<?, ?>) field(EscrowRuntime.of(server).terminal(), "work");
+        var source = (EscrowFlightSource) field(captures.get(record.transferId()), "source");
+        helper.assertTrue(!source.unchanged.get(), "Departure did not invalidate the F6/F7 lease synchronously");
+    }
+
     static void assertWriteFailure(GameTestHelper helper, MinecraftServer server, RocketTransferRecord record) {
         EscrowTestEndpoints.requireEnabled(server);
         var histories = (EscrowTerminalRetries) field(EscrowRuntime.of(server).terminal(), "retries");

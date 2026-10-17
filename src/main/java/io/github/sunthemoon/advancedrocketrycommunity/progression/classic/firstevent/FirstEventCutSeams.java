@@ -206,6 +206,11 @@ public final class FirstEventCutSeams {
 
     /** FP7a observes the real completion's WAIT, rather than merely observing an unreadable root at startup. */
     public static void moonDeferred(MinecraftServer server) {
+        if (Boolean.getBoolean("advancedrocketrycommunity.releaseTestHooks")
+                && "GOVERNED_BENCH".equals(System.getProperty("advancedrocketrycommunity.escrowCase"))) {
+            EscrowTestEndpoints.requireEnabled(server);
+            io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime.of(server).checkpoint("WORLD_FIRST_DEFER");
+        }
         if (!is(server, Cut.FP7A)) { return; }
         moonWaitObserved = true;
         AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_TEST first_event_fixture completion_wait");

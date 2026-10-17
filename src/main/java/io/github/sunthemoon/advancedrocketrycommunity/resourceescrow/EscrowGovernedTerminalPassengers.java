@@ -24,10 +24,14 @@ public final class EscrowGovernedTerminalPassengers {
     /** Scheduling hint only. A positive result never supplies a terminal proof or action authority. */
     public static boolean present(MinecraftServer server, RocketTransferRecord record, EscrowFlightTables.Outcome outcome,
                                   RocketEntity survivor) {
-        if (!server.isSameThread() || survivor == null || !survivor.isAlive() || !survivor.isAddedToWorld()
-                || survivor.getServer() != server || !survivor.operational()) { return false; }
         var manifest = (outcome == EscrowFlightTables.Outcome.CANCELLED
                 ? record.sourceFlightData() : record.destinationFlightData()).passengers();
+        return present(server, manifest, survivor);
+    }
+
+    static boolean present(MinecraftServer server, RocketPassengerManifest manifest, RocketEntity survivor) {
+        if (!server.isSameThread() || survivor == null || !survivor.isAlive() || !survivor.isAddedToWorld()
+                || survivor.getServer() != server || !survivor.operational()) { return false; }
         return resolved(manifest, id -> {
             var player = server.getPlayerList().getPlayer(id);
             return player != null && player.getServer() == server && !player.isRemoved() && player.isAlive()

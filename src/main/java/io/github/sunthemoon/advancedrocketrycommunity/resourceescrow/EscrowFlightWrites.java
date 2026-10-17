@@ -13,7 +13,7 @@ import java.util.function.BiFunction;
 
 /** Bounded owner-thread batching; one exact generation acknowledges all independent requests. */
 final class EscrowFlightWrites {
-    private record Request(UUID logical, BiFunction<EscrowLedger, Long, EscrowLedger> change, BooleanSupplier valid, Consumer<Boolean> callback) { }
+    private record Request(UUID logical, BiFunction<EscrowLedger, Long, EscrowLedger> change, BooleanSupplier valid, Consumer<Boolean> callback, long requestedAt) { }
     private final Map<UUID, Request> queued = new LinkedHashMap<>();
     private List<Request> active = List.of();
     private boolean closed;
@@ -23,7 +23,7 @@ final class EscrowFlightWrites {
         java.util.Objects.requireNonNull(logical); java.util.Objects.requireNonNull(change);
         java.util.Objects.requireNonNull(valid); java.util.Objects.requireNonNull(callback);
         if (closed || queued.size() + active.size() >= 64 || locked(logical)) { return false; }
-        queued.put(logical, new Request(logical, change, valid, callback)); return true;
+        queued.put(logical, new Request(logical, change, valid, callback, System.nanoTime())); return true;
     }
 
     boolean pending() { return !queued.isEmpty(); }
@@ -38,6 +38,7 @@ final class EscrowFlightWrites {
         for (var request : selected) {
             try {
                 if (!request.valid().getAsBoolean()) { refused.add(request); continue; }
+                writer.timing("flight_writer_queue_age", System.nanoTime() - request.requestedAt());
                 var next = request.change().apply(candidate, generation);
                 requireScope(candidate, next, request.logical());
                 EscrowSettlementCapacity.preflight(next); candidate = next; accepted.add(request);
@@ -47,7 +48,7 @@ final class EscrowFlightWrites {
         active = List.copyOf(accepted);
         if (active.isEmpty()) { refused.forEach(value -> value.callback().accept(false)); return false; }
         var capturedRequests = active;
-        var snapshot = EscrowLedgerWriter.Snapshot.of(candidate.generation(generation), Set.of());
+        var snapshot = writer.snapshot(candidate.generation(generation), Set.of());
         boolean started = writer.request(() -> snapshot, result -> {
             acknowledge.accept(result);
             if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }

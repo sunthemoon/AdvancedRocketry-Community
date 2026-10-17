@@ -20,6 +20,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
     public enum Result { HELD, WAITING, ACKNOWLEDGED }
     private final Map<UUID, Work> work = new HashMap<>();
     private final EscrowTerminalRetries retries = new EscrowTerminalRetries();
+    private final EscrowGovernedEnvelopeHolds envelopeHolds = new EscrowGovernedEnvelopeHolds();
     private boolean closed;
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
@@ -30,6 +31,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
             entry.getValue().close(); return true;
         });
         if (journal.actionAuthorityAvailable()) {
+            envelopeHolds.retain(logical -> journal.findByLogicalRocket(logical).isPresent());
             retries.retain(logical -> journal.findByLogicalRocket(logical).isPresent()
                     || work.values().stream().anyMatch(state -> state.record.logicalRocketId().equals(logical)));
         }
@@ -65,8 +67,11 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
             return Result.ACKNOWLEDGED;
         }
         if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE
-                || !EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor) || !boundary.getAsBoolean()
-                || !EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor)) { return Result.HELD; }
+                || !EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor) || !boundary.getAsBoolean()) { return Result.HELD; }
+        if (envelopeHolds.capture(record.logicalRocketId(), data.ledger(), survivor, null,
+                () -> EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor) ? Boolean.TRUE : null) == null) {
+            return Result.HELD;
+        }
         if (state != null && (!state.record.equals(record) || state.source.rocket != survivor
                 || state.outcome != outcome || !state.source.observe())) {
             state.close(); work.remove(record.transferId(), state); state = null;
@@ -74,8 +79,8 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         if (state == null) {
             requireCapacity(work, record.transferId());
             retries.history(record.logicalRocketId());
-            state = new Work(record, outcome, new EscrowFlightSource(survivor,
-                    () -> EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor) && boundary.getAsBoolean()));
+            state = new Work(record, outcome, waitSource(survivor,
+                    () -> EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor), boundary));
             work.put(record.transferId(), state);
         }
         if (state.proofs.values().stream().anyMatch(proof -> !proof.valid())) {
@@ -130,6 +135,11 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         state.release(); retries.failed(state.record, phase, reason, tick);
     }
 
+    /** R13/R16: waits observe immutable identities and live riders, not a fresh serialized survivor each tick. */
+    static EscrowFlightSource waitSource(RocketEntity survivor, BooleanSupplier passengersPresent, BooleanSupplier boundary) {
+        return new EscrowFlightSource(survivor, () -> passengersPresent.getAsBoolean() && boundary.getAsBoolean());
+    }
+
     void observe(RocketEntity rocket) {
         for (var state : work.values()) {
             if (state.source.rocket == rocket) {
@@ -171,7 +181,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
                 "Terminal checkpoint work limit exceeded");
     }
 
-    @Override public void close() { closed = true; work.values().forEach(Work::close); work.clear(); retries.clear(); }
+    @Override public void close() { closed = true; work.values().forEach(Work::close); work.clear(); retries.clear(); envelopeHolds.clear(); }
 
     private static final class Work implements AutoCloseable {
         final RocketTransferRecord record;

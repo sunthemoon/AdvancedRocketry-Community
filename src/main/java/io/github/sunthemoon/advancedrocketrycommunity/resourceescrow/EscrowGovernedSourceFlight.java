@@ -22,6 +22,7 @@ import net.minecraft.world.phys.Vec3;
 public final class EscrowGovernedSourceFlight {
     public enum Result { HELD, COUNTDOWN, ASCENT, TRANSIT, DESTINATION_DUE }
     private final Map<UUID, Binding> bindings = new HashMap<>();
+    private final EscrowGovernedEnvelopeHolds envelopeHolds = new EscrowGovernedEnvelopeHolds();
 
     public Result tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,
                        RocketEntity source, BooleanSupplier boundary) {
@@ -39,6 +40,7 @@ public final class EscrowGovernedSourceFlight {
         if (authority == null || authority.decision().route() != EscrowGovernedDispatch.Route.ACTIVE
                 || record.phase() != RocketTransferPhase.PREPARED) { return Result.HELD; }
         bindings.entrySet().removeIf(entry -> journal.find(entry.getValue().authority.record().transferId()).isEmpty());
+        envelopeHolds.retain(logical -> journal.findByLogicalRocket(logical).isPresent());
         long levelTime = source.level().getGameTime();
         var binding = bindings.get(record.logicalRocketId());
         if (binding != null && binding.entity != source && binding.entity.isRemoved()) {
@@ -48,9 +50,13 @@ public final class EscrowGovernedSourceFlight {
         }
         if (binding != null && !binding.sameNative(source)) { return Result.HELD; }
         if (binding == null || !binding.valid(source, boundary)) {
-            var observed = EscrowNativeEnvelope.rocket(source);
-            var clock = binding == null ? EscrowGovernedSourceClock.resume(record, observed, levelTime) : binding.clock;
-            if (!EscrowGovernedSourceRecovery.sourceMatches(record, observed, clock.at(levelTime))) { return Result.HELD; }
+            var previous = binding;
+            var clock = envelopeHolds.capture(record.logicalRocketId(), data.ledger(), source, null, () -> {
+                var observed = EscrowNativeEnvelope.rocket(source);
+                var candidate = previous == null ? EscrowGovernedSourceClock.resume(record, observed, levelTime) : previous.clock;
+                return EscrowGovernedSourceRecovery.sourceMatches(record, observed, candidate.at(levelTime)) ? candidate : null;
+            });
+            if (clock == null) { return Result.HELD; }
             if (binding == null && bindings.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) { return Result.HELD; }
             binding = new Binding(authority, source, clock); bindings.put(record.logicalRocketId(), binding);
         }
@@ -84,7 +90,7 @@ public final class EscrowGovernedSourceFlight {
         return result;
     }
 
-    public void clear() { bindings.clear(); }
+    public void clear() { bindings.clear(); envelopeHolds.clear(); }
 
     /** F4 uses the checked source's logical phase clock, not a rolled-back Level timestamp. */
     long publicationTime(EscrowGovernedDispatch.Authority authority, RocketEntity source, BooleanSupplier boundary) {
