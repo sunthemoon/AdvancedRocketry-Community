@@ -12,7 +12,7 @@ public final class EscrowGovernedCleanup {
     /** Only queues a journal mutation. Its checked acknowledgement is still required for every effect. */
     public static boolean remove(EscrowCoordinator coordinator, RocketTransferSavedData journal,
                                  RocketTransferRecord record, BooleanSupplier boundary) {
-        if (!coordinator.governedAvailable(record.logicalRocketId()) || !journal.actionAuthorityAvailable()
+        if (!coordinator.governedAvailable(record.logicalRocketId()) || !journal.actionAuthorityAvailable(record.logicalRocketId())
                 || journal.find(record.transferId()).filter(record::equals).isEmpty()
                 || EscrowGovernedDispatch.decide(coordinator.ledger(), record).route() != EscrowGovernedDispatch.Route.CLEANUP
                 || !boundary.getAsBoolean()) { return false; }
@@ -23,13 +23,13 @@ public final class EscrowGovernedCleanup {
     /** An acknowledged terminal root plus checked absence, including after a plain restart. */
     public static boolean absent(EscrowCoordinator coordinator, RocketTransferSavedData journal, EscrowFlightTables.Armed arm) {
         return coordinator.governedAvailable(arm.logical()) && terminal(coordinator.ledger(), arm)
-                && journal.actionAuthorityAvailable()
+                && journal.actionAuthorityAvailable(arm.logical())
                 && EscrowFlightJournal.noTransfer(journal, arm.logical(), arm.transfer(), arm.serial()).getAsBoolean();
     }
 
     /** Transient acknowledgements stay silent; contradictory checked cleanup needs an operator. */
     public static String blockedReason(EscrowCoordinator coordinator, RocketTransferSavedData journal, EscrowFlightTables.Armed arm) {
-        if (!coordinator.governedAvailable(arm.logical()) || !journal.actionAuthorityAvailable()) { return null; }
+        if (!coordinator.governedAvailable(arm.logical()) || !journal.actionAuthorityAvailable(arm.logical())) { return null; }
         if (!terminal(coordinator.ledger(), arm)) { return "GOVERNED_CLEANUP_AUTHORITY_CONFLICT"; }
         return EscrowFlightJournal.noTransfer(journal, arm.logical(), arm.transfer(), arm.serial()).getAsBoolean()
                 ? null : "GOVERNED_CLEANUP_JOURNAL_CONFLICT";
@@ -41,10 +41,10 @@ public final class EscrowGovernedCleanup {
         if (!absent(coordinator, journal, arm) || !dependenciesReleased.getAsBoolean()) { return false; }
         var lease = EscrowFlightJournal.noTransfer(journal, arm.logical(), arm.transfer(), arm.serial());
         return coordinator.flightWrite(arm.logical(), (root, generation) -> {
-            EscrowTags.require(terminal(root, arm) && journal.actionAuthorityAvailable() && lease.getAsBoolean()
+            EscrowTags.require(terminal(root, arm) && journal.actionAuthorityAvailable(arm.logical()) && lease.getAsBoolean()
                     && dependenciesReleased.getAsBoolean(), "F8 lost its exact terminal entry or acknowledged cleanup");
             return EscrowFlightAuthority.prune(root, arm);
-        }, lease, committed -> completion.accept(committed && lease.getAsBoolean() && journal.actionAuthorityAvailable()
+        }, lease, committed -> completion.accept(committed && lease.getAsBoolean() && journal.actionAuthorityAvailable(arm.logical())
                 && coordinator.ledger().armedFlights().stream().noneMatch(value -> value.equals(arm))));
     }
 

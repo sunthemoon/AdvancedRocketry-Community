@@ -94,7 +94,11 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         try {
             var references = intent.observations().stream().map(EscrowSettlementIntent.Observation::endpoint).toList();
             var journal = RocketTransferSavedData.get(server);
-            if (!journal.retryChecked(server)) { return; }
+            var members = coordinator.ledger().records().stream().filter(op -> intent.ids().contains(op.id())).toList();
+            // R17 item 3: O3/O4 wait for each member rocket's checked state, not for a quiet journal.
+            if (!journal.retryChecked(server) && !members.stream().allMatch(op -> journal.actionAuthorityAvailable(op.guard().rocket()))) {
+                return;
+            }
             boolean installed = EscrowSettlementTombstones.installed(coordinator.ledger(), intent);
             requireJournal(coordinator.ledger(), intent, journal, installed);
             var next = intent.checkpointed().stream().filter(end -> !state.proofs.containsKey(end.endpoint().key())).findFirst();
@@ -133,7 +137,7 @@ final class EscrowSettlementRecovery implements AutoCloseable {
             if (!installed) {
                 state.phase = "O3"; state.writing = true;
                 runtime.checkpoint("O3_CAPTURE");
-                if (!coordinator.settlementWrite(intent, state.proofs, false, journal.acknowledgedLease(), committed -> {
+                if (!coordinator.settlementWrite(intent, state.proofs, false, EscrowFlightJournal.members(journal, members), committed -> {
                     state.writing = false;
                     if (committed) { runtime.checkpoint("O3_AFTER"); }
                     else { stalled(runtime, intent, state, "O3_WRITE_UNACKNOWLEDGED", server.getTickCount()); }
@@ -147,11 +151,11 @@ final class EscrowSettlementRecovery implements AutoCloseable {
                 if (journal.find(op.guard().transfer()).isPresent()) { journal.remove(op.guard().transfer()); removed = true; }
             }
             if (removed) { state.phase = "O3J"; journal.flushChecked(server); return; }
-            if (!journal.acknowledgedCurrent()) { return; }
+            if (!members.stream().allMatch(op -> journal.actionAuthorityAvailable(op.guard().rocket()))) { return; }
             runtime.checkpoint("O3J_AFTER");
             state.phase = "O4"; state.writing = true;
             runtime.checkpoint("O4_CAPTURE");
-            if (!coordinator.settlementWriteExact(intent, state.proofs, true, journal.acknowledgedLease(), acknowledgement -> {
+            if (!coordinator.settlementWriteExact(intent, state.proofs, true, EscrowFlightJournal.members(journal, members), acknowledgement -> {
                 state.writing = false;
                 if (acknowledgement.committed()) {
                     runtime.checkpoint("O4_AFTER"); state.clear();
@@ -189,10 +193,11 @@ final class EscrowSettlementRecovery implements AutoCloseable {
         throw new IllegalArgumentException("Unknown proof endpoint");
     }
     static void requireJournal(EscrowLedger root, EscrowSettlementIntent intent, RocketTransferSavedData journal, boolean installed) {
-        EscrowTags.require(journal.acknowledgedCurrent(), "Unacknowledged journal");
         for (var op : root.records()) {
             if (!intent.ids().contains(op.id())) { continue; }
-            var current = journal.acknowledgedGuard(op.guard().rocket()).orElseThrow();
+            // R17 item 3: each member rocket's own checked guard; another rocket's pending change does not hold it.
+            var current = journal.logicalGuard(op.guard().rocket()).orElse(null);
+            EscrowTags.require(current != null, "Unacknowledged journal");
             if (installed && current.transfer() == null) { continue; }
             EscrowTags.require(RocketEscrowAudit.journal(op.guard(), current) == EscrowReason.NONE, "Frozen matching journal changed");
         }

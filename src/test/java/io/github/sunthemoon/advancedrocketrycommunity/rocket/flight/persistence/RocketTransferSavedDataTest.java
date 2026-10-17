@@ -133,6 +133,11 @@ class RocketTransferSavedDataTest {
     }
 
     private static RocketTransferRecord record(UUID transfer, UUID logical, UUID sourceEntity) {
+        return record(transfer, logical, sourceEntity, MOON_ORIGIN);
+    }
+
+    /** Another rocket's record; a different arrival origin keeps its destination clear of {@link #record()}. */
+    static RocketTransferRecord record(UUID transfer, UUID logical, UUID sourceEntity, RocketPosition arrival) {
         ResourceLocation iron = ResourceLocation.tryParse("minecraft:iron_block");
         List<RocketBlock> blocks = List.of(
                 new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(iron, Map.of())),
@@ -153,7 +158,7 @@ class RocketTransferSavedDataTest {
         RocketStructureSnapshot destination = source.relocated(
                 UUID.nameUUIDFromBytes(("destination:" + transfer).getBytes(java.nio.charset.StandardCharsets.UTF_8)),
                 RocketFlightPlanner.MOON.dimensionId(),
-                MOON_ORIGIN,
+                arrival,
                 160L
         );
         RocketFuelState fuel = RocketFuelState.empty(1_000L).fill(1_000L).state();
@@ -183,7 +188,7 @@ class RocketTransferSavedDataTest {
                 sourceFlight.fuel().debit(transfer, plan.requiredFuel()).state(),
                 RocketFlightPlanner.MOON.bodyId(),
                 RocketFlightPlanner.MOON.dimensionId(),
-                MOON_ORIGIN,
+                arrival,
                 RocketFlightLimits.COUNTDOWN_TICKS
                         + RocketFlightLimits.ASCENT_TICKS
                         + RocketFlightLimits.TRANSIT_TICKS
