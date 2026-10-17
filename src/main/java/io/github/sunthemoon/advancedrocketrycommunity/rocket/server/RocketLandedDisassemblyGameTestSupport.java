@@ -94,6 +94,20 @@ public final class RocketLandedDisassemblyGameTestSupport {
     }
 
     /**
+     * W92-R1: M0's read-only decision against the world journal, with or without its record clause. DISASSEMBLY_PENDING
+     * means that M0 would release T; any other code is the one the request answers. Nothing changes.
+     */
+    public RocketValidationCode admission(RocketEntity rocket, boolean recordClause) {
+        var server = helper.getLevel().getServer();
+        var journal = RocketTransferSavedData.get(server);
+        var transfers = flights.transfers();
+        var snapshot = rocket.snapshot().orElseThrow();
+        var record = journal.findByLogicalRocket(rocket.assemblyTransactionId().orElseThrow()).orElse(null);
+        return transfers.landedDisassemblies().admission(rocket, record, journal, transfers.landedPort(server, journal),
+                () -> disassembly.preflight((ServerLevel) rocket.level(), rocket, snapshot), recordClause).code();
+    }
+
+    /**
      * M0 and M1 against an isolated checked journal: the production request, preflight, P and port, except that the
      * continuation is queued without a flush, so the test performs each write with the committer it chooses. A null
      * requester is the release-test hook.

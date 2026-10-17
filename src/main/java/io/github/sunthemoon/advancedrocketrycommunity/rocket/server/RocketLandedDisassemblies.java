@@ -137,13 +137,25 @@ final class RocketLandedDisassemblies {
             return RocketValidationCode.DISASSEMBLY_PENDING;
         }
         RocketTransferRecord record = journal.findByLogicalRocket(logical).orElse(null);
-        var decision = RocketLandedDisassemblyRules.admit(record != null, journal.resourceMutationUnproved(logical),
-                () -> RocketLandedDisassemblyRules.landedRecordAdmitted(record.schemaVersion(),
-                        record.nativeTransfer().isPresent())
-                        && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record),
-                () -> port.bayAllowsRemoval(record), journal.canQueueEffect(), hasCapacity(), preflight);
+        var decision = admission(rocket, record, journal, port, preflight, true);
         return decision.admission() == RocketLandedDisassemblyRules.Admission.RELEASE
                 ? release(journal, record, rocket.getUUID(), request, port) : decision.code();
+    }
+
+    /**
+     * M0's read-only decision for L's record. Production always applies the record clause; W92-R1's G9 also evaluates
+     * it without the clause to show that the clause alone refuses a governed record.
+     */
+    RocketLandedDisassemblyRules.Decision admission(RocketEntity rocket, RocketTransferRecord record,
+                                                    RocketTransferSavedData journal, Port port,
+                                                    Supplier<Optional<RocketValidationCode>> preflight,
+                                                    boolean recordClause) {
+        return RocketLandedDisassemblyRules.admit(record != null,
+                journal.resourceMutationUnproved(rocket.assemblyTransactionId().orElseThrow()),
+                () -> (!recordClause || RocketLandedDisassemblyRules.landedRecordAdmitted(record.schemaVersion(),
+                        record.nativeTransfer().isPresent()))
+                        && RocketTransferEntities.isReplaceableLandedAuthority(rocket, record),
+                () -> port.bayAllowsRemoval(record), journal.canQueueEffect(), hasCapacity(), preflight);
     }
 
     /**
