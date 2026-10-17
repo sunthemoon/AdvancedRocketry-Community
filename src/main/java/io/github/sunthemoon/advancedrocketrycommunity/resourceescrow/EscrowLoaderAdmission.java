@@ -283,10 +283,18 @@ public final class EscrowLoaderAdmission {
         return durable && held ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.PREPARING;
     }
 
-    /** Queues a paced device's attempt once in the fair queue; false when the queue is full (it retries next interval). */
-    public static boolean offer(FluidFuelLoaderBlockEntity loader, EscrowFillQueue.Attempt attempt) {
+    /**
+     * Queues a paced device's attempt once in the fair queue (W95-R5): READY while it waits there, or ESCROW_FULL, with
+     * nothing queued, when the bounded queue is full; the device retries at its next interval.
+     */
+    public static FluidFuelLoaderStatus offer(FluidFuelLoaderBlockEntity loader, EscrowFillQueue.Attempt attempt) {
         var server = ((ServerLevel) loader.getLevel()).getServer();
-        return EscrowRuntime.of(server).fills(server).offer(loader.root().orElseThrow().device(), attempt);
+        return queued(EscrowRuntime.of(server).fills(server).offer(loader.root().orElseThrow().device(), attempt));
+    }
+
+    /** READY means that the device waits in the fair queue; a refused offer queued nothing. */
+    static FluidFuelLoaderStatus queued(boolean waiting) {
+        return waiting ? FluidFuelLoaderStatus.READY : FluidFuelLoaderStatus.ESCROW_FULL;
     }
 
     static EscrowEndpoint.Key rocketKey(ServerLevel level, RocketEntity rocket) {

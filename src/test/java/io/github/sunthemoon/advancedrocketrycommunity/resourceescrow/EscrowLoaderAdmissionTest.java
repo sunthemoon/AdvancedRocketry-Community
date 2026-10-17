@@ -119,6 +119,20 @@ class EscrowLoaderAdmissionTest {
         assertTrue(EscrowLoaderAdmission.switchOpen(true, false, () -> false, false, false, () -> false));
     }
 
+    /** W95-R5: READY only for a device that waits in the fair queue; a full queue gives a refusal that moved nothing. */
+    @Test void aFullFairQueueGivesEscrowFullNotReady() {
+        assertEquals(FluidFuelLoaderStatus.READY, EscrowLoaderAdmission.queued(true));
+        var refused = EscrowLoaderAdmission.queued(false);
+        assertEquals(FluidFuelLoaderStatus.ESCROW_FULL, refused);
+        assertTrue(refused.refusal());
+        var queue = new EscrowFillQueue();
+        for (int i = 0; i < EscrowFillQueue.CAPACITY; i++) { assertTrue(queue.offer(EscrowTestFixtures.id(i), () -> false)); }
+        assertEquals(FluidFuelLoaderStatus.ESCROW_FULL, EscrowLoaderAdmission.queued(queue.offer(EscrowTestFixtures.id(10_000), () -> false)));
+        assertFalse(queue.waiting(EscrowTestFixtures.id(10_000)));
+        assertEquals(FluidFuelLoaderStatus.READY, EscrowLoaderAdmission.queued(queue.offer(EscrowTestFixtures.id(0), () -> false)),
+                "A device that already waits stays READY");
+    }
+
     @Test void theFairQueueVisitsInArrivalOrderOncePerDeviceWithOneCapturePerTick() {
         var queue = new EscrowFillQueue(); var visited = new ArrayList<Integer>();
         for (int i = 0; i < 12; i++) {

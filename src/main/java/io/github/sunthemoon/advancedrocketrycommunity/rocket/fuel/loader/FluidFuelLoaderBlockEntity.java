@@ -230,7 +230,8 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
     /**
      * One attempt, which the ticker runs at most once per refill interval. It runs every eligibility check a fill would.
      * Where a fill would start it gives ADMISSION_DISABLED, unless the escrow adapter's gated switch is open: then the
-     * device waits once in the fair queue (READY), and only that queue's visit captures or reserves anything.
+     * device waits once in the fair queue (READY), or gets ESCROW_FULL when that bounded queue is full, and only the
+     * queue's visit captures or reserves anything.
      */
     public FluidFuelLoaderStatus attempt() {
         FluidFuelLoaderStatus refusal = deviceRefusal();
@@ -248,8 +249,7 @@ public final class FluidFuelLoaderBlockEntity extends BlockEntity implements Men
         if (!EscrowLoaderAdmission.enabled(server.getServer(), root.device())) {
             return FluidFuelLoaderStatus.ADMISSION_DISABLED;
         }
-        EscrowLoaderAdmission.offer(this, this::admitFromQueue);
-        return FluidFuelLoaderStatus.READY;
+        return EscrowLoaderAdmission.offer(this, this::admitFromQueue);
     }
 
     /**
