@@ -2,7 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.endgame.command;
 
 import com.mojang.authlib.GameProfile;
 import io.netty.channel.embedded.EmbeddedChannel;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
@@ -23,21 +23,30 @@ import net.minecraft.world.phys.Vec3;
  * They play in creative mode: drill owners and riders stand in vacuum, and nothing in the endgame systems depends on
  * the game mode. Their channels belong to one server: {@link #clear} forgets them when it stops (review C13-F8).
  */
-final class ReleaseTestPlayers {
-    private static final Map<UUID, EmbeddedChannel> CHANNELS = new HashMap<>();
+public final class ReleaseTestPlayers {
+    private static final String HOOKS = "advancedrocketrycommunity.releaseTestHooks";
+    private static final Map<MinecraftServer, Map<ServerPlayer, OwnedChannel>> CHANNELS = new IdentityHashMap<>();
 
     private ReleaseTestPlayers() {
     }
 
     /** The player with this ID at {@code at} in {@code level}, joining it first when it is offline. */
-    static ServerPlayer place(MinecraftServer server, UUID id, String name, ServerLevel level, Vec3 at) {
+    public static ServerPlayer place(MinecraftServer server, UUID id, String name, ServerLevel level, Vec3 at) {
+        requireEnabled(server);
+        if (level.getServer() != server) { throw new IllegalArgumentException("Foreign test-player Level"); }
+        var channels = CHANNELS.computeIfAbsent(server, ignored -> new IdentityHashMap<>());
         ServerPlayer player = server.getPlayerList().getPlayer(id);
         if (player == null) {
             player = new ServerPlayer(server, level, new GameProfile(id, name));
             Connection connection = new Connection(PacketFlow.SERVERBOUND);
-            CHANNELS.put(id, new EmbeddedChannel(connection));
-            server.getPlayerList().placeNewPlayer(connection, player);
+            EmbeddedChannel channel = new EmbeddedChannel(connection);
+            try {
+                server.getPlayerList().placeNewPlayer(connection, player);
+                channels.put(player, new OwnedChannel(player.connection, channel));
+            } catch (RuntimeException failed) { channel.finishAndReleaseAll(); throw failed; }
             player.setGameMode(GameType.CREATIVE);
+        } else if (!owned(channels, player, player.connection)) {
+            throw new IllegalStateException("Cannot adopt a connection not created by the release-test facility");
         }
         player.teleportTo(level, at.x, at.y, at.z, 0.0F, 0.0F);
         return player;
@@ -48,28 +57,60 @@ final class ReleaseTestPlayers {
      * keep-alives; forgets players who left. The server ticks only the connections it accepted, so without this a test
      * player would never run its player tick, nor the gravity-field lookup in it.
      */
-    static void pump(MinecraftServer server) {
-        Iterator<Map.Entry<UUID, EmbeddedChannel>> entries = CHANNELS.entrySet().iterator();
+    public static void pump(MinecraftServer server) {
+        requireEnabled(server);
+        var channels = CHANNELS.get(server);
+        if (channels == null) { return; }
+        Iterator<Map.Entry<ServerPlayer, OwnedChannel>> entries = channels.entrySet().iterator();
         while (entries.hasNext()) {
-            Map.Entry<UUID, EmbeddedChannel> entry = entries.next();
-            ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-            if (player == null) {
+            var entry = entries.next();
+            ServerPlayer player = entry.getKey();
+            if (server.getPlayerList().getPlayer(player.getUUID()) != player
+                    || !owned(channels, player, player.connection)) {
+                entry.getValue().channel.finishAndReleaseAll();
                 entries.remove();
                 continue;
             }
             player.connection.tick();
             Object message;
-            while ((message = entry.getValue().readOutbound()) != null) {
+            while ((message = entry.getValue().channel.readOutbound()) != null) {
                 if (message instanceof ClientboundKeepAlivePacket keepAlive) {
                     player.connection.handleKeepAlive(new ServerboundKeepAlivePacket(keepAlive.getId()));
                 }
+                io.netty.util.ReferenceCountUtil.release(message);
             }
         }
     }
 
+    /** Only this server's exact facility-created player/connection pairs may enter escrow fixtures. */
+    public static boolean ownsAllConnectedPlayers(MinecraftServer server) {
+        if (!Boolean.getBoolean(HOOKS) || !server.isSameThread()) { return false; }
+        var channels = CHANNELS.get(server);
+        return server.getPlayerList().getPlayers().stream().allMatch(player ->
+                owned(channels, player, player.connection));
+    }
+
+    // Identity, not UUID/name/equality, prevents a later login from inheriting fixture authority.
+    static boolean owned(Map<?, OwnedChannel> channels, Object player, Object connection) {
+        var entry = channels == null ? null : channels.get(player);
+        return entry != null && entry.connection == connection && entry.channel.isOpen();
+    }
+
+    static final class OwnedChannel {
+        final Object connection;
+        final EmbeddedChannel channel;
+        OwnedChannel(Object connection, EmbeddedChannel channel) { this.connection = connection; this.channel = channel; }
+    }
+
+    private static void requireEnabled(MinecraftServer server) {
+        if (!Boolean.getBoolean(HOOKS) || !server.isSameThread()) {
+            throw new IllegalStateException("Release-test players require enabled hooks and the server thread");
+        }
+    }
+
     /** At server stop: the channels reach that server's players and Levels. */
-    static void clear() {
-        CHANNELS.values().forEach(EmbeddedChannel::close);
-        CHANNELS.clear();
+    static void clear(MinecraftServer server) {
+        var channels = CHANNELS.remove(server);
+        if (channels != null) { channels.values().forEach(owned -> owned.channel.finishAndReleaseAll()); }
     }
 }

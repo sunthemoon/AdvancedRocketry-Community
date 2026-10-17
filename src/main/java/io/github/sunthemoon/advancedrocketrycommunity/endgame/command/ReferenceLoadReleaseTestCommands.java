@@ -81,7 +81,7 @@ public final class ReferenceLoadReleaseTestCommands {
             MinecraftForge.EVENT_BUS.addListener((ServerStoppedEvent stopped) -> {
                 fixture.restoreConfig();
                 reset();
-                ReleaseTestPlayers.clear();
+                ReleaseTestPlayers.clear(stopped.getServer());
             });
         }
         event.getDispatcher().register(Commands.literal("arce").then(Commands.literal("endgame")
