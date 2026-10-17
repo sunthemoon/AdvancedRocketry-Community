@@ -1324,6 +1324,223 @@ and credited-world reconciliation are not part of part 1.
 
 This is a development implementation note, not owner acceptance or a Gate result.
 
+### W11b2 part 2 implementation note: settlement, reconciliation and governed flights (admission disabled)
+
+This note records W11b2 part 2 as merged together with its fixes. It does not change a decision
+or accept a risk. The risks are R-031, R-032 and R-035.
+
+**Sources.**
+- **Design:** `records/W11B2-DESIGN-2.md` (frozen at `238f4b9a`) and its independent review.
+- **Root decisions:** R1 to R20 (with R19A), in `D:/GitHub/ARCE-Task-Evidence/root-queue/` and summarized in
+  the W11b2 records; each continuation's TASK names the ones it applies.
+- **Implementation:** W11b2 continuations 06 to 53 and W89, recorded in `records/W11B2.md`,
+  `records/W11B2-F7F8.md`, `records/W11B2-C41.md`, `records/W11B2-C46.md` to `records/W11B2-C53.md`
+  and `records/W89.md`.
+- **Reviews.** The settlement, C09, C11 and C0 to C8 reviews; the final review part A
+  (settlement, receipts, capacity, operator; MERGE-WITH-FOLLOWUP, SHA-256 `4d9d8273…`) and part B
+  (governed flight path; FIX-FIRST, SHA-256 `60581547…`); and the two reviews of their fixes
+  (the journal-lease fix review: FIX-FIRST, SHA-256 `d1d513c2…`, LR1 and LR2 fixed by continuation 49;
+  the flight fix review: MERGE-WITH-FOLLOWUP, SHA-256 `5a418f13…`, N1, N3, N4 and N7 fixed by
+  continuation 50).
+
+**What exists.**
+- **Settlement O1 to O4** of a frozen decision: O1 freezes the intent; O2 takes joint native
+  proofs of every endpoint; O3 installs the receipts (tombstones) with the survivors; the journal
+  records naming the settled members are removed (O3J); O4 removes the settled records. Every
+  step needs its exact acknowledgement; a released survivor's markers are pruned later by the
+  bounded pruning cursor, never by the probe.
+- **Operator commands** (`/arce escrow status`, `inspect`, `retry`, settlement preview and
+  confirm) with console provenance; a retry accelerates only retryable reasons and has one
+  200-tick cooldown per settlement intent.
+- **Ordinary reconciliation C0 to C8** for `FLUID_PROPULSION_FILL` with fixture sources only:
+  `proved=true` comes only from C7; each step's permit is one-use.
+- **The governed flight path F0 to F8**: an ARMED entry checkpoints the exact source envelope E
+  before launch (F1); a schema-3 PREPARED record (F2); bound source phases with one-use permits
+  (F3); a fixed destination identity (F4); the passenger and source moves (F5); the joint proofs
+  of the survivor (F6); the HANDED_OFF or CANCELLED outcome with the exact successor-lock release
+  (F7, R12); and cleanup that prunes the ARMED entry (F8). A pre-F2 orphan is cancelled only
+  after it proves the unchanged E and checked no-T.
+- **Rider normalization (R18).** Every governed comparison of a native rocket envelope from F1 to
+  F8 uses the envelope with its physical rider list normalized to the empty list, after checking
+  the live riders as a duplicate-free subset of the assigned passengers. The manifest and every
+  other field are compared exactly. Uncrewed digests did not change.
+- **Per-rocket journal lease (R17 item 3).** F1, F7, F8, the pre-F2 cancellation, settlement O3
+  and O4 and reconciliation C2 to C7 hold a lease on logical rocket L only; another rocket's
+  journal change does not revoke it. A coalesced flight batch is captured again without a request
+  whose guard refuses.
+- **Writer accounting (R17 item 4).** A guard refusal before replacement is its own outcome
+  (`GUARD_REFUSED`) and never counts towards writer unavailability; autosave runs while the
+  writer is unavailable.
+
+**Production admission is disabled.** A ledger can be created only by the GameTest server or the
+release-test hooks, so production worlds see none of the holds below.
+
+**Formats (unreleased, M2).** Escrow root schema 2, receipt schema 3, governed transfer record
+schema 3 with envelope 1, and journal root 3 (W44). Their definitions changed in place during development with no migration chain. A
+development escrow root written before a format change is refused at whole-world startup with
+its raw file preserved and one ERROR per start; worlds without a ledger are unaffected. R18 left
+uncrewed ARMED digests unchanged; a crewed development arm written before R18 no longer matches
+and stays held (whole-world repair or regeneration). Older jars refuse and preserve governed
+records.
+
+**Capacity.**
+- 64 permanent receipts per world lifetime, every choice counted; at most 64 receipt-backed
+  READY heads; 64 ARMED or terminal flight entries, counting terminal and UNKNOWN entries.
+- Concurrent fill capacity is min(byte capacity, 63 − permanent receipts) (part A F1): at 63
+  receipts no fill is admitted until offline repair. Pinned byte capacities (R5 to R9): an empty
+  root admits 62 unguarded or 58 guarded fills with no floors, and 60 or 56 with 29 floors.
+- A launch refused by ARMED capacity answers TRANSFER_JOURNAL_BLOCKED, releases its pad and logs
+  nothing.
+
+**Refusals, holds and quarantines (AGENTS.md section 3.3).** None rewrites or discards a saved
+file. Each refuses an action or holds resources.
+
+- **Pre-change development root (M2).** Scope: the whole world, only when the ledger file exists.
+  Every start is refused until repair; the raw file is unchanged. Log: one ERROR per start, without
+  a stack. Recovery: whole-world repair, or regeneration of a disposable fixture world.
+- **Baseline readback (M4).** Before start, a root that does not re-read identically refuses
+  whole-world startup, as above. A late bind failure makes escrow unavailable for the session:
+  every rocket in that world is non-idle (no refuelling, launch, mounting or native resource
+  change), and settlement, pruning and reconciliation stop. Log: one WARN
+  `ARCE_ESCROW_BASELINE_UNAVAILABLE`. Duration: until a stopped-server repair and restart.
+- **Settlement O1 to O4.** Scope: every endpoint of the frozen component, which covers rocket L
+  (refuelling, launch, mounting, disassembly and external movement) and its fixture sources.
+  Duration: from the O1 acknowledgement until O4, with no online rescind; indefinite under a veto,
+  a frozen-observation mismatch, an unloaded endpoint or a missing proof, retried every 200 ticks.
+  Log: INFO `ARCE_ESCROW_O1` once, INFO `ARCE_ESCROW_SETTLEMENT_HELD` once per reason change per
+  intent and after each restart, INFO `ARCE_ESCROW_O4`. While O3J's journal removal is
+  unacknowledged, part 1's journal pause applies. Recovery: automatic for retryable reasons (the
+  operator may accelerate them, once per intent every 200 ticks); a mismatch, a veto or an invalid
+  identity needs whole-world repair.
+- **Permanent receipts.** Exhaustion refuses every settlement choice and preview
+  (`RECEIPTS_FULL`) and, through the capacity rule above, every fill. A missing or abandoned logical
+  rocket, any physical copy of a settled L other than its READY head's, an exact retired transfer
+  and a missing block-entity identity stay locked for the world's lifetime. Recovery: whole-world
+  repair.
+- **Survivor markers awaiting pruning.** The released group's survivor and fixture source stay
+  non-idle until the bounded cursor can remove the leading prefix; a wait behind an earlier group
+  or live work is not sticky, a frontier that never matches holds indefinitely. Log: one WARN
+  `ARCE_ESCROW_PRUNING_REFUSED` per change of (group, endpoint, reason), and one INFO
+  `ARCE_ESCROW_PRUNING_CLEARED` when a warned endpoint later prunes; `/arce escrow inspect` shows
+  `pruning=<state>`. Recovery: automatic, otherwise whole-world repair.
+- **Ordinary reconciliation.** The C3 freeze holds the endpoints from C3 to L2. A C7 write with an
+  UNKNOWN outcome keeps the candidate and the locks. A C0 to C2 OTHER_STATE is sticky REPAIR: the
+  source debit stays held for the whole component until settlement or offline repair, with one
+  WARN per state change. A stale destination prefix is a silent wait until the rocket's first
+  tick-hook prune. A component above eight members, or a 65th Level service, is BARRIER_BOUNDS:
+  STALLED after three failures with one WARN, retried every 1,200 ticks.
+- **ARMED authority, F1 to F8.** L is not idle: it cannot launch again, be mounted externally, be
+  disassembled or killed, or be teleported, spread or moved to another dimension, and its
+  resources stay locked until the exact F7 acknowledgement (R12). Healthy duration: seconds to
+  minutes, with no log.
+- **F1 preparation.** Any refusal discards the launch, releases the tentative pad and backs off by
+  100, 400 and 1,200 ticks, with one INFO `ARCE_ESCROW_SUCCESSOR_HOLD` per transition. Another
+  rocket's journal change no longer refuses it. A full F2 callback queue no longer discards a
+  written PREPARED launch; F3 starts its countdown.
+- **Pre-F2 orphan (ARMED without T).** Held until the cancellation proves the unchanged E (R18) and
+  checked no-T; it then writes CANCELLED, and F8 prunes the arm. INFO hold lines once per
+  transition. Recovery: automatic, otherwise whole-world repair.
+- **Governed classification holds.** Loud reasons (`GOVERNED_LEDGER_MISSING`,
+  `_LEDGER_UNAVAILABLE`, `_LEDGER_MISMATCH`, `_ARM_MISSING`, `_ARM_MISMATCH`, `_ESCROW_PENDING`,
+  `_RETIRED_AUTHORITY`, `_EXACT_TRANSFER_FLOOR`, `_READY_REQUIRED`, `_READY_MISMATCH`,
+  `_TERMINAL_PHASE_MISMATCH`, `_RECORD_REQUIRED`, `_ACTION_REQUIRED`) log one
+  `ARCE_TRANSFER_FENCED ... repair=offline-whole-world` WARN per reason change per transfer and are
+  re-evaluated on the 100, 400 and 1,200-tick schedule; silent reasons (R10, R11, R14:
+  `GOVERNED_JOURNAL_UNACKNOWLEDGED`, `_LEDGER_PENDING`, `_RUNTIME_STOPPED`) log nothing. Scope: one
+  record and its logical rocket. ARM and READY mismatches are permanent and need whole-world
+  repair.
+- **Executor holds inside an ACTIVE route (R17 items 5 and 6).** Motion that the rocket's own tick
+  zeroes is transient and sets no sticky flag. A non-transient refusal (a persistent position
+  change at rest, a mismatched envelope, a native endpoint failure) logs one WARN
+  `ARCE_GOVERNED_EXECUTOR_HOLD transfer=<T> reason=<reason>` per flight and reason, only while the
+  journal still holds that flight as ACTIVE, and stops refreshing the flight tickets, so their
+  chunks unload. Duration: indefinite. Recovery: whole-world repair.
+- **F6 passenger wait.** The survivor's resources, ARMED, T, the pad and both tickets (two loaded
+  chunks) are held only while an assigned passenger is offline (R17 item 2). An online assigned
+  passenger at rest reaches F5's checked move; CANCELLED accepts an online passenger aboard or
+  unmounted in the source's Level. Duration: unbounded while the passenger stays offline; W80's
+  admin recovery is the follow-up. Log: none for the wait.
+- **F7 or F8 UNKNOWN.** The writer keeps the exact candidate, so every other rocket's F1, F7, F8
+  and pre-F2 write waits behind it (world-wide escrow-writer serialization, not a Level save veto),
+  retried every 200 ticks. Log: one INFO per unknown episode and one on resolution.
+- **Writer unavailable.** Three unresolved real write outcomes (a guard refusal does not count,
+  R17 item 4) refuse new admissions, flight writes and settlements and fence governed transfers
+  with WARN lines. A dirty autosave still runs and a COMMITTED generation restores availability.
+  Log: one WARN on entry, one INFO on recovery.
+- **Terminal entries awaiting F8.** The slot stays charged and L cannot relaunch. Blocked reasons
+  `GOVERNED_CLEANUP_AUTHORITY_CONFLICT`, `_JOURNAL_CONFLICT` and `_PAD_UNAVAILABLE` log one WARN per
+  reason change.
+- **Schema-3 record refusal.** A governed record that fails envelope decode, has an unknown field
+  or fails digest validation blocks the whole transfer journal under the existing managed-root
+  policy, so every transfer in the world stops. Log: the existing journal ERROR. Recovery:
+  whole-world repair.
+
+**Accepted interval (R13).** A motion change between a capture and its off-thread replacement is
+seen only at the next owner-thread observation. The write records the proved disk state, and such
+a change cannot duplicate or lose the rocket.
+
+**Pending pads.** A governed launch's selected destination stays reserved in memory from F1
+admission until its F2 publication callback returns or the launch is refused or discarded, and is
+kept while the ARMED write is UNKNOWN (continuation 53). Pad selection for every launch, governed
+or not, excludes these regions as well as the journal's; when all pads are taken the request gets
+the existing `LANDING_PAD_UNAVAILABLE`. The set is bounded by the 64 pending launches and is not
+saved: a pre-F2 arm without T is cancelled after a restart (R19, R19A).
+
+**Journal leases.** F1, F6, F7, F8, the pre-F2 cancellation, settlement O3 and O4 and
+reconciliation C2 to C7 lease only logical rocket L's checked state, so ordinary and governed work
+completes under unrelated journal activity. Another record that names the same T or serial still
+refuses the lease, checked against the acknowledged journal as well as RAM.
+
+**Known limit.** A governed return requested by the owner exists only in memory: after a restart,
+a cancelled countdown whose return was not yet applied resumes forward dispatch. Nothing is
+duplicated or lost; the flight does not do what the owner asked.
+
+**Recovery.** Retryable IO resumes by itself. A frozen mismatch, missing or invalid authority, a
+pre-change format or receipt exhaustion needs stopped-server whole-world-copy repair: back up
+every Level's regions, entities and POI, the global data, the journals, the ledger, player data
+and metadata with hashes; repair only the copy and keep the original; validate natively; do two
+save and restart cycles; then replace the whole stopped world. Restoring one file, including a
+migration backup, is not safe, and a restart alone is not a repair.
+
+**Limits.** There is no reconstruction of a missing credited source (W27f), and R-032's
+exclusions remain.
+
+**Accepted deviation (part A F6).** Receipt schema 3 does not name the predecessor READY head
+(design 2 section 1 says O3 names it). This has no safety effect: L is locked from O1 to O4, and
+O4 reads the previous head from the root it replaces.
+
+**Benchmark.** Continuation 53's native run on `453094c3` ran continuation 45's eight-flight
+reference load on the Windows 11 host (12 logical CPUs; the JVM limited to 4 processors and 4 GiB;
+not the Debian reference node): two connected players, 16 active oxygen vents, ten stations, 100
+satellite tasks, a 2,048-block assembly, eight concurrent governed flights through the player
+entry (all eight landed as checked idle survivors, six of them through F3's countdown fallback),
+one ordinary C0 to C8 retirement, settlement O1 to O4 with pruning, seven periodic saves and one
+restart. Over 1,400 measured ticks the main thread's mean was 4.14 ms, P95 12.42 ms and P99
+36.81 ms (budgets 25, 50 and 100 ms); the largest non-save tick was 164 ms (budget 500 ms) and the
+peak RSS 1.40 GiB (5.5 GiB). From the F1 request to the checked idle landed survivor took 19.6 s
+on average and 25.3 s at most. The runner reported one coverage gap, the world-first DEFER (R16
+item 3(c)), which continuation 54 adds. These short-run numbers are development evidence, not a
+soak, a reference-node measurement or a Gate result.
+
+**Open before W11b3 or any admission:**
+- Part 1's F3, F8 and N2 (designs W86 and W85, frozen; code after the merge). F9 was fixed by W77
+  and N1 by part 2.
+- Signed per-fluid accounting.
+- Governed readiness (W90): dispatch needs each end's whole discovery margin loaded and
+  entity-ticking, but the flight tickets make only each end's origin chunk entity-ticking, so a
+  flight whose margin crosses a chunk border, with no other ticket providing readiness at that
+  end, never reaches F3. Root decision R21 accepts one ticket per margin column (at most 16 per
+  end) for governed records.
+- Cold destinations (W90 Q1): F1 and F2 require the destination margin to be ready, so a governed
+  launch to an unready destination is refused. R21 chooses a bounded preflight warm-up of the
+  server-selected destination (option B); admission cannot be enabled before it.
+- A launch-boundary refusal at the exact moment of a return proof callback holds that return
+  until a restart (flight fix review residual).
+- N6: the arrival executor runs twice per COMMITTED visit (cost only; no state effect).
+- W83 (arrival entity readiness) before admission, as Root recommends.
+
+This is a development implementation note, not owner acceptance or a Gate result.
+
 ## 11. Network, provenance, progression and verification
 
 ### 11.1 Exact proposed protocol transitions and message table

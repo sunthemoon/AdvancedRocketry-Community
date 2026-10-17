@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: 493c7dc8 (the W88 merge)
-latest_hosted_regression: run 38990733224 at fcf3484d (after the W88 merge), passed
+latest_code_commit: eff6eff3 (the W11b2 merge)
+latest_hosted_regression: run 39044351335 at c420e521 (the W11b2 head merged by eff6eff3), passed
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-15
+last_updated: 2026-10-17
 ```
 
 ## Current state
@@ -59,8 +59,9 @@ branch. Each merge records its hosted run and independent review in
 - Complete in C18: most C18a devices, all C18b equipment including the laser gun, the C18c
   observatory and processor with all 17 advancements, and the C18d HUD, sounds and client
   settings.
-- The D3-A escrow core is merged with admission disabled. Its rocket integration (W11b2) is
-  in progress.
+- The D3-A escrow core and its rocket integration (W11b2: settlement, ordinary reconciliation and
+  governed flights) are merged with admission disabled. Before admission: W11b3, W90a and W90b
+  (governed readiness and the destination warm-up), part 1's F3, F8 and N2, and W83.
 
 The hosted regression runs on the exact pushed commit:
 - a clean build with the unit tests;
@@ -86,7 +87,8 @@ What is still open:
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
   No S1 campaign has run.
-- **S2.** The D3-A crash cuts wait for W11b2 and W11b3.
+- **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). The
+  S2 campaign waits for W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
 - **C19.** W58 audited it (`records/W58.md`). Merged since: the validator chain and the G4 fix
   (C19-A), the portable evidence links (W60), correction files in the Markdown check and the
