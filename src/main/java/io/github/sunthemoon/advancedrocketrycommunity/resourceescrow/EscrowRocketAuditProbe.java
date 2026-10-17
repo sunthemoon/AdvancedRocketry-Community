@@ -125,12 +125,15 @@ final class EscrowRocketAuditProbe {
     }
 
     static RocketEntity createRocket(ServerLevel level, UUID logical, boolean typed) {
+        return createRocket(level, logical, typed, new RocketPosition(64, 100, 64));
+    }
+    static RocketEntity createRocket(ServerLevel level, UUID logical, boolean typed, RocketPosition origin) {
         var descriptor = new RocketPropulsion(RocketPropulsion.Mode.MONO, 2_000, 0, 1, 1,
                 RocketPropulsion.Settings.DEFAULTS.withAllowedFluids(Map.of(RocketPropulsion.Role.MONO, List.of("minecraft:water"),
                         RocketPropulsion.Role.BIPROPELLANT_FUEL, List.of(), RocketPropulsion.Role.OXIDIZER, List.of(), RocketPropulsion.Role.WORKING_FLUID, List.of())));
         var blocks = List.of(new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of())),
                 new RocketBlock(new RocketPosition(0, 1, 0), new RocketBlockState(ResourceLocation.tryParse("minecraft:iron_block"), Map.of())));
-        var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), new RocketPosition(64, 100, 64),
+        var snapshot = RocketStructureSnapshot.create(UUID.randomUUID(), level.dimension().location(), origin,
                 blocks, List.of(new RocketPosition(0, 1, 0)), new RocketStats(2, 100, 1_000, 2_000, 1, 1, 1, 0), 0, typed ? descriptor : null);
         var created = ModEntities.ROCKET.get().create(level); EscrowTags.require(created != null, "Missing rocket type");
         created.initialize(snapshot, logical, UUID.randomUUID()); return created;

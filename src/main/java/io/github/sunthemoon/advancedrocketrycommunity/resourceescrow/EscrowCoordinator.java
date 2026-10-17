@@ -110,7 +110,7 @@ public final class EscrowCoordinator implements AutoCloseable {
             var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
             EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared floor-intent admission refused: " + reservation);
         }
-        boolean accepted = writer.request(() -> EscrowLedgerWriter.Snapshot.of(frozen, Set.of()), result -> {
+        boolean accepted = writer.request(() -> writer.snapshot(frozen, Set.of()), result -> {
             acknowledge(result);
             if (result.outcome() != EscrowLedgerWriter.Outcome.UNKNOWN && !closed) {
                 completion.accept(result.outcome() == EscrowLedgerWriter.Outcome.COMMITTED
@@ -155,7 +155,7 @@ public final class EscrowCoordinator implements AutoCloseable {
                 : EscrowSettlementTombstones.install(data.ledger(), intent);
         EscrowSettlementCapacity.preflight(candidate);
         var frozen = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
-        boolean accepted = writer.request(() -> EscrowLedgerWriter.Snapshot.of(frozen, Set.of()), result -> {
+        boolean accepted = writer.request(() -> writer.snapshot(frozen, Set.of()), result -> {
             acknowledge(result);
             if (result.outcome() == EscrowLedgerWriter.Outcome.UNKNOWN) { return; }
             // An ordinary C3 freeze may precede a later sticky repair/O1. Only exact O4,
@@ -193,7 +193,7 @@ public final class EscrowCoordinator implements AutoCloseable {
         candidate = candidate.generation(Math.addExact(writer.lastGeneration(), 1));
         Set<UUID> included = candidate.records().stream().map(EscrowOperation::id)
                 .filter(requests::containsKey).collect(java.util.stream.Collectors.toSet());
-        return EscrowLedgerWriter.Snapshot.of(candidate, included);
+        return writer.snapshot(candidate, included);
     }
     private static boolean candidateContains(EscrowLedger ledger, UUID id) {
         return ledger.records().stream().anyMatch(op -> op.id().equals(id));

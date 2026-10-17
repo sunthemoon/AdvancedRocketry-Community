@@ -38,6 +38,7 @@ public final class EscrowRuntime {
     private EscrowChainReleaseProbe chainProbe;
     private EscrowRecoveryReleaseProbe recoveryProbe;
     private EscrowBenchmarkProbe benchmark;
+    private volatile EscrowFlightBenchmarkProbe flightBenchmark;
     private EscrowRocketAuditProbe rocketAuditProbe;
     private EscrowSettlementProbe settlementProbe;
     private EscrowSettlementCompletionProbe settlementCompletionProbe;
@@ -97,7 +98,7 @@ public final class EscrowRuntime {
     EscrowSettlementRecovery settlementRecovery() { return settlements; }
     EscrowReconciliationScheduler reconciliationScheduler() { return scheduler; }
     String settlementPhase() { return settlements.phase(); }
-    EscrowTimingSink timings() { return benchmark == null ? EscrowTimingSink.NONE : benchmark; }
+    EscrowTimingSink timings() { return flightBenchmark != null ? flightBenchmark.metrics : benchmark == null ? EscrowTimingSink.NONE : benchmark; }
     java.util.List<EscrowSettlementPruning.Group> settlementGroups(EscrowLedger root) { return settlements.pruningGroups(root); }
     private EscrowReconciliationScheduler scheduler;
     private EscrowTestReconciliation reconciliation;
@@ -110,6 +111,7 @@ public final class EscrowRuntime {
         return reconciliation;
     }
     public void checkpoint(String cut) {
+        var measured = flightBenchmark; if (measured != null) { measured.metrics.checkpoint(cut); }
         var ordinary = reconciliationProbe; if (ordinary != null) { ordinary.checkpoint(cut); }
         var terminalCut = terminalTestCut; if (terminalCut != null) { terminalCut.accept(cut); }
         var nativeTerminal = terminalProbe; if (nativeTerminal != null) { nativeTerminal.checkpoint(cut); }
@@ -175,6 +177,11 @@ public final class EscrowRuntime {
         if (event.phase != TickEvent.Phase.END) { return; }
         var runtime = of(event.getServer()); if (runtime.stopping) { return; }
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
+                && EscrowFlightBenchmarkProbe.CASE.equals(System.getProperty("advancedrocketrycommunity.escrowCase"))
+                && System.getProperty("advancedrocketrycommunity.escrowScenario") != null && runtime.flightBenchmark == null) {
+            runtime.flightBenchmark = new EscrowFlightBenchmarkProbe(event.getServer());
+        }
+        if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowCase", "").startsWith("SR_")) {
             if (runtime.settlementCompletionProbe == null) { runtime.settlementCompletionProbe = new EscrowSettlementCompletionProbe(event.getServer()); }
             runtime.settlementCompletionProbe.tick();
@@ -202,7 +209,9 @@ public final class EscrowRuntime {
         if (Boolean.getBoolean(EscrowTestEndpoints.HOOKS)
                 && System.getProperty("advancedrocketrycommunity.escrowScenario") != null) {
             String testCase = System.getProperty("advancedrocketrycommunity.escrowCase", "");
-            if (testCase.startsWith("CR_")) {
+            if (testCase.equals(EscrowFlightBenchmarkProbe.CASE)) {
+                runtime.flightBenchmark.tick();
+            } else if (testCase.startsWith("CR_")) {
                 if (runtime.reconciliationProbe == null) { runtime.reconciliationProbe = new EscrowReconciliationProbe(event.getServer()); }
                 runtime.reconciliationProbe.tick();
             } else if (testCase.startsWith("FT_")) {
@@ -249,11 +258,13 @@ public final class EscrowRuntime {
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void benchmarkStart(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             var benchmark = of(event.getServer()).benchmark; if (benchmark != null) { benchmark.startTick(); }
+            var flights = of(event.getServer()).flightBenchmark; if (flights != null) { flights.startTick(); }
         }
     }
     @SubscribeEvent(priority = EventPriority.LOWEST) public static void benchmarkEnd(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             var benchmark = of(event.getServer()).benchmark; if (benchmark != null) { benchmark.endTick(); }
+            var flights = of(event.getServer()).flightBenchmark; if (flights != null) { flights.endTick(); }
         }
     }
     @SubscribeEvent(priority = EventPriority.HIGHEST) public static void stopping(ServerStoppingEvent event) {
