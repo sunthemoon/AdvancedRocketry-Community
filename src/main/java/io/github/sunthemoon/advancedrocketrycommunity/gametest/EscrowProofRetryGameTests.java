@@ -91,7 +91,7 @@ public final class EscrowProofRetryGameTests {
             if (closed) { return; }
             pacer.pace(); var level = helper.getLevel();
             barrier.tick(level.getServer().getTickCount());
-            if (closed || !level.areEntitiesLoaded(chunk.toLong())) { return; }
+            if (closed || entity && !level.areEntitiesLoaded(chunk.toLong())) { return; }
             // This test deliberately supersedes its first capture. Waiting for the terrain cooldown before that
             // rejected attempt wastes the unchanged tick budget; the real save and product backoff precede the retry.
             proof.tick();
