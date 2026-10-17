@@ -48,7 +48,7 @@ public final class RocketFailBackAdmissionGameTests {
 
     private static void check(GameTestHelper helper, int mode) {
         var level = helper.getLevel(); var server = level.getServer();
-        var journal = new RocketTransferSavedData(); var service = new RocketTransferService();
+        var journal = new RocketTransferSavedData(2); var service = new RocketTransferService();
         var index = LandingPadIndex.get(server);
         UUID station = UUID.randomUUID(), owner = UUID.randomUUID();
         var pad = index.register(station, owner, UUID.randomUUID(), "N2", new StationPosition(0, 80, 0));

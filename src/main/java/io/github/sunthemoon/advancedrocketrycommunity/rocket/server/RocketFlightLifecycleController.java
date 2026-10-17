@@ -57,7 +57,7 @@ final class RocketFlightLifecycleController {
             return;
         }
         RocketTransferSavedData journal = RocketTransferSavedData.get(server);
-        if (!journal.acknowledgedCurrent()) {
+        if (!journal.clean()) {
             return;
         }
         RocketTransferRecord record = journal.operational()

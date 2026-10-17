@@ -23,7 +23,7 @@ final class RocketGovernedCleanupDispatcher {
 
     void tick(MinecraftServer server, RocketTransferSavedData journal, RocketTransferBayDispatch bays) {
         var data = ResourceEscrowSavedData.existing(server);
-        if (data == null || !server.isSameThread() || !journal.actionAuthorityAvailable()) { return; }
+        if (data == null || !server.isSameThread()) { return; }
         var coordinator = data.bind(server);
         if (!coordinator.operational()) { return; }
         var entries = data.ledger().armedFlights().stream().filter(arm -> arm.outcome() != EscrowFlightTables.Outcome.ARMED).toList();
@@ -31,8 +31,9 @@ final class RocketGovernedCleanupDispatcher {
         work.keySet().retainAll(ids); warnings.keySet().retainAll(ids);
         if (entries.isEmpty()) { cursor = 0; return; }
         int start = Math.floorMod(cursor, entries.size()); int visits = Math.min(8, entries.size());
-        for (int index = 0; index < visits && journal.actionAuthorityAvailable(); index++) {
+        for (int index = 0; index < visits; index++) {
             var arm = entries.get((start + index) % entries.size());
+            if (!journal.actionable(arm.logical()) || !journal.actionAuthorityAvailable(arm.logical())) { continue; }
             var state = work.computeIfAbsent(arm.transfer(), ignored -> new Work(arm));
             if (!state.arm.equals(arm)) { blocked(arm.transfer(), "GOVERNED_CLEANUP_AUTHORITY_CONFLICT"); continue; }
             if (state.queued || !state.retry.ready(server.getTickCount())) { continue; }

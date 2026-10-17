@@ -28,7 +28,7 @@ public final class FirstEventCaseExports {
         if (FirstEventCutSeams.configured().orElseThrow() != FirstEventCutSeams.Cut.FW9) { throw new IllegalStateException("Export fixture is not armed"); }
         var journal = RocketTransferSavedData.get(server);
         var stations = StationRegistrySavedData.get(server);
-        if (!journal.acknowledgedCurrent() || journal.firstMoonLandingRam().state() != FirstEventOutbox.State.DELIVERED
+        if (!journal.clean() || journal.firstMoonLandingRam().state() != FirstEventOutbox.State.DELIVERED
                 || stations.firstWarpRam().state() != FirstEventOutbox.State.DELIVERED || journal.entries().size() != 2) {
             throw new IllegalStateException("The complete paired seed has not settled");
         }

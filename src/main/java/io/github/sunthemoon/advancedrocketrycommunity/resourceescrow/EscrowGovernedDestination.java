@@ -96,16 +96,23 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         if (record.phase() == RocketTransferPhase.PREPARED) {
             long time = runtime.sourceFlights().publicationTime(authority, source, finalBoundary);
             if (!EscrowGovernedDestinationAction.sourceDue(record, EscrowGovernedEnvelope.capture(source), time)) { return Result.WAITING; }
-            if (destination != null || !journal.canQueueEffect()) { return Result.HELD; }
-            var next = record.destinationSpawned(record.nativeTransfer().orElseThrow().armed().destination());
-            journal.put(next);
-            runtime.checkpoint("F4_DESTINATION_REQUESTED");
-            journal.afterAcknowledged(server, record.logicalRocketId(), () -> {
-                runtime.checkpoint("F4_DESTINATION_ACK");
-                // No captured permit or authority crosses this acknowledgement. Reacquire everything.
-                return tick(server, journal, next, source, boundary) != Result.HELD;
-            }, () -> { });
-            return Result.WAITING;
+            if (destination != null) { return Result.HELD; }
+            try (var reservation = journal.canQueueEffect(record.logicalRocketId()).orElse(null)) {
+                if (reservation == null) { return Result.HELD; }
+                var next = record.destinationSpawned(record.nativeTransfer().orElseThrow().armed().destination());
+                journal.put(next);
+                runtime.checkpoint("F4_DESTINATION_REQUESTED");
+                journal.afterAcknowledged(server, reservation, () -> {
+                    if (source == null || !source.isAlive() || !source.isAddedToWorld()
+                            || !((net.minecraft.server.level.ServerLevel) source.level()).areEntitiesLoaded(source.chunkPosition().toLong())) {
+                        return false;
+                    }
+                    runtime.checkpoint("F4_DESTINATION_ACK");
+                    // No captured permit or authority crosses this acknowledgement. Reacquire everything.
+                    return tick(server, journal, next, source, boundary) != Result.HELD;
+                }, () -> { });
+                return Result.WAITING;
+            }
         }
         // The acknowledged F4 may survive with only F1's E on disk. Do not require a second
         // source ascent or debit; validate the unchanged source at E or its permitted progression.

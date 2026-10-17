@@ -56,31 +56,31 @@ public final class RocketTransferSavedData extends SavedData {
     private WriteOutcome writeOutcome = WriteOutcome.UNACKNOWLEDGED;
     private RocketJournalWriter writer;
     private java.nio.file.Path writerFile;
-    private boolean stopping;
+    private volatile boolean stopping;
     /** W44 section 2.1: the monotonic RAM slot; authority is only the latest writer confirmation. */
     private FirstEventOutbox firstMoonLanding = FirstEventOutbox.empty();
+    private long outboxSequence = 1;
     /** W44 section 3.6: how this root was first obtained; a detached root behaves as loaded. */
     private ManagedRootPresence presence = ManagedRootPresence.LOADED;
     private final RocketJournalFirstWrite firstWrite = new RocketJournalFirstWrite();
     private final RocketJournalLeases leases = new RocketJournalLeases();
-    private static final class Effect {
-        final UUID logical;
-        final RocketTransferRecord expected;
-        final java.util.function.BooleanSupplier action;
-        final Runnable discarded;
-        boolean committed;
-        Effect(UUID logical, RocketTransferRecord expected, java.util.function.BooleanSupplier action, Runnable discarded) {
-            this.logical = logical; this.expected = expected; this.action = action; this.discarded = discarded;
-        }
-        void run() {
-            boolean accepted = false;
-            try { accepted = action.getAsBoolean(); }
-            finally { if (!accepted) { discarded.run(); } }
-        }
-    }
-    private final Map<Long, Effect> effects = new LinkedHashMap<>();
+    private final RocketJournalSchedule schedule;
     private long lastWriterNanos;
     private long completedWriteCount;
+
+    public RocketTransferSavedData() { this(RocketJournalSchedule.LIMIT); }
+
+    /** A smaller detached-journal bound exercises capacity refusals without enlarging production limits. */
+    public RocketTransferSavedData(int reservationLimit) { schedule = new RocketJournalSchedule(this, reservationLimit); }
+
+    /** Single-use owner-thread token. Closing a consumed or invalidated token cannot release another reservation. */
+    public static final class Reservation implements AutoCloseable {
+        private final RocketJournalSchedule owner;
+        private final UUID logical;
+        Reservation(RocketJournalSchedule owner, UUID logical) { this.owner = owner; this.logical = logical; }
+        public UUID logical() { return logical; }
+        @Override public void close() { owner.close(this); }
+    }
 
     public enum WriteOutcome { UNACKNOWLEDGED, COMMITTED, NOT_COMMITTED, UNKNOWN }
 
@@ -117,8 +117,12 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     public static RocketTransferSavedData load(CompoundTag source) {
+        return load(source, RocketJournalSchedule.LIMIT);
+    }
+
+    static RocketTransferSavedData load(CompoundTag source, int reservationLimit) {
         Objects.requireNonNull(source, "source");
-        RocketTransferSavedData data = new RocketTransferSavedData();
+        RocketTransferSavedData data = new RocketTransferSavedData(reservationLimit);
         CompoundTag preserved = source.copy();
         try {
             if (RocketNbtSize.uncompressedBytes(source)
@@ -193,6 +197,7 @@ public final class RocketTransferSavedData extends SavedData {
         if (!operational() || stopping || !firstMoonLanding.isEmpty()) { return false; }
         firstMoonLanding = FirstEventOutbox.elected(event);
         mutationSequence++;
+        outboxSequence = mutationSequence;
         setDirty();
         return true;
     }
@@ -204,6 +209,7 @@ public final class RocketTransferSavedData extends SavedData {
         if (firstMoonLanding.state() == FirstEventOutbox.State.DELIVERED) { return true; }
         firstMoonLanding = firstMoonLanding.delivered();
         mutationSequence++;
+        outboxSequence = mutationSequence;
         setDirty();
         return true;
     }
@@ -381,27 +387,66 @@ public final class RocketTransferSavedData extends SavedData {
     /** A persistent failure cannot turn a per-tick retry into a synchronous write storm. */
     public boolean retryChecked(MinecraftServer server) {
         pollWriter(server.getTickCount());
-        if (acknowledgedCurrent()) { return true; }
+        if (acknowledgedCurrent()) { return clean(); }
         if (failedWrite && attempted && (long) server.getTickCount() - lastAttemptTick < 200) { return false; }
-        return flushChecked(server);
+        flushChecked(server); return clean();
     }
 
     public boolean acknowledgedCurrent() {
         return operational() && !isDirty() && checkpoint.current(mutationSequence);
     }
 
+    /** Whole-root consumers must also wait for reserved and budget-deferred owner-thread work. */
+    public boolean clean() { return acknowledgedCurrent() && !schedule.outstanding(); }
+
+    public boolean actionable(UUID logical) { return slotAcknowledged(logical) && !schedule.busy(logical); }
+
+    public boolean actionable(UUID logical, Reservation reservation) {
+        return slotAcknowledged(logical) && !schedule.busy(logical, reservation);
+    }
+
+    /** Owner-thread scheduling lease layered on the unchanged R17 IO-safe logical lease. */
+    public java.util.function.BooleanSupplier actionableLease(UUID logical) {
+        if (!actionable(logical)) { return () -> false; }
+        var lease = logicalLease(logical, null, 0);
+        return () -> actionable(logical) && lease.getAsBoolean();
+    }
+
+    public Optional<Reservation> reserve(UUID logical) { return schedule.reserve(logical); }
+    public int outstandingEffectCount() { return schedule.size(); }
+    public Optional<Reservation> canQueueEffect(UUID logical) {
+        return failedWrite ? Optional.empty() : reserve(logical);
+    }
+
+    boolean schedulingAvailable() { return operational() && !stopping; }
+    boolean effectWriteFailed() { return failedWrite; }
+    boolean logicalUnchangedSince(UUID logical, long sequence) { return leases.unchangedSince(logical, sequence); }
+    boolean slotAcknowledged(UUID logical) {
+        if (!logicalAcknowledged(logical)) { return false; }
+        var acknowledged = checkpoint.acknowledged().orElseThrow();
+        var record = findByLogicalRocket(logical).orElse(null);
+        return record == null ? !acknowledged.logicalRockets().contains(logical)
+                : acknowledged.records().containsKey(record.transferId())
+                        && RocketJournalCheckpoint.RecordVersion.of(record).equals(acknowledged.versions().get(logical));
+    }
+    boolean outboxAcknowledged(FirstEventOutbox expected) {
+        return checkpoint.acknowledged().filter(value -> value.sequence() >= outboxSequence
+                && value.firstMoonLanding().equals(expected)).isPresent();
+    }
+
     /** Owner-thread effects need current authority and a live journal, not just an unchanged IO lease. */
     public boolean actionAuthorityAvailable() {
-        return !stopping && !failedWrite && acknowledgedCurrent();
+        return !stopping && !failedWrite && clean();
     }
 
     public long mutationSequence() { return mutationSequence; }
 
-    /** Owner-thread acquisition; the returned lease reads only a volatile sequence off-thread. */
+    /** Owner-thread acquisition; the ledger writer reads only volatile lifecycle, work and mutation flags. */
     public java.util.function.BooleanSupplier acknowledgedLease() {
         if (ownerServer != null && !ownerServer.isSameThread()) { throw new IllegalStateException("Journal lease requires the owner thread"); }
-        if (!acknowledgedCurrent()) { return () -> false; }
-        long captured = mutationSequence; return () -> mutationSequence == captured;
+        if (!clean() || stopping) { return () -> false; }
+        long captured = mutationSequence;
+        return () -> !stopping && !schedule.outstanding() && mutationSequence == captured && leases.rootAcknowledged(captured);
     }
 
     /** R17 item 3: this rocket's latest change is in the exact acknowledged generation; other rockets may be pending. */
@@ -441,14 +486,10 @@ public final class RocketTransferSavedData extends SavedData {
 
     /** Current and last acknowledged authority protect removal failures without locking new identities. */
     public boolean resourceMutationUnproved(UUID logical) {
-        if (!operational()) { return true; }
-        var acknowledged = checkpoint.acknowledged();
-        // No retained disk generation after an observed failure means the affected identities are unknown.
-        if (failedWrite && acknowledged.isEmpty()) { return true; }
-        var record = findByLogicalRocket(logical).orElse(null);
-        if (record == null) { return acknowledged.map(value -> value.logicalRockets().contains(logical)).orElse(false); }
-        return acknowledged.map(value -> !RocketJournalCheckpoint.RecordVersion.of(record)
-                .equals(value.versions().get(logical))).orElse(true);
+        // Preserve the pre-baseline exception only for an untouched absent identity, never after failure or stop.
+        if (schedulingAvailable() && !failedWrite && checkpoint.acknowledged().isEmpty()
+                && findByLogicalRocket(logical).isEmpty() && leases.untouched(logical) && !schedule.busy(logical)) { return false; }
+        return !actionable(logical);
     }
 
     public CheckedWriteResult checkedWriteResult() {
@@ -460,7 +501,7 @@ public final class RocketTransferSavedData extends SavedData {
     public record JournalGuard(UUID logical, UUID transfer, String recordDigest, String rootDigest, long sequence) { }
 
     public Optional<JournalGuard> acknowledgedGuard(UUID logical) {
-        if (!acknowledgedCurrent()) { return Optional.empty(); }
+        if (!clean()) { return Optional.empty(); }
         var acknowledged = checkpoint.acknowledged().orElseThrow();
         var record = findByLogicalRocket(logical).orElse(null);
         return Optional.of(new JournalGuard(logical, record == null ? null : record.transferId(),
@@ -468,15 +509,33 @@ public final class RocketTransferSavedData extends SavedData {
                 acknowledged.digest(), acknowledged.sequence()));
     }
 
-    /** At most one dependent continuation per captured generation, and at most two generations. */
+    /** One continuation or reservation per logical rocket, bounded independently of writer generations. */
     public boolean afterAcknowledged(MinecraftServer server, UUID logical, Runnable effect) {
         return afterAcknowledged(server, logical, () -> { effect.run(); return true; }, () -> { });
     }
 
     public boolean afterAcknowledged(MinecraftServer server, UUID logical,
             java.util.function.BooleanSupplier effect, Runnable discarded) {
-        if (!server.isSameThread() || !operational() || stopping) { return false; }
-        if (!queueEffect(logical, effect, discarded)) { return false; }
+        if (!server.isSameThread()) { return false; }
+        try (var token = reserve(logical).orElse(null)) {
+            return token != null && afterAcknowledged(server, token, effect, discarded);
+        }
+    }
+
+    public boolean afterAcknowledged(MinecraftServer server, Reservation token, Runnable effect) {
+        return afterAcknowledged(server, token, () -> { effect.run(); return true; }, () -> { });
+    }
+
+    public boolean afterAcknowledged(MinecraftServer server, Reservation token,
+                                    java.util.function.BooleanSupplier effect, Runnable discarded) {
+        return afterAcknowledged(server, token, false, false, effect, discarded);
+    }
+
+    public boolean afterAcknowledged(MinecraftServer server, Reservation token, boolean outbox, boolean duringFailure,
+                                    java.util.function.BooleanSupplier effect, Runnable discarded) {
+        if (!server.isSameThread() || !schedule.submit(token, outbox, duringFailure, effect, discarded, server.getTickCount())) {
+            return false;
+        }
         flushChecked(server); return true;
     }
 
@@ -485,44 +544,20 @@ public final class RocketTransferSavedData extends SavedData {
     }
 
     boolean queueEffect(UUID logical, java.util.function.BooleanSupplier effect, Runnable discarded) {
-        if (!operational() || stopping) { return false; }
-        var continuation = new Effect(logical, findByLogicalRocket(logical).orElse(null),
-                Objects.requireNonNull(effect), Objects.requireNonNull(discarded));
-        if (acknowledgedCurrent()) { continuation.run(); return true; }
-        if (effects.containsKey(mutationSequence) || effects.size() == 2) { return false; }
-        effects.put(mutationSequence, continuation); return true;
+        try (var token = reserve(logical).orElse(null)) {
+            return token != null && queueEffect(token, false, false, effect, discarded);
+        }
     }
 
-    public boolean canQueueEffect() { return !stopping && !failedWrite && effects.size() < 2; }
-
-    /** Owner-thread preflight for a removal that will need a new continuation generation. */
-    public boolean canReserveRemovalEffect() {
-        return operational() && !stopping && effects.size() < 2;
+    boolean queueEffect(Reservation token, boolean outbox, boolean duringFailure,
+                        java.util.function.BooleanSupplier effect, Runnable discarded) {
+        return schedule.submit(token, outbox, duringFailure, effect, discarded, schedule.tick());
     }
 
     public void pollWriter(long tick) {
         if (!operational()) { return; }
         if (writer != null) { writer.tick(tick, this::publish); }
-        if (!stopping && acknowledgedCurrent()) {
-            // A later disjoint generation may already be in RAM when the earlier exact write completes.
-            // Wait for a clean acknowledgement, then require that it still contains the same authority.
-            for (var entry : List.copyOf(effects.entrySet())) {
-                if (!acknowledgedCurrent()) { break; }
-                Effect effect = entry.getValue();
-                if (!effect.committed) {
-                    if (entry.getKey() < mutationSequence) { effects.remove(entry.getKey()); effect.discarded.run(); }
-                    continue;
-                }
-                effects.remove(entry.getKey());
-                if (findByLogicalRocket(effect.logical).orElse(null) == effect.expected) {
-                    try { effect.run(); }
-                    catch (RuntimeException failure) {
-                        com.mojang.logging.LogUtils.getLogger().error("ARCE_TRANSFER_EFFECT_FAILED logical={} generation={}; retain journal authority for recovery",
-                                effect.logical, entry.getKey(), failure);
-                    }
-                } else { effect.discarded.run(); }
-            }
-        }
+        schedule.visit(tick);
     }
 
     private void publish(RocketJournalWriter.Completion completion) {
@@ -533,8 +568,6 @@ public final class RocketTransferSavedData extends SavedData {
             return;
         }
         checkpoint.publish(completion); lastWriterNanos = completion.writerNanos();
-        Effect effect = effects.get(completion.sequence());
-        if (effect != null && completion.outcome() == RocketJournalCheckpoint.Outcome.COMMITTED) { effect.committed = true; }
         writeOutcome = WriteOutcome.valueOf(completion.outcome().name());
         failedWrite = completion.outcome() != RocketJournalCheckpoint.Outcome.COMMITTED;
         if (writeOutcome == WriteOutcome.UNKNOWN && ownerServer != null
@@ -581,8 +614,7 @@ public final class RocketTransferSavedData extends SavedData {
         }
     }
     private void discardEffects() {
-        var pending = List.copyOf(effects.values()); effects.clear();
-        pending.forEach(effect -> effect.discarded.run());
+        schedule.discard();
     }
     public void abort() { stopping = true; publishLeases(); discardEffects(); if (writer != null) { writer.abort(); } }
 

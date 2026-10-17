@@ -49,6 +49,7 @@ final class RocketDestinationCompletion {
             RocketTransferSavedData journal,
             RocketTransferRecord record
     ) {
+        if (!journal.actionable(record.logicalRocketId()) || journal.find(record.transferId()).orElse(null) != record) { return; }
         RocketEntity destination = RocketTransferEntities.findDestination(server, record);
         if (destination == null) {
             liveTransfers.remove(record.transferId());
@@ -129,16 +130,19 @@ final class RocketDestinationCompletion {
                     record
             );
             if (migrated.isPresent()) {
-                record = migrated.orElseThrow();
-                journal.migrateCommitted(record);
-                RocketTransferRecord changed = record;
-                journal.afterAcknowledged(server, changed.logicalRocketId(), () -> {
-                    if (!flightAllowed(server, journal, changed)) { return; }
-                    liveTransfers.add(changed.transferId());
-                    AdvancedRocketryCommunity.LOGGER.info("ARCE_TRANSFER_SCHEMA_MIGRATED transfer={} schema={}",
-                            changed.transferId(), changed.schemaVersion());
-                });
-                return;
+                try (var reservation = journal.reserve(record.logicalRocketId()).orElse(null)) {
+                    if (reservation == null) { return; }
+                    record = migrated.orElseThrow();
+                    journal.migrateCommitted(record);
+                    RocketTransferRecord changed = record;
+                    journal.afterAcknowledged(server, reservation, () -> {
+                        if (!flightAllowed(server, journal, changed)) { return; }
+                        liveTransfers.add(changed.transferId());
+                        AdvancedRocketryCommunity.LOGGER.info("ARCE_TRANSFER_SCHEMA_MIGRATED transfer={} schema={}",
+                                changed.transferId(), changed.schemaVersion());
+                    });
+                    return;
+                }
             } else {
                 AdvancedRocketryCommunity.LOGGER.warn(
                         "ARCE_TRANSFER_SCHEMA_MIGRATION_BLOCKED transfer={} phase={}",

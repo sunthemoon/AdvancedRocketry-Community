@@ -180,9 +180,9 @@ class RocketJournalWriterTest {
         var data = new RocketTransferSavedData(); var record = RocketTransferSavedDataTest.record(); var called = new AtomicInteger();
         data.put(record); assertTrue(data.queueEffect(record.logicalRocketId(), called::incrementAndGet));
         assertFalse(data.queueEffect(record.logicalRocketId(), () -> fail("Replaced exact continuation")));
-        data.remove(record.transferId()); assertTrue(data.queueEffect(record.logicalRocketId(), called::incrementAndGet));
+        data.remove(record.transferId()); assertFalse(data.queueEffect(record.logicalRocketId(), called::incrementAndGet));
         data.put(record); assertFalse(data.queueEffect(record.logicalRocketId(), called::incrementAndGet));
-        assertFalse(data.canQueueEffect()); data.requestWrite(target(), atomic());
+        assertTrue(data.canQueueEffect(record.logicalRocketId()).isEmpty()); data.requestWrite(target(), atomic());
         assertThrows(IllegalArgumentException.class, () -> data.requestWrite(directory.resolve("other.dat"), atomic()));
         data.stop(); assertEquals(0, called.get());
     }

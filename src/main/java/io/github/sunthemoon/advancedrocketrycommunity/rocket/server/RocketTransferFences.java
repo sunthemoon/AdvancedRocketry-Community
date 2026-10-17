@@ -45,7 +45,7 @@ final class RocketTransferFences {
     void drop(UUID id) { reasons.remove(id); attempts.remove(id); approved.remove(id); }
 
     void classify(MinecraftServer server, RocketTransferSavedData journal, Set<UUID> live, Set<UUID> settled) {
-        if (journal.acknowledgedCurrent()) {
+        if (journal.clean()) {
             Set<UUID> present = journal.entries().stream().map(RocketTransferRecord::transferId).collect(java.util.stream.Collectors.toSet());
             reasons.keySet().retainAll(present); attempts.keySet().retainAll(present);
             approved.keySet().retainAll(present);
@@ -101,7 +101,8 @@ final class RocketTransferFences {
     }
 
     RocketTransferRecord reevaluateOne(MinecraftServer server, RocketTransferSavedData journal, Set<UUID> live, Set<UUID> settled) {
-        var records = journal.entries().stream().filter(record -> reasons.containsKey(record.transferId())).toList();
+        var records = journal.entries().stream().filter(record -> reasons.containsKey(record.transferId()))
+                .filter(record -> journal.actionable(record.logicalRocketId())).toList();
         if (!records.isEmpty()) {
             var record = records.get(Math.floorMod(cursor++, records.size()));
             if (permit(server, journal, record, live, settled)) { return record; }
