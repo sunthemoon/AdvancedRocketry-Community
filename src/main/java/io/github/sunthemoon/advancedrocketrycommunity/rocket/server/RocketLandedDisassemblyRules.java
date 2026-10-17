@@ -70,11 +70,13 @@ final class RocketLandedDisassemblyRules {
 
     /**
      * M2 step 2, checked when the removal's continuation runs: at most the confirmation lifetime after the request, E
-     * still equal to S and the bay gate still allowing the removal. It is not a timer and bounds nothing.
+     * still equal to S, an operational v0.5 transaction journal with no pending recovery overlapping E (W92-R2), and
+     * the bay gate still allowing the removal. It is not a timer and bounds nothing.
      */
-    static boolean restore(long requestedAt, long now, boolean entityMatches, boolean bayAllowsRemoval) {
+    static boolean restore(long requestedAt, long now, boolean entityMatches, boolean transactionsClear,
+                           boolean bayAllowsRemoval) {
         return now >= requestedAt && now - requestedAt <= RocketDisassemblyConfirmations.LIFETIME_TICKS
-                && entityMatches && bayAllowsRemoval;
+                && entityMatches && transactionsClear && bayAllowsRemoval;
     }
 
     enum Outcome { SUCCESS, CLEAN_ROLLBACK, UNCERTAIN }

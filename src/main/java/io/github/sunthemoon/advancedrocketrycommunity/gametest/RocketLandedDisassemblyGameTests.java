@@ -35,6 +35,9 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketF
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketFailurePoint;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketRegion;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionAbortException;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionPhase;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionRecord;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.transaction.RocketTransactionType;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.validation.RocketValidationCode;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -86,12 +89,13 @@ public final class RocketLandedDisassemblyGameTests {
         script.start();
     }
 
-    /** G2, G2b, G3 and G3b: failures after the release, world journal and an injected v0.5 fault. */
+    /** G2, G2b, G3, W92-R2 and G3b: failures after the release, world journal and an injected v0.5 fault. */
     @GameTest(template = "rocket_test", batch = "landed_disassembly_rollbacks", timeoutTicks = 1200)
     public static void cleanFailuresWriteTheIdenticalRecordBackAndUncertainOnesNever(GameTestHelper helper) {
         var script = new Script(helper);
         script.landed(false, false, RocketLandedDisassemblyGameTests::obstructionAfterTheRequestWritesBack);
         script.landed(false, false, RocketLandedDisassemblyGameTests::completeRollbackWritesBack);
+        script.landed(false, false, RocketLandedDisassemblyGameTests::transactionRecoveryAtTheAcknowledgementWritesBack);
         script.landed(false, false, RocketLandedDisassemblyGameTests::failedRollbackIsOwnedByTheTransactionRecovery);
         script.start();
     }
@@ -287,6 +291,38 @@ public final class RocketLandedDisassemblyGameTests {
                     && "WRITE_BACK".equals(faulty.stage(a.logical())), "A certified clean rollback did not write T back");
             RocketJournalGameTestSupport.acknowledgeFixture(s.helper);
             s.check(!faulty.pending(a.rocket) && faulty.resourceMutationAllowed(a.rocket), "The write-back did not settle");
+        });
+    }
+
+    private static void transactionRecoveryAtTheAcknowledgementWritesBack(Script s, Arrival a) {
+        s.then(() -> {
+            var journal = a.journal();
+            var owner = a.requester(a.owner);
+            CompoundTag before = a.diskRecord();
+            a.support.requestDisassembly(owner, a.rocket);
+            s.check(code(owner, "disassembly_pending"), "Request was not pending");
+            // W92-R2: a v0.5 FAILED record overlapping E appears between M0 and M2, so M2 does not restore.
+            var snapshot = a.rocket.snapshot().orElseThrow();
+            var transactions = RocketTransactionSavedData.get(s.helper.getLevel().getServer()).journalFor(snapshot, a.owner);
+            UUID pending = UUID.randomUUID();
+            transactions.write(new RocketTransactionRecord(pending, RocketTransactionType.DISASSEMBLY,
+                    RocketTransactionPhase.FAILED, snapshot.snapshotId(), snapshot.contentHash(),
+                    RocketRegion.fromSnapshot(snapshot), 0, a.rocket.getUUID()));
+            try {
+                RocketJournalGameTestSupport.drainFixture(s.helper);
+            } finally {
+                transactions.remove(pending); // Gone before the installed v0.5 recovery can see it.
+            }
+            s.check(code(owner, "region_busy") && a.rocket.isAlive() && !a.anyRestored(),
+                    "M2 restored over a pending v0.5 recovery");
+            s.check(journal.find(a.landed.transferId()).orElse(null) == a.landed
+                    && "WRITE_BACK".equals(a.support.stage(a.logical())), "T was not written back identically");
+            RocketJournalGameTestSupport.acknowledgeFixture(s.helper);
+            s.check(!a.support.pending(a.rocket) && a.support.resourceMutationAllowed(a.rocket)
+                    && before.equals(a.diskRecord()), "The acknowledged write-back is not byte-identical and settled");
+            a.support.requestDisassembly(owner, a.rocket);
+            RocketJournalGameTestSupport.acknowledgeFixture(s.helper);
+            s.check(a.rocket.isRemoved() && a.allRestored(), "The request after the v0.5 record ended did not succeed");
         });
     }
 

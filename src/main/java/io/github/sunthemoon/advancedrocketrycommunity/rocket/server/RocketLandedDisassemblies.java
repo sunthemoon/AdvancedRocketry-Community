@@ -41,6 +41,12 @@ final class RocketLandedDisassemblies {
         /** E is alive and loaded and still equals S. */
         boolean matches();
 
+        /**
+         * W92-R2, read-only: the v0.5 transaction journal is operational and has no pending recovery overlapping E's
+         * region, as {@code validateRocket} checked before today's one-tick {@code execute}.
+         */
+        boolean restorable();
+
         /** M3's view of E for the record that would be written back. */
         Presence presence(RocketTransferRecord record);
 
@@ -221,7 +227,7 @@ final class RocketLandedDisassemblies {
             entry.port.probe("K2", entry.record);
             entry.port.released(entry.record, entry.entity);
             if (!RocketLandedDisassemblyRules.restore(entry.requestedAt, entry.port.now(), entry.request.matches(),
-                    entry.port.bayAllowsRemoval(entry.record))) {
+                    entry.request.restorable(), entry.port.bayAllowsRemoval(entry.record))) {
                 writeBack(entry);
                 return true;
             }

@@ -121,6 +121,27 @@ class RocketLandedDisassembliesTest {
         }
     }
 
+    @Test void aPendingTransactionRecoveryAtTheAcknowledgementWritesBackWithoutRestoring() {
+        // W92-R2: a v0.5 record overlapping E (or a v0.5 journal that is not operational) appears between M0 and M2.
+        for (int mode = 0; mode < 2; mode++) {
+            var f = new Fixture(new RocketPosition(64 + mode * 64, 80, 64));
+            assertEquals(RocketValidationCode.DISASSEMBLY_PENDING, f.release());
+            if (mode == 0) { f.request.restorable = false; }
+            if (mode == 1) { f.request.restorableThrows = new IllegalStateException("v0.5 journal unavailable"); }
+            f.acknowledge();
+            assertEquals(0, f.request.restores, "M2 restored over a pending v0.5 recovery");
+            assertEquals(List.of("REGION_BUSY"), f.request.reports);
+            assertEquals(Stage.WRITE_BACK, f.disassemblies.find(f.logical()).stage());
+            assertSame(f.landed, f.journal.find(f.landed.transferId()).orElseThrow(), "The identical record");
+            assertTrue(f.world.rockets.containsKey(f.entity) && f.world.blocks.isEmpty());
+            f.acknowledge();
+            assertFalse(f.disassemblies.pending(f.logical()));
+            assertEquals(List.of("released", "restored settle=true"), f.port.events);
+            assertEquals(List.of(f.landed.transferId()), f.diskRecords());
+            f.close();
+        }
+    }
+
     @Test void uncertainMutationNeverWritesTheRecordBack() {
         for (int mode = 0; mode < 3; mode++) {
             var f = new Fixture(new RocketPosition(64 + mode * 64, 80, 64));
@@ -350,6 +371,8 @@ class RocketLandedDisassembliesTest {
         Error matchesError;
         RuntimeException restoreThrows;
         boolean notifierThrows;
+        boolean restorable = true;
+        RuntimeException restorableThrows;
         int restores;
 
         FakeRequest(FakeWorld world, RocketTransferRecord record) { this.world = world; this.record = record; }
@@ -359,6 +382,10 @@ class RocketLandedDisassembliesTest {
             if (matchesThrows != null) { throw matchesThrows; }
             var snapshot = record.destinationSnapshot();
             return world.rocketMatches(record.destinationEntityId().orElseThrow(), snapshot.snapshotId(), snapshot.contentHash());
+        }
+        @Override public boolean restorable() {
+            if (restorableThrows != null) { throw restorableThrows; }
+            return restorable;
         }
         @Override public Presence presence(RocketTransferRecord ignored) { return presence; }
         @Override public RocketTransactionResult restore() {
