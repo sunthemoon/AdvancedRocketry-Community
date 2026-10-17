@@ -40,25 +40,36 @@ public final class MoonConcurrentLandingGameTests {
         new Scenario(helper).start();
     }
 
+    @GameTest(template = "empty", batch = "journal_concurrent_flight", timeoutTicks = 450)
+    public static void definiteFailureRefusesMoonElectionUntilRetry(GameTestHelper helper) {
+        new Scenario(helper, true).start();
+    }
+
     private static final class Scenario {
         final GameTestHelper helper;
         final net.minecraft.server.MinecraftServer server;
         final net.minecraft.server.level.ServerLevel moon;
         final GameTestTickPacer pacer;
-        final BlockPos origin = SafeCelestialTravel.FIXED_FEET_POSITION.offset(512, 20, 512);
-        final ChunkPos ticket = new ChunkPos(origin);
+        final BlockPos origin;
+        final ChunkPos ticket;
+        final boolean definiteFailure;
         final RocketEntity[] rockets = new RocketEntity[2];
         final RocketTransferRecord[] records = new RocketTransferRecord[2];
         final ServerPlayer[] players = new ServerPlayer[2];
         DetachedFirstEventRoots roots;
         RocketDestinationCompletion completion;
         RocketJournalSchedulingGameTestSupport.HeldWrite held;
+        RocketJournalSchedulingGameTestSupport.FailedWrite fault;
         FirstEvent.MoonLanding event;
         int step, waits, heldVisits;
         boolean closed;
 
-        Scenario(GameTestHelper helper) {
+        Scenario(GameTestHelper helper) { this(helper, false); }
+        Scenario(GameTestHelper helper, boolean definiteFailure) {
             this.helper = helper; server = helper.getLevel().getServer(); moon = server.getLevel(CelestialIds.MOON_LEVEL);
+            this.definiteFailure = definiteFailure;
+            origin = SafeCelestialTravel.FIXED_FEET_POSITION.offset(definiteFailure ? 640 : 512, 20, 512);
+            ticket = new ChunkPos(origin);
             pacer = new GameTestTickPacer(server);
         }
 
@@ -71,10 +82,30 @@ public final class MoonConcurrentLandingGameTests {
         void tick() {
             if (closed) { return; }
             try {
-                helper.assertTrue(++waits < 220, "Moon concurrency fixture exceeded its bounded wait");
+                helper.assertTrue(++waits < (definiteFailure ? 420 : 220), "Moon concurrency fixture exceeded its bounded wait");
                 if (step == 0) {
                     if (moon.getGameTime() >= RocketFlightLimits.DESCENT_TICKS
                             && moon.isPositionEntityTicking(origin) && moon.isPositionEntityTicking(origin.south(5))) { setup(); }
+                } else if (step == 4) {
+                    if (fault.entered()) { fault.releaseFailure(); }
+                    roots.journal.pollWriter(server.getTickCount());
+                    if (roots.journal.checkedWriteResult().outcome()
+                            != io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData.WriteOutcome.NOT_COMMITTED) { return; }
+                    completion.tickDestination(server, roots.journal, records[0]);
+                    helper.assertTrue(roots.journal.actionable(records[0].logicalRocketId())
+                            && roots.journal.canQueueEffect(records[0].logicalRocketId()).isEmpty()
+                            && roots.journal.firstMoonLandingRam().isEmpty()
+                            && rockets[0].flightData().orElseThrow().state() == RocketFlightState.DESCENT
+                            && !done(players[0], Milestone.MOON_LANDING), "Definite failure admitted a Moon election or landing");
+                    fault.recover(); step = 5;
+                } else if (step == 5) {
+                    roots.journal.pollWriter(server.getTickCount());
+                    if (!roots.journal.clean()) { pacer.pace(); return; }
+                    completion.tickDestination(server, roots.journal, records[0]);
+                    roots.confirmJournal();
+                    helper.assertTrue(rockets[0].flightData().orElseThrow().state() == RocketFlightState.LANDED
+                            && done(players[0], Milestone.MOON_LANDING), "Retried Moon election did not publish its landing");
+                    close(); helper.succeed();
                 } else if (step == 1) {
                     if (held.entered()) {
                         completion.tickDestination(server, roots.journal, records[0]);
@@ -154,8 +185,14 @@ public final class MoonConcurrentLandingGameTests {
             var recovery = new RocketTransferRecoveryService(new HashSet<>(), new HashSet<>());
             completion = new RocketDestinationCompletion(new HashSet<>(), new HashSet<>(), recovery.bays(), roots.dispositions());
             roots.journal.setDirty();
-            held = RocketJournalSchedulingGameTestSupport.hold(helper, roots.journal, roots.file(ManagedSavedDataType.ROCKET_TRANSFERS));
-            step = 1;
+            if (definiteFailure) {
+                roots.journal.put(RocketFailBackAdmissionGameTests.record(helper, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(),
+                        null, helper.absolutePos(new BlockPos(3, 2, 3)), 256));
+                fault = RocketJournalSchedulingGameTestSupport.fail(helper, roots.journal, roots.file(ManagedSavedDataType.ROCKET_TRANSFERS), false);
+                step = 4;
+            } else {
+                held = RocketJournalSchedulingGameTestSupport.hold(helper, roots.journal, roots.file(ManagedSavedDataType.ROCKET_TRANSFERS)); step = 1;
+            }
         }
 
         boolean done(ServerPlayer player, Milestone milestone) {
@@ -164,6 +201,7 @@ public final class MoonConcurrentLandingGameTests {
         }
         void close() {
             if (closed) { return; } closed = true; if (held != null) { held.close(); }
+            if (fault != null) { fault.close(); }
             for (var player : players) { if (player != null) { player.stopRiding(); server.getPlayerList().remove(player); } }
             for (var rocket : rockets) { if (rocket != null) { rocket.discard(); } }
             if (roots != null) { roots.close(); }

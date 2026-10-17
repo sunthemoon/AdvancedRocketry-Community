@@ -41,7 +41,7 @@ public final class RocketConcurrentFlightGameTests {
         new Scenario(helper, false).start();
     }
 
-    private static final class Scenario {
+    static final class Scenario {
         final GameTestHelper helper;
         final boolean delayed;
         final RocketTransferService service = new RocketTransferService();
