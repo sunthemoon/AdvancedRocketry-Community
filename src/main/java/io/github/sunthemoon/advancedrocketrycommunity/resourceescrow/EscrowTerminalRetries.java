@@ -8,7 +8,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-/** Logical-flight retry history outlives replaceable F6 captures, but never the owning runtime. */
+/** Logical-flight retry history outlives replaceable F4/F6 captures, but never the owning runtime. */
 final class EscrowTerminalRetries {
     private final Map<UUID, EscrowSuccessorRetry> histories = new HashMap<>();
     private final java.util.function.Supplier<EscrowSuccessorRetry> factory;

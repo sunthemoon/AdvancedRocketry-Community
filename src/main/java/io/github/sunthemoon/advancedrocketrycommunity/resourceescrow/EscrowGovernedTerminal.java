@@ -49,6 +49,10 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         if (state != null && (state.queued || state.pending)) { return Result.WAITING; }
         // A recapture or a different proposed T is not permission to bypass this logical flight's backoff.
         if (!retries.ready(record.logicalRocketId(), server.getTickCount())) { return Result.WAITING; }
+        if (state != null && state.proofs.size() < state.slots.size()
+                && !EscrowRuntime.of(server).barrier().available(state.slots.get(state.proofs.size()), server.getTickCount())) {
+            return Result.WAITING;
+        }
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null || survivor == null) { return Result.HELD; }
         var coordinator = data.bind(server);
@@ -60,7 +64,8 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
             retries.completed(record.logicalRocketId());
             return Result.ACKNOWLEDGED;
         }
-        if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE || !boundary.getAsBoolean()
+        if (decision.route() != EscrowGovernedDispatch.Route.ACTIVE
+                || !EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor) || !boundary.getAsBoolean()
                 || !EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor)) { return Result.HELD; }
         if (state != null && (!state.record.equals(record) || state.source.rocket != survivor
                 || state.outcome != outcome || !state.source.observe())) {
@@ -69,8 +74,8 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         if (state == null) {
             requireCapacity(work, record.transferId());
             retries.history(record.logicalRocketId());
-            state = new Work(record, outcome, new EscrowFlightSource(survivor, () -> boundary.getAsBoolean()
-                    && EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor)));
+            state = new Work(record, outcome, new EscrowFlightSource(survivor,
+                    () -> EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor) && boundary.getAsBoolean()));
             work.put(record.transferId(), state);
         }
         if (state.proofs.values().stream().anyMatch(proof -> !proof.valid())) {

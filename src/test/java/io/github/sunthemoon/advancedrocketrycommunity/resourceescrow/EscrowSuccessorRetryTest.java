@@ -7,6 +7,26 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class EscrowSuccessorRetryTest {
+    @Test void destinationReturnAndCleanupWaitsShareTheScheduleAndTransitionLog() {
+        for (String phase : java.util.List.of("F4_PROOF", "RETURN_ABSENCE_PROOF", "RETURN_F6_PROOF", "F8_PRUNE")) {
+            var lines = new ArrayList<EscrowSuccessorRetry.Hold>();
+            var retry = new EscrowSuccessorRetry(lines::add);
+            var ledger = UUID.randomUUID(); var logical = UUID.randomUUID(); var transfer = UUID.randomUUID();
+            String reason = phase.equals("F8_PRUNE") ? "LEDGER_WRITE_FAILED" : "BARRIER_IO";
+            long now = 20;
+            for (int delay : new int[] {100, 400, 1_200, 1_200}) {
+                retry.failed(ledger, logical, transfer, 7, phase, reason, now);
+                assertEquals(now + delay, retry.nextTick(), phase);
+                for (long tick = now; tick < now + delay; tick++) { assertFalse(retry.ready(tick), phase); }
+                now += delay; assertTrue(retry.ready(now), phase);
+            }
+            assertEquals(3, lines.size(), phase + " logged a repeated saturated wait");
+            assertTrue(lines.stream().allMatch(line -> line.phase().equals(phase) && line.serial() == 7));
+            retry.failed(ledger, logical, transfer, 7, phase, "SUPERSEDING_SAVE", now);
+            assertEquals(4, lines.size(), "A changed wait reason needs its own transition");
+        }
+    }
+
     @Test void proofAndDefiniteWriteFailuresKeepTheExact1004001200Schedule() {
         var lines = new ArrayList<EscrowSuccessorRetry.Hold>();
         var retry = new EscrowSuccessorRetry(lines::add);

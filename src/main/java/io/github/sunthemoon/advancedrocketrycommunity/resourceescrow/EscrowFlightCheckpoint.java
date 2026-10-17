@@ -88,6 +88,9 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
         var coordinator = data.bind(server); var journal = RocketTransferSavedData.get(server);
         if (!coordinator.operational() || !journal.retryChecked(server)
                 || !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)) { return false; }
+        if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(), true, server.getTickCount())) {
+            return false;
+        }
         EscrowFlightSource frozen;
         try {
             frozen = new EscrowFlightSource(rocket, boundary);

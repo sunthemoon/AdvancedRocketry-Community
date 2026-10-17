@@ -31,6 +31,23 @@ class RocketGovernedSourceDispatcherTest {
         }
     }
 
+    @Test void repeatedLoadedEndPollingNeverEntersAnExecutorAndObservesReadinessAfresh() {
+        var active = new EscrowGovernedDispatch.Decision(EscrowGovernedDispatch.Route.ACTIVE, null);
+        var probes = new java.util.concurrent.atomic.AtomicInteger();
+        var tickets = new java.util.concurrent.atomic.AtomicInteger();
+        var loaded = new java.util.concurrent.atomic.AtomicBoolean();
+        for (int tick = 0; tick < 2_000; tick++) {
+            assertFalse(RocketGovernedSourceDispatcher.afterClassification(active, tickets::incrementAndGet,
+                    () -> { probes.incrementAndGet(); return loaded.get(); }));
+        }
+        assertEquals(2_000, probes.get()); assertEquals(2_000, tickets.get());
+        loaded.set(true);
+        assertTrue(RocketGovernedSourceDispatcher.afterClassification(active, tickets::incrementAndGet, loaded::get));
+        loaded.set(false);
+        assertFalse(RocketGovernedSourceDispatcher.afterClassification(active, tickets::incrementAndGet, loaded::get),
+                "A prior loaded result became cached action authority");
+    }
+
     @Test void visitsEightAtMostAndEveryRecordAtThe64EntryLimit() {
         var records = new ArrayList<RocketTransferRecord>();
         for (int index = 0; index < 64; index++) { records.add(GovernedTransferFixture.create(index + 1, 1, false).record()); }

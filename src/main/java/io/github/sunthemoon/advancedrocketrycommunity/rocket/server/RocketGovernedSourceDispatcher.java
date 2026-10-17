@@ -2,9 +2,12 @@ package io.github.sunthemoon.advancedrocketrycommunity.rocket.server;
 
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedDispatch;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedSourceFlight;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowGovernedTerminalPassengers;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowFlightTables;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightLimits;
+import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightState;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferPhase;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketTransferRecord;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData;
@@ -29,7 +32,11 @@ final class RocketGovernedSourceDispatcher {
             if (entity != null && !(entity instanceof RocketEntity)) { return; }
             var source = (RocketEntity) entity;
             if (source != null && !source.operational()) { return; }
+            // At-rest passenger waits must precede destination/phase/return envelope captures.
+            // This negative hint performs no action; all successful routes still repeat their final checks.
+            if (passengersPending(server, record, source)) { return; }
             var returns = EscrowRuntime.of(server).returns();
+            if (returns.waitingForPassengers(server, record, source)) { return; }
             if (returns.handles(record, source)) {
                 returns.tickThroughTerminal(server, journal, record, source,
                         () -> RocketGovernedLaunchBoundary.allows(server, journal, record, source, bays));
@@ -58,6 +65,15 @@ final class RocketGovernedSourceDispatcher {
                 destination(server, journal, record, source, bays);
             }
         });
+    }
+
+    private static boolean passengersPending(MinecraftServer server, RocketTransferRecord record, RocketEntity source) {
+        if (source != null || record.phase() != RocketTransferPhase.COMMITTED) { return false; }
+        var level = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
+        var entity = level == null ? null : level.getEntity(record.nativeTransfer().orElseThrow().armed().destination());
+        return entity instanceof RocketEntity arrival
+                && arrival.flightData().filter(flight -> flight.state() == RocketFlightState.LANDED).isPresent()
+                && !EscrowGovernedTerminalPassengers.present(server, record, EscrowFlightTables.Outcome.HANDED_OFF, arrival);
     }
 
     private static void destination(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record,

@@ -4,7 +4,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 /** Owner-thread scheduling only. A due retry never supplies action or storage authority. */
-final class EscrowSuccessorRetry {
+public final class EscrowSuccessorRetry {
     record Hold(UUID ledger, UUID logical, UUID transfer, long serial, String phase, String reason, int backoff) { }
     private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     private final Consumer<Hold> logger;
@@ -12,16 +12,16 @@ final class EscrowSuccessorRetry {
     private long next;
     private Hold logged;
 
-    EscrowSuccessorRetry() {
+    public EscrowSuccessorRetry() {
         this(hold -> LOGGER.info("ARCE_ESCROW_SUCCESSOR_HOLD ledger={} logical={} transfer={} serial={} phase={} reason={} backoff={}",
                 hold.ledger(), hold.logical(), hold.transfer(), hold.serial(), hold.phase(), hold.reason(), hold.backoff()));
     }
     EscrowSuccessorRetry(Consumer<Hold> logger) { this.logger = logger; }
-    boolean ready(long tick) { return tick >= next; }
+    public boolean ready(long tick) { return tick >= next; }
     long nextTick() { return next; }
     int failures() { return failures; }
 
-    void failed(UUID ledger, UUID logical, UUID transfer, long serial, String phase, String reason, long tick) {
+    public void failed(UUID ledger, UUID logical, UUID transfer, long serial, String phase, String reason, long tick) {
         failures = Math.min(3, failures + 1);
         int delay = EscrowReason.backoff(failures);
         next = Math.addExact(tick, delay);
