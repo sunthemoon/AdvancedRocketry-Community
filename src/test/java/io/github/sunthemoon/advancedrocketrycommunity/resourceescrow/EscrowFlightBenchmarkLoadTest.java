@@ -32,6 +32,21 @@ class EscrowFlightBenchmarkLoadTest {
                 () -> EscrowFlightBenchmarkLoad.refill(items, new EnergyStorage(40000), Items.IRON_INGOT));
     }
 
+    @Test void admissionRespectsCaptureCadenceWithoutWaitingForFlightCompletion() {
+        var budget = new EscrowBarrierBudget(); var requested = new boolean[8];
+        for (int tick = 0; tick < 8; tick++) {
+            long now = tick;
+            EscrowFlightBenchmarkProbe.admitLaunches(requested, () -> budget.available("earth", true, now), i -> {
+                assertTrue(budget.reserve("earth", true, now));
+                budget.captured(256); requested[i] = true;
+            });
+            assertEquals(tick + 1, budget.pending(), "No prior flight has completed or released its capture");
+            assertFalse(budget.available("earth", true, now), "A second same-tick capture must remain refused");
+        }
+        for (boolean value : requested) { assertTrue(value); }
+        assertEquals(8, budget.pending());
+    }
+
     @Test void benchmarkPadsAndSourcesKeepTheDiscoveryMarginInsideTheirOriginChunk() {
         var sources = new java.util.HashSet<net.minecraft.core.BlockPos>();
         var pads = new java.util.HashSet<net.minecraft.core.BlockPos>();

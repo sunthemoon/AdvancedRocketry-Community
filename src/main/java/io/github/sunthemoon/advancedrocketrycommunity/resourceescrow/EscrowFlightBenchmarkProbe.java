@@ -97,7 +97,8 @@ final class EscrowFlightBenchmarkProbe {
             EscrowTags.require(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(encoded)
                     == EscrowLimits.ROOT_BYTES, "Ceiling encode changed size");
         }
-        for (int i = 0; i < 8; i++) { if (!requested[i]) { launch(i); } }
+        admitLaunches(requested, () -> EscrowRuntime.of(server).barrier().available(
+                load.earth.dimension().location().toString(), true, server.getTickCount()), this::launch);
         peakConcurrent = Math.max(peakConcurrent, (int) data.ledger().armedFlights().stream().filter(arm -> logical.contains(arm.logical())).count());
         if (elapsed % 200 == 0) {
             load.refill(); savedTick = server.getTickCount(); long start = System.nanoTime();
@@ -179,6 +180,13 @@ final class EscrowFlightBenchmarkProbe {
             }
         }
         return result;
+    }
+    static void admitLaunches(boolean[] requested, java.util.function.BooleanSupplier available,
+                              java.util.function.IntConsumer launch) {
+        for (int i = 0; i < requested.length; i++) {
+            // F1 captures at most one source per tick; never consume a request ID while that budget is unavailable.
+            if (!requested[i] && available.getAsBoolean()) { launch.accept(i); }
+        }
     }
     private void launch(int i) {
         var rocket = sources.get(i); var player = load.players.get(0);
