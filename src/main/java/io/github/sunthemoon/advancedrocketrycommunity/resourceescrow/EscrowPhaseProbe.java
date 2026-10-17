@@ -84,7 +84,7 @@ final class EscrowPhaseProbe {
         if (level.getEntity(record.sourceEntityId()) != null
                 || !(level.getEntity(record.destinationEntityId().orElseThrow()) instanceof RocketEntity arrival)) { return; }
         if (cut.startsWith("FD_")) { arrival(record, arrival, data); return; }
-        EscrowTags.require(record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(arrival))
+        EscrowTags.require(EscrowDestinationProbe.fixedDestination(record, EscrowNativeEnvelope.rocket(arrival))
                 && arrival.flightData().orElseThrow().fuel().totalAmount() == 500 && arrival.escrowSection().epoch() == 0
                 && data.ledger().armedFlights().equals(List.of(record.nativeTransfer().orElseThrow().armed()))
                 && !RocketEscrowGate.idle(arrival) && arrival.flightData().orElseThrow().passengers().assignments().size() == 1,

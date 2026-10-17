@@ -66,6 +66,26 @@ class EscrowGovernedEnvelopeTest {
         assertEquals(EscrowGovernedEnvelope.digest(source), EscrowGovernedEnvelope.digest(reordered));
     }
 
+    @Test void probesCompareACrewedArrivalWithTheFixedDestinationUnderR18() {
+        var fixture = GovernedTransferFixture.create(1, 3, false);
+        var record = fixture.record();
+        var fixed = record.nativeTransfer().orElseThrow().destinationEnvelope(record);
+        assertTrue(fixed.getList("passengers", Tag.TAG_COMPOUND).isEmpty());
+        assertTrue(EscrowDestinationProbe.fixedDestination(record, fixed.copy()), "The uncrewed comparison is unchanged");
+        var riders = fixture.source().getList("passengers", Tag.TAG_COMPOUND);
+        var crewed = fixed.copy(); var aboard = new ListTag(); aboard.add(riders.get(2).copy()); aboard.add(riders.get(0).copy());
+        crewed.put("passengers", aboard);
+        assertNotEquals(fixed, crewed, "The raw envelope comparison would mismatch with a rider aboard");
+        assertTrue(EscrowDestinationProbe.fixedDestination(record, crewed));
+        var duplicate = crewed.copy(); duplicate.getList("passengers", Tag.TAG_COMPOUND).add(riders.get(0).copy());
+        var foreign = crewed.copy(); var outsider = new CompoundTag(); outsider.putUUID("physical", GovernedTransferFixture.id(999));
+        foreign.getList("passengers", Tag.TAG_COMPOUND).add(outsider);
+        var changed = crewed.copy(); changed.putBoolean("invulnerable", !crewed.getBoolean("invulnerable"));
+        for (var mismatch : java.util.List.of(duplicate, foreign, changed)) {
+            assertFalse(EscrowDestinationProbe.fixedDestination(record, mismatch));
+        }
+    }
+
     @Test void allOtherFieldsIncludingManifestRemainComparedExactly() {
         var source = GovernedTransferFixture.create(1, 2, false).source();
         var hash = EscrowGovernedEnvelope.digest(source);
