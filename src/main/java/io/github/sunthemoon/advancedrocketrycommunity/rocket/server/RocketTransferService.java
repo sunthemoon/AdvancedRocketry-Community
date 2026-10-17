@@ -139,14 +139,10 @@ final class RocketTransferService {
                         diagnostics.prepared(acknowledged.transferId());
                         auditPrepare(rocket, plan, selected, RocketFlightRequestCode.SUCCESS);
                         completion.accepted().run();
-                    }, () -> {
-                        // Only a definitely unarmed/idle failure can release the tentative pad.
-                        if (journal.actionable(countdown.logicalRocketId()) && journal.find(plan.requestId()).isEmpty()
-                                && resourceMutationAllowed(rocket)) {
-                            io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
-                        }
-                        completion.discarded().run();
-                    });
+                    }, governedLaunchDiscard(journal, countdown.logicalRocketId(), plan.requestId(),
+                            () -> resourceMutationAllowed(rocket),
+                            () -> io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan),
+                            completion.discarded()));
             if (!started) {
                 io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadService.release(server, plan);
             }
@@ -502,6 +498,18 @@ final class RocketTransferService {
     static boolean resourceMutationAllowed(boolean operational, RocketTransferPhase phase,
             boolean settled, boolean stationaryArrival) {
         return operational && (phase == null || phase == RocketTransferPhase.COMMITTED && settled && stationaryArrival);
+    }
+
+    /** The production discard callback; package-private solely to test it without starting a world. */
+    static Runnable governedLaunchDiscard(RocketTransferSavedData journal, UUID logical, UUID request,
+            java.util.function.BooleanSupplier resourcesAllowed, Runnable releasePad, Runnable discarded) {
+        return () -> {
+            // Only a definitely unarmed/idle failure can release the tentative pad.
+            if (journal.actionable(logical) && journal.find(request).isEmpty() && resourcesAllowed.getAsBoolean()) {
+                releasePad.run();
+            }
+            discarded.run();
+        };
     }
 
     boolean releaseLandedReservation(RocketEntity rocket) {
