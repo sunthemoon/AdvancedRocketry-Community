@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.FluidFuelLoaderEscrowFixtures.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType;
@@ -18,9 +19,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
@@ -36,13 +40,36 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
  * W95, leaf B3-E's A1 acceptance with the real loader and real rockets, behind the gated switch: two competing
  * devices forming a mixed-bank prefix through the fair queue; five admitted fills and a refused sixth; every refusal
  * comparing both resource envelopes and the queue and count state; production reconciliation of a held and then
- * reloaded device and rocket; and a missing loader that stays REPAIR without reconstruction.
+ * reloaded device and rocket; and a missing loader that stays REPAIR without reconstruction. An after-batch cleanup
+ * removes the fixtures of a failed or timed-out test (W95-R2).
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class FluidFuelLoaderEscrowGameTests {
     static final String BATCH = "fluid_fuel_loader_escrow";
+    /** The running batch's scenarios; the after-batch cleanup undoes any that a failure or a timeout left unfinished. */
+    private static final List<Scenario> RUNNING = new ArrayList<>();
     private FluidFuelLoaderEscrowGameTests() { }
+
+    /**
+     * W95-R2: runs after a failure or a timeout too. For every unfinished scenario it closes the device gates, clears the
+     * loaders and rockets, releases the tickets and closes a detached fixture ledger. One line naming the batch counts
+     * them and the shared ledger's unresolved operations that still named their endpoints, so that a later cascade is
+     * attributable.
+     */
+    @AfterBatch(batch = BATCH)
+    public static void afterBatch(ServerLevel level) {
+        var unfinished = RUNNING.stream().filter(scenario -> !scenario.finished).toList();
+        RUNNING.clear();
+        if (unfinished.isEmpty()) { return; }
+        var held = new HashSet<UUID>(); RuntimeException failed = null;
+        for (var scenario : unfinished) {
+            try { held.addAll(scenario.abandon()); }
+            catch (RuntimeException failure) { if (failed == null) { failed = failure; } }
+        }
+        AdvancedRocketryCommunity.LOGGER.warn("ARCE_W95_AFTER_BATCH batch={} unfinished={} held_operations={} cleanup_failed={}; "
+                + "the fixtures of a failed or timed-out test were removed", BATCH, unfinished.size(), held.size(), failed != null, failed);
+    }
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 2_400)
     public static void twoCompetingLoadersFillMixedBanksThroughOneRocketPrefix(GameTestHelper helper) {
@@ -78,13 +105,15 @@ public final class FluidFuelLoaderEscrowGameTests {
         final List<Area> areas = new ArrayList<>();
         final List<FluidFuelLoaderBlockEntity> loaders = new ArrayList<>();
         final List<RocketEntity> rockets = new ArrayList<>();
+        /** Every device whose gate this scenario opened and has not closed, whatever became of its loader. */
+        final Set<UUID> opened = new HashSet<>();
         int step;
         boolean finished;
         Scenario(GameTestHelper helper, int... chunks) {
             this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
             for (int i = 0; i < chunks.length; i += 2) { areas.add(new Area(level, chunks[i], chunks[i + 1])); }
         }
-        final void start() { areas.forEach(Area::hold); helper.onEachTick(this::tick); }
+        final void start() { RUNNING.add(this); areas.forEach(Area::hold); helper.onEachTick(this::tick); }
         private void tick() {
             if (finished) { return; }
             pacer.pace();
@@ -105,6 +134,7 @@ public final class FluidFuelLoaderEscrowGameTests {
         }
         void gate(FluidFuelLoaderBlockEntity loader, boolean open) {
             EscrowRuntime.of(level.getServer()).loaderAdmissionForTests(level.getServer(), device(loader), open);
+            if (open) { opened.add(device(loader)); } else { opened.remove(device(loader)); }
         }
         /** Nothing is created or lost: tanks, banks and the debited-but-uncredited amount escrow holds add up. */
         void conserved(RocketEntity rocket, long total) {
@@ -128,14 +158,34 @@ public final class FluidFuelLoaderEscrowGameTests {
                     && rocket.escrowSection().markers().isEmpty() && loaders.stream().allMatch(loader -> loader.root().isEmpty()
                     || section(loader).markers().isEmpty());
         }
-        void finish() {
+        void finish() { undo(); finished = true; helper.succeed(); }
+        /** Removes the fixtures: every gate this scenario opened, the loaders, the rockets and the tickets. */
+        void undo() {
             var server = level.getServer(); var runtime = EscrowRuntime.of(server);
             for (var loader : loaders) {
                 loader.root().ifPresent(root -> runtime.loaderAdmissionForTests(server, root.device(), false));
                 clear(level, loader.getBlockPos());
             }
+            opened.forEach(device -> runtime.loaderAdmissionForTests(server, device, false)); opened.clear();
             rockets.forEach(RocketEntity::discard); areas.forEach(Area::release);
-            finished = true; helper.succeed();
+        }
+        /**
+         * After a failure or a timeout: the shared ledger's unresolved operations that still name these endpoints, then
+         * the same undo as a finished test, so no gated device keeps admitting fills into later batches.
+         */
+        Set<UUID> abandon() {
+            finished = true;
+            var server = level.getServer(); var held = new HashSet<UUID>();
+            var data = ResourceEscrowSavedData.existing(server);
+            if (data != null && data.operational()) {
+                var coordinator = data.bind(server);
+                for (var loader : loaders) {
+                    loader.root().ifPresent(root -> coordinator.unresolvedNaming(root.device()).forEach(op -> held.add(op.id())));
+                }
+                for (var rocket : rockets) { coordinator.unresolvedNaming(rocket.getUUID()).forEach(op -> held.add(op.id())); }
+            }
+            undo();
+            return held;
         }
     }
 
@@ -221,8 +271,13 @@ public final class FluidFuelLoaderEscrowGameTests {
     /** Each refusal is one synchronous fair-queue visit; both envelopes, the queues and the counts stay exactly equal. */
     private static final class Refusals extends Scenario {
         RocketEntity mono, full, foreign;
+        ArmorStand rider;
         int settling;
         Refusals(GameTestHelper helper) { super(helper, 47_016, 47_000); }
+        @Override void undo() {
+            if (rider != null) { rider.stopRiding(); rider.discard(); }
+            super.undo();
+        }
         @Override void run() {
             var server = level.getServer(); var area = areas.get(0);
             if (step == 0) {
@@ -260,10 +315,9 @@ public final class FluidFuelLoaderEscrowGameTests {
             refuse("bank full", loader(area.at(2, 100, 4), owner, tank(ROCKET_FUEL, 1_000), binding(full)), full, FluidFuelLoaderStatus.BANK_FULL, true);
             refuse("foreign ledger", loader(area.at(13, 100, 11), owner, tank(ROCKET_FUEL, 1_000), binding(foreign)), foreign,
                     FluidFuelLoaderStatus.ESCROW_PENDING, true);
-            var rider = new ArmorStand(level, mono.getX(), mono.getY(), mono.getZ());
+            rider = new ArmorStand(level, mono.getX(), mono.getY(), mono.getZ());
             helper.assertTrue(level.addFreshEntity(rider) && rider.startRiding(mono, true), "The fixture rider did not mount");
             refuse("ridden rocket", loader(area.at(10, 100, 6), owner, tank(ROCKET_FUEL, 1_000), bound), mono, FluidFuelLoaderStatus.ROCKET_BUSY, true);
-            rider.stopRiding(); rider.discard();
             finish();
         }
         void refuse(String label, FluidFuelLoaderBlockEntity loader, RocketEntity rocket, FluidFuelLoaderStatus expected, boolean open) {
@@ -393,11 +447,16 @@ public final class FluidFuelLoaderEscrowGameTests {
                 helper.assertTrue(coordinator.currentReason(operation) == EscrowReason.MISSING_ENDPOINT
                         && coordinator.locked(operation.destination().key()) && coordinator.locked(operation.source().key()),
                         "The missing loader lost its sticky REPAIR hold");
-                coordinator.close();
-                try (var files = Files.list(directory)) { for (var file : files.toList()) { Files.delete(file); } Files.delete(directory); }
-                catch (java.io.IOException failure) { throw new IllegalStateException("Fixture cleanup failed", failure); }
                 finish();
             }
+        }
+        /** The detached ledger and its temporary directory go with the fixtures, after a failure too. */
+        @Override void undo() {
+            super.undo();
+            coordinator.close();
+            if (!Files.exists(directory)) { return; }
+            try (var files = Files.list(directory)) { for (var file : files.toList()) { Files.delete(file); } Files.delete(directory); }
+            catch (java.io.IOException failure) { throw new IllegalStateException("Fixture cleanup failed", failure); }
         }
     }
 }

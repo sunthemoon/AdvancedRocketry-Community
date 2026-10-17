@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.resourceescrow;
 
 import static io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.FluidFuelLoaderEscrowFixtures.*;
 
+import io.github.sunthemoon.advancedrocketrycommunity.AdvancedRocketryCommunity;
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.gametest.GameTestTickPacer;
 import io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile;
@@ -15,8 +16,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.gametest.framework.AfterBatch;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -26,17 +29,41 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
  * batch: it detaches the shared GameTest ledger through the runtime's retarget method and sets its file aside, so the
  * world is NO_FILE; a gated real loader's fair-queue visit then creates a fresh production ledger, whose empty
  * generation-1 baseline reaches the disk before L1. Production reconciliation completes the fill, and the original
- * ledger and its file are restored exactly.
+ * ledger and its file are restored exactly, by the after-batch cleanup if the test fails or times out (W95-R2).
  */
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class FluidFuelLoaderLedgerCreationGameTests {
     static final String BATCH = "fluid_fuel_loader_creation";
+    /** The batch's one scenario, for the after-batch cleanup. */
+    private static Creation running;
     private FluidFuelLoaderLedgerCreationGameTests() { }
 
     @GameTest(template = "empty", batch = BATCH, timeoutTicks = 1_200)
     public static void aWorldsFirstFillCreatesTheLedgerAfterAnEmptyBaseline(GameTestHelper helper) {
         new Creation(helper).start();
+    }
+
+    /**
+     * W95-R2: runs after a failure or a timeout too. Unless the test finished, it closes the device gate, clears the
+     * fixtures and restores the original ledger and its file. The retarget refuses while the created ledger holds
+     * queued, captured or UNKNOWN work; then the shared ledger stays detached, and one line naming the batch says so,
+     * so that any later failure is attributable.
+     */
+    @AfterBatch(batch = BATCH)
+    public static void afterBatch(ServerLevel level) {
+        var creation = running; running = null;
+        if (creation == null || creation.finished) { return; }
+        creation.finished = true;
+        try {
+            boolean restored = creation.undo(level.getServer());
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_W95_AFTER_BATCH batch={} restored={} backup={}; {}", BATCH, restored, creation.backup,
+                    restored ? "the unfinished test's fixtures were removed and the shared ledger restored"
+                            : "the created ledger still holds work, so the shared ledger stays detached and its file stays set aside");
+        } catch (RuntimeException failure) {
+            AdvancedRocketryCommunity.LOGGER.warn("ARCE_W95_AFTER_BATCH batch={} restored=false backup={}; the cleanup failed", BATCH,
+                    creation.backup, failure);
+        }
     }
 
     private static final class Creation {
@@ -50,13 +77,15 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
         RocketEntity rocket;
         FluidFuelLoaderBlockEntity loader;
         UUID operation;
+        /** The fixture holds the server's ledger slot, and the ledger file holds no original bytes; undo restores both. */
+        boolean detached, fileAside;
         boolean baselineSeen, finished;
         int step;
         Creation(GameTestHelper helper) {
             this.helper = helper; level = helper.getLevel(); pacer = new GameTestTickPacer(level.getServer());
             area = new Area(level, 47_040, 47_000);
         }
-        void start() { area.hold(); helper.onEachTick(this::tick); }
+        void start() { running = this; area.hold(); helper.onEachTick(this::tick); }
         void tick() {
             if (finished) { return; }
             pacer.pace(); var server = level.getServer(); var runtime = EscrowRuntime.of(server); var delegate = runtime.propulsion(server);
@@ -68,10 +97,12 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
                         if (delegate.holdsWork()) { return; }
                         helper.assertTrue(runtime.replaceLedgerForTests(server, null), "The idle shared ledger could not be detached");
                     }
+                    detached = true;
                     file = ResourceEscrowSavedData.file(server);
                     backup = file.resolveSibling(file.getFileName() + ".w95-backup");
                     try { if (Files.exists(file)) { Files.move(file, backup, StandardCopyOption.ATOMIC_MOVE); } }
                     catch (java.io.IOException failure) { throw new IllegalStateException("Fixture could not set the ledger file aside", failure); }
+                    fileAside = true;
                     helper.assertTrue(ResourceEscrowSavedData.existing(server) == null && !Files.exists(file)
                             && delegate.state() == EscrowAdmissionAuthority.Delegate.State.NO_FILE, "The world is not NO_FILE");
                     rocket = FluidFuelLoaderEscrowFixtures.rocket(level, area.at(8, 100, 8), owner, mono(2_000));
@@ -124,7 +155,7 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
                             && created.ledger().id().equals(section(loader).ledger()), "The endpoints are not bound to the created ledger");
                     step = 4;
                 }
-                default -> restore(server, runtime, delegate);
+                default -> restore(server, delegate);
             }
         }
         /** The disk's ledger, or null while the IO thread replaces it. */
@@ -132,19 +163,40 @@ public final class FluidFuelLoaderLedgerCreationGameTests {
             try { return CheckedSavedDataFile.readPayload(file, ManagedSavedDataType.RESOURCE_ESCROW).map(EscrowCodec::decode).orElse(null); }
             catch (RuntimeException replacing) { return null; }
         }
-        void restore(net.minecraft.server.MinecraftServer server, EscrowRuntime runtime, EscrowAdmissionAuthority.Delegate delegate) {
-            var coordinator = created.bind(server);
-            if (delegate.holdsWork() || !coordinator.writerIdle()) { return; }
-            runtime.loaderAdmissionForTests(server, device(loader), false);
-            clear(level, loader.getBlockPos()); rocket.discard();
-            helper.assertTrue(runtime.replaceLedgerForTests(server, original), "The original ledger was not restored");
-            coordinator.close();
-            try {
-                Files.deleteIfExists(file);
-                if (Files.exists(backup)) { Files.move(backup, file, StandardCopyOption.ATOMIC_MOVE); }
-            } catch (java.io.IOException failure) { throw new IllegalStateException("Fixture could not restore the ledger file", failure); }
+        void restore(MinecraftServer server, EscrowAdmissionAuthority.Delegate delegate) {
+            if (delegate.holdsWork() || !created.bind(server).writerIdle()) { return; }
+            helper.assertTrue(undo(server), "The original ledger was not restored");
             helper.assertTrue(ResourceEscrowSavedData.existing(server) == original, "The shared ledger did not return");
-            area.release(); finished = true; helper.succeed();
+            finished = true; helper.succeed();
+        }
+        /**
+         * Undoes the fixture: the device gate, the loader, the rocket and the ticket, then the original ledger and its
+         * file. It returns false, leaving the ledger and both files as they are, while the created ledger holds queued,
+         * captured or UNKNOWN work, because the retarget then refuses. Running it again changes nothing.
+         */
+        boolean undo(MinecraftServer server) {
+            var runtime = EscrowRuntime.of(server);
+            if (loader != null) {
+                loader.root().ifPresent(root -> runtime.loaderAdmissionForTests(server, root.device(), false));
+                clear(level, loader.getBlockPos());
+            }
+            if (rocket != null) { rocket.discard(); }
+            area.release();
+            if (!detached) { return true; }
+            var current = ResourceEscrowSavedData.existing(server);
+            // Taken while it is still the server's ledger: binding a detached root would attach a new coordinator.
+            var replaced = current == null || current == original ? null : current.bind(server);
+            if (!runtime.replaceLedgerForTests(server, original)) { return false; }
+            if (replaced != null) { replaced.close(); }
+            if (fileAside) {
+                try {
+                    Files.deleteIfExists(file);
+                    if (Files.exists(backup)) { Files.move(backup, file, StandardCopyOption.ATOMIC_MOVE); }
+                } catch (java.io.IOException failure) { throw new IllegalStateException("Fixture could not restore the ledger file", failure); }
+                fileAside = false;
+            }
+            detached = false;
+            return true;
         }
     }
 }
