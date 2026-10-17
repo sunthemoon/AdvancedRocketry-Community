@@ -73,7 +73,8 @@ public final class MoonConcurrentLandingGameTests {
             try {
                 helper.assertTrue(++waits < 220, "Moon concurrency fixture exceeded its bounded wait");
                 if (step == 0) {
-                    if (moon.isPositionEntityTicking(origin) && moon.isPositionEntityTicking(origin.south(5))) { setup(); }
+                    if (moon.getGameTime() >= RocketFlightLimits.DESCENT_TICKS
+                            && moon.isPositionEntityTicking(origin) && moon.isPositionEntityTicking(origin.south(5))) { setup(); }
                 } else if (step == 1) {
                     if (held.entered()) {
                         completion.tickDestination(server, roots.journal, records[0]);

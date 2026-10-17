@@ -54,7 +54,7 @@ public final class RocketConcurrentFlightGameTests {
         RocketJournalSchedulingGameTestSupport.HeldWrite held;
         Path directory, file;
         int stage, waits, risingTicks, simultaneousSteps;
-        boolean released, closed, sawCountdown, sawAscent, sawTransit;
+        boolean released, closed, sawCountdown, sawAscent, sawTransit, awaitSpawnPair;
 
         Scenario(GameTestHelper helper, boolean delayed) {
             this.helper = helper; this.delayed = delayed; pacer = new GameTestTickPacer(helper.getLevel().getServer());
@@ -125,6 +125,12 @@ public final class RocketConcurrentFlightGameTests {
 
         void fly() {
             var server = helper.getLevel().getServer(); journal.pollWriter(server.getTickCount());
+            if (awaitSpawnPair) {
+                // Establish both acknowledged spawn prerequisites before the explicit same-tick service visit.
+                journal.retryChecked(server);
+                if (java.util.Arrays.stream(initial).anyMatch(record -> !journal.actionable(record.logicalRocketId()))) { return; }
+                awaitSpawnPair = false;
+            }
             int stepped = 0;
             for (int i = 0; i < 2; i++) {
                 var before = journal.find(initial[i].transferId()).orElseThrow();
@@ -160,7 +166,7 @@ public final class RocketConcurrentFlightGameTests {
                     helper.assertTrue(sawCountdown && sawAscent && sawTransit && risingTicks >= RocketFlightLimits.ASCENT_TICKS - 1,
                             "Held writer did not cover B's entire countdown/ascent/transit");
                     helper.assertTrue(journal.outstandingEffectCount() == 2, "Both spawn continuations were not retained");
-                    held.close(); released = true;
+                    held.close(); released = true; awaitSpawnPair = true;
                 }
             }
             if (landed[0] && landed[1]) { verifyAndFinish(); }
