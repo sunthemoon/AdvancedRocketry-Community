@@ -74,8 +74,8 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         if (state == null) {
             requireCapacity(work, record.transferId());
             retries.history(record.logicalRocketId());
-            state = new Work(record, outcome, new EscrowFlightSource(survivor,
-                    () -> EscrowGovernedTerminalPassengers.resolved(server, record, outcome, survivor) && boundary.getAsBoolean()));
+            state = new Work(record, outcome, waitSource(survivor,
+                    () -> EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor), boundary));
             work.put(record.transferId(), state);
         }
         if (state.proofs.values().stream().anyMatch(proof -> !proof.valid())) {
@@ -128,6 +128,11 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
 
     private void retry(Work state, String phase, String reason, long tick) {
         state.release(); retries.failed(state.record, phase, reason, tick);
+    }
+
+    /** R13/R16: waits observe immutable identities and live riders, not a fresh serialized survivor each tick. */
+    static EscrowFlightSource waitSource(RocketEntity survivor, BooleanSupplier passengersPresent, BooleanSupplier boundary) {
+        return new EscrowFlightSource(survivor, () -> passengersPresent.getAsBoolean() && boundary.getAsBoolean());
     }
 
     void observe(RocketEntity rocket) {

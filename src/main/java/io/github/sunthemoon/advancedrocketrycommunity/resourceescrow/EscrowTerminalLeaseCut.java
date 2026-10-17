@@ -67,6 +67,9 @@ final class EscrowTerminalLeaseCut implements AutoCloseable {
                 case MOTION -> survivor.setDeltaMovement(new Vec3(0.125, 0, 0));
                 case NONE -> { }
             }
+            if (fault == Fault.DISMOUNT || fault == Fault.REMOVAL || fault == Fault.LOGOUT) {
+                EscrowTerminalRetryCut.assertInvalidated(helper, server, record);
+            }
         } finally { resume.countDown(); }
         // Await this real IO completion without another entity tick/save observation. This is
         // R13's explicitly accepted setter interval, not a simulated passage of world ticks.
