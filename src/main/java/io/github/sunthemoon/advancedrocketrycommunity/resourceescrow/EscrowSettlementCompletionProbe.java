@@ -296,8 +296,8 @@ final class EscrowSettlementCompletionProbe {
                 var endpoint = EscrowCodec.endpoint(((CompoundTag) raw).getCompound("endpoint"));
                 if (endpoint.kind() != EscrowEndpoint.Kind.ENTITY) { continue; }
                 if (!(level.getEntity(endpoint.identity()) instanceof RocketEntity survivor)) { return; }
-                if (heldB) { if (!survivor.escrowSection().markers().isEmpty()) { return; } }
-                else { survivor.pruneSettledEscrow(); }
+                // Final review A, F4: only the product pruning cursor prunes the survivor; the probe waits for it.
+                if (!survivor.escrowSection().markers().isEmpty()) { return; }
                 if (normalization && survivor.escrowSection().epoch() == 0) {
                     EscrowTags.require(survivor.flightData().orElseThrow().fuel().totalAmount() == 0
                             && data.ledger().id().equals(survivor.escrowSection().ledger()) && RocketEscrowGate.idle(survivor), "Neutral normalization did not release intact");
