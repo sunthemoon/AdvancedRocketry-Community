@@ -77,7 +77,10 @@ public final class RocketLandedDisassemblyGameTests {
 
     private RocketLandedDisassemblyGameTests() { }
 
-    /** G1, G4, G5, G10, G14, G15 and G16 through the player path and the release-test hook, world journal. */
+    /**
+     * G1, G4, G5, G10, G14, G15 and G16 through the player path and the release-test hook, world journal; G16's
+     * unloaded E (W92-R7) against an isolated checked journal, so that E unloads before the removal is acknowledged.
+     */
     @GameTest(template = "rocket_test", batch = "landed_disassembly_requests", timeoutTicks = 1200)
     public static void landedRequestsKeepTheClaimUntilRestorationAndAnswerPending(GameTestHelper helper) {
         var script = new Script(helper);
@@ -86,6 +89,7 @@ public final class RocketLandedDisassemblyGameTests {
         script.landed(true, false, RocketLandedDisassemblyGameTests::fueledConsentAndChangedFuel);
         script.landed(true, false, RocketLandedDisassemblyGameTests::repeatedRequestsOnlyReportPending);
         script.landed(false, false, RocketLandedDisassemblyGameTests::destroyedArrivalIsARefusedInsert);
+        script.landed(false, true, RocketLandedDisassemblyGameTests::unloadedArrivalGetsTheRecordBack);
         script.start();
     }
 
@@ -237,6 +241,41 @@ public final class RocketLandedDisassemblyGameTests {
             RocketJournalGameTestSupport.acknowledgeFixture(s.helper);
             s.check(!a.anyRestored() && journal.find(a.landed.transferId()).isEmpty() && !a.support.pending(a.rocket)
                     && code(owner, "region_busy"), "A destroyed arrival was restored or its record written back");
+        });
+    }
+
+    private static void unloadedArrivalGetsTheRecordBack(Script s, Arrival a) {
+        var owner = new Requester[1];
+        long[] section = new long[1];
+        s.then(() -> {
+            owner[0] = a.requester(a.owner);
+            section[0] = new ChunkPos(a.rocket.blockPosition()).toLong();
+            s.check(a.release(owner[0]) == RocketValidationCode.DISASSEMBLY_PENDING, "Detached request was not pending");
+            // G16, W92-R7: E's entity section unloads before the removal is acknowledged; the unload stores E.
+            a.releaseMoonTickets();
+        });
+        s.waitUntil(() -> !a.moon.areEntitiesLoaded(section[0]));
+        s.then(() -> {
+            s.check(a.rocket.getRemovalReason() == net.minecraft.world.entity.Entity.RemovalReason.UNLOADED_TO_CHUNK
+                    && a.moon.getEntity(a.rocket.getUUID()) == null, "E did not unload with its chunk");
+            a.write(CheckedSavedDataPolicy.atomic(TYPE), true);
+            s.check(code(owner[0], "region_busy") && "WRITE_BACK".equals(a.support.stage(a.logical()))
+                    && a.detached.find(a.landed.transferId()).orElse(null) == a.landed,
+                    "M3 did not write T back for an unloaded E");
+            s.check(!a.moon.areEntitiesLoaded(section[0]), "M2 or M3 loaded E's section");
+            a.write(CheckedSavedDataPolicy.atomic(TYPE), true);
+            s.check(!a.support.pending(a.rocket) && a.diskTransfers().contains(a.landed.transferId()),
+                    "The write-back did not end P with T on disk");
+        });
+        // Ordinary loading brings the stored E back, unchanged and with no block restored.
+        s.waitUntil(() -> a.ready() && a.moon.getEntity(a.rocket.getUUID()) instanceof RocketEntity);
+        s.then(() -> {
+            var stored = (RocketEntity) a.moon.getEntity(a.rocket.getUUID());
+            var unloaded = a.rocket;
+            a.rocket = stored; // The fixture's cleanup discards the reloaded E.
+            s.check(stored != unloaded && stored.isAlive()
+                    && stored.snapshot().orElseThrow().contentHash().equals(a.landed.destinationSnapshot().contentHash())
+                    && !a.anyRestored(), "The stored E did not come back unchanged");
         });
     }
 
@@ -667,6 +706,17 @@ public final class RocketLandedDisassemblyGameTests {
                     level.getChunkSource().addRegionTicket(TICKET, chunk, 2, chunk);
                     level.getChunkAt(at);
                 }
+            }
+        }
+
+        /** Removes this fixture's Moon tickets, so that E's chunk and entity section can unload; {@link #ready} re-adds them. */
+        void releaseMoonTickets() {
+            var snapshot = record.destinationSnapshot();
+            var chunks = new java.util.HashSet<ChunkPos>();
+            for (var block : snapshot.blocks()) {
+                var absolute = snapshot.sourceOrigin().add(block.position());
+                var chunk = new ChunkPos(new BlockPos(absolute.x(), absolute.y(), absolute.z()));
+                if (chunks.add(chunk)) { moon.getChunkSource().removeRegionTicket(TICKET, chunk, 2, chunk); }
             }
         }
 
