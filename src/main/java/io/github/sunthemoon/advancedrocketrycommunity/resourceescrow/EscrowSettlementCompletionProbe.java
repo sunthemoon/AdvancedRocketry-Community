@@ -27,7 +27,7 @@ final class EscrowSettlementCompletionProbe {
     private final ServerLevel level;
     private final String cut;
     private final String boundary;
-    private final boolean recovery, chain, abandon, floor, veto, normalization, heldB;
+    private final boolean recovery, chain, abandon, floor, named, veto, checkpointedVeto, normalization, heldB;
     private EscrowCoordinator coordinator;
     private ResourceEscrowSavedData data;
     private RocketEntity rocket;
@@ -38,7 +38,7 @@ final class EscrowSettlementCompletionProbe {
     private EscrowSettlementIntent preview;
     private UUID selected;
     private long startTick;
-    private boolean waiting, done, vetoInstalled;
+    private boolean waiting, done, vetoInstalled, holdObserved;
     private int step;
     private volatile boolean writingIntent;
     private volatile String ledgerPhase = "";
@@ -46,23 +46,24 @@ final class EscrowSettlementCompletionProbe {
         EscrowTestEndpoints.requireEnabled(server); this.server = server; level = server.overworld();
         cut = System.getProperty("advancedrocketrycommunity.escrowCase", "");
         String[] parts = cut.substring(3).split("__", 2);
-        EscrowTags.require(parts.length == 2 && List.of("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMALIZE", "HELD_B").contains(parts[0]),
+        EscrowTags.require(parts.length == 2 && List.of("ACCEPT", "ABANDON", "CHAIN_ACCEPT", "CHAIN_ABANDON", "FLOOR", "NORMALIZE",
+                "NAMED_ACCEPT", "NAMED_ABANDON", "HELD_B").contains(parts[0]),
                 "Unknown settlement completion case");
         boundary = parts[1]; chain = parts[0].startsWith("CHAIN"); abandon = parts[0].endsWith("ABANDON");
-        floor = parts[0].equals("FLOOR"); veto = boundary.equals("VETO");
+        floor = parts[0].equals("FLOOR"); checkpointedVeto = boundary.equals("VETO_CHECKPOINTED");
+        veto = boundary.equals("VETO") || checkpointedVeto;
         normalization = parts[0].equals("NORMALIZE");
+        named = parts[0].startsWith("NAMED_");
         heldB = parts[0].equals("HELD_B");
         recovery = "recover".equals(System.getProperty("advancedrocketrycommunity.escrowScenario"));
     }
     void checkpoint(String name) {
         if (done) { return; }
+        if (!recovery && writingIntent && boundary.equals("O1_BEFORE") && name.equals("K1")) { pause(boundary); }
         if (name.equals("O3_CAPTURE") || name.equals("O4_CAPTURE")) { ledgerPhase = name.substring(0, 2); return; }
         if (veto && name.equals("O_VETO") && vetoInstalled) {
-            EscrowTags.require(!data.ledger().records().isEmpty() && data.ledger().tombstones().isEmpty(), "Veto permitted retirement");
-            if (recovery) {
-                AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT cut={} state=HELD records={} locked=true", cut, data.ledger().records().size());
-                done = true;
-            } else { pause("O_VETO"); }
+            // stalled() publishes its diagnostic after this checkpoint. Read it on the next owner tick.
+            holdObserved = true;
         }
         if (recovery || veto || writingIntent) { return; }
         if (name.equals(boundary)) { pause(name); }
@@ -81,8 +82,10 @@ final class EscrowSettlementCompletionProbe {
     void tick() {
         if (done || waiting || !level.areEntitiesLoaded(new ChunkPos(POSITION).toLong()) || !level.isPositionEntityTicking(POSITION)) { return; }
         if (data == null) { data = ResourceEscrowSavedData.forTests(server); coordinator = data.bind(server); startTick = server.getTickCount(); }
+        if (holdObserved) { held(); return; }
         if (recovery) {
             if (veto && !vetoInstalled && !data.ledger().records().isEmpty()) { installVeto(); }
+            if (boundary.equals("O1_BEFORE")) { beforeIntent(); return; }
             if (!veto && data.ledger().records().size() == (heldB ? 1 : 0) && !data.ledger().tombstones().isEmpty()) { completed(); }
             return;
         }
@@ -90,9 +93,13 @@ final class EscrowSettlementCompletionProbe {
             case 0 -> {
                 var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
                 if (floor) { if (!createFloor(journal)) { return; } step = 3; return; }
-                source = EscrowTestEndpoints.create(level, POSITION, data.ledger().id());
-                sources.add(source);
-                rocket = EscrowRocketAuditProbe.createRocket(level, source.logical(), true); source.bank().discard();
+                if (source == null) {
+                    source = EscrowTestEndpoints.create(level, POSITION, data.ledger().id());
+                    sources.add(source);
+                    rocket = EscrowRocketAuditProbe.createRocket(level, source.logical(), true); source.bank().discard();
+                }
+                if (named && selected == null) { createFloor(journal); return; }
+                if (named && (!coordinator.writerIdle() || !journal.retryChecked(server))) { return; }
                 var captures = new ArrayList<EscrowNativeBinding.Admission>(); captures.add(operation(source, coordinator.nextSequence(), 0));
                 if (chain) {
                     var second = EscrowTestEndpoints.chainSource(source, POSITION.offset(1, 0, 0)); sources.add(second);
@@ -129,7 +136,7 @@ final class EscrowSettlementCompletionProbe {
             case 2 -> {
                 if (!coordinator.writerIdle() || data.ledger().records().size() != (chain ? 2 : 1) + (heldB ? 1 : 0)) { return; }
                 // Refuse vanilla's intervening saves as well as the later O2 own-store attempt.
-                if (veto && !vetoInstalled) { installVeto(); }
+                if (veto && !checkpointedVeto && !vetoInstalled) { installVeto(); }
                 for (int i = 0; i < sources.size(); i++) { sources.get(i).applySource(data.ledger().records().get(i)); }
                 if (heldB) {
                     heldSource.apply(data.ledger().records().stream().filter(op -> op.id().equals(heldId)).findFirst().orElseThrow());
@@ -141,8 +148,9 @@ final class EscrowSettlementCompletionProbe {
                 if (!coordinator.writerIdle() || floor && !RocketTransferSavedData.get(server).retryChecked(server)
                         || !floor && data.ledger().records().get(0).reason() != EscrowReason.OTHER_STATE) { return; }
                 if (abandon) { level.setBlockAndUpdate(POSITION, Blocks.AIR.defaultBlockState()); }
-                if (!veto || floor) { EscrowTags.require(server.saveEverything(false, true, true), "Completion fixture baseline save refused"); }
+                if (!veto || floor || checkpointedVeto) { EscrowTags.require(server.saveEverything(false, true, true), "Completion fixture baseline save refused"); }
                 level.entityManager.permanentStorage.flush(true); level.getChunkSource().chunkMap.worker.synchronize(true).join();
+                if (checkpointedVeto) { installVeto(); }
                 preview = EscrowRuntime.of(server).settlement().preview(server, selected, choice(), ACTOR, "Server"); step = 4;
             }
             case 4 -> {
@@ -150,6 +158,7 @@ final class EscrowSettlementCompletionProbe {
                 writingIntent = true;
                 waiting = EscrowRuntime.of(server).settlement().confirm(server, selected, choice(), ACTOR, preview.digest(), committed -> {
                     EscrowTags.require(committed, "Completion O1 was not acknowledged"); writingIntent = false; waiting = false; step = 5;
+                    if (boundary.equals("O1_AFTER")) { pause(boundary); }
                     if (veto) { installVeto(); }
                 });
             }
@@ -164,6 +173,36 @@ final class EscrowSettlementCompletionProbe {
         return floor ? EscrowSettlementIntent.Choice.TRANSFER_FLOOR_RETIRE
                 : abandon ? EscrowSettlementIntent.Choice.ABANDON : EscrowSettlementIntent.Choice.ACCEPT_CURRENT;
     }
+    private void beforeIntent() {
+        var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
+        EscrowTags.require(data.ledger().records().size() == (floor ? 0 : chain ? 2 : 1)
+                && data.ledger().tombstones().isEmpty() && data.ledger().records().stream().allMatch(op -> op.settlement().isEmpty())
+                && data.ledger().floors().size() == (floor || named ? 1 : 0), "Pre-O1 restart invented a decision or retired authority");
+        if (!floor) {
+            var first = data.ledger().records().get(0);
+            if (!(level.getEntity(first.destination().identity()) instanceof RocketEntity found)) { return; }
+            EscrowTags.require(!RocketEscrowGate.idle(found) && found.flightData().orElseThrow().fuel().totalAmount()
+                    == (normalization ? 0 : chain ? 2_000 : 1_000), "Pre-O1 restart released or mutated the protected rocket");
+        }
+        EscrowTags.require(journal.entries().size() == (floor || named ? 1 : 0), "Pre-O1 restart removed the guarded journal");
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT cut={} state=PRE_O1 records={} locked=true", cut, data.ledger().records().size());
+        done = true;
+    }
+    private void held() {
+        EscrowTags.require(!data.ledger().records().isEmpty() && data.ledger().tombstones().isEmpty(), "Veto permitted retirement");
+        var intent = EscrowSettlementIntent.decode(data.ledger().records().get(0).settlement());
+        var reason = EscrowRuntime.of(server).settlementRecovery().view(intent).reason();
+        String expected = recovery && !floor && !checkpointedVeto ? "Frozen settlement endpoint changed" : "BARRIER_VETO";
+        EscrowTags.require(expected.equals(reason), "Unexpected settlement hold reason: " + reason + "; expected " + expected);
+        EscrowTags.require(intent.ids().size() == (chain ? 2 : 1) && intent.ids().stream().allMatch(id ->
+                data.ledger().records().stream().anyMatch(op -> op.id().equals(id) && !op.settlement().isEmpty())), "Hold lost frozen members");
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_VETO cut={} reason={} records={} checkpointed={} recovery={}",
+                cut, reason, data.ledger().records().size(), checkpointedVeto, recovery);
+        if (recovery) {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_COMPLETION_RESULT cut={} state=HELD records={} locked=true", cut, data.ledger().records().size());
+            done = true;
+        } else { pause("O_VETO"); }
+    }
     private EscrowNativeBinding.Admission operation(EscrowTestEndpoints.Fixture fixture, long sequence, long epoch) {
         return operation(fixture, sequence, epoch, data.ledger());
     }
@@ -175,18 +214,16 @@ final class EscrowSettlementCompletionProbe {
                 ModIdentity.id("rocket").toString(), 4, 0, 4, EscrowEndpoint.Unit.PRIMARY, epoch, before.resourceSignature(), after.resourceSignature());
         var guard = RocketTransferSavedData.get(server).acknowledgedGuard(source.logical()).orElseThrow();
         var op = new EscrowOperation(sample.id(), sequence, rocket.ownerId().orElseThrow(), sample.createdTick(), sample.phase(), sample.reason(), sample.payload(), sample.payloadHash(),
-                sample.source(), destination, new EscrowGuard(source.logical(), null, Math.max(1, guard.sequence()), guard.rootDigest()));
+                sample.source(), destination, new EscrowGuard(source.logical(), guard.transfer(), Math.max(1, guard.sequence()),
+                        guard.transfer() == null ? guard.rootDigest() : guard.recordDigest()));
         return EscrowNativeBinding.captureTest(op, rocket, fixture.source(), before, after, bindingRoot);
     }
     private boolean createFloor(RocketTransferSavedData journal) {
         BlockPos target = POSITION.offset(16, 0, 0);
         if (!level.areEntitiesLoaded(new ChunkPos(target).toLong()) || !level.isPositionEntityTicking(target)) { return false; }
-        // Keep concrete absence slots available for inspection after vanilla's ordinary empty-slot suppression.
-        for (var position : List.of(POSITION, target)) {
-            var anchor = new net.minecraft.world.entity.decoration.ArmorStand(level, position.getX() + 1.5, 100, position.getZ() + 1.5);
-            anchor.setNoGravity(true); EscrowTags.require(level.addFreshEntity(anchor), "Floor absence anchor was not added");
-        }
-        UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID(), identity = UUID.randomUUID(); selected = transfer;
+        // Floor absence proofs cover genuinely empty entity slots, not slots padded with anchors.
+        UUID logical = named ? source.logical() : UUID.randomUUID(), transfer = UUID.randomUUID();
+        UUID identity = named ? rocket.getUUID() : UUID.randomUUID(); selected = transfer;
         var propulsion = new RocketPropulsion(RocketPropulsion.Mode.ABSTRACT, 1_000, 0, 1, 1, RocketPropulsion.Settings.DEFAULTS);
         var blocks = List.of(new RocketBlock(new RocketPosition(0, 0, 0), new RocketBlockState(net.minecraft.resources.ResourceLocation.tryParse("minecraft:iron_block"), java.util.Map.of())),
                 new RocketBlock(new RocketPosition(0, 1, 0), new RocketBlockState(net.minecraft.resources.ResourceLocation.tryParse("minecraft:iron_block"), java.util.Map.of())));
@@ -194,21 +231,30 @@ final class EscrowSettlementCompletionProbe {
                 List.of(new RocketPosition(0, 1, 0)), new RocketStats(2, 100, 1_000, 1_000, 1, 1, 1, 0), 0, propulsion);
         var to = from.relocated(UUID.randomUUID(), level.dimension().location(), new RocketPosition(80, 100, 64), 0);
         var fuel = RocketFuelState.empty(propulsion).fill(1_000).state();
+        if (named) {
+            to = rocket.snapshot().orElseThrow();
+            from = to.relocated(UUID.randomUUID(), level.dimension().location(), new RocketPosition(80, 100, 64), 0);
+            fuel = rocket.flightData().orElseThrow().fuel().withFluidBank(false,
+                    net.minecraft.resources.ResourceLocation.tryParse("minecraft:water"), null, 1_500);
+        }
         var plan = new RocketFlightPlan(3, transfer, RocketFlightPlanner.EARTH.bodyId(), RocketFlightPlanner.MOON.bodyId(),
                 level.dimension().location(), level.dimension().location(), 500, 0);
-        var flight = RocketFlightData.initial(logical, 1_000, 1, plan.sourceBody(), plan.sourceDimension(), from.sourceOrigin(), 0)
+        if (named) { plan = plan.withPropulsionDebit(new RocketPropulsionDebit(500, 0, fuel.propulsion().orElseThrow().revision(),
+                fuel.resourceSignature(), RocketNativeResources.hash("Named settlement journal fixture"))); }
+        var flight = RocketFlightData.initial(logical, from.stats().fuelCapacity(), 1, plan.sourceBody(), plan.sourceDimension(), from.sourceOrigin(), 0)
                 .withFuel(fuel, 0).withPlan(plan).startCountdown(0).completeCountdown(60).beginTransit(transfer, 140);
         var arrival = flight.arriveAtDestination(fuel.debit(plan).state(), plan.destinationBody(), plan.destinationDimension(), to.sourceOrigin(), 160);
-        var record = RocketTransferRecord.create(transfer, logical, UUID.randomUUID(), UUID.randomUUID(), from, to, flight, arrival, 500, 0)
+        var record = RocketTransferRecord.create(transfer, logical, named ? rocket.ownerId().orElseThrow() : UUID.randomUUID(), UUID.randomUUID(), from, to, flight, arrival, 500, 0)
                 .destinationSpawned(identity).advance(RocketTransferPhase.PASSENGERS_TRANSFERRED).advance(RocketTransferPhase.SOURCE_REMOVED).advance(RocketTransferPhase.COMMITTED);
         // Publish the test floor in the same owner-thread call, before flushing journal authority.
         journal.put(record);
         var floorTag = new CompoundTag(); floorTag.putInt("schema_version", 2); floorTag.putUUID("rocket_id", logical); floorTag.putUUID("transfer_id", transfer);
         floorTag.putLong("journal_generation", 1); floorTag.putString("journal_digest", io.github.sunthemoon.advancedrocketrycommunity.persistence.CanonicalNbtDigest.of(
                 journal.save(new CompoundTag()).getList("transfers", 10).getCompound(0), RocketFlightLimits.MAX_TRANSFER_RECORD_NBT_BYTES, 35));
-        floorTag.putUUID("entity_id", identity); floorTag.putLong("resource_epoch", 1); floorTag.putString("signature", fuel.resourceSignature()); floorTag.putLong("highest_seq", 1);
+        String signature = (named ? arrival.fuel() : fuel).resourceSignature();
+        floorTag.putUUID("entity_id", identity); floorTag.putLong("resource_epoch", 1); floorTag.putString("signature", signature); floorTag.putLong("highest_seq", 1);
         var reference = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, to.sourceDimension().toString(), identity, logical, ModIdentity.id("rocket").toString(),
-                to.sourceOrigin().x() >> 4, 0, to.sourceOrigin().z() >> 4, EscrowEndpoint.Unit.PRIMARY, 1, fuel.resourceSignature(), fuel.resourceSignature());
+                to.sourceOrigin().x() >> 4, 0, to.sourceOrigin().z() >> 4, EscrowEndpoint.Unit.PRIMARY, 1, signature, signature);
         floorTag.putString("signature_kind", EscrowSignatureKind.FUEL_VECTOR_V1.name()); floorTag.putString("invariant_digest", EscrowInvariant.rocket(reference, record.ownerId(), to));
         data.acknowledged(new EscrowLedger(data.ledger().id(), 1, data.ledger().writerGeneration(), List.of(), List.of(floorTag), List.of()), true);
         journal.flushChecked(server); coordinator.autosave(); return true;

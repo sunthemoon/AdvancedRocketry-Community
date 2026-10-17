@@ -15,7 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 
-/** O1-only real-rocket cuts. No proof, tombstone, journal removal or release is claimed. */
+/** Real-rocket O1 cuts retain the undecided/frozen assertions and follow eventual checked O2-O4. */
 final class EscrowSettlementProbe {
     private static final BlockPos POSITION = new BlockPos(64, 100, 64);
     private static final UUID ACTOR = UUID.nameUUIDFromBytes("arce:escrow:server-console".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
@@ -32,6 +32,7 @@ final class EscrowSettlementProbe {
     private EscrowSettlementIntent preview;
     private boolean waiting;
     private boolean done;
+    private boolean retainedObserved;
     private volatile boolean writingIntent;
     private int step;
 
@@ -47,7 +48,7 @@ final class EscrowSettlementProbe {
         if (!recovery && writingIntent && cut.endsWith("_BEFORE") && name.equals("K1")) { pause(); }
     }
     private void pause() {
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_PAUSED cut={} boundary={} scope=O1_ONLY", cut,
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_PAUSED cut={} boundary={} scope=O1_CUT", cut,
                 cut.endsWith("_BEFORE") ? "STAGED_BEFORE_REPLACE" : "OWNER_ACKNOWLEDGED");
         try { TimeUnit.SECONDS.sleep(30); } catch (InterruptedException failure) { throw new IllegalStateException(failure); }
         throw new IllegalStateException("Settlement intent hard stop did not arrive within 30 seconds");
@@ -110,6 +111,8 @@ final class EscrowSettlementProbe {
         return EscrowNativeBinding.captureTest(op, rocket, fixture.source(), before, after, bindingRoot);
     }
     private void recovered() {
+        if (cut.endsWith("_AFTER") && data.ledger().records().isEmpty()) { released(); return; }
+        if (retainedObserved) { return; }
         EscrowTags.require(data.ledger().records().size() == (chain ? 2 : 1), "Settlement lost connected records");
         var first = data.ledger().records().get(0);
         if (!(level.getEntity(first.destination().identity()) instanceof RocketEntity found)) { return; }
@@ -122,7 +125,33 @@ final class EscrowSettlementProbe {
             EscrowTags.require(!op.settlement().isEmpty() == frozen, "Wrong durable intent boundary");
             if (frozen) { EscrowSettlementIntent.decode(op.settlement()).requireConfirmed(); }
         }
-        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_RESULT cut={} records={} intent={} fuel=0 locked=true scope=O1_ONLY", cut,
-                data.ledger().records().size(), frozen ? "frozen" : "absent"); done = true;
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_RETAINED cut={} records={} intent={} fuel=0 locked=true", cut,
+                data.ledger().records().size(), frozen ? "frozen" : "absent"); retainedObserved = true;
+        if (!frozen) {
+            AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_RESULT cut={} state=PRE_O1 records={} fuel=0 locked=true", cut, data.ledger().records().size());
+            done = true;
+        }
+    }
+    private void released() {
+        var journal = RocketTransferSavedData.get(server); if (!journal.retryChecked(server)) { return; }
+        EscrowTags.require(data.ledger().tombstones().size() == (chain ? 2 : 1) && data.ledger().floors().isEmpty()
+                && journal.entries().isEmpty(), "O1 continuation lost its receipts or retained journal authority");
+        for (var receipt : data.ledger().tombstones()) {
+            EscrowTags.require(receipt.getBoolean("released") && receipt.getUUID("actor").equals(ACTOR)
+                    && receipt.getString("choice").equals(abandon ? "ABANDON" : "ACCEPT_CURRENT")
+                    && receipt.getString("accounting_status").equals("UNKNOWN"), "O1 continuation changed the frozen choice");
+            for (var raw : EscrowTags.list(receipt, "survivors", 2)) {
+                var endpoint = EscrowCodec.endpoint(((net.minecraft.nbt.CompoundTag) raw).getCompound("endpoint"));
+                if (endpoint.kind() != EscrowEndpoint.Kind.ENTITY) { continue; }
+                if (!(level.getEntity(endpoint.identity()) instanceof RocketEntity survivor)) { return; }
+                survivor.pruneSettledEscrow();
+                EscrowTags.require(survivor.operational() && RocketEscrowGate.idle(survivor)
+                        && survivor.flightData().orElseThrow().fuel().totalAmount() == 0
+                        && survivor.escrowSection().equals(new RocketEscrowSection(data.ledger().id(), 0, List.of())),
+                        "O2-O4 failed to release the intact normalized survivor");
+            }
+        }
+        AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_SETTLEMENT_RESULT cut={} state=RELEASED records=0 fuel=0 locked=false", cut);
+        done = true;
     }
 }

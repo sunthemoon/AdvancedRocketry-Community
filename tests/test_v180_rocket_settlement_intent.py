@@ -9,6 +9,17 @@ import run_v180_rocket_settlement_intent as native
 
 
 class SettlementIntentNativeOracleTest(unittest.TestCase):
+    def test_retained_assertion_is_required_before_progress_on_first_restart(self):
+        for cut in native.CASES:
+            for restart in (1, 2):
+                count = 2 if cut.startswith("SO_CHAIN_") else 1
+                line = f"ARCE_RELEASE_SETTLEMENT_RETAINED cut={cut} records={count} intent={'frozen' if cut.endswith('_AFTER') else 'absent'} fuel=0 locked=true"
+                native.require_retained([line], cut, restart)
+                if restart == 1 or cut.endswith("_BEFORE"):
+                    for invalid in ([], [line, line], [line.replace("fuel=0", "fuel=1000")]):
+                        with self.assertRaises(native.smoke.SmokeError): native.require_retained(invalid, cut, restart)
+                else: native.require_retained([], cut, restart)
+
     def setUp(self):
         self.cut = "SO_ACCEPT_AFTER"
         self.root = dict(ledger_id=[10, 11, 12, 13], floors=[], tombstones=[], records=[
@@ -84,6 +95,32 @@ class SettlementIntentNativeOracleTest(unittest.TestCase):
         other["settlement"] = copy.deepcopy(self.intent); self.sources.append(copy.deepcopy(self.sources[0])); self.inspect()
         other["settlement"]["digest"] = "b" * 64
         with self.assertRaises(native.smoke.SmokeError): self.inspect()
+
+    def test_eventual_release_only_adds_the_prescribed_binding_and_exact_receipts(self):
+        import run_v180_rocket_settlement_completion as completion
+        op = self.root["records"][0]
+        op["destination"]["kind"] = "ENTITY"
+        op["transfer_guard"] = dict(rocket_id=[20, 21, 22, 23])
+        op["source"] = self.intent["observations"][0]["endpoint"]
+        self.intent["observations"][1]["endpoint"] = dict(op["destination"])
+        baseline = copy.deepcopy(self.inspect())
+        receipt = dict(schema_version=3, op_id=op["op_id"], actor=native.ACTOR, actor_name="Server", choice="ACCEPT_CURRENT",
+                       confirmed_tick=11, decision_digest="a" * 64, guards=[op["transfer_guard"]],
+                       before_choice=copy.deepcopy(self.intent["observations"]), released=1, release_generation=10, accounting_status="UNKNOWN")
+        self.root["records"] = []; self.root["tombstones"] = [receipt]
+        self.wrapper["resource_escrow"]["ledger_id"] = self.root["ledger_id"]
+        def check(cut="SO_ACCEPT_AFTER"):
+            with patch.object(native, "ledger", return_value=self.root), patch.object(native, "digest", return_value="a" * 64), \
+                    patch.object(completion, "journal", return_value=dict(transfers=[])), \
+                    patch.object(native, "record", side_effect=[dict(Entities=[self.rocket]), dict(block_entities=self.sources)]):
+                return native.inspect_released(Path("world"), cut, baseline)
+        self.assertEqual(0, check()["fuel"])
+        with self.assertRaises(native.smoke.SmokeError): check("SO_ACCEPT_BEFORE")
+        self.wrapper["flight_data"]["fuel"]["amount"] = 1
+        with self.assertRaises(native.smoke.SmokeError): check()
+        self.wrapper["flight_data"]["fuel"]["amount"] = 0
+        receipt["decision_digest"] = "b" * 64
+        with self.assertRaises(native.smoke.SmokeError): check()
 
 
 if __name__ == "__main__":

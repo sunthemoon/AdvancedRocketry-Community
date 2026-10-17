@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Cut O1-only real-rocket intents before replacement/after owner acknowledgement; restart twice."""
+"""Cut real-rocket O1; retain pre-O1/frozen assertions and follow O2-O4 on two restarts."""
 
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -75,7 +76,44 @@ def inspect(world: Path, cut: str) -> dict:
                 files={name: digest(world / name) for name in ("data/" + LEDGER, "region/r.0.0.mca", "entities/r.0.0.mca")})
 
 
+def inspect_released(world: Path, cut: str, before: dict) -> dict:
+    from run_v180_rocket_settlement_completion import journal, require_progress
+    if not cut.endswith("_AFTER"):
+        raise smoke.SmokeError("An undecided O1 cut cannot release")
+    root = ledger(world / "data" / LEDGER)
+    require_progress(before["ledger"], root)
+    if root["floors"] or any(receipt.get("released") != 1 or receipt.get("release_generation", 0) <= 0
+                              or receipt.get("schema_version") != 3 or receipt.get("accounting_status") != "UNKNOWN"
+                              or "loss_known" in receipt or "audited_loss" in receipt for receipt in root["tombstones"]):
+        raise smoke.SmokeError("O1 continuation released without checked UNKNOWN receipts")
+    entities = record(world / "entities/r.0.0.mca")["Entities"]
+    rockets = [entity for entity in entities if "RocketEntityData" in entity]
+    expected = copy.deepcopy(before["wrapper"])
+    expected["resource_escrow"]["ledger_id"] = root["ledger_id"]
+    if (len(rockets) != 1 or rockets[0]["RocketEntityData"] != expected
+            or rockets[0]["UUID"] != before["ledger"]["records"][0]["destination"]["identity"]
+            or rockets[0]["Pos"] != [64.5, 100., 64.5]):
+        raise smoke.SmokeError("O2-O4 changed more than the prescribed neutral binding")
+    sources = [entry for entry in record(world / "region/r.0.0.mca")["block_entities"]
+               if entry.get("ForgeData", {}).get("arce_escrow_fixture")]
+    if (len(sources) != before["source_count"]
+            or any(entry["ForgeData"]["arce_escrow_fixture"]["amount"] != 5000 for entry in sources)
+            or journal(world)["transfers"]):
+        raise smoke.SmokeError("O1 continuation changed native sources or retained journal authority")
+    return dict(ledger=root, wrapper=rockets[0]["RocketEntityData"], source_count=len(sources), fuel=0,
+                files={name: digest(world / name) for name in ("data/" + LEDGER, "region/r.0.0.mca", "entities/r.0.0.mca")})
+
+
+def require_retained(lines: list[str], cut: str, restart: int) -> None:
+    if cut.endswith("_BEFORE") or restart == 1:
+        count = 2 if cut.startswith("SO_CHAIN_") else 1
+        expected = f"ARCE_RELEASE_SETTLEMENT_RETAINED cut={cut} records={count} intent={'frozen' if cut.endswith('_AFTER') else 'absent'} fuel=0 locked=true"
+        if sum(expected in line for line in lines) != 1:
+            raise smoke.SmokeError("Restart skipped the retained-intent/pre-O1 assertion")
+
+
 def run(args) -> dict:
+    from run_v180_rocket_settlement_completion import require_lock
     session, evidence = args.session_dir.resolve(), args.evidence_dir.resolve()
     if session.exists() or session.is_symlink() or evidence == session or session in evidence.parents:
         raise smoke.SmokeError("Unsafe or occupied disposable session")
@@ -91,7 +129,7 @@ def run(args) -> dict:
     marker = session / ".arce-w11b2-settlement-owned"
     marker.write_text(token, encoding="ascii")
     report = dict(status="IN_PROGRESS", source_commit=args.source_commit, jar_sha256=digest(args.jar), cases=[],
-                  scope="O1 ONLY; no O2-O4, durable absence, tombstone, journal removal, release or full settlement claim")
+                  scope="O1 cut, retained-intent/pre-O1 assertions, eventual O2-O4 only for acknowledged O1")
     process = None
     try:
         shutil.copytree(libraries, session / "libraries")
@@ -104,6 +142,7 @@ def run(args) -> dict:
             (session / "server.properties").write_text("".join(f"{key}={value}\n" for key, value in sorted(properties.items())), encoding="ascii")
             row = dict(cut=cut, restarts=[]); report["in_progress"] = row
             for restart in range(3):
+                owner = require_lock(args.lock_owner)
                 free = {str(drive): shutil.disk_usage(drive).free for drive in (Path("C:/"), Path("D:/"))}
                 if min(free.values()) < 10 * 1024**3:
                     raise smoke.SmokeError("Native start refused below 10 GiB free")
@@ -111,22 +150,28 @@ def run(args) -> dict:
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"))
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowCase=" + cut)
                 process = smoke.CapturedProcess(command, session, evidence / f"{cut}-restart-{restart}.log")
-                row.setdefault("starts", []).append(dict(command=command, free_bytes=free, restart=restart))
+                row.setdefault("starts", []).append(dict(command=command, free_bytes=free, restart=restart, lock_owner=owner))
                 if restart == 0:
                     process.wait_for(re.compile(r"ARCE_RELEASE_SETTLEMENT_PAUSED cut=" + cut), args.startup_timeout)
                     process.process.kill(); process.abort(); process = None
+                    require_lock(args.lock_owner)
                     row["cut_disk"] = inspect(session / ("world-" + cut), cut)
                 else:
-                    process.wait_for(re.compile(r"ARCE_RELEASE_SETTLEMENT_RESULT cut=" + cut + r" .*locked=true scope=O1_ONLY"), args.startup_timeout)
+                    released = cut.endswith("_AFTER")
+                    state = "RELEASED" if released else "PRE_O1"
+                    process.wait_for(re.compile(r"ARCE_RELEASE_SETTLEMENT_RESULT cut=" + cut + " state=" + state), args.startup_timeout)
+                    require_retained(process.lines, cut, restart)
                     process.command("stop"); code = process.finish()
                     if code != 0 or any("/ERROR]" in line or "/FATAL]" in line for line in process.lines):
                         raise smoke.SmokeError(f"Native restart failed or logged ERROR: {cut}/{restart}")
-                    process = None; disk = inspect(session / ("world-" + cut), cut)
-                    if disk["wrapper"] != row["cut_disk"]["wrapper"] or disk["ledger"]["records"] != row["cut_disk"]["ledger"]["records"]:
+                    process = None; require_lock(args.lock_owner)
+                    disk = (inspect_released(session / ("world-" + cut), cut, row["cut_disk"]) if released
+                            else inspect(session / ("world-" + cut), cut))
+                    if not released and (disk["wrapper"] != row["cut_disk"]["wrapper"] or disk["ledger"]["records"] != row["cut_disk"]["ledger"]["records"]):
                         raise smoke.SmokeError("Restart changed the frozen decision or protected rocket")
                     row["restarts"].append(dict(restart=restart, exit_code=code, disk=disk))
             row["status"] = "PASS"; report["cases"].append(row)
-            print(f"{cut}: PASS (O1 only, forced stop, two restarts, retained locks)", flush=True)
+            print(f"{cut}: PASS (O1 cut, two restarts, {'checked release' if cut.endswith('_AFTER') else 'retained pre-O1 locks'})", flush=True)
         report.pop("in_progress", None); report["status"] = "PASS"; return report
     except Exception as failure:
         report.update(status="FAILED", error=str(failure)); raise
@@ -146,6 +191,7 @@ def main() -> int:
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--source-commit", required=True)
     parser.add_argument("--java", required=True)
+    parser.add_argument("--lock-owner", help="Require this machine-wide lock owner before each JVM start")
     parser.add_argument("--case", action="append", choices=CASES)
     parser.add_argument("--startup-timeout", type=float, default=240)
     args = parser.parse_args()
