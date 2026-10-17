@@ -50,7 +50,19 @@ public final class LandingPadGameTests {
             "arce_gametest_landing_pad", Comparator.<UUID>naturalOrder(), 400);
 
     private LandingPadGameTests() { }
-    private record Fixture(ServerLevel space, StationState station, BlockPos pad) { }
+    private record Fixture(ServerLevel space, StationState station, BlockPos pad,
+                           List<RocketTransferRecord> flightTickets) {
+        void retainFlight(UUID transfer) {
+            flightTickets.add(RocketTransferSavedData.get(space.getServer()).find(transfer).orElseThrow());
+        }
+
+        void releaseFlights() {
+            // These tests remove/reload journals themselves. Keep the ticket identities independently
+            // so a completed or failed fixture never leaves its tickets until their 400-tick expiry.
+            flightTickets.forEach(record -> RocketTransferEntities.releaseFlightTickets(space.getServer(), record));
+            flightTickets.clear();
+        }
+    }
 
     @GameTest(template = "rocket_test", batch = "landing_pads", timeoutTicks = 160)
     public static void ownerOperatorAndMemberRegisterRemoveMatrix(GameTestHelper helper) {
@@ -135,6 +147,7 @@ public final class LandingPadGameTests {
             RocketEntity source = addSource(helper, snapshot, f.station.ownerId());
             UUID logical = source.assemblyTransactionId().orElseThrow(); UUID transfer = UUID.randomUUID();
             var result = RocketRuntime.requestAdminPadFlight(source, f.station.stationId(), entry.reference(), transfer);
+            f.retainFlight(transfer);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.assertPendingLaunch(helper, result, source);
             helper.assertTrue(transfer.equals(LandingPadIndex.get(f.space.getServer()).find(f.station.stationId(), entry.reference()).orElseThrow().claim()), "Prepared claim missing");
             await(helper, driver, helper.getTick() + 270, () -> {
@@ -171,6 +184,7 @@ public final class LandingPadGameTests {
             var service = new RocketTransferService();
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.assertPendingLaunch(helper,
                     service.prepareLaunch(source, countdown), source);
+            f.retainFlight(transfer);
             io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
             helper.assertTrue(service.cancelCountdown(source).code() == RocketFlightRequestCode.JOURNAL_PENDING,
                     "Cancellation did not await its removal acknowledgement");
@@ -212,6 +226,7 @@ public final class LandingPadGameTests {
                     if ((presence & 1) == 0) { source.discard(); }
                     if ((presence & 2) != 0) { helper.assertTrue(f.space.addFreshEntity(destination), "Recovery destination spawn failed"); }
                     var journal = RocketTransferSavedData.get(f.space.getServer()); journal.put(record); journal.flush(f.space.getServer());
+                    f.retainFlight(transfer);
                     io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketJournalGameTestSupport.acknowledgeFixture(helper);
                     // Real native SavedData files + BE serializer, then fresh Java lifecycle owners.
                     var storage = f.space.getServer().overworld().getDataStorage(); storage.save();
@@ -264,15 +279,19 @@ public final class LandingPadGameTests {
         var station = new StationCreationService(new StationPlatformGenerator(), id -> true).create(helper.getLevel().getServer(),
                 UUID.randomUUID(), "Pad Test", CelestialIds.EARTH_ID, false).station().orElseThrow();
         var pad = new BlockPos(station.landingPad().x() + 32, station.landingPad().y() - 1, station.landingPad().z());
-        retainPadChunks(helper, space, station.stationId(), pad);
+        var fixture = new Fixture(space, station, pad, new ArrayList<>());
+        retainPadChunks(helper, fixture);
         for (int x = -2; x <= 2; x++) { for (int z = -2; z <= 2; z++) {
             var pos = pad.offset(x, 0, z); space.getChunk(pos); space.setBlock(pos, Blocks.GRAY_CONCRETE.defaultBlockState(), Block.UPDATE_ALL);
         } }
         space.setBlock(pad, ModBlocks.LANDING_PAD.get().defaultBlockState(), Block.UPDATE_ALL);
-        return new Fixture(space, station, pad);
+        return fixture;
     }
 
-    private static void retainPadChunks(GameTestHelper helper, ServerLevel space, UUID ticket, BlockPos pad) {
+    private static void retainPadChunks(GameTestHelper helper, Fixture fixture) {
+        ServerLevel space = fixture.space;
+        UUID ticket = fixture.station.stationId();
+        BlockPos pad = fixture.pad;
         var chunks = new ArrayList<ChunkPos>();
         for (int x = (pad.getX() - 2) >> 4; x <= (pad.getX() + 2) >> 4; x++) {
             for (int z = (pad.getZ() - 2) >> 4; z <= (pad.getZ() + 2) >> 4; z++) {
@@ -289,6 +308,7 @@ public final class LandingPadGameTests {
             field.setAccessible(true);
             ((GameTestInfo) field.get(helper)).addListener(new GameTestListener() {
                 private void release() {
+                    fixture.releaseFlights();
                     chunks.forEach(chunk -> space.getChunkSource().removeRegionTicket(FIXTURE_TICKET, chunk, 0, ticket));
                 }
                 @Override public void testStructureLoaded(GameTestInfo info) { }
@@ -334,6 +354,7 @@ public final class LandingPadGameTests {
         helper.assertTrue(refused, "Unauthorized pad operation accepted");
     }
     private static void cleanup(GameTestHelper helper, Fixture f) {
+        f.releaseFlights();
         var index = LandingPadIndex.get(f.space.getServer());
         for (var entry : index.entries(f.station.stationId())) { index.remove(entry.stationId(), entry.reference(), entry.physicalId()); }
         for (int x = -2; x <= 2; x++) { for (int z = -2; z <= 2; z++) { f.space.removeBlock(f.pad.offset(x, 0, z), false); } }
