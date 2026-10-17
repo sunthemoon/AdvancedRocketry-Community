@@ -53,14 +53,14 @@ def require_governed_record(transfer: dict, arm: dict) -> None:
         raise smoke.SmokeError("Governed pre-F2 fixture changed its record versions or exact authority")
 
 
-def crewed_cancellation(cut: str, crewed: bool) -> bool:
-    return crewed and cut in ("PF_ARM_REPLACED", "PF_ARM_ACK")
+def cancellation_cut(cut: str) -> bool:
+    return cut in ("PF_ARM_REPLACED", "PF_ARM_ACK")
 
 
 def recovery_outcome(cut: str, crewed: bool) -> str:
     if governed_transfer(cut):
         return "RESUMED"
-    if crewed_cancellation(cut, crewed):
+    if cancellation_cut(cut):
         return "CANCELLED_CLEANED"
     return "UNARMED" if cut == "PF_ARM_BEFORE" else "ARMED" if has_transfer(cut) else "CANCELLED"
 
@@ -127,7 +127,7 @@ def inspect(world: Path, cut: str, restarted: bool, crewed: bool = False, resume
     data = source["RocketEntityData"]
     wrapper, flight = data["resource_escrow"], data["flight_data"]
     before, has_t = cut == "PF_ARM_BEFORE", has_transfer(cut)
-    cleaned = restarted and crewed_cancellation(cut, crewed)
+    cleaned = restarted and cancellation_cut(cut)
     expected = "CANCELLED" if restarted and not has_t else "ARMED"
     arms = root["armed_flights"]
     if (root["records"] or root["floors"] or root["tombstones"] or root["rocket_authorities"]
@@ -144,7 +144,7 @@ def inspect(world: Path, cut: str, restarted: bool, crewed: bool = False, resume
             or source["Pos"] != [64.5, 100., 64.5]):
         raise smoke.SmokeError("F1 lost or changed its native source frontier")
     if cleaned and (flight.get("state") != "FUELED" or "plan" in flight):
-        raise smoke.SmokeError("Crewed pre-F2 source is not idle after cleanup")
+        raise smoke.SmokeError("No-T pre-F2 source is not idle after cleanup")
     if transfers and transfers[0]["transfer_id"] != arms[0]["t"]:
         raise smoke.SmokeError("Negative case lost T")
     if governed_transfer(cut):
@@ -198,7 +198,7 @@ def run(args) -> dict:
                 command = _server_command(args.java); command[2] = "-Xmx4G"
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowScenario=" + ("recover" if restart else "start"))
                 command.insert(1, "-Dadvancedrocketrycommunity.escrowCase=" + cut)
-                if governed_transfer(cut) or crewed_cancellation(cut, args.crewed):
+                if governed_transfer(cut) or cancellation_cut(cut):
                     command.insert(1, "-Dadvancedrocketrycommunity.escrowPreF2Restart=" + str(restart))
                 if args.crewed:
                     command.insert(1, "-Dadvancedrocketrycommunity.escrowCrewed=true")
@@ -213,10 +213,10 @@ def run(args) -> dict:
                 else:
                     outcome = recovery_outcome(cut, args.crewed)
                     process.wait_for(re.compile(r"ARCE_RELEASE_PRE_F2_RESULT cut=" + cut + " outcome=" + outcome + r"\s"), args.startup_timeout)
-                    if crewed_cancellation(cut, args.crewed) and restart == 1:
+                    if cancellation_cut(cut) and restart == 1:
                         cancellations = [line for line in process.lines if "ARCE_RELEASE_PRE_F2_CANCELLED cut=" + cut + " " in line]
                         if len(cancellations) != 1 or "serial=1 issued=1 outcome=CANCELLED digest=" not in cancellations[0]:
-                            raise smoke.SmokeError("Crewed first recovery lacks its exact acknowledged CANCELLED outcome")
+                            raise smoke.SmokeError("No-T first recovery lacks its exact acknowledged CANCELLED outcome")
                     if governed_transfer(cut):
                         countdowns = [line for line in process.lines if "ARCE_RELEASE_PRE_F2_COUNTDOWN cut=" + cut + " " in line]
                         if len(countdowns) != int(restart == 1):

@@ -9,6 +9,8 @@ import run_v180_escrow_pre_f2 as runner
 
 
 class PreF2OracleTest(unittest.TestCase):
+    crewed = True
+
     def fixture(self, outcome="CANCELLED"):
         arm = dict(outcome=outcome, serial=1, src="source", d="destination", l="logical", t="transfer", epoch=1)
         root = dict(armed_flights=[arm], issued_launch_serial=1, records=[], floors=[], tombstones=[],
@@ -22,38 +24,37 @@ class PreF2OracleTest(unittest.TestCase):
                       NoGravity=1, OnGround=0, Invulnerable=0)
         return root, [], source
 
-    def inspect_fixture(self, root, transfers, source, cut="PF_ARM_REPLACED", restarted=True, crewed=False):
+    def inspect_fixture(self, root, transfers, source, cut="PF_ARM_REPLACED", restarted=True):
         with patch.object(runner, "ledger", return_value=root), \
                 patch.object(runner, "journal", return_value={"transfers": transfers}), \
                 patch.object(runner, "record", return_value={"Entities": [source]}), \
                 patch.object(runner, "digest", return_value="file-hash"):
-            return runner.inspect(Path("world"), cut, restarted, crewed)
+            return runner.inspect(Path("world"), cut, restarted, self.crewed)
 
-    def test_uncrewed_cancellation_keeps_exact_retained_arm(self):
+    def test_no_t_cancellation_refuses_retained_arm_after_restart(self):
         for cut in ("PF_ARM_REPLACED", "PF_ARM_ACK"):
-            root, transfers, source = self.fixture()
-            self.assertEqual(root, self.inspect_fixture(root, transfers, source, cut)["ledger"])
-            root["armed_flights"] = []
-            with self.subTest(cut=cut), self.assertRaises(runner.smoke.SmokeError):
-                self.inspect_fixture(root, transfers, source, cut)
+            for outcome in ("ARMED", "CANCELLED"):
+                root, transfers, source = self.fixture(outcome)
+                with self.subTest(cut=cut, outcome=outcome), self.assertRaises(runner.smoke.SmokeError):
+                    self.inspect_fixture(root, transfers, source, cut)
 
-    def test_crewed_no_t_requires_arm_at_cut_and_cleanup_after_each_restart(self):
+    def test_no_t_requires_arm_at_cut_and_cleanup_after_each_restart(self):
         for cut in ("PF_ARM_REPLACED", "PF_ARM_ACK"):
             root, transfers, source = self.fixture("ARMED")
-            before = self.inspect_fixture(root, transfers, source, cut, restarted=False, crewed=True)
+            before = self.inspect_fixture(root, transfers, source, cut, restarted=False)
             for restart in (1, 2):
                 cleaned = copy.deepcopy(root)
                 cleaned["armed_flights"] = []
-                disk = self.inspect_fixture(cleaned, transfers, source, cut, crewed=True)
+                disk = self.inspect_fixture(cleaned, transfers, source, cut)
                 runner.require_unchanged_source(disk, before)
                 self.assertEqual([], disk["ledger"]["armed_flights"])
                 with self.subTest(cut=cut, restart=restart), self.assertRaises(runner.smoke.SmokeError):
-                    self.inspect_fixture(root, transfers, source, cut, crewed=True)
+                    self.inspect_fixture(root, transfers, source, cut)
             root["armed_flights"] = []
             with self.assertRaises(runner.smoke.SmokeError):
-                self.inspect_fixture(root, transfers, source, cut, restarted=False, crewed=True)
+                self.inspect_fixture(root, transfers, source, cut, restarted=False)
 
-    def test_cleaned_crewed_state_refuses_extra_serial_leftover_t_and_other_authority(self):
+    def test_cleaned_state_refuses_extra_serial_leftover_t_and_other_authority(self):
         for cut in ("PF_ARM_REPLACED", "PF_ARM_ACK"):
             for kind in ("serial", "transfer", "arm", "records", "floors", "tombstones", "rocket_authorities"):
                 root, transfers, source = self.fixture()
@@ -62,9 +63,9 @@ class PreF2OracleTest(unittest.TestCase):
                 elif kind == "transfer": transfers.append({"transfer_id": "transfer"})
                 elif kind not in ("arm", "serial"): root[kind].append({"retained": True})
                 with self.subTest(cut=cut, kind=kind), self.assertRaises(runner.smoke.SmokeError):
-                    self.inspect_fixture(root, transfers, source, cut, crewed=True)
+                    self.inspect_fixture(root, transfers, source, cut)
 
-    def test_cleaned_crewed_state_refuses_changed_source_frontier(self):
+    def test_cleaned_state_refuses_changed_source_frontier(self):
         for kind in ("fuel", "debit", "epoch", "marker", "ledger", "manifest", "position", "state", "plan", "active"):
             root, transfers, source = self.fixture()
             root["armed_flights"] = []
@@ -80,11 +81,11 @@ class PreF2OracleTest(unittest.TestCase):
             elif kind == "plan": flight["plan"] = {}
             elif kind == "active": flight["active_transfer_id"] = "transfer"
             with self.subTest(kind=kind), self.assertRaises(runner.smoke.SmokeError):
-                self.inspect_fixture(root, transfers, source, crewed=True)
+                self.inspect_fixture(root, transfers, source)
 
     def test_complete_checkpoint_projection_refuses_same_count_manifest_and_other_source_changes(self):
         root, transfers, source = self.fixture("ARMED")
-        before = self.inspect_fixture(root, transfers, source, restarted=False, crewed=True)
+        before = self.inspect_fixture(root, transfers, source, restarted=False)
         root["armed_flights"] = []
         for kind in ("passenger", "seat", "owner", "motion", "rotation", "gravity", "ground", "invulnerable", "id"):
             changed = copy.deepcopy(source); data = changed["RocketEntityData"]
@@ -97,18 +98,17 @@ class PreF2OracleTest(unittest.TestCase):
             elif kind == "ground": changed["OnGround"] = 1
             elif kind == "invulnerable": changed["Invulnerable"] = 1
             elif kind == "id": changed["id"] = "other"
-            disk = self.inspect_fixture(root, transfers, changed, crewed=True)
+            disk = self.inspect_fixture(root, transfers, changed)
             with self.subTest(kind=kind), self.assertRaisesRegex(runner.smoke.SmokeError, "Restart changed checkpointed E"):
                 runner.require_unchanged_source(disk, before)
 
-    def test_governed_cut_outcomes_resume_and_crewed_no_t_cleans(self):
-        expected = ("UNARMED", "CANCELLED", "CANCELLED", "ARMED", "RESUMED", "RESUMED", "RESUMED")
+    def test_governed_cuts_resume_and_every_no_t_cut_cleans(self):
+        expected = ("UNARMED", "CANCELLED_CLEANED", "CANCELLED_CLEANED", "ARMED", "RESUMED", "RESUMED", "RESUMED")
         for cut, outcome in zip(runner.CASES, expected):
             self.assertEqual(outcome, runner.recovery_outcome(cut, False))
             cleaned = cut in ("PF_ARM_REPLACED", "PF_ARM_ACK")
-            self.assertEqual("CANCELLED_CLEANED" if cleaned else outcome, runner.recovery_outcome(cut, True))
-            self.assertEqual(cleaned, runner.crewed_cancellation(cut, True))
-            self.assertFalse(runner.crewed_cancellation(cut, False))
+            self.assertEqual(outcome, runner.recovery_outcome(cut, True))
+            self.assertEqual(cleaned, runner.cancellation_cut(cut))
 
     def read_journal(self, data, payload=b"bounded NBT fixture"):
         with patch.object(runner.gzip, "open") as compressed, patch.object(runner, "NbtReader") as reader:
@@ -161,6 +161,11 @@ class PreF2OracleTest(unittest.TestCase):
         changed["source_flight"]["schema_version"] = 3
         with self.assertRaises(runner.smoke.SmokeError):
             runner.require_governed_record(changed, arm)
+
+
+class UncrewedPreF2OracleTest(PreF2OracleTest):
+    """R19A applies every accepting/refusing no-T check to the uncrewed mode too."""
+    crewed = False
 
 
 if __name__ == "__main__":
