@@ -83,6 +83,15 @@ final class RocketGovernedSourceDispatcher {
             requestReturn(server, journal, record, source, bays, RocketTransferReturnReason.DESTINATION_PAD_BLOCKED, () -> { });
             return;
         }
+        // Restore a warm COMMITTED descent's planned pose before F4/F5 inspect it. This is the
+        // same checked arrival movement, never landing, a passenger move or a new phase authority.
+        if (source == null && record.phase() == RocketTransferPhase.COMMITTED) {
+            var level = RocketTransferEntities.level(server, record.destinationSnapshot().sourceDimension());
+            if (level != null && level.getEntity(record.nativeTransfer().orElseThrow().armed().destination()) instanceof RocketEntity arrival) {
+                EscrowRuntime.of(server).arrivals().tick(server, journal, record, arrival,
+                        () -> RocketGovernedLaunchBoundary.allows(server, journal, record, null, arrival, bays));
+            }
+        }
         var result = EscrowRuntime.of(server).destinations().tick(server, journal, record, source,
                 (checked, from, to) -> RocketGovernedLaunchBoundary.allows(server, journal, checked, from, to, bays)
                         && !EscrowRuntime.of(server).returns().handles(checked, from)

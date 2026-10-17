@@ -26,7 +26,7 @@ import net.minecraftforge.gametest.PrefixGameTestTemplate;
 @GameTestHolder(ModIdentity.MOD_ID)
 @PrefixGameTestTemplate(false)
 public final class EscrowGovernedSourceFlightGameTests {
-    private enum Fault { NONE, MOTION, DUPLICATE, CLOCK, LANDING }
+    private enum Fault { NONE, MOTION, DUPLICATE, CLOCK, LANDING, POSITION }
     private EscrowGovernedSourceFlightGameTests() { }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_progress", timeoutTicks = 600)
@@ -35,8 +35,13 @@ public final class EscrowGovernedSourceFlightGameTests {
     }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_motion", timeoutTicks = 600)
-    public static void changedNativeMotionCannotHideBehindEntityTickNormalization(GameTestHelper helper) {
+    public static void transientNativeMotionDoesNotStopSourceProgression(GameTestHelper helper) {
         new Scenario(helper, Fault.MOTION).start();
+    }
+
+    @GameTest(template = "empty", batch = "escrow_governed_source_position", timeoutTicks = 600)
+    public static void movingPlanRestoresTransientPositionWithoutAStickyHold(GameTestHelper helper) {
+        new Scenario(helper, Fault.POSITION).start();
     }
 
     @GameTest(template = "empty", batch = "escrow_governed_source_duplicate", timeoutTicks = 600)
@@ -173,6 +178,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                     changedAt = level.getGameTime();
                     frozenHeight = rocket.getY();
                     if (fault == Fault.MOTION) { rocket.setDeltaMovement(new Vec3(0.125, 0, 0)); }
+                    else if (fault == Fault.POSITION) { rocket.setPos(rocket.getX() + 0.125, rocket.getY() + 3, rocket.getZ() + 0.125); }
                     else if (fault == Fault.DUPLICATE) {
                         duplicate = io.github.sunthemoon.advancedrocketrycommunity.registry.ModEntities.ROCKET.get().create(level);
                         helper.assertTrue(duplicate != null, "Duplicate fixture could not be created");
@@ -204,7 +210,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                     return;
                 }
             }
-            if (fault == Fault.MOTION || fault == Fault.DUPLICATE) {
+            if (fault == Fault.DUPLICATE) {
                 if (changedAt < 0 || level.getGameTime() - changedAt < 30) { return; }
                 helper.assertTrue(flight.state() == RocketFlightState.ASCENT && rocket.getDeltaMovement().equals(Vec3.ZERO),
                         "Fixture did not exercise entity-tick motion normalization");
@@ -224,7 +230,7 @@ public final class EscrowGovernedSourceFlightGameTests {
                     "Source minted destination or terminal authority: phase=" + record.phase()
                             + ", acknowledged=" + journal.acknowledgedCurrent() + ", armed="
                             + data.ledger().armedFlights().contains(record.nativeTransfer().orElseThrow().armed()));
-            if (fault == Fault.NONE || fault == Fault.CLOCK || fault == Fault.LANDING) { step = 3; return; }
+            if (fault != Fault.DUPLICATE) { step = 3; return; }
             finish(journal, null);
         }
 
@@ -279,8 +285,8 @@ public final class EscrowGovernedSourceFlightGameTests {
                     "F5 changed credit, repeated a debit or released ARMED before F6/F7");
             if (changedDestinationAt >= 0) {
                 if (level.getGameTime() - changedDestinationAt < 30) { return; }
-                helper.assertTrue(arrival.getDeltaMovement().equals(Vec3.ZERO) && passenger.getVehicle() == null,
-                        "Normalized destination motion retained an F5 remount permission");
+                helper.assertTrue(arrival.getDeltaMovement().equals(Vec3.ZERO) && passenger.getVehicle() == arrival,
+                        "Transient destination motion prevented the checked F5 remount");
                 finish(journal, arrival); return;
             }
             if (passenger.getVehicle() != arrival) { return; }

@@ -53,12 +53,15 @@ public final class EscrowGovernedSourceFlight {
             var previous = binding;
             var clock = envelopeHolds.capture(record.logicalRocketId(), data.ledger(), source, null, () -> {
                 var observed = EscrowGovernedEnvelope.capture(source);
+                if (previous != null) { observed = EscrowGovernedFrame.normalized(observed, previous.frame, previous.flight.state()); }
                 var candidate = previous == null ? EscrowGovernedSourceClock.resume(record, observed, levelTime) : previous.clock;
                 return EscrowGovernedSourceRecovery.sourceMatches(record, observed, candidate.at(levelTime)) ? candidate : null;
             });
             if (clock == null) { return Result.HELD; }
             if (binding == null && bindings.size() >= RocketFlightLimits.MAX_ACTIVE_TRANSFERS) { return Result.HELD; }
-            binding = new Binding(authority, source, clock); bindings.put(record.logicalRocketId(), binding);
+            binding = new Binding(authority, source, clock);
+            if (previous != null) { binding.frame = EscrowGovernedFrame.normalized(binding.frame, previous.frame, previous.flight.state()); }
+            bindings.put(record.logicalRocketId(), binding);
         }
         long now = binding.clock.at(levelTime);
         var flight = source.flightData().orElseThrow();
@@ -120,7 +123,7 @@ public final class EscrowGovernedSourceFlight {
         return binding.motion(source, source.level().getGameTime(), boundary);
     }
 
-    /** Observe before entity ticks normalize motion and before saves/loads can hide a changed native field. */
+    /** Observe the normalized moving frame; all persistent native fields still invalidate the binding. */
     void observe(RocketEntity rocket) {
         var binding = rocket.assemblyTransactionId().map(bindings::get).orElse(null);
         if (binding != null && binding.entity == rocket) {
@@ -153,13 +156,13 @@ public final class EscrowGovernedSourceFlight {
         boolean sameNative(RocketEntity rocket) {
             return !changed && entity == rocket && rocket.isAlive() && rocket.isAddedToWorld() && rocket.operational()
                     && rocket.snapshot().orElseThrow() == snapshot && rocket.flightData().orElseThrow() == flight
-                    && rocket.escrowSection().equals(wrapper) && frame.equals(EscrowGovernedEnvelope.frame(rocket));
+                    && rocket.escrowSection().equals(wrapper) && EscrowGovernedFrame.matches(authority.record(), rocket, frame, flight.state());
         }
         MotionPermit motion(RocketEntity rocket, long now, BooleanSupplier boundary) {
             EscrowTags.require(valid(rocket, boundary) && flight.state() == RocketFlightState.ASCENT, "Invalid ascent binding");
             var origin = authority.record().sourceSnapshot().sourceOrigin();
             double y = ascentHeight(origin.y(), flight.stateStartedGameTime(), clock.at(now));
-            EscrowTags.require(y >= rocket.getY(), "Ascent clock moved backwards");
+            EscrowTags.require(y >= frame.getList("pos", 6).getDouble(1), "Ascent clock moved backwards");
             return new MotionPermit(this, boundary, now, new Vec3(origin.x() + 0.5, y, origin.z() + 0.5));
         }
     }

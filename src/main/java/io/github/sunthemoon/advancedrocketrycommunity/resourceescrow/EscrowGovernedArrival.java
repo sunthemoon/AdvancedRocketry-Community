@@ -35,7 +35,7 @@ public final class EscrowGovernedArrival {
             long now = binding.time(destination.level().getGameTime());
             double y = EscrowGovernedArrivalState.height(binding.initialHeight, record.destinationSnapshot().sourceOrigin().y(),
                     flight.stateStartedGameTime(), now);
-            EscrowTags.require(y <= destination.getY(), "Descent moved upwards");
+            EscrowTags.require(y <= binding.frame.getList("pos", 6).getDouble(1), "Descent moved upwards");
             var origin = record.destinationSnapshot().sourceOrigin();
             apply(destination, binding, flight, new Vec3(origin.x() + 0.5, y, origin.z() + 0.5), boundary);
             return now - flight.stateStartedGameTime() >= RocketFlightLimits.DESCENT_TICKS
@@ -89,10 +89,13 @@ public final class EscrowGovernedArrival {
         if (old != null && !old.sameNative(destination)) { return null; }
         if (old != null && old.authority.valid() && old.observation == destination.governedObservation()) { return old; }
         var observed = EscrowGovernedEnvelope.capture(destination); long levelTime = destination.level().getGameTime();
+        if (old != null) { observed = EscrowGovernedFrame.normalized(observed, old.frame, ((RocketFlightData) old.flight).state()); }
         long now = old == null ? EscrowGovernedArrivalState.resumeTime(record, observed, levelTime) : old.time(levelTime);
         EscrowTags.require(EscrowGovernedArrivalState.matches(record, observed, now), "Arrival complete envelope changed");
         requireCapacity(bindings, record.transferId());
-        var binding = new Binding(authority, destination, levelTime, now); bindings.put(record.transferId(), binding);
+        var binding = new Binding(authority, destination, levelTime, now);
+        if (old != null) { binding.frame = EscrowGovernedFrame.normalized(binding.frame, old.frame, ((RocketFlightData) old.flight).state()); }
+        bindings.put(record.transferId(), binding);
         if (old == null && EscrowGovernedArrivalState.withoutRiders(observed)
                 .equals(record.nativeTransfer().orElseThrow().destinationEnvelope(record))) {
             // Publication time was frozen before F1. Start the live descent at this checked COMMITTED visit.
@@ -104,7 +107,7 @@ public final class EscrowGovernedArrival {
     private static void apply(RocketEntity rocket, Binding binding, RocketFlightData flight, Vec3 position, BooleanSupplier boundary) {
         var permit = new Permit(binding, boundary, rocket.level().getGameTime(), flight, position);
         rocket.advanceGovernedArrival(permit);
-        EscrowTags.require(binding.sameNative(rocket), "Native fields changed inside the arrival effect");
+        EscrowTags.require(binding.sameNative(rocket) && rocket.position().equals(position), "Native fields changed inside the arrival effect");
         binding.observation = rocket.governedObservation();
     }
 
@@ -151,7 +154,7 @@ public final class EscrowGovernedArrival {
             if (changed) { return false; }
             boolean same = entity == rocket && rocket.isAlive() && rocket.isAddedToWorld() && rocket.operational()
                     && rocket.snapshot().orElse(null) == snapshot && rocket.flightData().orElse(null) == flight
-                    && rocket.escrowSection().equals(wrapper) && frame.equals(frame(rocket));
+                    && rocket.escrowSection().equals(wrapper) && EscrowGovernedFrame.matches(authority.record(), rocket, frame, ((RocketFlightData) flight).state());
             if (!same) { changed = true; } return same;
         }
         long time(long levelTime) {
