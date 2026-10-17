@@ -126,7 +126,11 @@ public final class EscrowOperatorGameTests {
                     Rejected.suppressed(input.source.withSuppressedOutput()), Rejected.suppressed(playerStack.withSuppressedOutput()),
                     new Rejected(commandBlock.createCommandSourceStack().withPermission(4), () -> commandBlock.setLastOutput(null),
                             () -> commandBlock.getLastOutput().getString()),
-                    new Rejected(rcon.createCommandSourceStack().withPermission(4), rcon::prepareForCommand, rcon::getCommandResponse),
+                    // The pinned RconConsoleSource appends "\n" after each message; read the message without that terminator.
+                    new Rejected(rcon.createCommandSourceStack().withPermission(4), rcon::prepareForCommand, () -> {
+                        String response = rcon.getCommandResponse();
+                        return response.endsWith("\n") ? response.substring(0, response.length() - 1) : response;
+                    }),
                     new Rejected(input.source.withSource(substituted), substituted.lines::clear, () -> String.join("\n", substituted.lines)),
                     new Rejected(input.source.withEntity(player), () -> logged[0] = console.lines().size(),
                             () -> String.join("\n", console.lines().subList(logged[0], console.lines().size()))));
