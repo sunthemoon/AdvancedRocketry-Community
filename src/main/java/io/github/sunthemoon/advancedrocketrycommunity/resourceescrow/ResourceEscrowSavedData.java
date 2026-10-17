@@ -36,26 +36,35 @@ public final class ResourceEscrowSavedData extends SavedData {
     public EscrowCoordinator bind(MinecraftServer server) {
         if (!server.isSameThread()) { throw new IllegalStateException("Escrow binding requires the server thread"); }
         if (coordinator == null) {
-            var file = server.getWorldPath(LevelResource.ROOT).resolve("data")
-                    .resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
-            var writer = new EscrowLedgerWriter(file, ledger.writerGeneration(),
-                    EscrowRuntime.of(server).ledgerCommitter(server),
-                    EscrowRuntime.of(server)::checkpoint);
-            writer.timings(EscrowRuntime.of(server).timings());
+            var runtime = EscrowRuntime.of(server);
+            var writer = new EscrowLedgerWriter(file(server), ledger.writerGeneration(),
+                    runtime.ledgerCommitter(server),
+                    runtime::checkpoint);
+            writer.timings(runtime.timings());
             writer.baseline(ledger);
-            attach(new EscrowCoordinator(this, writer), () -> server.isRunning() && !server.isStopped());
+            // The coordinator attaches to the runtime's one PROPULSION delegate; it never registers an index.
+            attach(new EscrowCoordinator(this, writer, runtime.propulsion(server)), () -> server.isRunning() && !server.isStopped());
             coordinator.tick(server.getTickCount()); // The first explicit write uses the real server clock, not tick zero.
         }
         return coordinator;
     }
+    static java.nio.file.Path file(MinecraftServer server) {
+        return server.getWorldPath(LevelResource.ROOT).resolve("data").resolve(ManagedSavedDataType.RESOURCE_ESCROW.fileName());
+    }
+    /** Load-only lookup: it never creates a ledger or a file. */
     public static ResourceEscrowSavedData existing(MinecraftServer server) {
         return server.overworld().getDataStorage().get(ResourceEscrowSavedData::load,
                 ManagedSavedDataType.RESOURCE_ESCROW.dataName());
     }
+    /** Gated test creation goes through the runtime's retarget method, so a new ledger never registers a second index. */
     public static ResourceEscrowSavedData forTests(MinecraftServer server) {
         EscrowTestEndpoints.requireEnabled(server);
-        return server.overworld().getDataStorage().computeIfAbsent(ResourceEscrowSavedData::load,
-                ResourceEscrowSavedData::create, ManagedSavedDataType.RESOURCE_ESCROW.dataName());
+        var current = existing(server);
+        if (current != null) { return current; }
+        var created = create();
+        // No ledger is stored, so no attached coordinator holds work and the retarget cannot refuse.
+        EscrowTags.require(EscrowRuntime.of(server).replaceLedgerForTests(server, created), "Escrow test ledger creation was refused");
+        return created;
     }
     public void tick(long tick) { if (coordinator != null) { coordinator.tick(tick); } }
     public void stop() { if (coordinator != null) { coordinator.close(); } }

@@ -2,6 +2,7 @@ package io.github.sunthemoon.advancedrocketrycommunity.gametest;
 
 import io.github.sunthemoon.advancedrocketrycommunity.ModIdentity;
 import io.github.sunthemoon.advancedrocketrycommunity.celestial.CelestialIds;
+import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.EscrowRuntime;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.ResourceEscrowSavedData;
 import io.github.sunthemoon.advancedrocketrycommunity.resourceescrow.RocketEscrowGate;
 import io.github.sunthemoon.advancedrocketrycommunity.rocket.entity.RocketEntity;
@@ -43,8 +44,9 @@ public final class RocketJournalInterlockGameTests {
     public static void noLedgerLandedBoardAndRefuelSurviveAnotherTransfersWrite(GameTestHelper helper) {
         RocketLegacyFuelGameTests.afterLanding(helper, rocket -> {
             var server = helper.getLevel().getServer(); var ledger = ResourceEscrowSavedData.existing(server);
-            var name = io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.ManagedSavedDataType.RESOURCE_ESCROW.dataName();
-            server.overworld().getDataStorage().set(name, null);
+            // The runtime's one retarget path; it refuses rather than drop a ledger that still holds escrow work.
+            var runtime = EscrowRuntime.of(server);
+            helper.assertTrue(runtime.replaceLedgerForTests(server, null), "Ledger removal refused while escrow work is held");
             helper.assertTrue(ResourceEscrowSavedData.existing(helper.getLevel().getServer()) == null, "Fixture requires no ledger");
             var record = anotherTransferWriting(helper);
             var player = RocketLegacyFuelGameTests.owner(helper, rocket); var manager = new RocketManager();
@@ -54,7 +56,10 @@ public final class RocketJournalInterlockGameTests {
                 helper.assertTrue(player.getVehicle() == rocket, "Unrelated write blocked landed boarding");
                 RocketLegacyFuelGameTests.refuel(helper, rocket);
                 RocketLegacyFuelGameTests.intent(manager, player, rocket, RocketFlightAction.LEAVE);
-            } finally { player.stopRiding(); finishUnrelated(helper, record); server.overworld().getDataStorage().set(name, ledger); }
+            } finally {
+                player.stopRiding(); finishUnrelated(helper, record);
+                helper.assertTrue(runtime.replaceLedgerForTests(server, ledger), "Original ledger was not restored");
+            }
         });
     }
 

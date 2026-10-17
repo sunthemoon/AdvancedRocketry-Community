@@ -9,7 +9,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-/** Server-lifetime coordinator. This slice deliberately has no production admission entry point. */
+/**
+ * Ledger-owned coordinator: one exists for each bound ledger SavedData, and only a test hook's ledger replacement ends
+ * its attachment. Admission uses the runtime-owned authority through the PROPULSION delegate. Production admission
+ * stays disabled: {@link #prepareFill} exists, but no device calls it yet.
+ */
 public final class EscrowCoordinator implements AutoCloseable {
     private final Thread owner = Thread.currentThread();
     private final ResourceEscrowSavedData data;
@@ -19,7 +23,14 @@ public final class EscrowCoordinator implements AutoCloseable {
     private final Map<EscrowEndpoint.Key, EscrowPrefix.State> frontiers = new HashMap<>();
     private final Map<UUID, EscrowReason> transitions = new HashMap<>();
     private final EscrowReconciliationPruning.Candidates pruningCandidates = new EscrowReconciliationPruning.Candidates();
-    private final EscrowAdmissionAuthority admission = new EscrowAdmissionAuthority();
+    private final EscrowAdmissionAuthority admission;
+    private final EscrowAdmissionAuthority.Delegate propulsion;
+    private final EscrowAdmissionAuthority.Store admissionStore = new EscrowAdmissionAuthority.Store() {
+        @Override public EscrowAdmissionAuthority.Index index() {
+            return new EscrowAdmissionAuthority.Index(true, unresolved().map(EscrowAdmissionAuthority.Pending::of).toList());
+        }
+        @Override public boolean holdsWork() { return !queued.isEmpty() || !writer.idle(); }
+    };
     private final EscrowFlightWrites flightWrites = new EscrowFlightWrites();
     private final EscrowReconciliationDriver reconciliation = new EscrowReconciliationDriver(this);
     private long issued;
@@ -28,12 +39,19 @@ public final class EscrowCoordinator implements AutoCloseable {
     private boolean closed;
     private io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.persistence.RocketTransferSavedData floorJournal;
 
-    public EscrowCoordinator(ResourceEscrowSavedData data, EscrowLedgerWriter writer) {
-        this.data = data; this.writer = writer; issued = data.ledger().issuedThrough();
-        admission.registerIndex(EscrowAdmissionAuthority.Consumer.PROPULSION, () -> new EscrowAdmissionAuthority.Index(true,
-                java.util.stream.Stream.of(data.ledger().records().stream(), queued.values().stream(), writer.capturedOperations().stream())
-                        .flatMap(java.util.function.Function.identity()).map(EscrowAdmissionAuthority.Pending::of).toList()));
+    /** Detached coordinator with its own authority, for unit tests and gated standalone fixtures; never a server's ledger. */
+    EscrowCoordinator(ResourceEscrowSavedData data, EscrowLedgerWriter writer) {
+        this(data, writer, new EscrowAdmissionAuthority().register(EscrowAdmissionAuthority.Consumer.PROPULSION));
     }
+    /** Attaches this ledger's index to the given PROPULSION delegate; it never registers one. */
+    EscrowCoordinator(ResourceEscrowSavedData data, EscrowLedgerWriter writer, EscrowAdmissionAuthority.Delegate propulsion) {
+        EscrowTags.require(propulsion.consumer() == EscrowAdmissionAuthority.Consumer.PROPULSION, "Coordinator needs the PROPULSION delegate");
+        this.data = data; this.writer = writer; issued = data.ledger().issuedThrough();
+        this.propulsion = propulsion; admission = propulsion.authority();
+        EscrowTags.require(attachAdmission(), "Admission delegate still holds another ledger's queued, captured or UNKNOWN work");
+    }
+    /** Retargets the PROPULSION delegate to this ledger; false, with nothing changed, while another ledger holds work. */
+    boolean attachAdmission() { owner(); return propulsion.retarget(admissionStore); }
     public boolean productionAdmissionEnabled() { return false; }
     void reconcile(net.minecraft.server.MinecraftServer server, EscrowOperation operation,
                    Consumer<EscrowReconciliationScheduler.Result> completion) {
@@ -84,6 +102,68 @@ public final class EscrowCoordinator implements AutoCloseable {
         EscrowSettlementCapacity.preflight(data.ledger().append(candidate), op.id());
         var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
         EscrowTags.require(reservation == EscrowAdmissionAuthority.Result.RESERVED, "Shared admission refused: " + reservation);
+        enqueue(op, completion);
+    }
+    /** prepareFill's typed outcome. Every member but QUEUED is a refusal that changed nothing. */
+    enum Fill { QUEUED, UNAVAILABLE, INVALID, STALE, ENDPOINT_BUSY, ROCKET_LIMIT, ESCROW_FULL, SERVER_FULL, ROCKET_FULL, IDENTITY_CONFLICT }
+    /**
+     * Production fill admission (W11B3-DESIGN sections 2 and 4), beside the gated {@link #prepareTest}: the pure
+     * {@link #fillRefusal} check, then the shared {@code tryReserve}, then the queue entry that locks both endpoints,
+     * as one owner-thread action. A refusal issues no sequence and leaves the queue, the writer and the authority
+     * unchanged. The completion receives true after the exact L1 acknowledgement and false after a definite failure.
+     * No device calls this yet; production admission stays disabled.
+     */
+    Fill prepareFill(EscrowNativeBinding.Admission capture, Consumer<Boolean> completion) {
+        owner(); var op = capture.operation();
+        if (closed || writer.unavailable()) { return Fill.UNAVAILABLE; }
+        if (op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL || op.phase() != EscrowOperation.Phase.PREPARED
+                || op.reason() != EscrowReason.NONE || !op.settlement().isEmpty()
+                || op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1 || !op.nativeBinding().complete()) { return Fill.INVALID; }
+        if (op.sequence() != nextSequence() || requests.containsKey(op.id())
+                || unresolved().anyMatch(existing -> existing.id().equals(op.id()))) { return Fill.STALE; }
+        if (frontiers.containsKey(op.source().key()) || frontiers.containsKey(op.destination().key())
+                || flightWrites.locked(op.guard().rocket())
+                || data.ledger().armedFlights().stream().anyMatch(arm -> arm.logical().equals(op.guard().rocket()))) {
+            return Fill.ENDPOINT_BUSY;
+        }
+        var refusal = fillRefusal(data.ledger(), queued.values(), capture);
+        if (refusal.isPresent()) { return refusal.get(); }
+        var reservation = admission.tryReserve(op.id(), op.owner(), op.guard().rocket(), EscrowAdmissionAuthority.Consumer.PROPULSION);
+        if (reservation != EscrowAdmissionAuthority.Result.RESERVED) {
+            return switch (reservation) {
+                case SERVER_FULL -> Fill.SERVER_FULL;
+                case ROCKET_FULL -> Fill.ROCKET_FULL;
+                case IDENTITY_CONFLICT -> Fill.IDENTITY_CONFLICT;
+                case ALREADY_HELD -> Fill.STALE;
+                case UNAVAILABLE, RESERVED -> Fill.UNAVAILABLE;
+            };
+        }
+        // Nothing that can fail runs between the reservation and its queue entry: a reservation has no release call.
+        enqueue(op, completion);
+        return Fill.QUEUED;
+    }
+    /**
+     * prepareFill's pure check against a given root and its queued admissions: the five-marker limit and settlement
+     * fit of {@code requireAdmission}, then the candidate preflight, which keeps Root-R6's floor-retirement headroom
+     * and charges every unsettled component, the candidate's included, at its ceiling (Root-R8). It adds no capacity
+     * rule of its own and mutates nothing; the first-fill path runs it against a virtual empty root.
+     */
+    static java.util.Optional<Fill> fillRefusal(EscrowLedger root, java.util.Collection<EscrowOperation> admissions,
+                                                EscrowNativeBinding.Admission capture) {
+        var op = capture.operation();
+        if (capture.before().ledger() != null && !capture.before().ledger().equals(root.id())) { return java.util.Optional.of(Fill.STALE); }
+        var candidate = new ArrayList<>(admissions); candidate.add(op);
+        EscrowLedger prospective;
+        try { prospective = root.append(candidate); }
+        catch (IllegalArgumentException invalid) { return java.util.Optional.of(Fill.STALE); }
+        try { EscrowSettlementCapacity.requireAdmission(prospective, op, capture.before()); }
+        catch (IllegalArgumentException limit) { return java.util.Optional.of(Fill.ROCKET_LIMIT); }
+        try { EscrowSettlementCapacity.preflight(prospective, op.id()); }
+        catch (IllegalArgumentException full) { return java.util.Optional.of(Fill.ESCROW_FULL); }
+        return java.util.Optional.empty();
+    }
+    /** The shared queue core: the reserved operation joins the queue, which locks both endpoints until resolution. */
+    private void enqueue(EscrowOperation op, Consumer<Boolean> completion) {
         queued.put(op.id(), op); requests.put(op.id(), completion); issued = op.sequence(); data.setDirty();
         admission.refresh();
     }
