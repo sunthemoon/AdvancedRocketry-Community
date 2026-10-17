@@ -38,12 +38,12 @@ completion_plan: docs/status/COMPLETION-PLAN.md
 development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
-latest_code_commit: eff6eff3 (the W11b2 merge)
-latest_hosted_regression: run 39044351335 at c420e521 (the W11b2 head merged by eff6eff3), passed
+latest_code_commit: c7b5b99f (W11b2 continuation 54 merged after the W11b2 merge)
+latest_hosted_regression: run 39044351335 at c420e521 (the W11b2 head merged by eff6eff3), passed; the shared-branch run for the merge is pending
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
-last_updated: 2026-10-17
+last_updated: 2026-10-18
 ```
 
 ## Current state

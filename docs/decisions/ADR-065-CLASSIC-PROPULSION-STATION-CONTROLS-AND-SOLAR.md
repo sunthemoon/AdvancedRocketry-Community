@@ -1333,8 +1333,8 @@ or accept a risk. The risks are R-031, R-032 and R-035.
 - **Design:** `records/W11B2-DESIGN-2.md` (frozen at `238f4b9a`) and its independent review.
 - **Root decisions:** R1 to R20 (with R19A), in `D:/GitHub/ARCE-Task-Evidence/root-queue/` and summarized in
   the W11b2 records; each continuation's TASK names the ones it applies.
-- **Implementation:** W11b2 continuations 06 to 53 and W89, recorded in `records/W11B2.md`,
-  `records/W11B2-F7F8.md`, `records/W11B2-C41.md`, `records/W11B2-C46.md` to `records/W11B2-C53.md`
+- **Implementation:** W11b2 continuations 06 to 54 and W89, recorded in `records/W11B2.md`,
+  `records/W11B2-F7F8.md`, `records/W11B2-C41.md`, `records/W11B2-C46.md` to `records/W11B2-C54.md`
   and `records/W89.md`.
 - **Reviews.** The settlement, C09, C11 and C0 to C8 reviews; the final review part A
   (settlement, receipts, capacity, operator; MERGE-WITH-FOLLOWUP, SHA-256 `4d9d8273…`) and part B
@@ -1509,18 +1509,21 @@ exclusions remain.
 (design 2 section 1 says O3 names it). This has no safety effect: L is locked from O1 to O4, and
 O4 reads the previous head from the root it replaces.
 
-**Benchmark.** Continuation 53's native run on `453094c3` ran continuation 45's eight-flight
+**Benchmark.** Continuation 54's native run on `20304245` ran continuation 45's eight-flight
 reference load on the Windows 11 host (12 logical CPUs; the JVM limited to 4 processors and 4 GiB;
 not the Debian reference node): two connected players, 16 active oxygen vents, ten stations, 100
 satellite tasks, a 2,048-block assembly, eight concurrent governed flights through the player
 entry (all eight landed as checked idle survivors, six of them through F3's countdown fallback),
-one ordinary C0 to C8 retirement, settlement O1 to O4 with pruning, seven periodic saves and one
-restart. Over 1,400 measured ticks the main thread's mean was 4.14 ms, P95 12.42 ms and P99
-36.81 ms (budgets 25, 50 and 100 ms); the largest non-save tick was 164 ms (budget 500 ms) and the
-peak RSS 1.40 GiB (5.5 GiB). From the F1 request to the checked idle landed survivor took 19.6 s
-on average and 25.3 s at most. The runner reported one coverage gap, the world-first DEFER (R16
-item 3(c)), which continuation 54 adds. These short-run numbers are development evidence, not a
-soak, a reference-node measurement or a Gate result.
+a world-first DEFER held for 20 ticks over 77 dispatcher visits (R16 item 3(c)), one ordinary C0
+to C8 retirement, settlement O1 to O4 with pruning, seven periodic saves and one restart. The
+runner reported full coverage. Over 1,400 measured ticks the main thread's mean was 4.17 ms, P95
+12.04 ms and P99 39.43 ms (budgets 25, 50 and 100 ms); the largest non-save tick was 156 ms
+(budget 500 ms) and the peak RSS 1.78 GiB (5.5 GiB); the 20 ticks containing the DEFER averaged
+7.18 ms. From the F1 request to the checked idle landed survivor took 20.6 s on average and 26.4 s
+at most. Its first attempt completed the same workload but its process monitor reported an
+incomplete JVM inventory, so the runner rejected it before the restart; it is retained, not used.
+These short-run numbers are development evidence, not a soak, a reference-node measurement or a
+Gate result.
 
 **Open before W11b3 or any admission:**
 - Part 1's F3, F8 and N2 (designs W86 and W85, frozen; code after the merge). F9 was fixed by W77
