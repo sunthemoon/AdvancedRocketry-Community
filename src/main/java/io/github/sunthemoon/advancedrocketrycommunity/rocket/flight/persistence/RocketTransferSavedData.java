@@ -279,7 +279,7 @@ public final class RocketTransferSavedData extends SavedData {
         }
         entries.put(record.transferId(), record);
         mutationSequence++;
-        leases.changed(record.logicalRocketId(), mutationSequence);
+        leases.changed(record.logicalRocketId(), mutationSequence, existing);
         setDirty();
         publishLeases();
     }
@@ -312,7 +312,7 @@ public final class RocketTransferSavedData extends SavedData {
         }
         entries.put(migrated.transferId(), migrated);
         mutationSequence++;
-        leases.changed(migrated.logicalRocketId(), mutationSequence);
+        leases.changed(migrated.logicalRocketId(), mutationSequence, legacy);
         setDirty();
         publishLeases();
     }
@@ -324,7 +324,7 @@ public final class RocketTransferSavedData extends SavedData {
         var removed = entries.remove(Objects.requireNonNull(transferId, "transferId"));
         if (removed != null) {
             mutationSequence++;
-            leases.changed(removed.logicalRocketId(), mutationSequence);
+            leases.changed(removed.logicalRocketId(), mutationSequence, removed);
             setDirty();
             publishLeases();
         }
@@ -355,7 +355,7 @@ public final class RocketTransferSavedData extends SavedData {
             throw exception;
         }
         mutationSequence++;
-        leases.changed(replacement.logicalRocketId(), mutationSequence);
+        leases.changed(replacement.logicalRocketId(), mutationSequence, previous);
         setDirty();
         publishLeases();
     }
@@ -426,8 +426,9 @@ public final class RocketTransferSavedData extends SavedData {
 
     /**
      * R17 item 3: the checked lease of logical rocket L for F1, F7, F8, the pre-F2 cancellation, settlement O3/O4 and
-     * reconciliation C3 to C7. Null {@code transfer} or a serial below 1 checks no T or serial. Owner-thread acquisition;
-     * the returned lease reads only an immutable published view, so the ledger writer may check it before replacement.
+     * reconciliation C3 to C7. Null {@code transfer} or a serial below 1 checks no T or serial; another record that names
+     * them refuses it in RAM or in the last acknowledged generation (LR1). Owner-thread acquisition; the returned lease
+     * reads only an immutable published view, so the ledger writer may check it before replacement.
      */
     public java.util.function.BooleanSupplier logicalLease(UUID logical, UUID transfer, long serial) {
         if (ownerServer != null && !ownerServer.isSameThread()) { throw new IllegalStateException("Journal lease requires the owner thread"); }

@@ -16,7 +16,8 @@ final class EscrowFlightJournal {
         if (serial <= 0 || guard == null || guard.transfer() != null || journal.find(transfer).isPresent()) {
             return () -> false;
         }
-        // The lease also refuses any record that names T or this root-wide serial, including another rocket's.
+        // The lease also refuses any record that names T or this root-wide serial, including another rocket's, in RAM
+        // or in the last acknowledged generation (an unacknowledged removal still names them).
         return journal.logicalLease(logical, transfer, serial);
     }
 
