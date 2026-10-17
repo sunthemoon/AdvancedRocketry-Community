@@ -42,7 +42,7 @@ public final class ReleaseTestPlayers {
             EmbeddedChannel channel = new EmbeddedChannel(connection);
             try {
                 server.getPlayerList().placeNewPlayer(connection, player);
-                channels.put(player, new OwnedChannel(player.connection, channel));
+                own(server, player, channel);
             } catch (RuntimeException failed) { channel.finishAndReleaseAll(); throw failed; }
             player.setGameMode(GameType.CREATIVE);
         } else if (!owned(channels, player, player.connection)) {
@@ -88,6 +88,11 @@ public final class ReleaseTestPlayers {
         var channels = CHANNELS.get(server);
         return server.getPlayerList().getPlayers().stream().allMatch(player ->
                 owned(channels, player, player.connection));
+    }
+
+    /** Records the exact player, connection and channel that {@link #place} created; the wiring test uses it too. */
+    static void own(MinecraftServer server, ServerPlayer player, EmbeddedChannel channel) {
+        CHANNELS.computeIfAbsent(server, ignored -> new IdentityHashMap<>()).put(player, new OwnedChannel(player.connection, channel));
     }
 
     // Identity, not UUID/name/equality, prevents a later login from inheriting fixture authority.

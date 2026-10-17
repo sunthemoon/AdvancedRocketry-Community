@@ -86,7 +86,8 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
         if (!retryReady(launch.logical(), server.getTickCount())
                 || !retries.containsKey(launch.logical()) && retries.size() >= 64) { return false; }
         var coordinator = data.bind(server); var journal = RocketTransferSavedData.get(server);
-        if (!coordinator.operational() || !journal.retryChecked(server)
+        // R17 item 3: L's checked state, not a quiet journal; the retry still pushes any pending journal write.
+        if (!coordinator.operational() || !journal.retryChecked(server) && !journal.actionAuthorityAvailable(launch.logical())
                 || !io.github.sunthemoon.advancedrocketrycommunity.rocket.server.RocketRuntime.resourceMutationAllowed(rocket)) { return false; }
         if (!EscrowRuntime.of(server).barrier().available(level.dimension().location().toString(), true, server.getTickCount())) {
             return false;
@@ -100,7 +101,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                     && launch.sourceEnvelope().equals(frozen.digest)
                     && launch.committedDebits().equals(java.util.Set.copyOf(rocket.flightData().orElseThrow().fuel().committedDebits()))
                     && coordinator.admissionAuthority().pendingFor(launch.logical()) == 0
-                    && RocketEscrowAudit.journal(launch.journal(), journal.acknowledgedGuard(launch.logical()).orElse(null)) == EscrowReason.NONE,
+                    && RocketEscrowAudit.journal(launch.journal(), journal.logicalGuard(launch.logical()).orElse(null)) == EscrowReason.NONE,
                     "F1 source or journal binding changed");
             EscrowSettlementCapacity.preflight(preparation.capture(coordinator.ledger(), launch,
                     Math.addExact(coordinator.ledger().writerGeneration(), 1)));

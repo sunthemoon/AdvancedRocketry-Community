@@ -28,7 +28,11 @@ class EscrowFlightJournalGovernedTest {
             assertFalse(EscrowFlightJournal.noTransfer(journal, logical, record.transferId(), 2).getAsBoolean());
             var lease = EscrowFlightJournal.noTransfer(journal, logical, intent, 2); assertTrue(lease.getAsBoolean());
             journal.put(record.destinationSpawned(record.nativeTransfer().orElseThrow().armed().destination()));
-            assertFalse(lease.getAsBoolean(), "A superseding phase invalidates the captured absence lease");
+            // R17 item 3 reverses the journal-wide rule: another rocket's phase change keeps L's absence lease.
+            assertTrue(lease.getAsBoolean(), "Another rocket's superseding phase revoked L's captured absence lease");
+            assertFalse(EscrowFlightJournal.noTransfer(journal, record.logicalRocketId(), intent, 2).getAsBoolean(),
+                    "The changed rocket's own pending phase is not checked");
+            assertFalse(EscrowFlightJournal.noTransfer(journal, logical, intent, 1).getAsBoolean(), "Another logical rocket names the same serial");
         } finally { journal.stop(); }
     }
 

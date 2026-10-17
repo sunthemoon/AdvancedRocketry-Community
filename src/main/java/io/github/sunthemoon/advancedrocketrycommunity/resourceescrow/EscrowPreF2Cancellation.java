@@ -56,7 +56,8 @@ final class EscrowPreF2Cancellation implements AutoCloseable {
         if (state.pending || !state.retry.ready(server.getTickCount())) { return; }
         if (state.source != null) { state.source.observe(); }
         var journal = RocketTransferSavedData.get(server);
-        if (!journal.retryChecked(server)) { return; }
+        // R17 item 3: wait for L's checked state, not for a quiet journal.
+        if (!journal.retryChecked(server) && !journal.actionAuthorityAvailable(arm.logical())) { return; }
         var noTransfer = EscrowFlightJournal.noTransfer(journal, arm.logical(), arm.transfer(), arm.serial());
         if (!noTransfer.getAsBoolean() || arm.outcome() != EscrowFlightTables.Outcome.ARMED) { state.release(); return; }
         if (!coordinator.governedAvailable(arm.logical())) { return; }

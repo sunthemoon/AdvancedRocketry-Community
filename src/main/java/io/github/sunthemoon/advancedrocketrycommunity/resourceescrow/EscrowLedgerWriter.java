@@ -20,7 +20,12 @@ import net.minecraft.nbt.CompoundTag;
 
 /** One captured generation and one successor request. All state/capture/callbacks belong to the owner thread. */
 public final class EscrowLedgerWriter implements AutoCloseable {
-    public enum Outcome { COMMITTED, FAILED_BEFORE_REPLACE, UNKNOWN }
+    /**
+     * GUARD_REFUSED (R17 item 4): the request's own guard refused before any replacement was attempted. It is not an IO
+     * failure, so it never counts towards {@link #unavailable()}. A refusal while an earlier outcome is unknown still
+     * resolves through readback as FAILED_BEFORE_REPLACE or UNKNOWN.
+     */
+    public enum Outcome { COMMITTED, FAILED_BEFORE_REPLACE, UNKNOWN, GUARD_REFUSED }
     public record Snapshot(EscrowLedger ledger, CompoundTag payload, String digest, Set<UUID> admissions) {
         public Snapshot {
             EscrowTags.bound(payload, EscrowLimits.ROOT_BYTES, 24, 131_072);
@@ -158,7 +163,8 @@ public final class EscrowLedgerWriter implements AutoCloseable {
                 policy.replace(file, snapshot::payload); CheckedSavedDataPolicy.forceDirectory(file.getParent());
                 outcome = Outcome.COMMITTED;
             } catch (RuntimeException | IOException failure) {
-                outcome = attempted[0] || previouslyUncertain ? Outcome.UNKNOWN : Outcome.FAILED_BEFORE_REPLACE;
+                outcome = attempted[0] || previouslyUncertain ? Outcome.UNKNOWN
+                        : refused[0] ? Outcome.GUARD_REFUSED : Outcome.FAILED_BEFORE_REPLACE;
                 if (attempted[0] || previouslyUncertain) {
                     try {
                         Optional<CompoundTag> disk = policy.read(file);
@@ -200,7 +206,7 @@ public final class EscrowLedgerWriter implements AutoCloseable {
                 }
                 if (completion.outcome() == Outcome.COMMITTED) {
                     failures = 0; durableGeneration = completion.generation(); durableDigest = completion.digest();
-                } else { failures++; }
+                } else if (completion.outcome() != Outcome.GUARD_REFUSED) { failures++; }
                 uncertain = false; logAvailability(wasUnavailable, completion.generation());
                 captured = null; active = successor; successor = null;
                 // Successful authority is published before successor capture; failure cancellation is delayed

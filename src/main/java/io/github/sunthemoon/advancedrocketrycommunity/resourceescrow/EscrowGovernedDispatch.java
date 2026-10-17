@@ -45,22 +45,38 @@ public final class EscrowGovernedDispatch implements AutoCloseable {
     }
 
     private final Map<UUID, Authority> checked = new HashMap<>();
-    private final EscrowDispatchRetries retries = new EscrowDispatchRetries();
+    private final EscrowDispatchRetries retries;
+    private long retainedTick = Long.MIN_VALUE;
+    private long retentions;
     private boolean closed;
+
+    public EscrowGovernedDispatch() { this(new EscrowDispatchRetries()); }
+    EscrowGovernedDispatch(EscrowDispatchRetries retries) { this.retries = java.util.Objects.requireNonNull(retries); }
 
     /** No ledger creation, entity lookup, chunk readiness query, ticket or journal retry occurs here. */
     public Decision classify(MinecraftServer server, RocketTransferSavedData journal, RocketTransferRecord record) {
         if (server == null || !server.isSameThread()) { return Decision.hold("GOVERNED_ACTION_REQUIRED"); }
         if (closed) { return Decision.hold("GOVERNED_RUNTIME_STOPPED"); }
-        if (journal.actionAuthorityAvailable()) {
-            retries.retain(logical -> journal.findByLogicalRocket(logical).isPresent());
-        }
-        return retries.poll(record, server.getTickCount(), () -> {
+        return classify(server.getTickCount(), journal, record, () -> {
             var data = ResourceEscrowSavedData.existing(server);
             if (data == null) { return Decision.hold("GOVERNED_LEDGER_MISSING"); }
             return classify(data.bind(server), journal, record);
         });
     }
+
+    /** Review B F10: retry histories are retained once per tick, from one set of the journal's logical IDs. */
+    Decision classify(long tick, RocketTransferSavedData journal, RocketTransferRecord record, Supplier<Decision> observation) {
+        if (tick != retainedTick && journal.actionAuthorityAvailable()) {
+            retainedTick = tick; retentions++;
+            var present = new java.util.HashSet<UUID>();
+            for (var entry : journal.entries()) { present.add(entry.logicalRocketId()); }
+            retries.retain(present::contains);
+        }
+        return retries.poll(record, tick, observation);
+    }
+
+    /** Test-visible count of retention passes. */
+    long retentions() { return retentions; }
 
     Decision classify(EscrowCoordinator coordinator, RocketTransferSavedData journal, RocketTransferRecord record) {
         if (closed) { return Decision.hold("GOVERNED_RUNTIME_STOPPED"); }

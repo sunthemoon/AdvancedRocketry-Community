@@ -81,6 +81,44 @@ class EscrowGovernedPreparationTest {
         }
     }
 
+    /** Review B F9: once PREPARED is written, a full callback queue leaves the launch pending, not discarded. */
+    @Test void aFullCallbackQueueAfterPreparedIsWrittenDoesNotDiscardTheLaunch() throws Exception {
+        var server = io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.owned();
+        var record = GovernedTransferFixture.create().record(); var journal = new RocketTransferSavedData();
+        var countdowns = new java.util.concurrent.atomic.AtomicInteger(); var discards = new java.util.concurrent.atomic.AtomicInteger();
+        try {
+            acknowledge(journal);
+            // Two earlier generations still await their acknowledgement, which fills the bounded callback queue.
+            journal.put(record); assertTrue(journal.afterAcknowledged(server, GovernedTransferFixture.id(901), () -> true, () -> { }));
+            journal.remove(record.transferId()); assertTrue(journal.afterAcknowledged(server, GovernedTransferFixture.id(902), () -> true, () -> { }));
+            assertFalse(journal.canQueueEffect());
+            assertFalse(EscrowGovernedPreparation.prepare(journal, server, record,
+                    () -> { countdowns.incrementAndGet(); return true; }, discards::incrementAndGet));
+            assertEquals(0, discards.get(), "A written PREPARED record was reported as a discarded launch");
+            assertSame(record, journal.find(record.transferId()).orElseThrow());
+            // As the server does each tick: poll, and request the newest generation once the two queued ones finish.
+            for (int tick = 0; tick < 1_000 && !journal.retryChecked(server); tick++) { Thread.sleep(2); }
+            // F3 starts the countdown from the acknowledged record; this callback was never queued.
+            assertTrue(journal.logicalAcknowledged(record.logicalRocketId()));
+            assertEquals(0, countdowns.get()); assertEquals(0, discards.get());
+        } finally { journal.stop(); }
+        assertEquals(0, discards.get(), "Stopping the journal discarded an unqueued launch");
+    }
+
+    @Test void aQueuedF2CountdownRunsOnlyAfterPreparedIsAcknowledged() throws Exception {
+        var server = io.github.sunthemoon.advancedrocketrycommunity.testsupport.UnstartedServer.owned();
+        var record = GovernedTransferFixture.create().record(); var journal = new RocketTransferSavedData();
+        var countdowns = new java.util.concurrent.atomic.AtomicInteger(); var discards = new java.util.concurrent.atomic.AtomicInteger();
+        try {
+            acknowledge(journal);
+            assertTrue(EscrowGovernedPreparation.prepare(journal, server, record,
+                    () -> { countdowns.incrementAndGet(); return true; }, discards::incrementAndGet));
+            assertEquals(0, countdowns.get(), "The countdown ran before PREPARED was acknowledged");
+            acknowledge(journal);
+            assertEquals(1, countdowns.get()); assertEquals(0, discards.get());
+        } finally { journal.stop(); }
+    }
+
     private State state() throws Exception {
         var fixture = GovernedTransferFixture.create(); var arm = fixture.record().nativeTransfer().orElseThrow().armed();
         var root = new EscrowLedger(arm.ledger(), 0, arm.generation(), List.of(), List.of(), List.of(),

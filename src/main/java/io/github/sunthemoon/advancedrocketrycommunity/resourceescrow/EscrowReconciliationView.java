@@ -57,12 +57,16 @@ final class EscrowReconciliationView {
     static EscrowReconciliationView capture(MinecraftServer server, EscrowLedger root, List<EscrowOperation> members) {
         requireCaptureBounds(server.isSameThread(), members.size());
         var journal = RocketTransferSavedData.get(server);
-        if (!journal.retryChecked(server) || !journal.actionAuthorityAvailable()) { throw new Refusal(EscrowReason.TRANSFER_JOURNAL_UNPROVED); }
+        // R17 item 3: C3 to C7 lease each member rocket's checked state; C2 shares this view and its lease.
+        journal.retryChecked(server);
+        if (!members.stream().allMatch(op -> journal.actionAuthorityAvailable(op.guard().rocket()))) {
+            throw new Refusal(EscrowReason.TRANSFER_JOURNAL_UNPROVED);
+        }
         var references = new LinkedHashMap<EscrowEndpoint.Key, EscrowEndpoint>();
         for (var op : members) {
             if (op.kind() != EscrowOperation.Kind.FLUID_PROPULSION_FILL || !op.nativeBinding().complete()
                     || op.nativeBinding().kind() != EscrowSignatureKind.FUEL_VECTOR_V1) { throw new Refusal(EscrowReason.INVALID_ENDPOINT); }
-            var reason = RocketEscrowAudit.journal(op.guard(), journal.acknowledgedGuard(op.guard().rocket()).orElse(null));
+            var reason = RocketEscrowAudit.journal(op.guard(), journal.logicalGuard(op.guard().rocket()).orElse(null));
             if (reason != EscrowReason.NONE) { throw new Refusal(reason); }
             if (EscrowRuntime.of(server).flightCheckpoint().locked(op.guard().rocket())
                     || root.armedFlights().stream().anyMatch(arm -> arm.logical().equals(op.guard().rocket()))) { throw new Refusal(EscrowReason.NONE); }
@@ -123,7 +127,7 @@ final class EscrowReconciliationView {
             ends.put(endpoint.key(), new End(endpoint, observation.state(), envelope, level, rocket, source,
                     rocket == null ? () -> true : sameNativeCapture(rocket)));
         }
-        return new EscrowReconciliationView(server, root, members, ends, journal.acknowledgedLease(), bytes);
+        return new EscrowReconciliationView(server, root, members, ends, EscrowFlightJournal.members(journal, members), bytes);
     }
 
     static void requireCaptureBounds(boolean ownerThread, int members) {

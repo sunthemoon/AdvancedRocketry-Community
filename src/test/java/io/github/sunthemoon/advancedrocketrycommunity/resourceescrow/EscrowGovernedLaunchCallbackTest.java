@@ -59,10 +59,11 @@ class EscrowGovernedLaunchCallbackTest {
         }
     }
 
-    @Test void dirtyOrNamedJournalIsNeverCheckedNoT() throws Exception {
+    @Test void lsOwnPendingOrNamedRecordIsNeverCheckedNoT() throws Exception {
         try (var state = state()) {
+            // R17 item 3 replaces journal-wide quiescence: a dirty journal with no change of L keeps L's checked absence.
             state.journal.setDirty();
-            assertThrows(IllegalArgumentException.class, () -> state.launch.afterArm(state.root, state.arm(), state.fixture.source(), state.journal));
+            assertNotNull(state.launch.afterArm(state.root, state.arm(), state.fixture.source(), state.journal));
             acknowledge(state.journal);
             var record = state.launch.afterArm(state.root, state.arm(), state.fixture.source(), state.journal);
             state.journal.put(record);

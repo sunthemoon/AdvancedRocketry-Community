@@ -54,10 +54,12 @@ final class EscrowGovernedHandoff {
                         && proof.capture().chunk().x == endpoint.x() && proof.capture().chunk().z == endpoint.z(),
                         "F7 slot token has a different frontier or position");
             }
-            EscrowTags.require(journal.actionAuthorityAvailable()
+            EscrowTags.require(journal.actionAuthorityAvailable(record.logicalRocketId())
                     && journal.find(record.transferId()).filter(record::equals).isPresent(),
                     "F7 requires its exact checked journal record");
-            journalLease = journal.acknowledgedLease();
+            // R17 item 3: L's exact record instance and guard; another rocket's journal change does not revoke it.
+            journalLease = journal.logicalLease(record.logicalRocketId(), record.transferId(),
+                    record.nativeTransfer().orElseThrow().armed().serial());
         }
 
         /** No entity, player, registry, coordinator or mutable journal read is allowed here. */
@@ -94,7 +96,7 @@ final class EscrowGovernedHandoff {
         java.util.Objects.requireNonNull(completion);
         var record = proof.record;
         if (proof.claimed || !coordinator.governedAvailable(record.logicalRocketId()) || !proof.observe()
-                || !journal.actionAuthorityAvailable()
+                || !journal.actionAuthorityAvailable(record.logicalRocketId())
                 || EscrowGovernedDispatch.decide(coordinator.ledger(), record).route() != EscrowGovernedDispatch.Route.ACTIVE) {
             return false;
         }
@@ -106,13 +108,13 @@ final class EscrowGovernedHandoff {
         var invariant = EscrowInvariant.rocket(physical, arm.logical(), arm.owner(), EscrowAdapterIds.ROCKET,
                 destination ? record.destinationSnapshot() : record.sourceSnapshot());
         boolean queued = coordinator.flightWrite(arm.logical(), (root, generation) -> {
-            EscrowTags.require(proof.observe() && journal.actionAuthorityAvailable()
+            EscrowTags.require(proof.observe() && journal.actionAuthorityAvailable(arm.logical())
                     && EscrowGovernedDispatch.decide(root, record).route() == EscrowGovernedDispatch.Route.ACTIVE,
                     "F7 lost its joint proof or checked active authority at capture");
             return EscrowFlightAuthority.finish(root, arm, proof.outcome, physical, wrapper.epoch(), signature, invariant);
         }, proof::valid, committed -> {
             proof.close();
-            boolean exact = committed && journal.actionAuthorityAvailable() && proof.journalLease.getAsBoolean()
+            boolean exact = committed && journal.actionAuthorityAvailable(arm.logical()) && proof.journalLease.getAsBoolean()
                     && journal.find(record.transferId()).filter(record::equals).isPresent()
                     && EscrowGovernedDispatch.decide(coordinator.ledger(), record).route() == EscrowGovernedDispatch.Route.CLEANUP
                     && coordinator.ledger().armedFlights().stream().anyMatch(terminal -> terminal.transfer().equals(arm.transfer())
