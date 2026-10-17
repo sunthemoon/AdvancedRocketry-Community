@@ -89,7 +89,8 @@ What is still open:
   No S1 campaign has run.
 - **Intermittent GameTest.** Hosted run 39047343116 at `b01f441e` failed
   `EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier` once with
-  `SUPERSEDING_SAVE` (a test-timing race, W36's class); the next run passed. W94 fixes the test.
+  `SUPERSEDING_SAVE` (a test-timing race, W36's class); the next run passed. W94 (merged `ec7214c5`)
+  lets such proof tests retry only that reason; 30 of 30 local batch runs passed.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). The
   S2 campaign waits for W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
