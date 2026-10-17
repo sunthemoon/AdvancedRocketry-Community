@@ -51,7 +51,15 @@ def require_state(root: dict, sources: list[dict], rocket: dict, cut: str, resta
             raise smoke.SmokeError("Partial L2 cut did not retain [A, B] against the surviving B record")
     if repair and any(op["phase"] != "REPAIR" or op["reason"] != "OTHER_STATE" for op in root["records"]):
         raise smoke.SmokeError("C2 mismatch lost sticky REPAIR")
-    if before or repair:
+    if cut == "CR_C2_DESTINATION_MISMATCH":
+        # The real driver applies the source first. Its successful debit remains held by L1;
+        # refusing the destination must neither refund that source nor publish the credit.
+        op = root["records"][0]
+        expected_marker = dict(op_id=op["op_id"], seq=op["seq"], role="SOURCE", epoch_after=1)
+        if (amounts != [4000] or sources[0]["resource_escrow"]["markers"] != [expected_marker]
+                or fuel != 0 or wrapper["resource_epoch"] != 0 or wrapper["markers"]):
+            raise smoke.SmokeError("Destination C2 refusal lost the held source AFTER or changed the destination BEFORE")
+    elif before or repair:
         if amounts != [5000] or fuel != 0 or wrapper["resource_epoch"] != 0 or wrapper["markers"]:
             raise smoke.SmokeError("Unacknowledged or refused C2 changed resources")
     elif restarted or cut in L2 or cut == "CR_LATER_L2_REPLACED":

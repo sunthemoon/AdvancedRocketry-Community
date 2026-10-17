@@ -58,12 +58,33 @@ class ReconciliationRunnerTest(unittest.TestCase):
 
     def test_source_and_destination_mismatch_require_the_persisted_manual_reason(self):
         for cut in ("CR_C2_MISMATCH", "CR_C2_DESTINATION_MISMATCH"):
-            sample = self.sample(records=1, amount=0, source_amount=5000)
-            sample[0]["records"] = [dict(phase="REPAIR", reason="OTHER_STATE")]
+            destination = cut == "CR_C2_DESTINATION_MISMATCH"
+            sample = self.sample(records=1, amount=0, source_amount=4000 if destination else 5000, retained=destination)
+            sample[0]["records"] = [dict(op_id="A", seq=1, phase="REPAIR", reason="OTHER_STATE")]
             runner.require_state(*sample, cut, True)
             sample[0]["records"][0]["reason"] = "NONE"
             with self.assertRaises(runner.smoke.SmokeError):
                 runner.require_state(*sample, cut, True)
+
+    def test_destination_refusal_requires_the_exact_held_source_and_never_credits_or_refunds(self):
+        sample = self.sample(records=1, amount=0, source_amount=4000, retained=True)
+        sample[0]["records"] = [dict(op_id="A", seq=1, phase="REPAIR", reason="OTHER_STATE")]
+        for restarted in (False, True):
+            runner.require_state(*sample, "CR_C2_DESTINATION_MISMATCH", restarted)
+            for amount in (3000, 5000):
+                bad = copy.deepcopy(sample)
+                bad[1][0]["arce_escrow_fixture"]["amount"] = amount
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.require_state(*bad, "CR_C2_DESTINATION_MISMATCH", restarted)
+            for markers in ([], [dict(op_id="foreign", seq=1, role="SOURCE", epoch_after=1)]):
+                bad = copy.deepcopy(sample)
+                bad[1][0]["resource_escrow"]["markers"] = markers
+                with self.assertRaises(runner.smoke.SmokeError):
+                    runner.require_state(*bad, "CR_C2_DESTINATION_MISMATCH", restarted)
+            bad = copy.deepcopy(sample)
+            bad[2]["RocketEntityData"]["flight_data"]["fuel"]["amount"] = 1000
+            with self.assertRaises(runner.smoke.SmokeError):
+                runner.require_state(*bad, "CR_C2_DESTINATION_MISMATCH", restarted)
 
     def test_later_member_and_stale_binding_restarts_finish_exactly_two_fills(self):
         for cut in ("CR_LATER_WAIT", "CR_STALE_BIND", "CR_LATER_L2_REPLACED"):

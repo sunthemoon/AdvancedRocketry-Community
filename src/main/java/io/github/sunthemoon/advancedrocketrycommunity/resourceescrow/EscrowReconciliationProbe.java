@@ -196,7 +196,7 @@ final class EscrowReconciliationProbe {
         if (!coordinator.writerIdle() || server.getTickCount() - began < 100 || !repair && !data.ledger().records().isEmpty()) { return; }
         long amount = before || repair ? 0 : chain() ? 2_000 : 1_000;
         EscrowTags.require(rocket.flightData().orElseThrow().fuel().totalAmount() == amount
-                && EscrowTestEndpoints.amount(source.getPersistentData()) == (amount == 0 ? 5_000 : 4_000)
+                && EscrowTestEndpoints.amount(source.getPersistentData()) == (amount == 0 && !cut.equals("CR_C2_DESTINATION_MISMATCH") ? 5_000 : 4_000)
                 && (second == null || EscrowTestEndpoints.amount(second.getPersistentData()) == 4_000)
                 && rocket.escrowSection().epoch() == amount / 1_000 && rocket.escrowSection().markers().isEmpty()
                 && sourceMarkersMatch(source, retainedSourceMarker())
@@ -218,6 +218,11 @@ final class EscrowReconciliationProbe {
 
     private boolean sourceMarkersMatch(BlockEntity from, boolean retained) {
         var state = EscrowTestEndpoints.state(from.getPersistentData(), data.ledger().id(), false);
+        if (cut.equals("CR_C2_DESTINATION_MISMATCH")) {
+            var op = data.ledger().records().get(0);
+            return state.epoch() == op.source().afterEpoch() && state.signature().equals(op.source().afterSignature())
+                    && state.markers().equals(List.of(new EscrowPrefix.Link(op, op.source(), "SOURCE").marker()));
+        }
         if (!retained) { return state.markers().isEmpty(); }
         return state.markers().size() == 1 && state.markers().get(0).sequence() == 1
                 && state.markers().get(0).role().equals("SOURCE") && state.markers().get(0).epochAfter() == state.epoch();
