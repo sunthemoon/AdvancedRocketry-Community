@@ -62,8 +62,9 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         var data = ResourceEscrowSavedData.existing(server);
         if (data == null || survivor == null) { return Result.HELD; }
         var coordinator = data.bind(server);
-        if (!coordinator.governedAvailable(record.logicalRocketId()) || !journal.actionAuthorityAvailable()
-                || journal.find(record.transferId()).filter(record::equals).isEmpty()) { return Result.HELD; }
+        // R17 item 3 (lease review LR2): L's checked lease and per-rocket authority, not a quiet journal.
+        var hold = new JournalHold(journal, record);
+        if (!coordinator.governedAvailable(record.logicalRocketId()) || !hold.holds(journal)) { return Result.HELD; }
         var decision = EscrowGovernedDispatch.decide(data.ledger(), record);
         if (decision.route() == EscrowGovernedDispatch.Route.CLEANUP) {
             if (state != null) { state.close(); work.remove(record.transferId(), state); }
@@ -80,14 +81,14 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
         }
         EscrowRuntime.of(server).executorHolds().healthy(record);
         if (state != null && (!state.record.equals(record) || state.source.rocket != survivor
-                || state.outcome != outcome || !state.source.observe())) {
+                || state.outcome != outcome || !state.source.observe() || !state.hold.holds(journal))) {
             state.close(); work.remove(record.transferId(), state); state = null;
         }
         if (state == null) {
             requireCapacity(work, record.transferId());
             retries.history(record.logicalRocketId());
             state = new Work(record, outcome, waitSource(survivor,
-                    () -> EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor), boundary));
+                    () -> EscrowGovernedTerminalPassengers.present(server, record, outcome, survivor), boundary), hold);
             work.put(record.transferId(), state);
         }
         if (state.proofs.values().stream().anyMatch(proof -> !proof.valid())) {
@@ -107,8 +108,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
                             if (result.proof() != null) { result.proof().release(); }
                             pending.release(); return;
                         }
-                        if (!pending.source.observe() || !journal.actionAuthorityAvailable()
-                                || journal.find(record.transferId()).filter(record::equals).isEmpty()) {
+                        if (!pending.source.observe() || !pending.hold.holds(journal)) {
                             if (result.proof() != null) { result.proof().release(); }
                             retry(pending, "F6_PROOF", "SOURCE_OR_JOURNAL_CHANGED", server.getTickCount()); return;
                         }
@@ -177,9 +177,8 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
     public boolean checkpoint(MinecraftServer server, RocketTransferRecord record) {
         if (closed || !server.isSameThread()) { return false; }
         var state = work.get(record.transferId());
-        var journal = RocketTransferSavedData.get(server);
         return state != null && state.record == record && state.source.observe()
-                && journal.actionAuthorityAvailable() && journal.find(record.transferId()).filter(record::equals).isPresent()
+                && state.hold.holds(RocketTransferSavedData.get(server))
                 && state.proofs.size() == state.slots.size() && state.proofs.values().stream().allMatch(EscrowBarrier.Proof::valid);
     }
 
@@ -190,17 +189,42 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
 
     @Override public void close() { closed = true; work.values().forEach(Work::close); work.clear(); retries.clear(); envelopeHolds.clear(); }
 
+    /**
+     * R17 item 3 for F6 (lease review LR2): L's checked lease and per-rocket authority, kept from the capture across the
+     * barrier callback. Another rocket's pending change keeps it; L's own or unacknowledged change, another record that
+     * names T or the serial, or a failed write ends it.
+     */
+    static final class JournalHold {
+        private final RocketTransferSavedData journal;
+        private final RocketTransferRecord record;
+        private final BooleanSupplier lease;
+
+        /** Owner thread. */
+        JournalHold(RocketTransferSavedData journal, RocketTransferRecord record) {
+            this.journal = journal; this.record = record;
+            lease = journal.logicalLease(record.logicalRocketId(), record.transferId(),
+                    record.nativeTransfer().map(value -> value.armed().serial()).orElse(0L));
+        }
+
+        /** Owner thread: the same journal, L's authority and lease, and L's exact record. */
+        boolean holds(RocketTransferSavedData current) {
+            return current == journal && journal.actionAuthorityAvailable(record.logicalRocketId()) && lease.getAsBoolean()
+                    && journal.find(record.transferId()).filter(record::equals).isPresent();
+        }
+    }
+
     private static final class Work implements AutoCloseable {
         final RocketTransferRecord record;
         final EscrowFlightTables.Outcome outcome;
         final EscrowFlightSource source;
+        final JournalHold hold;
         final List<EscrowEndpoint> slots;
         final Map<EscrowEndpoint, EscrowBarrier.Proof> proofs = new LinkedHashMap<>();
         EscrowGovernedHandoff.Proof handoff;
         boolean pending;
         boolean queued;
-        Work(RocketTransferRecord record, EscrowFlightTables.Outcome outcome, EscrowFlightSource source) {
-            this.record = record; this.outcome = outcome; this.source = source;
+        Work(RocketTransferRecord record, EscrowFlightTables.Outcome outcome, EscrowFlightSource source, JournalHold hold) {
+            this.record = record; this.outcome = outcome; this.source = source; this.hold = hold;
             slots = EscrowGovernedTerminalDisk.slots(record, outcome);
         }
         void release() {
