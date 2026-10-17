@@ -39,7 +39,7 @@ development_log: docs/work/v1.8.0-implementation-log.md
 accepted_development_baseline: 55da6a58842762c382edce0a5a842d06bb76ff6e
 runtime_build: 1.20.1-1.8.0-dev
 latest_code_commit: c7b5b99f (W11b2 continuation 54 merged after the W11b2 merge)
-latest_hosted_regression: run 39044351335 at c420e521 (the W11b2 head merged by eff6eff3), passed; the shared-branch run for the merge is pending
+latest_hosted_regression: run 39049214708 at d9a7c0e9 (after the W11b2 merge and continuation 54), passed
 ledger_planned_units: 19
 asset_review_items: 154
 required_gates_approved: none
@@ -87,6 +87,9 @@ What is still open:
 - **Assets.** 154 legacy assets are still under REVIEW (ADR-066 section 7.3).
 - **S1.** W11b1 and W44 have native dedicated-server restart evidence as development evidence.
   No S1 campaign has run.
+- **Intermittent GameTest.** Hosted run 39047343116 at `b01f441e` failed
+  `EscrowCoreGameTests.ownTerrainAndEntityStoresConfirmTheExactFrozenFrontier` once with
+  `SUPERSEDING_SAVE` (a test-timing race, W36's class); the next run passed. W94 fixes the test.
 - **S2.** W11b2's crash cuts passed natively as development evidence (the W11b2 records). The
   S2 campaign waits for W11b3.
 - **V1 and V2.** No slice has real-GPU or two-client evidence.
