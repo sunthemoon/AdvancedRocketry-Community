@@ -21,7 +21,7 @@ final class EscrowFlightSource {
     private final Object flight;
     private final Object snapshot;
     private final RocketEscrowSection wrapper;
-    private final List<java.util.UUID> passengers;
+
     private final java.util.function.BooleanSupplier boundary;
 
     EscrowFlightSource(RocketEntity rocket) {
@@ -31,12 +31,11 @@ final class EscrowFlightSource {
     EscrowFlightSource(RocketEntity rocket, java.util.function.BooleanSupplier boundary) {
         this.rocket = rocket;
         this.boundary = java.util.Objects.requireNonNull(boundary);
-        envelope = EscrowNativeEnvelope.rocket(rocket);
+        envelope = EscrowGovernedEnvelope.capture(rocket);
         digest = EscrowNativeEnvelope.digest(envelope);
         signature = signature(rocket.flightData().orElseThrow().fuel());
         invariant = EscrowInvariant.rocket(rocket);
         flight = rocket.flightData().orElseThrow(); snapshot = rocket.snapshot().orElseThrow(); wrapper = rocket.escrowSection();
-        passengers = rocket.getPassengers().stream().map(net.minecraft.world.entity.Entity::getUUID).toList();
         EscrowTags.require(wrapper.ledger() != null && wrapper.markers().isEmpty() && rocket.noPhysics,
                 "Source checkpoint requires the bound, pruned native adapter");
         endpoint = new EscrowEndpoint(EscrowEndpoint.Kind.ENTITY, envelope.getString("level"), rocket.getUUID(),
@@ -60,7 +59,7 @@ final class EscrowFlightSource {
                 && rocket.isNoGravity() == envelope.getBoolean("no_gravity") && rocket.noPhysics == envelope.getBoolean("no_physics")
                 && rocket.onGround() == envelope.getBoolean("on_ground") && rocket.isInvulnerable() == envelope.getBoolean("invulnerable")
                 && rocket.getYRot() == envelope.getFloat("yaw") && rocket.getXRot() == envelope.getFloat("pitch")
-                && rocket.getPassengers().stream().map(net.minecraft.world.entity.Entity::getUUID).toList().equals(passengers);
+                && EscrowGovernedEnvelope.liveRiders(rocket);
         if (!same) { unchanged.set(false); }
         return same;
     }

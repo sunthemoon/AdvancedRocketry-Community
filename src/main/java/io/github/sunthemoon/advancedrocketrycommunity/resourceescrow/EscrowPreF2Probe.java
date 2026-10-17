@@ -76,7 +76,7 @@ final class EscrowPreF2Probe {
             EscrowTags.require(before ? arms.isEmpty() && data.ledger().issuedLaunchSerial() == 0
                     : arms.size() == 1 && arms.get(0).outcome() == (hasT ? EscrowFlightTables.Outcome.ARMED : EscrowFlightTables.Outcome.CANCELLED)
                     && arms.get(0).serial() == 1 && data.ledger().issuedLaunchSerial() == 1
-                    && arms.get(0).sourceEnvelope().equals(EscrowNativeEnvelope.digest(EscrowNativeEnvelope.rocket(rocket))), "Wrong restarted F1 outcome or E");
+                    && arms.get(0).sourceEnvelope().equals(EscrowGovernedEnvelope.digest(EscrowNativeEnvelope.rocket(rocket))), "Wrong restarted F1 outcome or E");
             EscrowTags.require(rocket.flightData().orElseThrow().fuel().totalAmount() == 1_000 && rocket.escrowSection().epoch() == 1
                     && rocket.flightData().orElseThrow().fuel().committedDebits().isEmpty()
                     && rocket.flightData().orElseThrow().passengers().assignments().size() == 1
@@ -84,7 +84,7 @@ final class EscrowPreF2Probe {
             if (governedTransfer()) {
                 var record = journal.entries().get(0); var envelope = record.nativeTransfer().orElseThrow();
                 EscrowTags.require(envelope.armed().equals(arms.get(0))
-                        && envelope.sourceEnvelope(record).equals(EscrowNativeEnvelope.rocket(rocket)), "Restart changed governed T or checkpoint source");
+                        && EscrowGovernedEnvelope.same(envelope.sourceEnvelope(record), EscrowNativeEnvelope.rocket(rocket)), "Restart changed governed T or checkpoint source");
             }
             AdvancedRocketryCommunity.LOGGER.info("ARCE_RELEASE_PRE_F2_RESULT cut={} outcome={} source={} fuel=1000 epoch=1 manifest=1 debits=0",
                     cut, before ? "UNARMED" : arms.get(0).outcome(), rocket.getUUID()); done = true; return;

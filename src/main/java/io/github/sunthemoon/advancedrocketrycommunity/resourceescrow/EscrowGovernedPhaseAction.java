@@ -21,12 +21,10 @@ public final class EscrowGovernedPhaseAction {
         return record.phase() == RocketTransferPhase.SOURCE_REMOVED || record.phase() == RocketTransferPhase.COMMITTED;
     }
 
-    /** Restore the frozen rider projection for comparison only. No entity or journal is rewritten. */
+    /** Normalize the validated physical rider observation for comparison only. No entity or journal is rewritten. */
     static CompoundTag sourceComparison(RocketTransferRecord record, CompoundTag observed) {
         riders(record, observed);
-        var comparison = observed.copy();
-        comparison.put("passengers", record.nativeTransfer().orElseThrow().sourceEnvelope(record).get("passengers").copy());
-        return comparison;
+        return EscrowGovernedEnvelope.comparison(observed);
     }
 
     static boolean sourceMatches(RocketTransferRecord record, CompoundTag source, long levelTime) {
@@ -100,8 +98,11 @@ public final class EscrowGovernedPhaseAction {
 
         void consume() {
             EscrowTags.require(!used, "F5 permit already consumed"); used = true;
-            EscrowTags.require(authority.valid() && boundary.getAsBoolean()
-                    && java.util.Objects.equals(source, observedSource.get()) && destination.equals(observedDestination.get()),
+            EscrowTags.require(authority.valid() && boundary.getAsBoolean(), "F5 lost its final authority or boundary");
+            var liveSource = observedSource.get(); var liveDestination = observedDestination.get();
+            EscrowTags.require(EscrowGovernedEnvelope.same(source, liveSource) && EscrowGovernedEnvelope.same(destination, liveDestination)
+                    && (liveSource == null || java.util.Collections.disjoint(
+                            riders(authority.record(), liveSource), riders(authority.record(), liveDestination))),
                     "F5 lost its final authority or complete endpoint comparison");
         }
 
@@ -110,7 +111,7 @@ public final class EscrowGovernedPhaseAction {
             EscrowTags.require(sourceOptional(authority.record())
                     && rocket.isAlive() && rocket.isAddedToWorld() && rocket.getServer().isSameThread()
                     && rocket.getUUID().equals(authority.record().sourceEntityId()) && rocket.getPassengers().isEmpty()
-                    && source != null && source.equals(EscrowNativeEnvelope.rocket(rocket)), "Not the authorized empty source");
+                    && source != null && EscrowGovernedEnvelope.same(source, EscrowNativeEnvelope.rocket(rocket)), "Not the authorized empty source");
             rocket.discard();
         }
     }

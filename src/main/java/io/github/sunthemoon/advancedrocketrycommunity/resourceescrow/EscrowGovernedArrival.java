@@ -50,10 +50,10 @@ public final class EscrowGovernedArrival {
             var binding = binding(server, journal, record, destination, boundary);
             if (binding == null) { return false; }
             var flight = destination.flightData().orElseThrow(); long now = binding.time(destination.level().getGameTime());
-            var before = EscrowNativeEnvelope.rocket(destination);
+            var before = EscrowGovernedEnvelope.capture(destination);
             if (!ready(record, before, now)) { return false; }
             var permit = EscrowGovernedLandingAction.issue(binding.authority, before, now, boundary);
-            apply(destination, binding, permit.consume(() -> EscrowNativeEnvelope.rocket(destination)), destination.position(), boundary);
+            apply(destination, binding, permit.consume(() -> EscrowGovernedEnvelope.capture(destination)), destination.position(), boundary);
             EscrowRuntime.of(server).checkpoint("F6_LANDED"); return true;
         } catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return false; }
     }
@@ -62,7 +62,7 @@ public final class EscrowGovernedArrival {
                          RocketEntity destination, BooleanSupplier boundary) {
         try {
             var binding = binding(server, journal, record, destination, boundary);
-            return binding != null && ready(record, EscrowNativeEnvelope.rocket(destination), binding.time(destination.level().getGameTime()));
+            return binding != null && ready(record, EscrowGovernedEnvelope.capture(destination), binding.time(destination.level().getGameTime()));
         } catch (IllegalArgumentException | IllegalStateException | ArithmeticException refused) { return false; }
     }
 
@@ -88,7 +88,7 @@ public final class EscrowGovernedArrival {
         if (old != null && old.entity != destination && old.entity.isRemoved()) { bindings.remove(record.transferId()); old = null; }
         if (old != null && !old.sameNative(destination)) { return null; }
         if (old != null && old.authority.valid() && old.observation == destination.governedObservation()) { return old; }
-        var observed = EscrowNativeEnvelope.rocket(destination); long levelTime = destination.level().getGameTime();
+        var observed = EscrowGovernedEnvelope.capture(destination); long levelTime = destination.level().getGameTime();
         long now = old == null ? EscrowGovernedArrivalState.resumeTime(record, observed, levelTime) : old.time(levelTime);
         EscrowTags.require(EscrowGovernedArrivalState.matches(record, observed, now), "Arrival complete envelope changed");
         requireCapacity(bindings, record.transferId());
@@ -110,7 +110,9 @@ public final class EscrowGovernedArrival {
 
     void observe(RocketEntity rocket) {
         for (var binding : bindings.values()) {
-            if (binding.entity == rocket && !binding.sameNative(rocket)) { binding.changed = true; }
+            if (binding.entity != rocket) { continue; }
+            try { if (!binding.sameNative(rocket)) { binding.changed = true; } }
+            catch (IllegalArgumentException | IllegalStateException invalid) { binding.changed = true; }
         }
     }
     void clear() { bindings.clear(); }
@@ -121,7 +123,7 @@ public final class EscrowGovernedArrival {
     }
 
     private static CompoundTag frame(RocketEntity rocket) {
-        var frame = EscrowNativeEnvelope.frame(rocket); frame.remove("passengers"); return frame;
+        return EscrowGovernedEnvelope.frame(rocket);
     }
 
     private static final class Binding {

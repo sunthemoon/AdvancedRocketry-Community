@@ -116,7 +116,7 @@ public final class EscrowGovernedTerminal implements AutoCloseable {
             return Result.WAITING;
         }
         var proof = new EscrowGovernedHandoff.Proof(journal, record, outcome, state.source.envelope, state.proofs,
-                () -> EscrowNativeEnvelope.rocket(survivor), pending.source::observe, pending.source.unchanged::get);
+                () -> EscrowGovernedEnvelope.capture(survivor), pending.source::observe, pending.source.unchanged::get);
         state.handoff = proof;
         state.queued = EscrowGovernedHandoff.request(coordinator, journal, proof, committed -> {
             pending.queued = false;

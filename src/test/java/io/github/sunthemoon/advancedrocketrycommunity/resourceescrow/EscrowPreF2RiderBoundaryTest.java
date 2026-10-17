@@ -18,12 +18,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Characterizes the pre-F2 evidence boundary; this is not acceptance of a permanent rider hold. */
+/** R18's pre-F2 rider normalization retains assignments and the checked no-T boundary. */
 class EscrowPreF2RiderBoundaryTest {
     @BeforeAll static void bootstrap() { MinecraftBootstrap.initialize(); }
     @TempDir Path directory;
 
-    @Test void acceptedRiderSubsetsAndOrdersShareTheSameSourceDiskImageButNotTheArmDigest() {
+    @Test void acceptedRiderSubsetsAndOrdersShareTheSameSourceDiskImageAndArmDigest() {
         var fixture = GovernedTransferFixture.create(1, 3, false);
         var source = fixture.source();
         var riders = source.getList("passengers", Tag.TAG_COMPOUND);
@@ -39,19 +39,19 @@ class EscrowPreF2RiderBoundaryTest {
             var root = preparation.preflight(EscrowLedger.empty(preparation.launch().wrapper().ledger()), 1);
             var arm = root.armedFlights().get(0);
             var record = preparation.record(arm);
-            assertEquals(observed, record.nativeTransfer().orElseThrow().sourceEnvelope(record));
+            assertEquals(EscrowGovernedEnvelope.comparison(observed), record.nativeTransfer().orElseThrow().sourceEnvelope(record));
             assertEquals(source.getCompound("flight"), observed.getCompound("flight"), "Assignments do not change");
             assertTrue(EscrowFlightSource.validator(endpoint(observed), observed).test(disk),
                     "F1's existing native validator accepts the same saved source for each rider projection");
             assertEquals(32, arm.encode().getByteArray("source").length);
             assertEquals(arm, EscrowFlightTables.Armed.decode(arm.encode()));
-            assertTrue(hashes.add(arm.sourceEnvelope()), "The ARMED commitment still distinguishes physical riders");
+            hashes.add(arm.sourceEnvelope());
         }
-        assertEquals(5, hashes.size());
+        assertEquals(1, hashes.size());
         assertFalse(disk.getList("Entities", Tag.TAG_COMPOUND).getCompound(0).contains("Passengers"));
     }
 
-    @Test void checkedNoTAndPersistedAssignmentsDoNotSupplySourceComparisonsRecordedRiders() throws Exception {
+    @Test void checkedNoTAndPersistedAssignmentsPermitDismountedPreF2Cancellation() throws Exception {
         var fixture = GovernedTransferFixture.create(1, 3, false);
         var source = fixture.source(); var riders = source.getList("passengers", Tag.TAG_COMPOUND);
         var subset = new ListTag(); subset.add(riders.get(2).copy()); subset.add(riders.get(0).copy());
@@ -62,7 +62,8 @@ class EscrowPreF2RiderBoundaryTest {
         var arm = root.armedFlights().get(0);
         var restored = source.copy(); restored.put("passengers", new ListTag());
         assertTrue(EscrowFlightSource.validator(endpoint(source), source).test(sourceSlot(restored)));
-        assertNotEquals(arm.sourceEnvelope(), EscrowNativeEnvelope.digest(restored));
+        assertEquals(arm.sourceEnvelope(), EscrowGovernedEnvelope.digest(restored));
+        assertNotEquals(arm.sourceEnvelope(), EscrowNativeEnvelope.digest(source), "Earlier crewed development arms remain incompatible");
         assertEquals(source.getCompound("flight"), restored.getCompound("flight"));
 
         var journal = new RocketTransferSavedData();
@@ -71,15 +72,13 @@ class EscrowPreF2RiderBoundaryTest {
                     directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()));
             var noTransfer = EscrowFlightJournal.noTransfer(journal, arm.logical(), arm.transfer(), arm.serial());
             assertTrue(noTransfer.getAsBoolean()); assertTrue(journal.entries().isEmpty());
-            assertTrue(EscrowPreF2Cancellation.eligible(root, arm, EscrowNativeEnvelope.digest(source), noTransfer));
-            assertFalse(EscrowPreF2Cancellation.eligible(root, arm, EscrowNativeEnvelope.digest(restored), noTransfer),
-                    "Diagnostic: the existing digest check holds the unchanged, dismounted source before F2");
+            assertTrue(EscrowPreF2Cancellation.eligible(root, arm, EscrowGovernedEnvelope.digest(source), noTransfer));
+            assertTrue(EscrowPreF2Cancellation.eligible(root, arm, EscrowGovernedEnvelope.digest(restored), noTransfer));
 
-            // This comparison works only with the record that would be written at F2. The checked
-            // empty journal above does not contain its source projection, so restart cannot use it.
+            // The same normalized comparison also applies after F2 without substituting recorded riders.
             var notYetPersisted = preparation.record(arm);
             var comparison = EscrowGovernedPhaseAction.sourceComparison(notYetPersisted, restored);
-            assertEquals(source, comparison);
+            assertEquals(restored, comparison);
             assertEquals(arm.sourceEnvelope(), EscrowNativeEnvelope.digest(comparison));
             assertTrue(journal.entries().isEmpty(), "No synthetic F2 record grants cancellation authority");
         } finally { journal.stop(); }

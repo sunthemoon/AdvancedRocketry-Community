@@ -82,7 +82,7 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         boolean phases = record.phase().ordinal() >= RocketTransferPhase.PASSENGERS_TRANSFERRED.ordinal();
         if (record.phase() == RocketTransferPhase.PREPARED) {
             long time = runtime.sourceFlights().publicationTime(authority, source, finalBoundary);
-            if (!EscrowGovernedDestinationAction.sourceDue(record, EscrowNativeEnvelope.rocket(source), time)) { return Result.WAITING; }
+            if (!EscrowGovernedDestinationAction.sourceDue(record, EscrowGovernedEnvelope.capture(source), time)) { return Result.WAITING; }
             if (destination != null || !journal.canQueueEffect()) { return Result.HELD; }
             var next = record.destinationSpawned(record.nativeTransfer().orElseThrow().armed().destination());
             journal.put(next);
@@ -99,13 +99,13 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         var time = envelopeHolds.capture(record.logicalRocketId(), data.ledger(), source, destination, () -> {
             long observedTime = phases ? (source == null ? server.overworld().getGameTime() : source.level().getGameTime())
                     : runtime.sourceFlights().publicationTime(authority, source, finalBoundary);
-            var observedSource = source == null ? null : EscrowNativeEnvelope.rocket(source);
+            var observedSource = source == null ? null : EscrowGovernedEnvelope.capture(source);
             if (!(phases ? EscrowGovernedPhaseAction.sourceMatches(record, observedSource, observedTime)
                     : EscrowGovernedSourceRecovery.sourceMatches(record, observedSource, observedTime))) { return null; }
             if (destination != null) {
                 var previous = work.remove(record.transferId()); if (previous != null) { previous.release(); }
-                if (!(phases ? EscrowGovernedPhaseAction.destinationMatches(record, EscrowNativeEnvelope.rocket(destination))
-                        : record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(destination)))) { return null; }
+                if (!(phases ? EscrowGovernedPhaseAction.destinationMatches(record, EscrowGovernedEnvelope.capture(destination))
+                        : record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowGovernedEnvelope.capture(destination)))) { return null; }
             }
             return observedTime;
         });
@@ -152,14 +152,14 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         }
         var ready = state;
         var permit = EscrowGovernedDestinationAction.issue(authority, state.sourceEnvelope(), time, level.getGameTime(),
-                () -> source == null ? null : EscrowNativeEnvelope.rocket(source), finalBoundary, () -> ready.sourceValid() && ready.proved());
+                () -> source == null ? null : EscrowGovernedEnvelope.capture(source), finalBoundary, () -> ready.sourceValid() && ready.proved());
         var created = ModEntities.ROCKET.get().create(level);
         if (created == null) {
             if (!EscrowGovernedReturnAction.phase(record)) { state.retry(server.getTickCount(), "DESTINATION_CREATE_FAILED"); return Result.HELD; }
             state.release(); state.failure = Result.CREATE_FAILED; return state.failure;
         }
         created.initializeGovernedDestination(permit);
-        EscrowTags.require(record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(created)),
+        EscrowTags.require(record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowGovernedEnvelope.capture(created)),
                 "Initialized destination differs from its complete envelope");
         EscrowTags.require(authority.valid() && finalBoundary.getAsBoolean() && state.sourceValid() && state.proved(),
                 "Destination changed before publication");
@@ -174,8 +174,8 @@ public final class EscrowGovernedDestination implements AutoCloseable {
         work.remove(record.transferId());
         runtime.checkpoint("F4_PUBLICATION_AFTER");
         return boundary.allows(record, source, created)
-                && java.util.Objects.equals(state.sourceEnvelope(), source == null ? null : EscrowNativeEnvelope.rocket(source))
-                && record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowNativeEnvelope.rocket(created))
+                && java.util.Objects.equals(state.sourceEnvelope(), source == null ? null : EscrowGovernedEnvelope.capture(source))
+                && record.nativeTransfer().orElseThrow().destinationEnvelope(record).equals(EscrowGovernedEnvelope.capture(created))
                 ? Result.PUBLISHED : Result.HELD;
     }
 

@@ -61,7 +61,7 @@ final class EscrowFlightCheckpoint implements AutoCloseable {
                 try {
                     if (data != null && data.bind(level.getServer()).governedAvailable(arm.logical())
                             && boundary.test(captured.get())) {
-                        record = prepared.afterArm(data.ledger(), arm, EscrowNativeEnvelope.rocket(rocket), journal);
+                        record = prepared.afterArm(data.ledger(), arm, EscrowGovernedEnvelope.capture(rocket), journal);
                     }
                 } catch (IllegalArgumentException refused) {
                     // ARMED remains durable and locked; only its checked cancellation/recovery may retire it.

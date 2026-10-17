@@ -65,7 +65,7 @@ final class EscrowGovernedPhaseTracking {
     void clear() { captures.clear(); }
 
     private static CompoundTag frame(RocketEntity rocket) {
-        var frame = EscrowNativeEnvelope.frame(rocket); frame.remove("passengers"); return frame;
+        return EscrowGovernedEnvelope.frame(rocket);
     }
     private static final class Capture {
         final RocketEntity rocket;

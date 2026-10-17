@@ -24,7 +24,7 @@ class EscrowGovernedLaunchTest {
         var record = prepared.record(arm);
         assertEquals(beforeRoot, EscrowCodec.encode(root)); assertEquals(original, fixture.source());
         assertEquals(1, arm.serial()); assertEquals(1, arm.generation());
-        assertEquals(3, record.schemaVersion()); assertEquals(original, record.nativeTransfer().orElseThrow().sourceEnvelope(record));
+        assertEquals(3, record.schemaVersion()); assertEquals(EscrowGovernedEnvelope.comparison(original), record.nativeTransfer().orElseThrow().sourceEnvelope(record));
         assertEquals(flight(original).fuel(), record.sourceFlightData().fuel());
         assertEquals(fixture.record().destinationFlightData().fuel(), record.destinationFlightData().fuel());
         assertEquals(List.of(record.transferId()), record.destinationFlightData().fuel().committedDebits());
@@ -37,7 +37,7 @@ class EscrowGovernedLaunchTest {
         assertEquals(record.destinationSnapshot().sourceOrigin().y() + RocketFlightLimits.FLIGHT_ALTITUDE_BLOCKS,
                 destination.getList("pos", 6).getDouble(1));
         fixture.source().putBoolean("on_ground", !fixture.source().getBoolean("on_ground"));
-        assertEquals(original, prepared.record(arm).nativeTransfer().orElseThrow().sourceEnvelope(record));
+        assertEquals(EscrowGovernedEnvelope.comparison(original), prepared.record(arm).nativeTransfer().orElseThrow().sourceEnvelope(record));
     }
 
     @Test void landedFueledSuccessorKeepsItsCheckpointStateUntilF2() {
@@ -132,7 +132,7 @@ class EscrowGovernedLaunchTest {
         var record = prepared.record(prepared.preflight(root(fixture), 1).armedFlights().get(0));
         assertEquals(16, record.sourceFlightData().passengers().assignments().size());
         assertEquals(64, record.destinationFlightData().fuel().committedDebits().size());
-        assertEquals(fixture.source(), record.nativeTransfer().orElseThrow().sourceEnvelope(record));
+        assertEquals(EscrowGovernedEnvelope.comparison(fixture.source()), record.nativeTransfer().orElseThrow().sourceEnvelope(record));
         assertTrue(io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNbtSize.uncompressedBytes(
                 record.nativeTransfer().orElseThrow().encode()) <= EscrowTransferEnvelope.MAX_BYTES);
     }

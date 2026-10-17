@@ -65,18 +65,18 @@ public final class EscrowTransferEnvelope {
         EscrowTags.require(sourceFlight.schemaVersion() == 2 && destinationFlight.schemaVersion() == 2
                 && sourceFlight.fuel().propulsion().isPresent() && destinationFlight.fuel().propulsion().isPresent(),
                 "Governed record requires native schema-2 flight bodies");
-        EscrowTags.require(armed.sourceEnvelope().equals(EscrowNativeEnvelope.digest(
+        EscrowTags.require(armed.sourceEnvelope().equals(EscrowGovernedEnvelope.digest(
                 EscrowTransferProjection.expand(source, armed, false, sourceSnapshot, sourceFlight)))
-                && armed.destinationEnvelope().equals(EscrowNativeEnvelope.digest(
+                && armed.destinationEnvelope().equals(EscrowGovernedEnvelope.digest(
                 EscrowTransferProjection.expand(destination, armed, true, destinationSnapshot, destinationFlight))),
                 "Governed record envelope digest changed");
     }
 
     public CompoundTag sourceEnvelope(RocketTransferRecord record) {
-        validate(record); return EscrowTransferProjection.expand(source, armed, false, record.sourceSnapshot(), record.sourceFlightData());
+        validate(record); return EscrowGovernedEnvelope.comparison(EscrowTransferProjection.expand(source, armed, false, record.sourceSnapshot(), record.sourceFlightData()));
     }
 
     public CompoundTag destinationEnvelope(RocketTransferRecord record) {
-        validate(record); return EscrowTransferProjection.expand(destination, armed, true, record.destinationSnapshot(), record.destinationFlightData());
+        validate(record); return EscrowGovernedEnvelope.comparison(EscrowTransferProjection.expand(destination, armed, true, record.destinationSnapshot(), record.destinationFlightData()));
     }
 }

@@ -111,7 +111,7 @@ class EscrowGovernedSourceRecoveryTest {
         }
     }
 
-    @Test void everyEnvelopeFieldIsRequiredIncludingPhysicalOccupantsAndNativeMotion() throws Exception {
+    @Test void everyEnvelopeFieldIsRequiredButAssignedRidersMayDismount() throws Exception {
         try (var state = state()) {
             var source = state.fixture.source();
             for (String key : source.getAllKeys()) {
@@ -122,7 +122,7 @@ class EscrowGovernedSourceRecoveryTest {
             var extra = source.copy(); extra.putBoolean("unrecognized", true);
             assertNotNull(reason(state, RESUME_EXACT_SOURCE, observation(extra)));
             var dismounted = source.copy(); dismounted.put("passengers", new net.minecraft.nbt.ListTag());
-            assertNotNull(reason(state, RETURN_EXACT_SOURCE, observation(dismounted)), "Passenger changes need their own checked action");
+            assertNull(reason(state, RETURN_EXACT_SOURCE, observation(dismounted)), "R18 accepts assigned dismounts without changing the manifest");
         }
     }
 

@@ -84,7 +84,7 @@ class EscrowGovernedSourceActionTest {
                     .consume(fixture.source()::copy);
             assertEquals(countdown, after); assertEquals(initial.fuel(), after.fuel());
             assertEquals(original, fixture.source());
-            assertEquals(original, record.nativeTransfer().orElseThrow().sourceEnvelope(record));
+            assertEquals(EscrowGovernedEnvelope.comparison(original), record.nativeTransfer().orElseThrow().sourceEnvelope(record));
         } finally { journal.stop(); }
     }
 

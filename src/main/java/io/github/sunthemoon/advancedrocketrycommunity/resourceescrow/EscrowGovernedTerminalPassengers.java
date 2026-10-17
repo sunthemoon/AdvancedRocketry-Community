@@ -17,7 +17,7 @@ public final class EscrowGovernedTerminalPassengers {
         // Offline assignments are a cheap, silent wait, not a reason to encode the whole rocket each tick.
         try {
             return afterPassengers(() -> present(server, record, outcome, survivor),
-                    () -> EscrowGovernedTerminalDisk.survivor(record, outcome, EscrowNativeEnvelope.rocket(survivor)));
+                    () -> EscrowGovernedTerminalDisk.survivor(record, outcome, EscrowGovernedEnvelope.capture(survivor)));
         } catch (IllegalArgumentException | IllegalStateException | ArithmeticException invalid) { return false; }
     }
 

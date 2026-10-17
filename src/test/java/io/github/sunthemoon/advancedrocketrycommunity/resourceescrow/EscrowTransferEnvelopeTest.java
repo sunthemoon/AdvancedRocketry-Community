@@ -22,7 +22,7 @@ class EscrowTransferEnvelopeTest {
         var fixture = GovernedTransferFixture.create(); var record = fixture.record();
         var metadata = record.nativeTransfer().orElseThrow();
         assertEquals(3, record.schemaVersion()); assertEquals(2, record.sourceFlightData().schemaVersion());
-        assertEquals(fixture.source(), metadata.sourceEnvelope(record));
+        assertEquals(EscrowGovernedEnvelope.comparison(fixture.source()), metadata.sourceEnvelope(record));
         assertEquals(fixture.destination(), metadata.destinationEnvelope(record));
         assertEquals(7, metadata.sourceEnvelope(record).getCompound("wrapper").getLong("resource_epoch"));
         assertEquals(0, metadata.destinationEnvelope(record).getCompound("wrapper").getLong("resource_epoch"));
@@ -48,7 +48,7 @@ class EscrowTransferEnvelopeTest {
             var loaded = RocketTransferSavedData.load(root); assertTrue(loaded.operational());
             var restored = loaded.entries().get(0);
             assertEquals(record.checksum(), restored.checksum()); assertEquals(phase, restored.phase());
-            assertEquals(fixture.source(), restored.nativeTransfer().orElseThrow().sourceEnvelope(restored));
+            assertEquals(EscrowGovernedEnvelope.comparison(fixture.source()), restored.nativeTransfer().orElseThrow().sourceEnvelope(restored));
             assertEquals(root, loaded.save(new CompoundTag()));
             assertThrows(IllegalArgumentException.class, () -> RocketTransferRecord.restore(3,
                     restored.transferId(), restored.phase(), restored.logicalRocketId(), restored.ownerId(), restored.sourceEntityId(),
@@ -104,7 +104,7 @@ class EscrowTransferEnvelopeTest {
     @Test void nativeProjectionCopiesInputsAndOutputsAndRetainsPriorIdlePlan() {
         var fixture = GovernedTransferFixture.create(1, 16, true); var record = fixture.record();
         var metadata = record.nativeTransfer().orElseThrow();
-        assertEquals(fixture.source(), metadata.sourceEnvelope(record));
+        assertEquals(EscrowGovernedEnvelope.comparison(fixture.source()), metadata.sourceEnvelope(record));
         int size = RocketNbtSize.uncompressedBytes(metadata.encode());
         assertTrue(size <= EscrowTransferEnvelope.MAX_BYTES);
         System.out.println("governed_metadata_16_passengers_prior_plan_bytes=" + size);
@@ -142,7 +142,7 @@ class EscrowTransferEnvelopeTest {
         }
         assertEquals(measured.bytes(), sum);
         System.out.println("governed_max_identifier_manifest_bytes=" + measured.bytes() + " nodes=" + measured.nodes());
-        assertEquals(fixture.source(), metadata.sourceEnvelope(record));
+        assertEquals(EscrowGovernedEnvelope.comparison(fixture.source()), metadata.sourceEnvelope(record));
         assertTrue(RocketTransferSavedData.load(root(record)).operational());
     }
 

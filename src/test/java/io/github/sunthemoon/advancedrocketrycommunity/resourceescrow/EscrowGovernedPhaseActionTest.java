@@ -69,12 +69,13 @@ class EscrowGovernedPhaseActionTest {
         var journal = new RocketTransferSavedData();
         try {
             journal.put(record); var authority = acknowledge(journal, record);
-            for (int fault = 0; fault < 3; fault++) {
+            for (int fault = 0; fault < 4; fault++) {
                 var source = fixture.source().copy(); var destination = fixture.destination().copy(); var boundary = new AtomicBoolean(true);
                 var permit = issue(authority, source, destination, boundary::get);
                 if (fault == 0) { boundary.set(false); }
                 if (fault == 1) { source.putBoolean("invulnerable", true); }
                 if (fault == 2) { destination.putUUID("owner", GovernedTransferFixture.id(999)); }
+                if (fault == 3) { destination.getList("passengers", 10).add(source.getList("passengers", 10).get(0).copy()); }
                 assertThrows(IllegalArgumentException.class, permit::consume);
                 assertThrows(IllegalArgumentException.class, permit::consume);
             }

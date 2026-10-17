@@ -128,7 +128,7 @@ public final class EscrowGovernedPhases {
         player.stopRiding();
         var detachedSource = EscrowGovernedPhaseAction.withoutRider(beforeSource, player.getUUID());
         BooleanSupplier detached = () -> boundary.getAsBoolean() && online(server, player) && player.getVehicle() == null
-                && Objects.equals(detachedSource, envelope(source)) && beforeDestination.equals(envelope(destination));
+                && EscrowGovernedEnvelope.same(detachedSource, envelope(source)) && EscrowGovernedEnvelope.same(beforeDestination, envelope(destination));
         // stopRiding posts the ordinary invalidation event. Never suppress it or reuse the old permit.
         permit(server, journal, record, source, destination, detached).consume();
         player.setDeltaMovement(Vec3.ZERO); player.fallDistance = 0;
@@ -148,7 +148,7 @@ public final class EscrowGovernedPhases {
         var expectedDestination = beforeDestination.copy();
         var rider = new CompoundTag(); rider.putUUID("physical", player.getUUID());
         expectedDestination.getList("passengers", net.minecraft.nbt.Tag.TAG_COMPOUND).add(rider);
-        EscrowTags.require(Objects.equals(detachedSource, envelope(source)) && expectedDestination.equals(envelope(destination)),
+        EscrowTags.require(EscrowGovernedEnvelope.same(detachedSource, envelope(source)) && EscrowGovernedEnvelope.same(expectedDestination, envelope(destination)),
                 "Passenger callback changed a native endpoint");
         permit(server, journal, record, source, destination, boundary).consume();
         EscrowRuntime.of(server).checkpoint("F5_PASSENGER_AFTER"); return true;

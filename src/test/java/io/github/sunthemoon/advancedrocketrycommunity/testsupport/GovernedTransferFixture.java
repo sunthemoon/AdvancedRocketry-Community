@@ -71,8 +71,8 @@ public final class GovernedTransferFixture {
         var sourceEnvelope = envelope(id(5), source, idle, 7, true);
         var destinationEnvelope = envelope(id(6), destination, descent, 0, false);
         var arm = new EscrowFlightTables.Armed(id(7), id(3), id(8), id(5), 7, id(4), serial, 10,
-                "1".repeat(64), "2".repeat(64), EscrowNativeEnvelope.digest(sourceEnvelope),
-                EscrowNativeEnvelope.digest(destinationEnvelope), id(6), new EscrowGuard(id(3), null, 1, "3".repeat(64)),
+                "1".repeat(64), "2".repeat(64), EscrowGovernedEnvelope.digest(sourceEnvelope),
+                EscrowGovernedEnvelope.digest(destinationEnvelope), id(6), new EscrowGuard(id(3), null, 1, "3".repeat(64)),
                 maximal ? id(9) : null, maximal ? 9 : 0, EscrowFlightTables.Outcome.ARMED);
         var nativeTransfer = EscrowTransferEnvelope.capture(arm, sourceEnvelope, destinationEnvelope, source,
                 destination, transit, descent);
