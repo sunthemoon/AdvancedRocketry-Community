@@ -713,10 +713,7 @@ final class RocketTransferService {
             return RocketGovernedSourceDispatcher.requestReturn(server, journal, record, source, recovery.bays(), reason, completion.accepted());
         }
         if (!flightAllowed(server, journal, record, SETTLE_SOURCE)
-                || !recovery.bays().allowed(server, journal, record, REMOVE_JOURNAL)) { return false; }
-        // N2: no poll or callback intervenes before remove/queue on the owner thread.
-        // A failed write may retain this continuation; only capacity/lifecycle refuse it.
-        if (!journal.canReserveRemovalEffect()) { return false; }
+                || !recovery.bays().allowed(server, journal, record, REMOVE_JOURNAL) || !journal.canReserveRemovalEffect()) { return false; }
         RocketFlightData safe = RocketTransferEntities.stationarySource(
                 record,
                 source.level().getGameTime()
