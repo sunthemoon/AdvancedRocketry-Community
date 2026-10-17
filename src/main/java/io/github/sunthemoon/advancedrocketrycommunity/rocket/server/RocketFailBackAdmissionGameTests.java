@@ -105,14 +105,14 @@ public final class RocketFailBackAdmissionGameTests {
     }
 
     @SuppressWarnings("unchecked")
-    private static Set<UUID> live(RocketTransferService service) {
+    static Set<UUID> live(RocketTransferService service) {
         try {
             var field = RocketTransferService.class.getDeclaredField("liveTransfers"); field.setAccessible(true);
             return (Set<UUID>) field.get(service);
         } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
     }
 
-    private static RocketTransferRecord record(GameTestHelper helper, UUID entity, UUID owner, UUID station,
+    static RocketTransferRecord record(GameTestHelper helper, UUID entity, UUID owner, UUID station,
             io.github.sunthemoon.advancedrocketrycommunity.station.pad.LandingPadReference pad, BlockPos origin, int offset) {
         long now = helper.getLevel().getGameTime(); UUID logical = UUID.randomUUID(), transfer = UUID.randomUUID();
         var propulsion = new RocketPropulsion(RocketPropulsion.Mode.ABSTRACT, 1_000, 0, 1, 1,

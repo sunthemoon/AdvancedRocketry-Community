@@ -26,4 +26,38 @@ public final class RocketJournalSchedulingGameTestSupport {
         }
         return journal.queueEffect(logical, effect);
     }
+
+    /** A real checked writer paused immediately before replacement, on an isolated fixture file. */
+    public static HeldWrite hold(GameTestHelper helper, RocketTransferSavedData journal, java.nio.file.Path file) {
+        if (!(helper.getLevel().getServer() instanceof GameTestServer)) {
+            throw new IllegalStateException("Not a GameTest fixture");
+        }
+        if (journal == RocketTransferSavedData.get(helper.getLevel().getServer())) {
+            throw new IllegalArgumentException("Held writer requires a detached journal");
+        }
+        var held = new HeldWrite();
+        helper.assertTrue(journal.requestWrite(file, new io.github.sunthemoon.advancedrocketrycommunity.persistence
+                .migration.CheckedSavedDataPolicy(io.github.sunthemoon.advancedrocketrycommunity.persistence
+                .migration.ManagedSavedDataType.ROCKET_TRANSFERS, (staged, target) -> {
+                    held.entered.countDown();
+                    try {
+                        if (!held.release.await(30, java.util.concurrent.TimeUnit.SECONDS)) {
+                            throw new java.io.IOException("GameTest held writer was not released");
+                        }
+                    } catch (InterruptedException failure) {
+                        Thread.currentThread().interrupt(); throw new java.io.IOException(failure);
+                    }
+                    io.github.sunthemoon.advancedrocketrycommunity.persistence.migration.CheckedSavedDataFile
+                            .atomicMove(staged, target);
+                })), "Held fixture write was refused");
+        return held;
+    }
+
+    public static final class HeldWrite implements AutoCloseable {
+        private final java.util.concurrent.CountDownLatch entered = new java.util.concurrent.CountDownLatch(1);
+        private final java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
+        private HeldWrite() { }
+        public boolean entered() { return entered.getCount() == 0; }
+        @Override public void close() { release.countDown(); }
+    }
 }
