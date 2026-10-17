@@ -12,6 +12,7 @@ import io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketNativeR
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -40,10 +41,21 @@ public final class EscrowLoaderAdmission {
      * named, and a gated release dedicated server (hooks, no RCON, only test-owned players) opens it by {@link #SWITCH}.
      */
     public static boolean enabled(MinecraftServer server, UUID device) {
-        if (EscrowCoordinator.PRODUCTION_ADMISSION) { return true; }
-        if (!server.isSameThread() || !EscrowTestEndpoints.enabled(server)) { return false; }
-        return Boolean.getBoolean(EscrowTestEndpoints.HOOKS) && Boolean.getBoolean(SWITCH)
-                || EscrowRuntime.of(server).loaderAdmissionAllowed(device);
+        return switchOpen(EscrowCoordinator.PRODUCTION_ADMISSION, server.isSameThread(), () -> EscrowTestEndpoints.enabled(server),
+                Boolean.getBoolean(EscrowTestEndpoints.HOOKS), Boolean.getBoolean(SWITCH),
+                () -> EscrowRuntime.of(server).loaderAdmissionAllowed(device));
+    }
+
+    /**
+     * The switch's decision (W95-R4), pure so that every combination is pinned: on the owner thread, the release-test
+     * gate, and then either both properties or a device that a GameTest hook named. Neither property opens anything
+     * without the gate, and the gate alone opens nothing. The gate is read only on the owner thread, and the device set
+     * only behind the gate.
+     */
+    static boolean switchOpen(boolean production, boolean ownerThread, BooleanSupplier gate, boolean hooks, boolean property,
+                              BooleanSupplier device) {
+        if (production) { return true; }
+        return ownerThread && gate.getAsBoolean() && (hooks && property || device.getAsBoolean());
     }
 
     /** prepareFill's typed results as player status; every member but QUEUED is a refusal that changed nothing. */
@@ -225,8 +237,8 @@ public final class EscrowLoaderAdmission {
     /**
      * The device's escrow progress, or null when escrow names nothing for it. PREPARING lasts until the device's own
      * debit is applied (the creation baseline, L1 or an UNKNOWN L1 outcome); TRANSFERRING follows through the proofs
-     * and L2; ESCROW_PENDING is a held or retired-but-unpruned state, never a claim that no fuel moved. Reading never
-     * creates a ledger.
+     * and L2; ESCROW_PENDING is a held or retired-but-unpruned state, never a claim that no fuel moved; LEDGER_UNAVAILABLE
+     * appears only before the debit. Reading never creates a ledger.
      */
     public static FluidFuelLoaderStatus progress(FluidFuelLoaderBlockEntity loader) {
         var root = loader.root().orElse(null);
@@ -243,23 +255,46 @@ public final class EscrowLoaderAdmission {
             return root.escrow().locked() || coordinator.frozenIdentity(root.device())
                     || EscrowSettlementTombstones.endpointLocked(data.ledger(), key) ? FluidFuelLoaderStatus.ESCROW_PENDING : null;
         }
-        if (!coordinator.operational()) { return FluidFuelLoaderStatus.LEDGER_UNAVAILABLE; }
         var op = named.get(0);
-        if (!coordinator.durable(op.id())) { return FluidFuelLoaderStatus.PREPARING; }
-        var scheduler = EscrowRuntime.of(server).reconciliationScheduler();
-        if (coordinator.currentReason(op) != EscrowReason.NONE || op.phase() != EscrowOperation.Phase.PREPARED || !op.settlement().isEmpty()
-                || scheduler != null && !scheduler.view(op.id()).reason().equals(EscrowReason.NONE.name())) {
-            return FluidFuelLoaderStatus.ESCROW_PENDING;
-        }
         boolean applied = root.escrow().markers().stream().anyMatch(marker -> marker.operation().equals(op.id()));
-        return !applied ? FluidFuelLoaderStatus.PREPARING
-                : coordinator.writerUnknown() ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.TRANSFERRING;
+        var scheduler = EscrowRuntime.of(server).reconciliationScheduler();
+        boolean held = coordinator.currentReason(op) != EscrowReason.NONE || op.phase() != EscrowOperation.Phase.PREPARED
+                || !op.settlement().isEmpty() || scheduler != null && !scheduler.view(op.id()).reason().equals(EscrowReason.NONE.name());
+        return progress(coordinator.durable(op.id()), applied, coordinator.operational(), coordinator.writerUnavailable(), held,
+                coordinator.writerUnknown());
     }
 
-    /** Queues a paced device's attempt once in the fair queue; false when the queue is full (it retries next interval). */
-    public static boolean offer(FluidFuelLoaderBlockEntity loader, EscrowFillQueue.Attempt attempt) {
+    /**
+     * The progress of one operation naming the device (W95-R1), pure so that every combination is pinned. "Applied" means
+     * the device's section holds this operation's marker, so its own debit has happened, and no status after it may say
+     * that no fuel moved: an unavailable coordinator or writer (a failed baseline, or three unresolved writes) then reads
+     * ESCROW_PENDING, and LEDGER_UNAVAILABLE only before it. An available ledger shows PREPARING until the debit,
+     * TRANSFERRING after it, and ESCROW_PENDING for a held durable record or an UNKNOWN write after the debit.
+     */
+    static FluidFuelLoaderStatus progress(boolean durable, boolean applied, boolean operational, boolean writerUnavailable,
+                                          boolean held, boolean writerUnknown) {
+        if (!operational || writerUnavailable) {
+            return applied ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.LEDGER_UNAVAILABLE;
+        }
+        if (applied) {
+            // A debit needs the exact L1 acknowledgement, so an applied operation that is not durable is held, not new.
+            return !durable || held || writerUnknown ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.TRANSFERRING;
+        }
+        return durable && held ? FluidFuelLoaderStatus.ESCROW_PENDING : FluidFuelLoaderStatus.PREPARING;
+    }
+
+    /**
+     * Queues a paced device's attempt once in the fair queue (W95-R5): READY while it waits there, or ESCROW_FULL, with
+     * nothing queued, when the bounded queue is full; the device retries at its next interval.
+     */
+    public static FluidFuelLoaderStatus offer(FluidFuelLoaderBlockEntity loader, EscrowFillQueue.Attempt attempt) {
         var server = ((ServerLevel) loader.getLevel()).getServer();
-        return EscrowRuntime.of(server).fills(server).offer(loader.root().orElseThrow().device(), attempt);
+        return queued(EscrowRuntime.of(server).fills(server).offer(loader.root().orElseThrow().device(), attempt));
+    }
+
+    /** READY means that the device waits in the fair queue; a refused offer queued nothing. */
+    static FluidFuelLoaderStatus queued(boolean waiting) {
+        return waiting ? FluidFuelLoaderStatus.READY : FluidFuelLoaderStatus.ESCROW_FULL;
     }
 
     static EscrowEndpoint.Key rocketKey(ServerLevel level, RocketEntity rocket) {
