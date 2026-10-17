@@ -31,4 +31,36 @@ class EscrowFlightBenchmarkLoadTest {
         assertThrows(IllegalArgumentException.class,
                 () -> EscrowFlightBenchmarkLoad.refill(items, new EnergyStorage(40000), Items.IRON_INGOT));
     }
+
+    @Test void benchmarkPadsAndSourcesKeepTheDiscoveryMarginInsideTheirOriginChunk() {
+        var sources = new java.util.HashSet<net.minecraft.core.BlockPos>();
+        var pads = new java.util.HashSet<net.minecraft.core.BlockPos>();
+        for (int i = 0; i < 8; i++) {
+            var source = EscrowFlightBenchmarkLoad.source(i); var pad = EscrowFlightBenchmarkLoad.destination(i);
+            sources.add(source); pads.add(pad);
+            for (var pos : java.util.List.of(source, pad)) {
+                assertEquals(pos.getX() >> 4, (pos.getX() - 1) >> 4);
+                assertEquals(pos.getX() >> 4, (pos.getX() + 2) >> 4);
+                assertEquals(pos.getZ() >> 4, (pos.getZ() - 1) >> 4);
+                assertEquals(pos.getZ() >> 4, (pos.getZ() + 2) >> 4);
+            }
+        }
+        assertEquals(8, sources.size()); assertEquals(8, pads.size());
+    }
+
+    @Test void productQuotePinsExactFuelConservationInsteadOfTheOldSyntheticDebit() {
+        var descriptor = new io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion(
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Mode.MONO,
+                2000, 0, 1, 1, io.github.sunthemoon.advancedrocketrycommunity.rocket.model.RocketPropulsion.Settings.DEFAULTS);
+        var fuel = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFuelState.empty(descriptor)
+                .withFluidBank(false, io.github.sunthemoon.advancedrocketrycommunity.ModIdentity.id("rocket_fuel"), null, 1000);
+        var planned = io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner.plan(
+                EscrowFlightBenchmarkLoad.flightStats(), fuel,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner.EARTH,
+                io.github.sunthemoon.advancedrocketrycommunity.rocket.flight.RocketFlightPlanner.MOON, java.util.UUID.randomUUID(), 1);
+        assertTrue(planned.success());
+        assertEquals(EscrowFlightBenchmarkProbe.ROUTE_FUEL, planned.plan().requiredFuel());
+        assertEquals(EscrowFlightBenchmarkProbe.PRIMARY_DEBIT, planned.plan().propulsionDebit().primary());
+        assertEquals(EscrowFlightBenchmarkProbe.LANDED_FUEL, fuel.debit(planned.plan()).state().totalAmount());
+    }
 }
