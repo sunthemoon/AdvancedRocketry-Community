@@ -158,6 +158,33 @@ class EscrowGovernedDispatchTest {
                 List.of(), List.of(), root.tombstones(), 1, List.of(EscrowFlightTables.Head.decode(completed)), List.of(arm)), record).reason());
     }
 
+    /** Review B F10: one retention pass per tick, from one set of logical IDs, however many records are classified. */
+    @Test void retryHistoriesAreRetainedOncePerTickNotOncePerClassification() throws Exception {
+        var record = GovernedTransferFixture.create().record(); var journal = new RocketTransferSavedData();
+        var observations = new java.util.concurrent.atomic.AtomicInteger(); var lines = new java.util.ArrayList<EscrowSuccessorRetry.Hold>();
+        var held = EscrowGovernedDispatch.Decision.hold("GOVERNED_LEDGER_UNAVAILABLE");
+        java.util.function.Supplier<EscrowGovernedDispatch.Decision> observe = () -> { observations.incrementAndGet(); return held; };
+        try (var dispatcher = new EscrowGovernedDispatch(new EscrowDispatchRetries(lines::add))) {
+            journal.put(record); acknowledge(journal);
+            for (int visit = 0; visit < 64; visit++) { assertEquals(held, dispatcher.classify(5, journal, record, observe)); }
+            assertEquals(1, dispatcher.retentions(), "Retention ran once per classified record");
+            assertEquals(1, observations.get(), "The held flight was observed again during its backoff");
+            for (int visit = 0; visit < 64; visit++) { dispatcher.classify(6, journal, record, observe); }
+            assertEquals(2, dispatcher.retentions()); assertEquals(1, observations.get(), "An unchanged journal dropped a held history");
+
+            journal.remove(record.transferId());
+            dispatcher.classify(7, journal, record, observe);
+            assertEquals(2, dispatcher.retentions(), "A pending journal removal evicted a held history");
+            assertEquals(1, observations.get());
+            acknowledge(journal);
+            dispatcher.classify(7, journal, record, observe);
+            assertEquals(3, dispatcher.retentions(), "An acknowledgement later in the same tick did not retain once");
+            assertEquals(2, observations.get(), "The checked removal kept the removed rocket's history");
+            dispatcher.classify(7, journal, record, observe); assertEquals(3, dispatcher.retentions());
+            assertEquals(2, lines.size(), "Each new failed observation logs one hold transition");
+        } finally { journal.stop(); }
+    }
+
     private void acknowledge(RocketTransferSavedData journal) throws Exception {
         EscrowArmedRestartBoundaryTest.acknowledge(journal, directory.resolve(ManagedSavedDataType.ROCKET_TRANSFERS.fileName()));
     }
